@@ -6,6 +6,7 @@
 // the editor drew it. The label is drawn here in its region rather than by
 // the generic centred label, which would print it over the whole box.
 
+import { capBandBaselineY } from '@livediagram/icons';
 import { BORDER_RADIUS_PX } from './border-style';
 import { labelFontPx } from './label-font';
 import type { BoxedElement, ImageElement } from './index';
@@ -29,13 +30,21 @@ const family = (fontFamily?: string) =>
 
 // One line of text centred vertically in `r` (element-relative), anchored per
 // `align`. Clipped by character count, since a headless render cannot measure.
+// `onCapBand`: a glyph in a disc sits on the alphabetic baseline that centres its cap band
+// (docs/specs/004-interface-design/optical-alignment.md); other lines centre their em box.
 function line(
   el: BoxedElement,
   text: string,
   r: LayoutRect,
   px: number,
   color: string,
-  o: { align?: 'start' | 'middle' | 'end'; bold?: boolean; opacity?: number; fontFamily?: string },
+  o: {
+    align?: 'start' | 'middle' | 'end';
+    bold?: boolean;
+    opacity?: number;
+    fontFamily?: string;
+    onCapBand?: boolean;
+  },
 ): string {
   if (!text) return '';
   const align = o.align ?? 'middle';
@@ -43,7 +52,9 @@ function line(
   const maxChars = Math.max(1, Math.floor(r.width / (px * 0.56)));
   const shown = text.length > maxChars ? `${text.slice(0, Math.max(1, maxChars - 1))}…` : text;
   return (
-    `<text x="${r2(x)}" y="${r2(el.y + r.y + r.height / 2)}" text-anchor="${align}" dominant-baseline="central"` +
+    (o.onCapBand
+      ? `<text x="${r2(x)}" y="${r2(capBandBaselineY(el.y + r.y + r.height / 2, px))}" text-anchor="${align}"`
+      : `<text x="${r2(x)}" y="${r2(el.y + r.y + r.height / 2)}" text-anchor="${align}" dominant-baseline="central"`) +
     `${family(o.fontFamily)} font-size="${px}" font-weight="${o.bold ? 600 : 400}"` +
     (o.opacity !== undefined ? ` opacity="${o.opacity}"` : '') +
     ` fill="${xmlEscape(color)}">${xmlEscape(shown)}</text>`
@@ -117,7 +128,7 @@ export function svgWebComponent(
           },
           Math.round(l.badge.r),
           ACCENT_BAR_TEXT,
-          { bold: true, fontFamily },
+          { bold: true, fontFamily, onCapBand: true },
         ) +
         line(el, el.pageTitle ?? '', l.heading, l.headingPx, ink, {
           align: 'start',
@@ -168,7 +179,11 @@ export function svgWebComponent(
           const num = { x: s.cx - s.r, y: s.cy - s.r, width: s.r * 2, height: s.r * 2 };
           return (
             `<circle cx="${r2(el.x + s.cx)}" cy="${r2(el.y + s.cy)}" r="${r2(s.r)}" fill="${xmlEscape(stroke)}"/>` +
-            line(el, String(i + 1), num, l.numberPx, ACCENT_BAR_TEXT, { bold: true, fontFamily }) +
+            line(el, String(i + 1), num, l.numberPx, ACCENT_BAR_TEXT, {
+              bold: true,
+              fontFamily,
+              onCapBand: true,
+            }) +
             line(el, steps[i] ?? '', s.caption, l.captionPx, ink, { fontFamily })
           );
         })
@@ -194,7 +209,7 @@ export function svgWebComponent(
           },
           Math.round(l.logo.r),
           bar,
-          { bold: true, fontFamily },
+          { bold: true, fontFamily, onCapBand: true },
         ) +
         label(el, text, l.brand, white, fontFamily) +
         l.links

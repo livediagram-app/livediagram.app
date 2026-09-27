@@ -13,6 +13,7 @@
 // alone: each one's resting frame is the static element, which is what a still
 // image wants anyway.
 
+import { capBandBaselineY } from '@livediagram/icons';
 import { clampPercent, clampRating, RATING_DEFAULT, RATING_MAX } from './data-shapes';
 import { RAIL_DEFAULT_POINTS } from './data-shapes';
 import { labelFontPx } from './label-font';
@@ -27,11 +28,15 @@ const RAIL_LINE = '#94a3b8';
 const sans = (fontFamily?: string) =>
   ` font-family="${xmlEscape(fontFamily ?? 'system-ui, sans-serif')}"`;
 
-/** The centred percentage every progress element carries. */
+/** The percentage label's size, in px; the canvas view draws it at the same size (text-sm). */
+const PROGRESS_LABEL_PX = 14;
+
+/** The centred percentage every progress element carries, on its cap band (optical-alignment.md). */
 function progressLabel(el: Data, pct: number, textColor: string, fontFamily?: string): string {
+  const y = capBandBaselineY(el.y + el.height / 2, PROGRESS_LABEL_PX);
   return (
-    `<text x="${r2(el.x + el.width / 2)}" y="${r2(el.y + el.height / 2)}" text-anchor="middle"` +
-    ` dominant-baseline="central"${sans(fontFamily)} font-size="14" font-weight="600"` +
+    `<text x="${r2(el.x + el.width / 2)}" y="${r2(y)}" text-anchor="middle"` +
+    `${sans(fontFamily)} font-size="${PROGRESS_LABEL_PX}" font-weight="600"` +
     ` fill="${xmlEscape(textColor)}">${pct}%</text>`
   );
 }
