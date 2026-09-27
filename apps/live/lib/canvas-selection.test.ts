@@ -290,3 +290,35 @@ describe('deriveCanvasSelection — popover yields to an open context menu', () 
     expect(s.showPlus).toBe(true);
   });
 });
+
+// An arrow's label belongs to its line (docs/specs/008-canvas/arrow-labels.md), so the
+// floating toolbars treat it as part of the arrow and never float over it.
+describe('deriveCanvasSelection — an arrow label is part of its arrow', () => {
+  const line = arrow('ar', { x: 100, y: 200 }, { x: 500, y: 200 });
+  const above = { x: 280, y: 150, width: 40, height: 20 };
+  const labelRectOf = (id: string) => (id === 'ar' ? above : null);
+
+  it('spans the label in a selected arrow’s bounds', () => {
+    const s = derive({ elements: [line], selectedId: 'ar', labelRectOf });
+    expect(s.selectionBounds).toEqual({ x: 100, y: 150, width: 400, height: 50 });
+  });
+
+  it('keeps the line’s own bounds when the arrow has no label', () => {
+    const s = derive({ elements: [line], selectedId: 'ar', labelRectOf: () => null });
+    expect(s.selectionBounds).toEqual({ x: 100, y: 200, width: 400, height: 0 });
+  });
+
+  it('never widens a boxed element by a label rect', () => {
+    const s = derive({ elements: [box('a')], selectedId: 'a', labelRectOf: () => above });
+    expect(s.selectionBounds).toEqual({ x: 0, y: 0, width: 100, height: 60 });
+  });
+
+  it('spans selected arrows’ labels in the multi-selection toolbar bounds', () => {
+    const s = derive({
+      elements: [line, box('b', { x: 100, y: 300 })],
+      multiSelectedIds: new Set(['ar', 'b']),
+      labelRectOf,
+    });
+    expect(s.multiToolbarBounds).toEqual({ x: 100, y: 150, width: 400, height: 210 });
+  });
+});

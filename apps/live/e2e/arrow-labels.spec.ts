@@ -162,6 +162,41 @@ test.describe('arrow labels and bending', () => {
     expectNoPageErrors(pageErrors);
   });
 
+  test('the selection toolbar never covers the label', async ({ page, pageErrors }) => {
+    // A label dragged clear above its line: the toolbar used to float over the
+    // line's own box and, at some zooms, land exactly on the label.
+    await startBlankDiagram(page);
+    await seedTab(page, [
+      square('a', 'Client', 100, 200),
+      square('b', 'Server', 600, 200),
+      {
+        id: 'ar',
+        type: 'arrow',
+        from: pinned('a', 'e'),
+        to: pinned('b', 'w'),
+        label: 'calls',
+        labelOffset: { t: 0.5, offset: -40 },
+      },
+    ]);
+    const label = page.getByText('calls', { exact: true });
+    const toolbar = page.getByTestId('selection-popover');
+    const zoomIn = page.getByRole('button', { name: 'Zoom in', exact: true });
+    for (let step = 0; step < 8; step += 1) {
+      const p = await onLine(page, 'ar', 0.2);
+      await page.mouse.click(p.x, p.y);
+      await expect(toolbar).toBeVisible();
+      await expect(toolbar).toHaveCSS('opacity', '1');
+      const l = (await label.boundingBox())!;
+      const t = (await toolbar.boundingBox())!;
+      const overlaps =
+        t.x < l.x + l.width && l.x < t.x + t.width && t.y < l.y + l.height && l.y < t.y + t.height;
+      expect(overlaps, `toolbar covers the label at zoom step ${step}`).toBe(false);
+      await page.keyboard.press('Escape');
+      await zoomIn.click();
+    }
+    expectNoPageErrors(pageErrors);
+  });
+
   test('a free arrow scales from its frame corner', async ({ page, pageErrors }) => {
     await startBlankDiagram(page);
     await seedTab(page, [

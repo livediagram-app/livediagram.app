@@ -96,6 +96,7 @@ export function SelectionPopover({
   return (
     <div
       ref={ref}
+      data-testid="selection-popover"
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         e.preventDefault();

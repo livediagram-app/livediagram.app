@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ArrowLabelLayout } from '@livediagram/diagram';
-import { sameLabelRender, type ArrowLabelRender } from './useArrowLabelLayouts';
+import { labelPlate, sameLabelRender, type ArrowLabelRender } from './useArrowLabelLayouts';
 
 const layout = (over: Partial<ArrowLabelLayout> = {}): ArrowLabelLayout => ({
   mode: 'on-line',
@@ -46,5 +46,11 @@ describe('sameLabelRender', () => {
 
   it('sees a label appear', () => {
     expect(sameLabelRender(render(null), render(layout()))).toBe(false);
+  });
+});
+
+describe('labelPlate', () => {
+  it('is the plate centred on the label anchor', () => {
+    expect(labelPlate(layout())).toEqual({ x: 60, y: 33, width: 80, height: 34 });
   });
 });

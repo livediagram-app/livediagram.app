@@ -5,7 +5,6 @@ import {
   sendManyToBack,
   sendToBack,
   unionBoxedBounds,
-  unionElementBounds,
   type Element,
   type ShapeElement,
 } from './index';
@@ -87,34 +86,6 @@ describe('unionBoxedBounds', () => {
   it('returns null when the set contains no boxed elements', () => {
     expect(unionBoxedBounds([arrow('ar')], new Set(['ar']))).toBeNull();
     expect(unionBoxedBounds([box('a')], new Set(['x']))).toBeNull();
-  });
-});
-
-describe('unionElementBounds', () => {
-  it('spans arrows too (unlike unionBoxedBounds)', () => {
-    // arrow('ar') runs (0,0)->(10,10); box 'b' sits at (100,80) 40x20.
-    const els = [box('b', { x: 100, y: 80, width: 40, height: 20 }), arrow('ar')];
-    expect(unionElementBounds(els, new Set(['ar', 'b']))).toEqual({
-      x: 0,
-      y: 0,
-      width: 140,
-      height: 100,
-    });
-  });
-
-  it('covers an arrow-only selection where unionBoxedBounds is null', () => {
-    const els = [arrow('ar')];
-    expect(unionBoxedBounds(els, new Set(['ar']))).toBeNull();
-    expect(unionElementBounds(els, new Set(['ar']))).toEqual({
-      x: 0,
-      y: 0,
-      width: 10,
-      height: 10,
-    });
-  });
-
-  it('returns null when no listed id matches', () => {
-    expect(unionElementBounds([box('a')], new Set(['x']))).toBeNull();
   });
 });
 
