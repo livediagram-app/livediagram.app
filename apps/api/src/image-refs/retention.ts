@@ -3,7 +3,7 @@
 // order, so the run that completes the backfill can already sweep; the sweep
 // gates itself on completion, so it runs even when the backfill fails.
 
-import { deleteOldUnusedImages } from '../db/images';
+import { deleteOldUnusedImages } from '../db/image-retention';
 import type { Env } from '../types';
 import { runImageRefsBackfill } from './backfill';
 

@@ -15,7 +15,7 @@ const { order, backfill, sweep } = vi.hoisted(() => {
   };
 });
 vi.mock('./backfill', () => ({ runImageRefsBackfill: backfill }));
-vi.mock('../db/images', () => ({ deleteOldUnusedImages: sweep }));
+vi.mock('../db/image-retention', () => ({ deleteOldUnusedImages: sweep }));
 
 import { runImageRetention, UNUSED_IMAGE_RETENTION_MS } from './retention';
 import type { Env } from '../types';

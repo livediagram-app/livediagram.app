@@ -74,4 +74,9 @@ describe('imageRefIdsFromData', () => {
   it('returns nothing for a valid body without elements', () => {
     expect(imageRefIdsFromData('{"theme":"x"}')).toEqual([]);
   });
+
+  it('returns nothing for a valid body that is not an object', () => {
+    expect(imageRefIdsFromData('"imageId"')).toEqual([]);
+    expect(imageRefIdsFromData('["imageId"]')).toEqual([]);
+  });
 });

@@ -118,6 +118,32 @@ describe('runImageRefsBackfill', () => {
     );
   });
 
+  it('passes a corrupt tab that names no usable id', async () => {
+    const db = legacy({ bad: '{"elements":[{"type":"image","imageId":null}' });
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(
+      await runImageRefsBackfill(db.env, createdAt(db) + IMAGE_REFS_BACKFILL_SETTLE_MS),
+    ).toEqual({
+      state: 'complete',
+    });
+    expect(refCount(db.sql)).toBe(0);
+    expect(warn).toHaveBeenCalledWith(
+      'image-refs backfill: corrupt tab bad scanned as text (0 ids)',
+    );
+  });
+
+  it('completes when every tab it was waiting on is gone', async () => {
+    const db = legacy({ t1: body('a') });
+    db.sql.exec('DELETE FROM tabs');
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    expect(
+      await runImageRefsBackfill(db.env, createdAt(db) + IMAGE_REFS_BACKFILL_SETTLE_MS),
+    ).toEqual({
+      state: 'complete',
+    });
+  });
+
   it('is idempotent over references a save already wrote', async () => {
     const db = legacy({ t1: body('a') });
     db.sql.exec("INSERT INTO image_refs (tab_id, image_id) VALUES ('t1', 'a')");
