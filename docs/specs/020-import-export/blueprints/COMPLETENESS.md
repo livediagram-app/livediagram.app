@@ -24,4 +24,5 @@
 - [x] Web Experience
 - [x] Observability
 - [x] Testing
+- [x] Assets and external resources
 - [x] Defaults ledger

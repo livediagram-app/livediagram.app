@@ -141,6 +141,17 @@ Copy is the pipeline spec's; pluralisation `1 image` / `2 images`, `1 placeholde
 | All images fail                          | Import succeeds with placeholders; report explains   |
 | Pipeline module fails to load            | Runner throws → the panel's existing catch-all error |
 
+## Assets and external resources
+
+| Asset                                                         | Source                                                                                               | Licence                                                                    |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `apps/live/lib/__fixtures__/excalidraw-export.excalidraw.png` | excalidraw.com, Export image, Embed scene on, 1x, PNG, of a scene holding one text and one rectangle | Our own drawing; Excalidraw's output format is MIT (excalidraw/excalidraw) |
+| `apps/live/lib/__fixtures__/excalidraw-export.excalidraw.svg` | The same scene and dialog, SVG                                                                       | As above                                                                   |
+
+Regenerate by loading that scene on excalidraw.com (drop the `.excalidraw` file on the canvas),
+opening Export image (Ctrl+Shift+E), switching Embed scene on and exporting each format. The text
+must read `Imported from Excalidraw`, which the tests assert.
+
 ## Observability
 
 - `[excalidraw-import]` `console.info` with `{ container, elements, images, skipped }` on success;
@@ -149,14 +160,16 @@ Copy is the pipeline spec's; pluralisation `1 image` / `2 images`, `1 placeholde
 
 ## Testing
 
-| Rule                                      | Test                                                                              |
-| ----------------------------------------- | --------------------------------------------------------------------------------- |
-| Image requests from `files`, key = fileId | `excalidraw-import.test.ts`                                                       |
-| Missing file → `null` source              | `excalidraw-import.test.ts`                                                       |
-| `crop` → `objectFit: 'cover'`             | `excalidraw-import.test.ts`                                                       |
-| PNG compressed / uncompressed / legacy    | `excalidraw-embedded.test.ts` (fixtures built with the same encoding in the test) |
-| SVG v1 / v2 payloads                      | `excalidraw-embedded.test.ts`                                                     |
-| No scene / corrupt scene messages         | `excalidraw-embedded.test.ts`                                                     |
-| JSON passthrough                          | `excalidraw-embedded.test.ts`                                                     |
-| Report copy                               | `import-images/report.test.ts`                                                    |
-| End to end with real exports              | Manual run against the local editor + api                                         |
+| Rule                                      | Test                                                                                            |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Image requests from `files`, key = fileId | `apps/live/lib/excalidraw-import.test.ts`                                                       |
+| Missing file → `null` source              | `apps/live/lib/excalidraw-import.test.ts`                                                       |
+| `crop` → `objectFit: 'cover'`             | `apps/live/lib/excalidraw-import.test.ts`                                                       |
+| PNG compressed / uncompressed / legacy    | `apps/live/lib/excalidraw-embedded.test.ts` (fixtures built with the same encoding in the test) |
+| SVG v1 / v2 payloads                      | `apps/live/lib/excalidraw-embedded.test.ts`                                                     |
+| No scene / corrupt scene messages         | `apps/live/lib/excalidraw-embedded.test.ts`                                                     |
+| JSON passthrough                          | `apps/live/lib/excalidraw-embedded.test.ts`                                                     |
+| Report copy                               | `apps/live/lib/import-images/report.test.ts`                                                    |
+| Images stored as WebP, report, focus      | `apps/live/e2e/import-images.spec.ts`                                                           |
+| Full gallery: placeholders + sentence     | `apps/live/e2e/import-images.spec.ts` (403 via route)                                           |
+| Real PNG export imports its content       | `apps/live/e2e/import-images.spec.ts`                                                           |
