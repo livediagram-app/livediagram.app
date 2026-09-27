@@ -10,19 +10,13 @@
 
 import { sourceTypeIconPath } from './sourceTypeMeta';
 import type { TimelineEvent, TimelineRenderer, TimelineRendererRegistry } from './types';
+import { Glyph } from '@livediagram/ui';
 
 export function SourceTypeIcon({ sourceType }: { sourceType: string }) {
   return (
-    <svg
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      viewBox="0 0 24 24"
-      aria-hidden
-    >
+    <Glyph size={16} units={24} className="h-4 w-4" strokeLinecap="butt" strokeLinejoin="miter">
       <path strokeLinecap="round" strokeLinejoin="round" d={sourceTypeIconPath(sourceType)} />
-    </svg>
+    </Glyph>
   );
 }
 

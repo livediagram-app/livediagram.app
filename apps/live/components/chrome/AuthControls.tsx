@@ -23,7 +23,7 @@
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { useClickOutside, SOLID_BRAND_DARK } from '@livediagram/ui';
+import { useClickOutside, SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
@@ -148,21 +148,11 @@ function AuthControlsDisabled() {
 // the same glyph so the two sign-in affordances read as one action.
 export function SignInIcon({ size = 13 }: { size?: number } = {}) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={size} units={16}>
       <path d="M9 3h3.5A1.5 1.5 0 0 1 14 4.5v7A1.5 1.5 0 0 1 12.5 13H9" />
       <path d="M2 8h7" />
       <path d="M6 5l3 3-3 3" />
-    </svg>
+    </Glyph>
   );
 }
 

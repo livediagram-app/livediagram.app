@@ -1,7 +1,7 @@
 'use client';
 
 import { NAME_MAX_LENGTH } from '@livediagram/diagram';
-import { TextInput } from '@livediagram/ui';
+import { TextInput, Glyph } from '@livediagram/ui';
 import { PlacementBrowser, type PickerFolder } from '@/components/placement/PlacementBrowser';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { isOfflineLocation, saveLocationLabel, type SaveLocationId } from '@/lib/save-locations';
@@ -91,21 +91,10 @@ export function NewDiagramSettingsStep({
           exactly when it applies. */}
       {offline ? (
         <div className="-mt-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-          <svg
-            className="mt-px shrink-0"
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
+          <Glyph size={14} units={16} className="mt-px shrink-0">
             <path d="M8 2.5 1.8 13.5h12.4L8 2.5Z" />
             <path d="M8 6.5v3.2M8 11.6v.1" />
-          </svg>
+          </Glyph>
           <span>
             This diagram is not backed up or synced. Clearing your browser data, using private
             browsing, or switching device or browser will lose it for good. You can Sync it to your

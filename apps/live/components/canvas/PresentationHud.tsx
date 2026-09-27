@@ -9,7 +9,7 @@
 // popover would be left orphaned over the slide.
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, Tooltip } from '@livediagram/ui';
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, Tooltip, Glyph } from '@livediagram/ui';
 
 import { GearIcon } from '@/components/chrome/tab-bar-icons';
 
@@ -206,38 +206,19 @@ export function PresentationHud({
             you need until somebody asks about the slide from nine slides ago
             and you arrow back through nine of them in front of a room. */}
         <HudButton label="Jump to a slide" onPress={onToggleJump} active={jumpOpen}>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
+          <Glyph size={14} units={16}>
             <rect x="2" y="2.5" width="5" height="5" rx="1" />
             <rect x="9" y="2.5" width="5" height="5" rx="1" />
             <rect x="2" y="8.5" width="5" height="5" rx="1" />
             <rect x="9" y="8.5" width="5" height="5" rx="1" />
-          </svg>
+          </Glyph>
         </HudButton>
         {hasNotes ? (
           <HudButton label="Presenter notes" onPress={onToggleNotes} active={notesOpen}>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              aria-hidden
-            >
+            <Glyph size={14} units={16} strokeLinejoin="miter">
               <rect x="2.5" y="2" width="11" height="12" rx="1.6" />
               <path d="M5 5.5h6M5 8h6M5 10.5h3.5" />
-            </svg>
+            </Glyph>
           </HudButton>
         ) : null}
         {/* The app's own settings glyph, not a cog. A cog's spokes around a

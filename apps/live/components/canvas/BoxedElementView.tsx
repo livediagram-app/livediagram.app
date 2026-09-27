@@ -1,5 +1,6 @@
 import { memo, useRef, useState } from 'react';
-import { Tooltip } from '@livediagram/ui';
+import { ICON_STROKE_PX_SMALL } from '@livediagram/icons';
+import { Tooltip, Glyph } from '@livediagram/ui';
 import {
   BORDER_DASH_ARRAY,
   BORDER_RADIUS_PX,
@@ -639,19 +640,10 @@ function BoxedElementViewImpl({
             className="pointer-events-auto absolute -right-2 -top-2 flex items-center justify-center rounded-full bg-slate-700 text-white shadow dark:bg-slate-200 dark:text-slate-900"
             style={{ width: 18 / zoom, height: 18 / zoom }}
           >
-            <svg
-              width={12 / zoom}
-              height={12 / zoom}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
+            {/* Sized in canvas px so it reads 12px on screen at any zoom; the weight follows suit. */}
+            <Glyph size={12 / zoom} units={24} weight={ICON_STROKE_PX_SMALL / zoom}>
               <path d="M5 13l4 4L19 7" />
-            </svg>
+            </Glyph>
           </span>
         </Tooltip>
       ) : null}

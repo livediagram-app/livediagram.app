@@ -14,43 +14,23 @@
 // diagram has many tabs.
 
 import { useRef, useState } from 'react';
-import { MenuIcon, useClickOutside, useEscape } from '@livediagram/ui';
+import { MenuIcon, useClickOutside, useEscape, Glyph } from '@livediagram/ui';
 import type { Tab } from '@livediagram/diagram';
 
 function OpenExternalIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={12}>
       <path d="M5 2H2.5A.5.5 0 0 0 2 2.5v7a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V7" />
       <path d="M7 2h3v3M10 2 5.5 6.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 function ChevronIcon() {
   return (
-    <svg
-      width="10"
-      height="10"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={10} units={12}>
       <path d="M3 4.5 6 7.5l3-3" />
-    </svg>
+    </Glyph>
   );
 }
 

@@ -5,42 +5,23 @@
 // table-icons.tsx / explorer-icons.tsx. No behaviour change. Colour comes from
 // the parent via `currentColor`.
 
-import { SearchIcon } from '@livediagram/ui';
+import { SearchIcon, Glyph } from '@livediagram/ui';
 
 export function CopyIcon() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={13} units={16} strokeLinecap="butt">
       <rect x="3" y="3" width="8" height="8" rx="1.25" />
       <path d="M5.5 13.5h6a1 1 0 0 0 1-1v-6" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function TabLockIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <rect x="3.5" y="7.5" width="9" height="6" rx="1.25" />
       <path d="M5.5 7.5V5a2.5 2.5 0 0 1 5 0v2.5" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -49,96 +30,46 @@ export function TabLockIcon() {
 // its editors have locked.
 export function TabNotSharedIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <path d="M2 8s2.2-4 6-4c1 0 1.9.3 2.7.7M14 8s-.8 1.5-2.3 2.6M9.4 9.4a2 2 0 0 1-2.8-2.8" />
       <path d="M2.5 2.5l11 11" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function FolderMenuIcon() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={13} units={16}>
       <path d="M2 4.5h4l1.25 1.5H14v6.5H2z" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function MoveIcon() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={13} units={16}>
       <rect x="2" y="4" width="7" height="9" rx="1.25" />
       <path d="M9.5 8.5h4.5" />
       <path d="M12 6.5l2 2-2 2" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function DiagramIcon() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={13} units={16}>
       <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
       <path d="M5 6h6M5 9h4" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function ClearIcon() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={13} units={16}>
       <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
       <path d="M5.5 5.5l5 5M10.5 5.5l-5 5" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -151,13 +82,13 @@ export function SearchGlyph() {
 // GitHub mark - the open-source repo link in the footer (docs/specs/002-project-scope/open-source-and-business-model.md).
 export function GithubIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <Glyph size={16} units={16} filled>
       <path
         fillRule="evenodd"
         clipRule="evenodd"
         d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"
       />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -171,23 +102,13 @@ export function GearIcon() {
   // modern UI kits (Heroicons, Lucide, Material) and reads as
   // "settings" without ambiguity.
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={20}>
       <line x1="3" y1="6" x2="11" y2="6" />
       <line x1="16" y1="6" x2="17.5" y2="6" />
       <circle cx="13.5" cy="6" r="2" />
       <line x1="3" y1="14" x2="6" y2="14" />
       <line x1="11" y1="14" x2="17.5" y2="14" />
       <circle cx="8.5" cy="14" r="2" />
-    </svg>
+    </Glyph>
   );
 }

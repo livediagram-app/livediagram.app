@@ -22,6 +22,7 @@ import type {
   TextAlignX,
   TextAlignY,
 } from '@livediagram/diagram';
+import { Glyph } from '@livediagram/ui';
 
 export function BorderStrokeIcon({ value }: { value: BorderStroke }) {
   if (value === 'none') {
@@ -219,20 +220,10 @@ export function ArrowStyleIcon({ style }: { style: ArrowStyle }) {
 // button under the Theme accordion. 12×12 inside a 14×14 box.
 export function ResetIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <path d="M3 8 a5 5 0 1 0 1.5 -3.5" />
       <polyline points="2,2 4,4.5 6.5,3.5" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -314,41 +305,21 @@ export function ArrowEndsIcon({ ends }: { ends: ArrowEnds }) {
 
 export function FileImportIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <path d="M8 13.5V5.5" />
       <path d="M5 10.5l3 3 3-3" />
       <path d="M2.5 3v-0.5h11V3" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function FileExportIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <path d="M8 2v8" />
       <path d="M5 5l3-3 3 3" />
       <path d="M2.5 11v2.5h11V11" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -357,42 +328,22 @@ export function PanIcon() {
   // Each finger is a capsule; the palm curls in from the wrist so the
   // silhouette still reads as a hand at the 13 px palette size.
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={24}>
       <path d="M18 11V6a2 2 0 0 0-4 0" />
       <path d="M14 10V4a2 2 0 0 0-4 0v2" />
       <path d="M10 10.5V6a2 2 0 0 0-4 0v8" />
       <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function SelectIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <rect x="2" y="2" width="9" height="9" strokeDasharray="2 1.5" />
       <path d="M11 11l3 3" />
       <path d="M11 11l-1.5 -0.5l-0.5 -1.5" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -400,23 +351,13 @@ export function LaserIcon() {
   // Stylised laser pointer: a beam emerging from a small body in the
   // bottom-left toward a glowing dot in the top-right.
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M2.5 13.5l8-8" />
       <circle cx="11.5" cy="4.5" r="1.4" fill="currentColor" stroke="none" />
       <path d="M10 3.2l.7-1" strokeWidth="1.2" />
       <path d="M12.8 3l1-.4" strokeWidth="1.2" />
       <path d="M12.8 6l1 .4" strokeWidth="1.2" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -425,23 +366,13 @@ export function LaserIcon() {
 // 3-D, tilted". The shared vertical edge hints at the extruded depth.
 export function IsometricIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       {/* top face (rhombus) */}
       <path d="M8 1.8l5.2 3v0L8 7.8 2.8 4.8z" />
       {/* left + right front faces share the centre vertical edge */}
       <path d="M2.8 4.8v5.4L8 13.2v-5.4" />
       <path d="M13.2 4.8v5.4L8 13.2" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -454,21 +385,11 @@ export function IsometricIcon() {
 // glyph rides the tool dropdown and a Mode Button face, both of which tint it.
 export function HighlighterIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M3.5 10.5 L9 5 L11.5 7.5 L6 13 Z" />
       <path d="M9 5 L11 2.5 L14 5.5 L11.5 7.5" />
       <path d="M2 14.5 H9" strokeWidth="2.4" opacity="0.45" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -477,40 +398,20 @@ export function HighlighterIcon() {
 // where you build slides, and only the Start button inside it presents.
 export function SlideDeckIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <rect x="1.5" y="4.5" width="10" height="7.5" rx="1.2" />
       <path d="M4.5 2.5h8a1.2 1.2 0 0 1 1.2 1.2v6.3" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function EraserIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M3 10.5l4.5-4.5a1.3 1.3 0 0 1 1.8 0l2.7 2.7a1.3 1.3 0 0 1 0 1.8l-2.7 2.7H5.2z" />
       <path d="M6.2 7.3l3.5 3.5" />
       <path d="M2.5 13.5h11" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -520,21 +421,11 @@ export function EraserIcon() {
 // element-to-element format tool): this one styles the whole tab.
 export function ThemeBrushIcon({ size = 20 }: { size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={size} units={20}>
       <path d="M17 3c-3 1-6.4 3.6-8.3 6.1l2.2 2.2C13.4 9.4 16 6 17 3z" />
       <path d="M8.7 9.1 6.5 11.3" />
       <path d="M8 13.4a2.6 2.6 0 1 1-3.7-2.3c.8-.4 1.9-.2 2.6.5.7.7.9 1.3 1.1 1.8z" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -549,24 +440,14 @@ export { FormatPainterIcon } from '@livediagram/ui';
 // emits light" without copying the laser-pointer beam.
 export function SpotlightIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <circle cx="8" cy="8" r="3.2" />
       <circle cx="8" cy="8" r="1" fill="currentColor" stroke="none" />
       <path d="M8 1.5v2" />
       <path d="M8 12.5v2" />
       <path d="M1.5 8h2" />
       <path d="M12.5 8h2" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -576,17 +457,7 @@ export function SpotlightIcon() {
 // palette's Avatar ELEMENT tile means).
 export function AvatarModeIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <circle cx="8.6" cy="3" r="1.7" />
       {/* torso */}
       <path d="M8.4 5.4v4" />
@@ -596,7 +467,7 @@ export function AvatarModeIcon() {
       {/* swinging arms */}
       <path d="M8.4 6.6L5.6 8" />
       <path d="M8.4 6.6l2.8 1" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -604,22 +475,12 @@ export function AvatarModeIcon() {
 // corner arrows pushing outward) for the palette enter button.
 export function ZenIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M6 2H2v4" />
       <path d="M10 2h4v4" />
       <path d="M14 10v4h-4" />
       <path d="M2 10v4h4" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -627,40 +488,21 @@ export function ZenIcon() {
 // the exit-zen control next to the zoom controls.
 export function ZenExitIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M2 6h4V2" />
       <path d="M14 6h-4V2" />
       <path d="M14 10h-4v4" />
       <path d="M2 10h4v4" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function NonePaddingIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16} strokeLinejoin="miter">
       <rect x="2" y="2" width="12" height="12" rx="1.5" />
       <path d="M4 4l8 8M12 4l-8 8" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -669,39 +511,20 @@ export function PaddingIcon({ size }: { size: 'sm' | 'md' | 'lg' }) {
   // padding amount. Mirrors the scale in PADDING_PX.
   const inset = size === 'sm' ? 2.5 : size === 'md' ? 4 : 5.5;
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16} strokeLinecap="butt">
       <rect x="2" y="2" width="12" height="12" rx="1.5" strokeDasharray="1.5 1.5" />
       <rect x={2 + inset} y={2 + inset} width={12 - 2 * inset} height={12 - 2 * inset} rx="1" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function ScaleIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M3 8h10" />
       <path d="M3 8l2 -2M3 8l2 2" />
       <path d="M13 8l-2 -2M13 8l-2 2" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -712,11 +535,11 @@ export function DotsIcon({ count }: { count: 1 | 2 | 3 }) {
   const radii = count === 1 ? [1.4] : count === 2 ? [1.8, 1.8] : [2.2, 2.2, 2.2];
   const spacing = count === 1 ? [8] : count === 2 ? [5, 11] : [3.5, 8, 12.5];
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <Glyph size={14} units={16} filled>
       {radii.map((r, i) => (
         <circle key={i} cx={spacing[i]} cy={8} r={r} />
       ))}
-    </svg>
+    </Glyph>
   );
 }
 
@@ -748,68 +571,38 @@ export function AlignIcon({ x, y }: { x: TextAlignX; y: TextAlignY }) {
 
 export function TimerIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       {/* a stopwatch: crown, dial, and a hand at ten past */}
       <path d="M6.4 1.6h3.2" />
       <path d="M8 1.6v1.6" />
       <circle cx="8" cy="9" r="5" />
       <path d="M8 9V6.4" />
       <path d="M8 9l2 1.6" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function VoteIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       {/* three dots landing on a card — dot voting, docs/specs/012-collaboration/session-tools.md */}
       <rect x="2" y="8.4" width="12" height="5.6" rx="1.4" />
       <circle cx="5" cy="4.4" r="1.5" fill="currentColor" stroke="none" />
       <circle cx="9" cy="3.2" r="1.5" fill="currentColor" stroke="none" />
       <circle cx="12.6" cy="5.2" r="1.5" fill="currentColor" stroke="none" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function PollIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       {/* a question with two answer bars beneath it */}
       <path d="M5.6 4.2a2.4 2.4 0 1 1 2.8 2.4v1" />
       <circle cx="8.4" cy="9.6" r="0.7" fill="currentColor" stroke="none" />
       <path d="M2.6 12.6h10.8" />
       <path d="M4.6 14.6h6.8" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -817,43 +610,23 @@ export function PollIcon() {
 
 export function RevealIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       {/* a card being lifted off what is underneath */}
       <path d="M2.4 9.6l5.6-3.2 5.6 3.2-5.6 3.2z" />
       <path d="M4.6 4.6l3.4-2 3.4 2" opacity="0.55" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function PickerIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       {/* a die mid-roll */}
       <rect x="2.6" y="2.6" width="10.8" height="10.8" rx="2.2" />
       <circle cx="5.8" cy="5.8" r="0.9" fill="currentColor" stroke="none" />
       <circle cx="10.2" cy="10.2" r="0.9" fill="currentColor" stroke="none" />
       <circle cx="8" cy="8" r="0.9" fill="currentColor" stroke="none" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -863,19 +636,9 @@ export function PickerIcon() {
 
 function CollabGlyph({ children }: { children: React.ReactNode }) {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       {children}
-    </svg>
+    </Glyph>
   );
 }
 
@@ -980,39 +743,20 @@ export function RollCallIcon() {
 /** Session tools (docs/specs/012-collaboration/session-button.md): dot voting, drawn as dots landing on a card. */
 export function SessionVoteIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={18} units={24}>
       <rect x="3" y="5" width="18" height="14" rx="2.2" />
       <circle cx="8.5" cy="11" r="1.9" fill="currentColor" stroke="none" />
       <circle cx="14" cy="11" r="1.9" fill="currentColor" stroke="none" />
       <circle cx="11.2" cy="15.4" r="1.9" fill="currentColor" stroke="none" />
-    </svg>
+    </Glyph>
   );
 }
 
 /** Session tools (docs/specs/012-collaboration/session-button.md): a poll, drawn as answer bars of different lengths. */
 export function SessionPollIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={18} units={24} strokeLinejoin="miter">
       <path d="M4 6.5h15M4 12h9.5M4 17.5h12.5" />
-    </svg>
+    </Glyph>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, TextInput } from '@livediagram/ui';
+import { Button, TextInput, Glyph } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -295,56 +295,31 @@ function RowButton({
 
 function TabGlyph() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16} strokeLinecap="butt">
       <path d="M2 5.5A1.5 1.5 0 0 1 3.5 4h3l1.2 1.5H12.5A1.5 1.5 0 0 1 14 7v4.5A1.5 1.5 0 0 1 12.5 13h-9A1.5 1.5 0 0 1 2 11.5z" />
-    </svg>
+    </Glyph>
   );
 }
 
 function DiagramGlyph({ muted }: { muted?: boolean }) {
   return (
-    <svg
-      width={muted ? 28 : 14}
-      height={muted ? 28 : 14}
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinejoin="round"
-      aria-hidden
+    <Glyph
+      size={muted ? 28 : 14}
+      units={16}
       className={muted ? 'text-slate-300 dark:text-slate-400' : undefined}
+      strokeLinecap="butt"
     >
       <rect x="2" y="2.5" width="5" height="4" rx="1" />
       <rect x="9" y="9.5" width="5" height="4" rx="1" />
       <path d="M4.5 6.5v3.5a1 1 0 0 0 1 1H9" />
-    </svg>
+    </Glyph>
   );
 }
 
 function CheckGlyph() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className="shrink-0"
-    >
+    <Glyph size={14} units={16} className="shrink-0">
       <path d="M3.5 8.5l3 3 6-6.5" />
-    </svg>
+    </Glyph>
   );
 }

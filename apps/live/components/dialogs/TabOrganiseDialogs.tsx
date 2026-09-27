@@ -17,7 +17,7 @@ import {
   PlacementCard,
 } from '@/components/placement/PlacementCard';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
-import { useEscape } from '@livediagram/ui';
+import { useEscape, Glyph } from '@livediagram/ui';
 import { matches } from '@/lib/search';
 
 // Shared modal frame: header (title + sub + close) over a scrollable body.
@@ -63,21 +63,11 @@ function OrganiseDialogFrame({
 // A "loose tabs" glyph for the No Folder tile — a bar of tab pills.
 function NoFolderIcon() {
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={20} units={20}>
       <rect x="2.5" y="8" width="5" height="4" rx="1.2" />
       <rect x="9" y="8" width="5" height="4" rx="1.2" />
       <path d="M15.5 8h2v4h-2" />
-    </svg>
+    </Glyph>
   );
 }
 

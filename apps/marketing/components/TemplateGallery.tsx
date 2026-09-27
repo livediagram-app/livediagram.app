@@ -15,6 +15,7 @@ import {
   BAND_SECTION,
   BAND_TITLE,
 } from '@/components/band-classes';
+import { Glyph } from '@livediagram/ui';
 
 // "What do you want to create?" (docs/specs/019-marketing/marketing-site.md): one card per template the editor
 // ships, each category a four-across carousel (TemplateCarousel), with a
@@ -158,20 +159,13 @@ export function TemplateGallery() {
 
 function SearchIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
+    <Glyph
+      size={18}
+      units={24}
       className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400"
     >
       <circle cx="11" cy="11" r="7" />
       <path d="M20 20 L16 16" />
-    </svg>
+    </Glyph>
   );
 }

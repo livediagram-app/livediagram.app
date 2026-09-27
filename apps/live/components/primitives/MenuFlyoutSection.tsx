@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { CloseIcon } from '@livediagram/ui';
+import { CloseIcon, Glyph } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useReposition } from '@/hooks/canvas/useReposition';
@@ -341,11 +341,11 @@ function Flyout({
         </span>
         {/* Ellipsis — signals the row opens further sub-options (in a side
             flyout), distinct from an accordion's chevron that expands inline. */}
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+        <Glyph size={14} units={16} filled>
           <circle cx="4" cy="8" r="1.15" />
           <circle cx="8" cy="8" r="1.15" />
           <circle cx="12" cy="8" r="1.15" />
-        </svg>
+        </Glyph>
       </button>
       {open ? (
         <Portal>

@@ -31,13 +31,13 @@ import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import type { SlideDeckState } from '@/app/diagram/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
 import { isDragTravel } from '@/lib/press-gestures';
-import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
 
 function PlayIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden>
+    <Glyph size={12} units={12} filled>
       <path d="M3 1.8 10 6l-7 4.2z" />
-    </svg>
+    </Glyph>
   );
 }
 

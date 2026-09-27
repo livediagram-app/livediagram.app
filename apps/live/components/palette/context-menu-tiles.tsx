@@ -33,6 +33,7 @@ import {
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import { IconPrims } from '@/components/primitives/icon-glyph';
+import { Glyph } from '@livediagram/ui';
 
 // Stable no-op so a tile grid without preview handlers (e.g. a future caller)
 // still calls useRevertOnUnmount unconditionally (hook-rule safe).
@@ -432,19 +433,9 @@ const ICON_WEIGHT_LABEL: Record<IconWeight, string> = {
 const WEIGHT_TILE_PX = 22;
 function IconWeightGlyph({ iconId, weight }: { iconId: string | undefined; weight: IconWeight }) {
   return (
-    <svg
-      width={WEIGHT_TILE_PX}
-      height={WEIGHT_TILE_PX}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={(ICON_WEIGHT_PX[weight] * 24) / WEIGHT_TILE_PX}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={WEIGHT_TILE_PX} units={24} weight={ICON_WEIGHT_PX[weight]}>
       <IconPrims iconId={iconId} />
-    </svg>
+    </Glyph>
   );
 }
 

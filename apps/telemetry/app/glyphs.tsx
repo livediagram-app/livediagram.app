@@ -1,3 +1,4 @@
+import { Glyph } from '@livediagram/ui';
 // Inline SVG glyph set used by the telemetry dashboard's per-row icons
 // (mapped from category / action / type by EventIcon in page.tsx). All
 // glyphs share a frame so the row layout stays stable regardless of
@@ -564,18 +565,10 @@ export function DotGlyph() {
 
 export function AlertGlyph() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden
-    >
+    <Glyph size={16} units={16} strokeLinecap="butt" strokeLinejoin="miter">
       <path d="M8 2.2 14.4 13H1.6L8 2.2Z" strokeLinejoin="round" />
       <path d="M8 6.6v3" strokeLinecap="round" />
       <path d="M8 11.6h.01" strokeLinecap="round" />
-    </svg>
+    </Glyph>
   );
 }

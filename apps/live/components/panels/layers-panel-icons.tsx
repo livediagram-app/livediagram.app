@@ -1,3 +1,4 @@
+import { Glyph } from '@livediagram/ui';
 // Glyphs for the Layers panel (docs/specs/006-diagram/layers.md): the row controls (eye / eye-off,
 // lock, ellipsis, merge up / down) and the footer add / delete, plus the
 // dock-button LayersStackIcon that the CanvasChrome cluster and the mobile
@@ -12,21 +13,11 @@
 // renders it at its own 16px.
 export function LayersStackIcon({ size = 20 }: { size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={size} units={20}>
       <path d="M10 3 17 6.6 10 10.2 3 6.6 10 3z" />
       <path d="M3 10.4 10 14 17 10.4" />
       <path d="M3 13.8 10 17.4 17 13.8" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -72,11 +63,11 @@ export function LockIcon({ size = 12 }: { size?: number } = {}) {
 
 export function EllipsisIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 14 14" fill="currentColor" aria-hidden>
+    <Glyph size={13} units={14} filled>
       <circle cx="3" cy="7" r="1.2" />
       <circle cx="7" cy="7" r="1.2" />
       <circle cx="11" cy="7" r="1.2" />
-    </svg>
+    </Glyph>
   );
 }
 

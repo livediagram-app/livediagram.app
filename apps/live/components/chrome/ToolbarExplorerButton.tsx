@@ -1,7 +1,7 @@
 'use client';
 
 import { track } from '@/lib/telemetry';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
@@ -40,18 +40,9 @@ export function ToolbarExplorerButton({
           : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
       }`}
     >
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 20 20"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={20} strokeLinejoin="miter">
         <path d="M4 6h12M4 10h12M4 14h12" />
-      </svg>
+      </Glyph>
     </button>
   );
   return (

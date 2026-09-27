@@ -11,26 +11,18 @@
 
 import { keycapEdge } from '@/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { Glyph } from '@livediagram/ui';
 
 // A target: the reticle you put over the thing you want looked at. Not an eye
 // (that is the reveal's, docs/specs/009-elements/reveal-zone.md) and not an arrow (that is the portal's):
 // this one is about WHERE, not about seeing or travelling.
 function TargetGlyph() {
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={20} units={24} strokeLinejoin="miter">
       <circle cx="12" cy="12" r="7.5" />
       <circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none" />
       <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" />
-    </svg>
+    </Glyph>
   );
 }
 

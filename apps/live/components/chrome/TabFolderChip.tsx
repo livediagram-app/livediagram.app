@@ -4,7 +4,7 @@ import { NameEditor } from '@/components/primitives/NameEditor';
 import type { Tab } from '@livediagram/diagram';
 import type { Participant } from '@/lib/identity';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
-import { useEscape } from '@livediagram/ui';
+import { useEscape, Glyph } from '@livediagram/ui';
 
 // One folder group in the tab bar (docs/specs/006-diagram/tab-folders.md). The folder renders as a
 // compact chip (glyph + name + count) plus, when the ACTIVE tab lives in
@@ -213,22 +213,12 @@ export function TabFolderChip({
 // chevron.
 function FolderGlyph({ open }: { open: boolean }) {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={13} units={24}>
       {open ? (
         <path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2" />
       ) : (
         <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
       )}
-    </svg>
+    </Glyph>
   );
 }

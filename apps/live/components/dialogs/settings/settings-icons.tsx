@@ -9,6 +9,7 @@
 // sized for a 28px tile and stroked to read at that size.
 
 import type { ReactNode } from 'react';
+import { Glyph } from '@livediagram/ui';
 
 export type SettingsCategoryId =
   | 'account'
@@ -53,19 +54,9 @@ export function SettingsCategoryIcon({ id }: { id: SettingsCategoryId }) {
 
 function Svg({ children }: { children: ReactNode }) {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={20}>
       {children}
-    </svg>
+    </Glyph>
   );
 }
 

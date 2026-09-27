@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { IMAGE_TYPES_LABEL, MAX_IMAGE_MB } from '@livediagram/api-schema';
 import { UPLOAD_ACCEPT_ATTR } from '@/lib/upload-image';
+import { Glyph } from '@livediagram/ui';
 
 // Drop / click target for image uploads. The same dashed-border
 // tile appeared inline in both ImagePicker (editor modal, 192px
@@ -108,21 +109,10 @@ export function ImageDropZone({
 
 function UploadIcon() {
   return (
-    <svg
-      width="28"
-      height="28"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className="text-slate-500 dark:text-slate-400"
-    >
+    <Glyph size={28} units={24} className="text-slate-500 dark:text-slate-400">
       <path d="M12 16V4" />
       <path d="M7 9l5-5 5 5" />
       <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
-    </svg>
+    </Glyph>
   );
 }

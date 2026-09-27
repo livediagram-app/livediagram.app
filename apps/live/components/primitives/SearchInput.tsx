@@ -1,6 +1,6 @@
 'use client';
 
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 
 // The shared search box: a bordered text input with an inline clear (×)
 // button. Used by the Icons + Technology pickers, the palette's Tools tab,
@@ -56,18 +56,9 @@ export function SearchInput({
             aria-label={clearAriaLabel}
             className="absolute right-1 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
           >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              aria-hidden
-            >
+            <Glyph size={12} units={12} strokeLinejoin="miter">
               <path d="M3 3 L9 9 M9 3 L3 9" />
-            </svg>
+            </Glyph>
           </button>
         </HoverCard>
       ) : null}

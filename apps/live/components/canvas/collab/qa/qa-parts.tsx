@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { QaNote } from '@livediagram/diagram';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // The board's accent marks what is YOURS and what is LIVE. It is the tab
@@ -31,19 +31,9 @@ export const stopPointer = { onPointerDown: (e: React.PointerEvent) => e.stopPro
 
 type Glyph = { size?: number };
 const svg = (size: number, children: React.ReactNode) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 16 16"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.7}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden
-  >
+  <Glyph size={size} units={16}>
     {children}
-  </svg>
+  </Glyph>
 );
 export const UpGlyph = ({ size = 12 }: Glyph) => svg(size, <path d="M3.5 10 8 5.5l4.5 4.5" />);
 export const CheckGlyph = ({ size = 12 }: Glyph) => svg(size, <path d="m3.5 8.5 3 3 6-7" />);

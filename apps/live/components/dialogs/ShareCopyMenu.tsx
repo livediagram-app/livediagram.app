@@ -4,7 +4,7 @@ import { useRef, useState, type ReactNode } from 'react';
 import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 
 // A labelled Share-dialog button that drops a menu of clipboard-copy
 // actions (docs/specs/013-workspace/embeds.md + docs/specs/013-workspace/live-image-share.md). Shared by the Embed and Live image
@@ -99,17 +99,10 @@ export function ShareCopyMenu({
 // "opens a menu" rather than a one-shot copy.
 function EllipsisGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="currentColor"
-      aria-hidden
-      className="-mr-0.5 opacity-70"
-    >
+    <Glyph size={12} units={16} filled className="-mr-0.5 opacity-70">
       <circle cx="3.5" cy="8" r="1.2" />
       <circle cx="8" cy="8" r="1.2" />
       <circle cx="12.5" cy="8" r="1.2" />
-    </svg>
+    </Glyph>
   );
 }

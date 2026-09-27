@@ -17,21 +17,13 @@ import type { ShapeElement, Tab } from '@livediagram/diagram';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { portalName, portalSites } from '@/lib/portals';
+import { Glyph } from '@livediagram/ui';
 
 function PlusGlyph() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 13 13"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={13} units={13} strokeLinejoin="miter">
       <path d="M6.5 2.4v8.2M2.4 6.5h8.2" />
-    </svg>
+    </Glyph>
   );
 }
 

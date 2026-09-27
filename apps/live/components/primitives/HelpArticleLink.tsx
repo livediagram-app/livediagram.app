@@ -8,7 +8,7 @@ import {
   type HelpArticleKey,
 } from '@/lib/help-articles';
 import { track } from '@/lib/telemetry';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 
 type HelpArticleLinkProps = {
   /** Which help article to deep-link (key in HELP_ARTICLES). */
@@ -147,15 +147,7 @@ export function HelpArticleLink({
 // sit beside a 12px label like the + on the Create button).
 export function HelpMarkIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      aria-hidden
-    >
+    <Glyph size={14} units={16} strokeLinecap="butt" strokeLinejoin="miter">
       <circle cx="8" cy="8" r="6.25" />
       <path
         d="M6.3 6.2a1.8 1.8 0 1 1 2.5 1.7c-.5.25-.9.65-.9 1.25v.3"
@@ -163,27 +155,17 @@ export function HelpMarkIcon() {
         strokeLinejoin="round"
       />
       <circle cx="8" cy="11.6" r="0.6" fill="currentColor" stroke="none" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Tiny "opens in a new tab" glyph for the text variant.
 function ArrowOutIcon() {
   return (
-    <svg
-      width="11"
-      height="11"
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={11} units={20}>
       <path d="M8 4H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3" />
       <path d="M12 4h4v4" />
       <path d="M16 4l-7 7" />
-    </svg>
+    </Glyph>
   );
 }

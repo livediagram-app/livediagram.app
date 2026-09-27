@@ -6,7 +6,7 @@
 // to drop into the same chrome as NotFound (EditorHeader above), and
 // renders as an absolute overlay so anything behind stays interactive.
 
-import { Button } from '@livediagram/ui';
+import { Button, Glyph } from '@livediagram/ui';
 
 type ApiErrorPageProps = {
   // Re-attempt the action that failed (reload the editor, retry the
@@ -28,21 +28,11 @@ export function ApiErrorPage({
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
       <div className="pointer-events-auto flex max-w-md animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-500 dark:bg-amber-500/15">
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
+          <Glyph size={28} units={24}>
             <path d="M10.3 3.3 1.8 18a1.5 1.5 0 0 0 1.3 2.3h17.8a1.5 1.5 0 0 0 1.3-2.3L13.7 3.3a1.5 1.5 0 0 0-2.6 0Z" />
             <path d="M12 9v4" />
             <path d="M12 17h.01" />
-          </svg>
+          </Glyph>
         </div>
         <p className="mt-4 text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
           Connection error
@@ -60,19 +50,9 @@ export function ApiErrorPage({
 
 function RetryIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9" />
       <path d="M13.5 2v3h-3" />
-    </svg>
+    </Glyph>
   );
 }

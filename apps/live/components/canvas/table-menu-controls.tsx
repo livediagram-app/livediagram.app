@@ -6,7 +6,7 @@ import {
   FLOATING_CONTROL_HOVER_CLASS,
   FLOATING_CONTROL_SIZE,
 } from '@/components/chrome/floating-controls';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
 
 // Edge-menu UI primitives for TableView: the compact "⋯" trigger that
 // opens a column / row menu from the table's top / left edge, and the
@@ -49,7 +49,7 @@ export function Trigger({
       }`}
       style={{ width: FLOATING_CONTROL_SIZE, height: FLOATING_CONTROL_SIZE }}
     >
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden>
+      <Glyph size={14} units={14} filled>
         {vertical ? (
           <>
             <circle cx="7" cy="3.5" r="1.1" />
@@ -63,7 +63,7 @@ export function Trigger({
             <circle cx="10.5" cy="7" r="1.1" />
           </>
         )}
-      </svg>
+      </Glyph>
     </button>
   );
 }

@@ -9,7 +9,7 @@
 import type { ReactNode } from 'react';
 import { PollMenuIcon, TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
 import type { StudioTool, StudioToolStatus } from './session-studio';
-import { SOLID_BRAND_DARK, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { SOLID_BRAND_DARK, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
 
 const TOOL_META: Record<StudioTool, { label: string; icon: ReactNode }> = {
   timer: { label: 'Timer', icon: <TimerMenuIcon /> },
@@ -219,44 +219,34 @@ export function StudioLabel({ children, aside }: { children: ReactNode; aside?: 
 
 export function PlayGlyph({ size = 16 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <Glyph size={size} units={16} filled>
       <path d="M5 3.2v9.6a.6.6 0 0 0 .9.5l7.6-4.8a.6.6 0 0 0 0-1L5.9 2.7a.6.6 0 0 0-.9.5z" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function PauseGlyph({ size = 16 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <Glyph size={size} units={16} filled>
       <rect x="4" y="3" width="3" height="10" rx="0.8" />
       <rect x="9" y="3" width="3" height="10" rx="0.8" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function RestartGlyph() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M3 8a5 5 0 1 0 1.5-3.6" />
       <path d="M3 2.5v2.5h2.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function StopGlyph() {
   return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <Glyph size={12} units={16} filled>
       <rect x="3" y="3" width="10" height="10" rx="1.5" />
-    </svg>
+    </Glyph>
   );
 }

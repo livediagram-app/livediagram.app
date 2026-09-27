@@ -1,6 +1,7 @@
 'use client';
 
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
+import { Glyph } from '@livediagram/ui';
 
 // Blocking overlay shown over the canvas while the ACTIVE tab's content
 // is still being fetched (docs/specs/006-diagram/per-tab-storage.md lazy per-tab load), or after that
@@ -48,20 +49,15 @@ export function TabLoadOverlay({
   return (
     <div className="absolute inset-0 z-[var(--z-overlay)] flex items-center justify-center bg-slate-50 dark:bg-slate-950">
       <div className="flex flex-col items-center gap-3">
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 32 32"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="3"
-          strokeLinecap="round"
+        <Glyph
+          size={32}
+          units={32}
           className="animate-spin text-brand-500 dark:text-brand-400"
-          aria-hidden
+          strokeLinejoin="miter"
         >
           <circle cx="16" cy="16" r="12" strokeOpacity="0.18" />
           <path d="M28 16a12 12 0 0 0-12-12" />
-        </svg>
+        </Glyph>
         <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Loading tab…</p>
       </div>
     </div>

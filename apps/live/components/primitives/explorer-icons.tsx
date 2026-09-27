@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { PlusIcon as SharedPlusIcon, TrashIcon as SharedTrashIcon } from '@livediagram/ui';
+import { PlusIcon as SharedPlusIcon, TrashIcon as SharedTrashIcon, Glyph } from '@livediagram/ui';
 
 // The one glyph set for both Explorer surfaces: the full-page /explorer
 // route and the editor's floating Explorer panel, plus the menus and panes
@@ -80,13 +80,13 @@ export function TreeChevronIcon({ open = false, size = 10 }: IconProps & { open?
 // The page's filled folder, which opens when its subtree is expanded.
 export function FolderSolidIcon({ open = false, size = 13 }: IconProps & { open?: boolean }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <Glyph size={size} units={16} filled>
       {open ? (
         <path d="M1.5 4.5a1.5 1.5 0 0 1 1.5-1.5h3.4a1 1 0 0 1 .77.37l1 1.24a1 1 0 0 0 .78.39h4.05A1.5 1.5 0 0 1 14.5 6.5H1.5v-2zm0 3h13l-.93 4.65a1.5 1.5 0 0 1-1.47 1.2H3.9a1.5 1.5 0 0 1-1.47-1.2L1.5 7.5z" />
       ) : (
         <path d="M1.5 4.5A1.5 1.5 0 0 1 3 3h3.4a1 1 0 0 1 .77.37l1 1.24a1 1 0 0 0 .78.39H13a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 13 13H3a1.5 1.5 0 0 1-1.5-1.5v-7z" />
       )}
-    </svg>
+    </Glyph>
   );
 }
 

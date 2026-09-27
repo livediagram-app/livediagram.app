@@ -10,6 +10,7 @@
 // thing.
 
 import type { TimelineMode } from './types';
+import { Glyph } from '@livediagram/ui';
 
 export const MODE_ICONS: Record<TimelineMode, string> = {
   list: 'M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5',
@@ -30,15 +31,8 @@ export const MODE_LABELS: Record<TimelineMode, string> = {
 
 export function ModeIcon({ mode }: { mode: TimelineMode }) {
   return (
-    <svg
-      className="h-3.5 w-3.5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-      aria-hidden
-    >
+    <Glyph size={14} units={24} className="h-3.5 w-3.5" strokeLinecap="butt" strokeLinejoin="miter">
       <path strokeLinecap="round" strokeLinejoin="round" d={MODE_ICONS[mode]} />
-    </svg>
+    </Glyph>
   );
 }

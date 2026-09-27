@@ -15,6 +15,7 @@ import { MODE_LABELS, ModeIcon, TIMELINE_MODES } from './ModeIcon';
 import { TimelineFilterPopover } from './TimelineFilterPopover';
 import type { TimelineControls as Controls } from './useTimelineControls';
 import { SOLID_BRAND_DARK_CONTROL } from '../brand-classes';
+import { Glyph } from '@livediagram/ui';
 
 // The shared shape: same height, radius, border and type scale as the
 // header's other buttons.
@@ -103,19 +104,12 @@ export function TimelineControls({ controls }: { controls: Controls }) {
 
 function FilterIcon() {
   return (
-    <svg
-      className="h-3.5 w-3.5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-      aria-hidden
-    >
+    <Glyph size={14} units={24} className="h-3.5 w-3.5" strokeLinecap="butt" strokeLinejoin="miter">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M3 4.5h18M6.75 12h10.5M11.25 19.5h1.5"
       />
-    </svg>
+    </Glyph>
   );
 }

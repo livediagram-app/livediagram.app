@@ -1,5 +1,5 @@
 import type { ShareLinkExpiry } from '@/lib/api-client';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 
 // Presentational parts of the share dialog: the expiry-label lookup and
 // the Role segmented button + the Embed / Live image glyphs. Split out of ShareDialog.
@@ -41,39 +41,19 @@ export function RoleButton({
 // Menu-item glyphs for the Embed / Live image copy menus.
 export function ImageGlyph() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <rect x="2" y="3" width="12" height="10" rx="1.5" />
       <circle cx="6" cy="6.5" r="1.2" />
       <path d="M3 12l3.5-3.5 2.5 2.5 2-2L14 11.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function CodeGlyph() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M6 5l-3 3 3 3M10 5l3 3-3 3" />
-    </svg>
+    </Glyph>
   );
 }
 

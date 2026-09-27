@@ -16,7 +16,7 @@
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useRef } from 'react';
 import type { BackgroundPattern } from '@livediagram/diagram';
-import { useEscape, useFocusTrap } from '@livediagram/ui';
+import { useEscape, useFocusTrap, Glyph } from '@livediagram/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
@@ -343,54 +343,28 @@ function TabButton({
 // Compact 14px glyphs for the tab bar.
 function BackgroundTabIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      aria-hidden
-    >
+    <Glyph size={14} units={16} strokeLinecap="butt" strokeLinejoin="miter">
       <rect x="2.5" y="2.5" width="11" height="11" rx="2" />
       <circle cx="6" cy="6" r="0.6" fill="currentColor" stroke="none" />
       <circle cx="10" cy="6" r="0.6" fill="currentColor" stroke="none" />
       <circle cx="6" cy="10" r="0.6" fill="currentColor" stroke="none" />
       <circle cx="10" cy="10" r="0.6" fill="currentColor" stroke="none" />
-    </svg>
+    </Glyph>
   );
 }
 function FontTabIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M3 13L7.5 3l4.5 10M4.6 9.5h5.8" />
-    </svg>
+    </Glyph>
   );
 }
 function ThemeTabIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      aria-hidden
-    >
+    <Glyph size={14} units={16} strokeLinecap="butt" strokeLinejoin="miter">
       <path d="M8 2.5a5.5 5.5 0 1 0 0 11c.9 0 1.3-.7 1.3-1.3 0-.7-.6-1-.6-1.6 0-.5.4-.9 1-.9h1.1A2.7 2.7 0 0 0 13.5 7 5.5 5.5 0 0 0 8 2.5z" />
       <circle cx="5.5" cy="7" r="0.7" fill="currentColor" stroke="none" />
       <circle cx="8" cy="5.2" r="0.7" fill="currentColor" stroke="none" />
-    </svg>
+    </Glyph>
   );
 }

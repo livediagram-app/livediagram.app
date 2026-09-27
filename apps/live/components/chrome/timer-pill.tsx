@@ -1,6 +1,7 @@
 'use client';
 
 import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@livediagram/diagram';
+import { Glyph } from '@livediagram/ui';
 
 // The session timer's LOOK, in one place (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/session-button.md).
 //
@@ -30,37 +31,27 @@ export function TimerCloseIcon() {
 
 export function TimerPauseIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <Glyph size={14} units={16} filled>
       <rect x="4" y="3" width="3" height="10" rx="1" />
       <rect x="9" y="3" width="3" height="10" rx="1" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function TimerPlayIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <Glyph size={14} units={16} filled>
       <path d="M5 3.5v9l8-4.5z" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function TimerResetIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M2.5 8a5.5 5.5 0 1 0 1.7-4" />
       <path d="M3.5 2.5v3h3" />
-    </svg>
+    </Glyph>
   );
 }
 

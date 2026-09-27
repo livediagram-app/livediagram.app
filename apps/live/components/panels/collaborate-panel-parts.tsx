@@ -4,7 +4,7 @@ import { formatRelativeTimeShort } from '@/lib/relative-time';
 import { initialsOf } from '@/lib/identity';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 import type { ActionRow, CommentRow } from './CollaboratePanel';
-import { HoverCard, SOLID_BRAND_DARK } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // The COLLABORATE panel's row + filter-control components, lifted out
@@ -56,19 +56,9 @@ export function KindFilterButton({
 
 function FunnelGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <path d="M2 3h12l-4.5 5v4.5l-3 1.5V8z" />
-    </svg>
+    </Glyph>
   );
 }
 

@@ -7,7 +7,7 @@
 // chevrons, menu, search) come from @livediagram/ui instead, so the hero
 // mirrors the editor rather than a copy of it.
 
-import { SearchIcon } from '@livediagram/ui';
+import { SearchIcon, Glyph } from '@livediagram/ui';
 
 // A tab's presence avatar, sized as the editor's TabPresenceStack sizes them:
 // small initials on the participant's colour, a ring of the bar's own surface, overlapping the
@@ -216,55 +216,27 @@ export function Shape({ kind }: { kind: string }) {
 
 export function StarGlyph() {
   return (
-    <svg
-      width="8"
-      height="8"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={8} units={12} strokeLinecap="butt">
       <path d="M6 1.5l1.4 2.9 3.1.4-2.3 2.2.6 3.1L6 8.6 3.2 10.1l.6-3.1L1.5 4.8l3.1-.4z" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function ShareGlyph() {
   return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={9} units={12} strokeLinejoin="miter">
       <path d="M6 7.5V1.5M3.5 4 6 1.5 8.5 4" />
       <path d="M2.5 6.5v3.5h7V6.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function EyeGlyph({ off }: { off: boolean }) {
   return (
-    <svg
-      width="10"
-      height="10"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={10} units={16}>
       <path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z" />
       <circle cx="8" cy="8" r="2" />
       {off ? <path d="M2.5 13.5l11-11" /> : null}
-    </svg>
+    </Glyph>
   );
 }
