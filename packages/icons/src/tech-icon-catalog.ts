@@ -21,7 +21,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'amazon storage bucket object',
     color: '#7AA116',
     glyph:
-      '<path d="M6.5 8h11l-1 9.2a1.3 1.3 0 0 1-1.3 1.15H8.8A1.3 1.3 0 0 1 7.5 17.2Z"/><path d="M6 8h12"/>',
+      '<path d="M6.5 6.82h11l-1 9.2a1.3 1.3 0 0 1-1.3 1.15H8.8A1.3 1.3 0 0 1 7.5 16.02Z"/><path d="M6 6.82h12"/>',
   },
   {
     id: 'aws-ec2',
@@ -55,7 +55,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'amazon nosql database key value',
     color: '#3B48CC',
     glyph:
-      '<ellipse cx="12" cy="8" rx="5" ry="2"/><path d="M7 8v8c0 1.1 2.2 2 5 2s5-.9 5-2V8"/><path d="M12.6 10.5l-2 3h1.6l-.6 2.4 2.4-3.2h-1.6l.6-2.2z" fill="#fff" stroke="none"/>',
+      '<rect x="6" y="6.5" width="12" height="11" rx="1.5"/><path d="M6 10.2h12M6 13.8h12M10 6.5v11"/>',
   },
   {
     id: 'aws-apigateway',
@@ -154,7 +154,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     provider: 'azure',
     keywords: 'microsoft compute server vm instance',
     color: '#0078D4',
-    glyph: '<rect x="6" y="7" width="12" height="8" rx="1"/><path d="M9.5 18h5M12 15v3"/>',
+    glyph: '<rect x="6" y="6.5" width="12" height="8" rx="1"/><path d="M9.5 17.5h5M12 14.5v3"/>',
   },
   {
     id: 'azure-blob',
@@ -217,7 +217,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'microsoft network vnet subnet',
     color: '#0078D4',
     glyph:
-      '<circle cx="12" cy="7" r="1.9"/><circle cx="7" cy="16" r="1.9"/><circle cx="17" cy="16" r="1.9"/><path d="M11 8.6 8 14.4M13 8.6 16 14.4M9 16h6"/>',
+      '<circle cx="12" cy="7.5" r="1.9"/><circle cx="7" cy="16.5" r="1.9"/><circle cx="17" cy="16.5" r="1.9"/><path d="M11 9.1L8 14.9M13 9.1L16 14.9M9 16.5h6"/>',
   },
   {
     id: 'azure-loadbalancer',
@@ -227,7 +227,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'microsoft load balancer distribute traffic',
     color: '#0078D4',
     glyph:
-      '<circle cx="12" cy="6" r="1.6" fill="#fff" stroke="none"/><circle cx="7" cy="17" r="1.6" fill="#fff" stroke="none"/><circle cx="12" cy="17" r="1.6" fill="#fff" stroke="none"/><circle cx="17" cy="17" r="1.6" fill="#fff" stroke="none"/><path d="M12 7.6v3.4M12 11H7v4.4M12 11v4.4M12 11h5v4.4"/>',
+      '<circle cx="12" cy="6.5" r="1.6" fill="#fff" stroke="none"/><circle cx="7" cy="17.5" r="1.6" fill="#fff" stroke="none"/><circle cx="12" cy="17.5" r="1.6" fill="#fff" stroke="none"/><circle cx="17" cy="17.5" r="1.6" fill="#fff" stroke="none"/><path d="M12 8.1v3.4M12 11.5H7v4.4M12 11.5v4.4M12 11.5h5v4.4"/>',
   },
   {
     id: 'azure-servicebus',
@@ -245,7 +245,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'microsoft secret key vault security',
     color: '#0062AD',
     glyph:
-      '<circle cx="9.8" cy="11" r="3"/><path d="M12.1 12.6 17 17.5M15.2 15.1l-1.4 1.4M13.4 13.3 12 14.7"/>',
+      '<circle cx="9.9" cy="10.25" r="3"/><path d="M12.2 11.85L17.1 16.75M15.3 14.35l-1.4 1.4M13.5 12.55L12.1 13.95"/>',
   },
   {
     id: 'azure-monitor',
@@ -263,7 +263,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'k8s container orchestration helm cluster',
     color: '#326CE5',
     glyph:
-      '<path d="M12 4.8 17.6 7.4 19 13 15.2 17.6H8.8L5 13 6.4 7.4Z"/><circle cx="12" cy="12" r="1.4" fill="#fff" stroke="none"/><path d="M12 7.2v3.2M15.4 9.6 13 11M14.2 15.4 12.6 13M9.8 15.4 11.4 13M8.6 9.6 11 11"/>',
+      '<path d="M12 5.6L17.6 8.2 19 13.8 15.2 18.4H8.8L5 13.8 6.4 8.2Z"/><circle cx="12" cy="12.8" r="1.4" fill="#fff" stroke="none"/><path d="M12 8v3.2M15.4 10.4L13 11.8M14.2 16.2L12.6 13.8M9.8 16.2L11.4 13.8M8.6 10.4L11 11.8"/>',
   },
   {
     id: 'docker',
@@ -272,7 +272,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'container image whale compose',
     color: '#2496ED',
     glyph:
-      '<g fill="#fff" stroke="none"><rect x="6" y="11.2" width="2.4" height="2.4"/><rect x="8.9" y="11.2" width="2.4" height="2.4"/><rect x="11.8" y="11.2" width="2.4" height="2.4"/><rect x="8.9" y="8.3" width="2.4" height="2.4"/><rect x="11.8" y="8.3" width="2.4" height="2.4"/></g><path d="M5 14.2h11.5c.4 1.8-1.4 4-4.7 4-3.8 0-5.5-2-6.8-4Z" fill="#fff" stroke="none"/>',
+      '<g fill="#fff" stroke="none"><rect x="7.22" y="9.95" width="2.4" height="2.4"/><rect x="10.12" y="9.95" width="2.4" height="2.4"/><rect x="13.02" y="9.95" width="2.4" height="2.4"/><rect x="10.12" y="7.05" width="2.4" height="2.4"/><rect x="13.02" y="7.05" width="2.4" height="2.4"/></g><path d="M6.22 12.95h11.5c0.4 1.8-1.4 4-4.7 4-3.8 0-5.5-2-6.8-4Z" fill="#fff" stroke="none"/>',
   },
   {
     id: 'postgres',
@@ -325,7 +325,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     provider: 'generic',
     keywords: 'web server reverse proxy load balancer',
     color: '#009639',
-    glyph: '<path d="M8 17.5V7.5l8 9v-9"/>',
+    glyph: '<path d="M8 17V7l8 9v-9"/>',
   },
   {
     id: 'rabbitmq',
@@ -361,7 +361,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'git repository version control source code',
     color: '#181717',
     glyph:
-      '<circle cx="7" cy="6" r="2"/><circle cx="7" cy="18" r="2"/><circle cx="16" cy="8" r="2"/><path d="M7 8v8M16 10v1.5a3 3 0 0 1-3 3H7"/>',
+      '<circle cx="7.5" cy="6" r="2"/><circle cx="7.5" cy="18" r="2"/><circle cx="16.5" cy="8" r="2"/><path d="M7.5 8v8M16.5 10v1.5a3 3 0 0 1-3 3H7.5"/>',
   },
   {
     id: 'gitlab',
@@ -369,7 +369,8 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     provider: 'generic',
     keywords: 'git repository version control devops ci',
     color: '#FC6D26',
-    glyph: '<path d="M12 20 4.5 10.5 6 5l2.4 5.5h7.2L18 5l1.5 5.5Z" fill="#fff" stroke="none"/>',
+    glyph:
+      '<path d="M12 19.5L4.5 10 6 4.5l2.4 5.5h7.2L18 4.5l1.5 5.5Z" fill="#fff" stroke="none"/>',
   },
   {
     id: 'nodejs',
@@ -412,7 +413,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'infrastructure as code iac hashicorp provisioning',
     color: '#7B42BC',
     glyph:
-      '<path d="M10 5.5 14 7.8v4.5L10 10Z"/><path d="M14.7 8.2 18.7 10.5v4.5l-4-2.3Z"/><path d="M10 10.8 14 13.1v4.5L10 15.3Z"/>',
+      '<path d="M7.65 5.95L11.65 8.25v4.5L7.65 10.45Z"/><path d="M12.35 8.65L16.35 10.95v4.5l-4-2.3Z"/><path d="M7.65 11.25L11.65 13.55v4.5L7.65 15.75Z"/>',
   },
   {
     id: 'cassandra',
@@ -430,7 +431,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'monitoring metrics observability alerting time series',
     color: '#E6522C',
     glyph:
-      '<path d="M12 3.5c2.2 2.6 1 4.4 0 5.4 1.6.2 2.8 1.6 2.8 3.2a3.6 3.6 0 0 1-7.2 0c0-1 .4-1.9 1-2.6"/><path d="M7.5 16.5h9M8.5 19h7"/>',
+      '<path d="M12 4.25c2.2 2.6 1 4.4 0 5.4 1.6 0.2 2.8 1.6 2.8 3.2a3.6 3.6 0 0 1-7.2 0c0-1 0.4-1.9 1-2.6"/><path d="M7.5 17.25h9M8.5 19.75h7"/>',
   },
   // ---- Cloudflare ---------------------------------------------------------
   {
@@ -458,7 +459,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'cloudflare object storage bucket s3',
     color: '#F38020',
     glyph:
-      '<path d="M6.5 8h11l-1 9.2a1.3 1.3 0 0 1-1.3 1.15H8.8A1.3 1.3 0 0 1 7.5 17.2Z"/><path d="M6 8h12"/>',
+      '<path d="M6.5 6.82h11l-1 9.2a1.3 1.3 0 0 1-1.3 1.15H8.8A1.3 1.3 0 0 1 7.5 16.02Z"/><path d="M6 6.82h12"/>',
   },
   {
     id: 'cf-d1',
@@ -614,7 +615,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'firebase google file object storage bucket',
     color: '#F57C00',
     glyph:
-      '<path d="M6.5 8h11l-1 9.2a1.3 1.3 0 0 1-1.3 1.15H8.8A1.3 1.3 0 0 1 7.5 17.2Z"/><path d="M6 8h12"/>',
+      '<path d="M6.5 6.82h11l-1 9.2a1.3 1.3 0 0 1-1.3 1.15H8.8A1.3 1.3 0 0 1 7.5 16.02Z"/><path d="M6 6.82h12"/>',
   },
   {
     id: 'fb-messaging',
@@ -624,6 +625,6 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'firebase google fcm push notification',
     color: '#F57C00',
     glyph:
-      '<path d="M9 14.5V11a3 3 0 0 1 6 0v3.5l1 1.5H8z"/><path d="M11 16.5a1.2 1.2 0 0 0 2 0"/>',
+      '<path d="M9 13.98V10.48a3 3 0 0 1 6 0v3.5l1 1.5H8z"/><path d="M11 15.98a1.2 1.2 0 0 0 2 0"/>',
   },
 ];
