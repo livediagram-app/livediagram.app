@@ -166,13 +166,17 @@ the same result, so the mirror handles this openly, never silently:
 - The diagram moves to **Unsorted**, and a notice in the Drive panel (and on
   the diagram's Explorer row) says so: "Moved in Drive to a folder livediagram
   can't see."
-- **Adopting a folder** (pending operator decision, tracked in
-  `AMBIGUITIES.md`): the notice offers **Show this folder to livediagram**,
+- **Adopting a folder:** the notice offers **Show this folder to livediagram**,
   which opens the Google Picker with folder selection. Picking the folder
   grants livediagram access to it; livediagram then creates the matching
   Personal Space folder, places it under its nearest mirrored ancestor (or at
   the root when that is unknown too), and moves the diagram into it. From then
-  on that folder syncs both ways like any other.
+  on that folder syncs both ways like any other. Widening access to all of
+  Drive (a restricted scope with a yearly paid security assessment) is
+  deliberately not the answer.
+- Whether picking a folder also grants access to files inside it that
+  livediagram did not create is untested; adoption relies only on access to
+  the folder itself.
 - Folders created **in livediagram** always appear in Drive, so building the
   tree from livediagram needs no adoption.
 
