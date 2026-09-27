@@ -5,6 +5,7 @@ import { tileCaption } from './tile-caption';
 import { useModKeyHeld } from '@/hooks/ui/useModKeyHeld';
 import { createContext, useContext } from 'react';
 import { HoverCard, Tooltip } from '@livediagram/ui';
+import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 
 // The active tab theme's element colours, made available to every palette
 // tile so the palette previews the theme rather than a fixed slate. `stroke`
@@ -126,6 +127,10 @@ export function IconButton({
   noTint,
   shortcutAlwaysVisible,
 }: IconButtonProps) {
+  // Minimal chrome (docs/specs/007-editor/power-user-mode.md): icon only, named by a Tooltip.
+  const minimalChrome = useMinimalChrome();
+  const captionHidden = hideCaption || minimalChrome;
+  const hintKind = minimalChrome ? (hint ?? 'tooltip') : tileHint(hint, hideCaption);
   // A dragKind tile is draggable and carries the palette DnD payload; an
   // explicit draggable/onDragStart (the icon grid) is used otherwise.
   const effectiveDraggable = dragKind ? true : draggable;
@@ -198,12 +203,12 @@ export function IconButton({
         onDragEnd?.(e);
       }}
       className={
-        hideCaption
+        captionHidden
           ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
           : `relative flex w-full flex-col items-center justify-start gap-0.5 rounded-md px-0.5 py-1 transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
       }
     >
-      {hideCaption ? (
+      {captionHidden ? (
         <span style={glyphStyle} className={`${glyphClass}flex items-center justify-center`}>
           {children}
         </span>
@@ -236,7 +241,7 @@ export function IconButton({
     </button>
   );
   if (disabled) return button;
-  if (tileHint(hint, hideCaption) === 'tooltip') return <Tooltip label={label}>{button}</Tooltip>;
+  if (hintKind === 'tooltip') return <Tooltip label={label}>{button}</Tooltip>;
   return (
     <HoverCard title={label} description={description}>
       {button}

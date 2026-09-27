@@ -45,6 +45,17 @@ type HelpArticleLinkProps = {
   className?: string;
 };
 
+// The one telemetry event a help deep link sends, wherever it is opened from.
+export function trackHelpArticle(article: HelpArticleKey): void {
+  track('UI', 'Opened', helpArticleTelemetryId(article));
+}
+
+// Open an article from a control that is not a link (a menu row).
+export function openHelpArticle(article: HelpArticleKey): void {
+  trackHelpArticle(article);
+  window.open(helpArticleHref(article), '_blank', 'noopener,noreferrer');
+}
+
 // One affordance for every editor -> help-centre deep link (docs/specs/018-help/contextual-help-links.md).
 // Surfaces reference an article key, never a raw URL; the link opens the
 // help centre in a new tab and fires a single UI/Opened telemetry event
@@ -60,7 +71,7 @@ export function HelpArticleLink({
   className,
 }: HelpArticleLinkProps) {
   const href = helpArticleHref(article);
-  const onClick = () => track('UI', 'Opened', helpArticleTelemetryId(article));
+  const onClick = () => trackHelpArticle(article);
   const common = {
     href,
     target: '_blank',
@@ -134,7 +145,7 @@ export function HelpArticleLink({
 
 // A circled question mark for the `button` variant's leading icon (sized to
 // sit beside a 12px label like the + on the Create button).
-function HelpMarkIcon() {
+export function HelpMarkIcon() {
   return (
     <svg
       width="14"
