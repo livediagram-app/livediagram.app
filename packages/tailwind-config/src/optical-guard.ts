@@ -13,6 +13,8 @@ export type OpticalViolation = { file: string; line: number; snippet: string };
 
 // The primitives own the rule, so their call sites are compliant by construction.
 const PRIMITIVES = new Set(['GlyphDisc', 'Chip', 'IconSlot']);
+// ...and so is their own implementation (packages/ui/src/optical).
+const PRIMITIVES_DIR = `${sep}optical${sep}`;
 const SKIP_DIRS = new Set([
   'node_modules',
   '.next',
@@ -34,7 +36,9 @@ function sources(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
     if (statSync(path).isDirectory()) return SKIP_DIRS.has(name) ? [] : sources(path);
-    return name.endsWith('.tsx') && !/\.test\.tsx$/.test(name) ? [path] : [];
+    if (!name.endsWith('.tsx') || /\.test\.tsx$/.test(name) || path.includes(PRIMITIVES_DIR))
+      return [];
+    return [path];
   });
 }
 

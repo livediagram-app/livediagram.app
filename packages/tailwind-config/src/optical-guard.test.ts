@@ -4,10 +4,10 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { checkOpticalAlignment } from './optical-guard';
 
-function scan(source: string) {
+function scan(source: string, dir = 'components') {
   const root = mkdtempSync(join(tmpdir(), 'optical-guard-'));
-  mkdirSync(join(root, 'components'));
-  writeFileSync(join(root, 'components', 'Shape.tsx'), source);
+  mkdirSync(join(root, dir), { recursive: true });
+  writeFileSync(join(root, dir, 'Shape.tsx'), source);
   return checkOpticalAlignment({ root });
 }
 
@@ -60,6 +60,12 @@ describe('optical guard', () => {
   </span>
 );`);
     expect(v.map((x) => x.snippet)).toEqual(["{'AB'}"]);
+  });
+
+  it('exempts the primitives own implementation', () => {
+    const src = `export const A = ({ children }: { children: string }) => <span className="${DISC}">{children}</span>;`;
+    expect(scan(src, 'src/optical')).toEqual([]);
+    expect(scan(src)).toHaveLength(1);
   });
 
   it('leaves the primitives, unrounded and unsized shapes alone', () => {
