@@ -14,6 +14,9 @@ export type PresetSummaryLine = {
   categoryLabel: string;
   label: string;
   value: string;
+  // Switching on recorded a baseline for it, so switching off can restore it.
+  // False when another client turned the mode on without one (P7).
+  restorable: boolean;
   // Changed since the mode switched on, so switching off keeps it.
   changed: boolean;
   // Its row is offered in this dialog right now, so "Change" can go to it.
@@ -56,6 +59,7 @@ export function presetSummaryLines(
       categoryLabel: category.label,
       label: row.label,
       value: formatValue(row, prefs),
+      restorable: !!entry,
       changed: entry ? !isUntouched(prefs, entry) : false,
       reachable: offered.has(row.key),
     };

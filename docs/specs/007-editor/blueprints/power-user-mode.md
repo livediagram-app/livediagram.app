@@ -168,8 +168,8 @@ where `role` is the role in force (`isReadOnly ? 'view' : 'edit'`).
 - Children of `powerUserMode`, both `available: ctx.powerUserMode`: `minimalChrome` (toggle), then
   `powerUserPreset` (`kind: 'presetSummary'`).
 - `presetSummaryLines(prefs, offered)` (pure) returns, for each preset setting except `minimalChrome`, in preset order:
-  `{ setting, rowKey, categoryId, categoryLabel, label, value, changed, reachable }`. `value` is the row's own
-  `read` formatted (toggle: On / Off; choice: the option label). `changed` is true when the baseline entry exists and
+  `{ setting, rowKey, categoryId, categoryLabel, label, value, restorable, changed, reachable }`. `value` is the row's own
+  `read` formatted (toggle: On / Off; choice: the option label). `restorable` is whether a baseline entry exists (no status line without one). `changed` is true when the baseline entry exists and
   is not untouched (the same test switch-off uses, `isUntouched`). `reachable` is whether that row is in the
   visible categories (`offered`).
 - `SettingsPresetSummaryRow` renders a card: a `<ul>` of lines, each `label: value`, the category, the status

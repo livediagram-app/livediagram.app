@@ -57,7 +57,8 @@ directly, indented beneath it as one group named "Power User Mode settings":
    Layout, Alignment Guides, Auto-Attach Arrows, Show Welcome Tour, Suggested Prompts), each with its current value
    and the category it lives in. Each is still changed in its own row, and a **Change** button on the line goes to
    that row, ringed. A line whose value the user has changed since switching on says so ("Changed: kept when you
-   switch off"); the others read "Restored when you switch off". A setting whose row is not offered here (Suggested
+   switch off"); the others read "Restored when you switch off". With no baseline to restore from (the mode was switched on by a client that recorded none), the lines make no promise
+   about switching off. A setting whose row is not offered here (Suggested
    Prompts without AI) shows its value without the button.
 
 With the mode off the group is absent. Keyboard order follows the visual order: the mode's switch, then the group.

@@ -46,17 +46,19 @@ export function SettingsPresetSummaryRow({
                       · {line.categoryLabel}
                     </span>
                   </span>
-                  <span
-                    className={
-                      line.changed
-                        ? 'text-[11px] text-amber-700 dark:text-amber-300'
-                        : 'text-[11px] text-slate-500 dark:text-slate-400'
-                    }
-                  >
-                    {line.changed
-                      ? 'Changed: kept when you switch off'
-                      : 'Restored when you switch off'}
-                  </span>
+                  {line.restorable ? (
+                    <span
+                      className={
+                        line.changed
+                          ? 'text-[11px] text-amber-700 dark:text-amber-300'
+                          : 'text-[11px] text-slate-500 dark:text-slate-400'
+                      }
+                    >
+                      {line.changed
+                        ? 'Changed: kept when you switch off'
+                        : 'Restored when you switch off'}
+                    </span>
+                  ) : null}
                 </div>
                 {line.reachable && onGoToRow ? (
                   <button

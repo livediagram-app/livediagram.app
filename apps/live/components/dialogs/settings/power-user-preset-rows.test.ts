@@ -34,6 +34,14 @@ describe('presetSummaryLines', () => {
     expect(layout.changed).toBe(true);
   });
 
+  it('makes no promise about switching off without a baseline to restore from', () => {
+    const lines = presetSummaryLines({ powerUserMode: true, panelLayout: 'toolbar' }, ALL);
+    expect(lines.every((l) => l.restorable === false)).toBe(true);
+    expect(
+      presetSummaryLines(setPowerUserMode({}, true).prefs, ALL).every((l) => l.restorable),
+    ).toBe(true);
+  });
+
   it('shows a row that is not offered here without a way to it', () => {
     const offered = new Set(ALL);
     offered.delete('aiSuggestedPrompts');
