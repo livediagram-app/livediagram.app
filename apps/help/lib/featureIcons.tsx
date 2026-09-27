@@ -1066,6 +1066,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="16.5" cy="17" r="1.6" fill="currentColor" stroke="none" />
     </Glyph>
   ),
+  // A lightning bolt over a bare bar: faster defaults, fewer words.
+  'power-user-mode': (
+    <Glyph>
+      <path d="M13 2.5 6.5 12h5l-1 7.5L17 10h-5z" {...s} />
+      <path d="M3 21.5h18" {...s} />
+    </Glyph>
+  ),
   // Canvas sub-article guides — the ten that finish the Canvas category. Once a
   // category is fully drawn its fallback glyph never renders inside it, which is
   // the point of working category by category.

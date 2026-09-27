@@ -164,8 +164,8 @@ export const categories: Category[] = [
     slug: 'user-interface',
     title: 'User Interface',
     description:
-      'Get your bearings in the editor: the panels, toolbar, context menus, minimap, zoom and tab bars, and quick controls.',
-    articleCount: 8,
+      'Get your bearings in the editor: the panels, toolbar, context menus, minimap, zoom and tab bars, quick controls, and power user mode.',
+    articleCount: 9,
     kind: 'feature',
   },
   {
@@ -317,6 +317,16 @@ export const articles: Article[] = [
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
       'settings preferences options config configure gear cog toggles minimal panels minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings',
+    category: 'User Interface',
+    categorySlug: 'user-interface',
+  },
+
+  {
+    slug: 'power-user-mode',
+    title: 'Power User Mode',
+    description: 'Recommended settings in one switch, and Minimal chrome for a quieter interface.',
+    keywords:
+      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },

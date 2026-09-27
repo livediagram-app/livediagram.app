@@ -9,6 +9,7 @@ import {
   type PanelLayout,
   type UserPreferences,
 } from '@/lib/user-preferences';
+import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
 import type { SettingsIllustrationId } from './settings-illustrations';
 
 // The Settings dialog as DATA: the categories, and per category the rows
@@ -37,7 +38,12 @@ import type { SettingsIllustrationId } from './settings-illustrations';
 // nothing can send, AND a signed-in account, or there is no address to send
 // to. A guest flipping them would be writing preferences that can never
 // apply, so they are absent rather than dead.
-export type SettingsRowContext = { emailEnabled: boolean; signedIn: boolean };
+// Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
+export type SettingsRowContext = {
+  emailEnabled: boolean;
+  signedIn: boolean;
+  powerUserMode?: boolean;
+};
 
 type RowBase = {
   // Stable id. Doubles as the React key and the footnote's element id.
@@ -203,6 +209,35 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: autoRebindArrowsEnabled,
         write: (p, v) => ({ ...p, autoRebindArrows: v }),
         event: { category: 'UI', on: 'AutoRebindOn', off: 'AutoRebindOff' },
+      },
+      {
+        // A preset, not a flag (docs/specs/007-editor/power-user-mode.md): switching on writes the
+        // recommended values once; switching off restores the untouched ones.
+        kind: 'toggle',
+        key: 'powerUserMode',
+        keywords: 'power user expert advanced pro minimal chrome fewer labels declutter',
+        section: 'Power User',
+        label: 'Power User Mode',
+        description:
+          'Applies a set of recommended settings for people who know their way around: the Toolbar layout, alignment guides and auto-attach arrows on, the welcome tour marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
+        helpArticle: 'powerUserMode',
+        read: isPowerUserMode,
+        write: (p, v) => setPowerUserMode(p, v).prefs,
+        event: { category: 'UI', on: 'PowerUserModeOn', off: 'PowerUserModeOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'minimalChrome',
+        keywords: 'minimal chrome hide labels captions titles hints icons only declutter',
+        section: 'Power User',
+        label: 'Minimal Chrome',
+        description:
+          'Hides labels and hints you no longer need: palette captions, panel titles, the selection caption, status bar text and onboarding notices. Every control stays; its name shows when you hover or focus it.',
+        helpArticle: 'powerUserMode',
+        available: (ctx) => ctx.powerUserMode === true,
+        read: (p) => p.minimalChrome !== false,
+        write: (p, v) => ({ ...p, minimalChrome: v }),
+        event: { category: 'UI', on: 'MinimalChromeOn', off: 'MinimalChromeOff' },
       },
     ],
   },

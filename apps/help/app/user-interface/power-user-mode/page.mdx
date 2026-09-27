@@ -1,0 +1,56 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Power User Mode',
+  description:
+    'Power user mode applies a set of recommended settings for people who know the editor, and unlocks Minimal chrome, which hides labels and hints while keeping every control.',
+  path: '/help/user-interface/power-user-mode/',
+});
+
+<ArticleLayout
+  title="Power User Mode"
+  description="Recommended settings in one switch, and a quieter interface once you know your way around."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+Once you know where everything is, the words that taught you start to take up room. **Power user mode** is one switch for that moment. Turn it on from [Settings](/help/user-interface/settings/), under **Editor → Power User**.
+
+## What it sets
+
+Switching it on applies these settings once:
+
+- **Panel Layout**: [Toolbar](/help/palette/toolbar-layout/), the palette in one strip across the top.
+- **Alignment Guides**: on.
+- **Auto-Attach Arrows**: on.
+- **Welcome Tour**: marked as seen.
+- **AI Suggested Prompts**: off.
+- **Minimal Chrome**: on (see below).
+
+Panel opacity is left as it is.
+
+It is a starting point, not a lock. Change any of these afterwards and the mode stays on. Switch the mode off and every setting you left alone goes back to what it was before; the ones you changed keep your change.
+
+## Minimal chrome
+
+Minimal chrome is a setting that only appears while power user mode is on. It hides the words and hints that teach the interface:
+
+- the caption above the selection toolbar ("Selected Square");
+- the captions under palette tiles;
+- the text beside Search, Settings and the appearance button in the bottom bar;
+- the "Tabs" label;
+- panel titles and their **?** buttons (the Explorer's **⋯** menu gains a **Help** row instead);
+- onboarding notices: the modifier-key hint, the sign-in notice in the Explorer, and the theme-match suggestion;
+- the bin in the selection toolbar, on a computer: press **Delete** or **Backspace** instead. Touch screens keep it.
+
+The **Editing** / **Viewing** pill leaves the title bar and becomes a pencil or an eye at the start of the bottom bar. Click it, as you would the pill, to preview your diagram read-only.
+
+Every control stays. Hover one for a second, or focus it with the keyboard, and its name appears. Screen readers hear the same names as before.
+
+<Tip>
+  livediagram offers power user mode once, after you have been editing for a while or using a fair
+  few keyboard shortcuts. Say no thanks and it will not ask again; the switch is always in Settings.
+</Tip>
+
+</ArticleLayout>
