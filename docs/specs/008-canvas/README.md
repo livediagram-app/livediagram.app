@@ -4,7 +4,7 @@ Follow the references below only as needed; never upfront.
 
 - ./canvas-and-palette.md - when working on Canvas and palette: The canvas and its floating palette: canvas tools, every element kind, drawing, rich-text labels
 - ./arrow-anchors.md - when working on Arrow anchors and auto-rebind: The sixteen anchor ids, the anchors each shape offers and where they sit, outline projection, the creation anchor, the converging fan, and the auto-rebind that moves an end to the facing side (same position class) only when its drawn path runs through a shape, plus same-side crossing swaps
-- ./blueprints/README.md - when implementing a canvas spec that has a blueprint (arrow anchors and auto-rebind)
+- ./blueprints/README.md - when implementing a canvas spec that has a blueprint (arrow anchors, labels, bending, quick style panel)
 - ./isometric-view.md - when working on Isometric view: Navigation tool that tilts the tab into an isometric, extruded-depth view; pans like Hand, read-only
 - ./layout-cleanup.md - when working on Layout cleanup: The tab menu's Cleanup band: Auto-align (grid snap) + Auto Layout (deterministic graph layout / Tidy up)
 - ./arrow-to-arrow.md - when working on Arrow-to-arrow connections: Snap an arrow endpoint to evenly-spaced points along another arrow's line (sequence-diagram messages)
@@ -25,3 +25,4 @@ Follow the references below only as needed; never upfront.
 - ./element-size.md - when working on The Size category: A Size category in the element menu: exact width / height in canvas pixels, plus the aspect lock (which lived in Layer) and the reset (which lived in Shape, so it only showed for morphable kinds). Boxes are drafts committed on blur or Enter, anchored top-left, clamped 8-20000px, and the lock carries the other dimension
 - ./arrow-labels.md - when working on Arrow labels: labels sit on the line with a knockout gap, wrap to a width set by the arrow shape, fall beside the line when too short; export matches
 - ./arrow-bending.md - when working on Bending arrows: drag the line to bend it (bow, bend point, segment slide), move frame for free arrows, and the double-press rule that stops fast double-clicks hitting fresh handles
+- ./quick-style-panel.md - when working on Quick style panel: The right-edge panel of most-used style choices for selected shapes + arrows (7 theme-relative colours, then 3-option rows for width, style, text + icon alignment, Clear styles), its boundary with the context menu, deterministic placement clear of the Palette, and per-kind style memory for the next user-drawn element
