@@ -77,6 +77,17 @@ test('a multi-page draw.io file becomes a tab per page, with a summary', async (
   await page.getByText('Detail', { exact: true }).first().click();
   await expect(page.getByText('Big and bold').first()).toBeVisible();
   await shot(page, 'multi-page.drawio-4-detail');
+
+  // One undo takes the whole import back: the new tabs go, the first tab is
+  // empty and named as before, on screen and in storage.
+  await page.getByText('Overview', { exact: true }).first().click();
+  await page.locator('[data-canvas-a11y-root]').click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press('ControlOrMeta+z');
+  await expect(page.getByText('Detail', { exact: true })).toHaveCount(0);
+  await expect
+    .poll(() => storedTabs(page), { timeout: 15_000 })
+    .toEqual([{ name: 'Tab 1', elements: 0 }]);
+  await shot(page, 'multi-page.drawio-5-undone');
   expectNoPageErrors(pageErrors);
 });
 
