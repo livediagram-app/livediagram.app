@@ -189,6 +189,19 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   // row passes this gate — the invitee may read the team to decide,
   // accept, or decline (delete their row) — but every admin verb
   // below additionally requires a JOINED admin row.
+  // Route before loading: a path no team-scoped route below serves 404s here
+  // rather than after two D1 reads, and without implying the team exists.
+  const teamScoped =
+    segments.length === 3 ||
+    (segments.length === 4 &&
+      (segments[3] === 'library' ||
+        segments[3] === 'invite-link' ||
+        segments[3] === 'members' ||
+        segments[3] === 'access-check' ||
+        segments[3] === 'notify-action')) ||
+    (segments.length === 5 && segments[3] === 'members') ||
+    (segments.length === 6 && segments[3] === 'members' && segments[5] === 'accept');
+  if (!teamScoped) return notFound();
   const teamId = segments[2]!;
   const team = await getTeam(env, teamId);
   if (!team) return notFound();

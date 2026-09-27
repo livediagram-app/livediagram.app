@@ -1,6 +1,6 @@
 import { resolveAiProvider } from '../ai-provider';
 import { emailEnabled } from '../email/client';
-import { json, methodNotAllowed } from '../responses';
+import { json, methodNotAllowed, notFound } from '../responses';
 import type { RouteContext } from './context';
 
 // GET /api/capabilities — no auth required.
@@ -9,7 +9,8 @@ import type { RouteContext } from './context';
 // provisioned. Fail-closed by design: an absent / misconfigured
 // binding returns false, never true.
 export function handleCapabilities(ctx: RouteContext): Response {
-  const { env, request } = ctx;
+  const { env, request, segments } = ctx;
+  if (segments.length !== 2) return notFound();
   if (request.method !== 'GET') {
     return methodNotAllowed();
   }

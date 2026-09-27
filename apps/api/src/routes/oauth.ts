@@ -17,7 +17,9 @@ export async function handleOauthExchange(ctx: RouteContext): Promise<Response> 
   const { request, env, segments, clerkUserId } = ctx;
   if (segments[1] !== 'oauth') return notFound();
   if (!clerkUserId) return forbidden();
-  if (segments[2] !== 'exchange' || request.method !== 'POST') return notFound();
+  if (segments[2] !== 'exchange' || segments.length !== 3 || request.method !== 'POST') {
+    return notFound();
+  }
   const owner = clerkUserId;
 
   const body = (await request.json().catch(() => ({}))) as {

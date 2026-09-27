@@ -18,14 +18,14 @@ The api worker ([API app](api.md)) is documented two ways today:
 
 What's missing is a **single, machine-readable description of the surface**: the paths, methods, auth requirements, and status codes. The TS types cover payload _shape_ but say nothing about URL shape, verbs, or auth; the prose isn't discoverable, testable, or consumable by tooling. A self-hoster or integrator can't point a client generator, a Postman import, or a docs viewer at anything.
 
-The goal is an **OpenAPI 3.1 document** for `/api/*` that is generated from the existing source of truth (not hand-maintained in parallel, which would drift — the one thing this repo most wants to avoid) and is impossible to silently desync from the real routes.
+The goal is an **OpenAPI 3.1 document** for `/api/*` that is generated from the existing source of truth (not hand-maintained in parallel, which would drift — the one thing this repo most wants to avoid) and cannot fall behind the real routes without turning CI red, within the bounds the drift test states below.
 
 ## Goals
 
 - One OpenAPI 3.1 document covering every `/api/*` endpoint (the surface enumerated in [API app](api.md)): path template, method, summary, auth scheme, request body schema, response schema(s), and the meaningful status codes (200/201/204/400/401/403/404/409).
 - Served at **`GET /api/openapi.json`** — public, no auth, cacheable. It's the contract, not data, so a token holder isn't needed.
 - **Component schemas reuse `@livediagram/api-schema`**: DTO shapes are generated from those TS types, never re-typed by hand. Adding a field to a DTO updates the doc automatically.
-- **A drift test** (CI) that fails when a route is reachable in the worker's dispatch but absent from the OpenAPI doc, or vice versa. This mirrors the test-pinned template / theme catalogues ([Canvas and palette](../008-canvas/canvas-and-palette.md)): the doc cannot fall behind the code without turning CI red.
+- **A drift test** (CI) that fails when a `(method, path-template)` is reachable in the worker's dispatch but absent from the OpenAPI doc, or vice versa, to the precision stated under "Drift test" below. This mirrors the test-pinned template / theme catalogues ([Canvas and palette](../008-canvas/canvas-and-palette.md)): the doc cannot fall behind the code without turning CI red.
 - Self-hostable: the doc is produced at build time and served by the worker. No external service, no secrets, works in pure-guest mode (Clerk unset).
 
 ## Non-goals (v1)
@@ -46,7 +46,27 @@ The worker uses vanilla `fetch` handlers with segment-based dispatch (`apps/api/
 - **Route manifest** — `apps/api/src/openapi/manifest.ts`: an array, one entry per endpoint. Each entry carries the method, the path template (`/api/...` with `{param}` placeholders), a summary, the auth mode (public / guest / clerk / either), optional request and response schema names, and the meaningful status codes. The manifest is plain data referencing DTO names from `@livediagram/api-schema`; it is the single declaration of the surface.
 - **Component schemas** — generated from the api-schema TS types into JSON Schema (e.g. `ts-json-schema-generator` as a build step in `packages/api-schema` or the api worker), emitted into the OpenAPI `components.schemas`. Shapes are never re-typed; the manifest only references them by name.
 - **Assembly** — a build step composes the manifest + generated schemas + the auth-scheme definitions (the guest `X-Owner-Id` header and the Clerk Bearer, per [Auth + guest access](../014-identity/auth-and-guest-access.md)) into one OpenAPI 3.1 object, written to a TS constant the worker serves verbatim at `GET /api/openapi.json`. Build-time generation keeps the request path a constant lookup, no per-request work.
-- **Drift test** (`apps/api/src/openapi/manifest.test.ts`) — the dispatch is segment-based, not declarative, so the manifest is the declaration and the test pins parity: it asserts the manifest's `(method, path)` set matches a route inventory derived from the handlers (and that every `requestSchema` / `responseSchema` name exists in `@livediagram/api-schema`). A new route added to `index.ts` / `routes/*.ts` without a manifest entry fails CI. This is the anti-drift guarantee; without it the doc is just another thing that rots.
+- **Drift test** — the dispatch is segment-based and imperative, not declarative, so there is no route table to diff; the manifest is the declaration and the test pins it to the running dispatch (see "Drift test" below). Every `requestSchema` / `responseSchema` name must also exist in `@livediagram/api-schema`. This is the anti-drift guarantee; without it the doc is just another thing that rots.
+
+### Drift test
+
+The route inventory is taken from the worker itself, by probing it:
+
+- **Vocabulary.** For each resource segment in `index.ts`'s dispatch switch, the literals its route modules compare a path position against (`segments[k] === '<literal>'`), read from the source, plus a placeholder standing in for any path parameter.
+- **Probe.** Every `(method, path)` built from that vocabulary, for GET, POST, PUT, DELETE and PATCH, one level deeper than the deepest known path, is sent through the real `fetch` handler as a signed-in caller, with feature gates open and every storage binding (D1, R2, Durable Objects) and outbound `fetch` replaced by a trap that records the touch and throws.
+- **Outcomes.** A clean 404 / 405 without a touch is _not routed_. Any other answer without a touch is _routed_: that exact method and path are served. A touch means the path is served, but not which methods, because most handlers load and authorise the resource before branching on the verb.
+
+What the test then proves:
+
+1. Every manifest entry is served: its `(method, path)` is never _not routed_.
+2. Every path the probe finds served matches a manifest path template.
+3. Every _routed_ `(method, path)` matches a manifest entry with that method.
+4. Every literal the route code discriminates on appears at that position in a manifest template of its segment, so a literal route shadowed by a parameter sibling (`/teams/stats` beside `/teams/{id}`) cannot hide behind the parameter's template.
+5. Every verb a segment's route modules compare `request.method` against is documented for that segment.
+
+And what it does not: for a handler that touches storage before branching on the verb, method parity holds per resource segment (rule 5), not per path; a new verb on such a path passes when the segment already documents that verb elsewhere. The vocabulary also depends on route code reading path segments only as `segments[<digit>]` or `segments.length` and never comparing an alias of one against a literal; the test enforces both, since a literal reached any other way would be invisible to the probe.
+
+Two consequences for route code: every handler matches its **full** path, so an unknown suffix (`/api/capabilities/x`) is a 404 rather than an undocumentable alias; and a handler routes before it loads, so an unknown path under a resource 404s without a storage read.
 
 ### Auth + secrets
 
@@ -91,12 +111,20 @@ The recommended route-manifest approach shipped. Concrete layout, all under
 - **`routes/openapi.ts`** — `handleOpenapi`, dispatched from `index.ts` on the
   `openapi.json` segment. GET only, public, `Cache-Control: public, max-age=3600`,
   memoised once per isolate.
-- **`manifest.test.ts`** — the drift guards (run in the api worker's Node test
-  env): (1) the manifest's segment set equals the `case '…':` labels in
-  `index.ts`'s dispatch, in both directions; (2) every schema the manifest /
-  assembled document references exists; (3) the committed `schemas.generated.ts`
-  deep-equals a fresh generation, so a DTO change that wasn't regenerated fails
-  CI. The (method, path) pairs are also asserted unique.
+- **`route-parity.test.ts`** + **`dispatch-probe.ts`** — the `(method,
+path-template)` parity described under "Drift test", run in the api worker's
+  Node test env against `index.ts`'s default export.
+- **`manifest.test.ts`** — the remaining guards: (1) the manifest's segment set
+  equals the `case '…':` labels in `index.ts`'s dispatch, in both directions,
+  and every verb a segment's handlers compare against is documented for it;
+  (2) every schema the manifest / assembled document references exists; (3) the
+  committed `schemas.generated.ts` deep-equals a fresh generation, so a DTO
+  change that wasn't regenerated fails CI; (4) the 429 each operation declares
+  mirrors `index.ts`'s limiters. The (method, path) pairs are also asserted
+  unique.
+- **Media types** — a success body is `application/json` unless the entry sets
+  `responseMediaType`; the two SVG snapshot reads (`GET /diagrams/{id}/thumbnail`,
+  `GET /share/{code}/image.svg`) declare `image/svg+xml`.
 
 The served document validates as OpenAPI 3.1 (checked with `@redocly/cli`). The
 realtime WebSocket op protocol stays in [API app](api.md) prose, as planned;

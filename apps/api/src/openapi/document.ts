@@ -83,19 +83,16 @@ function operationId(route: RouteSpec): string {
 //   - writes share a per-owner (or per-token) budget, except POST /events
 //     (docs/specs/017-telemetry/telemetry.md: telemetry must not be throttled into silence);
 //   - GETs are throttled only under a token, so only the token-usable ones;
-//   - GET /share/{code} is throttled per IP, to blunt share-code guessing.
+//   - every GET under /share is throttled per IP, to blunt share-code guessing;
+//   - the room-ticket mint is exempt, because a 429 there costs a member their
+//     whole realtime session (docs/specs/015-api/api.md).
 // A read that no token can reach cannot 429, and saying otherwise would send
 // an integrator writing retry logic for a status it will never see.
-//
-// One more exemption lives in index.ts: the room-ticket mint (a 429 there
-// costs a member their whole realtime session). It needs no entry here because
-// the mint has no manifest entry at all, the realtime handshake being
-// documented in docs/specs/015-api/api.md rather than in the OpenAPI surface.
-const RATE_LIMIT_EXEMPT_WRITES = new Set(['post /events']);
+const RATE_LIMIT_EXEMPT_WRITES = new Set(['post /events', 'post /diagrams/{id}/room-ticket']);
 
 function isRateLimited(route: RouteSpec): boolean {
   const id = `${route.method.toLowerCase()} ${route.path}`;
-  if (route.method === 'GET') return route.tokenUsable === true || route.path === '/share/{code}';
+  if (route.method === 'GET') return route.tokenUsable === true || route.segment === 'share';
   return !RATE_LIMIT_EXEMPT_WRITES.has(id);
 }
 
@@ -116,7 +113,11 @@ function responsesFor(route: RouteSpec): Record<string, unknown> {
       } else {
         responses[key] = {
           description: 'Success.',
-          content: { 'application/json': { schema: bodyToSchema(route.responseSchema) } },
+          content: {
+            [route.responseMediaType ?? 'application/json']: {
+              schema: bodyToSchema(route.responseSchema),
+            },
+          },
         };
       }
     } else if (status === 101) {
