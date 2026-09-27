@@ -130,3 +130,44 @@ test('a PNG exported from Excalidraw with the scene embedded imports its content
   await expect(page.getByText('Imported from Excalidraw')).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
+
+// A browser whose canvas cannot encode WebP hands back a PNG instead (Safari
+// does). Emulated here in any engine by answering WebP requests with PNG, so
+// the pipeline must detect it by the blob type and load the WASM encoder.
+test('without canvas WebP, images are still stored as WebP via the WASM encoder', async ({
+  page,
+  pageErrors,
+}) => {
+  await page.addInitScript(() => {
+    const asPng = (type?: string) => (type === 'image/webp' ? 'image/png' : type);
+    const toBlob = HTMLCanvasElement.prototype.toBlob;
+    HTMLCanvasElement.prototype.toBlob = function (cb, type, quality) {
+      return toBlob.call(this, cb, asPng(type), quality);
+    };
+    if (typeof OffscreenCanvas !== 'undefined') {
+      const convert = OffscreenCanvas.prototype.convertToBlob;
+      OffscreenCanvas.prototype.convertToBlob = function (options) {
+        return convert.call(this, { ...options, type: asPng(options?.type) });
+      };
+    }
+  });
+  const wasmRequests: string[] = [];
+  page.on('request', (r) => {
+    if (/webp_enc(_simd)?\.[^/]*wasm$/.test(new URL(r.url()).pathname)) wasmRequests.push(r.url());
+  });
+  await startBlankDiagram(page);
+  await dismissQuickTour(page);
+  // Nothing is fetched until an image needs encoding.
+  expect(wasmRequests).toEqual([]);
+  await importExcalidrawFile(page, 'board.excalidraw', boardWithImages());
+  await expect(page.getByTestId('import-image-report')).toContainText('3 images imported');
+
+  const images = await page.evaluate(async () => {
+    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
+    const res = await fetch('/api/images', { headers: { 'X-Owner-Id': owner } });
+    return ((await res.json()) as { images: { contentType: string }[] }).images;
+  });
+  expect(images.map((i) => i.contentType).sort()).toEqual(['image/webp', 'image/webp']);
+  expect(wasmRequests).toHaveLength(1);
+  expectNoPageErrors(pageErrors);
+});
