@@ -11,6 +11,6 @@ One row per default applied where a spec is silent or qualitative.
 | D5  | power-user-mode | Whether counting stops after the offer        | It continues; the latch alone stops the offer                                                              |
 | D6  | power-user-mode | Shape of a palette tile without its caption   | The existing icon-only tile (`hideCaption`), named by a Tooltip                                            |
 | D7  | power-user-mode | Selection when switching to the view preview  | Cleared, so no edit toolbar lingers into viewing                                                           |
-| D8  | power-user-mode | Look of the role status icon                  | The status bar's own control square (`CHROME_BTN`), emerald or amber glyph                                 |
+| D8  | power-user-mode | Look of the role status icon                  | The status bar control box, in the role's emerald or amber rather than the bar's slate                     |
 | D9  | power-user-mode | Malformed offer counters                      | Reset to zero with a `[power-user-offer]` warning                                                          |
 | D10 | power-user-mode | Where Help sits in the Explorer's menu        | First row of the app band, above Search                                                                    |
