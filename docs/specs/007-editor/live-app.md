@@ -42,9 +42,29 @@ Three regions stacked vertically, filling the viewport:
 └────────────────────────────────────────────────────┘
 ```
 
-- **Header:** brand wordmark, diagram-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the diagram lives in a team library and has no share links, [Team shared diagrams](../013-workspace/team-shared-diagrams.md)). (The full-page `/explorer` library is reached from the AuthControls menu, the mobile dock, and the **Explorer** link in the marketing site header — not from the editor header itself.)
+- **Header:** brand wordmark, diagram-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the diagram lives in a team library and has no share links, [Team shared diagrams](../013-workspace/team-shared-diagrams.md)), followed by the [role pill](#role-pill). (The full-page `/explorer` library is reached from the AuthControls menu, the mobile dock, and the **Explorer** link in the marketing site header — not from the editor header itself.)
 - **Canvas:** owns most of the viewport. See [09-canvas-and-palette.md](../008-canvas/canvas-and-palette.md) for the full surface — shapes, arrows, marquee, multi-select, floating palettes, plus the activity / context panels.
-- **Tab bar:** horizontal row of tabs with `+` to add. Click to switch, double-click to rename, drag to reorder. Its right-hand cluster (`ChromeControls`, shared with the Explorer's bottom bar) holds **Search**, **Settings**, and the appearance toggle. In the editor each shows a text label beside its icon from `sm` up ("Search", "Settings", and the appearance in force: "Light" / "Dark" / "System") and is icon-only on a phone; the Explorer's bar stays icon-only. There is no keyboard-shortcuts button: the shortcut reference and the per-device on/off switch live in Settings' **Keyboard** category ([User preferences](user-preferences.md)), which the "Keyboard shortcuts" search command opens directly.
+- **Tab bar (status bar):** horizontal row of tabs with `+` to add. Click to switch, double-click to rename, drag to reorder. Its right-hand cluster (`ChromeControls`, shared with the Explorer's bottom bar) holds **Search**, **Settings**, and the appearance toggle. In the editor each shows a text label beside its icon from `sm` up ("Search", "Settings", and the appearance in force: "Light" / "Dark" / "System") and is icon-only on a phone; the Explorer's bar stays icon-only. There is no keyboard-shortcuts button: the shortcut reference and the per-device on/off switch live in Settings' **Keyboard** category ([User preferences](user-preferences.md)), which the "Keyboard shortcuts" search command opens directly.
+
+## Role pill
+
+The **role pill** says whether you are editing or viewing this diagram. Everyone sees it, owner included.
+
+- **Where.** In the title bar, after the visibility badge. From `sm` up, like the visibility badge: a phone's title
+  bar has no room. Under [Minimal chrome](power-user-mode.md#minimal-chrome) it becomes an icon at the start of the
+  status bar instead.
+- **What it reads.** "Editing" (emerald) or "Viewing" (amber).
+- **Who owns the diagram** is disclosed progressively: a Tooltip on the pill reads "Owned by <name>" ("Owned by you"
+  for the owner), and the pill's accessible name carries the same words after its role. There is no separate owner
+  badge. With no known owner (the owner has never joined the room), the pill has no Tooltip.
+- **A toggle when your role allows editing.** For the owner, and for a visitor whose link grants edit, the pill is a
+  button: clicking it switches between Editing and **Viewing**, a read-only preview of the diagram as a view-link
+  visitor sees it. The preview is local to this tab and this visit: it changes nothing on the server, nothing other
+  participants see, and a reload returns to Editing. The pill's accessible description says what a click does
+  ("Switch to viewing (read-only)" / "Switch to editing").
+- **Not a toggle when your role is view.** A view-link visitor's pill is static text, focusable so its Tooltip
+  can be read by keyboard.
+- Zen mode and embeds hide it with the rest of the header.
 
 ## What the editor supports today
 
