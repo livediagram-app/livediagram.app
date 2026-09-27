@@ -433,6 +433,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Ended|Vote': 'Someone ended a dot vote on a tab.',
   'Tab|Ended|VoteReview':
     "Someone finished reviewing a dot vote's ranked results, closing out the vote for everyone.",
+  'Tab|Imported|Drawio':
+    'Someone imported a draw.io file: its first page into a tab, any further pages as new tabs.',
   'Tab|Imported|Excalidraw': 'Someone imported a tab from an Excalidraw file.',
   'Tab|Linked|': 'A tab was linked into another diagram.',
   'Tab|Loaded|':

@@ -1260,8 +1260,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, or an Excalidraw scene into the active tab by pasting text or picking a file (it replaces the contents).',
-    keywords: 'import json mermaid markdown excalidraw file paste upload load convert migrate',
+      'Import JSON, a Mermaid diagram, a Markdown outline, an Excalidraw scene, or a draw.io diagram (a tab per page) into the active tab by pasting text or picking a file.',
+    keywords:
+      'import json mermaid markdown excalidraw drawio draw.io diagrams.net mxfile file paste upload load convert migrate pages',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

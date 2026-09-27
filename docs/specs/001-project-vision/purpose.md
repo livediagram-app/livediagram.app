@@ -68,7 +68,8 @@ never arrives.
   slide decks built from element sets that can span tabs.
 - **Getting work in and out**: import/export as JSON, Mermaid
   ([Mermaid import & export](../020-import-export/mermaid.md)), Markdown and Excalidraw
-  ([Excalidraw import & export](../020-import-export/excalidraw-import-export.md)); image export
+  ([Excalidraw import & export](../020-import-export/excalidraw-import-export.md)); draw.io import
+  ([draw.io import](../020-import-export/drawio-import.md)); image export
   ([Export fidelity](../020-import-export/export-fidelity.md)); read-only embeds.
 - **Teams** ([Teams](../013-workspace/teams.md), [Team shared diagrams](../013-workspace/team-shared-diagrams.md)): a
   named group with Admin/Member roles and a shared library of diagrams and

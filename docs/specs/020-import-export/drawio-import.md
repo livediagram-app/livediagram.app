@@ -268,7 +268,7 @@ never inside the diagram, so the bytes are **not** written into the element:
   imports without the picture. Counted (`image-unavailable`).
 - A page `backgroundImage`: dropped. Counted (`image-unavailable`).
 
-The pending images are the seam for the shared [import image pipeline](import-image-pipeline.md) (browser resize to WebP, then the existing upload, within the hosted per-owner cap): the hook hands each page's requests to it before the tabs change, and each stored image fills its placeholder's `imageId`. Anything the pipeline cannot place (the cap, a failed
+The pending images are the seam for the shared import image pipeline (browser resize to WebP, then the upload of [Image element + per-owner gallery](../009-elements/images.md), within the hosted per-owner cap): the hook hands each page's requests to it before the tabs change, and each stored image fills its placeholder's `imageId`. Anything the pipeline cannot place (the cap, a failed
 upload, an unsupported format) stays a placeholder and stays counted; an import never fails because of
 an image.
 
