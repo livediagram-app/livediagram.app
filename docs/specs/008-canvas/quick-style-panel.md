@@ -64,7 +64,7 @@ place you dress what you drew sit together, and nothing new appears somewhere el
   one gap below the lowest panel in the Palette's column.
 - **No room beneath** (a Palette docked at the bottom, or a short window): directly above the Palette
   if it fits there whole; else beneath it with a capped height and a scrolling body, as long as at
-  least 160 px (the header and two rows) is free; else it falls back to the right-edge placement
+  least 96 px (the header and one row) is free: docked and scrolling is better than jumping into the middle of the canvas; else it falls back to the right-edge placement
   below.
 - **No Palette on screen**: the right-edge placement below.
 

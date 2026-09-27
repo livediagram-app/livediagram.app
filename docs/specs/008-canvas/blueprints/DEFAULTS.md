@@ -45,5 +45,5 @@ One row per default applied where a spec is silent or qualitative.
 | D38 | quick-style-panel | Keyboard model of a row                                   | WAI-ARIA radio group: arrows move and choose, wrapping; Home / End; one tab stop per row                            |
 | D39 | quick-style-panel | Where the panel sits in the Minimal layout                | The right edge, like Toolbar: its Palette is a popover, not a resting panel to dock under                           |
 | D40 | quick-style-panel | "Right beneath the Palette"                               | Left edges aligned, the Palette's width, one corner-stack gap (16 px) below                                         |
-| D41 | quick-style-panel | Too little room beneath the Palette                       | Whole fit above it first, then beneath with a scrolling body if 160 px is free, then the right edge                 |
+| D41 | quick-style-panel | Too little room beneath the Palette                       | Whole fit above it first, then beneath with a scrolling body if 96 px is free, then the right edge                  |
 | D42 | quick-style-panel | Following a Palette mid-drag                              | Live, via a MutationObserver on the Palette's style, coalesced per frame                                            |

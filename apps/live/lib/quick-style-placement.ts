@@ -22,9 +22,10 @@ export const QUICK_STYLE_GAP_PX = 12;
 // The gap between panels in a corner stack (docs/specs/007-editor/panel-docking.md), so the docked
 // panel reads as the next one in the Palette's stack.
 export const QUICK_STYLE_DOCK_GAP_PX = 16;
-// The least room worth docking into with a scrolling body: the header and two
-// rows. Below it the right-edge walk takes over.
-export const QUICK_STYLE_DOCK_MIN_HEIGHT_PX = 160;
+// The least room worth docking into with a scrolling body: the header and one
+// row. Docked and scrolling beats jumping into the middle of the canvas, so
+// the bar is low; below it the right-edge walk takes over.
+export const QUICK_STYLE_DOCK_MIN_HEIGHT_PX = 96;
 
 const right = (r: Rect) => r.left + r.width;
 const bottom = (r: Rect) => r.top + r.height;

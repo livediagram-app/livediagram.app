@@ -125,3 +125,20 @@ describe('placeQuickStylePanel: Floating, docked under the Palette', () => {
     expect(dock([], null)).toMatchObject({ left: 988, top: 250, candidate: 'centre' });
   });
 });
+
+describe('placeQuickStylePanel: Floating on a short window', () => {
+  it('docks and scrolls rather than jumping into the canvas', () => {
+    const shortArea: Rect = { left: 0, top: 56, width: 1280, height: 616 };
+    const palette: Rect = { left: 1008, top: 72, width: 256, height: 360 };
+    const zoom: Rect = { left: 868, top: 610, width: 400, height: 46 };
+    const placed = placeQuickStylePanel({
+      layout: 'floating',
+      area: shortArea,
+      panel: { width: 256, height: 280 },
+      obstacles: [palette, zoom],
+      anchor: palette,
+    });
+    expect(placed).toMatchObject({ left: 1008, top: 448, candidate: 'under-palette' });
+    expect(placed.maxHeight).toBe(610 - 16 - 448);
+  });
+});

@@ -201,7 +201,7 @@ the floating Palette's rect or `null`. `inner` = `area` inset by `gap`.
 3. Beneath: `top = anchor.bottom + D`. Repeat: a `column` obstacle covering `top` moves
    `top` to its bottom + `D`; else `next` = the nearest `column` obstacle below,
    `room = min(inner.bottom, next.top - D) - top`. `room >= panel.height` → **under-palette**.
-   The first `room >= QUICK_STYLE_DOCK_MIN_HEIGHT_PX = 160` is kept as the scrolling choice
+   The first `room >= QUICK_STYLE_DOCK_MIN_HEIGHT_PX = 96` is kept as the scrolling choice
    (`maxHeight = room`). Continue from `next.bottom + D`; stop when there is no `next`.
 4. Above: `top = anchor.top - D - panel.height`, stepping above any `others` hit, while
    `top >= inner.top`: a clear box → **over-palette**.
@@ -356,6 +356,6 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | `FILL_WASH` light / dark         | 0.2 / 0.3                  | D37                                | 0.1 to 0.4  |
 | `QUICK_STYLE_GAP_PX`             | 12                         | Existing corner insets (`right-3`) | 8 to 24     |
 | `QUICK_STYLE_DOCK_GAP_PX`        | 16                         | panel-docking.md corner-stack gap  | 8 to 24     |
-| `QUICK_STYLE_DOCK_MIN_HEIGHT_PX` | 160                        | D41: header + two rows             | 120 to 240  |
+| `QUICK_STYLE_DOCK_MIN_HEIGHT_PX` | 96                         | D41: header + one row              | 80 to 240   |
 | `STYLE_MEMORY_WRITE_DEBOUNCE_MS` | 250                        | D36                                | 100 to 1000 |
 | Swatch size / gap                | 24 / 4 px                  | WCAG 2.2 2.5.8 target size         | 24+ / 2+    |
