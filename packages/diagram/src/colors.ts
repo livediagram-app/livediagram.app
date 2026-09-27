@@ -10,6 +10,7 @@ import {
   type TextAlignY,
 } from './index';
 import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
+import { MODE_BUTTON_SKIN } from './selection-mode';
 
 // Per-type default padding bucket (was beside the Padding type).
 export function defaultPadding(element: BoxedElement): Padding {
@@ -168,7 +169,36 @@ const DARK_INK = {
   annotationFill: '#1c2533',
 } as const;
 
+// The Behaviour elements that look like controls or furniture store no
+// colour (behaviour-skin.ts); these are their unstyled looks per surface. The
+// buttons (mode, session: the timer, vote and poll; picker) wear a real UI
+// button's skin, a light card on light paper and a raised slate one on dark,
+// never the shape default, so they read as pressable before anyone styles
+// them. The reveal cover and the chair paint themselves; only their outline
+// and label ink follow the paper.
+const CONTROL_SKIN_DARK = { fill: '#1e293b', stroke: '#475569', text: '#f1f5f9' } as const;
+const OUTLINE_SKIN_LIGHT = { stroke: '#94a3b8', text: '#0f172a' } as const;
+
+function behaviourSkin(
+  element: BoxedElement,
+  surface: CanvasSurface,
+): { fill: string; stroke: string; text: string } | null {
+  if (element.type !== 'shape') return null;
+  const kind = element.shape;
+  if (kind === 'mode-button' || kind === 'session-button' || kind === 'picker') {
+    return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
+  }
+  if (kind === 'reveal' || kind === 'chair') {
+    return surface === 'dark'
+      ? { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text }
+      : { fill: 'transparent', ...OUTLINE_SKIN_LIGHT };
+  }
+  return null;
+}
+
 export function defaultTextColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
+  const skin = behaviourSkin(element, surface);
+  if (skin) return skin.text;
   // An accent-bar web component (docs/specs/009-elements/web-components-and-no-groups.md) writes white on its bar, on any
   // paper: the bar is the accent, not the surface.
   if (element.type === 'shape' && isAccentBarShape(element.shape)) return ACCENT_BAR_TEXT;
@@ -254,6 +284,8 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
   // the memo and filled every frame with the shape default, so a frame that
   // was transparent on the canvas exported pale blue.
   if (element.type === 'shape' && element.shape === 'frame') return 'transparent';
+  const skin = behaviourSkin(element, surface);
+  if (skin) return skin.fill;
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':
@@ -299,6 +331,8 @@ export function defaultStrokeColor(
   element: BoxedElement,
   surface: CanvasSurface = 'light',
 ): string {
+  const skin = behaviourSkin(element, surface);
+  if (skin) return skin.stroke;
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':

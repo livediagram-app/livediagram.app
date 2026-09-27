@@ -5,6 +5,7 @@
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
 import { BORDER_RADIUS_PX } from './border-style';
+import { ownColours } from './behaviour-skin';
 import {
   defaultFillColor,
   defaultPadding,
@@ -161,11 +162,13 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
   if (stickerArt) {
     return { opacity, shape: { kind: 'sticker', art: stickerArt }, label: null };
   }
-  const fill = el.fillColor ?? defaultFillColor(el, surface);
+  // ownColours: a skin a Behaviour element was once created with reads as
+  // unset, as on the canvas (behaviour-skin.ts).
+  const own = ownColours(el);
+  const fill = own.fill ?? defaultFillColor(el, surface);
   // A sticky is borderless paper unless the user deliberately set a border
   // colour (matching the canvas, docs/specs/008-canvas/canvas-and-palette.md "Sticky notes read as paper").
-  const stroke =
-    el.strokeColor ?? (el.type === 'sticky' ? 'none' : defaultStrokeColor(el, surface));
+  const stroke = own.stroke ?? (el.type === 'sticky' ? 'none' : defaultStrokeColor(el, surface));
   // Icon elements (docs/specs/008-canvas/canvas-and-palette.md "Icons" line art + docs/specs/010-palette/technology-icons.md Technology marks): when
   // a caller supplies the glyph resolver AND the id resolves, export the real
   // art with the caption in the bottom band (mirroring IconGlyph /
@@ -230,7 +233,7 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
         : el.type === 'text'
           ? { kind: 'none' }
           : { kind: 'rect', fill, stroke };
-  const baseColor = el.textColor ?? defaultTextColor(el, surface);
+  const baseColor = own.text ?? defaultTextColor(el, surface);
   // A sticky's label is a block of writing rather than a name, and runs
   // smaller at every preset. The canvas decides that the same way (its
   // `multiline` flag is `type === 'sticky'`).

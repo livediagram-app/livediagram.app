@@ -13,7 +13,6 @@ import {
   DEFAULT_PICKER_SOURCE,
   DEFAULT_SESSION_TOOL,
   DEFAULT_TIMER_MINUTES,
-  MODE_BUTTON_SKIN,
 } from './selection-mode';
 import {
   CHECKLIST_DEFAULT_ITEMS,
@@ -233,13 +232,9 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       // hairline border, dark text, and a soft lift off the canvas (docs/specs/008-canvas/element-shadows.md).
       // Deliberately NOT a saturated brand block — a solid slab of colour on
       // the canvas reads as a shape someone drew, not as a control, and it
-      // fought every diagram's own palette. These are ELEMENT colours, so they
-      // behave like any user-picked colour and are changeable from the menu;
-      // deriveNewBoxedColours skips the kind for the same reason it skips a
-      // page.
-      fillColor: MODE_BUTTON_SKIN.fill,
-      strokeColor: MODE_BUTTON_SKIN.stroke,
-      textColor: MODE_BUTTON_SKIN.text,
+      // fought every diagram's own palette. The skin is NOT stored: it is the
+      // kind's default per surface (behaviourSkin in colors.ts), so an
+      // unstyled button follows light / dark and the tab theme like any shape.
       shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.24 },
       borderRadius: 'lg',
       textSize: 'sm',
@@ -278,9 +273,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     return {
       ...base,
       session: { tool: DEFAULT_SESSION_TOOL, minutes: DEFAULT_TIMER_MINUTES },
-      fillColor: MODE_BUTTON_SKIN.fill,
-      strokeColor: MODE_BUTTON_SKIN.stroke,
-      textColor: MODE_BUTTON_SKIN.text,
       shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.24 },
       borderRadius: 'lg',
       textSize: 'sm',
@@ -294,9 +286,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     return {
       ...base,
       label: 'Hidden',
-      fillColor: 'transparent',
-      strokeColor: '#94a3b8',
-      textColor: '#0f172a',
       borderRadius: 'lg',
       textAlignY: 'top',
       textBold: true,
@@ -308,9 +297,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     return {
       ...base,
       pickerSource: DEFAULT_PICKER_SOURCE,
-      fillColor: '#ffffff',
-      strokeColor: '#cbd5e1',
-      textColor: '#0f172a',
       shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.2 },
       borderRadius: 'lg',
       textSize: 'sm',
@@ -323,9 +309,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     return {
       ...base,
       chairFacing: DEFAULT_CHAIR_FACING,
-      fillColor: 'transparent',
-      strokeColor: '#94a3b8',
-      textColor: '#0f172a',
       textSize: 'sm',
       textAlignY: 'bottom',
       // A chair stretched wide stops reading as a chair, the same reason the
