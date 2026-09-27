@@ -18,7 +18,8 @@ export function sharedTabsNotice(
 ): string | null {
   if (tabs === 0) return null;
   const one = tabs === 1;
-  const where = `${tabs} of its tabs ${one ? 'is' : 'are'} also used in ${diagrams} other diagram${diagrams === 1 ? '' : 's'}`;
+  // A non-breaking space keeps the count on the line with its noun.
+  const where = `${tabs}\u00a0of its tabs ${one ? 'is' : 'are'} also used in ${diagrams} other diagram${diagrams === 1 ? '' : 's'}`;
   const stays = one ? 'it stays there' : 'they stay there';
   if (action === 'delete') return `${where}; ${stays}.`;
   const parting = one

@@ -16,22 +16,22 @@ describe('sharedTabsNotice', () => {
 
   it('tells a delete which tabs stay, and where', () => {
     expect(sharedTabsNotice({ tabs: 3, diagrams: 2 }, 'delete')).toBe(
-      '3 of its tabs are also used in 2 other diagrams; they stay there.',
+      '3\u00a0of its tabs are also used in 2 other diagrams; they stay there.',
     );
   });
 
   it('reads in the singular for one tab in one diagram', () => {
     expect(sharedTabsNotice({ tabs: 1, diagrams: 1 }, 'delete')).toBe(
-      '1 of its tabs is also used in 1 other diagram; it stays there.',
+      '1\u00a0of its tabs is also used in 1 other diagram; it stays there.',
     );
   });
 
   it('tells Take Offline the copies part ways', () => {
     expect(sharedTabsNotice({ tabs: 2, diagrams: 1 }, 'offline')).toBe(
-      '2 of its tabs are also used in 1 other diagram; they stay there, and the copies in this browser no longer share edits with them.',
+      '2\u00a0of its tabs are also used in 1 other diagram; they stay there, and the copies in this browser no longer share edits with them.',
     );
     expect(sharedTabsNotice({ tabs: 1, diagrams: 3 }, 'offline')).toBe(
-      '1 of its tabs is also used in 3 other diagrams; it stays there, and the copy in this browser no longer shares edits with it.',
+      '1\u00a0of its tabs is also used in 3 other diagrams; it stays there, and the copy in this browser no longer shares edits with it.',
     );
   });
 });
@@ -43,7 +43,7 @@ describe('fetchSharedTabsNotice', () => {
     const notice = await fetchSharedTabsNotice('owner', 'd1', 'delete');
 
     expect(apiSharedTabs).toHaveBeenCalledWith('owner', 'd1', expect.any(AbortSignal));
-    expect(notice).toBe('2 of its tabs are also used in 2 other diagrams; they stay there.');
+    expect(notice).toBe('2\u00a0of its tabs are also used in 2 other diagrams; they stay there.');
   });
 
   it('opens the confirmation without a notice when the read fails', async () => {
