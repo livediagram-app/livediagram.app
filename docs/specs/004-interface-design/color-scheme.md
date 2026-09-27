@@ -62,9 +62,8 @@ Reserved for status — never used decoratively.
 - **Selection / collaborator highlights** on the canvas use `brand-200`–`brand-300` tints. Individual collaborator cursors may shift hue (per-user color), but the default user's selection stays in the brand range.
 - **Page background**: `slate-50`. **Canvas background**: pure white (`#FFFFFF`) so diagrams read cleanly.
 - **Dark mode** uses `slate-950` page bg, `slate-900` surfaces and the Steel accent, as the [dark palette](#dark-palette-steel) sets out.
-- **Numerals in a circle or pill** (step numbers, counts) centre their ink, not their line box: the digit sits in
-  `text-optical-centre`, a shared utility that trims the text box to cap height and baseline. It is layout, not
-  colour, so it holds in both appearances.
+- **Glyphs in a circle or pill** centre their ink, not their line box, in both appearances: see
+  [Optical alignment](optical-alignment.md).
 - **A circle at the end of a pill is concentric with it.** When a pill holds a circle at its start that fills the
   pill's height bar the inset (a step number, an avatar; not a small glyph such as a spinner), the circle sits as far
   from the pill's leading edge as from its top and bottom: the leading padding equals the vertical padding, at every
