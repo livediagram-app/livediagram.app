@@ -16,7 +16,11 @@ import {
 import type { PendingImage } from '@/lib/import-report';
 import type { DrawioCell, Rect } from './cells';
 import { readLabel } from './label';
-import { DRAWIO_CAPTION_CHAR_PX, DRAWIO_CAPTION_LINE_PX } from './limits';
+import {
+  DRAWIO_CAPTION_CHAR_PX,
+  DRAWIO_CAPTION_LINE_PX,
+  DRAWIO_CAPTION_PADDING_PX,
+} from './limits';
 import { shapeTurn, type VertexClass } from './shapes';
 import { boxedProps, radiusPreset, textProps, type ConvertContext } from './vertex-props';
 
@@ -51,17 +55,27 @@ function buildShape(
   const { rotation: own, ...props } = boxedProps(cell, ctx);
   const rotation = ((own ?? 0) + turn.rotation) % 360;
   if (cell.style.str('image')) ctx.tally.add('image-unavailable');
+  // A UML actor's name sits under the figure, like an icon's caption.
+  const vside = cell.style.str('verticalLabelPosition');
+  const actorCaption = cls.shape === 'actor' && (vside === 'bottom' || vside === 'top');
+  const text = textProps(cell, ctx, {
+    ...LABEL,
+    onFill: props.fillColor,
+    outsideMovesIn: !actorCaption,
+  });
+  const caption = actorCaption ? captionBox(cell, box, text.label) : null;
   return {
     id,
     type: 'shape',
     shape: cls.shape,
-    ...box,
+    ...(caption ? caption.box : box),
     ...props,
     ...(rotation !== 0 ? { rotation } : {}),
     ...(cls.shape === 'square'
       ? { borderRadius: radiusPreset(cell.style, rect.width, rect.height) }
       : {}),
-    ...textProps(cell, ctx, LABEL),
+    ...text,
+    ...(caption ? { textAlignX: caption.textAlignX, textAlignY: caption.textAlignY } : {}),
   };
 }
 
@@ -78,7 +92,7 @@ function buildText(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string): 
     ...(locked ? { locked } : {}),
     ...(link ? { link } : {}),
     ...(note ? { note } : {}),
-    ...textProps(cell, ctx, LABEL),
+    ...textProps(cell, ctx, { ...LABEL, onFill: fillColor }),
   };
 }
 
@@ -181,6 +195,40 @@ const nearestIconSize = (px: number): IconSize =>
     Math.abs(ICON_SIZE_PX[k] - px) < Math.abs(ICON_SIZE_PX[best] - px) ? k : best,
   );
 
+type CaptionBox = {
+  box: Rect;
+  textAlignX: NonNullable<ShapeElement['textAlignX']>;
+  textAlignY: NonNullable<ShapeElement['textAlignY']>;
+};
+
+// An icon or actor carries its label OUTSIDE its figure in draw.io (below by
+// default); livediagram keeps the caption inside the element's box, beside the
+// figure. So the box grows by the caption towards its side (blueprint step 14):
+// by a line per line above or below, widening about its centre to hold the
+// longest line unwrapped, or by the line's width beside it.
+function captionBox(cell: DrawioCell, rect: Rect, label: string | undefined): CaptionBox {
+  const box = { ...rect };
+  const lines = label ? label.split('\n') : [];
+  if (lines.length === 0) return { box, textAlignX: 'center', textAlignY: 'bottom' };
+  const side = cell.style.str('labelPosition');
+  const vside = cell.style.str('verticalLabelPosition');
+  const across = Math.max(...lines.map((l) => l.length)) * DRAWIO_CAPTION_CHAR_PX;
+  if (side === 'left' || side === 'right') {
+    box.width += across + DRAWIO_CAPTION_PADDING_PX;
+    if (side === 'left') box.x -= across + DRAWIO_CAPTION_PADDING_PX;
+    return { box, textAlignX: side, textAlignY: 'middle' };
+  }
+  const grow = lines.length * DRAWIO_CAPTION_LINE_PX;
+  box.height += grow;
+  if (vside === 'top') box.y -= grow;
+  const wide = across + DRAWIO_CAPTION_PADDING_PX;
+  if (wide > box.width) {
+    box.x -= (wide - box.width) / 2;
+    box.width = wide;
+  }
+  return { box, textAlignX: 'center', textAlignY: vside === 'top' ? 'top' : 'bottom' };
+}
+
 function buildIcon(
   cell: DrawioCell,
   rect: Rect,
@@ -191,28 +239,7 @@ function buildIcon(
   ctx.tally.add('icon-substituted');
   const text = textProps(cell, ctx, { scale: 'label', rich: false, outsideMovesIn: false });
   const label = text.label ?? cls.caption;
-  const lines = label ? label.split('\n') : [];
-  const box = { ...rect };
-  let textAlignX = 'center' as ShapeElement['textAlignX'];
-  let textAlignY = 'bottom' as ShapeElement['textAlignY'];
-  if (lines.length > 0) {
-    const side = cell.style.str('labelPosition');
-    const vside = cell.style.str('verticalLabelPosition');
-    const grow = lines.length * DRAWIO_CAPTION_LINE_PX;
-    const across = Math.max(...lines.map((l) => l.length)) * DRAWIO_CAPTION_CHAR_PX;
-    if (side === 'left' || side === 'right') {
-      textAlignX = side;
-      textAlignY = 'middle';
-      box.width += across;
-      if (side === 'left') box.x -= across;
-    } else if (vside === 'top') {
-      textAlignY = 'top';
-      box.height += grow;
-      box.y -= grow;
-    } else if (vside === 'bottom' || vside === undefined) {
-      box.height += grow;
-    }
-  }
+  const { box, textAlignX, textAlignY } = captionBox(cell, rect, label);
   const { strokeColor, opacity, rotation, locked, link, note } = boxedProps(cell, ctx);
   return {
     id,
@@ -232,8 +259,9 @@ function buildIcon(
     ...(locked ? { locked } : {}),
     ...(link ? { link } : {}),
     ...(note ? { note } : {}),
+    // No caption colour: vendor stencils hard-code one for white paper, which
+    // disappears on a dark canvas; the caption takes the theme's text colour.
     ...(label ? { label } : {}),
-    ...(text.textColor ? { textColor: text.textColor } : {}),
     ...(text.textBold ? { textBold: true } : {}),
     textSize: text.textSize,
     textAlignX,
@@ -261,6 +289,10 @@ function buildFrame(
     ...(text.label ? { label: text.label } : {}),
     ...(text.textColor ? { textColor: text.textColor } : {}),
     textSize: text.textSize,
+    // A container's title sits in its top corner, as the palette's frame does.
+    textAlignX: text.textAlignX === 'right' ? 'right' : 'left',
+    textAlignY: 'top',
+    padding: 'lg',
   };
 }
 
@@ -273,13 +305,14 @@ function buildUnmatched(
 ): ShapeElement {
   ctx.tally.add('shape-unmatched');
   ctx.tally.name('shape-unmatched', name);
-  const text = textProps(cell, ctx, LABEL);
+  const props = boxedProps(cell, ctx);
+  const text = textProps(cell, ctx, { ...LABEL, onFill: props.fillColor });
   return {
     id,
     type: 'shape',
     shape: 'square',
     ...rect,
-    ...boxedProps(cell, ctx),
+    ...props,
     borderRadius: radiusPreset(cell.style, rect.width, rect.height),
     ...text,
     ...(text.label ? {} : { label: name }),

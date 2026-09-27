@@ -10,6 +10,7 @@ import {
   elementLink,
   fontIdFor,
   fontSizePreset,
+  inkOnFill,
   radiusPreset,
   strokePreset,
   textProps,
@@ -136,6 +137,15 @@ describe('boxedProps', () => {
   });
 });
 
+describe('inkOnFill', () => {
+  it('picks ink that reads on the fill, and none without one', () => {
+    expect(inkOnFill('#fff2cc')).toBe('#1e293b');
+    expect(inkOnFill('#036897')).toBe('#ffffff');
+    expect(inkOnFill('transparent')).toBeUndefined();
+    expect(inkOnFill(undefined)).toBeUndefined();
+  });
+});
+
 describe('textProps', () => {
   const opts = { scale: 'label' as const, rich: true, outsideMovesIn: true };
 
@@ -175,6 +185,13 @@ describe('textProps', () => {
     const empty = ctx();
     textProps(cell('labelPosition=right;'), empty, opts);
     expect(empty.tally.notes()).toEqual([]);
+  });
+
+  it('gives an uncoloured label on an own fill legible ink, but never overrides a colour', () => {
+    const onFill = { ...opts, onFill: '#fff2cc' };
+    expect(textProps(cell('', 'Hi'), ctx(), onFill).textColor).toBe('#1e293b');
+    expect(textProps(cell('fontColor=#ff0000;', 'Hi'), ctx(), onFill).textColor).toBe('#ff0000');
+    expect(textProps(cell(''), ctx(), onFill).textColor).toBeUndefined();
   });
 
   it('defaults to draw.io 12 px, centred', () => {

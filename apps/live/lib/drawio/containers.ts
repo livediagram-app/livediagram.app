@@ -18,14 +18,43 @@ import { absoluteRect, type DrawioCell, type DrawioGraph, type Rect } from './ce
 import { hexOf, readColour } from './colour';
 import { readLabel } from './label';
 import { shapeName } from './style';
-import { boxedProps, textProps } from './vertex-props';
+import { DRAWIO_CAPTION_CHAR_PX } from './limits';
+import { boxedProps, inkOnFill, textProps } from './vertex-props';
 import type { PageContext } from './vertices';
 
 const TITLE = { scale: 'label', rich: false, outsideMovesIn: false } as const;
 
+// A title reading across needs about this much room per character, plus the
+// gutter's padding either side.
+const TITLE_CHAR_PX = DRAWIO_CAPTION_CHAR_PX + 1;
+const TITLE_PADDING_PX = 16;
+
+// draw.io writes a vertical lane's title up its strip; livediagram's reads
+// across, so the gutter widens into the free space before the lane's content
+// (never over it).
+function verticalGutter(
+  cell: DrawioCell,
+  rect: Rect,
+  title: string,
+  startSize: number,
+  graph: DrawioGraph,
+): number {
+  const longest = Math.max(...title.split('\n').map((line) => line.length));
+  const needed = longest * TITLE_CHAR_PX + TITLE_PADDING_PX;
+  const lefts = cell.children
+    .map((id) => graph.cells.get(id))
+    .filter((c): c is DrawioCell => !!c && c.vertex && c.visible)
+    .map((c) => absoluteRect(graph, c.id))
+    .filter((r): r is Rect => r !== null)
+    .map((r) => r.x - rect.x);
+  const room = lefts.length > 0 ? Math.min(...lefts) : rect.width / 2;
+  return Math.max(startSize, Math.min(needed, room));
+}
+
 export function buildLane(
   cell: DrawioCell,
   rect: Rect,
+  graph: DrawioGraph,
   ctx: PageContext,
   id: string,
 ): ShapeElement {
@@ -35,7 +64,13 @@ export function buildLane(
   void _header;
   const header = hexOf(s.str('fillColor'));
   const body = readColour(s.str('swimlaneFillColor'));
-  const text = textProps(cell, ctx, TITLE);
+  const text = textProps(cell, ctx, { ...TITLE, onFill: header });
+  const startSize = s.num('startSize') ?? 23;
+  let headerSize = startSize;
+  if (!horizontal && text.label) {
+    ctx.tally.add('label-moved');
+    headerSize = verticalGutter(cell, rect, text.label, startSize, graph);
+  }
   return {
     id,
     type: 'shape',
@@ -44,7 +79,7 @@ export function buildLane(
     ...props,
     fillColor: body.kind === 'hex' ? body.value : 'transparent',
     ...(header ? { headerFill: header } : {}),
-    headerSize: s.num('startSize') ?? 23,
+    headerSize,
     ...text,
     textAlignX: horizontal ? 'center' : 'left',
     textAlignY: horizontal ? 'top' : 'middle',
@@ -77,13 +112,14 @@ export function buildEntity(
     .filter((row) => row.visible && shapeName(row.style) !== 'line');
   const fields = rows.slice(0, ENTITY_MAX_FIELDS).map((row) => fieldOf(row, ctx));
   ctx.tally.add('text-truncated', rows.length - fields.length);
+  const props = boxedProps(cell, ctx);
   return {
     id,
     type: 'shape',
     shape: 'entity',
     ...rect,
-    ...boxedProps(cell, ctx),
-    ...textProps(cell, ctx, TITLE),
+    ...props,
+    ...textProps(cell, ctx, { ...TITLE, onFill: props.fillColor }),
     entityFields: fields,
   };
 }
@@ -94,7 +130,7 @@ function cellStyleOf(c: DrawioCell): TableCellStyle | null {
   const s = c.style;
   const fontStyle = s.num('fontStyle') ?? 0;
   const bg = hexOf(s.str('fillColor'));
-  const color = hexOf(s.str('fontColor'));
+  const color = hexOf(s.str('fontColor')) ?? inkOnFill(bg);
   const alignX = ALIGN_X[s.str('align') ?? 'center'];
   const style: TableCellStyle = {
     ...(bg ? { bg } : {}),
@@ -193,7 +229,11 @@ export function buildTable(
       ...(props.note ? { note: props.note } : {}),
       textSize: text.textSize,
       ...(text.font ? { font: text.font } : {}),
-      ...(text.textColor ? { textColor: text.textColor } : {}),
+      ...(text.textColor
+        ? { textColor: text.textColor }
+        : inkOnFill(props.fillColor)
+          ? { textColor: inkOnFill(props.fillColor) }
+          : {}),
     },
   };
 }

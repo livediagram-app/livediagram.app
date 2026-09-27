@@ -134,7 +134,7 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
     }
 
     let built: BoxedElement | null;
-    if (cls.kind === 'lane') built = buildLane(cell, rect, ctx, elementId);
+    if (cls.kind === 'lane') built = buildLane(cell, rect, graph, ctx, elementId);
     else if (cls.kind === 'entity') built = buildEntity(cell, rect, graph, ctx, elementId);
     else if (cls.kind === 'table') {
       const { title, table } = buildTable(cell, rect, graph, ctx, {
@@ -265,10 +265,14 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
   return {
     elements,
     ...(layered ? { layers } : {}),
-    ...(graph.background ? { backgroundColor: graph.background } : {}),
+    // White is draw.io's default paper, so it stays unset and the theme decides (D27).
+    ...(graph.background && !WHITE.has(graph.background)
+      ? { backgroundColor: graph.background }
+      : {}),
   };
 }
 
+const WHITE = new Set(['#fff', '#ffffff', '#ffffffff']);
 const add = (p: Pt, o: Pt): Pt => ({ x: p.x + o.x, y: p.y + o.y });
 const centreOf = (el: BoxedElement): Pt => ({ x: el.x + el.width / 2, y: el.y + el.height / 2 });
 

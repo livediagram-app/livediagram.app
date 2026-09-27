@@ -54,7 +54,8 @@ describe('flowchart.drawio', () => {
     expectSound(page!);
     expect(report).toEqual({ source: 'drawio', pages: 1, elements: 17, notes: FLOWCHART_NOTES });
     expect(page!.name).toBe('Order flow');
-    expect(page!.backgroundColor).toBe('#ffffff');
+    // draw.io's white page is its default paper: the theme decides.
+    expect(page!.backgroundColor).toBeUndefined();
     expect(shapes(page!).map((s) => s.shape)).toEqual([
       'stadium',
       'square',
@@ -70,6 +71,7 @@ describe('flowchart.drawio', () => {
       fillColor: '#dae8fc',
       strokeColor: '#6c8ebf',
       borderRadius: 'sm',
+      textColor: '#1e293b',
       richText: [{ text: 'Validate ' }, { text: 'payment', bold: true }],
     });
     expect(byLabel(page!, 'Payments settle within\ntwo working days.')).toMatchObject({
@@ -78,8 +80,16 @@ describe('flowchart.drawio', () => {
       textColor: '#666666',
     });
     const no = arrows(page!).find((a) => a.label === 'No')!;
-    expect(no).toMatchObject({ arrowStyle: 'angled', labelOffset: { t: 0.4, offset: 0 } });
-    expect(no.curvePoints).toBeDefined();
+    expect(no).toMatchObject({
+      arrowStyle: 'angled',
+      from: { kind: 'pinned', anchor: 'w' },
+      to: { kind: 'pinned', anchor: 'e' },
+      labelOffset: { t: 0.4, offset: 0 },
+    });
+    // The loop back runs through its two waypoints with right-angle corners.
+    const back = arrows(page!).at(-1)!;
+    expect(back).toMatchObject({ arrowStyle: 'angled', to: { anchor: 's' } });
+    expect(back.curvePoints).toHaveLength(2);
     const both = arrows(page!).find((a) => a.arrowEnds === 'both')!;
     // One head shape per arrow: the end's (block, the default triangle).
     expect(both.arrowheadShape).toBeUndefined();
@@ -105,7 +115,11 @@ describe('swimlanes.drawio', () => {
       const { pages, report } = await load(name);
       const page = pages[0]!;
       expectSound(page);
-      expect(report).toMatchObject({ elements: 17, notes: [] });
+      // Vertical titles read across: the pool and its three lanes.
+      expect(report).toMatchObject({
+        elements: 17,
+        notes: [{ kind: 'label-moved', count: 4 }],
+      });
       const lanes = shapes(page).filter((s) => s.shape === 'lane');
       expect(lanes.map((l) => l.label)).toEqual([
         'Hiring',
@@ -117,8 +131,10 @@ describe('swimlanes.drawio', () => {
       expect(byLabel(page, 'Candidate')).toMatchObject({
         x: 60,
         y: 40,
-        headerSize: 20,
+        // The gutter widens into the room before the first step (60 px).
+        headerSize: 60,
         headerFill: '#dae8fc',
+        textColor: '#1e293b',
         fillColor: '#f5f9ff',
         textAlignX: 'left',
       });
@@ -146,8 +162,16 @@ describe('uml.drawio', () => {
       notes: [
         { kind: 'shape-approximated', count: 2 },
         { kind: 'arrowhead-approximated', count: 1 },
-        { kind: 'label-moved', count: 1 },
       ],
+    });
+    // The actor's name sits under the figure, as in draw.io: the box grows to hold it.
+    expect(byLabel(page, 'Shopper')).toMatchObject({
+      shape: 'actor',
+      x: 702.5,
+      y: 320,
+      width: 65,
+      height: 78,
+      textAlignY: 'bottom',
     });
     expect(byLabel(page, 'Order')).toMatchObject({
       shape: 'entity',
@@ -226,17 +250,18 @@ describe('cloud-architecture.drawio', () => {
         'k8s',
         'server',
       ]);
-      expect(byLabel(page, 'Production VPC')).toMatchObject({ shape: 'frame' });
+      expect(byLabel(page, 'Production VPC')).toMatchObject({
+        shape: 'frame',
+        textAlignX: 'left',
+        textAlignY: 'top',
+      });
       expect(byLabel(page, 'Pod')).toMatchObject({ iconId: 'k8s' });
       expect(byLabel(page, 'router')).toMatchObject({ shape: 'square' });
-      // An icon's caption below it grows its box.
-      expect(byLabel(page, 'Orders function')).toMatchObject({
-        x: 420,
-        y: 120,
-        width: 78,
-        height: 96,
-        textAlignY: 'bottom',
-      });
+      // An icon's caption below it grows its box, down and (about its centre)
+      // across to hold the line; the vendor's caption colour stays behind.
+      const fn = byLabel(page, 'Orders function')!;
+      expect(fn).toMatchObject({ x: 398.5, y: 120, width: 121, height: 96, textAlignY: 'bottom' });
+      expect(fn).not.toHaveProperty('textColor');
       const logo = page.elements.find((e) => e.type === 'image' && e.alt === 'Team logo')!;
       expect(logo).toMatchObject({ imageId: null });
       expect(images).toEqual([

@@ -102,7 +102,11 @@ describe('tables', () => {
           ['D', ''],
         ],
         cellStyles: [
-          [{ bg: '#ffeedd', bold: true, underline: true, alignX: 'left' }, null],
+          // An uncoloured cell on a light fill of its own takes dark ink.
+          [
+            { bg: '#ffeedd', textColor: '#1e293b', bold: true, underline: true, alignX: 'left' },
+            null,
+          ],
           [null, null],
         ],
       }),

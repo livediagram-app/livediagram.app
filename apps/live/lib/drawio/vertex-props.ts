@@ -8,6 +8,7 @@ import {
   BORDER_STROKE_PX,
   FONTS,
   LABEL_FONT_PX,
+  isLightColor,
   NOTE_FONT_PX,
   arrowLabelFontSize,
   type ArrowheadSize,
@@ -171,8 +172,22 @@ export function boxedProps(cell: DrawioCell, ctx: ConvertContext) {
 const ALIGN_X: Record<string, TextAlignX> = { left: 'left', center: 'center', right: 'right' };
 const ALIGN_Y: Record<string, TextAlignY> = { top: 'top', middle: 'middle', bottom: 'bottom' };
 
+// draw.io's default label ink is black on paper. On a fill of the element's own
+// the theme's text colour no longer belongs (it pairs with the theme's fill),
+// so an uncoloured label takes the ink that reads on that fill.
+const INK_ON_LIGHT = '#1e293b';
+const INK_ON_DARK = '#ffffff';
+
+/** The ink for an uncoloured label on this fill; undefined without a fill. */
+export function inkOnFill(fill: string | undefined): string | undefined {
+  if (!fill || !fill.startsWith('#')) return undefined;
+  return isLightColor(fill) ? INK_ON_LIGHT : INK_ON_DARK;
+}
+
 export type TextOptions = {
   scale: TextScale;
+  /** The element's own fill behind the label, when it has one. */
+  onFill?: string;
   /** Whether the element kind carries `richText`. */
   rich: boolean;
   /** Whether a label draw.io draws outside the box is moved in (and counted). */
@@ -217,7 +232,11 @@ export function textProps(cell: DrawioCell, ctx: ConvertContext, options: TextOp
     ...(fontStyle & 2 ? { textItalic: true } : {}),
     ...(fontStyle & 4 ? { textUnderline: true } : {}),
     ...(fontStyle & 8 ? { textStrikethrough: true } : {}),
-    ...(color.kind === 'hex' ? { textColor: color.value } : {}),
+    ...(color.kind === 'hex'
+      ? { textColor: color.value }
+      : inkOnFill(options.onFill) && plain !== ''
+        ? { textColor: inkOnFill(options.onFill) }
+        : {}),
     textSize: fontSizePreset(s.num('fontSize') ?? 12, options.scale),
     ...(font ? { font } : {}),
     textAlignX: alignX,
