@@ -41,6 +41,7 @@ import {
   UNDO_AND_REVERT,
   VOTING,
   WELCOME_TOUR,
+  POWER_USER_OFFER,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import type { ViewKey } from './view-keys';
@@ -72,6 +73,7 @@ export const GROUPS: MetricGroup[] = [
       CALLS_TO_ACTION,
       SIGN_IN_PROMPTS,
       WELCOME_TOUR,
+      POWER_USER_OFFER,
     ],
   },
   {

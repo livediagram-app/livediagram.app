@@ -69,6 +69,20 @@ export const EDITOR_SETTINGS = settingsStack(
       'Auto-Attach Arrows',
       'Arrows re-attaching to the nearest shape.',
     ),
+    toggle(
+      'UI',
+      'PowerUserModeOn',
+      'PowerUserModeOff',
+      'Power User Mode',
+      'The recommended-settings preset, from Settings or the offer.',
+    ),
+    toggle(
+      'UI',
+      'MinimalChromeOn',
+      'MinimalChromeOff',
+      'Minimal Chrome',
+      'Labels and hints hidden, for power users.',
+    ),
   ],
 );
 

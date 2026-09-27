@@ -58,7 +58,6 @@ describe('SettingsDialog', () => {
     expect(screen.getByRole('switch', { name: 'Minimal Chrome' })).toBeTruthy();
   });
 
-
   it('opens on desktop with the rail and the first category already showing', () => {
     setViewport(false);
     renderDialog();

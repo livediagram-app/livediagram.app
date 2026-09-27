@@ -80,7 +80,10 @@ describe('setPowerUserMode off', () => {
   });
 
   it('keeps a setting the user changed while the mode was on', () => {
-    const changed = { ...on({ alignmentGuides: false, aiSuggestedPrompts: true }), aiSuggestedPrompts: true };
+    const changed = {
+      ...on({ alignmentGuides: false, aiSuggestedPrompts: true }),
+      aiSuggestedPrompts: true,
+    };
     const { prefs, kept, restored } = off(changed);
     expect(prefs.aiSuggestedPrompts).toBe(true);
     expect(kept).toEqual(['aiSuggestedPrompts']);
@@ -92,7 +95,10 @@ describe('setPowerUserMode off', () => {
   it('compares and restores a multi-key setting as one', () => {
     // The layout written through the row's own writer (as Settings and the
     // tour picker do) changes both keys; switching off must keep BOTH.
-    const floating = withPanelLayout(on({ panelLayout: 'minimal', minimalPanels: true }), 'floating');
+    const floating = withPanelLayout(
+      on({ panelLayout: 'minimal', minimalPanels: true }),
+      'floating',
+    );
     const { prefs, kept } = off(floating);
     expect(kept).toContain('panelLayout');
     expect(prefs.panelLayout).toBe('floating');

@@ -31,6 +31,10 @@ type EditorPreferencesDeps = {
 export function useEditorPreferences(deps: EditorPreferencesDeps) {
   const { ownerId, passwordGated, setAiPanelVisible } = deps;
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({});
+  // True once the server copy has been merged in, or failed to arrive: the
+  // point after which a one-way latch such as `powerUserOfferShown` can be
+  // trusted not to be stale (docs/specs/007-editor/power-user-mode.md).
+  const [prefsSettled, setPrefsSettled] = useState(false);
   useEffect(() => {
     if (userPreferences.aiAssistanceEnabled) setAiPanelVisible(true);
     // setAiPanelVisible is a useState setter (stable identity).
@@ -78,13 +82,20 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
     if (passwordGated) return;
     let cancelled = false;
     void fetchUserPreferences(ownerId).then((merged) => {
-      if (cancelled || merged === null) return;
-      setUserPreferences(merged);
+      if (cancelled) return;
+      if (merged !== null) setUserPreferences(merged);
+      setPrefsSettled(true);
     });
     return () => {
       cancelled = true;
     };
   }, [ownerId, passwordGated]);
 
-  return { userPreferences, setUserPreferences, autoRebindArrowsRef, alignmentGuidesRef };
+  return {
+    userPreferences,
+    setUserPreferences,
+    prefsSettled,
+    autoRebindArrowsRef,
+    alignmentGuidesRef,
+  };
 }

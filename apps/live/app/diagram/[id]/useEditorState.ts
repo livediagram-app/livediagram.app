@@ -37,6 +37,7 @@ import { useDiagramActions } from '@/hooks/canvas/useDiagramActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useViewPreview } from './useViewPreview';
+import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useDiagramHistory } from '@/hooks/canvas/useDiagramHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
 import { useLaneSettle } from '@/hooks/canvas/useLaneSettle';
@@ -502,12 +503,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Per-user editor preferences (docs/specs/007-editor/user-preferences.md): the state, the ref mirrors
   // the drag hook reads, and the localStorage read + D1 sync effects.
   // See useEditorPreferences.
-  const { userPreferences, setUserPreferences, autoRebindArrowsRef, alignmentGuidesRef } =
-    useEditorPreferences({
-      ownerId: selfParticipant.id,
-      passwordGated: sharePasswordGate !== null,
-      setAiPanelVisible: panelLayout.setAiPanelVisible,
-    });
+  const {
+    userPreferences,
+    setUserPreferences,
+    prefsSettled,
+    autoRebindArrowsRef,
+    alignmentGuidesRef,
+  } = useEditorPreferences({
+    ownerId: selfParticipant.id,
+    passwordGated: sharePasswordGate !== null,
+    setAiPanelVisible: panelLayout.setAiPanelVisible,
+  });
 
   // Hide / show a diagram in the Explorer panel's Recent list (docs/specs/013-workspace/hide-from-recent.md).
   // Read-modify-writes from the CACHE, not the React snapshot: the PUT
@@ -675,6 +681,20 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // edit link edits its one tab's content, nothing around it
   // (docs/specs/013-workspace/tab-scoped-share-links.md).
   const isStructureReadOnly = isReadOnly || sessionTabScope !== null;
+  // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md). Its shortcut
+  // counter rides the keyboard hook below.
+  const powerUserOffer = usePowerUserOffer({
+    prefs: userPreferences,
+    settled: prefsSettled,
+    editable: hydrated && !isReadOnly,
+    embed: embedMode,
+    zen: panelLayout.zenMode,
+    apply: (next) => {
+      setUserPreferences(next);
+      writeUserPreferences(next, selfParticipant.id);
+    },
+    offer: toast.offer,
+  });
 
   // Per-tab autosave. The previous snapshot lives in a ref so we can
   // diff: any tab whose object reference changed since last save is
@@ -2771,6 +2791,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     zenMode: panelLayout.zenMode,
     onToggleZen: toggleZenMode,
     onOpenSearch: () => dialogs.setSearchOpen(true),
+    onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: keyboardEnabled,
   });
 
