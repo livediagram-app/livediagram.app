@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useClickOutside } from '@livediagram/ui';
+import { SearchIcon, useClickOutside } from '@livediagram/ui';
 import { articleHref, searchArticles } from '@/lib/articles';
 import { reportHelpSearch, SEARCH_SETTLE_MS } from '@/lib/search-telemetry';
 
@@ -40,22 +40,10 @@ export function SearchInput({ large = false }: { large?: boolean }) {
   return (
     <div ref={wrapperRef} className="relative w-full text-left">
       <div className="relative">
-        <svg
+        <SearchIcon
           className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-          xmlns="http://www.w3.org/2000/svg"
-          width={large ? 22 : 18}
-          height={large ? 22 : 18}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
+          size={large ? 22 : 18}
+        />
         <input
           type="text"
           placeholder="Search help articles..."

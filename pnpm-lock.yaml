@@ -109,6 +109,9 @@ importers:
       '@livediagram/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
+      '@livediagram/icons':
+        specifier: workspace:^
+        version: link:../../packages/icons
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -140,9 +143,6 @@ importers:
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@livediagram/icons':
-        specifier: workspace:^
-        version: link:../../packages/icons
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config

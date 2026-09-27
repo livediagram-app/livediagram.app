@@ -30,18 +30,23 @@ describe('shared chrome icons', () => {
     expect(paint).toBe('currentColor');
   });
 
-  it('draws the house weight in on-screen px, whatever the viewBox', () => {
-    // 16-unit TrashIcon at 16px and 24-unit CircleXIcon at 24px both draw 1.5px.
-    const trash = render(<icons.TrashIcon size={16} />).container.querySelector('svg')!;
-    expect(Number(trash.getAttribute('stroke-width'))).toBe(1.5);
-    const circle = render(<icons.CircleXIcon size={24} />).container.querySelector('svg')!;
-    expect(Number(circle.getAttribute('stroke-width'))).toBe(1.5);
-    const small = render(<icons.CircleXIcon size={12} />).container.querySelector('svg')!;
-    expect(Number(small.getAttribute('stroke-width'))).toBe(2.5);
-  });
+  const onScreenPx = (svg: SVGSVGElement) => {
+    const units = Number(svg.getAttribute('viewBox')!.split(' ')[2]);
+    return (Number(svg.getAttribute('stroke-width')) * Number(svg.getAttribute('width'))) / units;
+  };
+
+  it.each(ICONS.filter(([n]) => n !== 'SparkleIcon'))(
+    '%s draws the house weight in on-screen px, whatever its viewBox',
+    (_name, Icon) => {
+      const at16 = render(<Icon size={16} />).container.querySelector('svg')!;
+      expect(onScreenPx(at16)).toBeCloseTo(1.5, 5);
+      const at12 = render(<Icon size={12} />).container.querySelector('svg')!;
+      expect(onScreenPx(at12)).toBeCloseTo(1.25, 5);
+    },
+  );
 
   it('honours an on-screen weight override', () => {
-    const { container } = render(<icons.TrashIcon size={16} weight={2} />);
-    expect(Number(container.querySelector('svg')!.getAttribute('stroke-width'))).toBe(2);
+    const svg = render(<icons.TrashIcon size={16} weight={2} />).container.querySelector('svg')!;
+    expect(onScreenPx(svg)).toBeCloseTo(2, 5);
   });
 });

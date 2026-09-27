@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PlusWideIcon, Tooltip } from '@livediagram/ui';
+import { PlusIcon, Tooltip } from '@livediagram/ui';
 import {
   ES_NOTE_GAP,
   eventStormingKindOf,
@@ -159,7 +159,7 @@ export function NextNoteButtons({
                     : `${outer}px ${inner}px ${inner}px ${outer}px`,
                 }}
               >
-                <PlusWideIcon
+                <PlusIcon
                   size={t.tabHeight * (PLUS_RATIO / TAB_HEIGHT_RATIO)}
                   className="shrink-0"
                 />

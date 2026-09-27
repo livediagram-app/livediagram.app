@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { PlusWideIcon, TrashIcon as SharedTrashIcon } from '@livediagram/ui';
+import { PlusIcon as SharedPlusIcon, TrashIcon as SharedTrashIcon } from '@livediagram/ui';
 
 // The one glyph set for both Explorer surfaces: the full-page /explorer
 // route and the editor's floating Explorer panel, plus the menus and panes
@@ -287,7 +287,7 @@ export function InviteIcon({ size = 13 }: IconProps) {
 
 // The shared plus and trash from @livediagram/ui, at this set's default sizes.
 export function PlusIcon({ size = 12 }: IconProps) {
-  return <PlusWideIcon size={size} />;
+  return <SharedPlusIcon size={size} />;
 }
 
 export function CheckIcon({ size = 12 }: IconProps) {

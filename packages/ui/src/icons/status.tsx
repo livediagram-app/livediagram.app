@@ -1,10 +1,14 @@
+import { lucideCircleX, lucideFolder } from '@livediagram/icons/lucide';
+
 import { Glyph, type IconProps } from './Glyph';
+import { lucideGlyph } from './lucide-glyph';
 
 // Status + label glyphs: the share-state badge dots (docs/specs/013-workspace/share-password.md / docs/specs/013-workspace/team-shared-diagrams.md), the
 // Tabs label, the sign-in sparkle and the error-state crossed circle. The
 // marketing hero illustration draws the editor's chrome with these same
 // components, so the two can't drift apart.
 
+// The 9px badges are drawn for their size (a 24-unit glyph turns to mud at 9px).
 // Connected nodes on a 9-unit viewBox: the "Shared" badge.
 export function SharedDotIcon({ size = 9, ...rest }: IconProps) {
   return (
@@ -27,16 +31,8 @@ export function PrivateDotIcon({ size = 9, ...rest }: IconProps) {
   );
 }
 
-// Folder-tab stack on a 12-unit viewBox, paired with the tab bar's TABS
-// label: reads as "tabs of paper", not the canvas's shape tooling.
-export function TabsLabelIcon({ size = 11, ...rest }: IconProps) {
-  return (
-    <Glyph size={size} units={12} {...rest}>
-      <path d="M1.5 4.5h3l1 1.25h5v4.25h-9z" />
-      <path d="M3 4.5V3h3.25" />
-    </Glyph>
-  );
-}
+// A folder, paired with the tab bar's TABS label.
+export const TabsLabelIcon = lucideGlyph(lucideFolder, 11);
 
 // A large and a small four-point star, filled: the sign-in prompts.
 export function SparkleIcon({ size = 14, ...rest }: IconProps) {
@@ -48,13 +44,5 @@ export function SparkleIcon({ size = 14, ...rest }: IconProps) {
   );
 }
 
-// A crossed-out circle on a 24-unit viewBox: the "not found" / "no access"
-// error cards.
-export function CircleXIcon({ size = 28, ...rest }: IconProps) {
-  return (
-    <Glyph size={size} units={24} {...rest}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M9 9l6 6M9 15l6-6" />
-    </Glyph>
-  );
-}
+// A crossed-out circle: the "not found" / "no access" error cards.
+export const CircleXIcon = lucideGlyph(lucideCircleX, 28);

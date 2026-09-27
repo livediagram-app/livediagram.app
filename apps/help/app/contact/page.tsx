@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { helpMetadata } from '@/lib/seo';
 import { buttonClassName, REPO_URL } from '@livediagram/ui';
+import { ExternalLinkIcon } from '@/lib/chrome-icons';
 
 export const metadata: Metadata = helpMetadata({
   title: 'Contact',
@@ -9,23 +10,7 @@ export const metadata: Metadata = helpMetadata({
   path: '/help/contact/',
 });
 
-const ExternalIcon = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-    <polyline points="15 3 21 3 21 9" />
-    <line x1="10" x2="21" y1="14" y2="3" />
-  </svg>
-);
+const ExternalIcon = <ExternalLinkIcon />;
 
 export default function ContactPage() {
   return (

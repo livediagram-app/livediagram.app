@@ -11,7 +11,8 @@ import { articleJsonLd } from '@/lib/structured-data';
 import { track } from '@/lib/telemetry';
 import { helpPathTelemetryId } from '@livediagram/help-registry/telemetry';
 import { useArticleVote } from './useArticleVote';
-import { JsonLd } from '@livediagram/ui';
+import { CloseIcon, JsonLd } from '@livediagram/ui';
+import { ClockIcon, ContentsIcon } from '@/lib/chrome-icons';
 
 /** Sidebar card: shows the TOC and/or a "Learn more" list of related
  *  guides. Renders nothing visible if both are empty (CSS hides it). */
@@ -136,21 +137,7 @@ export function ArticleLayout({
           <div className="flex items-center gap-4 text-xs text-slate-400">
             {readingTime > 0 && (
               <span className="flex items-center gap-1.5">
-                <svg
-                  className="h-3.5 w-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden
-                >
-                  <circle cx="12" cy="12" r="10" strokeWidth={2} />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6l4 2"
-                  />
-                </svg>
+                <ClockIcon className="h-3.5 w-3.5" />
                 {readingTime} min read
               </span>
             )}
@@ -159,20 +146,7 @@ export function ArticleLayout({
             onClick={() => setMobileSidebarOpen(true)}
             className="mt-5 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 lg:hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h7"
-              />
-            </svg>
+            <ContentsIcon className="h-4 w-4" />
             Contents and guides
           </button>
         </div>
@@ -196,20 +170,7 @@ export function ArticleLayout({
                 className="p-1 text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
                 aria-label="Close navigation"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <CloseIcon size={20} className="h-5 w-5" />
               </button>
             </div>
             <SidebarCard subArticles={subArticles} />

@@ -18,7 +18,7 @@ import {
   EmptyState,
   PencilIcon,
   PlusIcon,
-  TrashSimpleIcon,
+  TrashIcon,
   HoverCard,
   SOLID_BRAND_DARK_CONTROL,
 } from '@livediagram/ui';
@@ -104,7 +104,7 @@ export function ThemesPane() {
                     danger
                     onClick={() => void confirmDelete(t.id, t.name)}
                   >
-                    <TrashSimpleIcon />
+                    <TrashIcon />
                   </IconBtn>
                 </HoverCard>
               </div>

@@ -1,5 +1,7 @@
 // Shared chrome icons (React components). See Glyph.tsx for the contract.
 export { Glyph, type IconProps } from './Glyph';
+export { lucideGlyph } from './lucide-glyph';
+export { Prims } from './Prims';
 export {
   CheckIcon,
   CloseIcon,
@@ -9,10 +11,8 @@ export {
   LockIcon,
   PencilIcon,
   PlusIcon,
-  PlusWideIcon,
   RefreshIcon,
   TrashIcon,
-  TrashSimpleIcon,
 } from './actions';
 export {
   ChevronDownIcon,
