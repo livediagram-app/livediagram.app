@@ -195,7 +195,8 @@ The room never touches D1; persistence is the REST `PUT /api/diagrams/:id/tabs/:
 The schema starts at `0001_init.sql` and evolves migration-by-migration; the migration files double as commit history of the shape. Today, in broad strokes:
 
 - **`diagrams`** — id, owner, name, share flag, folder fk, timestamps. The original `data` JSON column was dropped in migration 0006 once tabs moved to their own rows.
-- **`tabs`** — one row per tab keyed on `(id)`, FK to `diagrams(id)` with `ON DELETE CASCADE`. The body lives in a `data` JSON blob (elements + per-tab settings — theme, background, lock). Order is tracked by `order_index`. See [13-per-tab-storage.md](../006-diagram/per-tab-storage.md) for why.
+- **`tabs`** — one row per tab keyed on `(id)`: the body only, in a `data` JSON blob (elements + per-tab settings — theme, background, lock). No column points at a diagram, so nothing cascades from `diagrams`; the delete paths drop a tab once no diagram links it. See [13-per-tab-storage.md](../006-diagram/per-tab-storage.md) for why.
+- **`diagram_tabs`** — the many-to-many link: `(diagram_id, tab_id)` with the tab's `order_index` and `folder` in that diagram, cascading from both sides. See [Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md).
 - **`participants`** — id, name, color. Volatile presence/status state stays on the wire.
 - **`share_links`** — code → diagramId + role. Multiple links per diagram are supported; revoking a link is a row delete.
 - **`change_log`** — per-diagram audit entries that drive the Activity Panel + Revert path. See [12-activity-and-audit.md](../012-collaboration/activity-and-audit.md).

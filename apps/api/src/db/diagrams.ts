@@ -34,10 +34,6 @@ async function listTabSummariesFor(env: Env, diagramId: string): Promise<TabSumm
   // Read through the diagram_tabs link table (migration 0011 /
   // docs/specs/006-diagram/tab-diagram-many-to-many.md) — order_index now lives on the link, not on the tab,
   // so two diagrams that share a tab can order it independently.
-  // The legacy tabs.diagram_id + tabs.order_index columns still
-  // exist for one more phase as a fallback; we read the canonical
-  // path here and let writes keep both in sync until they're
-  // dropped in a follow-up migration.
   const result = await env.DB.prepare(
     `SELECT t.id, dt.diagram_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder
        FROM diagram_tabs dt
@@ -371,10 +367,12 @@ export async function copyDiagram(
     const freshTabId = tabIdMap.get(row.id)!;
     const data = remapTabDataLinks(row.data, tabIdMap);
     return [
-      env.DB.prepare(
-        `INSERT INTO tabs (id, diagram_id, name, order_index, data, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-      ).bind(freshTabId, newId, row.name, row.order_index, data, now),
+      env.DB.prepare(`INSERT INTO tabs (id, name, data, updated_at) VALUES (?, ?, ?, ?)`).bind(
+        freshTabId,
+        row.name,
+        data,
+        now,
+      ),
       env.DB.prepare(
         `INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)`,

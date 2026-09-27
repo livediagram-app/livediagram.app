@@ -119,7 +119,7 @@ export async function deleteAccount(
   // user-facing affordance in this product, never a retention strategy.
   await deleteTimelineForOwner(env, ownerId);
   // Activity (docs/specs/013-workspace/activity-page.md): the alias rows + the backfill stamp. The index
-  // rows themselves cascade with the diagrams' tabs above.
+  // rows themselves went with the tabs diagramRemovalStatements dropped above.
   await deleteCollabIndexForOwner(env, ownerId);
   return {
     diagrams: diagramsRes.meta.changes ?? 0,
