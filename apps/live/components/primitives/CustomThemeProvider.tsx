@@ -74,15 +74,14 @@ export function CustomThemeProvider({
   children: ReactNode;
 }) {
   const [themes, setThemes] = useState<CustomTheme[]>([]);
-  const [loading, setLoading] = useState(true);
+  // The owner whose list has settled (loaded or failed): loading until that is the current owner.
+  const [settledFor, setSettledFor] = useState<string | null>(null);
+  if (!ownerId && settledFor !== null) setSettledFor(null);
+  const loading = ownerId ? settledFor !== ownerId : false;
 
   useEffect(() => {
-    if (!ownerId) {
-      setLoading(false);
-      return;
-    }
+    if (!ownerId) return;
     let alive = true;
-    setLoading(true);
     void (async () => {
       try {
         const list = await apiListCustomThemes(ownerId);
@@ -97,7 +96,7 @@ export function CustomThemeProvider({
         // Silent: custom themes are optional; diagrams fall back to
         // built-ins via getTheme. The next mount retries.
       } finally {
-        if (alive) setLoading(false);
+        if (alive) setSettledFor(ownerId);
       }
     })();
     return () => {
