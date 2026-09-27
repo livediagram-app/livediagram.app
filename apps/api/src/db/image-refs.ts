@@ -52,16 +52,19 @@ export function imageRefPruneTabStatement(env: Env, tabId: string): D1PreparedSt
 
 // The SQL twin of image-refs/extract.ts `imageRefIds`, held to it by a parity
 // test. Indexes the tabs matching `tabWhere` without a body leaving D1. The
-// nested CASE hands json_each an empty object unless the body is valid JSON
-// with an `elements` ARRAY, so a corrupt tab can't fail the statement (in
-// whatever order SQLite evaluates the join) and an object isn't walked.
+// nested CASE hands json_each an empty object unless the body mentions
+// "imageId" at all (D1 bills every element json_each walks, so image-free
+// tabs must not be walked; the JavaScript side has the same fast path) and is
+// valid JSON with an `elements` ARRAY, so a corrupt tab can't fail the
+// statement (in whatever order SQLite evaluates the join) and an object
+// isn't walked.
 function indexTabsSql(tabWhere: string): string {
   return `INSERT OR IGNORE INTO image_refs (tab_id, image_id)
     SELECT t.id, json_extract(e.value, '$.imageId')
       FROM tabs t,
-           json_each(CASE WHEN json_valid(t.data)
-                          THEN CASE WHEN json_type(t.data, '$.elements') = 'array'
-                                    THEN t.data ELSE '{}' END
+           json_each(CASE WHEN instr(t.data, '"imageId"') = 0 THEN '{}'
+                          WHEN NOT json_valid(t.data) THEN '{}'
+                          WHEN json_type(t.data, '$.elements') = 'array' THEN t.data
                           ELSE '{}' END, '$.elements') e
      WHERE (${tabWhere})
        AND e.type = 'object'
