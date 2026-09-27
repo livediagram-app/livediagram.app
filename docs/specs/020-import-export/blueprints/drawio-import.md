@@ -263,8 +263,7 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
    the nearest offered anchor to `(x + fx * w, y + fy * h)`. Otherwise floating: the reference point
    is the first waypoint (source) / last waypoint (target), else the other end's centre (or its free
    point); take the point where the segment from the element's centre towards it crosses the
-   element's box, then the nearest anchor, restricted to `n`, `e`, `s`, `w` when the route is
-   angled. Not found and the id was non-empty → free at the geometry point (`sourcePoint` /
+   element's box: for an angled route, the middle of the side it crosses (`n`, `e`, `s`, `w`) when the shape offers it; otherwise the nearest offered anchor to that point. Not found and the id was non-empty → free at the geometry point (`sourcePoint` /
    `targetPoint` in the edge parent's origin, else the cell's box centre if the cell exists) and
    `connection-loosened` += 1. Empty id → free at the geometry point.
 2. An end whose cell is an edge → free at that edge's midpoint (its resolved from/to midpoint),

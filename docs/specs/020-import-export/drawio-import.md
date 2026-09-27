@@ -231,7 +231,7 @@ When the cell has no label, the box is labelled with the stencil's readable name
 - **Ends.** An edge's `source` / `target` pin its ends to the elements they became. `exitX` / `exitY`
   (and `entry...`) name a point on the shape; the end pins to the nearest anchor the shape offers.
   A floating end pins to the anchor nearest where the line towards the next point leaves the shape;
-  an orthogonal edge's floating end uses the side midpoints only. A cell that was consumed (an entity
+  an orthogonal edge's floating end sits at the middle of the side the line leaves through. A cell that was consumed (an entity
   row, a table cell, a dropped group) hands its connections to the nearest ancestor that became an
   element. An end with no cell, or an end on another edge, is a free end at its geometry point;
   one that had a cell but has nowhere to pin is counted (`connection-loosened`).
