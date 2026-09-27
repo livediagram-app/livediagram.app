@@ -32,12 +32,10 @@ async function open(page: Page, url: string, build: string): Promise<void> {
 
 async function expectCentred(page: Page, screen: string): Promise<void> {
   const report = await auditOptical(page);
-  test
-    .info()
-    .annotations.push({
-      type: `optical: ${screen}`,
-      description: `${report.measured} shapes measured`,
-    });
+  test.info().annotations.push({
+    type: `optical: ${screen}`,
+    description: `${report.measured} shapes measured`,
+  });
   expect(report.measured, `${screen}: nothing was measured`).toBeGreaterThan(0);
   const lines = report.failures.map((f) => `${f.offsetPx}px ${f.what} at ${f.where}`);
   expect
