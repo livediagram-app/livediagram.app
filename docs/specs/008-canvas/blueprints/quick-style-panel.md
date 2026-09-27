@@ -59,7 +59,7 @@ Memorable fields:
 1. Ink: `themeInk(theme)` = `theme.elementX ?? unpaintedShapeInk(canvasSurface(theme.backgroundColor)).X`.
 2. Slot 0: `{ color: ink.stroke | ink.fill, name: 'Theme default' }`.
 3. A theme with a `palette`: its first six entries, `stroke` or `fill` by role, named by
-   `hueName(entry.stroke)`; padded from the toned set when shorter (D31); names disambiguated.
+   `hueName(entry.stroke)`; padded from the toned set when shorter (D32); names disambiguated.
 4. Otherwise the toned set: accent HSL from `ink.stroke`; `s = clamp(s, 0.45, 0.85)`;
    `l = clamp(l, 0.36, 0.52)` on light paper, `clamp(l, 0.6, 0.74)` on dark. Hues and names: 0 Red,
    28 Orange, 46 Yellow, 140 Green, 215 Blue, 270 Violet.
@@ -83,11 +83,11 @@ case-insensitively, else `null`.
 - Picking slot `k > 0` writes the colour and `strokeSwatch` / `fillSwatch = k`. Picking slot 0 writes
   `theme.elementX ?? undefined` (the context menu's reset-to-theme value) and clears the binding.
 - `rederiveQuickSwatches(el, theme)`: for a shape or arrow carrying a valid slot, rewrites the bound
-  colour from `quickSwatchColor(view, role, slot)`; an invalid slot is ignored (D32). Returns `el`
+  colour from `quickSwatchColor(view, role, slot)`; an invalid slot is ignored (D33). Returns `el`
   unchanged when nothing is bound.
 - Called last in `recolourElementsForTheme`, `switchThemeElements`, `resetThemeElementsToTheme` and
   `resetArrowsToTheme`, with the theme itself (not the per-branch view), so a slot means the same
-  colour on every branch (D33).
+  colour on every branch (D34).
 - Cleared by: `applyFillColorToEl` (`fillSwatch`), `applyStrokeColorToEl` (`strokeSwatch`, shapes and
   arrows), `applyColorPresetToEl` (both), `resetColorsSelected` (shape both, arrow stroke),
   `resetShapeStyleSelected` (both).
@@ -156,16 +156,16 @@ calls `forget` with the kind keys of every target it changed.
   (`!==`): the value is written under the element's kind key; `undefined`, or a colour equal
   (case-insensitive) to the theme's own value for that field (`elementFill` / `elementStroke` /
   `elementText`), deletes the field instead. An empty kind entry is removed. Returns the input
-  `memory` itself when nothing changed (D34).
+  `memory` itself when nothing changed (D35).
 - `applyStyleMemory(el, memory, theme)`: for a style target with an entry, lays each remembered field
   on the element; then a remembered `strokeSwatch` / `fillSwatch` re-derives its colour for `theme`, and
   a remembered `colorPreset` re-derives the preset for `theme` (`rederiveColorPresetForTheme`).
   Anything else is returned unchanged.
 - `forgetStyleKinds(memory, kinds)`: removes those entries.
 - `parseStyleMemory(raw)`: `safeJson`, keeps only known kind keys and memorable fields with the right
-  primitive type (string / number); anything else is dropped (D35).
+  primitive type (string / number); anything else is dropped (D36).
 - Storage: `localStorage` key `livediagram:v2:style-memory:<diagramId>`, written through
-  `writeLocalStorageSafe`, at most once per `STYLE_MEMORY_WRITE_DEBOUNCE_MS = 250` (D36), and flushed
+  `writeLocalStorageSafe`, at most once per `STYLE_MEMORY_WRITE_DEBOUNCE_MS = 250` (D37), and flushed
   on unmount. Read once per diagram id.
 
 `useStyleMemory({ diagramId, theme })` returns `recordEdit(before, after)`, `styleNewElement(el)`,
@@ -351,11 +351,11 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | -------------------------------- | -------------------------- | ---------------------------------- | ----------- |
 | `QUICK_STROKE_MIN_CONTRAST`      | 3                          | WCAG 2.2 1.4.11                    | 3 to 4.5    |
 | `QUICK_FILL_MIN_TEXT_CONTRAST`   | 4.5                        | WCAG 2.2 1.4.3                     | 4.5 to 7    |
-| Saturation clamp                 | 0.45 to 0.85               | D37                                | 0.3 to 1    |
-| Lightness clamp, light / dark    | 0.36 to 0.52 / 0.6 to 0.74 | D37                                | 0.25 to 0.8 |
-| `FILL_WASH` light / dark         | 0.2 / 0.3                  | D37                                | 0.1 to 0.4  |
+| Saturation clamp                 | 0.45 to 0.85               | D38                                | 0.3 to 1    |
+| Lightness clamp, light / dark    | 0.36 to 0.52 / 0.6 to 0.74 | D38                                | 0.25 to 0.8 |
+| `FILL_WASH` light / dark         | 0.2 / 0.3                  | D38                                | 0.1 to 0.4  |
 | `QUICK_STYLE_GAP_PX`             | 12                         | Existing corner insets (`right-3`) | 8 to 24     |
 | `QUICK_STYLE_DOCK_GAP_PX`        | 16                         | panel-docking.md corner-stack gap  | 8 to 24     |
-| `QUICK_STYLE_DOCK_MIN_HEIGHT_PX` | 96                         | D41: header + one row              | 80 to 240   |
-| `STYLE_MEMORY_WRITE_DEBOUNCE_MS` | 250                        | D36                                | 100 to 1000 |
+| `QUICK_STYLE_DOCK_MIN_HEIGHT_PX` | 96                         | D42: header + one row              | 80 to 240   |
+| `STYLE_MEMORY_WRITE_DEBOUNCE_MS` | 250                        | D37                                | 100 to 1000 |
 | Swatch size / gap                | 24 / 4 px                  | WCAG 2.2 2.5.8 target size         | 24+ / 2+    |
