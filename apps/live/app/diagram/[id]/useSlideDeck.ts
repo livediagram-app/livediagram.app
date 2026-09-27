@@ -30,7 +30,6 @@ import {
 import { track } from '@/lib/telemetry';
 import { useSlideThumbnails } from '@/hooks/ui/useSlideThumbnails';
 import {
-  DEFAULT_PRESENTATION_CONFIG,
   loadPresentationConfig,
   savePresentationConfig,
   type PresentationConfig,
@@ -79,8 +78,9 @@ export function useSlideDeck({
   // Device-local presenter settings (docs/specs/012-collaboration/presentation-mode.md). Owned here rather than in the
   // overlay because the FIT reads them too — "Actual size" is a setting about
   // the camera, and the camera lives outside the overlay.
-  const [config, setConfig] = useState<PresentationConfig>(DEFAULT_PRESENTATION_CONFIG);
-  useEffect(() => setConfig(loadPresentationConfig()), []);
+  // Read from storage on first render (safe during prerender, and it only shapes a running presentation,
+  // so the first markup never depends on it).
+  const [config, setConfig] = useState<PresentationConfig>(loadPresentationConfig);
   const updateConfig = useCallback((patch: Partial<PresentationConfig>) => {
     // The FIELD, not the value: what we want to learn is which settings people
     // reach for at all. Values would multiply the vocabulary for no extra

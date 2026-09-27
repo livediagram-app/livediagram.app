@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
 
 // The side effects of LANDING on a tab (hydration, a tab switch, or the
 // active tab's elements finishing their lazy load), lifted out of
@@ -37,6 +37,9 @@ export function useTabEntryEffects({
   // one must not fit it. Consumed (and cleared) on the entry it names.
   skipFitForTabRef?: RefObject<string | null>;
 }) {
+  // fitToScreen reads live state; the fit is re-evaluated only on hydration / tab-id / load /
+  // element-count transitions (and explicit requests), so it is called through an effect event.
+  const fit = useEffectEvent(() => fitToScreen());
   useEffect(() => {
     if (!hydrated || !activeId || typeof window === 'undefined') return;
     const url = new URL(window.location.href);
@@ -61,21 +64,17 @@ export function useTabEntryEffects({
     if (elementCount === 0) return;
     // Defer to the next frame so the canvas wrapper has its final
     // measured size before fitToScreen reads getBoundingClientRect.
-    const handle = window.requestAnimationFrame(() => fitToScreen());
+    const handle = window.requestAnimationFrame(fit);
     return () => window.cancelAnimationFrame(handle);
-    // fitToScreen reads live state via closure; we deliberately only
-    // re-evaluate on hydration / tab-id / load / element-count transitions.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, activeId, tabLoaded, elementCount]);
+  }, [hydrated, activeId, tabLoaded, elementCount, skipFitForTabRef]);
 
   // A fit asked for alongside a content change. State, not a direct call, so the fit runs after the
   // render that carries the new content (the request batches with the commit that makes it).
   const [fitRequest, setFitRequest] = useState(0);
   useEffect(() => {
     if (fitRequest === 0) return;
-    const handle = window.requestAnimationFrame(() => fitToScreen());
+    const handle = window.requestAnimationFrame(fit);
     return () => window.cancelAnimationFrame(handle);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fitRequest]);
   const requestFit = useCallback(() => setFitRequest((n) => n + 1), []);
 

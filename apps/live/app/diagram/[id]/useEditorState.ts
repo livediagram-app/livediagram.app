@@ -715,6 +715,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const lastSavedNameRef = useRef<string>('');
   // Peer ops that land while a save is in flight (docs/specs/012-collaboration/collab-race-hardening.md); see save-baseline.
   const remoteOpJournalRef = useRef<RemoteOpJournal>(createRemoteOpJournal());
+  // Peer ops applied to `tabs`, as state: the journal's count as of this render, for the autosave.
+  const [opsApplied, setOpsApplied] = useState(0);
+  const countAppliedOp = useCallback(() => setOpsApplied((n) => n + 1), []);
 
   // True while a hover-preview is on screen (set by useStylePreview). Style
   // previews mutate `tabs` via tickTabs so they render live, but they must
@@ -746,6 +749,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     lastSavedNameRef,
     loadedTabIdsRef,
     remoteOpJournalRef,
+    opsApplied,
     previewingRef,
     roomRef,
     setSaveStatus,
@@ -932,6 +936,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     markSeen,
     selfParticipantRef,
     saveBaseline: { tabs: lastSavedTabsRef, name: lastSavedNameRef, journal: remoteOpJournalRef },
+    countAppliedOp,
     sessionShareCodeRef,
     roomRef,
     applyRemoteTabs,

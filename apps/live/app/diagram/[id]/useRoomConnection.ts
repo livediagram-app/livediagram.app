@@ -58,6 +58,8 @@ export function useRoomConnection(opts: {
   // folded into it as well as into the tabs on screen, so the next local save
   // neither mistakes it for ours nor ships it back out.
   saveBaseline: SaveBaselineRefs;
+  // Counts a peer op applied to `tabs` (useEditorState's opsApplied, read by the autosave).
+  countAppliedOp: () => void;
   sessionShareCodeRef: MutableRefObject<string | null>;
   roomRef: MutableRefObject<ReturnType<typeof connectRoom> | null>;
   // Merge a peer's tab / diagram-meta change into the present, PRESERVING
@@ -132,6 +134,7 @@ export function useRoomConnection(opts: {
     markSeen,
     selfParticipantRef,
     saveBaseline,
+    countAppliedOp,
     sessionShareCodeRef,
     roomRef,
     applyRemoteTabs,
@@ -294,6 +297,8 @@ export function useRoomConnection(opts: {
         if (op.kind === 'diagram-meta') setDiagramName(op.name);
         applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
         foldRemoteOpIntoBaseline(saveBaseline, op);
+        // In the same batch as the tabs update, so the render that shows the op also counts it.
+        countAppliedOp();
       } else if (op.kind === 'select') {
         setRemoteSelections((prev) => {
           const next = new Map(prev);
