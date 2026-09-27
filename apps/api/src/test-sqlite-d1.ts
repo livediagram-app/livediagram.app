@@ -73,17 +73,27 @@ export function sqliteD1(base: Partial<Env> = {}, opts: { before?: string } = {}
           meta: { changes: Number(res.changes), last_row_id: Number(res.lastInsertRowid) },
         };
       },
+      // What D1's batch hands back per statement: a read's rows, a write's
+      // change count.
+      batchResult: async () => {
+        const prepared = sql.prepare(query);
+        if (prepared.columns().length > 0) {
+          return { results: rows(), success: true, meta: { changes: 0 } };
+        }
+        const res = prepared.run(...args);
+        return { results: [], success: true, meta: { changes: Number(res.changes) } };
+      },
     };
   };
 
   const db = {
     prepare: (query: string) => statement(query, []),
     // D1 runs a batch as one transaction: all of it lands or none of it does.
-    batch: async (statements: { run: () => Promise<unknown> }[]) => {
+    batch: async (statements: { batchResult: () => Promise<unknown> }[]) => {
       sql.exec('BEGIN');
       try {
         const results = [];
-        for (const s of statements) results.push(await s.run());
+        for (const s of statements) results.push(await s.batchResult());
         sql.exec('COMMIT');
         return results;
       } catch (err) {

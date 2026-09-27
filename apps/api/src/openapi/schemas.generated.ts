@@ -5503,6 +5503,44 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "TrashedDiagram": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "purgeAt": {
+        "type": "number"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "trashedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "teamId",
+      "teamName",
+      "trashedAt",
+      "purgeAt"
+    ],
+    "type": "object"
+  },
   "UnfurlResult": {
     "additionalProperties": false,
     "properties": {

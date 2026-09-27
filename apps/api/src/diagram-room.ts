@@ -1,4 +1,4 @@
-import { isPresenceOpKind, isSystemOpKind } from '@livediagram/api-schema';
+import { DIAGRAM_TRASHED_CLOSE, isPresenceOpKind, isSystemOpKind } from '@livediagram/api-schema';
 import { opForTheWire, stampCommentAuthor } from '@livediagram/diagram';
 import { RoomLedgerStore } from './room-ledger-store';
 import { RoomLivePoll } from './room-live-poll';
@@ -261,6 +261,7 @@ export class DiagramRoom implements DurableObject {
       if (body.ordered === true) this.broadcastOrderedSystemOp(op);
       else this.broadcastSystemOp(op);
       this.closeSessionsOfChangedLink(op);
+      this.closeAllIfTrashed(op);
       return new Response(null, { status: 204 });
     }
     if (request.method === 'POST' && url.pathname === '/qa') {
@@ -437,6 +438,21 @@ export class DiagramRoom implements DurableObject {
       if (this.readSession(ws)?.shareCode !== code) continue;
       try {
         ws.close(SHARE_LINK_CHANGED_CLOSE, kind);
+      } catch {
+        // Already gone.
+      }
+      this.opRates.delete(ws);
+    }
+  }
+
+  // After a diagram-trashed op has gone out, close every socket
+  // (docs/specs/013-workspace/trash.md): the diagram is in the Trash, and its
+  // admission refuses every new join until it is restored.
+  private closeAllIfTrashed(op: unknown): void {
+    if ((op as { kind?: unknown } | null)?.kind !== 'diagram-trashed') return;
+    for (const ws of this.state.getWebSockets()) {
+      try {
+        ws.close(DIAGRAM_TRASHED_CLOSE, 'diagram-trashed');
       } catch {
         // Already gone.
       }

@@ -16,6 +16,7 @@ const { db } = vi.hoisted(() => ({
     extendShareLink: vi.fn(),
     generateShareCode: vi.fn(() => 'CODE1234'),
     getDiagram: vi.fn(),
+    getTrashedDiagramMeta: vi.fn(async () => null),
     getDiagramSharePassword: vi.fn(),
     getShareLinkIncludingExpired: vi.fn(),
     listShareLinks: vi.fn(),

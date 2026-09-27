@@ -1800,6 +1800,27 @@ describe('DiagramRoom tab-scoped sessions', () => {
     });
   }
 
+  it('closes every socket with 4004 when the diagram is trashed, after telling them', async () => {
+    // docs/specs/013-workspace/trash.md: open sessions end the moment the
+    // diagram goes to the Trash, each told why.
+    const { room, state } = newRoom();
+    const owner = makeSocket() as FakeSocket & { closed?: [number, string] };
+    const visitor = makeSocket() as FakeSocket & { closed?: [number, string] };
+    scopedSession(state, owner, presence('p-o', 'edit'), null);
+    scopedSession(state, visitor, presence('p-v', 'view'), 't2', 'CODE2345');
+    await room.fetch(
+      new Request('https://room/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ op: { kind: 'diagram-trashed' } }),
+      }),
+    );
+    for (const ws of [owner, visitor]) {
+      expect(ops(ws)).toEqual([{ kind: 'diagram-trashed' }]);
+      expect(ws.closed).toEqual([4004, 'diagram-trashed']);
+    }
+  });
+
   it('pins the scope and code on the session at admission', () => {
     const { room } = newRoom();
     const ws = makeSocket();
