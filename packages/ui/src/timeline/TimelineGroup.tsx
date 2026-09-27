@@ -7,6 +7,11 @@
 import type { ReactNode } from 'react';
 import { CARD_GRID } from '../cardGrid';
 import { SOLID_BRAND_DARK } from '../brand-classes';
+import { Chip } from '../optical';
+
+// The day badges' rendered height, pinned: a trimmed caps label no longer props a padded badge open
+// (docs/specs/004-interface-design/optical-alignment.md).
+const DAY_BADGE_HEIGHT_PX = 19;
 
 export function TimelineGroup({
   label,
@@ -54,16 +59,24 @@ export function TimelineGroup({
       <div className="min-w-0 flex-1 pb-4">
         <div className="mb-2 flex items-baseline gap-2 pt-1">
           {isToday && (
-            <span
-              className={`rounded bg-brand-500 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white ${SOLID_BRAND_DARK}`}
+            <Chip
+              height={DAY_BADGE_HEIGHT_PX}
+              radius="sm"
+              caps
+              className={`bg-brand-500 px-1.5 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
             >
               Today
-            </span>
+            </Chip>
           )}
           {isFuture && (
-            <span className="rounded bg-violet-500/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-300">
+            <Chip
+              height={DAY_BADGE_HEIGHT_PX}
+              radius="sm"
+              caps
+              className="bg-violet-500/15 px-1.5 text-[10px] font-semibold text-violet-600 dark:text-violet-300"
+            >
               Upcoming
-            </span>
+            </Chip>
           )}
           <p
             className={`whitespace-nowrap text-sm font-semibold ${

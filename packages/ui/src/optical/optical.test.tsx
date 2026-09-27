@@ -121,6 +121,17 @@ describe('Chip', () => {
     expect(container.firstElementChild!.firstElementChild).toBe(slot);
   });
 
+  it('can be a rectangular badge instead of a pill', () => {
+    const { container } = render(
+      <Chip height={19} radius="sm">
+        Today
+      </Chip>,
+    );
+    const chip = container.firstElementChild as HTMLElement;
+    expect(chip.className).toContain('rounded');
+    expect(chip.className).not.toContain('rounded-full');
+  });
+
   it('gives a caps label back its trailing letter-space', () => {
     const { container } = render(
       <Chip height={18} caps>

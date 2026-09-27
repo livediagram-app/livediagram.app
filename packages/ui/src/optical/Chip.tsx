@@ -9,6 +9,8 @@ export type ChipProps = {
   icon?: ReactNode;
   iconSize?: number;
   caps?: boolean;
+  // A pill by default; 'sm' is a rectangular badge (4px corners).
+  radius?: 'full' | 'sm';
   children: ReactNode;
 } & HTMLAttributes<HTMLSpanElement>;
 
@@ -17,6 +19,7 @@ export function Chip({
   icon,
   iconSize,
   caps = false,
+  radius = 'full',
   children,
   className = '',
   style,
@@ -25,7 +28,7 @@ export function Chip({
   return (
     <span
       data-optical="chip"
-      className={`inline-flex shrink-0 items-center gap-1 rounded-full leading-none ${className}`}
+      className={`inline-flex shrink-0 items-center gap-1 leading-none ${radius === 'full' ? 'rounded-full' : 'rounded'} ${className}`}
       style={{ height, ...style }}
       {...rest}
     >

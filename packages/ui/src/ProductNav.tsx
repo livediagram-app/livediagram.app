@@ -114,7 +114,7 @@ export function ProductNav({
         aria-expanded={open}
         aria-label={`Switch section, currently ${active.label}`}
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-medium text-slate-600 shadow-sm outline-none transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 focus-visible:border-slate-300 focus-visible:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+        className="flex h-[34px] items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-sm font-medium text-slate-600 shadow-sm outline-none transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 focus-visible:border-slate-300 focus-visible:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
       >
         {/* Hamburger affordance so the label reads as an openable menu, not a
             static section name. */}
@@ -125,7 +125,9 @@ export function ProductNav({
             as a menu, and the aria-label carries the current section) so the
             header's Brand + menu + "Start drawing" CTA stop crowding each other
             on a narrow screen. The label returns at sm+. */}
-        <span className="hidden sm:inline">{active.label}</span>
+        {/* Trimmed to its cap band so it centres on the letters (optical-alignment.md); the button's
+            height is pinned above because the trimmed label no longer props it open. */}
+        <span className="text-optical-centre max-sm:hidden">{active.label}</span>
         <ChevronDownIcon
           size={12}
           className={`h-3 w-3 opacity-60 transition-transform duration-micro group-hover:[transform:rotate(180deg)] group-focus-within:[transform:rotate(180deg)] ${

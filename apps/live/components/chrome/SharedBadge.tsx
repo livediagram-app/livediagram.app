@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { PrivateDotIcon, SharedDotIcon } from '@livediagram/ui';
+import { useState, type HTMLAttributes } from 'react';
+import { Chip, PrivateDotIcon, SharedDotIcon } from '@livediagram/ui';
 
 // The visibility pill rendered beside the diagram title, split out of
 // EditorHeader. Share links win: a shared team diagram reads "Shared" as
@@ -24,21 +24,21 @@ const SHARE_STATE_META: Record<
     label: 'Private',
     description: 'Only visible to you.',
     badge:
-      'inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700',
+      'bg-slate-100 px-2 text-[10px] font-semibold text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700',
     dot: 'text-slate-400',
   },
   shared: {
     label: 'Shared',
     description: 'Anyone with a link can view.',
     badge:
-      'inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30',
+      'bg-emerald-50 px-2 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30',
     dot: 'text-emerald-500',
   },
   team: {
     label: 'Team',
     description: 'In a team library: every member of the team can open it.',
     badge:
-      'inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30',
+      'bg-brand-50 px-2 text-[10px] font-semibold text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30',
     dot: 'text-brand-500 dark:text-brand-400',
   },
   // Offline Mode (docs/specs/006-diagram/offline-mode.md): saved only in this browser, never on the server.
@@ -48,7 +48,7 @@ const SHARE_STATE_META: Record<
     label: 'Offline',
     description: 'Saved only in this browser. Not synced, not backed up.',
     badge:
-      'inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30',
+      'bg-amber-50 px-2 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30',
     dot: 'text-amber-500',
   },
 };
@@ -57,11 +57,34 @@ const SHARE_STATE_META: Record<
 // audiences, with Offline last as the deliberate opt-out.
 const LEGEND_ORDER: ShareState[] = ['private', 'shared', 'team', 'offline'];
 
+// The pill's rendered height, pinned: its caps label is trimmed to cap height, so padding alone would
+// shrink it (docs/specs/004-interface-design/optical-alignment.md).
+const STATE_CHIP_HEIGHT_PX = 19;
+
 function StateDot({ state, className }: { state: ShareState; className: string }) {
   return (
-    <span aria-hidden className={className}>
+    <span aria-hidden className={`flex ${className}`}>
       {state === 'private' || state === 'offline' ? <PrivateDotIcon /> : <SharedDotIcon />}
     </span>
+  );
+}
+
+function ShareStateChip({
+  state,
+  className = '',
+  ...rest
+}: { state: ShareState; className?: string } & HTMLAttributes<HTMLSpanElement>) {
+  const m = SHARE_STATE_META[state];
+  return (
+    <Chip
+      height={STATE_CHIP_HEIGHT_PX}
+      caps
+      icon={<StateDot state={state} className={m.dot} />}
+      className={`${m.badge} ${className}`}
+      {...rest}
+    >
+      {m.label}
+    </Chip>
   );
 }
 
@@ -85,10 +108,11 @@ export function SharedBadge({
       onFocus={() => setOpen(true)}
       onBlur={() => setOpen(false)}
     >
-      <span tabIndex={0} aria-label={`${meta.label}: ${meta.description}`} className={meta.badge}>
-        <StateDot state={state} className={meta.dot} />
-        {meta.label}
-      </span>
+      <ShareStateChip
+        state={state}
+        tabIndex={0}
+        aria-label={`${meta.label}: ${meta.description}`}
+      />
       {/* The badge legend (docs/specs/006-diagram/offline-mode.md follow-up): every visibility state with its
           meaning, current row highlighted. Anchored below the pill; the header
           creates its own stacking context and doesn't clip overflow (the
@@ -114,10 +138,7 @@ export function SharedBadge({
                       : ''
                   }`}
                 >
-                  <span className={`${m.badge} mt-px shrink-0`}>
-                    <StateDot state={s} className={m.dot} />
-                    {m.label}
-                  </span>
+                  <ShareStateChip state={s} className="mt-px" />
                   <span className="min-w-0 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
                     {m.description}
                   </span>
