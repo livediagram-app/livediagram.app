@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { articleHref, articles, type Article } from '@/lib/articles';
-import { featureColour } from '@/lib/featureColours';
+import { FEATURE_TILE_CLASS, featureColour, featureTileStyle } from '@/lib/featureColours';
 import { featureIcon } from '@/lib/featureIcons';
 import { CountPill } from '@/components/CountPill';
 
@@ -13,12 +13,12 @@ export function FeatureArticleCard({ article }: { article: Article }) {
   return (
     <Link
       href={articleHref(article)}
-      className="card-glow group block rounded-xl bg-white p-5 transition-colors duration-micro hover:bg-brand-50/30 sm:p-6 dark:bg-slate-900"
+      className="card-glow group block rounded-xl bg-white p-5 transition-colors duration-micro hover:bg-brand-50/30 dark:hover:bg-brand-500/10 sm:p-6 dark:bg-slate-900"
     >
       <div className="flex items-start gap-4">
         <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-          style={{ backgroundColor: `${colour}1f`, color: colour }}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${FEATURE_TILE_CLASS}`}
+          style={featureTileStyle(colour)}
         >
           {featureIcon(article.slug, article.categorySlug)}
         </div>

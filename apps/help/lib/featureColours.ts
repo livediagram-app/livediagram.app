@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { topCategorySlug } from '@livediagram/help-registry';
 
 /** Feature slug → accent colour (hex). The home + features grid and the
@@ -248,4 +249,13 @@ export function featureColour(slug: string, categorySlug?: string): string {
     FEATURE_CATEGORY_HEX[topCategorySlug(categorySlug ?? '')] ??
     FEATURE_FALLBACK_HEX
   );
+}
+
+/** A feature card's icon tile: the hue at 12% behind a glyph in the hue. In dark mode the glyph
+ *  lifts toward white, so the muted hues (slate, indigo) still read on a dark card. */
+export const FEATURE_TILE_CLASS =
+  'text-(--feature) dark:text-[color-mix(in_oklab,var(--feature)_70%,white)]';
+
+export function featureTileStyle(colour: string): CSSProperties {
+  return { backgroundColor: `${colour}1f`, '--feature': colour } as CSSProperties;
 }

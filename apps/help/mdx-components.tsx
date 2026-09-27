@@ -2,7 +2,12 @@ import type { MDXComponents } from 'mdx/types';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { articles, categories, articleHref, categoryHref } from '@/lib/articles';
-import { FEATURE_FALLBACK_HEX, featureColour } from '@/lib/featureColours';
+import {
+  FEATURE_FALLBACK_HEX,
+  FEATURE_TILE_CLASS,
+  featureColour,
+  featureTileStyle,
+} from '@/lib/featureColours';
 import { featureIcon } from '@/lib/featureIcons';
 import { Figure } from './components/Figure';
 
@@ -38,7 +43,9 @@ function Tip({ children }: { children: ReactNode }) {
           d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
         />
       </svg>
-      <div className="text-sm leading-relaxed text-slate-600 [&>p]:mb-0">{children}</div>
+      <div className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 [&>p]:mb-0">
+        {children}
+      </div>
     </div>
   );
 }
@@ -61,7 +68,9 @@ function Note({ children }: { children: ReactNode }) {
           d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
         />
       </svg>
-      <div className="text-sm leading-relaxed text-slate-600 [&>p]:mb-0">{children}</div>
+      <div className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 [&>p]:mb-0">
+        {children}
+      </div>
     </div>
   );
 }
@@ -92,22 +101,24 @@ function Feature({ slug, title, children }: { slug?: string; title: string; chil
     <div
       className={`h-full rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 ${
         href
-          ? 'transition-colors hover:border-brand-300 hover:bg-brand-50/40 dark:hover:border-brand-500/60'
+          ? 'transition-colors hover:border-brand-300 hover:bg-brand-50/40 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
           : ''
       }`}
     >
       <div className="flex items-start gap-3">
         {icon && (
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: `${colour}1f`, color: colour }}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${FEATURE_TILE_CLASS}`}
+            style={featureTileStyle(colour)}
           >
             {icon}
           </div>
         )}
         <div className="min-w-0 flex-1">
           <p className="mb-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</p>
-          <div className="text-sm leading-relaxed text-slate-500 [&>p]:mb-0">{children}</div>
+          <div className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 [&>p]:mb-0">
+            {children}
+          </div>
         </div>
       </div>
     </div>
@@ -172,12 +183,12 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       </a>
     ),
     ul: ({ children }) => (
-      <ul className="mb-5 ml-1 space-y-2.5 text-slate-600 [&>li]:relative [&>li]:pl-5 [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:top-[10px] [&>li]:before:h-2 [&>li]:before:w-2 [&>li]:before:rounded-full [&>li]:before:bg-brand-400 [&>li]:before:content-['']">
+      <ul className="mb-5 ml-1 space-y-2.5 text-slate-600 dark:text-slate-300 [&>li]:relative [&>li]:pl-5 [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:top-[10px] [&>li]:before:h-2 [&>li]:before:w-2 [&>li]:before:rounded-full [&>li]:before:bg-brand-400 [&>li]:before:content-['']">
         {children}
       </ul>
     ),
     ol: ({ children }) => (
-      <ol className="counter-reset-[step] mb-5 ml-1 list-none space-y-2.5 text-slate-600 [&>li]:relative [&>li]:pl-8 [&>li]:counter-increment-[step] [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:top-0 [&>li]:before:flex [&>li]:before:h-5 [&>li]:before:w-5 [&>li]:before:items-center [&>li]:before:justify-center [&>li]:before:rounded-full [&>li]:before:bg-brand-100 [&>li]:before:text-xs [&>li]:before:font-bold [&>li]:before:text-brand-700 [&>li]:before:content-[counter(step)]">
+      <ol className="counter-reset-[step] mb-5 ml-1 list-none space-y-2.5 text-slate-600 dark:text-slate-300 [&>li]:relative [&>li]:pl-8 [&>li]:counter-increment-[step] [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:top-0 [&>li]:before:flex [&>li]:before:h-5 [&>li]:before:w-5 [&>li]:before:items-center [&>li]:before:justify-center [&>li]:before:rounded-full [&>li]:before:bg-brand-100 [&>li]:before:text-xs [&>li]:before:font-bold [&>li]:before:text-brand-700 [&>li]:before:content-[counter(step)] dark:[&>li]:before:bg-brand-500/20 dark:[&>li]:before:text-brand-300">
         {children}
       </ol>
     ),
@@ -220,7 +231,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       <strong className="font-semibold text-slate-900 dark:text-slate-100">{children}</strong>
     ),
     hr: () => (
-      <hr className="my-8 h-px border-0 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+      <hr className="my-8 h-px border-0 bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-700" />
     ),
     Step,
     Tip,

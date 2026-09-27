@@ -17,7 +17,7 @@ export function ArticleCard({ article, number }: { article: Article; number?: nu
   return (
     <Link
       href={articleHref(article)}
-      className="card-glow group block rounded-xl bg-white p-5 transition-colors duration-micro hover:bg-brand-50/30 sm:p-6 dark:bg-slate-900"
+      className="card-glow group block rounded-xl bg-white p-5 transition-colors duration-micro hover:bg-brand-50/30 dark:hover:bg-brand-500/10 sm:p-6 dark:bg-slate-900"
     >
       <div className="flex items-start gap-3">
         {number !== undefined ? (
@@ -30,7 +30,7 @@ export function ArticleCard({ article, number }: { article: Article; number?: nu
         ) : (
           <span
             aria-hidden
-            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-300"
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100 dark:bg-brand-500/15 dark:group-hover:bg-brand-500/25 dark:text-brand-300"
           >
             {icon}
           </span>

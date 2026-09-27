@@ -81,7 +81,7 @@ export function SearchInput({ large = false }: { large?: boolean }) {
                 setQuery('');
                 setDismissed(false);
               }}
-              className="block border-b border-slate-100 px-4 py-3 transition-colors last:border-b-0 hover:bg-brand-50/60 dark:border-slate-800"
+              className="block border-b border-slate-100 px-4 py-3 transition-colors last:border-b-0 hover:bg-brand-50/60 dark:border-slate-800 dark:hover:bg-slate-800"
             >
               <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                 {article.title}
