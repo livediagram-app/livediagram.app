@@ -65,7 +65,7 @@ Jobs:
 4. **deploy-api** — runs:
    - `pnpm exec wrangler whoami` (diagnostic — prints which Cloudflare account the token authenticates against so a `7403 account not authorized` error is debuggable from the log).
    - `pnpm exec wrangler d1 migrations apply DB --remote` applies any pending migrations BEFORE the worker deploy so the new code never briefly runs against an older schema. If this step fails the job halts and surfaces a precise error pointing at the missing token scopes. (Wrangler 4 dropped the `--yes` flag; the command is non-interactive by default in CI.)
-   - `pnpm exec wrangler deploy` from `apps/api/`.
+   - `pnpm exec wrangler deploy` from `apps/api/`, plus the hosted profile's `--var` flags on livediagram.app's own repository (see "Hosted profile" below), then `node scripts/hosted-vars.mjs verify` against the live version.
 5. **deploy-telemetry** — downloads `telemetry-out`, runs `pnpm exec wrangler deploy` from `apps/telemetry/` (in parallel with marketing/live/api).
 6. **deploy-help** — downloads `help-out`, runs `pnpm exec wrangler deploy` from `apps/help/` (in parallel with the others).
 7. **deploy-mcp** — depends on **deploy-api** (the MCP worker has a service binding to the api worker, [MCP server](../015-api/mcp-server.md), so api must exist first). Runs `pnpm exec wrangler deploy` from `apps/mcp/` — no static artifact to download, the worker bundles from source. NOT a `deploy-router` dependency: `mcp.livediagram.app` is its own host, not a path under the main hostname.
@@ -74,6 +74,17 @@ Jobs:
 `deploy-marketing`, `deploy-live`, `deploy-api`, `deploy-telemetry`, and `deploy-help` run in parallel off `build`; `deploy-mcp` runs once `deploy-api` is up (parallel to the rest); `deploy-router` waits for the five it binds (not mcp, which is a separate host).
 
 All seven deploy jobs use raw `pnpm exec wrangler` rather than `cloudflare/wrangler-action` — wrangler 4 ships sensible defaults and the explicit invocation makes the workflow log read 1:1 against a local run.
+
+## Hosted profile
+
+Some configuration is what **livediagram.app** runs with, not what the software defaults to. Committed `[vars]` would make it every fork's default; a value set only in the Cloudflare dashboard would be wiped by the next `wrangler deploy`, which replaces a worker's plain vars with exactly the ones it declares ([Staging environment](staging-environment.md) "Known sharp edge"). So it has a seam of its own: the **hosted profile**.
+
+- **What it holds.** `apps/api/hosted-vars.json`: `TELEMETRY_ENABLED = "true"` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) and the per-owner image gallery caps `IMAGE_MAX_PER_OWNER = "100"` and `IMAGE_MAX_BYTES_PER_OWNER = "104857600"` ([Image element + per-owner gallery](../009-elements/images.md)). Its frontend mirror, `NEXT_PUBLIC_TELEMETRY_ENABLED`, is derived from it rather than stated twice.
+- **Who gets it.** The reusable workflow resolves `HOSTED` from the repository ID of `livediagram-app/livediagram.app`, so production and staging both apply it, a rename or transfer keeps it, and no fork matches. A fork's deploy applies nothing, so a fork is **telemetry-off and uncapped** until it opts in by declaring the vars in its own `[vars]`.
+- **How it is applied.** On every hosted deploy, not once: the build step appends the frontend mirror to `$GITHUB_ENV`, and the api deploy passes each var as `wrangler deploy --var NAME:VALUE` (`node scripts/hosted-vars.mjs flags`).
+- **How it is checked.** After the api deploy, `node scripts/hosted-vars.mjs verify` reads the plain vars off every version serving traffic (`wrangler deployments status` + `wrangler versions view`) and fails the run on any hosted var that is missing or different. In CI, `apps/api/src/hosted-vars.test.ts` fails when the profile stops turning telemetry on, stops capping galleries (by the worker's own cap parser), names a var the worker does not read, or when `wrangler.toml` commits a hosted-only var as a default.
+
+`AI_ALLOWED_ORIGINS` is deliberately **not** in the profile. It names livediagram.app's origins but fails closed, so a fork that forgets to change it gets an AI endpoint that refuses its own origin rather than one open to every page.
 
 ## Required GitHub Action secrets
 

@@ -62,6 +62,16 @@ on:
       INTERNAL_EVENTS_KEY:
         required: false
 
+# The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"):
+# livediagram.app's own deploys add the vars in apps/api/hosted-vars.json
+# (telemetry on, per-owner image caps) and a fork's do not, so a fork deploying
+# this repo as documented is telemetry-off and uncapped. Keyed on the repository
+# ID of livediagram-app/livediagram.app rather than its name, so a rename or a
+# transfer keeps the profile and no fork can match it. In a reusable workflow
+# the `github` context is the caller's, so both callers resolve it the same way.
+env:
+  HOSTED: ${{ github.repository_id == '1253158818' }}
+
 # Least privilege: deploys authenticate to Cloudflare with CF_API_TOKEN, which
 # is a secret rather than a token permission, so no job here needs write access
 # to the repository itself.
@@ -90,6 +100,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The hosted profile's build-time half: NEXT_PUBLIC_TELEMETRY_ENABLED,
+      # mirrored from hosted-vars.json so the frontends emit exactly when the api
+      # ingests. On in staging too, against staging's own D1 — that is how you
+      # verify a new event lands before production sees it. Skipped on a fork,
+      # whose frontends then emit nothing unless its own build env opts in.
+      - name: Apply hosted profile to the build
+        if: env.HOSTED == 'true'
+        working-directory: apps/api
+        run: |
+          set -euo pipefail
+          node scripts/hosted-vars.mjs build-env >> "$GITHUB_ENV"
+
       - name: Build all apps
         # Frontend Clerk publishable key is baked into `next build`
         # at this step. Repo secret because the user doesn't want
@@ -101,13 +123,6 @@ jobs:
         # staging sign-in can never touch a production user.
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          # Turn on client-side telemetry emission (docs/specs/017-telemetry/telemetry.md). A plain public
-          # flag, not a secret. The api worker's TELEMETRY_ENABLED is the
-          # authoritative gate; this just lets the live editor actually send
-          # events. Unset (e.g. local builds, OSS forks) keeps emission off.
-          # On in staging too, against staging's own D1 — that is how you
-          # verify a new event actually lands before production sees it.
-          NEXT_PUBLIC_TELEMETRY_ENABLED: 'true'
           # Show the "Continue with Google" OAuth button on the sign-in
           # / get-started pages. Plain public flag, not a secret. Only takes
           # effect when the Clerk key above is also set and Google SSO is
@@ -441,7 +456,31 @@ jobs:
         # staging environment (docs/specs/016-platform/staging-environment.md "One-time setup"). Migrations
         # run via `pnpm db:migrate:remote` for ad-hoc local runs; the
         # deploy applies them automatically in the step above.
-        run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+        #
+        # On the hosted repository the hosted profile rides along as `--var`
+        # flags. Sent on EVERY deploy, because `wrangler deploy` replaces the
+        # worker's plain vars with exactly the ones it declares: a value set
+        # once in the dashboard is gone on the next deploy.
+        run: |
+          set -euo pipefail
+          hosted_vars=()
+          if [ "$HOSTED" = 'true' ]; then
+            flags="$(node scripts/hosted-vars.mjs flags)"
+            mapfile -t hosted_vars <<<"$flags"
+          fi
+          pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"} "${hosted_vars[@]}"
+
+      # Read the hosted vars back off the version now serving traffic and fail
+      # the run if any is missing or different. The image caps are the R2
+      # quota guard; they were once documented as live while no deploy set
+      # them, and nothing noticed. This is the step that notices.
+      - name: Verify hosted vars are live
+        if: env.HOSTED == 'true'
+        working-directory: apps/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: node scripts/hosted-vars.mjs verify ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
   deploy-mcp:
     name: Deploy mcp

@@ -133,8 +133,9 @@ from production's in exactly two values:
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and
-`NEXT_PUBLIC_TELEMETRY_ENABLED` / `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` are `true` in both
-so the staging build exercises the same code as production's.
+`NEXT_PUBLIC_TELEMETRY_ENABLED` (from the hosted profile, [Deployment](deployment.md)
+"Hosted profile") / `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` are `true` in both so the staging
+build exercises the same code as production's.
 
 ## Integrations
 
@@ -264,10 +265,11 @@ becomes a step if staging is ever moved to a Clerk production instance.
 
 `wrangler deploy` replaces a worker's plain `[vars]` with whatever the config file
 declares, so any var set **only** in the Cloudflare dashboard is wiped on the next
-deploy unless `keep_vars = true`. This already applies to production
-(`IMAGE_MAX_PER_OWNER` and friends are documented as dashboard-settable but are not in
-`wrangler.toml`). Staging declares the ones it needs
-**in `[env.staging.vars]`** so the environment is reproducible from the repo alone.
+deploy unless `keep_vars = true`. So nothing is set only in the dashboard: a var is
+either committed (`[vars]` / `[env.staging.vars]`, every fork's default too) or part of
+the hosted profile, which the deploy sends with `--var` on every run and then reads back
+off the live worker ([Deployment](deployment.md) "Hosted profile"). Either way the
+environment is reproducible from the repo alone.
 
 **This prediction came true, and it cost a security control.** `AI_ALLOWED_ORIGINS` was
 documented as production-set but was measurably unset when probed — `POST /api/ai` with no
@@ -275,9 +277,10 @@ documented as production-set but was measurably unset when probed — `POST /api
 which fronts a live OpenAI key, accepted requests from any origin. Whether it was never set
 or set once and wiped by a deploy is now unknowable, which is the point: a dashboard var
 leaves no trace either way, and no amount of reading the repo would have revealed it.
-`AI_ALLOWED_ORIGINS` is therefore now declared in production's `[vars]` too. The remaining
-dashboard-only vars (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`) should be assumed
-absent until probed, not trusted because a comment says the hosted deployment sets them.
+`AI_ALLOWED_ORIGINS` is therefore declared in production's `[vars]` too. The image gallery
+caps (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`) went the same way: documented as
+hosted-set, set by nothing, so the R2 quota guard was off. They are in the hosted profile now,
+and the deploy's verify step is the probe that fails when one is not live.
 `AI_REQUIRE_CLERK` is deliberately unset in **both** environments (the editor offers AI to
 guests; see the comment above production's `AI_ALLOWED_ORIGINS`). Staging set it until
 September 2026, which made staging refuse AI to guests that production serves: exactly the
@@ -286,4 +289,4 @@ drift this environment exists to catch, so it was removed.
 The general lesson, worth more than the specific fix: **an optional guard that fails open is
 untestable from the source tree.** Every file can read as though a protection is active while
 production runs without it. Where a guard is config-gated, the audit step is a probe against
-the deployment, not a code review.
+the deployment, not a code review, and for the hosted profile that probe runs on every deploy.
