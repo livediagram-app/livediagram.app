@@ -125,7 +125,7 @@ export function PortalMenu({
   // (rather than the jarring full-screen modal). Rendered inside this
   // menu's container so the outside-click handler treats it as "inside".
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const deleteRowRef = useRef<HTMLDivElement>(null);
+  const [deleteRow, setDeleteRow] = useState<HTMLDivElement | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
@@ -329,7 +329,7 @@ export function PortalMenu({
                   the everyday verbs: both change what the tab will let you
                   do next rather than doing something to it. The confirm
                   popover anchors to this wrapper. */}
-              <div ref={deleteRowRef} className="ml-auto flex items-center gap-0.5">
+              <div ref={setDeleteRow} className="ml-auto flex items-center gap-0.5">
                 <MenuToolButton
                   icon={<TabLockIcon />}
                   label={locked ? 'Unlock tab' : 'Lock tab'}
@@ -459,9 +459,9 @@ export function PortalMenu({
           </>
         ) : null}
       </div>
-      {confirmingDelete && deleteRowRef.current ? (
+      {confirmingDelete && deleteRow ? (
         <ConfirmPopover
-          anchor={deleteRowRef.current}
+          anchor={deleteRow}
           message="Delete this tab? Its content can't be recovered."
           confirmLabel="Delete"
           onConfirm={() => {
