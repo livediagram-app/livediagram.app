@@ -18,6 +18,7 @@ import {
 } from '@clerk/react';
 import { useEffect } from 'react';
 import { clerkPublishableKey } from '@/lib/clerk-config';
+import { useLatest } from '@/hooks/ui/useLatest';
 import type { DeferredAuthState } from './deferred-auth';
 
 export function ClerkBridge({ onState }: { onState: (state: DeferredAuthState) => void }) {
@@ -44,6 +45,9 @@ function Publisher({ onState }: { onState: (state: DeferredAuthState) => void })
     if (!user) throw new Error('Not signed in');
     await user.delete();
   });
+  // Clerk's hook re-mints it per render; the published closure calls the newest one, so the state is
+  // only republished when an auth field that matters changes.
+  const deleteUserRef = useLatest(deleteUserReverified);
 
   useEffect(() => {
     onState({
@@ -63,13 +67,9 @@ function Publisher({ onState }: { onState: (state: DeferredAuthState) => void })
         : null,
       getToken: async (opts) => (await getToken(opts)) ?? null,
       signOut: (opts) => signOut(opts),
-      deleteAccount: isSignedIn ? () => deleteUserReverified() : null,
+      deleteAccount: isSignedIn ? () => deleteUserRef.current() : null,
     });
-    // deleteUserReverified is re-minted per render by Clerk's hook; the
-    // published closure reads it via this effect's latest run, and the
-    // state identity is keyed on the auth fields that matter.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, isSignedIn, userId, user, getToken, signOut, onState]);
+  }, [isLoaded, isSignedIn, userId, user, getToken, signOut, onState, deleteUserRef]);
 
   return null;
 }
