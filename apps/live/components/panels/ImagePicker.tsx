@@ -2,7 +2,7 @@
 
 import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
 import {
   apiDeleteImage,
@@ -75,39 +75,6 @@ export function ImagePicker({
       .catch(() => setGalleryError('Could not load your gallery.'));
   }, [ownerId]);
 
-  // Clipboard paste support. While the picker is open, a paste
-  // gesture (Cmd-V / Ctrl-V or right-click → Paste) lifts the
-  // first image file off the clipboard and runs it through the
-  // same handleFile path as drag-drop / file input. Pasting a
-  // screenshot is the most common image source after drag-drop,
-  // so handling it natively saves the user a "save to disk → drag
-  // in" detour. Only attaches the listener while the picker is
-  // mounted; the keydown handler above lives on the document so
-  // the paste one does too (a focused button inside the dialog
-  // doesn't bubble the paste event to the dialog otherwise).
-  useEffect(() => {
-    const onPaste = (e: ClipboardEvent) => {
-      const items = e.clipboardData?.items;
-      if (!items) return;
-      for (const item of items) {
-        if (item.kind !== 'file') continue;
-        const file = item.getAsFile();
-        if (!file) continue;
-        if (file.type.startsWith('image/')) {
-          e.preventDefault();
-          void handleFile(file);
-          return;
-        }
-      }
-    };
-    document.addEventListener('paste', onPaste);
-    return () => document.removeEventListener('paste', onPaste);
-    // handleFile reads `ownerId` / `onSelect` from the enclosing
-    // closure; both are stable for the picker's lifetime so the
-    // empty dep array is intentional.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const handleFile = async (file: File) => {
     setUploadError(null);
     setUploading(true);
@@ -122,6 +89,38 @@ export function ImagePicker({
       setUploading(false);
     }
   };
+
+  // Clipboard paste support. While the picker is open, a paste
+  // gesture (Cmd-V / Ctrl-V or right-click → Paste) lifts the
+  // first image file off the clipboard and runs it through the
+  // same handleFile path as drag-drop / file input. Pasting a
+  // screenshot is the most common image source after drag-drop,
+  // so handling it natively saves the user a "save to disk → drag
+  // in" detour. Only attaches the listener while the picker is
+  // mounted; the keydown handler above lives on the document so
+  // the paste one does too (a focused button inside the dialog
+  // doesn't bubble the paste event to the dialog otherwise).
+  // The pasted file goes through handleFile as an effect event, so the listener attaches once and
+  // still uploads with the newest owner / diagram / onSelect.
+  const pasteFile = useEffectEvent((file: File) => void handleFile(file));
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.kind !== 'file') continue;
+        const file = item.getAsFile();
+        if (!file) continue;
+        if (file.type.startsWith('image/')) {
+          e.preventDefault();
+          pasteFile(file);
+          return;
+        }
+      }
+    };
+    document.addEventListener('paste', onPaste);
+    return () => document.removeEventListener('paste', onPaste);
+  }, []);
 
   // Gallery picks re-home for offline diagrams (docs/specs/006-diagram/offline-mode.md): a bare gallery id
   // inside an offline diagram would break once the server's 30-day unused-

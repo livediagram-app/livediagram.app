@@ -56,7 +56,7 @@ export function ExplorerHeaderMenu({
           icon={<OpenIcon />}
           label="Open Explorer"
           onClick={run(() => {
-            window.location.href = '/explorer';
+            window.location.assign('/explorer');
           })}
         />,
       ],
