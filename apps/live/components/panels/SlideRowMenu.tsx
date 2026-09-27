@@ -14,7 +14,7 @@
 // is a menu people have to learn twice.
 
 import { DuplicateIcon, PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { PlusIcon, Glyph } from '@livediagram/ui';
 
@@ -76,7 +76,8 @@ export function SlideRowMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState<string | null>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  // The menu button, held in state so the menu anchors on its first render.
+  const [button, setButton] = useState<HTMLButtonElement | null>(null);
   const close = () => {
     setOpen(false);
     setSection(null);
@@ -92,7 +93,7 @@ export function SlideRowMenu({
   return (
     <>
       <EllipsisTriggerButton
-        ref={buttonRef}
+        ref={setButton}
         size="sm"
         label={`Options for ${slideName(slide, index)}`}
         expanded={open}
@@ -105,7 +106,7 @@ export function SlideRowMenu({
         }}
       />
       {open ? (
-        <PortalMenu anchor={buttonRef.current} placement="below" onClose={close}>
+        <PortalMenu anchor={button} placement="below" onClose={close}>
           {/* Quick-action toolbar, matching the Explorer's rows and the tab
               context menu: the verbs reached for most often as a compact icon
               row, Delete pinned to the right edge. */}
@@ -152,7 +153,7 @@ export function SlideRowMenu({
                   // Hand the menu button up as the anchor so the panel can
                   // open the confirm beside it — the same pattern the
                   // Explorer's row menu uses for its own Delete.
-                  onDelete(buttonRef.current);
+                  onDelete(button);
                   close();
                 }}
               />

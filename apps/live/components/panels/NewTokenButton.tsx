@@ -8,7 +8,7 @@
 // TokensController so the list + sidebar badge update on create.
 import { PlusIcon } from '@/components/primitives/explorer-icons';
 import { Button } from '@livediagram/ui';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import type { TokensController } from '@/hooks/persistence/useTokens';
 import { useCopiedFlash } from '@livediagram/ui';
@@ -16,7 +16,8 @@ import { useCopiedFlash } from '@livediagram/ui';
 const MAX_NAME = 60;
 
 export function NewTokenButton({ tokens }: { tokens: TokensController }) {
-  const btnRef = useRef<HTMLButtonElement>(null);
+  // The button, held in state so its menu anchors on its first render.
+  const [button, setButton] = useState<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [secret, setSecret] = useState<string | null>(null);
@@ -41,7 +42,7 @@ export function NewTokenButton({ tokens }: { tokens: TokensController }) {
   return (
     <>
       <Button
-        ref={btnRef}
+        ref={setButton}
         size="xs"
         onClick={() => (open ? close() : setOpen(true))}
         disabled={disabled}
@@ -53,7 +54,7 @@ export function NewTokenButton({ tokens }: { tokens: TokensController }) {
         New token
       </Button>
       {open ? (
-        <PortalMenu anchor={btnRef.current} placement="below" onClose={close}>
+        <PortalMenu anchor={button} placement="below" onClose={close}>
           <div className="px-3 py-2">
             {secret ? (
               <div className="flex flex-col gap-2">
