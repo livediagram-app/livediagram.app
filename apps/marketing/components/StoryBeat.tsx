@@ -1,4 +1,4 @@
-import { ChevronRightIcon } from '@livediagram/ui';
+import { ChevronRightIcon, GlyphDisc } from '@livediagram/ui';
 import { CATEGORY_ICONS } from '@/components/category-icons';
 import { CtaLink } from '@/components/CtaLink';
 import { Showcase } from '@/components/Showcase';
@@ -27,12 +27,12 @@ export function StoryBeat({ beat, index }: { beat: LandingBeat; index: number })
           {/* The beat's number sits beside its title, centred on the whole
               block, so a title that wraps to two lines stays balanced. */}
           <div className="flex items-center gap-4">
-            <span
+            <GlyphDisc
               aria-hidden
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white tabular-nums sm:h-10 sm:w-10"
+              className="h-9 w-9 bg-brand-500 text-sm font-semibold text-white tabular-nums sm:h-10 sm:w-10"
             >
               {number}
-            </span>
+            </GlyphDisc>
             <h2 className="text-3xl font-semibold tracking-tight text-balance text-slate-900 sm:text-4xl dark:text-slate-100">
               {beat.title}
             </h2>

@@ -1,7 +1,7 @@
 // Feature illustrations — canvas + real-time scenes. Split from
 // FeatureArt.tsx; see ./shared for Frame + color constants.
 import { ARROW_STROKE, BLUE_STROKE, Frame, INK_FILL, INK_STROKE, PINK, SKY } from './shared';
-import { ActionIcon } from '@livediagram/ui';
+import { ActionIcon, GlyphDisc } from '@livediagram/ui';
 import {
   ClockIcon,
   Cursor,
@@ -237,17 +237,18 @@ export function CommentsArt() {
       {/* comment count badge on the element */}
       <span className="absolute left-[34%] top-5 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-[9px] font-bold text-white shadow">
         <span className="fa-pulse absolute inset-0 rounded-full bg-amber-400" />
-        <span className="relative">2</span>
+        <span className="text-optical-centre relative">2</span>
       </span>
       {/* thread popover */}
       <div className="fa-fade absolute right-2 top-3 w-[52%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-1">
-          <span
-            className="flex h-3.5 w-3.5 items-center justify-center rounded-full text-[6px] font-bold text-white"
+          <GlyphDisc
+            size={14}
+            className="text-[6px] font-bold text-white"
             style={{ backgroundColor: PINK }}
           >
             JR
-          </span>
+          </GlyphDisc>
           <span className="text-[7px] font-semibold text-slate-600 dark:text-slate-300">
             Jordan
           </span>
@@ -283,12 +284,13 @@ export function AssignedActionsArt() {
       <div className="fa-fade absolute right-2 top-3 w-[54%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md dark:border-slate-800 dark:bg-slate-900">
         <div className="h-1.5 w-4/5 rounded bg-slate-200 dark:bg-slate-700" />
         <div className="mt-1 flex items-center gap-1">
-          <span
-            className="flex h-3.5 w-3.5 items-center justify-center rounded-full text-[6px] font-bold text-white"
+          <GlyphDisc
+            size={14}
+            className="text-[6px] font-bold text-white"
             style={{ backgroundColor: PINK }}
           >
             AS
-          </span>
+          </GlyphDisc>
           <span className="text-[7px] font-semibold text-slate-600 dark:text-slate-300">
             Assigned to Ana
           </span>
@@ -529,9 +531,10 @@ export function PresenceArt() {
             >
               <div className="flex h-[14px] -space-x-1.5">
                 {t.people.map((p, i) => (
-                  <span
+                  <GlyphDisc
+                    size={14}
                     key={p.initials}
-                    className="fa-pop flex h-[14px] w-[14px] items-center justify-center rounded-full text-[6px] font-bold text-white"
+                    className="fa-pop text-[6px] font-bold text-white"
                     style={{
                       backgroundColor: p.color,
                       boxShadow: `0 0 0 1.5px var(--avatar-gap, white), 0 0 0 3px ${p.ring}`,
@@ -539,7 +542,7 @@ export function PresenceArt() {
                     }}
                   >
                     {p.initials}
-                  </span>
+                  </GlyphDisc>
                 ))}
               </div>
               <span className="text-[7px] font-medium text-slate-500 dark:text-slate-400">
@@ -815,12 +818,13 @@ export function TeamsArt() {
             className="fa-pop flex items-center gap-1.5 rounded px-1 py-0.5 text-[8px]"
             style={{ animationDelay: `${0.3 + i * 0.5}s` }}
           >
-            <span
-              className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-[6px] font-semibold text-white"
+            <GlyphDisc
+              size={14}
+              className="text-[6px] font-semibold text-white"
               style={{ backgroundColor: m.c }}
             >
               {m.who[0]}
-            </span>
+            </GlyphDisc>
             <span className="font-semibold text-slate-700 dark:text-slate-200">{m.who}</span>
             <span className={'ml-auto rounded px-1.5 py-0.5 text-[7px] font-semibold ' + m.cls}>
               {m.role}

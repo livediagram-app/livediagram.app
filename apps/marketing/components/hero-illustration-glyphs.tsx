@@ -7,7 +7,7 @@
 // chevrons, menu, search) come from @livediagram/ui instead, so the hero
 // mirrors the editor rather than a copy of it.
 
-import { SearchIcon, Glyph } from '@livediagram/ui';
+import { SearchIcon, Glyph, GlyphDisc } from '@livediagram/ui';
 
 // A tab's presence avatar, sized as the editor's TabPresenceStack sizes them:
 // small initials on the participant's colour, a ring of the bar's own surface, overlapping the
@@ -23,14 +23,15 @@ export function TabAvatar({
   last: boolean;
 }) {
   return (
-    <span
+    <GlyphDisc
+      size={16}
       style={{ backgroundColor: color }}
-      className={`inline-flex h-4 w-4 items-center justify-center rounded-full border-2 border-white text-[7px] dark:border-slate-900 font-semibold text-white ${
+      className={`border-2 border-white text-[7px] dark:border-slate-900 font-semibold text-white ${
         last ? '' : '-mr-0.5'
       }`}
     >
       {initials}
-    </span>
+    </GlyphDisc>
   );
 }
 
