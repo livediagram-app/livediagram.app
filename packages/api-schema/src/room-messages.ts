@@ -480,11 +480,11 @@ export type RoomOp =
   | { kind: 'focus-here'; tabId: string; at: { x: number; y: number }; zoom: number }
   // --- Live poll (docs/specs/012-collaboration/live-poll.md) -------------------------------------------
   // Deliberately NOT a Tab field like the timer / dot-vote: a poll is
-  // ephemeral, so it exists only as these ops and the memory of the
-  // clients that received them. Nothing here reaches D1, the change log,
-  // or undo. All three relay unordered (no seq) and are never replayed to
-  // a reconnecting client — which is exactly why a late joiner isn't
-  // prompted.
+  // ephemeral, so nothing here reaches D1, the change log, or undo. The
+  // room keeps the running poll and its answers in its own storage and
+  // replays them on hello (docs/specs/012-collaboration/live-poll.md).
+  // `poll-start` / `poll-end` are sequenced mutations; `poll-answer` relays
+  // unordered, like presence.
   //
   // The host opened a poll. Replaces any poll already on screen (one at a
   // time per diagram).

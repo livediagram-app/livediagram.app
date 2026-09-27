@@ -4,8 +4,9 @@ Make simultaneous multi-user editing **robust**: two people working the same tab
 at the same time must not clobber each other, and a dropped connection must
 recover cleanly. Two mechanisms shipped for this. A third — a full field-level
 CRDT for concurrent edits to the _same_ element — was scoped and **deliberately
-dropped** (see the decision at the end); the selection lock already covers that
-case.
+dropped** (see the decision at the end). Same-element collisions therefore
+remain last-writer-wins; the advisory selection lock makes them rare, it does
+not prevent them.
 
 ## The problem it fixed
 
@@ -27,7 +28,8 @@ a socket dropped.
 ### Element-level ops
 
 The whole-tab broadcast is replaced by granular, id-addressed element ops, so
-different elements merge instead of clobbering. The room stays a relay.
+different elements merge instead of clobbering. The room orders element ops and
+relays them; it does not merge them.
 
 - Wire (`packages/api-schema/src/room-messages.ts`): `{ kind: 'el'; tabId;
 op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
@@ -38,8 +40,12 @@ op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   is `applyElementOp(elements, op)` by id — an op for an already-removed id is a
   safe no-op.
 - `update` replaces the whole element by id (simple + correct). Two peers editing
-  the same element still last-writer-wins per element — which the selection lock
-  covers.
+  the same element are still last-writer-wins per element, in room order. The
+  selection lock makes that rare; it is advisory and client-only, so it does not
+  prevent it. Only the multi-writer fields (answers, ideas, checklist ticks,
+  comments, dots) survive a same-element collision, because they travel as
+  `el-delta` / `vote` deltas and receivers keep their own copy of them
+  ([Collaboration race hardening](collab-race-hardening.md)).
 - The emit side is `tabBroadcastOps` (in the autosave path); it falls back to a
   whole-`tab` op for a new tab or a bulk change. A meta field that was
   _cleared_ serialises to `undefined`, which JSON drops on the wire, so it
@@ -50,7 +56,8 @@ op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
 ### Ordered room + reconnect catch-up
 
 The room stamps every **mutation** op with a monotonic `seq` inside an `epoch`
-(a random id minted per Durable Object instantiation) and rebroadcasts
+(a random id minted when the room is first created, then kept in its storage)
+and rebroadcasts
 `{ op, seq, epoch }`. Because every mutation passes through one single-threaded
 DO that assigns a total order, all peers converge. Ephemeral presence ops
 (cursor / select / laser / tab-focus) stay unordered.
@@ -81,13 +88,12 @@ that let `viewport` through.
 - The DO keeps a bounded in-memory op log. On reconnect a client sends
   `{ epoch, lastSeq }`; the DO replays the delta or answers `resync: true` when
   it can't bridge the gap (behind the trimmed log floor, or a stale epoch), and
-  the client re-hydrates from D1 — a full reload, the same recovery the editor's
-  error boundary uses, with a `RealtimeResync` telemetry ping.
-- The log + seq + epoch live in memory (like the existing rate-limit map). A
-  hibernation wake resets them; a client that stayed connected adopts the new
-  epoch off the next op, and a client that _reconnects_ across a wake finds its
-  epoch stale and re-hydrates. So the reset only ever forces the safe path,
-  never loses data.
+  the client re-fetches its loaded tabs from D1 in place (`useRoomResync`), with
+  a `RealtimeResync` telemetry ping ([Resync without reloading the page](resync-without-reload.md)).
+- `epoch` and `seq` are persisted in Durable Object storage and restored on
+  every wake, so hibernation does not strand a reconnecting client. The op log
+  lives in memory only: a client that fell behind across a wake finds the log
+  empty and re-fetches, which is the safe path and never loses data.
 - The client (`apps/live/lib/api/room.ts`) gained auto-reconnect with capped
   backoff + seq/epoch tracking.
 - **The cursor must include the client's own ops.** The relay skips the
@@ -112,21 +118,29 @@ that let `viewport` through.
   600 ms debounce cancelled the local save outright, and the stale baseline
   made the next save re-broadcast peers' elements in their older form.
 
-**Durability is unchanged:** D1 stays the system of record. Persistence is
-client-driven (clients PUT tabs to D1 as before); the op log is a warm catch-up
-cache, not a second writer, so there's no double-write race.
+**D1 stays the system of record.** Tab content is persisted by clients (each
+editor PUTs its whole copy of a changed tab); the op log is a warm catch-up
+cache, not a second writer. Two later additions put the room on the
+persistence path without making it hold the document: the tab PUT merges the
+room's collaboration ledger in before writing
+([Collaboration race hardening](collab-race-hardening.md) phase 3), and Q&A board writes are performed
+by the room itself, one at a time ([Q&A board](qa-board.md)).
 
 ## Locked decisions
 
 1. **Undo is local, not global.** Undo/redo affects the current user's own
    changes only — never rolls back a peer's edit. Undo applies the inverse of
    your own element ops locally and broadcasts them.
-2. **D1 is the system of record.** Persistence stays client-driven; the room
-   holds only live ordering state (the op log), never the only copy. REST reads,
-   exports, and offline durability are unchanged.
-3. **The selection lock stays.** The [Live app](../007-editor/live-app.md) lock soft-locks a selected element
-   for peers, which is what makes same-element concurrent editing a non-issue —
-   and the reason the field-level CRDT below wasn't needed.
+2. **D1 is the system of record.** The room holds ordering and collaboration
+   state (epoch + seq, the op log, the collaboration ledger, the live poll, the
+   facilitator baton), never a copy of the document. REST reads, exports, and
+   offline durability read D1.
+3. **The selection lock stays advisory.** The [Live app](../007-editor/live-app.md) lock soft-locks a
+   selected element for peers on the client. It makes same-element concurrent
+   editing rare, not impossible: the room does not enforce it, and a REST
+   writer (the MCP server, an API-token script) never sees it. Such collisions
+   stay last-writer-wins over the whole element, which is the cost accepted in
+   dropping the field-level CRDT below.
 
 ## Considered and dropped: a full field-level CRDT
 
@@ -136,15 +150,16 @@ box while another recolours it) would both survive, merged field-by-field.
 
 It was dropped because the cost outweighed the benefit:
 
-- **The benefit is narrow and mostly already covered.** The selection lock
-  (decision 3) prevents two people grabbing the same element at once in the first
-  place, so the case the CRDT uniquely rescues barely occurs. And it can't help
-  when two people change the _same_ field — someone's value still has to win.
+- **The benefit is narrow.** The selection lock (decision 3) makes two people
+  grabbing the same element at once rare, though it does not prevent it, and the
+  fields many people write at once already merge as deltas. So the case the CRDT
+  uniquely rescues is uncommon. And it can't help when two people change the
+  _same_ field — someone's value still has to win.
 - **The cost is paid by everyone, always.** It pulled in a third-party CRDT
   library (~60 KB gzipped) that shipped in the editor bundle regardless of use,
   added a permanent second sync path to maintain alongside the element-op path,
-  and turned the room from a stateless relay into a stateful service holding a
-  live copy of the diagram in memory.
+  and made the room hold a live copy of the whole diagram in memory: a second
+  copy of the document beside D1, which the room otherwise never holds.
 - **It was unverified.** It was never exercised with two live clients, so
   keeping it meant carrying risk that a future change flips it on and corrupts
   diagrams.
@@ -158,12 +173,27 @@ verified end-to-end and turned on properly, not carried as dormant code.
   `applyElementOp` (pure, unit-tested).
 - `packages/api-schema/src/room-messages.ts` — `el` / `tab-meta` ops; `seq` /
   `epoch` on the op frame; the `sync` + `catchup` frames.
-- `apps/api/src/diagram-room.ts` — seq / epoch / bounded op log + the
-  `sync` → `catchup` handler. Still a relay for op content; no diagram state
-  persisted.
+- `packages/api-schema/src/room-messages.ts` — `PRESENCE_OP_KINDS` /
+  `MUTATION_OP_KINDS` / `SYSTEM_OP_KINDS`, the one classification of every op.
+- `packages/diagram` — `element-deltas.ts` (`applyElementDelta`,
+  `mergeIncomingElement`), `collab-ledger.ts` (the ledger's entries and the
+  save merge), `comments.ts` (`opForTheWire`, `stampCommentAuthor`).
+- `apps/api/src/diagram-room.ts` — the role / class gate, seq + epoch
+  (persisted as `order-state`), the bounded in-memory op log and the
+  `sync` → `catchup` handler (`resolveCatchup` in `diagram-room-rules.ts`). It
+  rewrites comment authors in every mutation it relays and keeps collaboration
+  state in Durable Object storage: the per-element ledger
+  (`room-ledger-store.ts`), the live poll (`room-live-poll.ts`) and the
+  facilitator baton (`facilitator.ts`). It writes D1 for Q&A boards
+  (`handleQaWrite` → `qa-board-write.ts`). The full description is
+  [API app → Realtime model](../015-api/api.md#realtime-model).
+- `apps/api/src/room-client.ts` — the worker's calls into the room: the ledger
+  merge on a tab PUT (`mergeRoomLedger`, driven by `X-Room-Cursor`), the
+  view-role comment relay (`relayElementDelta`) and share-link broadcasts.
 - `apps/live` — `tab-broadcast-ops.ts` (emit) + the room `onOp` handler (apply);
-  `lib/api/room.ts` (auto-reconnect + seq/epoch tracking); `useRoomConnection`
-  (`onResync` → reload + telemetry).
+  `lib/api/room.ts` (auto-reconnect, seq/epoch tracking, the outbox);
+  `useRoomConnection` (`onResync` → `useRoomResync`, an in-place re-fetch, +
+  telemetry).
 
 See also [Live app](../007-editor/live-app.md) (selection lock),
 [API app](../015-api/api.md) (api + room), [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),

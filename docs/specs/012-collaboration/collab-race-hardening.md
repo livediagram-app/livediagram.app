@@ -143,9 +143,13 @@ a ledger that would outgrow the storage value limit stops recording rather
 than failing.
 
 **A save is merged with it.** When a tab PUT arrives for a diagram with a
-room (shared, or in a team), the api asks the room to merge its ledger into
-the incoming tab (`POST /merge-tab` on the DO stub, internal only) before
-writing. Each ledger entry is re-applied through `applyElementDelta`, so
+room (shared, or in a team) carrying the room cursor its snapshot was taken at
+(`X-Room-Cursor: <epoch>:<seq>`), the api reads the room's ledger for that tab
+(`GET /ledger` on the DO stub, internal only) and merges into the incoming tab
+only the entries sequenced after that cursor (`mergeRoomLedger` in
+`room-client.ts`, `mergeLedgerIntoTab` in `collab-ledger.ts`) before writing.
+A save with no cursor (the unload beacon, an API token, the MCP server), or a
+cursor from another epoch, isn't merged. Each ledger entry is re-applied through `applyElementDelta`, so
 the merge is exactly what a peer receiving those deltas would do: answers
 are re-set or withdrawn, ticks re-set, votes replaced for the same round,
 and ideas the snapshot is missing appended (per text, as many copies as
