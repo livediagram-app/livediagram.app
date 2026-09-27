@@ -265,7 +265,7 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
   return {
     elements,
     ...(layered ? { layers } : {}),
-    // White is draw.io's default paper, so it stays unset and the theme decides (D27).
+    // White is draw.io's default paper, so it stays unset and the theme decides.
     ...(graph.background && !WHITE.has(graph.background)
       ? { backgroundColor: graph.background }
       : {}),

@@ -34,7 +34,7 @@ export function applyDrawioPages(
     name: multiPage ? pageName(pages[0]!, 0) : active.name,
   });
   // New tabs carry the active tab's look, and its folder so a folder run is
-  // not split by the tabs landing inside it (D26).
+  // not split by the tabs landing inside it.
   const added = pages.slice(1).map((page, i) =>
     imported(page, {
       ...createTab(pageName(page, i + 1)),

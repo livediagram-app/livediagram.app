@@ -59,7 +59,9 @@ A draw.io file holds one or more pages. Each page becomes its own tab:
 
 - **The first page replaces the active tab**, exactly as every other import format does (the Import
   dialog's warning names that tab).
-- **Every further page becomes a new tab**, inserted straight after the active tab in page order.
+- **Every further page becomes a new tab**, inserted straight after the active tab in page order,
+  with the active tab's theme, font, text size and background, and in its tab folder (so a folder's
+  run of tabs is never split).
 - **Names.** A single-page file leaves the active tab's name alone, like every other format. A
   multi-page file names every tab after its page, the active tab included, so the set reads as the
   file's pages. An empty page name falls back to `Page n`.
@@ -106,7 +108,7 @@ counted (`shape-approximated`), and anything not in the table is **unmatched** (
 | draw.io                                                                                                                                                                                                                                                                                       | livediagram                                                                   | Fidelity     |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------ |
 | default rectangle, `rect`, `label`, `mxgraph.flowchart.process`, `mxgraph.basic.rect`                                                                                                                                                                                                         | `square`; `rounded=1` maps `arcSize` to the nearest `borderRadius`            | exact        |
-| `ellipse`, `mxgraph.flowchart.start_1`, `startState`, `mxgraph.flowchart.on-page_reference`                                                                                                                                                                                                   | `circle` (fills its box, so a wide one is an ellipse)                         | exact        |
+| `ellipse`, `mxgraph.flowchart.start_1`, `mxgraph.flowchart.start_2`, `startState`, `mxgraph.flowchart.on-page_reference`                                                                                                                                                                      | `circle` (fills its box, so a wide one is an ellipse)                         | exact        |
 | `rhombus`, `mxgraph.flowchart.decision`                                                                                                                                                                                                                                                       | `diamond`                                                                     | exact        |
 | `triangle`                                                                                                                                                                                                                                                                                    | `triangle`, turned to draw.io's `direction` (east by default) with `rotation` | exact        |
 | `hexagon`, `mxgraph.flowchart.preparation`                                                                                                                                                                                                                                                    | `hexagon`                                                                     | exact        |
@@ -114,13 +116,13 @@ counted (`shape-approximated`), and anything not in the table is **unmatched** (
 | `cloud`, `mxgraph.networks.cloud`                                                                                                                                                                                                                                                             | `cloud`                                                                       | exact        |
 | `parallelogram`, `mxgraph.flowchart.data`                                                                                                                                                                                                                                                     | `parallelogram`                                                               | exact        |
 | `trapezoid`                                                                                                                                                                                                                                                                                   | `trapezoid`                                                                   | exact        |
-| `document`, `mxgraph.flowchart.document`                                                                                                                                                                                                                                                      | `document`                                                                    | exact        |
+| `document`, `mxgraph.flowchart.document`, `mxgraph.flowchart.document2`                                                                                                                                                                                                                       | `document`                                                                    | exact        |
 | `actor`, `umlActor`                                                                                                                                                                                                                                                                           | `actor`                                                                       | exact        |
 | `mxgraph.flowchart.terminator`                                                                                                                                                                                                                                                                | `stadium`                                                                     | exact        |
 | `mxgraph.basic.star`                                                                                                                                                                                                                                                                          | `star`                                                                        | exact        |
 | `callout`, `wedgeCallout`                                                                                                                                                                                                                                                                     | `speech-bubble`                                                               | exact        |
 | `note`                                                                                                                                                                                                                                                                                        | `sticky` with its fill                                                        | exact        |
-| `text`, `edgeLabel` on a vertex                                                                                                                                                                                                                                                               | `text`                                                                        | exact        |
+| `text`, `edgeLabel` on a vertex; `mxgraph.flowchart.annotation_1` / `_2` (approximated)                                                                                                                                                                                                       | `text`                                                                        | exact        |
 | `line` (a vertex drawn as a line)                                                                                                                                                                                                                                                             | headless `arrow` across the box's middle                                      | exact        |
 | `swimlane`                                                                                                                                                                                                                                                                                    | `lane`, or `entity` for a class / entity stack (below)                        | exact        |
 | `table` (with `tableRow` rows)                                                                                                                                                                                                                                                                | `table` (below)                                                               | exact        |
@@ -128,14 +130,14 @@ counted (`shape-approximated`), and anything not in the table is **unmatched** (
 | `umlFrame`                                                                                                                                                                                                                                                                                    | `frame`                                                                       | exact        |
 | `mxgraph.android.phone2`, `mxgraph.ios7.misc.iphone`                                                                                                                                                                                                                                          | `phone`                                                                       | exact        |
 | `mxgraph.mockup.containers.browserWindow`                                                                                                                                                                                                                                                     | `browser`                                                                     | exact        |
-| `doubleEllipse`, `orEllipse`, `sumEllipse`, `or`, `xor`, `endState`, `mxgraph.flowchart.start_2`, `umlBoundary`, `umlEntity`, `umlControl`, `mxgraph.bpmn.event`, `lineEllipse`                                                                                                               | `circle`                                                                      | approximated |
+| `doubleEllipse`, `orEllipse`, `sumEllipse`, `or`, `xor`, `endState`, `mxgraph.flowchart.or_2`, `mxgraph.flowchart.summing_junction`, `umlBoundary`, `umlEntity`, `umlControl`, `mxgraph.bpmn.event`, `lineEllipse`                                                                            | `circle`                                                                      | approximated |
 | `process`, `internalStorage`, `card`, `cube`, `folder`, `component`, `module`, `offPageConnector`, `mxgraph.flowchart.predefined_process`, `mxgraph.flowchart.off-page_reference`, `umlLifeline`, `partialRectangle`, `singleArrow`, `doubleArrow`, `mxgraph.bpmn.task`, `mxgraph.bpmn.shape` | `square`                                                                      | approximated |
 | `delay`, `display`, `mxgraph.flowchart.delay`, `mxgraph.flowchart.display`                                                                                                                                                                                                                    | `stadium`                                                                     | approximated |
 | `step`                                                                                                                                                                                                                                                                                        | `parallelogram`                                                               | approximated |
 | `manualInput`, `loopLimit`, `mxgraph.flowchart.manual_input`, `mxgraph.flowchart.loop_limit`, `mxgraph.flowchart.manual_operation`                                                                                                                                                            | `trapezoid`                                                                   | approximated |
 | `tape`, `mxgraph.flowchart.paper_tape`, `mxgraph.flowchart.multi-document`                                                                                                                                                                                                                    | `document`                                                                    | approximated |
 | `dataStorage`, `mxgraph.flowchart.stored_data`, `mxgraph.flowchart.direct_data`, `mxgraph.flowchart.sequential_data`                                                                                                                                                                          | `cylinder`                                                                    | approximated |
-| `mxgraph.bpmn.gateway2`, `mxgraph.flowchart.merge_or_storage`, `mxgraph.flowchart.extract_or_measurement`                                                                                                                                                                                     | `diamond` / `triangle`                                                        | approximated |
+| `mxgraph.bpmn.gateway2`, `mxgraph.flowchart.sort` (diamond); `mxgraph.flowchart.merge_or_storage`, `mxgraph.flowchart.extract_or_measurement` (triangle)                                                                                                                                      | `diamond` / `triangle`                                                        | approximated |
 | `mxgraph.aws4.group`, `mxgraph.aws4.groupCenter`, `mxgraph.gcp2.*` groups                                                                                                                                                                                                                     | `frame` with the group's label                                                | approximated |
 
 A shape turned by `direction` other than the triangle keeps its upright livediagram form (counted with
@@ -162,7 +164,10 @@ look changes, the meaning does not):
 
 A tech icon's size is the nearest `iconSize` preset to the stencil's box. Its label, which draw.io
 draws outside the box (usually below), becomes the icon's caption on the same side, and the box grows
-to hold it.
+to hold it: down (or up) by a line per caption line, and wider about its centre when the caption is
+wider than the icon, since draw.io draws it unwrapped. The caption takes the theme's text colour:
+vendor stencils hard-code a caption colour for white paper, which vanishes on a dark canvas. A UML
+actor's name, drawn under the figure, grows its box the same way and is not counted as moved.
 
 **Unmatched** shapes (Cisco, GCP, BPMN detail, electrical, custom `stencil(...)` shapes, anything not
 listed) come in as a **labelled box**: a `square` in the stencil's box with its colours and label.
@@ -183,9 +188,14 @@ When the cell has no label, the box is labelled with the stencil's readable name
   separator line is dropped). Connections to a row attach to the entity. Rows beyond
   `ENTITY_MAX_FIELDS`, and text beyond `ENTITY_MAX_TEXT`, are cut and counted (`text-truncated`).
 - **Tables** (`shape=table` with `shape=tableRow` children) become a `table`: one row per row, one
-  cell per cell, the row heights and the first row's column widths carried over. A table's own label
-  (the title draw.io draws in its `startSize` strip) comes in as a `text` element above the grid,
-  counted (`shape-approximated`).
+  cell per cell, the row heights and the first row's column widths carried over, and each cell's fill,
+  text colour, bold / italic / underline and alignment. A table's own label (the title draw.io draws in
+  its `startSize` strip) comes in as a `text` element above the grid, counted (`shape-approximated`).
+- **Vertical lane titles.** draw.io writes a `horizontal=0` lane's title up its strip; a livediagram
+  lane title reads across. The title strip widens to hold the title, but only into the free space
+  before the lane's first shape (never over the content), and the change is counted (`label-moved`).
+- **Frames** (`umlFrame`, AWS and GCP groups) keep their title in the top-left corner, as a
+  livediagram frame does.
 
 ### Vertices: properties
 
@@ -193,7 +203,12 @@ When the cell has no label, the box is labelled with the stencil's readable name
   is kept verbatim; `none` is `transparent` for a fill and `strokeWidth: 'none'` for a stroke;
   `light-dark(a, b)` takes the light value `a`. **`default`, or no colour at all, is left unset**, so
   the element takes the tab's theme like anything drawn in livediagram: draw.io's white-and-black
-  defaults become the theme's defaults (a documented decision, not a loss).
+  defaults become the theme's defaults (a documented decision, not a loss). The same goes for the
+  page: draw.io's white page is its default paper and leaves the tab's background unset.
+- **Legible labels on own fills.** A label with no colour of its own on a shape (or lane title, entity,
+  table cell) with a fill of its own takes the ink that reads on that fill: dark on a light fill, white
+  on a dark one. draw.io's default label ink is black on paper, and the theme's text colour pairs with
+  the theme's fill, not with a fill the author picked.
 - `strokeWidth` (px) to the nearest `thin` / `medium` / `thick` / `extra-thick`; `0` to `none`.
 - `dashed=1` to `dashed`; a `dashPattern` whose dashes are no longer than its gaps to `dotted`.
 - `rounded=1` with `arcSize` (a percentage of the shorter side, default 10; `absoluteArcSize=1` makes
@@ -223,8 +238,8 @@ When the cell has no label, the box is labelled with the stencil's readable name
   Helvetica, the default, is left unset.
 - `align` to `textAlignX`; `verticalAlign` to `textAlignY`.
 - A label draw.io places **outside** its shape (`labelPosition` / `verticalLabelPosition` other than
-  centre) on anything but an icon is kept inside the shape, aligned towards that side. Counted
-  (`label-moved`).
+  centre) on anything but an icon or an actor is kept inside the shape, aligned towards that side.
+  Counted (`label-moved`).
 
 ### Edges
 
@@ -274,7 +289,8 @@ an image.
 
 ### The page
 
-- `background` on the page's `mxGraphModel` to the tab's `backgroundColor` (`none` leaves it unset).
+- `background` on the page's `mxGraphModel` to the tab's `backgroundColor`; `none` and white (draw.io's
+  default page) leave it unset.
 - The tab keeps its own theme, pattern and font.
 
 ## The import report
@@ -292,7 +308,7 @@ that occurred, with its count. The kinds are a closed set shared by every import
 | `image-unavailable`      | an image the importer cannot bring (a web or library URL, a page background, an image on a non-image shape) |
 | `arrowhead-approximated` | an arrowhead livediagram does not draw, imported as the nearest one                                         |
 | `connection-loosened`    | a connection whose end could not stay attached                                                              |
-| `label-moved`            | a label moved inside its shape, or several edge labels merged                                               |
+| `label-moved`            | a label moved inside its shape, a vertical lane title set across, or several edge labels merged             |
 | `group-flattened`        | a group dropped, its members kept in place                                                                  |
 | `hidden-skipped`         | a hidden shape or connection not imported                                                                   |
 | `collapsed-skipped`      | a shape inside a collapsed container not imported                                                           |
@@ -316,6 +332,8 @@ These differ from draw.io for every file and are not worth a line each time:
 - Page size, grid, guides, page view and print settings; the page's zoom and scroll.
 - Custom connection points (`points=[...]`) beyond the anchor they resolve to.
 - draw.io comments, tags, metadata and the file's edit history.
+- Tooltips and custom properties on connections (a livediagram arrow has no note); on shapes they
+  become the note.
 - The white-and-black default colours (see properties): the theme paints them.
 
 ## UI
@@ -324,7 +342,8 @@ These differ from draw.io for every file and are not worth a line each time:
   inside. Keeps shapes, text, connections and pages. Multi-page files add a tab for each further
   page." Its panel is the shared paste-or-file panel: paste XML, or pick a file; the picker accepts
   `.drawio`, `.xml`, `.svg`, `.png` and `.drawio.*`.
-- **The summary.** After an import with a non-empty report the dialog shows "Imported from draw.io",
+- **The summary.** After an import with a non-empty report the dialog replaces its warning and panel
+  with the summary (subtitle "Here is what changed on the way in."): "Imported from draw.io",
   a line of what arrived ("3 pages became 3 tabs, 128 elements"), the report's lines in the table's
   order, each with its count and, for unmatched shapes, the top stencil names, then a **Done** button
   that closes it. Images waiting for the pipeline say so ("2 images came in as placeholders. Select

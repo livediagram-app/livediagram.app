@@ -6,31 +6,35 @@ cited as `Dn`.
 
 Scope, by file (all under `apps/live/` unless stated):
 
-| File                                     | Role                                                                                      |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `lib/drawio/limits.ts`                   | Named constants of this blueprint                                                         |
-| `lib/drawio/inflate.ts`                  | `inflateBytes`, `decompressDiagram`, `ByteBudget`: DecompressionStream with a byte budget |
-| `lib/drawio/png.ts`                      | `extractPngDiagram`: the embedded XML from a `.drawio.png`                                |
-| `lib/drawio/envelope.ts`                 | `readDrawioPages`: input sniffing, `mxfile` / `mxGraphModel` / SVG / PNG to page sources  |
-| `lib/drawio/style.ts`                    | `parseStyle`, `DrawioStyle`: style string plus the built-in named styles                  |
-| `lib/drawio/colour.ts`                   | `readColour`: `#hex` / `none` / `default` / `light-dark()`                                |
-| `lib/drawio/cells.ts`                    | `readGraph`: the cell tree, layers, absolute geometry                                     |
-| `lib/drawio/label.ts`                    | `readLabel`: plain and HTML labels to text and `TextRun[]`                                |
-| `lib/drawio/stencils.ts`                 | Pure data: stencil and library-image names to icon ids                                    |
-| `lib/drawio/shapes.ts`                   | `classifyVertex`: the shape mapping table                                                 |
-| `lib/drawio/vertex-props.ts`             | `boxedProps`, `textProps`: the property maps shared by every vertex                       |
-| `lib/drawio/containers.ts`               | `buildLane`, `buildEntity`, `buildTable`                                                  |
-| `lib/drawio/edges.ts`                    | `buildArrow`: endpoints, route, heads, labels                                             |
-| `lib/drawio/convert-page.ts`             | `convertPage`: one page's graph to elements, layers, background                           |
-| `lib/drawio/import.ts`                   | `importDrawio`: the entry point                                                           |
-| `lib/import-report.ts`                   | `ImportReport`, `ImportNoteKind`, `ReportTally`, `PendingImage`, `describeImportNote`     |
-| `lib/import-tab.ts`                      | `pickFile` (a `File`), `pickTabFile` on top of it; `ImportOutcome.done` gains `report`    |
-| `hooks/persistence/useTabImport.ts`      | The `drawio` format: multi-page apply, one undo step, telemetry, log                      |
-| `hooks/persistence/drawio-apply.ts`      | `applyDrawioPages`: pure `Tab[]` transform the hook commits                               |
-| `components/dialogs/ImportTabDialog.tsx` | The draw.io card; routes a reported outcome to the summary                                |
-| `components/dialogs/TextImportPanel.tsx` | `onDone(outcome)`                                                                         |
-| `components/dialogs/ImportSummary.tsx`   | The summary view                                                                          |
-| `lib/drawio/__fixtures__/`               | The corpus and its generator                                                              |
+| File                                     | Role                                                                                           |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `lib/drawio/limits.ts`                   | Named constants of this blueprint                                                              |
+| `lib/drawio/inflate.ts`                  | `inflateBytes`, `decompressDiagram`, `ByteBudget`: DecompressionStream with a byte budget      |
+| `lib/drawio/png.ts`                      | `extractPngDiagram`: the embedded XML from a `.drawio.png`                                     |
+| `lib/drawio/refusals.ts`                 | `DrawioRefused`, `refusalMessage`: the named refusals and their copy                           |
+| `lib/drawio/envelope.ts`                 | `readDrawioPages`: input sniffing, `mxfile` / `mxGraphModel` / SVG / PNG to page sources       |
+| `lib/drawio/style.ts`                    | `parseStyle`, `DrawioStyle`: style string plus the built-in named styles                       |
+| `lib/drawio/colour.ts`                   | `readColour`: `#hex` / `none` / `default` / `light-dark()`                                     |
+| `lib/drawio/cells.ts`                    | `readGraph`: the cell tree, layers, absolute geometry                                          |
+| `lib/drawio/label.ts`                    | `readLabel`: plain and HTML labels to text and `TextRun[]`                                     |
+| `lib/drawio/stencils.ts`                 | Pure data: stencil and library-image names to icon ids                                         |
+| `lib/drawio/shapes.ts`                   | `classifyVertex`: the shape mapping table                                                      |
+| `lib/drawio/vertex-props.ts`             | `boxedProps`, `textProps`: the property maps shared by every vertex                            |
+| `lib/drawio/vertices.ts`                 | `buildVertex`, `captionBox`: shapes, text, notes, lines, images, icons, frames, labelled boxes |
+| `lib/drawio/containers.ts`               | `buildLane`, `buildEntity`, `buildTable`                                                       |
+| `lib/drawio/edges.ts`                    | `buildArrow`: endpoints, route, heads, labels                                                  |
+| `lib/drawio/convert-page.ts`             | `convertPage`: one page's graph to elements, layers, background                                |
+| `lib/drawio/import.ts`                   | `importDrawio`: the entry point                                                                |
+| `lib/import-report.ts`                   | `ImportReport`, `ImportNoteKind`, `ReportTally`, `PendingImage`, `describeImportNote`          |
+| `lib/import-tab.ts`                      | `pickTabFile` also returns the picked `File`; `ImportOutcome.done` gains `report`              |
+| `hooks/persistence/useTabImport.ts`      | The `drawio` format: multi-page apply, one undo step, telemetry, log                           |
+| `hooks/persistence/drawio-apply.ts`      | `applyDrawioPages`: pure `Tab[]` transform the hook commits                                    |
+| `components/dialogs/ImportTabDialog.tsx` | The draw.io card; routes a reported outcome to the summary                                     |
+| `components/dialogs/TextImportPanel.tsx` | `onDone(outcome)`                                                                              |
+| `components/dialogs/ImportSummary.tsx`   | The summary view                                                                               |
+| `lib/drawio/__fixtures__/`               | The corpus and its generator                                                                   |
+| `lib/drawio/test-support.ts`             | DOM test helpers: a model from XML, a vertex, fixture bytes                                    |
+| `e2e/drawio-import.spec.ts`              | The corpus through the real dialog on the production build, persistence and undo               |
 
 ## Domain and naming
 
@@ -230,8 +234,13 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
     arrows), over `sm`, `md`, `lg` only, ties to the smaller. `fontFamily` → `fontIdFor(family)`.
     `align` → `textAlignX`; `verticalAlign` → `textAlignY` (`middle` kept as `middle`).
 11. Label outside: `labelPosition` `left` / `right` or `verticalLabelPosition` `top` / `bottom` on a
-    non-icon kind: alignment set towards that side (`textAlignX: 'left'|'right'`, `textAlignY:
-'top'|'bottom'`), `label-moved` += 1 when the label is non-empty.
+    kind that is not an icon or an actor with its name above or below: alignment set towards that
+    side (`textAlignX: 'left'|'right'`, `textAlignY: 'top'|'bottom'`), `label-moved` += 1 when the
+    label is non-empty.
+12. Ink on an own fill (`inkOnFill(fill)`): when the element (shape, text, labelled box, lane title
+    on its `headerFill`, entity, table, table cell `bg`) carries a hex fill and the label has no
+    `fontColor`, `textColor` = `#1e293b` on a fill `isLightColor` calls light, else `#ffffff` (D28).
+    A label that is empty gets none.
 
 `fontIdFor(family)`: lower-case the first family in the list, trimmed of quotes; a `FONTS` id or
 label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-mono`; `comic`,
@@ -239,10 +248,14 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
 
 ### 11. Containers
 
-1. **Lane** (`buildLane`): `shape: 'lane'`, box from the cell, `headerSize = startSize` (23 when
-   absent), `horizontal=0` → `textAlignX 'left'`, else `textAlignX 'center'`, `textAlignY 'top'`.
-   `fillColor` → `headerFill` (per step 10.1); `swimlaneFillColor` → `fillColor`, absent or `none`
-   → `'transparent'`. Children convert as normal elements after the lane.
+1. **Lane** (`buildLane(cell, rect, graph, ctx, id)`): `shape: 'lane'`, box from the cell,
+   `horizontal=0` → `textAlignX 'left'`, `textAlignY 'middle'`; else `textAlignX 'center'`,
+   `textAlignY 'top'`. `fillColor` → `headerFill` (per step 10.1); `swimlaneFillColor` →
+   `fillColor`, absent or `none` → `'transparent'`. `headerSize` = `startSize` (23 when absent),
+   except for a titled `horizontal=0` lane: `label-moved` += 1 and `headerSize = max(startSize,
+min(needed, room))`, `needed` = longest title line × `TITLE_CHAR_PX` (8) + `TITLE_PADDING_PX`
+   (16), `room` = the smallest `x` offset of a visible vertex child from the lane's left edge (half
+   the lane's width without one). Children convert as normal elements after the lane.
 2. **Entity** (`buildEntity`): a swimlane with `childLayout=stackLayout` and at least one child,
    every child a vertex whose `shapeName` is `''` with named style `text`, or `line`, and none with
    children of its own. `shape: 'entity'`, label = the swimlane's plain label, `entityFields` = the
@@ -250,33 +263,39 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
    omitted when empty); rows over `ENTITY_MAX_FIELDS` dropped and text over `ENTITY_MAX_TEXT` cut,
    each counted `text-truncated`. Rows and lines are consumed, forwarding to the entity.
 3. **Table** (`buildTable`): rows = the children whose `shapeName` is `tableRow`, cells = each row's
-   children, in order. `cells[r][c]` = plain label; rows padded to the widest with `''`.
+   vertex children, in order. `cells[r][c]` = plain label; rows padded to the widest with `''`.
    `rowHeights` = row heights; `colWidths` = the first row's cell widths. The grid's box starts
    `startSize` below the table's top. Non-empty table label → a `text` element above the grid box
-   (`y = table.y`, height `startSize`), `shape-approximated`. Cell `fillColor` hex → `cellStyles`
-   `bg`. Rows and cells are consumed, forwarding to the table.
+   (`y = table.y`, height `startSize`), `shape-approximated`. Per cell, `cellStyles` carries `bg`
+   (`fillColor` hex), `textColor` (`fontColor` hex, else step 10.12 on `bg`), `bold` / `italic` /
+   `underline` (`fontStyle` bits) and `alignX` (`align` other than centre); `cellStyles` is omitted
+   when every cell is `null`. No rows → a `square` with the table's label, `shape-approximated`.
+   Rows and cells are consumed, forwarding to the table.
 
 ### 12. Edges (`buildArrow`)
 
-1. **Ends.** `endpoint(cellId, side)`: `resolveTarget(cellId)` follows `forward` until an element id
-   is found. Found → pinned. An `exitX`/`exitY` (source) or `entryX`/`entryY` (target) pair →
-   the nearest offered anchor to `(x + fx * w, y + fy * h)`. Otherwise floating: the reference point
-   is the first waypoint (source) / last waypoint (target), else the other end's centre (or its free
-   point); take the point where the segment from the element's centre towards it crosses the
-   element's box: for an angled route, the middle of the side it crosses (`n`, `e`, `s`, `w`) when the shape offers it; otherwise the nearest offered anchor to that point. Not found and the id was non-empty → free at the geometry point (`sourcePoint` /
-   `targetPoint` in the edge parent's origin, else the cell's box centre if the cell exists) and
-   `connection-loosened` += 1. Empty id → free at the geometry point.
-2. An end whose cell is an edge → free at that edge's midpoint (its resolved from/to midpoint),
-   `connection-loosened` += 1.
+1. **Ends.** The converter resolves each end (`resolve(cellId)`): follow `forward` until a cell that
+   became an element; found → `{ kind: 'element' }`. A `exitX`/`exitY` (source) or
+   `entryX`/`entryY` (target) pair → pinned to the nearest offered anchor to
+   `(x + fx * w, y + fy * h)`. Otherwise floating: the reference point is the first waypoint
+   (source) / last waypoint (target), else the other end's centre (or its free point); the segment
+   from the element's centre towards it leaves the element's box through one side: for an angled
+   route, that side's middle (`n`, `e`, `s`, `w`) when the shape offers it; otherwise the nearest
+   offered anchor to the exit point. Not found and the id was non-empty → free at the cell's box
+   centre when the cell exists, else at the geometry point (`sourcePoint` / `targetPoint` in the
+   edge parent's origin), and `connection-loosened` += 1. Empty id → free at the geometry point.
+2. An end whose cell is an edge → free at that edge's midpoint (the mean of its two ends' element
+   centres, else of its waypoints), `connection-loosened` += 1.
 3. **Route.** `edgeStyle` in `DRAWIO_ANGLED_EDGE_STYLES` → `angled`; `curved=1` → `curved`; else
    `straight`. Waypoints (absolute: points + the edge parent's origin):
    - none: `angled` / `curved` / `straight` with no `curvePoints`;
    - `curved`: `curvePoints` = the waypoints;
    - `straight`: `arrowStyle: 'angled'` and `curvePoints` = the waypoints;
-   - `angled`: `curvePoints` = the orthogonal expansion of `[from, ...waypoints, to]`: between
-     consecutive points `p`, `q` that differ in both axes, insert `(q.x, p.y)` when the previous
-     segment was vertical (the first segment counts as vertical when `from`'s anchor is `n` or `s`),
-     else `(p.x, q.y)`; then drop the first and last point.
+   - `angled`: `curvePoints` = the orthogonal expansion of `[from, ...waypoints, to]`. `vertical`
+     is the direction the next leg leaves in, first `true` when `from`'s anchor is `n` or `s`.
+     Between consecutive points `p`, `q` that differ in both axes insert `(p.x, q.y)` when
+     `vertical`, else `(q.x, p.y)`, and `vertical` stays; for aligned points `vertical` becomes
+     `p.y === q.y`. Then drop the first and last point.
      `curvePoints` are stored as `{ dx, dy }` from the midpoint of the resolved `from` and `to`
      positions (`anchorPosition` for pinned ends).
 4. **Heads.** `startArrow` / `endArrow` through `DRAWIO_MARKERS`: `none` / `''` → no head; a known
@@ -287,77 +306,104 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
    `arrowhead-approximated` += 1 when either head is not exact, or both ends carry heads of
    different shapes.
 5. **Stroke.** `strokeColor` hex → `strokeColor` (`none` → `opacity: 0`, D16); `strokeWidth` px →
-   `strokeWidth` (number, omitted at 2, the default). `dashed` / `dashPattern` as vertices.
-   `opacity` as vertices.
-6. **Labels.** Parts: the edge's own plain label, then each child vertex's with `edgeLabel` or
-   `text` named style (in order). Joined with `\n`; more than one non-empty part →
+   `strokeWidth` (number, default 1, omitted at 2). `dashed` / `dashPattern` as vertices.
+   `opacity` as vertices. `link` as step 10.8.
+6. **Labels.** Parts: the edge's own plain label, then each visible child vertex's with `edgeLabel`
+   or `text` named style (in order). Joined with `\n`; more than one non-empty part →
    `label-moved` += 1. Font props as step 10.10 on the arrow scale, from the edge's style (or the
-   first child's, when the edge's value is empty). The first label cell's geometry `x` (−1..1) with
-   `|x| > DRAWIO_LABEL_CENTRE_EPSILON` → `labelOffset: { t: (x + 1) / 2, offset: geometry.y }`.
-7. An edge-label child vertex's absolute position (for step 7's `absoluteRect`) is the point at
-   `t = (x + 1) / 2` along the edge's resolved polyline plus its `offset`.
+   first child's, when the edge's value is empty). The first labelled child's geometry `x` (−1..1)
+   with `|x| > DRAWIO_LABEL_CENTRE_EPSILON` → `labelOffset: { t: (x + 1) / 2, offset: geometry.y }`.
+7. A child vertex of an edge that is not a label is built as its own element, centred at
+   `t = (x + 1) / 2` along the straight line between the ends' centres (or free points), moved by
+   its `y` and `offset`, right after the arrow.
 
 ### 13. Images
 
 `image` class: `{ type: 'image', imageId: null, x, y, width, height, alt?: plain label }`.
-`style.str('image')`: starts with `data:` → a pending image `{ tabId, elementId, key, source: { kind: 'data-url', dataUrl }, hint: { width, height } }` (a base64 payload without `;base64`, as draw.io writes it, gains the marker; `key` is `drawio-image-<n>`, one per distinct data URL across the import), `image-placeholder` += 1; any other value (a web or library URL) or none → placeholder only, `image-unavailable` += 1. A non-image kind
-whose style carries `image=` → `image-unavailable` += 1. A page with `backgroundImage` →
-`image-unavailable` += 1.
+`style.str('image')`: starts with `data:` → a pending image `{ tabId, elementId, key, source: { kind:
+'data-url', dataUrl }, hint: { width, height } }` (a base64 payload without `;base64`, as draw.io
+writes it, gains the marker; a percent-encoded or raw payload stays; `key` is `drawio-image-<n>`,
+one per distinct data URL across the import), `image-placeholder` += 1; any other value (a web or
+library URL) or none → placeholder only, `image-unavailable` += 1. A non-image kind whose style
+carries `image=` → `image-unavailable` += 1. A page with `backgroundImage` → `image-unavailable`
++= 1.
 
-### 14. Icons
+### 14. Icons, actors and frames
 
 `icon` class → `{ type: 'shape', shape: 'icon', iconId, x, y, width, height }`, caption = label
-(plain; the kind's name from the table when empty and the table gives one). Tech icons:
-`iconSize` = nearest of `ICON_SIZE_PX` to `min(width, height)`, omitted at `md`. Caption placement:
-`verticalLabelPosition` `bottom` (the stencil default) → `textAlignY: 'bottom'`, the box grows by
-`DRAWIO_CAPTION_LINE_PX` per caption line downwards; `top` → `textAlignY: 'top'`, grows upwards;
-`labelPosition` `left` / `right` → `textAlignX`, grows sideways by the caption's estimated width
-(`DRAWIO_CAPTION_CHAR_PX` × longest line). `icon-substituted` += 1.
+(plain; the kind's name from the table when empty and the table gives one), no `textColor` (vendor stencils hard-code one for white paper),
+`textSize` from `fontSize`. Tech icons: `iconSize` = nearest of `ICON_SIZE_PX` to
+`min(width, height)`, omitted at `md`; line-art icons keep a hex `strokeColor`.
+`icon-substituted` += 1.
+
+`captionBox(cell, rect, label)` places a caption draw.io draws outside the figure:
+
+- no label → the box as it is, `textAlignX: 'center'`, `textAlignY: 'bottom'`;
+- `labelPosition` `left` / `right` → `textAlignX` that side, `textAlignY: 'middle'`, the box
+  widens towards it by longest line × `DRAWIO_CAPTION_CHAR_PX` + `DRAWIO_CAPTION_PADDING_PX`;
+- otherwise the box grows by `DRAWIO_CAPTION_LINE_PX` per line, downwards (`textAlignY:
+'bottom'`) or, for `verticalLabelPosition=top`, upwards (`'top'`), and widens about its centre to
+  longest line × `DRAWIO_CAPTION_CHAR_PX` + `DRAWIO_CAPTION_PADDING_PX` when that is wider.
+
+Icons always use it; an `actor` shape with `verticalLabelPosition` `top` / `bottom` uses it too and
+does not count `label-moved`.
+
+`frame` class (`umlFrame`, AWS / GCP groups): boxed props without the fill, the plain label,
+`textAlignX: 'right'` when `align=right` else `'left'`, `textAlignY: 'top'`, `padding: 'lg'` (as the
+palette's frame); the AWS / GCP groups count `shape-approximated`.
 
 ### 15. Page conversion (`convertPage(graph, ctx)`)
 
-1. `ConvertState`: `idMap` (cell id → element id, minted by `crypto.randomUUID()`), `forward`
-   (consumed cell id → cell id), `tally` (the import's), `elements` (output, paint order),
-   `layerOf` (element id → layer id).
+1. State: `cellToElement` (cell id → the boxed element it became), `forward` (consumed cell id →
+   the cell that owns its element, `''` for none), `visited`, `slots` (elements and queued edges in
+   paint order), the import's `tally`, `images` and `imageKeys` from `ctx`.
 2. Layers: `layerIds.length >= 2` → `Tab.layers` = one per layer cell: first `DEFAULT_LAYER_ID`, the
    rest `layer:<uuid>`; `name` = plain label, else `DEFAULT_LAYER_NAME` for the first and
-   `Layer n` after; `visible: false` when the layer cell is invisible; `locked: true` when its style
-   has `locked=1`. A single layer → no `layers`, no `layerId`s.
+   `Layer n` after (D25); `visible: false` when the layer cell is invisible; `locked: true` when its
+   style has `locked=1`. A single layer → no `layers`, no `layerId`s.
 3. Walk each layer's children depth-first (pre-order). Per cell: invisible → skip the subtree,
-   `hidden-skipped` += 1 + descendants; edge → queue in paint order (built in pass 2); vertex →
-   classify and build.
-4. Collapsed vertex: build it, skip descendants, `collapsed-skipped` += descendant count.
-5. `group` class: no element; `forward[group] =` nothing (connections loosen), children walked,
+   `hidden-skipped` += 1 + descendants; edge → queue in paint order (built in pass 2), its children
+   marked visited; vertex without geometry → skipped like a hidden one (D17); vertex → classify and
+   build. A `line` vertex becomes an arrow and nothing pins to it.
+4. Collapsed vertex: build it, skip descendants, `collapsed-skipped` += descendant count, and forward
+   every descendant to it.
+5. `group` class: no element; `forward[group] = ''` (connections loosen), children walked,
    `group-flattened` += 1.
 6. Elements carry `layerId` of their layer cell when layers were emitted.
-7. Pass 2: arrows, built in their queued paint positions (the element list is built with arrow
-   placeholders so paint order is draw.io's).
+7. Pass 2: arrows, built in their queued paint positions, then any shapes riding on them (12.7).
 8. Truncation: output beyond `MAX_ELEMENTS_PER_TAB` dropped, `content-truncated` += dropped.
-9. Result `{ elements, layers?, backgroundColor? }`; pending images carry `ctx.tabId`.
+9. Result `{ elements, layers?, backgroundColor? }`: `backgroundColor` is the page background unless
+   white (`#fff`, `#ffffff`, `#ffffffff`), which stays unset. Pending images carry `ctx.tabId`.
 
-### 16. Apply (`applyDrawioPages(tabs, activeId, pages)` and the hook)
+### 16. Apply (`applyDrawioPages(tabs, activeId, pages, createTab)` and the hook)
 
-Pure `Tab[] => Tab[]`:
+Pure `Tab[] => Tab[]`; the input returned as it is when the active tab is missing or no page came:
 
-1. Page 0 merges into the active tab through `mergeImportedTab(active, { ...imported })` with
-   `elements`, `layers`, `backgroundColor`, `name`: single page → the active tab's name; multi-page
-   → the page name, else `Page 1`.
-2. Pages 1..n → new tabs `{ ...createTab(name), id: page.tabId, elements, layers, backgroundColor,
-theme, font, defaultTextSize, backgroundPattern, patternColor, backgroundOpacity (from the active
-tab), templateChosen: true }`, inserted after the active tab in page order.
-3. Hook: `commitTabs(ts => applyDrawioPages(ts, activeId, pages))` (one undo step), `markTabLoaded`
-   for each new tab, selection / edit / format source cleared, `requestFit()` when page 0 has
-   elements, `track('Tab', 'Imported', 'Drawio')`, log `[drawio-import] applied`.
-4. Pending images: `onPendingImages(images)` seam (step 17). Returns
-   `{ status: 'done', report }`.
-5. `tabIdForPage(0) = activeId`; `tabIdForPage(i > 0) = crypto.randomUUID()`.
+1. Page 0 merges into the active tab through `mergeImportedTab` with `elements`, `layers` and
+   `backgroundColor` when present; name: single page → the active tab's name; multi-page → the page
+   name (trimmed), else `Page 1` (D24).
+2. Pages 1..n → new tabs: `createTab(name)` with `id: page.tabId`, the active tab's `theme`, `font`,
+   `defaultTextSize` (else `'sm'`), `backgroundPattern`, `backgroundColor`, `backgroundOpacity`,
+   `patternColor`, `backgroundPatternScale`, and its `folder`, then merged with the page like
+   page 0; inserted after the active tab in page order.
+3. Hook (`importDrawioInput`): `importDrawio` with `tabIdForPage(0) = activeId`,
+   `tabIdForPage(i > 0) = crypto.randomUUID()`; a refusal returns `{ status: 'error' }` and touches
+   nothing. Then `attachPendingImages` (step 17), one `commitTabs(ts => applyDrawioPages(...))`
+   (one undo step), `markTabLoaded` for each new tab, selection / edit / format source cleared,
+   `requestFit()` when page 0 has elements, `track('Tab', 'Imported', 'Drawio')`, log
+   `[drawio-import] applied`. Returns `{ status: 'done', report }` when the report has notes, else
+   `{ status: 'done' }`.
+4. Paste goes in as `{ kind: 'text' }`; a picked file as `{ kind: 'bytes' }` from
+   `picked.file.arrayBuffer()` (a `.drawio.png` is binary).
 
 ### 17. The image seam
 
-`useTabImport` calls `resolvePendingImages(images)` from `lib/import-report.ts`, which today returns
-`{ placed: 0 }` and leaves every placeholder. The image pipeline replaces that one function: it
-uploads, writes `imageId` / `naturalWidth` / `naturalHeight` onto the placeholders through
-`commitTabs`, and adjusts the report's `image-placeholder` count to those still unplaced.
+`useTabImport` calls `attachPendingImages(pages, images)` from `lib/import-report.ts` before the
+tabs change, which today returns `{ pages, placed: 0 }` and leaves every placeholder. The shared
+import image pipeline replaces that one body: a session for the import, `attachImportImages(page
+elements, the page's requests, session)` per page, which writes `imageId` / `naturalWidth` /
+`naturalHeight` onto the placeholders, and the report's `image-placeholder` count becomes those
+still unplaced (the pipeline's own image report then lists why).
 
 ## Interfaces and contracts
 
@@ -383,6 +429,7 @@ export type ImportNote = {
   kind: ImportNoteKind;
   count: number;
   names?: { name: string; count: number }[];
+  moreNames?: number; // names left out of `names`
 };
 export type ImportSource = 'drawio';
 export type ImportReport = {
@@ -394,16 +441,23 @@ export type ImportReport = {
 export type PendingImage = {
   tabId: string;
   elementId: string;
-  source: { kind: 'data-url'; dataUrl: string } | { kind: 'url'; url: string };
+  key: string; // shared by identical pictures
+  source: { kind: 'data-url'; dataUrl: string };
+  hint: { width: number; height: number };
 };
 export class ReportTally {
-  add(kind, count = 1): void;
-  name(kind, name): void;
+  constructor(namesMax?: number);
+  add(kind: ImportNoteKind, count?: number): void;
+  name(kind: ImportNoteKind, name: string): void;
   notes(): ImportNote[];
 }
 export function describeImportNote(note: ImportNote): string; // the summary copy
-export function importSummaryLine(report: ImportReport): string; // "3 pages became 3 tabs, 128 elements"
-export function resolvePendingImages(images: PendingImage[]): Promise<{ placed: number }>;
+export function namesLine(note: ImportNote): string | null; // "router ×3, switch, …"
+export function importSummaryLine(report: ImportReport): string; // "3 pages became 3 tabs, 128 elements."
+export function attachPendingImages<P extends { tabId: string; elements: Element[] }>(
+  pages: P[],
+  images: PendingImage[],
+): Promise<{ pages: P[]; placed: number }>;
 
 // lib/drawio/import.ts
 export type DrawioInput = { kind: 'text'; text: string } | { kind: 'bytes'; bytes: Uint8Array };
@@ -414,6 +468,9 @@ export type ImportedPage = {
   layers?: Layer[];
   backgroundColor?: string;
 };
+export type DrawioImportResult =
+  | { ok: true; pages: ImportedPage[]; images: PendingImage[]; report: ImportReport }
+  | { ok: false; error: string };
 export function importDrawio(
   input: DrawioInput,
   options: { tabIdForPage: (index: number) => string },
@@ -424,11 +481,23 @@ export type ImportOutcome =
   | { status: 'done'; report?: ImportReport }
   | { status: 'cancelled' }
   | { status: 'error'; error: string };
-export function pickFile(accept: string): Promise<File | null>;
+export type PickedTabFile = { name: string; text: string; file: File };
+export function pickTabFile(accept?: string): Promise<PickedTabFile | null>;
+
+// hooks/persistence/useTabImport.ts
+export type ImportFormat = 'json' | 'markdown' | 'mermaid' | 'excalidraw' | 'drawio';
+
+// hooks/persistence/drawio-apply.ts
+export function applyDrawioPages(
+  tabs: Tab[],
+  activeId: string,
+  pages: ImportedPage[],
+  createTab: (name: string) => Tab,
+): Tab[];
 ```
 
 `notes()` returns only non-zero kinds, in `IMPORT_NOTE_ORDER`; `names` sorted by count descending,
-then name, capped at `DRAWIO_REPORT_NAMES_MAX`.
+then name, capped at `DRAWIO_REPORT_NAMES_MAX` with the rest counted in `moreNames`.
 
 Refusals (the `error` string, final copy):
 
@@ -449,7 +518,7 @@ Refusals (the `error` string, final copy):
   `isValidElement` / `isValidTab`, saved by the existing per-tab storage.
 - Image bytes are never written into elements (a data URL in a tab would breach `MAX_TAB_BYTES`);
   they live only in the in-memory pending list for the seam.
-- No D11 migration, no api change, no `api-schema` change.
+- No D1 migration, no api change, no `api-schema` change.
 - Undo: the import is one `commitTabs` entry; undo removes the new tabs and restores the active tab.
 
 ## Errors and edge cases
@@ -501,8 +570,8 @@ Refusals (the `error` string, final copy):
   over from draw.io".
 - File picker `accept`: `.drawio,.xml,.svg,.png,application/xml,text/xml,image/svg+xml,image/png`.
 - `TextImportPanel.onDone(outcome)`; `ImportTabDialog` closes on `done` without notes, else shows
-  `ImportSummary` in place of the panel (the warning banner hides; the header subtitle becomes the
-  summary line).
+  `ImportSummary` in place of the panel (the warning banner hides; the header subtitle becomes "Here
+  is what changed on the way in.").
 - `ImportSummary`: heading "Imported from draw.io"; summary line from `importSummaryLine`;
   a list, one item per note, `describeImportNote` copy; for `shape-unmatched`, a second line
   listing names `router ×3, switch ×2, …`; a **Done** primary button focused on mount, closing the
@@ -515,7 +584,7 @@ Refusals (the `error` string, final copy):
   - `image-unavailable`: "n image(s) link to files outside the diagram and came in as placeholders or were left out."
   - `arrowhead-approximated`: "n connection(s) use arrowheads livediagram doesn't draw; they have the nearest one."
   - `connection-loosened`: "n connection end(s) couldn't stay attached and were left where they were."
-  - `label-moved`: "n label(s) were moved inside their shape or merged onto one line."
+  - `label-moved`: "n label(s) were moved: inside their shape, across a lane's title strip, or merged onto one line."
   - `group-flattened`: "n group(s) were dropped; their shapes kept their places."
   - `hidden-skipped`: "n hidden item(s) were left out."
   - `collapsed-skipped`: "n item(s) inside collapsed containers were left out."
@@ -543,56 +612,61 @@ Refusals (the `error` string, final copy):
 
 ## Observability
 
-| Fingerprint                      | Level   | When                                                       |
-| -------------------------------- | ------- | ---------------------------------------------------------- |
-| `[drawio-import] refused`        | `warn`  | Any refusal: `{ reason, detail? }` (never file content)    |
-| `[drawio-import] page`           | `debug` | Each page converted: `{ index, cells, elements, notes }`   |
-| `[drawio-import] applied`        | `info`  | The hook applied: `{ pages, elements, notes: kind→count }` |
-| `[drawio-import] pending-images` | `info`  | Pending images handed to the seam: `{ count, placed }`     |
+| Fingerprint                      | Level   | When                                                                                                  |
+| -------------------------------- | ------- | ----------------------------------------------------------------------------------------------------- |
+| `[drawio-import] refused`        | `warn`  | Any refusal: `{ reason, detail?, cause? }` (`cause` only for an unexpected error; never file content) |
+| `[drawio-import] page`           | `debug` | Each page converted: `{ index, cells, elements }`                                                     |
+| `[drawio-import] applied`        | `info`  | The hook applied: `{ pages, elements, notes: kind→count }`                                            |
+| `[drawio-import] pending-images` | `info`  | Pending images handed to the seam, when there are any: `{ count, placed }`                            |
 
 ## Testing
 
 Unit tests (Vitest), files beside their modules; the DOM ones carry `// @vitest-environment jsdom`.
 
-| Rule (spec)                                           | Test                                                                |
-| ----------------------------------------------------- | ------------------------------------------------------------------- |
-| Inputs table                                          | `envelope.test.ts`: each input form from the fixtures, each refusal |
-| Compressed decode + zip-bomb guard                    | `inflate.test.ts`                                                   |
-| PNG chunks (tEXt, zTXt zlib + raw, iTXt, none)        | `png.test.ts`                                                       |
-| Style parsing and named styles                        | `style.test.ts`                                                     |
-| Colours                                               | `colour.test.ts`                                                    |
-| Cell tree, geometry, layers, UserObject, placeholders | `cells.test.ts`                                                     |
-| Labels, plain and HTML                                | `label.test.ts`                                                     |
-| Shape table, stencils, unmatched                      | `shapes.test.ts`                                                    |
-| Vertex properties                                     | `vertex-props.test.ts`                                              |
-| Lanes, entities, tables                               | `containers.test.ts`                                                |
-| Edges                                                 | `edges.test.ts`                                                     |
-| Images, groups, hidden, collapsed, truncation, report | `convert-page.test.ts`                                              |
-| Pages to tabs, names, links                           | `import.test.ts`                                                    |
-| Every fixture valid + expected report                 | `fixtures.test.ts`                                                  |
-| Apply to tabs, one commit                             | `drawio-apply.test.ts`                                              |
-| Report tally and copy                                 | `import-report.test.ts`                                             |
-| Summary rendering, focus, Done                        | `ImportSummary.test.tsx`                                            |
-| Dialog routing (close vs summary)                     | `ImportTabDialog.test.tsx`                                          |
+| Rule (spec)                                                     | Test                                                                |
+| --------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Inputs table                                                    | `envelope.test.ts`: each input form from the fixtures, each refusal |
+| Compressed decode + zip-bomb guard                              | `inflate.test.ts`                                                   |
+| PNG chunks (tEXt, zTXt zlib + raw, iTXt, none)                  | `png.test.ts`                                                       |
+| Style parsing and named styles                                  | `style.test.ts`                                                     |
+| Colours                                                         | `colour.test.ts`                                                    |
+| Cell tree, geometry, layers, UserObject, placeholders           | `cells.test.ts`                                                     |
+| Labels, plain and HTML                                          | `label.test.ts`                                                     |
+| Shape table, stencils, unmatched                                | `shapes.test.ts`                                                    |
+| Vertex properties                                               | `vertex-props.test.ts`                                              |
+| Lanes, entities, tables                                         | `containers.test.ts`                                                |
+| Edges                                                           | `edges.test.ts`                                                     |
+| Images, groups, hidden, collapsed, truncation, report           | `convert-page.test.ts`                                              |
+| Pages to tabs, page links, refusals, size limit                 | `fixtures.test.ts` (via `importDrawio`)                             |
+| Every fixture valid + expected report                           | `fixtures.test.ts`                                                  |
+| Apply to tabs: names, folder, look, layers                      | `drawio-apply.test.ts`                                              |
+| One commit, new tabs marked loaded, telemetry, refusal and lock | `useTabImport.drawio.test.ts`                                       |
+| Report tally and copy                                           | `import-report.test.ts`                                             |
+| Summary rendering, focus, Done                                  | `ImportSummary.test.tsx`                                            |
+| Dialog routing (close vs summary)                               | `ImportTabDialog.test.tsx`                                          |
 
-End to end: the live app via PM2, playwright-cli importing every fixture file, screenshots.
+End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-stack.mjs`) picks each fixture form through the Import dialog, checks the summary, the tabs and what the api stored, and that one undo removes the new tabs; `DRAWIO_SHOTS=<dir>` also saves screenshots.
 
 ## Constants and configuration
 
-| Constant                      | Value                                                                                                                                                       | Provenance / safe range                           |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `DRAWIO_MAX_FILE_BYTES`       | 50 MiB                                                                                                                                                      | Spec; 10 to 200 MiB                               |
-| `DRAWIO_MAX_INFLATED_BYTES`   | 100 MiB                                                                                                                                                     | Spec; at least the file limit                     |
-| `DRAWIO_MAX_PAGES`            | 100                                                                                                                                                         | Spec; 1 to 500                                    |
-| `MAX_ELEMENTS_PER_TAB`        | 10 000                                                                                                                                                      | `@livediagram/diagram` validate.ts                |
-| `DRAWIO_DEFAULT_ARC_SIZE`     | 10 (%)                                                                                                                                                      | draw.io's `mxConstants.RECTANGLE_ROUNDING_FACTOR` |
-| `DRAWIO_SHADOW`               | `{2, 3, 3, 0.25}`                                                                                                                                           | draw.io's shadow offset (2, 3) and opacity, D19   |
-| `DRAWIO_CAPTION_LINE_PX`      | 18                                                                                                                                                          | One `sm` caption line with leading, D20; 14 to 24 |
-| `DRAWIO_CAPTION_CHAR_PX`      | 7                                                                                                                                                           | `sm` average glyph width, D20; 6 to 9             |
-| `DRAWIO_LABEL_CENTRE_EPSILON` | 0.05                                                                                                                                                        | D21; 0 to 0.2                                     |
-| `DRAWIO_REPORT_NAMES_MAX`     | 5                                                                                                                                                           | D22; 3 to 10                                      |
-| `DRAWIO_ANGLED_EDGE_STYLES`   | `orthogonalEdgeStyle`, `elbowEdgeStyle`, `entityRelationEdgeStyle`, `segmentEdgeStyle`, `isometricEdgeStyle`, `sideToSideEdgeStyle`, `topToBottomEdgeStyle` | draw.io's `mxEdgeStyle` routers                   |
-| `DRAWIO_MARKERS`              | the table in step 12.4                                                                                                                                      | draw.io's marker names                            |
+| Constant                                            | Value                                                                                                                                                       | Provenance / safe range                                         |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `DRAWIO_MAX_FILE_BYTES`                             | 50 MiB                                                                                                                                                      | Spec; 10 to 200 MiB                                             |
+| `DRAWIO_MAX_INFLATED_BYTES`                         | 100 MiB                                                                                                                                                     | Spec; at least the file limit                                   |
+| `DRAWIO_MAX_PAGES`                                  | 100                                                                                                                                                         | Spec; 1 to 500                                                  |
+| `MAX_ELEMENTS_PER_TAB`                              | 10 000                                                                                                                                                      | `@livediagram/diagram` validate.ts                              |
+| `DRAWIO_DEFAULT_ARC_SIZE`                           | 10 (%)                                                                                                                                                      | draw.io's `mxConstants.RECTANGLE_ROUNDING_FACTOR`               |
+| `DRAWIO_SHADOW`                                     | `{2, 3, 3, 0.25}`                                                                                                                                           | draw.io's shadow offset (2, 3) and opacity, D19                 |
+| `DRAWIO_CAPTION_LINE_PX`                            | 18                                                                                                                                                          | One `sm` caption line with leading, D20; 14 to 24               |
+| `DRAWIO_CAPTION_CHAR_PX`                            | 7                                                                                                                                                           | `sm` average glyph width, D20; 6 to 9                           |
+| `DRAWIO_CAPTION_PADDING_PX`                         | 16                                                                                                                                                          | The icon caption area's inner padding, both sides, D20; 8 to 24 |
+| `TITLE_CHAR_PX`, `TITLE_PADDING_PX` (containers.ts) | 8, 16                                                                                                                                                       | A lane title reading across, D20; 7 to 10, 8 to 24              |
+| `INK_ON_LIGHT`, `INK_ON_DARK` (vertex-props.ts)     | `#1e293b`, `#ffffff`                                                                                                                                        | The editor's light-paper text ink and dark-paper text, D28      |
+| `WHITE` (convert-page.ts)                           | `#fff`, `#ffffff`, `#ffffffff`                                                                                                                              | draw.io's default page                                          |
+| `DRAWIO_LABEL_CENTRE_EPSILON`                       | 0.05                                                                                                                                                        | D21; 0 to 0.2                                                   |
+| `DRAWIO_REPORT_NAMES_MAX`                           | 5                                                                                                                                                           | D22; 3 to 10                                                    |
+| `DRAWIO_ANGLED_EDGE_STYLES`                         | `orthogonalEdgeStyle`, `elbowEdgeStyle`, `entityRelationEdgeStyle`, `segmentEdgeStyle`, `isometricEdgeStyle`, `sideToSideEdgeStyle`, `topToBottomEdgeStyle` | draw.io's `mxEdgeStyle` routers                                 |
+| `DRAWIO_MARKERS`                                    | the table in step 12.4                                                                                                                                      | draw.io's marker names                                          |
 
 ## Assets and external resources
 
