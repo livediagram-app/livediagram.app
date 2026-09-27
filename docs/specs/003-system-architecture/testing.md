@@ -50,6 +50,11 @@ export default defineProject({ test: { environment: 'jsdom' } });
 - **Prefer pure-function tests.** The highest-value, lowest-cost units are the
   pure helpers: the diagram data model, the wire-format serializers, and the
   canvas geometry. Those are tested first.
+- **Two D1 doubles in `apps/api`.** `src/test-d1.ts` records which SQL ran
+  with which bindings, and has no schema. `src/test-sqlite-d1.ts` is a real
+  in-memory SQLite (`node:sqlite`) with every migration applied and foreign
+  keys on, as D1 has them. Use the second wherever the behaviour lives in the
+  schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes.
 
 ## Scripts
 
@@ -220,7 +225,8 @@ v5 test runner with every check green: nothing invoked the broken path.
 - **Ahead:**
   - Worker-runtime tests for `apps/api`: the current suites run under plain
     vitest in the `node` environment with fakes for `WebSocket` / Durable
-    Object state; a future move to `@cloudflare/vitest-pool-workers` would
+    Object state, and D1 as either a recorder or in-memory SQLite (see
+    Conventions); a future move to `@cloudflare/vitest-pool-workers` would
     let the D1 binding + Durable Object run in a real `workerd` runtime, but
     that's an aspiration, not the current setup.
   - End-to-end tests are out of scope for this spec (unit tests only).

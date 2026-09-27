@@ -32,6 +32,19 @@ timestamp (`ON CONFLICT DO NOTHING`) rather than bumping it.
 `ON DELETE CASCADE` through `diagrams` means a deleted diagram takes everyone's
 star with it, so the view can never list a dead id.
 
+## Stars follow the owner
+
+A star is the starrer's data, keyed on their owner id, so it takes part in
+both owner-wide operations ([Owner-keyed data](../015-api/api.md#owner-keyed-data)):
+
+- **Account deletion erases every star the user placed**, including those on
+  a teammate's or anyone else's diagram. The cascade only reaches stars on
+  the user's own diagrams, so the rest are deleted by owner id.
+- **Signing up carries a guest's stars into the account.** Both identities may
+  have starred the same diagram, and the primary key is
+  `(owner_id, diagram_id)`, so the move is `INSERT OR IGNORE` then `DELETE`:
+  on a collision the account's star, and its original `created_at`, wins.
+
 ## No access check on write
 
 `PUT /api/favourites/:id` doesn't verify the caller can read that diagram. A
