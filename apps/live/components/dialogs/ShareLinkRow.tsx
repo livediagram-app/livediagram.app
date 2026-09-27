@@ -1,11 +1,10 @@
 import { TrashIcon } from '@/components/primitives/explorer-icons';
-import { Button, LinkIcon, Select } from '@livediagram/ui';
+import { Button, LinkIcon, Select, HoverCard } from '@livediagram/ui';
 import type { ShareLink } from '@/lib/api-client';
 import { buildEmbedSnippet, embedUrlFor } from '@/lib/embed';
 import { liveImageHtml, liveImageMarkdown, liveImageUrlFor } from '@/lib/live-image';
 import { formatTimeLeftCompact } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { ShareCopyMenu } from './ShareCopyMenu';
 import { CodeGlyph, EXPIRY_LABELS, ImageGlyph, ScopeOptions } from './share-dialog-parts';
 
@@ -75,7 +74,7 @@ export function ActiveShareLinkRow({
           {link.role === 'edit' ? 'Edit' : 'View'}
         </span>
         {link.expiresAt !== null ? (
-          <Tooltip
+          <HoverCard
             title="Expiring link"
             description={`Created with a ${
               link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]
@@ -84,7 +83,7 @@ export function ActiveShareLinkRow({
             <span className="inline-flex shrink-0 items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">
               {formatTimeLeftCompact(link.expiresAt - now)}
             </span>
-          </Tooltip>
+          </HoverCard>
         ) : null}
         <input
           readOnly
@@ -103,11 +102,11 @@ export function ActiveShareLinkRow({
         </Button>
         {/* Embed (docs/specs/013-workspace/embeds.md): copy the embed as a raw URL or an
                     <iframe> snippet. Embeds honour the link's role,
-                    so the tooltip says which one this row hands out. */}
+                    so the hover card says which one this row hands out. */}
         <ShareCopyMenu
           label="Embed"
-          tooltipTitle="Embed"
-          tooltipDescription={`Copy an embed of this diagram as a URL or an <iframe> snippet for wikis, Notion, and docs. ${
+          hoverCardTitle="Embed"
+          hoverCardDescription={`Copy an embed of this diagram as a URL or an <iframe> snippet for wikis, Notion, and docs. ${
             link.role === 'edit'
               ? 'This edit link embeds an editable canvas.'
               : 'This view link embeds a read-only canvas.'
@@ -136,8 +135,8 @@ export function ActiveShareLinkRow({
         {sharePassword ? null : (
           <ShareCopyMenu
             label="Live image"
-            tooltipTitle="Live image"
-            tooltipDescription="An <img>-able SVG URL that re-renders this diagram, so an embed in a README, wiki, or doc stays up to date."
+            hoverCardTitle="Live image"
+            hoverCardDescription="An <img>-able SVG URL that re-renders this diagram, so an embed in a README, wiki, or doc stays up to date."
             trackType="LiveImage"
             header={
               // Per-tab picker (docs/specs/013-workspace/live-image-share.md): only worth showing
@@ -191,7 +190,7 @@ export function ActiveShareLinkRow({
         )}
         <span className="flex-1" />
         {onRescope ? (
-          <Tooltip
+          <HoverCard
             title="Tabs"
             description="Which tabs this link opens. Changing it takes effect at once: anyone using the link reloads into the new choice."
           >
@@ -205,9 +204,9 @@ export function ActiveShareLinkRow({
             >
               <ScopeOptions tabs={tabs} />
             </Select>
-          </Tooltip>
+          </HoverCard>
         ) : null}
-        <Tooltip
+        <HoverCard
           title="Revoke link"
           description="The URL stops working immediately for everyone holding it."
         >
@@ -220,7 +219,7 @@ export function ActiveShareLinkRow({
           >
             <TrashIcon />
           </button>
-        </Tooltip>
+        </HoverCard>
       </div>
     </li>
   );

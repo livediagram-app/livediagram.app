@@ -5,7 +5,6 @@
 
 import type { QaNote } from '@livediagram/diagram';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { tint } from '../collab-chrome';
 import {
   AuthorChip,
@@ -16,23 +15,24 @@ import {
   VotePill,
   stopPointer,
 } from './qa-parts';
+import { HoverCard } from '@livediagram/ui';
 
 function SpotButton({
   children,
   onPress,
   loud,
   textColor,
-  tooltip,
+  hoverCard,
 }: {
   children: React.ReactNode;
   onPress: () => void;
   loud?: boolean;
   textColor: string;
-  tooltip: { title: string; description: string };
+  hoverCard: { title: string; description: string };
 }) {
   const press = usePressWithoutDrag(onPress);
   return (
-    <Tooltip title={tooltip.title} description={tooltip.description}>
+    <HoverCard title={hoverCard.title} description={hoverCard.description}>
       <button
         type="button"
         {...press}
@@ -50,7 +50,7 @@ function SpotButton({
       >
         {children}
       </button>
-    </Tooltip>
+    </HoverCard>
   );
 }
 
@@ -135,7 +135,7 @@ export function QaSpotlight({
           <SpotButton
             textColor={textColor}
             onPress={onDone}
-            tooltip={{
+            hoverCard={{
               title: 'Done',
               description: 'Folds this note into Discussed. Its votes freeze.',
             }}
@@ -147,7 +147,7 @@ export function QaSpotlight({
               loud
               textColor={textColor}
               onPress={onDoneNext}
-              tooltip={{
+              hoverCard={{
                 title: 'Done, next',
                 description: 'Closes this note and spotlights the current top note.',
               }}

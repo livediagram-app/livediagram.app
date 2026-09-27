@@ -1,7 +1,6 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ChevronDownIcon } from '@livediagram/ui';
+import { ChevronDownIcon, HoverCard } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 export type PaletteDropdownOption = {
@@ -78,8 +77,8 @@ export function PaletteDropdown({
   options,
   onChange,
   ariaLabel,
-  tooltipTitle,
-  tooltipDescription,
+  hoverCardTitle,
+  hoverCardDescription,
   align = 'left',
   accent = false,
   triggerLeading,
@@ -95,10 +94,10 @@ export function PaletteDropdown({
   options: PaletteDropdownOption[];
   onChange: (id: string) => void;
   ariaLabel: string;
-  // When set, the trigger gets a hover/focus tooltip (used by the icon
+  // When set, the trigger gets a hover card (used by the icon
   // filter to explain what the funnel does).
-  tooltipTitle?: string;
-  tooltipDescription?: string;
+  hoverCardTitle?: string;
+  hoverCardDescription?: string;
   // Which edge the popover hangs from. Right-aligned dropdowns (the
   // right-hand category picker) keep the menu inside the panel.
   align?: 'left' | 'right';
@@ -263,12 +262,12 @@ export function PaletteDropdown({
   );
   return (
     <div className="relative min-w-0" ref={triggerRef}>
-      {/* The tooltip steps aside while the menu is open: it would otherwise
+      {/* The hover card steps aside while the menu is open: it would otherwise
           sit on top of the options it describes. */}
-      {tooltipTitle && !open ? (
-        <Tooltip title={tooltipTitle} description={tooltipDescription ?? ''}>
+      {hoverCardTitle && !open ? (
+        <HoverCard title={hoverCardTitle} description={hoverCardDescription ?? ''}>
           {trigger}
-        </Tooltip>
+        </HoverCard>
       ) : (
         trigger
       )}

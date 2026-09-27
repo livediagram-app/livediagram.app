@@ -55,3 +55,27 @@ describe('the Event Storming palette category', () => {
     expect(screen.getByRole('option', { name: /add domain event note/i })).toBeTruthy();
   });
 });
+
+describe('EventStormingBoardRows disabled photo import', () => {
+  it('says why it is disabled in the row itself, not in a hover', () => {
+    render(
+      <EventStormingBoardRows
+        controls={{
+          onImportPhoto: noop,
+          photoDisabled: true,
+          photoDisabledReason: 'Finish the open photo first',
+        }}
+      />,
+    );
+    const row = screen.getByRole('button', { name: /Add from photo/ });
+    expect(row.textContent).toContain('Finish the open photo first');
+    expect(row.hasAttribute('title')).toBe(false);
+  });
+
+  it('describes the import while it is available', () => {
+    render(<EventStormingBoardRows controls={{ onImportPhoto: noop }} />);
+    expect(screen.getByRole('button', { name: /Add from photo/ }).textContent).toContain(
+      'Read the stickies off a photo of the wall',
+    );
+  });
+});

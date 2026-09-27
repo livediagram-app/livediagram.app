@@ -28,10 +28,10 @@ import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
 import { SlideDeckSettingsPopover } from '@/components/panels/SlideDeckSettingsPopover';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import type { SlideDeckState } from '@/app/diagram/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
 import { isDragTravel } from '@/lib/press-gestures';
+import { HoverCard } from '@livediagram/ui';
 
 function PlayIcon() {
   return (
@@ -122,7 +122,7 @@ function SlideRow({
       {/* A passive marker, not a control: the toggle lives in the row's menu
           under Visibility, so the row stays one press = open this slide. */}
       {slide.hidden ? (
-        <Tooltip
+        <HoverCard
           title="Hidden from the presentation"
           description="This slide is skipped when you present. Show it again from its menu."
         >
@@ -132,7 +132,7 @@ function SlideRow({
           >
             <EyeOffIcon />
           </span>
-        </Tooltip>
+        </HoverCard>
       ) : null}
       {/* The picture of the slide. A deck row without one is a list of names,
           and seeing the shape of the talk is the whole point of a sorter. It

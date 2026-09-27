@@ -27,7 +27,6 @@ export function EventStormingBoardRows({ controls }: { controls: EsBoardControls
           type="button"
           onClick={controls.onImportPhoto}
           disabled={controls.photoDisabled}
-          title={controls.photoDisabledReason}
           className={`flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition ${
             controls.photoDisabled
               ? 'cursor-not-allowed opacity-50'
@@ -41,8 +40,11 @@ export function EventStormingBoardRows({ controls }: { controls: EsBoardControls
             <span className="block text-[11px] font-semibold text-slate-700 dark:text-slate-200">
               Add from photo
             </span>
+            {/* A disabled button takes no focus and may get no hover, so the
+                reason is the row's own second line rather than a hint. */}
             <span className="block text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-              Read the stickies off a photo of the wall
+              {(controls.photoDisabled && controls.photoDisabledReason) ||
+                'Read the stickies off a photo of the wall'}
             </span>
           </span>
         </button>

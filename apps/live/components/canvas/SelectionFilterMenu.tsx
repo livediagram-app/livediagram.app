@@ -2,8 +2,8 @@
 
 import { useRef, useState } from 'react';
 import { elementKindLabel, type Element } from '@livediagram/diagram';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { PortalMenu, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
+import { HoverCard } from '@livediagram/ui';
 
 // One selectable bucket in the Filter Selection menu: a human label plus the
 // ids of every selected element that belongs to it.
@@ -73,7 +73,7 @@ export function SelectionFilterMenu({ selectedElements, onFilter }: SelectionFil
 
   return (
     <>
-      <Tooltip title="Filter Selection" description="Keep only one kind of element.">
+      <HoverCard title="Filter Selection" description="Keep only one kind of element.">
         <button
           ref={buttonRef}
           type="button"
@@ -89,7 +89,7 @@ export function SelectionFilterMenu({ selectedElements, onFilter }: SelectionFil
         >
           <FilterIcon />
         </button>
-      </Tooltip>
+      </HoverCard>
       {open ? (
         <PortalMenu anchor={buttonRef.current} placement="below" onClose={() => setOpen(false)}>
           <MenuTileGrid cols={2}>

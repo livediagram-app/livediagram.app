@@ -647,7 +647,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 selectedIsTable && placement === 'right' ? onAddTableColumn : undefined
               }
               // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, each naming its
-              // shortcut in the tooltip. Only on a mind node, and only where
+              // shortcut in the hover card. Only on a mind node, and only where
               // there is a grower (not the share view, embed, or exports).
               onGrowMind={
                 selectedIsMind && growMind

@@ -2,15 +2,15 @@ import type { ComponentProps, ReactNode } from 'react';
 import { ChartLegend } from '@/components/primitives/ChartLegend';
 
 // What every chart element is drawn on (docs/specs/009-elements/pie-chart.md): the positioned box, the
-// full-bleed SVG the marks live in, the hover tooltip, and the legend strip.
+// full-bleed SVG the marks live in, the hover readout, and the legend strip.
 //
 // The bar, line and pie views each carried their own copy: the same wrapper
 // div, the same seven SVG attributes, and the same five legend props, with
-// only the marks and the tooltip's position differing. Three copies of a frame
+// only the marks and the readout's position differing. Three copies of a frame
 // is how one of them ends up with a different viewBox or a legend that stops
 // inheriting the element's font.
 //
-// The tooltip arrives as a node rather than coordinates, because where it
+// The readout arrives as a node rather than coordinates, because where it
 // points is the one part that is genuinely per-chart: a bar knows its slot, a
 // wedge its centroid, a line its sample.
 export function ChartSurface({
@@ -22,7 +22,7 @@ export function ChartSurface({
   textColor,
   fontFamily,
   fontPx,
-  tooltip,
+  readout,
   children,
 }: ComponentProps<typeof ChartLegend> & {
   // The element's own coordinate space, from chartFrame(). The SVG scales to
@@ -30,7 +30,7 @@ export function ChartSurface({
   w: number;
   h: number;
   // Rendered only when something is hovered; the caller decides where.
-  tooltip?: ReactNode;
+  readout?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -46,7 +46,7 @@ export function ChartSurface({
       >
         {children}
       </svg>
-      {tooltip}
+      {readout}
       <ChartLegend
         items={items}
         colorAt={colorAt}

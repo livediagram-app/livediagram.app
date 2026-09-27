@@ -17,7 +17,7 @@ import {
 } from '@/components/canvas/label-style';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { ShapeMarkerGlyph } from '@/components/canvas/ShapeMarker';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 // Inline-icon + marker + label layout for a shape, split out of
 // BoxedElementView. Arranges an optional glyph and status marker beside
@@ -103,12 +103,12 @@ export function ShapeInlineIconLayout({
       <IconGlyph iconId={element.iconId} stroke={iconStroke} strokeWidth={2} hasLabel={false} />
     </div>
   );
-  // Only the draggable icon earns a tooltip (the affordance hint); a static
+  // Only the draggable icon earns a hover card (the affordance hint); a static
   // icon needs none, so it skips the wrapper entirely.
   const iconBox = draggableIcon ? (
-    <Tooltip title="Drag to move" description="Move the icon to another side of the label.">
+    <HoverCard title="Drag to move" description="Move the icon to another side of the label.">
       {iconGlyph}
-    </Tooltip>
+    </HoverCard>
   ) : (
     iconGlyph
   );

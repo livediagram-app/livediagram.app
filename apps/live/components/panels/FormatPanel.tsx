@@ -20,8 +20,8 @@ import {
   type FormatMode,
 } from '@/lib/format-config';
 import { AccordionSection } from '@/components/primitives/AccordionSection';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
+import { HoverCard } from '@livediagram/ui';
 
 type Row = 'copies' | 'mode';
 
@@ -113,7 +113,7 @@ export function FormatPanel({
               {FORMAT_GROUPS.map((group) => {
                 const active = config.copies[group.id];
                 return (
-                  <Tooltip key={group.id} title={group.label} description={group.hint}>
+                  <HoverCard key={group.id} title={group.label} description={group.hint}>
                     <button
                       type="button"
                       role="checkbox"
@@ -127,7 +127,7 @@ export function FormatPanel({
                     >
                       {group.label}
                     </button>
-                  </Tooltip>
+                  </HoverCard>
                 );
               })}
             </div>
@@ -150,7 +150,7 @@ export function FormatPanel({
               {FORMAT_MODES.map((option) => {
                 const active = option.id === config.mode;
                 return (
-                  <Tooltip key={option.id} title={option.label} description={option.hint}>
+                  <HoverCard key={option.id} title={option.label} description={option.hint}>
                     <button
                       type="button"
                       role="radio"
@@ -164,7 +164,7 @@ export function FormatPanel({
                     >
                       {option.label}
                     </button>
-                  </Tooltip>
+                  </HoverCard>
                 );
               })}
             </div>

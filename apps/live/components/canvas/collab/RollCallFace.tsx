@@ -61,7 +61,7 @@ export function RollCallFace({
           tone={entries.length ? 'quiet' : 'loud'}
           textColor={textColor}
           onPress={onTakeRoll}
-          tooltip={{
+          hoverCard={{
             title: entries.length ? 'Take the roll again' : 'Take the roll',
             description: entries.length
               ? 'Replaces the list with whoever is in the room now — the usual reason is latecomers.'

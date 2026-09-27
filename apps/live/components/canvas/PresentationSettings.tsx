@@ -11,6 +11,7 @@
 // Device-local (lib/presentation-config): how YOU drive a deck on THIS
 // machine, not a property of the diagram.
 
+import { HoverCard } from '@livediagram/ui';
 import {
   AUTO_ADVANCE_CHOICES,
   SLIDE_SPEEDS,
@@ -44,23 +45,23 @@ function Segmented<T extends string | number>({
   return (
     <div className="flex gap-1 px-1">
       {options.map((o) => (
-        <button
-          key={String(o.id)}
-          type="button"
-          title={o.hint}
-          aria-pressed={value === o.id}
-          onClick={(e) => {
-            e.stopPropagation();
-            onPick(o.id);
-          }}
-          className={`flex-1 cursor-pointer rounded-md px-1.5 py-1 text-[11px] font-medium transition ${
-            value === o.id
-              ? 'bg-white/25 text-white'
-              : 'text-white/60 hover:bg-white/10 hover:text-white/90'
-          }`}
-        >
-          {o.label}
-        </button>
+        <HoverCard key={String(o.id)} title={o.label} description={o.hint} className="flex-1">
+          <button
+            type="button"
+            aria-pressed={value === o.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPick(o.id);
+            }}
+            className={`flex-1 cursor-pointer rounded-md px-1.5 py-1 text-[11px] font-medium transition ${
+              value === o.id
+                ? 'bg-white/25 text-white'
+                : 'text-white/60 hover:bg-white/10 hover:text-white/90'
+            }`}
+          >
+            {o.label}
+          </button>
+        </HoverCard>
       ))}
     </div>
   );

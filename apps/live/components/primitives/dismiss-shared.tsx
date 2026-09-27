@@ -1,6 +1,6 @@
 import { CloseIcon } from '@livediagram/ui';
 
-// Dismissing a diagram someone shared with you: the verb, its tooltip,
+// Dismissing a diagram someone shared with you: the verb, its hover card,
 // and its glyph. The editor panel's Shared rows and the Explorer page's
 // Shared list both offer it, and had drifted to different words
 // ("Remove" vs "Dismiss") and two copies of the X. The diagram menu's

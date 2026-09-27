@@ -1,7 +1,7 @@
 'use client';
 
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 // The Layers button in the bottom-right cluster (docs/specs/006-diagram/layers.md), in every layout.
 //
@@ -50,13 +50,13 @@ export function LayersClusterButton({
       }}
       className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
-      {/* No tooltip while open: it would sit over the panel it names. */}
+      {/* No hover card while open: it would sit over the panel it names. */}
       {popoverOpen ? (
         button
       ) : (
-        <Tooltip title="Open Layers" description="Expand the Layers panel.">
+        <HoverCard title="Open Layers" description="Expand the Layers panel.">
           {button}
-        </Tooltip>
+        </HoverCard>
       )}
     </div>
   );

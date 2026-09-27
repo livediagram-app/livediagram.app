@@ -1,6 +1,6 @@
 'use client';
 
-import { Tooltip } from '@livediagram/ui';
+import { HoverCard } from '@livediagram/ui';
 import { fmtDay } from './chart-utils';
 
 // A standalone inline-SVG line chart for a 30-day daily series, shared by
@@ -9,7 +9,7 @@ import { fmtDay } from './chart-utils';
 // stretched to the container with `preserveAspectRatio="none"`, while
 // `vector-effect="non-scaling-stroke"` keeps the stroke an even width
 // despite the non-uniform scale. A transparent row of hover columns
-// overlaid on top gives a per-day tooltip (date + count) without per-point
+// overlaid on top gives a per-day hover card (date + count) without per-point
 // hit-testing maths.
 //
 // `highlightFromIndex` marks where the selected window begins: everything
@@ -143,17 +143,17 @@ export function TrendChart({
             }}
           />
         ) : null}
-        {/* Transparent per-day hover columns for the tooltip. */}
+        {/* Transparent per-day hover columns for the hover card. */}
         <div className="absolute inset-0 flex">
           {values.map((v, i) => (
-            <Tooltip
+            <HoverCard
               key={days[i] ?? i}
               title={fmtDay(days[i] ?? 0)}
               description={`${v.toLocaleString()} ${v === 1 ? 'event' : 'events'}`}
               className="h-full flex-1"
             >
               <div className="h-full w-full" />
-            </Tooltip>
+            </HoverCard>
           ))}
         </div>
       </div>

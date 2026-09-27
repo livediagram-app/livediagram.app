@@ -14,8 +14,7 @@
 // Everybody else sees no verb at all, because there is nothing they can do
 // with it — rather than a button that would be refused by the room.
 
-import { Button } from '@livediagram/ui';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { Button, HoverCard } from '@livediagram/ui';
 
 export function FacilitatorButton({
   isSelf,
@@ -70,7 +69,7 @@ export function FacilitatorButton({
   // button that vanishes teaches nothing about why.
   const blocked = !canHold;
   return (
-    <Tooltip
+    <HoverCard
       title={label}
       description={
         blocked ? 'Viewers cannot run a session: the tools write to the diagram.' : description
@@ -87,6 +86,6 @@ export function FacilitatorButton({
           {label}
         </Button>
       </span>
-    </Tooltip>
+    </HoverCard>
   );
 }

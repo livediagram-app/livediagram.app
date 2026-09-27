@@ -67,7 +67,6 @@ export function TechPickerTab({
               label={`Add ${icon.label}`}
               caption={icon.short ?? icon.label}
               description="Click to add, or drag onto the canvas."
-              hideTooltip
               onClick={() => addTechIcon(icon.id)}
               noTint
               draggable

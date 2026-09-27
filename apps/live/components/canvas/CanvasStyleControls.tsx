@@ -19,7 +19,7 @@ import {
   type PatternEntry,
 } from '@/components/palette/palette-controls';
 import { ShowMoreButton } from '@/components/primitives/ShowMoreButton';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 // Static vs animated split (docs/specs/008-canvas/canvas-and-palette.md): the two render as separate, labelled
 // sections so the catalogue reads clearly. Computed once from the single
@@ -41,11 +41,11 @@ function PatternGrid({
   return (
     <div className={gridClass}>
       {patterns.map((p) => (
-        <Tooltip key={p.id} title={p.label} description={p.description}>
+        <HoverCard key={p.id} title={p.label} description={p.description}>
           <PatternButton active={active === p.id} onClick={() => onPick(p.id)} label={p.shortLabel}>
             <p.icon />
           </PatternButton>
-        </Tooltip>
+        </HoverCard>
       ))}
     </div>
   );
@@ -127,12 +127,12 @@ export function CanvasStyleControls({
         Colours
       </p>
       <div className="mt-1 flex items-stretch gap-1">
-        <Tooltip title="Canvas colour" description="The colour of the canvas background.">
+        <HoverCard title="Canvas colour" description="The colour of the canvas background.">
           <ColorSwatch label="Canvas" value={backgroundColor} onChange={onSetBackgroundColor} />
-        </Tooltip>
-        <Tooltip title="Pattern colour" description="The colour of the grid dots or ruled lines.">
+        </HoverCard>
+        <HoverCard title="Pattern colour" description="The colour of the grid dots or ruled lines.">
           <ColorSwatch label="Pattern" value={patternColor} onChange={onSetPatternColor} />
-        </Tooltip>
+        </HoverCard>
       </div>
       <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 dark:border-slate-800">
         <div className="flex items-center justify-between">

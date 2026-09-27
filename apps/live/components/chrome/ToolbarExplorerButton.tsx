@@ -1,7 +1,7 @@
 'use client';
 
 import { track } from '@/lib/telemetry';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
@@ -70,13 +70,13 @@ export function ToolbarExplorerButton({
         e.stopPropagation();
       }}
     >
-      {/* No tooltip while open: it would sit over the panel it names. */}
+      {/* No hover card while open: it would sit over the panel it names. */}
       {open ? (
         button
       ) : (
-        <Tooltip title="Explorer" description="Your diagrams, folders and teams.">
+        <HoverCard title="Explorer" description="Your diagrams, folders and teams.">
           {button}
-        </Tooltip>
+        </HoverCard>
       )}
     </div>
   );

@@ -125,7 +125,7 @@ type PaletteTileAction =
 export type ToolGroupId = 'write' | 'draw' | 'behaviour';
 
 // Display order, headings, and a one-line "what's in here" for the Tools tab's
-// groups. The description is what the category tile's tooltip says: a count
+// groups. The description is what the category tile's hover card says: a count
 // ("6 tools") tells you nothing you can act on, whereas naming the contents
 // answers the actual question — is the thing I want in this box?
 // Label + membership only. These groups render through PaletteToolRows /
@@ -178,7 +178,7 @@ export type PaletteTileDef = {
   caption?: string;
   description: string;
   // A short line rendered UNDER the tile in list layouts (the Tools tab).
-  // Separate from `description`, which is the fuller tooltip / search text:
+  // Separate from `description`, which is the fuller hover card / search text:
   // this one has to fit a palette-width row, so it is a clause, not a
   // sentence, and it says what the tool IS rather than how to use it.
   blurb?: string;

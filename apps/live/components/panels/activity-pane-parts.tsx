@@ -10,9 +10,8 @@ import { CountBadge } from '@/components/primitives/CountBadge';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ActivityAction, ActivityPlace, ActivityThread } from '@livediagram/api-schema';
-import { EmptyState } from '@livediagram/ui';
+import { EmptyState, HoverCard } from '@livediagram/ui';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { collabDeepLinkHref, type CollabPopover } from '@/lib/collab-deep-link';
 import { helpArticleHref } from '@/lib/help-articles';
 import { initialsOf } from '@/lib/identity';
@@ -160,14 +159,14 @@ function ActivityRowShell({
           </span>
         </span>
         <span className="flex shrink-0 flex-col items-end gap-0.5">
-          <Tooltip title={avatar.name} description={avatar.detail}>
+          <HoverCard title={avatar.name} description={avatar.detail}>
             <span
               className={`flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-semibold text-white ${avatar.colorClass ?? ''}`}
               style={avatar.color ? { backgroundColor: avatar.color } : undefined}
             >
               {initialsOf(avatar.name)}
             </span>
-          </Tooltip>
+          </HoverCard>
           <span className="text-[10px] text-slate-400 dark:text-slate-500">
             {formatRelativeTimeShort(Date.now() - at)}
           </span>

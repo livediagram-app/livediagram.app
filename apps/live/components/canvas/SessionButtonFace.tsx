@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 // Deliberately the Selection Mode button's twin — same tile, same chip, same
 // press-not-on-drag rule — because they are the same object with a different
 // payload: one hands YOU a mode, this one starts a tool for THE ROOM. The one
-// place they differ is that difference: the tooltip says "everyone", and a
+// place they differ is that difference: the hover card says "everyone", and a
 // read-only visitor sees an inert face instead of a control that would do
 // nothing (starting a timer or a vote is edit-role, docs/specs/012-collaboration/session-tools.md).
 
@@ -144,7 +144,7 @@ export function SessionButtonFace({
   const layout =
     'flex h-full w-full flex-col items-center justify-center gap-2 rounded-[inherit] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]';
 
-  // No tooltips on any of these branches. The button is small and usually
+  // No hover cards on any of these branches. The button is small and usually
   // sits near the top of a board, so the hover card landed over the element
   // toolbar directly above it and blocked the controls the user was reaching
   // for. What each one said is either already on the button's own face (it

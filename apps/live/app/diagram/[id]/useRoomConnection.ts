@@ -181,7 +181,7 @@ export function useRoomConnection(opts: {
             // Status + lastActiveAt are derived locally rather than
             // carried on the wire — the server doesn't track idle
             // time. Seed any peer we haven't seen with `now` so the
-            // tooltip reads "Active just now" until their first op
+            // hover card reads "Active just now" until their first op
             // arrives.
             status: 'online',
             lastActiveAt: lastSeenRef.current.get(p.id) ?? now,

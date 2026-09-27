@@ -1,11 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ChevronDownIcon, EllipsisIcon } from '@livediagram/ui';
+import { ChevronDownIcon, EllipsisIcon, HoverCard } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { loadPaletteFavourites } from '@/lib/palette-favourites';
 import { loadRecentTiles, recordTileUse, saveRecentTiles } from '@/lib/toolbar-recent-tiles';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
@@ -233,7 +232,7 @@ export function ToolbarPalette(props: Props) {
           : TOOLBAR_TRIGGER_TONE
       }`}
     >
-      {/* An ellipsis rather than the word: the tooltip and aria-label name
+      {/* An ellipsis rather than the word: the hover card and aria-label name
           it, and a glyph sits with the icon tiles instead of reading as a
           stray label among them. */}
       <EllipsisIcon />
@@ -284,8 +283,8 @@ export function ToolbarPalette(props: Props) {
                     <PaletteDropdown
                       ariaLabel="Selection mode"
                       dataTourId="canvas-tool"
-                      tooltipTitle="Selection Mode"
-                      tooltipDescription="Choose how the pointer acts on the canvas."
+                      hoverCardTitle="Selection Mode"
+                      hoverCardDescription="Choose how the pointer acts on the canvas."
                       value={canvasTool}
                       variant="toolbar"
                       iconOnly
@@ -365,12 +364,12 @@ export function ToolbarPalette(props: Props) {
                     {moreOpen ? (
                       moreButton
                     ) : (
-                      <Tooltip
+                      <HoverCard
                         title={`More ${category?.label ?? ''}`.trim()}
                         description={category?.description ?? 'Everything in this category.'}
                       >
                         {moreButton}
-                      </Tooltip>
+                      </HoverCard>
                     )}
                   </>
                 ) : null}

@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import type { ApiToken } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { EmptyState } from '@livediagram/ui';
+import { EmptyState, Tooltip } from '@livediagram/ui';
 import { TOKEN_REVOKE_MESSAGE } from './token-copy';
 
 const DAY = 86_400_000;
@@ -113,12 +113,12 @@ export function TokensPane({
                     <KeyIcon />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p
-                      className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100"
-                      title={t.name || 'Untitled token'}
-                    >
-                      {t.name || 'Untitled token'}
-                    </p>
+                    {/* The name truncates; the Tooltip gives it whole. */}
+                    <Tooltip label={t.name || 'Untitled token'}>
+                      <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        {t.name || 'Untitled token'}
+                      </p>
+                    </Tooltip>
                     <span className="mt-1 inline-flex flex-wrap items-center gap-1">
                       <span
                         className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}

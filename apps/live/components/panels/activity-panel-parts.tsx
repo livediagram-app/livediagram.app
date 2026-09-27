@@ -9,7 +9,7 @@ import { useEffect, useRef } from 'react';
 import type { ChangeLogEntry } from '@/lib/api-client';
 import { formatRelativeTimeShort, useRelativeTimeTick } from '@/lib/relative-time';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 // Save-status badge that lived in the footer; the Activity panel
 // title is its new home — same factual content, paired with the
@@ -30,7 +30,7 @@ export function SaveStatusBadge({ status }: { status: SaveStatus; savedAt: numbe
   }
   if (status === 'forbidden') {
     return (
-      <Tooltip
+      <HoverCard
         title="Not saved"
         description="You no longer have permission to edit this diagram. Export a copy to keep your changes."
       >
@@ -41,12 +41,12 @@ export function SaveStatusBadge({ status }: { status: SaveStatus; savedAt: numbe
           <WarningIcon />
           No access
         </span>
-      </Tooltip>
+      </HoverCard>
     );
   }
   if (status === 'unauthenticated') {
     return (
-      <Tooltip
+      <HoverCard
         title="Not saved"
         description="Couldn't confirm you're signed in, so changes aren't saving. Sign in again to keep them."
       >
@@ -57,12 +57,12 @@ export function SaveStatusBadge({ status }: { status: SaveStatus; savedAt: numbe
           <WarningIcon />
           Signed out
         </span>
-      </Tooltip>
+      </HoverCard>
     );
   }
   if (status === 'error') {
     return (
-      <Tooltip title="Not saved" description="Couldn't save. Check your network.">
+      <HoverCard title="Not saved" description="Couldn't save. Check your network.">
         <span
           role="status"
           className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-rose-700 ring-1 ring-rose-200"
@@ -70,7 +70,7 @@ export function SaveStatusBadge({ status }: { status: SaveStatus; savedAt: numbe
           <WarningIcon />
           Not saved
         </span>
-      </Tooltip>
+      </HoverCard>
     );
   }
   return null;
@@ -153,13 +153,13 @@ export function ActivityRow({
         onClick={onClick}
         className="flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/60"
       >
-        <Tooltip title={entry.participantName} description="Made this change.">
+        <HoverCard title={entry.participantName} description="Made this change.">
           <span
             aria-hidden
             style={{ backgroundColor: entry.participantColor }}
             className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
           />
-        </Tooltip>
+        </HoverCard>
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-medium text-slate-800 dark:text-slate-100">
             {entry.summary}
@@ -171,10 +171,10 @@ export function ActivityRow({
       </button>
       {/* Floats over the row on hover so it never reserves layout
           space when idle. The outer absolute wrapper carries the
-          positioning + visibility — that way the inner Tooltip
+          positioning + visibility — that way the inner HoverCard
           anchors to the actual button (its wrapping span tracks
           the button's bounding box), instead of a 0-size sibling
-          which left the tooltip card drifting up to the row's
+          which left the hover card drifting up to the row's
           top-left when the button was absolutely positioned
           itself. stopPropagation so clicking Revert doesn't ALSO
           fire the row click handler. Anchored to the row's top
@@ -182,7 +182,7 @@ export function ActivityRow({
           the summary line on the now-taller two-line rows. */}
       {entry.elementIds.length > 0 && canRevert ? (
         <div className="absolute right-1.5 top-1.5 hidden group-hover:block group-focus-within:block">
-          <Tooltip title="Revert" description={`Undo this change: ${entry.summary}`}>
+          <HoverCard title="Revert" description={`Undo this change: ${entry.summary}`}>
             <button
               type="button"
               onClick={(e) => {
@@ -194,7 +194,7 @@ export function ActivityRow({
             >
               <RevertIcon />
             </button>
-          </Tooltip>
+          </HoverCard>
         </div>
       ) : null}
     </li>
@@ -213,7 +213,7 @@ export function UndoRedoButton({
   onClick: () => void;
 }) {
   return (
-    <Tooltip
+    <HoverCard
       title={label}
       description={disabled ? 'Nothing to apply.' : 'Step through history.'}
       block
@@ -228,7 +228,7 @@ export function UndoRedoButton({
         {icon}
         {label}
       </button>
-    </Tooltip>
+    </HoverCard>
   );
 }
 

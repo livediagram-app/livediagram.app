@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Tooltip } from '@livediagram/ui';
 import { useEyeDropper } from '@/hooks/ui/useEyeDropper';
 import { hexish, ToggleSwitch } from '@/components/palette/palette-controls';
 import { DirArrow } from '@/components/palette/context-menu-icons';
@@ -89,12 +90,21 @@ export function ColourRow({
     onAddCustom?.(color);
   };
 
-  const swatch = (c: string, removable: boolean) => (
+  // A colour you added says how to bin it; a preset needs no hint.
+  const swatch = (c: string, removable: boolean) =>
+    removable ? (
+      <Tooltip key={c} label={`${c} (right-click to remove)`}>
+        {swatchButton(c, true)}
+      </Tooltip>
+    ) : (
+      swatchButton(c, false)
+    );
+
+  const swatchButton = (c: string, removable: boolean) => (
     <button
       key={c}
       type="button"
       aria-label={removable ? `${c} (right-click to remove)` : c}
-      title={removable ? 'Right-click to remove' : undefined}
       onClick={() => pick(c)}
       onContextMenu={
         removable
@@ -153,19 +163,20 @@ export function ColourRow({
               than trailing off the end of it. */}
           <div className="flex items-center gap-1.5">
             {eyeDropper.supported ? (
-              <button
-                type="button"
-                aria-label={`Pick ${label} colour from the screen`}
-                title="Pick a colour from anywhere on the screen"
-                onClick={() => {
-                  void eyeDropper.pick().then((hex) => {
-                    if (hex) pick(hex);
-                  });
-                }}
-                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:hover:border-brand-500 dark:hover:text-brand-300"
-              >
-                <PipetteIcon />
-              </button>
+              <Tooltip label={`Pick ${label} colour from the screen`}>
+                <button
+                  type="button"
+                  aria-label={`Pick ${label} colour from the screen`}
+                  onClick={() => {
+                    void eyeDropper.pick().then((hex) => {
+                      if (hex) pick(hex);
+                    });
+                  }}
+                  className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:hover:border-brand-500 dark:hover:text-brand-300"
+                >
+                  <PipetteIcon />
+                </button>
+              </Tooltip>
             ) : null}
             <label
               className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-300 text-sm leading-none text-slate-500 dark:border-slate-600"
@@ -191,20 +202,21 @@ export function ColourRow({
           <div className="flex flex-wrap overflow-hidden rounded-md border border-slate-300 dark:border-slate-600">
             {/* No colour: the one option every row needs and no theme
                 provides. */}
-            <button
-              type="button"
-              aria-label={`No ${label.toLowerCase()} colour`}
-              title="Transparent"
-              onClick={() => (onCommit ?? onChange)(TRANSPARENT)}
-              onPointerEnter={onPreview ? onMouseHover(() => onPreview(TRANSPARENT)) : undefined}
-              onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
-              className={`h-7 w-7 cursor-pointer transition ${
-                isTransparent(value)
-                  ? 'relative z-10 ring-2 ring-brand-500 ring-inset'
-                  : 'hover:brightness-95'
-              }`}
-              style={{ background: CHECKER }}
-            />
+            <Tooltip label={`No ${label.toLowerCase()} colour`}>
+              <button
+                type="button"
+                aria-label={`No ${label.toLowerCase()} colour`}
+                onClick={() => (onCommit ?? onChange)(TRANSPARENT)}
+                onPointerEnter={onPreview ? onMouseHover(() => onPreview(TRANSPARENT)) : undefined}
+                onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
+                className={`h-7 w-7 cursor-pointer transition ${
+                  isTransparent(value)
+                    ? 'relative z-10 ring-2 ring-brand-500 ring-inset'
+                    : 'hover:brightness-95'
+                }`}
+                style={{ background: CHECKER }}
+              />
+            </Tooltip>
             {presets.map((c) => swatch(c, false))}
             {(customs ?? [])
               .filter((c) => !presets.some((p) => p.toLowerCase() === c.toLowerCase()))

@@ -39,7 +39,7 @@ export type { TechIconDef, TechProvider } from '@livediagram/icons';
 // knows line-art prims). Value carried = the tech-icon id.
 export const TECH_ICON_DND_MIME = 'application/x-livediagram-tech-icon';
 
-// Provider display names for the palette filter + tooltips.
+// Provider display names for the palette filter + hover cards.
 export const TECH_PROVIDERS: { id: TechProvider; label: string }[] = [
   { id: 'aws', label: 'AWS' },
   { id: 'azure', label: 'Azure' },

@@ -78,7 +78,7 @@ export function PaletteGroupBrowser({
   // you left switched on.
   const [query, setQuery] = useState('');
 
-  // No `description` on a category, so ToolsCategoryGrid draws no tooltip. A
+  // No `description` on a category, so ToolsCategoryGrid draws no hover card. A
   // hover card restating "Reactions: react on the board" is a delay in
   // exchange for nothing — the same call the Icons grid already made for
   // People and Arrows. The accordions these replaced carried that line under

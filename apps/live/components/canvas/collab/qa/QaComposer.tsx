@@ -5,7 +5,6 @@
 
 import { useState } from 'react';
 import { QA_MAX_TEXT } from '@livediagram/diagram';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { tint } from '../collab-chrome';
 import {
   MaskGlyph,
@@ -15,6 +14,7 @@ import {
   SendGlyph,
   stopPointer,
 } from './qa-parts';
+import { HoverCard } from '@livediagram/ui';
 
 export function QaComposer({
   textColor,
@@ -77,7 +77,7 @@ export function QaComposer({
         </button>
       </div>
       <div className="flex items-center justify-between gap-2 px-1">
-        <Tooltip
+        <HoverCard
           title={anonymous ? 'Posting anonymously' : `Posting as ${selfName || 'you'}`}
           description={
             anonymous
@@ -113,7 +113,7 @@ export function QaComposer({
             </span>
             {anonymous ? 'Anonymous' : `As ${selfName || 'you'}`}
           </button>
-        </Tooltip>
+        </HoverCard>
         {left <= 40 ? (
           <span
             className="text-[10px] font-medium tabular-nums"

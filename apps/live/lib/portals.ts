@@ -22,7 +22,7 @@ export function portalsOnTab(elements: Element[]): ShapeElement[] {
   return elements.filter((el): el is ShapeElement => el.type === 'shape' && el.shape === 'portal');
 }
 
-// A portal's display name for menus and tooltips: its own label, else a stable
+// A portal's display name for menus and hover cards: its own label, else a stable
 // positional name ("Portal 2") so an unlabelled pair is still tellable apart.
 export function portalName(elements: Element[], portal: ShapeElement): string {
   const label = portal.label?.trim();

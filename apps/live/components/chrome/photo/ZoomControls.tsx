@@ -1,5 +1,6 @@
 'use client';
 
+import { HoverCard } from '@livediagram/ui';
 import { PHOTO_ZOOM_MAX } from '@/lib/photo-view';
 
 // The zoom, where it can be seen and clicked (docs/specs/021-event-storming/event-storming.md Phase 9). The wheel and
@@ -26,16 +27,17 @@ export function ZoomControls({
       // draws a box.
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <button
-        type="button"
-        aria-label="Zoom out"
-        title="Zoom out (−)"
-        disabled={zoom <= 1}
-        onClick={onZoomOut}
-        className={button}
-      >
-        −
-      </button>
+      <HoverCard title="Zoom out" description="Shortcut: −">
+        <button
+          type="button"
+          aria-label="Zoom out"
+          disabled={zoom <= 1}
+          onClick={onZoomOut}
+          className={button}
+        >
+          −
+        </button>
+      </HoverCard>
       <span
         aria-live="polite"
         data-testid="photo-zoom-level"
@@ -43,26 +45,31 @@ export function ZoomControls({
       >
         {Math.round(zoom * 100)}%
       </span>
-      <button
-        type="button"
-        aria-label="Zoom in"
-        title="Zoom in (+). Or scroll, or pinch; drag with the middle button to move around."
-        disabled={zoom >= PHOTO_ZOOM_MAX}
-        onClick={onZoomIn}
-        className={button}
+      <HoverCard
+        title="Zoom in"
+        description="Shortcut: +. Or scroll, or pinch; drag with the middle button to move around."
       >
-        +
-      </button>
-      <button
-        type="button"
-        aria-label="Show the whole photo"
-        title="Whole photo (0)"
-        disabled={zoom === 1}
-        onClick={onFit}
-        className={`${button} text-xs`}
-      >
-        Fit
-      </button>
+        <button
+          type="button"
+          aria-label="Zoom in"
+          disabled={zoom >= PHOTO_ZOOM_MAX}
+          onClick={onZoomIn}
+          className={button}
+        >
+          +
+        </button>
+      </HoverCard>
+      <HoverCard title="Show the whole photo" description="Shortcut: 0">
+        <button
+          type="button"
+          aria-label="Show the whole photo"
+          disabled={zoom === 1}
+          onClick={onFit}
+          className={`${button} text-xs`}
+        >
+          Fit
+        </button>
+      </HoverCard>
     </div>
   );
 }

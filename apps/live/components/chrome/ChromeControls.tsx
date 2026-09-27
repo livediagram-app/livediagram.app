@@ -1,8 +1,7 @@
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { AppearanceToggle } from '@/components/chrome/AppearanceToggle';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from '@/components/chrome/chrome-button';
 import { GearIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
-import { REPO_URL } from '@livediagram/ui';
+import { REPO_URL, HoverCard } from '@livediagram/ui';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/live-app.md): search, the open-source GitHub
@@ -21,7 +20,7 @@ export function ChromeControls({
   onOpenSearch?: () => void;
   onOpenSettings?: () => void;
   // The editor's settings are per-diagram; the Explorer's read the same
-  // synced preferences. Let the host phrase the tooltip.
+  // synced preferences. Let the host phrase the hover card.
   settingsLabel?: string;
   settingsDescription?: string;
   labelled?: boolean;
@@ -33,12 +32,12 @@ export function ChromeControls({
   return (
     <>
       {onOpenSearch ? (
-        <Tooltip title="Search" description="Find diagrams, folders, tabs and elements.">
+        <HoverCard title="Search" description="Find diagrams, folders, tabs and elements.">
           <button type="button" onClick={onOpenSearch} aria-label="Search" className={BTN}>
             <SearchGlyph />
             <ChromeLabel show={labelled}>Search</ChromeLabel>
           </button>
-        </Tooltip>
+        </HoverCard>
       ) : null}
       {github ? (
         <>
@@ -49,10 +48,10 @@ export function ChromeControls({
           one control here that leaves the app entirely — the others (search,
           settings, dark mode) are things you reach for mid-edit.
           Still reachable from the marketing site and the help centre. */}
-          {/* A wrapper, not the Tooltip's className: the Tooltip's own
+          {/* A wrapper, not the HoverCard's className: the HoverCard's own
           inline-flex outranks a `hidden` passed alongside it. */}
           <span className="hidden sm:contents">
-            <Tooltip
+            <HoverCard
               title="Source on GitHub"
               description="View livediagram's open-source code on GitHub."
             >
@@ -66,17 +65,17 @@ export function ChromeControls({
                 <GithubIcon />
                 <ChromeLabel show={labelled}>GitHub</ChromeLabel>
               </a>
-            </Tooltip>
+            </HoverCard>
           </span>
         </>
       ) : null}
       {onOpenSettings ? (
-        <Tooltip title={settingsLabel} description={settingsDescription}>
+        <HoverCard title={settingsLabel} description={settingsDescription}>
           <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>
             <GearIcon />
             <ChromeLabel show={labelled}>Settings</ChromeLabel>
           </button>
-        </Tooltip>
+        </HoverCard>
       ) : null}
       <AppearanceToggle labelled={labelled} />
     </>

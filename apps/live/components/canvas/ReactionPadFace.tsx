@@ -2,9 +2,9 @@
 
 import { REACTION_EMOJI, REACTION_HINT, REACTION_LABEL, type Reaction } from '@livediagram/diagram';
 
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { PadTread } from '@/components/canvas/paper-kit';
+import { HoverCard } from '@livediagram/ui';
 
 // The face of a Reaction Pad (docs/specs/009-elements/reaction-pad.md): a big pressable glyph over the
 // element's label.
@@ -74,7 +74,7 @@ export function ReactionPadFace({
   }
 
   return (
-    <Tooltip
+    <HoverCard
       block
       className="h-full w-full"
       title={`${REACTION_LABEL[reaction]} pad`}
@@ -93,6 +93,6 @@ export function ReactionPadFace({
         <PadTread textColor={textColor} />
         {face}
       </button>
-    </Tooltip>
+    </HoverCard>
   );
 }

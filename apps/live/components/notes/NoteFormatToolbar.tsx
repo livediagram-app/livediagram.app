@@ -19,8 +19,8 @@ import {
 } from '@/components/rich-text/toolbar-chrome';
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { normaliseUrl } from '@/lib/url-safety';
+import { HoverCard } from '@livediagram/ui';
 
 // preventDefault on mousedown keeps focus + the live selection in the
 // contentEditable when a control is clicked (the classic rich-text-toolbar
@@ -51,7 +51,7 @@ export function NoteFormatToolbar({
     <div className="flex flex-col gap-1.5">
       <div className="flex flex-wrap items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800/60">
         {toggles.map((t) => (
-          <Tooltip key={t.key} title={t.label} description={t.description}>
+          <HoverCard key={t.key} title={t.label} description={t.description}>
             <button
               type="button"
               aria-label={t.label}
@@ -62,7 +62,7 @@ export function NoteFormatToolbar({
             >
               {t.icon}
             </button>
-          </Tooltip>
+          </HoverCard>
         ))}
         {TOOLBAR_DIVIDER}
         {/* One block-type picker (docs/specs/009-elements/block-type-picker.md) rather than three heading buttons
@@ -77,7 +77,7 @@ export function NoteFormatToolbar({
           onApplyList={onApplyList}
         />
         {TOOLBAR_DIVIDER}
-        <Tooltip title="Link" description="Point the selected text at a web address.">
+        <HoverCard title="Link" description="Point the selected text at a web address.">
           <button
             type="button"
             aria-label="Link"
@@ -89,7 +89,7 @@ export function NoteFormatToolbar({
           >
             <LinkMenuIcon />
           </button>
-        </Tooltip>
+        </HoverCard>
       </div>
       {linkOpen ? (
         <NoteLinkField

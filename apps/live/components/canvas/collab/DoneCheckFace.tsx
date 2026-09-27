@@ -59,7 +59,7 @@ function Roster({
         {keys.map((key) => {
           const who = participants.find((p) => participantKey(p) === key);
           return who ? (
-            <ParticipantAvatar key={key} participant={who} size={22} withTooltip />
+            <ParticipantAvatar key={key} participant={who} size={22} withHoverCard />
           ) : null;
         })}
       </div>
@@ -162,7 +162,7 @@ export function DoneCheckFace({
           tone={mine ? 'quiet' : 'loud'}
           textColor={textColor}
           onPress={onToggleMine}
-          tooltip={{
+          hoverCard={{
             title: mine ? "Say you're not done after all" : 'Mark yourself done',
             description: mine
               ? 'Takes your mark off. Nobody is stuck finished on a card they misread.'

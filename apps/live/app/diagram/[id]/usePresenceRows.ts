@@ -174,7 +174,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   // ByElement already filters out our own selection, so a hit here always
   // means someone ELSE holds it. The selection hooks consult this to block
   // select / edit / marquee; the element view uses it for the cursor +
-  // "Locked to <name>" tooltip.
+  // "Locked to <name>" hover card.
   const lockedByOther = useCallback(
     (id: string) => remoteSelectionsByElement.has(id),
     [remoteSelectionsByElement],

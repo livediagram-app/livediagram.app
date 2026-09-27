@@ -9,7 +9,7 @@ import { PrivateDotIcon, SharedDotIcon } from '@livediagram/ui';
 // lie (every joined member can open it); "Offline" (docs/specs/006-diagram/offline-mode.md) supersedes
 // "Private" for browser-only diagrams. Hovering (or focusing) the pill opens a
 // legend popover explaining every badge, with the current one highlighted, so
-// the four states can be compared in place instead of hunting each tooltip.
+// the four states can be compared in place instead of hunting each hover card.
 
 type ShareState = 'private' | 'shared' | 'team' | 'offline';
 

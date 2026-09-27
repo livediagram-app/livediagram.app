@@ -3,9 +3,9 @@
 import { AskIcon, BlinkCursor, CleanIcon, PlugIcon, SendIcon, Spinner } from './ai-panel-icons';
 import type { Element } from '@livediagram/diagram';
 import type { AiMode } from '@/lib/api-client';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useAiPanelSession } from './useAiPanelSession';
+import { HoverCard } from '@livediagram/ui';
 
 type AiPanelProps = {
   contextElements: Element[]; // all tab elements
@@ -25,7 +25,7 @@ type AiPanelProps = {
 type ModeConfig = {
   id: AiMode;
   label: string;
-  tooltip: string;
+  description: string;
   icon: React.ReactNode;
   suggestions: string[];
 };
@@ -34,7 +34,7 @@ const MODES: ModeConfig[] = [
   {
     id: 'ask',
     label: 'Ask',
-    tooltip: 'Ask a question about the selected elements or whole tab. Read-only.',
+    description: 'Ask a question about the selected elements or whole tab. Read-only.',
     icon: <AskIcon />,
     suggestions: [
       'How many steps are there?',
@@ -46,7 +46,7 @@ const MODES: ModeConfig[] = [
   {
     id: 'clean',
     label: 'Clean',
-    tooltip: 'Fix typos, normalise layout, sizes and styles.',
+    description: 'Fix typos, normalise layout, sizes and styles.',
     icon: <CleanIcon />,
     suggestions: ['Fix spelling', 'Align and space evenly', 'Normalise colors', 'Improve layout'],
   },
@@ -114,7 +114,7 @@ export function AiPanelContent({
       <div className="flex items-center justify-between gap-1 border-b border-slate-100 px-2 py-1.5 dark:border-slate-800">
         <div className="flex gap-0.5">
           {MODES.map((m) => (
-            <Tooltip key={m.id} title={m.label} description={m.tooltip}>
+            <HoverCard key={m.id} title={m.label} description={m.description}>
               <button
                 type="button"
                 onClick={() => setMode(m.id)}
@@ -127,7 +127,7 @@ export function AiPanelContent({
                 {m.icon}
                 {m.label}
               </button>
-            </Tooltip>
+            </HoverCard>
           ))}
         </div>
         {/* Connect an external AI tool (MCP) — opens the help guide. */}

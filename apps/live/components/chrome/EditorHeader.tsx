@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
-import { Brand, ProductNav } from '@livediagram/ui';
+import { Brand, ProductNav, HoverCard } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
-import { Tooltip } from '@/components/primitives/Tooltip';
 
 // Sync state surfaced as a small pill next to the diagram title. The
 // editor is autosave-driven, so silent failures (offline, API down,
@@ -117,7 +116,7 @@ export function EditorHeader({
                 {diagramName}
               </span>
             ) : (
-              <Tooltip title="Rename diagram" description="Click to edit the name.">
+              <HoverCard title="Rename diagram" description="Click to edit the name.">
                 <button
                   type="button"
                   onClick={() => setEditing(true)}
@@ -125,7 +124,7 @@ export function EditorHeader({
                 >
                   {diagramName}
                 </button>
-              </Tooltip>
+              </HoverCard>
             )}
             <span className="hidden sm:contents">
               <SharedBadge shareable={shareable} team={teamDiagram} offline={offline} />
@@ -137,7 +136,7 @@ export function EditorHeader({
           the bar (the -mr-4 cancels the header's right padding). */}
       <div className="-mr-4 flex items-stretch self-stretch">
         {onMakeCopy ? (
-          <Tooltip title="Make a copy" description="Duplicate this diagram into your own files.">
+          <HoverCard title="Make a copy" description="Duplicate this diagram into your own files.">
             <button
               type="button"
               onClick={onMakeCopy}
@@ -147,10 +146,10 @@ export function EditorHeader({
               <CopyIcon />
               {copying ? 'Copying' : 'Copy'}
             </button>
-          </Tooltip>
+          </HoverCard>
         ) : null}
         {showShare ? (
-          <Tooltip
+          <HoverCard
             title={shareable ? 'Shared' : 'Share'}
             description={shareable ? 'Click to manage links.' : 'Invite collaborators with a link.'}
           >
@@ -171,7 +170,7 @@ export function EditorHeader({
                   the title. */}
               <span>Share</span>
             </button>
-          </Tooltip>
+          </HoverCard>
         ) : null}
         {/* Explorer + Help used to sit here as top-right links; both now live
             in the ProductNav apps menu next to the logo, so the header keeps

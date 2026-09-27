@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { HoverCard, Tooltip } from '@livediagram/ui';
 import {
   EMBED_PROVIDER_HINT,
   EMBED_PROVIDER_LABEL,
@@ -277,32 +278,36 @@ function PlayerControls({
         <rect x="4.5" y="4.5" width="7" height="7" rx="1.2" fill="currentColor" stroke="none" />
       </ControlButton>
       {openUrl ? (
-        <a
-          href={openUrl}
-          target="_blank"
-          rel="noreferrer noopener"
-          aria-label="Open this page in a new tab"
-          title="Blank? Open this page in a new tab"
-          onClick={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-          className="pointer-events-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-md bg-slate-900/70 text-white transition hover:bg-slate-900/90"
+        <HoverCard
+          title="Open this page in a new tab"
+          description="For when the embed stays blank: some sites refuse to be shown inside another page."
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-            <path
-              d="M9 3.5h3.5V7M12.5 3.5 8 8"
-              stroke="currentColor"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M11.5 9.5v2.2a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2.2"
-              stroke="currentColor"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-            />
-          </svg>
-        </a>
+          <a
+            href={openUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="Open this page in a new tab"
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="pointer-events-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-md bg-slate-900/70 text-white transition hover:bg-slate-900/90"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+              <path
+                d="M9 3.5h3.5V7M12.5 3.5 8 8"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M11.5 9.5v2.2a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2.2"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+              />
+            </svg>
+          </a>
+        </HoverCard>
       ) : null}
     </div>
   );
@@ -320,23 +325,24 @@ function ControlButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      aria-label={label}
-      aria-pressed={active}
-      title={label}
-      className={`pointer-events-auto flex h-6 w-6 items-center justify-center rounded-md backdrop-blur transition ${
-        active ? 'bg-brand-500 text-white' : 'bg-black/60 text-white hover:bg-black/80'
-      }`}
-    >
-      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
-        {children}
-      </svg>
-    </button>
+    <Tooltip label={label}>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        aria-label={label}
+        aria-pressed={active}
+        className={`pointer-events-auto flex h-6 w-6 items-center justify-center rounded-md backdrop-blur transition ${
+          active ? 'bg-brand-500 text-white' : 'bg-black/60 text-white hover:bg-black/80'
+        }`}
+      >
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+          {children}
+        </svg>
+      </button>
+    </Tooltip>
   );
 }
 

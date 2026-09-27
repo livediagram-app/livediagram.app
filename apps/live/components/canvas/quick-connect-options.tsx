@@ -55,7 +55,7 @@ export const ADD_COLUMN_OPTION: Option = {
 
 // Mind-map growth (docs/specs/009-elements/mind-node.md), offered on a mind node's ring. Tab-for-child
 // and Enter-for-sibling ARE the feature, so they need to be discoverable
-// without already knowing them: the shortcut rides in the tooltip, which is
+// without already knowing them: the shortcut rides in the hover card, which is
 // where every other shortcut in the ring would be found.
 //
 // They replaced a hint chip pinned under the selected node. It announced the

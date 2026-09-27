@@ -94,7 +94,7 @@ describe('tool blurbs', () => {
 
   it('keeps each blurb short enough for a palette-width row', () => {
     // Roughly two lines at the rendered size. Past that it stops being a
-    // caption and starts being the tooltip, which already exists.
+    // caption and starts being the hover card, which already exists.
     const tooLong = toolTiles.filter((t) => (t.blurb ?? '').length > 60).map((t) => t.id);
     expect(tooLong).toEqual([]);
   });

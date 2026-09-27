@@ -7,7 +7,6 @@ import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { LayerRow } from '@/components/panels/LayerRow';
 import { LayerRowMenu } from '@/components/panels/LayerRowMenu';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { useLayerRowDrag } from '@/components/panels/useLayerRowDrag';
 import { useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import {
@@ -17,6 +16,7 @@ import {
   TrashIcon,
 } from '@/components/panels/layers-panel-icons';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import { HoverCard } from '@livediagram/ui';
 
 // The Layers panel (docs/specs/006-diagram/layers.md): one row per layer, TOP layer first (the
 // panel mirrors the paint stack like every design tool). Row = eye
@@ -129,7 +129,7 @@ export function LayersPanel({
   // Hover-to-solo, DEBOUNCED: the preview engages only after the pointer
   // rests on a row for a beat (instant solo flashing on every pass-over
   // read as jumpy). Once engaged, moving across rows switches instantly,
-  // tooltip-chain style; leaving the list disengages.
+  // like the tooltip warm-up; leaving the list disengages.
   const previewTimerRef = useRef<number | null>(null);
   const previewActiveRef = useRef(false);
   const clearPreviewTimer = () => {
@@ -247,7 +247,7 @@ export function LayersPanel({
         </ul>
         <div className="mt-2 flex items-center justify-between gap-1.5">
           <div className="flex gap-1.5">
-            <Tooltip
+            <HoverCard
               title="Merge Up"
               description={
                 canMergeUp
@@ -264,8 +264,8 @@ export function LayersPanel({
               >
                 <MergeUpIcon />
               </button>
-            </Tooltip>
-            <Tooltip
+            </HoverCard>
+            <HoverCard
               title="Merge Down"
               description={
                 canMergeDown
@@ -282,10 +282,10 @@ export function LayersPanel({
               >
                 <MergeDownIcon />
               </button>
-            </Tooltip>
+            </HoverCard>
           </div>
           <div className="flex gap-1.5">
-            <Tooltip title="Add Layer" description="Insert a new layer above the active one.">
+            <HoverCard title="Add Layer" description="Insert a new layer above the active one.">
               <button
                 type="button"
                 onClick={onAddLayer}
@@ -294,8 +294,8 @@ export function LayersPanel({
                 <PlusIcon />
                 Add
               </button>
-            </Tooltip>
-            <Tooltip
+            </HoverCard>
+            <HoverCard
               title="Delete Layer"
               description={
                 layers.length <= 1
@@ -317,7 +317,7 @@ export function LayersPanel({
               >
                 <TrashIcon />
               </button>
-            </Tooltip>
+            </HoverCard>
           </div>
         </div>
         {rowMenu

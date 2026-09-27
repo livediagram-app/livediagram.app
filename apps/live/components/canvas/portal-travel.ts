@@ -80,7 +80,7 @@ export function makePortalTravel({
     teleportTo(portalExitPoint(to.portal), to.portal.id);
   };
 
-  // What the portal face needs: the far portal's name for the tooltip, and the
+  // What the portal face needs: the far portal's name for the hover card, and the
   // travel action — absent when the portal is unlinked, which is what makes the
   // face render inert and say so.
   const resolvePortal = (element: ShapeElement) => {

@@ -22,6 +22,7 @@
 // (useOpenDockPanelOnChange), since that is exactly when you want it.
 
 import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-schema';
+import { HoverCard } from '@livediagram/ui';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 
@@ -118,23 +119,29 @@ export function PollPanel({
                   gets the primary row. It does not end the poll: keep a chart
                   now, keep another later, end when the room is done. */}
               {onKeepResults ? (
+                <HoverCard
+                  block
+                  title="Keep Results"
+                  description="Drop a chart of the results so far onto the canvas. The poll keeps running."
+                >
+                  <button
+                    type="button"
+                    onClick={onKeepResults}
+                    className="flex h-7 w-full items-center justify-center rounded-md bg-brand-500 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-600"
+                  >
+                    Keep Results
+                  </button>
+                </HoverCard>
+              ) : null}
+              <HoverCard block title="End Poll" description="End the poll for everyone.">
                 <button
                   type="button"
-                  onClick={onKeepResults}
-                  title="Drop a chart of the results so far onto the canvas. The poll keeps running."
-                  className="flex h-7 w-full items-center justify-center rounded-md bg-brand-500 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-600"
+                  onClick={onEnd}
+                  className="flex h-7 w-full items-center justify-center rounded-md border border-slate-200 px-2 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
                 >
-                  Keep Results
+                  End Poll
                 </button>
-              ) : null}
-              <button
-                type="button"
-                onClick={onEnd}
-                title="End the poll for everyone"
-                className="flex h-7 w-full items-center justify-center rounded-md border border-slate-200 px-2 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
-              >
-                End Poll
-              </button>
+              </HoverCard>
             </>
           ) : (
             <button

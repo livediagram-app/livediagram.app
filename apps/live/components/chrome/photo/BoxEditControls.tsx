@@ -2,6 +2,7 @@
 
 import type { PointerEvent } from 'react';
 import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
+import { HoverCard, Tooltip } from '@livediagram/ui';
 import type { Corner } from '@/lib/photo-boxes';
 
 // What a SELECTED box offers (docs/specs/021-event-storming/event-storming.md Phase 9): its tick, a handle on each
@@ -72,29 +73,33 @@ export function BoxEditControls({
           >
             {ticked ? '✓' : ''}
           </button>
-          {EVENT_STORMING_NOTES.map((note) => (
+          {EVENT_STORMING_NOTES.map((note) => {
+            const name = `Make this a ${note.label.toLowerCase()}`;
+            return (
+              <Tooltip key={note.kind} label={name}>
+                <button
+                  type="button"
+                  aria-label={name}
+                  aria-pressed={note.kind === kind}
+                  onClick={() => onKind(note.kind)}
+                  className={`h-5 w-5 rounded-full border-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white ${
+                    note.kind === kind ? 'border-white' : 'border-transparent'
+                  }`}
+                  style={{ background: note.fill }}
+                />
+              </Tooltip>
+            );
+          })}
+          <HoverCard title="Delete this box" description="Shortcut: Del">
             <button
-              key={note.kind}
               type="button"
-              aria-label={`Make this a ${note.label.toLowerCase()}`}
-              aria-pressed={note.kind === kind}
-              title={note.label}
-              onClick={() => onKind(note.kind)}
-              className={`h-5 w-5 rounded-full border-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white ${
-                note.kind === kind ? 'border-white' : 'border-transparent'
-              }`}
-              style={{ background: note.fill }}
-            />
-          ))}
-          <button
-            type="button"
-            aria-label="Delete this box"
-            title="Delete (Del)"
-            onClick={onDelete}
-            className="ml-1 flex h-5 w-5 items-center justify-center rounded-full text-sm leading-none text-white hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
-          >
-            ×
-          </button>
+              aria-label="Delete this box"
+              onClick={onDelete}
+              className="ml-1 flex h-5 w-5 items-center justify-center rounded-full text-sm leading-none text-white hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
+            >
+              ×
+            </button>
+          </HoverCard>
         </div>
       </div>
     </>

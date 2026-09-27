@@ -2,7 +2,7 @@ import type { StickerDef } from '@livediagram/icons';
 import { STICKER_CATEGORIES, STICKER_DND_MIME, stickersInCategory } from '@/lib/stickers';
 import { StickerArt } from '@/components/canvas/StickerView';
 import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 // One sticker in the picker, drawn as the sticker it actually is — plate,
 // shadow and all — rather than as a glyph on a palette button (docs/specs/010-palette/stickers.md). The
@@ -10,17 +10,17 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 //
 // Deliberately not IconButton: that draws a themed, tinted, captioned tile,
 // and every one of those treatments is wrong for a sticker. It keeps a
-// tooltip, though — 220 small pictures can't tell you "Pleading face" from
+// hover card, though — 220 small pictures can't tell you "Pleading face" from
 // "Weary face" on their own.
 function StickerTile({ sticker, onAdd }: { sticker: StickerDef; onAdd: (id: string) => void }) {
   // A badge pill takes two of the four columns: at one column's width its word
   // would be unreadable. The span lives on THIS wrapper, not on the button —
-  // Tooltip wraps its child, so the button is a grandchild of the grid and a
+  // HoverCard wraps its child, so the button is a grandchild of the grid and a
   // col-span on it would do nothing.
   const wide = sticker.kind === 'badge';
   return (
     <div className={wide ? 'col-span-2 w-full' : ''}>
-      <Tooltip title={sticker.label} description="Click to add, or drag it onto the canvas.">
+      <HoverCard title={sticker.label} description="Click to add, or drag it onto the canvas.">
         <button
           type="button"
           aria-label={sticker.label}
@@ -36,7 +36,7 @@ function StickerTile({ sticker, onAdd }: { sticker: StickerDef; onAdd: (id: stri
         >
           <StickerArt def={sticker} className="h-full w-full overflow-visible" />
         </button>
-      </Tooltip>
+      </HoverCard>
     </div>
   );
 }

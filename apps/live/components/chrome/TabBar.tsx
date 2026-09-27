@@ -122,7 +122,7 @@ type TabBarProps = {
   // focused on. Each tab in the bar renders the matching avatars so
   // collaborators can see at a glance where everyone is working.
   participantsByTab: Map<string, Participant[]>;
-  // Local viewer's identity + role, so the per-tab avatar tooltip can
+  // Local viewer's identity + role, so the per-tab avatar hover card can
   // tag the local user with "You" + their role (Viewer / Editor). We
   // can't reliably tag peers with their role yet (the api doesn't
   // broadcast role per ParticipantPresence), so the badge only appears

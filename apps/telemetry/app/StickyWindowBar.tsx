@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
 import type { TelemetryWindowKey } from '@livediagram/api-schema';
+import { Tooltip } from '@livediagram/ui';
 import { WINDOW_META } from './windows';
 
 // Three dots — the "more / switch view" affordance in the sticky bar.
@@ -70,6 +71,7 @@ export function StickyWindowBar({
   }, [watchRef]);
 
   const activeView = views.find((v) => v.key === view);
+  const viewPickerLabel = activeView ? `Switch view, now ${activeView.label}` : 'Switch view';
 
   return (
     <div
@@ -103,27 +105,29 @@ export function StickyWindowBar({
         {/* Divider, then the view (category) picker. */}
         <span aria-hidden className="mx-0.5 h-5 w-px bg-slate-200 dark:bg-slate-700" />
         <div className="relative">
-          <button
-            type="button"
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-haspopup="menu"
-            aria-expanded={menuOpen}
-            aria-label="Switch view"
-            title={activeView ? `View: ${activeView.label}` : 'Switch view'}
-            className={
-              'flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition ' +
-              (menuOpen
-                ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100'
-                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800')
-            }
-          >
-            {activeView ? (
-              <span aria-hidden className="[&_svg]:h-3.5 [&_svg]:w-3.5">
-                {activeView.icon}
-              </span>
-            ) : null}
-            <EllipsisIcon />
-          </button>
+          {/* The glyph alone shows the current view, so the name says it too. */}
+          <Tooltip label={viewPickerLabel}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              aria-label={viewPickerLabel}
+              className={
+                'flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition ' +
+                (menuOpen
+                  ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100'
+                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800')
+              }
+            >
+              {activeView ? (
+                <span aria-hidden className="[&_svg]:h-3.5 [&_svg]:w-3.5">
+                  {activeView.icon}
+                </span>
+              ) : null}
+              <EllipsisIcon />
+            </button>
+          </Tooltip>
 
           {menuOpen ? (
             <>

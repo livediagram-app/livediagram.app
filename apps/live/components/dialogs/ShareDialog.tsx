@@ -2,7 +2,7 @@
 
 import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { useState } from 'react';
-import { Button, LinkIcon, RefreshIcon, Select, TextInput } from '@livediagram/ui';
+import { Button, LinkIcon, RefreshIcon, Select, TextInput, HoverCard } from '@livediagram/ui';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { initialsOf, randomName } from '@/lib/identity';
@@ -10,7 +10,6 @@ import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { EXPIRY_LABELS, RoleButton, ScopeOptions } from './share-dialog-parts';
 import { ActiveShareLinkRow } from './ShareLinkRow';
 import type { ShareDialogProps } from './ShareDialog.types';
@@ -189,7 +188,7 @@ export function ShareDialog({
                 aria-label="Your name"
                 className="min-w-0 flex-1"
               />
-              <Tooltip title="Shuffle name" description="Pick a different random name.">
+              <HoverCard title="Shuffle name" description="Pick a different random name.">
                 <button
                   type="button"
                   onClick={() => setName(randomName())}
@@ -198,7 +197,7 @@ export function ShareDialog({
                 >
                   <RefreshIcon />
                 </button>
-              </Tooltip>
+              </HoverCard>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
               What collaborators see on your cursor and comments.
@@ -243,7 +242,7 @@ export function ShareDialog({
                 />
               </div>
               {multiTab ? (
-                <Tooltip
+                <HoverCard
                   title="Tabs"
                   description="Share every tab, or just one. Visitors on a one-tab link see the other tabs locked, and never receive their content."
                   className="min-w-0 sm:w-44"
@@ -256,14 +255,14 @@ export function ShareDialog({
                   >
                     <ScopeOptions tabs={tabs} />
                   </Select>
-                </Tooltip>
+                </HoverCard>
               ) : null}
             </div>
             <div className="flex items-center gap-2">
-              {/* The growth goes on the TOOLTIP, which is the actual flex
+              {/* The growth goes on the HOVER CARD, which is the actual flex
                   child — the Select sits inside its wrapper span, so flex-1
                   there would have had nothing to grow against. */}
-              <Tooltip
+              <HoverCard
                 title="Link lifetime"
                 description="The link stops working after this long and moves to Inactive, where you can extend or delete it. Never keeps it working until you revoke it."
                 className={multiTab ? 'min-w-0 flex-1' : 'min-w-0 flex-1 sm:flex-none'}
@@ -279,7 +278,7 @@ export function ShareDialog({
                   <option value="month">Expires in 1 month</option>
                   <option value="sixMonths">Expires in 6 months</option>
                 </Select>
-              </Tooltip>
+              </HoverCard>
               <Button onClick={create} disabled={busy} size="xs" className="shrink-0 shadow-sm">
                 <LinkIcon />
                 Create
@@ -349,7 +348,7 @@ export function ShareDialog({
                     onFocus={(e) => e.currentTarget.select()}
                     className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-slate-400 line-through outline-none dark:text-slate-400"
                   />
-                  <Tooltip
+                  <HoverCard
                     title={`Extend ${link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}`}
                     description="Reactivates this link for another round of the lifetime chosen when it was created, counted from now."
                   >
@@ -362,7 +361,7 @@ export function ShareDialog({
                     >
                       Extend {link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}
                     </Button>
-                  </Tooltip>
+                  </HoverCard>
                   <button
                     type="button"
                     onClick={() => revoke(link.code)}

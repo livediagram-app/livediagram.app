@@ -11,7 +11,7 @@ import { tint } from '@/lib/element-tint';
 // and the kit it now also feeds lives one level up (see lib/element-tint.ts).
 export { tint };
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 // Scales a Collaborate card's contents to the element's box (docs/specs/012-collaboration/participant-responses.md).
 //
@@ -202,7 +202,7 @@ export function CollabButton({
   tone = 'quiet',
   textColor,
   label,
-  tooltip,
+  hoverCard,
 }: {
   children: React.ReactNode;
   onPress?: () => void;
@@ -211,7 +211,7 @@ export function CollabButton({
   textColor: string;
   // Accessible name where the visible text is a glyph or too terse.
   label?: string;
-  tooltip?: { title: string; description: string };
+  hoverCard?: { title: string; description: string };
 }) {
   // The canvas-wide press guard: a press that turns into a drag moves the
   // element instead of firing (every other on-canvas control uses it).
@@ -228,11 +228,11 @@ export function CollabButton({
       {children}
     </button>
   );
-  if (!tooltip) return button;
+  if (!hoverCard) return button;
   return (
-    <Tooltip title={tooltip.title} description={tooltip.description}>
+    <HoverCard title={hoverCard.title} description={hoverCard.description}>
       {button}
-    </Tooltip>
+    </HoverCard>
   );
 }
 

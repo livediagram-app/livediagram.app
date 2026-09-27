@@ -1,8 +1,7 @@
 import { useRef } from 'react';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@/components/chrome/FloatingTitle';
-import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon } from '@livediagram/ui';
+import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@livediagram/ui';
 import {
   BringToFrontIcon,
   EllipsisIcon,
@@ -108,7 +107,7 @@ export function SelectionPopover({
       {title ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
       {onOpenContextMenu ? (
         <>
-          <Tooltip title="More" description="Open the element menu.">
+          <HoverCard title="More" description="Open the element menu.">
             <button
               ref={ellipsisRef}
               type="button"
@@ -123,7 +122,7 @@ export function SelectionPopover({
             >
               <EllipsisIcon />
             </button>
-          </Tooltip>
+          </HoverCard>
           <Divider />
         </>
       ) : null}
@@ -191,7 +190,7 @@ export function SelectionPopover({
       ) : null}
 
       {onToggleLock ? (
-        <Tooltip
+        <HoverCard
           title={locked ? 'Unlock' : 'Lock'}
           description={
             locked
@@ -212,11 +211,11 @@ export function SelectionPopover({
           >
             <LockIcon closed={locked} />
           </button>
-        </Tooltip>
+        </HoverCard>
       ) : null}
       {onDelete ? (
         <>
-          <Tooltip
+          <HoverCard
             title="Delete"
             description={
               locked ? 'Locked. Unlock it to delete.' : 'Delete this element (arrows too).'
@@ -235,7 +234,7 @@ export function SelectionPopover({
             >
               <TrashIcon />
             </button>
-          </Tooltip>
+          </HoverCard>
         </>
       ) : null}
     </div>
@@ -260,7 +259,7 @@ function PopoverButton({
   active?: boolean;
 }) {
   return (
-    <Tooltip title={label} description={description}>
+    <HoverCard title={label} description={description}>
       <button
         type="button"
         onClick={onClick}
@@ -274,6 +273,6 @@ function PopoverButton({
       >
         {children}
       </button>
-    </Tooltip>
+    </HoverCard>
   );
 }

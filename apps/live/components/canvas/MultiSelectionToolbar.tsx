@@ -1,6 +1,5 @@
 import type { Element } from '@livediagram/diagram';
-import { DuplicateIcon, EllipsisIcon, LockIcon, TrashIcon } from '@livediagram/ui';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { DuplicateIcon, EllipsisIcon, LockIcon, TrashIcon, HoverCard } from '@livediagram/ui';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
 
 // Shared styling for the toolbar's plain icon buttons (More / Duplicate /
@@ -55,7 +54,7 @@ export function MultiSelectionToolbar({
     <>
       {onOpenContextMenu ? (
         <>
-          <Tooltip title="More" description="Open the selection menu.">
+          <HoverCard title="More" description="Open the selection menu.">
             <button
               type="button"
               data-context-menu-trigger
@@ -68,7 +67,7 @@ export function MultiSelectionToolbar({
             >
               <EllipsisIcon size={14} />
             </button>
-          </Tooltip>
+          </HoverCard>
           <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
         </>
       ) : null}
@@ -80,7 +79,7 @@ export function MultiSelectionToolbar({
           <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
         </>
       ) : null}
-      <Tooltip title="Duplicate" description="Duplicate the selection, arrows included.">
+      <HoverCard title="Duplicate" description="Duplicate the selection, arrows included.">
         <button
           type="button"
           onClick={onDuplicate}
@@ -89,7 +88,7 @@ export function MultiSelectionToolbar({
         >
           <DuplicateIcon size={14} />
         </button>
-      </Tooltip>
+      </HoverCard>
       {/* Duplicate copies the selection; everything after acts ON it
           (export, then lock / delete) — the divider marks that
           boundary, same as the one after More above. */}
@@ -98,7 +97,7 @@ export function MultiSelectionToolbar({
           decide whether these elements can still be touched, and locking is
           what makes the Delete beside it refuse. A divider between them read
           as Lock belonging with Export, which it does not. */}
-      <Tooltip title="Export" description="Export just these elements.">
+      <HoverCard title="Export" description="Export just these elements.">
         <button
           type="button"
           onClick={onExport}
@@ -107,9 +106,9 @@ export function MultiSelectionToolbar({
         >
           <ExportIcon />
         </button>
-      </Tooltip>
+      </HoverCard>
       <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
-      <Tooltip
+      <HoverCard
         title={anyLocked ? 'Unlock' : 'Lock'}
         description={anyLocked ? 'Unlock so they move again.' : "Lock so they can't move."}
       >
@@ -126,8 +125,8 @@ export function MultiSelectionToolbar({
         >
           <LockIcon closed={anyLocked} size={14} strokeWidth={1.5} />
         </button>
-      </Tooltip>
-      <Tooltip
+      </HoverCard>
+      <HoverCard
         title="Delete"
         description={
           allLocked ? 'All locked. Unlock to delete.' : 'Delete selected (locked ones are kept).'
@@ -146,7 +145,7 @@ export function MultiSelectionToolbar({
         >
           <TrashIcon size={14} strokeWidth={1.5} />
         </button>
-      </Tooltip>
+      </HoverCard>
     </>
   );
 }

@@ -237,7 +237,7 @@ export function clampPercent(value: number): number {
 export const REACTIONS = ['confetti', 'sparkles', 'hearts', 'applause', 'fireworks'] as const;
 export type Reaction = (typeof REACTIONS)[number];
 
-/** Menu + tooltip name for a reaction. */
+/** Menu + hover card name for a reaction. */
 export const REACTION_LABEL: Record<Reaction, string> = {
   confetti: 'Confetti',
   sparkles: 'Sparkles',

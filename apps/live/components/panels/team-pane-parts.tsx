@@ -1,12 +1,11 @@
-import { CloseIcon, Select } from '@livediagram/ui';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { CloseIcon, Select, HoverCard } from '@livediagram/ui';
 import type { TeamMember, TeamRole } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
 
 // What a member row is called. Self rows use the account display name
 // so the list reads as people, not pronouns; everyone else is their
 // email's local part prettified ("anna.smith" → "Anna Smith") with
-// the full address only in the avatar tooltip territory (kept out of
+// the full address only in the avatar hover card territory (kept out of
 // the row to stay calm — the local part is the recognisable bit).
 export function memberName(
   m: TeamMember,
@@ -44,12 +43,12 @@ function RolePill({ member, pinned }: { member: TeamMember; pinned: boolean }) {
   if (!pinned) return pill;
   // The only Admin: explain why there's no role select here.
   return (
-    <Tooltip
+    <HoverCard
       title="Last Admin"
       description="A team always needs at least one Admin. Promote someone else before changing this role, removing this member, or leaving."
     >
       {pill}
-    </Tooltip>
+    </HoverCard>
   );
 }
 

@@ -119,7 +119,7 @@ export function ShadowSection({
         <BorderGrid label="Presets" cols={5}>
           <SizeButton
             active={shadow === undefined}
-            title="None"
+            label="None"
             onClick={() => onCommitPreset(null)}
             onPointerEnter={onMouseHover(() => onPreviewPreset(null))}
             onPointerLeave={onMouseHover(onPreviewEnd)}
@@ -130,7 +130,7 @@ export function ShadowSection({
             <SizeButton
               key={p.id}
               active={shadow !== undefined && sameShadow(shadow, p.shadow)}
-              title={p.label}
+              label={p.label}
               onClick={() => onCommitPreset(p.shadow)}
               onPointerEnter={onMouseHover(() => onPreviewPreset(p.shadow))}
               onPointerLeave={onMouseHover(onPreviewEnd)}

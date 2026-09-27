@@ -38,7 +38,7 @@ export function TabPresenceStack({
   participants: Participant[];
   selfId: string;
   selfRole: 'edit' | 'view';
-  // Who we are following (docs/specs/012-collaboration/follow-me-viewport.md), for the ring + tooltip chip.
+  // Who we are following (docs/specs/012-collaboration/follow-me-viewport.md), for the ring + hover card chip.
   followingId?: string | null;
   // Opens the Collaborators modal with the clicked person highlighted (null
   // from the "+N" badge). Absent leaves the avatars as plain indicators.
@@ -126,7 +126,7 @@ export function TabPresenceStack({
               <ParticipantAvatar
                 participant={slot.p}
                 size={16}
-                withTooltip
+                withHoverCard
                 badges={badges.length > 0 ? badges : undefined}
               />
             );

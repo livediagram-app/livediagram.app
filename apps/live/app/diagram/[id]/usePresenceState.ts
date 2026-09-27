@@ -17,7 +17,7 @@ export function usePresenceState() {
   // Wall-clock timestamp of each peer's last observed interaction.
   // Seeded on presence arrival; bumped on every incoming op from
   // that peer (cursor / selection / tab op). Drives the
-  // online/away/offline derivation + the "Active X ago" tooltip.
+  // online/away/offline derivation + the "Active X ago" hover card.
   // Lives in a ref because the bump-on-op needs to be O(1) and we
   // don't want to re-render the whole tree on every cursor packet
   // just to update an idle timestamp.

@@ -23,13 +23,13 @@ import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 // item carries.
 import type { DiagramListItem, SharedWithItem } from '@/lib/api-client';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { DISMISS_SHARED, DismissSharedIcon } from '@/components/primitives/dismiss-shared';
 import { SYNTHETIC_FOLDERS, type SyntheticFolderKind } from '@/app/explorer/synthetic-folders';
 import { useDiagramDropTarget } from './useDiagramDropTarget';
 import { DiagramRow } from './DiagramRow';
 import { PanelDiagramRows, type PanelRowActions } from './PanelDiagramRows';
 import { TreeNodeHeader } from './TreeNodeHeader';
+import { HoverCard } from '@livediagram/ui';
 
 export { FolderNode } from './FolderNode';
 export { DiagramRow };
@@ -200,7 +200,7 @@ export function SharedRow({
       </button>
       {onDismiss ? (
         <div className="absolute right-1.5 top-1.5 block sm:hidden sm:group-hover:block sm:group-focus-within:block">
-          <Tooltip title={DISMISS_SHARED.title} description={DISMISS_SHARED.description}>
+          <HoverCard title={DISMISS_SHARED.title} description={DISMISS_SHARED.description}>
             <button
               type="button"
               onClick={(e) => {
@@ -212,7 +212,7 @@ export function SharedRow({
             >
               <DismissSharedIcon />
             </button>
-          </Tooltip>
+          </HoverCard>
         </div>
       ) : null}
     </li>

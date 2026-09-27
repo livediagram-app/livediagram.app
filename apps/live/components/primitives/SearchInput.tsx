@@ -1,6 +1,6 @@
 'use client';
 
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 // The shared search box: a bordered text input with an inline clear (×)
 // button. Used by the Icons + Technology pickers, the palette's Tools tab,
@@ -26,7 +26,7 @@ export function SearchInput({
   placeholder: string;
   ariaLabel: string;
   clearAriaLabel: string;
-  // Tooltip body for the clear button, e.g. "Clear the icon search query."
+  // HoverCard body for the clear button, e.g. "Clear the icon search query."
   clearDescription: string;
   // Optional keyboard passthrough. The box stays generic, what Arrow / Enter
   // MEAN belongs to whichever results list is underneath, so the caller owns
@@ -49,7 +49,7 @@ export function SearchInput({
         className="w-full rounded-md border border-slate-200 bg-white py-1 pl-2 pr-7 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
       />
       {value ? (
-        <Tooltip title="Clear search" description={clearDescription}>
+        <HoverCard title="Clear search" description={clearDescription}>
           <button
             type="button"
             onClick={() => onChange('')}
@@ -69,7 +69,7 @@ export function SearchInput({
               <path d="M3 3 L9 9 M9 3 L3 9" />
             </svg>
           </button>
-        </Tooltip>
+        </HoverCard>
       ) : null}
     </div>
   );

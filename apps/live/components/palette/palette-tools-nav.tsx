@@ -13,19 +13,19 @@
 
 import type { ReactNode } from 'react';
 import { ChevronIcon } from '@/components/primitives/ChevronIcon';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 export type ToolsCategory = {
   id: string;
   label: string;
   // Representative glyph: the group's first tile.
   icon: ReactNode;
-  // What's inside, in one line — the tooltip's job is to answer "is the thing
+  // What's inside, in one line — the hover card's job is to answer "is the thing
   // I want in here?", which a tool count never does.
   //
   // Optional, because that question only needs answering when the label
   // doesn't. "Blocks" is worth a sentence; the Icons tab's "People" and the
-  // Technology tab's "AWS" are not, and a tooltip restating the label is
+  // Technology tab's "AWS" are not, and a hover card restating the label is
   // noise you have to wait for.
   description?: string;
 };
@@ -47,7 +47,7 @@ export function ToolsCategoryGrid({
             // Short and wide rather than square: a category tile only has to be
             // a comfortable target, and seven squares pushed the tools below
             // the fold — the thing the drill-in was meant to fix. The count
-            // lives in the tooltip instead of costing a third line.
+            // lives in the hover card instead of costing a third line.
             className="flex h-[58px] w-full flex-col items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:-translate-y-px hover:border-brand-300 hover:text-brand-700 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-500 dark:hover:text-brand-200"
           >
             {/* The tile's own glyph, scaled up for a category-sized target. */}
@@ -59,12 +59,12 @@ export function ToolsCategoryGrid({
             </span>
           </button>
         );
-        // No description, no tooltip: a tooltip that only repeats the label
+        // No description, no hover card: a hover card that only repeats the label
         // already under the glyph is a delay in exchange for nothing.
         return category.description ? (
-          <Tooltip key={category.id} title={category.label} description={category.description}>
+          <HoverCard key={category.id} title={category.label} description={category.description}>
             {tile}
-          </Tooltip>
+          </HoverCard>
         ) : (
           <div key={category.id}>{tile}</div>
         );

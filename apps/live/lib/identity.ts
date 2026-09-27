@@ -38,14 +38,14 @@ export type Participant = {
   status: ParticipantStatus;
   // Wall-clock timestamp of this participant's most recent
   // interaction (cursor / selection / op / local input). Drives the
-  // status derivation + the "Active X ago" tooltip. Optional so
+  // status derivation + the "Active X ago" hover card. Optional so
   // legacy callers that don't track it can still construct a
   // Participant; treated as "now" when omitted.
   lastActiveAt?: number;
   // Server-verified share-code role inside this diagram. Set by the
   // api worker at WS upgrade time; clients can't forge it. Optional
   // because guest / private-diagram sessions don't have a role. The
-  // tooltip uses it to tag a peer as 'Editor' / 'Viewer' alongside
+  // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
   // their name.
   role?: 'edit' | 'view';
 };

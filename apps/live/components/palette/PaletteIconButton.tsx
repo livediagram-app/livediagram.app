@@ -2,9 +2,9 @@ import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livediagram/diagram';
 import { PALETTE_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import { tileCaption } from './tile-caption';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { useModKeyHeld } from '@/hooks/ui/useModKeyHeld';
 import { createContext, useContext } from 'react';
+import { HoverCard, Tooltip } from '@livediagram/ui';
 
 // The active tab theme's element colours, made available to every palette
 // tile so the palette previews the theme rather than a fixed slate. `stroke`
@@ -36,6 +36,13 @@ export function PaletteTintProvider({
   return <PaletteTintContext.Provider value={tint}>{children}</PaletteTintContext.Provider>;
 }
 
+export type TileHint = 'tooltip' | 'hover-card';
+
+// The hint a palette tile carries when its caller does not choose one.
+export function tileHint(hint: TileHint | undefined, hideCaption: boolean | undefined): TileHint {
+  return hint ?? (hideCaption ? 'hover-card' : 'tooltip');
+}
+
 type IconButtonProps = {
   label: string;
   description: string;
@@ -62,11 +69,12 @@ type IconButtonProps = {
   // Called when a drag from this tile ends, dropped or not (the event's
   // dropEffect says which). The drag ghost is cleared either way.
   onDragEnd?: (e: React.DragEvent) => void;
-  // Suppress the hover/focus tooltip. The icon-picker grid sets this:
-  // its tiles already read as a labelled gallery and a tooltip on every
-  // one of ~60 glyphs is noise. `label` is still applied as the button's
-  // aria-label so the control stays accessible.
-  hideTooltip?: boolean;
+  // Which hint the tile carries (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md).
+  // Default: a Tooltip with the full name when the caption shows (the
+  // caption may be shortened), a hover card with the description when it is
+  // hidden. The icon-picker grid asks for a Tooltip on its caption-less
+  // glyphs: a hover card on each of ~60 glyphs is noise, the name is not.
+  hint?: TileHint;
   // Suppress the caption under the icon. The icon-picker grid sets this:
   // its glyphs are a dense gallery where per-tile names would be noise (and
   // it stays a 6-up grid), unlike the shape / tool / device grids.
@@ -110,7 +118,7 @@ export function IconButton({
   dragChoice,
   onDragStart,
   onDragEnd,
-  hideTooltip,
+  hint,
   hideCaption,
   caption: captionOverride,
   dragKind,
@@ -227,12 +235,11 @@ export function IconButton({
       ) : null}
     </button>
   );
-  // A visible caption already names the action, so skip the tooltip there;
-  // only the caption-less tiles (the icon-picker grid) keep it.
-  if (disabled || hideTooltip || !hideCaption) return button;
+  if (disabled) return button;
+  if (tileHint(hint, hideCaption) === 'tooltip') return <Tooltip label={label}>{button}</Tooltip>;
   return (
-    <Tooltip title={label} description={description}>
+    <HoverCard title={label} description={description}>
       {button}
-    </Tooltip>
+    </HoverCard>
   );
 }

@@ -182,7 +182,7 @@ export type BoxedElementViewProps = {
   // disabled (docs/specs/009-elements/mode-button.md).
   activeMode?: import('@livediagram/diagram').SelectionMode;
   // Portal (docs/specs/009-elements/portal-element.md): resolves a portal's pairing for the face — the paired portal's
-  // name for the tooltip, and the travel action (undefined when unpaired, so the
+  // name for the hover card, and the travel action (undefined when unpaired, so the
   // face renders inert and says why).
   onEnterPortal?: (element: import('@livediagram/diagram').ShapeElement) => {
     targetName: string | null;
@@ -275,7 +275,7 @@ export type BoxedElementViewProps = {
   // True when the tab as a whole is locked. Shows the LockBadge on
   // every element regardless of its own per-element lock state.
   tabLocked: boolean;
-  // This diagram's tabs (id + name), so a link badge's tooltip can
+  // This diagram's tabs (id + name), so a link badge's hover card can
   // name the tab/element it points at (docs/specs/008-canvas/canvas-and-palette.md). Stable reference.
   tabSummaries: { id: string; name: string }[];
   // True for view-role share visitors (session read-only). Shape / text

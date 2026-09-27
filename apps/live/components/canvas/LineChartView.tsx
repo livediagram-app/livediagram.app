@@ -15,7 +15,7 @@ import {
 } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
-import { ChartTooltip } from '@/components/primitives/ChartTooltip';
+import { ChartReadout } from '@/components/primitives/ChartReadout';
 import { ChartSurface } from '@/components/primitives/ChartSurface';
 
 export function LineChartView({
@@ -78,9 +78,9 @@ export function LineChartView({
       textColor={textColor}
       fontFamily={fontFamily}
       fontPx={legendFontPx(element.textSize)}
-      tooltip={
+      readout={
         hover ? (
-          <ChartTooltip
+          <ChartReadout
             leftPct={(xAt(hover.i) / w) * 100}
             topPct={(yAt(valAt(hover.s, hover.i)) / h) * 100}
             label={`${categories[hover.i] ?? ''} · ${series[hover.s]?.name ?? ''}`}

@@ -17,13 +17,13 @@ import { FolderRow } from './folder-row';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import { CountBadge } from '@/components/primitives/CountBadge';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { DISMISS_SHARED, DismissSharedIcon } from '@/components/primitives/dismiss-shared';
 import {
   SYNTHETIC_FOLDERS,
   visibleSyntheticFolders,
   type SyntheticFolderKind,
 } from './synthetic-folders';
+import { HoverCard } from '@livediagram/ui';
 
 // The pane header lives in its own file now; re-exported so callers keep
 // importing it from the views barrel.
@@ -272,7 +272,7 @@ export function SharedList({
               {s.role === 'edit' ? 'Edit' : 'View'}
             </span>
             <RelativeTimeChip at={s.savedAt} />
-            <Tooltip title={DISMISS_SHARED.title} description={DISMISS_SHARED.description}>
+            <HoverCard title={DISMISS_SHARED.title} description={DISMISS_SHARED.description}>
               <button
                 type="button"
                 onClick={() => onDismiss(s.id)}
@@ -281,7 +281,7 @@ export function SharedList({
               >
                 <DismissSharedIcon />
               </button>
-            </Tooltip>
+            </HoverCard>
           </li>
         ))}
       </ul>

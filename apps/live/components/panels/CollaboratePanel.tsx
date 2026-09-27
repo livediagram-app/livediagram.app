@@ -21,7 +21,7 @@ import type { MovablePanelPlacementProps } from '@/components/primitives/Movable
 // one anatomy: a kind glyph (action clipboard / comment bubble) on the
 // far left, the name + description in the middle, and the person on the
 // far right — an avatar bubble above the relative time, with the name
-// on the avatar's hover tooltip rather than spent inline.
+// on the avatar's hover card rather than spent inline.
 // Click a row to jump to the element and open its popover (thread or
 // action, per kind).
 

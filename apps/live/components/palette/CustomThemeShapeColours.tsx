@@ -16,7 +16,7 @@ import {
   type Painter,
 } from '@/components/palette/custom-theme-builder-parts';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 // The shape kinds offered in the per-shape editor: the flowchart /
 // diagram vocabulary where a per-kind colour is meaningful. Device
@@ -81,7 +81,7 @@ export function PerShapeColoursSection({
         Give a shape kind its own colours (like UML). Leave a kind unset to use the base colours.
       </p>
       {/* Compact two-column rows: a shape preview + name, then its
-            three colour dots (fill / outline / text, tooltip'd). Dense
+            three colour dots (fill / outline / text, hover-carded). Dense
             and scannable rather than a wall of big swatch blocks. */}
       <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
         {PER_SHAPE_KINDS.map((kind) => {
@@ -113,31 +113,31 @@ export function PerShapeColoursSection({
                 >[0])}
               </span>
               <div className="flex shrink-0 items-center gap-1">
-                <Tooltip title="Fill" description="The shape's interior colour.">
+                <HoverCard title="Fill" description="The shape's interior colour.">
                   <ColorDot
                     label={`${kind} fill`}
                     value={r.fill}
                     onChange={(v) => setShapeColour(kind, 'fill', v)}
                     painter={painter}
                   />
-                </Tooltip>
-                <Tooltip title="Outline" description="The shape's border colour.">
+                </HoverCard>
+                <HoverCard title="Outline" description="The shape's border colour.">
                   <ColorDot
                     label={`${kind} outline`}
                     value={r.stroke}
                     onChange={(v) => setShapeColour(kind, 'stroke', v)}
                     painter={painter}
                   />
-                </Tooltip>
-                <Tooltip title="Text" description="The shape's label colour.">
+                </HoverCard>
+                <HoverCard title="Text" description="The shape's label colour.">
                   <ColorDot
                     label={`${kind} text`}
                     value={r.text}
                     onChange={(v) => setShapeColour(kind, 'text', v)}
                     painter={painter}
                   />
-                </Tooltip>
-                <Tooltip title="Reset" description="Use the base colours for this shape.">
+                </HoverCard>
+                <HoverCard title="Reset" description="Use the base colours for this shape.">
                   <button
                     type="button"
                     onClick={() => clearShape(kind)}
@@ -147,7 +147,7 @@ export function PerShapeColoursSection({
                   >
                     <ResetGlyph />
                   </button>
-                </Tooltip>
+                </HoverCard>
               </div>
             </div>
           );

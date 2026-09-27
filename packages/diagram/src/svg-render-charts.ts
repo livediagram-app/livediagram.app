@@ -8,7 +8,7 @@
 //
 // The layout comes from the same `chartFrame` the canvas lays out with, so the
 // plot and the legend land in the same rects; only the drawing primitives
-// differ. Hover, tooltips and the looping animations are the canvas's alone
+// differ. Hover, readouts and the looping animations are the canvas's alone
 // and have no meaning in a still image.
 
 import { chartFrame, type ChartLegendRect } from './chart-frame';

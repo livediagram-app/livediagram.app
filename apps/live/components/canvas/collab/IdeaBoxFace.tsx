@@ -108,7 +108,7 @@ export function IdeaBoxFace({
               tone="loud"
               textColor={textColor}
               onPress={onReveal && cards.length > 0 ? onReveal : undefined}
-              tooltip={{
+              hoverCard={{
                 title: 'Open the box',
                 description:
                   'Shows every idea to the room. There is no closing it again — the flag protects the writing round, it is not a toggle.',
@@ -120,7 +120,7 @@ export function IdeaBoxFace({
             <CollabButton
               textColor={textColor}
               onPress={onScatter && cards.length > 0 ? onScatter : undefined}
-              tooltip={{
+              hoverCard={{
                 title: 'Scatter to sticky notes',
                 description:
                   'Turns each idea into an ordinary sticky note beside the box, still with nobody’s name on it.',

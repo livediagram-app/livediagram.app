@@ -170,7 +170,7 @@ export function visibleTiles(defs: PaletteTileDef[], hasImage: boolean): Palette
 // One catalogue tile, rendered exactly as its home tab renders it.
 // (Favourites curation happens in the edit-favourites dialog, not by
 // overlaying badges here — see PaletteFavouritesDialog.) `compact` is the
-// Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): icon only, name in the tooltip, and the
+// Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): icon only, name in the hover card, and the
 // shortcut letter always showing in the corner rather than only while the
 // modifier is held, the way a tool bar reads.
 // A tile's click handler, which in the Toolbar layout also records the use,
