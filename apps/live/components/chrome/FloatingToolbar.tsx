@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@/components/chrome/FloatingTitle';
+import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
@@ -28,6 +29,7 @@ export function FloatingToolbar({
   children: ReactNode;
 }) {
   const { ref, placeAbove, style } = useEdgeAwarePlacement(bounds, canvasOffset, zoom, GAP / zoom);
+  const minimalChrome = useMinimalChrome();
 
   return (
     <div
@@ -37,10 +39,12 @@ export function FloatingToolbar({
         e.preventDefault();
         e.stopPropagation();
       }}
+      role="toolbar"
+      aria-label={title}
       className="pointer-events-auto absolute z-[var(--z-toolbar)] flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
       style={style}
     >
-      {title ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
+      {title && !minimalChrome ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
       {children}
     </div>
   );

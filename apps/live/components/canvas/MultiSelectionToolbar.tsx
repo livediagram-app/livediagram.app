@@ -1,6 +1,8 @@
 import type { Element } from '@livediagram/diagram';
 import { DuplicateIcon, EllipsisIcon, LockIcon, TrashIcon, HoverCard } from '@livediagram/ui';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
+import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 
 // Shared styling for the toolbar's plain icon buttons (More / Duplicate /
 // Export). Lock (active brand fill) and Delete (rose / disabled) compose
@@ -50,9 +52,13 @@ export function MultiSelectionToolbar({
   // trailing divider must share the SAME predicate — gating on `onFilter`
   // alone leaves a stray divider when the funnel button self-hides.
   const filterable = !!onFilter && buildFilterGroups(selectedElements).length >= 2;
+  // Same rule as the single-selection popover (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
+  const touch = useCoarsePointer();
+  const minimalChrome = useMinimalChrome();
+  const showDelete = touch || !minimalChrome;
   return (
     <>
-      {onOpenContextMenu ? (
+      {onOpenContextMenu && touch ? (
         <>
           <HoverCard title="More" description="Open the selection menu.">
             <button
@@ -126,26 +132,28 @@ export function MultiSelectionToolbar({
           <LockIcon closed={anyLocked} size={14} strokeWidth={1.5} />
         </button>
       </HoverCard>
-      <HoverCard
-        title="Delete"
-        description={
-          allLocked ? 'All locked. Unlock to delete.' : 'Delete selected (locked ones are kept).'
-        }
-      >
-        <button
-          type="button"
-          onClick={onDelete}
-          disabled={allLocked}
-          aria-label="Delete selected elements"
-          className={
-            allLocked
-              ? 'flex h-7 w-7 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
-              : 'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-300 dark:hover:bg-rose-500/15 dark:hover:text-rose-300'
+      {showDelete ? (
+        <HoverCard
+          title="Delete"
+          description={
+            allLocked ? 'All locked. Unlock to delete.' : 'Delete selected (locked ones are kept).'
           }
         >
-          <TrashIcon size={14} strokeWidth={1.5} />
-        </button>
-      </HoverCard>
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={allLocked}
+            aria-label="Delete selected elements"
+            className={
+              allLocked
+                ? 'flex h-7 w-7 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
+                : 'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-300 dark:hover:bg-rose-500/15 dark:hover:text-rose-300'
+            }
+          >
+            <TrashIcon size={14} strokeWidth={1.5} />
+          </button>
+        </HoverCard>
+      ) : null}
     </>
   );
 }
