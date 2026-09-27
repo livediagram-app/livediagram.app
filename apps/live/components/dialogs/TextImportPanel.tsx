@@ -2,6 +2,10 @@ import { useState, type ReactNode } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
 import { Button } from '@livediagram/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
+import type { ImportImageProgress } from '@/lib/import-images';
+
+type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
+type ProgressListener = (progress: ImportImageProgress) => void;
 
 // The paste-or-file sub-view for a text import format (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md).
 // A textarea to paste/write the content, an Import button, and a "pick a
@@ -28,27 +32,32 @@ export function TextImportPanel({
   // way back became the BackBar above. Left to hang under the footer instead,
   // it read as a stray line that had fallen off the dialog.
   note?: ReactNode;
-  onImportText: (text: string) => Promise<ImportOutcome>;
-  onImportFile: () => Promise<ImportOutcome>;
-  onDone: () => void;
+  // Runners get a progress listener: an import that meets images reports
+  // them as they store (docs/specs/020-import-export/import-image-pipeline.md).
+  onImportText: (text: string, onProgress: ProgressListener) => Promise<ImportOutcome>;
+  onImportFile: (onProgress: ProgressListener) => Promise<ImportOutcome>;
+  onDone: (outcome: DoneOutcome) => void;
   onBack: () => void;
 }) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<ImportImageProgress | null>(null);
 
-  const run = async (runner: () => Promise<ImportOutcome>) => {
+  const run = async (runner: (onProgress: ProgressListener) => Promise<ImportOutcome>) => {
     if (busy) return;
     setBusy(true);
     setError(null);
+    setProgress(null);
     // A runner that throws must still hand the panel back: an uncaught
     // rejection here left `busy` set, every control disabled, and no message.
-    const outcome = await runner().catch((): ImportOutcome => ({
+    const outcome = await runner(setProgress).catch((): ImportOutcome => ({
       status: 'error',
       error: "Couldn't import that. Check the file and try again.",
     }));
+    setProgress(null);
     if (outcome.status === 'done') {
-      onDone();
+      onDone(outcome);
     } else {
       if (outcome.status === 'error') setError(outcome.error);
       setBusy(false);
@@ -88,10 +97,17 @@ export function TextImportPanel({
           <Button
             variant="primary"
             size="md"
-            onClick={() => void run(() => onImportText(text))}
+            onClick={() => void run((onProgress) => onImportText(text, onProgress))}
             disabled={busy || text.trim().length === 0}
           >
-            {busy ? 'Importing…' : 'Import'}
+            {/* Announced politely so a screen reader hears the image count move. */}
+            <span aria-live="polite">
+              {!busy
+                ? 'Import'
+                : progress && progress.total > 0
+                  ? `Importing images ${progress.done} of ${progress.total}…`
+                  : 'Importing…'}
+            </span>
           </Button>
         </div>
       </div>
