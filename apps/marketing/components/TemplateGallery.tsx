@@ -49,7 +49,7 @@ export function TemplateGallery() {
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             What do you want to create?
           </h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-300 dark:text-slate-600">
+          <p className="mt-4 text-lg leading-relaxed text-slate-300">
             Pick a starting point and you are on the canvas with it already drawn. Every template
             the editor ships is here.
           </p>
@@ -100,7 +100,7 @@ export function TemplateGallery() {
                     <a
                       href={ctaHref(templateCreateHref(t.kind), 'Home.Gallery')}
                       aria-label={`Create a ${t.title}`}
-                      className="preview-motion-host group flex h-full flex-col rounded-2xl border border-slate-700/80 bg-slate-800/40 p-3 transition hover:border-brand-400 hover:bg-slate-800/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 dark:hover:border-brand-500/60"
+                      className="preview-motion-host group flex h-full flex-col rounded-2xl border border-slate-700/80 bg-slate-800/40 p-3 transition hover:border-brand-400 hover:bg-slate-800/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
                     >
                       {/* The picker's preview, drawn for a light tile and
                           re-lit for this dark band by the same rule the
@@ -132,7 +132,7 @@ export function TemplateGallery() {
                         type="button"
                         onClick={() => openCategory(group.id)}
                         aria-label={`Show ${group.label} templates`}
-                        className="rounded-full border border-slate-700 bg-slate-800/60 px-3.5 py-1.5 text-sm font-medium text-slate-200 transition hover:border-brand-400 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 dark:hover:border-brand-500/60"
+                        className="rounded-full border border-slate-700 bg-slate-800/60 px-3.5 py-1.5 text-sm font-medium text-slate-200 transition hover:border-brand-400 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
                       >
                         {group.label}
                         <span className="ml-1.5 text-xs text-slate-400">

@@ -93,7 +93,7 @@ function FeatureCard({ title, description, art, href }: FeatureProps) {
         </p>
       </div>
       {href ? (
-        <div className="flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-6 py-3 text-sm font-medium text-brand-600 transition-colors group-hover:bg-brand-50 group-hover:text-brand-700 dark:border-slate-800 dark:bg-slate-900/70 dark:text-brand-300 dark:group-hover:text-brand-200">
+        <div className="flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-6 py-3 text-sm font-medium text-brand-600 transition-colors group-hover:bg-brand-50 dark:group-hover:bg-brand-500/15 group-hover:text-brand-700 dark:border-slate-800 dark:bg-slate-900/70 dark:text-brand-300 dark:group-hover:text-brand-200">
           <span>
             Learn more<span className="sr-only"> (opens in a new tab)</span>
           </span>

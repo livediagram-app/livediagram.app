@@ -102,7 +102,7 @@ export default function StatusPage() {
             <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
               All systems operational
             </p>
-            <p className="text-xs text-emerald-800/80">
+            <p className="text-xs text-emerald-800/80 dark:text-emerald-200/80">
               No incidents reported. If you can read this page, the marketing site is up.
             </p>
           </div>

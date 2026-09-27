@@ -56,7 +56,7 @@ export function StoryBeat({ beat, index }: { beat: LandingBeat; index: number })
                       <Icon className="text-brand-500 transition group-hover:text-brand-600 dark:text-brand-300 dark:group-hover:text-brand-200" />
                     ) : null}
                     {section.label}
-                    <span className="rounded-full bg-slate-100 px-1.5 text-xs text-slate-500 tabular-nums transition group-hover:bg-brand-50 group-hover:text-brand-700 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:text-brand-200">
+                    <span className="rounded-full bg-slate-100 px-1.5 text-xs text-slate-500 tabular-nums transition group-hover:bg-brand-50 dark:group-hover:bg-brand-500/15 group-hover:text-brand-700 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:text-brand-200">
                       {section.items.length}
                     </span>
                   </a>

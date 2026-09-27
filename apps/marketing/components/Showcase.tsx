@@ -16,7 +16,7 @@ import { ShowcaseStagger } from '@/components/ShowcaseStagger';
 
 export function Showcase({ items }: { items: FeatureProps[] }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-brand-50/50 p-5 shadow-sm sm:p-6 dark:border-slate-800">
+    <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-brand-50/50 p-5 dark:from-slate-900 dark:to-brand-500/10 shadow-sm sm:p-6 dark:border-slate-800">
       <ShowcaseStagger>
         {items.map((item) => (
           <div key={item.title}>
