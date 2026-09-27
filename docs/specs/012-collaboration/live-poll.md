@@ -36,8 +36,8 @@ it, from the room too.
 ## Op vocabulary
 
 Three additions to `RoomOp` (`packages/api-schema/src/room-messages.ts`). The
-Durable Object keeps `op: unknown` and just relays, so the room needs no
-knowledge of any of them.
+wire keeps `op: unknown`; the room reads each op's kind to gate and order it,
+and reads these three to keep the running poll (above).
 
 - `{ kind: 'poll-start'; poll: LivePoll }` — the question, style, and options.
 - `{ kind: 'poll-answer'; pollId: string; value: string | null; key?: string }`

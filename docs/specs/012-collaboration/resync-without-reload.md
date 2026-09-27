@@ -88,4 +88,4 @@ routine hibernation.
 
 - **Persisting `opLog`**, per above.
 - **A CRDT for same-element concurrent edits** — still deliberately dropped
-  ([Realtime conflict resolution](realtime-conflict-resolution.md)); the selection lock already prevents the case.
+  ([Realtime conflict resolution](realtime-conflict-resolution.md)); the advisory selection lock makes the case rare, and it stays last-writer-wins.

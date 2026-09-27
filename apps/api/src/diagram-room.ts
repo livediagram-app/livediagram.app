@@ -35,12 +35,14 @@ import { writeQaAction, type QaWriteRequest } from './qa-board-write';
 // presence + op messages so every client sees what every other client is
 // doing in real time.
 //
-// Conflict model: last-writer-wins. Ops are not persisted here; they're
-// shaped opaquely (`op: unknown`) so the editor can evolve its
-// vocabulary without changing the room. Persistence happens through the
-// REST endpoints separately — clients save the full diagram snapshot
-// after their local mutation lands. The room is only responsible for
-// propagation.
+// State and conflict model (docs/specs/015-api/api.md, Realtime model): the room
+// classifies each op by kind, orders mutations (seq within an epoch, kept in
+// storage), rewrites comment authors, and keeps collaboration state in DO
+// storage (the ledger, the live poll, the facilitator baton). It never holds
+// the document: D1 does, written by clients over REST, except the Q&A board
+// writes this room performs itself. Payloads stay `op: unknown` so the
+// editor can evolve its vocabulary without changing the room. Two edits to
+// the same element are last-writer-wins in room order.
 //
 // WebSocket HIBERNATION (why this shape): sockets are accepted via
 // `state.acceptWebSocket()` and events arrive through the class-level

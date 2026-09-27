@@ -51,8 +51,7 @@ These are the meaningful gaps between today and "full product":
 
 - **Finer-grained team permissions** — every member of a team can edit every diagram in its shared library ([Team shared diagrams](../013-workspace/team-shared-diagrams.md)).
 - **Per-user grants beyond teams + share links** — a diagram is private, shared via a link with a role, or part of a team's shared library (teams with Admin/Member roles shipped — see [Teams](../013-workspace/teams.md) + [Team shared diagrams](../013-workspace/team-shared-diagrams.md)). There are still no per-diagram per-user grants outside those.
-
-A full field-level CRDT is not among the gaps: two people editing the _same_ element at once is headed off by the selection lock ([Live app](../007-editor/live-app.md)), so per-element merge is enough.
+- **Same-element concurrent edits are last-writer-wins.** Edits to different elements merge ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)), and the fields many people write at once merge as deltas, but two people changing the same element at the same moment still lose one edit. The advisory selection lock ([Live app](../007-editor/live-app.md)) makes that rare; it does not prevent it. A field-level CRDT that would close it was scoped and deliberately dropped, so this gap stays open by choice.
 
 ## Hard rules carried forward
 
