@@ -9,6 +9,7 @@ import {
 } from '@livediagram/diagram';
 import { getTheme, type ThemeId } from '@/lib/themes';
 import { useLanePreview } from '@/lib/lane-preview';
+import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
 
 // The lane a dragged note is landing on (docs/specs/021-event-storming/event-storming.md Phase 6), lit while the drag
 // is in hand and gone on release.
@@ -42,9 +43,8 @@ export function TimelineLanesOverlay({
   wrapperRef: RefObject<HTMLDivElement | null>;
 }) {
   const preview = useLanePreview();
-  if (!timeline || !preview) return null;
-  const rect = wrapperRef.current?.getBoundingClientRect();
-  if (!rect) return null;
+  const rect = useCanvasClientOrigin(wrapperRef, !!timeline && !!preview);
+  if (!timeline || !preview || !rect) return null;
 
   const theme = getTheme(tabThemeId);
   // The guides' own visual language rather than a second vocabulary: the
