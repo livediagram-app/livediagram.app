@@ -380,9 +380,7 @@ export function MovablePanel({
           // content, so plain `overflow-hidden` clips on collapse without
           // adding a scrollbar when expanded.
           className={
-            growBody
-              ? 'overflow-hidden'
-              : 'overflow-y-auto overflow-x-hidden [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700'
+            growBody ? 'overflow-hidden' : 'scrollbar-slim overflow-y-auto overflow-x-hidden'
           }
         >
           <div className={`flex flex-col ${flushTop ? '' : 'pt-1'}`}>{children}</div>

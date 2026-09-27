@@ -52,3 +52,14 @@
 - [x] Constants and configuration
 - [x] Assets and external resources
 - [x] Defaults ledger
+
+## scrollbars
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Presentation and UX
+- [x] Accessibility
+- [x] Web Experience
+- [x] Testing
+- [x] Constants and configuration
+- [x] Defaults ledger
