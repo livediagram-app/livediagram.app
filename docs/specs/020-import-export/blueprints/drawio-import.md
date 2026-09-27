@@ -34,21 +34,21 @@ Scope, by file (all under `apps/live/` unless stated):
 
 ## Domain and naming
 
-| Term          | Identifier             | Meaning                                                                   |
-| ------------- | ---------------------- | ------------------------------------------------------------------------- |
-| Input         | `DrawioInput`          | `{ kind: 'text'; text }` or `{ kind: 'bytes'; bytes: Uint8Array }`        |
-| Page source   | `DrawioPageSource`     | `{ id, name, model: Element }`, `model` the page's `mxGraphModel`         |
-| Style         | `DrawioStyle`          | Named styles plus key/value pairs of one cell, built-ins merged under     |
-| Cell          | `DrawioCell`           | One `mxCell` (unwrapped from `UserObject` / `object`) with resolved facts |
-| Graph         | `DrawioGraph`          | A page's cells by id, the root, the layers, the background                |
-| Layer cell    | `DrawioGraph.layerIds` | The root's children, bottom to top                                        |
-| Vertex class  | `VertexClass`          | What `classifyVertex` decided a vertex becomes                            |
-| Consumed cell | `ConvertState.forward` | A cell whose element is another cell's (entity row, table cell, group)    |
-| Imported page | `ImportedPage`         | `{ tabId, name, elements, layers?, backgroundColor? }`                    |
-| Report        | `ImportReport`         | `{ source, pages, elements, notes: ImportNote[] }`                        |
-| Note          | `ImportNote`           | `{ kind: ImportNoteKind, count, names? }`                                 |
-| Pending image | `PendingImage`         | `{ tabId, elementId, source }`, `source` a `data-url` or a `url`          |
-| Byte budget   | `ByteBudget`           | Remaining inflate allowance for one import                                |
+| Term          | Identifier             | Meaning                                                                                  |
+| ------------- | ---------------------- | ---------------------------------------------------------------------------------------- |
+| Input         | `DrawioInput`          | `{ kind: 'text'; text }` or `{ kind: 'bytes'; bytes: Uint8Array }`                       |
+| Page source   | `DrawioPageSource`     | `{ id, name, model }`: `model` the page's `mxGraphModel`, or null when the page is empty |
+| Style         | `DrawioStyle`          | Named styles plus key/value pairs of one cell, built-ins merged under                    |
+| Cell          | `DrawioCell`           | One `mxCell` (unwrapped from `UserObject` / `object`) with resolved facts                |
+| Graph         | `DrawioGraph`          | A page's cells by id, the root, the layers, the background                               |
+| Layer cell    | `DrawioGraph.layerIds` | The root's children, bottom to top                                                       |
+| Vertex class  | `VertexClass`          | What `classifyVertex` decided a vertex becomes                                           |
+| Consumed cell | `ConvertState.forward` | A cell whose element is another cell's (entity row, table cell, group)                   |
+| Imported page | `ImportedPage`         | `{ tabId, name, elements, layers?, backgroundColor? }`                                   |
+| Report        | `ImportReport`         | `{ source, pages, elements, notes: ImportNote[] }`                                       |
+| Note          | `ImportNote`           | `{ kind: ImportNoteKind, count, names? }`                                                |
+| Pending image | `PendingImage`         | `{ tabId, elementId, source }`, `source` a `data-url` or a `url`                         |
+| Byte budget   | `ByteBudget`           | Remaining inflate allowance for one import                                               |
 
 Banned synonyms: "diagram" for a page (a livediagram diagram is the whole document; say page), "shape"
 for an edge, "warning" for a note, "stencil" for a named style (`ellipse` is a named style,
