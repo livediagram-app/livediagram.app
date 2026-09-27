@@ -119,6 +119,13 @@ Share dialog gate).
   ([Presentation mode](../012-collaboration/presentation-mode.md)), the created date, the folder (kept only when it is one of the
   caller's own personal folders, else Unsorted) and the star ([Favourite diagrams](../013-workspace/favourites.md)). The
   local copy is deleted next, so anything the create leaves behind is gone.
+- **A forked tab comes back as its own tab.** The create never writes into a tab
+  another diagram holds: a seeded tab whose id is already taken outside this
+  diagram is created under a fresh id, and the diagram's tab / element links and
+  deck slides follow it. So a tab that forked on Take Offline returns as a new
+  tab beside the original rather than overwriting it; joining them again is an
+  explicit "Add to Diagram". A retried create (the tab already in this diagram)
+  keeps its ids.
 - On success the **local copy is removed** from IndexedDB so there's one source
   of truth; the diagram is now a cloud diagram (Share / AI / Teams reappear). The
   id is unchanged, so the route stays the same: the editor reloads to re-hydrate
@@ -141,6 +148,12 @@ confirmation:
 - **The deck, star and personal folder come along** for the same reason: the
   server row they live on is about to be deleted. A team diagram's folder is a
   team folder, which has no place in the personal tree, so it lands in Unsorted.
+- **Shared tabs fork.** A tab also linked into other diagrams
+  ([Tab ↔ diagram many-to-many](tab-diagram-many-to-many.md)) is not taken
+  away from them: the server delete keeps it there whole, history included, and
+  the offline copy holds its own copy of the content. From then on the two are
+  independent; an edit on either side never reaches the other. The
+  confirmation says so up front (see [Shared-tab notice](tab-diagram-many-to-many.md#shared-tab-notice)).
 - **Every tab, or nothing.** If any tab fails to download the conversion aborts
   before anything is written locally and before the server delete, so the cloud
   copy stays authoritative. This is the one failure in this direction that

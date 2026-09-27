@@ -173,9 +173,12 @@ export async function upsertDiagramMeta(
   // `source` (provenance, docs/specs/013-workspace/folders.md) is written on INSERT but deliberately
   // absent from the DO UPDATE SET, so it's set once at create time and
   // never rewritten by a later metadata upsert (rename / autosave / move).
+  // `presentation` likewise: a create carries the deck an Offline Mode sync
+  // built (docs/specs/006-diagram/offline-mode.md); after that only
+  // setDiagramPresentation writes it.
   await env.DB.prepare(
-    `INSERT INTO diagrams (id, owner_id, name, shareable, folder_id, source, saved_at, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO diagrams (id, owner_id, name, shareable, folder_id, source, presentation, saved_at, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
@@ -188,6 +191,7 @@ export async function upsertDiagramMeta(
       d.shareable ? 1 : 0,
       d.folderId,
       d.source ?? null,
+      d.presentation ?? null,
       d.savedAt,
       d.createdAt,
     )

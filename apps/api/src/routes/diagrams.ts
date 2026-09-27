@@ -38,6 +38,7 @@ import {
   reorderTabs,
   seedTabs,
   setDiagramPresentation,
+  tabIdsHeldElsewhere,
   upsertDiagramMeta,
 } from '../db';
 import {
@@ -64,6 +65,7 @@ import {
 } from '../timeline';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
 import { handleDiagramPlacement } from './diagram-placement-route';
+import { forkTakenTabIds } from '../tab-id-fork';
 import { handleDiagramRoomRoutes } from './diagram-room-routes';
 import { handleDiagramSubresources } from './diagram-subresource-routes';
 import type { ChangeLogEntryDTO, DiagramDTO } from '../types';
@@ -130,6 +132,21 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         const folder = await getFolder(env, folderId);
         if (!folder || folder.teamId !== null || folder.ownerId !== owner) folderId = null;
       }
+      // A seeded tab whose id another diagram holds is created under a fresh
+      // id, never upserted over it: that is how a synced-back offline copy of a
+      // shared tab forks (docs/specs/006-diagram/offline-mode.md), and why a
+      // create can't rewrite someone else's tab by naming its id.
+      const seeded = Array.isArray(body.tabs)
+        ? forkTakenTabIds(
+            body.tabs,
+            typeof body.presentation === 'string' ? body.presentation : null,
+            await tabIdsHeldElsewhere(
+              env,
+              body.id,
+              body.tabs.map((t) => t.id),
+            ),
+          )
+        : null;
       const now = Date.now();
       // Diagram meta first so the FK in tabs can resolve.
       await upsertDiagramMeta(env, {
@@ -144,7 +161,9 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         teamId: null,
         // Usually none. An Offline Mode sync carries the deck it built
         // offline (docs/specs/006-diagram/offline-mode.md), which would otherwise be lost with the local copy.
-        presentation: typeof body.presentation === 'string' ? body.presentation : null,
+        presentation:
+          seeded?.presentation ??
+          (typeof body.presentation === 'string' ? body.presentation : null),
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made diagram.
         source: body.source === 'ai' || body.source === 'mcp' ? body.source : null,
@@ -155,8 +174,8 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // welcome flow uses this when it commits a fresh diagram
       // id — it ships the templated tab inline so the very
       // first per-tab fetch already has data.
-      if (Array.isArray(body.tabs)) {
-        await seedTabs(env, body.id, body.tabs);
+      if (seeded) {
+        await seedTabs(env, body.id, seeded.tabs);
       }
       const diagram = await getDiagram(env, body.id);
       // docs/specs/013-workspace/timeline.md §4.2: only a GENUINE create earns a timeline event. A

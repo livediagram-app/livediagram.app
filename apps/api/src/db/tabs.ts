@@ -149,6 +149,26 @@ export async function seedTabs(env: Env, diagramId: string, tabs: Tab[]): Promis
   await env.DB.batch(stmts);
 }
 
+// Which of `tabIds` already name a tab that is NOT in `diagramId`: a create
+// seeding one of those would write into a tab another diagram holds, so the
+// create re-mints it (docs/specs/006-diagram/offline-mode.md, "Shared tabs fork").
+// A tab already in this diagram is a retried create and keeps its id.
+export async function tabIdsHeldElsewhere(
+  env: Env,
+  diagramId: string,
+  tabIds: string[],
+): Promise<Set<string>> {
+  if (tabIds.length === 0) return new Set();
+  const rows = await env.DB.prepare(
+    `SELECT id FROM tabs
+      WHERE id IN (SELECT value FROM json_each(?))
+        AND NOT EXISTS (SELECT 1 FROM diagram_tabs dt WHERE dt.diagram_id = ? AND dt.tab_id = tabs.id)`,
+  )
+    .bind(JSON.stringify(tabIds), diagramId)
+    .all<{ id: string }>();
+  return new Set((rows.results ?? []).map((r) => r.id));
+}
+
 // Remove the tab from this diagram (drops the `diagram_tabs` link
 // row). The underlying `tabs` row only goes away when no other
 // diagram still references it: linked tabs (per docs/specs/006-diagram/tab-diagram-many-to-many.md) survive
