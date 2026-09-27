@@ -14,7 +14,9 @@ path until it is folded in. Evidence for the platform facts below:
 - Each source is a **format card in the Import dialog**, next to Markdown,
   Mermaid and Excalidraw, with the same **replace-the-tab** semantics and a
   **single undo step**. A user moving a board creates a diagram, then imports
-  into its tab. No new surface is added.
+  into its tab. No new surface is added. Microsoft Whiteboard is the exception:
+  it adds a new whiteboard tab instead of replacing one, because a tab's kind
+  is fixed at creation ([Microsoft Whiteboard import](whiteboard-import.md)).
 - Importers live in `apps/live/lib/board-import/`: one module per source
   (`miro.ts`, `whiteboard.ts`) plus the shared stages (`assets.ts`,
   `report.ts`). Lazy-loaded by `useTabImport` like the other importers. Nothing
@@ -79,7 +81,8 @@ plus image totals `{ uploaded, deduped, placeholders, placeholderReason? }`.
 
 ## Bulk readiness
 
-Bulk import is not built. What keeps it cheap to add:
+Bulk import is not built; [Microsoft Whiteboard import](whiteboard-import.md) leads on it, as the
+next piece of work after its single-file import. What keeps it cheap to add:
 
 - Stages take one source and share no module state; a queue calls them in turn
   and aggregates reports.
@@ -90,6 +93,7 @@ Bulk import is not built. What keeps it cheap to add:
 
 ## Non-goals
 
-- Bulk import of many files or boards at once.
+- Bulk import of many files or boards at once, until Microsoft Whiteboard
+  import leads it.
 - Keeping an imported board in sync with its source.
 - Persisting the report beyond the dialog.

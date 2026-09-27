@@ -37,7 +37,8 @@ pen widths, dock spacing) are named constants, tuned in place.
   with one whiteboard tab.
 - **New tab:** the tab bar's new-tab action offers **Whiteboard** beside the
   ordinary tab, so a whiteboard can be added to any diagram.
-- **Import:** a Microsoft Whiteboard import lands on a whiteboard tab.
+- **Import:** a Microsoft Whiteboard import adds a new whiteboard tab, named
+  after the board ([Microsoft Whiteboard import](../020-import-export/whiteboard-import.md)).
 - A tab's kind is fixed at creation. Converting a diagram tab into a
   whiteboard (or back) is not offered: the two present the same elements very
   differently, and a silent switch would surprise.

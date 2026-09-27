@@ -53,11 +53,18 @@ shipped strings. The standalone Windows, iOS and Android apps retired on
 
 ## Where it lands
 
-- The import lands on a **whiteboard tab** (`kind: 'whiteboard'`,
-  [Whiteboard](../023-whiteboard/whiteboard.md)), named after the board's
-  title (the HTML file name without `.html`).
-- It follows the Import dialog's replace-the-tab semantics and single undo
-  step ([Board import](board-import.md)).
+- Each import **adds a new whiteboard tab** (`kind: 'whiteboard'`,
+  [Whiteboard](../023-whiteboard/whiteboard.md)) right after the active tab,
+  named after the board's title (the HTML or picture file name without its
+  extension), and opens it. The active tab is never touched, so a tab's kind
+  stays fixed at creation.
+- Adding the tab is **one undo step**: undo removes it and returns to the tab
+  the import started from.
+- The card therefore carries no replace warning; it says it adds a
+  whiteboard tab.
+- The tab carries `kind: 'whiteboard'` from the first import. Until the
+  whiteboard's own presentation is built it shows as an ordinary tab, and
+  becomes a whiteboard with no migration when that lands.
 
 ## The board route
 
@@ -149,10 +156,11 @@ Named rejections, tab untouched:
 - A picture larger than the browser can decode: the report suggests the
   standard-resolution export.
 
-## Bulk readiness
+## Bulk
 
-Bulk import is not built ([Board import](board-import.md)). This importer keeps
-it cheap: each board is one pure parse of one file with no shared state, the
+This importer **leads on bulk import**: many exported boards at once, the case
+a user moving 100+ boards has. Bulk is the next piece of work after single-file
+import ships, specified then; single-file import keeps it cheap: each board is one pure parse of one file with no shared state, the
 plan carries a stable `sourceId` (`mswb:` plus the board title and a hash of
 its item ids) so a bulk run can spot a board it already imported, and the
 commit target is a parameter, so a bulk run can commit each board to a new
@@ -182,13 +190,5 @@ the Zip, what carries over and what does not, and the picture fallback.
 
 With the operator; each answer moves into the sections above.
 
-1. **Where it lands.** The Import dialog replaces the active tab, but a tab's
-   kind is fixed at creation ([Whiteboard](../023-whiteboard/whiteboard.md)).
-   Replace the active tab and make it a whiteboard, or add a new whiteboard
-   tab named after the board?
-2. **Whiteboard tab kind first?** The tab kind is specified but not built.
-   Stamp `kind: 'whiteboard'` from this importer now (presentation follows
-   when the kind is built), or build the kind first?
-3. **Bulk.** Should this importer lead on importing many boards at once?
-4. **Ink as strokes or outlines**, and **widths beyond livediagram's thickest
+1. **Ink as strokes or outlines**, and **widths beyond livediagram's thickest
    pen**: decided with the operator's real exports in front of us.

@@ -27,7 +27,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | `lib/fnv1a.ts`                                      | `fnv1a32`: the hash behind `sourceId` (shared with `identity.ts`)                         |
 | `lib/board-import/whiteboard/__fixtures__/`         | Fixtures and their generator                                                              |
 | `lib/board-import/whiteboard/test-support.ts`       | DOM test helpers: a board document from markup, fixture bytes                             |
-| `hooks/persistence/useTabImport.ts`                 | The `whiteboard` format: bytes in, one undo step, fit, telemetry, log                     |
+| `hooks/persistence/useTabImport.ts`                 | The `whiteboard` format: bytes in, a new whiteboard tab in one commit, telemetry, log     |
 | `components/dialogs/ImportTabDialog.tsx`            | The Microsoft Whiteboard card (file only) and its report                                  |
 | `apps/help/app/…/import-from-microsoft-whiteboard/` | The help article                                                                          |
 | `e2e/whiteboard-import.spec.ts`                     | Fixtures through the real dialog on the production build, persistence and undo            |
@@ -215,6 +215,14 @@ source: { kind: 'data-url', dataUrl }, hint }`, key an FNV-1a hash of the data U
   (identical pictures share a key, the pipeline stores them once).
 - Background: `backgroundColor` = the board colour hex, when not white (D43).
 
+### 10. Commit (`useTabImport`)
+
+Not a replace: the `whiteboard` format never calls `replaceActiveTabContent`. Sequence: pick a file
+(`.zip,.html,.htm,.png,.jpg,.jpeg,.webp`), read its bytes, `importWhiteboard`, store images through
+the shared pipeline (on adoption), then commit the new tab, select nothing, open the new tab, request
+a fit, `track`, log `applied`. A refusal returns `{ status: 'error', error }` and commits nothing. A
+locked active tab does not block the import (nothing on it changes).
+
 ## Interfaces and contracts
 
 ```ts
@@ -243,7 +251,11 @@ type WhiteboardImportResult =
 ## Data and persistence
 
 - Nothing is persisted by the importer; the commit goes through `commitTabs` like every import.
-- The tab gains `kind: 'whiteboard'` per the operator's answer to spec open questions 1 and 2.
+- The import adds a tab `{ id: crypto.randomUUID(), name: title, kind: 'whiteboard', elements,
+backgroundColor? }`, spliced in right after the active tab, in **one** `commitTabs` call (one undo
+  step). The new tab is marked loaded (the per-tab loader must not fetch it) and made active; the
+  active tab is untouched. `tabKindOf` reads `'whiteboard'` (`packages/diagram/src/tab-kind.ts`).
+- Picture route: the same new tab holding one `image` element at the origin, sized to the picture.
 - Comment threads are written on the anchored element with `authorName` from the comments file,
   `authorColor` a fixed neutral (D44), no `authorId`, `createdAt` from the file or the import time.
   Email fields are never read.
@@ -288,8 +300,10 @@ are imported; a comment on a skipped item counts `comment-unanchored`.
 ## Presentation and UX
 
 - Card: title **Microsoft Whiteboard**, description "A board exported from Microsoft Whiteboard:
-  the Full export Zip, or its PNG. Keeps ink, notes, text, shapes and images editable.", file
-  only, icon label `mswb`.
+  the Full export Zip, or its PNG. Adds a whiteboard tab with ink, notes, text, shapes and images
+  kept editable.", file only, icon label `mswb`.
+- The replace warning is not shown for this card; its panel instead says "Adds a new whiteboard tab
+  named after the board. Your current tab stays as it is."
 - While importing: the card's panel shows "Reading the board…" then "Storing images (n of m)…",
   in space reserved before the import starts.
 - Result: the shared import summary; for the picture route the line from the spec.
