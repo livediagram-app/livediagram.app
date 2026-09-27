@@ -30,51 +30,53 @@ type State =
   | { status: 'ready'; src: string }
   | { status: 'broken' };
 
+// A fetched result, kept with the request it answers so a changed input reads
+// as loading at once, never as the previous image.
+type Fetched = { key: string; state: State };
+
 export function useImageBlobUrl(
   ownerId: string,
   imageId: string | null,
   opts: { diagramId: string; shareCode?: string | null } = { diagramId: '' },
 ): State {
-  const [state, setState] = useState<State>(imageId ? { status: 'loading' } : { status: 'idle' });
+  const { diagramId } = opts;
+  const shareCode = opts.shareCode ?? null;
+  const key = [ownerId, imageId, diagramId, shareCode].join('\0');
+  const [fetched, setFetched] = useState<Fetched | null>(null);
 
   useEffect(() => {
-    if (!imageId) {
-      setState({ status: 'idle' });
-      return;
-    }
-    // Offline Mode (docs/specs/006-diagram/offline-mode.md): an embedded image IS its bytes — a base64
-    // data URI in imageId. Nothing to fetch and nothing to revoke.
-    if (imageId.startsWith('data:')) {
-      setState({ status: 'ready', src: imageId });
-      return;
-    }
+    // Nothing to fetch: no image, or an Offline Mode data URI.
+    if (!imageId || imageId.startsWith('data:')) return;
     let cancelled = false;
     let activeUrl: string | null = null;
-    setState({ status: 'loading' });
-    apiFetchImageBlobUrl(ownerId, imageId, {
-      diagramId: opts.diagramId,
-      shareCode: opts.shareCode ?? null,
-    })
+    apiFetchImageBlobUrl(ownerId, imageId, { diagramId, shareCode })
       .then((url) => {
         if (cancelled) {
           if (url) URL.revokeObjectURL(url);
           return;
         }
         if (!url) {
-          setState({ status: 'broken' });
+          setFetched({ key, state: { status: 'broken' } });
           return;
         }
         activeUrl = url;
-        setState({ status: 'ready', src: url });
+        setFetched({ key, state: { status: 'ready', src: url } });
       })
       .catch(() => {
-        if (!cancelled) setState({ status: 'broken' });
+        if (!cancelled) setFetched({ key, state: { status: 'broken' } });
       });
     return () => {
       cancelled = true;
       if (activeUrl) URL.revokeObjectURL(activeUrl);
     };
-  }, [ownerId, imageId, opts.diagramId, opts.shareCode]);
+  }, [key, ownerId, imageId, diagramId, shareCode]);
 
-  return state;
+  if (!imageId) return IDLE;
+  // Offline Mode (docs/specs/006-diagram/offline-mode.md): an embedded image IS its bytes — a base64
+  // data URI in imageId. Nothing to fetch and nothing to revoke.
+  if (imageId.startsWith('data:')) return { status: 'ready', src: imageId };
+  return fetched?.key === key ? fetched.state : LOADING;
 }
+
+const IDLE: State = { status: 'idle' };
+const LOADING: State = { status: 'loading' };

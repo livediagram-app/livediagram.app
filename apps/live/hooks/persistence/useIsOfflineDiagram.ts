@@ -10,10 +10,16 @@ import { isOfflineId, isOfflineIdSync } from '@/lib/offline/offline-store';
 // async check so a render before the cache loads still settles correctly.
 export function useIsOfflineDiagram(diagramId: string | null): boolean {
   const [offline, setOffline] = useState(() => (diagramId ? isOfflineIdSync(diagramId) : false));
+  // No diagram is never offline: reset during render, not a frame later.
+  const [checkedId, setCheckedId] = useState(diagramId);
+  if (diagramId !== checkedId) {
+    setCheckedId(diagramId);
+    if (!diagramId) setOffline(false);
+  }
   useEffect(() => {
+    if (!diagramId) return;
     let live = true;
-    if (diagramId) void isOfflineId(diagramId).then((v) => live && setOffline(v));
-    else setOffline(false);
+    void isOfflineId(diagramId).then((v) => live && setOffline(v));
     return () => {
       live = false;
     };

@@ -43,33 +43,44 @@ export function useTeams(ownerId: string | null, opts: { enabled: boolean }): Us
   const [invites, setInvites] = useState<TeamInvite[]>([]);
   const [loading, setLoading] = useState(enabled);
 
+  // Settles `loading` from the response callbacks, never synchronously, so
+  // the load effect below only starts the request.
+  const load = useCallback(
+    (owner: string) =>
+      // The list call runs the server-side lazy claim; the invites
+      // call repeats it, so the pair is order-independent.
+      Promise.all([apiListTeams(owner), apiListTeamInvites(owner)])
+        .then(
+          ([teamList, inviteList]) => {
+            setTeams(teamList);
+            setInvites(inviteList);
+          },
+          () => {
+            // Silent failure, same rationale as useFolders: a transient
+            // hiccup shouldn't wipe whatever we've already loaded.
+          },
+        )
+        .finally(() => setLoading(false)),
+    [],
+  );
+
   const refresh = useCallback(async () => {
     if (!ownerId || !enabled) return;
     setLoading(true);
-    try {
-      // The list call runs the server-side lazy claim; the invites
-      // call repeats it, so the pair is order-independent.
-      const [teamList, inviteList] = await Promise.all([
-        apiListTeams(ownerId),
-        apiListTeamInvites(ownerId),
-      ]);
-      setTeams(teamList);
-      setInvites(inviteList);
-    } catch {
-      // Silent failure, same rationale as useFolders: a transient
-      // hiccup shouldn't wipe whatever we've already loaded.
-    } finally {
-      setLoading(false);
-    }
-  }, [ownerId, enabled]);
+    await load(ownerId);
+  }, [ownerId, enabled, load]);
+
+  // A newly enabled owner is loading from its first render.
+  const loadOwner = enabled ? ownerId : null;
+  const [loadingFor, setLoadingFor] = useState(loadOwner);
+  if (loadOwner !== loadingFor) {
+    setLoadingFor(loadOwner);
+    if (loadOwner) setLoading(true);
+  }
 
   useEffect(() => {
-    if (!enabled || !ownerId) {
-      setLoading(false);
-      return;
-    }
-    void refresh();
-  }, [enabled, ownerId, refresh]);
+    if (loadOwner) void load(loadOwner);
+  }, [loadOwner, load]);
 
   const createTeam = useCallback(
     async (input: { name: string; organisation?: string | null }) => {
@@ -136,5 +147,14 @@ export function useTeams(ownerId: string | null, opts: { enabled: boolean }): Us
     [ownerId, enabled],
   );
 
-  return { teams, invites, loading, createTeam, acceptInvite, declineInvite, refresh };
+  // Nothing loads for a guest or before the owner resolves: nothing to wait for.
+  return {
+    teams,
+    invites,
+    loading: enabled && ownerId ? loading : false,
+    createTeam,
+    acceptInvite,
+    declineInvite,
+    refresh,
+  };
 }
