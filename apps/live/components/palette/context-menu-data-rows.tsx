@@ -24,18 +24,9 @@ import { MenuToggleRow } from './context-menu-input-rows';
 // The "None" tile glyph — a dashed empty circle, sized to match a marker glyph.
 export function NoMarkerGlyph() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeDasharray="3 3"
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="8" />
-    </svg>
+    <Glyph size={18} units={24}>
+      <circle cx="12" cy="12" r="8" strokeDasharray="3 3" />
+    </Glyph>
   );
 }
 import { SizeButton } from '@/components/palette/palette-controls';

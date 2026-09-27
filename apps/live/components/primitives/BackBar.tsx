@@ -90,11 +90,11 @@ function ChevronGlyph() {
 // Four dots: the choices below, rather than a way back.
 function DotsGlyph() {
   return (
-    <svg width="13" height="13" viewBox="0 0 12 12" fill="none" aria-hidden>
-      <circle cx="3.5" cy="3.5" r="1.4" fill="currentColor" />
-      <circle cx="8.5" cy="3.5" r="1.4" fill="currentColor" />
-      <circle cx="3.5" cy="8.5" r="1.4" fill="currentColor" />
-      <circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" />
-    </svg>
+    <Glyph size={13} units={12} filled>
+      <circle cx="3.5" cy="3.5" r="1.4" />
+      <circle cx="8.5" cy="3.5" r="1.4" />
+      <circle cx="3.5" cy="8.5" r="1.4" />
+      <circle cx="8.5" cy="8.5" r="1.4" />
+    </Glyph>
   );
 }

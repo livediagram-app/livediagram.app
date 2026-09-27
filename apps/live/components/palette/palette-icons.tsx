@@ -527,19 +527,10 @@ export function AlignIcon({ x, y }: { x: TextAlignX; y: TextAlignY }) {
   const ix = x === 'left' ? 2 : x === 'right' ? 9 : 5.5;
   const iy = y === 'top' ? 3 : y === 'bottom' ? 10 : 6.5;
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
-      <rect
-        x="1"
-        y="1"
-        width="14"
-        height="14"
-        rx="1.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1"
-      />
-      <rect x={ix} y={iy} width="5" height="3" rx="0.5" fill="currentColor" />
-    </svg>
+    <Glyph size={14} units={16}>
+      <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
+      <rect x={ix} y={iy} width="5" height="3" rx="0.5" fill="currentColor" stroke="none" />
+    </Glyph>
   );
 }
 
