@@ -26,3 +26,16 @@ describe('text-optical-caps', () => {
     expect(rule).toMatch(/margin-inline-end:\s*calc\(-1 \* var\(--optical-tracking, 0\.05em\)\)/);
   });
 });
+
+describe('text-optical-line', () => {
+  it('centres the cap band but keeps a full line box, so no host changes height', () => {
+    const rule = utility('text-optical-line');
+    expect(rule).toMatch(/display:\s*inline-block/);
+    expect(rule).toMatch(/text-box:\s*trim-both cap alphabetic/);
+    expect(rule).toMatch(/margin-block:\s*calc\(\(1lh - 1cap\) \/ 2\)/);
+    // Without text-box nothing is trimmed, so nothing is given back.
+    expect(rule).toMatch(
+      /@supports not \(text-box: trim-both cap alphabetic\)\s*\{\s*margin-block:\s*0/,
+    );
+  });
+});

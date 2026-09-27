@@ -1,4 +1,4 @@
-import { forwardRef, type ButtonHTMLAttributes } from 'react';
+import { Children, forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { SOLID_BRAND_DARK_CONTROL } from './brand-classes';
 
 // The shared button primitive. Before this, every dialog / panel /
@@ -58,13 +58,31 @@ export function buttonClassName({
   return `${BASE} ${VARIANTS[variant]} ${SIZES[size]}${className ? ` ${className}` : ''}`;
 }
 
+// A button's label centres its cap band, not its line box (docs/specs/004-interface-design/
+// optical-alignment.md): each text run renders in `text-optical-line`, which keeps the line's height, so
+// the button is the size it always was. Icons and other elements pass through untouched. Links styled
+// with `buttonClassName` wrap their content in this too.
+export function ButtonContent({ children }: { children: ReactNode }) {
+  return (
+    <>
+      {Children.map(children, (child) =>
+        typeof child === 'string' || typeof child === 'number' ? (
+          <span className="text-optical-line">{child}</span>
+        ) : (
+          child
+        ),
+      )}
+    </>
+  );
+}
+
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant, size, className, type = 'button', ...rest },
+  { variant, size, className, type = 'button', children, ...rest },
   ref,
 ) {
   return (
@@ -73,6 +91,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       className={buttonClassName({ variant, size, className })}
       {...rest}
-    />
+    >
+      <ButtonContent>{children}</ButtonContent>
+    </button>
   );
 });
