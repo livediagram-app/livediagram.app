@@ -267,9 +267,11 @@ export function hasOwnFace(kind: ShapeKind): boolean {
 
 // Whether text alignment does anything on this kind: not a self-drawing kind
 // (no label at all) and not one with its own face (the label is a fixed
-// title). The one gate for both the context menu and the quick style panel.
-// Web components (banner, callout, header), pages and icons keep it: they
-// render the aligned label.
+// title), nor an icon (a glyph with a short caption under it; the alignment
+// grid on it only ever nudged a caption nobody wanted moved; a sticker is
+// self-drawing, so it is already out). The one gate for both the context menu
+// and the quick style panel. Web components (banner, callout, header) and
+// pages keep it: they render the aligned label.
 export function supportsTextAlign(kind: ShapeKind): boolean {
-  return !isSelfDrawingShape(kind) && !hasOwnFace(kind);
+  return !isSelfDrawingShape(kind) && !hasOwnFace(kind) && kind !== 'icon';
 }

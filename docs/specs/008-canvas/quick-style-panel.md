@@ -136,7 +136,7 @@ Top to bottom, each a small title over one row of option buttons:
   in the menu's 3×3 grid. It shows only where it moves something: not on self-drawing kinds (no
   label) and not on kinds with their own face (the collab panels such as the Q&A board and agenda,
   the session tools, the chair, the comment and action panels, the portal), whose label is a fixed
-  title. One predicate, `supportsTextAlign` in `@livediagram/diagram`, gates both this panel and the
+  title, and not on icons or stickers (a glyph, at most a short caption). One predicate, `supportsTextAlign` in `@livediagram/diagram`, gates both this panel and the
   context menu's Text Alignment section, so the two can't disagree.
 - A section shows when at least one selected element supports it (a background for a shape that has
   one, a border for a shape that draws one, a label slot for alignment). Sticky notes, text, tables,

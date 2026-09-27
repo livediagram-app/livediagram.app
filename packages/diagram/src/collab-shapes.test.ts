@@ -247,6 +247,7 @@ describe('supportsTextAlign', () => {
       'mode-button',
       'stat-row',
       'sticker',
+      'icon',
     ] as const) {
       expect(supportsTextAlign(kind), kind).toBe(false);
     }
