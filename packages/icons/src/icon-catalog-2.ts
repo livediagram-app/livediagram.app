@@ -11,6 +11,7 @@
 // can't drift, and they keep rendering as the bare tinted glyph those
 // elements have always been. The palette does not offer them — the Stickers
 // category owns them now, as their own element kind with their own artwork.
+import { lucideSignal } from './lucide.generated';
 import { STICKER_CATALOG } from './sticker-catalog';
 import type { IconDef } from './types';
 
@@ -502,9 +503,9 @@ export const ICON_CATALOG_2: IconDef[] = [
     label: 'Desk',
     keywords: 'office workspace table drawers furniture',
     prims: [
-      { t: 'rect', x: 3, y: 8, w: 18, h: 4, rx: 1 },
-      { t: 'rect', x: 14, y: 12, w: 7, h: 7, rx: 1 },
-      { t: 'line', x1: 5, y1: 12, x2: 5, y2: 18 },
+      { t: 'rect', x: 3, y: 6.5, w: 18, h: 4, rx: 1 },
+      { t: 'rect', x: 14, y: 10.5, w: 7, h: 7, rx: 1 },
+      { t: 'line', x1: 5, y1: 10.5, x2: 5, y2: 16.5 },
     ],
   },
   {
@@ -533,8 +534,8 @@ export const ICON_CATALOG_2: IconDef[] = [
     label: 'Toilet',
     keywords: 'wc bathroom loo washroom',
     prims: [
-      { t: 'rect', x: 8, y: 3, w: 8, h: 4, rx: 1 },
-      { t: 'ellipse', cx: 12, cy: 14, rx: 4, ry: 5 },
+      { t: 'rect', x: 8, y: 4, w: 8, h: 4, rx: 1 },
+      { t: 'ellipse', cx: 12, cy: 15, rx: 4, ry: 5 },
     ],
   },
   {
@@ -542,9 +543,9 @@ export const ICON_CATALOG_2: IconDef[] = [
     label: 'Sink',
     keywords: 'basin washbasin bathroom kitchen tap',
     prims: [
-      { t: 'rect', x: 5, y: 6, w: 14, h: 11, rx: 3 },
-      { t: 'circle', cx: 12, cy: 11, r: 1 },
-      { t: 'line', x1: 12, y1: 6, x2: 12, y2: 4 },
+      { t: 'rect', x: 5, y: 7.5, w: 14, h: 11, rx: 3 },
+      { t: 'circle', cx: 12, cy: 12.5, r: 1 },
+      { t: 'line', x1: 12, y1: 7.5, x2: 12, y2: 5.5 },
     ],
   },
   {
@@ -586,9 +587,9 @@ export const ICON_CATALOG_2: IconDef[] = [
     label: 'Door',
     keywords: 'doorway entrance swing opening',
     prims: [
-      { t: 'line', x1: 5, y1: 20, x2: 5, y2: 6 },
-      { t: 'path', d: 'M5 6 A 14 14 0 0 1 19 20' },
-      { t: 'line', x1: 5, y1: 20, x2: 19, y2: 20 },
+      { t: 'line', x1: 5, y1: 19, x2: 5, y2: 5 },
+      { t: 'path', d: 'M5 5 A 14 14 0 0 1 19 19' },
+      { t: 'line', x1: 5, y1: 19, x2: 19, y2: 19 },
     ],
   },
   {
@@ -645,11 +646,8 @@ export const ICON_CATALOG_2: IconDef[] = [
     id: 'signal',
     label: 'Signal',
     keywords: 'signal wifi wireless network broadcast live pulse animated',
-    prims: [
-      { t: 'path', d: 'M5 12.5 a9 9 0 0 1 14 0' },
-      { t: 'path', d: 'M8 15.5 a5 5 0 0 1 8 0' },
-      { t: 'circle', cx: 12, cy: 18.5, r: 1 },
-    ],
+    // Rising strength bars: distinct from Wi-Fi's arcs.
+    prims: [...lucideSignal],
   },
   ...LEGACY_EMOJI_ICONS,
 ];

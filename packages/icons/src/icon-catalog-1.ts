@@ -5,6 +5,7 @@
 // dynamic-imports them (async chunk, off its first-load JS — import it ONLY
 // through the registry there), and the Workers static-import via ./resolve.
 // Order matters (the first entry is the default icon), so part 1 stays first.
+import { lucideDatabase, lucideWifi, lucideWrench } from './lucide.generated';
 import type { IconDef } from './types';
 
 export const ICON_CATALOG_1: IconDef[] = [
@@ -43,11 +44,7 @@ export const ICON_CATALOG_1: IconDef[] = [
     id: 'database',
     label: 'Database',
     keywords: 'db storage sql data',
-    prims: [
-      { t: 'ellipse', cx: 12, cy: 5, rx: 9, ry: 3 },
-      { t: 'path', d: 'M21 5v6c0 1.66-4 3-9 3s-9-1.34-9-3V5' },
-      { t: 'path', d: 'M3 11v6c0 1.66 4 3 9 3s9-1.34 9-3v-6' },
-    ],
+    prims: [...lucideDatabase],
   },
   {
     id: 'cloud',
@@ -157,12 +154,7 @@ export const ICON_CATALOG_1: IconDef[] = [
     id: 'wifi',
     label: 'Wi-Fi',
     keywords: 'network wireless signal internet connection',
-    prims: [
-      { t: 'path', d: 'M5 12.55a11 11 0 0 1 14.08 0' },
-      { t: 'path', d: 'M1.42 9a16 16 0 0 1 21.16 0' },
-      { t: 'path', d: 'M8.53 16.11a6 6 0 0 1 6.95 0' },
-      { t: 'line', x1: 12, y1: 20, x2: 12.01, y2: 20 },
-    ],
+    prims: [...lucideWifi],
   },
   {
     id: 'monitor',
@@ -593,12 +585,7 @@ export const ICON_CATALOG_1: IconDef[] = [
     id: 'tool',
     label: 'Tool',
     keywords: 'wrench spanner fix settings build',
-    prims: [
-      {
-        t: 'path',
-        d: 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z',
-      },
-    ],
+    prims: [...lucideWrench],
   },
   {
     id: 'power',
