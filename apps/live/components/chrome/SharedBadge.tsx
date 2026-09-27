@@ -61,11 +61,12 @@ const LEGEND_ORDER: ShareState[] = ['private', 'shared', 'team', 'offline'];
 // shrink it (docs/specs/004-interface-design/optical-alignment.md).
 const STATE_CHIP_HEIGHT_PX = 19;
 
+// The icon carries its colour itself: a wrapper would hide the svg from the chip's edge compensation.
 function StateDot({ state, className }: { state: ShareState; className: string }) {
-  return (
-    <span aria-hidden className={`flex ${className}`}>
-      {state === 'private' || state === 'offline' ? <PrivateDotIcon /> : <SharedDotIcon />}
-    </span>
+  return state === 'private' || state === 'offline' ? (
+    <PrivateDotIcon className={className} />
+  ) : (
+    <SharedDotIcon className={className} />
   );
 }
 

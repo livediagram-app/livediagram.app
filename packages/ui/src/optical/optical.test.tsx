@@ -109,16 +109,14 @@ describe('Chip', () => {
     expect(label.className).not.toContain('text-optical-caps');
   });
 
-  it('puts a leading icon in a slot, half its height by default', () => {
+  it('renders a leading icon as its own first child, so the edge rule reaches it', () => {
     const { container, getByTestId } = render(
       <Chip height={18} icon={icon}>
         Private
       </Chip>,
     );
-    const slot = getByTestId('icon').parentElement as HTMLElement;
-    expect(slot.dataset.optical).toBe('slot');
-    expect(slot.style.width).toBe('9px');
-    expect(container.firstElementChild!.firstElementChild).toBe(slot);
+    expect(container.firstElementChild!.firstElementChild).toBe(getByTestId('icon'));
+    expect((container.firstElementChild as HTMLElement).className).toContain('[&>svg]:block');
   });
 
   it('keeps its natural height when none is pinned', () => {

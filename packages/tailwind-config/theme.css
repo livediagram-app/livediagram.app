@@ -85,12 +85,11 @@
  * padding measured to the box reads lopsided. Pull the icon in by its own blank margin, which its Glyph
  * reports from its geometry (optical-alignment.md); an svg without the variables moves by nothing. */
 @utility optical-edges {
-  & > svg:first-child,
-  & > [data-optical='slot']:first-child > svg {
+  /* Direct children only: inside a centring slot a negative margin is split by the centring and halves. */
+  & > svg:first-child {
     margin-inline-start: calc(-1 * var(--glyph-ink-l, 0px));
   }
-  & > svg:last-child,
-  & > [data-optical='slot']:last-child > svg {
+  & > svg:last-child {
     margin-inline-end: calc(-1 * var(--glyph-ink-r, 0px));
   }
 }

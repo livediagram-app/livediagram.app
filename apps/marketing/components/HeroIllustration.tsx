@@ -40,6 +40,7 @@ import {
   MenuIcon,
   PREFERS_REDUCED_MOTION,
   PrivateDotIcon,
+  Chip,
   SharedDotIcon,
   TabsLabelIcon,
   useMediaQuery,
@@ -412,20 +413,25 @@ function EditorWindow({
               </div>
               <div className="flex min-w-0 items-center gap-2">
                 <span className="hidden truncate text-xs text-slate-400 sm:inline">{title}</span>
+                {/* The editor's own share-state chip (Chip), so the art cannot drift from it. */}
                 {shared ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
-                    <span className="text-emerald-500">
-                      <SharedDotIcon />
-                    </span>
-                    <span className="text-optical-line text-optical-caps">Shared</span>
-                  </span>
+                  <Chip
+                    height={19}
+                    caps
+                    icon={<SharedDotIcon className="text-emerald-500" />}
+                    className="bg-emerald-50 px-2 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30"
+                  >
+                    Shared
+                  </Chip>
                 ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">
-                    <span className="text-amber-500">
-                      <PrivateDotIcon />
-                    </span>
-                    <span className="text-optical-line text-optical-caps">Private</span>
-                  </span>
+                  <Chip
+                    height={19}
+                    caps
+                    icon={<PrivateDotIcon className="text-amber-500" />}
+                    className="bg-amber-50 px-2 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30"
+                  >
+                    Private
+                  </Chip>
                 )}
               </div>
               <span className="inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white dark:bg-brand-600">

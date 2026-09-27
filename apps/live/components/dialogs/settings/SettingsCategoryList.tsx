@@ -67,7 +67,7 @@ export function SettingsCategoryList({
           >
             <SettingsCategoryIcon id={category.id} />
             <span
-              className={`flex-1 truncate text-sm font-medium ${
+              className={`text-optical-line flex-1 truncate text-sm font-medium ${
                 !isRoot && current
                   ? 'text-brand-800 dark:text-brand-100'
                   : 'text-slate-800 dark:text-slate-100'

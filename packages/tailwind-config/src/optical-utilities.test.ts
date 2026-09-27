@@ -44,10 +44,12 @@ describe('optical-edges', () => {
   it('pulls an edge icon in by the blank margin its Glyph reports, and by nothing without it', () => {
     const rule = utility('optical-edges');
     expect(rule).toMatch(
-      /& > svg:first-child,\s*& > \[data-optical='slot'\]:first-child > svg \{\s*margin-inline-start:\s*calc\(-1 \* var\(--glyph-ink-l, 0px\)\)/,
+      /& > svg:first-child \{\s*margin-inline-start:\s*calc\(-1 \* var\(--glyph-ink-l, 0px\)\)/,
     );
     expect(rule).toMatch(
-      /& > svg:last-child,\s*& > \[data-optical='slot'\]:last-child > svg \{\s*margin-inline-end:\s*calc\(-1 \* var\(--glyph-ink-r, 0px\)\)/,
+      /& > svg:last-child \{\s*margin-inline-end:\s*calc\(-1 \* var\(--glyph-ink-r, 0px\)\)/,
     );
+    // Never through a centring slot: centring would split a negative margin and halve it.
+    expect(rule).not.toMatch(/data-optical/);
   });
 });
