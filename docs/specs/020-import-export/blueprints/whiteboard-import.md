@@ -15,7 +15,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | `lib/board-import/whiteboard/zip.ts`                | `readZip`: central directory, stored and deflated entries, byte budget                    |
 | `lib/board-import/whiteboard/envelope.ts`           | `readWhiteboardFile`: sniff Zip / HTML / picture, find the board                          |
 | `lib/board-import/whiteboard/matrix.ts`             | `Matrix`, `parseCssTransform`, `parseSvgTransform`, `compose`, `apply`                    |
-| `packages/diagram/src/svg-path-outline.ts` | `flattenSvgPath`: SVG path data to polylines, shared with shape outlines |
+| `packages/diagram/src/svg-path-outline.ts`          | `flattenSvgPath`: SVG path data to polylines, shared with shape outlines                  |
 | `lib/board-import/whiteboard/colour.ts`             | `readColour`: `rgba()` / `rgb()` / hex / named to `{ hex, alpha }`                        |
 | `lib/board-import/whiteboard/placement.ts`          | `anchorMatrix`, `innerMatrix`, `inlineStyle`, `px`: markup to board px                    |
 | `lib/board-import/whiteboard/canvas.ts`             | `readBoard`, `isWhiteboardCanvas`: the canvas root, anchors in stacking order, background |
