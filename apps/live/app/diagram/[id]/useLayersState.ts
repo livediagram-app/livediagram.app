@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useEffectEvent } from 'react';
 import {
   addLayerAbove,
   clearLayerElements,
@@ -95,25 +95,26 @@ export function useLayersState(opts: {
   // at the creation gates, so say WHY once, the moment it becomes true
   // (hide/lock the active layer, or activate a hidden one).
   const activeLayerHidden = !isLayerVisible(activeLayer);
-  useEffect(() => {
-    if (editsBlocked || !activeLayerBlocked) return;
+  // Fired on the rising edge / cause change only, not on unrelated renders: the toast function is read
+  // at that moment (an effect event), not depended on.
+  const explainBlockedLayer = useEffectEvent((hidden: boolean) =>
     toastInfo(
-      activeLayerHidden
+      hidden
         ? 'The active layer is hidden, so adding elements is paused. Show it or switch layers.'
         : 'The active layer is locked, so adding elements is paused. Unlock it or switch layers.',
-    );
-    // Fire on the rising edge / cause change only, not on unrelated renders.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    ),
+  );
+  useEffect(() => {
+    if (editsBlocked || !activeLayerBlocked) return;
+    explainBlockedLayer(activeLayerHidden);
   }, [activeLayerBlocked, activeLayerHidden, editsBlocked]);
 
   // Hover-to-solo (docs/specs/006-diagram/layers.md): while a panel row is hovered the canvas
   // renders ONLY that layer. Pure view state — never persisted, synced,
   // or exported.
   const [previewLayerId, setPreviewLayerId] = useState<string | null>(null);
-  useEffect(() => {
-    // A layer deleted (or tab switched) mid-hover must not strand the solo.
-    if (previewLayerId && !layers.some((l) => l.id === previewLayerId)) setPreviewLayerId(null);
-  }, [previewLayerId, layers]);
+  // A layer deleted (or tab switched) mid-hover must not strand the solo: adjusted during render.
+  if (previewLayerId && !layers.some((l) => l.id === previewLayerId)) setPreviewLayerId(null);
 
   const setActiveLayer = (layerId: string) => {
     if (layerId === activeLayerId || !layers.some((l) => l.id === layerId)) return;
