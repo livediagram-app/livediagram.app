@@ -129,6 +129,8 @@ The wordmark's "diagram" half is the one vivid note: **sky-400 `#38bdf8`** in da
   and the dark surface stops ([Canvas and theme dialog](../011-theme/canvas-and-theme-dialog.md)); that tint
   outranks the Steel base by selector, not by stylesheet order, so the Steel palette is only ever what a Default tab
   shows.
+- **Surfaces painted inline use the tokens.** The active tab pill paints its dark surface as `var(--color-slate-800)`,
+  not a literal, so it follows the dark palette and a themed tab's tint.
 - **Light mode is untouched.** No light token, class or colour changes with the dark palette.
 
 ## Accessibility

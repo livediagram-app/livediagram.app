@@ -246,3 +246,14 @@ describe('white text on an identity colour', () => {
     expect(offenders).toEqual([]);
   });
 });
+
+// Secondary text in dark mode is slate-400 (docs/specs/004-interface-design/color-scheme.md, Dark palette
+// rules): slate-500 as text is 3.4 to 3.9:1 on every dark surface.
+describe('secondary text in dark mode', () => {
+  it('is never slate-500', () => {
+    const offenders = STRINGS.filter(({ text }) =>
+      tokens(text).some((t) => /^dark:(placeholder:)?text-slate-500(\/\d+)?$/.test(t)),
+    ).map(({ path, text }) => `${path}: ${text.slice(0, 90)}`);
+    expect(offenders).toEqual([]);
+  });
+});

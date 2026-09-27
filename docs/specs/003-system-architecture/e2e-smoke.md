@@ -94,9 +94,13 @@ vehicle that exercises code paths.
    Diagram wizard, the editor with a seeded diagram, the Join dialog, the
    Settings dialog, the panels and the Explorer, every visible text node is
    measured against the background actually painted under it (each ancestor's
-   background composited by its alpha down to the page) and must meet WCAG AA:
-   4.5:1, or 3:1 for large text. No allow-list: a failure is fixed at its
-   colour. Dark mode only; light mode belongs to #74's light half
+   background composited by its alpha down to the page; a gradient at its
+   worst stop; any CSS colour space read back through a 1x1 canvas) and must
+   meet WCAG AA: 4.5:1, or 3:1 for large text. No allow-list: a failure is
+   fixed at its colour. What cannot be measured honestly is reported, never
+   failed: glyphs drawn under 6px (the minimap, thumbnails: incidental text),
+   disabled controls, visually hidden text, art under a CSS filter, and text
+   over an image. Dark mode only; light mode belongs to #74's light half
    ([Colour scheme](../004-interface-design/color-scheme.md#accessibility)).
 
 New browser-risky features should add one focused smoke here, not a
