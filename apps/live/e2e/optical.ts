@@ -30,6 +30,7 @@ type Probe = {
   // sits at it: a word by its advance (its side bearings are the typeface's), anything else by ink.
   horizontal: {
     shortGlyph: boolean;
+    intent: string;
     controls: { left: number; right: number } | null;
     text: { left: number; right: number } | null;
     otherLeft: number;
@@ -178,10 +179,15 @@ function discover(args: { attr: string; shape: typeof SHAPE; tol: number }) {
     const gap = cs.display.includes('flex') ? parseFloat(cs.columnGap) || 0 : 0;
     const shrinkWrapped =
       items > 0 && Math.abs(occupied + gap * (items - 1) - (inner.right - inner.left)) <= 1.5;
-    const centredIntent =
-      /center|space-around|space-evenly/.test(cs.justifyContent) ||
-      cs.textAlign === 'center' ||
-      shrinkWrapped;
+    // Why the shape is held to horizontal centring, reported with any failure.
+    const intent = /center|space-around|space-evenly/.test(cs.justifyContent)
+      ? `justify-content: ${cs.justifyContent}`
+      : cs.textAlign === 'center'
+        ? 'text-align: center'
+        : shrinkWrapped
+          ? `shrink-wrapped (${(occupied + gap * (items - 1)).toFixed(1)} of ${(inner.right - inner.left).toFixed(1)}px)`
+          : null;
+    const centredIntent = intent !== null;
     const shortGlyph = !text || /^\S{1,3}$/.test(text);
     // A shape holding two or more controls (a segmented switch) centres its controls' boxes; a
     // segment's fill is part of the control, not ink to balance against the other side's text.
@@ -224,6 +230,7 @@ function discover(args: { attr: string; shape: typeof SHAPE; tol: number }) {
       horizontal: centredIntent
         ? {
             shortGlyph,
+            intent: intent ?? '',
             controls: controlBoxes,
             text: text0 ? { left: text0.left - r.left, right: text0.right - r.left } : null,
             otherLeft: otherLeft - r.left,
@@ -259,6 +266,7 @@ function discover(args: { attr: string; shape: typeof SHAPE; tol: number }) {
         concentric: null,
         horizontal: {
           shortGlyph: true,
+          intent: 'svg disc',
           controls: null,
           text: null,
           otherLeft: Infinity,
@@ -431,7 +439,7 @@ export async function auditOptical(page: Page): Promise<OpticalReport> {
         : t && t.right > h.otherRight
           ? boxLeft + t.right
           : inkRight;
-      fail(p, 'content, horizontal', (left + right) / 2 - cx);
+      fail(p, `content, horizontal [${h.intent}]`, (left + right) / 2 - cx);
     }
     if (p.iconsOnly) fail(p, 'ink, vertical', midX(ink.top, ink.bottom) - cy);
     if (p.capsOnly) {
