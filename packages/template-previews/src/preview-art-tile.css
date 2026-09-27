@@ -15,15 +15,10 @@
    scheme's actual colours, so re-lighting them would be a lie.
 
    Shipped by @livediagram/template-previews next to the art it re-lights,
-   and imported by every app that renders a preview: the editor under its
-   `.dark` chrome, and the marketing site's template gallery, which sits on
-   a dark band whatever the visitor's scheme and so opts a tile in with
-   `preview-art-tile-dark`. */
-.preview-art-tile-dark {
-  filter: invert(0.9) hue-rotate(180deg);
-}
+   and imported by every app that renders a preview (the editor and the
+   marketing site's template gallery), each under its `.dark` appearance. */
 
-/* In the editor the re-lit paper lands on the dark CANVAS colour (#0d121a), so a thumbnail
+/* The re-lit paper lands on the dark CANVAS colour (#0d121a), so a thumbnail
    previews the canvas you will get (docs/specs/007-editor/live-app.md). Everything lighter than
    #f3faff (the plate and the art's white fills) is clamped to it by a darken veil before the
    filter, and the filter maps #f3faff to #0d1318: the nearest it reaches to the canvas, measured.

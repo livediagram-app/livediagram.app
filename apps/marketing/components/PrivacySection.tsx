@@ -1,11 +1,15 @@
-// Privacy section — mirrors the dark visual treatment of the
-// TemplateGallery above so the landing page reads as two distinct
-// promises (what you can make, how we handle the data) separated by
-// a darker band. Each card now leads with a dark-friendly animated
-// illustration in the same vocabulary as FeatureArt (Frame + SVG +
-// fa-* keyframes), so the section reads as design-of-a-piece rather
-// than glyph-and-text.
+// Privacy section: shares the TemplateGallery's inset band (band-classes.ts), so the
+// landing page reads as two distinct promises (what you can make, how we handle the data)
+// set apart from the story beats. Each card leads with an animated illustration in the
+// FeatureArt vocabulary (Frame + SVG + fa-* keyframes), drawn for both appearances.
 
+import {
+  BAND_CARD,
+  BAND_EYEBROW,
+  BAND_LEAD,
+  BAND_SECTION,
+  BAND_TITLE,
+} from '@/components/band-classes';
 import {
   DataIsYoursArt,
   EncryptedArt,
@@ -56,23 +60,14 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
 
 export function PrivacySection() {
   return (
-    <section
-      id="privacy"
-      className="border-t border-slate-800 bg-slate-900"
-      aria-labelledby="privacy-heading"
-    >
+    <section id="privacy" className={BAND_SECTION} aria-labelledby="privacy-heading">
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-brand-400">
-            Privacy by design
-          </p>
-          <h2
-            id="privacy-heading"
-            className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl"
-          >
+          <p className={BAND_EYEBROW}>Privacy by design</p>
+          <h2 id="privacy-heading" className={BAND_TITLE}>
             Your data, your call
           </h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-300">
+          <p className={BAND_LEAD}>
             We don&rsquo;t make money by being creepy. No third-party trackers, no ads, no resale,
             no surprise audience. Just a diagram editor that treats your work like your work.
           </p>
@@ -80,27 +75,31 @@ export function PrivacySection() {
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PROMISES.map((p) => (
-            <article
-              key={p.title}
-              className="flex flex-col rounded-2xl border border-slate-700/80 bg-slate-800/40 p-5"
-            >
+            <article key={p.title} className={`flex flex-col p-5 ${BAND_CARD}`}>
               {p.art}
-              <h3 className="text-base font-semibold text-white">{p.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-300">{p.description}</p>
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                {p.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                {p.description}
+              </p>
             </article>
           ))}
         </div>
 
-        <p className="mt-12 text-center text-xs text-slate-500">
+        <p className="mt-12 text-center text-xs text-slate-600 dark:text-slate-400">
           Read the full{' '}
           <a
             href="/help/policies/privacy-policy/"
-            className="underline transition hover:text-slate-300"
+            className="underline transition hover:text-slate-900 dark:hover:text-slate-200"
           >
             privacy policy
           </a>
           {' or check the live '}
-          <a href="/telemetry" className="underline transition hover:text-slate-300">
+          <a
+            href="/telemetry"
+            className="underline transition hover:text-slate-900 dark:hover:text-slate-200"
+          >
             telemetry dashboard
           </a>
           .

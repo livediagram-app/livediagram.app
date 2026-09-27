@@ -6,6 +6,15 @@ import { templateCreateHref, type TemplateCategory } from '@livediagram/template
 import { useState, type CSSProperties } from 'react';
 import { TemplateCarousel } from '@/components/TemplateCarousel';
 import { filterGallery, galleryTemplates, groupGallery } from '@/lib/template-gallery';
+import {
+  BAND_CARD,
+  BAND_CONTROL_HOVER,
+  BAND_EYEBROW,
+  BAND_LABEL,
+  BAND_LEAD,
+  BAND_SECTION,
+  BAND_TITLE,
+} from '@/components/band-classes';
 
 // "What do you want to create?" (docs/specs/019-marketing/marketing-site.md): one card per template the editor
 // ships, each category a four-across carousel (TemplateCarousel), with a
@@ -40,23 +49,19 @@ export function TemplateGallery() {
     setOpenIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
 
   return (
-    <section className="border-t border-slate-800 bg-slate-900">
+    <section className={BAND_SECTION}>
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-brand-400">
-            One canvas, many jobs
-          </p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            What do you want to create?
-          </h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-300">
+          <p className={BAND_EYEBROW}>One canvas, many jobs</p>
+          <h2 className={BAND_TITLE}>What do you want to create?</h2>
+          <p className={BAND_LEAD}>
             Pick a starting point and you are on the canvas with it already drawn. Every template
             the editor ships is here.
           </p>
         </div>
 
-        {/* The search box. Not the shared TextInput: that is drawn for a
-            light form, and this sits on the page's one dark band. */}
+        {/* The search box. Not the shared TextInput: this one is the band's
+            larger, rounder search field. */}
         <div className="mx-auto mt-10 max-w-md">
           <label htmlFor="template-gallery-search" className="sr-only">
             Search templates
@@ -70,17 +75,17 @@ export function TemplateGallery() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search templates, e.g. flowchart, retro, wireframe"
               autoComplete="off"
-              className="w-full rounded-xl border border-slate-700 bg-slate-800/70 py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-400/30"
+              className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 shadow-xs outline-none transition placeholder:text-slate-500 focus:border-brand-400 focus:ring-2 focus:ring-brand-400/30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-400"
             />
           </div>
         </div>
 
         {groups.length === 0 ? (
-          <p className="mt-12 text-center text-slate-400">
+          <p className="mt-12 text-center text-slate-600 dark:text-slate-400">
             Nothing matches &ldquo;{query.trim()}&rdquo;. Try a different word, or{' '}
             <a
               href={ctaHref('/new?blank=1', 'Home.GalleryDraw')}
-              className="text-brand-400 underline-offset-2 hover:underline"
+              className="text-brand-600 underline-offset-2 hover:underline dark:text-brand-300"
             >
               start from a blank canvas
             </a>
@@ -100,17 +105,19 @@ export function TemplateGallery() {
                     <a
                       href={ctaHref(templateCreateHref(t.kind), 'Home.Gallery')}
                       aria-label={`Create a ${t.title}`}
-                      className="preview-motion-host group flex h-full flex-col rounded-2xl border border-slate-700/80 bg-slate-800/40 p-3 transition hover:border-brand-400 hover:bg-slate-800/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+                      className={`preview-motion-host group flex h-full flex-col p-3 ${BAND_CARD} ${BAND_CONTROL_HOVER}`}
                     >
                       {/* The picker's preview, drawn for a light tile and
-                          re-lit for this dark band by the same rule the
-                          editor's dark chrome uses (preview-art-tile-dark),
-                          scaled up from its fixed picker size. */}
-                      <span className="preview-art-tile-dark preview-motion flex h-24 items-center justify-center rounded-xl bg-slate-50 [&>svg]:h-16 [&>svg]:w-auto">
+                          re-lit onto the dark canvas colour in dark by the
+                          editor's own rule (preview-art-tile), scaled up
+                          from its fixed picker size. */}
+                      <span className="preview-art-tile preview-motion flex h-24 items-center justify-center rounded-xl bg-slate-50 [&>svg]:h-16 [&>svg]:w-auto">
                         <TemplatePreview kind={t.kind} />
                       </span>
-                      <span className="mt-3 block text-sm font-semibold text-white">{t.title}</span>
-                      <span className="mt-1 block text-xs leading-relaxed text-slate-400">
+                      <span className="mt-3 block text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        {t.title}
+                      </span>
+                      <span className="mt-1 block text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                         {t.description}
                       </span>
                     </a>
@@ -120,9 +127,7 @@ export function TemplateGallery() {
             ))}
             {folded.length > 0 ? (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  More categories
-                </h3>
+                <h3 className={BAND_LABEL}>More categories</h3>
                 {/* The cloud: one chip per folded category, with how many
                     templates it holds. Clicking opens that category above. */}
                 <ul className="mt-3 flex flex-wrap gap-2">
@@ -132,10 +137,10 @@ export function TemplateGallery() {
                         type="button"
                         onClick={() => openCategory(group.id)}
                         aria-label={`Show ${group.label} templates`}
-                        className="rounded-full border border-slate-700 bg-slate-800/60 px-3.5 py-1.5 text-sm font-medium text-slate-200 transition hover:border-brand-400 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+                        className={`rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-medium text-slate-700 hover:text-brand-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-white ${BAND_CONTROL_HOVER}`}
                       >
                         {group.label}
-                        <span className="ml-1.5 text-xs text-slate-400">
+                        <span className="ml-1.5 text-xs text-slate-500 dark:text-slate-400">
                           {group.templates.length}
                         </span>
                       </button>
@@ -163,7 +168,7 @@ function SearchIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
-      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400"
     >
       <circle cx="11" cy="11" r="7" />
       <path d="M20 20 L16 16" />
