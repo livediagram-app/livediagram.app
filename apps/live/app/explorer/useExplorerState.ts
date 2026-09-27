@@ -145,18 +145,23 @@ export function useExplorerState() {
   // `?settings=<category>` deep link. The Settings dialog replaced the
   // /explorer/profile page (docs/specs/014-identity/profile-and-email-notifications.md), and mail already in people's inboxes
   // links at their notification preferences, so any surface can name the pane
-  // it means. The param is stripped once consumed, so a refresh or a back
-  // does not keep reopening the dialog.
+  // it means. Opened during render, once per link; the param is then stripped,
+  // so a refresh or a back does not keep reopening the dialog.
+  const settingsLink = searchParams?.get('settings') ?? null;
+  const [settingsLinkSeen, setSettingsLinkSeen] = useState<string | null>(null);
+  if (settingsLink !== settingsLinkSeen) {
+    setSettingsLinkSeen(settingsLink);
+    if (settingsLink) {
+      setSettingsCategory(settingsLink);
+      setSettingsOpen(true);
+    }
+  }
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (!settingsLink) return;
     const url = new URL(window.location.href);
-    const category = url.searchParams.get('settings');
-    if (!category) return;
-    setSettingsCategory(category);
-    setSettingsOpen(true);
     url.searchParams.delete('settings');
     window.history.replaceState({}, '', url.toString());
-  }, []);
+  }, [settingsLink]);
   // Which folder branches (and which teams) are open in the sidebar.
   // Local state only; a fresh visit starts everything collapsed. Team
   // ids live in the same set so a team's folder subtree expands the
@@ -200,38 +205,50 @@ export function useExplorerState() {
   const confirm = useConfirm();
   const toast = useToast();
 
-  const refresh = useCallback(
-    async (ownerId: string) => {
-      setLoading(true);
-      const [list, sharedList] = await Promise.all([
+  // One read of the lists, settling state only from the responses, so the
+  // load effect below only starts it.
+  const load = useCallback(
+    (ownerId: string) =>
+      Promise.all([
         apiListDiagrams(ownerId).catch(() => null),
         apiListSharedWith(ownerId).catch(() => null),
         refreshFolders(),
-      ]);
-      // A failed load must not masquerade as an empty account: set only what
-      // actually came back (a failed list keeps its prior value) and tell the
-      // user, rather than flashing the "you have no diagrams" empty state.
-      if (list !== null) setDiagrams(list);
-      if (sharedList !== null) setShared(sharedList);
-      if (list === null || sharedList === null) {
-        toast.error('Could not load your diagrams. Check your connection and try again.');
-      }
-      setLoading(false);
-    },
+      ]).then(([list, sharedList]) => {
+        // A failed load must not masquerade as an empty account: set only what
+        // actually came back (a failed list keeps its prior value) and tell the
+        // user, rather than flashing the "you have no diagrams" empty state.
+        if (list !== null) setDiagrams(list);
+        if (sharedList !== null) setShared(sharedList);
+        if (list === null || sharedList === null) {
+          toast.error('Could not load your diagrams. Check your connection and try again.');
+        }
+        setLoading(false);
+      }),
     [refreshFolders, toast],
   );
 
+  const refresh = useCallback(
+    async (ownerId: string) => {
+      setLoading(true);
+      await load(ownerId);
+    },
+    [load],
+  );
+
+  // A guest's ownerId resolves asynchronously now (ensureSignedGuestIdentity
+  // above), so it lags `authLoaded` by a tick. Keep the skeleton rather than
+  // flashing an empty state — ownerId always resolves (signed-in → Clerk id;
+  // guest → minted id), so this never stalls. A new owner is loading from its
+  // first render.
+  const loadOwner = authLoaded ? ownerId : null;
+  const [loadingFor, setLoadingFor] = useState(loadOwner);
+  if (loadOwner !== loadingFor) {
+    setLoadingFor(loadOwner);
+    if (loadOwner) setLoading(true);
+  }
   useEffect(() => {
-    if (!authLoaded) return;
-    if (!ownerId) {
-      // A guest's ownerId resolves asynchronously now (ensureSignedGuestIdentity
-      // above), so it lags `authLoaded` by a tick. Keep the skeleton rather than
-      // flashing an empty state — ownerId always resolves (signed-in → Clerk id;
-      // guest → minted id), so this never stalls.
-      return;
-    }
-    void refresh(ownerId);
-  }, [authLoaded, ownerId, refresh]);
+    if (loadOwner) void load(loadOwner);
+  }, [loadOwner, load]);
 
   // ---- Derived tree shape ---------------------------------------
   // Index folders by parentId so the recursive renderer can walk
