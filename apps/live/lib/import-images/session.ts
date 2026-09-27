@@ -6,6 +6,7 @@
 import { IMPORT_IMAGE_CONCURRENCY, OFFLINE_IMPORT_EMBED_BUDGET_CHARS } from './constants';
 import { prepareImportImage } from './prepare';
 import { readImportImageSource } from './source';
+import { ApiError } from '../api/core';
 import { failureFromUploadError } from './upload-error';
 import type {
   DisplayHint,
@@ -93,12 +94,25 @@ export function createImportImageSession(deps: ImportImageSessionDeps): ImportIm
     }
 
     try {
-      const { imageId, deduped } = await deps.upload(prepared, source.name);
+      const { imageId, deduped } = await uploadRetryingConflict(prepared, source.name);
       const kind = deduped ? 'deduped' : 'uploaded';
       log('[import-images]', kind, detail);
       return { ok: true, imageId, ...size, kind };
     } catch (error) {
       return failed(failureFromUploadError(error), { ...detail, error: String(error) });
+    }
+  };
+
+  // A 409 upload_conflict means the cap refused the insert but the gallery had
+  // room again by the time the server looked (an image was deleted meanwhile):
+  // one retry, then the failure stands (docs/specs/020-import-export/import-image-pipeline.md).
+  const uploadRetryingConflict = async (prepared: PreparedImportImage, name?: string) => {
+    try {
+      return await deps.upload(prepared, name);
+    } catch (error) {
+      if (!(error instanceof ApiError && error.code === 'upload_conflict')) throw error;
+      log('[import-images]', 'upload-conflict-retry');
+      return deps.upload(prepared, name);
     }
   };
 

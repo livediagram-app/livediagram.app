@@ -65,6 +65,34 @@ describe('createImportImageSession', () => {
     expect(upload).toHaveBeenCalledTimes(1);
   });
 
+  it('retries once after a 409 upload_conflict (cap race resolved meanwhile)', async () => {
+    const upload = vi
+      .fn()
+      .mockRejectedValueOnce(new ApiError('upload image', 409, 'upload_conflict'))
+      .mockResolvedValueOnce({ imageId: 'img-2', deduped: false });
+    expect(await createImportImageSession(deps({ upload })).store(pngSource())).toMatchObject({
+      ok: true,
+      imageId: 'img-2',
+      kind: 'uploaded',
+    });
+    expect(upload).toHaveBeenCalledTimes(2);
+  });
+
+  it('leaves a placeholder when the retry conflicts again', async () => {
+    const upload = vi.fn().mockRejectedValue(new ApiError('upload image', 409, 'upload_conflict'));
+    expect(await createImportImageSession(deps({ upload })).store(pngSource())).toEqual({
+      ok: false,
+      failure: 'upload-failed',
+    });
+    expect(upload).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not retry other refusals', async () => {
+    const upload = vi.fn().mockRejectedValue(new ApiError('upload image', 403, 'gallery_full'));
+    await createImportImageSession(deps({ upload })).store(pngSource());
+    expect(upload).toHaveBeenCalledTimes(1);
+  });
+
   it('maps a network error to upload-failed', async () => {
     const upload = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
     expect(await createImportImageSession(deps({ upload })).store(pngSource())).toEqual({

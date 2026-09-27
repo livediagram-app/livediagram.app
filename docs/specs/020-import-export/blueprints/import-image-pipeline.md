@@ -154,7 +154,8 @@ string, log? }`. State:
 3. Offline: `dataUrl = await toDataUrl(prepared.blob)`. `embeddedChars + dataUrl.length >
 OFFLINE_IMPORT_EMBED_BUDGET_CHARS`: `offline-budget` (the budget is not consumed). Else add it
    and resolve `{ ok: true, imageId: dataUrl, kind: 'embedded' }`.
-4. Cloud: `await upload(prepared, source.name)`; resolve `kind: deduped ? 'deduped' : 'uploaded'`. A throw:
+4. Cloud: `await upload(prepared, source.name)`; an `ApiError` with code `upload_conflict` logs
+   `upload-conflict-retry` and calls `upload` once more (any throw of that second call is final). Resolve `kind: deduped ? 'deduped' : 'uploaded'`. A throw:
    `failureFromUploadError`; `images-unavailable` sets `unavailable`.
 5. Any unexpected throw inside the slot: `upload-failed` (never rejects). Release the slot.
 6. `gallery-full` changes no state: later stores still upload (spec).
@@ -285,6 +286,7 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 | Data URL parsing, MIME sniff                          | `source.test.ts`                                           |
 | Upload error mapping                                  | `upload-error.test.ts`                                     |
 | Unavailable short-circuit; cap keeps trying           | `session.test.ts`                                          |
+| 409 `upload_conflict` retried once, then placeholder  | `session.test.ts`                                          |
 | Offline embed + budget                                | `session.test.ts`                                          |
 | Concurrency never above 3                             | `session.test.ts`                                          |
 | Key dedupe, element patch, report invariant, progress | `attach.test.ts`                                           |
