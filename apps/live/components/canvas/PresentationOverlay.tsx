@@ -16,7 +16,7 @@
 // advances. A click while a popover is open dismisses it rather than
 // advancing, so reading a note never costs you a slide.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { announce } from '@/lib/announcer';
 
 import { slideName, type BoxedElement, type Slide, type Tab } from '@livediagram/diagram';
@@ -89,6 +89,24 @@ export function PresentationOverlay({
     return () => document.documentElement.removeAttribute('data-pointer-idle');
   }, [idle]);
 
+  // Pacing (docs/specs/012-collaboration/presentation-mode.md). One ticking value drives both readouts, and it only
+  // ticks when something is actually being shown: a deck with the clock and
+  // the budget both off must not re-render once a second for nothing.
+  //
+  // Wall-clock marks rather than accumulated counters, so a tab that was
+  // backgrounded (and had its timers throttled) still reports the real time
+  // spent rather than the number of ticks that happened to fire.
+  const [startedAt] = useState(() => Date.now());
+  const [slideEnteredAt, setSlideEnteredAt] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
+  const slideMinutes = step?.slide.minutes;
+  const wantsClock = config.showElapsed || (config.showBudget && !!slideMinutes);
+  useEffect(() => {
+    if (!wantsClock) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [wantsClock]);
+
   const go = useCallback(
     (next: number) => {
       // Advancing closes what is open, so the next slide starts clean.
@@ -96,19 +114,26 @@ export function PresentationOverlay({
       setSettingsOpen(false);
       setDetail(null);
       if (next < 0) return;
+      // Every slide change while the deck runs comes through here (the host
+      // hands `onGo` straight to the deck), so this is where a slide is
+      // entered; a move that lands where it already is keeps the clock.
+      const enter = (target: number) => {
+        if (target !== at) setSlideEnteredAt(Date.now());
+        onGo(target);
+      };
       // Looping (a cog setting) turns the end of the deck back into the start
       // instead of the end state, for a deck left running in a room.
       if (config.loop && next >= steps.length) {
-        onGo(0);
+        enter(0);
         return;
       }
       if (next > steps.length) {
         onExit();
         return;
       }
-      onGo(next);
+      enter(next);
     },
-    [config.loop, onExit, onGo, steps.length],
+    [at, config.loop, onExit, onGo, steps.length],
   );
 
   // Auto-advance, for a deck left running in a room. Paused while anything is
@@ -131,25 +156,6 @@ export function PresentationOverlay({
       if (document.fullscreenElement) void document.exitFullscreen?.().catch(() => {});
     };
   }, []);
-
-  // Pacing (docs/specs/012-collaboration/presentation-mode.md). One ticking value drives both readouts, and it only
-  // ticks when something is actually being shown: a deck with the clock and
-  // the budget both off must not re-render once a second for nothing.
-  //
-  // Wall-clock marks rather than accumulated counters, so a tab that was
-  // backgrounded (and had its timers throttled) still reports the real time
-  // spent rather than the number of ticks that happened to fire.
-  const [startedAt] = useState(() => Date.now());
-  const [slideEnteredAt, setSlideEnteredAt] = useState(() => Date.now());
-  const [now, setNow] = useState(() => Date.now());
-  const slideMinutes = step?.slide.minutes;
-  const wantsClock = config.showElapsed || (config.showBudget && !!slideMinutes);
-  useEffect(() => setSlideEnteredAt(Date.now()), [at]);
-  useEffect(() => {
-    if (!wantsClock) return;
-    const id = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(id);
-  }, [wantsClock]);
 
   // Say the slide out loud for a screen reader (docs/specs/004-interface-design/canvas-accessibility.md's announcer). The deck
   // is otherwise an entirely visual surface: driven by the arrow keys, nothing
@@ -175,16 +181,16 @@ export function PresentationOverlay({
   // slide should not land back in the editor still holding it.
   //
   // The ref is read at cleanup only, so remembering the tool at Start costs
-  // nothing while the deck runs.
+  // nothing while the deck runs. Once, on Start and Exit, not on every tool
+  // change: handing the tool back is an effect event.
   const toolAtStart = useRef(canvasTool);
+  const handBackTool = useEffectEvent((before: string) => {
+    if (before === 'laser' || before === 'spotlight') return;
+    onSetCanvasTool('select');
+  });
   useEffect(() => {
     const before = toolAtStart.current;
-    return () => {
-      if (before === 'laser' || before === 'spotlight') return;
-      onSetCanvasTool('select');
-    };
-    // Deliberately once: this is Start and Exit, not every tool change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => handBackTool(before);
   }, []);
 
   // Keep the screen awake for the run (docs/specs/012-collaboration/presentation-mode.md). A slide you talk over for five
@@ -223,77 +229,80 @@ export function PresentationOverlay({
     };
   }, []);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      // Capture phase and always consumed: the editor's own shortcuts must not
-      // fire underneath a presentation.
-      const key = e.key;
-      const handled = () => {
-        e.preventDefault();
-        e.stopPropagation();
-      };
-      if (key === 'Escape') {
-        handled();
-        if (detail) setDetail(null);
-        else if (jumpOpen) setJumpOpen(false);
-        else if (settingsOpen) setSettingsOpen(false);
-        else if (notesOpen) setNotesOpen(false);
-        else onExit();
-        return;
-      }
-      // The pointing tools (docs/specs/012-collaboration/presentation-mode.md). Neither touches the diagram, and the
-      // laser was built for exactly this room — docs/specs/008-canvas/laser-panel.md opens by calling it
-      // "the presenting tool". Pressing the same key again puts the pointer
-      // back, so arming one is never a trap.
-      if (key === 'l' || key === 'L') {
-        handled();
-        onSetCanvasTool(canvasTool === 'laser' ? 'select' : 'laser');
-        return;
-      }
-      if (key === 's' || key === 'S') {
-        handled();
-        onSetCanvasTool(canvasTool === 'spotlight' ? 'select' : 'spotlight');
-        return;
-      }
-      if (key === 'g' || key === 'G') {
-        handled();
-        setJumpOpen((v) => !v);
-        return;
-      }
-      if (key === 'ArrowRight' || key === ' ' || key === 'PageDown' || key === 'Enter') {
-        handled();
-        go(at + 1);
-        return;
-      }
-      if (key === 'ArrowLeft' || key === 'PageUp') {
-        handled();
-        go(Math.max(0, at - 1));
-        return;
-      }
-      if (key === 'Home') {
-        handled();
-        go(0);
-        return;
-      }
-      if (key === 'End') {
-        handled();
-        go(Math.max(0, steps.length - 1));
-        return;
-      }
-      if (key === 'n' || key === 'N') {
-        handled();
-        // Same rule as the button: a slide with no script has nothing to open,
-        // so the key is inert rather than raising an empty card.
-        if (!step?.slide.notes?.trim()) return;
-        setNotesOpen((v) => {
-          if (!v) track('UI', 'Opened', 'PresenterNotes');
-          return !v;
-        });
-      }
+  // The deck's keys, attached once: the handler is an effect event, so it reads
+  // the newest slide, popovers and tool without re-attaching on each change.
+  const onKey = useEffectEvent((e: KeyboardEvent) => {
+    // Capture phase and always consumed: the editor's own shortcuts must not
+    // fire underneath a presentation.
+    const key = e.key;
+    const handled = () => {
+      e.preventDefault();
+      e.stopPropagation();
     };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [at, detail, go, notesOpen, onExit, settingsOpen, step, steps.length]);
+    if (key === 'Escape') {
+      handled();
+      if (detail) setDetail(null);
+      else if (jumpOpen) setJumpOpen(false);
+      else if (settingsOpen) setSettingsOpen(false);
+      else if (notesOpen) setNotesOpen(false);
+      else onExit();
+      return;
+    }
+    // The pointing tools (docs/specs/012-collaboration/presentation-mode.md). Neither touches the diagram, and the
+    // laser was built for exactly this room — docs/specs/008-canvas/laser-panel.md opens by calling it
+    // "the presenting tool". Pressing the same key again puts the pointer
+    // back, so arming one is never a trap.
+    if (key === 'l' || key === 'L') {
+      handled();
+      onSetCanvasTool(canvasTool === 'laser' ? 'select' : 'laser');
+      return;
+    }
+    if (key === 's' || key === 'S') {
+      handled();
+      onSetCanvasTool(canvasTool === 'spotlight' ? 'select' : 'spotlight');
+      return;
+    }
+    if (key === 'g' || key === 'G') {
+      handled();
+      setJumpOpen((v) => !v);
+      return;
+    }
+    if (key === 'ArrowRight' || key === ' ' || key === 'PageDown' || key === 'Enter') {
+      handled();
+      go(at + 1);
+      return;
+    }
+    if (key === 'ArrowLeft' || key === 'PageUp') {
+      handled();
+      go(Math.max(0, at - 1));
+      return;
+    }
+    if (key === 'Home') {
+      handled();
+      go(0);
+      return;
+    }
+    if (key === 'End') {
+      handled();
+      go(Math.max(0, steps.length - 1));
+      return;
+    }
+    if (key === 'n' || key === 'N') {
+      handled();
+      // Same rule as the button: a slide with no script has nothing to open,
+      // so the key is inert rather than raising an empty card.
+      if (!step?.slide.notes?.trim()) return;
+      setNotesOpen((v) => {
+        if (!v) track('UI', 'Opened', 'PresenterNotes');
+        return !v;
+      });
+    }
+  });
+  useEffect(() => {
+    const listener = (e: KeyboardEvent) => onKey(e);
+    window.addEventListener('keydown', listener, true);
+    return () => window.removeEventListener('keydown', listener, true);
+  }, []);
 
   const onSurfaceClick = (e: React.MouseEvent) => {
     // Something open? Dismiss it. Reading must never cost a slide.
