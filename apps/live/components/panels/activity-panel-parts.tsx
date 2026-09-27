@@ -7,7 +7,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { ChangeLogEntry } from '@/lib/api-client';
-import { formatRelativeTimeShort, useRelativeTimeTick } from '@/lib/relative-time';
+import { formatRelativeTimeShort, useRelativeNow } from '@/lib/relative-time';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { HoverCard, Glyph } from '@livediagram/ui';
 
@@ -113,8 +113,8 @@ export function ActivityRow({
   onClick: () => void;
 }) {
   // Re-render every 30s so the "2 min ago" string doesn't stick.
-  useRelativeTimeTick();
-  const relative = formatRelativeTimeShort(Date.now() - entry.createdAt);
+  const now = useRelativeNow();
+  const relative = formatRelativeTimeShort(now - entry.createdAt);
   const previewable = canRevert && entry.elementIds.length > 0;
   const hoveringRef = useRef(false);
   const endHover = () => {

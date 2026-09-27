@@ -40,6 +40,8 @@ export function useRoomConnection(opts: {
   selfParticipant: Participant;
   sessionShareCode: string | null;
   lastSeenRef: MutableRefObject<Map<string, number>>;
+  // Bumps a peer's last-seen (usePresenceState), publishing when they arrive or return from idle.
+  markSeen: (participantId: string) => void;
   selfParticipantRef: MutableRefObject<Participant>;
   // The autosave's baseline (docs/specs/012-collaboration/collab-race-hardening.md): every document op a peer sends is
   // folded into it as well as into the tabs on screen, so the next local save
@@ -116,6 +118,7 @@ export function useRoomConnection(opts: {
     selfParticipant,
     sessionShareCode,
     lastSeenRef,
+    markSeen,
     selfParticipantRef,
     saveBaseline,
     sessionShareCodeRef,
@@ -192,14 +195,10 @@ export function useRoomConnection(opts: {
             ...(p.role ? { role: p.role } : {}),
           })),
         );
-        // Seed lastSeen for any presence-arrival we haven't tracked
-        // yet — without this the next render still shows
-        // `lastActiveAt = undefined` because the merge happens
-        // synchronously above before the ref write.
+        // Seed lastSeen for any presence-arrival we haven't tracked yet, publishing it so the next
+        // render has their `lastActiveAt`.
         for (const p of participants) {
-          if (!lastSeenRef.current.has(p.id)) {
-            lastSeenRef.current.set(p.id, now);
-          }
+          if (!lastSeenRef.current.has(p.id)) markSeen(p.id);
         }
         // Unique-colour reconciliation. Every client computes the
         // same allocation on every presence update; we only act when
@@ -264,7 +263,7 @@ export function useRoomConnection(opts: {
         // the idle timer used by the avatar's away/offline status
         // derivation. Cursor packets are the most frequent so this
         // doubles as a perfectly fine activity heartbeat.
-        lastSeenRef.current.set(from, Date.now());
+        markSeen(from);
         if (
           op.kind === 'tab' ||
           op.kind === 'el' ||

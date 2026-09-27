@@ -33,7 +33,7 @@ at zero they become errors, so no new one lands.
 - **An element a popover anchors to** is held in state through a callback ref, so the first render
   that has the element has it.
 - **Measurements of the DOM** are taken in a layout effect or an observer and kept in state.
-- **Relative time** comes from the shared tick store: `useNow()` returns the timestamp of the latest
+- **Relative time** comes from the shared tick store: `useRelativeNow()` returns the timestamp of the latest
   30-second tick, one timer for the whole page. Nothing reads `Date.now()` while rendering.
 - **Effect dependencies are complete.** A dependency that must not retrigger the effect is an effect
   event, not an omission.

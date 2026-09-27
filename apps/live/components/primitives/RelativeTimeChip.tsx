@@ -1,4 +1,4 @@
-import { relativeSince } from '@/lib/relative-time';
+import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 
 // The small uppercase "when was this last touched" stamp on an Explorer row,
 // card, or panel entry.
@@ -14,7 +14,10 @@ import { relativeSince } from '@/lib/relative-time';
 // alone would split the pair across workspaces to satisfy a rule about code
 // two apps share. If a second app ever grows a timestamp, both move together.
 export function RelativeTimeChip({ at }: { at: number }) {
+  const now = useRelativeNow();
   return (
-    <span className="text-[11px] uppercase tracking-wider text-slate-400">{relativeSince(at)}</span>
+    <span className="text-[11px] uppercase tracking-wider text-slate-400">
+      {relativeSince(at, now)}
+    </span>
   );
 }

@@ -14,7 +14,7 @@ import { useReposition } from '@/hooks/canvas/useReposition';
 import type { Comment, CommentThread } from '@livediagram/diagram';
 import { initialsOf } from '@/lib/identity';
 import { isMobileViewportSync } from '@/lib/responsive';
-import { formatRelativeTimeCompact } from '@/lib/relative-time';
+import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
@@ -254,6 +254,7 @@ function CommentRow({
   // affordance. Editable rows pass the bound delete handler.
   onDelete?: () => void;
 }) {
+  const now = useRelativeNow();
   return (
     <li className={`group flex gap-2 py-2 ${resolved ? 'opacity-60' : ''}`}>
       <GlyphDisc
@@ -271,7 +272,7 @@ function CommentRow({
             {comment.authorName}
           </span>
           <span className="text-slate-400 dark:text-slate-400">
-            {formatRelativeTimeCompact(Date.now() - comment.createdAt)}
+            {formatRelativeTimeCompact(now - comment.createdAt)}
           </span>
         </div>
         <p className="mt-0.5 whitespace-pre-wrap text-xs text-slate-700 dark:text-slate-200">

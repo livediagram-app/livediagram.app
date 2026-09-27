@@ -1,5 +1,5 @@
 import { initialsOf, statusLabel, statusRingColor, type Participant } from '@/lib/identity';
-import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
+import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { GlyphDisc, HoverCard } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
@@ -43,7 +43,7 @@ export function ParticipantAvatar({
   // of going stale. The hook is cheap so we always pay it — calling
   // it conditionally would violate rules-of-hooks if `withHoverCard`
   // flipped.
-  useRelativeTimeTick();
+  const now = useRelativeNow();
   const ringColor = statusRingColor(participant.status);
   // The ring is drawn as a 2px box-shadow with a 1px white gap inside.
   const avatar = (
@@ -71,7 +71,7 @@ export function ParticipantAvatar({
   // label so the hover card still says something sensible.
   const idleSuffix =
     participant.lastActiveAt !== undefined
-      ? ` · Active ${relativeSince(participant.lastActiveAt)}`
+      ? ` · Active ${relativeSince(participant.lastActiveAt, now)}`
       : '';
   const title =
     badges && badges.length > 0 ? (

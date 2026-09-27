@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { apiListDiagrams } from '@/lib/api-client';
-import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
+import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { Glyph } from '@livediagram/ui';
 
 type RecentItem = { id: string; name: string; savedAt: number | null };
@@ -25,7 +25,7 @@ export function RecentDiagramsCard({
   onCount?: (n: number) => void;
 }) {
   const [recent, setRecent] = useState<RecentItem[] | null>(null);
-  useRelativeTimeTick();
+  const now = useRelativeNow();
 
   useEffect(() => {
     if (!ownerId) return;
@@ -81,7 +81,9 @@ export function RecentDiagramsCard({
                   {d.name || 'Untitled diagram'}
                 </span>
                 {d.savedAt != null ? (
-                  <span className="text-[10px] text-slate-400">{relativeSince(d.savedAt)}</span>
+                  <span className="text-[10px] text-slate-400">
+                    {relativeSince(d.savedAt, now)}
+                  </span>
                 ) : null}
               </span>
               <ChevronRight />

@@ -22,7 +22,7 @@ import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 // panel and the /explorer route can't drift apart on what a list
 // item carries.
 import type { DiagramListItem, SharedWithItem } from '@/lib/api-client';
-import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
+import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { DISMISS_SHARED, DismissSharedIcon } from '@/components/primitives/dismiss-shared';
 import { SYNTHETIC_FOLDERS, type SyntheticFolderKind } from '@/app/explorer/synthetic-folders';
 import { useDiagramDropTarget } from './useDiagramDropTarget';
@@ -165,8 +165,8 @@ export function SharedRow({
   onOpen: () => void;
   onDismiss?: () => void;
 }) {
-  useRelativeTimeTick();
-  const relative = relativeSince(item.savedAt);
+  const now = useRelativeNow();
+  const relative = relativeSince(item.savedAt, now);
   return (
     <li className="group relative">
       <button

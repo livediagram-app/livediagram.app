@@ -2,7 +2,6 @@
 // pressable. Pressing one starts the tab timer for that long, through the same
 // entry point the Current Tab menu and the session button already use.
 
-import { useEffect, useState } from 'react';
 import {
   agendaTotalMinutes,
   clampAgendaMinutes,
@@ -13,6 +12,7 @@ import {
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { CollabEmpty, CollabPanel, tint } from './collab-chrome';
 import { FoldCrease, RuledLines } from '@/components/canvas/paper-kit';
+import { useNow } from '@/hooks/ui/useNow';
 
 // "1h 5m" / "45m". The number in the header is what tells you the plan doesn't
 // fit before you start.
@@ -105,16 +105,11 @@ export function AgendaFace({
 }) {
   const items = element.agendaItems ?? [];
   const current = element.agendaCurrent;
-  // Re-render 4x/sec while a countdown runs, exactly as the TimerWidget does.
-  // A paused or absent timer is static, so nothing spins then.
-  const [, setTick] = useState(0);
+  // The clock advances 4x a second while a countdown runs, exactly as the TimerWidget's does. A paused or
+  // absent timer is static, so nothing spins then.
   const running = timer?.running === true && current !== undefined;
-  useEffect(() => {
-    if (!running) return;
-    const id = setInterval(() => setTick((n) => n + 1), 250);
-    return () => clearInterval(id);
-  }, [running]);
-  const remainingMs = timer && current !== undefined ? timerDisplayMs(timer, Date.now()) : null;
+  const now = useNow(running);
+  const remainingMs = timer && current !== undefined ? timerDisplayMs(timer, now) : null;
 
   return (
     <CollabPanel

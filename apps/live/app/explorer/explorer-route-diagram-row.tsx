@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
-import { useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
@@ -29,7 +28,6 @@ export function DiagramRow(props: DiagramEntryProps) {
     folderChip,
     showVisibility = true,
   } = props;
-  useRelativeTimeTick();
   const menu = useRowMenu({ disabled: renaming });
   const href = hrefForDiagram(diagram);
 

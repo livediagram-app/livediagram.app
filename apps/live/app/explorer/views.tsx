@@ -10,7 +10,6 @@
 import Link from 'next/link';
 import type { ExplorerViewProps } from '@/app/explorer/explorer-view-props';
 import type { DiagramListItem, SharedWithItem } from '@/lib/api-client';
-import { useRelativeTimeTick } from '@/lib/relative-time';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DiagramRow } from './explorer-route-diagram-row';
 import { FolderRow } from './folder-row';
@@ -234,7 +233,6 @@ export function SharedList({
   ownerId: string | null;
   onDismiss: (id: string) => void;
 }) {
-  useRelativeTimeTick();
   if (shared.length === 0) {
     return <EmptyPane selected={{ kind: 'shared' }} />;
   }

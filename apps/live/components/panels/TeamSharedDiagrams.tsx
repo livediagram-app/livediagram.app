@@ -19,7 +19,6 @@ import { useTeamLibrary } from '@/hooks/persistence/useTeamLibrary';
 import { apiCreateFolder } from '@/lib/api-client';
 import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { track } from '@/lib/telemetry';
-import { useRelativeTimeTick } from '@/lib/relative-time';
 import { folderDescendants } from '@/lib/folder-tree';
 
 // "Shared diagrams" on the team page (docs/specs/013-workspace/team-shared-diagrams.md): the team's folder
@@ -80,7 +79,6 @@ export function TeamSharedDiagrams({
   // List vs card layout — the same device-local preference (docs/specs/006-diagram/diagram-snapshots.md) the
   // Explorer browse views use, so a card-view user gets cards here too.
   const [viewMode, setViewMode] = useExplorerViewMode();
-  useRelativeTimeTick();
 
   const unsorted = lib.diagramsByFolder.get(null) ?? [];
   const currentFolderId = spot.kind === 'folder' ? spot.id : null;

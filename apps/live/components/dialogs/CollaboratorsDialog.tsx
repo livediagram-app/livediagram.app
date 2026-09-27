@@ -16,7 +16,7 @@ import {
   rosterSummary,
 } from '@/lib/collaborator-roster';
 import { statusLabel, type Participant } from '@/lib/identity';
-import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
+import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { legibleTabAccent } from '@/lib/tab-accent';
 
 // The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the diagram, grouped by
@@ -73,7 +73,7 @@ export function CollaboratorsDialog({
   onClose,
 }: CollaboratorsDialogProps) {
   // Keeps each row's "Active 2 mins ago" honest while the modal stays open.
-  useRelativeTimeTick();
+  const now = useRelativeNow();
   const { appearance } = useAppearance();
   const isDark = appearance === 'dark';
   const roster = buildCollaboratorRoster({ participantsByTab, tabs, activeId, selfId });
@@ -163,7 +163,7 @@ export function CollaboratorsDialog({
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {statusLabel(p.status)}
                         {p.lastActiveAt !== undefined && !isSelf
-                          ? ` · Active ${relativeSince(p.lastActiveAt)}`
+                          ? ` · Active ${relativeSince(p.lastActiveAt, now)}`
                           : ''}
                       </p>
                     </div>

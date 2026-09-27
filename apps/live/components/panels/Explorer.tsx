@@ -2,7 +2,6 @@
 
 import { memo, useState } from 'react';
 import { DiagramRowShell } from './DiagramRowShell';
-import { useRelativeTimeTick } from '@/lib/relative-time';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
@@ -80,10 +79,6 @@ function ExplorerImpl({
   // shows on mobile, banner-collapsed at the very top of the viewport
   // above the Palette.
   const isMobile = useIsMobileViewport();
-  // Re-render every 30s so the "Updated X ago" strings stay fresh
-  // while the panel is open. Cheap when the panel is minimised (this
-  // function returns early below before the interval is set up).
-  useRelativeTimeTick();
   // Expansion state for each folder node + Unsorted (keyed by
   // folder id, or the literal 'unsorted' for the synthetic bucket).
   // Team rows + team folders share this map too (ids are globally
@@ -115,8 +110,7 @@ function ExplorerImpl({
   // All derived collections below are useMemo'd against their real
   // inputs (diagrams, folders, currentDiagramId): Explorer holds a
   // pile of internal state (accordion open flags, expandedFolders,
-  // moveTargetDiagramId, exitingDiagramIds, the 30s relative-time
-  // tick from useRelativeTimeTick) that re-renders the component
+  // moveTargetDiagramId, exitingDiagramIds) that re-renders the component
   // frequently without changing the underlying lists. Without these
   // memos every accordion toggle rebuilt foldersByParent +
   // diagramsByFolder + sorted both, and re-walked the folder tree

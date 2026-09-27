@@ -9,7 +9,6 @@
 import Link from 'next/link';
 import type { CardViewProps, DiagramEntryProps } from '@/app/explorer/explorer-view-props';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
-import { useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
@@ -52,7 +51,6 @@ export function CardView(props: CardViewProps) {
     showOwner = false,
     showVisibilityBadge = true,
   } = props;
-  useRelativeTimeTick();
   return (
     <div className={`lvd-cascade ${CARD_GRID}`}>
       {visibleSyntheticFolders(props).map((e) => {
