@@ -17,6 +17,7 @@ import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-regist
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MapSize } from '@/lib/user-preferences';
+import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 
 // Panel body heights per map size. Tailwind classes rather than inline styles
 // so the dark-mode / responsive tooling still applies.
@@ -75,6 +76,8 @@ type MinimapProps = {
 // never touch the map's edge.
 const PAD_FRACTION = 0.12;
 const PAD_MIN = 48;
+// What the catalogue resolvers find before the catalogue chunk lands.
+const NO_ART = () => undefined;
 // The map's on-screen size in px (the w-64 panel — matching the Palette — and
 // its h-36 svg). The viewBox is expanded to this aspect ratio so the wireframe
 // fills the panel edge-to-edge rather than letterboxing into white bars under
@@ -111,18 +114,24 @@ export function Minimap({
   // mainRef is the canvas <main>; read it fresh (it's an object ref at runtime,
   // but the prop type allows a callback ref, so narrow defensively).
   const getMain = () => (mainRef && typeof mainRef !== 'function' ? mainRef.current : null);
+  // Its size, for the current-view window: observed, not read while rendering.
+  const mainSize = useObservedSize(mainRef);
 
   // Re-render once the async icon catalogues land so Technology marks pop in.
   const iconsLoaded = useIconCatalogs();
   // One pass builds the full-fidelity markup (the SAME headless renderer the
   // exports / live image use — real colours, silhouettes, tables, freehand,
   // icon glyphs, rotation, curved arrows) plus the content bounds; recomputed
-  // only when elements change — panning/zooming re-renders just the viewport
-  // overlay below. The markup is our own renderer's output (user text is
+  // only when elements, the tab font or the icon catalogues change —
+  // panning/zooming re-renders just the viewport overlay below. The markup is our own renderer's output (user text is
   // xmlEscaped inside it), so injecting it is safe.
   const { markup, bounds } = useMemo(() => {
     const corners: Point[] = [];
     const parts: string[] = [];
+    // The resolvers find nothing until the catalogue chunk lands, which
+    // re-runs the build with the glyphs.
+    const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
+    const resolveStickerArt = iconsLoaded ? resolveStickerArtLoaded : NO_ART;
     const labels = arrowLabelPass(elements, {
       fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
     });
@@ -133,8 +142,8 @@ export function Minimap({
       if (!isBoxed(el)) continue;
       parts.push(
         svgBoxed(el, {
-          resolveIconArt: resolveIconArtLoaded,
-          resolveStickerArt: resolveStickerArtLoaded,
+          resolveIconArt,
+          resolveStickerArt,
           tabFont,
         }),
       );
@@ -149,9 +158,7 @@ export function Minimap({
       markup: parts.join(''),
       bounds: boundsOfPoints(corners),
     };
-    // iconsLoaded re-runs the build when the catalogue chunk lands.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elements, iconsLoaded]);
+  }, [elements, tabFont, iconsLoaded]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;
@@ -194,9 +201,8 @@ export function Minimap({
   }
   const vb = `${x0} ${y0} ${x1 - x0} ${y1 - y0}`;
 
-  const rect = getMain()?.getBoundingClientRect();
-  const w = rect?.width ?? 0;
-  const h = rect?.height ?? 0;
+  const w = mainSize?.width ?? 0;
+  const h = mainSize?.height ?? 0;
   const z = viewportZoom || 1;
   const viewCx = w / 2 - viewportOffset.x;
   const viewCy = h / 2 - viewportOffset.y;
