@@ -3,8 +3,9 @@
 The New Diagram wizard's third step ([Dedicated route for new-diagram creation](../007-editor/new-diagram-route.md), [Offline Mode](offline-mode.md); `settings` in code,
 its chip reads **Location**) asks **where a new diagram is stored**. Until now that question was a single iOS-style toggle,
 "Save Offline, This Browser Only", which could only ever answer yes or no: on
-the server, or in this browser. More stores are coming (Google Drive is the
-first candidate; GitHub is plausible), and a toggle cannot grow a third state.
+the server, or in this browser. More stores may come (GitHub is plausible), and a toggle cannot grow a third
+state. Google Drive is not one of them: it is a mirror of cloud diagrams, not a
+place a diagram is stored ([Google Drive is a mirror, not a location](#google-drive-is-a-mirror-not-a-location)).
 
 So the toggle becomes a **Save location** chooser: a row of selectable tiles,
 exactly one active, where each tile is one place a diagram can live. The
@@ -36,7 +37,7 @@ the `PlacementCard` tile). The locations today:
 - Switching back to livediagram restores the folder step with whatever
   placement was selected before.
 - Only **shipped** locations are shown. There are no greyed-out "coming soon"
-  tiles for Drive or GitHub: a tile that cannot be chosen is a promise the
+  tiles for GitHub: a tile that cannot be chosen is a promise the
   product has not made yet.
 
 The tile glyphs: the livediagram tile carries the brand mark (the same
@@ -117,7 +118,7 @@ A save location is one entry in a small catalogue, `apps/live/lib/save-locations
 - `isOfflineLocation(id)` says whether an id resolves to the browser-only store.
   It is the only place the wizard's model touches [Offline Mode](offline-mode.md)'s notion of "offline".
 
-Adding a location (say, Google Drive) means: a new id in the union, a new
+Adding a location (say, GitHub) means: a new id in the union, a new
 catalogue entry, a glyph in the picker's icon map (the map is typed on the id,
 so a missing glyph is a compile error, not a blank tile), and a create branch in
 `/new` that hands the diagram to that store. Nothing in the wizard's step,
@@ -127,6 +128,18 @@ The wire between the wizard and `/new` is `NewDiagramSettings.saveLocation:
 SaveLocationId`. It replaces the old `offline: boolean`; the boolean was the
 toggle's shape leaking into the contract, and it is exactly what a third
 location could not fit through.
+
+## Google Drive is a mirror, not a location
+
+A signed-in user can mirror their Personal Space diagrams to their own Google
+Drive. The diagram still lives in livediagram (the default location): Drive
+holds a copy that is kept in sync both ways while a tab is open, and a Drive
+file is never the diagram's home. So Drive never becomes a tile here, the
+wizard does not change when the mirror ships, and a diagram created with
+**livediagram** is mirrored like any other. Local Browser diagrams have no
+server copy and are not mirrored. The mirror itself (connection, folder tree,
+rename, move, delete to Trash, "Open with") is specified with the mirror, not
+here.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
@@ -146,8 +159,7 @@ wizard, and each location's article (offline today) is where the substance is.
 - Changing where a diagram is stored **after** creation. Conversion between
   livediagram and Local Browser stays with [Offline Mode](offline-mode.md)'s Sync Diagram / Take
   Offline; other locations will define their own when they ship.
-- Any implementation of Google Drive or GitHub storage. This spec only makes
-  room for them.
+- Any implementation of GitHub storage. This spec only makes room for it.
 
 ## Implementation map
 

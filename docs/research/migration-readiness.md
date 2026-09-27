@@ -2,8 +2,11 @@
 
 Research to de-risk three features that let a user bring 100+ boards from other
 tools into livediagram and keep them mirrored in their own Google Drive. No
-product code; the proposed spec drafts live beside this report in
-[`migration/`](./migration/).
+product code. The decisions below turned the proposals into specs:
+[Board import](../specs/020-import-export/board-import.md),
+[Miro import](../specs/020-import-export/miro-import.md) and
+[Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md);
+the Drive decision amended [Save Locations](../specs/006-diagram/save-locations.md).
 
 - **Checked:** 2026-09-27, against the official pages listed in [Sources](#sources)
   (each page's own "last updated" date is recorded there).
@@ -13,14 +16,27 @@ product code; the proposed spec drafts live beside this report in
   experiment we could not run without accounts (listed in
   [Experiments still needed](#experiments-still-needed)).
 
+## Decisions
+
+Taken by the operator on 2026-09-27, after the first version of this report.
+
+| Question           | Decision                                                                                                                                                      | Recorded in                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Miro route         | **REST API only**; what it cannot read is reported as lost. No clipboard decoding.                                                                            | [Miro import](../specs/020-import-export/miro-import.md)                       |
+| Whiteboard account | The boards are on a **personal** Microsoft account: the exported image is the import route.                                                                   | [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) |
+| Drive's role       | Drive is a **mirror** of cloud diagrams, never a save location.                                                                                               | [Save Locations](../specs/006-diagram/save-locations.md)                       |
+| Drive bin          | Maps to the livediagram **Trash**, specified separately (soft delete for 30 days, team Trash, local Trash for Offline Mode, api and MCP deletes go to Trash). | Trash spec (lead session)                                                      |
+| Safari images      | A **WASM WebP encoder**, loaded only when the browser cannot encode WebP.                                                                                     | [Board import](../specs/020-import-export/board-import.md)                     |
+
 ## Headlines
 
-1. **Microsoft Whiteboard for personal accounts is reported to retire:** editing
-   ends 2026-09-22, view and export end **2026-10-16**. Unverified (a Microsoft Q&A
-   answer by an independent advisor, and a third-party exporter that hides a
-   "retirement banner"); no official Microsoft page was found. If the operator's
-   boards are on a personal account, export them well before 2026-10-16,
-   whatever we build. See [C](#c-microsoft-whiteboard-import).
+1. **Microsoft Whiteboard for personal accounts is being retired** (verified in
+   the web app's own strings and Microsoft Support): boards became **read-only on
+   2026-09-25** and are **permanently deleted on 2026-10-16**. The standalone
+   Windows, iOS and Android apps retired on 2026-09-14; the web app still exports.
+   Its richest export is a **Full export Zip (HTML + JSON)**, a snapshot of the
+   board's own markup, beside the PNG image export. Steps:
+   [Exporting personal boards before 2026-10-16](#exporting-personal-boards-before-2026-10-16).
 2. **`drive.file` is non-sensitive: in production it needs no verification, no
    CASA assessment and has no user cap.** Brand verification is only needed to show the app
    name and logo. Testing mode caps at 100 test users and expires grants after 7 days.
@@ -33,22 +49,22 @@ product code; the proposed spec drafts live beside this report in
 5. **Drive API quotas changed on 2026-05-01:** 1,000,000 quota units per minute per
    project, and a **400,000,000 units per day per project** threshold above which
    charges are "planned later in 2026". At 10M users the naive polling budget
-   overshoots it about twofold. Polling and write cadence need a budget.
+   overshoots it about twofold; the [proposed sync cadence](#proposed-sync-cadence)
+   brings it to about 80%.
 6. **Miro's REST API is browser-callable (CORS `*`)** so only the one-time
    code-for-token exchange needs the Worker. But it does not expose pen strokes,
    tables, kanban, mockups, emoji or user story maps, nor connector waypoints.
 7. **Miro's clipboard carries the full board, pen strokes included,** behind a
-   trivial obfuscation (third-party reverse engineering). Using it is a legal and
-   product fork: Miro's terms forbid reverse engineering "except to the extent
-   expressly permitted by Law".
+   trivial obfuscation (third-party reverse engineering). Miro's terms forbid
+   reverse engineering, so livediagram does not use it (decided).
 8. **Microsoft Graph converts a `.whiteboard` file to HTML or PDF**
    (`GET /drive/items/{id}/content?format=html`), and Microsoft ships a
    PowerShell cmdlet that does it. This only reaches work or school boards stored in
    OneDrive for Business; personal boards are not files at all.
 9. **Safari cannot encode WebP from a canvas** (`toBlob` / `convertToBlob` with
    `image/webp` are unsupported and silently return PNG; MDN browser-compat-data
-   8.1.3, 2026-09-24). The decided "resize to WebP in the browser" needs a
-   Safari fallback: a WASM encoder, or JPEG and PNG there.
+   8.1.3, 2026-09-24). Decided: a WASM WebP encoder, loaded only on
+   that path.
 
 ## A. Google Drive two-way mirror
 
@@ -177,15 +193,15 @@ resumable upload (verify E-A4 first).
 
 - **Thumbnail:** rasterise the existing SVG snapshot to PNG in the browser for
   `contentHints`; SVG is not accepted there.
-- **Trash:** livediagram has no diagram Trash today (diagram delete is final;
-  only images, layers and timeline rows mention deletion). "Drive bin to
-  livediagram Trash" depends on a Trash feature that must be specified first.
-- **Save locations:** [Save Locations](../specs/006-diagram/save-locations.md)
-  reserves Google Drive as a future **store**. The decided mirror is a copy of
-  cloud diagrams, not a store. The two readings must be reconciled in that spec.
+- **Trash:** livediagram has no diagram Trash yet; it is being specified
+  separately (see [Decisions](#decisions)). A Drive bin maps to it; a restore in
+  Drive restores the diagram; a Drive permanent delete (`removed: true`)
+  empties the diagram from Trash.
+- **Save locations:** amended. Drive is a mirror, never a tile in the New
+  Diagram wizard.
 - **Quota budget:** polling `changes.list` every 5 minutes plus a write per
-  autosave does not fit 10M users under the free daily threshold (see the cost
-  model). The spec needs explicit cadences.
+  autosave does not fit 10M users under the free daily threshold. The
+  [proposed sync cadence](#proposed-sync-cadence) does.
 - **Self-hosters:** files created by livediagram.app's Google project are not
   visible to a self-hoster's project (`drive.file` is per app). Unverified but
   follows from the scope's per-app grant; E-A6.
@@ -235,20 +251,51 @@ connection for those two hours would cost 500,000 × 12 × 7,200 s × 0.125 GB �
 5.4 billion GB-s ≈ **$67,500/month**; do not coordinate the mirror through a
 Durable Object.
 
-**Google side** (free but capped): per active connected user-day, 20 mirrored
-saves × 2 files × 50 units + 24 polls × 100 units ≈ 4,400 units.
+**Google side** (free but capped). A naive cadence, 20 mirrored saves × 2 files
+× 50 units plus a poll every 5 minutes (24 × 100 units), costs about 4,400
+units per active connected user-day:
+
+| Users  | Active connected/day | Naive units/day | Share of 400M threshold |
+| ------ | -------------------- | --------------- | ----------------------- |
+| 50     | about 1              | 4,400           | 0.001%                  |
+| 10,000 | about 200            | 0.9M            | 0.2%                    |
+| 10M    | about 200,000        | 880M            | **220%**                |
+
+### Proposed sync cadence
+
+Named constants in one module, so they can be tuned without touching the sync
+logic. Units assume `files.update` costs 50 (edit) and `changes.list` 100
+(list); the second is an inference (A6).
+
+| Constant                                   | Value                 | Rule                                                                                                                                                                                |
+| ------------------------------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DRIVE_POLLER`                             | one tab per browser   | The Web Locks API elects one tab to poll and write; other tabs of the same browser do neither.                                                                                      |
+| `DRIVE_CATCH_UP`                           | on arrival            | The poller runs `changes.list` from the stored page token once when it takes the lock, and re-uploads any diagram whose `saved_at` is newer than its mirrored revision.             |
+| `DRIVE_POLL_INTERVAL_MS`                   | 20 minutes            | Poll only while a livediagram tab is visible; never while hidden.                                                                                                                   |
+| `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 5 minutes             | On window focus or `visibilitychange` to visible, poll if the last poll is older than this.                                                                                         |
+| `DRIVE_CHANGES_PAGE_SIZE`                  | 1,000                 | The maximum, so a catch-up is usually one call.                                                                                                                                     |
+| `DRIVE_WRITE_IDLE_MS`                      | 60 seconds            | Mirror a diagram once it has had no edits for this long.                                                                                                                            |
+| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 minutes             | At most one mirror write (JSON with thumbnail, then SVG) per diagram per interval.                                                                                                  |
+| `DRIVE_WRITE_FLUSH`                        | on hide and on switch | Flush pending writes on `visibilitychange` to hidden and when the user leaves a diagram; anything missed is caught up on the next arrival.                                          |
+| `DRIVE_BACKOFF`                            | double, capped        | On `403 userRateLimitExceeded` or `429`, double the poll interval (cap 60 minutes) and the write interval (cap 30 minutes); return to the base values after an hour without errors. |
+| `DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS` | 10 minutes            | Write the page token to D1 only when it changed, at most this often, and on flush.                                                                                                  |
+
+**What that costs.** A two-hour active day becomes about 6 writes × 100 units
+plus about 10 polls (arrival, 6 on the interval, 3 on focus) × 100 units, so
+about **1,600 units** instead of 4,400.
 
 | Users  | Active connected/day | Units/day | Share of 400M threshold |
 | ------ | -------------------- | --------- | ----------------------- |
-| 50     | about 1              | 4,400     | 0.001%                  |
-| 10,000 | about 200            | 0.9M      | 0.2%                    |
-| 10M    | about 200,000        | 880M      | **220%**                |
+| 50     | about 1              | 1,600     | 0.0004%                 |
+| 10,000 | about 200            | 0.32M     | 0.08%                   |
+| 10M    | about 200,000        | 320M      | **80%**                 |
 
-At 10M the budget has to fall to about 2,000 units per active user-day: debounce
-mirror writes (for example after 5 minutes idle, on tab hide, on close), poll on
-focus and visibility plus every 15 minutes. The per-minute project quota
-(1M units) also binds: 100 units per poll means at most 10,000 polls a minute,
-so about 150,000 concurrently open connected tabs at a 15-minute interval.
+The per-minute project quota (1M units) holds too: an open connected tab costs
+about 10 units a minute (5 for polls, 5 for writes). At 10M users about 16,700
+tabs are open on average (200,000 active users × 2 of 24 hours); at a peak three
+times that, about 500,000 units a minute, half the quota. The backoff absorbs
+spikes. The D1 figures in the table above already assume the throttled
+page-token write.
 
 ## B. Miro board import
 
@@ -326,74 +373,92 @@ The third-party census of one real board found **54% of items content-free**
 through REST (219 pen strokes and 91 link previews), against a full clipboard
 decode [M9]. Unverified by us, but consistent with Miro's own "Unsupported" list.
 
-### B4. Proposed importer
+### B4. Importer
 
-See the draft: [Miro import (proposed spec)](./migration/miro-import-draft.md),
-built on the shared contract in
-[Import pipeline (proposed spec)](./migration/import-pipeline-draft.md).
+Specified in [Miro import](../specs/020-import-export/miro-import.md), on the
+shared stages of [Board import](../specs/020-import-export/board-import.md).
 
 ## C. Microsoft Whiteboard import
 
-### C1. Export options today
+### C1. Retirement of personal-account Whiteboard
 
-| Claim                                                                                                                                                                                          | Status                                         | Source     |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------- |
-| Current help: Settings, **Export Image**, standard or high resolution, saved to Downloads (a raster image).                                                                                    | Verified                                       | [W1], [W2] |
-| Older admin doc (2023-02-17): Windows/iOS export **PNG**; **Whiteboard for the web exports SVG**.                                                                                              | Verified (dated)                               | [W3]       |
-| Web SVG export still exists and keeps ink as vector paths.                                                                                                                                     | Unverified                                     | E-C1       |
-| What an export contains: a picture of the board; no documented structured data (stickies, text, shapes are not separable in PNG).                                                              | Verified for PNG by nature; Unverified for SVG | [W1]       |
-| **Graph converts** `.whiteboard` (and `.wbtx`, `.loop`, `.fluid`) files to **HTML** and to **PDF** via `GET /drive/items/{id}/content?format=html                                              | pdf`; delegated `Files.Read` suffices.         | Verified   | [W4] |
-| Microsoft's own `WhiteboardAdmin` module (1.14.1) ships `Export-WhiteboardHtml`, which walks the user's `Whiteboards` folder and calls exactly that endpoint; user mode needs no admin rights. | Verified (docs and module source)              | [W5], [W6] |
-| What the HTML contains (vector ink, positioned stickies, images).                                                                                                                              | Unverified                                     | E-C2       |
+| Claim                                                                                                                                                                                                                                                                                                                        | Status                                                                               | Source     |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------- |
+| In-product banner for Microsoft accounts: "Microsoft Whiteboard for Microsoft account is being retired. Starting from September 25, 2026, you will no longer be able to create or edit whiteboards. Please export any whiteboards you'd like to keep before October 16, 2026, after which they will be permanently deleted." | Verified (shipped `en-us` strings, key `AzureDeprecation.InBoard.Phase1.MsaMessage`) | [W15]      |
+| Current phase for Microsoft accounts: "Whiteboards are now read-only. Export any whiteboards you want to keep by October 16, 2026. After that, they will be permanently deleted."                                                                                                                                            | Verified (`...Phase2.MsaMessage`)                                                    | [W15]      |
+| Azure-stored boards become read-only on 2026-09-25, are permanently deleted on **2026-10-16**, and the Azure Whiteboard service shuts down on 2026-11-30.                                                                                                                                                                    | Verified                                                                             | [W14]      |
+| The standalone **Windows, iOS and Android apps retired on 2026-09-14**; Whiteboard on the web and in Teams remain until the deletion.                                                                                                                                                                                        | Verified                                                                             | [W14]      |
+| Personal-account boards are stored in Azure and reachable only in the app, never as files.                                                                                                                                                                                                                                   | Verified                                                                             | [W8], [W9] |
+| Microsoft's own advice for boards it will delete: Settings, Export image, before 2026-10-16.                                                                                                                                                                                                                                 | Verified                                                                             | [W14]      |
 
-### C2. Storage format and APIs
+### C2. What the web app exports today
 
-| Claim                                                                                                                                                                                               | Status                                                                          | Source       |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------ |
-| Work or school boards are `.whiteboard` files in the creator's OneDrive for Business `Whiteboards` folder; average 50 KB to 1 MB.                                                                   | Verified                                                                        | [W7], [W8]   |
-| **Personal account boards are stored in Azure** and reachable only from the board picker, never as files.                                                                                           | Verified                                                                        | [W8], [W9]   |
-| Boards begun on a Surface Hub or Teams Rooms device are also stored in Azure.                                                                                                                       | Verified                                                                        | [W7]         |
-| The OneDrive `.whiteboard` format is a Fluid Framework document ("originally created as fluid" in the admin cmdlets); it is not publicly documented.                                                | Verified (naming); Unverified (internal layout)                                 | [W10]        |
-| No Microsoft Graph resource for whiteboard **content** exists; only drive-item conversion (C1).                                                                                                     | Verified (no whiteboard resource in the Graph reference; conversion documented) | [W4]         |
-| The web app uses an internal REST API (`whiteboard.microsoft.com/api/v1.0/whiteboards/{id}/...`) returning Fluid op batches; a third-party tool reads it with a token lifted from the browser.      | Unverified (third-party, MIT, 2026-07-27)                                       | [W11]        |
-| A 302 from Graph `/content` cannot be followed by a browser `fetch` with an `Authorization` header (CORS); JavaScript apps must use `@microsoft.graph.downloadUrl`, which conversions do not offer. | Verified                                                                        | [W12], [W4]  |
-| Personal-account Whiteboard retires: editing ends 2026-09-22, view/export ends 2026-10-16.                                                                                                          | **Unverified** (community answer, third-party banner)                           | [W13], [W11] |
+Read from the shipped web app (`whiteboard.cloud.microsoft`, build
+26.10910.101) and its `en-us` strings on 2026-09-27; see E-4.
 
-### C3. Recommendation and sample request
+| Claim                                                                                                                                                                                                                                                   | Status                                                                                            | Source      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------- |
+| Settings (gear) shows **Export**, which opens **Export board as** with two groups: **Quick export** ("Easy to save and share.") and **Full export**.                                                                                                    | Verified                                                                                          | [W15]       |
+| Quick export, **Image**: a PNG, "Standard resolution. Good for email." (longest side up to **5,000 px**) or "High resolution. File size may be large." (up to **16,200 px**).                                                                           | Verified (constants `r=5e3`, `a=16200` logged as `MaxDimension`, `Type: PNG`)                     | [W15]       |
+| Quick export, **PDF**: only in the Windows desktop app or on Surface Hub, behind a feature flag and minimum app version. Not on the web; the desktop app is retired.                                                                                    | Verified                                                                                          | [W15]       |
+| Full export, **Zip (HTML+JSON)**: "Includes comments (JSON), alt text, and links that can be utilized for data analysis or exporting to another application." Hidden only in the iOS and Android apps and Teams on mobile.                              | Verified                                                                                          | [W15]       |
+| The Zip holds `<title>.html`, a clone of the rendered canvas with images inlined as data URLs, Loop and app frames replaced by placeholders, over the canvas background SVG; and `<title>-comments.json` with comment threads keyed to ids in the HTML. | Verified (export code)                                                                            | [W15]       |
+| Ink in the rendered canvas is vector SVG paths; notes and text are HTML.                                                                                                                                                                                | Unverified here (third-party report, consistent with the export code cloning the DOM)             | [W11]       |
+| The Zip is offered, and completes, on a read-only personal board.                                                                                                                                                                                       | Unverified (the menu shows it wherever the board may be printed; the operator's export will tell) | E-C1        |
+| Items outside the viewport are present in the HTML (the canvas may not render off-screen items).                                                                                                                                                        | Unverified                                                                                        | E-C1        |
+| No SVG export exists in the current web app (the 2023 admin doc's "Export image (SVG)" is gone); the only export type logged is PNG.                                                                                                                    | Verified (absence in the export code)                                                             | [W15], [W3] |
+| No bulk export: one board at a time.                                                                                                                                                                                                                    | Verified (every export acts on the open board)                                                    | [W15]       |
 
-Most faithful realistic route, in order:
+### C3. Other routes, for completeness
 
-1. **Work or school board:** the Graph **HTML conversion** of the `.whiteboard`
-   file. Documented, Microsoft-maintained, and the only structured output
-   Microsoft offers. livediagram imports the `.html` file the user downloads
-   (Microsoft's cmdlet, or a later "Connect OneDrive" button whose Worker only
-   resolves the 302 `Location`, never the bytes). Parser design waits on a
-   sample (E-C2).
-2. **Any board, while the web app still exports it:** the **SVG** image export,
-   imported as vector ink plus text, with stickies reconstructed where the SVG
-   keeps them. Needs a sample (E-C1).
-3. **Fallback:** the PNG export as an image element, full stop.
+| Claim                                                                                                                                                                                                         | Status                   | Source           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ | ---------------- |
+| Graph converts work or school `.whiteboard` files (OneDrive for Business) to HTML or PDF (`content?format=html`), and Microsoft's `Export-WhiteboardHtml` cmdlet wraps it. Not applicable to personal boards. | Verified                 | [W4], [W5], [W6] |
+| A 302 from Graph `/content` cannot be followed by a browser `fetch` with an `Authorization` header (CORS).                                                                                                    | Verified                 | [W12], [W4]      |
+| The web app's internal API returns Fluid op batches; a third-party MIT tool bulk-exports screenshots, a reconstructed SVG and the raw ops with a token taken from the signed-in browser.                      | Unverified (third party) | [W11]            |
 
-Rejected: the internal Whiteboard REST API (undocumented, needs a lifted token,
-disappears with the retirement); `.whiteboard` binary parsing (undocumented
-Fluid internals, Graph already converts it).
+### C4. Import route
 
-**What the operator should provide** (they have the Windows app):
+Specified in [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md):
+v1 imports the exported **PNG** as one image. The Full export Zip is the richer
+source (editable ink and notes) but its HTML is Whiteboard's internal markup,
+so its mapping is specified only once real exports exist. Because the boards
+disappear on 2026-10-16, both files must be exported now, whatever is built
+later.
 
-- Which account the boards live on: **personal** Microsoft account, or **work or
-  school**. This decides everything above.
-- One test board containing: pen ink, highlighter, a sticky note, a note grid,
-  a text box, two shapes joined by a connector with an arrowhead, an image, and
-  a reaction.
-- From the Windows app: Settings, Export Image, both resolutions.
-- From [whiteboard.cloud.microsoft](https://whiteboard.cloud.microsoft): the export
-  menu, every format it offers (note whether SVG is present).
-- If work or school: the `.whiteboard` file from OneDrive's `Whiteboards` folder,
-  and the output of `Export-WhiteboardHtml -Mode User -Environment AzureCloud`
-  (PowerShell, `Install-Module WhiteboardAdmin`).
-- A screenshot of the board as ground truth.
+### Exporting personal boards before 2026-10-16
 
-See the draft: [Whiteboard import (proposed spec)](./migration/whiteboard-import-draft.md).
+For the operator, and the basis of the help article. Do it in the browser; the
+Windows app is retired.
+
+1. On a desktop browser (Edge or Chrome), open
+   [whiteboard.cloud.microsoft](https://whiteboard.cloud.microsoft) and sign in
+   with the **personal** Microsoft account. Note how many boards the picker lists.
+2. Make a folder, for example `Whiteboard export 2026-10`, and set the browser
+   to ask where to save downloads (so each file can go there with a unique name).
+3. For each board, in turn:
+   1. Open it and wait until it has fully loaded, then zoom out until the whole
+      board is on screen.
+   2. Settings (gear, top right), **Export**, **Full export**, **Zip
+      (HTML+JSON)**. Save it as `NN title.zip` (a number keeps boards with the
+      same title apart).
+   3. Settings, **Export**, **Quick export**, **Image**, **High resolution**,
+      **Export**. Save it as `NN title.png`.
+   4. Open the Zip's `.html` in the browser and check that ink, notes, text and
+      images are all there. If it says "Failed to embed image" or content is
+      missing, zoom to fit and export the Zip again.
+4. When the count of Zips and PNGs matches the picker's count, copy the folder
+   to a second place (Google Drive, a USB disk).
+5. Finish well before **2026-10-16**; after that Microsoft deletes the boards
+   and nothing can be recovered.
+6. If the menu shows only "Export image" or no Full export, export the high
+   resolution PNG, note which boards lacked the Zip, and tell the lead session.
+
+Optional, only if there are too many boards to do by hand: the third-party
+[PanoramicData.MicrosoftWhiteboardExport](https://github.com/panoramicdata/PanoramicData.MicrosoftWhiteboardExport)
+(MIT) bulk-exports every board. It drives a signed-in browser and reads the
+app's token, so read its code before running it; it is an archive aid, not
+something livediagram depends on.
 
 ## Experiments run
 
@@ -416,6 +481,17 @@ Transfer-Encoding, X-GUploader-UploadID, ...` (no `Location` on a 401).
   `WhiteboardAdmin` 1.14.1 from the PowerShell Gallery; `Export-WhiteboardHtml.psm1`
   lists `drive/root:/Whiteboards:/children`, keeps `*.whiteboard` and `*.wbtx`, then
   calls `.../items/{id}/content?format=html`.
+- **E-4 Whiteboard web app bundle** (2026-09-27): fetched the public shell of
+  `https://whiteboard.cloud.microsoft/` (script `app.v26.10910.101.js`), its
+  webpack chunk map, 975 of 978 chunks from `/whiteboard-app/chunks/`, and the
+  strings at `/blueboard/26.10910.101/resources/locales/en-us/main.json`. Read:
+  `ExportSizesDialog` (PNG, `MaxDimension` 5,000 or 16,200), the `callouts`
+  chunk's export panel (Image always; PDF behind `EnableWindowsHostExportPDF`
+  in the desktop or Surface Hub host only; Zip unless iOS, Android or Teams
+  mobile) and its Zip writer (`getCanvasContentClone`, images to data URLs,
+  `<title>.html` plus `<title>-comments.json`), and the `AzureDeprecation`
+  strings. No sign-in was used; nothing was sent to the service beyond static
+  file requests.
 
 ## Experiments still needed
 
@@ -429,88 +505,84 @@ Transfer-Encoding, X-GUploader-UploadID, ...` (no `Location` on a 401).
 | E-A6 | A second Cloud project (self-host) cannot see files created by the first                                                                      | two projects                          |
 | E-B1 | Miro image URL (`redirect=false`, `format=original`): host and CORS headers of the 60-second URL                                              | Miro developer team app               |
 | E-B2 | Token scope across teams; REST shape of pen strokes and link previews on a real board                                                         | same                                  |
-| E-C1 | Whiteboard web export formats today, SVG structure                                                                                            | operator's board                      |
-| E-C2 | Graph HTML conversion output structure                                                                                                        | work or school account                |
+| E-C1 | Full export Zip on a read-only personal board: offered, complete (off-screen items, images), and the HTML's structure for the mapping         | the operator's exports                |
+| E-C2 | Graph HTML conversion output structure (work or school only; parked)                                                                          | work or school account                |
 
 ## Open questions
 
 Tracked here until answered; each answer moves into a spec.
 
-1. **Miro route:** documented REST only (loses pen strokes and link previews),
-   or also the clipboard decode (full fidelity, undocumented, terms risk)?
-2. **Trash:** specify a diagram Trash as a prerequisite of the Drive mirror, or
-   map a Drive bin to "delete after 30 days" without a Trash?
-3. **Drive as mirror versus store:** amend [Save Locations](../specs/006-diagram/save-locations.md)
-   so Drive is a mirror of cloud diagrams, or keep a separate Drive store in scope?
-4. **Whiteboard account type:** personal (urgent export) or work or school?
-5. **Image encoding on Safari:** lazy-load a WASM WebP encoder, or accept JPEG
-   and PNG there?
+1. **Whiteboard picture size:** at the shared 2,048 px limit, handwriting on a
+   large board becomes unreadable. Keep it, raise it for whole-board pictures, or
+   tile the picture?
+2. **Whiteboard and the image cap:** the hosted cap is 100 images per owner, so
+   more than 100 boards cannot all arrive as pictures. Accept placeholders, or
+   treat board pictures differently?
+3. **Whiteboard Zip:** once the operator's Zips are in, specify a structured
+   import of them (editable ink and notes)?
 
 ## Sources
 
 All fetched 2026-09-27. "Updated" is the page's own date where it shows one.
 
-| Id  | Page                                                                                                                                                                                | Updated              |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| G1  | [Drive API-specific auth (scopes)](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)                                                                      | 2026-09-03           |
-| G2  | [OAuth App Verification Help Center](https://support.google.com/cloud/answer/13463073)                                                                                              | not shown            |
-| G3  | [Unverified apps](https://support.google.com/cloud/answer/7454865)                                                                                                                  | not shown            |
-| G4  | [Manage App Audience](https://support.google.com/cloud/answer/15549945)                                                                                                             | not shown            |
-| G5  | [Verification requirements](https://support.google.com/cloud/answer/13464321)                                                                                                       | not shown            |
-| G7  | [When is verification not needed](https://support.google.com/cloud/answer/13464323)                                                                                                 | not shown            |
-| G8  | [Security Assessment](https://support.google.com/cloud/answer/13465431)                                                                                                             | not shown            |
-| G9  | [Verification FAQ](https://support.google.com/cloud/answer/13463817)                                                                                                                | not shown            |
-| G11 | [Manage OAuth App Branding](https://support.google.com/cloud/answer/10311615)                                                                                                       | not shown            |
-| G12 | [OAuth Application Rate Limits](https://support.google.com/cloud/answer/9028764)                                                                                                    | not shown            |
-| G13 | [Configure a Drive UI integration](https://developers.google.com/workspace/drive/api/guides/enable-sdk)                                                                             | 2026-09-03           |
-| G14 | [Integrate with "Open with"](https://developers.google.com/workspace/drive/api/guides/integrate-open)                                                                               | 2026-09-03           |
-| G15 | [Marketplace overview](https://developers.google.com/workspace/marketplace/overview)                                                                                                | 2026-09-03           |
-| G16 | [Marketplace app review](https://developers.google.com/workspace/marketplace/about-app-review)                                                                                      | 2026-09-03           |
-| G17 | [Publish to the Marketplace](https://developers.google.com/workspace/marketplace/how-to-publish)                                                                                    | 2026-09-03           |
-| G18 | [GIS: use the token model](https://developers.google.com/identity/oauth2/web/guides/use-token-model)                                                                                | 2026-05-26           |
-| G19 | [GIS overview](https://developers.google.com/identity/oauth2/web/guides/overview)                                                                                                   | 2026-05-26           |
-| G20 | [GIS JavaScript reference](https://developers.google.com/identity/oauth2/web/reference/js-reference)                                                                                | 2025-08-20           |
-| G21 | [Migrate to GIS](https://developers.google.com/identity/oauth2/web/guides/migration-to-gis)                                                                                         | 2025-09-05           |
-| G22 | [GIS supported browsers](https://developers.google.com/identity/gsi/web/guides/supported-browsers)                                                                                  | 2026-09-01           |
-| G23 | [OAuth 2.0 for web server apps](https://developers.google.com/identity/protocols/oauth2/web-server)                                                                                 | 2026-09-14           |
-| G24 | [OAuth 2.0 overview](https://developers.google.com/identity/protocols/oauth2)                                                                                                       | 2026-05-26           |
-| G25 | [GIS: use the code model](https://developers.google.com/identity/oauth2/web/guides/use-code-model)                                                                                  | 2026-01-28           |
-| G26 | [changes.list reference](https://developers.google.com/workspace/drive/api/reference/rest/v3/changes/list)                                                                          | 2026-07-07           |
-| G27 | [Retrieve changes](https://developers.google.com/workspace/drive/api/guides/manage-changes)                                                                                         | 2026-09-03           |
-| G28 | [Change resource](https://developers.google.com/workspace/drive/api/reference/rest/v3/changes)                                                                                      | not shown            |
-| G29 | [File resource](https://developers.google.com/workspace/drive/api/reference/rest/v3/files)                                                                                          | 2026-07-14           |
-| G30 | [Trash or delete files](https://developers.google.com/workspace/drive/api/guides/delete)                                                                                            | 2026-09-03           |
-| G31 | [Custom file properties](https://developers.google.com/workspace/drive/api/guides/properties)                                                                                       | 2026-09-03           |
-| G32 | [Drive API usage limits](https://developers.google.com/workspace/drive/api/guides/limits)                                                                                           | 2026-09-11           |
-| G33 | [Workspace standardized model for agent tools and APIs](https://developers.google.com/workspace/tools-safety)                                                                       | 2026-09-03           |
-| G34 | [Upload file data](https://developers.google.com/workspace/drive/api/guides/manage-uploads)                                                                                         | 2026-09-03           |
-| G35 | [Manage file metadata (thumbnails)](https://developers.google.com/workspace/drive/api/guides/file-metadata)                                                                         | 2026-09-03           |
-| C1  | [Cloudflare Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/)                                                                                           | 2026-08-28           |
-| C2  | [Cloudflare D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/)                                                                                                     | 2026-04-21           |
-| C3  | [Cloudflare Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/)                                                                           | 2026-08-25           |
-| M1  | [Miro: How to save board backup](https://help.miro.com/hc/en-us/articles/360017572774)                                                                                              | 2026-09-08           |
-| M2  | [Miro: How to export your board](https://help.miro.com/hc/en-us/articles/360017572754)                                                                                              | 2026-09-08           |
-| M3  | [Miro: Board Export API overview](https://help.miro.com/hc/en-us/articles/17774560667794)                                                                                           | 2026-09-08           |
-| M4  | [Miro OpenAPI: create board export job](https://developers.miro.com/reference/enterprise-create-board-export)                                                                       | spec 2026-04-22      |
-| M5  | [Miro: Get started with OAuth 2.0](https://developers.miro.com/docs/getting-started-with-oauth)                                                                                     | "6 months ago"       |
-| M6  | [Miro: Share an app outside of a developer team](https://developers.miro.com/docs/share-an-app-outside-of-a-developer-team)                                                         | "6 months ago"       |
-| M7  | [Miro: Permission scopes](https://developers.miro.com/reference/scopes)                                                                                                             | "6 months ago"       |
-| M8  | [Miro: Rate limiting](https://developers.miro.com/reference/rate-limiting)                                                                                                          | "6 months ago"       |
-| M9  | [Velm: Miro's formats, reverse-engineered](https://github.com/ibrahimbisen/Velm/blob/HEAD/docs/02-miro-formats.md) (third party, Apache-2.0)                                        | 2026-07-30           |
-| M10 | [Miro OpenAPI spec (`miroapp/api-clients`)](https://github.com/miroapp/api-clients/blob/main/packages/generator/spec.json)                                                          | commit 2026-04-22    |
-| M11 | [Miro Web SDK: Unsupported](https://developers.miro.com/docs/websdk-reference-unsupported)                                                                                          | 2026-03-19           |
-| M12 | [Miro Terms of Service, 2.9 Restrictions](https://miro.com/legal/terms-of-service/)                                                                                                 | effective 2021-09-01 |
-| M13 | [Miro Developer Terms of Use, 3.3](https://miro.com/legal/developer-terms-of-use/)                                                                                                  | effective 2022-11-25 |
-| W1  | [Export a whiteboard](https://support.microsoft.com/en-us/whiteboard/export-a-whiteboard)                                                                                           | not shown            |
-| W2  | [Whiteboard Settings menu](https://support.microsoft.com/en-us/whiteboard/whiteboard-settings-menu)                                                                                 | not shown            |
-| W3  | [Whiteboard GDPR requests](https://learn.microsoft.com/en-us/microsoft-365/whiteboard/gdpr-requests)                                                                                | 2023-02-17           |
-| W4  | [Graph: download a file in another format](https://learn.microsoft.com/en-us/graph/api/driveitem-get-content-format)                                                                | not shown            |
-| W5  | [Export-WhiteboardHtml](https://learn.microsoft.com/en-us/powershell/module/whiteboardadmin/export-whiteboardhtml)                                                                  | 2026-05-28           |
-| W6  | [WhiteboardAdmin 1.14.1 package](https://www.powershellgallery.com/packages/WhiteboardAdmin)                                                                                        | package              |
-| W7  | [Manage Whiteboard data](https://learn.microsoft.com/en-us/microsoft-365/whiteboard/manage-data-organizations)                                                                      | not shown            |
-| W8  | [Save a whiteboard](https://support.microsoft.com/en-us/whiteboard/save-a-whiteboard)                                                                                               | not shown            |
-| W9  | [Differences between Azure and OneDrive whiteboards](https://support.microsoft.com/en-us/whiteboard/differences-between-azure-and-onedrive-work-or-school-whiteboards)              | not shown            |
-| W10 | [Get-OriginalFluidWhiteboardsForTenant](https://learn.microsoft.com/en-us/powershell/module/whiteboardadmin/get-originalfluidwhiteboardsfortenant)                                  | 2026-05-28           |
-| W11 | [PanoramicData.MicrosoftWhiteboardExport](https://github.com/panoramicdata/PanoramicData.MicrosoftWhiteboardExport) (third party, MIT)                                              | 2026-07-27           |
-| W12 | [Graph: download driveItem content](https://learn.microsoft.com/en-us/graph/api/driveitem-get-content)                                                                              | not shown            |
-| W13 | [Microsoft Q&A: Whiteboard app will be retired on October 16, 2026](https://learn.microsoft.com/en-us/answers/questions/5982865/microsoft-whiteboard-app-will-be-retired-on-octobe) | 2026-08-22           |
+| Id  | Page                                                                                                                                                                                              | Updated              |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| G1  | [Drive API-specific auth (scopes)](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)                                                                                    | 2026-09-03           |
+| G2  | [OAuth App Verification Help Center](https://support.google.com/cloud/answer/13463073)                                                                                                            | not shown            |
+| G3  | [Unverified apps](https://support.google.com/cloud/answer/7454865)                                                                                                                                | not shown            |
+| G4  | [Manage App Audience](https://support.google.com/cloud/answer/15549945)                                                                                                                           | not shown            |
+| G5  | [Verification requirements](https://support.google.com/cloud/answer/13464321)                                                                                                                     | not shown            |
+| G7  | [When is verification not needed](https://support.google.com/cloud/answer/13464323)                                                                                                               | not shown            |
+| G8  | [Security Assessment](https://support.google.com/cloud/answer/13465431)                                                                                                                           | not shown            |
+| G9  | [Verification FAQ](https://support.google.com/cloud/answer/13463817)                                                                                                                              | not shown            |
+| G11 | [Manage OAuth App Branding](https://support.google.com/cloud/answer/10311615)                                                                                                                     | not shown            |
+| G12 | [OAuth Application Rate Limits](https://support.google.com/cloud/answer/9028764)                                                                                                                  | not shown            |
+| G13 | [Configure a Drive UI integration](https://developers.google.com/workspace/drive/api/guides/enable-sdk)                                                                                           | 2026-09-03           |
+| G14 | [Integrate with "Open with"](https://developers.google.com/workspace/drive/api/guides/integrate-open)                                                                                             | 2026-09-03           |
+| G15 | [Marketplace overview](https://developers.google.com/workspace/marketplace/overview)                                                                                                              | 2026-09-03           |
+| G16 | [Marketplace app review](https://developers.google.com/workspace/marketplace/about-app-review)                                                                                                    | 2026-09-03           |
+| G17 | [Publish to the Marketplace](https://developers.google.com/workspace/marketplace/how-to-publish)                                                                                                  | 2026-09-03           |
+| G18 | [GIS: use the token model](https://developers.google.com/identity/oauth2/web/guides/use-token-model)                                                                                              | 2026-05-26           |
+| G19 | [GIS overview](https://developers.google.com/identity/oauth2/web/guides/overview)                                                                                                                 | 2026-05-26           |
+| G20 | [GIS JavaScript reference](https://developers.google.com/identity/oauth2/web/reference/js-reference)                                                                                              | 2025-08-20           |
+| G21 | [Migrate to GIS](https://developers.google.com/identity/oauth2/web/guides/migration-to-gis)                                                                                                       | 2025-09-05           |
+| G22 | [GIS supported browsers](https://developers.google.com/identity/gsi/web/guides/supported-browsers)                                                                                                | 2026-09-01           |
+| G23 | [OAuth 2.0 for web server apps](https://developers.google.com/identity/protocols/oauth2/web-server)                                                                                               | 2026-09-14           |
+| G24 | [OAuth 2.0 overview](https://developers.google.com/identity/protocols/oauth2)                                                                                                                     | 2026-05-26           |
+| G25 | [GIS: use the code model](https://developers.google.com/identity/oauth2/web/guides/use-code-model)                                                                                                | 2026-01-28           |
+| G26 | [changes.list reference](https://developers.google.com/workspace/drive/api/reference/rest/v3/changes/list)                                                                                        | 2026-07-07           |
+| G27 | [Retrieve changes](https://developers.google.com/workspace/drive/api/guides/manage-changes)                                                                                                       | 2026-09-03           |
+| G28 | [Change resource](https://developers.google.com/workspace/drive/api/reference/rest/v3/changes)                                                                                                    | not shown            |
+| G29 | [File resource](https://developers.google.com/workspace/drive/api/reference/rest/v3/files)                                                                                                        | 2026-07-14           |
+| G30 | [Trash or delete files](https://developers.google.com/workspace/drive/api/guides/delete)                                                                                                          | 2026-09-03           |
+| G31 | [Custom file properties](https://developers.google.com/workspace/drive/api/guides/properties)                                                                                                     | 2026-09-03           |
+| G32 | [Drive API usage limits](https://developers.google.com/workspace/drive/api/guides/limits)                                                                                                         | 2026-09-11           |
+| G33 | [Workspace standardized model for agent tools and APIs](https://developers.google.com/workspace/tools-safety)                                                                                     | 2026-09-03           |
+| G34 | [Upload file data](https://developers.google.com/workspace/drive/api/guides/manage-uploads)                                                                                                       | 2026-09-03           |
+| G35 | [Manage file metadata (thumbnails)](https://developers.google.com/workspace/drive/api/guides/file-metadata)                                                                                       | 2026-09-03           |
+| C1  | [Cloudflare Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/)                                                                                                         | 2026-08-28           |
+| C2  | [Cloudflare D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/)                                                                                                                   | 2026-04-21           |
+| C3  | [Cloudflare Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/)                                                                                         | 2026-08-25           |
+| M1  | [Miro: How to save board backup](https://help.miro.com/hc/en-us/articles/360017572774)                                                                                                            | 2026-09-08           |
+| M2  | [Miro: How to export your board](https://help.miro.com/hc/en-us/articles/360017572754)                                                                                                            | 2026-09-08           |
+| M3  | [Miro: Board Export API overview](https://help.miro.com/hc/en-us/articles/17774560667794)                                                                                                         | 2026-09-08           |
+| M4  | [Miro OpenAPI: create board export job](https://developers.miro.com/reference/enterprise-create-board-export)                                                                                     | spec 2026-04-22      |
+| M5  | [Miro: Get started with OAuth 2.0](https://developers.miro.com/docs/getting-started-with-oauth)                                                                                                   | "6 months ago"       |
+| M6  | [Miro: Share an app outside of a developer team](https://developers.miro.com/docs/share-an-app-outside-of-a-developer-team)                                                                       | "6 months ago"       |
+| M7  | [Miro: Permission scopes](https://developers.miro.com/reference/scopes)                                                                                                                           | "6 months ago"       |
+| M8  | [Miro: Rate limiting](https://developers.miro.com/reference/rate-limiting)                                                                                                                        | "6 months ago"       |
+| M9  | [Velm: Miro's formats, reverse-engineered](https://github.com/ibrahimbisen/Velm/blob/HEAD/docs/02-miro-formats.md) (third party, Apache-2.0)                                                      | 2026-07-30           |
+| M10 | [Miro OpenAPI spec (`miroapp/api-clients`)](https://github.com/miroapp/api-clients/blob/main/packages/generator/spec.json)                                                                        | commit 2026-04-22    |
+| M11 | [Miro Web SDK: Unsupported](https://developers.miro.com/docs/websdk-reference-unsupported)                                                                                                        | 2026-03-19           |
+| M12 | [Miro Terms of Service, 2.9 Restrictions](https://miro.com/legal/terms-of-service/)                                                                                                               | effective 2021-09-01 |
+| M13 | [Miro Developer Terms of Use, 3.3](https://miro.com/legal/developer-terms-of-use/)                                                                                                                | effective 2022-11-25 |
+| W3  | [Whiteboard GDPR requests](https://learn.microsoft.com/en-us/microsoft-365/whiteboard/gdpr-requests)                                                                                              | 2023-02-17           |
+| W4  | [Graph: download a file in another format](https://learn.microsoft.com/en-us/graph/api/driveitem-get-content-format)                                                                              | not shown            |
+| W5  | [Export-WhiteboardHtml](https://learn.microsoft.com/en-us/powershell/module/whiteboardadmin/export-whiteboardhtml)                                                                                | 2026-05-28           |
+| W6  | [WhiteboardAdmin 1.14.1 package](https://www.powershellgallery.com/packages/WhiteboardAdmin)                                                                                                      | package              |
+| W8  | [Save a whiteboard](https://support.microsoft.com/en-us/whiteboard/save-a-whiteboard)                                                                                                             | not shown            |
+| W9  | [Differences between Azure and OneDrive whiteboards](https://support.microsoft.com/en-us/whiteboard/differences-between-azure-and-onedrive-work-or-school-whiteboards)                            | not shown            |
+| W11 | [PanoramicData.MicrosoftWhiteboardExport](https://github.com/panoramicdata/PanoramicData.MicrosoftWhiteboardExport) (third party, MIT)                                                            | 2026-07-27           |
+| W12 | [Graph: download driveItem content](https://learn.microsoft.com/en-us/graph/api/driveitem-get-content)                                                                                            | not shown            |
+| W14 | [Migration of Whiteboards from Azure to OneDrive](https://support.microsoft.com/en-us/whiteboard/migration-of-whiteboards-from-azure-to-onedrive)                                                 | not shown            |
+| W15 | [Whiteboard web app](https://whiteboard.cloud.microsoft/) build 26.10910.101 and its [en-us strings](https://whiteboard.cloud.microsoft/blueboard/26.10910.101/resources/locales/en-us/main.json) | build 26.10910.101   |
