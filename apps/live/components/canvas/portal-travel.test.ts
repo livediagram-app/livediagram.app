@@ -1,6 +1,9 @@
+// @vitest-environment jsdom
+
+import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement, type Tab } from '@livediagram/diagram';
-import { makePortalTravel, type PortalTravelDeps } from './portal-travel';
+import { usePortalTravel, type PortalTravelDeps } from './portal-travel';
 
 // Going through a portal (docs/specs/009-elements/portal-element.md) does three things that have to happen
 // together: switch tab when the far portal is on another one, centre the camera
@@ -22,20 +25,23 @@ function setup(over: Partial<PortalTravelDeps> = {}) {
   const onFollowLink = vi.fn();
   const setViewportOffset = vi.fn();
   const teleportTo = vi.fn();
-  const travel = makePortalTravel({
-    elements: [],
-    activeTabId: 't1',
-    onFollowLink,
-    mainRef: viewport as unknown as PortalTravelDeps['mainRef'],
-    viewportZoom: 1,
-    setViewportOffset,
-    teleportTo,
-    ...over,
-  });
+  const { result } = renderHook(() =>
+    usePortalTravel({
+      elements: [],
+      activeTabId: 't1',
+      onFollowLink,
+      mainRef: viewport as unknown as PortalTravelDeps['mainRef'],
+      viewportZoom: 1,
+      setViewportOffset,
+      teleportTo,
+      ...over,
+    }),
+  );
+  const travel = result.current;
   return { travel, onFollowLink, setViewportOffset, teleportTo };
 }
 
-describe('makePortalTravel', () => {
+describe('usePortalTravel', () => {
   it('switches tab first when the far portal is on another one', () => {
     const here = portal('a', { portalTarget: 'b' });
     const there = portal('b');

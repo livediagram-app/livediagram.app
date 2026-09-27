@@ -70,6 +70,8 @@ type Api = {
   // the document focus isn't in an input. Canvas's pointerdown
   // reads this to decide pan vs marquee.
   spaceHeldRef: RefObject<boolean>;
+  // The same, as state, for what render shows (the canvas cursor).
+  spaceHeld: boolean;
 };
 
 export function useCanvasPanAndMarquee(deps: Deps): Api {
@@ -86,8 +88,10 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
 
   // Held-Space modifier turns canvas drag into a pan instead of a
   // marquee. Tracked via a ref so the pointerdown handler always
-  // sees the current value without re-binding when state changes.
+  // sees the current value without re-binding when state changes,
+  // and mirrored in state for the cursor render reads.
   const spaceHeldRef = useRef(false);
+  const [spaceHeld, setSpaceHeld] = useState(false);
   useEffect(() => {
     const isTypingTarget = (t: EventTarget | null) =>
       t instanceof HTMLInputElement ||
@@ -101,10 +105,12 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       // for those.
       e.preventDefault();
       spaceHeldRef.current = true;
+      setSpaceHeld(true);
     };
     const up = (e: KeyboardEvent) => {
       if (e.code !== 'Space') return;
       spaceHeldRef.current = false;
+      setSpaceHeld(false);
     };
     document.addEventListener('keydown', down);
     document.addEventListener('keyup', up);
@@ -265,5 +271,5 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
     };
   }, [depsRef, marquee]);
 
-  return { pan, setPan, marquee, setMarquee, spaceHeldRef };
+  return { pan, setPan, marquee, setMarquee, spaceHeldRef, spaceHeld };
 }
