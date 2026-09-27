@@ -101,12 +101,19 @@ describe('paintableBoxedFields', () => {
       iconAnimation: 'spin',
       iconAnimationSpeed: 'fast',
       iconSize: 'xl',
+      iconWeight: 'bold',
     });
     // The union's Partial hides shape-only fields; read structurally.
-    const icon = out as { iconAnimation?: string; iconAnimationSpeed?: string; iconSize?: string };
+    const icon = out as {
+      iconAnimation?: string;
+      iconAnimationSpeed?: string;
+      iconSize?: string;
+      iconWeight?: string;
+    };
     expect(icon.iconAnimation).toBe('spin');
     expect(icon.iconAnimationSpeed).toBe('fast');
     expect(icon.iconSize).toBe('xl');
+    expect(icon.iconWeight).toBe('bold');
     // Identity stays with the target: the glyph itself is never painted.
     expect(out).not.toHaveProperty('iconId');
   });

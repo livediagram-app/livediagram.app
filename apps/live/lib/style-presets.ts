@@ -25,6 +25,7 @@ import {
   type Element,
   type IconPosition,
   type IconSize,
+  type IconWeight,
   type Padding,
   type ShapeKind,
   isChartShape,
@@ -36,6 +37,7 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import type { ShapeColorPreset } from './themes';
+import { isTechIconId } from './tech-icons';
 import type { TablePreset } from '@livediagram/diagram';
 
 // Apply a theme-derived style preset to a shape: its colours (fill + stroke +
@@ -212,6 +214,14 @@ export function applyShapeKindToEl(el: Element, kind: ShapeKind): Element {
 // A Technology icon's fixed tile-size preset (docs/specs/010-palette/technology-icons.md). Icon shapes only.
 export function applyIconSizeToEl(el: Element, iconSize: IconSize): Element {
   return el.type === 'shape' && el.shape === 'icon' ? { ...el, iconSize } : el;
+}
+
+// A line-art icon's thin / regular / bold weight (docs/specs/004-interface-design/iconography.md). Technology
+// marks are filled tiles and keep their art, so they are left alone.
+export function applyIconWeightToEl(el: Element, iconWeight: IconWeight): Element {
+  return el.type === 'shape' && el.shape === 'icon' && !isTechIconId(el.iconId)
+    ? { ...el, iconWeight }
+    : el;
 }
 
 // Status markers (docs/specs/009-elements/shape-markers.md): the glyph shown inside the shape, left of its

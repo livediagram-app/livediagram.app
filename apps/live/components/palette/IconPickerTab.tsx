@@ -1,6 +1,6 @@
 import { ICON_CATEGORIES, ICON_DND_MIME, iconsInCategory, type IconDef } from '@/lib/icons';
 import { IconButton } from '@/components/palette/palette-controls';
-import { IconPrims } from '@/components/primitives/icon-glyph';
+import { CatalogIconThumb } from '@/components/primitives/icon-glyph';
 import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
 
 type IconPickerTabProps = {
@@ -33,19 +33,7 @@ function IconTile({ icon, onAdd }: { icon: IconDef; onAdd: (id: string) => void 
         e.dataTransfer.effectAllowed = 'copy';
       }}
     >
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <IconPrims iconId={icon.id} />
-      </svg>
+      <CatalogIconThumb iconId={icon.id} />
     </IconButton>
   );
 }
@@ -79,21 +67,7 @@ export function IconPickerTab({
       label: cat.label,
       // No description: "People" and "Arrows" say what they hold, and a
       // hover card restating the label would just be a delay.
-      icon: first ? (
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <IconPrims iconId={first.id} />
-        </svg>
-      ) : null,
+      icon: first ? <CatalogIconThumb iconId={first.id} /> : null,
       items,
     };
   });

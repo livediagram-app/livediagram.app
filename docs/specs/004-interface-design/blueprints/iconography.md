@@ -10,8 +10,8 @@ Derived from [Iconography](../iconography.md).
 | Stroke in units    | `strokeUnits(px, sizePx, units)`                                                                                     | `packages/icons/src/weight.ts`                       |
 | Icon size step     | `GlyphSize` = `12 \| 14 \| 16 \| 20 \| 24`, `GLYPH_SIZES`                                                            | `packages/icons/src/weight.ts`                       |
 | Icon primitive     | `Glyph`                                                                                                              | `packages/ui/src/icons/Glyph.tsx`                    |
-| Icon weight        | `IconWeight` = `'thin' \| 'regular' \| 'bold'`                                                                       | packages/diagram/src/icon-weight.ts (planned)        |
-| Icon weight px     | `ICON_WEIGHT_PX`, `DEFAULT_ICON_WEIGHT`                                                                              | packages/diagram/src/icon-weight.ts (planned)        |
+| Icon weight        | `IconWeight` = `'thin' \| 'regular' \| 'bold'`                                                                       | `packages/diagram/src/icon-weight.ts`                |
+| Icon weight px     | `ICON_WEIGHT_PX`, `DEFAULT_ICON_WEIGHT`                                                                              | `packages/diagram/src/icon-weight.ts`                |
 | Element field      | `iconWeight?: IconWeight`                                                                                            | `BoxedElement` in `element-types.ts`                 |
 | Vendored Lucide    | one `lucide<Name>` export per glyph in `packages/icons/src/lucide.generated.ts`, subpath `@livediagram/icons/lucide` | written by `packages/icons/scripts/vendor-lucide.ts` |
 | Vendor manifest    | `packages/icons/lucide-manifest.json`                                                                                | pinned version + glyph names                         |
@@ -64,7 +64,7 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 
 - `iconWeight` is optional and persisted with the element like `iconSize`. Absent means `regular`. No migration.
 - Diagrams saved before this change render at 1.5px instead of 2px. This is the intended refinement.
-- The format painter copies `iconWeight` (format group `size`). Change summaries list it under `ICON_KEYS`. Style presets carry it.
+- The format painter copies `iconWeight` (format group `size`). Change summaries list it under `ICON_KEYS`.
 
 ## Errors and edge cases
 
@@ -87,13 +87,13 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 
 ## Presentation and UX
 
-- The icon context menu gains a **Weight** row of three tiles (Thin, Regular, Bold), each previewing the selected glyph at that weight. It sits beside the icon Size row and follows the menu tile grid.
+- The icon context menu gains a **Weight** accordion section of three tiles (Thin, Regular, Bold), each drawing the selected glyph at that weight (`IconWeightTiles`). The multi-selection menu shows the same row when the selection holds a line-art icon.
 - Copy: row label "Weight"; tiles "Thin", "Regular", "Bold".
 - Hover previews the weight live, as the Size row does.
 
 ## Accessibility
 
-- Weight tiles are a radio group (`role="radiogroup"`, `aria-checked`), keyboard-operable like the Size row.
+- Weight tiles are toggle buttons (`aria-pressed`), like every menu tile row (`SizeButton`), and keyboard-operable.
 - `Glyph` stays `aria-hidden`. The control that holds it carries the name.
 - At 1.25–1.5px on-screen stroke, glyphs keep 3:1 non-text contrast against the dark and light surfaces the contrast audit already covers.
 
@@ -104,7 +104,7 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 
 ## Observability
 
-- Weight change: `track('Icon', 'SetWeight', <IconWeight>)`, using the existing telemetry categories where one fits.
+- Weight change: `track('Element', 'Changed', 'IconWeight')`, the pair every style commit uses (`commitStyle` in `useStylePreview`).
 - The vendor script logs `vendor-lucide: wrote <n> glyphs from lucide-static@<version>`.
 - The centring test failure names the file, the export and the offset in px.
 
@@ -118,7 +118,8 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 | Vendored, pinned, attributed      | `lucide-vendor.test.ts`: pinned version, manifest equals exports, file current, licence verbatim |
 | Icon weight default + map         | `icon-weight.test.ts`                                                                            |
 | Export honours weight             | `svg-render.test.ts`                                                                             |
-| Weight UI                         | e2e `icon-weight.spec.ts`: set Bold, reload, export                                              |
+| Weight UI                         | e2e `icon-weight.spec.ts`: regular by default, set Bold, reload                                  |
+| Weight on elements                | `style-presets.test.ts` (`applyIconWeightToEl`), `format-painter.test.ts`                        |
 | Furniture silhouettes distinct    | `icon-catalog.test.ts`: no two ids share prims                                                   |
 | No same-provider tech glyph dupes | `tech-icon-catalog.test.ts`                                                                      |
 | No raw svg outside homes          | lint rule `livediagram/no-raw-svg` + its rule test                                               |

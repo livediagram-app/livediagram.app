@@ -441,6 +441,7 @@ export * from './web-components';
 export * from './behaviour-shapes';
 export * from './colors';
 export * from './icon-size';
+export * from './icon-weight';
 
 // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): the runs-as-delta model + pure
 // helpers shared by the canvas renderer and the contentEditable editor.

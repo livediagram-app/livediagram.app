@@ -94,6 +94,7 @@ const FIELD_GROUP: Record<string, FormatGroup> = {
   aspectLocked: 'size',
   padding: 'size',
   iconSize: 'size',
+  iconWeight: 'size',
 };
 
 export function formatGroupOf(field: string): FormatGroup | undefined {

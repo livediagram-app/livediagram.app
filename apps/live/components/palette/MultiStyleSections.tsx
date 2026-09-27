@@ -9,6 +9,7 @@ import {
   defaultArrowStrokeColor,
   defaultFillColor,
   defaultStrokeColor,
+  DEFAULT_ICON_WEIGHT,
   defaultTextColor,
   isChartShape,
   PIE_LOOPING_ANIMS,
@@ -21,6 +22,7 @@ import {
   type ElementShadow,
   type ShapeElement,
 } from '@livediagram/diagram';
+import { isTechIconId } from '@/lib/tech-icons';
 import {
   AnimationMenuGlyph,
   BorderGlyph,
@@ -33,6 +35,7 @@ import {
   FlowTiles,
   IconAnimationTiles,
   IconSizeTiles,
+  IconWeightTiles,
 } from '@/components/palette/context-menu-tiles';
 import { ColourRow, PieAnimTiles } from '@/components/palette/context-menu-rows';
 import { ShadowSection } from '@/components/palette/ShadowSection';
@@ -104,6 +107,11 @@ export function MultiStyleSections({
     boxedSel.length > 0 && boxedSel.every((el) => el.type === 'shape' && el.shape === 'icon');
   const chartSrc = allCharts ? (boxedSel[0] as ShapeElement) : undefined;
   const iconSrc = allIcons ? (boxedSel[0] as ShapeElement) : undefined;
+  // First line-art icon: gates + feeds the Weight row, which applies to every line-art icon.
+  const lineIconSrc = boxedSel.find(
+    (el): el is ShapeElement =>
+      el.type === 'shape' && el.shape === 'icon' && !isTechIconId(el.iconId),
+  );
   return (
     <>
       {/* Animation (docs/specs/008-canvas/canvas-and-palette.md) — applies to every boxed member of the
@@ -273,6 +281,22 @@ export function MultiStyleSections({
             value={techIconSrc.iconSize ?? 'md'}
             onSet={props.onSetIconSize}
             onPreview={props.onPreviewIconSize}
+            onPreviewEnd={props.onPreviewStyleEnd}
+          />
+        </MenuAccordionSection>
+      ) : null}
+      {/* Weight — every line-art icon in the selection (docs/specs/004-interface-design/iconography.md). */}
+      {part === 'motion' && lineIconSrc ? (
+        <MenuAccordionSection
+          title="Weight"
+          icon={<IconCategoryGlyph />}
+          {...sectionProps('m-icon-weight')}
+        >
+          <IconWeightTiles
+            iconId={lineIconSrc.iconId}
+            value={lineIconSrc.iconWeight ?? DEFAULT_ICON_WEIGHT}
+            onSet={props.onSetIconWeight}
+            onPreview={props.onPreviewIconWeight}
             onPreviewEnd={props.onPreviewStyleEnd}
           />
         </MenuAccordionSection>

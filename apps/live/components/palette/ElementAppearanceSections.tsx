@@ -30,6 +30,8 @@ import {
   supportsBorderControls,
   supportsColours,
   type IconSize,
+  type IconWeight,
+  DEFAULT_ICON_WEIGHT,
   type Padding,
   type TextAlignX,
   type TextAlignY,
@@ -50,7 +52,7 @@ import {
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { TypographySections } from './TypographySections';
 
-import { IconSizeTiles } from '@/components/palette/context-menu-tiles';
+import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
 import { isTechIconId } from '@/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
@@ -255,6 +257,25 @@ export function ElementAppearanceSections({
               value={(target as { iconSize?: IconSize }).iconSize ?? DEFAULT_ICON_SIZE}
               onSet={props.onSetIconSize}
               onPreview={props.onPreviewIconSize}
+              onPreviewEnd={props.onPreviewStyleEnd}
+            />
+          </MenuAccordionSection>
+        </>
+      ) : null}
+      {/* Weight — a line-art icon's thin / regular / bold stroke (docs/specs/004-interface-design/iconography.md). */}
+      {isIcon && !isTechIconId((target as { iconId?: string }).iconId) ? (
+        <>
+          <MenuGroupSeparator />
+          <MenuAccordionSection
+            title="Weight"
+            icon={<IconCategoryGlyph />}
+            {...sectionProps('icon-weight')}
+          >
+            <IconWeightTiles
+              iconId={(target as { iconId?: string }).iconId}
+              value={(target as { iconWeight?: IconWeight }).iconWeight ?? DEFAULT_ICON_WEIGHT}
+              onSet={props.onSetIconWeight}
+              onPreview={props.onPreviewIconWeight}
               onPreviewEnd={props.onPreviewStyleEnd}
             />
           </MenuAccordionSection>

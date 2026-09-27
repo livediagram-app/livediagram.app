@@ -16,6 +16,7 @@ import type { MindFlow } from './mind-flow';
 import type { ChartPaletteId } from './chart-palettes';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
+import type { IconWeight } from './icon-weight';
 import type { EmbedProvider } from './youtube';
 import type { ParticipantResponse } from './responses';
 import type { QaNote } from './qa-board';
@@ -102,6 +103,9 @@ export type ShapeElement = {
   // default preset ('md'). Ignored by line-art icons, which keep scaling
   // with their box.
   iconSize?: IconSize;
+  // Line weight of a line-art icon glyph (docs/specs/004-interface-design/iconography.md): thin / regular /
+  // bold on-screen stroke. Undefined = regular. Ignored by Technology marks, which are filled tiles.
+  iconWeight?: IconWeight;
   // Where the inline icon sits relative to the shape's text label (only
   // meaningful on a non-'icon' shape carrying an `iconId`). Defaults to
   // 'left' when unset. Chosen by which side of the shape the icon was

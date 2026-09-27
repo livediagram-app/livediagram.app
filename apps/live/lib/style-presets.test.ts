@@ -13,6 +13,7 @@ import {
   applyTablePresetToEl,
   applyFillColorToEl,
   applyHeaderFillToEl,
+  applyIconWeightToEl,
   applyRotationToEl,
   applyShadowToEl,
   applyStrokeColorToEl,
@@ -342,5 +343,19 @@ describe('any other colour edit drops a quick-swatch binding (docs/specs/008-can
       borderStyle: 'solid',
     } as ShapeColorPreset);
     expect(next).toMatchObject({ strokeSwatch: undefined, fillSwatch: undefined });
+  });
+});
+
+describe('applyIconWeightToEl', () => {
+  it('sets the weight on a line-art icon', () => {
+    const icon = el('shape', { shape: 'icon', iconId: 'server' });
+    expect(applyIconWeightToEl(icon, 'bold')).toMatchObject({ iconWeight: 'bold' });
+  });
+
+  it('leaves Technology marks and other elements untouched', () => {
+    const tech = el('shape', { shape: 'icon', iconId: 'aws-s3' });
+    expect(applyIconWeightToEl(tech, 'bold')).toBe(tech);
+    const square = el('shape');
+    expect(applyIconWeightToEl(square, 'thin')).toBe(square);
   });
 });

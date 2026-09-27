@@ -527,9 +527,19 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('<path d="M1 2"/>');
       expect(svg).toContain('viewBox="0 0 24 24"');
       expect(svg).toContain('stroke="#123456"');
-      // 48px box over a 24-unit viewBox = 2x scale, so the 2px on-screen
-      // stroke exports as 1 glyph unit.
-      expect(svg).toContain('stroke-width="1"');
+      // 48px box over a 24-unit viewBox = 2x scale, so the regular 1.5px
+      // on-screen stroke exports as 0.75 glyph units.
+      expect(svg).toContain('stroke-width="0.75"');
+    });
+
+    it('exports the element icon weight as its on-screen stroke', () => {
+      const art = { resolveIconArt: () => ({ markup: '<path d="M1 2"/>', colored: false }) };
+      expect(renderElementsToSvg(tab([icon({ iconWeight: 'bold' })]), art)).toContain(
+        'stroke-width="1.13"',
+      );
+      expect(renderElementsToSvg(tab([icon({ iconWeight: 'thin' })]), art)).toContain(
+        'stroke-width="0.5"',
+      );
     });
 
     it('scales a captioned glyph into the band opposite the label (docs/specs/010-palette/technology-icons.md bands)', () => {

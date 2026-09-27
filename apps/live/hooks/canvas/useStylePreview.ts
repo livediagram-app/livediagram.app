@@ -42,6 +42,7 @@ import type {
   IconPosition,
   ElementShadow,
   IconSize,
+  IconWeight,
   Padding,
   ShapeKind,
   ShapeMarker,
@@ -63,6 +64,7 @@ import {
   applyFontToEl,
   applyShadowToEl,
   applyIconSizeToEl,
+  applyIconWeightToEl,
   applyInlineIconToEl,
   applyMarkerSizeToEl,
   applyMarkerToEl,
@@ -282,6 +284,10 @@ export function useStylePreview(deps: {
     // Tech-icon fixed tile size (docs/specs/010-palette/technology-icons.md).
     previewIconSize: (v: IconSize) => previewStyle((el) => applyIconSizeToEl(el, v)),
     commitIconSize: (v: IconSize) => commitStyle((el) => applyIconSizeToEl(el, v), 'IconSize'),
+    // Line-art icon weight (docs/specs/004-interface-design/iconography.md).
+    previewIconWeight: (v: IconWeight) => previewStyle((el) => applyIconWeightToEl(el, v)),
+    commitIconWeight: (v: IconWeight) =>
+      commitStyle((el) => applyIconWeightToEl(el, v), 'IconWeight'),
     // Status markers (docs/specs/009-elements/shape-markers.md) + their size row.
     previewMarker: (v: ShapeMarker | null) => previewStyle((el) => applyMarkerToEl(el, v)),
     commitMarker: (v: ShapeMarker | null) => commitStyle((el) => applyMarkerToEl(el, v), 'Marker'),

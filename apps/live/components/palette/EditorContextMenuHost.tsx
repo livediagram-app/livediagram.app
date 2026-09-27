@@ -35,6 +35,8 @@ export function EditorContextMenuHost() {
     previewInlineIcon,
     commitIconSize,
     previewIconSize,
+    commitIconWeight,
+    previewIconWeight,
     commitTextAlign,
     previewTextAlign,
     bringSelectedToFront,
@@ -233,6 +235,8 @@ export function EditorContextMenuHost() {
       onPreviewIconPosition={previewInlineIcon}
       onSetIconSize={commitIconSize}
       onPreviewIconSize={previewIconSize}
+      onSetIconWeight={commitIconWeight}
+      onPreviewIconWeight={previewIconWeight}
       onSetTextAlign={commitTextAlign}
       onPreviewTextAlign={previewTextAlign}
       onBringToFront={bringSelectedToFront}

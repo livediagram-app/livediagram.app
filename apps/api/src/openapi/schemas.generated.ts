@@ -2814,6 +2814,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "IconWeight": {
+    "enum": [
+      "thin",
+      "regular",
+      "bold"
+    ],
+    "type": "string"
+  },
   "ImageElement": {
     "additionalProperties": false,
     "properties": {
@@ -3734,6 +3742,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "iconSize": {
         "$ref": "#/components/schemas/IconSize"
+      },
+      "iconWeight": {
+        "$ref": "#/components/schemas/IconWeight"
       },
       "id": {
         "$ref": "#/components/schemas/ElementId"

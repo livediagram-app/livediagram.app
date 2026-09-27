@@ -28,6 +28,7 @@ import type {
   IconAnimation,
   IconPosition,
   IconSize,
+  IconWeight,
   Padding,
   TextAlignX,
   TextAlignY,
@@ -341,6 +342,10 @@ export type EditorContextMenuProps = {
   // hover-preview pair.
   onSetIconSize: (size: IconSize) => void;
   onPreviewIconSize: (size: IconSize) => void;
+  // A line-art icon's thin / regular / bold weight (docs/specs/004-interface-design/iconography.md).
+  // Commit + hover-preview pair.
+  onSetIconWeight: (weight: IconWeight) => void;
+  onPreviewIconWeight: (weight: IconWeight) => void;
   // Whole-element text alignment (the same 3x3 grid as the text toolbar's
   // alignment dropdown — surfaced in both places for discovery, docs/specs/008-canvas/canvas-and-palette.md).
   // Commit + hover-preview pair.

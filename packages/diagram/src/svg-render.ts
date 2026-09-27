@@ -8,6 +8,7 @@
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
 import { iconBandBounds, techIconMarkBounds } from './icon-size';
+import { iconWeightPx } from './icon-weight';
 import {
   hasShapeSilhouette,
   scaledPolygonPoints,
@@ -194,7 +195,8 @@ export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: strin
   }
   const band = iconBandBounds(el);
   const scale = Math.min(band.width / 24, band.height / 24);
-  const strokeWidth = scale > 0 ? 2 / scale : 2;
+  const px = iconWeightPx(el.type === 'shape' ? el.iconWeight : undefined);
+  const strokeWidth = scale > 0 ? px / scale : px;
   return (
     `<svg x="${r2(band.x)}" y="${r2(band.y)}" width="${r2(band.width)}" height="${r2(band.height)}"` +
     ` viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible"` +
