@@ -396,18 +396,25 @@ shared stages of [Board import](../specs/020-import-export/board-import.md).
 Read from the shipped web app (`whiteboard.cloud.microsoft`, build
 26.10910.101) and its `en-us` strings on 2026-09-27; see E-4.
 
-| Claim                                                                                                                                                                                                                                                   | Status                                                                                            | Source      |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------- |
-| Settings (gear) shows **Export**, which opens **Export board as** with two groups: **Quick export** ("Easy to save and share.") and **Full export**.                                                                                                    | Verified                                                                                          | [W15]       |
-| Quick export, **Image**: a PNG, "Standard resolution. Good for email." (longest side up to **5,000 px**) or "High resolution. File size may be large." (up to **16,200 px**).                                                                           | Verified (constants `r=5e3`, `a=16200` logged as `MaxDimension`, `Type: PNG`)                     | [W15]       |
-| Quick export, **PDF**: only in the Windows desktop app or on Surface Hub, behind a feature flag and minimum app version. Not on the web; the desktop app is retired.                                                                                    | Verified                                                                                          | [W15]       |
-| Full export, **Zip (HTML+JSON)**: "Includes comments (JSON), alt text, and links that can be utilized for data analysis or exporting to another application." Hidden only in the iOS and Android apps and Teams on mobile.                              | Verified                                                                                          | [W15]       |
-| The Zip holds `<title>.html`, a clone of the rendered canvas with images inlined as data URLs, Loop and app frames replaced by placeholders, over the canvas background SVG; and `<title>-comments.json` with comment threads keyed to ids in the HTML. | Verified (export code)                                                                            | [W15]       |
-| Ink in the rendered canvas is vector SVG paths; notes and text are HTML.                                                                                                                                                                                | Unverified here (third-party report, consistent with the export code cloning the DOM)             | [W11]       |
-| The Zip is offered, and completes, on a read-only personal board.                                                                                                                                                                                       | Unverified (the menu shows it wherever the board may be printed; the operator's export will tell) | E-C1        |
-| Items outside the viewport are present in the HTML (the canvas may not render off-screen items).                                                                                                                                                        | Unverified                                                                                        | E-C1        |
-| No SVG export exists in the current web app (the 2023 admin doc's "Export image (SVG)" is gone); the only export type logged is PNG.                                                                                                                    | Verified (absence in the export code)                                                             | [W15], [W3] |
-| No bulk export: one board at a time.                                                                                                                                                                                                                    | Verified (every export acts on the open board)                                                    | [W15]       |
+| Claim                                                                                                                                                                                                                                                                                                                                                    | Status                                                                                            | Source      |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------- |
+| Settings (gear) shows **Export**, which opens **Export board as** with two groups: **Quick export** ("Easy to save and share.") and **Full export**.                                                                                                                                                                                                     | Verified                                                                                          | [W15]       |
+| Quick export, **Image**: a PNG, "Standard resolution. Good for email." (longest side up to **5,000 px**) or "High resolution. File size may be large." (up to **16,200 px**).                                                                                                                                                                            | Verified (constants `r=5e3`, `a=16200` logged as `MaxDimension`, `Type: PNG`)                     | [W15]       |
+| Quick export, **PDF**: only in the Windows desktop app or on Surface Hub, behind a feature flag and minimum app version. Not on the web; the desktop app is retired.                                                                                                                                                                                     | Verified                                                                                          | [W15]       |
+| Full export, **Zip (HTML+JSON)**: "Includes comments (JSON), alt text, and links that can be utilized for data analysis or exporting to another application." Hidden only in the iOS and Android apps and Teams on mobile.                                                                                                                               | Verified                                                                                          | [W15]       |
+| The Zip holds `<title>.html`, a clone of the rendered canvas with images inlined as data URLs, Loop and app frames replaced by placeholders, over the canvas background SVG; and `<title>-comments.json` with comment threads keyed to ids in the HTML.                                                                                                  | Verified (export code)                                                                            | [W15]       |
+| The Zip is written with `fflate` at compression level 0: both entries are **stored**, not deflated.                                                                                                                                                                                                                                                      | Verified (export code)                                                                            | E-5         |
+| `<title>.html` is `<html><head><style>…</style></head><body>` then one `div` whose style is `transform: translate(Xpx, Ypx) scale(S)` (zoom to fit, scale at most 1), holding `<svg class="canvasBackground">` and the cloned `div.canvasContent`.                                                                                                       | Verified (export code)                                                                            | E-5         |
+| Each board item is an anchor `div` with classes `anchor canvasChildElement align <origin>`, attributes `data-whiteboard-type` and `data-apikey` (the item id), and a style of `left`, `top` (board px) plus an optional `transform` matrix for scale and rotation. Inside it sits `div.canvasChild` with the item's content.                             | Verified (render code)                                                                            | E-5         |
+| `data-whiteboard-type` takes `Note`, `PlainText`, `ListItem`, `List`, `TemplateTitle`, `LegacySticker`, `WorkItem`, `Shape`; the item schemas include `BpInkGroup`, `Image` (subtype `ReactionStickers` for reactions), `ListContainer` (subtype `GridList`), `Connector`, `ShapeWithTextBox`, `TextBox`, `PreviewCard`, `BpLoopObject`, `UnknownChild`. | Verified (render code)                                                                            | E-5         |
+| Ink renders as SVG: one `g.inkStroke` per stroke with a `transform`, holding a `path` whose `d` is the stroke **outline** filled with `rgba(r,g,b,a)` (not a centreline with a stroke width). A highlighter stroke's `g` carries `mix-blend-mode: darken`.                                                                                               | Verified (render code)                                                                            | E-5         |
+| Thin strokes also carry a hidden `polyline.inkHitTestOverlay` whose `points` are the stroke's **centreline** (rounded to whole px); its `points` stay empty when the stroke is wider than the hit-test width.                                                                                                                                            | Verified (render code); presence in exports unverified                                            | E-5, E-C1   |
+| Whiteboard shapes (rectangle, ellipse, triangle, diamond, block arrow, star, cloud, line, …) are ink shapes: an ink group with a recognised shape kind.                                                                                                                                                                                                  | Verified (render code)                                                                            | E-5         |
+| Notes, text, text inside shapes, connectors, images and reactions are HTML or SVG inside the anchor; their exact markup is not read from the bundle.                                                                                                                                                                                                     | Unverified                                                                                        | E-C1        |
+| The Zip is offered, and completes, on a read-only personal board.                                                                                                                                                                                                                                                                                        | Unverified (the menu shows it wherever the board may be printed; the operator's export will tell) | E-C1        |
+| Items outside the viewport are present in the HTML (the canvas may not render off-screen items).                                                                                                                                                                                                                                                         | Unverified                                                                                        | E-C1        |
+| No SVG export exists in the current web app (the 2023 admin doc's "Export image (SVG)" is gone); the only export type logged is PNG.                                                                                                                                                                                                                     | Verified (absence in the export code)                                                             | [W15], [W3] |
+| No bulk export: one board at a time.                                                                                                                                                                                                                                                                                                                     | Verified (every export acts on the open board)                                                    | [W15]       |
 
 ### C3. Other routes, for completeness
 
@@ -420,11 +427,11 @@ Read from the shipped web app (`whiteboard.cloud.microsoft`, build
 ### C4. Import route
 
 Specified in [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md):
-v1 imports the exported **PNG** as one image. The Full export Zip is the richer
-source (editable ink and notes) but its HTML is Whiteboard's internal markup,
-so its mapping is specified only once real exports exist. Because the boards
-disappear on 2026-10-16, both files must be exported now, whatever is built
-later.
+the **Full export Zip** is the primary route, parsed into editable strokes,
+stickies, text, shapes and arrows; the exported **PNG** is the fallback, one
+image per board. The Zip's markup is read from the bundle (E-5) and confirmed
+from the operator's exports (E-C1). Because the boards disappear on 2026-10-16,
+both files must be exported now, whatever is built later.
 
 ### Exporting personal boards before 2026-10-16
 
@@ -492,6 +499,17 @@ Transfer-Encoding, X-GUploader-UploadID, ...` (no `Location` on a 401).
   `<title>.html` plus `<title>-comments.json`), and the `AzureDeprecation`
   strings. No sign-in was used; nothing was sent to the service beyond static
   file requests.
+- **E-5 Whiteboard canvas markup** (2026-09-28): the same build's chunks, read
+  for what the Zip clones. The Zip writer (`callouts` chunk) calls fflate's
+  `zip` with `{ level: 0 }` and wraps the clone as described in C2. The
+  canvas-child wrapper (`BoardEditorComponent` chunk) renders the anchor
+  `div` (`anchor` + `canvasChildElement`, `data-whiteboard-type`,
+  `data-apikey`) positioned by `left` / `top` and a `matrix()` transform
+  composed of scale, rotation and origin offset. `InkGroupConnected` renders
+  each stroke as `g.inkStroke` with filled outline `path`s and a hidden
+  centreline `polyline.inkHitTestOverlay`, highlighter strokes with
+  `mix-blend-mode: darken`. Source maps are not published (404). Static file
+  requests only; no sign-in.
 
 ## Experiments still needed
 
@@ -510,16 +528,11 @@ Transfer-Encoding, X-GUploader-UploadID, ...` (no `Location` on a 401).
 
 ## Open questions
 
-Tracked here until answered; each answer moves into a spec.
-
-1. **Whiteboard picture size:** at the shared 2,048 px limit, handwriting on a
-   large board becomes unreadable. Keep it, raise it for whole-board pictures, or
-   tile the picture?
-2. **Whiteboard and the image cap:** the hosted cap is 100 images per owner, so
-   more than 100 boards cannot all arrive as pictures. Accept placeholders, or
-   treat board pictures differently?
-3. **Whiteboard Zip:** once the operator's Zips are in, specify a structured
-   import of them (editable ink and notes)?
+Tracked here until answered; each answer moves into a spec. The three
+Whiteboard questions (picture size, the image cap, a structured Zip import) are
+answered in [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md):
+the Zip route keeps ink as vectors and costs the gallery only a board's own
+pictures, and the picture route keeps the shared 2,048 px limit.
 
 ## Sources
 
