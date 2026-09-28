@@ -35,7 +35,6 @@ function renderDialog(over: Partial<ShareDialogProps> = {}) {
     sharePassword: null,
     shareUrlFor: (code) => `https://x.test/diagram/shared?s=${code}`,
     tabs: TABS,
-    nameConfirmed: true,
     lockedName: 'Ada',
     onSaveName: vi.fn(),
     onCreateLink: vi.fn(),

@@ -169,7 +169,7 @@ function ShareDialog({ variant }: { variant: ShareVariant }) {
               strokeWidth={1.5}
             />
             <Label x={dx + 16} y={dy + 150} size={8} weight={700} tone="muted">
-              VALID FOR
+              VALID
             </Label>
             {/* The four-way segmented control, 1 month selected. */}
             <rect

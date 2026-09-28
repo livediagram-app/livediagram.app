@@ -15,6 +15,8 @@ export const EXPIRY_LABELS: Record<Exclude<ShareLinkExpiry, 'never'>, string> = 
 // Also what a pass prints beside Valid when it never expires.
 export const FOREVER_LABEL = 'Forever';
 
+// The lifetimes a new pass can be issued with (docs/specs/013-workspace/share-link-expiry.md), in the
+// order the Valid control shows them. Forever = never expires, the default.
 export const LIFETIMES: { value: ShareLinkExpiry; label: string }[] = [
   { value: 'never', label: FOREVER_LABEL },
   { value: 'week', label: '1 week' },

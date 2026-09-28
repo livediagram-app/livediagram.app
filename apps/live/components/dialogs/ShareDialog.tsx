@@ -56,7 +56,7 @@ export function ShareDialog({
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const { copied: copiedCode, flash } = useCopiedFlash<string>(1500);
-  // The pass issued in this dialog session, which pops in on arrival.
+  // The pass issued in this dialog session, which opens into the list on arrival.
   const [freshCode, setFreshCode] = useState<string | null>(null);
   // ...and, for a beat after it lands, the one wearing the highlight ring
   // (a timer, then the ring's own 250ms fade: docs/specs/004-interface-design/motion.md).

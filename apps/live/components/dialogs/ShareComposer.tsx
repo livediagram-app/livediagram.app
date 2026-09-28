@@ -9,12 +9,10 @@ import { LIFETIMES, ROLE_PASS, SECTION_LABEL, ScopeOptions } from './share-dialo
 
 const ROLES: ShareRole[] = ['edit', 'view'];
 
-// The lifetimes a new pass can be issued with (docs/specs/013-workspace/share-link-expiry.md), in the
-// order the segmented control shows them. Forever = never expires, the default.
-
 // "Issue a pass" (docs/specs/007-editor/live-app.md "Layout, top to bottom"): two role cards as a
-// radio group, a sentence of options (the tabs it opens, how long it is valid), and one
-// full-width Create Pass button (it also copies the new link). Owns the draft pass; the dialog owns issuing it.
+// radio group, then the fine print: Opens (multi-tab only) and Valid, a sliding segmented control
+// ending in the Create Pass button (which also copies the new link). Owns the draft pass; the
+// dialog owns issuing it.
 export function ShareComposer({
   tabs,
   busy,

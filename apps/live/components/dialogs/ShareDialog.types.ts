@@ -14,9 +14,6 @@ export type ShareDialogProps = {
   // snapshot renders; picking another appends `?tab=<id>` to the image
   // URL. Only `id` + `name` are read.
   tabs: { id: string; name: string }[];
-  // Whether the owner has confirmed their name (drives the share button
-  // behaviour but no longer hides the identity card).
-  nameConfirmed: boolean;
   // When non-null, the owner is signed in via Clerk and their display
   // name is dictated by their account — there's nothing to edit, so
   // the "Your name" row hides entirely (docs/specs/007-editor/live-app.md). Guests (null) get
