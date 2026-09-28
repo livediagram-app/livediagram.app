@@ -975,6 +975,18 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timeline|Removed': 'Someone removed one or more entries from their Timeline feed.',
   'Timeline|Selected':
     "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
+  'Drive|Linked':
+    'Someone connected Google Drive, so their Personal Space is mirrored to their own Drive. The type says how: through the server (Broker) or with browser-only access (Browser).',
+  'Drive|Unlinked':
+    'Someone disconnected Google Drive. livediagram stops updating it, and the files stay in their Drive.',
+  'Drive|Changed':
+    "Google stopped accepting a mirror's access (revoked, or unused for six months), so the mirror asks to be reconnected. Nothing is deleted.",
+  'Drive|Created':
+    'A newly connected Personal Space finished copying every diagram into Google Drive for the first time.',
+  'Drive|Applied':
+    'A change someone made in Google Drive reached livediagram: a rename, a move (or a move into a folder livediagram cannot see), a bin, a restore, or a permanent delete.',
+  'Drive|Opened':
+    'Someone opened a livediagram file from Google Drive with Open with. The type is what happened: it opened, a copy was offered, or it could not be read.',
   'Trash|Opened': 'Someone opened the Trash, where deleted diagrams wait for 30 days.',
   'Trash|Cleared':
     'Someone emptied one group of their Trash (their own diagrams, a team, or this browser), deleting everything in it for good.',
