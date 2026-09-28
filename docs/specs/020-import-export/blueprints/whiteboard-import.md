@@ -33,9 +33,10 @@ Still to be written, each added to this table when it exists: the items reader (
 shapes, connectors, images, reactions, from E-C1) and the end-to-end spec (fixtures through the
 real dialog on the production build, persistence and undo).
 
-The shared import image pipeline (`feat/import-images`) and the shared import report
-(`feat/drawio-import`) are adopted, and linked from here, once they reach `main`; this importer
-defines no image or report machinery of its own.
+Images go through the shared [import image pipeline](../import-image-pipeline.md)
+(`apps/live/lib/import-images/`, [its blueprint](import-image-pipeline.md)); the shared import
+report (`feat/drawio-import`) is adopted, and linked from here, once it reaches `main`. This
+importer defines no image or report machinery of its own.
 
 ## Domain and naming
 

@@ -83,22 +83,22 @@ Every board item lands in exactly one of **imported**, **degraded** (imported
 with a named loss) or **skipped** (named by its Whiteboard kind), as
 [Board import](board-import.md) requires.
 
-| Whiteboard item                   | Becomes                                                                   | When degraded                                                                                   |
-| --------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Pen stroke                        | `freehand` stroke with its colour, opacity and width                      | Its centreline cannot be read: kept as its drawn outline, a filled closed `freehand`, same look |
-| Highlighter stroke                | `freehand` with `pen: 'highlighter'`, its colour and width                | as for a pen stroke                                                                             |
-| Ink shape (rectangle, ellipse, …) | The matching livediagram shape, with the ink's colour and width, no fill  | No livediagram match: kept as its ink strokes                                                   |
-| Ink line, curve, polyline         | `freehand` stroke                                                         |                                                                                                 |
-| Note                              | `sticky` with its colour and text                                         | A colour outside the sticky palette: nearest sticky colour                                      |
-| Note grid                         | Its notes, as stickies where they sit                                     | Always: the grid itself is not kept                                                             |
-| Text                              | `text` with its size, colour, weight and style                            | A size between presets: nearest preset                                                          |
-| Shape with text                   | The matching shape with the text as its label                             | as for an ink shape                                                                             |
-| Connector                         | `arrow`; attached to the items it joins when both are imported, else free | An arrowhead livediagram does not draw: the nearest one                                         |
-| Image                             | `image` through the shared image pipeline                                 | Not stored (gallery full, too large, …): a placeholder with its reason                          |
-| Reaction                          | `text` holding the reaction's emoji, where it sat                         |                                                                                                 |
-| Link preview                      | `link-card` for its URL                                                   |                                                                                                 |
-| Comment thread                    | A comment thread on the item it is anchored to                            | Anchored to nothing that was imported: skipped                                                  |
-| Loop component, app frame, other  | Skipped, named by kind                                                    |                                                                                                 |
+| Whiteboard item                   | Becomes                                                                      | When degraded                                                                                   |
+| --------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Pen stroke                        | `freehand` stroke with its colour, opacity and width                         | Its centreline cannot be read: kept as its drawn outline, a filled closed `freehand`, same look |
+| Highlighter stroke                | `freehand` with `pen: 'highlighter'`, its colour and width                   | as for a pen stroke                                                                             |
+| Ink shape (rectangle, ellipse, …) | The matching livediagram shape, with the ink's colour and width, no fill     | No livediagram match: kept as its ink strokes                                                   |
+| Ink line, curve, polyline         | `freehand` stroke                                                            |                                                                                                 |
+| Note                              | `sticky` with its colour and text                                            | A colour outside the sticky palette: nearest sticky colour                                      |
+| Note grid                         | Its notes, as stickies where they sit                                        | Always: the grid itself is not kept                                                             |
+| Text                              | `text` with its size, colour, weight and style                               | A size between presets: nearest preset                                                          |
+| Shape with text                   | The matching shape with the text as its label                                | as for an ink shape                                                                             |
+| Connector                         | `arrow`; attached to the items it joins when both are imported, else free    | An arrowhead livediagram does not draw: the nearest one                                         |
+| Image                             | `image` through the shared [import image pipeline](import-image-pipeline.md) | Not stored (gallery full, too large, …): a placeholder with its reason                          |
+| Reaction                          | `text` holding the reaction's emoji, where it sat                            |                                                                                                 |
+| Link preview                      | `link-card` for its URL                                                      |                                                                                                 |
+| Comment thread                    | A comment thread on the item it is anchored to                               | Anchored to nothing that was imported: skipped                                                  |
+| Loop component, app frame, other  | Skipped, named by kind                                                       |                                                                                                 |
 
 - The exact markup of notes, text, shapes' text, connectors, images and
   reactions is confirmed from real exports; the blueprint names what is
