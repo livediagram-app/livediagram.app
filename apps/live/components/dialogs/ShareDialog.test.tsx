@@ -101,17 +101,48 @@ describe('ShareDialog scope', () => {
 
 // The pass redesign (docs/specs/007-editor/live-app.md "Share dialog").
 describe('ShareDialog passes', () => {
-  it('issues a view pass from the Can View card and copies it', async () => {
+  it('issues a view pass from the Viewer card and copies it', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.assign(navigator, { clipboard: { writeText } });
     const created = link({ code: 'NEW23456', role: 'view' });
     const props = renderDialog({ onCreateLink: vi.fn().mockResolvedValue(created) });
-    fireEvent.click(screen.getByRole('radio', { name: /Can View/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Create & Copy View Pass' }));
+    fireEvent.click(screen.getByRole('radio', { name: /Viewer/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create Pass' }));
     await vi.waitFor(() => expect(props.onCreateLink).toHaveBeenCalledWith('view', 'never', null));
     await vi.waitFor(() =>
       expect(writeText).toHaveBeenCalledWith('https://x.test/diagram/shared?s=NEW23456'),
     );
+  });
+
+  it('issues the pass with the lifetime picked on the Valid control', async () => {
+    const props = renderDialog();
+    const forever = screen.getByRole('radio', { name: 'Forever' });
+    expect(forever.getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(screen.getByRole('radio', { name: '1 month' }));
+    fireEvent.click(screen.getByRole('button', { name: /Create Pass/ }));
+    await vi.waitFor(() => expect(props.onCreateLink).toHaveBeenCalledWith('edit', 'month', null));
+  });
+
+  it('confirms before revoking a pass', async () => {
+    const props = renderDialog({ links: [link()] });
+    fireEvent.click(screen.getByRole('button', { name: 'Revoke link' }));
+    expect(props.onRevokeLink).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(props.onRevokeLink).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Revoke link' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Revoke' }));
+    await vi.waitFor(() => expect(props.onRevokeLink).toHaveBeenCalledWith('CODE2345'));
+  });
+
+  it('copies a pass from the button inside its link field', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+    renderDialog({ links: [link()] });
+    fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
+    await vi.waitFor(() =>
+      expect(writeText).toHaveBeenCalledWith('https://x.test/diagram/shared?s=CODE2345'),
+    );
+    await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Copied' })).toBeTruthy());
   });
 
   it('says the diagram is private until a pass is live', () => {
@@ -126,7 +157,8 @@ describe('ShareDialog passes', () => {
 
   it('lists an expired pass under Expired with Extend', () => {
     renderDialog({ links: [link({ expiry: 'week', expiresAt: 5 })] });
-    expect(screen.getByText('Expired (1)')).toBeTruthy();
+    // The caption reads "Expired" with its count in a badge.
+    expect(document.getElementById('share-expired-heading')?.textContent).toBe('Expired1');
     expect(screen.getByRole('button', { name: 'Extend 1 week' })).toBeTruthy();
   });
 

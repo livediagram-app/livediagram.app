@@ -3,14 +3,18 @@
 import { useState, type KeyboardEvent } from 'react';
 import { Button, CheckIcon, Select } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
-import { ROLE_PASS, SECTION_LABEL, ScopeOptions } from './share-dialog-parts';
+import { LIFETIMES, ROLE_PASS, SECTION_LABEL, ScopeOptions } from './share-dialog-parts';
 
 const ROLES: ShareRole[] = ['edit', 'view'];
 
+// The lifetimes a new pass can be issued with (docs/specs/013-workspace/share-link-expiry.md), in the
+// order the segmented control shows them. Forever = never expires, the default.
+
 // "Issue a pass" (docs/specs/007-editor/live-app.md "Layout, top to bottom"): two role cards as a
 // radio group, a sentence of options (the tabs it opens, how long it is valid), and one
-// full-width Create & Copy button. Owns the draft pass; the dialog owns issuing it.
+// full-width Create Pass button (it also copies the new link). Owns the draft pass; the dialog owns issuing it.
 export function ShareComposer({
   tabs,
   busy,
@@ -36,6 +40,19 @@ export function ShareComposer({
     setRole(next);
     e.currentTarget.parentElement
       ?.querySelector<HTMLButtonElement>(`[data-role="${next}"]`)
+      ?.focus();
+  };
+
+  // Arrow keys walk the lifetimes, wrapping, as in any radio group.
+  const onLifetimeKey = (e: KeyboardEvent<HTMLButtonElement>) => {
+    const step = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    const i = LIFETIMES.findIndex((l) => l.value === expiry);
+    const next = LIFETIMES[(i + step + LIFETIMES.length) % LIFETIMES.length]!.value;
+    setExpiry(next);
+    e.currentTarget.parentElement
+      ?.querySelector<HTMLButtonElement>(`[data-lifetime="${next}"]`)
       ?.focus();
   };
 
@@ -99,48 +116,76 @@ export function ShareComposer({
         })}
       </div>
 
-      {/* The options read as a sentence printed on the pass-to-be. */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-600 dark:text-slate-300">
+      {/* The pass's fine print: one labelled row per term, labels in one
+          column so the terms read as a block rather than loose dropdowns.
+          Create Pass ends the Valid row, the last choice before issuing, so
+          the lifetime reads as part of making the pass. */}
+      <div className="grid grid-cols-1 items-center gap-x-3 gap-y-1.5 rounded-xl bg-slate-50 p-2.5 sm:grid-cols-[3.5rem_1fr_auto] sm:gap-y-2 dark:bg-slate-800/50">
         {multiTab ? (
-          <label className="inline-flex items-center gap-1.5">
-            Opens
+          <>
+            <label
+              htmlFor="share-new-scope"
+              className="text-xs font-medium text-slate-600 dark:text-slate-300"
+            >
+              Opens
+            </label>
             <Select
-              size="sm"
+              id="share-new-scope"
+              className="sm:col-span-2"
               value={scope}
               onChange={(e) => setScope(e.target.value)}
               aria-label="Tabs this link opens"
-              className="max-w-40"
             >
               <ScopeOptions tabs={tabs} />
             </Select>
-          </label>
+          </>
         ) : null}
-        <span className="inline-flex items-center gap-1">
-          <label className="inline-flex items-center gap-1.5">
-            Valid
-            <Select
-              size="sm"
-              value={expiry}
-              onChange={(e) => setExpiry(e.target.value as ShareLinkExpiry)}
-              aria-label="Link lifetime"
-            >
-              <option value="never">Never expires</option>
-              <option value="week">For 1 week</option>
-              <option value="month">For 1 month</option>
-              <option value="sixMonths">For 6 months</option>
-            </Select>
-          </label>
+        <span className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+          Valid
           <HelpArticleLink article="shareLinkExpiry" />
         </span>
+        <div
+          role="radiogroup"
+          aria-label="Link lifetime"
+          className="relative grid h-8 grid-cols-4 rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-900"
+        >
+          {/* The selection slides to the picked lifetime, like the Explorer tabs. */}
+          <SegmentSlider
+            count={LIFETIMES.length}
+            index={LIFETIMES.findIndex((l) => l.value === expiry)}
+            className={`${ROLE_PASS[role].solid} shadow-sm`}
+          />
+          {LIFETIMES.map(({ value, label }) => {
+            const active = expiry === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                tabIndex={active ? 0 : -1}
+                data-lifetime={value}
+                onClick={() => setExpiry(value)}
+                onKeyDown={onLifetimeKey}
+                className={`relative z-10 h-full rounded-md px-1 text-xs font-medium whitespace-nowrap transition-colors ${
+                  active
+                    ? 'text-white'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
+                }`}
+              >
+                <span className="text-optical-line">{label}</span>
+              </button>
+            );
+          })}
+        </div>
+        <Button
+          onClick={() => onIssue(role, expiry, multiTab && scope ? scope : null)}
+          disabled={busy}
+          className="shadow-sm whitespace-nowrap"
+        >
+          Create Pass
+        </Button>
       </div>
-
-      <Button
-        onClick={() => onIssue(role, expiry, multiTab && scope ? scope : null)}
-        disabled={busy}
-        className="w-full shadow-sm"
-      >
-        {`Create & Copy ${ROLE_PASS[role].stamp} Pass`}
-      </Button>
     </section>
   );
 }

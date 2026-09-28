@@ -1,7 +1,6 @@
-import { Button } from '@livediagram/ui';
+import { Button, LockIcon } from '@livediagram/ui';
 import { useRef, useState } from 'react';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { SettingsToggleRow } from '@/components/panels/SettingsToggleRow';
+import { SettingsRow } from '@/components/dialogs/settings/SettingsRow';
 
 // The share-password band (docs/specs/013-workspace/share-password.md): one optional password that gates every
 // link. Owns its own field + "Saved" flash state; the busy flag is shared with
@@ -91,30 +90,44 @@ export function SharePasswordSection({
 
   return (
     <div className="flex flex-col gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
-      <SettingsToggleRow
-        label="Password Protection"
-        hint="Everyone opening a pass must enter it first, embeds included."
+      {/* The Settings dialog's own toggle row, so the switch looks and
+          behaves like every other setting in the app. */}
+      <SettingsRow
+        row={{
+          key: 'share-password',
+          label: 'Password Protection',
+          description: 'Everyone opening a pass must enter it first, embeds included.',
+          helpArticle: 'sharePasswords',
+        }}
         checked={enabled}
-        onToggle={toggle}
+        onChange={toggle}
         disabled={busy}
-        help={<HelpArticleLink article="sharePasswords" />}
       />
       {enabled ? (
-        <div className="flex animate-fade-in items-center gap-2 px-2">
-          <input
-            ref={fieldRef}
-            type="text"
-            value={pw}
-            onChange={(e) => setPw(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !busy && pw !== (sharePassword ?? '')) void savePassword();
-            }}
-            placeholder="Choose a password"
-            aria-label="Share password"
-            autoComplete="off"
-            spellCheck={false}
-            className="min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-sm text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-          />
+        // Nested under the setting it belongs to: indented to the footnote's
+        // edge with a guide rule, so it reads as the switch's detail rather
+        // than a stray field.
+        <div className="ml-3.5 flex animate-fade-in items-center gap-2 border-l-2 border-slate-200 py-0.5 pl-3 dark:border-slate-700">
+          <div className="relative min-w-0 flex-1">
+            <LockIcon
+              size={13}
+              className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              ref={fieldRef}
+              type="text"
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !busy && pw !== (sharePassword ?? '')) void savePassword();
+              }}
+              placeholder="Choose a password"
+              aria-label="Share password"
+              autoComplete="off"
+              spellCheck={false}
+              className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pr-2 pl-8 font-mono text-sm text-slate-800 outline-none transition placeholder:font-sans placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            />
+          </div>
           <Button
             size="xs"
             onClick={savePassword}

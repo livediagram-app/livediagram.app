@@ -12,6 +12,16 @@ export const EXPIRY_LABELS: Record<Exclude<ShareLinkExpiry, 'never'>, string> = 
   sixMonths: '6 months',
 };
 
+// Also what a pass prints beside Valid when it never expires.
+export const FOREVER_LABEL = 'Forever';
+
+export const LIFETIMES: { value: ShareLinkExpiry; label: string }[] = [
+  { value: 'never', label: FOREVER_LABEL },
+  { value: 'week', label: '1 week' },
+  { value: 'month', label: '1 month' },
+  { value: 'sixMonths', label: '6 months' },
+];
+
 const EditPassIcon = lucideGlyph(lucidePencilLine, 18);
 const ViewPassIcon = lucideGlyph(lucideEye, 18);
 export const ClockIcon = lucideGlyph(lucideClock, 12);
@@ -34,16 +44,16 @@ export const ROLE_PASS: Record<
   }
 > = {
   edit: {
-    stamp: 'Edit',
-    title: 'Can Edit',
+    stamp: 'Editor',
+    title: 'Editor',
     blurb: 'Draws with you in real time.',
     Icon: EditPassIcon,
     solid: 'bg-brand-500 text-white dark:bg-brand-600',
     selected: 'border-brand-500 bg-brand-50/70 dark:border-brand-400 dark:bg-brand-500/10',
   },
   view: {
-    stamp: 'View',
-    title: 'Can View',
+    stamp: 'Viewer',
+    title: 'Viewer',
     blurb: "Watches, pans and zooms. Can't change a thing.",
     Icon: ViewPassIcon,
     solid: 'bg-violet-500 text-white dark:bg-violet-500/60',
@@ -58,6 +68,16 @@ export function ImageGlyph() {
       <rect x="2" y="3" width="12" height="10" rx="1.5" />
       <circle cx="6" cy="6.5" r="1.2" />
       <path d="M3 12l3.5-3.5 2.5 2.5 2-2L14 11.5" />
+    </Glyph>
+  );
+}
+
+// Markdown's M-and-down-arrow mark, for the Copy Markdown row.
+export function MarkdownGlyph() {
+  return (
+    <Glyph size={14} units={16}>
+      <rect x="1.5" y="3.5" width="13" height="9" rx="1.5" />
+      <path d="M4 10V6l2 2 2-2v4M11 6v4M9.5 8.5 11 10l1.5-1.5" />
     </Glyph>
   );
 }

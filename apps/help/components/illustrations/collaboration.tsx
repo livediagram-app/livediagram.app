@@ -120,9 +120,7 @@ function ShareDialog({ variant }: { variant: ShareVariant }) {
   const dy = 18;
   const dw = 308;
   const dh = variant === 'links' ? 204 : 212;
-  // The expiry variant floats an open dropdown below the dialog, so the scene
-  // needs extra height for it to land inside the viewBox.
-  const sceneH = variant === 'expiry' ? 284 : 240;
+  const sceneH = 240;
   return (
     <Scene w={420} h={sceneH} bg="plain">
       <Dialog x={dx} y={dy} w={dw} h={dh} title="Share" sceneW={420} sceneH={sceneH} scrim={false}>
@@ -171,58 +169,40 @@ function ShareDialog({ variant }: { variant: ShareVariant }) {
               strokeWidth={1.5}
             />
             <Label x={dx + 16} y={dy + 150} size={8} weight={700} tone="muted">
-              VALID
+              VALID FOR
             </Label>
-            {/* Dropdown */}
+            {/* The four-way segmented control, 1 month selected. */}
             <rect
               x={dx + 16}
               y={dy + 160}
-              width={120}
-              height={26}
-              rx={7}
-              className="fill-white stroke-brand-500"
-              strokeWidth={2}
-            />
-            <Label x={dx + 28} y={dy + 174} size={11} weight={600} tone="body">
-              For 1 month
-            </Label>
-            <path
-              d={`M${dx + 122} ${dy + 170} l5 5 l5 -5`}
-              fill="none"
-              className="stroke-slate-400"
-              strokeWidth={2}
-              strokeLinecap="round"
-            />
-            {/* Open option list */}
-            <rect
-              x={dx + 16}
-              y={dy + 188}
-              width={120}
-              height={62}
+              width={dw - 32}
+              height={28}
               rx={8}
               className="fill-white stroke-slate-200"
               strokeWidth={1.5}
             />
-            {['For 1 week', 'For 1 month', 'For 6 months'].map((opt, i) => {
-              const oy = dy + 192 + i * 19;
-              const on = i === 1;
+            {['Forever', '1 week', '1 month', '6 months'].map((opt, i) => {
+              const segW = (dw - 36) / 4;
+              const sx = dx + 18 + i * segW;
+              const on = i === 2;
               return (
                 <g key={opt}>
                   {on && (
                     <rect
-                      x={dx + 20}
-                      y={oy}
-                      width={112}
-                      height={18}
-                      rx={5}
-                      className="fill-brand-50"
+                      x={sx}
+                      y={dy + 162}
+                      width={segW}
+                      height={24}
+                      rx={6}
+                      className="fill-brand-500"
                     />
                   )}
                   <Label
-                    x={dx + 28}
-                    y={oy + 9}
+                    x={sx + segW / 2}
+                    y={dy + 174}
+                    anchor="middle"
                     size={10}
-                    tone={on ? 'accent' : 'body'}
+                    tone={on ? 'onAccent' : 'body'}
                     weight={on ? 600 : 400}
                   >
                     {opt}
@@ -238,7 +218,7 @@ function ShareDialog({ variant }: { variant: ShareVariant }) {
 }
 
 /** A single share link drawn as a pass (docs/specs/007-editor/live-app.md "The pass metaphor"):
- *  a role-coloured stub, a perforated edge, a faux URL field, and a Copy button. */
+ *  a role-coloured stub and a faux URL field with its copy button inside. */
 function ShareLinkRow({ x, y, role }: { x: number; y: number; role: 'Edit' | 'View' }) {
   const edit = role === 'Edit';
   const w = 276;
@@ -261,37 +241,13 @@ function ShareLinkRow({ x, y, role }: { x: number; y: number; role: 'Edit' | 'Vi
         className={edit ? 'fill-brand-500' : 'fill-violet-500 dark:fill-violet-700'}
       />
       <Label x={x + stub / 2} y={y + 13} anchor="middle" size={8} weight={700} tone="onAccent">
-        {role.toUpperCase()}
+        {edit ? 'EDITOR' : 'VIEWER'}
       </Label>
-      {/* Perforation, with a notch punched out top and bottom. */}
-      <line
-        x1={x + stub}
-        y1={y}
-        x2={x + stub}
-        y2={y + h - 8}
-        className="stroke-slate-300"
-        strokeWidth={1.5}
-        strokeDasharray="3 3"
-      />
-      <circle
-        cx={x + stub}
-        cy={y - 4}
-        r={4}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <circle
-        cx={x + stub}
-        cy={y + h - 4}
-        r={4}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      {/* URL field */}
+      {/* URL field, with the copy button inside its right edge */}
       <rect
         x={x + stub + 10}
         y={y + 1}
-        width={150}
+        width={w - stub - 20}
         height={24}
         rx={6}
         className="fill-slate-50 stroke-slate-200"
@@ -300,8 +256,22 @@ function ShareLinkRow({ x, y, role }: { x: number; y: number; role: 'Edit' | 'Vi
       <Label x={x + stub + 20} y={y + 13} size={10} tone="muted">
         livediagram.app/d/…
       </Label>
-      {/* Copy button */}
-      <Button x={x + w - 64} y={y + 1} w={56} h={24} label="Copy" variant="primary" />
+      <rect
+        x={x + w - 27}
+        y={y + 9}
+        width={7}
+        height={8}
+        rx={1.5}
+        fill="none"
+        className="stroke-slate-400"
+        strokeWidth={1.3}
+      />
+      <path
+        d={`M${x + w - 29} ${y + 15} v-6.5 a1.5 1.5 0 0 1 1.5 -1.5 h5`}
+        fill="none"
+        className="stroke-slate-400"
+        strokeWidth={1.3}
+      />
     </g>
   );
 }

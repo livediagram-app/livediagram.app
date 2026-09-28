@@ -150,7 +150,7 @@ rounded-full leading-none [&>svg]:block`, `width` / `height` from `size` when gi
   `HEADER_ICON_SLOT_PX` (16) that holds each pill's icon. Labels render through `ButtonContent`, so
   every text run is `text-optical-line`.
 - The account pill leads with a `GlyphDisc` of `HEADER_AVATAR_PX` (24) and follows the concentric
-  rule: the 36px pill insets it 6px (`pl-1.5`), the same as its top and bottom.
+  rule: the 34px button insets it 5px (`pl-[5px]`), the same as its top and bottom.
 
 ## Controls that keep their height
 

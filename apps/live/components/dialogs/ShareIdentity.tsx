@@ -30,29 +30,35 @@ export function ShareIdentity({
       >
         {initialsOf(shown)}
       </GlyphDisc>
-      <label className="flex min-w-0 flex-1 flex-col">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-          Sharing as
-        </span>
-        <input
-          id="share-name"
-          value={name}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={participant.name}
-          aria-label="Your name"
-          className="-ml-1 min-w-0 rounded border border-transparent bg-transparent px-1 text-sm font-medium text-slate-800 outline-none transition hover:border-slate-200 focus:border-brand-400 dark:text-slate-100 dark:hover:border-slate-700"
-        />
-      </label>
-      <HoverCard title="Shuffle name" description="Pick a different random name.">
-        <button
-          type="button"
-          onClick={() => onChange(randomName())}
-          aria-label="Generate a different name"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+      <div className="flex min-w-0 flex-1 flex-col">
+        <label
+          htmlFor="share-name"
+          className="text-[10px] font-semibold uppercase tracking-wider text-slate-400"
         >
-          <RefreshIcon />
-        </button>
-      </HoverCard>
+          Sharing as
+        </label>
+        {/* Shuffle sits right against the name it changes, not out by Done. */}
+        <div className="-ml-1 flex min-w-0 items-center">
+          <HoverCard title="Shuffle name" description="Pick a different random name.">
+            <button
+              type="button"
+              onClick={() => onChange(randomName())}
+              aria-label="Generate a different name"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            >
+              <RefreshIcon size={13} />
+            </button>
+          </HoverCard>
+          <input
+            id="share-name"
+            value={name}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={participant.name}
+            aria-label="Your name"
+            className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 text-sm font-medium text-slate-800 outline-none transition hover:border-slate-200 focus:border-brand-400 dark:text-slate-100 dark:hover:border-slate-700"
+          />
+        </div>
+      </div>
     </div>
   );
 }

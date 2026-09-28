@@ -163,7 +163,7 @@ export function EditorHeader({
             <button
               type="button"
               onClick={onOpenShare}
-              className={`${HEADER_PILL} ${HEADER_PILL_PRIMARY} px-4`}
+              className={`${HEADER_PILL} ${HEADER_PILL_PRIMARY} px-3`}
               aria-pressed={shareable}
             >
               <HeaderGlyph>
@@ -175,7 +175,7 @@ export function EditorHeader({
                   verb changing to "Shared"). aria-pressed carries it for
                   assistive tech, the green SharedBadge in words. */}
               {shareable ? (
-                <span aria-hidden className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                <span aria-hidden className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                   <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400 opacity-75 [animation-duration:2s]" />
                   <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
                 </span>

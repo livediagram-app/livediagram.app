@@ -5,6 +5,7 @@ import { Button, useCopiedFlash } from '@livediagram/ui';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { CountBadge } from '@/components/primitives/CountBadge';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { useRelativeNow } from '@/lib/relative-time';
@@ -154,9 +155,13 @@ export function ShareDialog({
       <div className="flex flex-col gap-5 overflow-y-auto px-6 py-5">
         <ShareComposer tabs={tabs} busy={busy} onIssue={issue} />
 
-        <section className="flex flex-col gap-2" aria-labelledby="share-passes-heading">
-          <p id="share-passes-heading" className={SECTION_LABEL}>
-            Passes{activeLinks.length > 0 ? ` (${activeLinks.length})` : ''}
+        <section
+          className="flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800"
+          aria-labelledby="share-passes-heading"
+        >
+          <p id="share-passes-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
+            Passes
+            {activeLinks.length > 0 ? <CountBadge count={activeLinks.length} /> : null}
           </p>
           {activeLinks.length === 0 ? (
             <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
@@ -197,8 +202,9 @@ export function ShareDialog({
             something in it, so owners who never use expiry never see it. */}
         {inactiveLinks.length > 0 ? (
           <section className="flex flex-col gap-2" aria-labelledby="share-expired-heading">
-            <p id="share-expired-heading" className={SECTION_LABEL}>
-              Expired ({inactiveLinks.length})
+            <p id="share-expired-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
+              Expired
+              <CountBadge count={inactiveLinks.length} />
             </p>
             <ul className="flex flex-col gap-2">
               {inactiveLinks.map((link) => (

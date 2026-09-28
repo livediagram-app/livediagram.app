@@ -46,7 +46,7 @@ Owner-side paths that must still see expired rows (the Share dialog's list, dele
 
 ## Share dialog
 
-- The composer's **Valid** dropdown sets the lifetime: Never expires (default), For 1 week, For 1 month, For 6 months.
+- The composer's **Valid** segmented control sets the lifetime: Forever (default, never expires), 1 week, 1 month, 6 months.
 - **Passes** (the active list): links with a deadline show a compact countdown chip ("6d left") beside Valid.
 - **Expired** (rendered under Passes only when non-empty, see [Live app → Share dialog](../007-editor/live-app.md#share-dialog)): each expired pass is greyed with an "Expired" stamp, its URL struck through (no Copy/Embed — it doesn't work), a Delete action (same revoke endpoint), and an **Extend** action labelled with the link's creation duration ("Extend 1 week"). Extending moves the link back to Passes with a fresh deadline.
 

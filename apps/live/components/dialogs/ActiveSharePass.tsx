@@ -1,12 +1,16 @@
+'use client';
+
+import { useState } from 'react';
+import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { TrashIcon } from '@/components/primitives/explorer-icons';
 import {
-  Button,
   CheckIcon,
   CopyIcon,
   HoverCard,
   LinkIcon,
   LockIcon,
   Select,
+  Tooltip,
 } from '@livediagram/ui';
 import type { ShareLink } from '@/lib/api-client';
 import { buildEmbedSnippet, embedUrlFor } from '@/lib/embed';
@@ -19,7 +23,9 @@ import {
   ClockIcon,
   CodeGlyph,
   EXPIRY_LABELS,
+  FOREVER_LABEL,
   ImageGlyph,
+  MarkdownGlyph,
   ScopeOptions,
 } from './share-dialog-parts';
 
@@ -75,30 +81,45 @@ export function ActiveSharePass({
   // A scoped link's live image is always its own tab: the server picks it,
   // so the URL carries no `?tab=` and the picker has nothing to offer.
   const scoped = link.tabId !== null;
+  // The bin the revoke confirmation anchors to while it is open.
+  const [revokeAnchor, setRevokeAnchor] = useState<HTMLElement | null>(null);
   const imageTabParam = scoped ? undefined : liveImageTabParam;
   const metaLabel = 'text-[10px] font-semibold uppercase tracking-wider text-slate-400';
   return (
     <SharePassTicket role={link.role} fresh={fresh}>
-      {/* Line 1: the link itself, and the one filled button on the card. */}
-      <div className="flex items-center gap-2">
+      {/* Line 1: the link, with its copy button inside the field's right
+          edge: the field IS the thing being copied, so the action lives in it. */}
+      <div className="relative flex items-center">
         <input
           readOnly
           value={shareUrlFor(link.code)}
           onFocus={(e) => e.currentTarget.select()}
           aria-label={`${link.role === 'edit' ? 'Edit' : 'View'} pass link`}
-          className="min-w-0 flex-1 truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-[11px] text-slate-700 outline-none focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"
+          className="min-w-0 flex-1 truncate rounded-lg border border-slate-200 bg-slate-50 py-1.5 pr-10 pl-2.5 font-mono text-[11px] text-slate-700 outline-none focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"
         />
-        <Button onClick={() => onCopy(link.code)} size="xs" className="shrink-0 shadow-sm">
-          {copied ? <CheckIcon /> : <CopyIcon />}
-          {copied ? 'Copied' : 'Copy'}
-        </Button>
+        <Tooltip label={copied ? 'Copied' : 'Copy link'}>
+          <button
+            type="button"
+            onClick={() => onCopy(link.code)}
+            aria-label={copied ? 'Copied' : 'Copy link'}
+            className={`absolute top-1/2 right-1 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md transition ${
+              copied
+                ? 'text-emerald-600 dark:text-emerald-400'
+                : 'text-slate-400 hover:bg-slate-200/70 hover:text-brand-600 dark:hover:bg-slate-700 dark:hover:text-brand-300'
+            }`}
+          >
+            {copied ? <CheckIcon size={14} /> : <CopyIcon />}
+          </button>
+        </Tooltip>
       </div>
 
       {/* Line 2: what the pass is printed with. */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600 dark:text-slate-300">
-        <span className="inline-flex items-center gap-1.5">
-          <span className={metaLabel}>Opens</span>
-          {onRescope ? (
+        {/* Opens only when there is a choice to make: on a single-tab
+            diagram every pass opens every tab, so saying so is noise. */}
+        {onRescope ? (
+          <span className="inline-flex items-center gap-1.5">
+            <span className={metaLabel}>Opens</span>
             <HoverCard
               title="Tabs"
               description="Which tabs this pass opens. Changing it takes effect at once: anyone using it reloads into the new choice."
@@ -115,10 +136,8 @@ export function ActiveSharePass({
                 <ScopeOptions tabs={tabs} />
               </Select>
             </HoverCard>
-          ) : (
-            <span className="font-medium">All tabs</span>
-          )}
-        </span>
+          </span>
+        ) : null}
         <span className="inline-flex items-center gap-1.5">
           <span className={metaLabel}>Valid</span>
           {link.expiresAt !== null ? (
@@ -134,7 +153,7 @@ export function ActiveSharePass({
               </span>
             </HoverCard>
           ) : (
-            <span className="font-medium">Never expires</span>
+            <span className="font-medium">{FOREVER_LABEL}</span>
           )}
         </span>
         {sharePassword ? (
@@ -220,13 +239,13 @@ export function ActiveSharePass({
               },
               {
                 label: 'Copy Markdown',
-                icon: <ImageGlyph />,
+                icon: <MarkdownGlyph />,
                 text: liveImageMarkdown(origin, link.code, imageTabParam),
                 what: 'Markdown',
               },
               {
                 label: 'Copy HTML',
-                icon: <ImageGlyph />,
+                icon: <CodeGlyph />,
                 text: liveImageHtml(origin, link.code, imageTabParam),
                 what: 'HTML',
               },
@@ -240,14 +259,30 @@ export function ActiveSharePass({
         >
           <button
             type="button"
-            onClick={() => onRevoke(link.code)}
+            onClick={(e) => setRevokeAnchor(e.currentTarget)}
             disabled={busy}
             aria-label="Revoke link"
+            aria-expanded={revokeAnchor !== null}
             className="rounded-md p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
           >
             <TrashIcon />
           </button>
         </HoverCard>
+        {/* Revoking cuts off everyone holding the pass and can't be undone
+            (a new pass is a new URL), so it confirms right beside the bin
+            (docs/specs/007-editor/live-app.md "Destructive actions"). */}
+        {revokeAnchor ? (
+          <ConfirmPopover
+            anchor={revokeAnchor}
+            message="Revoke this pass? The link stops working at once for everyone holding it."
+            confirmLabel="Revoke"
+            onConfirm={() => {
+              setRevokeAnchor(null);
+              onRevoke(link.code);
+            }}
+            onCancel={() => setRevokeAnchor(null)}
+          />
+        ) : null}
       </div>
     </SharePassTicket>
   );
