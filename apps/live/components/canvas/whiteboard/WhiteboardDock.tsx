@@ -10,7 +10,6 @@ import { Fragment, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Tooltip } from '@livediagram/ui';
 import { WHITEBOARD_BACKGROUNDS, whiteboardBackgroundOf } from '@livediagram/diagram';
 import { EraserIcon, HighlighterIcon, SelectIcon } from '@/components/palette/palette-icons';
-import { RedoIcon, UndoIcon } from '@/components/panels/ActivityPanel';
 import { HIGHLIGHTER_COLORS, HIGHLIGHTER_WIDTHS } from '@/lib/highlighter-config';
 import {
   WHITEBOARD_PEN_COLOURS,
@@ -24,13 +23,16 @@ import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { FlyoutOption, WhiteboardFlyout } from './WhiteboardFlyout';
 import {
   BackgroundGlyph,
+  DOCK_ICON_PX,
   MoreGlyph,
   PenGlyph,
   RecogniseGlyph,
+  RedoGlyph,
   ShapeGlyph,
   ShapesGlyph,
   StickyGlyph,
   TextGlyph,
+  UndoGlyph,
 } from './whiteboard-icons';
 
 type Flyout = {
@@ -346,7 +348,7 @@ export function WhiteboardDock({
         {item({
           key: 'select',
           label: 'Select',
-          icon: <SelectIcon />,
+          icon: <SelectIcon size={DOCK_ICON_PX} />,
           pressed: tool === 'select',
           onPress: () => pickAndClose(model.pickSelect),
         })}
@@ -356,7 +358,7 @@ export function WhiteboardDock({
         {item({
           key: 'highlighter',
           label: 'Highlighter',
-          icon: <HighlighterIcon />,
+          icon: <HighlighterIcon size={DOCK_ICON_PX} />,
           pressed: tool === 'highlighter',
           flyoutKind: 'highlighter',
           onPress: (el) =>
@@ -367,7 +369,7 @@ export function WhiteboardDock({
         {item({
           key: 'eraser',
           label: 'Eraser',
-          icon: <EraserIcon />,
+          icon: <EraserIcon size={DOCK_ICON_PX} />,
           pressed: tool === 'eraser',
           flyoutKind: 'eraser',
           onPress: (el) =>
@@ -408,14 +410,14 @@ export function WhiteboardDock({
         {item({
           key: 'undo',
           label: 'Undo',
-          icon: <UndoIcon />,
+          icon: <UndoGlyph />,
           disabled: !canUndo,
           onPress: onUndo,
         })}
         {item({
           key: 'redo',
           label: 'Redo',
-          icon: <RedoIcon />,
+          icon: <RedoGlyph />,
           disabled: !canRedo,
           onPress: onRedo,
         })}

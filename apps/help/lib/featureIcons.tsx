@@ -337,9 +337,9 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // A board on its stand with a marker scribble.
   whiteboards: (
     <Glyph>
-      <rect x="3" y="3.5" width="18" height="12" rx="1.5" {...s} />
-      <path d="M6.5 10c1-2.2 2.3-2.2 3 0s2 2.2 3 0 2-2.2 3 0" {...s} />
-      <path d="M9 15.5 7.5 21M15 15.5l1.5 5.5" {...s} />
+      <rect x="3" y="3.5" width="18" height="12" rx="1.5" />
+      <path d="M6.5 10c1-2.2 2.3-2.2 3 0s2 2.2 3 0 2-2.2 3 0" />
+      <path d="M9 15.5 7.5 21M15 15.5l1.5 5.5" />
     </Glyph>
   ),
   'using-tabs': (
