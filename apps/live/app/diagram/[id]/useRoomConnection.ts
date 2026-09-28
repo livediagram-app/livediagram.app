@@ -1,6 +1,7 @@
 import {
   useEffect,
   useEffectEvent,
+  useRef,
   type Dispatch,
   type MutableRefObject,
   type SetStateAction,
@@ -31,6 +32,7 @@ import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs } from './room-op-apply';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 import { shareLinkOpEffect } from './share-link-ops';
+import { joinRefusedBecauseTrashed } from './room-refusal';
 
 // Realtime room: one WebSocket per diagram, opened only while the
 // diagram is shared. Lifted out of editor-page.tsx verbatim — the
@@ -425,6 +427,25 @@ export function useRoomConnection(opts: {
   );
 
   const roomDiagramTrashed = useEffectEvent(() => receiveDiagramTrashed());
+  // A join turned away (docs/specs/013-workspace/trash.md): trashed between our load and our join, the room
+  // refuses us instead of telling us. Ask the api once per refusal (one probe at a time); only a trashed
+  // answer changes anything.
+  const refusalProbeRef = useRef(false);
+  const roomRefused = useEffectEvent(() => {
+    if (!diagramId || refusalProbeRef.current) return;
+    refusalProbeRef.current = true;
+    void joinRefusedBecauseTrashed({
+      diagramId,
+      selfId: selfParticipant.id,
+      shareCode: sessionShareCodeRef.current,
+    })
+      .then((trashed) => {
+        if (trashed) receiveDiagramTrashed();
+      })
+      .finally(() => {
+        refusalProbeRef.current = false;
+      });
+  });
   const roomResync = useEffectEvent(() => {
     // The room couldn't bridge our reconnect gap from its op log
     // (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1) -- we fell too far behind or it restarted.
@@ -461,6 +482,7 @@ export function useRoomConnection(opts: {
       onFacilitator: (msg) => roomFacilitator(msg),
       onSelectionReleased: (msg) => roomSelectionReleased(msg),
       onDiagramTrashed: () => roomDiagramTrashed(),
+      onRefused: () => roomRefused(),
       onResync: () => roomResync(),
     };
     // Team diagrams need a one-time room ticket (docs/specs/015-api/api.md): membership is
