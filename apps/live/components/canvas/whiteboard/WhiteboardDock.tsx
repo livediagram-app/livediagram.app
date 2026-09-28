@@ -6,7 +6,7 @@
 // under the pointer when a tool is picked. One tab stop; the arrow keys walk
 // the buttons (WAI-ARIA toolbar pattern).
 
-import { Fragment, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { Fragment, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Tooltip } from '@livediagram/ui';
 import { WHITEBOARD_BACKGROUNDS, whiteboardBackgroundOf } from '@livediagram/diagram';
 import { EraserIcon, HighlighterIcon, SelectIcon } from '@/components/palette/palette-icons';
@@ -68,15 +68,13 @@ export function WhiteboardDock({
   onUndo,
   onRedo,
 }: WhiteboardDockProps) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const barRef = useRef<HTMLDivElement>(null);
   const [flyout, setFlyout] = useState<Flyout | null>(null);
   // The roving tab stop, by the button's data-dock-item key.
   const [focusKey, setFocusKey] = useState('select');
   const { tool, prefs } = model;
 
   const openerOf = (kind: Flyout['kind']) =>
-    barRef.current?.querySelector<HTMLElement>(`[data-dock-item="${kind}"]`) ?? null;
+    document.querySelector<HTMLElement>(`[data-whiteboard-dock] [data-dock-item="${kind}"]`);
 
   const toggleFlyout = (kind: Flyout['kind'], opener: HTMLElement) => {
     if (flyout?.kind === kind) {
@@ -84,7 +82,7 @@ export function WhiteboardDock({
       return;
     }
     // Measured once, on the press: the flyout is placed, never re-laid out.
-    const wrap = wrapRef.current?.getBoundingClientRect();
+    const wrap = opener.closest('[data-whiteboard-dock]')?.getBoundingClientRect();
     const btn = opener.getBoundingClientRect();
     setFlyout({ kind, left: wrap ? btn.left + btn.width / 2 - wrap.left : 0 });
   };
@@ -99,7 +97,7 @@ export function WhiteboardDock({
     const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
     if (!keys.includes(e.key)) return;
     const items = Array.from(
-      barRef.current?.querySelectorAll<HTMLButtonElement>('button[data-dock-item]') ?? [],
+      e.currentTarget.querySelectorAll<HTMLButtonElement>('button[data-dock-item]'),
     ).filter((b) => !b.disabled);
     const at = items.indexOf(document.activeElement as HTMLButtonElement);
     if (at < 0) return;
@@ -316,7 +314,6 @@ export function WhiteboardDock({
 
   return (
     <div
-      ref={wrapRef}
       data-floating-panel=""
       data-whiteboard-dock=""
       onPointerDown={(e) => e.stopPropagation()}
@@ -340,7 +337,6 @@ export function WhiteboardDock({
         </WhiteboardFlyout>
       ) : null}
       <div
-        ref={barRef}
         role="toolbar"
         aria-label="Whiteboard tools"
         aria-orientation="horizontal"
