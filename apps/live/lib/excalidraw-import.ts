@@ -24,6 +24,7 @@ import {
   type TextAlignY,
   type TextSize,
 } from '@livediagram/diagram';
+import type { ImportImageRequest } from './import-images';
 
 // The slice of an Excalidraw element we read. Everything is optional —
 // the format is additive across versions and we ignore what we don't map.
@@ -59,10 +60,25 @@ type ExcalidrawElement = {
   endBinding?: { elementId?: string } | null;
   startArrowhead?: string | null;
   endArrowhead?: string | null;
+  // image
+  fileId?: string | null;
+  crop?: unknown;
 };
 
+// The scene's picture bytes, keyed by the image elements' `fileId`.
+type ExcalidrawFiles = Record<string, { mimeType?: unknown; dataURL?: unknown } | undefined>;
+
 export type ExcalidrawImportResult =
-  | { ok: true; elements: Element[]; backgroundColor?: string; skipped: number }
+  | {
+      ok: true;
+      elements: Element[];
+      backgroundColor?: string;
+      skipped: number;
+      // One per image element, for the import image pipeline
+      // (docs/specs/020-import-export/import-image-pipeline.md); the elements
+      // themselves arrive as placeholders.
+      images: ImportImageRequest[];
+    }
   | { ok: false; error: string };
 
 // --- Property maps ----------------------------------------------------
@@ -167,6 +183,7 @@ export function buildElementsFromExcalidraw(text: string): ExcalidrawImportResul
     type?: unknown;
     elements?: unknown;
     appState?: { viewBackgroundColor?: unknown };
+    files?: unknown;
   };
   if (scene.type !== 'excalidraw') {
     return {
@@ -196,6 +213,12 @@ export function buildElementsFromExcalidraw(text: string): ExcalidrawImportResul
       boundText.set(e.containerId, e);
     }
   }
+
+  const files: ExcalidrawFiles =
+    scene.files && typeof scene.files === 'object' && !Array.isArray(scene.files)
+      ? (scene.files as ExcalidrawFiles)
+      : {};
+  const images: ImportImageRequest[] = [];
 
   const boxedById = new Map<string, BoxedElement>();
   const boxed: BoxedElement[] = [];
@@ -287,11 +310,26 @@ export function buildElementsFromExcalidraw(text: string): ExcalidrawImportResul
       case 'arrow':
         arrowSources.push(e);
         break;
-      case 'image':
-        // Bytes aren't migrated in v1 (they'd need an R2 upload per file);
-        // a placeholder image element keeps the layout slot (docs/specs/020-import-export/excalidraw-import-export.md).
-        el = { id, type: 'image', imageId: null, ...common };
+      case 'image': {
+        // A placeholder now; the import image pipeline fills it from the
+        // scene's files before the tab changes (docs/specs/020-import-export/excalidraw-import-export.md).
+        // A crop has no counterpart, so the image fills its box instead.
+        el = {
+          id,
+          type: 'image',
+          imageId: null,
+          ...common,
+          ...(e.crop && typeof e.crop === 'object' ? { objectFit: 'cover' as const } : {}),
+        };
+        const dataUrl = e.fileId ? files[e.fileId]?.dataURL : undefined;
+        images.push({
+          elementId: id,
+          key: e.fileId || id,
+          source: typeof dataUrl === 'string' && dataUrl ? { kind: 'data-url', dataUrl } : null,
+          hint: { width: common.width, height: common.height },
+        });
         break;
+      }
       default:
         skipped += 1;
     }
@@ -367,6 +405,7 @@ export function buildElementsFromExcalidraw(text: string): ExcalidrawImportResul
     elements: [...boxed, ...arrows],
     ...(typeof bg === 'string' && bg ? { backgroundColor: bg } : {}),
     skipped,
+    images,
   };
 }
 

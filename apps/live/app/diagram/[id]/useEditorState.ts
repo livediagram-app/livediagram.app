@@ -113,6 +113,7 @@ import {
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
 import { createTab, deriveTabLoadState, mergeAiElements, patchTab } from './editor-page-helpers';
 import { useAutosave } from './useAutosave';
+import { useDiagramTrashed } from './useDiagramTrashed';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
 import { usePerTabLoad } from './usePerTabLoad';
@@ -669,6 +670,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // with the empty initial render.
   const [diagramId, setDiagramId] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  // The deleted state (docs/specs/013-workspace/trash.md): the diagram is in
+  // the Trash. Set by the load, the room and the autosave.
+  const diagramTrashed = useDiagramTrashed({
+    ownerId: selfParticipant.id,
+    diagramId,
+    viaShareLink: sessionShareCode !== null,
+  });
   // Sharing / session / owner / share-link state + the room refs all now
   // live in useEditorRealtime, destructured above. Embeds honour the share
   // code's role (docs/specs/013-workspace/embeds.md): a view code renders a read-only viewer, an edit
@@ -746,6 +754,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSaveStatus,
     setSavedAt,
     setDiagramList,
+    onDiagramTrashed: () => diagramTrashed.setDiagramTrashed(true),
   });
 
   // Persist self only when name or color actually changed. Without
@@ -779,6 +788,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setDiagramPresentation,
       setDiagramNotFound,
       setLoadError,
+      setDiagramTrashed: diagramTrashed.setDiagramTrashed,
       setDiagramOwnerColor,
       setDiagramOwnerId,
       setDiagramOwnerName,
@@ -956,6 +966,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     receivePollAnswer: livePoll.receiveAnswer,
     receivePollEnd: livePoll.receivePollEnd,
     receiveQa: qaBoard.receiveQa,
+    receiveDiagramTrashed: () => diagramTrashed.setDiagramTrashed(true),
     resyncFromServer,
   });
 
@@ -1879,6 +1890,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     diagramList,
     ownerId: selfParticipant.id,
+    diagramId,
     createTab,
     commit,
     commitTabs,
@@ -3056,6 +3068,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     diagramId,
     diagramNotFound,
     loadError,
+    diagramTrashed,
     dismissSharedDiagram,
     spawnConnectSelected,
     duplicateDiagram,

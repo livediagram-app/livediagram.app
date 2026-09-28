@@ -1,0 +1,14 @@
+import type { Metadata } from 'next';
+import { ExplorerPane } from '../ExplorerPane';
+
+// /explorer/trash — the Trash (docs/specs/013-workspace/trash.md): deleted
+// diagrams waiting out their 30 days. No sidebar row; Settings links here.
+// The layout's ExplorerShell provides the chrome + state; this page only pins
+// the route and the tab title.
+export const metadata: Metadata = {
+  title: 'Trash | livediagram',
+};
+
+export default function Page() {
+  return <ExplorerPane />;
+}

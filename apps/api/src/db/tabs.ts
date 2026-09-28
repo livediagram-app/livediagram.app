@@ -253,7 +253,7 @@ export async function tabLinkedToOwnedDiagram(
     `SELECT 1 AS present
        FROM diagram_tabs dt
        JOIN diagrams d ON d.id = dt.diagram_id
-      WHERE dt.tab_id = ? AND d.owner_id = ?
+      WHERE dt.tab_id = ? AND d.owner_id = ? AND d.trashed_at IS NULL
       LIMIT 1`,
   )
     .bind(tabId, ownerId)

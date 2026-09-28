@@ -5,13 +5,13 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import a JSON file, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene, or a draw.io diagram into the active tab, either by pasting the text or picking a file. Importing replaces the tab contents, so the dialog warns you first.',
+    'Import a JSON file, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene (including a PNG or SVG exported with the scene), or a draw.io diagram into the active tab, either by pasting the text or picking a file. Images in the board come across into your gallery. Importing replaces the tab contents, so the dialog warns you first.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid diagram, a Markdown outline, an Excalidraw scene, or a draw.io diagram into the active tab."
+  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid diagram, a Markdown outline, an Excalidraw scene, or a draw.io diagram, images included, into the active tab."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
@@ -25,10 +25,18 @@ From the tab ellipsis menu, expand the **Content** section and choose **Import**
 - **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip.
 - **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`), state diagram (`stateDiagram`), or ER diagram (`erDiagram`) and lays it out on the canvas, keeping every connection, its style (dashed, thick, two-headed, headless), `click` links, and any `subgraph` or composite-state blocks, which come in as frames drawn around their nodes. Other Mermaid diagram types (sequence, gantt, pie, …) aren't supported.
 - **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
-- **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, groups, and freehand drawings. The hand-drawn look flattens to clean strokes, and embedded images come in as placeholders you can re-upload.
+- **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, groups, freehand drawings, and images. It also reads a PNG or SVG exported from Excalidraw with **Embed scene** switched on (a `.excalidraw.png` or `.excalidraw.svg` file), which carries the whole scene inside the picture. The hand-drawn look flattens to clean strokes.
 - **draw.io** reads a diagram from [draw.io](https://www.drawio.com/) (diagrams.net, the desktop app, or its Confluence and VS Code plugins): a `.drawio` or `.xml` file, compressed or not, or a PNG or SVG exported with **Include a copy of my diagram** ticked. See [Importing from draw.io](#importing-from-draw-io) below.
 
 Each format opens the same two-step panel: **paste or write** the content into the editor and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
+
+## Images in an imported board
+
+When a board carries images, they come across with it. Each one is resized in your browser (to at most 2048 pixels on its longest side) and saved to your [image gallery](/help/explorer/image-gallery/), so it counts towards the gallery's space like any image you add yourself. An image you already have is recognised and reused rather than stored twice.
+
+While the images save, the panel counts them ("Importing images 3 of 12…"). When it finishes, the dialog tells you how many were imported, how many were already in your gallery, and how many were left as placeholders and why: the file didn't include the image, its format couldn't be read, it was too large, or your gallery is full. The rest of the board always imports. Double-click a placeholder to add its image later.
+
+In an [offline diagram](/help/privacy-and-security/offline-mode/), images are kept inside the diagram in this browser instead of your gallery, up to a limit for each import.
 
 <Figure caption="The Content section of the tab menu opens Import, offering JSON, Mermaid, Markdown, Excalidraw, and draw.io. Each opens a panel to paste the text or pick a file.">
   <ImportMenu />
@@ -47,7 +55,9 @@ What carries over:
 - **Cloud and network icons** (AWS, Azure, Kubernetes, servers, users and more) become the matching livediagram icon where there is a clear match. A stencil with no match comes in as a labelled box, so nothing disappears.
 - **Colours left at draw.io's default** take on your tab's theme, like anything drawn in livediagram. Colours you picked in draw.io stay as they were.
 
-When anything could not come across exactly, the dialog shows a short summary before closing, one line per kind of change with its count: shapes that came in as labelled boxes (with the stencil names), images waiting as placeholders, arrowheads livediagram draws differently, hidden items left out, and so on. Embedded pictures come in as placeholders you can fill by uploading the picture; pictures linked from the web are never fetched.
+Pictures embedded in the diagram come across like any imported board's [images](#images-in-an-imported-board): resized and saved to your gallery. Pictures linked from the web, or from draw.io's own icon library, are never fetched; they come in as placeholders.
+
+When anything could not come across exactly, the dialog shows one summary before closing, the same one every import uses: how the images came across, then one line per kind of change with its count: shapes that came in as labelled boxes (with the stencil names), lane titles that now read across, arrowheads livediagram draws differently, hidden items left out, and so on.
 
 ## Import replaces the tab
 

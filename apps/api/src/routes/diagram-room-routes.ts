@@ -7,7 +7,7 @@
 import { isPersonalOwner, shareLinkForDiagram, sharePasswordOk } from '../auth/share-access';
 import { consumeWsTicket, createWsTicket, getDiagramMeta } from '../db';
 import { forbidden, json, notFound } from '../responses';
-import { gateGrant, type RouteContext } from './context';
+import { gateGrant, missingDiagram, type RouteContext } from './context';
 
 // Returns null when the request isn't a room route.
 export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Response | null> {
@@ -33,7 +33,7 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // Gate-only projection — 1 query instead of getDiagram's 3; this
     // runs on every room join.
     const diagram = await getDiagramMeta(env, id);
-    if (!diagram) return notFound();
+    if (!diagram) return missingDiagram(ctx, id);
     // The grant carries the role, a tab-scoped link's scope and the code that
     // granted it (docs/specs/013-workspace/tab-scoped-share-links.md); the ticket takes all three to the room.
     const grant = await gateGrant(ctx, id, diagram.ownerId, diagram.teamId);
@@ -57,8 +57,12 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     let tabScope: string | null = null;
     let shareCode: string | null = null;
     const claimedOwnerId = url.searchParams.get('o');
-    // Gate-only projection — the upgrade uses only ownerId/teamId.
+    // Gate-only projection — the upgrade uses only ownerId/teamId. A diagram
+    // in the Trash (docs/specs/013-workspace/trash.md) reads as missing, so no
+    // leg below can admit anyone: not a ticket minted before the delete, not
+    // a share code, not the owner.
     const diagram = await getDiagramMeta(env, id);
+    if (!diagram) return notFound();
     // One-time ticket (docs/specs/015-api/api.md): minted seconds ago over authenticated
     // REST, single-use and diagram-scoped, carrying the server-resolved
     // role. This is the ONLY leg that can admit a team member — the old
@@ -75,8 +79,7 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // closed for the membership leg. Team owners come in via the ticket
     // (its mint admits them through the verified callerId === ownerId
     // leg); a personal guest owner's id stays an unguessable UUID.
-    const isOwnerUpgrade =
-      !!diagram && isPersonalOwner(claimedOwnerId, diagram.ownerId, diagram.teamId);
+    const isOwnerUpgrade = isPersonalOwner(claimedOwnerId, diagram.ownerId, diagram.teamId);
     if (admission) {
       ({ role, tabScope, shareCode } = admission);
     } else if (isOwnerUpgrade) {

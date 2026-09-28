@@ -35,8 +35,11 @@ type TabActionsDeps = {
   // The owner's diagram list — read for the destination name when
   // linking a tab into another diagram.
   diagramList: { id: string; name: string }[];
-  // The local participant id (owner of the link request).
+  // The local participant id (owner of the link request, and of any
+  // images an import stores).
   ownerId: string;
+  // The open diagram: an Offline Mode one embeds imported images.
+  diagramId: string | null;
   // Factory for a blank tab (kept in the page because the initial-state
   // initialiser also uses it).
   createTab: (name: string) => Tab;
@@ -78,6 +81,7 @@ export function useTabActions(deps: TabActionsDeps) {
     activeId,
     diagramList,
     ownerId,
+    diagramId,
     createTab,
     commit,
     commitTabs,
@@ -141,6 +145,8 @@ export function useTabActions(deps: TabActionsDeps) {
   // cross-diagram link below.
   const { importIntoActiveTab, importTextIntoActiveTab } = useTabImport({
     tabs,
+    ownerId,
+    diagramId,
     createTab,
     markTabLoaded,
     activeId,

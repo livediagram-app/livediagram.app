@@ -7,6 +7,7 @@
 //   favourites → /explorer/favourites
 //   gallery  → /explorer/images          invites → /explorer/invites
 //   folder   → /explorer/folder?id=<id>  team    → /explorer/team?id=<id>
+//   trash    → /explorer/trash (no sidebar row; reached from Settings)
 //
 // Folder / team ids ride in the query string rather than a path
 // segment ON PURPOSE: `output: 'export'` can't enumerate user-minted
@@ -47,6 +48,8 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/themes';
     case 'tokens':
       return '/explorer/tokens';
+    case 'trash':
+      return '/explorer/trash';
     case 'invites':
       return '/explorer/invites';
     case 'folder':
@@ -96,6 +99,8 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'themes' };
     case '/explorer/tokens':
       return { kind: 'tokens' };
+    case '/explorer/trash':
+      return { kind: 'trash' };
     case '/explorer/invites':
       return { kind: 'invites' };
     case '/explorer/folder': {

@@ -436,6 +436,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Imported|Drawio':
     'Someone imported a draw.io file: its first page into a tab, any further pages as new tabs.',
   'Tab|Imported|Excalidraw': 'Someone imported a tab from an Excalidraw file.',
+  'Tab|Imported|ExcalidrawPng':
+    'Someone imported a tab from a PNG exported by Excalidraw with its scene embedded.',
+  'Tab|Imported|ExcalidrawSvg':
+    'Someone imported a tab from an SVG exported by Excalidraw with its scene embedded.',
   'Tab|Linked|': 'A tab was linked into another diagram.',
   'Tab|Loaded|':
     "A tab's content was fetched for viewing (the first tab when a diagram opens, then each tab switched to).",
@@ -498,6 +502,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone switched the Timeline's filter to show everyone's activity, not just their own.",
   'Timeline|Selected|Others':
     "Someone switched the Timeline's filter to show only other people's activity, hiding their own.",
+  'Trash|Opened|Settings': 'Someone opened the Trash from Settings, under Account.',
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
@@ -963,6 +968,12 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timeline|Removed': 'Someone removed one or more entries from their Timeline feed.',
   'Timeline|Selected':
     "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
+  'Trash|Opened': 'Someone opened the Trash, where deleted diagrams wait for 30 days.',
+  'Trash|Cleared':
+    'Someone emptied one group of their Trash (their own diagrams, a team, or this browser), deleting everything in it for good.',
+  'Trash|Deleted': 'Someone deleted a diagram in the Trash for good, before its 30 days were up.',
+  'Trash|Restored':
+    'Someone brought a deleted diagram back from the Trash, putting it back where it was.',
   'Token|Created':
     'A new API token was created, either by hand or for an AI tool connected over MCP.',
   'Token|Removed': 'Someone revoked an API token.',

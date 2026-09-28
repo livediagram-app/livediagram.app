@@ -18,6 +18,7 @@ import { ExplorerSections } from '@/components/panels/ExplorerSections';
 import type { ExplorerProps } from './Explorer.types';
 import { useExplorerViewModel } from './useExplorerViewModel';
 import { useExplorerRowDelete } from './useExplorerRowDelete';
+import { TEAM_TRASH_RESTORE_HINT, TRASH_RESTORE_HINT } from '@/lib/trash-copy';
 
 // Floating "Explorer" panel pinned to the top-left of the canvas by
 // default. Symmetric to the Palette in shape and behaviour.
@@ -418,8 +419,12 @@ function ExplorerImpl({
             diagrams.find((d) => d.id === deleteConfirm.id)?.name ||
             teamDiagrams.find((d) => d.id === deleteConfirm.id)?.name ||
             'this diagram'
-          }"? Its tabs, history and share links go with it.${
+          }"? Its share links stop working.${
             deleteConfirm.notice ? ` ${deleteConfirm.notice}` : ''
+          } ${
+            teamDiagrams.some((d) => d.id === deleteConfirm.id)
+              ? TEAM_TRASH_RESTORE_HINT
+              : TRASH_RESTORE_HINT
           }`}
           confirmLabel="Delete"
           onConfirm={() => {

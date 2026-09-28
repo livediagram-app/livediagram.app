@@ -17,6 +17,9 @@ const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) =
 const ApiErrorPage = dynamic(() =>
   import('@/components/chrome/ApiErrorPage').then((m) => m.ApiErrorPage),
 );
+const DiagramTrashedCard = dynamic(() =>
+  import('@/components/chrome/DiagramTrashedCard').then((m) => m.DiagramTrashedCard),
+);
 const SharePasswordGate = dynamic(() =>
   import('@/components/dialogs/SharePasswordGate').then((m) => m.SharePasswordGate),
 );
@@ -108,6 +111,25 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
       onMoveDiagramToFolder={moveDiagramToFolder}
     />
   );
+
+  // The diagram is in the Trash (docs/specs/013-workspace/trash.md): from the
+  // load, the room, or a refused save. Ahead of every other status because it
+  // can arrive mid-session, over an editor that loaded fine.
+  if (state.diagramTrashed.trashed) {
+    const card = (
+      <DiagramTrashedCard
+        restorable={state.diagramTrashed.restorable}
+        onRestore={state.diagramTrashed.restore}
+      />
+    );
+    return embed ? (
+      <EmbedShell>{card}</EmbedShell>
+    ) : (
+      <StatusShell title="Diagram deleted" explorer={fullExplorer}>
+        {card}
+      </StatusShell>
+    );
+  }
 
   // The load FAILED (network / 5xx) rather than 404'd. Retryable, so
   // show the error card (with the Explorer behind it for navigation)

@@ -241,6 +241,49 @@ export const DIAGRAM_ACTIONS: MetricStack = {
   headline: [DIAGRAMS_CREATED, DIAGRAMS_RENAMED, DIAGRAMS_DELETED, DIAGRAMS_DUPLICATED],
 };
 
+// The Trash (docs/specs/013-workspace/trash.md): the backstop behind every
+// diagram delete. Whether anyone comes back for a deleted diagram is the
+// question, so restores lead; each chart counts every Trash (Personal, Team,
+// Local).
+export const TRASH_OPENED = chart(
+  'Trash',
+  'Opened',
+  'Trash Opened',
+  'The Trash opened from Settings.',
+);
+
+export const DIAGRAMS_RESTORED = chart(
+  'Trash',
+  'Restored',
+  'Diagrams Restored',
+  'A deleted diagram brought back from the Trash, from the Trash itself or from its deleted page.',
+);
+
+export const DIAGRAMS_DELETED_FOR_GOOD = chart(
+  'Trash',
+  'Deleted',
+  'Deleted for Good',
+  'A diagram in the Trash deleted permanently, ahead of its 30 days.',
+  { rising: 'neutral' },
+);
+
+export const TRASH_EMPTIED = chart(
+  'Trash',
+  'Cleared',
+  'Trash Emptied',
+  'Empty Trash on one group: your diagrams, a team, or this browser.',
+  { rising: 'neutral' },
+);
+
+export const TRASH: MetricStack = {
+  rising: 'neutral',
+  stack: true,
+  title: 'Trash',
+  blurb:
+    'Deleted diagrams wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
+  members: [DIAGRAMS_RESTORED, TRASH_OPENED, DIAGRAMS_DELETED_FOR_GOOD, TRASH_EMPTIED],
+};
+
 const TAB_CHANGES = [
   TABS_CREATED,
   TABS_RENAMED,

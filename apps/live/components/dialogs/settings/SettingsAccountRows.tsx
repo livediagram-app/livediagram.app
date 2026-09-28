@@ -96,7 +96,7 @@ export function SettingsDeleteAccountRow({ row }: { row: SettingsDeleteAccountRo
             </span>
             <span className="block text-xs text-slate-600 dark:text-slate-400">
               {signedIn
-                ? 'Permanently removes your diagrams, folders, and account. This cannot be undone.'
+                ? 'Permanently removes your diagrams (the Trash included), folders, and account. This cannot be undone.'
                 : 'Only available once you are signed in: deleting wipes the data held against a verified account, and a guest browser has none.'}
             </span>
           </span>

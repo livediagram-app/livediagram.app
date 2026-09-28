@@ -961,7 +961,14 @@ Favourites are not built. Everything here is additive.
 
 ### 3.5 Deletion and retention
 
-- **Deleting a diagram cascades**, matching Manager Toolkit. The delete
+- **A diagram in the [Trash](trash.md) is hidden, not swept.** Deleting a
+  diagram moves it to the Trash for 30 days; while it waits, `readTimeline`
+  and `countUnseen` leave out every event whose source or snapshot names a
+  trashed diagram (`NOT_IN_TRASH` in `db/timeline.ts`, a primary-key probe
+  per event), so a restore brings its history back. The purge is what
+  cascades, as described next, through `diagramsTimelineSweepStatement`
+  (the set form of the helper below). Take Offline still sweeps at once.
+- **Removing a diagram for good cascades**, matching Manager Toolkit. The purge
   hard-removes every `timeline_events` row with
   `source_type = 'diagram' AND source_id = <id>`; the
   `ON DELETE CASCADE` on `timeline_event_scopes.event_id` takes the

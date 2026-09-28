@@ -31,7 +31,7 @@ describe('ImportTabDialog, draw.io', () => {
   it('offers draw.io and passes the pasted XML to it', async () => {
     const { onImportText, onClose } = open({ status: 'done' });
     await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
-    expect(onImportText).toHaveBeenCalledWith('drawio', '<mxfile/>');
+    expect(onImportText).toHaveBeenCalledWith('drawio', '<mxfile/>', expect.any(Function));
   });
 
   it('shows the summary instead of closing when the import reports changes', async () => {

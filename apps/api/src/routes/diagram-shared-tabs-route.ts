@@ -4,8 +4,8 @@
 // many diagrams, so the user hears that those tabs stay before they act.
 
 import { getDiagram, sharedTabsSummary } from '../db';
-import { forbidden, json, notFound } from '../responses';
-import { mayDeleteDiagram, requireOwner, type RouteContext } from './context';
+import { forbidden, json } from '../responses';
+import { mayDeleteDiagram, missingDiagram, requireOwner, type RouteContext } from './context';
 
 // Returns null when the request isn't this route.
 export async function handleDiagramSharedTabs(ctx: RouteContext): Promise<Response | null> {
@@ -18,7 +18,7 @@ export async function handleDiagramSharedTabs(ctx: RouteContext): Promise<Respon
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
   const existing = await getDiagram(env, segments[2]!);
-  if (!existing) return notFound();
+  if (!existing) return missingDiagram(ctx, segments[2]!);
   if (!(await mayDeleteDiagram(ctx, existing))) return forbidden();
   return json({ sharedTabs: await sharedTabsSummary(env, existing.id) });
 }

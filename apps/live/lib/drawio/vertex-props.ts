@@ -45,7 +45,7 @@ function nearest<K extends string>(table: Record<K, number>, keys: readonly K[],
 
 const STROKES: readonly BorderStroke[] = ['thin', 'medium', 'thick', 'extra-thick'];
 
-/** A stroke width in px as a border preset (D14, D15: absent is draw.io's 1 px). */
+/** A stroke width in px as a border preset (D17, D18: absent is draw.io's 1 px). */
 export function strokePreset(px: number | undefined): BorderStroke {
   if (px === undefined) return 'thin';
   if (px <= 0) return 'none';
@@ -87,7 +87,7 @@ const ARROW_PX = {
   lg: arrowLabelFontSize('lg'),
 };
 
-/** A draw.io font size as the preset nearest on the element's own scale (D23). */
+/** A draw.io font size as the preset nearest on the element's own scale (D26). */
 export function fontSizePreset(px: number, scale: TextScale): TextSize {
   const table = scale === 'note' ? NOTE_FONT_PX : scale === 'arrow' ? ARROW_PX : LABEL_FONT_PX;
   return nearest(table as Record<TextSize, number>, SIZES, px);

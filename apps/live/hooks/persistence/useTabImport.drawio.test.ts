@@ -21,6 +21,8 @@ function setup(tabs: Tab[]) {
   let current = tabs;
   const deps = {
     tabs,
+    ownerId: 'owner-1',
+    diagramId: null,
     createTab: (name: string): Tab => ({ id: crypto.randomUUID(), name, elements: [] }),
     markTabLoaded: vi.fn(),
     activeId: tabs[0]!.id,

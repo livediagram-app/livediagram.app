@@ -100,7 +100,7 @@ Never throws: any exception inside is caught and refused as `unreadable`, logged
 
 - `decompressDiagram(text, budget)`: remove whitespace, `atob` → bytes, `inflateBytes(bytes,
 'deflate-raw', budget)`, decode as Latin-1 (the payload is URI-encoded ASCII), then
-  `decodeURIComponent`; if that throws, the Latin-1 text itself (an unencoded payload, D11). Finally
+  `decodeURIComponent`; if that throws, the Latin-1 text itself (an unencoded payload, D14). Finally
   remove C0 control characters other than tab, LF, CR (draw.io's `zapGremlins`).
 - `inflateBytes(bytes, format, budget)`: pipe a one-chunk `ReadableStream` through
   `new DecompressionStream(format)`; accumulate chunks; after each, `budget.take(chunk.length)`,
@@ -110,7 +110,7 @@ Never throws: any exception inside is caught and refused as `unreadable`, logged
 
 ### 4. PNG (`extractPngDiagram(bytes, budget)`)
 
-Walk chunks from offset 8: `length` (u32 BE), `type` (4 ASCII), data, CRC (not checked, D12). Stop at
+Walk chunks from offset 8: `length` (u32 BE), `type` (4 ASCII), data, CRC (not checked, D15). Stop at
 `IDAT`, `IEND`, or a chunk running past the end. For each:
 
 - `tEXt`: split at the first `0`; keyword `mxfile` or `mxGraphModel` → value as Latin-1.
@@ -147,7 +147,7 @@ The first match wins. Its value: while it starts with `%`, `decodeURIComponent` 
 
 `undefined`, `''`, `default`, `inherit` → `{ kind: 'unset' }`; `none` → `{ kind: 'none' }`;
 `light-dark(a, b)` → `readColour(a)`; `#rgb`, `#rrggbb`, `#rrggbbaa` → `{ kind: 'hex', value }`
-lower-cased; `rgb(...)` / `rgba(...)` → `{ kind: 'hex' }` of its RGB; anything else → `unset` (D13).
+lower-cased; `rgb(...)` / `rgba(...)` → `{ kind: 'hex' }` of its RGB; anything else → `unset` (D16).
 
 ### 7. Cells (`readGraph(model)`)
 
@@ -216,7 +216,7 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
 1. `fillColor`: `hex` → value; `none` → `'transparent'`; `unset` → omitted. Unset colours stay omitted by the spec's operator decision (default colours and the white page follow the tab theme); this applies to every colour map below.
 2. `strokeColor`: `hex` → value; `none` → `strokeWidth: 'none'`.
 3. `strokeWidth` px → nearest of `BORDER_STROKE_PX` (`thin` 1, `medium` 2, `thick` 4,
-   `extra-thick` 7), ties to the thinner (D14); `0` → `'none'`. Absent → `thin` (draw.io's 1 px, D15).
+   `extra-thick` 7), ties to the thinner (D17); `0` → `'none'`. Absent → `thin` (draw.io's 1 px, D18).
 4. `dashed=1` → `dashed`; with `dashPattern` `"a b ..."` where every dash ≤ its gap → `dotted`.
 5. `rounded=1` on `square`: radius = `absoluteArcSize=1` ? `arcSize` px : `arcSize` (default
    `DRAWIO_DEFAULT_ARC_SIZE`) % of `min(width, height)`; nearest of `BORDER_RADIUS_PX` excluding
@@ -239,7 +239,7 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
     label is non-empty.
 12. Ink on an own fill (`inkOnFill(fill)`): when the element (shape, text, labelled box, lane title
     on its `headerFill`, entity, table, table cell `bg`) carries a hex fill and the label has no
-    `fontColor`, `textColor` = `#1e293b` on a fill `isLightColor` calls light, else `#ffffff` (D28).
+    `fontColor`, `textColor` = `#1e293b` on a fill `isLightColor` calls light, else `#ffffff` (D29).
     A label that is empty gets none.
 
 `fontIdFor(family)`: lower-case the first family in the list, trimmed of quotes; a `FONTS` id or
@@ -313,7 +313,7 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
    nearest `ARROWHEAD_SIZE_PX` to `endSize` (else `startSize`, default 6), omitted at `medium`.
    `arrowhead-approximated` += 1 when either head is not exact, or both ends carry heads of
    different shapes.
-5. **Stroke.** `strokeColor` hex → `strokeColor` (`none` → `opacity: 0`, D16); `strokeWidth` px →
+5. **Stroke.** `strokeColor` hex → `strokeColor` (`none` → `opacity: 0`, D19); `strokeWidth` px →
    `strokeWidth` (number, default 1, omitted at 2). `dashed` / `dashPattern` as vertices.
    `opacity` as vertices. `link` as step 10.8.
 6. **Labels.** Parts: the edge's own plain label, then each visible child vertex's with `edgeLabel`
@@ -367,11 +367,11 @@ palette's frame); the AWS / GCP groups count `shape-approximated`.
    paint order), the import's `tally`, `images` and `imageKeys` from `ctx`.
 2. Layers: `layerIds.length >= 2` → `Tab.layers` = one per layer cell: first `DEFAULT_LAYER_ID`, the
    rest `layer:<uuid>`; `name` = plain label, else `DEFAULT_LAYER_NAME` for the first and
-   `Layer n` after (D25); `visible: false` when the layer cell is invisible; `locked: true` when its
+   `Layer n` after (D28); `visible: false` when the layer cell is invisible; `locked: true` when its
    style has `locked=1`. A single layer → no `layers`, no `layerId`s.
 3. Walk each layer's children depth-first (pre-order). Per cell: invisible → skip the subtree,
    `hidden-skipped` += 1 + descendants; edge → queue in paint order (built in pass 2), its children
-   marked visited; vertex without geometry → skipped like a hidden one (D17); vertex → classify and
+   marked visited; vertex without geometry → skipped like a hidden one (D20); vertex → classify and
    build. A `line` vertex becomes an arrow and nothing pins to it.
 4. Collapsed vertex: build it, skip descendants, `collapsed-skipped` += descendant count, and forward
    every descendant to it.
@@ -389,7 +389,7 @@ Pure `Tab[] => Tab[]`; the input returned as it is when the active tab is missin
 
 1. Page 0 merges into the active tab through `mergeImportedTab` with `elements`, `layers` and
    `backgroundColor` when present; name: single page → the active tab's name; multi-page → the page
-   name (trimmed), else `Page 1` (D24).
+   name (trimmed), else `Page 1` (D27).
 2. Pages 1..n → new tabs: `createTab(name)` with `id: page.tabId`, the active tab's `theme`, `font`,
    `defaultTextSize` (else `'sm'`), `backgroundPattern`, `backgroundColor`, `backgroundOpacity`,
    `patternColor`, `backgroundPatternScale`, and its `folder`, then merged with the page like
@@ -536,9 +536,9 @@ Refusals (the `error` string, final copy):
 | ------------------------------------------- | ----------------------------------------------------------------- |
 | Empty text / only whitespace                | Refused `not-xml` (the dialog's Import button is disabled anyway) |
 | A `diagram` with no content                 | An empty page: an empty tab, counted in `pages`                   |
-| A cell with no geometry                     | Vertex: skipped, `hidden-skipped` += 1 (D17); edge: fine          |
+| A cell with no geometry                     | Vertex: skipped, `hidden-skipped` += 1 (D20); edge: fine          |
 | Zero or negative width / height             | Clamped to 1                                                      |
-| Duplicate cell ids                          | Last one wins in the map; both walk (D18)                         |
+| Duplicate cell ids                          | Last one wins in the map; both walk (D21)                         |
 | A parent id that does not exist             | Treated as a child of the first layer                             |
 | A cycle in parents                          | The walk visits each id once; the cycle is broken                 |
 | Edge source = target (self-loop)            | Both ends pinned to the element, different anchors kept as mapped |
@@ -666,15 +666,15 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 | `DRAWIO_MAX_PAGES`                                  | 100                                                                                                                                                         | Spec; 1 to 500                                                  |
 | `MAX_ELEMENTS_PER_TAB`                              | 10 000                                                                                                                                                      | `@livediagram/diagram` validate.ts                              |
 | `DRAWIO_DEFAULT_ARC_SIZE`                           | 10 (%)                                                                                                                                                      | draw.io's `mxConstants.RECTANGLE_ROUNDING_FACTOR`               |
-| `DRAWIO_SHADOW`                                     | `{2, 3, 3, 0.25}`                                                                                                                                           | draw.io's shadow offset (2, 3) and opacity, D19                 |
-| `DRAWIO_CAPTION_LINE_PX`                            | 18                                                                                                                                                          | One `sm` caption line with leading, D20; 14 to 24               |
-| `DRAWIO_CAPTION_CHAR_PX`                            | 7                                                                                                                                                           | `sm` average glyph width, D20; 6 to 9                           |
-| `DRAWIO_CAPTION_PADDING_PX`                         | 16                                                                                                                                                          | The icon caption area's inner padding, both sides, D20; 8 to 24 |
-| `TITLE_CHAR_PX`, `TITLE_PADDING_PX` (containers.ts) | 9, 16                                                                                                                                                       | A lane title reading across, D20; 7 to 10, 8 to 24              |
-| `INK_ON_LIGHT`, `INK_ON_DARK` (vertex-props.ts)     | `#1e293b`, `#ffffff`                                                                                                                                        | The editor's light-paper text ink and dark-paper text, D28      |
+| `DRAWIO_SHADOW`                                     | `{2, 3, 3, 0.25}`                                                                                                                                           | draw.io's shadow offset (2, 3) and opacity, D22                 |
+| `DRAWIO_CAPTION_LINE_PX`                            | 18                                                                                                                                                          | One `sm` caption line with leading, D23; 14 to 24               |
+| `DRAWIO_CAPTION_CHAR_PX`                            | 7                                                                                                                                                           | `sm` average glyph width, D23; 6 to 9                           |
+| `DRAWIO_CAPTION_PADDING_PX`                         | 16                                                                                                                                                          | The icon caption area's inner padding, both sides, D23; 8 to 24 |
+| `TITLE_CHAR_PX`, `TITLE_PADDING_PX` (containers.ts) | 9, 16                                                                                                                                                       | A lane title reading across, D23; 7 to 10, 8 to 24              |
+| `INK_ON_LIGHT`, `INK_ON_DARK` (vertex-props.ts)     | `#1e293b`, `#ffffff`                                                                                                                                        | The editor's light-paper text ink and dark-paper text, D29      |
 | `WHITE` (convert-page.ts)                           | `#fff`, `#ffffff`, `#ffffffff`                                                                                                                              | draw.io's default page                                          |
-| `DRAWIO_LABEL_CENTRE_EPSILON`                       | 0.05                                                                                                                                                        | D21; 0 to 0.2                                                   |
-| `DRAWIO_REPORT_NAMES_MAX`                           | 5                                                                                                                                                           | D22; 3 to 10                                                    |
+| `DRAWIO_LABEL_CENTRE_EPSILON`                       | 0.05                                                                                                                                                        | D24; 0 to 0.2                                                   |
+| `DRAWIO_REPORT_NAMES_MAX`                           | 5                                                                                                                                                           | D25; 3 to 10                                                    |
 | `DRAWIO_ANGLED_EDGE_STYLES`                         | `orthogonalEdgeStyle`, `elbowEdgeStyle`, `entityRelationEdgeStyle`, `segmentEdgeStyle`, `isometricEdgeStyle`, `sideToSideEdgeStyle`, `topToBottomEdgeStyle` | draw.io's `mxEdgeStyle` routers                                 |
 | `DRAWIO_MARKERS`                                    | the table in step 12.4                                                                                                                                      | draw.io's marker names                                          |
 

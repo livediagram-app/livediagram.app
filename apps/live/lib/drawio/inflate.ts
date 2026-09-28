@@ -77,7 +77,7 @@ export async function decompressDiagram(text: string, budget: ByteBudget): Promi
   try {
     decoded = decodeURIComponent(inflated);
   } catch {
-    decoded = inflated; // not URI-encoded (D11)
+    decoded = inflated; // not URI-encoded (D14)
   }
   return decoded.replace(GREMLINS, '');
 }

@@ -39,6 +39,8 @@ New D1 table, migration `0004_change_log.sql`. Two follow-up migrations narrowed
 - **`0012`** — dropped `diagram_id` (item #14 / [Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md)). Every entry is tab-scoped; per-diagram reads join through `diagram_tabs`.
 - **`0013`** — dropped the denormalised `participant_name` + `participant_color` (item #15). Reads `LEFT JOIN participants` on `participant_id`; rows whose author has been deleted fall back to "Unknown" / slate-400 client-side.
 
+A diagram in the [Trash](../013-workspace/trash.md) keeps its change log (its tabs are untouched), unreadable while it waits and back on restore; the purge removes it with the tabs no other diagram holds.
+
 A daily cron (item #16) runs at 03:00 UTC and deletes `change_log` rows older than 90 days. The Activity Panel only ever surfaces the most recent N entries (`CHANGE_LOG_LIST_LIMIT = 30` server-side, paged by `created_at DESC`), so anything past the retention window has been invisible since the day it landed — the sweep just stops the table growing unboundedly under busy collab.
 
 Post-migration shape:

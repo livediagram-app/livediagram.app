@@ -6,13 +6,13 @@
 // remain export-only.
 
 // The result of an import attempt, surfaced back to the Import dialog:
-// 'done' (replaced the tab — close), 'cancelled' (file dialog dismissed
-// — stay open, no error), or 'error' (parse / build failed — show it).
-// A 'done' import that degraded anything carries its report
-// (docs/specs/020-import-export/drawio-import.md "The import report"), which
-// the dialog shows instead of closing.
+// 'done' (replaced the tab — close, or show the report when the import met
+// images or degraded anything, docs/specs/020-import-export/import-image-pipeline.md
+// and docs/specs/020-import-export/drawio-import.md "The import report"),
+// 'cancelled' (file dialog dismissed — stay open, no error), or 'error'
+// (parse / build failed — show it).
 export type ImportOutcome =
-  | { status: 'done'; report?: ImportReport }
+  | { status: 'done'; report?: ImportReport; images?: ImportImageReport }
   | { status: 'cancelled' }
   | { status: 'error'; error: string };
 
@@ -25,6 +25,7 @@ export type ImportOutcome =
 
 import { isValidElement, type Tab } from '@livediagram/diagram';
 import type { ImportReport } from './import-report';
+import type { ImportImageReport } from './import-images';
 import { TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from './export-tab';
 
 type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };

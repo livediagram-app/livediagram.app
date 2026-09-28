@@ -166,10 +166,12 @@ describe('deleteDiagram', () => {
   });
 });
 
-describe('DELETE /api/diagrams/:id with a shared tab', () => {
+// Removal proper is the permanent delete (a plain delete moves the diagram to
+// the Trash, docs/specs/013-workspace/trash.md) and Take Offline.
+describe('DELETE /api/diagrams/:id?permanent=true with a shared tab', () => {
   function del(db: SqliteD1, opts: Parameters<typeof makeTestRouteContext>[2]) {
     return handleDiagrams(
-      makeTestRouteContext('DELETE', '/api/diagrams/A', { env: db.env, ...opts }),
+      makeTestRouteContext('DELETE', '/api/diagrams/A?permanent=true', { env: db.env, ...opts }),
     );
   }
 

@@ -12,15 +12,15 @@ export const DRAWIO_MAX_INFLATED_BYTES = 100 * MiB;
 export const DRAWIO_MAX_PAGES = 100;
 /** draw.io's rounding factor for `rounded=1` without `arcSize`, in percent. */
 export const DRAWIO_DEFAULT_ARC_SIZE = 10;
-/** `shadow=1` as a livediagram drop shadow (D19). */
+/** `shadow=1` as a livediagram drop shadow (D22). */
 export const DRAWIO_SHADOW: ElementShadow = { offsetX: 2, offsetY: 3, blur: 3, opacity: 0.25 };
-/** Height one caption line adds to an icon's box (D20). */
+/** Height one caption line adds to an icon's box (D23). */
 export const DRAWIO_CAPTION_LINE_PX = 18;
-/** Width one caption character adds to an icon's box, sideways captions (D20). */
+/** Width one caption character adds to an icon's box, sideways captions (D23). */
 export const DRAWIO_CAPTION_CHAR_PX = 7;
-/** Room a caption's box keeps around its text, both sides together (D20). */
+/** Room a caption's box keeps around its text, both sides together (D23). */
 export const DRAWIO_CAPTION_PADDING_PX = 16;
-/** How far from the middle an edge label must sit to keep its place (D21). */
+/** How far from the middle an edge label must sit to keep its place (D24). */
 export const DRAWIO_LABEL_CENTRE_EPSILON = 0.05;
-/** Unmatched stencil names the summary lists (D22). */
+/** Unmatched stencil names the summary lists (D25). */
 export const DRAWIO_REPORT_NAMES_MAX = 5;

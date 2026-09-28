@@ -209,3 +209,64 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     expect(room.cursor()).toBeNull();
   });
 });
+
+// The room ends every session when the diagram goes to the Trash
+// (docs/specs/013-workspace/trash.md): close code 4004. The client hears it
+// and stops, rather than reconnecting into an upgrade that will be refused.
+describe('connectRoom when the diagram is trashed', () => {
+  class ClosingSocket {
+    static all: ClosingSocket[] = [];
+    readyState = 1;
+    private listeners: Record<string, ((e: { code?: number }) => void)[]> = {};
+    constructor() {
+      ClosingSocket.all.push(this);
+    }
+    addEventListener(type: string, fn: (e: { code?: number }) => void) {
+      (this.listeners[type] ??= []).push(fn);
+    }
+    send() {}
+    close() {}
+    fire(type: string, event: { code?: number } = {}) {
+      for (const fn of this.listeners[type] ?? []) fn(event);
+    }
+  }
+
+  beforeEach(() => {
+    ClosingSocket.all = [];
+    vi.stubGlobal('WebSocket', ClosingSocket);
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('reports it once and never reconnects', () => {
+    const onDiagramTrashed = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onDiagramTrashed },
+    );
+    ClosingSocket.all[0]!.fire('open');
+    ClosingSocket.all[0]!.fire('close', { code: 4004 });
+    vi.runAllTimers();
+
+    expect(onDiagramTrashed).toHaveBeenCalledTimes(1);
+    expect(ClosingSocket.all).toHaveLength(1);
+  });
+
+  it('still reconnects after an ordinary drop', () => {
+    const onDiagramTrashed = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onDiagramTrashed },
+    );
+    ClosingSocket.all[0]!.fire('close', { code: 1006 });
+    vi.runOnlyPendingTimers();
+
+    expect(onDiagramTrashed).not.toHaveBeenCalled();
+    expect(ClosingSocket.all).toHaveLength(2);
+  });
+});

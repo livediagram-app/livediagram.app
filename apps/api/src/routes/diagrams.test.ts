@@ -27,6 +27,10 @@ const { db, canReadDiagram, canEditDiagram, resolveDiagramGrant } = vi.hoisted((
     getDiagram: vi.fn(),
     upsertDiagramMeta: vi.fn(),
     deleteDiagram: vi.fn(),
+    // The Trash (docs/specs/013-workspace/trash.md): a plain delete trashes.
+    trashDiagram: vi.fn(async () => true),
+    purgeDiagrams: vi.fn(async () => 1),
+    getTrashedDiagramMeta: vi.fn(async () => null),
     getFolder: vi.fn(),
     setDiagramFolder: vi.fn(),
     getMembership: vi.fn(),
@@ -186,11 +190,12 @@ describe('handleDiagrams owner-only paths (DELETE /diagrams/:id)', () => {
     expect(db.deleteDiagram).not.toHaveBeenCalled();
   });
 
-  it('204 and deletes when the caller owns the diagram', async () => {
+  it('204 and moves it to the Trash when the caller owns the diagram', async () => {
     db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
     const res = await handleDiagrams(makeCtx('DELETE', '/api/diagrams/d1'));
     expect(res.status).toBe(204);
-    expect(db.deleteDiagram).toHaveBeenCalledWith({}, 'd1');
+    expect(db.trashDiagram).toHaveBeenCalledWith({}, 'd1', expect.any(Number));
+    expect(db.deleteDiagram).not.toHaveBeenCalled();
   });
 });
 

@@ -15,6 +15,7 @@ const { db, canReadDiagram, resolveDiagramGrant } = vi.hoisted(() => ({
     findImageBySha: vi.fn(),
     getDiagram: vi.fn(),
     getImage: vi.fn(),
+    imageTotalsByOwner: vi.fn(),
     imageUsageByOwner: vi.fn(),
     insertImage: vi.fn(),
     listImagesByOwner: vi.fn(),
@@ -152,5 +153,77 @@ describe('handleImages', () => {
     const res = await handleImages(makeCtx('GET', '/api/images/i1?d=d1'));
     expect(res.status).toBe(404);
     expect(db.diagramReferencesImage).toHaveBeenCalledWith(expect.anything(), 'd1', 'i1', 't2');
+  });
+});
+
+// docs/specs/009-elements/images.md "Size cap": the cap is enforced by the insert itself, so
+// uploads racing past the early totals check are refused, and their R2 object removed.
+describe('POST /api/images under a per-owner cap', () => {
+  const PNG = new Uint8Array([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 1, 2, 3, 4,
+  ]);
+
+  function upload(images: ReturnType<typeof imagesBinding>, vars: Record<string, string>) {
+    const ctx = makeTestRouteContext('POST', '/api/images', {
+      owner: 'owner-1',
+      env: { IMAGES: images, ...vars } as unknown as Env,
+    });
+    const request = new Request('https://api.test/api/images', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'image/png',
+        'Content-Length': String(PNG.byteLength),
+        'X-Image-Width': '4',
+        'X-Image-Height': '4',
+      },
+      body: PNG,
+    });
+    return handleImages({ ...ctx, request });
+  }
+
+  it('passes the caps to the insert', async () => {
+    db.imageTotalsByOwner.mockResolvedValue({ count: 0, bytes: 0 });
+    db.findImageBySha.mockResolvedValue(null);
+    db.insertImage.mockResolvedValue({ id: 'new' });
+    const res = await upload(imagesBinding(), {
+      IMAGE_MAX_PER_OWNER: '3',
+      IMAGE_MAX_BYTES_PER_OWNER: '1000',
+    });
+    expect(res.status).toBe(200);
+    expect(db.insertImage.mock.calls[0]![2]).toEqual({ maxImages: 3, maxBytes: 1000 });
+  });
+
+  it('403 gallery_full and removes the R2 object when the insert is refused by a racing upload', async () => {
+    db.imageTotalsByOwner
+      .mockResolvedValueOnce({ count: 2, bytes: 0 })
+      .mockResolvedValueOnce({ count: 3, bytes: 0 });
+    db.findImageBySha.mockResolvedValue(null);
+    db.insertImage.mockResolvedValue(null);
+    const images = imagesBinding();
+    const res = await upload(images, { IMAGE_MAX_PER_OWNER: '3' });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({
+      error: 'gallery_full',
+      reason: 'count',
+      limit: 3,
+      current: 3,
+    });
+    const key = images.put.mock.calls[0]![0];
+    expect(images.delete).toHaveBeenCalledWith(key);
+  });
+
+  it('names the byte cap when that is the one the race crossed', async () => {
+    db.imageTotalsByOwner
+      .mockResolvedValueOnce({ count: 0, bytes: 980 })
+      .mockResolvedValueOnce({ count: 1, bytes: 995 });
+    db.findImageBySha.mockResolvedValue(null);
+    db.insertImage.mockResolvedValue(null);
+    const res = await upload(imagesBinding(), { IMAGE_MAX_BYTES_PER_OWNER: '1000' });
+    expect(await res.json()).toEqual({
+      error: 'gallery_full',
+      reason: 'bytes',
+      limit: 1000,
+      current: 995,
+    });
   });
 });

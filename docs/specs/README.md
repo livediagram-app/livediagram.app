@@ -20,14 +20,14 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./010-palette/README.md - when working on the palette: categories, favourites, icon and sticker catalogues, presets
 - ./011-theme/README.md - when working on diagram themes: built-in, multi-colour and custom themes
 - ./012-collaboration/README.md - when working on realtime, sessions, facilitation, comments, actions or room tools
-- ./013-workspace/README.md - when working on the Explorer, folders, teams, favourites or share links
+- ./013-workspace/README.md - when working on the Explorer, folders, teams, favourites, share links or the Trash
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email
 - ./015-api/README.md - when working on the api worker, its OpenAPI document, tokens or the MCP server
 - ./016-platform/README.md - when working on routing, deployment or the staging environment
 - ./017-telemetry/README.md - when adding or changing anonymous events or the telemetry dashboard
 - ./018-help/README.md - when working on the help centre or contextual help links
 - ./019-marketing/README.md - when working on the marketing site, comparison pages or outbound assets
-- ./020-import-export/README.md - when working on Markdown, Mermaid, Excalidraw or draw.io import/export, or export fidelity
+- ./020-import-export/README.md - when working on Markdown, Mermaid, Excalidraw or draw.io import/export, imported images, or export fidelity
 - ./021-event-storming/README.md - when working on the event-storming board, its lanes or its photo import
 
 ## Workflow

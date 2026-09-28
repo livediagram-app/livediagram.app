@@ -214,6 +214,7 @@ link.
   no drag-and-drop, and Show in Explorer opens the team page.
 - **Right-clicking anywhere on a folder or diagram row** opens that row's ellipsis menu (suppressing the browser's default context menu), anchored to the row's ellipsis button: the same menu the `⋯` click opens. Applies in both the floating Explorer panel and the full-page `/explorer`, including the page's sidebar folder tree (a no-op while a row is being renamed). Every row and card shares one `useRowMenu` hook and one `EllipsisTriggerButton`, so the trigger always reports `aria-expanded` and, on the panel's hover-revealed rows, stays visible while its menu is open.
 - Folder-row ellipsis menu: Rename, Delete, "Move to folder…".
+- Deleting a diagram moves it to the [Trash](trash.md) for 30 days. A diagram restored after its folder was deleted lands in Unsorted (its `folder_id` was already cleared by the folder delete's `SET NULL`).
   Rename is inline (same pattern as the diagram-row rename). Delete
   pops a confirmation dialog ("Delete this folder?" with the
   cascade rules in the body: diagrams inside move to Unsorted,

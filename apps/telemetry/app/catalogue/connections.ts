@@ -60,7 +60,9 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('UpdateDiagram', 'Update Diagram', 'Editing a diagram’s elements.'),
   mcpTool('ShareDiagram', 'Share Diagram', 'Creating a share link for a diagram.'),
   mcpTool('RenameDiagram', 'Rename Diagram', 'Renaming a diagram.'),
-  mcpTool('DeleteDiagram', 'Delete Diagram', 'Deleting a diagram.'),
+  mcpTool('DeleteDiagram', 'Delete Diagram', 'Moving a diagram to the Trash, or deleting one tab.'),
+  mcpTool('ListTrash', 'List Trash', 'Listing the diagrams in the Trash.'),
+  mcpTool('RestoreDiagram', 'Restore Diagram', 'Bringing a diagram back from the Trash.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

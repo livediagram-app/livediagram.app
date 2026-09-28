@@ -150,7 +150,7 @@ export function readGraph(model: Element | null): DrawioGraph {
   for (const el of Array.from(root?.children ?? [])) {
     const cell = readCell(el);
     if (!cell) continue;
-    cells.set(cell.id, cell); // a duplicate id: the last one wins (D18)
+    cells.set(cell.id, cell); // a duplicate id: the last one wins (D21)
     ordered.push(cell);
   }
 
