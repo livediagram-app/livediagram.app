@@ -27,7 +27,8 @@ Two promises shape the design:
   browser's `DOMParser` and `DecompressionStream`, which the Workers runtime lacks.
 
 The importer is **pure with respect to the editor**: bytes or text in, pages of elements plus a report
-and a list of pending images out. Applying the result to tabs is the hook's job. That split is what lets
+and the embedded images' requests for the [import image pipeline](import-image-pipeline.md) out.
+Storing the images and applying the result to tabs is the hook's job. That split is what lets
 bulk import (many files at once, not built) reuse the importer unchanged later.
 
 ## Inputs
@@ -283,19 +284,24 @@ When the cell has no label, the box is labelled with the stencil's readable name
 
 ### Images
 
-A vertex with `shape=image` becomes an `image` element in its box, its label as `alt`. livediagram
-stores image bytes in its image pipeline ([Image element + per-owner gallery](../009-elements/images.md)),
-never inside the diagram, so the bytes are **not** written into the element:
+A vertex with `shape=image` becomes an `image` element in its box, its label as `alt`. Its picture comes
+across through the shared [import image pipeline](import-image-pipeline.md), exactly as an Excalidraw
+scene's images do: resized in the browser, stored in the gallery (or embedded in an Offline Mode
+diagram), and reported per image in the import's report, including any left as placeholders and why
+(the gallery is full, the format could not be read, and so on). An import never fails because of an
+image.
 
-- `image=data:...` (an embedded image): the element is a **placeholder** (`imageId: null`) and the image joins the result's **pending images**: a request shaped like the shared import image pipeline's (element id, a key shared by identical pictures, the data URL, the element's size), plus the tab it lands on. Counted (`image-placeholder`).
-- Any other `image=` (a web URL, or one of draw.io's own library paths such as `img/lib/azure2/...`, unless it matched an icon above): a placeholder, not requested. Counted (`image-unavailable`): the importer never fetches from third parties.
+- `image=data:...` (an embedded image): the element starts as a placeholder (`imageId: null`) and
+  the importer requests the picture from the pipeline (element id, a key shared by identical pictures
+  so each is stored once across all pages, the data URL, the element's size). The hook runs every
+  page's requests through **one** pipeline session and progress count before the tabs change, so the
+  import stays one undo step; each stored image fills its placeholder.
+- Any other `image=` (a web URL, or one of draw.io's own library paths such as
+  `img/lib/azure2/...`, unless it matched an icon above): a placeholder, never requested. Counted
+  (`image-unavailable`): the importer never fetches from third parties.
 - An `image=` on a shape that is not an image shape (a `label` style with an icon): the shape
   imports without the picture. Counted (`image-unavailable`).
 - A page `backgroundImage`: dropped. Counted (`image-unavailable`).
-
-The pending images are the seam for the shared import image pipeline (browser resize to WebP, then the upload of [Image element + per-owner gallery](../009-elements/images.md), within the hosted per-owner cap): the hook hands each page's requests to it before the tabs change, and each stored image fills its placeholder's `imageId`. Anything the pipeline cannot place (the cap, a failed
-upload, an unsupported format) stays a placeholder and stays counted; an import never fails because of
-an image.
 
 ### The page
 
@@ -305,8 +311,9 @@ an image.
 
 ## The import report
 
-Every import returns a report: pages imported, elements created, and one line per kind of degradation
-that occurred, with its count. The kinds are a closed set shared by every importer
+Every import returns a report: pages imported, elements created, how its images came across (the
+[import image pipeline](import-image-pipeline.md)'s report, when it met any), and one line per kind
+of degradation that occurred, with its count. The kinds are a closed set shared by every importer
 (`ImportNoteKind`):
 
 | Kind                     | Meaning                                                                                                     |
@@ -314,7 +321,6 @@ that occurred, with its count. The kinds are a closed set shared by every import
 | `shape-unmatched`        | a shape with no livediagram match, imported as a labelled box (names listed)                                |
 | `shape-approximated`     | a shape imported as the nearest livediagram shape                                                           |
 | `icon-substituted`       | a vendor stencil imported as the matching livediagram icon                                                  |
-| `image-placeholder`      | an embedded image imported as a placeholder, waiting for upload                                             |
 | `image-unavailable`      | an image the importer cannot bring (a web or library URL, a page background, an image on a non-image shape) |
 | `arrowhead-approximated` | an arrowhead livediagram does not draw, imported as the nearest one                                         |
 | `connection-loosened`    | a connection whose end could not stay attached                                                              |
@@ -327,8 +333,10 @@ that occurred, with its count. The kinds are a closed set shared by every import
 | `text-truncated`         | text or rows cut to fit an element's limits                                                                 |
 | `content-truncated`      | pages or elements beyond the import limits not imported                                                     |
 
-When the report has any line, the Import dialog does not close: it shows the summary (below), so the
-person sees what changed before they carry on. A clean import closes the dialog as before.
+When the report has any note, or met any image, the Import dialog does not close: it shows the
+summary (below), so the person sees what changed before they carry on. A clean import closes the
+dialog as before. The report's shape (`ImportReport`) is shared by every importer: Excalidraw's
+import returns one carrying its images, and later importers add their own notes to the same set.
 
 ## Accepted losses (documented, not counted)
 
@@ -357,13 +365,15 @@ These differ from draw.io for every file and are not worth a line each time:
   inside. Keeps shapes, text, connections and pages. Multi-page files add a tab for each further
   page." Its panel is the shared paste-or-file panel: paste XML, or pick a file; the picker accepts
   `.drawio`, `.xml`, `.svg`, `.png` and `.drawio.*`.
-- **The summary.** After an import with a non-empty report the dialog replaces its warning and panel
-  with the summary (subtitle "Here is what changed on the way in."): "Imported from draw.io",
-  a line of what arrived ("3 pages became 3 tabs, 128 elements"), the report's lines in the table's
-  order, each with its count and, for unmatched shapes, the top stencil names, then a **Done** button
-  that closes it. Images waiting for the pipeline say so ("2 images came in as placeholders. Select
-  one and upload the picture to fill it."). The summary is part of the dialog body: nothing is
-  toasted, nothing shifts the canvas.
+- **The summary.** Every importer ends in the same view. After an import whose report has news (a
+  note, or images it met) the dialog replaces its warning and panel with it: the heading "Import
+  complete", a line of what arrived ("3 pages became 3 tabs, 128 elements."), then how the images
+  came across (imported, already in the gallery, left as placeholders and why, and the hint to fill a
+  placeholder), then the report's notes in the table's order, each with its count and, for unmatched
+  shapes, the top stencil names, then a **Done** button that takes focus and closes it. The subtitle
+  reads "Here is what changed on the way in." when there are notes, else "Here's how your images
+  came across.". It is announced as a status; nothing is toasted and nothing shifts the canvas.
+  While images store, the panel counts them ("Importing images 3 of 12…").
 - **Telemetry** ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
   `track('Tab', 'Imported', 'Drawio')`, once per import, the existing pair and no schema change.
 - **Help centre.** The Importing a Tab article lists draw.io, what maps and what the summary means;

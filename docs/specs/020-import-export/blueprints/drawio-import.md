@@ -6,35 +6,36 @@ cited as `Dn`.
 
 Scope, by file (all under `apps/live/` unless stated):
 
-| File                                     | Role                                                                                           |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `lib/drawio/limits.ts`                   | Named constants of this blueprint                                                              |
-| `lib/drawio/inflate.ts`                  | `inflateBytes`, `decompressDiagram`, `ByteBudget`: DecompressionStream with a byte budget      |
-| `lib/drawio/png.ts`                      | `extractPngDiagram`: the embedded XML from a `.drawio.png`                                     |
-| `lib/drawio/refusals.ts`                 | `DrawioRefused`, `refusalMessage`: the named refusals and their copy                           |
-| `lib/drawio/envelope.ts`                 | `readDrawioPages`: input sniffing, `mxfile` / `mxGraphModel` / SVG / PNG to page sources       |
-| `lib/drawio/style.ts`                    | `parseStyle`, `DrawioStyle`: style string plus the built-in named styles                       |
-| `lib/drawio/colour.ts`                   | `readColour`: `#hex` / `none` / `default` / `light-dark()`                                     |
-| `lib/drawio/cells.ts`                    | `readGraph`: the cell tree, layers, absolute geometry                                          |
-| `lib/drawio/label.ts`                    | `readLabel`: plain and HTML labels to text and `TextRun[]`                                     |
-| `lib/drawio/stencils.ts`                 | Pure data: stencil and library-image names to icon ids                                         |
-| `lib/drawio/shapes.ts`                   | `classifyVertex`: the shape mapping table                                                      |
-| `lib/drawio/vertex-props.ts`             | `boxedProps`, `textProps`: the property maps shared by every vertex                            |
-| `lib/drawio/vertices.ts`                 | `buildVertex`, `captionBox`: shapes, text, notes, lines, images, icons, frames, labelled boxes |
-| `lib/drawio/containers.ts`               | `buildLane`, `buildEntity`, `buildTable`                                                       |
-| `lib/drawio/edges.ts`                    | `buildArrow`: endpoints, route, heads, labels                                                  |
-| `lib/drawio/convert-page.ts`             | `convertPage`: one page's graph to elements, layers, background                                |
-| `lib/drawio/import.ts`                   | `importDrawio`: the entry point                                                                |
-| `lib/import-report.ts`                   | `ImportReport`, `ImportNoteKind`, `ReportTally`, `PendingImage`, `describeImportNote`          |
-| `lib/import-tab.ts`                      | `pickTabFile` also returns the picked `File`; `ImportOutcome.done` gains `report`              |
-| `hooks/persistence/useTabImport.ts`      | The `drawio` format: multi-page apply, one undo step, telemetry, log                           |
-| `hooks/persistence/drawio-apply.ts`      | `applyDrawioPages`: pure `Tab[]` transform the hook commits                                    |
-| `components/dialogs/ImportTabDialog.tsx` | The draw.io card; routes a reported outcome to the summary                                     |
-| `components/dialogs/TextImportPanel.tsx` | `onDone(outcome)`                                                                              |
-| `components/dialogs/ImportSummary.tsx`   | The summary view                                                                               |
-| `lib/drawio/__fixtures__/`               | The corpus and its generator                                                                   |
-| `lib/drawio/test-support.ts`             | DOM test helpers: a model from XML, a vertex, fixture bytes                                    |
-| `e2e/drawio-import.spec.ts`              | The corpus through the real dialog on the production build, persistence and undo               |
+| File                                     | Role                                                                                                                        |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `lib/drawio/limits.ts`                   | Named constants of this blueprint                                                                                           |
+| `lib/drawio/inflate.ts`                  | `inflateBytes`, `decompressDiagram`, `ByteBudget`: DecompressionStream with a byte budget                                   |
+| `lib/drawio/png.ts`                      | `extractPngDiagram`: the embedded XML from a `.drawio.png`                                                                  |
+| `lib/drawio/refusals.ts`                 | `DrawioRefused`, `refusalMessage`: the named refusals and their copy                                                        |
+| `lib/drawio/envelope.ts`                 | `readDrawioPages`: input sniffing, `mxfile` / `mxGraphModel` / SVG / PNG to page sources                                    |
+| `lib/drawio/style.ts`                    | `parseStyle`, `DrawioStyle`: style string plus the built-in named styles                                                    |
+| `lib/drawio/colour.ts`                   | `readColour`: `#hex` / `none` / `default` / `light-dark()`                                                                  |
+| `lib/drawio/cells.ts`                    | `readGraph`: the cell tree, layers, absolute geometry                                                                       |
+| `lib/drawio/label.ts`                    | `readLabel`: plain and HTML labels to text and `TextRun[]`                                                                  |
+| `lib/drawio/stencils.ts`                 | Pure data: stencil and library-image names to icon ids                                                                      |
+| `lib/drawio/shapes.ts`                   | `classifyVertex`: the shape mapping table                                                                                   |
+| `lib/drawio/vertex-props.ts`             | `boxedProps`, `textProps`: the property maps shared by every vertex                                                         |
+| `lib/drawio/vertices.ts`                 | `buildVertex`, `captionBox`: shapes, text, notes, lines, images, icons, frames, labelled boxes                              |
+| `lib/drawio/containers.ts`               | `buildLane`, `buildEntity`, `buildTable`                                                                                    |
+| `lib/drawio/edges.ts`                    | `buildArrow`: endpoints, route, heads, labels                                                                               |
+| `lib/drawio/convert-page.ts`             | `convertPage`: one page's graph to elements, layers, background                                                             |
+| `lib/drawio/import.ts`                   | `importDrawio`: the entry point                                                                                             |
+| `lib/import-report.ts`                   | `ImportReport` (shared by every importer, images included), `ImportNoteKind`, `ReportTally`, `reportHasNews`, the note copy |
+| `lib/drawio/images.ts`                   | `attachDrawioImages`: every page's image requests through one pipeline pass                                                 |
+| `lib/import-tab.ts`                      | `pickTabFile` also returns the picked `File`; `ImportOutcome.done` gains `report`                                           |
+| `hooks/persistence/useTabImport.ts`      | The `drawio` format: multi-page apply, one undo step, telemetry, log                                                        |
+| `hooks/persistence/drawio-apply.ts`      | `applyDrawioPages`: pure `Tab[]` transform the hook commits                                                                 |
+| `components/dialogs/ImportTabDialog.tsx` | The draw.io card; routes a reported outcome to the summary                                                                  |
+| `components/dialogs/TextImportPanel.tsx` | `onDone(outcome)`                                                                                                           |
+| `components/dialogs/ImportSummary.tsx`   | The one end-of-import report view (images and notes), for every importer                                                    |
+| `lib/drawio/__fixtures__/`               | The corpus and its generator                                                                                                |
+| `lib/drawio/test-support.ts`             | DOM test helpers: a model from XML, a vertex, fixture bytes                                                                 |
+| `e2e/drawio-import.spec.ts`              | The corpus through the real dialog on the production build, persistence and undo                                            |
 
 ## Domain and naming
 
@@ -51,7 +52,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | Imported page | `ImportedPage`         | `{ tabId, name, elements, layers?, backgroundColor? }`                                   |
 | Report        | `ImportReport`         | `{ source, pages, elements, notes: ImportNote[] }`                                       |
 | Note          | `ImportNote`           | `{ kind: ImportNoteKind, count, names? }`                                                |
-| Pending image | `PendingImage`         | `{ tabId, elementId, source }`, `source` a `data-url` or a `url`                         |
+| Image request | `ImportImageRequest`   | The import image pipeline's `{ elementId, key, source, hint }`                           |
 | Byte budget   | `ByteBudget`           | Remaining inflate allowance for one import                                               |
 
 Banned synonyms: "diagram" for a page (a livediagram diagram is the whole document; say page), "shape"
@@ -73,7 +74,7 @@ for an edge, "warning" for a note, "stencil" for a named style (`ellipse` is a n
 6. Result `{ ok: true, pages, images, report }` with `report.pages = pages.length` and
    `report.elements` the sum of element counts.
 
-`DrawioImportResult = { ok: true; pages: ImportedPage[]; images: PendingImage[]; report: ImportReport } | { ok: false; error: string }`.
+`DrawioImportResult = { ok: true; pages: ImportedPage[]; images: ImportImageRequest[]; report: ImportReport } | { ok: false; error: string }`.
 Never throws: any exception inside is caught and refused as `unreadable`, logged (see Observability).
 
 ### 2. Envelope (`readDrawioPages`)
@@ -328,10 +329,11 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
 ### 13. Images
 
 `image` class: `{ type: 'image', imageId: null, x, y, width, height, alt?: plain label }`.
-`style.str('image')`: starts with `data:` → a pending image `{ tabId, elementId, key, source: { kind:
+`style.str('image')`: starts with `data:` → an image request `{ elementId, key, source: { kind:
 'data-url', dataUrl }, hint: { width, height } }` (a base64 payload without `;base64`, as draw.io
 writes it, gains the marker; a percent-encoded or raw payload stays; `key` is `drawio-image-<n>`,
-one per distinct data URL across the import), `image-placeholder` += 1; any other value (a web or
+one per distinct data URL across the import; how it came across is the pipeline's report, not a
+note); any other value (a web or
 library URL) or none → placeholder only, `image-unavailable` += 1. A non-image kind whose style
 carries `image=` → `image-unavailable` += 1. A page with `backgroundImage` → `image-unavailable`
 += 1.
@@ -396,22 +398,24 @@ Pure `Tab[] => Tab[]`; the input returned as it is when the active tab is missin
    page 0; inserted after the active tab in page order.
 3. Hook (`importDrawioInput`): `importDrawio` with `tabIdForPage(0) = activeId`,
    `tabIdForPage(i > 0) = crypto.randomUUID()`; a refusal returns `{ status: 'error' }` and touches
-   nothing. Then `attachPendingImages` (step 17), one `commitTabs(ts => applyDrawioPages(...))`
+   nothing. Then `attachDrawioImages` (step 17), one `commitTabs(ts => applyDrawioPages(...))`
    (one undo step), `markTabLoaded` for each new tab, selection / edit / format source cleared,
    `requestFit()` when page 0 has elements, `track('Tab', 'Imported', 'Drawio')`, log
-   `[drawio-import] applied`. Returns `{ status: 'done', report }` when the report has notes, else
+   `[drawio-import] applied`. The report gains `images` (the pipeline's report) when the file had
+   embedded images. Returns `{ status: 'done', report }` when `reportHasNews(report)`, else
    `{ status: 'done' }`.
 4. Paste goes in as `{ kind: 'text' }`; a picked file as `{ kind: 'bytes' }` from
    `picked.file.arrayBuffer()` (a `.drawio.png` is binary).
 
-### 17. The image seam
+### 17. Images through the pipeline
 
-`useTabImport` calls `attachPendingImages(pages, images)` from `lib/import-report.ts` before the
-tabs change, which today returns `{ pages, placed: 0 }` and leaves every placeholder. The shared
-import image pipeline replaces that one body: a session for the import, `attachImportImages(page
-elements, the page's requests, session)` per page, which writes `imageId` / `naturalWidth` /
-`naturalHeight` onto the placeholders, and the report's `image-placeholder` count becomes those
-still unplaced (the pipeline's own image report then lists why).
+`attachDrawioImages(pages, requests, attach)` (`lib/drawio/images.ts`): no requests → the pages as
+they are and `images: undefined` (the pipeline is not loaded). Otherwise ONE `attach` call over every
+page's elements concatenated in page order with all the requests, then each page takes back its own
+slice. The hook binds `attach` to `attachImportImages(elements, requests, session, onProgress)` with
+`session = createBrowserImportImageSession({ ownerId, diagramId })`, both lazy-imported, so every page
+shares one session, one concurrency limit, one Offline Mode budget and one progress count, and a
+picture repeated across pages is stored once. This runs before the one `commitTabs`.
 
 ## Interfaces and contracts
 
@@ -421,7 +425,6 @@ export type ImportNoteKind =
   | 'shape-unmatched'
   | 'shape-approximated'
   | 'icon-substituted'
-  | 'image-placeholder'
   | 'image-unavailable'
   | 'arrowhead-approximated'
   | 'connection-loosened'
@@ -440,20 +443,15 @@ export type ImportNote = {
   names?: { name: string; count: number }[];
   moreNames?: number; // names left out of `names`
 };
-export type ImportSource = 'drawio';
+export type ImportSource = 'drawio' | 'excalidraw';
 export type ImportReport = {
   source: ImportSource;
   pages: number;
   elements: number;
   notes: ImportNote[];
+  images?: ImportImageReport; // the import image pipeline's report
 };
-export type PendingImage = {
-  tabId: string;
-  elementId: string;
-  key: string; // shared by identical pictures
-  source: { kind: 'data-url'; dataUrl: string };
-  hint: { width: number; height: number };
-};
+export function reportHasNews(report: ImportReport): boolean; // a note, or any image met
 export class ReportTally {
   constructor(namesMax?: number);
   add(kind: ImportNoteKind, count?: number): void;
@@ -463,10 +461,17 @@ export class ReportTally {
 export function describeImportNote(note: ImportNote): string; // the summary copy
 export function namesLine(note: ImportNote): string | null; // "router ×3, switch, …"
 export function importSummaryLine(report: ImportReport): string; // "3 pages became 3 tabs, 128 elements."
-export function attachPendingImages<P extends { tabId: string; elements: Element[] }>(
+
+// lib/drawio/images.ts
+export type AttachImages = (
+  elements: Element[],
+  requests: ImportImageRequest[],
+) => Promise<{ elements: Element[]; report: ImportImageReport }>;
+export function attachDrawioImages<P extends { elements: Element[] }>(
   pages: P[],
-  images: PendingImage[],
-): Promise<{ pages: P[]; placed: number }>;
+  requests: ImportImageRequest[],
+  attach: AttachImages,
+): Promise<{ pages: P[]; images: ImportImageReport | undefined }>;
 
 // lib/drawio/import.ts
 export type DrawioInput = { kind: 'text'; text: string } | { kind: 'bytes'; bytes: Uint8Array };
@@ -478,7 +483,7 @@ export type ImportedPage = {
   backgroundColor?: string;
 };
 export type DrawioImportResult =
-  | { ok: true; pages: ImportedPage[]; images: PendingImage[]; report: ImportReport }
+  | { ok: true; pages: ImportedPage[]; images: ImportImageRequest[]; report: ImportReport }
   | { ok: false; error: string };
 export function importDrawio(
   input: DrawioInput,
@@ -578,18 +583,22 @@ Refusals (the `error` string, final copy):
   format icon label `drawio`, `note` linking the `importTabs` help article, label "See what carries
   over from draw.io".
 - File picker `accept`: `.drawio,.xml,.svg,.png,application/xml,text/xml,image/svg+xml,image/png`.
-- `TextImportPanel.onDone(outcome)`; `ImportTabDialog` closes on `done` without notes, else shows
-  `ImportSummary` in place of the panel (the warning banner hides; the header subtitle becomes "Here
-  is what changed on the way in.").
-- `ImportSummary`: heading "Imported from draw.io"; summary line from `importSummaryLine`;
-  a list, one item per note, `describeImportNote` copy; for `shape-unmatched`, a second line
-  listing names `router ×3, switch ×2, …`; a **Done** primary button focused on mount, closing the
-  dialog.
+- `TextImportPanel.onDone(outcome)`; `ImportTabDialog` closes on `done` without a `report`, else
+  shows `ImportSummary` in place of the panel (the warning banner hides; the header subtitle becomes
+  "Here is what changed on the way in." when the report has notes, else "Here's how your images came
+  across.", D9). While images store the panel counts them (the pipeline's progress label).
+- `ImportSummary({ report, onDone })`, the one view for every importer: `section role="status"`
+  (`data-testid="import-report"`, labelled by its heading) with heading "Import complete"; the
+  summary line from `importSummaryLine`; when the report met images, the images block
+  (`data-testid="import-report-images"`): `describeImportImageReport` lines, failures as
+  `"{count} · {sentence}"` with `data-failure`, and the hint; when it has notes, a list
+  (`data-testid="import-report-notes"`), one item per note, `describeImportNote` copy, for
+  `shape-unmatched` a second line listing names `router ×3, switch ×2, …`; a **Done** primary
+  button focused on mount, closing the dialog.
 - Note copy (`n` the count, singular / plural by `n`):
   - `shape-unmatched`: "n shape(s) had no livediagram match and came in as labelled boxes."
   - `shape-approximated`: "n shape(s) came in as the nearest livediagram shape."
   - `icon-substituted`: "n vendor icon(s) came in as the matching livediagram icon."
-  - `image-placeholder`: "n image(s) came in as placeholders. Select one and upload the picture to fill it."
   - `image-unavailable`: "n image(s) link to files outside the diagram and came in as placeholders or were left out."
   - `arrowhead-approximated`: "n connection(s) use arrowheads livediagram doesn't draw; they have the nearest one."
   - `connection-loosened`: "n connection end(s) couldn't stay attached and were left where they were."
@@ -622,38 +631,38 @@ Refusals (the `error` string, final copy):
 
 ## Observability
 
-| Fingerprint                      | Level   | When                                                                                                  |
-| -------------------------------- | ------- | ----------------------------------------------------------------------------------------------------- |
-| `[drawio-import] refused`        | `warn`  | Any refusal: `{ reason, detail?, cause? }` (`cause` only for an unexpected error; never file content) |
-| `[drawio-import] page`           | `debug` | Each page converted: `{ index, cells, elements }`                                                     |
-| `[drawio-import] applied`        | `info`  | The hook applied: `{ pages, elements, notes: kind→count }`                                            |
-| `[drawio-import] pending-images` | `info`  | Pending images handed to the seam, when there are any: `{ count, placed }`                            |
+| Fingerprint               | Level   | When                                                                                                                    |
+| ------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `[drawio-import] refused` | `warn`  | Any refusal: `{ reason, detail?, cause? }` (`cause` only for an unexpected error; never file content)                   |
+| `[drawio-import] page`    | `debug` | Each page converted: `{ index, cells, elements }`                                                                       |
+| `[drawio-import] applied` | `info`  | The hook applied: `{ pages, elements, notes: kind→count, images? }` (the pipeline logs each image as `[import-images]`) |
 
 ## Testing
 
 Unit tests (Vitest), files beside their modules; the DOM ones carry `// @vitest-environment jsdom`.
 
-| Rule (spec)                                                     | Test                                                                |
-| --------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Inputs table                                                    | `envelope.test.ts`: each input form from the fixtures, each refusal |
-| Compressed decode + zip-bomb guard                              | `inflate.test.ts`                                                   |
-| PNG chunks (tEXt, zTXt zlib + raw, iTXt, none)                  | `png.test.ts`                                                       |
-| Style parsing and named styles                                  | `style.test.ts`                                                     |
-| Colours                                                         | `colour.test.ts`                                                    |
-| Cell tree, geometry, layers, UserObject, placeholders           | `cells.test.ts`                                                     |
-| Labels, plain and HTML                                          | `label.test.ts`                                                     |
-| Shape table, stencils, unmatched                                | `shapes.test.ts`                                                    |
-| Vertex properties                                               | `vertex-props.test.ts`                                              |
-| Lanes (vertical titles, stacks, pools), entities, tables        | `containers.test.ts`                                                |
-| Edges                                                           | `edges.test.ts`                                                     |
-| Images, groups, hidden, collapsed, truncation, report           | `convert-page.test.ts`                                              |
-| Pages to tabs, page links, refusals, size limit                 | `fixtures.test.ts` (via `importDrawio`)                             |
-| Every fixture valid + expected report                           | `fixtures.test.ts`                                                  |
-| Apply to tabs: names, folder, look, layers                      | `drawio-apply.test.ts`                                              |
-| One commit, new tabs marked loaded, telemetry, refusal and lock | `useTabImport.drawio.test.ts`                                       |
-| Report tally and copy                                           | `import-report.test.ts`                                             |
-| Summary rendering, focus, Done                                  | `ImportSummary.test.tsx`                                            |
-| Dialog routing (close vs summary)                               | `ImportTabDialog.test.tsx`                                          |
+| Rule (spec)                                                                                                                  | Test                                                                |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Inputs table                                                                                                                 | `envelope.test.ts`: each input form from the fixtures, each refusal |
+| Compressed decode + zip-bomb guard                                                                                           | `inflate.test.ts`                                                   |
+| PNG chunks (tEXt, zTXt zlib + raw, iTXt, none)                                                                               | `png.test.ts`                                                       |
+| Style parsing and named styles                                                                                               | `style.test.ts`                                                     |
+| Colours                                                                                                                      | `colour.test.ts`                                                    |
+| Cell tree, geometry, layers, UserObject, placeholders                                                                        | `cells.test.ts`                                                     |
+| Labels, plain and HTML                                                                                                       | `label.test.ts`                                                     |
+| Shape table, stencils, unmatched                                                                                             | `shapes.test.ts`                                                    |
+| Vertex properties                                                                                                            | `vertex-props.test.ts`                                              |
+| Lanes (vertical titles, stacks, pools), entities, tables                                                                     | `containers.test.ts`                                                |
+| Edges                                                                                                                        | `edges.test.ts`                                                     |
+| Images, groups, hidden, collapsed, truncation, report                                                                        | `convert-page.test.ts`                                              |
+| Pages to tabs, page links, refusals, size limit                                                                              | `fixtures.test.ts` (via `importDrawio`)                             |
+| Every fixture valid + expected report                                                                                        | `fixtures.test.ts`                                                  |
+| Apply to tabs: names, folder, look, layers                                                                                   | `drawio-apply.test.ts`                                              |
+| Page images through one pipeline pass, split back per page                                                                   | `images.test.ts`                                                    |
+| One commit, new tabs marked loaded, telemetry, refusal and lock, embedded images stored (pipeline faked at its browser seam) | `useTabImport.drawio.test.ts`                                       |
+| Report tally and copy                                                                                                        | `import-report.test.ts`                                             |
+| The shared report view: images, notes, focus, Done                                                                           | `ImportSummary.test.tsx`                                            |
+| Dialog routing (close vs summary)                                                                                            | `ImportTabDialog.test.tsx`                                          |
 
 End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-stack.mjs`) picks each fixture form through the Import dialog, checks the summary, the tabs and what the api stored, and that one undo removes the new tabs; `DRAWIO_SHOTS=<dir>` also saves screenshots.
 
