@@ -25,7 +25,25 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      // Needs its own build and stack (E2E_DRIVE=1); see the drive project.
+      testIgnore: /drive-mirror\.spec\.ts/,
+    },
+    // Opt-in (pnpm --filter @livediagram/live test:e2e:drive): the Google Drive
+    // mirror against the fake Google, signed in through the test-only auth
+    // bridge (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing").
+    // Kept out of CI's default run: it needs a build with NEXT_PUBLIC_E2E_AUTH.
+    ...(process.env.E2E_DRIVE === '1'
+      ? [
+          {
+            name: 'drive',
+            use: { ...devices['Desktop Chrome'], colorScheme: 'dark' as const },
+            testMatch: /drive-mirror\.spec\.ts/,
+          },
+        ]
+      : []),
     // Opt-in (E2E_WEBKIT=1, after `playwright install webkit`): the image import
     // pipeline's Safari path (docs/specs/020-import-export/import-image-pipeline.md). Kept
     // out of CI's default run to spare its minutes; the same specs run in Chromium.

@@ -1,0 +1,63 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Google Drive',
+  description:
+    'Mirror your Personal Space to your own Google Drive: every diagram becomes a .livediagram file, kept in step both ways while livediagram is open, and opens from Drive with Open with.',
+  path: '/help/account-and-data/google-drive/',
+});
+
+<ArticleLayout
+  title="Google Drive"
+  description="Keep a copy of your diagrams in your own Google Drive, in folders that match yours, kept in step both ways."
+  categoryTitle="Account and Data"
+  categorySlug="account-and-data"
+>
+
+When you are signed in, you can **mirror your Personal Space to your own Google Drive**. Every diagram becomes a `.livediagram` file in a **livediagram** folder, arranged in the same folders you use here, with a picture of the diagram as its thumbnail.
+
+The copy in Drive is a mirror. Your diagrams still live in livediagram, so sharing, realtime editing and history work exactly as before.
+
+## Connecting
+
+Open your account menu and choose **Google Drive**, then **Connect Google Drive**. Google asks you to let livediagram create files in your Drive and appear in its **Open with** menu. That is all it can do: it only ever sees the files it made, or a file you open with it. It cannot see the rest of your Drive.
+
+The first time, livediagram copies every diagram into Drive, oldest first, with the progress in the Google Drive panel. If you close the tab part way, it carries on next time.
+
+## What stays in step
+
+The mirror syncs while a livediagram tab is open, and catches up when you come back. Nothing happens while nobody is here.
+
+| Here in livediagram              | In Google Drive                         |
+| -------------------------------- | --------------------------------------- |
+| Create, edit or rename a diagram | The file is created, updated or renamed |
+| Move a diagram to another folder | The file moves                          |
+| Delete a diagram                 | The file moves to Drive's bin           |
+| Restore a diagram from the Trash | The file comes back from the bin        |
+| Create, rename or move a folder  | The Drive folder follows                |
+
+It works the other way too: **rename** a file in Drive, **move** it to another folder in the livediagram tree, or **move it to the bin**, and the diagram follows here. Restoring it from Drive's bin restores the diagram, and emptying the bin deletes it for good from your [Trash](/help/account-and-data/trash/).
+
+Edits to a file's contents made outside livediagram are not taken in: livediagram writes its copy again the next time it syncs.
+
+## Folders livediagram cannot see
+
+A folder you make in Google Drive itself is invisible to livediagram until you show it one. If you move a diagram's file into such a folder, the diagram moves to **Unsorted** here and the Google Drive panel says so. Choose **Show this folder to livediagram**, pick the folder, and livediagram makes a matching folder and moves the diagram into it. From then on that folder syncs both ways.
+
+Folders you create in livediagram always appear in Drive, so building your tree here needs no extra step.
+
+## Opening a diagram from Drive
+
+Right-click a `.livediagram` file in Google Drive and choose **Open with**, then **livediagram**. Your own diagram opens straight away. If someone shared the file with you in Drive, or it came from another livediagram, you are offered **Import a copy**, which makes a new diagram of your own from it.
+
+## Disconnecting
+
+Choose **Disconnect** in the Google Drive panel. livediagram stops updating Drive and forgets its access; **your files stay in Drive**. You can also remove livediagram from your Google account's settings: the panel then offers **Reconnect**, and nothing is deleted.
+
+<Tip>
+  The mirror covers your Personal Space. Team libraries, diagrams shared with you and diagrams kept
+  only in this browser are not mirrored.
+</Tip>
+
+</ArticleLayout>

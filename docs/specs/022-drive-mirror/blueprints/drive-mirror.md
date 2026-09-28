@@ -40,13 +40,13 @@ Scope, by file:
 | `apps/live/lib/drive/engine.ts`                       | `DriveMirrorEngine`: passes, triggers, lease, token, status          |
 | `apps/live/lib/drive/token-source.ts`                 | Broker and browser-only (GIS) token sources                          |
 | `apps/live/lib/drive/consent.ts`                      | Google authorisation URL, pending-return memory                      |
-| `apps/live/lib/drive/picker.ts`                       | Google Picker folder selection behind `FolderPicker`                 |
+| `apps/live/lib/drive/google-scripts.ts`               | Google Identity Services and Picker loaders, `FolderPicker`          |
 | `apps/live/lib/drive/open-with.ts`                    | `/drive/open` state parsing and outcome decision                     |
 | `apps/live/lib/drive/tab-election.ts`                 | Web Locks election + BroadcastChannel relay                          |
 | `apps/live/components/drive/DriveMirrorProvider.tsx`  | Mounts the engine in the elected tab, publishes status               |
 | `apps/live/components/drive/DriveDialog.tsx`          | The account menu's Google Drive panel                                |
 | `apps/live/components/drive/DriveReconnectBanner.tsx` | The quiet Needs reconnecting / Resume sync banner                    |
-| `apps/live/components/drive/DriveNoticeBadge.tsx`     | The unseen-folder mark on an Explorer row                            |
+| `apps/live/components/drive/DriveNoticeMarker.tsx`    | The unseen-folder mark on an Explorer row                            |
 | `apps/live/app/drive/connected/page.tsx`              | The OAuth redirect target                                            |
 | `apps/live/app/drive/open/page.tsx`                   | The Drive UI integration's Open URL                                  |
 
@@ -541,7 +541,7 @@ Events: `elected`, `pass-start`, `pass-end`, `token`, `root-created`, `root-foun
 | Every outbound row                         | `apps/live/lib/drive/engine.outbound.test.ts`                        |
 | Every inbound row, echo, conflicts         | `apps/live/lib/drive/engine.inbound.test.ts`, `plan-inbound.test.ts` |
 | Two devices, catch-up, folder bin, unseen  | `apps/live/lib/drive/engine.scenarios.test.ts`                       |
-| Cadence, back-off, page-token throttle     | `apps/live/lib/drive/engine.cadence.test.ts`, `backoff.test.ts`      |
+| Cadence, back-off, page-token throttle     | `apps/live/lib/drive/engine.scenarios.test.ts`, `backoff.test.ts`    |
 | Open with outcomes                         | `apps/live/lib/drive/open-with.test.ts`                              |
 | Fake Google                                | `packages/fake-google/src/*.test.ts`                                 |
 | The whole flow in a browser                | `apps/live/e2e/drive-mirror.spec.ts`                                 |

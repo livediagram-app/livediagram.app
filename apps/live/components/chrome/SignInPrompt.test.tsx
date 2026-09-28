@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: false }));
+vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: false, sessionsEnabled: false }));
 vi.mock('@/components/providers/deferred-auth', () => ({ useDeferredAuth: () => ({}) }));
 vi.mock('@/components/chrome/auth-shared', () => ({ useAuthHrefs: () => ({}) }));
 

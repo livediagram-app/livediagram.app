@@ -3,7 +3,7 @@
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react';
 import { registerTokenProvider } from '@/lib/api-client';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { sessionsEnabled } from '@/lib/clerk-config';
 import { guestMigrationPending, settleGuestMigration } from '@/lib/guest-migration';
 
 // Two things every page that talks to the api needs to do once Clerk
@@ -38,7 +38,7 @@ import { guestMigrationPending, settleGuestMigration } from '@/lib/guest-migrati
 // the disabled branch never touches Clerk at all. The choice between
 // real-Clerk and stub is made at module load, then frozen — React's
 // rules-of-hooks require the same function to run on every render,
-// which this satisfies because `clerkEnabled` is a compile-time
+// which this satisfies because `sessionsEnabled` is a compile-time
 // constant baked from a `NEXT_PUBLIC_*` env var.
 
 type BootstrapResult = {
@@ -143,6 +143,6 @@ function useClerkApiBootstrapDisabled(): BootstrapResult {
   };
 }
 
-export const useClerkApiBootstrap = clerkEnabled
+export const useClerkApiBootstrap = sessionsEnabled
   ? useClerkApiBootstrapEnabled
   : useClerkApiBootstrapDisabled;

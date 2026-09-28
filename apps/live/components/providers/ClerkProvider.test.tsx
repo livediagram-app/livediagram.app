@@ -13,7 +13,11 @@ import { DEFERRED_AUTH_DEFAULT, useDeferredAuth, type DeferredAuthState } from '
 
 let pathname = '/diagram/abc';
 vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
-vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true, clerkPublishableKey: 'pk_test' }));
+vi.mock('@/lib/clerk-config', () => ({
+  clerkEnabled: true,
+  clerkPublishableKey: 'pk_test',
+  e2eAuthEnabled: false,
+}));
 
 // The lazily-loaded bridge, standing in for Clerk: publishes a settled guest.
 const GUEST: DeferredAuthState = { ...DEFERRED_AUTH_DEFAULT, authLoaded: true, isSignedIn: false };

@@ -25,7 +25,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useRef, useState } from 'react';
 import { useClickOutside, SOLID_BRAND_DARK, Glyph, GlyphDisc } from '@livediagram/ui';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { sessionsEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { useDriveMirror } from '@/components/drive/drive-mirror-context';
@@ -212,4 +212,4 @@ export function SignInIcon({ size = 13 }: { size?: number } = {}) {
   );
 }
 
-export const AuthControls = clerkEnabled ? AuthControlsEnabled : AuthControlsDisabled;
+export const AuthControls = sessionsEnabled ? AuthControlsEnabled : AuthControlsDisabled;
