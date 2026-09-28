@@ -34,6 +34,7 @@ export function MovablePanel({
   defaultCorner,
   width = 'w-56',
   headerExtra,
+  titleAdornment,
   headerActions,
   helpArticle,
   onReset,
@@ -278,7 +279,10 @@ export function MovablePanel({
             those stay accessible. Reset-position / drag affordances are
             intentionally omitted — there's no drag in this layout. */}
         <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 py-1.5 dark:border-slate-800">
-          <PanelTitle title={title} />
+          <span className="flex min-w-0 items-center gap-1.5">
+            <PanelTitle title={title} />
+            {titleAdornment}
+          </span>
           {headerExtra || headerActions || (helpArticle && !minimalChrome) ? (
             <div className="ml-auto flex items-center gap-1">
               {headerExtra}
@@ -338,6 +342,7 @@ export function MovablePanel({
         dragging={drag !== null}
         title={title}
         headerExtra={headerExtra}
+        titleAdornment={titleAdornment}
         headerActions={headerActions}
         helpArticle={helpArticle}
         onReset={atDefaultSpot ? undefined : onReset}

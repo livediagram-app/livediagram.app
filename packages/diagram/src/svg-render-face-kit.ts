@@ -64,11 +64,11 @@ export function collabCard(
   body: (w: number, h: number) => string,
 ): string {
   const design = SHAPE_DEFAULT_SIZE[el.shape] ?? { width: el.width, height: el.height };
-  // The Q&A board and the Idea box reflow rather than scale (docs/specs/012-collaboration/qa-board.md,
-  // idea-box.md): a bigger board shows more rows at the same size, on the
+  // The Q&A board, the Idea box and the Comment panel reflow rather than
+  // scale (docs/specs/012-collaboration/qa-board.md, idea-box.md, comment-pin.md): a bigger board shows more rows at the same size, on the
   // canvas and so in the export too.
   const scale =
-    el.shape === 'qa-board' || el.shape === 'idea-box'
+    el.shape === 'qa-board' || el.shape === 'idea-box' || el.shape === 'comment-pin'
       ? 1
       : Math.min(el.width / design.width, el.height / design.height);
   // The inner box in design units, so a card larger than its default still
@@ -191,4 +191,30 @@ export function glow(
     `</radialGradient></defs>` +
     `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" rx="${r2(rx)}" fill="url(#${gid})"/>`
   );
+}
+
+/** Break `body` into at most `max` lines that fit `width` at `size`px (an
+ *  estimate of the face's advance), the last one ending in an ellipsis when
+ *  the text runs on: the export's version of the canvas's line clamp. */
+export function wrapLines(body: string, width: number, size: number, max: number): string[] {
+  const perLine = Math.max(8, Math.floor(width / (size * 0.52)));
+  const words = body.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let line = '';
+  for (const word of words) {
+    const next = line ? `${line} ${word}` : word;
+    if (next.length <= perLine) {
+      line = next;
+      continue;
+    }
+    if (line) lines.push(line);
+    line = word;
+    if (lines.length === max) break;
+  }
+  if (line && lines.length < max) lines.push(line);
+  const used = lines.join(' ').length;
+  if (lines.length === max && used < body.trim().length) {
+    lines[max - 1] = `${lines[max - 1]!.slice(0, perLine - 1).trimEnd()}…`;
+  }
+  return lines;
 }

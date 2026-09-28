@@ -176,6 +176,16 @@ const DARK_INK = {
 // never the shape default, so they read as pressable before anyone styles
 // them. The reveal cover and the chair paint themselves; only their outline
 // and label ink follow the paper.
+// The Reveal cover's opaque base, from the PAPER under it rather than the
+// app's appearance, so a dark theme in light mode still gets a dark cover
+// (docs/specs/009-elements/reveal-zone.md "The look"). Shared by the canvas
+// face and the headless renderer (exports, the minimap), so the two cannot
+// drift: the renderer once hard-coded the light base and drew a white cover
+// on a dark board's map.
+export const REVEAL_COVER_BASE: Record<CanvasSurface, string> = {
+  light: '#f1f5f9',
+  dark: '#172131',
+};
 const CONTROL_SKIN_DARK = { fill: '#1e293b', stroke: '#475569', text: '#f1f5f9' } as const;
 const OUTLINE_SKIN_LIGHT = { stroke: '#94a3b8', text: '#0f172a' } as const;
 

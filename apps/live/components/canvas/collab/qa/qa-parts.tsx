@@ -321,10 +321,14 @@ export function EmptyRows({
   textColor,
   title,
   rows = 3,
+  glyph,
   children,
 }: {
   textColor: string;
   title: string;
+  // The card's own glyph in the disc; the sparkle ("something new is wanted
+  // here") when absent.
+  glyph?: React.ReactNode;
   // How many breathing rows to draw above the invitation; 0 for a card too
   // small for them (the fixed-size Done check).
   rows?: number;
@@ -333,30 +337,32 @@ export function EmptyRows({
 }) {
   return (
     <div className="flex flex-col items-center gap-5 pb-2 pt-1">
-      <div className="flex w-full flex-col gap-1.5" aria-hidden>
-        {[0.92, 0.7, 0.8].slice(0, rows).map((w, i) => (
-          <div
-            key={i}
-            className="qa-ghost flex items-center gap-2 rounded-xl p-2"
-            style={{ backgroundColor: tint(textColor, 0.04), animationDelay: `${i * 300}ms` }}
-          >
-            <span
-              className="h-8 w-8 rounded-lg"
-              style={{ backgroundColor: tint(textColor, 0.08) }}
-            />
-            <span
-              className="h-2 rounded-full"
-              style={{ width: `${w * 70}%`, backgroundColor: tint(textColor, 0.1) }}
-            />
-          </div>
-        ))}
-      </div>
+      {rows > 0 ? (
+        <div className="flex w-full flex-col gap-1.5" aria-hidden>
+          {[0.92, 0.7, 0.8].slice(0, rows).map((w, i) => (
+            <div
+              key={i}
+              className="qa-ghost flex items-center gap-2 rounded-xl p-2"
+              style={{ backgroundColor: tint(textColor, 0.04), animationDelay: `${i * 300}ms` }}
+            >
+              <span
+                className="h-8 w-8 rounded-lg"
+                style={{ backgroundColor: tint(textColor, 0.08) }}
+              />
+              <span
+                className="h-2 rounded-full"
+                style={{ width: `${w * 70}%`, backgroundColor: tint(textColor, 0.1) }}
+              />
+            </div>
+          ))}
+        </div>
+      ) : null}
       <div className="flex flex-col items-center gap-1.5 text-center">
         <GlyphDisc
           size={28}
           style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
         >
-          <SparkGlyph size={14} />
+          {glyph ?? <SparkGlyph size={14} />}
         </GlyphDisc>
         <p className="mt-1 text-[12.5px] font-semibold leading-tight" style={{ color: textColor }}>
           {title}

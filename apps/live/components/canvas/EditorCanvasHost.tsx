@@ -837,6 +837,9 @@ export function EditorCanvasHost() {
           setSelectedId(id);
           openActionPopover(id);
         }}
+        onToggleActionDone={
+          isReadOnly ? undefined : (id, done) => (done ? completeAction(id) : reopenAction(id))
+        }
         onRevertChange={revertChange}
         onPreviewRevert={previewRevert}
         onClearRevertPreview={clearRevertPreview}

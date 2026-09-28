@@ -8,7 +8,7 @@
 
 import type { ReactNode } from 'react';
 
-import { Scene, Label, TextBar, Avatar, Shape, Arrow, Panel } from './primitives';
+import { Scene, Label, TextBar, Avatar, Panel } from './primitives';
 
 // --- Shared card chrome ------------------------------------------------------
 
@@ -163,40 +163,6 @@ export function CollaborateGroups() {
           );
         })}
       </Panel>
-    </Scene>
-  );
-}
-
-/** A comment panel beside the element it is about, joined by an ordinary
- *  arrow. */
-export function CommentPanelCard() {
-  const x = 190;
-  const y = 18;
-  return (
-    <Scene w={420} h={210}>
-      <Shape x={22} y={80} w={104} h={54} kind="rect" label="Auth service" />
-      <Arrow from={[126, 107]} to={[188, 107]} />
-      <CollabCard x={x} y={y} w={210} h={170} title="Comments" aside="3">
-        <Avatar cx={x + 24} cy={y + 50} r={11} initial="R" colour="emerald" />
-        <TextBar x={x + 42} y={y + 42} w={140} />
-        <TextBar x={x + 42} y={y + 54} w={104} />
-        <Avatar cx={x + 24} cy={y + 88} r={11} initial="P" colour="violet" />
-        <TextBar x={x + 42} y={y + 80} w={126} />
-        <TextBar x={x + 42} y={y + 92} w={88} />
-        <rect
-          x={x + 14}
-          y={y + 108}
-          width={182}
-          height={22}
-          rx={7}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <Label x={x + 24} y={y + 119} size={9} tone="muted">
-          Add a comment…
-        </Label>
-        <CardButton x={x + 14} y={y + 136} w={86} label="Resolve" loud />
-      </CollabCard>
     </Scene>
   );
 }

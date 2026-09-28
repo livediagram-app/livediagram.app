@@ -72,6 +72,10 @@ export type MovablePanelProps = {
   // surface a status badge in the header without inventing a new
   // bar. Pointer events stay live so buttons inside still click.
   headerExtra?: ReactNode;
+  // A small adornment drawn DIRECTLY after the title (a count chip), as
+  // opposed to `headerExtra`, which is pushed toward the button group and so
+  // floated mid-header when a panel used it for a count.
+  titleAdornment?: ReactNode;
   // Optional action controls rendered inside the header's button group,
   // immediately to the LEFT of the reset-position button. Unlike
   // `headerExtra` (which sits before the button group, by the title),

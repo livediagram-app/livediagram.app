@@ -17,7 +17,9 @@ import { DEFAULT_CHAIR_FACING } from './collab-shapes';
 import { CHAIR_FACING_ROTATION, CHAIR_GEOMETRY, chairSeatFill } from './shape-geometry';
 import { REACTION_DEFAULT, REACTION_EMOJI, REACTION_HUES } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
-import { glow, pill, rule, text, type Face } from './svg-render-face-kit';
+import { REVEAL_COVER_BASE, type CanvasSurface } from './colors';
+import { glow, pill, text, type Face } from './svg-render-face-kit';
+import { svgActionPanel, svgCommentPanel } from './svg-render-panel-faces';
 
 /** The Behaviour kinds this module draws a face for, so the caller knows not
  *  to print the generic centred label over the top of one. */
@@ -41,6 +43,9 @@ export function svgBehaviourFace(
   label: string,
   color: string,
   stroke: string,
+  // The paper under the element, for the faces whose base follows it (the
+  // Reveal cover), exactly as the canvas face reads it.
+  surface: CanvasSurface = 'light',
 ): string | null {
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
@@ -90,7 +95,7 @@ export function svgBehaviourFace(
       // the gesture. The sweep of light is motion and isn't reproduced.
       if (el.revealed === true) return '';
       return (
-        `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="10" fill="#f1f5f9"/>` +
+        `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="10" fill="${REVEAL_COVER_BASE[surface]}"/>` +
         // The two soft glows of its accent, from opposite corners, then the border.
         glow(
           `reveal-a-${el.id}`,
@@ -195,71 +200,12 @@ export function svgBehaviourFace(
         ? `<g transform="rotate(${turn} ${r2(el.x + el.width / 2)} ${r2(el.y + el.height / 2)})">${chair}</g>`
         : chair;
     }
-    case 'comment-pin': {
-      const count = el.commentThread?.comments.length ?? 0;
-      return (
-        text(el.x + 12, el.y + 22, `${count} ${count === 1 ? 'comment' : 'comments'}`, {
-          size: 12,
-          weight: 600,
-          color,
-        }) +
-        text(el.x + 12, el.y + 42, count === 0 ? 'Nothing yet.' : '', {
-          size: 11,
-          color,
-          opacity: 0.55,
-        })
-      );
-    }
-    case 'action-card': {
-      // The action panel (docs/specs/012-collaboration/action-panel.md): its header, the action's name and who it
-      // is assigned to, or the empty state. Truncated to the card, since the
-      // export has no DOM to wrap against.
-      const action = el.action;
-      const fit = (body: string, px: number) => {
-        const max = Math.max(4, Math.floor((el.width - 24) / (px * 0.55)));
-        return body.length > max ? `${body.slice(0, max - 1)}…` : body;
-      };
-      const done = action?.status === 'done';
-      const header =
-        text(el.x + 12, el.y + 22, 'Action', { size: 12, weight: 600, color }) +
-        (done
-          ? pill(el.x + el.width - 56, el.y + 10, 44, 16, color) +
-            text(el.x + el.width - 34, el.y + 22, 'Done', {
-              size: 10,
-              weight: 600,
-              color,
-              anchor: 'middle',
-            })
-          : '');
-      if (!action) {
-        return (
-          header + text(el.x + 12, el.y + 44, 'No action yet.', { size: 11, color, opacity: 0.55 })
-        );
-      }
-      const assignee = action.assignee.name?.trim() || 'Teammate';
-      return (
-        header +
-        text(el.x + 12, el.y + 46, fit(action.name, 14), {
-          size: 14,
-          weight: 600,
-          color,
-          opacity: done ? 0.6 : 1,
-        }) +
-        (action.description
-          ? text(el.x + 12, el.y + 66, fit(action.description, 11), {
-              size: 11,
-              color,
-              opacity: 0.65,
-            })
-          : '') +
-        rule(el.x + 12, el.y + el.height - 34, el.x + el.width - 12, color) +
-        text(el.x + 12, el.y + el.height - 14, fit(`Assigned to ${assignee}`, 11), {
-          size: 11,
-          color,
-          opacity: 0.8,
-        })
-      );
-    }
+    case 'comment-pin':
+      // docs/specs/012-collaboration/comment-pin.md "The look": the thread as bubbles, the composer.
+      return svgCommentPanel(el, title, color, stroke);
+    case 'action-card':
+      // docs/specs/012-collaboration/action-panel.md "The card": name, status, assignee, Mark Complete.
+      return svgActionPanel(el, color, stroke);
     case 'portal': {
       // The ring, which is the whole element: an ellipse with a bright rim.
       const rx = Math.min(el.width, el.height) * 0.22;

@@ -3,27 +3,28 @@
 import { useState } from 'react';
 import { elementDisplayLabel, type BoxedElement } from '@livediagram/diagram';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import {
-  ActionRowItem,
-  CommentRowItem,
-  FilterTab,
-  KindFilterButton,
-} from '@/components/panels/collaborate-panel-parts';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 import { SOLID_BRAND_DARK } from '@livediagram/ui';
+import { KindChips, SideTabs } from '@/components/panels/collaborate/CollaborateControls';
+import { CollaborateEmpty } from '@/components/panels/collaborate/CollaborateEmpty';
+import { ActionRowItem, CommentRowItem } from '@/components/panels/collaborate/CollaborateRows';
+import {
+  kindCounts,
+  rowsFor,
+  sectionsFor,
+  showKindChips,
+  type CollaborateKind,
+  type CollaborateSide,
+} from '@/components/panels/collaborate/collaborate-model';
 
-// The floating COLLABORATE panel: the Comments and Actions panels
-// merged into one surface (they are the two ways work gets discussed /
-// divided on a diagram, and two stacked panels crowded the corner).
-// A segmented filter splits it into Open (open actions + unresolved
-// comment threads) and Resolved (completed actions + resolved threads —
-// which now surface here instead of hiding entirely). Every row shares
-// one anatomy: a kind glyph (action clipboard / comment bubble) on the
-// far left, the name + description in the middle, and the person on the
-// far right — an avatar bubble above the relative time, with the name
-// on the avatar's hover card rather than spent inline.
-// Click a row to jump to the element and open its popover (thread or
-// action, per kind).
+// The floating COLLABORATE panel (docs/specs/012-collaboration/assigned-actions.md §5): the Comments and Actions
+// panels merged into one surface, in the refreshed Collaborate look. An Open /
+// Resolved segmented control splits it; kind chips narrow it to comments or
+// actions when the tab has both. Open rows assigned to you lead under For You.
+// An action's round check completes it in place; clicking a row jumps to the
+// element and opens its thread or action. The pure rules (which rows, which
+// sections, which copy) live in collaborate/collaborate-model.ts; the rows,
+// controls and empty state in their own files beside it.
 
 export type CommentRow = {
   // Element id; click jumps to it and opens the thread.
@@ -62,13 +63,6 @@ export type ActionRow = {
   createdAt: number;
 };
 
-// One merged, sortable list entry. Actions assigned to me sort first in
-// the Open view; everything else interleaves newest-first on its own
-// timestamp (an action's createdAt, a thread's latest comment).
-type CollaborateRow =
-  | { kind: 'comment'; at: number; mine: false; comment: CommentRow }
-  | { kind: 'action'; at: number; mine: boolean; action: ActionRow };
-
 type CollaboratePanelProps = {
   // Every comment thread (unresolved AND resolved) + every action (open
   // AND done) on the tab — the panel splits Open / Resolved itself. The
@@ -80,6 +74,9 @@ type CollaboratePanelProps = {
   // popover (comment thread / action).
   onCommentRowClick: (elementId: string) => void;
   onActionRowClick: (elementId: string) => void;
+  // Complete (done = true) or reopen an action from its row's check. Absent
+  // for a read-only visitor, whose check is a static status disc.
+  onToggleActionDone?: (elementId: string, done: boolean) => void;
   forceDockMode?: boolean;
   onMobileClose?: () => void;
 } & MovablePanelPlacementProps & { onReset: () => void };
@@ -93,62 +90,44 @@ export function CollaboratePanel({
   onReset,
   onCommentRowClick,
   onActionRowClick,
+  onToggleActionDone,
   dock,
   mobileOpenOverride,
   mobileDockAnchor,
   forceDockMode,
   onMobileClose,
 }: CollaboratePanelProps) {
-  // Kind filter (left of the Open / Resolved control): All -> Comments
-  // -> Actions, cycled by one compact button so the narrow panel
-  // doesn't grow a second segmented row. Open/Resolved counts follow
-  // the active kind.
-  const [kindFilter, setKindFilter] = useState<'all' | 'comments' | 'actions'>('all');
-  const filteredComments = kindFilter === 'actions' ? [] : commentRows;
-  const filteredActions = kindFilter === 'comments' ? [] : actionRows;
-  const merge = (comments: CommentRow[], actions: ActionRow[]): CollaborateRow[] =>
-    [
-      ...comments.map((c): CollaborateRow => ({
-        kind: 'comment',
-        at: c.latestAt,
-        mine: false,
-        comment: c,
-      })),
-      ...actions.map((a): CollaborateRow => ({
-        kind: 'action',
-        at: a.createdAt,
-        mine: a.mine,
-        action: a,
-      })),
-    ].sort((a, b) => (a.mine === b.mine ? b.at - a.at : a.mine ? -1 : 1));
-  const open = merge(
-    filteredComments.filter((c) => !c.resolved),
-    filteredActions.filter((a) => a.status === 'open'),
-  );
-  const resolved = merge(
-    filteredComments.filter((c) => c.resolved),
-    filteredActions.filter((a) => a.status === 'done'),
-  );
+  const [kind, setKind] = useState<CollaborateKind>('all');
+  const openAll = kindCounts('open', commentRows, actionRows).all;
+  const resolvedAll = kindCounts('resolved', commentRows, actionRows).all;
   // Land on whichever side has content: Open normally, Resolved when
   // everything is already wrapped up (an empty default view helps no one).
-  const [filter, setFilter] = useState<'open' | 'resolved'>(open.length > 0 ? 'open' : 'resolved');
-  const shown = filter === 'open' ? open : resolved;
+  const [side, setSide] = useState<CollaborateSide>(openAll > 0 ? 'open' : 'resolved');
+  const chips = showKindChips(commentRows, actionRows);
+  // A chip only narrows while there are both kinds; if one kind disappears
+  // the list falls back to everything rather than to a stale filter.
+  const activeKind = chips ? kind : 'all';
+  const counts = kindCounts(side, commentRows, actionRows);
+  const shown = rowsFor(side, activeKind, commentRows, actionRows);
+  const sections = sectionsFor(side, shown);
+  let index = 0;
   return (
     <MovablePanel
       helpArticle="comments"
       title="Collaborate"
-      headerExtra={
-        open.length > 0 ? (
+      titleAdornment={
+        openAll > 0 ? (
           <span
             className={`inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
           >
-            <span className="text-optical-centre">{open.length}</span>
+            <span className="text-optical-centre">{openAll}</span>
           </span>
         ) : undefined
       }
       position={position}
       defaultCorner="top-right-stacked"
-      width="w-auto sm:w-64"
+      // A phone keeps even 16px gutters (the corner stack only insets the right).
+      width="w-[calc(100vw-2rem)] sm:w-64"
       stackBelowY={stackBelowY}
       onReset={onReset}
       onMoveTo={onMoveTo}
@@ -164,57 +143,52 @@ export function CollaboratePanel({
       // row so the canvas stays as roomy as possible.
       defaultCollapsed
     >
-      <div className="px-2 pb-2">
-        {/* Kind filter + Open / Resolved segmented filter. */}
-        <div className="mb-1.5 flex items-stretch gap-1">
-          <KindFilterButton value={kindFilter} onChange={setKindFilter} />
-          <div className="grid flex-1 grid-cols-2 gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800">
-            <FilterTab
-              label="Open"
-              count={open.length}
-              active={filter === 'open'}
-              onClick={() => setFilter('open')}
-            />
-            <FilterTab
-              label="Resolved"
-              count={resolved.length}
-              active={filter === 'resolved'}
-              onClick={() => setFilter('resolved')}
-            />
-          </div>
-        </div>
+      <div className="flex flex-col gap-2 px-2 pb-2">
+        <SideTabs
+          value={side}
+          counts={{ open: openAll, resolved: resolvedAll }}
+          onChange={setSide}
+        />
+        {chips ? <KindChips value={activeKind} counts={counts} onChange={setKind} /> : null}
         {shown.length === 0 ? (
-          <p className="px-1.5 py-4 text-center text-[11px] text-slate-400">
-            {kindFilter === 'comments'
-              ? filter === 'open'
-                ? 'No open comments.'
-                : 'No resolved comments yet.'
-              : kindFilter === 'actions'
-                ? filter === 'open'
-                  ? 'No open actions.'
-                  : 'No completed actions yet.'
-                : filter === 'open'
-                  ? 'Nothing open.'
-                  : 'Nothing resolved yet.'}
-          </p>
+          <CollaborateEmpty side={side} kind={activeKind} />
         ) : (
-          <ul className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800">
-            {shown.map((row) =>
-              row.kind === 'action' ? (
-                <ActionRowItem
-                  key={`a-${row.action.elementId}`}
-                  row={row.action}
-                  onClick={() => onActionRowClick(row.action.elementId)}
-                />
-              ) : (
-                <CommentRowItem
-                  key={`c-${row.comment.elementId}`}
-                  row={row.comment}
-                  onClick={() => onCommentRowClick(row.comment.elementId)}
-                />
-              ),
-            )}
-          </ul>
+          // Keyed on the view so switching side or kind replays the entrance.
+          <div key={`${side}-${activeKind}`} className="flex flex-col gap-1">
+            {sections.map((section) => (
+              <section key={section.key} aria-label={section.label ?? undefined}>
+                {section.label ? (
+                  <h3 className="px-2 pb-0.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    {section.label}
+                  </h3>
+                ) : null}
+                <ul className="flex flex-col gap-1">
+                  {section.rows.map((row) =>
+                    row.kind === 'action' ? (
+                      <ActionRowItem
+                        key={`a-${row.action.elementId}`}
+                        index={index++}
+                        row={row.action}
+                        onClick={() => onActionRowClick(row.action.elementId)}
+                        onToggleDone={
+                          onToggleActionDone
+                            ? (done) => onToggleActionDone(row.action.elementId, done)
+                            : undefined
+                        }
+                      />
+                    ) : (
+                      <CommentRowItem
+                        key={`c-${row.comment.elementId}`}
+                        index={index++}
+                        row={row.comment}
+                        onClick={() => onCommentRowClick(row.comment.elementId)}
+                      />
+                    ),
+                  )}
+                </ul>
+              </section>
+            ))}
+          </div>
         )}
       </div>
     </MovablePanel>

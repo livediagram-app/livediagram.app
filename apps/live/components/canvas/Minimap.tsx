@@ -18,6 +18,7 @@ import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MapSize } from '@/lib/user-preferences';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // Panel body heights per map size. Tailwind classes rather than inline styles
 // so the dark-mode / responsive tooling still applies.
@@ -54,6 +55,10 @@ type MinimapProps = {
   setViewportOffset: (offset: { x: number; y: number }) => void;
   setViewportZoom: (zoom: number) => void;
   mainRef: Ref<HTMLElement>;
+  // The tab's resolved paper colour (the backdrop the canvas paints). The map
+  // paints the same paper behind its miniature, so a card reads against the
+  // colour it sits on in the canvas rather than a fixed grey.
+  paperColor: string;
   // The active tab theme's accent (matches the on-canvas selection), used to
   // colour the current-view highlight instead of a fixed brand blue.
   accentColor: string;
@@ -101,6 +106,7 @@ export function Minimap({
   setViewportOffset,
   setViewportZoom,
   mainRef,
+  paperColor,
   accentColor,
   position,
   onMove,
@@ -117,6 +123,11 @@ export function Minimap({
   // Its size, for the current-view window: observed, not read while rendering.
   const mainSize = useObservedSize(mainRef);
 
+  // Which paper the canvas is (light / dark), from the SAME context the canvas
+  // elements read (docs/specs/008-canvas/minimap.md "Fidelity"). The renderer
+  // resolves every unstyled colour against it, so a Behaviour card that is a
+  // dark card on a dark canvas is a dark card here too, not the light skin.
+  const surface = useCanvasSurface();
   // Re-render once the async icon catalogues land so Technology marks pop in.
   const iconsLoaded = useIconCatalogs();
   // One pass builds the full-fidelity markup (the SAME headless renderer the
@@ -145,20 +156,21 @@ export function Minimap({
           resolveIconArt,
           resolveStickerArt,
           tabFont,
+          surface,
         }),
       );
       corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
     }
     for (const el of elements) {
       if (el.type !== 'arrow') continue;
-      parts.push(svgArrow(el, elements, 'light', tabFont, labels, 'lvd-minimap-ko-'));
+      parts.push(svgArrow(el, elements, surface, tabFont, labels, 'lvd-minimap-ko-'));
       corners.push(endpointPosition(el.from, elements), endpointPosition(el.to, elements));
     }
     return {
       markup: parts.join(''),
       bounds: boundsOfPoints(corners),
     };
-  }, [elements, tabFont, iconsLoaded]);
+  }, [elements, tabFont, iconsLoaded, surface]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;
@@ -243,7 +255,8 @@ export function Minimap({
           ref={svgRef}
           viewBox={vb}
           preserveAspectRatio="xMidYMid meet"
-          className={`block w-full cursor-pointer touch-none bg-slate-50/60 text-slate-400 dark:bg-slate-950/40 ${MAP_HEIGHT[size]}`}
+          className={`block w-full cursor-pointer touch-none text-slate-400 ${MAP_HEIGHT[size]}`}
+          style={{ backgroundColor: paperColor }}
           role="img"
           aria-label="Canvas map — tap or drag to navigate, scroll to zoom"
           onPointerDown={(e) => {
@@ -272,7 +285,7 @@ export function Minimap({
                 <path
                   d={`M${x0} ${y0}H${x1}V${y1}H${x0}Z M${vx} ${vy}H${vx1}V${vy1}H${vx}Z`}
                   fillRule="evenodd"
-                  className="fill-slate-500/25 dark:fill-slate-950/55"
+                  className={surface === 'dark' ? 'fill-black/45' : 'fill-slate-500/25'}
                 />
               ) : null}
               <rect

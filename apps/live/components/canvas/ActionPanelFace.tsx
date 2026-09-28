@@ -1,14 +1,26 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState } from 'react';
 
 import type { ShapeElement } from '@livediagram/diagram';
 
-import { ActionMenuIcon } from '@/components/palette/context-menu-icons';
-import { initialsOf } from '@/lib/identity';
-import { relativeSince, useRelativeNow } from '@/lib/relative-time';
-import { SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
-import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
+import { CollabPanel } from '@/components/canvas/collab/collab-chrome';
+import { CollabAccentScope } from '@/components/canvas/collab/collab-accent';
+import { CelebrationBurst } from '@/components/canvas/collab/CelebrationBurst';
+import { ActionAssignee } from '@/components/canvas/collab/action/ActionAssignee';
+import {
+  ActionGlyph,
+  CompleteButton,
+  EditButton,
+  StatusChip,
+} from '@/components/canvas/collab/action/action-parts';
+import {
+  EmptyRows,
+  QA_ACCENT,
+  QA_ON_ACCENT,
+  stopPointer,
+} from '@/components/canvas/collab/qa/qa-parts';
+import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 
 // The face of an Action panel (docs/specs/012-collaboration/action-panel.md): a card on the board that carries ONE
 // assigned action (docs/specs/012-collaboration/assigned-actions.md) and shows it in place.
@@ -19,10 +31,15 @@ import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
 // all work against that field, keyed by element id. A panel is an element
 // whose only job is to hold one and show it, so this file is a layout and
 // three callbacks.
+//
+// Built from the modern collab parts ("The card"): the accent scope and the
+// CollabPanel frame, the action's name as the title (the Decision record's
+// treatment), and one loud act in the footer.
 
 export function ActionPanelFace({
   element,
   textColor,
+  surface,
   selfId,
   onConfigure,
   onComplete,
@@ -30,6 +47,8 @@ export function ActionPanelFace({
 }: {
   element: ShapeElement;
   textColor: string;
+  /** The card's own fill, for the accent scope. Defaults to white for tests. */
+  surface?: string;
   // The current user's identity (Clerk id, else the guest participant id),
   // for "Assigned to you", the rule ActionPopover uses.
   selfId: string | null;
@@ -39,145 +58,92 @@ export function ActionPanelFace({
   onComplete?: () => void;
   onReopen?: () => void;
 }) {
-  const touchScroll = useTouchScrollBody<HTMLDivElement>();
   const action = element.action;
   const done = action?.status === 'done';
+  // Celebrate a completion seen on screen, never a card that loaded done.
+  const [initiallyDone] = useState(done);
 
-  return (
-    <div
-      className={`absolute inset-0 flex flex-col overflow-hidden rounded-[inherit] ${
-        done ? 'opacity-60' : ''
-      }`}
-      style={{ color: textColor }}
-    >
-      {/* Right padding keeps the header clear of the shared `…` settings
-          button every Behaviours card carries in its top-right corner. */}
-      <span className="flex w-full shrink-0 items-center gap-1.5 py-2 pl-2.5 pr-8">
-        <span className="opacity-60">
-          <ActionMenuIcon />
-        </span>
-        <span className="text-[11px] font-semibold">Action</span>
-        {done ? (
-          <span className="rounded bg-emerald-500/15 px-1.5 py-[1px] text-[9px] font-semibold text-emerald-700 dark:text-emerald-300">
-            Done
-          </span>
-        ) : null}
-      </span>
-
-      {!action ? (
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 px-3 pb-3 text-center">
-          <span className="text-[10px] italic opacity-50">No action yet.</span>
-          {onConfigure ? (
-            <FaceButton onPress={onConfigure} primary>
-              Set Up Action
-            </FaceButton>
-          ) : null}
-        </div>
-      ) : (
-        <>
-          {/* touch-none + useTouchScrollBody: see CollabPanel's body. */}
-          <div
-            {...touchScroll}
-            className="flex min-h-0 flex-1 touch-none flex-col gap-1 overflow-y-auto px-2.5 pb-1"
-          >
-            <span
-              className={`break-words text-[13px] font-semibold leading-snug ${
-                done ? 'line-through' : ''
-              }`}
+  if (!action) {
+    return (
+      <CollabAccentScope element={element} textColor={textColor} surface={surface ?? '#ffffff'}>
+        <CollabPanel element={element} title="Action" textColor={textColor}>
+          <div className="flex flex-1 flex-col items-center justify-center gap-3">
+            <EmptyRows
+              textColor={textColor}
+              title="No Action Yet"
+              rows={0}
+              glyph={<ActionGlyph size={14} />}
             >
-              {action.name}
-            </span>
-            {action.description ? (
-              <span className="whitespace-pre-wrap break-words text-[11px] leading-snug opacity-70">
-                {action.description}
-              </span>
-            ) : null}
+              {onConfigure ? 'Give someone a clear next step, with their name on it.' : undefined}
+            </EmptyRows>
+            {onConfigure ? <SetUpButton onPress={onConfigure} /> : null}
           </div>
-          <AssigneeRow
+        </CollabPanel>
+      </CollabAccentScope>
+    );
+  }
+
+  const canAct = done ? onReopen : onComplete;
+  return (
+    <CollabAccentScope element={element} textColor={textColor} surface={surface ?? '#ffffff'}>
+      <CollabPanel
+        element={element}
+        title={action.name}
+        titleLines={2}
+        titleSize={15}
+        textColor={textColor}
+        aside={<StatusChip done={done} />}
+        titleStruck={done}
+        footer={
+          canAct || onConfigure ? (
+            <div className="relative flex w-full items-center gap-2">
+              {canAct ? (
+                <CompleteButton done={done} onPress={canAct} textColor={textColor} />
+              ) : null}
+              {onConfigure ? <EditButton onPress={onConfigure} textColor={textColor} /> : null}
+              {done && !initiallyDone ? <CelebrationBurst /> : null}
+            </div>
+          ) : undefined
+        }
+      >
+        {action.description ? (
+          <p
+            className="whitespace-pre-wrap break-words text-[11.5px] leading-snug"
+            style={{ color: textColor, opacity: done ? 0.45 : 0.7 }}
+          >
+            {action.description}
+          </p>
+        ) : null}
+        <div className="mt-auto">
+          <ActionAssignee
             name={action.assignee.name?.trim() || 'Teammate'}
             mine={selfId !== null && action.assignee.userId === selfId}
             assignerName={action.assignerName?.trim() || null}
             createdAt={action.createdAt}
+            textColor={textColor}
+            done={done}
           />
-          {onConfigure || onComplete || onReopen ? (
-            <div className="flex shrink-0 items-center gap-1.5 px-2.5 pb-2">
-              {done
-                ? onReopen && <FaceButton onPress={onReopen}>Reopen</FaceButton>
-                : onComplete && (
-                    <FaceButton onPress={onComplete} primary>
-                      Complete
-                    </FaceButton>
-                  )}
-              {onConfigure ? <FaceButton onPress={onConfigure}>Edit</FaceButton> : null}
-            </div>
-          ) : null}
-        </>
-      )}
-    </div>
+        </div>
+      </CollabPanel>
+    </CollabAccentScope>
   );
 }
 
-function AssigneeRow({
-  name,
-  mine,
-  assignerName,
-  createdAt,
-}: {
-  name: string;
-  mine: boolean;
-  assignerName: string | null;
-  createdAt: number;
-}) {
-  const now = useRelativeNow();
-  return (
-    <span className="mx-2.5 mb-1.5 flex shrink-0 items-center gap-2 rounded-md bg-black/[0.04] px-2 py-1.5 dark:bg-white/[0.06]">
-      <GlyphDisc
-        size={24}
-        aria-hidden
-        className={`bg-brand-500 text-[9px] font-semibold text-white ${SOLID_BRAND_DARK}`}
-      >
-        {initialsOf(name)}
-      </GlyphDisc>
-      <span className="flex min-w-0 flex-col">
-        <span className="truncate text-[11px] font-medium">
-          {mine ? 'Assigned to you' : `Assigned to ${name}`}
-        </span>
-        <span className="truncate text-[9px] opacity-55">
-          {assignerName ? `by ${assignerName} · ` : ''}
-          {relativeSince(createdAt, now)}
-        </span>
-      </span>
-    </span>
-  );
-}
-
-// A button on the card. Stops the pointer-down so pressing it never starts a
-// drag of the card underneath, the Comment panel's rule for its own controls.
-function FaceButton({
-  onPress,
-  primary = false,
-  children,
-}: {
-  onPress: () => void;
-  primary?: boolean;
-  children: ReactNode;
-}) {
+function SetUpButton({ onPress }: { onPress: () => void }) {
+  const press = usePressWithoutDrag(onPress);
   return (
     <button
       type="button"
-      onPointerDown={(e) => e.stopPropagation()}
-      onDoubleClick={(e) => e.stopPropagation()}
-      onClick={(e) => {
-        e.stopPropagation();
-        onPress();
+      {...press}
+      {...stopPointer}
+      className="pointer-events-auto cursor-pointer rounded-full px-4 py-2 text-[12px] font-semibold transition hover:scale-[1.03] active:scale-95"
+      style={{
+        color: QA_ON_ACCENT,
+        backgroundColor: QA_ACCENT,
+        boxShadow: `0 8px 16px -10px ${QA_ACCENT}`,
       }}
-      className={`pointer-events-auto cursor-pointer rounded-md px-2 py-1 text-[10px] font-medium transition ${
-        primary
-          ? 'bg-slate-900/85 text-white hover:bg-slate-900 dark:bg-white/85 dark:text-slate-900 dark:hover:bg-white'
-          : 'bg-black/[0.06] hover:bg-black/[0.1] dark:bg-white/10 dark:hover:bg-white/15'
-      }`}
     >
-      {children}
+      Set Up Action
     </button>
   );
 }

@@ -33,6 +33,7 @@ import { svgCollabFace } from './svg-render-collab-faces';
 import { svgWebComponent } from './svg-render-web';
 import { isWebComponentShape } from './web-components';
 import type { BoxedElement, ShapeKind } from './index';
+import type { CanvasSurface } from './colors';
 
 /** The kinds whose body these emitters draw, rather than it being a box with a
  *  label. See the module comment: the PNG path reads this. */
@@ -68,6 +69,8 @@ export function svgElementBody(
     chartPalette?: readonly string[];
     /** The element's label text, for the faces that write their own title. */
     label: string;
+    /** The paper under the element, for the faces whose base follows it. */
+    surface?: CanvasSurface;
   },
 ): string {
   if (el.type !== 'shape') return '';
@@ -89,7 +92,7 @@ export function svgElementBody(
   // The Behaviour + Collaborate faces (docs/specs/009-elements/mode-button.md to /137), which all exported
   // as the same blank labelled box as each other.
   return svgFace(
-    svgBehaviourFace(el, label, labelColor, stroke) ??
+    svgBehaviourFace(el, label, labelColor, stroke, o.surface) ??
       svgCollabFace(el, label, labelColor, stroke) ??
       '',
     fontFamily,

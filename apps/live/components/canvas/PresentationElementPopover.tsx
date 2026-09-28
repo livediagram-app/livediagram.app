@@ -12,16 +12,16 @@
 // overlap: the HUD's carries the SLIDE's presenter note (what you mean to
 // say), this one carries the ELEMENT's (what the diagram records about it).
 //
-// It reuses CommentPanelFace rather than growing a third rendering of a
-// comment thread. That component already takes its handlers optionally, for
-// exactly this case: a surface with no comment session renders the thread
-// readable and inert. Presenting is a caller that omits them.
+// It reuses the Comment panel's thread (CommentBubbles) rather than growing a
+// third rendering of a comment thread, with no delete handler and no self, so
+// the thread renders readable and inert.
 
 import { activeCommentCount, isBoxed, type BoxedElement, type Element } from '@livediagram/diagram';
 import { CloseIcon } from '@livediagram/ui';
 
-import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
+import { CommentBubbles } from '@/components/canvas/collab/comment/CommentBubbles';
 import { NoteRichText } from '@/components/notes/NoteRichText';
+import { useRelativeNow } from '@/lib/relative-time';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -59,6 +59,7 @@ export function PresentationElementPopover({
   at: { x: number; y: number };
   onClose: () => void;
 }) {
+  const now = useRelativeNow();
   const note = element.note?.trim();
   const comments = activeCommentCount(element.commentThread);
   // One assigned action per element (docs/specs/012-collaboration/assigned-actions.md), not a list.
@@ -107,8 +108,14 @@ export function PresentationElementPopover({
       {comments > 0 ? (
         <Section title={comments === 1 ? '1 comment' : `${comments} comments`}>
           {/* No handlers: no composer, no resolve, no delete. */}
-          <div className="relative min-h-[4rem] rounded-md bg-slate-50 dark:bg-slate-800/60">
-            <CommentPanelFace element={element as never} textColor="inherit" selfId="" />
+          <div className="max-h-64 overflow-y-auto text-slate-700 dark:text-slate-200">
+            <CommentBubbles
+              comments={element.commentThread?.comments ?? []}
+              selfId=""
+              textColor="currentColor"
+              now={now}
+              freshFrom={Infinity}
+            />
           </div>
         </Section>
       ) : null}

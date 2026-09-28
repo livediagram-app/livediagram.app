@@ -39,8 +39,37 @@ second way to store a comment, that is the bug.
 
 The element is a **card on the board**, not a marker.
 
-- It shows the thread: a header with the count, the comments, a composer, and
-  resolve / reopen.
+- It shows the thread: a header, the comments, a composer, and resolve /
+  reopen.
+
+### The look
+
+Built from the same parts as the modern Collaborate cards (the Q&A board, the
+Idea box; [Idea box](idea-box.md) "The look"): the tab theme's **accent**
+(`CollabAccentScope`), the shared `CollabPanel` frame and the shared composer.
+It carries **no `…`**: it has no settings of its own, every act is on the card,
+and right-click opens the ordinary element menu.
+
+- **Header**: the element's label, or **Comments** when it has none. Its
+  top-right slot holds the thread's other act: a **Resolve** chip (a check in
+  the accent) once there is a thread, or a green **Resolved** chip once
+  resolved. No count: the bubbles already show how many there are.
+- **The thread reads as a conversation.** Each comment is a bubble under its
+  author's initial (in their identity colour) and name, with the relative
+  time. Your own comments sit on the right in an accent-tinted bubble;
+  everyone else's sit on the left in a neutral one. Consecutive comments by
+  the same author group under one name. A comment that arrives while the card
+  is on screen settles in (the Q&A board's enter motion), and the thread keeps
+  the newest in view. Your own comments carry a small delete on hover.
+- **Empty**: a speech-bubble glyph in a soft accent disc, **Start the
+  Conversation**, and "Replies stay on the board for everyone to read."
+- **Composer**: the shared rounded field with the round accent send button
+  (Enter sends).
+- **Resolved**: the thread softens, the composer gives way to a dashed accent
+  bar, **Reopen Thread**, and the header shows the green **Resolved** chip.
+- **Read-only** surfaces show the thread with no composer and no resolve.
+- **Export** draws the header (with **Resolved** once resolved) and the newest
+  comments as bubbles with their authors (`svg-render-faces.ts`), so the card reads the same in a PNG.
 - **It does not collapse.** A collapse-to-summary was built and then dropped: a
   panel you have deliberately put on the board is there to be READ, and folding
   it left an element whose whole purpose sat behind another click. "I don't

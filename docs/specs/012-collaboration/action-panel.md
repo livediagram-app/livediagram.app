@@ -44,24 +44,45 @@ If it ever grows a second way to store an action, that is the bug.
 
 ## The card
 
-- **Empty** (dropped fresh, no action yet): the card says so and offers one
-  button, **Set Up Action**, which opens the Assign Action dialog for this
-  card. The dialog prefills the action name from the element's label as it
-  does for any element, so the card ships with **no label**, since a default
-  caption would become every new action's name.
-- **With an action**: a header (the action glyph, "Action", and a **Done** chip
-  once completed), the action's **name**, its **description** (scrolls when
-  long), and an **assignee row** (avatar initials, "Assigned to you" or
-  "Assigned to {name}", and "by {assigner}"). A footer carries **Complete** (or
-  **Reopen** once done) and **Edit**, which reopens the dialog prefilled.
-- A completed action dims, the way a resolved Comment panel does, but stays
-  on the board: finished work is still a record of what was agreed.
+The card is built from the same parts as the modern Collaborate cards (the Q&A
+board, the Idea box, the Decision record; [Idea box](idea-box.md) "The look"):
+the tab theme's **accent** (the element's own stroke, `CollabAccentScope`),
+and the shared `CollabPanel` frame that scales with the element. It carries
+**no `…`**: it has no settings of its own, every act is on the card, and
+right-click opens the ordinary element menu.
+
+- **Empty** (dropped fresh, no action yet): the title reads **Action**, and
+  the body is an invitation rather than a placeholder: a clipboard-check glyph
+  in a soft accent disc, **No Action Yet**, the line "Give someone a clear next
+  step, with their name on it.", and one loud accent button, **Set Up
+  Action**, which opens the Assign Action dialog for this card. The dialog
+  prefills the action name from the element's label as it does for any
+  element, so the card ships with **no label**, since a default caption would
+  become every new action's name.
+- **With an action**: the **name is the title** (up to two lines, set large,
+  the Decision record's treatment), with a **status chip** beside it: **Open**
+  in the accent, **Done** in green. Under it, the **description** (muted,
+  scrolls when long), then the **assignee row**: a soft tinted row with the
+  assignee's initials in an accent disc, "Assigned to you" or "Assigned to
+  {name}", and "from {assigner} · {when}" beneath.
+- **The footer** carries the one act the card is for: **Mark Complete**, a
+  full-width accent button with a check. Pressing it strikes the title
+  through, turns the chip green, and throws the Done check's confetti burst
+  once (a card that loads already done does not celebrate). Once done the
+  button turns quiet and reads **Reopen**. **Edit** is a small round pencil
+  beside it, which reopens the dialog prefilled.
+- A completed action softens (title struck through and muted, the accent
+  swapped for green) but stays on the board: finished work is still a record
+  of what was agreed.
 - **Delete** is not on the face. Deleting the card deletes its action with it
   ([Assigned actions](assigned-actions.md) §3), and the element menu's Collaborate → View Action popover keeps
   its two-step Delete for clearing the action off a card you want to reuse.
 - **Read-only** surfaces (a view-role visitor, the embed, a presentation) show
   the card readable but with no buttons, like the popover ([Assigned actions](assigned-actions.md) §7). An
-  empty card there just says there is no action yet.
+  empty card there says **No Action Yet** with no invitation line.
+- **Export** draws the same card (`svg-render-faces.ts`): the status chip, the
+  title, the description, and the assignee row with its initials disc, so a
+  PNG or SVG of the board reads like the board.
 
 The generic action **badge** is suppressed on this kind: the card IS the badge,
 and a badge in its corner repeating what the card says is one too many. It is the

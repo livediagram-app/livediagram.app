@@ -308,6 +308,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
       fill: shape.fill,
       chartPalette: opts.chartPalette,
       label: label?.text ?? el.label ?? '',
+      surface,
     });
     // A SELF-PAINTING element's body is its own: the canvas gives it a
     // wrapper with no border and no background (element-variant.ts), and the

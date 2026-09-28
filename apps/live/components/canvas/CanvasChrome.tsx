@@ -160,6 +160,14 @@ export type CanvasChromeProps = CanvasProps & ChromeExtras;
 // (inset 16px = the `*-4` resting inset). Top corners stack downward,
 // bottom corners upward (flex-col-reverse) so the first panel always
 // sits flush to the corner and the rest flow away from it.
+// On a phone the Toolbar strip spans the canvas width (docs/specs/007-editor/toolbar-layout.md "On a phone"),
+// so the TOP corner stacks start below it rather than at the 16px inset, or a
+// panel docked there (the Collaborate banner) renders underneath the strip
+// where it can't be reached. The strip sits 12px down (top-3) and is 46px
+// tall; 68px leaves a 10px gap. On desktop the strip is centred and narrow,
+// so the corners are clear and keep their inset.
+const PHONE_TOOLBAR_TOP_CLEARANCE_PX = 68;
+
 const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
   'top-left': 'left-4 top-4 flex-col items-start',
   'top-right': 'right-4 top-4 flex-col items-end',
@@ -281,6 +289,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // Toolbar layout (docs/specs/007-editor/toolbar-layout.md) in force: honoured on a phone too, where it
   // replaces the dock's Palette + Explorer buttons.
   const toolbarActive = toolbarLayout === true;
+  // The strip only renders for an editor (not read-only) with the chrome up.
+  const stripSpansTop = toolbarActive && isMobile && !readOnly && !chromeHidden;
   // The Explorer menu button: top-left on desktop, the far left of the strip
   // on a phone (no room for both across the top). A read-only visitor has no
   // strip, so it keeps the corner there.
@@ -328,7 +338,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ref={(el) => {
               cornerRefs.current[corner] = el;
             }}
-            style={corner === 'bottom-right' ? { bottom: cornerBottomInset(corner) } : undefined}
+            style={
+              corner === 'bottom-right'
+                ? { bottom: cornerBottomInset(corner) }
+                : stripSpansTop && corner.startsWith('top')
+                  ? { top: PHONE_TOOLBAR_TOP_CLEARANCE_PX }
+                  : undefined
+            }
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
           >
             {children.map((id) => (

@@ -35,6 +35,20 @@ lets you jump the viewport anywhere with a tap or drag.
   area **outside the current view is dimmed**, leaving a lit window (outlined
   in the tab theme's accent, matching the on-canvas selection) that reads at
   a glance as where you are.
+- **Fidelity: the map paints the canvas's paper.** An element with no colour
+  of its own takes its colours from the paper it sits on (`CanvasSurface`,
+  light or dark, derived from the tab's resolved backdrop), so the map reads
+  the SAME surface the canvas elements read (`useCanvasSurface`) and hands it
+  to `svgBoxed` / `svgArrow`. A Behaviour or Collaborate card that is a dark
+  card on a dark board is a dark card on the map, never the light skin. The
+  map's own background is the tab's resolved paper colour
+  (`tabBackgroundColor`), not a fixed grey, and the dim outside the current
+  view darkens rather than greys on dark paper. A kind whose look depends on
+  the paper keeps that dependency in ONE shared value both renderers read
+  (for example `REVEAL_COVER_BASE` for the Reveal cover), and a drift test
+  (`svg-render-surface.test.ts`) fails if any kind without a stored fill
+  paints a light base on dark paper. The Layers panel's previews follow the
+  same rule.
 - **Navigation.** Tap a point to re-centre the canvas there; press-and-drag
   inside the map to pan continuously; **scroll** on it to zoom the canvas in/out
   centred on that spot. The viewport rectangle tracks live as you move. (Drags

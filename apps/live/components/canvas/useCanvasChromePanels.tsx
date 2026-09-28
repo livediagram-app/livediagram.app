@@ -159,6 +159,7 @@ export function useCanvasChromePanels({
     onNewDiagram,
     explorerMenuActions,
     onOpenActionForElement,
+    onToggleActionDone,
     onOpenCommentsForElement,
     onOpenDiagram,
     onRedo,
@@ -374,6 +375,7 @@ export function useCanvasChromePanels({
         dock={collaborateWiring.dock}
         onCommentRowClick={onOpenCommentsForElement}
         onActionRowClick={onOpenActionForElement}
+        onToggleActionDone={onToggleActionDone}
         mobileOpenOverride={activeMobilePanel === 'collaborate'}
         mobileDockAnchor={activeDockAnchor ?? undefined}
         forceDockMode={!!minimalPanels}
@@ -534,6 +536,7 @@ export function useCanvasChromePanels({
         setViewportOffset={props.setViewportOffset}
         setViewportZoom={props.setViewportZoom}
         mainRef={props.mainRef}
+        paperColor={props.tabBackgroundColor}
         accentColor={mapAccent}
         position={minimapWiring.position}
         onMove={props.onMoveMap}

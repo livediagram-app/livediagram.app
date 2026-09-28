@@ -83,8 +83,19 @@ export function drawsOwnElementMenu(kind: ShapeKind): boolean {
  *   does ("Double-click to reveal"); a `…` in its corner was a control on
  *   something meant to read as closed. Reveal for everyone is on its
  *   right-click menu, where it always was.
+ * - The Comment and Action panels (docs/specs/012-collaboration/comment-pin.md, action-panel.md) have
+ *   no settings of their own: everything they do is on the card (reply,
+ *   resolve, complete, edit), and their right-click menu is the ordinary
+ *   element menu. A `…` opening that menu was a control with nothing behind it.
  */
 export function carriesSharedSettingsMenu(kind: ShapeKind): boolean {
-  if (kind === 'focus-button' || kind === 'chair' || kind === 'reveal') return false;
+  if (
+    kind === 'focus-button' ||
+    kind === 'chair' ||
+    kind === 'reveal' ||
+    kind === 'comment-pin' ||
+    kind === 'action-card'
+  )
+    return false;
   return isBehaviourShape(kind) && !drawsOwnElementMenu(kind);
 }

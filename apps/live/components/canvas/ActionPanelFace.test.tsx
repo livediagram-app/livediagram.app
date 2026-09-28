@@ -77,7 +77,7 @@ describe('ActionPanelFace', () => {
     );
     expect(screen.getByText('Confirm the retry budget')).toBeTruthy();
     expect(screen.getByText('Assigned to you')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Mark Complete' }));
     expect(onComplete).toHaveBeenCalledOnce();
   });
 
@@ -93,7 +93,7 @@ describe('ActionPanelFace', () => {
       />,
     );
     expect(screen.getByText('Assigned to Sam')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Complete' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Mark Complete' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Reopen' }));
     expect(onReopen).toHaveBeenCalledOnce();
   });

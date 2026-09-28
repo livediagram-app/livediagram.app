@@ -155,6 +155,11 @@ out ([Interactive editor tour ("Show me around")](editor-tour.md)). What changes
   button.
 - **Zoom drops − and +** (`pinchOnly`), as on every phone ([Live app](live-app.md)). Fit
   stays.
+- **The top corner stacks start below the strip** (68px down rather than
+  the 16px inset), since the strip spans the width. A panel docked top-right,
+  such as the Collaborate banner, otherwise rendered underneath the strip
+  where it could not be reached. Without a strip (read-only, zen, the welcome
+  flow) the corners keep their inset.
 - Read-only visitors have no strip, so their menu button stays top-left.
 - The minimap stays off, as in every phone layout ([Minimap](../008-canvas/minimap.md)).
 

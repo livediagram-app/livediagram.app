@@ -518,6 +518,9 @@ export type CanvasProps = {
   actionRows: import('@/components/panels/CollaboratePanel').ActionRow[];
   // Row click: editor selects the element + opens its action popover.
   onOpenActionForElement: (elementId: string) => void;
+  // The Collaborate panel row's round check (docs/specs/012-collaboration/assigned-actions.md §5): complete
+  // (done) or reopen the action in place. Absent for a read-only visitor.
+  onToggleActionDone?: (elementId: string, done: boolean) => void;
   onRevertChange: (entry: ChangeLogEntry) => void;
   // Hover-to-preview for a row's Revert (docs/specs/012-collaboration/activity-and-audit.md): enter shows the
   // revert result live on the canvas, leave restores. Nothing commits.

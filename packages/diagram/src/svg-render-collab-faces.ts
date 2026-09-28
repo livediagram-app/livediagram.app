@@ -40,6 +40,7 @@ import {
   BODY_PX,
   checkMark,
   collabCard,
+  wrapLines,
   glow,
   lockMark,
   moodFace,
@@ -679,30 +680,4 @@ function statusGlyph(status: string, cx: number, cy: number, hue: string): strin
   if (status === 'superseded')
     return `<path d="M ${r2(cx - 3.5)} ${r2(cy + 2)} a 3.5 3.5 0 0 1 6 -2.5 M ${r2(cx + 3)} ${r2(cy - 3.5)} v 2.5 h -2.5" ${k}/>`;
   return `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="3.2" ${k} stroke-dasharray="1.6 1.6"/>`;
-}
-
-/** Break `body` into at most `max` lines that fit `width` at `size`px (an
- *  estimate of the face's advance), the last one ending in an ellipsis when
- *  the text runs on: the export's version of the canvas's line clamp. */
-function wrapLines(body: string, width: number, size: number, max: number): string[] {
-  const perLine = Math.max(8, Math.floor(width / (size * 0.52)));
-  const words = body.split(/\s+/).filter(Boolean);
-  const lines: string[] = [];
-  let line = '';
-  for (const word of words) {
-    const next = line ? `${line} ${word}` : word;
-    if (next.length <= perLine) {
-      line = next;
-      continue;
-    }
-    if (line) lines.push(line);
-    line = word;
-    if (lines.length === max) break;
-  }
-  if (line && lines.length < max) lines.push(line);
-  const used = lines.join(' ').length;
-  if (lines.length === max && used < body.trim().length) {
-    lines[max - 1] = `${lines[max - 1]!.slice(0, perLine - 1).trimEnd()}…`;
-  }
-  return lines;
 }

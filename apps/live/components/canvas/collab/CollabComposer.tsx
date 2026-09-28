@@ -76,17 +76,22 @@ export function CollabComposer({
           <SendGlyph size={13} />
         </button>
       </div>
-      <div className="flex items-center justify-between gap-2 px-1">
-        {meta ?? <span />}
-        {left <= 40 ? (
-          <span
-            className="text-[10px] font-medium tabular-nums"
-            style={{ color: left <= 10 ? '#e11d48' : textColor, opacity: left <= 10 ? 1 : 0.5 }}
-          >
-            {left}
-          </span>
-        ) : null}
-      </div>
+      {/* Only when it has something to say: an empty row under the field
+          read as stray padding on a composer with no chip (the Comment
+          panel's, docs/specs/012-collaboration/comment-pin.md). */}
+      {meta || left <= 40 ? (
+        <div className="flex items-center justify-between gap-2 px-1">
+          {meta ?? <span />}
+          {left <= 40 ? (
+            <span
+              className="text-[10px] font-medium tabular-nums"
+              style={{ color: left <= 10 ? '#e11d48' : textColor, opacity: left <= 10 ? 1 : 0.5 }}
+            >
+              {left}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,29 +1,54 @@
 'use client';
 
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
-import { activeCommentCount, type ShapeElement } from '@livediagram/diagram';
+import type { ShapeElement } from '@livediagram/diagram';
 
-import { relativeSince, useRelativeNow } from '@/lib/relative-time';
-import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
+import { useRelativeNow } from '@/lib/relative-time';
+import { CollabPanel, tint } from '@/components/canvas/collab/collab-chrome';
+import { CollabAccentScope } from '@/components/canvas/collab/collab-accent';
+import { CollabComposer } from '@/components/canvas/collab/CollabComposer';
+import { CommentBubbles } from '@/components/canvas/collab/comment/CommentBubbles';
+import {
+  AccentBar,
+  CheckGlyph,
+  DiscussGlyph,
+  EmptyRows,
+  QA_ACCENT,
+  QA_ACCENT_INK,
+  ReopenGlyph,
+  stopPointer,
+} from '@/components/canvas/collab/qa/qa-parts';
+import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 
 // The face of a Comment panel (docs/specs/012-collaboration/comment-pin.md): a card on the board that carries a
-// comment thread, collapsing to a one-line summary and opening to the thread.
+// comment thread and shows it in place, as a conversation.
 //
 // It carries NO comment machinery of its own. Every element can already hold a
 // `commentThread`, and the composer, resolve / unresolve, author identity,
 // realtime and persistence all already work against that field, keyed by
 // element id. A panel is an element whose only job is to hold one and show it
-// in place, so this file is a layout and a toggle.
+// in place, so this file is a layout.
 //
 // The point of a panel over the anchored popover is that it STAYS. A popover
 // is one reader's transient view; a panel connected to what it is about sits
-// on the board, in the export, and in everyone's session — which is what makes
+// on the board, in the export, and in everyone's session, which is what makes
 // a remark part of the diagram rather than a note somebody left.
+//
+// Built from the modern collab parts ("The look"): the accent scope, the
+// CollabPanel frame (reflowing, like the Q&A board: resizing makes room for
+// more of the thread, not bigger type), and the shared composer.
+
+// Same cap the api enforces on a comment (packages/diagram element-deltas).
+const COMMENT_MAX_TEXT = 5000;
+
+const GREEN = '#16a34a';
 
 export function CommentPanelFace({
   element,
+  label,
   textColor,
+  surface,
   selfId,
   onAddComment,
   onDeleteComment,
@@ -31,7 +56,10 @@ export function CommentPanelFace({
   onUnresolve,
 }: {
   element: ShapeElement;
+  label: string;
   textColor: string;
+  /** The card's own fill, for the accent scope. */
+  surface: string;
   selfId: string;
   // Absent on a surface with no comment session (the read-only embed, the
   // export renderer), which renders the panel readable but inert.
@@ -41,134 +69,102 @@ export function CommentPanelFace({
   onUnresolve?: () => void;
 }) {
   const now = useRelativeNow();
-  const touchScroll = useTouchScrollBody<HTMLDivElement>();
-  const [draft, setDraft] = useState('');
   const thread = element.commentThread;
   const comments = thread?.comments ?? [];
   const resolved = thread?.resolved === true;
-  const count = activeCommentCount(thread);
+  // Comments past this index arrived after the card first painted.
+  const [initialCount] = useState(comments.length);
 
-  const submit = () => {
-    const text = draft.trim();
-    if (!text || !onAddComment) return;
-    onAddComment(text);
-    setDraft('');
-  };
+  // Keep the newest in view: on first paint and whenever a comment lands. The
+  // list's parent is CollabPanel's scrolling body.
+  const listRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (comments.length === 0) return;
+    const scroller = listRef.current?.parentElement;
+    if (scroller) scroller.scrollTop = scroller.scrollHeight;
+  }, [comments.length]);
+
+  const aside = resolved ? (
+    <span
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+      style={{ color: GREEN, backgroundColor: tint(GREEN, 0.14) }}
+    >
+      <CheckGlyph size={10} />
+      Resolved
+    </span>
+  ) : comments.length > 0 && onResolve ? (
+    // The thread's one other act, top right: no count there, since the
+    // bubbles already show how many there are.
+    <ResolveChip onPress={onResolve} />
+  ) : undefined;
+
+  const footer = !onAddComment ? undefined : resolved ? (
+    onUnresolve ? (
+      <AccentBar onPress={onUnresolve} icon={<ReopenGlyph size={12} />}>
+        Reopen Thread
+      </AccentBar>
+    ) : undefined
+  ) : (
+    <CollabComposer
+      textColor={textColor}
+      placeholder={comments.length ? 'Reply…' : 'Write a comment…'}
+      ariaLabel="Write a comment"
+      sendLabel="Send comment"
+      maxLength={COMMENT_MAX_TEXT}
+      onSubmit={onAddComment}
+    />
+  );
 
   return (
-    <div
-      className={`absolute inset-0 flex flex-col overflow-hidden rounded-[inherit] ${
-        resolved ? 'opacity-60' : ''
-      }`}
-      style={{ color: textColor }}
-    >
-      {/* No quote rail down the left edge any more (docs/specs/012-collaboration/participant-responses.md once gave the
-          panel one to mean "somebody else is talking"): inside a card that
-          already has a header, a thread and a reply box, it read as a stray
-          bar rather than a cue. */}
-      {/* A header, not a toggle. Collapsing was built and then dropped: a
-          panel you have deliberately put on the board is there to be READ, and
-          folding it to a summary line left you with an element whose whole
-          purpose was hidden behind another click. The anchored popover already
-          covers "I don't want to see this right now" — you simply don't add a
-          panel. */}
-      <span className="flex w-full shrink-0 items-baseline gap-2 px-2.5 py-2">
-        <span className="text-[11px] font-semibold">
-          {resolved ? 'Resolved' : count === 1 ? '1 comment' : `${count} comments`}
-        </span>
-      </span>
-
-      {/* touch-none + useTouchScrollBody: see CollabPanel's body. */}
-      <div
-        {...touchScroll}
-        className="flex min-h-0 flex-1 touch-none flex-col gap-1.5 overflow-y-auto px-2.5 pb-1"
+    <CollabAccentScope element={element} textColor={textColor} surface={surface}>
+      <CollabPanel
+        element={element}
+        reflow
+        title={label.trim() || 'Comments'}
+        textColor={textColor}
+        aside={aside}
+        footer={footer}
       >
-        {comments.length === 0 ? (
-          <span className="text-[10px] italic opacity-50">
-            Nothing yet. Say what this is about.
-          </span>
-        ) : (
-          comments.map((c) => (
-            <span key={c.id} className="flex min-w-0 flex-col">
-              <span className="flex items-baseline gap-1.5">
-                <span className="text-[10px] font-semibold" style={{ color: c.authorColor }}>
-                  {c.authorName}
-                </span>
-                <span className="text-[9px] opacity-45">{relativeSince(c.createdAt, now)}</span>
-                {/* Your own comments only: the same rule the popover
-                        applies, so a panel cannot become a way around it. */}
-                {onDeleteComment && c.authorId && c.authorId === selfId ? (
-                  <button
-                    type="button"
-                    aria-label="Delete this comment"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteComment(c.id);
-                    }}
-                    className="pointer-events-auto ml-auto cursor-pointer text-[9px] opacity-40 transition hover:opacity-90"
-                  >
-                    ✕
-                  </button>
-                ) : null}
-              </span>
-              <span className="whitespace-pre-wrap break-words text-[11px] leading-snug">
-                {c.text}
-              </span>
-            </span>
-          ))
-        )}
-      </div>
-
-      {onAddComment ? (
-        <div className="flex shrink-0 items-end gap-1.5 px-2.5 pb-2 pt-1">
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onPointerDown={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              // The canvas listens for keys; a composer has to keep its
-              // own or typing would fire tool shortcuts. Enter sends,
-              // Shift+Enter breaks the line — the popover's rule.
-              e.stopPropagation();
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                submit();
-              }
-            }}
-            rows={1}
-            placeholder="Reply…"
-            className="pointer-events-auto min-w-0 flex-1 resize-none rounded-md border border-black/10 bg-white/70 px-2 py-1 text-[11px] outline-none transition focus:border-brand-400 dark:border-white/15 dark:bg-white/10"
-          />
-          <button
-            type="button"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              submit();
-            }}
-            disabled={!draft.trim()}
-            className="pointer-events-auto shrink-0 cursor-pointer rounded-md bg-slate-900/85 px-2 py-1 text-[10px] font-medium text-white transition hover:bg-slate-900 disabled:cursor-default disabled:opacity-40"
-          >
-            Send
-          </button>
+        <div ref={listRef} className={resolved ? 'opacity-55' : undefined}>
+          {comments.length === 0 ? (
+            <EmptyRows
+              textColor={textColor}
+              title="Start the Conversation"
+              rows={0}
+              glyph={<DiscussGlyph size={14} />}
+            >
+              {onAddComment ? 'Replies stay on the board for everyone to read.' : undefined}
+            </EmptyRows>
+          ) : (
+            <CommentBubbles
+              comments={comments}
+              selfId={selfId}
+              textColor={textColor}
+              now={now}
+              freshFrom={initialCount}
+              onDelete={onDeleteComment}
+            />
+          )}
         </div>
-      ) : null}
+      </CollabPanel>
+    </CollabAccentScope>
+  );
+}
 
-      {comments.length > 0 && (onResolve || onUnresolve) ? (
-        <button
-          type="button"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (resolved) onUnresolve?.();
-            else onResolve?.();
-          }}
-          className="pointer-events-auto shrink-0 cursor-pointer px-2.5 pb-2 text-left text-[10px] font-medium opacity-60 transition hover:opacity-100"
-        >
-          {resolved ? 'Reopen thread' : 'Resolve thread'}
-        </button>
-      ) : null}
-    </div>
+// In the header's top-right slot: the thread's one other act, a small chip in
+// the accent (the Idea box's Anonymous badge's shape).
+function ResolveChip({ onPress }: { onPress: () => void }) {
+  const press = usePressWithoutDrag(onPress);
+  return (
+    <button
+      type="button"
+      {...press}
+      {...stopPointer}
+      className="pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-full py-0.5 pl-1.5 pr-2 text-[10px] font-semibold transition hover:brightness-110"
+      style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
+    >
+      <CheckGlyph size={10} />
+      Resolve
+    </button>
   );
 }

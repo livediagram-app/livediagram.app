@@ -30,6 +30,7 @@ export function MovablePanelHeader({
   dragging,
   title,
   headerExtra,
+  titleAdornment,
   headerActions,
   helpArticle,
   onReset,
@@ -45,6 +46,7 @@ export function MovablePanelHeader({
   dragging: boolean;
   title: string;
   headerExtra?: ReactNode;
+  titleAdornment?: ReactNode;
   headerActions?: ReactNode;
   helpArticle?: HelpArticleKey;
   onReset?: () => void;
@@ -62,7 +64,10 @@ export function MovablePanelHeader({
       onPointerDown={beginDrag}
       className={`flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 pb-1.5 pt-2 dark:border-slate-800 ${dragging ? 'cursor-grabbing' : 'cursor-grab'}`}
     >
-      <PanelTitle title={title} />
+      <span className="flex min-w-0 items-center gap-1.5">
+        <PanelTitle title={title} />
+        {titleAdornment}
+      </span>
       {headerExtra ? (
         <div onPointerDown={(e) => e.stopPropagation()} className="ml-auto mr-1 flex items-center">
           {headerExtra}

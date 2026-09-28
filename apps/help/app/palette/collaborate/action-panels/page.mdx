@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { ActionPanelCard } from '@/components/illustrations/palette-collab-panels';
 
 export const metadata = helpMetadata({
   title: 'Action Panels',
@@ -22,7 +23,7 @@ An action panel is a card on the board that carries one [assigned action](/help/
 
 ## Adding one
 
-Add one from the [Collaborate](/help/palette/collaborate/) group of the palette's **Behaviours** category. A fresh panel has no action yet, so it shows a **Set Up Action** button.
+Add one from the [Collaborate](/help/palette/collaborate/) group of the palette's **Behaviours** category. A fresh panel has no action yet, so it invites you to give someone a clear next step, with a **Set Up Action** button.
 
 Press it and the usual **Assign Action** dialog opens: pick who it is for, give it a name and an optional description, and choose whether to email them. Confirm, and the card shows the action.
 
@@ -30,8 +31,14 @@ A panel can be _about_ an element: drop one beside it and join the two with an o
 
 ## Working with it
 
-- **Complete** marks the action done. The card dims and shows a **Done** chip, but stays on the board as a record of what was agreed. **Reopen** brings it back.
-- **Edit** reopens the dialog with everything filled in, so you can rename it, change the description or hand it to someone else.
+The card leads with the action's name, with an **Open** or **Done** chip beside it, then the description and who it is assigned to.
+
+<Figure caption="An action panel: the action's name and status, who it is for, and one button to finish it.">
+  <ActionPanelCard />
+</Figure>
+
+- **Mark Complete** marks the action done, with a small burst of confetti. The name is struck through and the chip turns green, but the card stays on the board as a record of what was agreed. **Reopen** brings it back.
+- The pencil beside it (**Edit**) reopens the dialog with everything filled in, so you can rename it, change the description or hand it to someone else.
 - To remove the action, delete the card. To keep the card and clear its action, use **Collaborate → View Action** in the card's menu and delete it from there.
 
 It is the same action as any other: it appears in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel) and on your Activity page, and anyone who can view the diagram can read it, while only editors can change it.
