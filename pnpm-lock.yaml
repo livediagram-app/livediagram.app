@@ -252,6 +252,9 @@ importers:
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
+      '@livediagram/fake-google':
+        specifier: workspace:*
+        version: link:../../packages/fake-google
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config

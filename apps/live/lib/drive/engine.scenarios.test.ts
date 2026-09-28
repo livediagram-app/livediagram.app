@@ -1,0 +1,266 @@
+import { describe, expect, it } from 'vitest';
+import { ApiError } from '../api/core';
+import {
+  DRIVE_FOCUS_POLL_MIN_GAP_MS,
+  DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS,
+  DRIVE_POLL_INTERVAL_MS,
+} from './cadence';
+import { fileOf, makeEngine, OWNER, world } from './test-support';
+import { createBrokerTokenSource, createBrowserTokenSource } from './token-source';
+
+// The mirror over time and across devices (docs/specs/022-drive-mirror/drive-mirror.md,
+// "Cadence", "Errors and edge cases", "Folders livediagram cannot see",
+// "Disconnecting").
+
+const MIN = 60_000;
+
+describe('two devices', () => {
+  it('the lease lets one device write; the other still reads changes from Drive', async () => {
+    const w = world();
+    w.ld.createDiagram('d1', 'Plan');
+    const a = makeEngine({ ...w, deviceId: 'device-a' });
+    await a.engine.start();
+    const b = makeEngine({ ...w, deviceId: 'device-b' });
+    await b.engine.start();
+
+    // A holds the lease: B's outbound is skipped, and B says so.
+    w.clock.tick(MIN);
+    await w.ld.port().renameDiagram('d1', 'From B');
+    await b.engine.syncNow();
+    expect(fileOf(w.google, w.ld, 'diagram', 'd1')!.name).toBe('Plan.livediagram');
+    expect(b.statuses.at(-1)!.leaseHeldElsewhere).toBe(true);
+    // A writes it.
+    await a.engine.syncNow();
+    expect(fileOf(w.google, w.ld, 'diagram', 'd1')!.name).toBe('From B.livediagram');
+
+    // B still applies a change made in Drive.
+    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, 'Drive.livediagram');
+    await b.engine.syncNow();
+    expect(w.ld.diagram('d1')!.name).toBe('Drive');
+
+    // A hides: it flushes and hands the lease over at once.
+    await a.engine.onHidden();
+    await a.engine.releaseLease();
+    w.clock.tick(MIN);
+    await w.ld.port().renameDiagram('d1', 'B again');
+    await b.engine.syncNow();
+    expect(fileOf(w.google, w.ld, 'diagram', 'd1')!.name).toBe('B again.livediagram');
+    expect(b.statuses.at(-1)!.leaseHeldElsewhere).toBe(false);
+  });
+});
+
+describe('arrival catch-up', () => {
+  it('uploads every diagram saved since it was last mirrored, after reading Drive', async () => {
+    const w = world();
+    w.ld.createDiagram('d1', 'Plan');
+    w.ld.createDiagram('d2', 'Notes');
+    const first = makeEngine(w);
+    await first.engine.start();
+    first.engine.stop();
+    const md5 = fileOf(w.google, w.ld, 'diagram', 'd1')!.md5Checksum;
+
+    // Away: edited on another device, a new diagram, a Drive rename.
+    w.clock.tick(3 * 60 * MIN);
+    w.ld.edit('d1');
+    w.ld.createDiagram('d3', 'New');
+    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd2')!.id, 'Renamed.livediagram');
+    w.clock.tick(5 * MIN);
+
+    const next = makeEngine(w);
+    await next.engine.start();
+    expect(fileOf(w.google, w.ld, 'diagram', 'd1')!.md5Checksum).not.toBe(md5);
+    expect(fileOf(w.google, w.ld, 'diagram', 'd3')).toBeDefined();
+    expect(w.ld.diagram('d2')!.name).toBe('Renamed');
+  });
+});
+
+describe('cadence', () => {
+  it('polls every 20 minutes while visible, never while hidden, and on focus after 5 minutes', async () => {
+    const w = world();
+    let visible = true;
+    const { engine } = makeEngine({ ...w, visible: () => visible });
+    await engine.start();
+    expect(w.timers.pending()).toEqual([DRIVE_POLL_INTERVAL_MS]);
+
+    const listed = () => w.google.requests.filter((r) => r.path === '/drive/v3/changes').length;
+    const before = listed();
+    w.timers.advance(DRIVE_POLL_INTERVAL_MS);
+    await engine.syncNow();
+    expect(listed()).toBeGreaterThan(before);
+
+    visible = false;
+    await engine.onHidden();
+    expect(w.timers.pending()).toEqual([]);
+
+    visible = true;
+    w.clock.tick(DRIVE_FOCUS_POLL_MIN_GAP_MS - 1);
+    const beforeFocus = listed();
+    await engine.onVisible();
+    expect(listed()).toBe(beforeFocus);
+    w.clock.tick(2);
+    await engine.onVisible();
+    expect(listed()).toBe(beforeFocus + 1);
+  });
+
+  it('writes the page token to D1 only when changed, at most every 10 minutes, and on flush', async () => {
+    const w = world();
+    w.ld.createDiagram('d1', 'Plan');
+    const { engine } = makeEngine(w);
+    await engine.start();
+    const saved = () => w.ld.connection!.pageToken;
+    const afterStart = saved();
+
+    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, 'X.livediagram');
+    await engine.syncNow();
+    expect(saved()).toBe(afterStart);
+
+    w.clock.tick(DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS);
+    await engine.syncNow();
+    expect(saved()).not.toBe(afterStart);
+
+    const t = saved();
+    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, 'Y.livediagram');
+    await engine.syncNow();
+    expect(saved()).toBe(t);
+    await engine.flush();
+    // The flush pass does not read changes; it persists what the last read got.
+    expect(saved()).not.toBe(t);
+  });
+
+  it('backs off on a rate limit: status says so and the poll interval doubles', async () => {
+    const w = world();
+    w.ld.createDiagram('d1', 'Plan');
+    const { engine, statuses } = makeEngine(w);
+    await engine.start();
+    w.google.fail({ status: 403, reason: 'userRateLimitExceeded' });
+    await engine.syncNow();
+    expect(statuses.at(-1)).toMatchObject({ error: 'rate_limited' });
+    expect(w.timers.pending()).toEqual([2 * DRIVE_POLL_INTERVAL_MS]);
+    await engine.syncNow();
+    expect(statuses.at(-1)).toMatchObject({ error: null });
+  });
+
+  it('reports offline when Google is unreachable, and resumes on the next trigger', async () => {
+    const w = world();
+    const { engine, statuses } = makeEngine(w);
+    await engine.start();
+    const fetchBefore = w.google.fetch;
+    Object.assign(w.google, { handle: () => Promise.reject(new TypeError('Failed to fetch')) });
+    await engine.syncNow();
+    expect(statuses.at(-1)).toMatchObject({ error: 'offline' });
+    expect(fetchBefore).toBeDefined();
+  });
+});
+
+describe('tokens', () => {
+  it('turns needs_reconnect when the api answers drive_needs_reconnect, once', async () => {
+    const w = world();
+    const tokens = createBrokerTokenSource({
+      fetchToken: async () => {
+        throw new ApiError('drive token', 409, 'drive_needs_reconnect');
+      },
+      now: () => w.clock.now,
+    });
+    const { engine, statuses, events } = makeEngine({ ...w, tokens });
+    await engine.start();
+    await engine.syncNow();
+    expect(statuses.at(-1)!.state).toBe('needs_reconnect');
+    expect(events.filter((e) => e === 'ReconnectNeeded')).toHaveLength(1);
+  });
+
+  it('browser-only mode asks to Resume sync when the token lapses', async () => {
+    const w = world();
+    const tokens = createBrowserTokenSource({ now: () => w.clock.now });
+    tokens.set({
+      accessToken: w.google.issueAccessToken(OWNER),
+      expiresAt: w.clock.now + 60 * MIN,
+    });
+    const { engine, statuses } = makeEngine({ ...w, tokens });
+    await engine.start();
+    expect(statuses.at(-1)!.state).toBe('idle');
+    w.clock.tick(60 * MIN);
+    await engine.syncNow();
+    expect(statuses.at(-1)!.state).toBe('needs_resume');
+    tokens.set({
+      accessToken: w.google.issueAccessToken(OWNER),
+      expiresAt: w.clock.now + 60 * MIN,
+    });
+    await engine.syncNow();
+    expect(statuses.at(-1)!.state).toBe('idle');
+  });
+
+  it('says disconnected when there is no connection', async () => {
+    const w = world();
+    w.ld.connection = null;
+    const { engine, statuses } = makeEngine(w);
+    await engine.start();
+    expect(statuses.at(-1)!.state).toBe('disconnected');
+  });
+});
+
+describe('folders livediagram cannot see', () => {
+  it('adopting the picked folder makes the matching folder and moves the diagram in; it then syncs both ways', async () => {
+    const w = world();
+    w.ld.createFolderAs('f1', 'Work');
+    w.ld.createDiagram('d1', 'Plan', 'f1');
+    const { engine, statuses } = makeEngine(w);
+    await engine.start();
+    w.clock.tick(MIN);
+    const hidden = w.google.userCreateFolder(
+      OWNER,
+      'Clients',
+      fileOf(w.google, w.ld, 'folder', 'f1')!.id,
+    );
+    w.google.userMove(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, hidden);
+    await engine.syncNow();
+    expect(statuses.at(-1)!.notices).toHaveLength(1);
+
+    // The Picker grants access to the folder itself.
+    w.google.grantAccess(OWNER, hidden);
+    await engine.adoptFolder('diagram', 'd1', hidden);
+    const adopted = [...w.ld.folders.values()].find((f) => f.name === 'Clients')!;
+    expect(adopted.parentId).toBe('f1');
+    expect(w.ld.diagram('d1')!.folderId).toBe(adopted.id);
+    expect(w.ld.item('diagram', 'd1')!.notice).toBeNull();
+    expect(statuses.at(-1)!.notices).toEqual([]);
+    expect(w.google.get(hidden)!.appProperties).toMatchObject({ ldFolderId: adopted.id });
+
+    // From then on it syncs like any other folder.
+    w.google.userRename(hidden, 'Customers');
+    await engine.syncNow();
+    expect(w.ld.folders.get(adopted.id)!.name).toBe('Customers');
+    await w.ld.port().renameFolder(adopted.id, 'Accounts');
+    await engine.syncNow();
+    expect(w.google.get(hidden)!.name).toBe('Accounts');
+  });
+});
+
+describe('disconnect and reconnect', () => {
+  it('a reconnect finds the root again and matches existing files instead of copying them', async () => {
+    const w = world();
+    w.ld.createFolderAs('f1', 'Work');
+    w.ld.createDiagram('d1', 'Plan', 'f1');
+    const first = makeEngine(w);
+    await first.engine.start();
+    first.engine.stop();
+    const root = w.ld.connection!.rootFolderId;
+    const files = w.google.appFiles(OWNER).length;
+
+    // Disconnect: rows go, Drive files stay.
+    w.ld.connection = null;
+    w.ld.items.clear();
+    w.ld.connection = {
+      status: 'connected',
+      hasRefreshToken: true,
+      rootFolderId: null,
+      pageToken: null,
+      pageTokenSavedAt: null,
+      connectedAt: w.clock.tick(MIN),
+    };
+    const second = makeEngine(w);
+    await second.engine.start();
+    expect(w.ld.connection!.rootFolderId).toBe(root);
+    expect(w.google.appFiles(OWNER).length).toBe(files);
+    expect(w.ld.items.size).toBe(2);
+  });
+});

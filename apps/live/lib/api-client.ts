@@ -62,3 +62,4 @@ export * from './api/preferences';
 export * from './api/ai';
 export * from './api/unfurl';
 export * from './api/trash';
+export * from './api/drive';

@@ -198,8 +198,8 @@ the same result, so the mirror handles this openly, never silently:
 - The diagram moves to **Unsorted**, and a notice in the Drive panel (and on
   the diagram's Explorer row) says so: "Moved in Drive to a folder livediagram
   can't see." The notice is kept on the item row, so every device shows it; it
-  clears when the diagram is moved again from either side, when the folder is
-  adopted, or when the user dismisses it. A folder moved into one is placed at
+  clears when the diagram is moved again from either side, or when the folder
+  is adopted. Until then the file stays where the user put it in Drive. A folder moved into one is placed at
   the top level with the same notice in the panel.
 - **Adopting a folder:** the notice offers **Show this folder to livediagram**,
   which opens the Google Picker with folder selection. Picking the folder
