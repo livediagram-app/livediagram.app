@@ -19,9 +19,14 @@ lets you jump the viewport anywhere with a tap or drag.
   free-floating map contradicts that intent, so it doesn't render there at all. It **stacks** with the Activity panel in the bottom-left rather than
   hiding behind it (the docking layout reflows them); the old "defer until
   Activity is minimised" rule is gone.
-- **Enable / disable + reset.** The map's preferences (**Show Minimap**, **Dim
-  Outside the View**, **Minimap Size**) live in the **Settings** dialog
-  ([User preferences](../007-editor/user-preferences.md)), Appearance for the first, Panels > Minimap for the other two.
+- **Enable / disable + reset.** The map's preferences (**Show Map**, **Dim
+  Outside the View**, **Map Size**) live in the **Settings** dialog
+  ([User preferences](../007-editor/user-preferences.md)), under Panels › Map.
+- **Named "Map" everywhere a user reads it**: the panel title, the Settings
+  rows and sub-category, and the help centre. "Minimap" survives only in code
+  identifiers, stored preference keys (`showMinimap`), telemetry tokens, the
+  help article's URL, and search keywords, so existing links, data and
+  dashboards keep working and a reader typing "minimap" still finds it.
   The panel header keeps only the standard **Reset position** button, shown
   once the map has left its default corner. It used to carry a settings gear
   of its own; that popover was removed when every preference was centralised,

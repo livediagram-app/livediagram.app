@@ -245,9 +245,11 @@ const RevertIcon = lucideGlyph(lucideUndo2, 10);
 
 // Clock-with-counter-clockwise-arrow — the universal "history" icon.
 // Lines up with the Activity panel's role as the editorial timeline.
-export function ActivityIcon() {
+// `size` defaults to the panel header's 20px; Settings draws it at 16 beside
+// its Activity sub-category.
+export function ActivityIcon({ size = 20 }: { size?: number } = {}) {
   return (
-    <Glyph size={20} units={20}>
+    <Glyph size={size} units={20}>
       <path d="M3.5 6.5A6.5 6.5 0 1 1 3 10.5" />
       <path d="M3 3.5V6.5H6" />
       <path d="M10 6.5V10.5L12.75 12" />

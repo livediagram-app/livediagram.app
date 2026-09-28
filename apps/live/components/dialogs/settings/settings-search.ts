@@ -1,4 +1,8 @@
-import type { SettingsCategorySpec, SettingsRowSpec } from './settings-catalogue';
+import {
+  settingsCategoryPath,
+  type SettingsCategorySpec,
+  type SettingsRowSpec,
+} from './settings-catalogue';
 
 // Search across the settings catalogue (docs/specs/007-editor/user-preferences.md). Pure, so the matching rules
 // are testable without rendering a dialog.
@@ -7,8 +11,8 @@ import type { SettingsCategorySpec, SettingsRowSpec } from './settings-catalogue
 // eight categories is the slow path for someone who already knows roughly
 // what they want. Search collapses that: type "dark", get Theme.
 //
-// A row's haystack deliberately includes its CATEGORY and SECTION labels as
-// well as its own text, so "privacy" finds the telemetry row and "layers"
+// A row's haystack deliberately includes its CATEGORY PATH (a sub-category's
+// parent too) and SECTION labels as well as its own text, so "privacy" finds the telemetry row and "layers"
 // finds all three layer rows, without either word appearing in the row's own
 // label. `keywords` carries the synonyms a reader is likely to reach for but
 // which the UI never says, "dark mode" for Theme, "transparency" for panel
@@ -28,7 +32,13 @@ export type SettingsSearchResult = {
 const MIN_QUERY = 2;
 
 function haystack(row: SettingsRowSpec, category: SettingsCategorySpec): string {
-  return [category.label, row.section ?? '', row.label, row.description, row.keywords ?? '']
+  return [
+    settingsCategoryPath(category),
+    row.section ?? '',
+    row.label,
+    row.description,
+    row.keywords ?? '',
+  ]
     .join(' ')
     .toLowerCase();
 }

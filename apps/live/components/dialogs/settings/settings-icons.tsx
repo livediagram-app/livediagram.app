@@ -1,4 +1,4 @@
-// The six category glyphs for the Settings list, drawn iOS-style: a white
+// The category glyphs for the Settings list, drawn iOS-style: a white
 // line-art mark on a filled, rounded colour tile. The tile colour is the
 // thing the eye actually navigates by once the labels blur together, so each
 // category owns a distinct hue and keeps it in both the mobile root list and
@@ -9,13 +9,16 @@
 // sized for a 28px tile and stroked to read at that size.
 
 import type { ReactNode } from 'react';
-import { Glyph } from '@livediagram/ui';
+import { Glyph, lucideGlyph } from '@livediagram/ui';
+import { lucideLayers, lucideMap } from '@livediagram/icons/lucide';
+import { ActivityIcon } from '@/components/panels/activity-panel-parts';
 
-export type SettingsCategoryId =
+// The categories that carry a tile: every top-level one. A sub-category
+// (Layers, Activity, Map under Panels) draws none of its own.
+export type SettingsIconId =
   | 'account'
   | 'editor'
   | 'appearance'
-  | 'controls'
   | 'keyboard'
   | 'panels'
   | 'notifications'
@@ -23,15 +26,20 @@ export type SettingsCategoryId =
   | 'ai'
   | 'privacy';
 
+// The sub-categories, nested under a top-level category (Panels).
+export type SettingsSubcategoryId = 'layers' | 'activity' | 'map';
+
+// Every category, top-level and sub-category alike: each opens its own pane.
+export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
+
 // Tailwind classes rather than hexes so the tiles follow the same dark-mode
 // pass as the rest of the chrome. Each hue is distinct at a glance AND when
 // desaturated, so the list stays navigable for a colour-blind reader, the
 // glyphs differ too, the colour is a second channel, never the only one.
-const TILE: Record<SettingsCategoryId, string> = {
+const TILE: Record<SettingsIconId, string> = {
   account: 'bg-teal-600',
   editor: 'bg-blue-500',
   appearance: 'bg-sky-600',
-  controls: 'bg-slate-500',
   keyboard: 'bg-orange-500',
   panels: 'bg-amber-500',
   notifications: 'bg-rose-500',
@@ -41,7 +49,7 @@ const TILE: Record<SettingsCategoryId, string> = {
 };
 
 // One tile: the coloured rounded square with its glyph centred.
-export function SettingsCategoryIcon({ id }: { id: SettingsCategoryId }) {
+export function SettingsCategoryIcon({ id }: { id: SettingsIconId }) {
   return (
     <span
       aria-hidden
@@ -66,16 +74,6 @@ const EditorGlyph = (
   <Svg>
     <rect x="2.5" y="3.5" width="15" height="13" rx="2" />
     <path d="M12 3.5v13" />
-  </Svg>
-);
-
-// Controls: a pointer. A mouse outline was the obvious draw for a group
-// about middle-mouse panning, but a rounded capsule with a wheel line inside
-// reads as a hollow "0" once it is shrunk to a 16px tile.
-const ControlsGlyph = (
-  <Svg>
-    <path d="M4.5 3.2 15 9.4l-4.3 1.1-1.5 4.4L4.5 3.2Z" />
-    <path d="m11.4 12.1 3.6 4.2" />
   </Svg>
 );
 
@@ -148,11 +146,10 @@ const PrivacyGlyph = (
   </Svg>
 );
 
-export const CATEGORY_GLYPHS: Record<SettingsCategoryId, ReactNode> = {
+export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
   account: AccountGlyph,
   editor: EditorGlyph,
   appearance: AppearanceGlyph,
-  controls: ControlsGlyph,
   keyboard: KeyboardGlyph,
   panels: PanelsGlyph,
   notifications: NotificationsGlyph,
@@ -160,3 +157,29 @@ export const CATEGORY_GLYPHS: Record<SettingsCategoryId, ReactNode> = {
   ai: AiGlyph,
   privacy: PrivacyGlyph,
 };
+
+// A sub-category's glyph: the same mark its panel carries in the editor, so
+// the row is recognisable as that panel's settings. Layers and Activity are
+// the toolbar's own (Lucide layers, as LayersStackIcon; the Activity panel's
+// clock), at 16px. The Map has no toolbar button, so it takes Lucide's map
+// from the same family. Plain and untinted, not a tile: the tile belongs to
+// the top-level category above, and a second column of tiles would read as
+// more top-level categories.
+const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
+const MapSubGlyph = lucideGlyph(lucideMap, 16);
+const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
+  layers: () => <LayersSubGlyph />,
+  activity: () => <ActivityIcon size={16} />,
+  map: () => <MapSubGlyph />,
+};
+
+export function SettingsSubcategoryIcon({ id }: { id: SettingsSubcategoryId }) {
+  return (
+    <span
+      aria-hidden
+      className="flex h-4 w-4 shrink-0 items-center justify-center text-slate-500 dark:text-slate-400"
+    >
+      {SUBCATEGORY_GLYPHS[id]()}
+    </span>
+  );
+}

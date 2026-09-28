@@ -18,7 +18,7 @@ describe('presetSummaryLines', () => {
     const prefs = setPowerUserMode({}, true).prefs;
     const lines = presetSummaryLines(prefs, ALL);
     expect(lines.map((l) => [l.label, l.value, l.categoryLabel])).toEqual([
-      ['Panel Layout', 'Toolbar', 'Appearance'],
+      ['Panel Layout', 'Toolbar', 'Panels'],
       ['Alignment Guides', 'On', 'Editor'],
       ['Auto-Attach Arrows', 'On', 'Editor'],
       ['Show Welcome Tour', 'Off', 'Accessibility'],

@@ -51,7 +51,7 @@ test('Settings reopens on the last category and row, across a resize', async ({
   await dismissQuickTour(page);
 
   await openSettings(page);
-  await dialog(page).getByRole('button', { name: 'Appearance' }).click();
+  await dialog(page).getByRole('button', { name: 'Editor' }).click();
   const scroller = dialog(page)
     .locator('[data-settings-row]')
     .first()
@@ -61,15 +61,17 @@ test('Settings reopens on the last category and row, across a resize', async ({
   const leftAt = await topRow(scroller);
   // Below the first row, so rows above it reflow and a pixel offset would drift.
   expect(leftAt.key).not.toBe('');
-  expect(leftAt.key).not.toBe('appearance');
+  expect(leftAt.key).not.toBe('quickAddOnHover');
   const leftScrollTop = await scroller.evaluate((el) => el.scrollTop);
   await page.keyboard.press('Escape');
   await expect(dialog(page)).toBeHidden();
 
-  // Narrower and shorter: every row reflows, so a pixel offset would miss.
-  await page.setViewportSize({ width: 680, height: 600 });
+  // Narrower and shorter: the rows above the anchor reflow (660 is narrow
+  // enough to wrap Editor's first footnote onto another line while staying
+  // above the phone breakpoint), so a pixel offset would miss.
+  await page.setViewportSize({ width: 660, height: 600 });
   await openSettings(page);
-  await expect(dialog(page).getByRole('switch', { name: 'Show Minimap' })).toBeVisible();
+  await expect(dialog(page).getByRole('switch', { name: 'Middle-Mouse Pan' })).toBeVisible();
   await expect(async () => {
     const back = await topRow(scroller);
     expect(back.key).toBe(leftAt.key);
@@ -86,7 +88,8 @@ test('Settings reopens on the last category and row, across a resize', async ({
 // anchor on the first frames of that (a ResizeObserver fires on observe).
 // Rects are shrunk by the scale but scrollTop is not, so an unscaled measure
 // lands short by 4% of how far the row's top sits above the pane: several
-// pixels deep inside a tall row, as Appearance's first row is.
+// pixels deep inside a tall row, as Editor's Alignment Guides row (with its
+// drawing) is once the pane is scrolled to the end.
 test('Settings reopens deep inside a tall row without drifting', async ({ page, pageErrors }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 720 });
@@ -96,20 +99,19 @@ test('Settings reopens deep inside a tall row without drifting', async ({ page, 
   await dismissQuickTour(page);
 
   await openSettings(page);
-  await dialog(page).getByRole('button', { name: 'Appearance' }).click();
+  await dialog(page).getByRole('button', { name: 'Editor' }).click();
   const scroller = dialog(page)
     .locator('[data-settings-row]')
     .first()
     .locator('xpath=ancestor::div[contains(@class, "overflow-y-auto")][1]');
   await scroller.hover();
-  await page.mouse.wheel(0, 200);
-  await expect.poll(() => scroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(150);
+  await scrollToEnd(page, scroller);
   await page.evaluate(
     () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
   );
   const leftAt = await topRow(scroller);
-  expect(leftAt.key).toBe('appearance');
-  expect(leftAt.offset).toBeLessThan(-150);
+  expect(leftAt.key).toBe('alignmentGuides');
+  expect(leftAt.offset).toBeLessThan(-120);
   await page.keyboard.press('Escape');
   await expect(dialog(page)).toBeHidden();
 
