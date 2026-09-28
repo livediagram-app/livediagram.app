@@ -18,12 +18,11 @@ export function PaletteDragGhost({ zoom }: { zoom: number }) {
   // Live cursor + whether it's over a valid drop target (the canvas, not a
   // floating panel). Reset whenever a drag isn't in progress.
   const [cursor, setCursor] = useState<{ x: number; y: number; over: boolean } | null>(null);
+  // A finished drag forgets its cursor, so the next one starts from none.
+  if (!preview && cursor) setCursor(null);
 
   useEffect(() => {
-    if (!preview) {
-      setCursor(null);
-      return;
-    }
+    if (!preview) return;
     const onDragOver = (e: DragEvent) => {
       const target = e.target as Element | null;
       // Panels live inside the canvas <main> for layout, so a drag back over

@@ -35,14 +35,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 const LOAD_TIMEOUT_MS = 8000;
 
 export function useFrameBlocked(src: string | undefined): {
-  ref: React.RefObject<HTMLIFrameElement | null>;
   /** The frame never loaded. NOT "the site refused to be framed" — see above. */
   failed: boolean;
   onLoad: () => void;
   /** Clears the verdict so a retry starts from scratch. */
   reset: () => void;
 } {
-  const ref = useRef<HTMLIFrameElement | null>(null);
   const [failed, setFailed] = useState(false);
   // The pending backstop, in a ref so `onLoad` can cancel it. Without that
   // cancel it fires on every embed regardless of outcome.
@@ -50,9 +48,11 @@ export function useFrameBlocked(src: string | undefined): {
 
   // A new URL is a new question: whatever we concluded about the last one
   // says nothing about this one.
-  useEffect(() => {
+  const [askedAbout, setAskedAbout] = useState(src);
+  if (src !== askedAbout) {
+    setAskedAbout(src);
     setFailed(false);
-  }, [src]);
+  }
 
   useEffect(() => {
     if (!src) return;
@@ -75,5 +75,5 @@ export function useFrameBlocked(src: string | undefined): {
 
   const reset = useCallback(() => setFailed(false), []);
 
-  return { ref, failed, onLoad, reset };
+  return { failed, onLoad, reset };
 }

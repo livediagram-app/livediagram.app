@@ -7,7 +7,7 @@
 // the slice the Avatar Panel edits and the sprite reads — it outlives any one
 // walk, and it is the only avatar state that persists at all.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import {
   hasStoredAvatarConfig,
   loadAvatarConfig,
@@ -31,11 +31,13 @@ export function useAvatarConfig({ active }: { active: boolean }) {
   // mode never has a character written for them, and done in an effect (not the
   // state initialiser) so the write happens once, after commit, rather than
   // during a render React may discard.
-  useEffect(() => {
-    if (!active) return;
+  // Only the entry edge matters (later changes persist through setConfig), so
+  // the pin reads the config as an effect event.
+  const pinFirstRoll = useEffectEvent(() => {
     if (!hasStoredAvatarConfig()) saveAvatarConfig(config);
-    // Only the entry edge matters; later changes persist through setConfig.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
+  useEffect(() => {
+    if (active) pinFirstRoll();
   }, [active]);
 
   // Persist on every change (the panel edits one field at a time), and tell

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_BUTTON_MODE,
   isAnimatedPattern,
@@ -62,7 +62,7 @@ import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
 import type { Reaction } from '@livediagram/diagram';
-import { makePortalTravel } from '@/components/canvas/portal-travel';
+import { usePortalTravel } from '@/components/canvas/portal-travel';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { Portal } from '@/components/primitives/Portal';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
@@ -169,8 +169,9 @@ export function Canvas(props: CanvasProps) {
   // / up listeners and the rect-vs-element marquee intersection,
   // exposes pan / marquee state + setters back so the canvas's
   // own pointerdown handlers can drive it, and exposes the
-  // spaceHeldRef the pointerdown reads to decide pan vs marquee.
-  const { pan, setPan, marquee, setMarquee, spaceHeldRef } = useCanvasPanAndMarquee({
+  // spaceHeldRef the pointerdown reads to decide pan vs marquee (and
+  // spaceHeld, its state twin, for the cursor).
+  const { pan, setPan, marquee, setMarquee, spaceHeldRef, spaceHeld } = useCanvasPanAndMarquee({
     viewportZoom,
     setViewportOffset,
     elements,
@@ -369,13 +370,14 @@ export function Canvas(props: CanvasProps) {
   // Keyed on the sequence number, not the vector, so two identical shoves in a
   // row both land.
   const lastShoveRef = useRef<number | null>(null);
+  // `avatar` is a fresh object every render; the shove is the trigger, so the
+  // push itself is an effect event.
+  const applyShove = useEffectEvent((dx: number, dy: number) => avatar.shove(dx, dy));
   useEffect(() => {
     const shove = props.avatarShove;
     if (!shove || shove.seq === lastShoveRef.current) return;
     lastShoveRef.current = shove.seq;
-    avatar.shove(shove.dx, shove.dy);
-    // `avatar` is a fresh object every render; the shove is the trigger.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    applyShove(shove.dx, shove.dy);
   }, [props.avatarShove]);
 
   // Bounds of whatever the avatar is standing on, for its "you are here" ring.
@@ -384,7 +386,7 @@ export function Canvas(props: CanvasProps) {
     const el = elements.find((e) => e.id === avatar.standingOnId);
     return el && isBoxed(el) ? { x: el.x, y: el.y, width: el.width, height: el.height } : null;
   }, [avatar.standingOnId, elements]);
-  const { enterPortal, resolvePortal } = makePortalTravel({
+  const { enterPortal, resolvePortal } = usePortalTravel({
     elements,
     tabs: props.portalTabs,
     activeTabId: props.activeTabId,
@@ -395,7 +397,7 @@ export function Canvas(props: CanvasProps) {
     teleportTo: avatar.teleportTo,
   });
   // Portals (docs/specs/009-elements/portal-element.md): the camera centres on the paired portal and the walking
-  // character steps out of it — see makePortalTravel.
+  // character steps out of it — see usePortalTravel.
   //
   // `enterPortal` needs the avatar hook (to place the character) and the hook
   // needs `enterPortal` (for the walk-in), so the callback goes through a ref:
@@ -413,7 +415,7 @@ export function Canvas(props: CanvasProps) {
     pan: !!pan,
     marquee: !!marquee,
     canvasTool,
-    spaceHeld: spaceHeldRef.current,
+    spaceHeld,
     isPaintMode,
   });
 

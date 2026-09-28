@@ -190,15 +190,16 @@ export function QuickConnectRing({
   // off for exit).
   const [rendered, setRendered] = useState(false);
   const [active, setActive] = useState(false);
+  // Opening mounts the options at once; closing starts their exit at once.
+  if (open && !rendered) setRendered(true);
+  if (!open && active) setActive(false);
   useEffect(() => {
     if (open) {
-      setRendered(true);
       // Flip to active on the next frame so the enter transition runs
       // from the hidden start state rather than snapping to shown.
       const r = requestAnimationFrame(() => setActive(true));
       return () => cancelAnimationFrame(r);
     }
-    setActive(false);
     const t = setTimeout(() => setRendered(false), EXIT_MS);
     return () => clearTimeout(t);
   }, [open]);

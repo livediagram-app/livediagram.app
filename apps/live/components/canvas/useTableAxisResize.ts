@@ -64,7 +64,7 @@ export function useTableAxisResize({
     [],
   );
 
-  const startAxisResize = (axis: 'col' | 'row') => (index: number) => (e: React.PointerEvent) => {
+  const startAxisResize = (axis: 'col' | 'row', index: number, e: React.PointerEvent) => {
     if (!enabled) return;
     e.preventDefault();
     e.stopPropagation();
@@ -118,7 +118,8 @@ export function useTableAxisResize({
     armedResize,
     armResizeEnter,
     armResizeLeave,
-    startColResize: startAxisResize('col'),
-    startRowResize: startAxisResize('row'),
+    // Per-divider handlers, built without running anything until the press.
+    startColResize: (index: number) => (e: React.PointerEvent) => startAxisResize('col', index, e),
+    startRowResize: (index: number) => (e: React.PointerEvent) => startAxisResize('row', index, e),
   };
 }

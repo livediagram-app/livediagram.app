@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { elementKindLabel, type Element } from '@livediagram/diagram';
 import { PortalMenu, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { HoverCard, Glyph } from '@livediagram/ui';
@@ -65,7 +65,8 @@ type SelectionFilterMenuProps = {
 // to narrow (a single-kind selection).
 export function SelectionFilterMenu({ selectedElements, onFilter }: SelectionFilterMenuProps) {
   const [open, setOpen] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  // The button the menu anchors to, held in state so the menu has it on the render that opens it.
+  const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
 
   const groups = buildFilterGroups(selectedElements);
   // Nothing to filter when the selection is already a single kind.
@@ -75,7 +76,7 @@ export function SelectionFilterMenu({ selectedElements, onFilter }: SelectionFil
     <>
       <HoverCard title="Filter Selection" description="Keep only one kind of element.">
         <button
-          ref={buttonRef}
+          ref={setAnchor}
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-label="Filter selection by type"
@@ -91,7 +92,7 @@ export function SelectionFilterMenu({ selectedElements, onFilter }: SelectionFil
         </button>
       </HoverCard>
       {open ? (
-        <PortalMenu anchor={buttonRef.current} placement="below" onClose={() => setOpen(false)}>
+        <PortalMenu anchor={anchor} placement="below" onClose={() => setOpen(false)}>
           <MenuTileGrid cols={2}>
             {groups.map((g) => (
               <MenuTile

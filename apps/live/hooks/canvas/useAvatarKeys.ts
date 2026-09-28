@@ -90,8 +90,7 @@ export function useAvatarKeys({
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);
     };
-    // onSteer / onJump are reached through liveRef, so the effect only needs
-    // to re-attach when the mode flips.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active]);
+    // onSteer / onJump are reached through liveRef, so the effect only
+    // re-attaches when the mode flips (both refs are stable).
+  }, [active, heldRef, liveRef]);
 }

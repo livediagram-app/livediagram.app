@@ -172,15 +172,11 @@ export function TableView({
   };
   useEffect(() => cancelHoverClear, []);
 
-  useEffect(() => {
-    // A stale edit target can point past the grid after a row/column
-    // delete; the selection clamps live in useTableCellSelection.
-    if (editing && (editing.r >= rows || editing.c >= cols)) setEditing(null);
-  }, [editing, rows, cols]);
-
-  useEffect(() => {
-    if (!isSelected) setMenu(null);
-  }, [isSelected]);
+  // A stale edit target can point past the grid after a row/column
+  // delete; the selection clamps live in useTableCellSelection.
+  if (editing && (editing.r >= rows || editing.c >= cols)) setEditing(null);
+  // Deselecting the table closes its column / row menu.
+  if (!isSelected && menu) setMenu(null);
 
   // Close the column / row menus on a click anywhere that isn't a table
   // control (the triggers + menus carry data-table-ui). The cell context
