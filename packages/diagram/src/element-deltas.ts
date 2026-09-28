@@ -33,6 +33,7 @@ import {
   type ParticipantResponse,
 } from './responses';
 import { IDEA_MAX_CARDS, IDEA_MAX_TEXT } from './collab-shapes';
+import { MENTIONS_MAX } from './comment-mentions';
 
 // Bound on the round id, which is otherwise opaque.
 export const COLLAB_ROUND_MAX = 64;
@@ -76,7 +77,10 @@ export function isComment(value: unknown): value is Comment {
     c.text.length <= COMMENT_MAX_TEXT &&
     typeof c.createdAt === 'number' &&
     typeof c.authorName === 'string' &&
-    typeof c.authorColor === 'string'
+    typeof c.authorColor === 'string' &&
+    // Mentions (docs/specs/012-collaboration/comment-mentions.md), when present, are a bounded list; their
+    // fields are cleaned server-side (sanitizeMentions) before they persist.
+    (c.mentions === undefined || (Array.isArray(c.mentions) && c.mentions.length <= MENTIONS_MAX))
   );
 }
 

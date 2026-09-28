@@ -176,6 +176,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
+      "mentionsYou": {
+        "type": "boolean"
+      },
       "onYourDiagram": {
         "type": "boolean"
       },
@@ -217,6 +220,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "elementLabel",
       "firstAt",
       "latest",
+      "mentionsYou",
       "onYourDiagram",
       "shareCode",
       "tabId",
@@ -983,6 +987,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "type": "string"
       },
+      "mentions": {
+        "items": {
+          "$ref": "#/components/schemas/CommentMention"
+        },
+        "type": "array"
+      },
       "text": {
         "type": "string"
       }
@@ -993,6 +1003,32 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt",
       "authorName",
       "authorColor"
+    ],
+    "type": "object"
+  },
+  "CommentMention": {
+    "additionalProperties": false,
+    "properties": {
+      "handle": {
+        "type": "string"
+      },
+      "memberId": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "userId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "userId",
+      "name",
+      "handle"
     ],
     "type": "object"
   },

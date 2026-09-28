@@ -44,6 +44,9 @@ export type CollabThreadRow = {
   // Comments written before `authorId` existed contribute nothing here;
   // the thread still indexes, it just can't be attributed to them.
   participantIds: string[];
+  // Distinct user ids and team member ids @-mentioned anywhere in the thread
+  // (docs/specs/012-collaboration/comment-mentions.md), so the Activity page lists it for them.
+  mentionedIds: string[];
   latestText: string;
   latestAuthorName: string;
   latestAuthorColor: string;
@@ -99,7 +102,13 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
       let latest = comments[0]!;
       let first = comments[0]!;
       const participants: string[] = [];
+      const mentioned: string[] = [];
       for (const c of comments) {
+        for (const m of c.mentions ?? []) {
+          for (const id of [m.userId, m.memberId]) {
+            if (id && !mentioned.includes(id)) mentioned.push(id);
+          }
+        }
         if (c.createdAt > latest.createdAt) latest = c;
         if (c.createdAt < first.createdAt) first = c;
         if (c.authorId && !participants.includes(c.authorId)) participants.push(c.authorId);
@@ -110,6 +119,7 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
         resolved: thread.resolved === true,
         commentCount: comments.length,
         participantIds: participants,
+        mentionedIds: mentioned,
         latestText: latest.text,
         latestAuthorName: latest.authorName,
         latestAuthorColor: latest.authorColor,

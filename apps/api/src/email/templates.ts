@@ -43,6 +43,7 @@ export type EmailKind =
   | 'DiagramJoined'
   | 'CommentNotification'
   | 'ActionAssigned'
+  | 'Mentioned'
   | 'TokenExpiring'
   | 'AccountDeleted';
 
@@ -330,6 +331,51 @@ export function actionAssignedEmail(
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate assigned you an action.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+// docs/specs/012-collaboration/comment-mentions.md: a teammate @-mentioned the recipient in a comment. The
+// author and diagram name come from server state (the notify-mention route);
+// the quote is the author's own words, escaped and cut at a word.
+export const MENTION_QUOTE_CHARS = 280;
+
+export function mentionQuote(text: string): string {
+  const flat = text.trim().replace(/\s+/g, ' ');
+  if (flat.length <= MENTION_QUOTE_CHARS) return flat;
+  const cut = flat.slice(0, MENTION_QUOTE_CHARS);
+  const space = cut.lastIndexOf(' ');
+  return `${(space > MENTION_QUOTE_CHARS / 2 ? cut.slice(0, space) : cut).trimEnd()}…`;
+}
+
+export function mentionedEmail(
+  env: Env,
+  authorName: string | null,
+  diagramName: string,
+  diagramId: string,
+  commentText: string,
+): RenderedEmail {
+  const base = appBaseUrl(env);
+  const who = authorName && authorName.trim() ? escapeHtml(authorName.trim()) : 'A teammate';
+  const whoText = authorName && authorName.trim() ? escapeText(authorName.trim()) : 'A teammate';
+  const diagram =
+    diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'a shared diagram';
+  const diagramText =
+    diagramName && diagramName.trim() ? escapeText(diagramName.trim()) : 'a diagram';
+  return {
+    kind: 'Mentioned',
+    subject: `${whoText} mentioned you in ${diagramText}`,
+    html: shell({
+      heading: 'You were mentioned',
+      intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${diagram}</strong>:`,
+      outro: `“${escapeHtml(mentionQuote(commentText))}”`,
+      ctaText: 'Open the diagram',
+      ctaHref: `${base}/diagram/${encodeURIComponent(diagramId)}`,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because a teammate mentioned you in a comment.',
       ),
     }),
     unsubscribeUrl: profilePath(env),

@@ -24,6 +24,7 @@ import { emailEnabled, sendEmail } from './client';
 const COMMENT_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 import {
   actionAssignedEmail,
+  mentionedEmail,
   commentNotificationEmail,
   diagramJoinedEmail,
   inviteResponseEmail,
@@ -69,6 +70,41 @@ export async function notifyActionAssigned(
       input.diagram.id,
       input.actionName,
       input.description,
+    ),
+  });
+}
+
+// docs/specs/012-collaboration/comment-mentions.md: a teammate @-mentioned the recipient in a comment. Fired
+// by the notify-mention route after it verified the team, the diagram and the
+// recipient's membership. Opt-out (notifyMentions); an invited member with no
+// account has no prefs and is written to at their invite address.
+export async function notifyMentioned(
+  env: Env,
+  input: {
+    recipientUserId: string | null;
+    recipientFallbackEmail: string | null;
+    authorName: string | null;
+    diagram: { id: string; name: string };
+    commentText: string;
+  },
+): Promise<void> {
+  if (!emailEnabled(env)) return;
+  const to = input.recipientUserId
+    ? ((await getOwnerEmail(env, input.recipientUserId)) ?? input.recipientFallbackEmail)
+    : input.recipientFallbackEmail;
+  if (!to) return;
+  if (input.recipientUserId) {
+    const prefs = await getNotificationPrefs(env, input.recipientUserId);
+    if (!prefs.notifyMentions) return;
+  }
+  await sendEmail(env, {
+    to,
+    ...mentionedEmail(
+      env,
+      input.authorName,
+      input.diagram.name,
+      input.diagram.id,
+      input.commentText,
     ),
   });
 }
