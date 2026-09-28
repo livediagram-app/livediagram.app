@@ -45,6 +45,42 @@ export function isEstimateShape(kind: ShapeKind): boolean {
   return kind === 'estimate';
 }
 
+// Where a value sits on its scale, for sorting revealed cards low to high: the
+// scale's own order (so a t-shirt round reads XS .. XL), with anything off the
+// scale after it (docs/specs/012-collaboration/estimate-card.md "The two states").
+export function estimateRank(scale: EstimateScale | undefined, value: string): number {
+  const i = estimateValues(scale).indexOf(value);
+  return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+}
+
+// The spread the card calls out once revealed: nobody, everyone agreeing, or
+// the lowest and highest answers by the scale's order ('?' is an answer but
+// not an end of the spread). `low` / `high` are the values to ring, absent
+// when unanimous. Shared by the canvas face and the export.
+export type EstimateSpread =
+  | { kind: 'none' }
+  | { kind: 'unanimous'; value: string }
+  | { kind: 'range'; low: string; high: string };
+
+export function estimateSpread(
+  scale: EstimateScale | undefined,
+  values: readonly string[],
+): EstimateSpread {
+  if (values.length === 0) return { kind: 'none' };
+  const distinct = [...new Set(values)];
+  if (distinct.length === 1) return { kind: 'unanimous', value: distinct[0]! };
+  const sized = distinct.filter((v) => v !== '?');
+  if (sized.length <= 1) return { kind: 'unanimous', value: sized[0] ?? '?' };
+  const sorted = [...sized].sort((a, b) => estimateRank(scale, a) - estimateRank(scale, b));
+  return { kind: 'range', low: sorted[0]!, high: sorted[sorted.length - 1]! };
+}
+
+export function estimateSpreadLabel(spread: EstimateSpread): string {
+  if (spread.kind === 'none') return 'No answers';
+  if (spread.kind === 'unanimous') return `Unanimous · ${spread.value}`;
+  return `Spread ${spread.low} → ${spread.high}`;
+}
+
 // --- Temperature check (docs/specs/012-collaboration/temperature-check.md) -----------------------------------------
 
 // Fist-of-five, fixed. Not configurable: it is a named ritual with a shared

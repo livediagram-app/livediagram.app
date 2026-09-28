@@ -275,8 +275,9 @@ export function AccentBar({
       {children}
     </button>
   );
+  // `block`: the bar spans its row wherever it sits (a board body, a footer).
   return hoverCard ? (
-    <HoverCard title={hoverCard.title} description={hoverCard.description}>
+    <HoverCard block title={hoverCard.title} description={hoverCard.description}>
       {bar}
     </HoverCard>
   ) : (

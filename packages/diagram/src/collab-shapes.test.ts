@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  estimateSpread,
+  estimateSpreadLabel,
+  estimateRank,
   temperatureMood,
   temperaturePosition,
   supportsMarkers,
@@ -293,5 +296,26 @@ describe('temperature mood', () => {
     expect(temperaturePosition(1)).toBe(0);
     expect(temperaturePosition(3)).toBe(0.5);
     expect(temperaturePosition(5)).toBe(1);
+  });
+});
+
+// The estimate card's spread (docs/specs/012-collaboration/estimate-card.md "The two states").
+describe('estimate spread', () => {
+  it('orders by the scale, so a t-shirt round reads small to large', () => {
+    expect(estimateRank('tshirt', 'XS')).toBeLessThan(estimateRank('tshirt', 'XL'));
+    expect(estimateRank('fibonacci', '13')).toBeGreaterThan(estimateRank('fibonacci', '8'));
+  });
+
+  it('names nobody, agreement, and the ends of a spread', () => {
+    expect(estimateSpread('fibonacci', [])).toEqual({ kind: 'none' });
+    expect(estimateSpreadLabel(estimateSpread('fibonacci', ['5', '5']))).toBe('Unanimous · 5');
+    expect(estimateSpread('fibonacci', ['13', '3', '5', '?'])).toEqual({
+      kind: 'range',
+      low: '3',
+      high: '13',
+    });
+    expect(estimateSpreadLabel(estimateSpread('tshirt', ['L', 'S']))).toBe('Spread S → L');
+    // A lone number beside a '?' is agreement on the one size anyone gave.
+    expect(estimateSpread('fibonacci', ['8', '?'])).toEqual({ kind: 'unanimous', value: '8' });
   });
 });

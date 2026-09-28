@@ -102,44 +102,6 @@ export function CardButton({
   );
 }
 
-/** A pressable value chip, as the estimate and temperature cards draw their
- *  scales. */
-function Chip({
-  x,
-  y,
-  value,
-  mine = false,
-}: {
-  x: number;
-  y: number;
-  value: string;
-  mine?: boolean;
-}) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={26}
-        height={22}
-        rx={6}
-        className={mine ? 'fill-brand-500 stroke-brand-600' : 'fill-slate-50 stroke-slate-300'}
-        strokeWidth={1.5}
-      />
-      <Label
-        x={x + 13}
-        y={y + 12}
-        anchor="middle"
-        size={11}
-        weight={700}
-        tone={mine ? 'onAccent' : 'body'}
-      >
-        {value}
-      </Label>
-    </g>
-  );
-}
-
 // --- Scenes ------------------------------------------------------------------
 
 /** The Collaborate tab: the comment panel loose at the top, then the two
@@ -243,28 +205,86 @@ export function CommentPanelCard() {
  *  said. */
 export function EstimateCard() {
   const x = 100;
-  const y = 14;
+  const y = 12;
   const w = 220;
+  const values = ['1', '2', '3', '5', '8', '13', '21', '?'];
+  const cw = 22;
+  const gap = 3;
+  const left = x + (w - (cw * values.length + gap * (values.length - 1))) / 2;
+  const cx = x + w / 2;
+  const hands = [
+    { initial: 'R', colour: 'emerald' as const },
+    { initial: 'P', colour: 'violet' as const },
+    { initial: 'J', colour: 'amber' as const },
+  ];
   return (
-    <Scene w={420} h={210}>
-      <CollabCard x={x} y={y} w={w} h={182} title="Login rework" aside="3/5 answered">
-        {['1', '2', '3', '5', '8', '13', '21', '?'].map((v, i) => (
-          <Chip
-            key={v}
-            x={x + 14 + (i % 6) * 32}
-            y={y + 42 + Math.floor(i / 6) * 28}
-            value={v}
-            mine={v === '5'}
-          />
-        ))}
-        <Label x={x + 14} y={y + 108} size={8} weight={700} tone="muted">
-          ANSWERED
+    <Scene w={420} h={214}>
+      <CollabCard x={x} y={y} w={w} h={190} title="Login rework" aside="3/5 ANSWERED">
+        {/* The one action, the dashed accent bar. */}
+        <rect
+          x={x + 12}
+          y={y + 40}
+          width={w - 24}
+          height={20}
+          rx={7}
+          className="fill-brand-50 stroke-brand-300"
+          strokeWidth={1.2}
+          strokeDasharray="4 3"
+        />
+        <Label x={cx} y={y + 50} anchor="middle" size={9} weight={600} tone="accent">
+          Reveal (3)
         </Label>
-        <Avatar cx={x + 26} cy={y + 130} r={11} initial="R" colour="emerald" />
-        <Avatar cx={x + 56} cy={y + 130} r={11} initial="P" colour="violet" />
-        <Avatar cx={x + 86} cy={y + 130} r={11} initial="J" colour="amber" />
-        <CardButton x={x + 14} y={y + 148} w={96} label="Reveal" loud />
-        <CardButton x={x + 118} y={y + 148} w={88} label="Clear" />
+        {/* The scale as cards, yours lifted in the accent. */}
+        {values.map((v, i) => {
+          const mine = v === '5';
+          const bx = left + i * (cw + gap);
+          return (
+            <g key={v}>
+              <rect
+                x={bx}
+                y={y + (mine ? 66 : 68)}
+                width={cw}
+                height={30}
+                rx={6}
+                className={mine ? 'fill-brand-500' : 'fill-slate-50 stroke-slate-200'}
+                strokeWidth={1.2}
+              />
+              <Label
+                x={bx + cw / 2}
+                y={y + (mine ? 81 : 83)}
+                anchor="middle"
+                size={9.5}
+                weight={700}
+                tone={mine ? 'onAccent' : 'strong'}
+              >
+                {v}
+              </Label>
+            </g>
+          );
+        })}
+        {/* Who has answered: face-down cards with their avatars. */}
+        {hands.map((h, i) => {
+          const hx = cx - 36 + i * 26;
+          return (
+            <g key={h.initial}>
+              <rect
+                x={hx}
+                y={y + 110}
+                width={20}
+                height={28}
+                rx={5}
+                className="fill-brand-100 stroke-brand-300"
+                strokeWidth={1}
+              />
+              <Avatar cx={hx + 10} cy={y + 140} r={6} initial={h.initial} colour={h.colour} />
+            </g>
+          );
+        })}
+        <Label x={cx} y={y + 160} anchor="middle" size={8} weight={600} tone="muted">
+          3 of 5 in
+        </Label>
+        <rect x={cx - 50} y={y + 167} width={100} height={4} rx={2} className="fill-slate-100" />
+        <rect x={cx - 50} y={y + 167} width={60} height={4} rx={2} className="fill-brand-500" />
       </CollabCard>
     </Scene>
   );

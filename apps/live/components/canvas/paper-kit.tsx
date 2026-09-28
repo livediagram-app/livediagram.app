@@ -150,49 +150,6 @@ export function Perforation({
   );
 }
 
-/**
- * A rubber stamp: rotated, double-ruled, wide-tracked capitals.
- *
- * Rotation is the whole effect. Square to the card it is a badge; a few
- * degrees off and it is something a person pressed onto the page.
- */
-export function Stamp({
-  textColor,
-  children,
-  rotate = -8,
-  strength = 1,
-}: {
-  textColor: string;
-  children: React.ReactNode;
-  rotate?: number;
-  /** 0-1, for a stamp that has been pressed lightly (an undecided record). */
-  strength?: number;
-}) {
-  const ink = tint(textColor, 0.55 * strength);
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none inline-flex items-center justify-center rounded-[3px] px-2 py-[3px] text-[10px] font-extrabold leading-none"
-      style={{
-        color: ink,
-        transform: `rotate(${rotate}deg)`,
-        // Double rule: the outer ring of a real stamp plus the inner one.
-        boxShadow: `0 0 0 2px ${ink}, 0 0 0 3.5px transparent, 0 0 0 4.5px ${tint(
-          textColor,
-          0.2 * strength,
-        )}`,
-        // The ink never lands evenly — a faint halftone breaks the fill up.
-        backgroundImage: `radial-gradient(${tint(textColor, 0.1 * strength)} 0.5px, transparent 0.6px)`,
-        backgroundSize: '3px 3px',
-      }}
-    >
-      <span className="text-optical-line text-optical-caps [--optical-tracking:0.18em]">
-        {children}
-      </span>
-    </span>
-  );
-}
-
 /** A dot screen over the whole card, the way cheap print lays colour down. */
 export function Halftone({ textColor, size = 3 }: { textColor: string; size?: number }) {
   return (
@@ -247,27 +204,6 @@ export function ReelWindow({ textColor }: { textColor: string }) {
           textColor,
           0.16,
         )} 100%)`,
-      }}
-    />
-  );
-}
-
-/**
- * The crosshatched back of a playing card.
- *
- * Two diagonal gratings crossed at right angles, the way a card back is
- * printed. Used behind an estimate card's answers before the reveal: the
- * values are face-down, and this is what face-down looks like.
- */
-export function CardBack({ textColor, from = 0 }: { textColor: string; from?: number }) {
-  const line = tint(textColor, 0.07);
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none absolute inset-x-0 bottom-0"
-      style={{
-        top: from,
-        backgroundImage: `repeating-linear-gradient(45deg, ${line} 0 1px, transparent 1px 6px), repeating-linear-gradient(-45deg, ${line} 0 1px, transparent 1px 6px)`,
       }}
     />
   );

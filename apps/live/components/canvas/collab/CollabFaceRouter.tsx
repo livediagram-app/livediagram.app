@@ -131,6 +131,7 @@ export function CollabFaceRouter({
         element={element}
         label={label}
         textColor={textColor}
+        surface={surface}
         selfKey={api?.selfKey ?? ''}
         participants={api?.participants ?? []}
         onRespond={api?.respond ? (value) => api.respond!(element, value) : undefined}

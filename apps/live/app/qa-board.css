@@ -176,3 +176,35 @@
 .mood-button:enabled:hover {
   transform: translateY(-2px);
 }
+
+/*
+ * Estimate card (docs/specs/012-collaboration/estimate-card.md "The look"): a pick card lifts under the
+ * pointer, the "N of M in" bar eases as people answer, and on the reveal every
+ * card turns face up in a short cascade (its delay is set inline per card).
+ */
+.est-card {
+  transition:
+    transform 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+.est-card:enabled:hover {
+  transform: translateY(-3px);
+}
+.est-progress {
+  transition: width 400ms ease-out;
+}
+@keyframes est-flip {
+  0% {
+    opacity: 0;
+    transform: perspective(200px) rotateY(90deg) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.est-flip {
+  animation: est-flip 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}

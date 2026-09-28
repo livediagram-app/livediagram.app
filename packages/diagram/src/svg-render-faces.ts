@@ -19,6 +19,10 @@
 import { SHAPE_DEFAULT_SIZE } from './shape-factory';
 import {
   agendaTotalMinutes,
+  estimateRank,
+  estimateSpread,
+  estimateSpreadLabel,
+  estimateValues,
   DEFAULT_CHAIR_FACING,
   TEMPERATURE_COLORS,
   TEMPERATURE_VALUES,
@@ -135,21 +139,6 @@ function collabCard(
   );
 }
 
-/** A row of small chips, the shape every "pick one of these" card wears. */
-function chipRow(x: number, y: number, labels: readonly string[], color: string): string {
-  let cx = x;
-  return labels
-    .map((value) => {
-      const w = Math.max(18, value.length * 6 + 12);
-      const out =
-        pill(cx, y, w, 16, color) +
-        text(cx + w / 2, y + 11.5, value, { size: 10, weight: 500, color, anchor: 'middle' });
-      cx += w + 5;
-      return out;
-    })
-    .join('');
-}
-
 /** The footer's action pills, which say what the card DOES. */
 function footerPills(x: number, y: number, labels: readonly string[], color: string): string {
   let cx = x;
@@ -178,27 +167,67 @@ export function svgCollabFace(
   const title = label.trim();
   switch (el.shape) {
     case 'estimate': {
-      const values =
-        el.estimateScale === 'tshirt'
-          ? ['XS', 'S', 'M', 'L', 'XL']
-          : ['1', '2', '3', '5', '8', '13'];
-      const answered = (el.responses ?? []).length;
+      // The card as the face draws it (docs/specs/012-collaboration/estimate-card.md "The look"): the scale's
+      // cards, then, once revealed, every answer face up low to high with the
+      // spread; hidden answers stay hidden in the export too.
+      const scale = el.estimateScale;
+      const values = estimateValues(scale);
+      const responses = el.responses ?? [];
+      const revealed = el.responsesRevealed === true;
       return collabCard(
         el,
         title || 'Estimate',
-        answered ? `${answered} answered` : undefined,
+        responses.length ? `${responses.length} answered` : undefined,
         color,
-        (w, h) =>
-          chipRow(PAD_X, PAD_Y + TITLE_PX + 10, values, color) +
-          footerPills(PAD_X, h - PAD_Y - 18, ['Reveal', 'Clear'], color) +
-          (answered === 0
-            ? text(w / 2, h / 2, 'Nobody has picked yet', {
+        (w, h) => {
+          const inner = w - PAD_X * 2;
+          const gap = 5;
+          const cw = Math.min(46, (inner - gap * (values.length - 1)) / values.length);
+          const rowW = cw * values.length + gap * (values.length - 1);
+          const x0 = PAD_X + (inner - rowW) / 2;
+          const top = PAD_Y + TITLE_PX + 10;
+          const picks = values
+            .map((v, i) => {
+              const x = x0 + i * (cw + gap);
+              return (
+                pill(x, top, cw, 40, color, 0.06) +
+                text(x + cw / 2, top + 24, v, { size: 13, weight: 700, color, anchor: 'middle' })
+              );
+            })
+            .join('');
+          const mid = (top + 40 + h - PAD_Y) / 2;
+          if (responses.length === 0) {
+            return (
+              picks +
+              text(w / 2, mid, 'No picks yet', { size: 10, color, anchor: 'middle', opacity: 0.45 })
+            );
+          }
+          if (!revealed) {
+            return (
+              picks +
+              text(w / 2, mid, `${responses.length} in, hidden until the reveal`, {
                 size: 10,
                 color,
                 anchor: 'middle',
-                opacity: 0.45,
+                opacity: 0.6,
               })
-            : ''),
+            );
+          }
+          const sorted = responses
+            .map((r) => r.value)
+            .sort((p, q) => estimateRank(scale, p) - estimateRank(scale, q));
+          const answers = sorted.join('  ');
+          return (
+            picks +
+            text(w / 2, mid - 8, estimateSpreadLabel(estimateSpread(scale, sorted)), {
+              size: 11,
+              weight: 700,
+              color,
+              anchor: 'middle',
+            }) +
+            text(w / 2, mid + 12, answers, { size: 12, weight: 600, color, anchor: 'middle' })
+          );
+        },
       );
     }
     case 'temperature': {
