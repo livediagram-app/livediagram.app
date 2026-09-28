@@ -151,6 +151,25 @@ pnpm --filter @livediagram/live exec vitest   # watch mode while developing
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@livediagram/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
 
+The Google Drive mirror has an opt-in end-to-end run against the fake Google ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)): `pnpm --filter @livediagram/live test:e2e:drive`. It rebuilds `apps/live/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`) and a test client id, then boots the e2e stack with `E2E_DRIVE=1`, which gives the api worker test values for `CLERK_JWKS_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DRIVE_TOKEN_KEY` and `GOOGLE_OAUTH_BASE_URL`. The test serves the JWKS (port 8795) and the fake Google (8796) itself. Rebuild the live app normally before running the ordinary e2e again, and stop any `pnpm dev` on port 3002 first (or set `E2E_LIVE_PORT`, `E2E_API_PORT`, `E2E_MARKETING_PORT` and `E2E_BASE_URL`), since Playwright reuses a running server.
+
+## Enabling the Google Drive mirror locally (optional)
+
+The mirror needs a Google Cloud OAuth client (web application) with `http://localhost:3000/drive/connected` as an authorised redirect URI and `http://localhost:3000` as a JavaScript origin, and the Drive API enabled:
+
+```sh
+# apps/api/.dev.vars (gitignored)
+GOOGLE_CLIENT_ID=123456789012-abc.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=...
+DRIVE_TOKEN_KEY=...        # openssl rand -base64 32
+
+# apps/live/.env.local (gitignored)
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-abc.apps.googleusercontent.com
+NEXT_PUBLIC_GOOGLE_API_KEY=... # optional: the Picker's browser key, for adopting a folder
+```
+
+It is signed-in only, so Clerk must be enabled too (above). Without these the account menu has no Google Drive entry and every `/api/drive` route answers `503 drive_not_configured`.
+
 ## Trying the photo import without an AI key
 
 The e2e stack (`scripts/e2e-stack.mjs`) can serve the built editor a second
