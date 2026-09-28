@@ -32,11 +32,16 @@ describe('text-optical-line', () => {
     const rule = utility('text-optical-line');
     expect(rule).toMatch(/display:\s*inline-block/);
     expect(rule).toMatch(/text-box:\s*trim-both cap alphabetic/);
-    expect(rule).toMatch(/margin-block:\s*calc\(\(1lh - 1cap\) \/ 2\)/);
+    expect(rule).toMatch(/padding-block:\s*calc\(\(1lh - 1cap\) \/ 2\)/);
     // Without text-box nothing is trimmed, so nothing is given back.
     expect(rule).toMatch(
-      /@supports not \(text-box: trim-both cap alphabetic\)\s*\{\s*margin-block:\s*0/,
+      /@supports not \(text-box: trim-both cap alphabetic\)\s*\{\s*padding-block:\s*0/,
     );
+  });
+
+  it('gives the line back inside the clip edge, so truncate never cuts descenders', () => {
+    // overflow clips at the padding edge; a margin would leave it on the baseline.
+    expect(utility('text-optical-line')).not.toMatch(/margin-block/);
   });
 });
 

@@ -58,13 +58,14 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 }
 /* A label in a host that keeps its height: trimmed, then given back half the line's leftover height above
  * and below, so the box is still one line tall. Needs a flex (or grid) parent: in a block line an
- * inline-block sits on the baseline, and the trim moves nothing. */
+ * inline-block sits on the baseline, and the trim moves nothing. Padding, not margin: overflow clips
+ * at the padding edge, so a truncated label keeps its descenders and accents. */
 @utility text-optical-line {
   display: inline-block;
   text-box: trim-both cap alphabetic;
-  margin-block: calc((1lh - 1cap) / 2);
+  padding-block: calc((1lh - 1cap) / 2);
   @supports not (text-box: trim-both cap alphabetic) {
-    margin-block: 0;
+    padding-block: 0;
   }
 }
 /* An icon at a control's first or last edge pulls in by its own blank margin. Direct children only: a
@@ -258,19 +259,19 @@ The ink audit is the arbiter: a site that fails it joins the migration.
 
 ## Errors and edge cases
 
-| Case                                               | Handling                                                                                                     |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Browser without `text-box`                         | `translateY(0.1em)` / no margin fallbacks; every target engine has it (Chrome 133, Safari 18.2, Firefox 154) |
-| A trimmed label in a padding-sized host            | `text-optical-line` keeps the line box; `text-optical-centre` only in hosts that pin their size              |
-| A trimmed label in a block line                    | No effect: `text-optical-line` needs a flex or grid parent, so such hosts become `inline-flex`               |
-| Two-letter initials wider than the disc            | `GlyphDisc` text is `whitespace-nowrap`; callers size the font (0.4 of the size for two letters)             |
-| A responsive disc                                  | `GlyphDisc` without `size`, sized by its breakpoint classes                                                  |
-| Truncated label                                    | The label span takes `truncate`; trimming is vertical only                                                   |
-| An edge icon without ink insets                    | Compensated by 0: the fallback in `optical-edges`                                                            |
-| An edge icon in a centring wrapper                 | Not compensated (a centring box halves a negative margin): render the icon as the host's own child           |
-| Hidden / zero-size / occluded shape                | Not a candidate / no ink checks                                                                              |
-| Hover, focus, animation or hydration changes paint | Pointer parked, reduced motion, `animations: 'disabled'`, `networkidle` before tagging                       |
-| Art that is composition, not a glyph frame         | `data-optical-ignore` on the art root (D45); its glyph discs and chips still follow the rules                |
+| Case                                               | Handling                                                                                                      |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Browser without `text-box`                         | `translateY(0.1em)` / no padding fallbacks; every target engine has it (Chrome 133, Safari 18.2, Firefox 154) |
+| A trimmed label in a padding-sized host            | `text-optical-line` keeps the line box; `text-optical-centre` only in hosts that pin their size               |
+| A trimmed label in a block line                    | No effect: `text-optical-line` needs a flex or grid parent, so such hosts become `inline-flex`                |
+| Two-letter initials wider than the disc            | `GlyphDisc` text is `whitespace-nowrap`; callers size the font (0.4 of the size for two letters)              |
+| A responsive disc                                  | `GlyphDisc` without `size`, sized by its breakpoint classes                                                   |
+| Truncated label                                    | The label span takes `truncate`; the line is given back as padding, so the clip edge clears descenders        |
+| An edge icon without ink insets                    | Compensated by 0: the fallback in `optical-edges`                                                             |
+| An edge icon in a centring wrapper                 | Not compensated (a centring box halves a negative margin): render the icon as the host's own child            |
+| Hidden / zero-size / occluded shape                | Not a candidate / no ink checks                                                                               |
+| Hover, focus, animation or hydration changes paint | Pointer parked, reduced motion, `animations: 'disabled'`, `networkidle` before tagging                        |
+| Art that is composition, not a glyph frame         | `data-optical-ignore` on the art root (D45); its glyph discs and chips still follow the rules                 |
 
 ## Observability
 
