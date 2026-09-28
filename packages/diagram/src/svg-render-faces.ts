@@ -19,6 +19,9 @@
 import { SHAPE_DEFAULT_SIZE } from './shape-factory';
 import {
   agendaTotalMinutes,
+  DECISION_STATUS_HUES,
+  DECISION_STATUS_LABELS,
+  DEFAULT_DECISION_STATUS,
   estimateRank,
   estimateSpread,
   estimateSpreadLabel,
@@ -400,51 +403,97 @@ export function svgCollabFace(
       );
     }
     case 'agenda': {
+      // The stepper as the face draws it (docs/specs/012-collaboration/agenda.md "The face"): a rail with a
+      // marker per segment, done ones checked, the current one filled, each
+      // with its minutes.
       const items = el.agendaItems ?? [];
       const total = agendaTotalMinutes(items);
+      const current = el.agendaCurrent;
       return collabCard(
         el,
         title || 'Agenda',
         items.length ? `${total}m` : undefined,
         color,
         (w, h) => {
-          // Ruled paper: the agenda's own backdrop, and the thing that makes
-          // it readable as a running order rather than a list.
-          const lines: string[] = [];
-          for (let y = PAD_Y + TITLE_PX + 18; y < h - PAD_Y; y += 16)
-            lines.push(rule(PAD_X, y, w - PAD_X, color, 0.12));
-          const rows = items.length
-            ? items
-                .slice(0, 6)
-                .map((item, i) =>
-                  text(PAD_X + 2, PAD_Y + TITLE_PX + 14 + i * 16, item.label, {
+          if (items.length === 0) {
+            return text(PAD_X, PAD_Y + TITLE_PX + 16, 'No segments yet', {
+              size: 10,
+              color,
+              opacity: 0.45,
+            });
+          }
+          const top = PAD_Y + TITLE_PX + 16;
+          const step = 22;
+          const fit = Math.max(1, Math.floor((h - top - PAD_Y) / step));
+          const shown = items.slice(0, fit);
+          const railX = PAD_X + 6;
+          const rail =
+            shown.length > 1
+              ? `<line x1="${r2(railX)}" y1="${r2(top)}" x2="${r2(railX)}" y2="${r2(top + (shown.length - 1) * step)}" stroke="${xmlEscape(color)}" stroke-opacity="0.18" stroke-width="2"/>`
+              : '';
+          return (
+            rail +
+            shown
+              .map((item, i) => {
+                const y = top + i * step;
+                const done = current !== undefined && i < current;
+                const now = current === i;
+                const marker = now
+                  ? `<circle cx="${r2(railX)}" cy="${r2(y)}" r="6" fill="${xmlEscape(color)}"/>`
+                  : `<circle cx="${r2(railX)}" cy="${r2(y)}" r="5.5" fill="none" stroke="${xmlEscape(color)}" stroke-opacity="${done ? 0.8 : 0.35}" stroke-width="2"/>`;
+                return (
+                  marker +
+                  text(railX + 14, y + 4, item.label, {
                     size: BODY_PX,
+                    weight: now ? 600 : 400,
                     color,
-                  }),
-                )
-                .join('')
-            : text(PAD_X, PAD_Y + TITLE_PX + 16, 'No segments yet', {
-                size: 10,
-                color,
-                opacity: 0.45,
-              });
-          return lines.join('') + rows;
+                    opacity: done ? 0.5 : 1,
+                  }) +
+                  text(w - PAD_X, y + 4, `${item.minutes}m`, {
+                    size: 10,
+                    color,
+                    anchor: 'end',
+                    opacity: 0.55,
+                  })
+                );
+              })
+              .join('')
+          );
         },
       );
     }
-    case 'decision':
+    case 'decision': {
+      // The card as the face draws it (docs/specs/012-collaboration/decision-record.md "The face"): its real
+      // status (it always printed "Proposed"), the drivers under "Because",
+      // each with an arrow in the status colour, and the date.
+      const status = el.decisionStatus ?? DEFAULT_DECISION_STATUS;
+      const hue = DECISION_STATUS_HUES[status];
+      const drivers = el.decisionDrivers ?? [];
       return collabCard(
         el,
         title || 'We will …',
-        'Proposed',
+        DECISION_STATUS_LABELS[status],
         color,
-        (w, h) =>
-          text(PAD_X, PAD_Y + TITLE_PX + 22, 'No drivers yet', {
-            size: 10,
-            color,
-            opacity: 0.45,
-          }) + rule(PAD_X, h - PAD_Y - 6, w - PAD_X, color),
+        (_w, h) => {
+          const top = PAD_Y + TITLE_PX + 22;
+          const head = text(PAD_X, top, 'BECAUSE', { size: 8.5, weight: 700, color: hue });
+          const body = drivers.length
+            ? drivers
+                .slice(0, 5)
+                .map(
+                  (d, i) =>
+                    text(PAD_X, top + 16 + i * 16, '→', { size: 10, weight: 700, color: hue }) +
+                    text(PAD_X + 12, top + 16 + i * 16, d, { size: BODY_PX, color }),
+                )
+                .join('')
+            : text(PAD_X, top + 16, 'No drivers yet', { size: 10, color, opacity: 0.45 });
+          const date = el.decisionDate
+            ? text(PAD_X, h - PAD_Y - 4, el.decisionDate, { size: 10, color, opacity: 0.6 })
+            : '';
+          return head + body + date;
+        },
       );
+    }
     case 'roll-call': {
       const entries = el.rollCall ?? [];
       return collabCard(

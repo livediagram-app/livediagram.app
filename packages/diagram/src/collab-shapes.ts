@@ -204,6 +204,17 @@ export const DECISION_STATUS_COLORS: Record<DecisionStatus, { bg: string; text: 
   superseded: { bg: '#fef3c7', text: '#92400e' }, // amber
 };
 
+// One hue per status, for the badge, the glow and the driver markers
+// (docs/specs/012-collaboration/decision-record.md "The face"). The badge is tinted from it, so it reads
+// on light and dark boards alike, where the light chip colours above sat pasted
+// onto a dark card. Shared by the canvas face and the export.
+export const DECISION_STATUS_HUES: Record<DecisionStatus, string> = {
+  proposed: '#64748b',
+  accepted: '#22c55e',
+  rejected: '#f43f5e',
+  superseded: '#f59e0b',
+};
+
 export const DECISION_MAX_DRIVERS = 20;
 export const DECISION_MAX_TEXT = 200;
 

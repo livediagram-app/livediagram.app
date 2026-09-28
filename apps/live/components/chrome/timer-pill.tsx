@@ -51,7 +51,7 @@ export function TimerResetIcon() {
 }
 
 export const TIMER_BUTTON_CLASS =
-  'flex h-6 w-6 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800';
+  'flex h-6 w-6 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white';
 
 /**
  * The drain: a countdown empties left to right as time runs out, so the

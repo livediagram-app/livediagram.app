@@ -1,6 +1,7 @@
-// The face of an Agenda (docs/specs/012-collaboration/agenda.md): the run of the session, with each segment
-// pressable. Pressing one starts the tab timer for that long, through the same
-// entry point the Current Tab menu and the session button already use.
+// The face of an Agenda (docs/specs/012-collaboration/agenda.md): the run of the session as a live stepper,
+// each segment pressable. Pressing one starts the tab timer for that long,
+// through the same entry point the Current Tab menu and the session button
+// already use. Built in the behaviour elements' current look ("The face").
 
 import {
   agendaTotalMinutes,
@@ -9,10 +10,11 @@ import {
   type ShapeElement,
   type TabTimer,
 } from '@livediagram/diagram';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { CollabEmpty, CollabPanel, tint } from './collab-chrome';
-import { FoldCrease, RuledLines } from '@/components/canvas/paper-kit';
 import { useNow } from '@/hooks/ui/useNow';
+import { CollabPanel, tint } from './collab-chrome';
+import { CollabAccentScope } from './collab-accent';
+import { AgendaStep, type StepState } from './agenda/AgendaStep';
+import { EmptyRows, QA_ACCENT } from './qa/qa-parts';
 
 // "1h 5m" / "45m". The number in the header is what tells you the plan doesn't
 // fit before you start.
@@ -23,138 +25,91 @@ export function formatMinutes(total: number): string {
   return rest === 0 ? `${hours}h` : `${hours}h ${rest}m`;
 }
 
-// The live remaining time on the current segment, from the tab timer rather
-// than a second clock of the agenda's own.
-function formatRemaining(ms: number): string {
-  const total = Math.max(0, Math.round(ms / 1000));
-  const mins = Math.floor(total / 60);
-  const secs = total % 60;
-  return `${mins}:${String(secs).padStart(2, '0')}`;
-}
-
-function AgendaRow({
-  index,
-  label,
-  minutes,
-  state,
-  remainingMs,
-  textColor,
-  onPress,
-}: {
-  index: number;
-  label: string;
-  minutes: number;
-  state: 'done' | 'current' | 'ahead';
-  remainingMs: number | null;
-  textColor: string;
-  onPress?: () => void;
-}) {
-  const press = usePressWithoutDrag(() => onPress?.());
-  return (
-    <li>
-      <button
-        type="button"
-        {...press}
-        disabled={!onPress}
-        aria-label={`Start ${label || `segment ${index + 1}`} — ${minutes} minutes`}
-        aria-current={state === 'current' ? 'step' : undefined}
-        className="pointer-events-auto flex w-full cursor-pointer items-baseline justify-between gap-2 rounded-md px-2 py-1.5 text-left transition hover:brightness-95 disabled:cursor-default"
-        style={{
-          backgroundColor: state === 'current' ? tint(textColor, 0.14) : 'transparent',
-        }}
-      >
-        <span
-          className={`min-w-0 truncate text-[11px] leading-snug ${
-            state === 'done' ? 'line-through opacity-45' : ''
-          } ${state === 'current' ? 'font-semibold' : ''}`}
-          style={{ color: textColor }}
-        >
-          {label || `Segment ${index + 1}`}
-        </span>
-        <span
-          className={`shrink-0 text-[10px] tabular-nums ${
-            state === 'current' ? 'font-semibold opacity-90' : 'opacity-55'
-          } ${state === 'done' ? 'opacity-40' : ''}`}
-          style={{ color: textColor }}
-        >
-          {state === 'current' && remainingMs !== null
-            ? formatRemaining(remainingMs)
-            : `${minutes}m`}
-        </span>
-      </button>
-    </li>
-  );
-}
-
 export function AgendaFace({
   element,
   label,
   textColor,
+  surface,
   timer,
   onPressItem,
 }: {
   element: ShapeElement;
   label: string;
   textColor: string;
+  // The card's own fill, for the accent scope.
+  surface: string;
   // The tab's timer, or undefined when none is running. The agenda reads the
-  // tab's clock rather than keeping one of its own — and ticks here rather
-  // than in the canvas host, so only a board with a running agenda pays for
-  // the re-render.
+  // tab's clock rather than keeping one of its own, and ticks here rather than
+  // in the canvas host, so only a board with a running agenda pays for it.
   timer: TabTimer | undefined;
   onPressItem?: (index: number) => void;
 }) {
   const items = element.agendaItems ?? [];
   const current = element.agendaCurrent;
-  // The clock advances 4x a second while a countdown runs, exactly as the TimerWidget's does. A paused or
+  // 4x a second while a countdown runs, as the TimerWidget does; a paused or
   // absent timer is static, so nothing spins then.
   const running = timer?.running === true && current !== undefined;
   const now = useNow(running);
   const remainingMs = timer && current !== undefined ? timerDisplayMs(timer, now) : null;
+  const total = agendaTotalMinutes(items);
+
+  // How far through the session: the finished segments' minutes plus the
+  // current one's elapsed time, over the total.
+  let elapsed = 0;
+  if (current !== undefined) {
+    items.forEach((item, i) => {
+      const m = clampAgendaMinutes(item.minutes);
+      if (i < current) elapsed += m;
+      else if (i === current && remainingMs !== null)
+        elapsed += Math.max(0, m - remainingMs / 60_000);
+    });
+  }
+  const progress = total > 0 ? Math.min(1, elapsed / total) : 0;
+  const stateOf = (i: number): StepState =>
+    current === undefined ? 'ahead' : i === current ? 'current' : i < current ? 'done' : 'ahead';
 
   return (
-    <CollabPanel
-      element={element}
-      title={label.trim() || 'Agenda'}
-      textColor={textColor}
-      aside={items.length ? formatMinutes(agendaTotalMinutes(items)) : undefined}
-      // A FOLDED PROGRAMME (docs/specs/012-collaboration/participant-responses.md): the running order handed out at the
-      // door. Ruled behind the segments, with the crease down the middle where
-      // it was folded in half to fit in a pocket.
-      backdrop={
-        <>
-          <RuledLines textColor={textColor} gap={20} from={44} />
-          <FoldCrease textColor={textColor} />
-        </>
-      }
-    >
-      {items.length === 0 ? (
-        <CollabEmpty textColor={textColor}>
-          No segments yet. Add them from the element’s menu, under Segments.
-        </CollabEmpty>
-      ) : (
-        <ul className="flex flex-col gap-1">
-          {items.map((item, i) => (
-            <AgendaRow
-              key={`${i}-${item.label}`}
-              index={i}
-              label={item.label}
-              minutes={clampAgendaMinutes(item.minutes)}
-              state={
-                current === undefined
-                  ? 'ahead'
-                  : i === current
-                    ? 'current'
-                    : i < current
-                      ? 'done'
-                      : 'ahead'
-              }
-              remainingMs={remainingMs}
-              textColor={textColor}
-              onPress={onPressItem ? () => onPressItem(i) : undefined}
-            />
-          ))}
-        </ul>
-      )}
-    </CollabPanel>
+    <CollabAccentScope element={element} textColor={textColor} surface={surface}>
+      <CollabPanel
+        element={element}
+        title={label.trim() || 'Agenda'}
+        textColor={textColor}
+        aside={items.length ? formatMinutes(total) : undefined}
+      >
+        {items.length === 0 ? (
+          <EmptyRows textColor={textColor} title="No segments yet">
+            Add them from the element’s menu, under Segments.
+          </EmptyRows>
+        ) : (
+          <>
+            <span
+              className="-mt-1 h-1 shrink-0 overflow-hidden rounded-full"
+              style={{ backgroundColor: tint(textColor, 0.08) }}
+              aria-hidden
+            >
+              <span
+                className="agenda-progress block h-full rounded-full"
+                style={{ width: `${progress * 100}%`, backgroundColor: QA_ACCENT }}
+              />
+            </span>
+            <ol className="flex flex-col">
+              {items.map((item, i) => (
+                <AgendaStep
+                  key={`${i}-${item.label}`}
+                  index={i}
+                  label={item.label}
+                  minutes={clampAgendaMinutes(item.minutes)}
+                  state={stateOf(i)}
+                  remainingMs={i === current ? remainingMs : null}
+                  last={i === items.length - 1}
+                  textColor={textColor}
+                  onPress={onPressItem ? () => onPressItem(i) : undefined}
+                />
+              ))}
+            </ol>
+          </>
+        )}
+      </CollabPanel>
+    </CollabAccentScope>
   );
 }

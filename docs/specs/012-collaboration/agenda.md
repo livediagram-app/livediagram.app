@@ -40,12 +40,24 @@ to the person facilitating.
 
 ## The face
 
+Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper kit is being retired; the [Q&A board](qa-board.md) set the look), in the tab theme's accent. It replaced a list of rows over a ruled, creased "folded programme".
+
 - A header with the session name and the **total** of every segment's minutes,
   which is the number that tells you the plan doesn't fit before you start.
-- One row per segment: its name, its minutes, and a press target.
-- **Done** segments (index below the current) dim and strike through.
-- The **current** segment is highlighted and shows the live remaining time,
-  read from the tab timer rather than a second clock of its own.
+- **How far through the session**, as a slim accent bar under the header: the
+  finished segments' minutes plus the current one's elapsed time, over the
+  total.
+- A **stepper**: one row per segment down a rail. Done segments show a check
+  and their name struck through, drawn back; upcoming ones a hollow ring and
+  their minutes; the **current** one a pulsing accent dot and an expanded row,
+  lit in the accent, with the live remaining time large and a bar draining as
+  it runs, read from the tab timer rather than a second clock of its own.
+- Every segment is the press target that starts it; under the pointer an
+  upcoming one shows **Start** with a play glyph in place of its minutes, so
+  the row says what the press does.
+- **No segments** gets the shared invitation ("No segments yet", "Add them from
+  the element's menu, under Segments").
+- Motion is canvas motion, in `qa-board.css`, off under reduced motion.
 
 ## Editing
 

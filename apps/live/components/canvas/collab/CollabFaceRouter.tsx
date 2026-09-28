@@ -231,6 +231,7 @@ export function CollabFaceRouter({
         element={element}
         label={label}
         textColor={textColor}
+        surface={surface}
         timer={api?.tabTimer}
         onPressItem={
           api?.pressAgendaItem ? (index) => api.pressAgendaItem!(element, index) : undefined

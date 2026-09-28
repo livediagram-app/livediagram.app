@@ -81,6 +81,7 @@ export function CollabPanel({
   textColor,
   aside,
   titleLines = 1,
+  titleSize = 13,
   children,
   footer,
   className,
@@ -100,6 +101,8 @@ export function CollabPanel({
   // How many lines the title may take before it clamps. One for a caption-ish
   // prompt; more where the label is a sentence (a decision statement).
   titleLines?: number;
+  // The title's size in px; a Decision record sets its statement larger.
+  titleSize?: number;
   textColor: string;
   // Small right-aligned status beside the title ("4 of 6 in", "1h 5m").
   aside?: React.ReactNode;
@@ -162,9 +165,10 @@ export function CollabPanel({
             <span className="flex min-w-0 items-center gap-1.5">
               {lead ? <span className="-ml-1 shrink-0">{lead}</span> : null}
               <span
-                className="min-w-0 text-[13px] font-semibold leading-snug"
+                className="min-w-0 font-semibold leading-snug"
                 style={{
                   color: textColor,
+                  fontSize: titleSize,
                   // A clamp rather than a truncate: the overflow has to be bounded
                   // (the header is shrink-0, so an unbounded title would push the
                   // body out of the card) but a one-line decision statement is
@@ -179,14 +183,18 @@ export function CollabPanel({
               </span>
             </span>
             <span className="flex shrink-0 items-center gap-1.5">
-              {aside ? (
+              {/* A plain caption ("3 notes") takes the quiet caps style; a node
+                  (the Decision record's status badge) is drawn as given. */}
+              {typeof aside === 'string' ? (
                 <span
                   className="text-[10px] font-medium uppercase tracking-[0.06em] opacity-55"
                   style={{ color: textColor }}
                 >
                   {aside}
                 </span>
-              ) : null}
+              ) : (
+                (aside ?? null)
+              )}
             </span>
           </div>
           {/* The body scrolls rather than overflowing the element box: a card with

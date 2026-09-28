@@ -351,3 +351,32 @@
   opacity: 1;
   transform: translateX(2px);
 }
+
+/*
+ * Agenda (docs/specs/012-collaboration/agenda.md "The face"): the session bar and the current segment's
+ * bar ease as time passes; under the pointer an upcoming segment swaps its
+ * minutes for "Start".
+ */
+.agenda-progress,
+.agenda-drain {
+  transition: width 400ms linear;
+}
+.agenda-step {
+  transition: background-color 150ms ease;
+}
+.agenda-step:enabled:hover {
+  background-color: color-mix(in srgb, var(--qa-accent) 7%, transparent);
+}
+.agenda-start {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.agenda-mins {
+  transition: opacity 150ms ease;
+}
+.agenda-step:enabled:hover .agenda-start {
+  opacity: 1;
+}
+.agenda-step:enabled:hover .agenda-mins {
+  opacity: 0;
+}
