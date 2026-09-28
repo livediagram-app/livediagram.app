@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Tooltip } from '@livediagram/ui';
+
+const VIEWPORT_MARGIN_PX = 12;
 
 // A dock button's settings, opened ABOVE the dock so the dock itself never
 // moves (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"). Focus moves into it on
@@ -22,6 +24,25 @@ export function WhiteboardFlyout({
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  // Nudge, in px, that keeps the flyout inside the viewport when its opener
+  // sits near an edge (a phone, a scrolled dock). Measured before paint.
+  const [nudge, setNudge] = useState(0);
+  useLayoutEffect(() => {
+    // Layout sizes, not the bounding rect: the pop-in starts at scale(0).
+    const node = ref.current;
+    const parent = node?.offsetParent;
+    if (!node || !parent) return;
+    const centre = parent.getBoundingClientRect().left + left;
+    const half = node.offsetWidth / 2;
+    const room = window.innerWidth - VIEWPORT_MARGIN_PX;
+    const dx =
+      centre - half < VIEWPORT_MARGIN_PX
+        ? VIEWPORT_MARGIN_PX - (centre - half)
+        : centre + half > room
+          ? room - (centre + half)
+          : 0;
+    setNudge(dx);
+  }, [left]);
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -58,8 +79,9 @@ export function WhiteboardFlyout({
         onClose(true);
       }}
       onPointerDown={(e) => e.stopPropagation()}
-      style={{ left }}
-      className="pointer-events-auto absolute bottom-full mb-2 w-max max-w-[min(20rem,calc(100vw-1.5rem))] -translate-x-1/2 animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+      // `translate`, not `transform`: the pop-in animation owns `transform`.
+      style={{ left, translate: `calc(-50% + ${nudge}px) 0` }}
+      className="pointer-events-auto absolute bottom-full mb-2 w-max max-w-[min(20rem,calc(100vw-1.5rem))] animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
       <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         {label}
