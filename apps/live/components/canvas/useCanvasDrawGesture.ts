@@ -330,6 +330,8 @@ export function useCanvasDrawGesture({
     }
     onCommitFreehand(stroke, pendingDraw.variant === 'shape-pen');
   });
+  // Whether a second finger has taken over, read at the sample.
+  const pinchingNow = useEffectEvent(() => isPinchingRef?.current === true);
   // The stroke as the press left it: where the sampling starts from.
   const penAtPress = useEffectEvent(() => penPoints ?? []);
   const penning = penPoints !== null && pendingDraw?.type === 'freehand';
@@ -342,7 +344,7 @@ export function useCanvasDrawGesture({
     let pinched = false;
     const onMove = (e: PointerEvent) => {
       // Remember the pinch before sampling stops for it.
-      if (isPinchingRef?.current) pinched = true;
+      if (pinchingNow()) pinched = true;
       const point = penSample(e);
       if (!point) return;
       buffer = [...buffer, point];
