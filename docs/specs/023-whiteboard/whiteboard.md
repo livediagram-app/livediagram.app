@@ -79,6 +79,7 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   the dock's own width is fixed per breakpoint, so nothing shifts under the
   pointer (zero layout shift).
 - On narrow screens the dock scrolls horizontally rather than wrapping.
+- A sticky or a text box placed from the dock opens for typing at once.
 - Selecting an element shows the ordinary on-canvas selection handles; its
   styling is reached through right-click, as on any tab, but the menu offers
   only what a whiteboard element uses (colour, width, delete, bring forward /

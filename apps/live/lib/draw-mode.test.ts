@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EMBED_PROVIDERS } from '@livediagram/document';
-import { drawBannerMessage, drawIntentCursor, type PendingDraw } from './draw-mode';
+import { drawBannerMessage, drawIntentCursor, opensForTyping, type PendingDraw } from './draw-mode';
 
 // Every pen variant, keyed so the compiler owns the list: `variant` is an
 // optional union on the freehand intent, and adding a member to it fails
@@ -243,5 +243,20 @@ describe('drawIntentCursor', () => {
       expect(c).toBeTruthy();
       expect(c).not.toBe('auto');
     }
+  });
+});
+
+describe('opensForTyping', () => {
+  it('opens a drawn text box for typing everywhere', () => {
+    expect(opensForTyping({ type: 'text' }, false)).toBe(true);
+  });
+
+  it('opens a sticky for typing on a whiteboard only (docs/specs/023-whiteboard/whiteboard.md)', () => {
+    expect(opensForTyping({ type: 'sticky' }, true)).toBe(true);
+    expect(opensForTyping({ type: 'sticky' }, false)).toBe(false);
+  });
+
+  it('leaves shapes selected, not typing', () => {
+    expect(opensForTyping({ type: 'shape', kind: 'square' }, true)).toBe(false);
   });
 });

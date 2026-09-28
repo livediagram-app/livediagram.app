@@ -324,8 +324,9 @@ export function WhiteboardDock({
         e.preventDefault();
         e.stopPropagation();
       }}
-      // Lifted above the bottom-right zoom cluster on a phone (D9); centred.
-      className="pointer-events-none absolute bottom-[4.25rem] left-1/2 z-[var(--z-toolbar)] w-max max-w-[calc(100%-1.5rem)] -translate-x-1/2 sm:bottom-4"
+      // Centred, and lifted above the bottom-right cluster (history, layers,
+      // zoom) until the viewport is wide enough for the two side by side (D9).
+      className="pointer-events-none absolute bottom-[4.25rem] left-1/2 z-[var(--z-toolbar)] w-max max-w-[calc(100%-1.5rem)] -translate-x-1/2 min-[1500px]:bottom-4"
     >
       {flyout && open ? (
         <WhiteboardFlyout

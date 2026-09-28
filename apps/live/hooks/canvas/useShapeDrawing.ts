@@ -22,7 +22,7 @@ import { createFreehand, isWhiteboardTab, type Element, type Tab } from '@livedi
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
-import type { PendingDraw } from '@/lib/draw-mode';
+import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
 import { buildDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
@@ -192,7 +192,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // an empty text box is only useful once you type into it, so save the
     // user the extra click. Other element kinds stay selected-but-not-
     // editing so their format popover is the immediate next interaction.
-    if (intent.type === 'text') setEditingId(sized.id);
+    if (opensForTyping(intent, whiteboard)) setEditingId(sized.id);
     setPendingDraw(null);
     const label =
       intent.type === 'shape'

@@ -153,6 +153,13 @@ export function isMarkerIntent(intent: PendingDraw | null | undefined): boolean 
   return intent?.type === 'freehand' && intent.variant === 'highlighter';
 }
 
+// Whether a freshly drawn element drops straight into typing. A text box is
+// only useful once typed into; on a whiteboard a sticky is too, as on a real
+// board (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows").
+export function opensForTyping(intent: PendingDraw, whiteboard: boolean): boolean {
+  return intent.type === 'text' || (whiteboard && intent.type === 'sticky');
+}
+
 // A pen held in the hand rather than armed for one gesture: the highlighter and
 // a whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "Pens"). Neither wears the one-shot banner.
 export function isHeldPenIntent(intent: PendingDraw | null | undefined): boolean {
