@@ -113,10 +113,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-slate-50 dark:bg-slate-900">
-      {/* pr-0 so the account control (a full-height, left-bordered toolbar
-          button) sits flush to the right edge instead of leaving a 16px gap
-          after it; pl-4 keeps the brand padded on the left. */}
-      <header className="sticky top-0 z-[var(--z-chrome)] flex h-14 shrink-0 items-center justify-between gap-4 border-y border-slate-200 bg-white/85 pl-4 pr-0 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
+      <header className="sticky top-0 z-[var(--z-chrome)] flex h-14 shrink-0 items-center justify-between gap-4 border-y border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
         <div className="flex items-center gap-3">
           <Brand href="/" size="md" />
           <ProductNav current="explorer" showOnMobile />

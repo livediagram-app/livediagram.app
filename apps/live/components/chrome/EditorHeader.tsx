@@ -1,9 +1,14 @@
 import { useState, type ReactNode } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
-import { Brand, ProductNav, HoverCard, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
+import { Brand, ButtonContent, ProductNav, HoverCard, Glyph } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
-import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
+import {
+  HEADER_PILL,
+  HEADER_PILL_PRIMARY,
+  HEADER_PILL_SECONDARY,
+  HeaderGlyph,
+} from '@/components/chrome/header-action';
 
 // Sync state surfaced as a small pill next to the diagram title. The
 // editor is autosave-driven, so silent failures (offline, API down,
@@ -132,21 +137,21 @@ export function EditorHeader({
           </div>
         )}
       </div>
-      {/* Right-edge actions: full-height, flush to the top / bottom / right of
-          the bar (the -mr-4 cancels the header's right padding). */}
-      <div className="-mr-4 flex items-stretch self-stretch">
+      {/* Right-edge actions: pills, primary Share first in weight
+          (docs/specs/007-editor/live-app.md "Header actions"). */}
+      <div className="flex items-center gap-2">
         {onMakeCopy ? (
           <HoverCard title="Make a copy" description="Duplicate this diagram into your own files.">
             <button
               type="button"
               onClick={onMakeCopy}
               disabled={copying}
-              className={`${HEADER_ACTION_BTN} text-slate-600 enabled:hover:bg-brand-50 enabled:hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-200 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-brand-200`}
+              className={`${HEADER_PILL} ${HEADER_PILL_SECONDARY}`}
             >
               <HeaderGlyph>
                 <CopyIcon />
               </HeaderGlyph>
-              {copying ? 'Copying' : 'Copy'}
+              <ButtonContent>{copying ? 'Copying' : 'Copy'}</ButtonContent>
             </button>
           </HoverCard>
         ) : null}
@@ -158,27 +163,26 @@ export function EditorHeader({
             <button
               type="button"
               onClick={onOpenShare}
-              className={`${HEADER_ACTION_BTN} ${
-                shareable
-                  ? `bg-brand-500 text-white hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`
-                  : 'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
-              }`}
+              className={`${HEADER_PILL} ${HEADER_PILL_PRIMARY} px-4`}
               aria-pressed={shareable}
             >
               <HeaderGlyph>
                 <ShareIcon />
               </HeaderGlyph>
-              {/* Label stays "Share" in both states — the user dislikes the
-                  verb changing to "Shared". State is communicated by the
-                  brand-500 fill + aria-pressed flip + the green SharedBadge by
-                  the title. */}
-              <span>Share</span>
+              <ButtonContent>Share</ButtonContent>
+              {/* The live beacon on the pill's corner: the shared state, since
+                  the label stays "Share" in both states (the user dislikes the
+                  verb changing to "Shared"). aria-pressed carries it for
+                  assistive tech, the green SharedBadge in words. */}
+              {shareable ? (
+                <span aria-hidden className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                  <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400 opacity-75 [animation-duration:2s]" />
+                  <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+                </span>
+              ) : null}
             </button>
           </HoverCard>
         ) : null}
-        {/* Explorer + Help used to sit here as top-right links; both now live
-            in the ProductNav apps menu next to the logo, so the header keeps
-            just its primary actions. */}
         <AuthControls />
       </div>
     </header>
@@ -187,7 +191,7 @@ export function EditorHeader({
 
 function CopyIcon() {
   return (
-    <Glyph size={13} units={16}>
+    <Glyph size={14} units={16}>
       <rect x="5" y="5" width="8" height="8.5" rx="1.5" />
       <path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" />
     </Glyph>
@@ -196,7 +200,7 @@ function CopyIcon() {
 
 function ShareIcon() {
   return (
-    <Glyph size={13} units={16}>
+    <Glyph size={14} units={16}>
       <circle cx="4" cy="8" r="1.6" />
       <circle cx="12" cy="3.5" r="1.6" />
       <circle cx="12" cy="12.5" r="1.6" />

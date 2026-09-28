@@ -5,28 +5,28 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 
 ## Files
 
-| Path                                                         | Role                                                                                                        |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `packages/tailwind-config/theme.css`                         | `@utility text-optical-centre`, `text-optical-line`, `text-optical-caps`, `optical-edges`                   |
-| `packages/tailwind-config/src/optical-utilities.test.ts`     | The utilities' contracts                                                                                    |
-| `packages/ui/src/optical/GlyphDisc.tsx`                      | Glyph disc                                                                                                  |
-| `packages/ui/src/optical/Chip.tsx`                           | Chip                                                                                                        |
-| `packages/ui/src/optical/IconSlot.tsx`                       | Icon slot                                                                                                   |
-| `packages/ui/src/optical/index.ts`                           | Re-exports; `export * from './optical'` in `packages/ui/src/index.ts`                                       |
-| `packages/ui/src/optical/optical.test.tsx`                   | Primitive contracts                                                                                         |
-| `packages/ui/src/Button.tsx`                                 | `ButtonContent`; `optical-edges` in the button base                                                         |
-| `apps/live/components/chrome/header-action.tsx`              | `HEADER_ACTION_BTN`, `HEADER_ICON_SLOT_PX`, `HeaderGlyph`                                                   |
-| `packages/icons/src/svg-cap-band.ts`                         | `CAP_HEIGHT_EM`, `capBandBaselineY` (`icons` is the lowest package both SVG renderers use)                  |
-| `packages/tailwind-config/src/optical-guard.ts`              | Static guard `checkOpticalAlignment(root)`; export `./optical-guard`                                        |
-| `apps/{live,help,marketing,telemetry}/optical-guard.test.ts` | Each app runs the guard over its own sources (as `motion-budget.test.ts`)                                   |
-| `packages/ui/optical-guard.test.ts`                          | The guard over `packages/ui/src`                                                                            |
-| `apps/live/e2e/optical.ts`                                   | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts)                                          |
-| `apps/live/e2e/optical-discover.ts`                          | `discover`: the in-page half (candidates, cap bands, intent, stack rows); one self-contained function       |
-| `apps/live/e2e/optical-audit.spec.ts`                        | The editor's audited screens                                                                                |
-| `apps/live/e2e/optical-audit-sites.spec.ts`                  | The help centre, telemetry dashboard and marketing site                                                     |
-| `apps/live/e2e/audit-screens.ts`                             | Screen setup shared with the contrast audit (seeded diagram, dark visitor, share link)                      |
-| `scripts/e2e-stack.mjs`                                      | Also serves `apps/help/out` at `/help/*`, `apps/telemetry/out` at `/telemetry/*`, marketing on its own port |
-| `.github/workflows/e2e.yml`                                  | Builds help, telemetry and marketing beside live                                                            |
+| Path                                                         | Role                                                                                                                    |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `packages/tailwind-config/theme.css`                         | `@utility text-optical-centre`, `text-optical-line`, `text-optical-caps`, `optical-edges`                               |
+| `packages/tailwind-config/src/optical-utilities.test.ts`     | The utilities' contracts                                                                                                |
+| `packages/ui/src/optical/GlyphDisc.tsx`                      | Glyph disc                                                                                                              |
+| `packages/ui/src/optical/Chip.tsx`                           | Chip                                                                                                                    |
+| `packages/ui/src/optical/IconSlot.tsx`                       | Icon slot                                                                                                               |
+| `packages/ui/src/optical/index.ts`                           | Re-exports; `export * from './optical'` in `packages/ui/src/index.ts`                                                   |
+| `packages/ui/src/optical/optical.test.tsx`                   | Primitive contracts                                                                                                     |
+| `packages/ui/src/Button.tsx`                                 | `ButtonContent`; `optical-edges` in the button base                                                                     |
+| `apps/live/components/chrome/header-action.tsx`              | `HEADER_PILL`, `HEADER_PILL_PRIMARY`, `HEADER_PILL_SECONDARY`, `HEADER_ICON_SLOT_PX`, `HEADER_AVATAR_PX`, `HeaderGlyph` |
+| `packages/icons/src/svg-cap-band.ts`                         | `CAP_HEIGHT_EM`, `capBandBaselineY` (`icons` is the lowest package both SVG renderers use)                              |
+| `packages/tailwind-config/src/optical-guard.ts`              | Static guard `checkOpticalAlignment(root)`; export `./optical-guard`                                                    |
+| `apps/{live,help,marketing,telemetry}/optical-guard.test.ts` | Each app runs the guard over its own sources (as `motion-budget.test.ts`)                                               |
+| `packages/ui/optical-guard.test.ts`                          | The guard over `packages/ui/src`                                                                                        |
+| `apps/live/e2e/optical.ts`                                   | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts)                                                      |
+| `apps/live/e2e/optical-discover.ts`                          | `discover`: the in-page half (candidates, cap bands, intent, stack rows); one self-contained function                   |
+| `apps/live/e2e/optical-audit.spec.ts`                        | The editor's audited screens                                                                                            |
+| `apps/live/e2e/optical-audit-sites.spec.ts`                  | The help centre, telemetry dashboard and marketing site                                                                 |
+| `apps/live/e2e/audit-screens.ts`                             | Screen setup shared with the contrast audit (seeded diagram, dark visitor, share link)                                  |
+| `scripts/e2e-stack.mjs`                                      | Also serves `apps/help/out` at `/help/*`, `apps/telemetry/out` at `/telemetry/*`, marketing on its own port             |
+| `.github/workflows/e2e.yml`                                  | Builds help, telemetry and marketing beside live                                                                        |
 
 ## Names
 
@@ -142,12 +142,15 @@ rounded-full leading-none [&>svg]:block`, `width` / `height` from `size` when gi
 - An icon that must be coloured passes its colour class to the icon itself: a wrapper would hide the
   svg from the edge rule.
 
-## Header stack row
+## Header pills
 
-- `HEADER_ACTION_BTN` keeps its column layout. Every header action renders its glyph in
-  `<HeaderGlyph>` (an `IconSlot` of `HEADER_ICON_SLOT_PX`): Copy, Share, Sign in, and the account
-  initial as `<GlyphDisc size={HEADER_ICON_SLOT_PX}>`. With equal slots and the one `gap-1`, every
-  label lands on the same baseline.
+- The header actions are pills, not a stack row (docs/specs/007-editor/live-app.md "Header actions").
+  `header-action.tsx` exports `HEADER_PILL` (shape, focus ring, `optical-edges`), the tones
+  `HEADER_PILL_PRIMARY` / `HEADER_PILL_SECONDARY`, and `HeaderGlyph`, an `IconSlot` of
+  `HEADER_ICON_SLOT_PX` (16) that holds each pill's icon. Labels render through `ButtonContent`, so
+  every text run is `text-optical-line`.
+- The account pill leads with a `GlyphDisc` of `HEADER_AVATAR_PX` (24) and follows the concentric
+  rule: the 36px pill insets it 6px (`pl-1.5`), the same as its top and bottom.
 
 ## Controls that keep their height
 
@@ -254,7 +257,7 @@ size is unchanged except where a header slot grew to 20px.
 | Icons as glyphs           | telemetry `MetricPicker` (the text "✕" is the shared `CloseIcon`)                                                                                                                                                                                                                                                                                                                                                                                            |
 | Chips                     | `SharedBadge`, `RoleIndicator`, `diagram-badges`, `ActiveSharePass`, `ExpiredSharePass`, `LinkPickerDialog`, `FloatingTitle`, `TabPill`, `LayerRow`, `ExplorerTabBar`, `PaletteDropdown`, `PaletteIconButton`, `PaletteToolRows`, `CollabMenuSections`, `CustomThemeBuilder`, `DecisionFace`, `QaNoteRow`, `paper-kit`, `VideoView`, `RichTextEditor`, `TimelineCard`, `TimelineGroup`, help `CountPill`, marketing `HeroIllustration` and feature-art chips |
 | Controls                  | `Button` and every `buttonClassName` link, `ProductNav`, `TimelineControls`, `SettingsCategoryList`                                                                                                                                                                                                                                                                                                                                                          |
-| Stack rows                | `EditorHeader` + `AuthControls`                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Stack rows                | none since the header actions became pills (see Header pills)                                                                                                                                                                                                                                                                                                                                                                                                |
 | SVG text in shapes        | `ProcessFace` + `svg-render-web` (steps, callout, monogram), `svg-render-data` + `ProgressView`, `sticker-markup`                                                                                                                                                                                                                                                                                                                                            |
 
 The ink audit is the arbiter: a site that fails it joins the migration.
@@ -306,6 +309,6 @@ The ink audit is the arbiter: a site that fails it joins the migration.
 | Utilities                                | `optical-utilities.test.ts`                                                           |
 | Primitives and their invariants          | `optical.test.tsx`                                                                    |
 | Button labels and edges                  | `Button.test.tsx`                                                                     |
-| Header stack row                         | `EditorHeader.test.tsx`                                                               |
+| Header pills                             | `EditorHeader.test.tsx`                                                               |
 | SVG text on its cap band                 | `svg-cap-band.test.ts`, `svg-cap-band-render.test.ts`, `sticker-badge-centre.test.ts` |
 | Primitives are the one implementation    | `optical-guard.test.ts` (the checker) and each workspace's `optical-guard.test.ts`    |
