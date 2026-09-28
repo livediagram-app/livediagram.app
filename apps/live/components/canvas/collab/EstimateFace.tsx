@@ -3,12 +3,19 @@
 // but not what, and one Reveal turns every card face up with the spread called
 // out. Built in the behaviour elements' current look ("The look").
 
-import { estimateValues, responseOf, type ShapeElement } from '@livediagram/diagram';
+import {
+  estimateScalePending,
+  estimateValues,
+  responseOf,
+  type EstimateScale,
+  type ShapeElement,
+} from '@livediagram/diagram';
 import type { Participant } from '@/lib/identity';
 import { CollabPanel } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { EstimateEmpty } from './estimate/EstimateEmpty';
 import { EstimatePicks } from './estimate/EstimatePicks';
+import { EstimateScalePicker } from './estimate/EstimateScalePicker';
 import { EstimateTable } from './estimate/EstimateTable';
 import { AccentBar, EyeGlyph, ReopenGlyph } from './qa/qa-parts';
 
@@ -22,6 +29,7 @@ export function EstimateFace({
   onRespond,
   onSetRevealed,
   onClear,
+  onChooseScale,
 }: {
   element: ShapeElement;
   label: string;
@@ -37,10 +45,15 @@ export function EstimateFace({
   onRespond?: (value: string) => void;
   onSetRevealed?: (revealed: boolean) => void;
   onClear?: () => void;
+  // Sets a new card's scale from the chooser it shows until one is picked.
+  onChooseScale?: (scale: EstimateScale) => void;
 }) {
   const responses = element.responses ?? [];
   const revealed = element.responsesRevealed === true;
   const inRoom = Math.max(participants.length, responses.length);
+  // A card the palette placed without a scale asks for one first
+  // (docs/specs/012-collaboration/estimate-card.md "Choosing a scale").
+  const choosing = estimateScalePending(element);
 
   return (
     <CollabAccentScope element={element} textColor={textColor} surface={surface}>
@@ -82,27 +95,33 @@ export function EstimateFace({
           </>
         }
       >
-        <EstimatePicks
-          values={estimateValues(element.estimateScale)}
-          mine={responseOf(responses, selfKey)}
-          textColor={textColor}
-          onRespond={onRespond}
-        />
-        {/* Fills the room under the cards and centres what it holds. */}
-        <div className="flex min-h-0 flex-1 flex-col justify-center">
-          {responses.length === 0 ? (
-            <EstimateEmpty textColor={textColor} canPick={!!onRespond} />
-          ) : (
-            <EstimateTable
-              scale={element.estimateScale}
-              responses={responses}
-              revealed={revealed}
-              inRoom={inRoom}
-              participants={participants}
+        {choosing ? (
+          <EstimateScalePicker textColor={textColor} onChoose={onChooseScale} />
+        ) : (
+          <>
+            <EstimatePicks
+              values={estimateValues(element.estimateScale)}
+              mine={responseOf(responses, selfKey)}
               textColor={textColor}
+              onRespond={onRespond}
             />
-          )}
-        </div>
+            {/* Fills the room under the cards and centres what it holds. */}
+            <div className="flex min-h-0 flex-1 flex-col justify-center">
+              {responses.length === 0 ? (
+                <EstimateEmpty textColor={textColor} canPick={!!onRespond} />
+              ) : (
+                <EstimateTable
+                  scale={element.estimateScale}
+                  responses={responses}
+                  revealed={revealed}
+                  inRoom={inRoom}
+                  participants={participants}
+                  textColor={textColor}
+                />
+              )}
+            </div>
+          </>
+        )}
       </CollabPanel>
     </CollabAccentScope>
   );

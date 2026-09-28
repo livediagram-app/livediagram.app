@@ -24,11 +24,25 @@ A **shape kind**, `estimate`, on the per-participant response primitive
 estimated, so it edits and exports like any other label.
 
 - **`ShapeElement.estimateScale`** — `'fibonacci'` (1 2 3 5 8 13 21 ?),
-  `'tshirt'` (XS S M L XL ?) or `'powers'` (1 2 4 8 16 ?). Absent = fibonacci.
-  Every scale ends in `?`, which is a real answer ("I can't size this") and the
-  most useful one on the card.
+  `'tshirt'` (XS S M L XL ?) or `'powers'` (1 2 4 8 16 ?). Every scale ends in
+  `?`, which is a real answer ("I can't size this") and the most useful one on
+  the card. **Absent means not chosen yet** (below), except on a card that
+  already holds answers: that is an older card from before the choice existed,
+  when absent meant Fibonacci, and it keeps meaning that
+  (`estimateScalePending`).
 - **`ShapeElement.responses`** — one pick per participant ([Per-participant responses](participant-responses.md)).
 - **`ShapeElement.responsesRevealed`** — shared, false by default.
+
+## Choosing a scale
+
+The three scales are the same card with different answers, so the palette has
+**one** Estimate tile, not a tile per scale. A new card arrives with no scale
+and asks for one on the canvas: **"Pick a scale to estimate on"** over the three
+scales as cards, each showing its values (the values are what is being chosen
+between, not the names). One press sets it, as an ordinary undoable edit that
+anyone who can edit may make, and the card becomes the normal estimate card. A
+viewer who can't edit sees "Waiting for a scale". The element menu's **Scale**
+changes it afterwards, as before.
 
 ## The two states
 

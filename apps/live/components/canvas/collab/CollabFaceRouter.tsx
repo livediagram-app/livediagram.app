@@ -7,6 +7,7 @@
 
 import {
   DONE_VALUE,
+  type EstimateScale,
   defaultFillColor,
   isCollabPanelShape,
   type ShapeElement,
@@ -44,6 +45,8 @@ export type CollabApi = {
   // render their controls disabled rather than lying about what a press does.
   respond?: (element: ShapeElement, value: string) => void;
   setResponsesRevealed?: (element: ShapeElement, revealed: boolean) => void;
+  // A new estimate card's scale, chosen on the card (docs/specs/012-collaboration/estimate-card.md).
+  chooseEstimateScale?: (element: ShapeElement, scale: EstimateScale) => void;
   clearResponses?: (element: ShapeElement) => void;
   addIdea?: (element: ShapeElement, text: string) => void;
   revealIdeas?: (element: ShapeElement) => void;
@@ -142,6 +145,9 @@ export function CollabFaceRouter({
             : undefined
         }
         onClear={api?.clearResponses ? () => api.clearResponses!(element) : undefined}
+        onChooseScale={
+          api?.chooseEstimateScale ? (scale) => api.chooseEstimateScale!(element, scale) : undefined
+        }
       />
     );
   }

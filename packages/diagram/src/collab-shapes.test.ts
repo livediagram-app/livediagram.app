@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  estimateScalePending,
   estimateSpread,
   estimateSpreadLabel,
   estimateRank,
@@ -153,9 +154,16 @@ describe('the new kinds create and validate', () => {
     expect(isValidElement(el)).toBe(true);
   });
 
-  it('seeds an estimate card with a scale and no answers yet', () => {
+  it('seeds an estimate card with no scale yet and no answers', () => {
     const el = createShape('estimate', 0, 0);
-    expect(el.estimateScale).toBe('fibonacci');
+    // A new card asks for its scale on the canvas (estimate-card.md "Choosing a scale").
+    expect(el.estimateScale).toBeUndefined();
+    expect(estimateScalePending(el)).toBe(true);
+    expect(estimateScalePending({ ...el, estimateScale: 'tshirt' })).toBe(false);
+    // An older card with no scale but a round on it keeps meaning Fibonacci.
+    expect(
+      estimateScalePending({ ...el, responses: [{ participantId: 'a', value: '5', at: 1 }] }),
+    ).toBe(false);
     expect(el.responses).toBeUndefined();
     expect(el.responsesRevealed).toBeUndefined();
   });

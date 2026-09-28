@@ -312,3 +312,13 @@
 .pad-ring {
   animation: pad-ring 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+.est-scale {
+  transition:
+    transform 200ms ease,
+    border-color 200ms ease,
+    background-color 200ms ease;
+}
+.est-scale:enabled:hover {
+  transform: translateY(-2px);
+  border-color: var(--qa-accent);
+}

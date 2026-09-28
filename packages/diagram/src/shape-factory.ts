@@ -29,7 +29,6 @@ import {
   AGENDA_DEFAULT_MINUTES,
   DEFAULT_CHAIR_FACING,
   DEFAULT_DECISION_STATUS,
-  DEFAULT_ESTIMATE_SCALE,
 } from './collab-shapes';
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
@@ -350,7 +349,8 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textAlignY: 'top',
     };
     if (kind === 'estimate') {
-      return { ...seed, label: 'Estimate', estimateScale: DEFAULT_ESTIMATE_SCALE };
+      // No scale: the card asks for one on the canvas (estimateScalePending).
+      return { ...seed, label: 'Estimate' };
     }
     if (kind === 'temperature') return { ...seed, label: 'How are we feeling?' };
     if (kind === 'idea-box') return { ...seed, label: 'Ideas' };

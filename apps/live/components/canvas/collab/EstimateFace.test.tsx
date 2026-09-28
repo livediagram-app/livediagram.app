@@ -4,7 +4,7 @@
 // answered shows as face-down cards (never what), Reveal turns them face up with
 // the spread, and New round only appears once revealed.
 
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ShapeElement } from '@livediagram/diagram';
 import { EstimateFace } from './EstimateFace';
@@ -19,6 +19,7 @@ const card = (o: Partial<ShapeElement> = {}): ShapeElement => ({
   y: 0,
   width: 360,
   height: 310,
+  estimateScale: 'fibonacci',
   ...o,
 });
 const answers = [
@@ -42,6 +43,28 @@ const show = (el: ShapeElement) =>
   );
 
 describe('EstimateFace', () => {
+  it('asks a new card for its scale, and sets it with one press', () => {
+    const onChooseScale = vi.fn();
+    render(
+      <EstimateFace
+        element={card({ estimateScale: undefined })}
+        label=""
+        textColor="#0f172a"
+        surface="#ffffff"
+        selfKey="me"
+        participants={[]}
+        onChooseScale={onChooseScale}
+      />,
+    );
+    expect(screen.getByText('Pick a scale to estimate on')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Pick 8' })).toBeNull();
+    const tshirt = screen.getByRole('button', { name: 'Estimate in T-shirt' });
+    fireEvent.pointerDown(tshirt);
+    fireEvent.pointerUp(tshirt);
+    fireEvent.click(tshirt);
+    expect(onChooseScale).toHaveBeenCalledWith('tshirt');
+  });
+
   it('invites a first pick', () => {
     show(card());
     expect(screen.getByText('No picks yet')).toBeTruthy();

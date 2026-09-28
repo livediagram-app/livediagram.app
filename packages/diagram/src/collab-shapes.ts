@@ -45,6 +45,22 @@ export function isEstimateShape(kind: ShapeKind): boolean {
   return kind === 'estimate';
 }
 
+// Whether an estimate card is still waiting for its scale (docs/specs/012-collaboration/estimate-card.md
+// "Choosing a scale"): the palette places ONE Estimate card with no scale, and
+// the card asks on the canvas. A card with no scale that already holds answers
+// is an older card from before the choice existed, when no scale meant
+// Fibonacci, so it keeps meaning that rather than hiding its round behind the
+// chooser.
+export function estimateScalePending(el: {
+  shape?: string;
+  estimateScale?: EstimateScale;
+  responses?: readonly unknown[];
+}): boolean {
+  return (
+    el.shape === 'estimate' && el.estimateScale === undefined && (el.responses ?? []).length === 0
+  );
+}
+
 // Where a value sits on its scale, for sorting revealed cards low to high: the
 // scale's own order (so a t-shirt round reads XS .. XL), with anything off the
 // scale after it (docs/specs/012-collaboration/estimate-card.md "The two states").
