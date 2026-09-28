@@ -431,7 +431,14 @@ function BoxedElementViewImpl({
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}
           strokeWidth={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
-          radiusPx={element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : 8}
+          radiusPx={
+            element.borderRadius !== undefined
+              ? BORDER_RADIUS_PX[element.borderRadius]
+              : // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes").
+                element.shape === 'mind-node'
+                ? 12
+                : 8
+          }
         />
       ) : null}
       {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}

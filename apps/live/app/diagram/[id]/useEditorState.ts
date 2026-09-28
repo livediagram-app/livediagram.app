@@ -139,6 +139,7 @@ import { usePresenceState } from './usePresenceState';
 import { useEditorDialogs } from './useEditorDialogs';
 import { useElementHelpers, selectionIds } from './useElementHelpers';
 import { useElementCreation } from './useElementCreation';
+import { useMindGrowth } from './useMindGrowth';
 import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
@@ -1795,7 +1796,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     addBoxed,
     addBoxedAt,
-    placePrebuilt,
     currentSelectionIds,
     selectionPrimary,
     exitFormatPainter,
@@ -2253,10 +2253,20 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     styleNewElement: styleMemory.styleNewElement,
   });
 
+  // Mind-map growth (docs/specs/009-elements/mind-node.md): Tab / Enter / the "+" ring. See useMindGrowth.
+  const { canGrowMindNode, growMindNode, abandonMindNode } = useMindGrowth({
+    editsBlocked: createBlocked,
+    activeId,
+    activeTab,
+    commitTabs,
+    setSelectedId,
+    setEditingId,
+    emitChange,
+    scrollIntoView,
+  });
+
   // Palette element-creation handlers. See useElementCreation.
   const {
-    canGrowMindNode,
-    growMindNode,
     addShape,
     addIcon,
     addSticker,
@@ -2292,7 +2302,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setEditingId,
     addBoxed,
     addBoxedAt,
-    placePrebuilt,
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
   });
@@ -2408,6 +2417,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
+    tidyMindMapSelected,
     setPageHeading,
     setWebRows,
     appendWebRowTo,
@@ -3291,6 +3301,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
+    tidyMindMapSelected,
     toggleChecklistItem,
     setPageHeading,
     setWebRows,
@@ -3299,6 +3310,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setHeroCaptionLine,
     setHeroCaptionSelected,
     growMindNode,
+    abandonMindNode,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
     setEstimateScaleSelected,

@@ -22,6 +22,7 @@ import {
   svgFreehandShape,
   svgShapeSilhouette,
 } from './svg-render-shapes';
+import { BORDER_RADIUS_PX } from './border-style';
 import { canvasSurface } from './colors';
 import { DIAMOND_POINTS } from './shape-geometry';
 import { svgTableShape } from './svg-render-table';
@@ -295,9 +296,13 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
           el.type === 'sticky'
           ? 0
           : // A mind node is a soft-cornered pill-ish box (docs/specs/009-elements/mind-node.md), the one
-            // rect kind the canvas rounds further than the usual 6.
+            // rect kind the canvas rounds further than the usual 6, and the one
+            // that honours its corner-radius pick (a round bubble-map node).
             el.type === 'shape' && el.shape === 'mind-node'
-            ? 12
+            ? Math.min(
+                el.borderRadius !== undefined ? BORDER_RADIUS_PX[el.borderRadius] : 12,
+                Math.min(el.width, el.height) / 2,
+              )
             : 6;
     // What this element draws INSTEAD of (or under) a plain label: its plot,
     // its value, its rows, its face. See svg-render-body.

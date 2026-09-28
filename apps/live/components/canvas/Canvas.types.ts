@@ -614,6 +614,8 @@ export type CanvasProps = {
   // fields, so they commit through here rather than the label editor.
   // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
+  // Escape on the empty node a Tab made one time too many removes it.
+  onAbandonMindNode: (id: string) => boolean;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a row edited in place, one more row from
   // the quick-connect ring, and a hero's caption line. Omitted in read-only.

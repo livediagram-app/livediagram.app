@@ -97,17 +97,14 @@ export function describeVariant(
       // free-corner shapes (NOT circle / stadium, whose radii
       // are part of the silhouette).
       const fixedRadius =
-        element.shape === 'circle'
-          ? '50%'
-          : element.shape === 'stadium'
-            ? '9999px'
-            : // A mind node (docs/specs/009-elements/mind-node.md) is a soft-cornered pill-ish box: rounded
-              // enough to read as a node in a tree rather than a flowchart box.
-              element.shape === 'mind-node'
-              ? '12px'
-              : null;
+        element.shape === 'circle' ? '50%' : element.shape === 'stadium' ? '9999px' : null;
       const userRadius =
         element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : null;
+      // A mind node (docs/specs/009-elements/mind-node.md) is a soft-cornered pill-ish box by default:
+      // rounded enough to read as a node in a tree rather than a flowchart
+      // box. Unlike the fixed silhouettes above it honours a radius pick, so a
+      // full radius on a square node draws a bubble-map circle.
+      const mindRadius = element.shape === 'mind-node' ? `${userRadius ?? 12}px` : null;
       const strokePx = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
       const style = element.strokeStyle ?? DEFAULT_BORDER_STYLE;
       // The composite dash patterns can't be drawn by a CSS border, so
@@ -130,7 +127,8 @@ export function describeVariant(
         className: `text-brand-800 shadow-sm dark:text-white ${ring}`,
         style: {
           ...(fill === 'transparent' ? filterShadow : boxShadow),
-          borderRadius: fixedRadius ?? (userRadius !== null ? `${userRadius}px` : '8px'),
+          borderRadius:
+            fixedRadius ?? mindRadius ?? (userRadius !== null ? `${userRadius}px` : '8px'),
           backgroundColor: fill,
           borderColor: remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface),
           borderWidth: useSvgBorder ? 0 : remoteBorderColor ? remoteBorderWidth : strokePx,

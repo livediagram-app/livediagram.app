@@ -107,6 +107,7 @@ export function EditorContextMenuHost() {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
+    tidyMindMapSelected,
     setChecklistItemsSelected,
     toggleChecklistItem,
     setEntityFieldsSelected,
@@ -314,6 +315,7 @@ export function EditorContextMenuHost() {
       onSetLegendItems={setLegendItemsSelected}
       mindFlow={menuMindFlow}
       onSetMindFlow={setMindFlowSelected}
+      onTidyMindMap={tidyMindMapSelected}
       onSetChecklistItems={setChecklistItemsSelected}
       onToggleChecklistItem={toggleChecklistItem}
       onSetEntityFields={setEntityFieldsSelected}

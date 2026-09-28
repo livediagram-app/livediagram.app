@@ -174,68 +174,6 @@ export function useElementHelpers(opts: {
     if (edit && takesTypedLabel(el)) setEditingId(el.id);
   };
 
-  // Place ALREADY-BUILT elements, keeping every side effect a normal add has:
-  // theme colours on the boxed ones, the template-picker dismissal, the
-  // activity-log entry, and selecting the primary.
-  //
-  // placeBoxed above makes exactly one element and centres it on a point.
-  // Mind-map growth (docs/specs/009-elements/mind-node.md) makes a node AND its connector, at a position
-  // it has already worked out from the branch, so it needs neither of those —
-  // but it needs all of the rest, and re-implementing them at the call site is
-  // how an add path ends up missing its activity-log entry.
-  const placePrebuilt = (
-    added: Element[],
-    primaryId: string,
-    // Existing elements to move out of the way, by id. Mind-map growth
-    // (docs/specs/009-elements/mind-node.md) makes room for a new node by sliding whole neighbouring
-    // trees down, and that move has to land in the SAME commit as the add or
-    // it becomes a second undo step for one keystroke.
-    shifts: readonly { id: string; dy: number }[] = [],
-  ) => {
-    if (editsBlocked) return;
-    const themed = added.map((el) =>
-      isBoxed(el)
-        ? {
-            ...el,
-            ...deriveNewBoxedColours(el, {
-              backgroundColor: activeTab.backgroundColor,
-              patternColor: activeTab.patternColor,
-              theme: activeTab.theme,
-            }),
-            ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
-          }
-        : el,
-    );
-    // Appends inside the updater, against whatever the tab holds NOW, rather
-    // than against a captured `activeTab.elements`.
-    //
-    // This matters because of who calls it: the mind-map grower runs
-    // immediately after the label editor commits the text you just typed
-    // (docs/specs/009-elements/mind-node.md), in the same tick. A snapshot taken at render time predates
-    // that commit, so writing it back silently threw the label away — every
-    // node in a chain came out blank.
-    const byId = new Map(shifts.map((s) => [s.id, s.dy]));
-    const displace = (els: Element[]): Element[] =>
-      byId.size === 0
-        ? els
-        : els.map((el) => {
-            const dy = byId.get(el.id);
-            return dy === undefined || !isBoxed(el) ? el : { ...el, y: el.y + dy };
-          });
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id === activeId
-          ? { ...t, elements: [...displace(t.elements), ...themed], templateChosen: true }
-          : t,
-      ),
-    );
-    // The log entry describes the ADD, which is correct even if `before` is a
-    // beat stale: any label change committed just now emitted its own entry.
-    const before = activeTab.elements;
-    emitChange(activeId, before, [...displace(before), ...themed]);
-    setSelectedId(primaryId);
-  };
-
   // --- Selection helpers ---------------------------------------------------
 
   // Unified "what's the user editing right now?" id set: an active
@@ -304,7 +242,6 @@ export function useElementHelpers(opts: {
   return {
     addBoxed,
     addBoxedAt,
-    placePrebuilt,
     currentSelectionIds,
     selectionPrimary,
     exitFormatPainter,

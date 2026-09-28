@@ -5,18 +5,18 @@
 // "where does the next node go".
 
 import { createPinnedArrow, createShape } from './factories';
-import { bestAnchorTowards } from './anchor-choice';
 import {
   DEFAULT_MIND_FLOW,
   isMindFlow,
   MIND_CHILD_GAP_X,
+  mindConnectorAnchors,
   MIND_SIBLING_GAP_Y,
   outwardAngle,
   placeMindChild,
   type MindFlow,
 } from './mind-flow';
 import { rectsIntersect as overlaps, unionRects, type Rect } from './geometry-primitives';
-import type { Anchor, ArrowElement, Element, ElementId, ShapeElement } from './index';
+import type { ArrowElement, Element, ElementId, ShapeElement } from './index';
 
 export { MIND_CHILD_GAP_X, MIND_SIBLING_GAP_Y };
 
@@ -118,10 +118,16 @@ function mindTrees(elements: Element[], skip?: Set<ElementId>): Tree[] {
 
 type Tree = { nodes: ShapeElement[]; bounds: Rect };
 
-function makeRoom(elements: Element[], fixed: Set<ElementId>, room: Rect): MindShift[] {
+export function makeRoom(
+  elements: Element[],
+  fixed: Set<ElementId>,
+  room: Rect | readonly Rect[],
+): MindShift[] {
   const ordered = mindTrees(elements, fixed);
   const shifts: MindShift[] = [];
-  const obstacles: Rect[] = [room];
+  // Several rects when a re-layout moved many nodes at once: every one of
+  // them is somewhere another tree must not be.
+  const obstacles: Rect[] = Array.isArray(room) ? [...room] : [room as Rect];
   for (const tree of ordered) {
     let dy = 0;
     for (const obstacle of obstacles) {
@@ -208,7 +214,7 @@ export function nextMindChildPosition(
 }
 
 /** Every node of `node`'s tree, the ones a growth may not move. */
-function treeIds(elements: Element[], node: ShapeElement): Set<ElementId> {
+export function treeIds(elements: Element[], node: ShapeElement): Set<ElementId> {
   const root = mindRootOf(elements, node);
   return new Set([root.id, ...mindSubtree(elements, root.id).map((n) => n.id)]);
 }
@@ -237,23 +243,15 @@ export function growMindChild(
   const node: ShapeElement = { ...base, ...size, x: at.x, y: at.y, mindParentId: parent.id };
   // The faces the connector uses follow the flow: a tree runs east to west, a
   // downward map north to south, and a fanned one whichever way the child
-  // actually went. Asking the shared anchor chooser rather than hardcoding a
-  // pair means a new flow gets sensible connectors for free.
-  const [from, to] = childAnchors(parent, node);
+  // actually went. The nearest-pair chooser alone picked a tree parent's SOUTH
+  // face for a child far down the column, and the connector then ran behind
+  // the siblings above it.
+  const [from, to] = mindConnectorAnchors(mindFlowOf(elements, parent), parent, node);
   return {
     node,
     arrow: createPinnedArrow(parent.id, from, node.id, to),
     shifts: makeRoom(elements, treeIds(elements, parent), { ...size, ...at }),
   };
-}
-
-/** The pair of faces a parent-to-child connector leaves and enters through. */
-function childAnchors(parent: ShapeElement, child: ShapeElement): [Anchor, Anchor] {
-  const centreOfBox = (n: ShapeElement) => ({ x: n.x + n.width / 2, y: n.y + n.height / 2 });
-  return [
-    bestAnchorTowards(parent, centreOfBox(child)),
-    bestAnchorTowards(child, centreOfBox(parent)),
-  ];
 }
 
 /**

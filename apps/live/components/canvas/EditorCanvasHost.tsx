@@ -312,6 +312,7 @@ export function EditorCanvasHost() {
     appendWebRowTo,
     setHeroCaptionLine,
     growMindNode,
+    abandonMindNode,
     setTextAlignSelected,
     setUserPreferences,
     setViewportOffset,
@@ -1011,6 +1012,7 @@ export function EditorCanvasHost() {
         onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
         onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
         onGrowMindNode={growMindNode}
+        onAbandonMindNode={abandonMindNode}
         chartPalette={themeChartPalette(getTheme(activeTab.theme))}
         onCancelEdit={cancelEdit}
         onBeginEndpointDrag={beginEndpointDrag}

@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Mind Maps',
   description:
-    'Build a mind map from the keyboard: Tab adds a child, Enter adds a sibling, and each new node is connected, selected and ready to type into.',
+    'Build a mind map from the keyboard: Tab adds a child, Enter adds a sibling, and the map stays tidy as it grows.',
   path: '/help/palette/mind-maps/',
 });
 
@@ -24,15 +24,20 @@ A **Mind node** is a labelled node that knows its parent. It lives in the palett
 <Step n={1}>Add a Mind node from the palette and type its label.</Step>
 
 <Step n={2}>
-  Press **Tab** to add a **child** to its right, then keep typing. The new node is already
-  connected, already selected, and already in edit mode.
+  Press **Tab** to add a **child**, then keep typing. The new node is already connected, already
+  selected, and already in edit mode.
 </Step>
 
-<Step n={3}>Press **Enter** to add a **sibling** below instead, and keep typing.</Step>
+<Step n={3}>
+  Press **Enter** to add a **sibling** directly after the node you are on, and keep typing.
+</Step>
 
-<Step n={4}>Press **Escape** when you are done to leave the editor.</Step>
+<Step n={4}>
+  Press **Escape** when you are done. What you typed is kept; a node you left empty is removed, so
+  a Tab pressed one time too many costs nothing.
+</Step>
 
-You never have to stop typing to reach for the palette, and you never have to draw the connectors: each new node arrives joined to its parent.
+You never have to stop typing to reach for the palette, and you never have to draw the connectors: each new node arrives joined to its parent. Type as fast as you like: keys pressed before the next node is on screen are held for it, so a burst of several nodes lands exactly as typed.
 
 <Tip>
   The keys work from **inside** the label editor as well as from a selected node. Typing a name and
@@ -42,23 +47,34 @@ You never have to stop typing to reach for the palette, and you never have to dr
 
 ## Where nodes land
 
-A child appears to the right of its parent. A sibling stacks below the last node in that branch, including any grandchildren that have grown down past it, so a new branch never lands on top of one that is already there.
+A map you build from the keyboard stays **tidy**: each parent sits centred on its children, and siblings stack neatly with no gaps or overlaps. As you add nodes, the map makes room for them, and the view scrolls to keep the node you are typing in on screen.
 
-Nodes are placed where they fit and then **stay put**. Nothing silently re-flows as you type, because a mind map that rearranged itself on every keystroke would fight anyone who had deliberately arranged one. When you do want it tidied, **Auto Layout → Mindmap** re-flows the whole thing radially on demand.
+Once you drag a node yourself, the map is yours: new nodes are placed where they fit and nothing you arranged moves. To tidy it again, open the node's menu and choose **Mind Map → Tidy Map**.
 
-## Sizes and shapes
+## Flows
 
-A new node inherits the size of the one you grew from, so renaming or resizing a node carries through to the rest of the branch rather than leaving a row of mismatched boxes.
+**Mind Map** in a node's menu picks the shape the whole map takes: **Tree** (branches to the right), **Balanced** (both ways off the centre), **Downward** (like an org chart) or **Bubble** (fanned around the centre). Picking one re-arranges the map straight away.
 
-Everything else about a mind node is an ordinary element: recolour it, restyle it, move it, or link it to another tab.
+## Sizes and looks
 
-## Deleting
+A new node looks like the others at its level: siblings match each other, and the first node of a new level takes after its parent. The connector matches the ones already in the map. So a map drawn with bold roots, tinted branches and dashed lines keeps growing that way.
+
+A mind node can be made round: give a square node a full corner radius.
+
+## Moving and deleting
+
+Dragging a node takes its whole branch with it.
 
 Deleting a node leaves its children in place, promoted to roots. It does not cascade, because deleting one node and silently losing nine is the kind of thing you only notice after the undo stack has moved on.
 
 <Note>
-  A selected mind node shows a small **Tab child · Enter sibling** hint under it, so the shortcut is
-  where the work is rather than in a menu you have to remember.
+  Select a mind node and press the **+** next to it for **Add child** and **Add sibling**, each with
+  its shortcut, if you would rather use the mouse.
+</Note>
+
+<Note>
+  Every Mind maps template is made of mind nodes, so you can grow a template with Tab and Enter
+  straight away.
 </Note>
 
 </ArticleLayout>

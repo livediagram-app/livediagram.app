@@ -4,6 +4,7 @@ import {
   anchorPosition,
   isBoxed,
   nearestOfferedAnchor,
+  withMindSubtrees,
   type Anchor,
   type ArrowElement,
 } from '@livediagram/diagram';
@@ -76,7 +77,13 @@ export function useBoxedDragHandlers({
     // within a frame being moved (pinned arrows between them follow via
     // the rebind pass). Resizing is deliberately excluded — a frame
     // resize re-sizes the section outline and leaves its contents put.
-    const ids = mode === 'move' ? withFrameContents(d.activeTab.elements, baseIds) : baseIds;
+    //
+    // A mind node (docs/specs/009-elements/mind-node.md "Moving a branch") carries its whole subtree
+    // the same way: a branch is one idea, and its points follow its heading.
+    const ids =
+      mode === 'move'
+        ? withMindSubtrees(d.activeTab.elements, withFrameContents(d.activeTab.elements, baseIds))
+        : baseIds;
 
     const startBounds = new Map<string, ShapeBounds>();
     // Free endpoints of any arrows the frame-section expansion pulled in, so

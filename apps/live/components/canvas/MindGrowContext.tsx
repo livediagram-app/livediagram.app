@@ -11,12 +11,18 @@ import { createContext, useContext } from 'react';
 // would tax every element in the app to serve mind nodes.
 //
 // Undefined outside a provider (the share view, the embed route, exports), and
-// the editor simply doesn't offer the shortcut there.
-type MindGrow = (id: string, kind: 'child' | 'sibling') => void;
+// the editor simply doesn't offer the shortcuts there.
+export type MindGrow = {
+  // Takes the id rather than closing over the edited element, so the provider
+  // doesn't have to re-create the callback (and re-render the tree) every time
+  // the edit target changes.
+  grow: (id: string, kind: 'child' | 'sibling') => void;
+  // Escape on an empty, childless node that was empty when the edit began:
+  // the Tab pressed one time too many. Removes it (and its connector) and
+  // selects its parent. False when the node isn't one to remove.
+  abandon: (id: string) => boolean;
+};
 
-// Takes the id rather than closing over the edited element, so the provider
-// doesn't have to re-create the callback (and re-render the tree) every time
-// the edit target changes.
 const MindGrowContext = createContext<MindGrow | undefined>(undefined);
 
 export const MindGrowProvider = MindGrowContext.Provider;
