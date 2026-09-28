@@ -405,3 +405,52 @@ describe('lease', () => {
     expect((await call(db, 'DELETE', '/lease')).status).toBe(400);
   });
 });
+
+describe('POST /drive/token rate limit', () => {
+  function limited(allow: boolean) {
+    const keys: string[] = [];
+    return {
+      keys,
+      binding: {
+        limit: async ({ key }: { key: string }) => {
+          keys.push(key);
+          return { success: allow };
+        },
+      },
+    };
+  }
+
+  it('answers 429 drive_token_rate_limited, keyed by owner, without asking Google', async () => {
+    const limiter = limited(false);
+    const db = sqliteD1({ ...BROKER, DRIVE_TOKEN_RATE_LIMITER: limiter.binding });
+    await connect(db);
+    const calls = googleCalls.length;
+    const res = await call(db, 'POST', '/token');
+    expect(res.status).toBe(429);
+    expect(await body(res)).toEqual({ error: 'drive_token_rate_limited' });
+    expect(limiter.keys).toEqual(['user_a']);
+    expect(googleCalls).toHaveLength(calls);
+  });
+
+  it('mints as usual under the limit', async () => {
+    const limiter = limited(true);
+    const db = sqliteD1({ ...BROKER, DRIVE_TOKEN_RATE_LIMITER: limiter.binding });
+    await connect(db);
+    googleReplies.push({ status: 200, body: { access_token: 'fresh', expires_in: 3600 } });
+    expect((await call(db, 'POST', '/token')).status).toBe(200);
+  });
+
+  it('allows everything when the binding is absent (self-host)', async () => {
+    const db = sqliteD1(BROKER);
+    await connect(db);
+    googleReplies.push({ status: 200, body: { access_token: 'fresh', expires_in: 3600 } });
+    expect((await call(db, 'POST', '/token')).status).toBe(200);
+  });
+
+  it('is only on the token route', async () => {
+    const limiter = limited(false);
+    const db = sqliteD1({ ...BROKER, DRIVE_TOKEN_RATE_LIMITER: limiter.binding });
+    expect((await call(db, 'GET', '/connection')).status).toBe(200);
+    expect(limiter.keys).toEqual([]);
+  });
+});

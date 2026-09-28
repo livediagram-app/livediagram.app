@@ -83,6 +83,11 @@ export type Env = {
   // outbound page fetch, so bound abuse. Keyed on CF-Connecting-IP. Optional:
   // absent (self-host) → "allow".
   UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
+  // Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
+  // "Tokens"): each call reaches Google's token endpoint, so it gets a far
+  // tighter bound than the general write limiter. Keyed on the Clerk user id.
+  // Optional: absent (self-host) → "allow".
+  DRIVE_TOKEN_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Authoritative: gates both
   // POST /api/events and GET /api/telemetry/summary. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.

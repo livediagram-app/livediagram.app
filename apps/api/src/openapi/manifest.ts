@@ -1367,10 +1367,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'drive',
     tag: 'Google Drive',
     summary:
-      'Mint a one-hour Google access token from the stored refresh token. 409 drive_needs_reconnect when Google revoked the grant.',
+      'Mint a one-hour Google access token from the stored refresh token. 409 drive_needs_reconnect when Google revoked the grant; 429 drive_token_rate_limited past 10 a minute.',
     auth: 'clerk',
     responseSchema: 'DriveAccessToken',
-    statuses: [200, 401, 404, 409, 502, 503],
+    statuses: [200, 401, 404, 409, 429, 502, 503],
   },
   {
     method: 'GET',

@@ -197,6 +197,15 @@ export async function handleDrive(ctx: RouteContext): Promise<Response> {
 
   if (route === 'token') {
     if (mode !== 'broker') return brokerUnavailable();
+    // Its own bound: a token is good for an hour, so a browser needs about one
+    // an hour; anything near the limit is a loop, and each call reaches Google.
+    if (
+      env.DRIVE_TOKEN_RATE_LIMITER &&
+      !(await env.DRIVE_TOKEN_RATE_LIMITER.limit({ key: owner })).success
+    ) {
+      logOutcome('token', 'rate_limited');
+      return driveError(429, 'drive_token_rate_limited');
+    }
     const connection = await getDriveConnection(env, owner);
     const sealed = await getSealedRefreshToken(env, owner);
     if (!connection || !sealed) return notConnected();

@@ -175,6 +175,18 @@ type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
+# Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
+# "Tokens"): each call reaches Google's token endpoint to mint a one-hour access
+# token, so a healthy browser needs about one an hour. 10 / 60s per Clerk user
+# id bounds a looping client far below the general write limiter's 300. The
+# route answers 429 drive_token_rate_limited, which the browser treats like
+# Google's own rate limit (it backs off). Absent binding → allow (self-host).
+[[unsafe.bindings]]
+name = "DRIVE_TOKEN_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1007"
+simple = { limit = 10, period = 60 }
+
 # The AI features (docs/specs/007-editor/ai-assistance.md) talk to ANY OpenAI-compatible chat-completions
 # endpoint, and WHICH provider is inferred from which key is set — a key is
 # provider-specific, so its name says whose it is (see src/ai-provider.ts):
@@ -377,6 +389,12 @@ name = "API_TOKEN_READ_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "DRIVE_TOKEN_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1007"
+simple = { limit = 10, period = 60 }
 
 # A different script is a different Durable Object namespace, so staging's
 # DIAGRAM_ROOM instances are separate from production's for free. The class

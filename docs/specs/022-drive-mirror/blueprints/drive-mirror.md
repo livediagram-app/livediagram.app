@@ -313,19 +313,19 @@ type DriveAccessToken = { accessToken: string; expiresAt: number };
 Every route: `503 drive_not_configured` when `driveMode` is `off`; `401 sign_in_required` without `ctx.clerkUserId`
 (guest header and API token both refused); owner is `ctx.clerkUserId`. Each logs `drive: <route> <outcome>`.
 
-| Method   | Path                         | Body                                                | Success                      | Rejections                                                                                                                            |
-| -------- | ---------------------------- | --------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST`   | `/drive/state`               | `{ redirectUri }`                                   | `200 { state }`              | `400 invalid_redirect_uri`; `503 drive_broker_unavailable` unless `broker`                                                            |
-| `POST`   | `/drive/connect`             | `{ code, state }`                                   | `200 { connection }`         | `400 invalid_request`, `400 invalid_state`, `502 drive_exchange_failed`, `502 drive_no_refresh_token`; `503 drive_broker_unavailable` |
-| `POST`   | `/drive/token`               | none                                                | `200 DriveAccessToken`       | `404 drive_not_connected`, `409 drive_needs_reconnect`, `502 drive_refresh_failed`; `503 drive_broker_unavailable`                    |
-| `GET`    | `/drive/connection`          |                                                     | `200 { connection \| null }` |                                                                                                                                       |
-| `PUT`    | `/drive/connection`          | `{ rootFolderId?, pageToken? }`                     | `200 { connection }`         | `400 invalid_request`; `404 drive_not_connected` (broker mode, no row)                                                                |
-| `DELETE` | `/drive/connection`          |                                                     | `204`                        |                                                                                                                                       |
-| `GET`    | `/drive/items`               |                                                     | `200 { items }`              |                                                                                                                                       |
-| `PUT`    | `/drive/items`               | `{ items: DriveItem[] }` (1..`DRIVE_ITEMS_PUT_MAX`) | `200 { items }` (as stored)  | `400 invalid_request`, `404 drive_not_connected`, `409 drive_item_conflict`                                                           |
-| `DELETE` | `/drive/items/{kind}/{ldId}` |                                                     | `204`                        | `400 invalid_request`                                                                                                                 |
-| `POST`   | `/drive/lease`               | `{ holder }`                                        | `200 DriveLease`             | `400 invalid_request`, `404 drive_not_connected`                                                                                      |
-| `DELETE` | `/drive/lease?holder=`       |                                                     | `204`                        | `400 invalid_request`                                                                                                                 |
+| Method   | Path                         | Body                                                | Success                      | Rejections                                                                                                                                         |
+| -------- | ---------------------------- | --------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST`   | `/drive/state`               | `{ redirectUri }`                                   | `200 { state }`              | `400 invalid_redirect_uri`; `503 drive_broker_unavailable` unless `broker`                                                                         |
+| `POST`   | `/drive/connect`             | `{ code, state }`                                   | `200 { connection }`         | `400 invalid_request`, `400 invalid_state`, `502 drive_exchange_failed`, `502 drive_no_refresh_token`; `503 drive_broker_unavailable`              |
+| `POST`   | `/drive/token`               | none                                                | `200 DriveAccessToken`       | `404 drive_not_connected`, `409 drive_needs_reconnect`, `429 drive_token_rate_limited`, `502 drive_refresh_failed`; `503 drive_broker_unavailable` |
+| `GET`    | `/drive/connection`          |                                                     | `200 { connection \| null }` |                                                                                                                                                    |
+| `PUT`    | `/drive/connection`          | `{ rootFolderId?, pageToken? }`                     | `200 { connection }`         | `400 invalid_request`; `404 drive_not_connected` (broker mode, no row)                                                                             |
+| `DELETE` | `/drive/connection`          |                                                     | `204`                        |                                                                                                                                                    |
+| `GET`    | `/drive/items`               |                                                     | `200 { items }`              |                                                                                                                                                    |
+| `PUT`    | `/drive/items`               | `{ items: DriveItem[] }` (1..`DRIVE_ITEMS_PUT_MAX`) | `200 { items }` (as stored)  | `400 invalid_request`, `404 drive_not_connected`, `409 drive_item_conflict`                                                                        |
+| `DELETE` | `/drive/items/{kind}/{ldId}` |                                                     | `204`                        | `400 invalid_request`                                                                                                                              |
+| `POST`   | `/drive/lease`               | `{ holder }`                                        | `200 DriveLease`             | `400 invalid_request`, `404 drive_not_connected`                                                                                                   |
+| `DELETE` | `/drive/lease?holder=`       |                                                     | `204`                        | `400 invalid_request`                                                                                                                              |
 
 Validation: ids and file ids 1..`DRIVE_ID_MAX` characters of `[A-Za-z0-9_-]` (Drive ids) or the livediagram id
 charset `[A-Za-z0-9_-]`; names 1..`DRIVE_NAME_MAX`; `holder` a 1..64 character `[A-Za-z0-9-]` string;
@@ -470,6 +470,7 @@ beyond D1's own; a connection is re-creatable by reconnecting. `DELETE /api/driv
 | -------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | Offline, `fetch` rejects                           | Pass ends, `error = 'offline'`, next trigger retries                                            |
 | Google 401                                         | Token dropped, fetched again once; second 401 ends the pass (`error = 'failed'`)                |
+| `429 drive_token_rate_limited` from the api        | Same as a Google rate limit: `backoff.hit`, `error = 'rate_limited'`, next poll backed off      |
 | 403 rate / 429                                     | `backoff.hit`, pass ends, `error = 'rate_limited'` until a clean pass                           |
 | 404 on update                                      | Re-create in the expected place                                                                 |
 | 404 on the root                                    | Root treated as missing; step 3 of the pass runs                                                |
@@ -493,7 +494,9 @@ beyond D1's own; a connection is re-creatable by reconnecting. `DELETE /api/driv
   another owner fails to open.
 - `state` binds user, redirect URI and 10 minutes; a code minted for one user cannot be redeemed by another.
 - Access tokens reach the browser only for the caller's own grant, which is what the browser would hold anyway.
-- Writes ride the existing `WRITE_RATE_LIMITER`; `POST /drive/token` is a POST, so it does too.
+- Writes ride the existing `WRITE_RATE_LIMITER`. `POST /drive/token` also has its own `DRIVE_TOKEN_RATE_LIMITER`
+  (10 per 60 s per Clerk user id, namespace `1007`, production and `[env.staging]`), checked before Google is
+  called; absent binding allows (self-host).
 - The browser never deletes a Drive file it did not create: tombstones name only files an item recorded.
 - `/drive/open` treats `state` as untrusted JSON; ids are validated before any request; an unknown file is an error.
 - No Google data is used for anything but the mirror (Limited Use); no Drive content reaches the server.
@@ -584,31 +587,32 @@ with `E2E_DRIVE=1`. A real build never sets the flag, so the bridge is compiled 
 
 ## Constants and configuration
 
-| Constant                                   | Value                              | Where                  | Provenance / safe range                 |
-| ------------------------------------------ | ---------------------------------- | ---------------------- | --------------------------------------- |
-| `DRIVE_POLL_INTERVAL_MS`                   | 20 min                             | `lib/drive/cadence.ts` | Research cadence; 10..60 min            |
-| `DRIVE_POLL_INTERVAL_MAX_MS`               | 60 min                             | cadence                | Research back-off cap                   |
-| `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 5 min                              | cadence                | Research; 1..20 min                     |
-| `DRIVE_CHANGES_PAGE_SIZE`                  | 1000                               | cadence                | Google maximum                          |
-| `DRIVE_WRITE_IDLE_MS`                      | 60 s                               | cadence                | Research; 10 s..5 min                   |
-| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 min                              | cadence                | Research; 1..30 min                     |
-| `DRIVE_WRITE_MIN_INTERVAL_MAX_MS`          | 30 min                             | cadence                | Research back-off cap                   |
-| `DRIVE_BACKOFF_CALM_MS`                    | 60 min                             | cadence                | Research                                |
-| `DRIVE_BACKOFF_MAX_LEVEL`                  | 3                                  | cadence                | 2^3 x 20 min > 60 min cap               |
-| `DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS` | 10 min                             | cadence                | Research                                |
-| `DRIVE_TOKEN_RENEW_BEFORE_MS`              | 5 min                              | cadence                | D4; 1..10 min of a 60-minute token      |
-| `DRIVE_LEASE_MS`                           | 15 min                             | api-schema `drive.ts`  | Spec; 5..30 min                         |
-| `DRIVE_LEASE_RENEW_BEFORE_MS`              | 5 min                              | api-schema             | Spec                                    |
-| `DRIVE_STATE_TTL_MS`                       | 10 min                             | api-schema             | Spec                                    |
-| `DRIVE_ITEMS_PUT_MAX`                      | 100                                | api-schema             | One D1 batch; D1 allows 1000 statements |
-| `DRIVE_ITEMS_PUT_BATCH`                    | 25                                 | cadence                | D5                                      |
-| `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                              | cadence                | Google multipart limit                  |
-| `DRIVE_THUMBNAIL_WIDTH_PX`                 | 1600                               | cadence                | Google's recommendation; min 220        |
-| `DRIVE_THUMBNAIL_MAX_BYTES`                | 2 MB                               | cadence                | Google limit                            |
-| `DRIVE_FILE_MIME`                          | `application/vnd.livediagram+json` | api-schema             | Spec                                    |
-| `DRIVE_FILE_EXTENSION`                     | `.livediagram`                     | api-schema             | Spec                                    |
-| `DRIVE_ROOT_NAME`                          | `livediagram`                      | api-schema             | Spec                                    |
-| `DRIVE_SCOPES`                             | `drive.file drive.install`         | api-schema             | Spec                                    |
+| Constant                                   | Value                              | Where                    | Provenance / safe range                                |
+| ------------------------------------------ | ---------------------------------- | ------------------------ | ------------------------------------------------------ |
+| `DRIVE_POLL_INTERVAL_MS`                   | 20 min                             | `lib/drive/cadence.ts`   | Research cadence; 10..60 min                           |
+| `DRIVE_POLL_INTERVAL_MAX_MS`               | 60 min                             | cadence                  | Research back-off cap                                  |
+| `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 5 min                              | cadence                  | Research; 1..20 min                                    |
+| `DRIVE_CHANGES_PAGE_SIZE`                  | 1000                               | cadence                  | Google maximum                                         |
+| `DRIVE_WRITE_IDLE_MS`                      | 60 s                               | cadence                  | Research; 10 s..5 min                                  |
+| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 min                              | cadence                  | Research; 1..30 min                                    |
+| `DRIVE_WRITE_MIN_INTERVAL_MAX_MS`          | 30 min                             | cadence                  | Research back-off cap                                  |
+| `DRIVE_BACKOFF_CALM_MS`                    | 60 min                             | cadence                  | Research                                               |
+| `DRIVE_BACKOFF_MAX_LEVEL`                  | 3                                  | cadence                  | 2^3 x 20 min > 60 min cap                              |
+| `DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS` | 10 min                             | cadence                  | Research                                               |
+| `DRIVE_TOKEN_RENEW_BEFORE_MS`              | 5 min                              | cadence                  | D4; 1..10 min of a 60-minute token                     |
+| `DRIVE_TOKEN_RATE_LIMITER`                 | 10 per 60 s                        | `apps/api/wrangler.toml` | Lead review; about one token an hour is healthy; 5..30 |
+| `DRIVE_LEASE_MS`                           | 15 min                             | api-schema `drive.ts`    | Spec; 5..30 min                                        |
+| `DRIVE_LEASE_RENEW_BEFORE_MS`              | 5 min                              | api-schema               | Spec                                                   |
+| `DRIVE_STATE_TTL_MS`                       | 10 min                             | api-schema               | Spec                                                   |
+| `DRIVE_ITEMS_PUT_MAX`                      | 100                                | api-schema               | One D1 batch; D1 allows 1000 statements                |
+| `DRIVE_ITEMS_PUT_BATCH`                    | 25                                 | cadence                  | D5                                                     |
+| `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                              | cadence                  | Google multipart limit                                 |
+| `DRIVE_THUMBNAIL_WIDTH_PX`                 | 1600                               | cadence                  | Google's recommendation; min 220                       |
+| `DRIVE_THUMBNAIL_MAX_BYTES`                | 2 MB                               | cadence                  | Google limit                                           |
+| `DRIVE_FILE_MIME`                          | `application/vnd.livediagram+json` | api-schema               | Spec                                                   |
+| `DRIVE_FILE_EXTENSION`                     | `.livediagram`                     | api-schema               | Spec                                                   |
+| `DRIVE_ROOT_NAME`                          | `livediagram`                      | api-schema               | Spec                                                   |
+| `DRIVE_SCOPES`                             | `drive.file drive.install`         | api-schema               | Spec                                                   |
 
 Env: api `GOOGLE_CLIENT_ID` (var), `GOOGLE_CLIENT_SECRET` (secret), `DRIVE_TOKEN_KEY` (secret, base64 of 32 bytes,
 `openssl rand -base64 32`), `GOOGLE_OAUTH_BASE_URL` (tests only); live `NEXT_PUBLIC_GOOGLE_CLIENT_ID`,

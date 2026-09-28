@@ -284,3 +284,27 @@ describe('idle states', () => {
     expect(w.timers.pending()).toEqual([DRIVE_POLL_INTERVAL_MS]);
   });
 });
+
+describe('the api token limiter', () => {
+  it('is treated like a Google rate limit: status says so and the poll backs off', async () => {
+    const w = world();
+    let limited = false;
+    const tokens = createBrokerTokenSource({
+      fetchToken: async () => {
+        if (limited) throw new ApiError('drive token', 429, 'drive_token_rate_limited');
+        return { accessToken: w.google.issueAccessToken(OWNER), expiresAt: w.clock.now + 60 * MIN };
+      },
+      now: () => w.clock.now,
+    });
+    const { engine, statuses } = makeEngine({ ...w, tokens });
+    await engine.start();
+    (tokens as { clear(): void }).clear();
+    limited = true;
+    await engine.syncNow();
+    expect(statuses.at(-1)).toMatchObject({ state: 'idle', error: 'rate_limited' });
+    expect(w.timers.pending()).toEqual([2 * DRIVE_POLL_INTERVAL_MS]);
+    limited = false;
+    await engine.syncNow();
+    expect(statuses.at(-1)).toMatchObject({ state: 'idle', error: null });
+  });
+});

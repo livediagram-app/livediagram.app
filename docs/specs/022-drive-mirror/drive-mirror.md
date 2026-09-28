@@ -74,6 +74,11 @@ this spec does not restate it.
 
 - `POST /api/drive/connect` (`{ code, state }`): exchanges the code, stores the
   encrypted refresh token, returns the connection summary.
+- `POST /api/drive/token` has its own per-user rate limit (10 a minute), far
+  below the general write limit, because every call reaches Google; past it the
+  api answers `429 drive_token_rate_limited` and the browser backs off exactly as
+  it does for Google's own rate limits. A deployment without the limiter binding
+  allows every call.
 - `POST /api/drive/token`: mints a one-hour access token from the stored
   refresh token and returns `{ accessToken, expiresAt }`. Called on arrival and
   shortly before expiry, so about once per active hour per user.

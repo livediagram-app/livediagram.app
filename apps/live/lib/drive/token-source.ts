@@ -11,7 +11,14 @@ import type { DriveAccessToken } from '@livediagram/api-schema';
 import { ApiError } from '../api/core';
 import { DRIVE_TOKEN_RENEW_BEFORE_MS } from './cadence';
 
-export type DriveTokenErrorKind = 'needs_reconnect' | 'needs_resume' | 'not_connected' | 'failed';
+export type DriveTokenErrorKind =
+  | 'needs_reconnect'
+  | 'needs_resume'
+  | 'not_connected'
+  // The api's own token limiter (429 drive_token_rate_limited): backed off
+  // like Google's rate limits.
+  | 'rate_limited'
+  | 'failed';
 
 export class DriveTokenError extends Error {
   readonly kind: DriveTokenErrorKind;
@@ -54,6 +61,7 @@ export function createBrokerTokenSource(deps: {
             throw new DriveTokenError('needs_reconnect');
           }
           if (err.status === 404) throw new DriveTokenError('not_connected');
+          if (err.status === 429) throw new DriveTokenError('rate_limited');
         }
         throw new DriveTokenError('failed', err instanceof Error ? err.message : String(err));
       }

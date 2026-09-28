@@ -293,7 +293,11 @@ export class DriveMirrorEngine {
         this.publish({ state: 'needs_reconnect' });
       } else if (err.kind === 'needs_resume') this.publish({ state: 'needs_resume' });
       else if (err.kind === 'not_connected') this.publish({ state: 'disconnected' });
-      else this.publish({ state: 'idle', error: 'failed' });
+      else if (err.kind === 'rate_limited') {
+        this.backoff.hit(this.deps.now());
+        this.publish({ state: 'idle', error: 'rate_limited', progress: null });
+        this.schedulePoll();
+      } else this.publish({ state: 'idle', error: 'failed' });
       return;
     }
     this.onPassError(err, 'token');
