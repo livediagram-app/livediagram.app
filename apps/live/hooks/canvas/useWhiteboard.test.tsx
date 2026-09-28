@@ -45,6 +45,14 @@ describe('useWhiteboard', () => {
     });
   });
 
+  it('puts the pen in hand when the open tab becomes a whiteboard (Quick Start)', () => {
+    const blank = { id: 't2', name: 'Tab 2', kind: 'diagram', elements: [] } as Tab;
+    const { deps, hook } = setup(blank);
+    expect(deps.beginDraw).not.toHaveBeenCalled();
+    hook.rerender({ ...deps, activeTab: { ...blank, kind: 'whiteboard' } });
+    expect(deps.beginDraw).toHaveBeenCalledTimes(1);
+  });
+
   it('leaves a held mode alone when a whiteboard opens', () => {
     const { deps } = setup(board(), null, 'eraser' as never);
     expect(deps.beginDraw).not.toHaveBeenCalled();

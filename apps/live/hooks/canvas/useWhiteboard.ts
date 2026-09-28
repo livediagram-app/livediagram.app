@@ -86,10 +86,13 @@ export function useWhiteboard(deps: Deps) {
   // Entering a whiteboard puts the active pen in hand (D2): "pick up a pen and
   // draw". Only when nothing else is held, so a mode the user chose survives.
   // Leaving one puts a whiteboard pen down, so it cannot leak onto a diagram tab.
-  const tabIdRef = useRef<string | null>(null);
+  // "Entering" is a new active tab, or the open tab becoming a whiteboard
+  // (Quick Start on a fresh tab).
+  const seenRef = useRef<string | null>(null);
   useEffect(() => {
-    const entered = tabIdRef.current !== activeTab.id;
-    tabIdRef.current = activeTab.id;
+    const key = `${activeTab.id}:${whiteboard}`;
+    const entered = seenRef.current !== key;
+    seenRef.current = key;
     if (!whiteboard) {
       if (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') cancelDraw();
       return;
