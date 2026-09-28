@@ -56,12 +56,11 @@ export function useLivePoll(deps: {
   // Local-only hide, so a participant isn't stuck with a panel when the
   // host disconnects without ending the poll.
   const [dismissed, setDismissed] = useState(false);
-  // Which poll id we opened, if any. A ref rather than state because
-  // nothing renders off it directly — `isHost` below derives it. Being the
-  // host is local-only: it decides who sees the host controls (End poll /
+  // Which poll id we opened, if any; `isHost` below derives from it. Being
+  // the host is local-only: it decides who sees the host controls (End poll /
   // copy), is deliberately not on the wire since no peer needs to know,
   // and a reload drops the whole poll anyway.
-  const hostedPollRef = useRef<string | null>(null);
+  const [hostedPollId, setHostedPollId] = useState<string | null>(null);
   // Mirror of `poll` for the handlers below. They need to READ the current
   // poll (to drop ops for a poll we don't have) while also writing other
   // state; doing that inside a setPoll updater would make the updater
@@ -85,7 +84,7 @@ export function useLivePoll(deps: {
     setAnswers(new Map());
     setMyAnswer(null);
     setDismissed(false);
-    hostedPollRef.current = null;
+    setHostedPollId(null);
   }, [setActivePoll]);
 
   // A poll arrived from a peer (or we opened our own). Replaces whatever
@@ -111,7 +110,7 @@ export function useLivePoll(deps: {
       // the rule the room and every peer share picks the one we stay on;
       // otherwise the starter of one ends up answering the other.
       if (!pollSupersedes(clean, pollRef.current)) return;
-      hostedPollRef.current = clean.hostKey && clean.hostKey === selfKey() ? clean.id : null;
+      setHostedPollId(clean.hostKey && clean.hostKey === selfKey() ? clean.id : null);
       openPoll(clean);
     },
     [openPoll, selfKey],
@@ -169,7 +168,7 @@ export function useLivePoll(deps: {
         hostKey: selfKey(),
       });
       if (!next) return;
-      hostedPollRef.current = next.id;
+      setHostedPollId(next.id);
       openPoll(next);
       roomRef.current?.send({ kind: 'op', op: { kind: 'poll-start', poll: next } });
       track('Tab', 'Started', 'Poll');
@@ -206,7 +205,7 @@ export function useLivePoll(deps: {
     roomRef.current?.send({ kind: 'op', op: { kind: 'poll-end', pollId: current.id } });
     clearPoll();
     track('Tab', 'Ended', 'Poll');
-  }, [roomRef, clearPoll]);
+  }, [roomRef, sessionBlockedRef, clearPoll]);
 
   // Hide our own panel without ending the poll for anyone else. The
   // escape hatch for a participant whose host vanished mid-poll.
@@ -217,7 +216,7 @@ export function useLivePoll(deps: {
     answers,
     myAnswer,
     dismissed,
-    isHost: poll !== null && hostedPollRef.current === poll.id,
+    isHost: poll !== null && hostedPollId === poll.id,
     startPoll,
     answerPoll,
     endPoll,

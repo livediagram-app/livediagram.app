@@ -21,11 +21,15 @@ export function useFavourites(ownerId: string | null) {
   // captured from inside it is unsafe to use for the outbound request.
   const idsRef = useLatest(favouriteIds);
 
+  // No owner, no stars: dropped during render the moment the owner goes.
+  const [loadedOwner, setLoadedOwner] = useState(ownerId);
+  if (ownerId !== loadedOwner) {
+    setLoadedOwner(ownerId);
+    if (!ownerId) setFavouriteIds(new Set());
+  }
+
   useEffect(() => {
-    if (!ownerId) {
-      setFavouriteIds(new Set());
-      return;
-    }
+    if (!ownerId) return;
     let cancelled = false;
     void apiListFavourites(ownerId).then((ids) => {
       if (!cancelled) setFavouriteIds(new Set(ids));

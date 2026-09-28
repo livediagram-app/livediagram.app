@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { GlyphDisc } from '@livediagram/ui';
 
 interface TocItem {
@@ -9,39 +9,57 @@ interface TocItem {
   level: number;
 }
 
+const HEADINGS = '.prose-help h2, .prose-help h3';
+
+const slugOf = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+// The article's headings are an external store: the MDX article renders beside this component, so there
+// is no render-time source, and they exist only once the article has committed (on a client-side
+// navigation that commit can come after this list mounts). The store is the DOM, watched for added or
+// removed nodes; a snapshot is kept per content, so an unchanged article is the same array. The server and
+// hydration snapshot is empty. One heading is no table of contents.
+const NO_ITEMS: TocItem[] = [];
+let cachedKey = '[]';
+let cachedItems = NO_ITEMS;
+
+function readToc(): TocItem[] {
+  const items: TocItem[] = [];
+  document.querySelectorAll(HEADINGS).forEach((heading) => {
+    const text = heading.textContent?.trim() ?? '';
+    if (text)
+      items.push({ id: heading.id || slugOf(text), text, level: heading.tagName === 'H2' ? 2 : 3 });
+  });
+  const list = items.length > 1 ? items : NO_ITEMS;
+  const key = JSON.stringify(list);
+  if (key !== cachedKey) {
+    cachedKey = key;
+    cachedItems = list;
+  }
+  return cachedItems;
+}
+
+function subscribeToArticle(onChange: () => void): () => void {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  return () => observer.disconnect();
+}
+
+const readNothing = () => NO_ITEMS;
+
 export function TableOfContents() {
-  const [items, setItems] = useState<TocItem[]>([]);
+  const items = useSyncExternalStore(subscribeToArticle, readToc, readNothing);
 
-  useEffect(() => {
-    const headings = document.querySelectorAll('.prose-help h2, .prose-help h3');
-    const tocItems: TocItem[] = [];
-
-    headings.forEach((heading) => {
+  // The links need anchors: every listed heading without an id gets the one its link already uses.
+  useLayoutEffect(() => {
+    document.querySelectorAll(HEADINGS).forEach((heading) => {
       const text = heading.textContent?.trim() ?? '';
-      if (!text) return;
-
-      if (!heading.id) {
-        heading.id = text
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-|-$/g, '');
-      }
-
-      tocItems.push({
-        id: heading.id,
-        text,
-        level: heading.tagName === 'H2' ? 2 : 3,
-      });
+      if (text && !heading.id) heading.id = slugOf(text);
     });
-
-    if (tocItems.length > 1) {
-      // The heading list only exists once the MDX article has rendered, so the
-      // DOM is the external system being read here and there is no render-time
-      // source to derive it from. Runs once on mount, so no render cascade.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setItems(tocItems);
-    }
-  }, []);
+  }, [items]);
 
   if (items.length === 0) return null;
 

@@ -92,6 +92,7 @@ type EditorBroadcastApi = {
 };
 
 export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastApi {
+  const { roomRef, cursorsHidden, activeId, canvasTool } = deps;
   const [localLaserTrail, setLocalLaserTrail] = useState<LaserPoint[]>([]);
   const lastCursorSentRef = useRef(0);
   const lastLaserSentRef = useRef(0);
@@ -102,14 +103,16 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // so a partial path doesn't persist past the tool / tab change.
   // The overlay would eventually hide stale points via its LIFETIME
   // filter, but a fresh laser session shouldn't start from the prior
-  // session's tail. Same behaviour as the inline effect this
-  // replaced.
-  useEffect(() => {
-    // Unconditional: a tab switch with the laser tool still active must
-    // clear too — the local trail carries no tabId, so the overlay would
-    // ghost the old tab's path onto the new one for the buffer TTL.
+  // session's tail. Cleared during render, so the stale trail never
+  // paints a frame. Unconditional: a tab switch with the laser tool
+  // still active must clear too — the local trail carries no tabId, so
+  // the overlay would ghost the old tab's path onto the new one for the
+  // buffer TTL.
+  const [trailFor, setTrailFor] = useState({ tool: canvasTool, tab: activeId });
+  if (trailFor.tool !== canvasTool || trailFor.tab !== activeId) {
+    setTrailFor({ tool: canvasTool, tab: activeId });
     setLocalLaserTrail([]);
-  }, [deps.canvasTool, deps.activeId]);
+  }
 
   // Entering a hide-cursors vote, retract our indicator once. Without
   // this, every peer keeps the LAST position we sent in their map: it's
@@ -118,9 +121,6 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // we were looking at mid-vote — exactly the leak the mode exists to
   // prevent. A null cursor is the room's "pointer left the canvas" signal,
   // so peers drop the entry outright. Sent before the gate below applies.
-  const cursorsHidden = deps.cursorsHidden;
-  const roomRef = deps.roomRef;
-  const activeId = deps.activeId;
   useEffect(() => {
     if (!cursorsHidden) return;
     roomRef.current?.send({

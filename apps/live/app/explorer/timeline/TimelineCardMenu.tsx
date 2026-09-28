@@ -21,7 +21,7 @@
 // both paths flip it.
 
 import { CloseIcon } from '@livediagram/ui';
-import { useRef, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import {
   MenuActionRow,
@@ -92,7 +92,8 @@ type Shape =
 
 export function TimelineCardMenu(props: Shared & Shape) {
   const { subject, open, onOpenChange, onRemove } = props;
-  const ref = useRef<HTMLButtonElement>(null);
+  // In state, so the menu anchors to the trigger on the render that opens it.
+  const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
   const close = () => onOpenChange(false);
   const then = (fn: () => void) => () => {
     fn();
@@ -101,7 +102,7 @@ export function TimelineCardMenu(props: Shared & Shape) {
   return (
     <>
       <EllipsisTriggerButton
-        ref={ref}
+        ref={setTrigger}
         tuck
         label={`Menu for ${subject}`}
         expanded={open}
@@ -110,7 +111,7 @@ export function TimelineCardMenu(props: Shared & Shape) {
       {!open ? null : props.diagram ? (
         <DiagramActionsMenu
           diagram={props.diagram}
-          anchor={ref.current}
+          anchor={trigger}
           onClose={close}
           onRemoveFromTimeline={onRemove}
           {...props.handlers}
@@ -118,15 +119,15 @@ export function TimelineCardMenu(props: Shared & Shape) {
       ) : props.folder ? (
         <FolderActionsMenu
           folder={props.folder}
-          anchor={ref.current}
+          anchor={trigger}
           onClose={close}
           onRemoveFromTimeline={onRemove}
-          {...props.folderHandlers(ref.current)}
+          {...props.folderHandlers(trigger)}
         />
       ) : (
         <EntityMenu
           subject={subject}
-          anchor={ref.current}
+          anchor={trigger}
           items={props.items ?? []}
           onRemove={then(onRemove)}
           onClose={close}

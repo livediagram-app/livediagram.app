@@ -64,13 +64,32 @@ export function getGuestSelfId(): string | null {
   return readLocalStorageSafe(KEYS.selfId);
 }
 
+// The guest id as an external store (docs/specs/003-system-architecture/react-state-and-effects.md):
+// components read it with useSyncExternalStore(subscribeGuestSelfId, getGuestSelfId), and every write
+// here notifies them; another tab's write arrives as a storage event.
+const guestIdListeners = new Set<() => void>();
+const notifyGuestId = () => guestIdListeners.forEach((fn) => fn());
+export function subscribeGuestSelfId(onChange: () => void): () => void {
+  guestIdListeners.add(onChange);
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === null || e.key === KEYS.selfId) onChange();
+  };
+  if (typeof window !== 'undefined') window.addEventListener('storage', onStorage);
+  return () => {
+    guestIdListeners.delete(onChange);
+    if (typeof window !== 'undefined') window.removeEventListener('storage', onStorage);
+  };
+}
+
 function setGuestSelfId(id: string): void {
   writeLocalStorageSafe(KEYS.selfId, id);
+  notifyGuestId();
 }
 
 export function clearGuestSelfId(): void {
   removeLocalStorageSafe(KEYS.selfId);
   removeLocalStorageSafe(KEYS.selfSig);
+  notifyGuestId();
 }
 
 export function getGuestSelfSig(): string | null {
@@ -84,6 +103,7 @@ export function setGuestIdentity(id: string, sig: string | null): void {
   writeLocalStorageSafe(KEYS.selfId, id);
   if (sig) writeLocalStorageSafe(KEYS.selfSig, sig);
   else removeLocalStorageSafe(KEYS.selfSig);
+  notifyGuestId();
 }
 
 // Read the existing guest id, or mint + persist a fresh one. The

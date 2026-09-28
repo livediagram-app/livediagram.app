@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
 
 // List vs card layout for the Explorer browse views (docs/specs/006-diagram/diagram-snapshots.md). Device-
 // local: a view preference, not account data, so it lives in
@@ -19,21 +18,13 @@ const STORAGE_KEY = 'livediagram:explorer-view';
 const DEFAULT_MODE: ExplorerViewMode = 'card';
 
 export function useExplorerViewMode(): [ExplorerViewMode, (mode: ExplorerViewMode) => void] {
-  const [mode, setMode] = useState<ExplorerViewMode>(DEFAULT_MODE);
+  // The saved choice, read as an external store. The static export
+  // prerenders with the default (no window at build), and the hydrating
+  // render matches it; the saved choice lands on the render after.
+  const saved = useLocalStorageValue(STORAGE_KEY);
+  const mode: ExplorerViewMode = saved === 'card' || saved === 'list' ? saved : DEFAULT_MODE;
 
-  // Read the saved choice on mount. The static export prerenders with the
-  // default (no window at build), so seeding here rather than in a lazy
-  // initializer avoids a hydration mismatch; a returning list-view user sees a
-  // brief card flash, acceptable for a layout toggle.
-  useEffect(() => {
-    const saved = readLocalStorageSafe(STORAGE_KEY);
-    if (saved === 'card' || saved === 'list') setMode(saved);
-  }, []);
-
-  const update = (next: ExplorerViewMode) => {
-    setMode(next);
-    writeLocalStorageSafe(STORAGE_KEY, next);
-  };
+  const update = (next: ExplorerViewMode) => writeLocalStorageValue(STORAGE_KEY, next);
 
   return [mode, update];
 }

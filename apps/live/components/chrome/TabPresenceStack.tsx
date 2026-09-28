@@ -45,47 +45,17 @@ export function TabPresenceStack({
   // from the "+N" badge). Absent leaves the avatars as plain indicators.
   onOpenCollaborators?: (participantId: string | null) => void;
 }) {
-  type Slot = { p: Participant; leaving: boolean };
   const [rendered, setRendered] = useState<Slot[]>(() =>
     participants.map((p) => ({ p, leaving: false })),
   );
 
-  useEffect(() => {
-    const incomingIds = new Set(participants.map((p) => p.id));
-    setRendered((prev) => {
-      const stable = new Map(prev.map((s) => [s.p.id, s] as const));
-      const next: Slot[] = [];
-      // Preserve current entries: mark leaving the ones no longer
-      // present, refresh the participant payload for the ones that
-      // are. Skip already-leaving entries that have since been
-      // re-added: the leaving timer below would otherwise yank them
-      // back out.
-      for (const slot of prev) {
-        if (incomingIds.has(slot.p.id)) {
-          const fresh = participants.find((p) => p.id === slot.p.id)!;
-          next.push({ p: fresh, leaving: false });
-        } else if (!slot.leaving) {
-          next.push({ p: slot.p, leaving: true });
-        } else {
-          next.push(slot);
-        }
-      }
-      // Append new arrivals.
-      for (const p of participants) {
-        if (!stable.has(p.id)) next.push({ p, leaving: false });
-      }
-      // No-op if nothing actually changed; cheap reference check
-      // saves a re-render storm when the parent computes the same
-      // identity on every animation frame.
-      if (
-        next.length === prev.length &&
-        next.every((s, i) => s.p === prev[i]!.p && s.leaving === prev[i]!.leaving)
-      ) {
-        return prev;
-      }
-      return next;
-    });
-  }, [participants]);
+  // Reconciled during render, so an arrival pops in on the render that
+  // brings it rather than a frame later.
+  const [seenParticipants, setSeenParticipants] = useState(participants);
+  if (participants !== seenParticipants) {
+    setSeenParticipants(participants);
+    setRendered((prev) => reconcileSlots(prev, participants));
+  }
 
   useEffect(() => {
     const leavers = rendered.filter((s) => s.leaving);
@@ -164,6 +134,46 @@ export function TabPresenceStack({
       ) : null}
     </div>
   );
+}
+
+type Slot = { p: Participant; leaving: boolean };
+
+// The slots after `participants` changes: the ones still here refreshed,
+// the ones gone marked leaving, arrivals appended. The same array when
+// nothing changed, so an identical list costs no re-render.
+function reconcileSlots(prev: Slot[], participants: Participant[]): Slot[] {
+  const incomingIds = new Set(participants.map((p) => p.id));
+  const stable = new Map(prev.map((s) => [s.p.id, s] as const));
+  const next: Slot[] = [];
+  // Preserve current entries: mark leaving the ones no longer
+  // present, refresh the participant payload for the ones that
+  // are. Skip already-leaving entries that have since been
+  // re-added: the leaving timer would otherwise yank them
+  // back out.
+  for (const slot of prev) {
+    if (incomingIds.has(slot.p.id)) {
+      const fresh = participants.find((p) => p.id === slot.p.id)!;
+      next.push({ p: fresh, leaving: false });
+    } else if (!slot.leaving) {
+      next.push({ p: slot.p, leaving: true });
+    } else {
+      next.push(slot);
+    }
+  }
+  // Append new arrivals.
+  for (const p of participants) {
+    if (!stable.has(p.id)) next.push({ p, leaving: false });
+  }
+  // No-op if nothing actually changed; cheap reference check
+  // saves a re-render storm when the parent computes the same
+  // identity on every animation frame.
+  if (
+    next.length === prev.length &&
+    next.every((s, i) => s.p === prev[i]!.p && s.leaving === prev[i]!.leaving)
+  ) {
+    return prev;
+  }
+  return next;
 }
 
 // Helper so the visible slice keeps any leavers that occupy a slot

@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useExplorer } from './ExplorerContext';
 import { NewTokenButton } from '@/components/panels/NewTokenButton';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
@@ -129,12 +129,10 @@ export function ExplorerPane() {
 
   // A team you're not a member of 404s in TeamPane (it doesn't leak the
   // name). When that happens, drop the title/breadcrumb above it — there
-  // is no team to name. Reset on every navigation so a real team's title
-  // isn't suppressed by a stale 404 from the last one.
-  const [teamNotFound, setTeamNotFound] = useState(false);
-  useEffect(() => {
-    setTeamNotFound(false);
-  }, [selected]);
+  // is no team to name. Kept with the node it was found missing in, so a
+  // real team's title is never suppressed by a stale 404 from the last one.
+  const [notFoundIn, setNotFoundIn] = useState<typeof selected | null>(null);
+  const teamNotFound = notFoundIn === selected;
   // Where each Recent row lives (docs/specs/013-workspace/recent-folder-chip.md). Recent is the only pane that
   // spans folders — every other one IS a folder, so a chip there would just
   // repeat the pane's own title.
@@ -286,7 +284,7 @@ export function ExplorerPane() {
             clerkDisplayName={clerkDisplayName}
             onTeamsChanged={() => void refreshTeams()}
             onLeftTeam={() => go({ kind: 'timeline' })}
-            onLoadResult={(found) => setTeamNotFound(!found)}
+            onLoadResult={(found) => setNotFoundIn(found ? null : selected)}
             // The shared-diagrams move picker offers every space (docs/specs/013-workspace/team-shared-diagrams.md):
             // the personal tree + each team, with `moveDiagramTo` routing a
             // cross-scope pick from the diagram's current placement.

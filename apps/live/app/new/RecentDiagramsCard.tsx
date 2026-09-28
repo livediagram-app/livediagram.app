@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { apiListDiagrams } from '@/lib/api-client';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { Glyph } from '@livediagram/ui';
@@ -26,6 +26,8 @@ export function RecentDiagramsCard({
 }) {
   const [recent, setRecent] = useState<RecentItem[] | null>(null);
   const now = useRelativeNow();
+  // Reported to the newest callback; a fresh one never refetches.
+  const reportCount = useEffectEvent((n: number) => onCount?.(n));
 
   useEffect(() => {
     if (!ownerId) return;
@@ -33,7 +35,7 @@ export function RecentDiagramsCard({
     void apiListDiagrams(ownerId)
       .then((list) => {
         if (cancelled) return;
-        onCount?.(list.length);
+        reportCount(list.length);
         const top = [...list]
           .sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
           .slice(0, 5)
@@ -43,13 +45,11 @@ export function RecentDiagramsCard({
       .catch(() => {
         // Best-effort: a returning user just doesn't get the shortcut. Report
         // zero so a fresh visitor on a flaky network still gets the tour card.
-        if (!cancelled) onCount?.(0);
+        if (!cancelled) reportCount(0);
       });
     return () => {
       cancelled = true;
     };
-    // onCount is a stable setState from the page.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ownerId]);
 
   if (!recent || recent.length === 0) return null;

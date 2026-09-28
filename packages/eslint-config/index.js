@@ -81,5 +81,12 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // Tests drive hooks outside a component on purpose (docs/specs/003-system-architecture/react-state-and-effects.md).
+    files: ['**/*.test.ts', '**/*.test.tsx'],
+    rules: {
+      'react-hooks/rules-of-hooks': 'off',
+    },
+  },
   prettier,
 );
