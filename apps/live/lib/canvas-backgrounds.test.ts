@@ -4,7 +4,7 @@ import {
   type AnimatedBackgroundPattern,
   type BackgroundPattern,
 } from '@livediagram/diagram';
-import { tabBackgroundStyle } from './canvas-backgrounds';
+import { tabBackgroundStyle, worldPatternOrigin } from './canvas-backgrounds';
 
 // `tabBackgroundStyle` is the single entry point Canvas stamps onto
 // its `<main>` element on every tab change. The catalogue of
@@ -170,5 +170,36 @@ describe('tabBackgroundStyle', () => {
       expect(style.backgroundImage).toBeUndefined();
       expect(style.backgroundSize).toBeUndefined();
     }
+  });
+});
+
+// The static pattern lives in world space (docs/specs/008-canvas/canvas-and-palette.md "Canvas"): its origin
+// lands where the element layer (`scale(z) translate(o)` about the canvas
+// centre) puts world point (0, 0), so elements keep their place on the pattern
+// at any zoom. A phone opens at 0.6, where the raw offset drifted on every pan.
+describe('worldPatternOrigin', () => {
+  const size = { w: 400, h: 800 };
+  const elementScreen = (p: { x: number; y: number }, o: { x: number; y: number }, z: number) => ({
+    x: z * (p.x + o.x) + (1 - z) * (size.w / 2),
+    y: z * (p.y + o.y) + (1 - z) * (size.h / 2),
+  });
+
+  it('is the offset itself at zoom 1', () => {
+    expect(worldPatternOrigin({ x: 30, y: -12 }, 1, size)).toEqual({ x: 30, y: -12 });
+  });
+
+  it('lands where the element layer puts the world origin at any zoom', () => {
+    for (const z of [0.6, 0.25, 2]) {
+      const o = { x: 57, y: -140 };
+      expect(worldPatternOrigin(o, z, size)).toEqual(elementScreen({ x: 0, y: 0 }, o, z));
+    }
+  });
+
+  it('moves by exactly as much as an element when the view pans', () => {
+    const z = 0.6;
+    const before = worldPatternOrigin({ x: 0, y: 0 }, z, size);
+    const after = worldPatternOrigin({ x: 100, y: 50 }, z, size);
+    expect(after.x - before.x).toBeCloseTo(z * 100);
+    expect(after.y - before.y).toBeCloseTo(z * 50);
   });
 });

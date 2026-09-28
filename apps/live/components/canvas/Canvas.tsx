@@ -5,7 +5,8 @@ import {
   isBoxed,
   type ShapeElement,
 } from '@livediagram/diagram';
-import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
+import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
+import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { pointerToCanvas } from '@/lib/canvas';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
@@ -128,6 +129,8 @@ export function Canvas(props: CanvasProps) {
   const isPaintMode = formatSourceId !== null || canvasTool === 'format';
   // Nudge above the Fit button when the whole diagram has scrolled out of view.
   const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
+  // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
+  const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
 
   // Pan tracking. viewportOffset is owned by the page (so element placement
   // can reason about the visible viewport); we just read/write through props.
@@ -566,13 +569,18 @@ export function Canvas(props: CanvasProps) {
         pendingDraw ? '' : cursorClass
       }`}
       style={{
+        // In world space: the pattern pans and zooms with the elements, so
+        // they stay on the same dots at any zoom (worldPatternOrigin).
         ...tabBackgroundStyle(
           tabBackgroundPattern,
-          viewportOffset,
+          worldPatternOrigin(viewportOffset, viewportZoom, {
+            w: mainSize.width,
+            h: mainSize.height,
+          }),
           tabBackgroundColor,
           tabPatternColor,
           tabBackgroundOpacity,
-          tabBackgroundPatternScale,
+          tabBackgroundPatternScale * viewportZoom,
         ),
         // Mirror the inner-wrapper cursor on <main>. The inner div is
         // `absolute inset-0` but its CSS transform scales it (zoom),
