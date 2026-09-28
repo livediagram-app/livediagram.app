@@ -46,7 +46,8 @@ export async function apiDriveToken(ownerId: string): Promise<DriveAccessToken> 
 
 export async function apiGetDriveConnection(ownerId: string): Promise<DriveConnection | null> {
   const res = await apiFetch(`${base}/connection`, { headers: await apiHeaders(ownerId) });
-  return (await expectOk<{ connection: DriveConnection | null }>(res, 'drive connection')).connection;
+  return (await expectOk<{ connection: DriveConnection | null }>(res, 'drive connection'))
+    .connection;
 }
 
 export async function apiPutDriveConnection(
@@ -58,7 +59,8 @@ export async function apiPutDriveConnection(
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify(patch),
   });
-  return (await expectOk<{ connection: DriveConnection }>(res, 'drive connection update')).connection;
+  return (await expectOk<{ connection: DriveConnection }>(res, 'drive connection update'))
+    .connection;
 }
 
 export async function apiDisconnectDrive(ownerId: string): Promise<void> {
