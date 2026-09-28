@@ -343,6 +343,7 @@ export function EditorCanvasHost() {
     viewportOffset,
     viewportZoom,
     zenMode,
+    whiteboardDock,
   } = useEditorContext();
 
   // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md). The facilitator verbs
@@ -472,6 +473,8 @@ export function EditorCanvasHost() {
         elements={canvasElements}
         tabLayers={activeTab.layers}
         tabKind={activeTab.kind}
+        whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
+        whiteboardInk={WHITEBOARD_INK[appearance]}
         layerInertIds={layerInertIds}
         shiftDupGhostIds={shiftDupGhostIds}
         snapGuides={snapGuides}

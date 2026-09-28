@@ -72,6 +72,10 @@ export type CanvasProps = {
   // The tab’s tab kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
   // presents as an event-storming board.
   tabKind?: TabKind;
+  // The whiteboard dock's model and the board's ink for this appearance
+  // (docs/specs/023-whiteboard/whiteboard.md), present on a whiteboard tab.
+  whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
+  whiteboardInk?: string;
   // The tab's timeline lane stack (docs/specs/021-event-storming/event-storming.md Phase 6) when lanes are on, else
   // undefined: a note dragged in from the palette snaps onto it, and the
   // overlay lights the lane it is landing on.

@@ -44,6 +44,7 @@ import { useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
+import { WhiteboardDock } from '@/components/canvas/whiteboard/WhiteboardDock';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -489,6 +490,25 @@ export function CanvasChrome(props: CanvasChromeProps) {
           esBoardControls={props.esBoardControls}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
+        />
+      ) : null}
+
+      {/* The whiteboard's dock (docs/specs/023-whiteboard/whiteboard.md): bottom centre, in place of the
+          palette. Absent for a view-role visitor, who has nothing to draw with. */}
+      {whiteboard && props.whiteboardDock && !readOnly && !chromeHidden ? (
+        <WhiteboardDock
+          model={props.whiteboardDock}
+          ink={props.whiteboardInk ?? '#1c1917'}
+          highlighter={{
+            colour: props.highlighterColor ?? '#fde047',
+            width: props.highlighterWidth ?? 14,
+            onColour: (c) => props.onSetHighlighterColor?.(c),
+            onWidth: (px) => props.onSetHighlighterWidth?.(px),
+          }}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={onUndo}
+          onRedo={onRedo}
         />
       ) : null}
 

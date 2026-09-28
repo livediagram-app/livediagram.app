@@ -47,6 +47,7 @@ import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { EraserBrushRing } from '@/components/canvas/EraserBrushRing';
 import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
+import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
@@ -508,6 +509,7 @@ export function Canvas(props: CanvasProps) {
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,
     pendingDraw,
+    whiteboard: props.whiteboardDock !== undefined,
     viewportOffset,
     viewportZoom,
     mainRef,
@@ -786,8 +788,16 @@ export function Canvas(props: CanvasProps) {
       {canvasTool === 'eraser' ? (
         <EraserBrushRing
           pos={eraserPos}
-          radius={eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)}
-          filtered={(props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'}
+          // A whiteboard's brush is fixed per mode (docs/specs/023-whiteboard/whiteboard.md "Eraser").
+          radius={
+            props.whiteboardDock
+              ? WHITEBOARD_ERASER_RADIUS_PX[props.whiteboardDock.prefs.eraserMode]
+              : eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)
+          }
+          filtered={
+            !props.whiteboardDock &&
+            (props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'
+          }
         />
       ) : null}
       {canvasTool === 'spotlight' ? (

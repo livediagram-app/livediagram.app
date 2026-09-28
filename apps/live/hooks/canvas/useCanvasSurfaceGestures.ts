@@ -9,6 +9,9 @@ import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import type { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import type { useLongPress } from '@/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
+import { isHeldPenIntent } from '@/lib/draw-mode';
+import { markPenSeen, penSeen } from '@/lib/pen-seen';
+import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
@@ -25,6 +28,7 @@ export function useCanvasSurfaceGestures({
   canvasTool,
   middleMousePan,
   pendingDraw,
+  whiteboard = false,
   viewportOffset,
   viewportZoom,
   mainRef,
@@ -47,6 +51,8 @@ export function useCanvasSurfaceGestures({
   // Settings › Controls: middle-button drag pans the canvas (default on).
   middleMousePan: boolean;
   pendingDraw: CanvasProps['pendingDraw'];
+  // The active tab is a whiteboard (docs/specs/023-whiteboard/whiteboard.md "Touch and pen input").
+  whiteboard?: boolean;
   viewportOffset: { x: number; y: number };
   viewportZoom: number;
   mainRef: CanvasProps['mainRef'];
@@ -158,6 +164,31 @@ export function useCanvasSurfaceGestures({
     // gesture.
     const surface = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (surface && e.target instanceof Node && !surface.contains(e.target)) return;
+    // Whiteboard (docs/specs/023-whiteboard/whiteboard.md "Touch and pen input"): once a pen has been
+    // used, a single finger pans instead of inking, so a resting palm never
+    // draws. The pen itself, and a mouse, always ink.
+    if (whiteboard && e.button === 0) {
+      if (e.pointerType === 'pen') markPenSeen();
+      const inking =
+        canvasTool === 'eraser' || canvasTool === 'highlighter' || isHeldPenIntent(pendingDraw);
+      const route = whiteboardPointerRoute({
+        pointerType: e.pointerType,
+        penSeen: penSeen(),
+        inking,
+      });
+      if (route === 'pan') {
+        e.preventDefault();
+        e.stopPropagation();
+        setPan({
+          startClientX: e.clientX,
+          startClientY: e.clientY,
+          startOffsetX: viewportOffset.x,
+          startOffsetY: viewportOffset.y,
+          movedRef: { current: false },
+        });
+        return;
+      }
+    }
     // Spotlight tool (docs/specs/008-canvas/canvas-and-palette.md): a non-editing presenter mode. Left-click
     // grows the light; right-click shrinks it (the shrink itself runs in
     // onContextMenuCapture below). Handled in the capture phase so it

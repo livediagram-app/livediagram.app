@@ -318,10 +318,16 @@ export function useCanvasDrawGesture({
     if (isPinchingRef?.current) return null;
     return pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
   });
-  const commitPenStroke = useEffectEvent((stroke: { x: number; y: number }[]) => {
+  const commitPenStroke = useEffectEvent((stroke: { x: number; y: number }[], pinched: boolean) => {
     // Recognition is which PEN you picked, not a preference (docs/specs/008-canvas/two-pens.md):
     // the Shape Pen converts, plain Freehand and the highlighter never do.
     if (pendingDraw?.type !== 'freehand' || stroke.length < 2) return;
+    // A stroke a second finger interrupted is discarded on a whiteboard
+    // (docs/specs/023-whiteboard/whiteboard.md "Touch and pen input").
+    if (pinched && pendingDraw.variant === 'whiteboard') {
+      console.debug('[whiteboard] stroke discarded: pinch');
+      return;
+    }
     onCommitFreehand(stroke, pendingDraw.variant === 'shape-pen');
   });
   // The stroke as the press left it: where the sampling starts from.
@@ -331,7 +337,12 @@ export function useCanvasDrawGesture({
     if (!penning) return;
     let buffer = penAtPress();
     let rafId: number | null = null;
+    // A second finger took over mid-stroke. On a whiteboard the fragment drawn
+    // so far is discarded (docs/specs/023-whiteboard/whiteboard.md "Touch and pen input").
+    let pinched = false;
     const onMove = (e: PointerEvent) => {
+      // Remember the pinch before sampling stops for it.
+      if (isPinchingRef?.current) pinched = true;
       const point = penSample(e);
       if (!point) return;
       buffer = [...buffer, point];
@@ -348,7 +359,7 @@ export function useCanvasDrawGesture({
       }
       const snapshot = buffer;
       setPenPoints(null);
-      commitPenStroke(snapshot);
+      commitPenStroke(snapshot, pinched);
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
