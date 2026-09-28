@@ -153,3 +153,20 @@ describe('quiz label editing', () => {
     expect(opensInlineLabelEditor('pie-chart')).toBe(false);
   });
 });
+
+describe('quizPickerKeys', () => {
+  it('groups who picked what by answer, in answer order', async () => {
+    const { quizPickerKeys } = await import('./quiz');
+    expect(
+      quizPickerKeys({
+        quizOptions: ['A', 'B'],
+        responses: [
+          { participantId: 'p1', value: '1', at: 1 },
+          { participantId: 'p2', value: '0', at: 2 },
+          { participantId: 'p3', value: '1', at: 3 },
+          { participantId: 'p4', value: '9', at: 4 },
+        ],
+      }),
+    ).toEqual([['p2'], ['p1', 'p3']]);
+  });
+});

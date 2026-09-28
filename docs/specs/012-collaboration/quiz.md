@@ -69,9 +69,12 @@ same rule as every Collaborate card
 - **Locked**: the ring is empty, the answers stop taking presses, the disc says
   "Time's up" and the count. The facilitator sees Reveal.
 - **Revealed**: the right answer **animates to green** (a pop and a glow), the
-  others fade back, every answer shows how many picked it, and the disc names
-  who answered correctly ("3 of 5 correct" plus their avatars and names, the
-  first few by name and the rest as "+N"). The facilitator sees Run again.
+  others fade back, and every answer shows how many picked it with **the
+  avatars of who picked it beside it**: above an answer in the top half of the
+  ring, below the rest, so the row sits on the outside, away from the disc.
+  Five faces at most, then "+N" (which also counts picks from people who have
+  since left the room, who have no face to show). The disc keeps only the
+  question and the score ("3 of 5 correct"). The facilitator sees Run again.
 
 **The element's stroke colour** draws the outlines when one is set: the
 disc's edge, the countdown ring and the answers' borders (full strength on

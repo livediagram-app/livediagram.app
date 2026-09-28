@@ -95,6 +95,17 @@ export function quizTally(q: QuizFields): number[] {
   return counts;
 }
 
+// Who picked each answer, index-aligned to `quizOptions`, each list in the
+// order people answered. What the reveal draws beside every answer.
+export function quizPickerKeys(q: QuizFields): string[][] {
+  const keys = (q.quizOptions ?? []).map((): string[] => []);
+  for (const r of q.responses ?? []) {
+    const i = Number(r.value);
+    if (Number.isInteger(i) && i >= 0 && i < keys.length) keys[i]!.push(r.participantId);
+  }
+  return keys;
+}
+
 // The participant keys that picked the right answer, in the order they
 // answered (the responses list is kept in answer order by setResponse).
 export function quizCorrectKeys(q: QuizFields): string[] {

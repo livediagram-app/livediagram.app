@@ -5,8 +5,8 @@ import {
   clampQuizSeconds,
   QUIZ_DESIGN_SIZE,
   QUIZ_DISC_RADIUS,
-  quizCorrectKeys,
   quizOptionCentres,
+  quizPickerKeys,
   quizPhase,
   quizRemainingMs,
   quizTally,
@@ -25,6 +25,7 @@ import {
 import { QuizCentre } from './QuizCentre';
 import { QuizEditDialog } from './QuizEditDialog';
 import { QuizOption, type QuizOptionState } from './QuizOption';
+import { QuizPickers } from './QuizPickers';
 
 // The face of a Quiz (docs/specs/012-collaboration/quiz.md): a disc holding the
 // question, with its answers fanned out on a ring around it.
@@ -88,10 +89,21 @@ export function QuizFace({
   const answered = (element.responses ?? []).length;
   const shown = phase === 'open' || phase === 'locked' || phase === 'revealed';
 
-  const correctKeys = phase === 'revealed' ? quizCorrectKeys(element) : [];
-  const correctPeople = correctKeys
-    .map((key) => participants.find((p) => participantKey(p) === key))
-    .filter((p): p is Participant => p !== undefined);
+  // Once revealed, who picked each answer, matched to the room. A pick from
+  // somebody who has since left has no face, so it is only counted.
+  const pickers =
+    phase === 'revealed'
+      ? quizPickerKeys(element).map((keys) => {
+          const people = keys
+            .map((key) => participants.find((p) => participantKey(p) === key))
+            .filter((p): p is Participant => p !== undefined);
+          return { people, unknown: keys.length - people.length };
+        })
+      : [];
+  const correctCount =
+    phase === 'revealed' && element.quizCorrect !== undefined
+      ? (tally[element.quizCorrect] ?? 0)
+      : 0;
 
   const scale = Math.min(element.width, element.height) / QUIZ_DESIGN_SIZE;
   const c = QUIZ_DESIGN_SIZE / 2;
@@ -181,10 +193,7 @@ export function QuizFace({
             seconds={seconds}
             secondsLeft={Math.ceil(remaining / 1000)}
             answered={answered}
-            correct={{
-              people: correctPeople,
-              unknown: correctKeys.length - correctPeople.length,
-            }}
+            correctCount={correctCount}
             textColor={textColor}
             actions={{
               start: actions.start,
@@ -213,6 +222,18 @@ export function QuizFace({
                 stroke={stroke}
                 surface={surface}
                 onPress={phase === 'open' && actions.answer ? () => actions.answer!(i) : undefined}
+              />
+            ))}
+            {pickers.map((who, i) => (
+              <QuizPickers
+                key={`pickers-${i}`}
+                at={centres[i]!}
+                // Outside the answer, away from the disc (see QuizPickers).
+                side={centres[i]!.y < c - 1 ? 'above' : 'below'}
+                people={who.people}
+                unknown={who.unknown}
+                index={i}
+                textColor={textColor}
               />
             ))}
           </div>
