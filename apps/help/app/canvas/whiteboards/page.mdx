@@ -1,0 +1,73 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Whiteboards',
+  description:
+    'Draw freely on a whiteboard tab: a dock of pens, a highlighter, two erasers, stickies, text and shapes, on a board that turns into a chalkboard in dark mode.',
+  path: '/help/canvas/whiteboards/',
+});
+
+<ArticleLayout
+  title="Whiteboards"
+  description="A tab for plain freehand whiteboarding: pick up a pen and draw."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+>
+
+A **whiteboard** is a kind of tab made for sketching by hand. It sits beside your ordinary diagram tabs in the same diagram, so a workshop can keep a free sketch next to a tidy diagram. Everything else works as on any tab: sharing, live collaboration, comments, layers, undo and export.
+
+## Making one
+
+- **A new diagram:** in the New Diagram wizard, pick **Whiteboard** beside Blank. There is no theme to choose, so the wizard goes straight on to where the diagram lives.
+- **A new tab:** press **+** in the tab bar, then pick **Whiteboard** in Quick Start.
+
+A tab stays the kind it was made as: a whiteboard does not turn into a diagram tab, or back.
+
+## The dock
+
+Instead of the palette, a whiteboard has one toolbar floating at the bottom of the canvas. From left to right:
+
+1. **Select**, to pick up, move and resize what you have drawn.
+2. **Four pens**: Ink, Red, Blue and Green. Press a pen to pick it up; press the pen already in your hand to change its **colour** and **width** (Fine, Medium or Bold). Your pens are yours: they are remembered in this browser, not saved with the diagram.
+3. **Highlighter**, a translucent marker. Press it again to change its colour and strength.
+4. **Eraser** (see below).
+5. **Sticky note** and **Text**: press, then click or drag on the board.
+6. **Shapes**: a rectangle, ellipse, triangle, diamond, line or arrow.
+7. **Shape recognition** (see below).
+8. **Undo** and **Redo**.
+9. **More**: the board's background.
+
+A pen stays in your hand after each stroke, so you can keep writing. Press **Select** or **Escape** to put it down. Opening a whiteboard puts your last pen in your hand straight away.
+
+The dock works from the keyboard: Tab to it, move along it with the **arrow keys**, and press **Enter** or **Space**. Escape closes a pen's colour and width options and takes you back to the dock.
+
+## Pen, finger and mouse
+
+- A **pen** (stylus) always draws.
+- A **mouse** draws with a left drag. Middle-drag or hold **Space** to pan, as on any tab.
+- A **finger** draws until you use a pen. After that, on the same device, one finger **pans** instead, so a palm resting on the screen never leaves a mark. Reload the page to go back.
+- **Two fingers** always pan and pinch to zoom. A stroke the second finger interrupts is thrown away rather than left half-drawn.
+
+## The two erasers
+
+Press the eraser again to switch its mode:
+
+- **Stroke** removes a whole stroke you touch. Only the ink counts: erasing beside a long stroke leaves it alone.
+- **Partial** rubs out only the part of a stroke under the eraser, leaving the pieces either side. Stickies, text and shapes are never cut.
+
+Each sweep of the eraser is one undo. Locked elements, and elements on a hidden or locked [layer](/help/canvas/layers/), are never erased.
+
+## Shape recognition
+
+With **shape recognition** on, a roughly drawn circle, rectangle, triangle, diamond or line becomes the clean shape when you lift the pen, in the pen's colour and weight. With it off, which is the default, strokes stay exactly as drawn. The setting is remembered in this browser, and Undo removes a recognised shape.
+
+## Backgrounds
+
+Under **More**, choose a **Plain**, **Dots** or **Grid** board. The background is saved with the tab, so everyone sees the same board.
+
+## Whiteboard and chalkboard
+
+A whiteboard has no theme. In light mode it is an off-white board with black marker ink; in dark mode it becomes a chalkboard with chalk-coloured ink. The **Ink** pen, and anything you draw without choosing a colour, follows whichever you are looking at, so two people in different modes each see their own board. Coloured pens keep their colour in both.
+
+</ArticleLayout>
