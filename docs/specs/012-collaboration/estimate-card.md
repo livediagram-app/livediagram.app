@@ -100,7 +100,9 @@ rubber stamp after the reveal, and Reveal / Clear pills side by side.
   "Your pick stays hidden from everyone until the reveal."
 - The spread and the value order live in `@livediagram/diagram`
   (`estimateSpread`, `estimateRank`), so the export draws the same card: the
-  scale, and once revealed the sorted answers with the spread.
+  scale chooser while it has no scale; otherwise the scale's cards over the
+  room's, face down before the reveal and face up after, sorted, with the spread
+  and its ends ringed.
 - Durations are canvas motion and live in `qa-board.css`; every motion
   collapses under reduced motion.
 

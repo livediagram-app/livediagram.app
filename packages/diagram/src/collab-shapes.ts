@@ -129,6 +129,18 @@ export const TEMPERATURE_COLORS: readonly string[] = [
   '#fb7185',
 ];
 
+// The mouth of each fist-of-five face, frown (1) to beam (5), in a 16-unit box
+// whose face is a circle of radius 6.4 at (8, 8) with eyes at (5.9, 6.6) and
+// (10.1, 6.6). One definition for the canvas buttons and the export, so the
+// two draw the same five faces (docs/specs/012-collaboration/temperature-check.md "The face").
+export const TEMPERATURE_FACE_MOUTHS: readonly string[] = [
+  'M5.2 11.4Q8 8.9 10.8 11.4',
+  'M5.5 11Q8 10 10.5 11',
+  'M5.5 10.6H10.5',
+  'M5.4 9.9Q8 11.9 10.6 9.9',
+  'M5 9.4Q8 13.4 11 9.4Z',
+];
+
 // Where an average sits on the cool-to-warm track, 0 (all 1s) to 1 (all 5s).
 export function temperaturePosition(average: number): number {
   return Math.min(1, Math.max(0, (average - 1) / 4));

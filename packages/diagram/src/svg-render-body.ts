@@ -28,12 +28,8 @@ import {
   svgRating,
   svgTimelineRail,
 } from './svg-render-data';
-import {
-  BEHAVIOUR_FACE_SHAPES,
-  svgBehaviourFace,
-  svgCollabFace,
-  svgFace,
-} from './svg-render-faces';
+import { BEHAVIOUR_FACE_SHAPES, svgBehaviourFace, svgFace } from './svg-render-faces';
+import { svgCollabFace } from './svg-render-collab-faces';
 import { svgWebComponent } from './svg-render-web';
 import { isWebComponentShape } from './web-components';
 import type { BoxedElement, ShapeKind } from './index';
