@@ -2,7 +2,7 @@
 
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react';
-import { setTokenProvider } from '@/lib/api-client';
+import { registerTokenProvider } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { guestMigrationPending, settleGuestMigration } from '@/lib/guest-migration';
 
@@ -118,15 +118,13 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
   // `X-Owner-Id: <Clerk id>`, which the worker refuses with a 401 (a Clerk id
   // is never a guest credential). Every layout effect runs before any
   // passive one, so the provider is in place by the time a child fetches.
+  //
+  // Registered, not set: the page, AuthControls and the Settings rows each
+  // mount this hook, and one of them unmounting must leave the others'
+  // Bearer in place (see registerTokenProvider).
   useLayoutEffect(() => {
-    if (isSignedIn) {
-      setTokenProvider((opts) => getToken(opts));
-    } else {
-      setTokenProvider(null);
-    }
-    return () => {
-      setTokenProvider(null);
-    };
+    if (!isSignedIn) return;
+    return registerTokenProvider((opts) => getToken(opts));
   }, [isSignedIn, getToken]);
 
   return { isSignedIn, authLoaded, clerkUserId, clerkDisplayName };

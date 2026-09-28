@@ -36,6 +36,7 @@ export {
   API_BASE,
   DIAGRAM_LIST_LOAD_SAFETY_MS,
   setTokenProvider,
+  registerTokenProvider,
   setSessionSharePassword,
   getSessionSharePassword,
   readCachedSharePassword,
