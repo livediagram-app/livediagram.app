@@ -91,7 +91,7 @@ function AuthControlsEnabled() {
   })();
 
   return (
-    <div className="relative flex h-full" ref={menuRef}>
+    <div className="relative flex items-center" ref={menuRef}>
       <button
         type="button"
         onClick={() => setMenuOpen((open) => !open)}
@@ -119,7 +119,7 @@ function AuthControlsEnabled() {
       {menuOpen ? (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-1 w-56 rounded-md border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
+          className="absolute right-0 top-full mt-2 w-56 rounded-md border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
           {displayName ? (
             <div className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
