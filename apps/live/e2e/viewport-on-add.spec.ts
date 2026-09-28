@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, dismissQuickTour, expectNoPageErrors } from './fixtures';
+import { expect, test, expectNoPageErrors, openJustDraw } from './fixtures';
 
 // The viewport on tab entry (docs/specs/008-canvas/canvas-and-palette.md "Fit-to-screen"): a tab is framed
 // once, when its content has loaded; what the user then adds, the first element on an empty tab
@@ -14,13 +14,7 @@ async function justDraw(page: Page): Promise<void> {
     const prefs = JSON.parse(localStorage.getItem(key) ?? '{}');
     localStorage.setItem(key, JSON.stringify({ ...prefs, panelLayout: 'toolbar' }));
   });
-  await page.goto('/new');
-  // Retried: on a cold dev server the first click can land before hydration.
-  await expect(async () => {
-    await page.getByRole('button', { name: /^just draw$/i }).click({ timeout: 2_000 });
-    await page.locator(CANVAS).waitFor({ timeout: 3_000 });
-  }).toPass({ timeout: 20_000 });
-  await dismissQuickTour(page);
+  await openJustDraw(page);
 }
 
 const centre = (b: { x: number; y: number; width: number; height: number }) => ({
