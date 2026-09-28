@@ -89,6 +89,39 @@ describe('EditorHeader pills', () => {
   });
 });
 
+// The account menu's Account item opens Settings in place (docs/specs/007-editor/live-app.md
+// "Header actions") instead of navigating to the Explorer.
+describe('EditorHeader account menu', () => {
+  it('opens Settings on Account in place when the host can', () => {
+    const onOpenAccount = vi.fn();
+    render(
+      <EditorHeader
+        diagramName="d"
+        showShare={false}
+        shareable={false}
+        onOpenShare={() => {}}
+        onOpenAccount={onOpenAccount}
+        onRename={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Account menu' }));
+    const item = screen.getByRole('menuitem', { name: 'Account' });
+    expect(item.tagName).toBe('BUTTON');
+    fireEvent.click(item);
+    expect(onOpenAccount).toHaveBeenCalledOnce();
+    // The account menu closes (the section switch keeps its own menu mounted).
+    expect(screen.queryByRole('menuitem', { name: 'Account' })).toBeNull();
+  });
+
+  it('falls back to the Explorer deep link without a handler', () => {
+    renderHeader();
+    fireEvent.click(screen.getByRole('button', { name: 'Account menu' }));
+    expect(screen.getByRole('menuitem', { name: 'Account' }).getAttribute('href')).toBe(
+      '/explorer?settings=account',
+    );
+  });
+});
+
 describe('EditorHeader rename requests', () => {
   const header = (renameNonce: number, hideTitle = false) => (
     <EditorHeader

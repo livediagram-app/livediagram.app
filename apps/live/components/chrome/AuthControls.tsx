@@ -44,7 +44,15 @@ import {
 // reachable from the "Profile" item below, so the destructive action has one
 // home rather than hanging off this dropdown too.
 
-function AuthControlsEnabled() {
+type AuthControlsProps = {
+  // Opens this page's Settings dialog on its Account category. Both hosts
+  // (the editor and the Explorer) own a Settings dialog, so the Account item
+  // opens it in place rather than navigating away. Without one, the item
+  // falls back to the Explorer's `?settings=account` deep link.
+  onOpenAccount?: () => void;
+};
+
+function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
   const { authLoaded, isSignedIn, user, signOut } = useDeferredAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -132,16 +140,30 @@ function AuthControlsEnabled() {
             </div>
           ) : null}
           {/* Account (docs/specs/007-editor/user-preferences.md): identity, email notifications and account
-              deletion all live in the Settings dialog now, so this deep-links
-              at its Account category rather than a separate profile page. */}
-          <Link
-            href="/explorer?settings=account"
-            role="menuitem"
-            onClick={() => setMenuOpen(false)}
-            className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
-          >
-            Account
-          </Link>
+              deletion all live in the Settings dialog, so this opens it on
+              its Account category, in place when the host can. */}
+          {onOpenAccount ? (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setMenuOpen(false);
+                onOpenAccount();
+              }}
+              className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+            >
+              Account
+            </button>
+          ) : (
+            <Link
+              href="/explorer?settings=account"
+              role="menuitem"
+              onClick={() => setMenuOpen(false)}
+              className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+            >
+              Account
+            </Link>
+          )}
           <button
             type="button"
             role="menuitem"
@@ -163,7 +185,7 @@ function AuthControlsEnabled() {
   );
 }
 
-function AuthControlsDisabled() {
+function AuthControlsDisabled(_props: AuthControlsProps) {
   // Clerk not configured — sign-in is not part of this deployment.
   // Render nothing so the header just shows the Share button.
   return null;
