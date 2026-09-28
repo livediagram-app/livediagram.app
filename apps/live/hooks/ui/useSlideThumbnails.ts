@@ -73,7 +73,16 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
         // still needs their real positions to draw itself.
         if (el.type === 'arrow')
           parts.push(
-            svgArrow(el, tab.elements, 'light', tab.font, labels, `lvd-slide-${slide.id}-ko-`),
+            // Breaks only around the slide's own boxes, the ones drawn here.
+            svgArrow(
+              el,
+              tab.elements,
+              'light',
+              tab.font,
+              labels,
+              `lvd-slide-${slide.id}-ko-`,
+              elements,
+            ),
           );
       }
       const pad = 8;

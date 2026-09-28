@@ -9,18 +9,17 @@ import {
   autoLayoutElements,
   coerceShapeKind,
   getBuiltInTheme,
-  graphToElements,
   isEventStormingNote,
   isEventStormingTab,
   isLayoutCandidate,
   landArrivals,
   nodesLookUnplaced,
   recolourElementsForTheme,
-  type DiagramGraph,
   type Element,
   type Tab,
   stampTabKind,
 } from '@livediagram/diagram';
+import { layoutGraph, type GraphInput } from './graph-input';
 import {
   TEMPLATES,
   buildTemplate,
@@ -73,16 +72,16 @@ export function buildTab(
   };
 }
 
-// Build a tab from a node/edge graph (docs/specs/015-api/mcp-server.md §4.7): translate the graph to
-// elements, then buildTab always auto-lays-it-out — a graph carries no
-// positions, so the server owns placement.
+// Build a tab from a node/edge graph (docs/specs/015-api/mcp-server.md §4.7): capped, laid out in its
+// chosen style and direction, arrows routed (graph-input.ts), then themed. The
+// layout is already done, so buildTab keeps it.
 export function buildGraphTab(
   tabId: string,
   name: string,
-  graph: DiagramGraph,
+  graph: GraphInput,
   themeId: string | undefined,
 ): Tab {
-  return buildTab(tabId, name, graphToElements(graph), 'auto', themeId);
+  return buildTab(tabId, name, layoutGraph(graph), 'preserve', themeId);
 }
 
 // Resolve a tool's `template` argument against the shared catalogue

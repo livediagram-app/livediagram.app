@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { parseMermaid } from './mermaid';
 import { layoutClusteredGraph } from './auto-layout-clusters';
 import { isValidTab } from './validate';
+import { graphToElements } from './graph-authoring';
+import { entityHeight } from './entity-geometry';
 
 // Tested through parseMermaid so the dispatch is covered too.
 describe('parseMermaid: ER diagrams', () => {
@@ -37,25 +39,47 @@ describe('parseMermaid: ER diagrams', () => {
     expect(r.graph.edges[0]).toMatchObject({ line: 'dashed' });
   });
 
-  it('folds attribute blocks into the entity label, dropping keys/comments', () => {
+  it('turns attribute blocks into entity field rows, keeping keys, dropping comments', () => {
     const r = parseMermaid(`erDiagram
   CUSTOMER {
     string name PK "the customer name"
     int age
+    string org_id FK, UK
   }
   CUSTOMER ||--o{ ORDER : places`);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const customer = r.graph.nodes.find((n) => n.id === 'CUSTOMER')!;
-    expect(customer.label).toBe('CUSTOMER\nstring name\nint age');
-    expect(customer.shape).toBe('square');
+    expect(customer.label).toBe('CUSTOMER');
+    expect(customer.fields).toEqual([
+      { name: 'name', type: 'string PK' },
+      { name: 'age', type: 'int' },
+      { name: 'org_id', type: 'string FK,UK' },
+    ]);
+  });
+
+  it('draws each entity as an entity element sized to its rows', () => {
+    const r = parseMermaid('erDiagram\n  A {\n    int id PK\n    text name\n  }');
+    if (!r.ok) throw new Error(r.error);
+    const [a] = graphToElements(r.graph);
+    expect(a).toMatchObject({
+      shape: 'entity',
+      label: 'A',
+      textAlignX: 'left',
+      textAlignY: 'top',
+      height: entityHeight(2, 'sm'),
+      entityFields: [
+        { name: 'id', type: 'int PK' },
+        { name: 'name', type: 'text' },
+      ],
+    });
   });
 
   it('accepts bare entity declarations', () => {
     const r = parseMermaid('erDiagram\n  LONELY');
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.graph.nodes).toEqual([{ id: 'LONELY', label: 'LONELY', shape: 'square' }]);
+    expect(r.graph.nodes).toEqual([{ id: 'LONELY', label: 'LONELY', fields: [] }]);
   });
 
   it('errors on an empty ER diagram', () => {

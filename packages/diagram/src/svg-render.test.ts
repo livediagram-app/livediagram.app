@@ -423,19 +423,19 @@ describe('renderElementsToSvg', () => {
 
     it('renders a hexagon silhouette instead of a rectangle', () => {
       const svg = renderElementsToSvg(tab([shape('h', { shape: 'hexagon' })]));
-      expect(svg).toContain('polygon points="25,0 75,0 100,50 75,100 25,100 0,50"');
-      expect(svg).toContain('preserveAspectRatio="none"');
+      // The table's 0..100 hexagon, mapped onto the 100 x 80 box.
+      expect(svg).toContain('polygon points="25,0 75,0 100,40 75,80 25,80 0,40"');
     });
 
     it('renders a frame see-through by default, but paints a picked fill like the canvas', () => {
       // The default fill is transparent, so the contents show through...
       const bare = renderElementsToSvg(tab([shape('f', { shape: 'frame' })]));
-      expect(bare).toMatch(/<rect x="1" y="1" width="98" height="98" fill="transparent"/);
+      expect(bare).toMatch(/<rect x="1" y="0.8" width="98" height="78.4" fill="transparent"/);
       // ...and a background colour picked in the menu exports, as it paints.
       const filled = renderElementsToSvg(
         tab([shape('f', { shape: 'frame', fillColor: '#fef3c7' })]),
       );
-      expect(filled).toMatch(/<rect x="1" y="1" width="98" height="98" fill="#fef3c7"/);
+      expect(filled).toMatch(/<rect x="1" y="0.8" width="98" height="78.4" fill="#fef3c7"/);
     });
 
     it('applies element rotation about the centre', () => {
@@ -1007,5 +1007,36 @@ describe('behaviour card marks in the export', () => {
     });
     expect(svg).toContain('DONE');
     expect(svg.match(/fill="#22c55e"/g)?.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('arrows as the canvas draws them (docs/specs/008-canvas/arrow-route-behind.md, docs/specs/006-diagram/layers.md)', () => {
+  // a -> c with b sitting on the line between them.
+  const row = [
+    shape('a', { x: 0, y: 0 }),
+    shape('b', { x: 200, y: 0 }),
+    shape('c', { x: 400, y: 0 }),
+  ];
+
+  it('breaks an arrow around a box it passes, like the canvas', () => {
+    const svg = renderElementsToSvg(tab([...row, pinnedArrow('x', 'a', 'c')]));
+    // A mask hole over b, inflated by the 10-unit margin.
+    expect(svg).toContain('<rect x="190" y="-10" width="120" height="100" rx="10" fill="black"/>');
+    expect(svg).toMatch(/<path d="[^"]*"[^>]*mask="url\(#lvd-ko-x\)"/);
+  });
+
+  it('draws it over the top when the arrow opts out', () => {
+    const svg = renderElementsToSvg(
+      tab([...row, pinnedArrow('x', 'a', 'c', { routeBehind: false })]),
+    );
+    expect(svg).not.toContain('mask=');
+  });
+
+  it('paints in array order, so an arrow sent behind a box stays behind it', () => {
+    const svg = renderElementsToSvg(tab([row[0]!, row[2]!, pinnedArrow('x', 'a', 'c'), row[1]!]));
+    const arrowAt = svg.indexOf('mask id="lvd-ko-x"');
+    const boxAt = svg.indexOf('<rect x="200"');
+    expect(arrowAt).toBeGreaterThan(-1);
+    expect(arrowAt).toBeLessThan(boxAt);
   });
 });

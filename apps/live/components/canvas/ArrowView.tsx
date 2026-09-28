@@ -11,6 +11,7 @@ import {
   ROUTE_BEHIND_MARGIN,
   type ArrowElement,
   type ArrowLabelLayout,
+  type Element,
   type ElementIndex,
 } from '@livediagram/diagram';
 import { sameLabelRender, type ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
@@ -41,6 +42,10 @@ type ArrowViewProps = {
   // arrow resolves its endpoints / label collisions with O(1) lookups
   // instead of scanning the whole element array twice per arrow.
   elementIndex: ElementIndex;
+  // The boxes the canvas is drawing (hidden layers left out), the only ones
+  // the line may pass behind: a box on a hidden layer must not leave a gap
+  // around nothing (docs/specs/008-canvas/arrow-route-behind.md). Stable per render of the layer.
+  occluders: readonly Element[];
   // This arrow's label layout + the knockouts its line takes, from the
   // layer's one label pass (docs/specs/008-canvas/arrow-labels.md).
   labelRender: ArrowLabelRender;
@@ -112,6 +117,7 @@ type ArrowViewProps = {
 function ArrowViewImpl({
   arrow,
   elementIndex,
+  occluders,
   labelRender,
   draftLayout,
   isSelected,
@@ -195,8 +201,8 @@ function ArrowViewImpl({
   // and N holes cost the same as one. Memoised on the element map identity
   // so a pan / selection re-render doesn't rescan every element per arrow.
   const behindHoles = useMemo(
-    () => routeBehindHoles(arrow, from, to, elementIndex.values()),
-    [arrow, from, to, elementIndex],
+    () => routeBehindHoles(arrow, from, to, occluders),
+    [arrow, from, to, occluders],
   );
   // Only mint a mask when something actually cuts this arrow — the common
   // case is nothing in the way, and an empty mask is pure overhead.

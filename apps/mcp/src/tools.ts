@@ -3,6 +3,7 @@
 // — no business logic the editor doesn't already own. The calling LLM produces
 // the elements; these tools validate, lay out, persist, and render. The
 // shared result / auth / tab-building plumbing lives in tool-helpers.ts.
+import { layoutGraph, resolveGraphInput } from './graph-input';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type {
   DiagramListResponse,
@@ -10,13 +11,8 @@ import type {
   ShareLinkResponse,
   TabResponse,
 } from '@livediagram/api-schema';
-import {
-  coerceShapeKind,
-  graphToElements,
-  isValidTab,
-  type Element,
-  type Tab,
-} from '@livediagram/diagram';
+import { coerceShapeKind, isValidTab, type Element, type Tab } from '@livediagram/diagram';
+import { lanesToFront, normaliseElement, normaliseElements } from './element-normalise';
 import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
 import { TRASH_RETENTION_DAYS, type TrashedDiagram } from '@livediagram/api-schema';
 import { ApiError, apiFetch, apiJson, reportApiFailure } from './api';
@@ -188,12 +184,18 @@ export function registerTools(server: McpServer, env: Env): void {
           continue;
         }
         // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
-        // and arrows from a node/edge graph.
-        if (t.graph) {
-          tabs.push(buildGraphTab(tabId, t.name, t.graph, args.theme));
+        // and arrows from a node/edge graph, or the same graph as Mermaid.
+        const input = resolveGraphInput(t);
+        if (input.error) return errorResult(`Tab "${t.name}": ${input.error}`);
+        if (input.graph) {
+          tabs.push(buildGraphTab(tabId, t.name, input.graph, args.theme));
           continue;
         }
-        const candidate: unknown = { id: tabId, name: t.name, elements: t.elements ?? [] };
+        const candidate: unknown = {
+          id: tabId,
+          name: t.name,
+          elements: normaliseElements(t.elements ?? []),
+        };
         if (!t.elements || !isValidTab(candidate)) {
           return errorResult(
             `Invalid elements in tab "${t.name}". Provide "elements" (or a "template" kind ` +
@@ -253,10 +255,16 @@ export function registerTools(server: McpServer, env: Env): void {
           `Unknown template "${args.template}". Valid kinds: ${validTemplateKinds()}.`,
         );
       }
-      const candidate: unknown = { id: tabId, name: args.name, elements: args.elements ?? [] };
-      if (!templateKind && !args.graph && (!args.elements || !isValidTab(candidate))) {
+      const input = resolveGraphInput(args);
+      if (input.error) return errorResult(input.error);
+      const candidate: unknown = {
+        id: tabId,
+        name: args.name,
+        elements: normaliseElements(args.elements ?? []),
+      };
+      if (!templateKind && !input.graph && (!args.elements || !isValidTab(candidate))) {
         return errorResult(
-          'Invalid input. Provide a "graph" (nodes + edges), "elements", or a "template" kind ' +
+          'Invalid input. Provide a "graph" (nodes + edges), "mermaid", "elements", or a "template" kind ' +
             'from list_templates. Check the livediagram://schema/elements resource: every element ' +
             'needs id/type/x/y/width/height (arrows need from/to), and arrays must be well-formed.',
         );
@@ -276,8 +284,8 @@ export function registerTools(server: McpServer, env: Env): void {
       }
       const tab = templateKind
         ? buildTemplateTab(tabId, args.name, templateKind, themeId)
-        : args.graph
-          ? buildGraphTab(tabId, args.name, args.graph, themeId)
+        : input.graph
+          ? buildGraphTab(tabId, args.name, input.graph, themeId)
           : buildTab(tabId, args.name, (candidate as Tab).elements, args.layout, themeId);
       await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${tabId}`, {
         method: 'PUT',
@@ -314,30 +322,41 @@ export function registerTools(server: McpServer, env: Env): void {
       const tabId = tab.id;
 
       let nextElements: unknown[];
-      // Graph-first replace (docs/specs/015-api/mcp-server.md §4.7): a node/edge graph the server builds
-      // + lays out, in place of hand-placed elements. Forces auto layout below.
-      const graphReplace = args.mode === 'replace' && !!args.graph;
+      // Graph-first replace (docs/specs/015-api/mcp-server.md §4.7): a node/edge graph (or Mermaid) the
+      // server builds + lays out, in place of hand-placed elements. Already laid
+      // out here, so the layout below keeps it.
+      const input = args.mode === 'replace' ? resolveGraphInput(args) : {};
+      if (input.error) return errorResult(input.error);
+      const graphReplace = !!input.graph;
       if (args.mode === 'replace') {
-        if (args.graph) {
-          nextElements = graphToElements(args.graph);
+        if (input.graph) {
+          nextElements = layoutGraph(input.graph);
         } else if (args.elements) {
-          nextElements = args.elements;
+          nextElements = normaliseElements(args.elements);
         } else {
-          return errorResult('replace mode requires "graph" or "elements".');
+          return errorResult('replace mode requires "graph", "mermaid" or "elements".');
         }
       } else {
         if (!args.ops) return errorResult('ops mode requires "ops".');
         const byId = new Map<string, unknown>(tab.elements.map((e) => [e.id, e as unknown]));
+        // Only the elements an edit touches are made safe (§4.7a); the rest of
+        // the diagram is left exactly as it is.
+        const touched = new Set<string>();
         for (const op of args.ops) {
           const el = op.element as { id?: string } | undefined;
           if (op.op === 'remove' && op.elementId) byId.delete(op.elementId);
-          else if (op.op === 'add' && el?.id) byId.set(el.id, el);
-          else if (op.op === 'update' && op.elementId) {
+          else if (op.op === 'add' && el?.id) {
+            byId.set(el.id, el);
+            touched.add(el.id);
+          } else if (op.op === 'update' && op.elementId) {
             const prev = (byId.get(op.elementId) as Record<string, unknown>) ?? {};
             byId.set(op.elementId, { ...prev, ...(el ?? {}) });
+            touched.add(op.elementId);
           }
         }
-        nextElements = [...byId.values()];
+        nextElements = lanesToFront(
+          [...byId].map(([id, el]) => (touched.has(id) ? normaliseElement(el) : el)),
+        );
       }
 
       const candidate: unknown = { id: tabId, name: tab.name, elements: nextElements };
@@ -354,7 +373,9 @@ export function registerTools(server: McpServer, env: Env): void {
       // Layout applies only on a full replace (the model decides via `layout`);
       // ops edits always keep the existing positions (docs/specs/015-api/mcp-server.md §4.4).
       const laidOut: Element[] =
-        args.mode === 'replace' ? applyLayout(graphReplace ? 'auto' : args.layout, fixed) : fixed;
+        args.mode === 'replace'
+          ? applyLayout(graphReplace ? 'preserve' : args.layout, fixed)
+          : fixed;
       // On an event-storming tab the workshop notes this call added or moved
       // land on lanes (docs/specs/021-event-storming/event-storming.md "Always on a lane").
       const elements = landMcpArrivals(

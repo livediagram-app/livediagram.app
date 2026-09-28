@@ -1,13 +1,14 @@
 // Headless SVG emitters for the shape silhouettes and freehand sketches the
 // generic renderer used to flatten into plain rectangles. The silhouettes
 // come from the shared geometry table (shape-geometry.ts), the same data the
-// editor's ShapeSvgOverlay draws from, emitted as a nested <svg> positioned
-// over the element box so the stretch behaviour (`preserveAspectRatio="none"`
-// for most, `meet` for the proportional actor) matches the canvas at any
-// aspect ratio. A silhouette changes in the table, never here.
+// editor's ShapeSvgOverlay draws from, mapped into the element box
+// (svg-shape-fit.ts) with the same fit the canvas uses (stretched for most,
+// `meet` for the proportional actor), so they match it at any aspect ratio
+// without a scaled stroke. A silhouette changes in the table, never here.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
 import type { BoxedElement, FreehandElement, ShapeKind } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { boxFit, fitShapePart } from './svg-shape-fit';
 import { catmullRomToBezierPath } from './polyline';
 import { codeTheme } from './code-themes';
 import { chartPaletteColors } from './chart-palettes';
@@ -76,12 +77,13 @@ export function svgShapePart(
     case 'rect':
       return (
         `<rect x="${r2(part.x)}" y="${r2(part.y)}" width="${r2(part.width)}" height="${r2(part.height)}"` +
-        `${part.rx !== undefined ? ` rx="${r2(part.rx)}"` : ''}${paint}/>`
+        `${part.rx !== undefined ? ` rx="${r2(part.rx)}"` : ''}` +
+        `${part.ry !== undefined ? ` ry="${r2(part.ry)}"` : ''}${paint}/>`
       );
     case 'ellipse':
-      return `<ellipse cx="${part.cx}" cy="${part.cy}" rx="${part.rx}" ry="${part.ry}"${paint}/>`;
+      return `<ellipse cx="${r2(part.cx)}" cy="${r2(part.cy)}" rx="${r2(part.rx)}" ry="${r2(part.ry)}"${paint}/>`;
     case 'circle':
-      return `<circle cx="${part.cx}" cy="${part.cy}" r="${part.r}"${paint}/>`;
+      return `<circle cx="${r2(part.cx)}" cy="${r2(part.cy)}" r="${r2(part.r)}"${paint}/>`;
   }
 }
 
@@ -116,13 +118,12 @@ export function svgShapeSilhouette(
   if (!geometry) return null;
   const strokeWidth = BORDER_STROKE_PX[el.strokeWidth ?? 'medium'] || 2;
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'] ?? undefined;
-  const markup = geometry.parts
-    .map((part) => svgShapePart(part, fill, stroke, strokeWidth, dash))
-    .join('');
-  return (
-    `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
-    ` viewBox="${geometry.viewBox}" preserveAspectRatio="${geometry.preserveAspectRatio}" overflow="visible">${markup}</svg>`
-  );
+  // Mapped into the box rather than nested in a stretched <svg>, so no
+  // renderer scales the stroke (svg-shape-fit.ts).
+  const fit = boxFit(geometry, el);
+  return `<g data-silhouette="${el.shape}">${geometry.parts
+    .map((part) => svgShapePart(fitShapePart(part, fit), fill, stroke, strokeWidth, dash))
+    .join('')}</g>`;
 }
 
 // A freehand sketch's real path (normalised points scaled to the box), drawn

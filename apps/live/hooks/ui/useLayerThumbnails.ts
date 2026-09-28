@@ -61,7 +61,16 @@ export function useLayerThumbnails(
       for (const el of band.elements) {
         if (el.type === 'arrow')
           parts.push(
-            svgArrow(el, elements, 'light', tabFont, labels, `lvd-layer-${band.layer.id}-ko-`),
+            // Breaks only around this layer's own boxes, the ones drawn here.
+            svgArrow(
+              el,
+              elements,
+              'light',
+              tabFont,
+              labels,
+              `lvd-layer-${band.layer.id}-ko-`,
+              band.elements,
+            ),
           );
       }
       const opacity = layerOpacityOf(band.layer);
