@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  temperatureMood,
+  temperaturePosition,
+  supportsMarkers,
   supportsTextAlign,
   AGENDA_DEFAULT_MINUTES,
   AGENDA_MAX_MINUTES,
@@ -257,5 +260,38 @@ describe('supportsTextAlign', () => {
     for (const kind of ['square', 'circle', 'banner', 'callout', 'page'] as const) {
       expect(supportsTextAlign(kind), kind).toBe(true);
     }
+  });
+});
+
+// Markers decorate a label, so they share the text-align gate's reasoning.
+describe('supportsMarkers', () => {
+  it('is off for kinds with their own face and for self-drawing kinds', () => {
+    for (const kind of [
+      'temperature',
+      'qa-board',
+      'idea-box',
+      'session-button',
+      'progress-bar',
+      'stat-row',
+    ] as const) {
+      expect(supportsMarkers(kind), kind).toBe(false);
+    }
+  });
+
+  it('is on for plain shapes', () => {
+    for (const kind of ['square', 'circle', 'banner'] as const) {
+      expect(supportsMarkers(kind), kind).toBe(true);
+    }
+  });
+});
+
+describe('temperature mood', () => {
+  it('names an average by its nearest value, and places it on the track', () => {
+    expect(temperatureMood(1)).toBe('Blocked');
+    expect(temperatureMood(3.8)).toBe('Keen');
+    expect(temperatureMood(4.6)).toBe('All in');
+    expect(temperaturePosition(1)).toBe(0);
+    expect(temperaturePosition(3)).toBe(0.5);
+    expect(temperaturePosition(5)).toBe(1);
   });
 });

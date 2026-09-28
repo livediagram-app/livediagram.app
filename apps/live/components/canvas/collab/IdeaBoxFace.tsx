@@ -65,7 +65,7 @@ export function IdeaBoxFace({
 
   const menu =
     onClear || onOpenSettings ? (
-      <ElementEllipsisMenu label="Idea box options" color={textColor}>
+      <ElementEllipsisMenu label="Idea box options" color={textColor} align="left">
         {(close) => (
           <>
             {onClear ? (

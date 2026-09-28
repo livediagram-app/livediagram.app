@@ -122,7 +122,7 @@ export function DoneCheckFace({
       headerExtra={
         // The shared element menu (docs/specs/012-collaboration/session-button.md), not a second one: it was written
         // here first, and the Timer needed the same thing.
-        <ElementEllipsisMenu label="Done check options" color={textColor}>
+        <ElementEllipsisMenu label="Done check options" color={textColor} align="left">
           {(close) => (
             <>
               {mine && onToggleMine ? (

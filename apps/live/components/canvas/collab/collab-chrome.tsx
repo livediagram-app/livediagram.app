@@ -5,6 +5,7 @@
 // so the frame lives here once. Without it each face re-types the same four
 // class strings and they drift the first time one is tweaked.
 
+import { createContext, useContext } from 'react';
 import { SHAPE_DEFAULT_SIZE, type ShapeElement } from '@livediagram/diagram';
 import { tint } from '@/lib/element-tint';
 // Re-exported: every collab face already reaches for it through this module,
@@ -69,6 +70,12 @@ function CollabScale({
   );
 }
 
+// The shared settings `…` (docs/specs/008-canvas/canvas-and-palette.md "Every Behaviours element carries a
+// `…`"), handed down by ElementFaceRouter so a collaboration panel can put it
+// before its title instead of the element's top-right corner, without every
+// face threading it through. A card's own headerExtra wins over it.
+export const CollabSettingsSlot = createContext<React.ReactNode>(null);
+
 export function CollabPanel({
   element,
   title,
@@ -103,9 +110,9 @@ export function CollabPanel({
   // all-done flash, which is a class rather than an inline style so the
   // reduced-motion override in globals.css can reach it.
   className?: string;
-  // A control pinned to the right of the title row, after `aside`. The Done
-  // check's ellipsis menu lives here; a card with no per-card controls passes
-  // nothing and the row is unchanged.
+  // The card's own `…` menu, which LEADS the title (the Done check's, the Q&A
+  // board's, the Idea box's). A card that draws none gets the shared settings
+  // `…` there instead, from CollabSettingsSlot.
   headerExtra?: React.ReactNode;
   // The paper kit (docs/specs/012-collaboration/participant-responses.md): the textures that make this card a particular
   // OBJECT rather than a generic rounded rectangle. `backdrop` prints UNDER
@@ -127,6 +134,8 @@ export function CollabPanel({
   reflow?: boolean;
 }) {
   const touchScroll = useTouchScrollBody<HTMLDivElement>();
+  const slot = useContext(CollabSettingsSlot);
+  const lead = headerExtra ?? slot;
   return (
     // Pinned with `absolute inset-0` rather than sized with `h-full w-full`,
     // and clipped to the element's own corner radius.
@@ -147,22 +156,28 @@ export function CollabPanel({
             paddingTop: inset?.top !== undefined ? 14 + inset.top : undefined,
           }}
         >
-          <div className="flex min-w-0 shrink-0 items-baseline justify-between gap-3">
-            <span
-              className="min-w-0 text-[13px] font-semibold leading-snug"
-              style={{
-                color: textColor,
-                // A clamp rather than a truncate: the overflow has to be bounded
-                // (the header is shrink-0, so an unbounded title would push the
-                // body out of the card) but a one-line decision statement is
-                // useless.
-                display: '-webkit-box',
-                WebkitBoxOrient: 'vertical',
-                WebkitLineClamp: titleLines,
-                overflow: 'hidden',
-              }}
-            >
-              {title.trim()}
+          <div className="flex min-w-0 shrink-0 items-center justify-between gap-3">
+            {/* The element's menu leads the title rather than floating at the
+                far corner: it belongs to the thing named, and a control
+                stranded in the top right read as random. */}
+            <span className="flex min-w-0 items-center gap-1.5">
+              {lead ? <span className="-ml-1 shrink-0">{lead}</span> : null}
+              <span
+                className="min-w-0 text-[13px] font-semibold leading-snug"
+                style={{
+                  color: textColor,
+                  // A clamp rather than a truncate: the overflow has to be bounded
+                  // (the header is shrink-0, so an unbounded title would push the
+                  // body out of the card) but a one-line decision statement is
+                  // useless.
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: titleLines,
+                  overflow: 'hidden',
+                }}
+              >
+                {title.trim()}
+              </span>
             </span>
             <span className="flex shrink-0 items-center gap-1.5">
               {aside ? (
@@ -173,7 +188,6 @@ export function CollabPanel({
                   {aside}
                 </span>
               ) : null}
-              {headerExtra}
             </span>
           </div>
           {/* The body scrolls rather than overflowing the element box: a card with

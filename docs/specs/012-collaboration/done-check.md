@@ -73,7 +73,7 @@ completion is information, so it stays visible; only the pulsing goes.
 
 ## The ellipsis menu
 
-A small `…` in the card's title row (`headerExtra` on `CollabPanel`, added for
+A small `…` leading the card's title (`headerExtra` on `CollabPanel`, added for
 this):
 
 - **Clear my mark** — only shown when you have one.

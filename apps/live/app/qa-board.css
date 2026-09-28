@@ -154,3 +154,25 @@
   opacity: 1;
   transform: none;
 }
+
+/*
+ * Temperature check (docs/specs/012-collaboration/temperature-check.md "The face"): the same family of
+ * canvas motion. A bar eases to its new share as answers land, the mood meter's
+ * marker glides to the new average, and a face button lifts under the pointer.
+ */
+.mood-bar {
+  transition: height 500ms ease-out;
+}
+.mood-marker {
+  transition: left 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mood-button {
+  transition:
+    transform 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+.mood-button:enabled:hover {
+  transform: translateY(-2px);
+}

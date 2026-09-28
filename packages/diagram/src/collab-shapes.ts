@@ -56,6 +56,38 @@ export function isTemperatureShape(kind: ShapeKind): boolean {
   return kind === 'temperature';
 }
 
+// The ritual's meaning said out loud, one word per value, so a first-timer
+// doesn't have to be told what a 2 means (docs/specs/012-collaboration/temperature-check.md "The face").
+export const TEMPERATURE_MOODS: readonly string[] = [
+  'Blocked',
+  'Doubtful',
+  'Okay',
+  'Keen',
+  'All in',
+];
+
+// Cool to warm, fixed hues rather than the theme's: "the low one is the cold
+// one" is the glanceable part, and a theme recolouring them would make five
+// arbitrary bars. Shared by the canvas face and the export.
+export const TEMPERATURE_COLORS: readonly string[] = [
+  '#60a5fa',
+  '#22d3ee',
+  '#a3e635',
+  '#fbbf24',
+  '#fb7185',
+];
+
+// The word for an average: the nearest value's (3.8 reads as Keen).
+export function temperatureMood(average: number): string {
+  const i = Math.min(4, Math.max(0, Math.round(average) - 1));
+  return TEMPERATURE_MOODS[i]!;
+}
+
+// Where an average sits on the cool-to-warm track, 0 (all 1s) to 1 (all 5s).
+export function temperaturePosition(average: number): number {
+  return Math.min(1, Math.max(0, (average - 1) / 4));
+}
+
 // --- Idea box (docs/specs/012-collaboration/idea-box.md) ---------------------------------------------------
 
 // Submissions are STRINGS, with nowhere to put an author. That is the
@@ -285,4 +317,13 @@ export function opensInlineLabelEditor(kind: ShapeKind): boolean {
 // pages keep it: they render the aligned label.
 export function supportsTextAlign(kind: ShapeKind): boolean {
   return !isSelfDrawingShape(kind) && !hasOwnFace(kind) && kind !== 'icon';
+}
+
+// Whether shape markers (docs/specs/009-elements/shape-markers.md) do anything on this kind: a marker
+// decorates the label, so not on a self-drawing kind (no label) and not on one
+// with its own face (the label is a fixed title the face draws, and a marker
+// never shows on it). The one gate for the single-element and multi-selection
+// menus.
+export function supportsMarkers(kind: ShapeKind): boolean {
+  return !isSelfDrawingShape(kind) && !hasOwnFace(kind);
 }

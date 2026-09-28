@@ -900,3 +900,30 @@ describe('idea box export', () => {
     expect(svg).not.toContain('sealed');
   });
 });
+
+// The Temperature check export (docs/specs/012-collaboration/temperature-check.md "The face"): the values, a
+// bar per value in its fixed hue, and the average.
+describe('temperature check export', () => {
+  const card = (values: string[]) =>
+    renderElementsToSvg(
+      tab([
+        shape('t', {
+          shape: 'temperature',
+          width: 320,
+          height: 300,
+          responses: values.map((value, i) => ({ participantId: `p${i}`, value, at: i })),
+        }),
+      ]),
+    );
+
+  it('draws the bars and the average', () => {
+    const svg = card(['4', '4', '3', '5']);
+    expect(svg).toContain('#fbbf24');
+    expect(svg).toContain('>4.0<');
+    expect(svg).toContain('4 ANSWERED');
+  });
+
+  it('says so when nobody has answered, rather than averaging zero', () => {
+    expect(card([])).toContain('No readings yet');
+  });
+});

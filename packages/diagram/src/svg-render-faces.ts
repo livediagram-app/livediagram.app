@@ -17,7 +17,14 @@
 // box, so a big one has bigger type rather than more padding.
 
 import { SHAPE_DEFAULT_SIZE } from './shape-factory';
-import { agendaTotalMinutes, DEFAULT_CHAIR_FACING } from './collab-shapes';
+import {
+  agendaTotalMinutes,
+  DEFAULT_CHAIR_FACING,
+  TEMPERATURE_COLORS,
+  TEMPERATURE_VALUES,
+  temperaturePosition,
+} from './collab-shapes';
+import { responseStats, responseTally } from './responses';
 import { CHAIR_FACING_ROTATION, CHAIR_GEOMETRY, chairSeatFill } from './shape-geometry';
 import { qaView } from './qa-board';
 import {
@@ -195,22 +202,70 @@ export function svgCollabFace(
       );
     }
     case 'temperature': {
-      const answered = (el.responses ?? []).length;
+      // The card as the face draws it (docs/specs/012-collaboration/temperature-check.md "The face"): the five
+      // values, a cool-to-warm bar per value, and the mood
+      // meter with the average marked, so an export still says how the room
+      // felt.
+      const tally = responseTally(el.responses, TEMPERATURE_VALUES);
+      const stats = responseStats(el.responses);
+      const answered = stats.count;
       return collabCard(
         el,
         title || 'How are we feeling?',
         answered ? `${answered} answered` : undefined,
         color,
-        (w, h) =>
-          chipRow(PAD_X, PAD_Y + TITLE_PX + 10, ['1', '2', '3', '4', '5'], color) +
-          (answered === 0
-            ? text(PAD_X, PAD_Y + TITLE_PX + 48, 'No readings yet', {
-                size: 10,
+        (w, h) => {
+          const inner = w - PAD_X * 2;
+          const gap = 6;
+          const col = (inner - gap * 4) / 5;
+          const top = PAD_Y + TITLE_PX + 10;
+          const chips = TEMPERATURE_VALUES.map((value, i) => {
+            const x = PAD_X + i * (col + gap);
+            return (
+              pill(x, top, col, 34, color, 0.06) +
+              text(x + col / 2, top + 21.5, value, {
+                size: 12,
+                weight: 700,
                 color,
-                opacity: 0.45,
+                anchor: 'middle',
               })
-            : '') +
-          rule(PAD_X, h - PAD_Y - 6, w - PAD_X, color),
+            );
+          }).join('');
+          const meterY = h - PAD_Y - 30;
+          const barTop = top + 46;
+          const barH = Math.max(12, meterY - 10 - barTop);
+          const peak = Math.max(1, ...tally);
+          const bars = tally
+            .map((count, i) => {
+              const bw = Math.min(28, col);
+              const x = PAD_X + i * (col + gap) + (col - bw) / 2;
+              const fill = count ? Math.max(8, (count / peak) * barH) : 0;
+              return (
+                pill(x, barTop, bw, barH, color, 0.06) +
+                (fill
+                  ? `<rect x="${r2(x)}" y="${r2(barTop + barH - fill)}" width="${r2(bw)}" height="${r2(fill)}" rx="${r2(Math.min(bw / 2, fill / 2))}" fill="${TEMPERATURE_COLORS[i]}"/>`
+                  : '')
+              );
+            })
+            .join('');
+          const stops = TEMPERATURE_COLORS.map(
+            (c, i) => `<stop offset="${i * 25}%" stop-color="${c}"/>`,
+          ).join('');
+          const gid = `temp-${xmlEscape(el.id)}`;
+          const track =
+            `<defs><linearGradient id="${gid}">${stops}</linearGradient></defs>` +
+            `<rect x="${r2(PAD_X)}" y="${r2(meterY)}" width="${r2(inner)}" height="8" rx="4" fill="url(#${gid})" opacity="${answered ? 0.9 : 0.25}"/>`;
+          const reading =
+            stats.average === null || answered === 0
+              ? text(PAD_X, meterY + 24, 'No readings yet', { size: 10, color, opacity: 0.45 })
+              : `<circle cx="${r2(PAD_X + temperaturePosition(stats.average) * inner)}" cy="${r2(meterY + 4)}" r="6" fill="#ffffff" stroke="${TEMPERATURE_COLORS[Math.round(temperaturePosition(stats.average) * 4)]}" stroke-width="3"/>` +
+                text(PAD_X, meterY + 26, stats.average.toFixed(1), {
+                  size: 12,
+                  weight: 700,
+                  color,
+                });
+          return chips + bars + track + reading;
+        },
       );
     }
     case 'idea-box': {

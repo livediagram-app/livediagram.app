@@ -273,50 +273,123 @@ export function EstimateCard() {
 /** A temperature check: five readings, the bars they fill, and the average. */
 export function TemperatureCheckCard() {
   const x = 100;
-  const y = 14;
+  const y = 12;
   const w = 220;
   const tally = [0, 1, 4, 2, 3];
-  const barTone = [
-    'fill-brand-400',
-    'fill-teal-400',
-    'fill-emerald-400',
-    'fill-amber-400',
-    'fill-rose-400',
+  const hues = ['#60a5fa', '#22d3ee', '#a3e635', '#fbbf24', '#fb7185'];
+  // The face's mouth per value, frown to beam (as MoodGlyph draws it).
+  const mouths = [
+    'M-3 3q3-2.6 6 0',
+    'M-2.6 2.6q2.6-1 5.2 0',
+    'M-2.6 2.2h5.2',
+    'M-2.8 1.6q2.8 2.2 5.6 0',
+    'M-3.2 1.2q3.2 4.2 6.4 0z',
   ];
+  const col = 36;
+  const gap = 5;
+  const left = x + (w - (col * 5 + gap * 4)) / 2;
+  const average = 3.7;
+  const pos = (average - 1) / 4;
+  const trackX = x + 14;
+  const trackW = w - 28;
   return (
-    <Scene w={420} h={210}>
-      <CollabCard x={x} y={y} w={w} h={182} title="How are we feeling?" aside="10 answered">
-        {['1', '2', '3', '4', '5'].map((v, i) => (
-          <Chip key={v} x={x + 14 + i * 32} y={y + 42} value={v} mine={v === '4'} />
-        ))}
+    <Scene w={420} h={214}>
+      <defs>
+        <linearGradient id="temperature-track">
+          {hues.map((c, i) => (
+            <stop key={c} offset={`${i * 25}%`} stopColor={c} />
+          ))}
+        </linearGradient>
+      </defs>
+      <CollabCard x={x} y={y} w={w} h={190} title="How are we feeling?" aside="10 ANSWERED">
         {tally.map((count, i) => {
-          const bx = x + 14 + i * 32;
-          const full = 62;
+          const bx = left + i * (col + gap);
+          const mine = i === 3;
+          const cx = bx + col / 2;
+          const full = 58;
           const barH = count === 0 ? 0 : Math.max(8, (count / 4) * full);
           return (
             <g key={i}>
-              <rect x={bx} y={y + 74} width={26} height={full} rx={5} className="fill-slate-100" />
+              {/* The face tile, yours lifted in its own colour. */}
+              <rect
+                x={bx}
+                y={y + (mine ? 38 : 40)}
+                width={col}
+                height={36}
+                rx={8}
+                fill={mine ? hues[i] : undefined}
+                fillOpacity={mine ? 0.18 : undefined}
+                stroke={mine ? hues[i] : undefined}
+                className={mine ? undefined : 'fill-slate-50 stroke-slate-200'}
+                strokeWidth={1.2}
+              />
+              <g
+                transform={`translate(${cx} ${y + (mine ? 52 : 54)})`}
+                className={mine ? undefined : 'stroke-slate-500'}
+                stroke={mine ? hues[i] : undefined}
+                fill="none"
+                strokeWidth={1.2}
+                strokeLinecap="round"
+              >
+                <circle r={6} />
+                <circle cx={-2} cy={-1.4} r={0.7} className="fill-current" stroke="none" />
+                <circle cx={2} cy={-1.4} r={0.7} className="fill-current" stroke="none" />
+                <path d={mouths[i]} />
+              </g>
+              <Label
+                x={cx}
+                y={y + (mine ? 67 : 69)}
+                anchor="middle"
+                size={8}
+                weight={700}
+                tone="strong"
+              >
+                {String(i + 1)}
+              </Label>
+              {/* The bar, rounded, easing to its share. */}
+              <rect
+                x={cx - 11}
+                y={y + 88}
+                width={22}
+                height={full}
+                rx={11}
+                className="fill-slate-100"
+              />
               {barH > 0 && (
                 <rect
-                  x={bx}
-                  y={y + 74 + full - barH}
-                  width={26}
+                  x={cx - 11}
+                  y={y + 88 + full - barH}
+                  width={22}
                   height={barH}
-                  rx={5}
-                  className={barTone[i]}
+                  rx={Math.min(11, barH / 2)}
+                  fill={hues[i]}
                 />
               )}
-              <Label x={bx + 13} y={y + 146} anchor="middle" size={9} tone="muted">
-                {count}
-              </Label>
             </g>
           );
         })}
-        <Label x={x + 14} y={y + 166} size={16} weight={700} tone="strong">
+        {/* The mood meter, the marker at the average. */}
+        <rect
+          x={trackX}
+          y={y + 154}
+          width={trackW}
+          height={6}
+          rx={3}
+          fill="url(#temperature-track)"
+        />
+        <circle
+          cx={trackX + 6 + pos * (trackW - 12)}
+          cy={y + 157}
+          r={5.5}
+          className="fill-white"
+          stroke={hues[Math.round(pos * 4)]}
+          strokeWidth={2.5}
+        />
+        <Label x={trackX} y={y + 178} size={15} weight={700} tone="strong">
           3.7
         </Label>
-        <Label x={x + 46} y={y + 167} size={10} tone="muted">
-          average
+        <Label x={x + w - 14} y={y + 178} anchor="end" size={9} tone="muted">
+          from 10 people
         </Label>
       </CollabCard>
     </Scene>

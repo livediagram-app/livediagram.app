@@ -274,46 +274,6 @@ export function CardBack({ textColor, from = 0 }: { textColor: string; from?: nu
 }
 
 /**
- * The tick plate of a dial instrument: a graduated scale with the fifths
- * called out taller, and a faint arc sweeping through them.
- *
- * A fist-of-five is a READING, not a tally — "how does the room feel" has a
- * needle answer, and a plate is what a needle is read against.
- */
-export function GaugePlate({
-  textColor,
-  ticks = 21,
-  height = 14,
-}: {
-  textColor: string;
-  ticks?: number;
-  height?: number;
-}) {
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none absolute inset-x-0"
-      style={{ bottom: 8, height }}
-    >
-      {Array.from({ length: ticks }, (_, i) => {
-        const major = i % 5 === 0;
-        return (
-          <span
-            key={i}
-            className="absolute bottom-0 w-px"
-            style={{
-              left: `${(i / (ticks - 1)) * 100}%`,
-              height: major ? height : height * 0.5,
-              background: tint(textColor, major ? 0.3 : 0.16),
-            }}
-          />
-        );
-      })}
-    </span>
-  );
-}
-
-/**
  * A vertical crease, the fold down the middle of a programme.
  *
  * A highlight beside a shadow — one line each — because that pair is the whole
