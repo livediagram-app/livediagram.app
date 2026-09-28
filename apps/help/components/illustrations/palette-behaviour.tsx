@@ -467,23 +467,45 @@ export function ReactionPads() {
 export function RevealZone() {
   return (
     <Scene w={420} h={196}>
-      {/* Covered */}
+      {/* Covered: an opaque panel lit by its accent, a solid border, a lock. */}
+      <defs>
+        <radialGradient id="reveal-glow" cx="0%" cy="0%" r="120%">
+          <stop offset="0%" className="[stop-color:var(--color-brand-300)]" stopOpacity={0.55} />
+          <stop offset="60%" className="[stop-color:var(--color-brand-100)]" stopOpacity={0} />
+        </radialGradient>
+      </defs>
+      <rect x={20} y={38} width={170} height={110} rx={10} className="fill-slate-100" />
       <rect
         x={20}
         y={38}
         width={170}
         height={110}
         rx={10}
-        className="fill-slate-100 stroke-brand-400"
-        strokeWidth={2}
-        strokeDasharray="6 5"
+        fill="url(#reveal-glow)"
+        className="stroke-brand-400"
+        strokeWidth={1.5}
       />
-      <Eye x={105} y={72} />
-      <Label x={105} y={96} anchor="middle" size={12} weight={700} tone="strong">
+      <circle cx={105} cy={70} r={12} className="fill-brand-100" />
+      <rect
+        x={101}
+        y={69}
+        width={8}
+        height={6.5}
+        rx={1.5}
+        className="fill-none stroke-brand-600"
+        strokeWidth={1.3}
+      />
+      <path
+        d="M102.6 69v-2a2.4 2.4 0 0 1 4.8 0v2"
+        className="fill-none stroke-brand-600"
+        strokeWidth={1.3}
+      />
+      <Label x={105} y={98} anchor="middle" size={12} weight={700} tone="strong">
         Estimates
       </Label>
-      <Label x={105} y={114} anchor="middle" size={8} weight={600} tone="muted">
-        DOUBLE-CLICK TO REVEAL
+      <rect x={58} y={108} width={94} height={16} rx={8} className="fill-slate-200" />
+      <Label x={105} y={116} anchor="middle" size={8} weight={600} tone="body">
+        Double-click to reveal
       </Label>
 
       {/* Uncovered, for me only */}

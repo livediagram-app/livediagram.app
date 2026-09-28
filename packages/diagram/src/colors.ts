@@ -189,8 +189,13 @@ function behaviourSkin(
     return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
   }
   if (kind === 'reveal' || kind === 'chair') {
-    return surface === 'dark'
-      ? { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text }
+    if (surface === 'dark') {
+      return { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text };
+    }
+    // The reveal cover's stroke is its ACCENT (docs/specs/009-elements/reveal-zone.md "The look"), so on
+    // light paper it takes the shape accent, not the chair's grey outline.
+    return kind === 'reveal'
+      ? { fill: 'transparent', stroke: '#0ea5e9', text: OUTLINE_SKIN_LIGHT.text }
       : { fill: 'transparent', ...OUTLINE_SKIN_LIGHT };
   }
   return null;

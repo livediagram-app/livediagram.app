@@ -43,13 +43,18 @@ the roll is taken, and nothing later rewrites them.
 
 ## The face
 
-- A header: the count ("7 present") and when it was taken, in the reader's
-  locale.
-- The people below in a wrapping grid — each participant's presence avatar
-  (initials on their presence colour, the same `ParticipantAvatar` the presence
-  stack and the picker use) with their name beside it.
-- Before the first roll, an empty state with the **Take roll** press on it, so
-  a freshly dropped card explains itself.
+Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper kit is being retired; the [Q&A board](qa-board.md) set the look), in the tab theme's accent. It replaced a two-column list on a perforated "ticket stub" with a torn
+bottom edge.
+
+- A **header block**: the count large ("7 present"), an overlapping stack of
+  the first few avatars (and "+3" past them), and when it was taken as a pill
+  (the time, and the date when it isn't today, in the reader's locale).
+- The people below as **rounded chips**, each the participant's presence avatar
+  (initials on their presence colour) and their name, in a wrapping grid. When
+  a roll is taken while the card is on screen they cascade in.
+- **Take roll** at the foot as the accent bar; once taken, **Take again**.
+- Before the first roll, the shared invitation ("Nobody recorded yet", "Take
+  the roll to freeze who is here into the diagram").
 
 ## Guests count
 

@@ -22,12 +22,10 @@ vi.mock('./audience', () => ({
 }));
 
 import type { Env } from '../types';
-import { recordDiagramRenamed } from './diagram-events';
 import { recordTeamRenamed } from './team-events';
 import { recordThemeSaved } from './account-events';
 
 const env = {} as Env;
-const diagram = { id: 'd1', name: 'Payments v2', ownerId: 'me', teamId: null } as never;
 
 function keys(): string[] {
   return emit.emitTimelineEvent.mock.calls.map(
@@ -41,16 +39,7 @@ beforeEach(() => {
 });
 
 describe('repeatable events carry a unique dedupe key', () => {
-  it('two renames of one diagram are two rows, not one upserted', async () => {
-    await recordDiagramRenamed(env, diagram, 'Payments', 'me');
-    await recordDiagramRenamed(env, diagram, 'Payments v1', 'me');
-    const [a, b] = keys();
-    expect(a).toBeTruthy();
-    expect(b).toBeTruthy();
-    expect(a).not.toBe(b);
-  });
-
-  it('the same for a team rename', async () => {
+  it('two renames of one team are two rows, not one upserted', async () => {
     await recordTeamRenamed(env, { id: 't1', name: 'Guild' }, 'Old Guild', 'me');
     await recordTeamRenamed(env, { id: 't1', name: 'Guild 2' }, 'Guild', 'me');
     const [a, b] = keys();

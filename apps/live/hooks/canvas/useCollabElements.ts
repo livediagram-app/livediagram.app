@@ -15,6 +15,7 @@ import {
   IDEA_MAX_CARDS,
   responseDeltaFor,
   type Element,
+  type EstimateScale,
   type ShapeElement,
   type Tab,
   type TimerMode,
@@ -126,6 +127,26 @@ export function useCollabElements({
   // --- Estimate card (docs/specs/012-collaboration/estimate-card.md) --------------------------------------------
   const setResponsesRevealed = (element: ShapeElement, revealed: boolean) => {
     patchAsFacilitator(element.id, () => ({ responsesRevealed: revealed }));
+    track('Element', 'Changed', 'Estimate');
+  };
+
+  // Choosing a new card's scale on the canvas (docs/specs/012-collaboration/estimate-card.md "Choosing a
+  // scale"). Authoring, like the menu's Scale, so it is an ordinary undoable
+  // edit, and anyone who can edit may make it (it is not running the room).
+  const chooseEstimateScale = (element: ShapeElement, scale: EstimateScale) => {
+    if (editsBlocked) return;
+    commitTabs((ts) =>
+      ts.map((tab) =>
+        tab.id !== activeId
+          ? tab
+          : {
+              ...tab,
+              elements: tab.elements.map((el) =>
+                el.id === element.id && el.type === 'shape' ? { ...el, estimateScale: scale } : el,
+              ),
+            },
+      ),
+    );
     track('Element', 'Changed', 'Estimate');
   };
 
@@ -274,6 +295,7 @@ export function useCollabElements({
     toggleChecklistItem,
     respond,
     setResponsesRevealed,
+    chooseEstimateScale,
     clearResponses,
     addIdea,
     revealIdeas,

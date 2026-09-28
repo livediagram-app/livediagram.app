@@ -1,14 +1,29 @@
-// The face of an Idea box (docs/specs/012-collaboration/idea-box.md): a prompt, a field anyone can type into,
-// and a count that becomes the cards once the box is opened.
+// The face of an Idea box (docs/specs/012-collaboration/idea-box.md): anonymous ideas, sealed until the
+// facilitator opens the box. Built from the Q&A board's parts ("The look"):
+// the shared accent scope, the composer at the foot, its row style, its empty
+// state and its motion.
 //
-// Closed, it shows a count and NOT the text — not even to the person who wrote
+// Closed, it shows a count and NOT the text, not even to the person who wrote
 // one. A box that shows you your own card tells the room what you wrote the
 // moment somebody watches you type it.
 
+import { CountBadge } from '@/components/primitives/CountBadge';
 import { useState } from 'react';
-import type { ShapeElement } from '@livediagram/diagram';
-import { CollabButton, CollabEmpty, CollabPanel, tint } from './collab-chrome';
-import { BoxLid, Corrugation } from '@/components/canvas/paper-kit';
+import { IDEA_MAX_TEXT, type ShapeElement } from '@livediagram/diagram';
+import { CollabPanel, tint } from './collab-chrome';
+import { CollabAccentScope } from './collab-accent';
+import { CollabComposer } from './CollabComposer';
+import { IdeaRow } from './idea/IdeaRow';
+import { IdeaSealed } from './idea/IdeaSealed';
+import {
+  AccentBar,
+  EmptyRows,
+  EyeGlyph,
+  MaskGlyph,
+  QA_ACCENT,
+  QA_ACCENT_INK,
+  ScatterGlyph,
+} from './qa/qa-parts';
 import {
   ElementEllipsisMenu,
   ElementMenuItem,
@@ -29,7 +44,7 @@ export function IdeaBoxFace({
   element: ShapeElement;
   label: string;
   textColor: string;
-  /** The card's own fill, for the posted card and the slot's depth. */
+  /** The card's own fill, for the accent scope. */
   surface: string;
   onAddIdea?: (text: string) => void;
   onReveal?: () => void;
@@ -43,148 +58,114 @@ export function IdeaBoxFace({
   // can be grouped, moved and dot-voted like anything else on the board.
   onScatter?: () => void;
 }) {
-  const [draft, setDraft] = useState('');
   const cards = element.ideaCards ?? [];
   const open = element.ideasRevealed === true;
+  // Ideas past this index arrived after the box first painted, and slide in.
+  const [initialCount] = useState(cards.length);
 
-  const submit = () => {
-    const text = draft.trim();
-    if (!text || !onAddIdea) return;
-    onAddIdea(text);
-    setDraft('');
-  };
+  const menu =
+    onClear || onOpenSettings ? (
+      <ElementEllipsisMenu label="Idea box options" color={textColor} align="left">
+        {(close) => (
+          <>
+            {onClear ? (
+              <ElementMenuItem
+                onPress={() => {
+                  onClear();
+                  close();
+                }}
+              >
+                Empty the box
+                {cards.length ? <CountBadge count={cards.length} /> : null}
+              </ElementMenuItem>
+            ) : null}
+            {onOpenSettings ? (
+              <ElementMenuSettingsRow
+                onOpen={() => {
+                  onOpenSettings();
+                  close();
+                }}
+              />
+            ) : null}
+          </>
+        )}
+      </ElementEllipsisMenu>
+    ) : undefined;
 
   return (
-    <CollabPanel
-      element={element}
-      title={label.trim() || 'Ideas'}
-      textColor={textColor}
-      aside={cards.length ? `${cards.length} ${cards.length === 1 ? 'idea' : 'ideas'}` : undefined}
-      headerExtra={
-        onClear || onOpenSettings ? (
-          <ElementEllipsisMenu label="Idea box options" color={textColor}>
-            {(close) => (
-              <>
-                {onClear ? (
-                  <ElementMenuItem
-                    onPress={() => {
-                      onClear();
-                      close();
-                    }}
-                  >
-                    {cards.length ? `Empty the box (${cards.length})` : 'Empty the box'}
-                  </ElementMenuItem>
-                ) : null}
-                {onOpenSettings ? (
-                  <ElementMenuSettingsRow
-                    onOpen={() => {
-                      onOpenSettings();
-                      close();
-                    }}
-                  />
-                ) : null}
-              </>
-            )}
-          </ElementEllipsisMenu>
-        ) : undefined
-      }
-      // A POSTING BOX (docs/specs/012-collaboration/participant-responses.md). The slot is the whole element in one shape:
-      // things go in, nothing comes back out until somebody opens it.
-      //
-      // It began as a dark bar near the top edge, which read as a progress
-      // track somebody had misplaced — a slot is only a slot if it is cut into
-      // something. So the lid is its own band with a lip where it overhangs
-      // the body, the mouth is sunk into it with the shadow on the inside, and
-      // the body below is corrugated like the carton it is cut from. With
-      // anything in the box a card sits caught half-way through the slot,
-      // which says "not empty" from across the room in a way a count cannot.
-      inset={{ top: 24 }}
-      backdrop={<Corrugation textColor={textColor} from={30} />}
-      overlay={<BoxLid textColor={textColor} surface={surface} posted={cards.length > 0} />}
-      footer={
-        <>
-          {!open ? (
-            <CollabButton
-              tone="loud"
+    <CollabAccentScope element={element} textColor={textColor} surface={surface}>
+      <CollabPanel
+        element={element}
+        // Resizing makes room for more ideas rather than bigger ones.
+        reflow
+        title={label.trim() || 'Ideas'}
+        textColor={textColor}
+        aside={
+          cards.length ? `${cards.length} ${cards.length === 1 ? 'idea' : 'ideas'}` : undefined
+        }
+        headerExtra={menu}
+        footer={
+          onAddIdea ? (
+            <CollabComposer
               textColor={textColor}
-              onPress={onReveal && cards.length > 0 ? onReveal : undefined}
-              hoverCard={{
-                title: 'Open the box',
-                description:
-                  'Shows every idea to the room. There is no closing it again — the flag protects the writing round, it is not a toggle.',
-              }}
-            >
-              Open the box
-            </CollabButton>
-          ) : (
-            <CollabButton
-              textColor={textColor}
-              onPress={onScatter && cards.length > 0 ? onScatter : undefined}
-              hoverCard={{
-                title: 'Scatter to sticky notes',
-                description:
-                  'Turns each idea into an ordinary sticky note beside the box, still with nobody’s name on it.',
-              }}
-            >
-              Scatter to stickies
-            </CollabButton>
-          )}
-        </>
-      }
-    >
-      {onAddIdea ? (
-        <div className="flex gap-1.5">
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              // The canvas listens for plain keys (type-to-edit, shortcuts), so
-              // every keystroke in here has to stop at the field.
-              e.stopPropagation();
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                submit();
-              }
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-            placeholder="Add an idea…"
-            aria-label="Add an anonymous idea"
-            maxLength={500}
-            className="pointer-events-auto min-w-0 flex-1 rounded-md border px-2.5 py-1.5 text-[11px] outline-none placeholder:opacity-50"
-            style={{
-              color: textColor,
-              backgroundColor: tint(textColor, 0.05),
-              borderColor: tint(textColor, 0.18),
-            }}
-          />
-          <CollabButton textColor={textColor} onPress={submit} label="Submit idea">
-            Add
-          </CollabButton>
-        </div>
-      ) : null}
-      <div>
+              placeholder="Add an idea…"
+              ariaLabel="Add an anonymous idea"
+              sendLabel="Submit idea"
+              maxLength={IDEA_MAX_TEXT}
+              onSubmit={onAddIdea}
+              meta={<AnonymousBadge />}
+            />
+          ) : undefined
+        }
+      >
+        {!open && onReveal && cards.length > 0 ? (
+          <AccentBar onPress={onReveal} icon={<EyeGlyph />} count={cards.length}>
+            Open the box
+          </AccentBar>
+        ) : null}
+        {open && onScatter && cards.length > 0 ? (
+          <AccentBar onPress={onScatter} icon={<ScatterGlyph />}>
+            Scatter to sticky notes
+          </AccentBar>
+        ) : null}
+
         {cards.length === 0 ? (
-          <CollabEmpty textColor={textColor}>
-            Nothing in the box yet. Nobody’s name is recorded against what they add.
-          </CollabEmpty>
+          <EmptyRows textColor={textColor} title="Nothing in the box yet">
+            {onAddIdea
+              ? 'Be the first to add an idea. Nobody’s name is stored with it.'
+              : undefined}
+          </EmptyRows>
         ) : open ? (
           <ul className="flex flex-col gap-1.5">
             {cards.map((card, i) => (
-              <li
+              <IdeaRow
                 key={`${i}-${card.slice(0, 12)}`}
-                className="rounded-md px-2.5 py-1.5 text-[11px] leading-relaxed"
-                style={{ color: textColor, backgroundColor: tint(textColor, 0.07) }}
-              >
-                {card}
-              </li>
+                text={card}
+                index={i}
+                fresh={i >= initialCount}
+                textColor={textColor}
+              />
             ))}
           </ul>
         ) : (
-          <CollabEmpty textColor={textColor}>
-            {`${cards.length} ${cards.length === 1 ? 'idea is' : 'ideas are'} in the box. Nothing shows until it is opened.`}
-          </CollabEmpty>
+          <IdeaSealed count={cards.length} textColor={textColor} />
         )}
-      </div>
-    </CollabPanel>
+      </CollabPanel>
+    </CollabAccentScope>
+  );
+}
+
+// Where the Q&A board has an Anonymous switch, the Idea box states it: there
+// is nothing to switch, and saying so where you write is the reassurance the
+// element exists to give.
+function AnonymousBadge() {
+  return (
+    <span
+      className="pointer-events-auto inline-flex items-center gap-1 rounded-full py-0.5 pl-1 pr-2 text-[10px] font-semibold"
+      style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
+    >
+      <MaskGlyph size={11} />
+      Anonymous
+    </span>
   );
 }

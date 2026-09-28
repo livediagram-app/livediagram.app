@@ -13,4 +13,5 @@ Follow the references below only as needed; never upfront.
 - ./dropdown-tile-grid.md - when working on Tile grids for the palette dropdowns: The canvas-tool and palette-category pickers lay their options out as an icon-over-label tile grid instead of a long column, matching the context menus' MenuTileGrid
 - ./iconography.md - when drawing, adding or changing any icon: Lucide vocabulary, 1.5px on-screen weight, one home, icon weight on canvas
 - ./optical-alignment.md - when a letter, numeral, initials, caps label or icon sits in a circle, chip, badge or tile, or icons stack over labels in a row
+- ./counts.md - when a label shows how many of something: a count is a badge (CountBadge, or AccentBar's count on the canvas), never a number in brackets
 - ./scrollbars.md - when anything scrolls: the themed scrollbar is the default everywhere, one slim variant, and the thumb contrast rule

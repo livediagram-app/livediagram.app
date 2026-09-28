@@ -6,28 +6,21 @@
 // wears "Most wanted" and every row carries a heat bar against it, and the
 // note being discussed lifts into a lit card with a breathing live dot.
 
+import { CountBadge } from '@/components/primitives/CountBadge';
 import { useEffect, useState } from 'react';
-import {
-  canvasSurface,
-  defaultStrokeColor,
-  qaView,
-  qaVoterId,
-  type QaNote,
-  type ShapeElement,
-} from '@livediagram/diagram';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { CollabPanel, tint } from '../collab-chrome';
+import { qaView, qaVoterId, type QaNote, type ShapeElement } from '@livediagram/diagram';
+import { CollabPanel } from '../collab-chrome';
 import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuSettingsRow,
 } from '@/components/canvas/ElementEllipsisMenu';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { QaNoteRow } from './QaNoteRow';
 import { QaSpotlight } from './QaSpotlight';
 import { QaDiscussed } from './QaDiscussed';
 import { QaComposer } from './QaComposer';
-import { QA_ACCENT, QA_ACCENT_INK, DiscussGlyph, stopPointer } from './qa-parts';
+import { AccentBar, DiscussGlyph, EmptyRows } from './qa-parts';
+import { CollabAccentScope } from '../collab-accent';
 import { useFlipList } from './useFlipList';
 
 // What the board can do for this viewer. Participant verbs are present for
@@ -58,58 +51,6 @@ function useSelfVoterId(ownerId: string, elementId: string): string {
   return id;
 }
 
-function StartButton({ onPress }: { onPress: () => void }) {
-  const press = usePressWithoutDrag(onPress);
-  return (
-    <button
-      type="button"
-      {...press}
-      {...stopPointer}
-      className="pointer-events-auto flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-dashed py-2 text-[11px] font-semibold transition hover:brightness-110"
-      style={{
-        color: QA_ACCENT_INK,
-        borderColor: tint(QA_ACCENT, 0.45),
-        backgroundColor: tint(QA_ACCENT, 0.05),
-      }}
-    >
-      <DiscussGlyph /> Discuss the top note
-    </button>
-  );
-}
-
-function EmptyBoard({ textColor, canAdd }: { textColor: string; canAdd: boolean }) {
-  return (
-    <div className="flex flex-col items-center gap-3 py-3">
-      <div className="flex w-full flex-col gap-1.5" aria-hidden>
-        {[0.92, 0.7, 0.8].map((w, i) => (
-          <div
-            key={i}
-            className="qa-ghost flex items-center gap-2 rounded-xl p-2"
-            style={{ backgroundColor: tint(textColor, 0.04), animationDelay: `${i * 300}ms` }}
-          >
-            <span
-              className="h-8 w-8 rounded-lg"
-              style={{ backgroundColor: tint(textColor, 0.08) }}
-            />
-            <span
-              className="h-2 rounded-full"
-              style={{ width: `${w * 70}%`, backgroundColor: tint(textColor, 0.1) }}
-            />
-          </div>
-        ))}
-      </div>
-      <p
-        className="text-center text-[11.5px] leading-relaxed"
-        style={{ color: textColor, opacity: 0.6 }}
-      >
-        {canAdd
-          ? 'Be the first to add a note. Upvote the ones you want to talk about and they rise to the top.'
-          : 'No notes yet.'}
-      </p>
-    </div>
-  );
-}
-
 export function QaBoardFace({
   element,
   label,
@@ -130,17 +71,6 @@ export function QaBoardFace({
   actions: QaFaceActions;
   onOpenSettings?: () => void;
 }) {
-  // The accent is the TAB THEME's: a theme writes every element's stroke, so
-  // the board's own stroke is the theme's element accent (and a user who
-  // recolours the border recolours the accent with it). The ink on it is
-  // picked by its lightness, so a pale accent gets dark text, not white.
-  const paper = useCanvasSurface();
-  const accent = element.strokeColor ?? defaultStrokeColor(element, paper);
-  const onAccent = canvasSurface(accent) === 'dark' ? '#ffffff' : '#0f172a';
-  const accentInk =
-    canvasSurface(accent) === canvasSurface(surface)
-      ? `color-mix(in srgb, ${accent} 40%, ${textColor})`
-      : accent;
   const notes: QaNote[] = element.qaNotes ?? [];
   const { discussing, queue, done } = qaView(notes);
   const voterId = useSelfVoterId(selfOwnerId, element.id);
@@ -157,7 +87,7 @@ export function QaBoardFace({
 
   const menu =
     actions.clear || onOpenSettings ? (
-      <ElementEllipsisMenu label="Q&A board options" color={textColor}>
+      <ElementEllipsisMenu label="Q&A board options" color={textColor} align="left">
         {(close) => (
           <>
             {discussing && actions.discuss ? (
@@ -177,7 +107,8 @@ export function QaBoardFace({
                   close();
                 }}
               >
-                {total ? `Empty the board (${total})` : 'Empty the board'}
+                Empty the board
+                {total ? <CountBadge count={total} /> : null}
               </ElementMenuItem>
             ) : null}
             {onOpenSettings ? (
@@ -194,18 +125,8 @@ export function QaBoardFace({
     ) : undefined;
 
   return (
-    <div
-      style={
-        {
-          display: 'contents',
-          '--qa-accent': accent,
-          '--qa-on-accent': onAccent,
-          '--qa-accent-ink': accentInk,
-          '--qa-accent-soft': tint(accent, 0.35),
-          '--qa-card': surface,
-        } as React.CSSProperties
-      }
-    >
+    // The accent is the TAB THEME's, shared with the Idea box (collab-accent.tsx).
+    <CollabAccentScope element={element} textColor={textColor} surface={surface}>
       <CollabPanel
         element={element}
         // Resizing makes room for more notes rather than bigger ones.
@@ -240,11 +161,17 @@ export function QaBoardFace({
             onReturn={actions.discuss ? () => actions.discuss!(null) : undefined}
           />
         ) : running && queue.length > 0 ? (
-          <StartButton onPress={() => actions.discuss!(queue[0]!.id)} />
+          <AccentBar onPress={() => actions.discuss!(queue[0]!.id)} icon={<DiscussGlyph />}>
+            Discuss the top note
+          </AccentBar>
         ) : null}
 
         {queue.length === 0 && !discussing && done.length === 0 ? (
-          <EmptyBoard textColor={textColor} canAdd={!!actions.add} />
+          <EmptyRows textColor={textColor} title="No notes yet">
+            {actions.add
+              ? 'Be the first to add one. Upvote the notes you want to talk about and they rise to the top.'
+              : undefined}
+          </EmptyRows>
         ) : (
           <ul className="relative flex flex-col gap-1.5">
             {queue.map((note, i) => (
@@ -279,6 +206,6 @@ export function QaBoardFace({
 
         <QaDiscussed notes={done} textColor={textColor} onReopen={actions.reopen} />
       </CollabPanel>
-    </div>
+    </CollabAccentScope>
   );
 }

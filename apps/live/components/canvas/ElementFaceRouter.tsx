@@ -12,6 +12,7 @@ import {
   carriesSharedSettingsMenu,
   elementKindLabel,
   isCollabPanelShape,
+  ownColours,
   isSelfDrawingShape,
   isWebComponentShape,
   type ShapeMarker,
@@ -22,6 +23,7 @@ import {
 import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
+import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
@@ -161,19 +163,24 @@ export function ElementFaceRouter({
   const surface = useCanvasSurface();
   // The shared settings `…` (docs/specs/008-canvas/canvas-and-palette.md), in the same corner on every Behaviours
   // element that has one: see carriesSharedSettingsMenu for who doesn't.
-  const settingsMenu =
+  const settingsButton =
     element.type === 'shape' &&
     !isEditing &&
     !readOnly &&
     onOpenElementSettings &&
     carriesSharedSettingsMenu(element.shape) ? (
-      <span className="absolute right-1 top-1 z-10">
-        <ElementSettingsButton
-          label={`${elementKindLabel(element)} settings`}
-          color={textColor}
-          onOpen={() => onOpenElementSettings(element.id)}
-        />
-      </span>
+      <ElementSettingsButton
+        label={`${elementKindLabel(element)} settings`}
+        color={textColor}
+        onOpen={() => onOpenElementSettings(element.id)}
+      />
+    ) : null;
+  // A collaboration panel has a title row, and the `…` leads its title
+  // (CollabSettingsSlot); everything else keeps it in the top-right corner.
+  const inTitleRow = element.type === 'shape' && isCollabPanelShape(element.shape);
+  const settingsMenu =
+    settingsButton && !inTitleRow ? (
+      <span className="absolute right-1 top-1 z-10">{settingsButton}</span>
     ) : null;
 
   return (
@@ -263,7 +270,7 @@ export function ElementFaceRouter({
           label={label}
           textColor={textColor}
           strokeColor={
-            remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
+            remoteBorderColor ?? ownColours(element).stroke ?? defaultStrokeColor(element, surface)
           }
           revealedForAll={element.revealed === true}
           revealedForMe={!!revealedForMe}
@@ -284,15 +291,17 @@ export function ElementFaceRouter({
            a temperature check, an idea box, an agenda, or a roll call. Like
            every other face above, mid-edit it falls through to the ordinary
            label editor below, so the title is retyped like any shape's. */
-        <CollabFaceRouter
-          element={element}
-          label={label}
-          textColor={textColor}
-          collab={collab}
-          onOpenSettings={
-            onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
-          }
-        />
+        <CollabSettingsSlot.Provider value={settingsButton}>
+          <CollabFaceRouter
+            element={element}
+            label={label}
+            textColor={textColor}
+            collab={collab}
+            onOpenSettings={
+              onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
+            }
+          />
+        </CollabSettingsSlot.Provider>
       ) : element.type === 'shape' && element.shape === 'comment-pin' && !isEditing ? (
         /* Comment pin (docs/specs/012-collaboration/comment-pin.md): opens the SAME thread popover an ordinary
            element's comment badge opens — the pin is just an element whose

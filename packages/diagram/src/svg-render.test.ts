@@ -876,3 +876,78 @@ describe('caption colour on dark paper', () => {
     );
   });
 });
+
+// The Idea box export (docs/specs/012-collaboration/idea-box.md "The look"): its count comes from the ideas
+// themselves, a closed box never prints a word of them, and an open one does.
+describe('idea box export', () => {
+  const box = (o: Partial<ShapeElement>) =>
+    renderElementsToSvg(
+      tab([
+        shape('b', { shape: 'idea-box', width: 300, height: 320, label: 'What slowed us?', ...o }),
+      ]),
+    );
+
+  it('counts the ideas and keeps a closed box sealed', () => {
+    const svg = box({ ideaCards: ['Flaky CI', 'Too many meetings'] });
+    expect(svg).toContain('2 IDEAS');
+    expect(svg).toContain('ideas sealed');
+    expect(svg).not.toContain('Flaky CI');
+  });
+
+  it('shows the ideas once the box is open', () => {
+    const svg = box({ ideaCards: ['Flaky CI'], ideasRevealed: true });
+    expect(svg).toContain('Flaky CI');
+    expect(svg).not.toContain('sealed');
+  });
+});
+
+// The Temperature check export (docs/specs/012-collaboration/temperature-check.md "The face"): the values, a
+// bar per value in its fixed hue, and the average.
+describe('temperature check export', () => {
+  const card = (values: string[]) =>
+    renderElementsToSvg(
+      tab([
+        shape('t', {
+          shape: 'temperature',
+          width: 320,
+          height: 300,
+          responses: values.map((value, i) => ({ participantId: `p${i}`, value, at: i })),
+        }),
+      ]),
+    );
+
+  it('draws the bars and the average', () => {
+    const svg = card(['4', '4', '3', '5']);
+    expect(svg).toContain('#fbbf24');
+    expect(svg).toContain('>4.0<');
+    expect(svg).toContain('4 ANSWERED');
+  });
+
+  it('says so when nobody has answered, rather than averaging zero', () => {
+    expect(card([])).toContain('No readings yet');
+  });
+});
+
+// The Estimate card export (docs/specs/012-collaboration/estimate-card.md "The look"): its own scale, hidden
+// answers stay hidden, and a revealed card shows the answers with the spread.
+describe('estimate card export', () => {
+  const card = (o: Partial<ShapeElement>) =>
+    renderElementsToSvg(tab([shape('e', { shape: 'estimate', width: 360, height: 310, ...o })]));
+  const answers = ['13', '3', '5'].map((value, i) => ({ participantId: `p${i}`, value, at: i }));
+
+  it('draws the powers scale for a powers card', () => {
+    expect(card({ estimateScale: 'powers' })).toContain('>16<');
+  });
+
+  it('keeps answers hidden until the reveal', () => {
+    const svg = card({ responses: answers });
+    expect(svg).toContain('3 in, hidden until the reveal');
+    expect(svg).not.toContain('Spread');
+  });
+
+  it('shows the sorted answers and the spread once revealed', () => {
+    const svg = card({ responses: answers, responsesRevealed: true });
+    expect(svg).toContain('Spread 3 → 13');
+    expect(svg).toContain('3  5  13');
+  });
+});

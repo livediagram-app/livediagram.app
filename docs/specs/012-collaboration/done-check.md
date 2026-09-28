@@ -60,20 +60,24 @@ An **empty room is never done**. With nobody present there is nothing to have
 finished, and flashing "everyone's done" at an empty board would be celebrating
 the absence of people.
 
-## The flash
+## The flash, and the finish
 
 A pulse of a green ring around the card, not a colour wash: the card can be any
 theme colour, and a wash would fight it.
 
 It **runs out** after four cycles. A card left flashing forever is noise on a
 board somebody walked away from, and the completed state is still perfectly
-legible afterwards from the count, the "Everyone's done." line and the empty
+legible afterwards from the ring, the "Everyone's done!" line and the empty
 waiting list. Under `prefers-reduced-motion` it is a steady ring instead — the
 completion is information, so it stays visible; only the pulsing goes.
 
+When the last person marks themselves done **while the card is on screen**, a
+short burst of confetti goes off from the ring, once. Not on a reload of a card
+that was already complete: it celebrates the moment, not the state.
+
 ## The ellipsis menu
 
-A small `…` in the card's title row (`headerExtra` on `CollabPanel`, added for
+A small `…` leading the card's title (`headerExtra` on `CollabPanel`, added for
 this):
 
 - **Clear my mark** — only shown when you have one.
@@ -87,14 +91,26 @@ and a bubbling listener never hears the click that should dismiss it.
 
 ## Reading the card
 
-- Title row: the question, the `done/total` count, the menu.
-- **Done** roster at full strength, **Waiting on** drawn back — a glance should
-  land on who is finished, since that is what the facilitator is counting.
+Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper
+kit is being retired; the [Q&A board](qa-board.md) set the look). It replaced a feint-ruled "sheet"
+with two plain avatar lists and a grey pill button.
+
+- **Title row**: the `…` leading the question, the `done/total` count at the right.
+- **The ring is the hero.** A progress ring in the tab theme's accent fills as
+  people finish, easing to its new share, with the count large in the middle
+  ("3/5"). Complete, it turns green, the count becomes a check and the card
+  reads **Everyone's done!** above the rosters.
+- **Beside it, the rosters.** **Done** at full strength, each avatar wearing a
+  small green check; **Waiting** drawn back and gently breathing, so a glance
+  lands on who is finished, since that is what the facilitator is counting.
+  Each label carries its count as a badge ([Counts are badges](../004-interface-design/counts.md)).
+- **The button** fills the foot: **I'm done** in the accent with a check, which
+  pops when pressed; once you are done it turns quiet and reads **I'm not
+  done**, the same press to take it back.
+- **An empty room** says so plainly ("Nobody here yet" over "Share the diagram
+  and the card fills itself in") rather than drawing an empty ring.
 - Avatar gaps clear the presence ring (the ring is a box-shadow outside each
   avatar's layout box and eats 4px of any gap beside it).
-- The card's **default height is 220**, taller than the other room-response
-  panels, because it stacks two rosters rather than one readout. At 190 a
-  two-person room overflowed the body by about 7px and grew a scrollbar:
-  measured, each roster is 41px, and two of them plus the gap did not fit the
-  100px body. There is no decorative rule under the rosters for the same
-  reason — it cost 13px with the gap and drew nothing anybody could see.
+- The card stays **fixed-size at 280x220**. Durations are canvas motion, in
+  `qa-board.css`, and collapse under reduced motion. The export draws the same
+  card: the ring at its share with the count, and the button.

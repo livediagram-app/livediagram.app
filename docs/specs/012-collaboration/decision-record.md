@@ -53,18 +53,28 @@ other collaboration faces do.
 
 ## The face
 
-- A **status chip** in the top-right, colour-coded and always spelled out in
-  words: proposed (slate), accepted (green), rejected (rose), superseded
-  (amber).
-- The statement as the label, given the room it needs — this is the sentence
-  people read.
-- Drivers as a compact bulleted list under it.
-- The date in the footer, or nothing at all when unset. An undated decision
-  card is common and fine; a card showing "no date" is noise.
+Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper
+kit is being retired). It replaced a halftone-screened "filed record" with a
+turned-up corner and a light chip that sat pasted onto a dark board.
 
-The status tints **the chip only**, never the element's fill. The theme owns
-the box ([Multi-colour (rainbow) themes](../011-theme/multicolour-themes.md)), and a card that turns green on accept fights every other
-element on a themed board.
+- **The status** as a badge in the top-right, spelled out in words with its
+  own glyph: proposed (slate, a dotted ring), accepted (green, a check),
+  rejected (rose, a cross), superseded (amber, a curved arrow). Each status has
+  one hue (`DECISION_STATUS_HUES`); the badge is tinted from it, so it reads in
+  light and dark alike.
+- **The statement** as the label, given the room it needs and set larger than a
+  panel title (three lines), under a soft glow of the status colour from the
+  card's top corner: this is the sentence people read.
+- **Drivers** under a small "Because" label, each a row with an arrow marker in
+  the status colour.
+- **The date** in the footer as a pill with a calendar glyph, or nothing at all
+  when unset. An undated decision card is common and fine; a card showing "no
+  date" is noise.
+- **No drivers** says so in one quiet line with a plus, pointing at the menu.
+
+The status tints **the badge, the glow and the markers**, never the element's
+fill. The theme owns the box ([Multi-colour (rainbow) themes](../011-theme/multicolour-themes.md)), and a card that turns green
+on accept fights every other element on a themed board.
 
 ## Why not a record box
 

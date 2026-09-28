@@ -76,7 +76,7 @@ export const QaNoteRow = forwardRef<
           {note.text}
         </p>
         <div className="flex min-w-0 items-center gap-1.5 text-[10px]">
-          <AuthorChip note={note} textColor={textColor} size={14} />
+          <AuthorChip author={note.author} textColor={textColor} size={14} />
           <span className="shrink-0 opacity-40" style={{ color: textColor }}>
             · {relTime(note.at)}
           </span>

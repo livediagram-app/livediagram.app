@@ -97,10 +97,6 @@ const diagramRenderer: TimelineRenderer = (event, ctx) => {
   switch (event.eventType) {
     case 'diagram_edited':
       return { ...base, meta: byActor(event, ctx) };
-    case 'diagram_renamed': {
-      const previous = str(event.snapshot, 'previousName');
-      return { ...base, meta: previous ? `Was ${previous}` : undefined };
-    }
     case 'diagram_duplicated': {
       const source = str(event.snapshot, 'sourceName');
       return { ...base, meta: source ? `Copy of ${source}` : undefined };

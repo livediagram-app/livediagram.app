@@ -237,6 +237,17 @@ export function clampPercent(value: number): number {
 export const REACTIONS = ['confetti', 'sparkles', 'hearts', 'applause', 'fireworks'] as const;
 export type Reaction = (typeof REACTIONS)[number];
 
+// Each reaction's colour, a pair of hues from one end of its glow to the other
+// (docs/specs/009-elements/reaction-pad.md "The look"). Fixed rather than the theme's: the reaction's
+// feeling is its identity. Shared by the canvas face and the export.
+export const REACTION_HUES: Record<Reaction, readonly [string, string]> = {
+  confetti: ['#fbbf24', '#fb7185'],
+  sparkles: ['#a78bfa', '#22d3ee'],
+  hearts: ['#f472b6', '#a855f7'],
+  applause: ['#fbbf24', '#fb923c'],
+  fireworks: ['#818cf8', '#e879f9'],
+};
+
 /** Menu + hover card name for a reaction. */
 export const REACTION_LABEL: Record<Reaction, string> = {
   confetti: 'Confetti',

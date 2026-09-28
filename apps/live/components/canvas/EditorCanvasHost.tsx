@@ -578,6 +578,7 @@ export function EditorCanvasHost() {
           setResponsesRevealed:
             isReadOnly || runBlocked ? undefined : collabElements.setResponsesRevealed,
           clearResponses: isReadOnly || runBlocked ? undefined : collabElements.clearResponses,
+          chooseEstimateScale: isReadOnly ? undefined : collabElements.chooseEstimateScale,
           addIdea: isReadOnly ? undefined : collabElements.addIdea,
           revealIdeas: isReadOnly || runBlocked ? undefined : collabElements.revealIdeas,
           clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,

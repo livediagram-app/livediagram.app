@@ -1063,48 +1063,21 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Estimate cards (docs/specs/012-collaboration/estimate-card.md): one tile per SCALE, grouped. Which scale a
-    // team estimates on is a standing decision, not something you change per
-    // card, so it belongs at the moment you reach for one.
-    id: 'collab:estimate-fibonacci',
+    // Estimate card (docs/specs/012-collaboration/estimate-card.md): ONE tile. The three scales are the same
+    // card with different answers, so they are one entry here, and a new card
+    // asks for its scale on the canvas ("Choosing a scale"); the element
+    // menu's Scale changes it later.
+    id: 'collab:estimate',
     tileGroup: 'ask',
-    blurb: '1, 2, 3, 5, 8, 13, 21',
-    caption: 'Fibonacci',
+    blurb: 'Planning poker: pick a scale on the card',
+    caption: 'Estimate',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add Fibonacci estimate card',
+    label: 'Add estimate card',
     description:
-      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses the classic story-point scale, where the gaps widen as the numbers grow so nobody argues over 6 versus 7.',
+      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Choose Fibonacci, T-shirt sizes or powers of two on the card once it is placed.',
     filled: true,
-    action: { type: 'shape', kind: 'estimate', estimateScale: 'fibonacci' },
-    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:estimate-tshirt',
-    tileGroup: 'ask',
-    blurb: 'XS through XL',
-    caption: 'T-shirt',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add T-shirt estimate card',
-    description:
-      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses sizes rather than numbers, for a room that starts haggling the moment it sees a digit.',
-    filled: true,
-    action: { type: 'shape', kind: 'estimate', estimateScale: 'tshirt' },
-    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:estimate-powers',
-    tileGroup: 'ask',
-    blurb: '1, 2, 4, 8, 16',
-    caption: 'Powers of two',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Powers of two estimate card',
-    description:
-      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses doubling steps, for sizing where each step up is meant to feel twice the work.',
-    filled: true,
-    action: { type: 'shape', kind: 'estimate', estimateScale: 'powers' },
+    action: { type: 'shape', kind: 'estimate' },
     icon: <EstimateIcon size={TILE_GLYPH_PX} />,
   },
   {

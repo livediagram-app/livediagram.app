@@ -29,7 +29,6 @@ import {
   AGENDA_DEFAULT_MINUTES,
   DEFAULT_CHAIR_FACING,
   DEFAULT_DECISION_STATUS,
-  DEFAULT_ESTIMATE_SCALE,
 } from './collab-shapes';
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
@@ -180,13 +179,15 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // ring around it. Big enough that six answers fit round the ring at a
   // readable size before anybody resizes it.
   quiz: { width: 520, height: 520 },
-  // Temperature check (docs/specs/012-collaboration/temperature-check.md): five buttons over five bars, plus the
-  // average. Narrower than the estimate card — five chips, not eight — but
-  // tall enough for all three bands.
-  temperature: { width: 300, height: 270 },
-  // Idea box (docs/specs/012-collaboration/idea-box.md): a box that holds a stack of cards, so it arrives
-  // sized like a retro column rather than a sticky.
-  'idea-box': { width: 320, height: 340 },
+  // Temperature check (docs/specs/012-collaboration/temperature-check.md): five faces over five bars over
+  // the mood meter. Wide enough for each face to carry its word, and tall
+  // enough that the bars, the main read, get real height.
+  temperature: { width: 320, height: 300 },
+  // Idea box (docs/specs/012-collaboration/idea-box.md): a list of ideas over the composer, so it arrives
+  // sized like a retro column rather than a sticky, and tall enough for its
+  // empty state (the breathing rows plus the invitation under them) above the
+  // composer without scrolling.
+  'idea-box': { width: 340, height: 420 },
   // Q&A board (docs/specs/012-collaboration/qa-board.md): a spotlight over a ranked list over the add field,
   // so it arrives tall enough for five or six notes before it scrolls.
   'qa-board': { width: 360, height: 460 },
@@ -348,7 +349,8 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textAlignY: 'top',
     };
     if (kind === 'estimate') {
-      return { ...seed, label: 'Estimate', estimateScale: DEFAULT_ESTIMATE_SCALE };
+      // No scale: the card asks for one on the canvas (estimateScalePending).
+      return { ...seed, label: 'Estimate' };
     }
     if (kind === 'temperature') return { ...seed, label: 'How are we feeling?' };
     if (kind === 'idea-box') return { ...seed, label: 'Ideas' };

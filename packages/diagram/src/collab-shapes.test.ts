@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  estimateScalePending,
+  estimateSpread,
+  estimateSpreadLabel,
+  estimateRank,
+  temperaturePosition,
+  supportsMarkers,
   supportsTextAlign,
   AGENDA_DEFAULT_MINUTES,
   AGENDA_MAX_MINUTES,
@@ -147,9 +153,16 @@ describe('the new kinds create and validate', () => {
     expect(isValidElement(el)).toBe(true);
   });
 
-  it('seeds an estimate card with a scale and no answers yet', () => {
+  it('seeds an estimate card with no scale yet and no answers', () => {
     const el = createShape('estimate', 0, 0);
-    expect(el.estimateScale).toBe('fibonacci');
+    // A new card asks for its scale on the canvas (estimate-card.md "Choosing a scale").
+    expect(el.estimateScale).toBeUndefined();
+    expect(estimateScalePending(el)).toBe(true);
+    expect(estimateScalePending({ ...el, estimateScale: 'tshirt' })).toBe(false);
+    // An older card with no scale but a round on it keeps meaning Fibonacci.
+    expect(
+      estimateScalePending({ ...el, responses: [{ participantId: 'a', value: '5', at: 1 }] }),
+    ).toBe(false);
     expect(el.responses).toBeUndefined();
     expect(el.responsesRevealed).toBeUndefined();
   });
@@ -245,6 +258,7 @@ describe('supportsTextAlign', () => {
       'reaction-pad',
       'portal',
       'mode-button',
+      'quiz',
       'stat-row',
       'sticker',
       'icon',
@@ -257,5 +271,56 @@ describe('supportsTextAlign', () => {
     for (const kind of ['square', 'circle', 'banner', 'callout', 'page'] as const) {
       expect(supportsTextAlign(kind), kind).toBe(true);
     }
+  });
+});
+
+// Markers decorate a label, so they share the text-align gate's reasoning.
+describe('supportsMarkers', () => {
+  it('is off for kinds with their own face and for self-drawing kinds', () => {
+    for (const kind of [
+      'temperature',
+      'qa-board',
+      'idea-box',
+      'session-button',
+      'progress-bar',
+      'stat-row',
+    ] as const) {
+      expect(supportsMarkers(kind), kind).toBe(false);
+    }
+  });
+
+  it('is on for plain shapes', () => {
+    for (const kind of ['square', 'circle', 'banner'] as const) {
+      expect(supportsMarkers(kind), kind).toBe(true);
+    }
+  });
+});
+
+describe('temperature mood', () => {
+  it('places an average on the track', () => {
+    expect(temperaturePosition(1)).toBe(0);
+    expect(temperaturePosition(3)).toBe(0.5);
+    expect(temperaturePosition(5)).toBe(1);
+  });
+});
+
+// The estimate card's spread (docs/specs/012-collaboration/estimate-card.md "The two states").
+describe('estimate spread', () => {
+  it('orders by the scale, so a t-shirt round reads small to large', () => {
+    expect(estimateRank('tshirt', 'XS')).toBeLessThan(estimateRank('tshirt', 'XL'));
+    expect(estimateRank('fibonacci', '13')).toBeGreaterThan(estimateRank('fibonacci', '8'));
+  });
+
+  it('names nobody, agreement, and the ends of a spread', () => {
+    expect(estimateSpread('fibonacci', [])).toEqual({ kind: 'none' });
+    expect(estimateSpreadLabel(estimateSpread('fibonacci', ['5', '5']))).toBe('Unanimous · 5');
+    expect(estimateSpread('fibonacci', ['13', '3', '5', '?'])).toEqual({
+      kind: 'range',
+      low: '3',
+      high: '13',
+    });
+    expect(estimateSpreadLabel(estimateSpread('tshirt', ['L', 'S']))).toBe('Spread S → L');
+    // A lone number beside a '?' is agreement on the one size anyone gave.
+    expect(estimateSpread('fibonacci', ['8', '?'])).toEqual({ kind: 'unanimous', value: '8' });
   });
 });

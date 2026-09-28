@@ -8,10 +8,9 @@ import {
   defaultStrokeColor,
   isBoxed,
   isChartShape,
-  isProgressShape,
-  isRailShape,
-  isRatingShape,
   isSelfDrawingShape,
+  supportsMarkers,
+  supportsTextAlign,
   supportsBorderControls,
   supportsBorderRadius,
   supportsColours,
@@ -158,10 +157,7 @@ export function MultiSelectionContextMenu({
         const markerSrc = boxedSel.find(
           (el) =>
             el.type === 'shape' &&
-            !isProgressShape(el.shape) &&
-            !isRailShape(el.shape) &&
-            !isRatingShape(el.shape) &&
-            !isChartShape(el.shape) &&
+            supportsMarkers(el.shape) &&
             // Markers decorate the label (docs/specs/009-elements/shape-markers.md): only offer them when a
             // member actually has text.
             (el.label ?? '').trim().length > 0,
@@ -172,7 +168,7 @@ export function MultiSelectionContextMenu({
         const alignSrc = boxedSel.find(
           (el) =>
             el.type !== 'image' &&
-            !(el.type === 'shape' && isSelfDrawingShape(el.shape)) &&
+            !(el.type === 'shape' && !supportsTextAlign(el.shape)) &&
             // Only offer alignment when a member actually has text.
             ((el as { label?: string }).label ?? '').trim().length > 0,
         );
