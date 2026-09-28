@@ -112,4 +112,6 @@ test('initials with a tailed capital centre on their cap band', async ({ page })
   const report = await auditOptical(page);
   const tailed = report.failures.filter((f) => f.where.includes('Tailed initials'));
   expect(tailed.map((f) => `${f.offsetPx}px ${f.what}`)).toEqual([]);
+  // The audit reads a tailed capital through a stand-in and puts the text back.
+  await expect(page.getByLabel('Tailed initials')).toHaveText('QW');
 });

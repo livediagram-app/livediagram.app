@@ -54,6 +54,35 @@ async function diffInk(page: Page, a: Buffer, b: Buffer) {
   );
 }
 
+// Swaps (or restores) the tailed capitals in a probe's text nodes for their tail-less twins.
+async function swapTails(page: Page, selector: string, on: boolean): Promise<void> {
+  await page.evaluate(
+    ([sel, swap]) => {
+      const root = document.querySelector(sel);
+      if (!root) return;
+      const store = window as unknown as { __opticalTails?: Map<Text, string> };
+      store.__opticalTails ??= new Map();
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      for (let n = walker.nextNode() as Text | null; n; n = walker.nextNode() as Text | null) {
+        if (swap) {
+          if (!/[QJ]/i.test(n.data)) continue;
+          store.__opticalTails.set(n, n.data);
+          n.data = n.data
+            .replace(/Q/g, 'O')
+            .replace(/q/g, 'o')
+            .replace(/J/g, 'I')
+            .replace(/j/g, 'i');
+        } else {
+          const original = store.__opticalTails.get(n);
+          if (original !== undefined) n.data = original;
+          store.__opticalTails.delete(n);
+        }
+      }
+    },
+    [selector, on] as const,
+  );
+}
+
 async function setHideRule(page: Page, css: string | null) {
   await page.evaluate(
     ([id, rule]) => {
@@ -139,6 +168,10 @@ export async function auditOptical(page: Page): Promise<OpticalReport> {
     }
     if (p.iconsOnly && p.vertical) fail(p, 'ink, vertical', midX(ink.top, ink.bottom) - cy);
     if (p.capsOnly && p.vertical) {
+      // A tailed capital (Q, J) is read as its tail-less twin (O, I): same cap shape and overshoot, no
+      // tail below the baseline. The text is restored straight after the two shots.
+      if (p.tailed) await swapTails(page, p.hide, true);
+      const all = await shot();
       // The text alone: hide only the glyph fill, so an icon beside it stays out of the reading.
       await setHideRule(
         page,
@@ -146,6 +179,7 @@ export async function auditOptical(page: Page): Promise<OpticalReport> {
       );
       const noText = await shot();
       await setHideRule(page, null);
+      if (p.tailed) await swapTails(page, p.hide, false);
       const text = await diffInk(page, all, noText);
       if (text) fail(p, 'caps ink, vertical', midX(text.top, text.bottom) - cy);
     }
