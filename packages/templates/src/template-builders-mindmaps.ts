@@ -91,26 +91,33 @@ export function buildMindMap(cx: number, cy: number): Element[] {
   );
 }
 
-// Tree mind map: a left-to-right outline, root, branches and a leaf each, for
-// people who think in outlines (the tree flow).
+// Tree mind map: a left-to-right outline for people who think in outlines
+// (the tree flow). The three levels read apart at a glance: a large bold root,
+// tinted medium branches, and small plain leaves two to a branch. Every box is
+// sized so its longest label sits on one line, which the old 140px leaves did
+// not ("SEO articles" spilled over its border).
 export function buildMindMapTree(cx: number, cy: number): Element[] {
-  const branches: [string, string][] = [
-    ['Blog', 'SEO articles'],
-    ['Social', 'Campaigns'],
-    ['Email', 'Newsletter'],
-    ['Video', 'Tutorials'],
+  const branches: [string, [string, string]][] = [
+    ['Blog', ['SEO articles', 'Guest posts']],
+    ['Social', ['Weekly campaigns', 'Creator collabs']],
+    ['Email', ['Monthly newsletter', 'Onboarding drip']],
+    ['Video', ['Product tutorials', 'Customer stories']],
   ];
   return buildMindTemplate(
     {
       label: 'Content strategy',
-      // Root of the tree → strongest preset so the topic anchors the outline.
-      look: { width: 170, height: 72, textSize: 'md', colorPreset: 'bold' },
-      children: branches.map(([label, leaf]) => ({
+      // Root of the tree: the strongest preset and the largest text, so the
+      // topic anchors the outline.
+      look: { width: 230, height: 96, textSize: 'lg', colorPreset: 'bold' },
+      children: branches.map(([label, leaves]) => ({
         label,
-        // A gentle tint sits below the bold root, above the plain leaves: a
-        // legible three-tier hierarchy.
-        look: { width: 160, height: 56, colorPreset: 'soft' },
-        children: [{ label: leaf, look: { width: 140, height: 46 } }],
+        // A gentle tint and medium text between the bold root and the plain
+        // leaves: a legible three-tier hierarchy.
+        look: { width: 170, height: 64, textSize: 'md', colorPreset: 'soft' },
+        children: leaves.map((leaf) => ({
+          label: leaf,
+          look: { width: 200, height: 44, textSize: 'sm' },
+        })),
       })),
     },
     'tree',

@@ -53,10 +53,10 @@ import {
 import {
   buildApprovalWorkflow,
   buildBlank,
-  buildDataFlow,
   buildDecisionTree,
   buildSwimlane,
 } from './template-builders-flows';
+import { buildDataFlow } from './template-builders-dataflow';
 import { buildFlowchart, buildOrgChart } from './template-builders-trees';
 import { buildBubbleMap, buildMindMap, buildMindMapTree } from './template-builders-mindmaps';
 

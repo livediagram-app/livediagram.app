@@ -1,15 +1,16 @@
-// Framework-canvas templates: the nine-block Business Model Canvas and
-// the Says / Thinks / Does / Feels empathy map. Both are "fill the
-// boxes" strategy canvases (a grid of labelled regions seeded with
-// starter content), which is why they share a file; the freeform
-// workshop boards live in template-builders-workshops.ts.
+// Framework-canvas templates: the nine-block Business Model Canvas, plus a
+// re-export of the empathy map (./template-builders-empathy, split out once
+// its persona card and Pains / Gains strip grew it). Both are "fill the
+// boxes" strategy canvases (a grid of labelled regions seeded with starter
+// content); the freeform workshop boards live in template-builders-workshops.ts.
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. Sizing constants live inline so each template is
 // self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createShape, createSticky, createText, type Element } from '@livediagram/diagram';
+import { createShape, createText, type Element } from '@livediagram/diagram';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+export { buildEmpathyMap } from './template-builders-empathy';
 
 // The classic Business Model Canvas: nine blocks in the canonical
 // Osterwalder arrangement (partners / activities+resources / value
@@ -190,137 +191,6 @@ export function buildBusinessModelCanvas(cx: number, cy: number): Element[] {
       });
     });
   }
-
-  return elements;
-}
-
-// Empathy map: Says / Thinks / Does / Feels quadrants around a central
-// persona. Same 2×2 bones as the SWOT (tinted quadrant containers, a
-// header in a deeper hue, a role glyph top-right) but the starters are
-// sticky notes, because empathy-map input is verbatim research capture
-// rather than analysis bullets. The persona circle sits in the
-// cross-gap, pushed last so it layers above the quadrant fills.
-export function buildEmpathyMap(cx: number, cy: number): Element[] {
-  const cellW = 560;
-  const cellH = 440;
-  const gap = 28;
-  const pad = 20;
-  const headerH = 56;
-  const iconSize = 52;
-  const stickyH = 124;
-  const stickyGap = 16;
-
-  const quadrants: {
-    label: string;
-    col: 0 | 1;
-    row: 0 | 1;
-    fill: string;
-    stroke: string;
-    headerColor: string;
-    icon: string;
-    notes: [string, string];
-  }[] = [
-    {
-      label: 'Says',
-      col: 0,
-      row: 0,
-      fill: '#dbeafe',
-      stroke: '#93c5fd',
-      headerColor: '#1d4ed8',
-      icon: 'message',
-      notes: ['"I need everyone on the same page"', '"Our docs are scattered everywhere"'],
-    },
-    {
-      label: 'Thinks',
-      col: 1,
-      row: 0,
-      fill: '#ede9fe',
-      stroke: '#c4b5fd',
-      headerColor: '#6d28d9',
-      icon: 'help-circle',
-      notes: ['Will the team adopt another tool?', 'I should look prepared in reviews'],
-    },
-    {
-      label: 'Does',
-      col: 0,
-      row: 1,
-      fill: '#dcfce7',
-      stroke: '#86efac',
-      headerColor: '#15803d',
-      icon: 'activity',
-      notes: ['Sketches plans on paper first', 'Pastes screenshots into chat'],
-    },
-    {
-      label: 'Feels',
-      col: 1,
-      row: 1,
-      fill: '#ffe4e6',
-      stroke: '#fda4af',
-      headerColor: '#be123c',
-      icon: 'heart',
-      notes: ['Overwhelmed by meetings', 'Proud when the team ships'],
-    },
-  ];
-
-  const elements: Element[] = [];
-  for (const q of quadrants) {
-    const x = cx - cellW - gap / 2 + q.col * (cellW + gap);
-    const y = cy - cellH - gap / 2 + q.row * (cellH + gap);
-
-    elements.push({
-      ...createShape('square', x, y),
-      width: cellW,
-      height: cellH,
-      fillColor: q.fill,
-      strokeColor: q.stroke,
-      textSize: 'md',
-      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-    });
-    elements.push({
-      ...createText(x + pad, y + pad),
-      width: cellW - pad * 2 - iconSize,
-      height: headerH,
-      label: q.label,
-      textSize: 'lg',
-      textAlignX: 'left',
-      textColor: q.headerColor,
-      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-    });
-    elements.push({
-      ...createShape('icon', x + cellW - pad - iconSize, y + pad),
-      width: iconSize,
-      height: iconSize,
-      iconId: q.icon,
-      strokeColor: q.headerColor,
-      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-    });
-    q.notes.forEach((note, i) => {
-      elements.push({
-        ...createSticky(x + pad, y + pad + headerH + stickyGap + i * (stickyH + stickyGap)),
-        width: cellW - pad * 2,
-        height: stickyH,
-        label: note,
-        textSize: 'sm',
-        layerId: TEMPLATE_CONTENT_LAYER_ID,
-      });
-    });
-  }
-
-  // Central persona: who all four quadrants describe. A circle (rather
-  // than the SWOT's pill) so it reads as a person, not a subject line.
-  const personaSize = 200;
-  elements.push({
-    ...createShape('circle', cx - personaSize / 2, cy - personaSize / 2),
-    width: personaSize,
-    height: personaSize,
-    label: 'Priya · Team lead',
-    textSize: 'md',
-    textBold: true,
-    colorPreset: 'bold',
-    // Content layer (docs/specs/006-diagram/layers.md): the rename target rides with the notes, so
-    // it stays clickable when the quadrant scaffold is locked.
-    layerId: TEMPLATE_CONTENT_LAYER_ID,
-  });
 
   return elements;
 }
