@@ -92,3 +92,24 @@ test.describe('Optical alignment audit', () => {
     expectNoPageErrors(pageErrors);
   });
 });
+
+// A capital with a tail (Q, J) drops below the baseline by design, like a descender: an all-caps disc
+// holding one is judged by its cap band, not its ink. Participant names are random, so this is pinned here
+// rather than left to the day a "Q" comes up.
+test('initials with a tailed capital centre on their cap band', async ({ page }) => {
+  await page.goto('/new');
+  await page.getByText('New Diagram', { exact: false }).first().waitFor();
+  await page.evaluate(() => {
+    const disc = document.createElement('span');
+    disc.setAttribute('aria-label', 'Tailed initials');
+    disc.style.cssText =
+      'position:fixed;left:40px;top:40px;z-index:99999;display:inline-flex;width:24px;height:24px;' +
+      'border-radius:9999px;align-items:center;justify-content:center;background:#4f46e5;color:#fff;' +
+      'font-size:10px;font-weight:600;line-height:1';
+    disc.innerHTML = '<span class="text-optical-centre">QW</span>';
+    document.body.appendChild(disc);
+  });
+  const report = await auditOptical(page);
+  const tailed = report.failures.filter((f) => f.where.includes('Tailed initials'));
+  expect(tailed.map((f) => `${f.offsetPx}px ${f.what}`)).toEqual([]);
+});

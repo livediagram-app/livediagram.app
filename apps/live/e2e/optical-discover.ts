@@ -280,12 +280,15 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
       vertical: verticalIntent,
       occluded,
       // Rendered in capitals (by content or text-transform): the text's own ink is its cap band.
+      // Q and J have tails below the baseline by design, like descenders, so a run holding one is judged
+      // by its cap band instead.
       capsOnly:
         capBands.length > 0 &&
         ownText(el).every(
           (n) =>
-            /^[A-Z0-9 +]+$/.test(n.data.trim()) ||
-            getComputedStyle(n.parentElement!).textTransform === 'uppercase',
+            !/[QJ]/i.test(n.data) &&
+            (/^[A-Z0-9 +]+$/.test(n.data.trim()) ||
+              getComputedStyle(n.parentElement!).textTransform === 'uppercase'),
         ),
       concentric: leadingDisc ? { lead: fr.left - r.left, vertical: fr.top - r.top } : null,
       horizontal: centredIntent
