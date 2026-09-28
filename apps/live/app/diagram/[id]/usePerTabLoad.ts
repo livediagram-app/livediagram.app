@@ -10,6 +10,7 @@ import type { Tab } from '@livediagram/diagram';
 import { apiLoadTab } from '@/lib/api-client';
 import { isTabOutOfScope } from '@/lib/tab-scope';
 import { track } from '@/lib/telemetry';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Lazy per-tab content load (docs/specs/006-diagram/per-tab-storage.md), lifted out of editor-page.tsx.
 // Hydration seeds the first tab; switching to a never-opened tab fires a
@@ -77,15 +78,9 @@ export function usePerTabLoad(opts: {
   // tick among them) tore the effect down and refetched; on a tab whose load
   // had FAILED that meant a refetch, and an Error telemetry report, twice a
   // minute for as long as the tab stayed open (docs/specs/017-telemetry/telemetry.md).
-  const resetTabsRef = useRef(resetTabs);
-  useEffect(() => {
-    resetTabsRef.current = resetTabs;
-  });
+  const resetTabsRef = useLatest(resetTabs);
   // Read by the search sweep when a fetch fails (see loadAllTabs).
-  const activeIdRef = useRef(activeId);
-  useEffect(() => {
-    activeIdRef.current = activeId;
-  });
+  const activeIdRef = useLatest(activeId);
 
   // Put a fetched tab in place: on screen, over a placeholder the user hasn't
   // touched (a tab they already drew on keeps its local content), and in the
@@ -94,17 +89,21 @@ export function usePerTabLoad(opts: {
   // per-diagram link metadata (docs/specs/006-diagram/tab-folders.md) owned by the meta path, not the
   // content fetch. The baseline decision reads the last render (tabsRef), not
   // the state updater, which React may run late or twice.
-  const adoptLoadedTab = (tab: Tab) => {
-    const onScreen = tabsRef.current.find((t) => t.id === tab.id);
-    if (onScreen && !userHasEdited(onScreen)) {
-      lastSavedTabsRef.current = lastSavedTabsRef.current.map((t) =>
-        t.id === tab.id ? { ...tab, folder: t.folder } : t,
+  // Reads only refs, so it is stable and both loaders below can list it.
+  const adoptLoadedTab = useCallback(
+    (tab: Tab) => {
+      const onScreen = tabsRef.current.find((t) => t.id === tab.id);
+      if (onScreen && !userHasEdited(onScreen)) {
+        lastSavedTabsRef.current = lastSavedTabsRef.current.map((t) =>
+          t.id === tab.id ? { ...tab, folder: t.folder } : t,
+        );
+      }
+      resetTabsRef.current((prev) =>
+        prev.map((t) => (t.id !== tab.id || userHasEdited(t) ? t : { ...tab, folder: t.folder })),
       );
-    }
-    resetTabsRef.current((prev) =>
-      prev.map((t) => (t.id !== tab.id || userHasEdited(t) ? t : { ...tab, folder: t.folder })),
-    );
-  };
+    },
+    [tabsRef, lastSavedTabsRef, resetTabsRef],
+  );
 
   // The attempt that last failed, keyed on everything that makes a fetch
   // worth repeating. A failed load stays failed (the error overlay stays up)
@@ -212,10 +211,19 @@ export function usePerTabLoad(opts: {
       // here so the next run actually fetches.
       if (!merged) loadedTabIds.delete(targetId);
     };
-    // Omitted deps are all refs + state setters (stable by React's guarantee);
-    // resetTabs is read through resetTabsRef on purpose (see above).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, diagramId, activeId, selfId, sessionShareCode, retryNonce]);
+    // resetTabs is read through resetTabsRef on purpose (see above); the refs and setters listed are stable.
+  }, [
+    hydrated,
+    diagramId,
+    activeId,
+    selfId,
+    sessionShareCode,
+    retryNonce,
+    adoptLoadedTab,
+    loadedTabIdsRef,
+    setLoadedTabIds,
+    setTabLoadErrors,
+  ]);
 
   // One-shot parallel fetch of every not-yet-loaded tab, so element
   // search covers the whole diagram instead of just the tabs the user
@@ -265,8 +273,19 @@ export function usePerTabLoad(opts: {
         }
       }),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, diagramId, selfId, sessionShareCode, sessionTabScope]);
+  }, [
+    hydrated,
+    diagramId,
+    selfId,
+    sessionShareCode,
+    sessionTabScope,
+    adoptLoadedTab,
+    loadedTabIdsRef,
+    setLoadedTabIds,
+    setTabLoadErrors,
+    tabsRef,
+    activeIdRef,
+  ]);
 
   return { loadAllTabs };
 }

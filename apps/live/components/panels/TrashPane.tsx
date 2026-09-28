@@ -5,11 +5,12 @@
 // joined team, then this browser only. Each row offers Restore and Delete
 // permanently; each group Empty Trash. The two destructive actions confirm in
 // a popover beside the button, as the Explorer's delete does. Reached from
-// Settings, never from the sidebar: the Trash is a quiet backstop.
+// the sidebar's Library section and from Settings › Account.
 import { useState } from 'react';
 import { Button, EmptyState, TrashIcon } from '@livediagram/ui';
 import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { InfoNote } from '@/components/primitives/InfoNote';
 import { DiagramIcon } from '@/components/primitives/explorer-icons';
 import { daysLeftLabel, trashGroups, type TrashGroup } from '@/lib/trash-groups';
 import type { TrashController } from '@/hooks/persistence/useTrash';
@@ -30,10 +31,10 @@ export function TrashPane({ trash }: { trash: TrashController }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+      <InfoNote>
         Deleted diagrams wait here for {TRASH_RETENTION_DAYS} days, then they are removed for good.
         Restoring one puts it back where it was.
-      </p>
+      </InfoNote>
 
       {groups === null ? (
         <p className="text-sm text-slate-400" role="status">
@@ -42,8 +43,8 @@ export function TrashPane({ trash }: { trash: TrashController }) {
       ) : groups.length === 0 ? (
         <EmptyState
           icon={<TrashIcon size={18} />}
-          title="The Trash is empty"
-          description={`Anything you delete waits here for ${TRASH_RETENTION_DAYS} days before it is gone for good.`}
+          title="Nothing in the Trash right now"
+          description={`Delete a diagram and it is kept here for ${TRASH_RETENTION_DAYS} days, so you can restore it.`}
         />
       ) : (
         groups.map((group) => (

@@ -32,6 +32,7 @@ import type { SlideDeckState } from '@/app/diagram/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
 import { isDragTravel } from '@/lib/press-gestures';
 import { HoverCard, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 function PlayIcon() {
   return (
@@ -82,13 +83,22 @@ function SlideRow({
 }) {
   const [draft, setDraft] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
+  // The draft is seeded during render from the name it is renaming (null while not renaming), and
+  // re-seeded if that name changes underneath.
+  const name = slide.name ?? '';
+  const [renamingFrom, setRenamingFrom] = useState<string | null>(null);
+  if (renaming && renamingFrom !== name) {
+    setRenamingFrom(name);
+    setDraft(name);
+  } else if (!renaming && renamingFrom !== null) {
+    setRenamingFrom(null);
+  }
   useEffect(() => {
-    if (renaming) {
-      setDraft(slide.name ?? '');
-      // Select rather than just focus: renaming usually replaces the name.
-      window.setTimeout(() => inputRef.current?.select(), 0);
-    }
-  }, [renaming, slide.name]);
+    if (!renaming) return;
+    // Select rather than just focus: renaming usually replaces the name.
+    const t = window.setTimeout(() => inputRef.current?.select(), 0);
+    return () => window.clearTimeout(t);
+  }, [renaming, name]);
 
   const commit = () => {
     onRename(draft);
@@ -266,8 +276,7 @@ export function SlideDeckPanel({
   const [dropAt, setDropAt] = useState<{ index: number; side: 'before' | 'after' } | null>(null);
   const origin = useRef<{ x: number; y: number } | null>(null);
   const dragging = useRef(false);
-  const dropRef = useRef<{ index: number; side: 'before' | 'after' } | null>(null);
-  dropRef.current = dropAt;
+  const dropRef = useLatest<{ index: number; side: 'before' | 'after' } | null>(dropAt);
 
   const slotUnder = (x: number, y: number) => {
     const el = document.elementFromPoint(x, y)?.closest('[data-slide-slot]');

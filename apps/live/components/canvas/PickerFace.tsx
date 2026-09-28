@@ -18,12 +18,11 @@
 // A view-role visitor still gets to roll and watch it; it simply isn't written
 // back, which is why `shared` exists — see below.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { spinFrameDelays, spinReel, type PickerCandidate } from '@/lib/picker';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { ReelWindow } from '@/components/canvas/paper-kit';
-import { HoverCard } from '@livediagram/ui';
 
 export function PickerFace({
   label,
@@ -86,8 +85,12 @@ export function PickerFace({
   // it land or because it was on the element when we arrived. Seeded from the
   // first render, so joining a diagram where somebody already rolled shows the
   // answer rather than replaying a spin nobody is waiting for.
+  //
+  // Keyed on the landing alone: re-running when the candidate list changes
+  // (somebody joining the room) would re-spin a result that already landed,
+  // so the response is an effect event.
   const seenResult = useRef(result);
-  useEffect(() => {
+  const onResult = useEffectEvent((result: string | undefined) => {
     if (result === seenResult.current) return;
     seenResult.current = result;
     // One press writes at most one result change, so the arming is spent here
@@ -101,10 +104,8 @@ export function PickerFace({
     // Match the name back to a live person where we can, so a peer's roll
     // spins past avatars here exactly as it did on the presser's screen.
     runReel(candidates.find((c) => c.label === result) ?? { label: result });
-    // Keyed on the landing alone: re-running when the candidate list changes
-    // (somebody joining the room) would re-spin a result that already landed.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [result]);
+  });
+  useEffect(() => onResult(result), [result]);
 
   const roll = () => {
     if (!onRoll || spinning !== null) return;
@@ -158,25 +159,16 @@ export function PickerFace({
         </span>
       </span>
       {onRoll ? (
-        <HoverCard
-          title={empty ? 'Nothing to pick from' : 'Pick one'}
-          description={
-            empty
-              ? 'Add options from the Picker menu, or switch it to pick from the people in the room.'
-              : 'Chooses at random and shows everyone the same answer.'
-          }
+        <button
+          type="button"
+          {...press}
+          disabled={empty}
+          aria-label="Pick at random"
+          className="pointer-events-auto mt-0.5 cursor-pointer rounded-full bg-black/[0.06] px-3 py-1 text-[11px] font-semibold transition hover:bg-black/[0.1] disabled:cursor-default disabled:opacity-50 dark:bg-white/10 dark:hover:bg-white/15"
+          style={{ color: textColor }}
         >
-          <button
-            type="button"
-            {...press}
-            disabled={empty}
-            aria-label="Pick at random"
-            className="pointer-events-auto mt-0.5 cursor-pointer rounded-full bg-black/[0.06] px-3 py-1 text-[11px] font-semibold transition hover:bg-black/[0.1] disabled:cursor-default disabled:opacity-50 dark:bg-white/10 dark:hover:bg-white/15"
-            style={{ color: textColor }}
-          >
-            {spinning ? 'Picking…' : result ? 'Again' : 'Pick'}
-          </button>
-        </HoverCard>
+          {spinning ? 'Picking…' : result ? 'Again' : 'Pick'}
+        </button>
       ) : null}
     </div>
   );

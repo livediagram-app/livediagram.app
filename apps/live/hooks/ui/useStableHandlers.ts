@@ -7,47 +7,39 @@
 // element views are React.memo'd on the premise of stable function
 // props — this hook reconciles the two at the consumption boundary:
 // each key gets ONE wrapper for the component's lifetime that calls
-// through a ref to the latest closure (the same latest-value-in-a-ref
-// convention useEditorDrag's depsRef documents).
+// through useLatest to the newest closure.
 //
 // `undefined` values pass through as `undefined` (children branch on
 // handler presence, e.g. read-only mode), and the returned object's
-// identity only changes when that presence pattern changes.
+// identity only changes when that presence pattern changes. Call sites
+// pass a literal object, so the key set is constant for the lifetime.
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useState } from 'react';
+import { useLatest } from './useLatest';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFn = (...args: any[]) => unknown;
 
 export function useStableHandlers<T extends Record<string, AnyFn | undefined>>(handlers: T): T {
-  const latest = useRef(handlers);
-  latest.current = handlers;
-  // A plain record rather than a Map: `wrappers.current[key] = ...` is an
-  // assignment, where `map.set(key, wrapper)` hands a ref-reading closure
-  // to a function during render, which react-hooks/refs rejects. Same
-  // one-wrapper-per-key-for-the-lifetime behaviour either way.
-  const wrappers = useRef<Record<string, AnyFn>>({});
-  // Key set + presence pattern; call sites pass a literal object, so
-  // the keys are constant and this only varies when a handler flips
-  // between defined and undefined (e.g. entering read-only).
+  const latest = useLatest(handlers);
+  const [wrappers] = useState(() =>
+    Object.fromEntries(
+      Object.keys(handlers).map((key) => [
+        key,
+        (...args: unknown[]) => (latest.current[key] as AnyFn)(...args),
+      ]),
+    ),
+  );
+  // Presence pattern: only varies when a handler flips between defined and
+  // undefined (e.g. entering read-only).
   const presenceKey = Object.keys(handlers)
     .filter((k) => handlers[k] !== undefined)
     .join('\0');
   return useMemo(() => {
+    const present = new Set(presenceKey === '' ? [] : presenceKey.split('\0'));
     const out: Record<string, AnyFn | undefined> = {};
-    for (const key of Object.keys(latest.current)) {
-      if (latest.current[key] === undefined) {
-        out[key] = undefined;
-        continue;
-      }
-      let wrapper = wrappers.current[key];
-      if (!wrapper) {
-        wrapper = (...args: unknown[]) => (latest.current[key] as AnyFn)(...args);
-        wrappers.current[key] = wrapper;
-      }
-      out[key] = wrapper;
-    }
+    for (const key of Object.keys(wrappers))
+      out[key] = present.has(key) ? wrappers[key] : undefined;
     return out as T;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presenceKey]);
+  }, [presenceKey, wrappers]);
 }

@@ -24,6 +24,7 @@ import { isPickerSource, isSelectionMode, isSessionTool } from './selection-mode
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
 import { QA_MAX_ID, QA_MAX_NAME, QA_MAX_NOTES, QA_MAX_TEXT, QA_MAX_VOTERS } from './qa-board';
 import { COLLAB_ROUND_MAX } from './element-deltas';
+import { QUIZ_MAX_OPTIONS, QUIZ_OPTION_MAX_TEXT } from './quiz';
 import {
   AGENDA_MAX_ITEMS,
   AGENDA_MAX_TEXT,
@@ -137,6 +138,8 @@ export const SHAPE_KINDS = new Set<string>([
   'agenda',
   'decision',
   'roll-call',
+  // Quiz (docs/specs/012-collaboration/quiz.md).
+  'quiz',
   'stadium',
   'actor',
   'cloud',
@@ -436,6 +439,20 @@ export function isValidElement(el: unknown): el is Element {
         if (typeof entry.at !== 'number' || !Number.isFinite(entry.at)) return false;
       }
     }
+    // Quiz (docs/specs/012-collaboration/quiz.md): bounded answers, an index, and the round's
+    // timestamps. The seconds are clamped where read (clampQuizSeconds), and a
+    // right-answer index past the answers makes the card `setup` rather than
+    // failing the tab, the same leniency the agenda's minutes take.
+    if (el.quizOptions !== undefined) {
+      if (!boundedArray(el.quizOptions, QUIZ_MAX_OPTIONS)) return false;
+      for (const o of el.quizOptions) {
+        if (typeof o !== 'string' || o.length > QUIZ_OPTION_MAX_TEXT) return false;
+      }
+    }
+    for (const n of [el.quizCorrect, el.quizSeconds, el.quizStartedAt, el.quizLockedAt]) {
+      if (n !== undefined && (typeof n !== 'number' || !Number.isFinite(n))) return false;
+    }
+    if (el.quizRevealed !== undefined && typeof el.quizRevealed !== 'boolean') return false;
     // Checklist (docs/specs/009-elements/checklist.md): bounded rows of { text, done }.
     if (el.checklistItems !== undefined) {
       if (!boundedArray(el.checklistItems, CHECKLIST_MAX_ITEMS)) return false;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { TextInput, Glyph, CloseIcon } from '@livediagram/ui';
 import { eventLabel, titleCase } from './event-vocab';
 import { useCategoryColor } from './useCategoryColor';
@@ -103,15 +103,19 @@ export function MetricPicker({
     return byCat;
   }, [metrics]);
 
-  const pick = (m: Metric) => {
-    setQuery(m.label);
-    setOpen(false);
-    onSelect(m);
-  };
-  const drill = (next: string[]) => {
+  // Stable per onSelect, so the rows below always activate with the current callback.
+  const pick = useCallback(
+    (m: Metric) => {
+      setQuery(m.label);
+      setOpen(false);
+      onSelect(m);
+    },
+    [onSelect],
+  );
+  const drill = useCallback((next: string[]) => {
     setPath(next);
     setHighlight(0);
-  };
+  }, []);
   const back = () => {
     setPath((p) => p.slice(0, -1));
     setHighlight(0);
@@ -124,11 +128,11 @@ export function MetricPicker({
     onSelect(null);
   };
 
-  const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const searching = tokens.length > 0;
+  const searching = query.trim() !== '';
 
   const rows = useMemo<Row[]>(() => {
-    if (searching) {
+    const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (tokens.length > 0) {
       return metrics
         .filter((m) => {
           const hay = m.label.toLowerCase();
@@ -208,8 +212,7 @@ export function MetricPicker({
         branch: true,
         activate: () => drill([category]),
       }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metrics, tree, query, path]);
+  }, [metrics, tree, query, path, pick, drill]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {

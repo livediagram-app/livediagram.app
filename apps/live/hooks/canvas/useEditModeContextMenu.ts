@@ -6,7 +6,7 @@
 // viewport the keyboard + menu would fight for space. Arrow labels and
 // table cells keep their plain editors and don't auto-open a menu.
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useEffectEvent, useRef } from 'react';
 import { isBoxed, type Element } from '@livediagram/diagram';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -24,19 +24,18 @@ export function useEditModeContextMenu({
   setContextMenu: React.Dispatch<React.SetStateAction<EditorContextMenuState | null>>;
 }) {
   const isMobile = useIsMobileViewport();
-  // Latest elements without retriggering the effect on every commit — the
-  // menu should open / close on edit transitions only.
-  const elementsRef = useRef(elements);
-  elementsRef.current = elements;
   const prevEditingRef = useRef<string | null>(null);
 
-  useEffect(() => {
+  // The menu opens / closes on edit transitions only, so the response reads
+  // the latest elements as an effect event rather than retriggering on every
+  // commit.
+  const onEditTransition = useEffectEvent(() => {
     const prev = prevEditingRef.current;
     prevEditingRef.current = editingId;
     if (isReadOnly) return;
     if (editingId) {
       if (isMobile) return;
-      const el = elementsRef.current.find((e) => e.id === editingId);
+      const el = elements.find((e) => e.id === editingId);
       if (!el || !isBoxed(el)) return;
       // Sticky notes opt out (docs/specs/021-event-storming/event-storming.md boards live and die by quick note
       // capture, and it reads wrong everywhere): double-click means "type",
@@ -71,7 +70,6 @@ export function useEditModeContextMenu({
         cur && cur.mode === 'element' && cur.elementId === prev ? null : cur,
       );
     }
-    // setContextMenu is a stable useState setter.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editingId, isMobile, isReadOnly]);
+  });
+  useEffect(() => onEditTransition(), [editingId, isMobile, isReadOnly]);
 }

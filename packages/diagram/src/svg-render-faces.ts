@@ -1,30 +1,23 @@
-// Behaviour and Collaborate faces in the headless render (docs/specs/009-elements/mode-button.md to /137).
+// Behaviour faces in the headless render (docs/specs/009-elements/mode-button.md to /137): the buttons,
+// the reveal cover, the picker, the reaction pad, the comment and action
+// panels, the portal, the chair. The Collaborate panels have their own module
+// (svg-render-collab-faces.ts); both draw with svg-render-face-kit.ts.
 //
-// These fifteen kinds all exported as the SAME thing: a rounded box with the
-// kind's name centred in it. Every workshop board came out of an export as a
-// grid of identical rectangles, with no way to tell an agenda from a decision.
-//
-// What they draw here is each card's STRUCTURE, in its real colours and at its
-// real scale: the title where the card puts it, the status line beside it, the
-// body's own marks, the footer's pills. What it deliberately does not
-// reproduce is the paper kit (docs/specs/012-collaboration/participant-responses.md) that gives each card its texture, and
-// the pressed / live states of controls that cannot be pressed in a still
-// image. A card is recognisable and readable rather than pixel-identical, and
-// the comment on each face says which of its marks are which.
+// These kinds all once exported as the SAME thing: a rounded box with the
+// kind's name centred in it. What they draw here is each face's structure and
+// marks in its real colours and at its real scale; what they leave out is
+// motion and the pressed / live states of controls, which cannot be pressed
+// in a still image (docs/specs/020-import-export/export-fidelity.md).
 //
 // Layout is in DESIGN units and then scaled, exactly as CollabScale does on
 // the canvas: a card is composed at its kind's default size and scaled to the
 // box, so a big one has bigger type rather than more padding.
 
-import { SHAPE_DEFAULT_SIZE } from './shape-factory';
-import { agendaTotalMinutes, DEFAULT_CHAIR_FACING } from './collab-shapes';
+import { DEFAULT_CHAIR_FACING } from './collab-shapes';
 import { CHAIR_FACING_ROTATION, CHAIR_GEOMETRY, chairSeatFill } from './shape-geometry';
-import { qaView } from './qa-board';
-import { REACTION_DEFAULT, REACTION_EMOJI } from './data-shapes';
-import type { BoxedElement } from './index';
+import { REACTION_DEFAULT, REACTION_EMOJI, REACTION_HUES } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
-
-type Face = BoxedElement & { type: 'shape' };
+import { glow, pill, rule, text, type Face } from './svg-render-face-kit';
 
 /** The Behaviour kinds this module draws a face for, so the caller knows not
  *  to print the generic centred label over the top of one. */
@@ -41,328 +34,7 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'focus-button',
 ]);
 
-const PAD_X = 16;
-const PAD_Y = 14;
-const TITLE_PX = 13;
-const BODY_PX = 11;
-
-// Every text mark below leaves its face to the group the caller wraps these
-// in (see `svgFace`), so the element's own typeface reaches all of them
-// without being threaded through twenty-odd call sites. A card exported in a
-// different face to the one on the board is this branch's bug in smaller
-// type.
-
-const text = (
-  x: number,
-  y: number,
-  body: string,
-  o: {
-    size?: number;
-    weight?: number;
-    color: string;
-    anchor?: 'start' | 'middle' | 'end';
-    opacity?: number;
-    uppercase?: boolean;
-  },
-): string =>
-  `<text x="${r2(x)}" y="${r2(y)}" font-size="${o.size ?? BODY_PX}"` +
-  ` font-weight="${o.weight ?? 400}" fill="${xmlEscape(o.color)}"` +
-  `${o.anchor && o.anchor !== 'start' ? ` text-anchor="${o.anchor}"` : ''}` +
-  `${o.opacity !== undefined ? ` opacity="${o.opacity}"` : ''}>` +
-  `${xmlEscape(o.uppercase ? body.toUpperCase() : body)}</text>`;
-
-const pill = (x: number, y: number, w: number, h: number, color: string, opacity = 0.12): string =>
-  `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" rx="${r2(h / 2)}" fill="${xmlEscape(color)}" opacity="${opacity}"/>`;
-
-const rule = (x1: number, y: number, x2: number, color: string, opacity = 0.18): string =>
-  `<path d="M ${r2(x1)} ${r2(y)} L ${r2(x2)} ${r2(y)}" stroke="${xmlEscape(color)}" stroke-width="1" opacity="${opacity}"/>`;
-
-/** The card frame every Collaborate panel shares: the title, its status line,
- *  and the design-unit box the body is laid out in. */
-function collabCard(
-  el: Face,
-  title: string,
-  aside: string | undefined,
-  color: string,
-  body: (w: number, h: number) => string,
-): string {
-  const design = SHAPE_DEFAULT_SIZE[el.shape] ?? { width: el.width, height: el.height };
-  // The Q&A board reflows rather than scales (docs/specs/012-collaboration/qa-board.md): a bigger board shows
-  // more rows at the same size, on the canvas and so in the export too.
-  const scale =
-    el.shape === 'qa-board' ? 1 : Math.min(el.width / design.width, el.height / design.height);
-  // The inner box in design units, so a card larger than its default still
-  // paints edge to edge rather than leaving a band of bare card.
-  const w = el.width / scale;
-  const h = el.height / scale;
-  const head =
-    text(PAD_X, PAD_Y + TITLE_PX, title, { size: TITLE_PX, weight: 600, color }) +
-    (aside
-      ? text(w - PAD_X, PAD_Y + TITLE_PX, aside, {
-          size: 10,
-          weight: 500,
-          color,
-          anchor: 'end',
-          opacity: 0.55,
-          uppercase: true,
-        })
-      : '');
-  return (
-    `<g transform="translate(${r2(el.x)} ${r2(el.y)}) scale(${r2(scale)})">` +
-    head +
-    body(w, h) +
-    `</g>`
-  );
-}
-
-/** A row of small chips, the shape every "pick one of these" card wears. */
-function chipRow(x: number, y: number, labels: readonly string[], color: string): string {
-  let cx = x;
-  return labels
-    .map((value) => {
-      const w = Math.max(18, value.length * 6 + 12);
-      const out =
-        pill(cx, y, w, 16, color) +
-        text(cx + w / 2, y + 11.5, value, { size: 10, weight: 500, color, anchor: 'middle' });
-      cx += w + 5;
-      return out;
-    })
-    .join('');
-}
-
-/** The footer's action pills, which say what the card DOES. */
-function footerPills(x: number, y: number, labels: readonly string[], color: string): string {
-  let cx = x;
-  return labels
-    .map((value) => {
-      const w = value.length * 5.6 + 18;
-      const out =
-        pill(cx, y, w, 18, color, 0.14) +
-        text(cx + w / 2, y + 12.5, value, { size: 10, weight: 600, color, anchor: 'middle' });
-      cx += w + 8;
-      return out;
-    })
-    .join('');
-}
-
-// ── Collaborate panels (docs/specs/012-collaboration/estimate-card.md to /129, /137) ─────────────────────────
-
-export function svgCollabFace(el: Face, label: string, color: string): string | null {
-  const title = label.trim();
-  switch (el.shape) {
-    case 'estimate': {
-      const values =
-        el.estimateScale === 'tshirt'
-          ? ['XS', 'S', 'M', 'L', 'XL']
-          : ['1', '2', '3', '5', '8', '13'];
-      const answered = (el.responses ?? []).length;
-      return collabCard(
-        el,
-        title || 'Estimate',
-        answered ? `${answered} answered` : undefined,
-        color,
-        (w, h) =>
-          chipRow(PAD_X, PAD_Y + TITLE_PX + 10, values, color) +
-          footerPills(PAD_X, h - PAD_Y - 18, ['Reveal', 'Clear'], color) +
-          (answered === 0
-            ? text(w / 2, h / 2, 'Nobody has picked yet', {
-                size: 10,
-                color,
-                anchor: 'middle',
-                opacity: 0.45,
-              })
-            : ''),
-      );
-    }
-    case 'temperature': {
-      const answered = (el.responses ?? []).length;
-      return collabCard(
-        el,
-        title || 'How are we feeling?',
-        answered ? `${answered} answered` : undefined,
-        color,
-        (w, h) =>
-          chipRow(PAD_X, PAD_Y + TITLE_PX + 10, ['1', '2', '3', '4', '5'], color) +
-          (answered === 0
-            ? text(PAD_X, PAD_Y + TITLE_PX + 48, 'No readings yet', {
-                size: 10,
-                color,
-                opacity: 0.45,
-              })
-            : '') +
-          rule(PAD_X, h - PAD_Y - 6, w - PAD_X, color),
-      );
-    }
-    case 'idea-box': {
-      const count = (el.responses ?? []).length;
-      return collabCard(
-        el,
-        title || 'Ideas',
-        count ? `${count} ${count === 1 ? 'idea' : 'ideas'}` : undefined,
-        color,
-        (w, h) =>
-          // The input row and its Add pill: the two marks that say "you write
-          // into this one".
-          `<rect x="${r2(PAD_X)}" y="${r2(PAD_Y + TITLE_PX + 8)}" width="${r2(w - PAD_X * 2 - 34)}" height="18" rx="4" fill="none" stroke="${xmlEscape(color)}" stroke-width="1" opacity="0.3"/>` +
-          footerPills(w - PAD_X - 30, PAD_Y + TITLE_PX + 8, ['Add'], color) +
-          text(PAD_X, PAD_Y + TITLE_PX + 44, 'Nothing in the box yet', {
-            size: 10,
-            color,
-            opacity: 0.45,
-          }) +
-          footerPills(PAD_X, h - PAD_Y - 18, ['Open the box'], color),
-      );
-    }
-    case 'qa-board': {
-      // The ranked queue as it stood: a vote pill and the note per row, the
-      // spotlit note first, so an exported board still says what the room
-      // asked and what it wanted most (docs/specs/012-collaboration/qa-board.md).
-      const { discussing, queue, done } = qaView(el.qaNotes);
-      const rows = discussing ? [discussing, ...queue] : queue;
-      const total = rows.length + done.length;
-      return collabCard(
-        el,
-        title || 'Questions',
-        total ? `${total} ${total === 1 ? 'note' : 'notes'}` : undefined,
-        color,
-        (w, h) => {
-          if (rows.length === 0) {
-            return text(PAD_X, PAD_Y + TITLE_PX + 28, 'No notes yet', {
-              size: 10,
-              color,
-              opacity: 0.45,
-            });
-          }
-          const rowH = 30;
-          const top = PAD_Y + TITLE_PX + 14;
-          const fit = Math.max(1, Math.floor((h - top - PAD_Y) / rowH));
-          const maxChars = Math.max(8, Math.floor((w - PAD_X * 2 - 44) / 5.6));
-          return rows
-            .slice(0, fit)
-            .map((n, i) => {
-              const y = top + i * rowH;
-              const body = n.text.length > maxChars ? `${n.text.slice(0, maxChars - 1)}…` : n.text;
-              return (
-                pill(PAD_X, y, w - PAD_X * 2, rowH - 6, color, n === discussing ? 0.16 : 0.06) +
-                pill(PAD_X + 5, y + 4, 30, rowH - 14, color, 0.14) +
-                text(PAD_X + 20, y + 16.5, String(n.voters.length), {
-                  size: 10,
-                  weight: 600,
-                  color,
-                  anchor: 'middle',
-                }) +
-                text(PAD_X + 42, y + 16.5, body, { size: 10.5, color })
-              );
-            })
-            .join('');
-        },
-      );
-    }
-    case 'agenda': {
-      const items = el.agendaItems ?? [];
-      const total = agendaTotalMinutes(items);
-      return collabCard(
-        el,
-        title || 'Agenda',
-        items.length ? `${total}m` : undefined,
-        color,
-        (w, h) => {
-          // Ruled paper: the agenda's own backdrop, and the thing that makes
-          // it readable as a running order rather than a list.
-          const lines: string[] = [];
-          for (let y = PAD_Y + TITLE_PX + 18; y < h - PAD_Y; y += 16)
-            lines.push(rule(PAD_X, y, w - PAD_X, color, 0.12));
-          const rows = items.length
-            ? items
-                .slice(0, 6)
-                .map((item, i) =>
-                  text(PAD_X + 2, PAD_Y + TITLE_PX + 14 + i * 16, item.label, {
-                    size: BODY_PX,
-                    color,
-                  }),
-                )
-                .join('')
-            : text(PAD_X, PAD_Y + TITLE_PX + 16, 'No segments yet', {
-                size: 10,
-                color,
-                opacity: 0.45,
-              });
-          return lines.join('') + rows;
-        },
-      );
-    }
-    case 'decision':
-      return collabCard(
-        el,
-        title || 'We will …',
-        'Proposed',
-        color,
-        (w, h) =>
-          text(PAD_X, PAD_Y + TITLE_PX + 22, 'No drivers yet', {
-            size: 10,
-            color,
-            opacity: 0.45,
-          }) + rule(PAD_X, h - PAD_Y - 6, w - PAD_X, color),
-      );
-    case 'roll-call': {
-      const entries = el.rollCall ?? [];
-      return collabCard(
-        el,
-        title || 'Roll call',
-        entries.length ? `${entries.length} present` : undefined,
-        color,
-        (_w, h) =>
-          (entries.length
-            ? entries
-                .slice(0, 6)
-                .map((e, i) =>
-                  text(PAD_X, PAD_Y + TITLE_PX + 20 + i * 15, e.name ?? '', {
-                    size: BODY_PX,
-                    color,
-                  }),
-                )
-                .join('')
-            : text(PAD_X, PAD_Y + TITLE_PX + 20, 'Nobody recorded yet', {
-                size: 10,
-                color,
-                opacity: 0.45,
-              })) + footerPills(PAD_X, h - PAD_Y - 18, ['Take roll'], color),
-      );
-    }
-    case 'done-check': {
-      const done = (el.responses ?? []).length;
-      return collabCard(
-        el,
-        title || 'Everyone done?',
-        `${done}/${Math.max(done, 1)}`,
-        color,
-        (_w, h) =>
-          text(PAD_X, PAD_Y + TITLE_PX + 20, 'Waiting on', {
-            size: 10,
-            weight: 600,
-            color,
-            opacity: 0.6,
-            uppercase: true,
-          }) + footerPills(PAD_X, h - PAD_Y - 18, ["I'm done"], color),
-      );
-    }
-    default:
-      return null;
-  }
-}
-
 // ── Behaviour elements (docs/specs/009-elements/mode-button.md to /107, /135, /136) ───────────────────
-
-/** The eye a reveal's cover carries, drawn at `size` about (cx, cy). */
-function eye(cx: number, cy: number, size: number, color: string): string {
-  const w = size;
-  const h = size * 0.62;
-  return (
-    `<path d="M ${r2(cx - w / 2)} ${r2(cy)} Q ${r2(cx)} ${r2(cy - h)} ${r2(cx + w / 2)} ${r2(cy)} Q ${r2(cx)} ${r2(cy + h)} ${r2(cx - w / 2)} ${r2(cy)} Z"` +
-    ` fill="none" stroke="${xmlEscape(color)}" stroke-width="1.5"/>` +
-    `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r2(size * 0.17)}" fill="${xmlEscape(color)}"/>`
-  );
-}
 
 export function svgBehaviourFace(
   el: Face,
@@ -413,21 +85,46 @@ export function svgBehaviourFace(
         text(cx, cy + 16, title || 'Session', { size: 12, weight: 600, color, anchor: 'middle' })
       );
     case 'reveal': {
-      // The cover: a dashed panel with its eye and its instruction. The
-      // scratch-panel hatching is the one mark not reproduced.
+      // The cover as the face draws it (docs/specs/009-elements/reveal-zone.md "The look"): an opaque panel
+      // washed with its accent, a solid accent border, a lock, the label and
+      // the gesture. The sweep of light is motion and isn't reproduced.
       if (el.revealed === true) return '';
       return (
-        `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
-        ` fill="#f1f5f9" stroke="${xmlEscape(stroke)}" stroke-width="2" stroke-dasharray="6 4"/>` +
-        eye(cx, cy - 14, 22, color) +
-        text(cx, cy + 8, title || 'Hidden', { size: 13, weight: 600, color, anchor: 'middle' }) +
-        text(cx, cy + 24, 'Double-click to reveal', {
+        `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="10" fill="#f1f5f9"/>` +
+        // The two soft glows of its accent, from opposite corners, then the border.
+        glow(
+          `reveal-a-${el.id}`,
+          el.x,
+          el.y,
+          el.width,
+          el.height,
+          stroke,
+          { cx: 0, cy: 0 },
+          0.22,
+          10,
+        ) +
+        glow(
+          `reveal-b-${el.id}`,
+          el.x,
+          el.y,
+          el.width,
+          el.height,
+          stroke,
+          { cx: 1, cy: 1 },
+          0.16,
+          10,
+        ) +
+        `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="10" fill="none" stroke="${xmlEscape(stroke)}" stroke-opacity="0.55" stroke-width="1.5"/>` +
+        `<circle cx="${r2(cx)}" cy="${r2(cy - 20)}" r="16" fill="${xmlEscape(stroke)}" fill-opacity="0.14"/>` +
+        `<rect x="${r2(cx - 5)}" y="${r2(cy - 21)}" width="10" height="8" rx="1.8" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>` +
+        `<path d="M ${r2(cx - 3)} ${r2(cy - 21)} v -2.5 a 3 3 0 0 1 6 0 v 2.5" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>` +
+        text(cx, cy + 12, title || 'Hidden', { size: 14, weight: 600, color, anchor: 'middle' }) +
+        text(cx, cy + 30, 'Double-click to reveal', {
           size: 10,
-          weight: 500,
+          weight: 600,
           color,
           anchor: 'middle',
           opacity: 0.6,
-          uppercase: true,
         })
       );
     }
@@ -455,9 +152,15 @@ export function svgBehaviourFace(
       // it (46% of the smaller side). Whether it paints in colour depends on
       // the renderer's emoji font, which is the same bargain every other
       // emoji in an export makes.
-      const glyph = REACTION_EMOJI[el.reaction ?? REACTION_DEFAULT];
-      const size = Math.min(el.width, el.height) * 0.46;
+      const reaction = el.reaction ?? REACTION_DEFAULT;
+      const glyph = REACTION_EMOJI[reaction];
+      const [from, to] = REACTION_HUES[reaction];
+      const size = Math.min(el.width, el.height) * 0.4;
+      const ey = cy - (title ? 4 : 0) + size * 0.5;
+      // The reaction's glow and the spot it stands on (docs/specs/009-elements/reaction-pad.md "The look").
       return (
+        `<ellipse cx="${r2(cx)}" cy="${r2(cy - 4)}" rx="${r2(el.width * 0.42)}" ry="${r2(el.height * 0.4)}" fill="${from}" fill-opacity="0.16"/>` +
+        `<ellipse cx="${r2(cx)}" cy="${r2(ey)}" rx="${r2(el.width * 0.22)}" ry="${r2(el.height * 0.05)}" fill="${to}" fill-opacity="0.35"/>` +
         `<text x="${r2(cx)}" y="${r2(cy - (title ? 4 : 0))}" text-anchor="middle" dominant-baseline="central"` +
         ` font-size="${r2(size)}">${xmlEscape(glyph)}</text>` +
         (title

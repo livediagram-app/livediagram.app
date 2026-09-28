@@ -14,9 +14,6 @@ export type ShareDialogProps = {
   // snapshot renders; picking another appends `?tab=<id>` to the image
   // URL. Only `id` + `name` are read.
   tabs: { id: string; name: string }[];
-  // Whether the owner has confirmed their name (drives the share button
-  // behaviour but no longer hides the identity card).
-  nameConfirmed: boolean;
   // When non-null, the owner is signed in via Clerk and their display
   // name is dictated by their account — there's nothing to edit, so
   // the "Your name" row hides entirely (docs/specs/007-editor/live-app.md). Guests (null) get
@@ -24,11 +21,13 @@ export type ShareDialogProps = {
   lockedName?: string | null;
   onSaveName: (name: string) => Promise<void> | void;
   // `tabId` scopes the new link to one tab (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
+  // Resolves to the created link, which the dialog copies straight away;
+  // undefined when creation failed (the handler has already toasted).
   onCreateLink: (
     role: ShareRole,
     expiry: ShareLinkExpiry,
     tabId: string | null,
-  ) => Promise<void> | void;
+  ) => Promise<ShareLink | undefined | void> | void;
   onRevokeLink: (code: string) => Promise<void> | void;
   // Change which tabs an existing link opens; null widens it to All tabs.
   onRescopeLink: (code: string, tabId: string | null) => Promise<void> | void;

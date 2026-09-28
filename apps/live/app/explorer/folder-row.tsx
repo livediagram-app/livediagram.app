@@ -3,7 +3,6 @@ import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerBu
 import { CountBadge } from '@/components/primitives/CountBadge';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import type { Folder } from '@/lib/api-client';
-import { useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { FolderActionsMenu } from './folder-actions-menu';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
@@ -31,7 +30,6 @@ export function FolderRow({
   onCancelRename: () => void;
   getActionsForAnchor: (anchor: HTMLElement | null) => FolderActionBundle;
 }) {
-  useRelativeTimeTick();
   const menu = useRowMenu({ disabled: renaming });
 
   // When renaming, the label area is a plain div so the <input>

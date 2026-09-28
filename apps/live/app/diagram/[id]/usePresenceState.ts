@@ -1,7 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AvatarPresence } from '@livediagram/api-schema';
 import type { RemoteSelection } from '@/lib/presence-rows';
-import type { Participant } from '@/lib/identity';
+import { AWAY_AFTER_MS, type Participant } from '@/lib/identity';
+import { RELATIVE_TICK_MS } from '@/lib/relative-time';
+
+// What presence statuses render from: each peer's last-seen instant and the clock they are read at.
+export type PresenceClock = { now: number; lastSeen: ReadonlyMap<string, number> };
 import type { LaserPoint } from '@/lib/laser-buffer';
 
 // Realtime presence state for the diagram room: who's connected, each
@@ -14,22 +18,35 @@ export function usePresenceState() {
   // Durable Object room right now. Includes ourselves once our `hello`
   // round-trips. Rendered in the editor header avatar stack.
   const [livePresence, setLivePresence] = useState<Participant[]>([]);
-  // Wall-clock timestamp of each peer's last observed interaction.
-  // Seeded on presence arrival; bumped on every incoming op from
-  // that peer (cursor / selection / tab op). Drives the
-  // online/away/offline derivation + the "Active X ago" hover card.
-  // Lives in a ref because the bump-on-op needs to be O(1) and we
-  // don't want to re-render the whole tree on every cursor packet
-  // just to update an idle timestamp.
+  // Wall-clock timestamp of each peer's last observed interaction: seeded on presence arrival, bumped on
+  // every incoming op (cursor / selection / tab). The bump lands in a ref, because re-rendering the tree
+  // on every cursor packet just to move an idle timestamp would be wasteful. Render never reads the ref:
+  // it reads `presenceClock`, a snapshot the idle tick republishes every 30s (so a peer who falls idle
+  // turns away without anything else re-rendering), and that a bump republishes at once when a peer
+  // arrives or returns from idle (so they turn online immediately).
+  // (docs/specs/003-system-architecture/react-state-and-effects.md)
   const lastSeenRef = useRef<Map<string, number>>(new Map());
-  // Re-derive presence statuses on a 30s tick. Without this, a peer
-  // who fell idle would keep showing "online" until something else
-  // re-rendered the editor.
-  const [, setIdleTick] = useState(0);
+  const [presenceClock, setPresenceClock] = useState<PresenceClock>(() => ({
+    now: Date.now(),
+    lastSeen: new Map(),
+  }));
+  const publish = useCallback(
+    () => setPresenceClock({ now: Date.now(), lastSeen: new Map(lastSeenRef.current) }),
+    [],
+  );
   useEffect(() => {
-    const id = window.setInterval(() => setIdleTick((n) => n + 1), 30_000);
+    const id = window.setInterval(publish, RELATIVE_TICK_MS);
     return () => window.clearInterval(id);
-  }, []);
+  }, [publish]);
+  const markSeen = useCallback(
+    (participantId: string) => {
+      const at = Date.now();
+      const prev = lastSeenRef.current.get(participantId);
+      lastSeenRef.current.set(participantId, at);
+      if (prev === undefined || at - prev >= AWAY_AFTER_MS) publish();
+    },
+    [publish],
+  );
   // Which tab each remote participant is currently looking at. Driven
   // by the room's 'tab-focus' op; updated on every active-tab change
   // and on initial room connect. Used to render avatar dots on the
@@ -76,6 +93,8 @@ export function usePresenceState() {
     livePresence,
     setLivePresence,
     lastSeenRef,
+    presenceClock,
+    markSeen,
     remoteTabFocus,
     setRemoteTabFocus,
     remoteSelections,

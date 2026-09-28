@@ -1,5 +1,6 @@
 'use client';
 
+import { CountBadge } from './CountBadge';
 import {
   useEffect,
   useLayoutEffect,
@@ -8,6 +9,7 @@ import {
   type CSSProperties,
   type PointerEventHandler,
   type ReactNode,
+  useCallback,
 } from 'react';
 import { ChevronDownIcon, HoverCard } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
@@ -43,7 +45,7 @@ export function PortalMenu({ anchor, placement = 'below', onClose, children }: P
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
 
-  useReposition(() => {
+  const reposition = useCallback(() => {
     if (!anchor) return;
     const r = anchor.getBoundingClientRect();
     setPos({
@@ -51,13 +53,17 @@ export function PortalMenu({ anchor, placement = 'below', onClose, children }: P
       top: placement === 'below' ? r.bottom : r.top,
     });
   }, [anchor, placement]);
+  useReposition(reposition);
 
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node || !pos) return;
-    const next = clampToViewport(node.getBoundingClientRect(), adjust);
-    if (next.x !== adjust.x || next.y !== adjust.y) setAdjust(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Clamped relative to the adjust already applied, so re-measuring after a nudge settles.
+    const rect = node.getBoundingClientRect();
+    setAdjust((prev) => {
+      const next = clampToViewport(rect, prev);
+      return next.x === prev.x && next.y === prev.y ? prev : next;
+    });
   }, [pos]);
 
   useEffect(() => {
@@ -365,6 +371,7 @@ export function MenuToolButton({
 export function MenuTile({
   icon,
   label,
+  count,
   labelStyle,
   onClick,
   danger = false,
@@ -378,6 +385,9 @@ export function MenuTile({
   // own face via labelStyle, which needs no separate swatch).
   icon?: ReactNode;
   label: string;
+  // How many things the tile acts on, shown as a badge beside the label
+  // (docs/specs/004-interface-design/counts.md), never in brackets.
+  count?: number;
   // Inline style for the label span — e.g. `{ fontFamily }` so a font tile
   // previews itself.
   labelStyle?: CSSProperties;
@@ -421,7 +431,10 @@ export function MenuTile({
           {icon}
         </span>
       ) : null}
-      <span style={labelStyle}>{label}</span>
+      <span style={labelStyle}>
+        {label}
+        {count !== undefined ? <CountBadge count={count} className="ml-1 align-middle" /> : null}
+      </span>
     </button>
   );
 }

@@ -9,6 +9,7 @@ import {
   type PointerEvent,
 } from 'react';
 import { FIT, clampView, panBy, pinchStep, zoomAt, type PhotoView } from '@/lib/photo-view';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Zoom and pan on the photograph under review, the way a photo viewer works:
 //
@@ -36,11 +37,19 @@ const typingIn = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
   (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
 
+// The frame's size, measured when an event asks, and its centre. Taken before
+// a view update rather than inside its updater, so the updater stays pure.
+type Size = { width: number; height: number };
+const sizeOf = (el: HTMLElement | null): Size => ({
+  width: el?.clientWidth ?? 0,
+  height: el?.clientHeight ?? 0,
+});
+const centreOf = (size: Size) => ({ x: size.width / 2, y: size.height / 2 });
+
 export function usePhotoView(opts: { onGesture?: () => void } = {}) {
   // Told when a two-finger gesture takes over, so a box the first finger
   // started drawing is dropped rather than landed.
-  const onGesture = useRef(opts.onGesture);
-  onGesture.current = opts.onGesture;
+  const onGesture = useLatest(opts.onGesture);
   const [view, setView] = useState<PhotoView>(FIT);
   // The frame the picture sits in. Its size IS the fitted picture's size.
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -48,14 +57,9 @@ export function usePhotoView(opts: { onGesture?: () => void } = {}) {
   const [panning, setPanning] = useState(false);
   const panFrom = useRef<{ x: number; y: number } | null>(null);
 
-  const size = () => ({
-    width: viewportRef.current?.clientWidth ?? 0,
-    height: viewportRef.current?.clientHeight ?? 0,
-  });
-  const centre = () => ({ x: size().width / 2, y: size().height / 2 });
-
   const zoomBy = useCallback((factor: number, at?: { x: number; y: number }) => {
-    setView((v) => zoomAt(v, size(), factor, at ?? centre()));
+    const size = sizeOf(viewportRef.current);
+    setView((v) => zoomAt(v, size, factor, at ?? centreOf(size)));
   }, []);
   const zoomIn = useCallback(() => zoomBy(ZOOM_STEP), [zoomBy]);
   const zoomOut = useCallback(() => zoomBy(1 / ZOOM_STEP), [zoomBy]);
@@ -115,7 +119,10 @@ export function usePhotoView(opts: { onGesture?: () => void } = {}) {
   useEffect(() => {
     const el = viewportRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(() => setView((v) => clampView(v, size())));
+    const observer = new ResizeObserver(() => {
+      const size = sizeOf(el);
+      setView((v) => clampView(v, size));
+    });
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -159,7 +166,8 @@ export function usePhotoView(opts: { onGesture?: () => void } = {}) {
       const after = fingers();
       if (before && after) {
         e.stopPropagation();
-        setView((v) => pinchStep(v, size(), before, after));
+        const size = sizeOf(viewportRef.current);
+        setView((v) => pinchStep(v, size, before, after));
       }
       return;
     }
@@ -167,7 +175,8 @@ export function usePhotoView(opts: { onGesture?: () => void } = {}) {
     if (!from) return;
     e.stopPropagation();
     panFrom.current = { x: e.clientX, y: e.clientY };
-    setView((v) => panBy(v, size(), e.clientX - from.x, e.clientY - from.y));
+    const size = sizeOf(viewportRef.current);
+    setView((v) => panBy(v, size, e.clientX - from.x, e.clientY - from.y));
   };
   const onPointerUpCapture = (e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'touch' && touches.current.has(e.pointerId)) {

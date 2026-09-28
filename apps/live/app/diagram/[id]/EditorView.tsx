@@ -145,6 +145,7 @@ export function EditorView() {
     setExportScope,
     setSearchOpen,
     setSettingsOpen,
+    openSettingsOn,
     setShareDialogOpen,
     renameDiagramNonce,
     renameTabNonce,
@@ -267,6 +268,7 @@ export function EditorView() {
                 // Minimal chrome moves the pill to an icon in the status bar.
                 rolePill={minimalChrome ? undefined : <RolePill {...role} />}
                 brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
+                onOpenAccount={() => openSettingsOn('account')}
                 onOpenShare={() => {
                   setShareDialogOpen(true);
                   track('UI', 'Opened', 'Share');

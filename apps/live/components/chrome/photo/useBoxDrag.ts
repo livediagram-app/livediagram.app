@@ -3,6 +3,7 @@
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { moveBox, resizeBox, type Corner } from '@/lib/photo-boxes';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Moving a box by its body, or resizing it by a corner handle (docs/specs/021-event-storming/event-storming.md Phase
 // 9). The pointer is converted into WORKING-image pixels through the
@@ -16,8 +17,7 @@ export function useBoxDrag(opts: {
   frame: { width: number; height: number };
   onChange: (id: number, next: DetectedSticky) => void;
 }) {
-  const optsRef = useRef(opts);
-  optsRef.current = opts;
+  const optsRef = useLatest(opts);
   const drag = useRef<{
     box: DetectedSticky;
     mode: 'move' | Corner;
@@ -57,7 +57,7 @@ export function useBoxDrag(opts: {
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
     };
-  }, []);
+  }, [optsRef]);
 
   // Start a drag from a box's body ('move') or one of its corners. Only the
   // primary button: the middle button pans, and belongs to the view.

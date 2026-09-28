@@ -33,6 +33,9 @@ import { DialogFooter } from '@/components/dialogs/DialogFooter';
 // check (docs/specs/012-collaboration/assigned-actions.md §4) so the "can't open this diagram" hint only shows
 // when the server says so.
 
+// What the per-open seed last filled the fields from; a new object per seed.
+type SeedTarget = { existing: ElementAction | null; elementLabel: string | null };
+
 type AssignActionDialogProps = {
   open: boolean;
   // The element's current action when editing; null when assigning fresh.
@@ -110,27 +113,35 @@ export function AssignActionDialog({
     assignee,
     setAssignee,
   });
-
   // Re-seed per open: a reopened dialog must show the CURRENT action (or
   // the create defaults), never the previous attempt. Creating defaults
   // the name to the element's own text (selected, so typing replaces it)
   // and preselects Myself — the common self-assignment is zero-click.
   // The email offer re-defaults to on each time (docs/specs/012-collaboration/assigned-actions.md: default on; it
   // only renders for a non-self assignee anyway).
-  // selfRow via a ref so a late identity settle (Clerk name resolving
-  // after the dialog opened) can't re-run the seed and wipe mid-typing
-  // edits.
-  const selfRowRef = useRef(selfRow);
-  selfRowRef.current = selfRow;
-  useEffect(() => {
-    if (!open) return;
+  // The seed is adjusted during render against the target it last seeded for, so the first commit
+  // already shows the seeded fields. selfRow is read but is not a trigger: a late identity settle
+  // (Clerk name resolving after the dialog opened) can't re-seed and wipe mid-typing edits.
+  const [seededFor, setSeededFor] = useState<SeedTarget | null>(null);
+  if (!open && seededFor !== null) setSeededFor(null);
+  if (
+    open &&
+    (seededFor === null ||
+      seededFor.existing !== existing ||
+      seededFor.elementLabel !== elementLabel)
+  ) {
+    setSeededFor({ existing, elementLabel });
     setName(existing?.name ?? elementLabel ?? '');
     setDescription(existing?.description ?? '');
-    setAssignee(existing ? null : selfRowRef.current);
+    setAssignee(existing ? null : selfRow);
     setNotifyEmail(true);
+  }
+  // Focus + select once the seeded name is on screen, so typing replaces it.
+  useEffect(() => {
+    if (!seededFor) return;
     nameRef.current?.focus();
     nameRef.current?.select();
-  }, [open, existing, elementLabel]);
+  }, [seededFor]);
 
   // Signed-out impression: the Myself-only picker with the sign-in
   // nudge. One emit per open so the funnel is measurable (docs/specs/017-telemetry/telemetry.md).

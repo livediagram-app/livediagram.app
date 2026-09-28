@@ -5,13 +5,13 @@
 // so the frame lives here once. Without it each face re-types the same four
 // class strings and they drift the first time one is tweaked.
 
+import { createContext, useContext } from 'react';
 import { SHAPE_DEFAULT_SIZE, type ShapeElement } from '@livediagram/diagram';
 import { tint } from '@/lib/element-tint';
+import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 // Re-exported: every collab face already reaches for it through this module,
 // and the kit it now also feeds lives one level up (see lib/element-tint.ts).
 export { tint };
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { HoverCard } from '@livediagram/ui';
 import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
 
 // Scales a Collaborate card's contents to the element's box (docs/specs/012-collaboration/participant-responses.md).
@@ -69,12 +69,19 @@ function CollabScale({
   );
 }
 
+// The shared settings `…` (docs/specs/008-canvas/canvas-and-palette.md "Every Behaviours element carries a
+// `…`"), handed down by ElementFaceRouter so a collaboration panel can put it
+// before its title instead of the element's top-right corner, without every
+// face threading it through. A card's own headerExtra wins over it.
+export const CollabSettingsSlot = createContext<React.ReactNode>(null);
+
 export function CollabPanel({
   element,
   title,
   textColor,
   aside,
   titleLines = 1,
+  titleSize = 13,
   children,
   footer,
   className,
@@ -94,6 +101,8 @@ export function CollabPanel({
   // How many lines the title may take before it clamps. One for a caption-ish
   // prompt; more where the label is a sentence (a decision statement).
   titleLines?: number;
+  // The title's size in px; a Decision record sets its statement larger.
+  titleSize?: number;
   textColor: string;
   // Small right-aligned status beside the title ("4 of 6 in", "1h 5m").
   aside?: React.ReactNode;
@@ -103,9 +112,9 @@ export function CollabPanel({
   // all-done flash, which is a class rather than an inline style so the
   // reduced-motion override in globals.css can reach it.
   className?: string;
-  // A control pinned to the right of the title row, after `aside`. The Done
-  // check's ellipsis menu lives here; a card with no per-card controls passes
-  // nothing and the row is unchanged.
+  // The card's own `…` menu, which LEADS the title (the Done check's, the Q&A
+  // board's, the Idea box's). A card that draws none gets the shared settings
+  // `…` there instead, from CollabSettingsSlot.
   headerExtra?: React.ReactNode;
   // The paper kit (docs/specs/012-collaboration/participant-responses.md): the textures that make this card a particular
   // OBJECT rather than a generic rounded rectangle. `backdrop` prints UNDER
@@ -127,6 +136,8 @@ export function CollabPanel({
   reflow?: boolean;
 }) {
   const touchScroll = useTouchScrollBody<HTMLDivElement>();
+  const slot = useContext(CollabSettingsSlot);
+  const lead = headerExtra ?? slot;
   return (
     // Pinned with `absolute inset-0` rather than sized with `h-full w-full`,
     // and clipped to the element's own corner radius.
@@ -147,33 +158,43 @@ export function CollabPanel({
             paddingTop: inset?.top !== undefined ? 14 + inset.top : undefined,
           }}
         >
-          <div className="flex min-w-0 shrink-0 items-baseline justify-between gap-3">
-            <span
-              className="min-w-0 text-[13px] font-semibold leading-snug"
-              style={{
-                color: textColor,
-                // A clamp rather than a truncate: the overflow has to be bounded
-                // (the header is shrink-0, so an unbounded title would push the
-                // body out of the card) but a one-line decision statement is
-                // useless.
-                display: '-webkit-box',
-                WebkitBoxOrient: 'vertical',
-                WebkitLineClamp: titleLines,
-                overflow: 'hidden',
-              }}
-            >
-              {title.trim()}
+          <div className="flex min-w-0 shrink-0 items-center justify-between gap-3">
+            {/* The element's menu leads the title rather than floating at the
+                far corner: it belongs to the thing named, and a control
+                stranded in the top right read as random. */}
+            <span className="flex min-w-0 items-center gap-1.5">
+              {lead ? <span className="-ml-1 shrink-0">{lead}</span> : null}
+              <span
+                className="min-w-0 font-semibold leading-snug"
+                style={{
+                  color: textColor,
+                  fontSize: titleSize,
+                  // A clamp rather than a truncate: the overflow has to be bounded
+                  // (the header is shrink-0, so an unbounded title would push the
+                  // body out of the card) but a one-line decision statement is
+                  // useless.
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: titleLines,
+                  overflow: 'hidden',
+                }}
+              >
+                {title.trim()}
+              </span>
             </span>
             <span className="flex shrink-0 items-center gap-1.5">
-              {aside ? (
+              {/* A plain caption ("3 notes") takes the quiet caps style; a node
+                  (the Decision record's status badge) is drawn as given. */}
+              {typeof aside === 'string' ? (
                 <span
                   className="text-[10px] font-medium uppercase tracking-[0.06em] opacity-55"
                   style={{ color: textColor }}
                 >
                   {aside}
                 </span>
-              ) : null}
-              {headerExtra}
+              ) : (
+                (aside ?? null)
+              )}
             </span>
           </div>
           {/* The body scrolls rather than overflowing the element box: a card with
@@ -205,8 +226,10 @@ export function CollabPanel({
   );
 }
 
-// A small pill button. `tone` picks the weight: 'quiet' for the secondary act
-// (Clear, Stand), 'loud' for the one the card is for (Reveal, Take roll).
+// A small pill button, for a control that sits inside a card's own layout
+// rather than as its one action (the Quiz's Start inside its disc). `tone`
+// picks the weight: 'quiet' for the secondary act, 'loud' for the one the
+// card is for. No hover card: a card button's label says what it does.
 export function CollabButton({
   children,
   onPress,
@@ -214,7 +237,6 @@ export function CollabButton({
   tone = 'quiet',
   textColor,
   label,
-  hoverCard,
 }: {
   children: React.ReactNode;
   onPress?: () => void;
@@ -223,12 +245,11 @@ export function CollabButton({
   textColor: string;
   // Accessible name where the visible text is a glyph or too terse.
   label?: string;
-  hoverCard?: { title: string; description: string };
 }) {
   // The canvas-wide press guard: a press that turns into a drag moves the
   // element instead of firing (every other on-canvas control uses it).
   const press = usePressWithoutDrag(() => onPress?.());
-  const button = (
+  return (
     <button
       type="button"
       {...press}
@@ -239,58 +260,5 @@ export function CollabButton({
     >
       {children}
     </button>
-  );
-  if (!hoverCard) return button;
-  return (
-    <HoverCard title={hoverCard.title} description={hoverCard.description}>
-      {button}
-    </HoverCard>
-  );
-}
-
-// One value in a row of pickable options (an estimate chip, a 1-5 reading).
-// `mine` is the raised state: your own answer, which you can always see even
-// when everybody else's is hidden.
-export function CollabChip({
-  value,
-  mine,
-  onPress,
-  disabled,
-  textColor,
-}: {
-  value: string;
-  mine: boolean;
-  onPress?: () => void;
-  disabled?: boolean;
-  textColor: string;
-}) {
-  const press = usePressWithoutDrag(() => onPress?.());
-  return (
-    <button
-      type="button"
-      {...press}
-      disabled={disabled || !onPress}
-      aria-pressed={mine}
-      aria-label={`Choose ${value}`}
-      className="pointer-events-auto min-w-[34px] shrink-0 cursor-pointer rounded-lg border px-2 py-1.5 text-[13px] font-semibold tabular-nums transition hover:brightness-95 disabled:cursor-default disabled:opacity-45"
-      style={{
-        color: textColor,
-        backgroundColor: tint(textColor, mine ? 0.2 : 0.05),
-        borderColor: tint(textColor, mine ? 0 : 0.14),
-      }}
-    >
-      {value}
-    </button>
-  );
-}
-
-// The line a card shows before anything has happened to it. Deliberately a
-// sentence rather than a zero: an average of 0 on an unanswered temperature
-// check reads as a very unhappy room (docs/specs/012-collaboration/temperature-check.md).
-export function CollabEmpty({ children, textColor }: { children: string; textColor: string }) {
-  return (
-    <p className="py-1 text-[11px] leading-relaxed opacity-55" style={{ color: textColor }}>
-      {children}
-    </p>
   );
 }

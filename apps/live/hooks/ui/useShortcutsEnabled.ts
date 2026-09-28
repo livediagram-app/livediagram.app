@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import { useLocalStorageValue, writeLocalStorageValue } from './useLocalStorageValue';
 import { track } from '@/lib/telemetry';
 
 // Per-device toggle that disables ALL editor keyboard shortcuts
@@ -17,25 +16,17 @@ import { track } from '@/lib/telemetry';
 
 const STORAGE_KEY = 'livediagram:v2:shortcuts-enabled';
 
-function read(): boolean {
-  // Stored as the literal string 'false' when disabled; absent or
-  // any other value (including the default) is treated as enabled.
-  return readLocalStorageSafe(STORAGE_KEY) !== 'false';
-}
-
 export function useShortcutsEnabled(): { enabled: boolean; setEnabled: (next: boolean) => void } {
-  const [enabled, setLocalEnabled] = useState(true);
-
-  useEffect(() => {
-    setLocalEnabled(read());
-  }, []);
+  // Stored as the literal string 'false' when disabled; absent or any other
+  // value (including the default) is treated as enabled. Every reader (the
+  // editor and the Settings row) shares the one store, so a flip reaches both.
+  const enabled = useLocalStorageValue(STORAGE_KEY) !== 'false';
 
   const setEnabled = (next: boolean) => {
     // Settings flip (docs/specs/017-telemetry/telemetry.md): emit BEFORE persisting so the wire value
     // matches the value the user just chose, like the other UI toggles.
     track('UI', 'Toggled', next ? 'ShortcutsOn' : 'ShortcutsOff');
-    writeLocalStorageSafe(STORAGE_KEY, next ? 'true' : 'false');
-    setLocalEnabled(next);
+    writeLocalStorageValue(STORAGE_KEY, next ? 'true' : 'false');
   };
 
   return { enabled, setEnabled };

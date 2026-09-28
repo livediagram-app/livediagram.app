@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type MutableRefObject } from 'react';
+import { useEffect, useRef, type MutableRefObject, useEffectEvent } from 'react';
 import type { Element } from '@livediagram/diagram';
 import { parseCollabDeepLink, type CollabDeepLink } from '@/lib/collab-deep-link';
 import type { TabLoadState } from './editor-page-helpers';
@@ -56,6 +56,19 @@ export function useCollabDeepLink({
   openComments: (elementId: string) => void;
 }) {
   const consumed = useRef(false);
+  // The stable editor callbacks are read when the link lands, not depended on: re-running on their
+  // identity would only re-evaluate an already-consumed link.
+  const arriveAt = useEffectEvent(
+    (
+      el: { id: string; x: number; y: number; width: number; height: number },
+      open: string | null | undefined,
+    ) => {
+      select(el.id);
+      scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
+      if (open === 'action') openActionPopover(el.id);
+      else if (open === 'comments') openComments(el.id);
+    },
+  );
 
   useEffect(() => {
     const target = link.current;
@@ -69,12 +82,6 @@ export function useCollabDeepLink({
     // Deleted since the Activity page loaded: the tab is open, which is
     // as close as the link can get (docs/specs/013-workspace/activity-page.md §1).
     if (!el || el.type === 'arrow') return;
-    select(el.id);
-    scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
-    if (target.open === 'action') openActionPopover(el.id);
-    else if (target.open === 'comments') openComments(el.id);
-    // The setters are stable editor callbacks; re-running on their
-    // identity would only re-evaluate an already-consumed link.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    arriveAt(el, target.open);
   }, [link, hydrated, activeId, activeTabLoadState, elements]);
 }

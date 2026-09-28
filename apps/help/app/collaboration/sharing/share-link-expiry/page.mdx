@@ -16,16 +16,16 @@ A share link is a standing invitation: anyone holding the URL keeps the link's r
 
 ## Choosing a lifetime
 
-When you create a link in the **Share** dialog, an expiry dropdown sits next to the role toggle. You can pick:
+When you create a link in the **Share** dialog, the **Valid** row under the role cards sets its lifetime. You can pick:
 
-- **Never expires**, the default, which is the original behaviour: the link lasts until you delete it.
-- **Expires in 1 week**
-- **Expires in 1 month**
-- **Expires in 6 months**
+- **Forever**, the default, which is the original behaviour: the link lasts until you delete it.
+- **1 week**
+- **1 month**
+- **6 months**
 
 Pick the shortest span that fits, like a week for a workshop group or a month for a project review.
 
-<Figure caption="The Share dialog's expiry dropdown offers a week, a month, or six months next to each link.">
+<Figure caption="The Share dialog's Valid row offers a week, a month, or six months for a new link.">
   <ShareExpiry />
 </Figure>
 
@@ -33,13 +33,13 @@ Pick the shortest span that fits, like a week for a workshop group or a month fo
 
 When a link's lifetime runs out, it stops granting access everywhere at once. The share URL and any embed using it show the same not-found surface as a deleted link, and it stops opening the realtime room. People already viewing through it lose access on their next load or save.
 
-Active links with a deadline show a small countdown chip in the dialog, like "6d left", so you can see at a glance how long each one has.
+Passes with a deadline show a small countdown chip beside **Valid**, like "6d left", so you can see at a glance how long each one has.
 
-## Inactive links: extend or delete
+## Expired links: extend or delete
 
-Expired links do not vanish. They move into an **Inactive links** section in the Share dialog, where each one shows an "Expired" badge and its URL. From there you can:
+Expired links do not vanish. They move into an **Expired** section in the Share dialog, where each pass is greyed out with an "Expired" stamp over its struck-through URL. From there you can:
 
-- **Extend** the link, which gives it a fresh deadline using its original duration (for example "Extend 1 week") and moves it back to Active, or
+- **Extend** the link, which gives it a fresh deadline using its original duration (for example "Extend 1 week") and moves it back to your live passes, or
 - **Delete** it for good.
 
 You can also extend a link that is still active to push its deadline further out.

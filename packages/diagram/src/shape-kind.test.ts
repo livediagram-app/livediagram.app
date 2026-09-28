@@ -43,7 +43,7 @@ describe('the shape vocabulary', () => {
   // docs/specs/008-canvas/canvas-and-palette.md cites this number in its prose. Themes and
   // templates are pinned the same way, and the counts that stayed accurate
   // are exactly the ones a test held.
-  it('has 61 kinds (matches docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(unionMembers).toHaveLength(61);
+  it('has 62 kinds (matches docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(unionMembers).toHaveLength(62);
   });
 });

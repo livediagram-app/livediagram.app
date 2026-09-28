@@ -1,20 +1,52 @@
 // Per-user editor preferences (docs/specs/007-editor/user-preferences.md), lifted out of useEditorState.
 // One localStorage key, applies to every diagram the user opens from
-// this device. Loaded on mount (not gated on diagramId, since
-// preferences aren't diagram-scoped) and mutated through the
-// SettingsDialog. Also owns the two ref mirrors the drag hook reads on
+// this device. Read from the device cache once hydrated (not gated on
+// diagramId, since preferences aren't diagram-scoped) and mutated through
+// the SettingsDialog. Also owns the two ref mirrors the drag hook reads on
 // every pointer move, and the side effects that apply preference flags
 // (reduce motion, AI panel auto-open).
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useState, useSyncExternalStore } from 'react';
 import { useReduceMotion } from '@/hooks/ui/useReduceMotion';
 import { usePanelOpacity } from '@/hooks/ui/usePanelOpacity';
 import {
   autoRebindArrowsEnabled,
   readUserPreferences,
   fetchUserPreferences,
+  PREFERENCES_CHANGED_EVENT,
+  STORAGE_KEY,
   type UserPreferences,
 } from '@/lib/user-preferences';
+import { readLocalStorageSafe } from '@/lib/local-storage-safe';
+import { useLatest } from '@/hooks/ui/useLatest';
+
+// The preferences cached on this device, as an external store: the server
+// and hydration snapshot is empty, so the static export never reads
+// localStorage in the render it hydrates. The parse is kept per raw string,
+// so an unchanged cache is the same object and never re-renders anyone.
+const NO_PREFERENCES: UserPreferences = {};
+let cachedRaw: string | null = null;
+let cachedPreferences: UserPreferences = NO_PREFERENCES;
+
+function getCachedPreferences(): UserPreferences {
+  const raw = readLocalStorageSafe(STORAGE_KEY);
+  if (raw !== cachedRaw) {
+    cachedRaw = raw;
+    cachedPreferences = raw === null ? NO_PREFERENCES : readUserPreferences();
+  }
+  return cachedPreferences;
+}
+
+function subscribeCachedPreferences(onChange: () => void): () => void {
+  window.addEventListener(PREFERENCES_CHANGED_EVENT, onChange);
+  window.addEventListener('storage', onChange);
+  return () => {
+    window.removeEventListener(PREFERENCES_CHANGED_EVENT, onChange);
+    window.removeEventListener('storage', onChange);
+  };
+}
+
+const getNoPreferences = (): UserPreferences => NO_PREFERENCES;
 
 type EditorPreferencesDeps = {
   // The resolved owner id: Clerk userId for signed-in users, the
@@ -30,15 +62,28 @@ type EditorPreferencesDeps = {
 
 export function useEditorPreferences(deps: EditorPreferencesDeps) {
   const { ownerId, passwordGated, setAiPanelVisible } = deps;
-  const [userPreferences, setUserPreferences] = useState<UserPreferences>({});
+  // Missing or unparseable entries collapse to `{}`; the per-flag default then
+  // depends on the consumer's comparison: `telemetryEnabled` reads via
+  // `!== false` so undefined = on, while `autoRebindArrows` (via
+  // autoRebindArrowsEnabled) and `drawToAdd` read via `=== true` so
+  // undefined = off (matches docs/specs/007-editor/user-preferences.md's defaults).
+  // The cache stands until this session sets preferences of its own (the
+  // server merge below, or any toggle), which then win.
+  const cached = useSyncExternalStore(
+    subscribeCachedPreferences,
+    getCachedPreferences,
+    getNoPreferences,
+  );
+  const [chosen, setChosen] = useState<UserPreferences | null>(null);
+  const userPreferences = chosen ?? cached;
+  const setUserPreferences = useCallback((next: UserPreferences) => setChosen(next), []);
   // True once the server copy has been merged in, or failed to arrive: the
   // point after which a one-way latch such as `powerUserOfferShown` can be
   // trusted not to be stale (docs/specs/007-editor/power-user-mode.md).
   const [prefsSettled, setPrefsSettled] = useState(false);
+  const openAiPanel = useEffectEvent(() => setAiPanelVisible(true));
   useEffect(() => {
-    if (userPreferences.aiAssistanceEnabled) setAiPanelVisible(true);
-    // setAiPanelVisible is a useState setter (stable identity).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (userPreferences.aiAssistanceEnabled) openAiPanel();
   }, [userPreferences.aiAssistanceEnabled]);
   // Apply the "Reduce motion" preference (docs/specs/007-editor/user-preferences.md) to <html>. The OS
   // prefers-reduced-motion media query is honoured by globals.css
@@ -51,30 +96,17 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // Mirror the auto-rebind flag into its own ref so the drag move
   // handler can read it without re-attaching listeners. Defaults to
   // ON (docs/specs/007-editor/user-preferences.md); the Settings toggle turns it off.
-  const autoRebindArrowsRef = useRef<boolean>(autoRebindArrowsEnabled(userPreferences));
-  autoRebindArrowsRef.current = autoRebindArrowsEnabled(userPreferences);
+  const autoRebindArrowsRef = useLatest<boolean>(autoRebindArrowsEnabled(userPreferences));
   // Same mirror for the alignment-guide preference so the drag move
   // handler can gate the guide computation without re-attaching its
   // listeners. Defaults to true (guides on) so a fresh session shows
   // them; flipping the Settings toggle takes effect on the next move.
-  const alignmentGuidesRef = useRef<boolean>(userPreferences.alignmentGuides !== false);
-  alignmentGuidesRef.current = userPreferences.alignmentGuides !== false;
-
-  // Load the cached preferences once on mount. Missing or unparseable
-  // entries collapse to `{}`; the per-flag default then depends on
-  // the consumer's comparison: `telemetryEnabled` reads via
-  // `!== false` so undefined = on, while
-  // `autoRebindArrows` (via autoRebindArrowsEnabled) and `drawToAdd`
-  // read via `=== true` so undefined = off (matches docs/specs/007-editor/user-preferences.md's
-  // defaults).
-  useEffect(() => {
-    setUserPreferences(readUserPreferences());
-  }, []);
+  const alignmentGuidesRef = useLatest<boolean>(userPreferences.alignmentGuides !== false);
 
   // Server-side preferences sync (docs/specs/007-editor/user-preferences.md). Once the owner id
   // resolves, fetch the row from D1 and merge it over the
   // localStorage cache. Server wins for any key present on both
-  // sides. The cache-only read above still fired first so the UI
+  // sides. The cache read above still lands first so the UI
   // never blocks on this network step; this just reconciles toggles
   // the user made on another device.
   useEffect(() => {
@@ -83,7 +115,7 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
     let cancelled = false;
     void fetchUserPreferences(ownerId).then((merged) => {
       if (cancelled) return;
-      if (merged !== null) setUserPreferences(merged);
+      if (merged !== null) setChosen(merged);
       setPrefsSettled(true);
     });
     return () => {

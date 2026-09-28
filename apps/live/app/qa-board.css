@@ -154,3 +154,229 @@
   opacity: 1;
   transform: none;
 }
+
+/*
+ * Temperature check (docs/specs/012-collaboration/temperature-check.md "The face"): the same family of
+ * canvas motion. A bar eases to its new share as answers land, the mood meter's
+ * marker glides to the new average, and a face button lifts under the pointer.
+ */
+.mood-bar {
+  transition: height 500ms ease-out;
+}
+.mood-marker {
+  transition: left 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mood-button {
+  transition:
+    transform 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+.mood-button:enabled:hover {
+  transform: translateY(-2px);
+}
+
+/*
+ * Estimate card (docs/specs/012-collaboration/estimate-card.md "The look"): a pick card lifts under the
+ * pointer, the "N of M in" bar eases as people answer, and on the reveal every
+ * card turns face up in a short cascade (its delay is set inline per card).
+ */
+.est-card {
+  transition:
+    transform 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+.est-card:enabled:hover {
+  transform: translateY(-3px);
+}
+.est-progress {
+  transition: width 400ms ease-out;
+}
+@keyframes est-flip {
+  0% {
+    opacity: 0;
+    transform: perspective(200px) rotateY(90deg) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.est-flip {
+  animation: est-flip 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/*
+ * Reveal zone (docs/specs/009-elements/reveal-zone.md "The look"): a slow band of light crosses the
+ * cover every few seconds, the one ambient motion that says "something is
+ * under here". Collapses under reduced motion like everything else here.
+ */
+@keyframes reveal-sweep {
+  0%,
+  55% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(220%) skewX(-18deg);
+  }
+}
+.reveal-sweep::before {
+  content: '';
+  position: absolute;
+  inset: -20% auto -20% 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.14), transparent);
+  animation: reveal-sweep 5.5s ease-in-out infinite;
+}
+.reveal-cover {
+  transition: filter 150ms ease;
+}
+.reveal-cover:hover {
+  filter: brightness(1.04);
+}
+
+/*
+ * Done check (docs/specs/012-collaboration/done-check.md "Reading the card"): the ring eases to its new
+ * share, the button settles its colour, and when the last person finishes a
+ * burst of confetti flies out from the ring once (each particle's angle is set
+ * inline as --burst-angle).
+ */
+.done-ring-arc {
+  transition:
+    stroke-dashoffset 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    stroke 300ms ease;
+}
+.done-button {
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease,
+    transform 150ms ease;
+}
+.done-button:enabled:active {
+  transform: scale(0.97);
+}
+@keyframes done-burst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--burst-angle)) translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--burst-angle)) translateY(-54px) scale(0.4);
+  }
+}
+.done-burst {
+  animation: done-burst 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/*
+ * Reaction pad (docs/specs/009-elements/reaction-pad.md "The look"): the emoji bobs gently (ambient),
+ * lifts under the pointer, squashes on a press, and each press throws a ring
+ * out from the spot it stands on.
+ */
+@keyframes pad-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4%);
+  }
+}
+.pad-emoji {
+  animation: pad-bob 2.8s ease-in-out infinite;
+  transition: filter 200ms ease;
+}
+.pad-button:hover .pad-emoji {
+  animation-play-state: paused;
+  transform: translateY(-6%) scale(1.08);
+  filter: brightness(1.08);
+}
+.pad-button:active .pad-emoji {
+  transform: translateY(0) scale(0.9, 0.84);
+}
+@keyframes pad-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+.pad-ring {
+  animation: pad-ring 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.est-scale {
+  background-color: var(--est-row);
+  border-color: var(--est-border);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 120ms ease;
+}
+.est-scale:enabled:hover {
+  background-color: var(--est-row-hover);
+  border-color: var(--est-border-hover);
+}
+.est-scale:enabled:active {
+  transform: scale(0.985);
+}
+.est-scale:focus-visible {
+  box-shadow: 0 0 0 3px var(--qa-accent-soft);
+  border-color: var(--est-border-hover);
+}
+/* The row's little hand of cards fans out under the pointer. */
+.est-fan-card {
+  transform: rotate(calc(var(--est-fan-i) * 5deg));
+  transform-origin: 50% 110%;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.est-scale:enabled:hover .est-fan-card {
+  transform: rotate(calc(var(--est-fan-i) * 10deg)) translateY(-1px);
+}
+.est-chevron {
+  opacity: 0.5;
+  transition:
+    transform 150ms ease,
+    opacity 150ms ease;
+}
+.est-scale:enabled:hover .est-chevron {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/*
+ * Agenda (docs/specs/012-collaboration/agenda.md "The face"): the session bar and the current segment's
+ * bar ease as time passes; under the pointer an upcoming segment swaps its
+ * minutes for "Start".
+ */
+.agenda-progress,
+.agenda-drain {
+  transition: width 400ms linear;
+}
+.agenda-step {
+  transition: background-color 150ms ease;
+}
+.agenda-step:enabled:hover {
+  background-color: color-mix(in srgb, var(--qa-accent) 7%, transparent);
+}
+.agenda-start {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.agenda-mins {
+  transition: opacity 150ms ease;
+}
+.agenda-step:enabled:hover .agenda-start {
+  opacity: 1;
+}
+.agenda-step:enabled:hover .agenda-mins {
+  opacity: 0;
+}

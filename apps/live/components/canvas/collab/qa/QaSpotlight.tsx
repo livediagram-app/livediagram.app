@@ -15,42 +15,38 @@ import {
   VotePill,
   stopPointer,
 } from './qa-parts';
-import { HoverCard } from '@livediagram/ui';
 
 function SpotButton({
   children,
   onPress,
   loud,
   textColor,
-  hoverCard,
 }: {
   children: React.ReactNode;
   onPress: () => void;
   loud?: boolean;
   textColor: string;
-  hoverCard: { title: string; description: string };
 }) {
   const press = usePressWithoutDrag(onPress);
+  // No hover card: the label says what it does (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md).
   return (
-    <HoverCard title={hoverCard.title} description={hoverCard.description}>
-      <button
-        type="button"
-        {...press}
-        {...stopPointer}
-        className="pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition hover:brightness-110 active:scale-95"
-        style={
-          loud
-            ? {
-                color: QA_ON_ACCENT,
-                backgroundColor: QA_ACCENT,
-                boxShadow: `0 4px 14px -6px ${QA_ACCENT}`,
-              }
-            : { color: textColor, backgroundColor: tint(textColor, 0.08) }
-        }
-      >
-        {children}
-      </button>
-    </HoverCard>
+    <button
+      type="button"
+      {...press}
+      {...stopPointer}
+      className="pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition hover:brightness-110 active:scale-95"
+      style={
+        loud
+          ? {
+              color: QA_ON_ACCENT,
+              backgroundColor: QA_ACCENT,
+              boxShadow: `0 4px 14px -6px ${QA_ACCENT}`,
+            }
+          : { color: textColor, backgroundColor: tint(textColor, 0.08) }
+      }
+    >
+      {children}
+    </button>
   );
 }
 
@@ -126,32 +122,17 @@ export function QaSpotlight({
             {note.text}
           </p>
           <div className="text-[10.5px]">
-            <AuthorChip note={note} textColor={textColor} />
+            <AuthorChip author={note.author} textColor={textColor} />
           </div>
         </div>
       </div>
       {onDone ? (
         <div className="mt-2.5 flex justify-end gap-1.5">
-          <SpotButton
-            textColor={textColor}
-            onPress={onDone}
-            hoverCard={{
-              title: 'Done',
-              description: 'Folds this note into Discussed. Its votes freeze.',
-            }}
-          >
+          <SpotButton textColor={textColor} onPress={onDone}>
             <CheckGlyph size={11} /> Done
           </SpotButton>
           {hasNext && onDoneNext ? (
-            <SpotButton
-              loud
-              textColor={textColor}
-              onPress={onDoneNext}
-              hoverCard={{
-                title: 'Done, next',
-                description: 'Closes this note and spotlights the current top note.',
-              }}
-            >
+            <SpotButton loud textColor={textColor} onPress={onDoneNext}>
               Done, next →
             </SpotButton>
           ) : null}

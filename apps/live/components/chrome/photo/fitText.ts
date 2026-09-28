@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, type RefObject } from 'react';
+import { useEffectEvent, useLayoutEffect, type RefObject } from 'react';
 
 // The words under a box fit the BOX (docs/specs/021-event-storming/event-storming.md Phase 9): as large as the
 // default, as small as the floor, at most two lines. Past the floor the
@@ -27,6 +27,9 @@ export function useFitText(
   text: string,
   onFit: (px: number) => void,
 ): void {
+  // Reported to the newest caller; a fresh `onFit` never re-measures.
+  const reportFit = useEffectEvent(onFit);
+  // `text` is a trigger: new words are new content to measure.
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -40,7 +43,7 @@ export function useFitText(
         return lines <= WORDS_FONT.lines;
       });
       el.style.fontSize = `${px}px`;
-      onFit(px);
+      reportFit(px);
     };
     fit();
     if (typeof ResizeObserver !== 'function') return;
@@ -52,6 +55,5 @@ export function useFitText(
     });
     observer.observe(el);
     return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ref, text]);
 }

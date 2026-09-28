@@ -37,12 +37,11 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
   // mid-session re-runs this with a different id).
   const requestId = useRef(0);
 
-  const load = useCallback(
-    async (mode: 'replace' | 'merge') => {
-      if (!ownerId) return;
-      const id = (requestId.current += 1);
-      if (mode === 'replace') setLoading(true);
-      const result = await apiListActivity(ownerId);
+  // One read, settling state only from its response, so the load effect
+  // below only starts it.
+  const fetchFeed = useCallback((owner: string, mode: 'replace' | 'merge') => {
+    const id = (requestId.current += 1);
+    return apiListActivity(owner).then((result) => {
       if (id !== requestId.current) return;
       if (!result) {
         // A 'merge' (returning to the tab) keeps what it had: a stale
@@ -59,14 +58,28 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
       setActions(result.actions);
       setThreads(result.threads);
       setLoading(false);
+    });
+  }, []);
+
+  const load = useCallback(
+    async (mode: 'replace' | 'merge') => {
+      if (!ownerId) return;
+      if (mode === 'replace') setLoading(true);
+      await fetchFeed(ownerId, mode);
     },
-    [ownerId],
+    [ownerId, fetchFeed],
   );
 
+  // A new owner is loading from its first render.
+  const [loadingFor, setLoadingFor] = useState(ownerId);
+  if (ownerId !== loadingFor) {
+    setLoadingFor(ownerId);
+    if (ownerId) setLoading(true);
+  }
+
   useEffect(() => {
-    if (!ownerId) return;
-    void load('replace');
-  }, [ownerId, load]);
+    if (ownerId) void fetchFeed(ownerId, 'replace');
+  }, [ownerId, fetchFeed]);
 
   // Coming back to a tab that has been open since yesterday re-reads
   // the list; also how a failed first read heals without a click.

@@ -167,15 +167,9 @@ export function nextFreeColor(taken: Set<string>, preferred?: string): string {
   return preferred ?? PARTICIPANT_COLORS[0]!;
 }
 
-// Up to two characters for the avatar. Single-word names use the first
-// two letters; multi-word names use the first letter of the first and
-// last word ("Curious Falcon" → "CF").
-export function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '?';
-  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
-  return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase();
-}
+// Up to two characters for the avatar: shared with the headless export, so
+// it lives in @livediagram/diagram (names.ts).
+export { initialsOf } from '@livediagram/diagram';
 
 // Status ring colour for the header avatar. Greens / oranges / reds are
 // the conventional presence vocabulary.

@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { NAME_MAX_LENGTH } from '@livediagram/diagram';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Shared inline-rename input used by every "click rename, type a
 // new name, press Enter or click away" interaction in the app
@@ -48,13 +49,11 @@ export function InlineRenameInput({
   // draftRef holds the latest draft for the document-level click
   // handler. That handler is attached once and can't re-close
   // over a fresh draft on every keystroke without re-binding.
-  const draftRef = useRef(draft);
-  draftRef.current = draft;
+  const draftRef = useLatest(draft);
   // Same idea for onCommit: the parent rebuilds it every render
   // (it closes over the row id / state), and we don't want to
   // thrash document listeners chasing that identity.
-  const commitRef = useRef(onCommit);
-  commitRef.current = onCommit;
+  const commitRef = useLatest(onCommit);
 
   useLayoutEffect(() => {
     const node = ref.current;
@@ -73,7 +72,7 @@ export function InlineRenameInput({
     };
     document.addEventListener('mousedown', handle);
     return () => document.removeEventListener('mousedown', handle);
-  }, []);
+  }, [commitRef, draftRef]);
 
   return (
     <input

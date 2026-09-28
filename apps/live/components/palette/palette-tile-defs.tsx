@@ -1035,48 +1035,49 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Estimate cards (docs/specs/012-collaboration/estimate-card.md): one tile per SCALE, grouped. Which scale a
-    // team estimates on is a standing decision, not something you change per
-    // card, so it belongs at the moment you reach for one.
-    id: 'collab:estimate-fibonacci',
+    // Quiz (docs/specs/012-collaboration/quiz.md): one question with a right answer, opened on a timer and
+    // revealed by the facilitator. In Ask, beside the poll and the estimate,
+    // because it is putting a question to the room.
+    id: 'collab:quiz',
     tileGroup: 'ask',
-    blurb: '1, 2, 3, 5, 8, 13, 21',
-    caption: 'Fibonacci',
+    blurb: 'A timed question with a right answer',
+    caption: 'Quiz',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add Fibonacci estimate card',
+    label: 'Add quiz',
     description:
-      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses the classic story-point scale, where the gaps widen as the numbers grow so nobody argues over 6 versus 7.',
+      'One multiple-choice question for the room. Start it and the answers fan out around the question for everyone to pick; it locks when the time runs out, then Reveal turns the right answer green and names who got it.',
     filled: true,
-    action: { type: 'shape', kind: 'estimate', estimateScale: 'fibonacci' },
-    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
+    action: { type: 'shape', kind: 'quiz' },
+    icon: (
+      <Glyph size={18} units={24}>
+        {/* A disc with a question mark, answers around it. */}
+        <circle cx="12" cy="12" r="4.6" />
+        <path d="M10.7 10.9a1.4 1.4 0 1 1 1.9 1.3c-.4.2-.6.5-.6.9" />
+        <circle cx="12" cy="14.5" r=".35" />
+        <circle cx="12" cy="2.8" r="1.4" />
+        <circle cx="21.2" cy="12" r="1.4" />
+        <circle cx="12" cy="21.2" r="1.4" />
+        <circle cx="2.8" cy="12" r="1.4" />
+      </Glyph>
+    ),
   },
   {
-    id: 'collab:estimate-tshirt',
+    // Estimate card (docs/specs/012-collaboration/estimate-card.md): ONE tile. The three scales are the same
+    // card with different answers, so they are one entry here, and a new card
+    // asks for its scale on the canvas ("Choosing a scale"); the element
+    // menu's Scale changes it later.
+    id: 'collab:estimate',
     tileGroup: 'ask',
-    blurb: 'XS through XL',
-    caption: 'T-shirt',
+    blurb: 'Planning poker: pick a scale on the card',
+    caption: 'Estimate',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add T-shirt estimate card',
+    label: 'Add estimate card',
     description:
-      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses sizes rather than numbers, for a room that starts haggling the moment it sees a digit.',
+      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Choose Fibonacci, T-shirt sizes or powers of two on the card once it is placed.',
     filled: true,
-    action: { type: 'shape', kind: 'estimate', estimateScale: 'tshirt' },
-    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:estimate-powers',
-    tileGroup: 'ask',
-    blurb: '1, 2, 4, 8, 16',
-    caption: 'Powers of two',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Powers of two estimate card',
-    description:
-      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses doubling steps, for sizing where each step up is meant to feel twice the work.',
-    filled: true,
-    action: { type: 'shape', kind: 'estimate', estimateScale: 'powers' },
+    action: { type: 'shape', kind: 'estimate' },
     icon: <EstimateIcon size={TILE_GLYPH_PX} />,
   },
   {

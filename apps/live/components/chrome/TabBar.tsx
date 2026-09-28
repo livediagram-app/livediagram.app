@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   folderNamesInDiagram,
   groupTabsIntoRuns,
@@ -200,11 +200,14 @@ export function TabBar({
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   // The command palette requests an active-tab rename by bumping
-  // renameActiveNonce. Skip the initial 0 so we don't open the editor on
-  // mount; ignored for view-only sessions (rename is blocked there).
-  useEffect(() => {
-    if (renameActiveNonce > 0 && !readOnly) setEditingId(activeId);
-  }, [renameActiveNonce, readOnly, activeId]);
+  // renameActiveNonce: each bump opens the editor once, during render. The
+  // value the bar mounts with is no request, so a remount never replays
+  // one; ignored for view-only sessions (rename is blocked there).
+  const [seenRenameNonce, setSeenRenameNonce] = useState(renameActiveNonce);
+  if (renameActiveNonce !== seenRenameNonce) {
+    setSeenRenameNonce(renameActiveNonce);
+    if (!readOnly) setEditingId(activeId);
+  }
   // Drag-reorder machinery (which pill is dragged / hovered + the five
   // per-pill handlers) lives in useTabReorderDrag.
   const reorderDrag = useTabReorderDrag(onReorder);

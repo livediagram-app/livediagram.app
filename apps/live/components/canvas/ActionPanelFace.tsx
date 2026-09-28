@@ -6,7 +6,7 @@ import type { ShapeElement } from '@livediagram/diagram';
 
 import { ActionMenuIcon } from '@/components/palette/context-menu-icons';
 import { initialsOf } from '@/lib/identity';
-import { relativeSince } from '@/lib/relative-time';
+import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
 import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
 
@@ -128,6 +128,7 @@ function AssigneeRow({
   assignerName: string | null;
   createdAt: number;
 }) {
+  const now = useRelativeNow();
   return (
     <span className="mx-2.5 mb-1.5 flex shrink-0 items-center gap-2 rounded-md bg-black/[0.04] px-2 py-1.5 dark:bg-white/[0.06]">
       <GlyphDisc
@@ -143,7 +144,7 @@ function AssigneeRow({
         </span>
         <span className="truncate text-[9px] opacity-55">
           {assignerName ? `by ${assignerName} · ` : ''}
-          {relativeSince(createdAt)}
+          {relativeSince(createdAt, now)}
         </span>
       </span>
     </span>

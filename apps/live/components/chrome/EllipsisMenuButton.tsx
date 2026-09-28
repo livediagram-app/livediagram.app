@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useState } from 'react';
 
 import { PortalMenu } from './TabPortalMenu';
 import { EllipsisGlyph } from '@/components/primitives/EllipsisTriggerButton';
@@ -76,11 +76,12 @@ export function EllipsisMenuButton({
   onToggleLock: () => void;
   onDelete: () => void;
 } & SessionToolsProps) {
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  // In state, so the menu anchors to the button on the render that opens it.
+  const [button, setButton] = useState<HTMLButtonElement | null>(null);
   return (
     <div>
       <button
-        ref={buttonRef}
+        ref={setButton}
         type="button"
         onClick={onToggle}
         aria-label="Tab menu"
@@ -93,7 +94,7 @@ export function EllipsisMenuButton({
       {open ? (
         <MenuErrorBoundary onError={onClose}>
           <PortalMenu
-            anchor={buttonRef.current}
+            anchor={button}
             onClose={onClose}
             canvas={canvas}
             onRename={onRename}

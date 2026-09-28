@@ -23,6 +23,8 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'chair',
   'done-check',
   'estimate',
+  // Quiz (docs/specs/012-collaboration/quiz.md).
+  'quiz',
   'temperature',
   'idea-box',
   'qa-board',
@@ -56,7 +58,11 @@ export function isBehaviourShape(kind: ShapeKind): boolean {
  */
 export function drawsOwnElementMenu(kind: ShapeKind): boolean {
   return (
-    kind === 'session-button' || kind === 'done-check' || kind === 'idea-box' || kind === 'qa-board'
+    kind === 'session-button' ||
+    kind === 'done-check' ||
+    kind === 'idea-box' ||
+    kind === 'qa-board' ||
+    kind === 'quiz'
   );
 }
 
@@ -64,7 +70,7 @@ export function drawsOwnElementMenu(kind: ShapeKind): boolean {
  * Does this kind carry the shared settings `…` at all (docs/specs/008-canvas/canvas-and-palette.md)?
  *
  * Most of the family does, beyond the ones that draw their own richer `…`
- * above. Two do not:
+ * above. Three do not:
  *
  * - Bring Focus (docs/specs/012-collaboration/bring-focus.md) is a button whose whole behaviour is "press me".
  *   Its colours and label are reached the ordinary way, by right-clicking the
@@ -73,8 +79,12 @@ export function drawsOwnElementMenu(kind: ShapeKind): boolean {
  * - A chair (docs/specs/009-elements/chair.md) is furniture, not a card. Its one setting, which way it
  *   faces, is set from the element menu, and an ellipsis floating over the
  *   backrest read as a control on the seat.
+ * - A reveal zone (docs/specs/009-elements/reveal-zone.md) is a cover whose whole face says what it
+ *   does ("Double-click to reveal"); a `…` in its corner was a control on
+ *   something meant to read as closed. Reveal for everyone is on its
+ *   right-click menu, where it always was.
  */
 export function carriesSharedSettingsMenu(kind: ShapeKind): boolean {
-  if (kind === 'focus-button' || kind === 'chair') return false;
+  if (kind === 'focus-button' || kind === 'chair' || kind === 'reveal') return false;
   return isBehaviourShape(kind) && !drawsOwnElementMenu(kind);
 }

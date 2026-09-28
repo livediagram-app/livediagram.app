@@ -45,7 +45,9 @@ is worth having with this limit, and the limit is written down.
 ## The element
 
 A **shape kind**, `idea-box`. Its `label` is the prompt ("What might go
-wrong?").
+wrong?"). It arrives at 340x420, tall enough for its empty state above the
+composer, and like the Q&A board it reflows: resizing makes room for more ideas
+rather than bigger ones.
 
 - **`ShapeElement.ideaCards`** — the submissions, in submission order. Bounded
   in `validate.ts` like every other list field.
@@ -60,13 +62,52 @@ box (a new round). A full box refuses the next card at the press.
 
 ## Closed and open
 
-**Closed**, the box shows the prompt, an **Add idea** field, and a count —
-"6 ideas inside". Not the text, not even to the person who wrote one: a box
-that shows you your own card tells the room what you wrote the moment someone
-watches you type it.
+**Closed**, the box shows the prompt, a count, and the composer. Not the text,
+not even to the person who wrote one: a box that shows you your own card tells
+the room what you wrote the moment someone watches you type it.
 
-**Open**, the cards render stacked inside the box in submission order, and the
-Add field stays — an idea after the reveal is still an idea.
+**Open**, the ideas render as rows in submission order, and the composer stays:
+an idea after the reveal is still an idea.
+
+## The look
+
+Built from the [Q&A board](qa-board.md)'s parts, so the two read as one family,
+not two eras ([Participant responses](participant-responses.md): the paper kit is being retired). It
+replaced a cardboard carton (a lid with a lip, a slot, a corrugated body, and a
+blank card drawn caught in the slot whenever the box held anything). That card
+was the worst of it: it appeared the moment an idea went in, looked like a
+sticky note, and could not be read or restyled, because it was a drawing with
+nothing written on it.
+
+- **Accent.** The tab theme's accent, from the element's themed stroke, with
+  the ink that reads on it, exactly as the Q&A board does (one shared accent
+  scope). An unstyled box follows light and dark with the rest of the board.
+- **The composer is at the foot**, where people add from, as on the Q&A
+  board, and it is the same composer: a rounded field with a send button in
+  the accent. Where the Q&A board has an Anonymous switch, the idea box shows a
+  fixed **Anonymous** chip: there is nothing to switch, and saying so at the
+  point of writing is the reassurance the element exists to give. Enter posts;
+  a counter appears near the limit.
+- **Closed** is a sealed panel, not an object: a lock in the accent, the count
+  large ("6 ideas sealed"), and "Hidden from everyone until the box is opened".
+  When an idea lands the count pops and lifts a +1, the Q&A board's vote
+  motion, so the room sees the box fill without seeing a word.
+- **Empty**, the Q&A board's empty state, shared: faint rows that breathe,
+  and spaced well below them a small invitation, a sparkle in the accent over
+  a title ("Nothing in the box yet") and a softer hint kept to a readable
+  measure ("Be the first to add an idea. Nobody's name is stored with it.").
+  The Q&A board reads "No notes yet" over its own hint.
+- **Open**, each idea is a card drawn exactly as a Q&A note is, minus the
+  vote: where the note has its vote pill, the idea has a tile of the same size
+  carrying its number (submission order), not a control; the text at the same
+  weight and clamp; and a meta line with the anonymous mask where a note names
+  its author. Ideas added after the box first painted slide in.
+- **The facilitator's one action sits above the rows** as the Q&A board's
+  dashed accent bar: **Open the box (6)** while closed, **Scatter to sticky
+  notes** once open. Empty the box stays in the `…` menu.
+- All of it is layout and `tint()` of the element's own colours, so it holds
+  on any theme and in either appearance, and every motion collapses under
+  reduced motion.
 
 Opening is edit-role only and shared. There is no closing again: once the room
 has read the cards, a re-closed box is theatre, and the flag exists to protect

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { HoverCard, SOLID_BRAND_DARK_CONTROL, Tooltip, Glyph } from '@livediagram/ui';
 import {
   EMBED_PROVIDER_HINT,
@@ -41,10 +41,12 @@ export function VideoView({ element }: { element: VideoElement }) {
   const frame = useFrameBlocked(playing ? target?.embedUrl : undefined);
   // Changing the link tears the player down. Without this, editing the URL of
   // a playing video would leave the OLD video playing behind the new poster.
-  useEffect(() => {
+  const [playedUrl, setPlayedUrl] = useState(target?.embedUrl);
+  if (target?.embedUrl !== playedUrl) {
+    setPlayedUrl(target?.embedUrl);
     setPlaying(false);
     setControls(false);
-  }, [target?.embedUrl]);
+  }
 
   if (!target) {
     return <EmptyState url={url} provider={element.embedProvider} />;
@@ -54,7 +56,6 @@ export function VideoView({ element }: { element: VideoElement }) {
     return (
       <div className="group relative h-full w-full overflow-hidden rounded-[inherit] bg-black">
         <iframe
-          ref={frame.ref}
           onLoad={frame.onLoad}
           src={target.embedUrl}
           title={`${target.label} embed`}

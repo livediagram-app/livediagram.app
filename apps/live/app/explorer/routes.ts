@@ -7,7 +7,7 @@
 //   favourites → /explorer/favourites
 //   gallery  → /explorer/images          invites → /explorer/invites
 //   folder   → /explorer/folder?id=<id>  team    → /explorer/team?id=<id>
-//   trash    → /explorer/trash (no sidebar row; reached from Settings)
+//   trash    → /explorer/trash (Library sidebar row + Settings › Account)
 //
 // Folder / team ids ride in the query string rather than a path
 // segment ON PURPOSE: `output: 'export'` can't enumerate user-minted

@@ -34,13 +34,25 @@ export function TeamFormModal({
 
   // Re-seed the fields each time the modal opens: a reopened "New
   // team" must not show the previous attempt, and "Edit team" must
-  // show the current values even after a prior edit.
+  // show the current values even after a prior edit. Adjusted during render and keyed on the
+  // VALUES, since callers hand `initial` as a fresh object on every render.
+  const seedName = initial?.name ?? '';
+  const seedOrganisation = initial?.organisation ?? '';
+  const [seededFor, setSeededFor] = useState<{ name: string; organisation: string } | null>(null);
+  if (!open && seededFor !== null) setSeededFor(null);
+  if (
+    open &&
+    (seededFor === null ||
+      seededFor.name !== seedName ||
+      seededFor.organisation !== seedOrganisation)
+  ) {
+    setSeededFor({ name: seedName, organisation: seedOrganisation });
+    setName(seedName);
+    setOrganisation(seedOrganisation);
+  }
   useEffect(() => {
-    if (!open) return;
-    setName(initial?.name ?? '');
-    setOrganisation(initial?.organisation ?? '');
-    nameRef.current?.focus();
-  }, [open, initial]);
+    if (seededFor) nameRef.current?.focus();
+  }, [seededFor]);
 
   const submit = () => {
     const trimmed = name.trim();

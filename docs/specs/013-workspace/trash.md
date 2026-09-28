@@ -61,10 +61,15 @@ Trash are always confirmed. Restore is not: it destroys nothing.
 deleted a moment ago shows 30 and one due within the day shows 1. A diagram
 past its 30 days but not yet swept reads "Removed at the next clean-up".
 
-The Trash is reached from Settings only, never a sidebar row or the account
-menu, so it stays out of the way of everyday work: **Settings › Account** has
-a **Trash** row, for everyone, guests and deployments without accounts
-included, because Settings is the one menu every deployment has. The view itself lives at `/explorer/trash`.
+The Trash is reached two ways, never from the account menu: the **Trash** row
+at the end of the Explorer sidebar's **Library** section (beside Image Gallery
+and Themes, the other things that hold your stuff rather than being it), and
+**Settings › Account**'s **Trash** row, for everyone, guests and deployments
+without accounts included, because Settings is the one menu every deployment
+has. It was Settings-only at first, to stay out of the way of everyday work,
+but a deleted diagram's first question is "where did it go", and the sidebar is
+where people look. The row is selected while the Trash is open. The view itself
+lives at `/explorer/trash`.
 
 Empty Trash empties **one group**: your diagrams, one team's, or this
 browser's. Emptying a team's Trash is said to be for the whole team in its
@@ -104,7 +109,10 @@ rather than a generic error:
   not a "link not found". On restore the same links work again, subject to
   their own expiry ([Share-link expiry](share-link-expiry.md)).
 - **The realtime room** refuses new joins, and ends every open session the
-  moment the diagram is trashed, telling each one it was deleted.
+  moment the diagram is trashed, telling each one it was deleted. An editor that
+  loaded just before the delete and joins just after is refused, not told, so
+  it asks the api why: the same load answers `diagram_trashed`, and the editor
+  shows the deleted card.
 - **Edits and saves** are rejected with a named error, `diagram_trashed`, so an
   editor left open on another device stops and says why instead of failing
   silently.

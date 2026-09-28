@@ -12,12 +12,12 @@ import {
   Glyph,
   GlyphDisc,
 } from '@livediagram/ui';
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import type { ElementAction } from '@livediagram/diagram';
 import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { initialsOf } from '@/lib/identity';
-import { formatRelativeTimeCompact } from '@/lib/relative-time';
+import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 
 // Portal-rendered assigned-action card (docs/specs/012-collaboration/assigned-actions.md), anchored to the right
@@ -55,6 +55,7 @@ export function ActionPopover({
   readOnly = false,
   selfUserId,
 }: ActionPopoverProps) {
+  const now = useRelativeNow();
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   // Two-step delete: the first click arms, the second confirms. Kept
@@ -63,7 +64,7 @@ export function ActionPopover({
 
   // Anchor to the element's live rect, flipping left when there's no
   // room on the right — the CommentThreadPopover placement.
-  useReposition(() => {
+  const reposition = useCallback(() => {
     const node = document.querySelector(`[data-element-id="${elementId}"]`);
     if (!node) return;
     const rect = node.getBoundingClientRect();
@@ -76,6 +77,7 @@ export function ActionPopover({
     top = Math.max(EDGE_MARGIN, top);
     setPos({ left, top });
   }, [elementId]);
+  useReposition(reposition);
 
   // Don't close on a click landing on the element's action badge — that
   // is this popover's own toggle (parent state handles the flip-flop).
@@ -148,7 +150,7 @@ export function ActionPopover({
               </span>
               <span className="block truncate text-[10px] text-slate-400">
                 {assignerName ? `by ${assignerName} · ` : ''}
-                {formatRelativeTimeCompact(Date.now() - action.createdAt)}
+                {formatRelativeTimeCompact(now - action.createdAt)}
               </span>
             </span>
           </div>

@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef, useState, type ReactNode } from 'react';
-import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
+import { useState, type ReactNode } from 'react';
+import { MenuActionRow, PortalMenu } from '@/components/primitives/PortalMenu';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
 import { HoverCard, Glyph } from '@livediagram/ui';
@@ -10,7 +10,7 @@ import { HoverCard, Glyph } from '@livediagram/ui';
 // actions (docs/specs/013-workspace/embeds.md + docs/specs/013-workspace/live-image-share.md). Shared by the Embed and Live image
 // controls: each is the same affordance — a button with a trailing
 // ellipsis (signalling "opens a menu", not "copies on click") that drops
-// a list of "copy this as X" rows — so they live in one component rather
+// a one-per-row list of "copy this as X" actions — so they live in one component rather
 // than two near-identical ones. Rendered for non-password links only by
 // the caller where an <img>/embed can't carry a password.
 type ShareCopyItem = {
@@ -42,7 +42,8 @@ export function ShareCopyMenu({
   // (the menu only closes on a click outside its own DOM).
   header?: ReactNode;
 }) {
-  const ref = useRef<HTMLButtonElement>(null);
+  // The button the menu anchors to, held in state so the menu's first render has it.
+  const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
   const toast = useToast();
 
@@ -61,7 +62,7 @@ export function ShareCopyMenu({
     <>
       <HoverCard title={hoverCardTitle} description={hoverCardDescription}>
         <button
-          ref={ref}
+          ref={setAnchor}
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-haspopup="menu"
@@ -73,22 +74,25 @@ export function ShareCopyMenu({
         </button>
       </HoverCard>
       {open ? (
-        <PortalMenu anchor={ref.current} placement="below" onClose={() => setOpen(false)}>
+        <PortalMenu anchor={anchor} placement="below" onClose={() => setOpen(false)}>
           {header ? (
             <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-700">
               {header}
             </div>
           ) : null}
-          <MenuTileGrid cols={2}>
+          {/* One row per copy action, icon left: a short verb list reads
+              down like a normal dropdown (docs/specs/008-canvas/canvas-and-palette.md). */}
+          <div className="min-w-44 py-1">
             {items.map((item) => (
-              <MenuTile
+              <MenuActionRow
                 key={item.label}
-                icon={<span className="[&_svg]:h-5 [&_svg]:w-5">{item.icon}</span>}
+                plain
+                icon={item.icon}
                 label={item.label}
                 onClick={() => void copy(item)}
               />
             ))}
-          </MenuTileGrid>
+          </div>
         </PortalMenu>
       ) : null}
     </>

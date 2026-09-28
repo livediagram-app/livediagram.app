@@ -134,22 +134,29 @@ the distinction comes from **form** — a folded corner, a punched margin, a tor
 edge, a rotated stamp — which survives any hue, any theme, and light or dark
 mode, none of which a per-kind colour would.
 
-| Element         | Object             | What draws it                                                  |
-| --------------- | ------------------ | -------------------------------------------------------------- |
-| Done check      | a ring-binder page | ruled, punched, wire loops through the holes                   |
-| Idea box        | a posting box      | lid with a lip, slot sunk into it, corrugated body, taped shut |
-| Estimate        | a hand of cards    | crosshatched backs face-down, a Shown stamp after the reveal   |
-| Temperature     | an instrument      | the graduated plate a needle is read against                   |
-| Agenda          | a folded programme | ruled, creased down the middle                                 |
-| Decision record | a filed record     | photocopy screen, turned-up corner                             |
-| Roll call       | a ticket stub      | perforated fold, torn bottom edge                              |
-| Comment panel   | a quoted remark    | none (the left-edge rail it had read as a stray bar and went)  |
-| Picker          | a reel in a window | shaded at the lip, clear in the middle                         |
-| Timer           | a dial             | minute ticks along the edge you read                           |
-| Session button  | a tally sheet      | five-bar gate marks (not on a timer)                           |
-| Reveal zone     | a scratch panel    | close diagonal hatching                                        |
-| Reaction pad    | a floor pad        | concentric tread out from the middle                           |
-| Mode button     | a keycap           | lit top, shaded skirt, a drop below it                         |
+| Element         | Object             | What draws it                                                                                                        |
+| --------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Done check      | (moved on)         | none: a progress ring and two rosters ([The Done check](done-check.md#reading-the-card))                             |
+| Idea box        | (moved on, below)  | none: rebuilt on the Q&A board's look ([Idea box](idea-box.md#the-look))                                             |
+| Estimate        | (moved on)         | none: cards to pick, face down then face up ([Estimate card](estimate-card.md#the-look))                             |
+| Temperature     | (moved on)         | none: faces, bars and a mood meter ([Temperature check](temperature-check.md#the-face))                              |
+| Agenda          | (moved on)         | none: a run-of-show stepper with a live countdown ([Agenda](agenda.md#the-face))                                     |
+| Decision record | (moved on)         | none: a status badge and glow, drivers as reasons ([Decision record](decision-record.md#the-face))                   |
+| Roll call       | (moved on)         | none: a count, an avatar stack and attendee chips ([Roll call](roll-call.md#the-face))                               |
+| Comment panel   | a quoted remark    | none (the left-edge rail it had read as a stray bar and went)                                                        |
+| Picker          | a reel in a window | shaded at the lip, clear in the middle                                                                               |
+| Timer           | a dial             | minute ticks along the edge you read                                                                                 |
+| Session button  | a tally sheet      | five-bar gate marks (not on a timer)                                                                                 |
+| Reveal zone     | (moved on)         | none: an accent-lit cover with a lock ([Reveal zone](../009-elements/reveal-zone.md#the-look))                       |
+| Reaction pad    | (moved on)         | none: a glow and a spotlight in the reaction's colour ([The Reaction Pad](../009-elements/reaction-pad.md#the-look)) |
+| Mode button     | a keycap           | lit top, shaded skirt, a drop below it                                                                               |
+
+**The kit is being retired, one element at a time.** The [Q&A board](qa-board.md) set a newer
+direction: a flat card lit by the tab theme's accent, rounded rows, a composer at the foot, and
+motion that carries meaning (a vote pops, a new entry settles in) instead of printed texture. Next
+to it the paper objects read as skeuomorphic and dated, so elements move onto the Q&A board's
+parts (its accent scope, composer, rows and motion) rather than growing new textures. The Idea box
+went first, then the Temperature check, the Estimate card, the Reveal zone, the Done check, the Reaction pad, the Agenda, the Decision record and the Roll call; the rest follow. Until an element moves, its row above still describes it.
 
 House rules for anything added to the kit: decorative, so `aria-hidden` and
 `pointer-events-none` without exception (these sit over cards whose controls

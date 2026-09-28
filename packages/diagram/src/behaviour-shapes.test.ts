@@ -25,6 +25,7 @@ describe('behaviour shapes', () => {
 
   it('gives the shared menu to a kind with settings behind it', () => {
     expect(carriesSharedSettingsMenu('mode-button')).toBe(true);
+    expect(carriesSharedSettingsMenu('reveal')).toBe(false);
   });
 
   it('gives Bring Focus no menu at all', () => {

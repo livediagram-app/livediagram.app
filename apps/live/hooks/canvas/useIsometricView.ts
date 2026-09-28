@@ -4,6 +4,7 @@ import { useMemo, type Ref } from 'react';
 import { isBoxed, unionBoxedBounds, type Element } from '@livediagram/diagram';
 import { isoPivot, isoTransform } from '@/lib/isometric';
 import { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
+import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 
 // The isometric-view slice (docs/specs/008-canvas/isometric-view.md), lifted out of Canvas: the
@@ -42,15 +43,11 @@ export function useIsometricView({
   // tilt rotate around the diagram rather than the wrapper centre, so the
   // content tilts in place and stays centred as the camera orbits. The
   // wrapper's unscaled size = the main canvas rect (it's `absolute inset-0`
-  // and untransformed itself), read here rather than tracked in state
-  // because the transform recomputes on every pan / orbit render anyway.
+  // and untransformed itself), observed only while the tool is active.
+  const mainSize = useObservedSize(mainRef, canvasTool === 'isometric');
   let isoFragment = '';
   if (canvasTool === 'isometric') {
-    const node = mainRef && 'current' in mainRef ? mainRef.current : null;
-    const rect = node?.getBoundingClientRect();
-    const pivot = rect
-      ? isoPivot(isoContentCenter, { width: rect.width, height: rect.height })
-      : null;
+    const pivot = mainSize ? isoPivot(isoContentCenter, mainSize) : null;
     isoFragment = ` ${isoTransform(isoCamera.azimuth, isoCamera.elevation, pivot ?? undefined)}`;
   }
 

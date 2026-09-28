@@ -104,12 +104,16 @@ export function HelpArticleLink({
         <a
           {...common}
           aria-label={title}
-          className={`inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white${
+          className={`optical-edges inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white${
             className ? ` ${className}` : ''
           }`}
         >
+          {/* optical-edges pulls the leading icon in by its own blank margin
+              and text-optical-line centres the label's cap band, the Button
+              label rules (docs/specs/004-interface-design/optical-alignment.md); without them the
+              content sat over half a pixel right of centre. */}
           {icon ?? <HelpMarkIcon />}
-          {label === 'Learn more' ? 'Help' : label}
+          <span className="text-optical-line">{label === 'Learn more' ? 'Help' : label}</span>
         </a>
       </HoverCard>
     );

@@ -102,13 +102,15 @@ moving piece while it is up.
 
 ## Share dialog (owner)
 
-The "Share this diagram" dialog gains a **Password** row in its options band
-beneath the link list (see [Live app → Share dialog](../007-editor/live-app.md#share-dialog);
-it applies to all links). It is a plain `type="text"` input that always
-shows the current password in the clear (the owner asked to always see it),
-with **Save** and **Remove** actions and a one-line hint: anyone opening a
-share link must enter it (embed viewers are prompted inside the frame,
-[Read-only embeds (`/embed`)](embeds.md)). Setting / clearing calls `apiSetSharePassword`.
+The "Share this diagram" dialog carries a **Password Protection** switch
+beneath the passes (see [Live app → Share dialog](../007-editor/live-app.md#share-dialog);
+it applies to all links), hinting that everyone opening a pass must enter it,
+embeds included ([Read-only embeds (`/embed`)](embeds.md)). Switched on, it
+reveals a plain `type="text"` input that always shows the current password in
+the clear (the owner asked to always see it), with **Save** (Enter also saves)
+and, once saved, **Remove**. Switching it off with a password saved removes
+the password; saving an empty field clears it and turns the switch off. Each
+pass shows a Password tag while one is set. Setting / clearing calls `apiSetSharePassword`.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 

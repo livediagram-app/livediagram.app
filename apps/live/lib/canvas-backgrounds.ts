@@ -57,6 +57,24 @@ function scaleBackgroundSize(spec: string, k: number): string {
   return spec.replace(/(\d+(?:\.\d+)?)px/g, (_, n: string) => `${Number(n) * k}px`);
 }
 
+// Where the static pattern's origin lands on screen, so the pattern lives in
+// WORLD space like the elements (docs/specs/008-canvas/canvas-and-palette.md "Canvas"). The element
+// layer is `scale(z) translate(o)` about the centre C of the canvas, which
+// puts world point p at `z * (p + o) + C * (1 - z)`; this is that for p = 0.
+// Feeding the raw offset instead drifted the pattern against the elements at
+// any zoom but 1, which a phone (it opens at 0.6) showed on every pan.
+// Pair it with `patternScale * zoom` so the tiles scale with the diagram.
+export function worldPatternOrigin(
+  offset: { x: number; y: number },
+  zoom: number,
+  size: { w: number; h: number },
+): { x: number; y: number } {
+  return {
+    x: zoom * offset.x + (1 - zoom) * (size.w / 2),
+    y: zoom * offset.y + (1 - zoom) * (size.h / 2),
+  };
+}
+
 export function tabBackgroundStyle(
   pattern: BackgroundPattern,
   offset: { x: number; y: number },

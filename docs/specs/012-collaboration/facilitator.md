@@ -126,6 +126,7 @@ every one of them behaves exactly as it does today.
 | Estimate / Temperature: reveal responses, clear for a new round       | `useCollabElements.ts`    |
 | Idea box: reveal, clear, scatter to the canvas                        | `useCollabElements.ts`    |
 | Done check: "Reset everyone"                                          | `DoneCheckFace.tsx`       |
+| Quiz: edit the question, start, lock, reveal, run again               | `useQuizElements.ts`      |
 | Picker: the roll everyone watches                                     | `useBehaviourElements.ts` |
 | Roll call: take the roll                                              | `useCollabElements.ts`    |
 | Reveal zone: lifting a cover                                          | `useBehaviourElements.ts` |

@@ -16,7 +16,7 @@
 // references at attach time, so shortcuts fired through them
 // silently no-op'd.
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { isMobileViewportSync } from '@/lib/responsive';
 import {
@@ -25,6 +25,7 @@ import {
   VIEW_TOOL_KEYS,
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Re-exported so existing importers (the unit test) keep resolving.
 export { EDIT_KEYS, VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
@@ -34,8 +35,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   // on every render so a stale closure can't reach an outdated
   // callback. This is the React canon for "I want fresh references
   // but I don't want to re-attach the listener on every render."
-  const liveRef = useRef(deps);
-  liveRef.current = deps;
+  const liveRef = useLatest(deps);
 
   // Escape cancels whichever transient editor mode is active:
   // format-painter, or a pending draw-to-size shape.
@@ -95,7 +95,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool]);
+  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool, liveRef]);
 
   // Everything else: Delete / Backspace, Cmd-Z / Cmd-Y / Cmd-Shift-Z,
   // Cmd-C / Cmd-V, V / H / L tool switches. One listener for the
@@ -343,7 +343,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [deps.enabled]);
+  }, [deps.enabled, liveRef]);
 
   // Space-tap on a selected element enters label edit mode. Held-
   // Space-with-drag stays as the canvas pan modifier (see
@@ -402,5 +402,5 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('keyup', onKeyUp);
     };
-  }, [deps.enabled]);
+  }, [deps.enabled, liveRef]);
 }

@@ -20,6 +20,8 @@ export type Probe = {
   occluded: boolean;
   // Capitals and digits only (initials, numerals, caps chips): the ink IS the cap band, so it is the truth.
   capsOnly: boolean;
+  // A caps run holding a tailed capital (Q, J), whose ink runs past the baseline by design.
+  tailed: boolean;
   // Leading-disc chips are held to the concentric rule instead of horizontal centring.
   concentric: { lead: number; vertical: number } | null;
   // Horizontal: null when the shape is not meant to centre (a start-aligned row). A short glyph run
@@ -287,6 +289,8 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
             /^[A-Z0-9 +]+$/.test(n.data.trim()) ||
             getComputedStyle(n.parentElement!).textTransform === 'uppercase',
         ),
+      // Q and J have tails below the baseline by design, like descenders.
+      tailed: ownText(el).some((n) => /[QJ]/i.test(n.data)),
       concentric: leadingDisc ? { lead: fr.left - r.left, vertical: fr.top - r.top } : null,
       horizontal: centredIntent
         ? {
@@ -326,6 +330,7 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
         vertical: true,
         occluded: false,
         capsOnly: false,
+        tailed: false,
         concentric: null,
         horizontal: {
           shortGlyph: true,

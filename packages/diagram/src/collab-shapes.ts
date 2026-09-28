@@ -10,6 +10,7 @@
 
 import type { ShapeKind } from './index';
 import { isQaBoardShape } from './qa-board';
+import { isQuizShape } from './quiz';
 import { isSelfDrawingShape } from './data-shapes';
 
 // --- Estimate card (docs/specs/012-collaboration/estimate-card.md) ---------------------------------------------
@@ -44,6 +45,58 @@ export function isEstimateShape(kind: ShapeKind): boolean {
   return kind === 'estimate';
 }
 
+// Whether an estimate card is still waiting for its scale (docs/specs/012-collaboration/estimate-card.md
+// "Choosing a scale"): the palette places ONE Estimate card with no scale, and
+// the card asks on the canvas. A card with no scale that already holds answers
+// is an older card from before the choice existed, when no scale meant
+// Fibonacci, so it keeps meaning that rather than hiding its round behind the
+// chooser.
+export function estimateScalePending(el: {
+  shape?: string;
+  estimateScale?: EstimateScale;
+  responses?: readonly unknown[];
+}): boolean {
+  return (
+    el.shape === 'estimate' && el.estimateScale === undefined && (el.responses ?? []).length === 0
+  );
+}
+
+// Where a value sits on its scale, for sorting revealed cards low to high: the
+// scale's own order (so a t-shirt round reads XS .. XL), with anything off the
+// scale after it (docs/specs/012-collaboration/estimate-card.md "The two states").
+export function estimateRank(scale: EstimateScale | undefined, value: string): number {
+  const i = estimateValues(scale).indexOf(value);
+  return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+}
+
+// The spread the card calls out once revealed: nobody, everyone agreeing, or
+// the lowest and highest answers by the scale's order ('?' is an answer but
+// not an end of the spread). `low` / `high` are the values to ring, absent
+// when unanimous. Shared by the canvas face and the export.
+export type EstimateSpread =
+  | { kind: 'none' }
+  | { kind: 'unanimous'; value: string }
+  | { kind: 'range'; low: string; high: string };
+
+export function estimateSpread(
+  scale: EstimateScale | undefined,
+  values: readonly string[],
+): EstimateSpread {
+  if (values.length === 0) return { kind: 'none' };
+  const distinct = [...new Set(values)];
+  if (distinct.length === 1) return { kind: 'unanimous', value: distinct[0]! };
+  const sized = distinct.filter((v) => v !== '?');
+  if (sized.length <= 1) return { kind: 'unanimous', value: sized[0] ?? '?' };
+  const sorted = [...sized].sort((a, b) => estimateRank(scale, a) - estimateRank(scale, b));
+  return { kind: 'range', low: sorted[0]!, high: sorted[sorted.length - 1]! };
+}
+
+export function estimateSpreadLabel(spread: EstimateSpread): string {
+  if (spread.kind === 'none') return 'No answers';
+  if (spread.kind === 'unanimous') return `Unanimous · ${spread.value}`;
+  return `Spread ${spread.low} → ${spread.high}`;
+}
+
 // --- Temperature check (docs/specs/012-collaboration/temperature-check.md) -----------------------------------------
 
 // Fist-of-five, fixed. Not configurable: it is a named ritual with a shared
@@ -53,6 +106,44 @@ export const TEMPERATURE_VALUES: readonly string[] = ['1', '2', '3', '4', '5'];
 
 export function isTemperatureShape(kind: ShapeKind): boolean {
   return kind === 'temperature';
+}
+
+// The ritual's meaning said out loud, one word per value, so a first-timer
+// doesn't have to be told what a 2 means (docs/specs/012-collaboration/temperature-check.md "The face").
+export const TEMPERATURE_MOODS: readonly string[] = [
+  'Blocked',
+  'Doubtful',
+  'Okay',
+  'Keen',
+  'All in',
+];
+
+// Cool to warm, fixed hues rather than the theme's: "the low one is the cold
+// one" is the glanceable part, and a theme recolouring them would make five
+// arbitrary bars. Shared by the canvas face and the export.
+export const TEMPERATURE_COLORS: readonly string[] = [
+  '#60a5fa',
+  '#22d3ee',
+  '#a3e635',
+  '#fbbf24',
+  '#fb7185',
+];
+
+// The mouth of each fist-of-five face, frown (1) to beam (5), in a 16-unit box
+// whose face is a circle of radius 6.4 at (8, 8) with eyes at (5.9, 6.6) and
+// (10.1, 6.6). One definition for the canvas buttons and the export, so the
+// two draw the same five faces (docs/specs/012-collaboration/temperature-check.md "The face").
+export const TEMPERATURE_FACE_MOUTHS: readonly string[] = [
+  'M5.2 11.4Q8 8.9 10.8 11.4',
+  'M5.5 11Q8 10 10.5 11',
+  'M5.5 10.6H10.5',
+  'M5.4 9.9Q8 11.9 10.6 9.9',
+  'M5 9.4Q8 13.4 11 9.4Z',
+];
+
+// Where an average sits on the cool-to-warm track, 0 (all 1s) to 1 (all 5s).
+export function temperaturePosition(average: number): number {
+  return Math.min(1, Math.max(0, (average - 1) / 4));
 }
 
 // --- Idea box (docs/specs/012-collaboration/idea-box.md) ---------------------------------------------------
@@ -117,6 +208,17 @@ export const DECISION_STATUS_COLORS: Record<DecisionStatus, { bg: string; text: 
   accepted: { bg: '#dcfce7', text: '#166534' }, // green
   rejected: { bg: '#ffe4e6', text: '#9f1239' }, // rose
   superseded: { bg: '#fef3c7', text: '#92400e' }, // amber
+};
+
+// One hue per status, for the badge, the glow and the driver markers
+// (docs/specs/012-collaboration/decision-record.md "The face"). The badge is tinted from it, so it reads
+// on light and dark boards alike, where the light chip colours above sat pasted
+// onto a dark card. Shared by the canvas face and the export.
+export const DECISION_STATUS_HUES: Record<DecisionStatus, string> = {
+  proposed: '#64748b',
+  accepted: '#22c55e',
+  rejected: '#f43f5e',
+  superseded: '#f59e0b',
 };
 
 export const DECISION_MAX_DRIVERS = 20;
@@ -239,7 +341,8 @@ export function isCollabPanelShape(kind: ShapeKind): boolean {
     isQaBoardShape(kind) ||
     isAgendaShape(kind) ||
     isRollCallShape(kind) ||
-    isDecisionShape(kind)
+    isDecisionShape(kind) ||
+    isQuizShape(kind)
   );
 }
 
@@ -261,8 +364,18 @@ export function hasOwnFace(kind: ShapeKind): boolean {
     kind === 'comment-pin' ||
     kind === 'action-card' ||
     kind === 'reaction-pad' ||
-    kind === 'portal'
+    kind === 'portal' ||
+    isQuizShape(kind)
   );
+}
+
+// Whether double-click, Space or typing opens the inline label editor on this
+// kind. Not on a self-drawing kind (it has no label), and not on a quiz
+// (docs/specs/012-collaboration/quiz.md): its label is the question, which the
+// Edit Quiz dialog owns, and editing it inline would print the hidden question
+// over the closed disc for anybody who double-clicked the card.
+export function opensInlineLabelEditor(kind: ShapeKind): boolean {
+  return !isSelfDrawingShape(kind) && !isQuizShape(kind);
 }
 
 // Whether text alignment does anything on this kind: not a self-drawing kind
@@ -274,4 +387,13 @@ export function hasOwnFace(kind: ShapeKind): boolean {
 // pages keep it: they render the aligned label.
 export function supportsTextAlign(kind: ShapeKind): boolean {
   return !isSelfDrawingShape(kind) && !hasOwnFace(kind) && kind !== 'icon';
+}
+
+// Whether shape markers (docs/specs/009-elements/shape-markers.md) do anything on this kind: a marker
+// decorates the label, so not on a self-drawing kind (no label) and not on one
+// with its own face (the label is a fixed title the face draws, and a marker
+// never shows on it). The one gate for the single-element and multi-selection
+// menus.
+export function supportsMarkers(kind: ShapeKind): boolean {
+  return !isSelfDrawingShape(kind) && !hasOwnFace(kind);
 }

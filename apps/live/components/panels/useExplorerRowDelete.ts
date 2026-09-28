@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import type { ExplorerProps } from './Explorer.types';
 
 // The Explorer's row-delete lifecycle (docs/specs/013-workspace/folders.md), lifted out of the
 // panel: the inline ConfirmPopover state + anchor, the slide-out
 // exit-animation id set, the optimistic hide-set for team rows (their
-// library sweep can't prune in time), and the two effects that prune
+// library sweep can't prune in time), and the render-time pruning of
 // both sets once the lists actually drop the deleted ids. The panel
 // renders the popover and rows from what this returns.
 export function useExplorerRowDelete({
@@ -81,37 +81,22 @@ export function useExplorerRowDelete({
   // Once a deleted diagram actually leaves the list, drop its id from the
   // exiting set. Pruning here (rather than clearing on the timeout) avoids a
   // one-frame flicker where the row would slide back in just before unmount,
-  // and keeps the set from growing across repeated deletes.
-  useEffect(() => {
-    setExitingDiagramIds((prev) => {
-      if (prev.size === 0) return prev;
-      const present = new Set(diagrams.map((d) => d.id));
-      let changed = false;
-      const next = new Set<string>();
-      for (const id of prev) {
-        if (present.has(id)) next.add(id);
-        else changed = true;
-      }
-      return changed ? next : prev;
-    });
-  }, [diagrams]);
+  // and keeps the set from growing across repeated deletes. Adjusted during
+  // render when the list changes; only then, since a team row's id slides out
+  // through this set too without ever being in the personal list.
+  const [exitPrunedFor, setExitPrunedFor] = useState(diagrams);
+  if (diagrams !== exitPrunedFor) {
+    setExitPrunedFor(diagrams);
+    setExitingDiagramIds((prev) => keepPresent(prev, diagrams));
+  }
 
   // Same pruning for team deletes: once the library sweep re-fetches
   // without the deleted id, drop it from the local hide-set so the set
-  // can't grow unbounded.
-  useEffect(() => {
-    setDeletedTeamIds((prev) => {
-      if (prev.size === 0) return prev;
-      const present = new Set(teamDiagrams.map((d) => d.id));
-      let changed = false;
-      const next = new Set<string>();
-      for (const id of prev) {
-        if (present.has(id)) next.add(id);
-        else changed = true;
-      }
-      return changed ? next : prev;
-    });
-  }, [teamDiagrams]);
+  // can't grow unbounded. A hidden id is always in the library when hidden, so
+  // this prunes on content rather than list identity (the panel defaults the
+  // library to a fresh [] per render).
+  const keptTeamIds = keepPresent(deletedTeamIds, teamDiagrams);
+  if (keptTeamIds !== deletedTeamIds) setDeletedTeamIds(keptTeamIds);
   return {
     exitingDiagramIds,
     deleteConfirm,
@@ -120,4 +105,12 @@ export function useExplorerRowDelete({
     openDeleteConfirm,
     runDelete,
   };
+}
+
+// The ids of `ids` still in `rows`; `ids` itself when none has gone, so a caller can tell nothing changed.
+function keepPresent(ids: Set<string>, rows: readonly { id: string }[]): Set<string> {
+  if (ids.size === 0) return ids;
+  const present = new Set(rows.map((d) => d.id));
+  const next = new Set([...ids].filter((id) => present.has(id)));
+  return next.size === ids.size ? ids : next;
 }

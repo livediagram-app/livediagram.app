@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import type { TeamInviteLinkInfo } from '@livediagram/api-schema';
 import { Brand, Button, buttonClassName, ButtonContent } from '@livediagram/ui';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { clerkEnabled } from '@/lib/clerk-config';
-import { ensureGuestSelfId } from '@/lib/local-identity';
+import { ensureGuestSelfId, getGuestSelfId, subscribeGuestSelfId } from '@/lib/local-identity';
+
+const noGuestId = () => null;
 import { track } from '@/lib/telemetry';
 import { apiJoinTeamByInviteLink, apiResolveTeamInviteLink } from '@/lib/api-client';
 
@@ -17,36 +19,42 @@ import { apiJoinTeamByInviteLink, apiResolveTeamInviteLink } from '@/lib/api-cli
 
 type Resolved = 'loading' | 'invalid' | TeamInviteLinkInfo;
 
+// The URL's token, as a store with nothing to subscribe to: the page never changes its own query.
+const noSubscription = () => () => {};
+const readUrlToken = () => new URLSearchParams(window.location.search).get('token');
+const beforeHydration = (): string | null | undefined => undefined;
+
 const teamHref = (teamId: string) => `/explorer/team?id=${encodeURIComponent(teamId)}`;
 
 export function TeamInviteJoin() {
   const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
-  // Read the token after mount (not in an initializer) so the static
-  // export and the first client render agree — no hydration mismatch.
-  const [token, setToken] = useState<string | null | undefined>(undefined);
-  useEffect(() => {
-    setToken(new URLSearchParams(window.location.search).get('token'));
-  }, []);
+  // The token is undefined while prerendering and hydrating (the server snapshot), so the static
+  // export and the first client render agree — no hydration mismatch — and read from the URL after.
+  const token = useSyncExternalStore(noSubscription, readUrlToken, beforeHydration);
 
-  const ownerId = useMemo(() => clerkUserId ?? ensureGuestSelfId(), [clerkUserId]);
-  const [resolved, setResolved] = useState<Resolved>('loading');
+  // The guest id is read from its store; a browser without one mints it once auth has settled (below),
+  // and the store re-renders this with it. Render never writes storage.
+  const guestId = useSyncExternalStore(subscribeGuestSelfId, getGuestSelfId, noGuestId);
+  const ownerId = clerkUserId ?? guestId;
+  useEffect(() => {
+    if (authLoaded && !clerkUserId) ensureGuestSelfId();
+  }, [authLoaded, clerkUserId]);
+  // What the api said about the token; a link without one is invalid without asking.
+  const [lookup, setLookup] = useState<Resolved>('loading');
+  const resolved: Resolved = authLoaded && token !== undefined && !token ? 'invalid' : lookup;
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
 
   // Resolve once auth has settled (so ownerId / the bearer are stable).
   useEffect(() => {
-    if (!authLoaded || token === undefined) return;
-    if (!token) {
-      setResolved('invalid');
-      return;
-    }
+    if (!authLoaded || !token || !ownerId) return;
     let cancelled = false;
     void apiResolveTeamInviteLink(ownerId, token)
       .then((res) => {
-        if (!cancelled) setResolved(res ?? 'invalid');
+        if (!cancelled) setLookup(res ?? 'invalid');
       })
       .catch(() => {
-        if (!cancelled) setResolved('invalid');
+        if (!cancelled) setLookup('invalid');
       });
     return () => {
       cancelled = true;
@@ -54,13 +62,13 @@ export function TeamInviteJoin() {
   }, [authLoaded, token, ownerId]);
 
   const join = useCallback(async () => {
-    if (!token || joining) return;
+    if (!token || !ownerId || joining) return;
     setJoining(true);
     setJoinError(null);
     try {
       const result = await apiJoinTeamByInviteLink(ownerId, token);
       if (!result) {
-        setResolved('invalid');
+        setLookup('invalid');
         return;
       }
       // Same event the Accept-invite flow fires (docs/specs/017-telemetry/telemetry.md) — a new

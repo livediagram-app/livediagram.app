@@ -74,10 +74,22 @@ would be worse than the gap:
   canvas because you can click it; an export of an empty field is empty.
 - **Live state of a control.** A timer's remaining time, a picker mid-roll, a
   pressed button.
-- **The Collaborate paper kit** ([Per-participant responses](../012-collaboration/participant-responses.md)): the
-  halftones, ruled paper, card backs and tape that give each card its texture.
-  The cards export with their real structure, colours and contents (title,
-  status, chips, rows, footer pills) but not their paper.
+- **Who is in the room.** An export has no presence, so a Done check has
+  nobody to wait on: it draws the people who marked themselves done, not a
+  waiting list.
+
+### The behaviour cards export as they look
+
+The Behaviour and Collaborate cards moved onto one modern look (flat, lit by
+the tab theme's accent, [Participant responses](../012-collaboration/participant-responses.md)), and their exports
+carry its **marks**, not just their text: the Temperature check's five faces,
+the Estimate card's face-up cards and its scale chooser while it has no scale,
+the Roll call's people as initial discs on their own colour (it stores their
+names and colours; a Done check or an Estimate stores only an opaque key per
+answer, so their people export as neutral discs), the Decision
+record's status badge with its glyph, and the soft accent glows behind the
+Reveal zone and the Idea box. What stays out is motion (a bob, a sweep, a
+flip) and live clocks, as above.
 
 ## Checking it
 

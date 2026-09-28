@@ -42,15 +42,15 @@ Tailwind's bare `transition` utility runs at `micro`.
 
 Every duration in the codebase belongs to exactly one kind. The budget applies to the first two.
 
-| Kind                     | What it is                                                                                             | Budget                                    |
-| ------------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
-| **Chrome transition**    | A chrome surface changing state: entering, leaving, opening, resizing, hovering                        | 250ms, or 150ms for hovers                |
-| **Cascade**              | Chrome items entering one beat apart                                                                   | 250ms for the whole cascade               |
-| **Canvas animation**     | Motion of or on the diagram. Element entry and animations, arrow flow, slide transitions, Q&A board    | Its own spec                              |
-| **Content illustration** | Marketing illustrations and template-preview stories: a picture that moves, not a control              | Its own spec                              |
-| **Content reveal**       | Content drawn in for reading: the marketing page entrance, telemetry data-viz reveals                  | About half its original length, see below |
-| **Ambient indicator**    | Looping status. Spinners, skeleton pulses, live dots, empty-state float, attention pulses that repeat  | Exempt; not a transition                  |
-| **Timer**                | Time before something happens: debounce, hover grace, close delay, long press, auto-save, auto-dismiss | Untouched; not motion                     |
+| Kind                     | What it is                                                                                              | Budget                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| **Chrome transition**    | A chrome surface changing state: entering, leaving, opening, resizing, hovering                         | 250ms, or 150ms for hovers                |
+| **Cascade**              | Chrome items entering one beat apart                                                                    | 250ms for the whole cascade               |
+| **Canvas animation**     | Motion of or on the diagram. Element entry and animations, arrow flow, slide transitions, collab boards | Its own spec                              |
+| **Content illustration** | Marketing illustrations and template-preview stories: a picture that moves, not a control               | Its own spec                              |
+| **Content reveal**       | Content drawn in for reading: the marketing page entrance, telemetry data-viz reveals                   | About half its original length, see below |
+| **Ambient indicator**    | Looping status. Spinners, skeleton pulses, live dots, empty-state float, attention pulses that repeat   | Exempt; not a transition                  |
+| **Timer**                | Time before something happens: debounce, hover grace, close delay, long press, auto-save, auto-dismiss  | Untouched; not motion                     |
 
 A timer that only waits for an exit animation to finish before unmounting is an **exit hold**. It
 belongs to the animation it waits for, not to the timers, so it runs for that animation's token.

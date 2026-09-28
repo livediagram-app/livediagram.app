@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import {
   CHECKLIST_MAX_ITEMS,
   CHECKLIST_MAX_TEXT,
@@ -18,10 +18,12 @@ import {
 import { hexish } from '@/components/palette/palette-controls';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
+import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
 // Pie-chart data editor (docs/specs/009-elements/pie-chart.md): one row per slice — a colour swatch
 // (recolourable), a label, and a value — plus add / remove. Local draft while
-// typing; commits the whole array on blur / structural change (one undo step).
+// typing, re-seeded during render when the slices change underneath (every editor here does the
+// same); commits the whole array on blur / structural change (one undo step).
 export function PieDataEditor({
   slices,
   palette = PIE_PALETTE,
@@ -34,8 +36,7 @@ export function PieDataEditor({
   palette?: readonly string[];
   onChange: (slices: PieSlice[]) => void;
 }) {
-  const [rows, setRows] = useState<PieSlice[]>(slices);
-  useEffect(() => setRows(slices), [slices]);
+  const [rows, setRows] = useFollowingDraft<PieSlice[]>(slices);
   const colorAt = (i: number, s: PieSlice) => s.color ?? palette[i % palette.length]!;
   const patch = (i: number, p: Partial<PieSlice>) =>
     setRows((r) => r.map((s, j) => (j === i ? { ...s, ...p } : s)));
@@ -115,8 +116,7 @@ export function LegendDataEditor({
   palette?: readonly string[];
   onChange: (items: LegendItem[]) => void;
 }) {
-  const [rows, setRows] = useState<LegendItem[]>(items);
-  useEffect(() => setRows(items), [items]);
+  const [rows, setRows] = useFollowingDraft<LegendItem[]>(items);
   const colorAt = (i: number, item: LegendItem) => item.color ?? palette[i % palette.length]!;
   const cellInput =
     'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
@@ -228,8 +228,7 @@ export function EntityFieldsEditor({
   fields: EntityField[];
   onChange: (fields: EntityField[]) => void;
 }) {
-  const [rows, setRows] = useState<EntityField[]>(fields);
-  useEffect(() => setRows(fields), [fields]);
+  const [rows, setRows] = useFollowingDraft<EntityField[]>(fields);
   const cellInput =
     'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   return (
@@ -297,8 +296,7 @@ export function ChecklistRowsEditor({
   // the rows like every other edit here.
   onToggle?: (index: number) => void;
 }) {
-  const [rows, setRows] = useState<ChecklistItem[]>(items);
-  useEffect(() => setRows(items), [items]);
+  const [rows, setRows] = useFollowingDraft<ChecklistItem[]>(items);
   const cellInput =
     'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   return (

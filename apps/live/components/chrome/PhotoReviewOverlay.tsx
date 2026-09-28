@@ -129,8 +129,13 @@ export function PhotoReviewOverlay({
     skip: (id) => edited.has(id),
     onReread: (boxes) => onReread?.(boxes),
   });
-  useEffect(() => {
+  // A new set of boxes reveals again from the first, reset during render.
+  const [revealFor, setRevealFor] = useState(detected.length);
+  if (detected.length !== revealFor) {
+    setRevealFor(detected.length);
     setRevealed(0);
+  }
+  useEffect(() => {
     if (detected.length === 0) return;
     const id = setInterval(() => {
       setRevealed((r) => {
@@ -237,7 +242,7 @@ export function PhotoReviewOverlay({
   const boxDrag = useBoxDrag({ pictureRef: photoRef, frame, onChange: edits.update });
   // A second finger turns a one-finger drag into a pinch: the box that finger
   // started is not a box, and the box it grabbed is not being moved.
-  const photoView = usePhotoView({
+  const { view, viewportRef, zoomIn, zoomOut, fit, hand, viewportHandlers } = usePhotoView({
     onGesture: () => {
       draw.cancel();
       boxDrag.cancel();
@@ -291,19 +296,19 @@ export function PhotoReviewOverlay({
           on-screen rect — is right at every zoom without knowing there is one.
         */}
         <div
-          ref={photoView.viewportRef}
+          ref={viewportRef}
           data-testid="photo-viewport"
           // `touch-none`: a pinch here zooms the PHOTO, never the whole page.
           className="relative touch-none overflow-hidden"
-          style={photoView.hand ? { cursor: photoView.hand } : undefined}
-          {...photoView.viewportHandlers}
+          style={hand ? { cursor: hand } : undefined}
+          {...viewportHandlers}
         >
           <div
             ref={photoRef}
             data-testid="photo-picture"
-            className={`relative select-none ${photoView.hand ? '' : 'cursor-crosshair'}`}
+            className={`relative select-none ${hand ? '' : 'cursor-crosshair'}`}
             style={{
-              transform: `translate(${photoView.view.x}px, ${photoView.view.y}px) scale(${photoView.view.zoom})`,
+              transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`,
               transformOrigin: '0 0',
             }}
             {...draw.handlers}
@@ -344,7 +349,7 @@ export function PhotoReviewOverlay({
                 onKind={(kind) => edits.update(s.id, withKind(s, kind))}
                 onDelete={() => remove(s.id)}
                 onEdit={(value) => editText(s.id, value)}
-                zoom={photoView.view.zoom}
+                zoom={view.zoom}
               />
             ))}
             {draw.drawing ? (
@@ -377,12 +382,7 @@ export function PhotoReviewOverlay({
           </div>
         )}
         <div className="pointer-events-none absolute right-2 top-2">
-          <ZoomControls
-            zoom={photoView.view.zoom}
-            onZoomIn={photoView.zoomIn}
-            onZoomOut={photoView.zoomOut}
-            onFit={photoView.fit}
-          />
+          <ZoomControls zoom={view.zoom} onZoomIn={zoomIn} onZoomOut={zoomOut} onFit={fit} />
         </div>
         <PhotoStatus
           detecting={detecting}

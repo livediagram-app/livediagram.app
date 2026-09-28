@@ -851,6 +851,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideSpade} />
     </Glyph>
   ),
+  // A quiz: the question in a disc, with its answers on a ring around it.
+  quizzes: (
+    <Glyph>
+      <circle cx="12" cy="12" r="4.5" />
+      <path d="M10.8 10.9a1.3 1.3 0 1 1 1.8 1.2c-.4.2-.6.5-.6.9M12 14.6h.01" />
+      <path d="M12 2.5h.01M21.5 12h.01M12 21.5h.01M2.5 12h.01" />
+    </Glyph>
+  ),
   // A fist-of-five gauge: the dial and where the room is pointing.
   'temperature-checks': (
     <Glyph>

@@ -39,13 +39,35 @@ So there is no `responsesRevealed` on this kind, and no control to add one.
 
 ## The face
 
-- A row of five pressable numbers, **your own reading raised**.
-- A bar per value, heights proportional to how many chose it, so the shape of
-  the room is readable at a glance — a flat 3 across the board and a split
-  between 1s and 5s have the same average and mean opposite things.
-- The **average to one decimal**, large, with the respondent count under it.
-- Empty state says "No readings yet" rather than drawing an average of zero,
-  which would read as a very unhappy room.
+Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper kit
+is being retired; the [Q&A board](qa-board.md) and [Idea box](idea-box.md) set the look): a flat card, no printed
+instrument, and motion that says something happened. It replaced a row of numbered chips over a
+graduated gauge plate.
 
-Colour runs cool-to-warm across the five bars from the theme's own accent
-range, so a low reading looks low without the element hard-coding red.
+- **Five faces to pick from**, not five numbers. Each button is a face that runs from a frown (1)
+  to a beam (5) over its number. Your own pick fills in its colour, lifts, and pops when you choose
+  it; pressing another moves it. The value's word (**Blocked, Doubtful, Okay, Keen, All in**, the
+  ritual's meaning: 1 = blocked, 5 = enthusiastic) is only the accessible name: printed, it took
+  room from the face and added nothing, and a hover card over five obvious faces was noise.
+- **One grid.** The faces, the bars and the mood meter share one five-column grid, each column
+  capped (88px) and the grid centred, so the buttons are big targets without turning into slabs
+  on a wide card, and a value's face, its bar and its point on the meter sit on one centre line.
+- **The shape of the room.** A rounded bar per value, height proportional to how many chose it,
+  easing to its new height as answers land, with the count over it. A flat 3 across the board and a
+  split between 1s and 5s have the same average and mean opposite things, so the bars stay the
+  main read. A count that rises after the card first painted pops.
+- **The mood meter.** Under the bars, a cool-to-warm gradient track with a glowing marker that
+  glides to the average. The track runs from the centre of the first column to the centre of the
+  last, so a reading of 4 sits directly under the 4, and a 1 or a 5 rests on the track's end
+  inside the card. Under it, the average to one decimal, large, with the respondent count.
+- **Empty** says "No readings yet" and "Tap the face that fits" over a quiet track with no marker,
+  rather than drawing an average of zero, which would read as a very unhappy room.
+
+Colour runs cool-to-warm across the five values in **fixed hues** (blue, cyan, lime, amber, rose),
+not the theme's palette: a temperature check that recoloured with the tab theme would read as five
+arbitrary bars, and "the low one is the cold one" is the whole glanceable part. The hues and words
+live in `@livediagram/diagram` (`TEMPERATURE_COLORS`, `TEMPERATURE_MOODS`), so the export draws the
+same card: the five faces over their numbers (`TEMPERATURE_FACE_MOUTHS`, shared with the canvas), the bars, the gradient track and the average. Everything else
+is `tint()` of the element's own colours, so the card holds on any theme and in either appearance,
+and every motion collapses under reduced motion. Its durations are canvas motion, so they live in
+`qa-board.css` beside the Q&A board's ([Motion](../004-interface-design/motion.md)), not in component classes.

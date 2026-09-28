@@ -34,6 +34,11 @@ export function useLayerThumbnails(
   // Re-render once the async icon catalogues land so icon glyphs pop in.
   const iconsLoaded = useIconCatalogs();
   return useMemo(() => {
+    // The resolvers find nothing until the catalogues land; gating them on the
+    // flag makes the rebuild on landing a real input of this memo.
+    const art = iconsLoaded
+      ? { resolveIconArt: resolveIconArtLoaded, resolveStickerArt: resolveStickerArtLoaded }
+      : {};
     if (elements.length === 0) {
       return { thumbMarkup: new Map<string, string>(), thumbViewBox: null };
     }
@@ -47,8 +52,7 @@ export function useLayerThumbnails(
         if (el.type !== 'arrow' && isBoxed(el)) {
           parts.push(
             svgBoxed(el, {
-              resolveIconArt: resolveIconArtLoaded,
-              resolveStickerArt: resolveStickerArtLoaded,
+              ...art,
               tabFont,
             }),
           );
@@ -72,7 +76,5 @@ export function useLayerThumbnails(
       thumbMarkup: markup,
       thumbViewBox: `${r2(b.x - pad)} ${r2(b.y - pad)} ${r2(b.w + pad * 2)} ${r2(b.h + pad * 2)}`,
     };
-    // iconsLoaded re-runs the build when the catalogue chunk lands.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [elements, layers, tabFont, iconsLoaded]);
 }

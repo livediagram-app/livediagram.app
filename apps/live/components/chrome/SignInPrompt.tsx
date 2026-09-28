@@ -27,31 +27,32 @@
 // ClerkProvider would throw, so the disabled branch never touches
 // Clerk.
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { buttonClassName, CloseIcon, ButtonContent } from '@livediagram/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { clerkEnabled } from '@/lib/clerk-config';
-import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
 
 const DISMISS_KEY = 'livediagram:v2:signin-prompt-dismissed';
 
-// Per-browser dismissal. Returns `null` until the first client effect
-// has read localStorage so the prompt never flashes in for a user who
-// already closed it (the initial render and the SSR/export build both
-// resolve to `null` → render nothing, then the effect settles the real
-// value). `dismiss` writes the flag and hides immediately.
+const subscribeNever = () => () => {};
+
+// Per-browser dismissal. Returns `null` until the render after hydration,
+// the first that may read localStorage, so the prompt never flashes in for a
+// user who already closed it (the SSR/export build and the hydrating render
+// both resolve to `null` → render nothing). `dismiss` writes the flag and
+// hides immediately.
 function usePromptDismissed(): { dismissed: boolean | null; dismiss: () => void } {
-  const [dismissed, setDismissed] = useState<boolean | null>(null);
-  useEffect(() => {
-    setDismissed(readLocalStorageSafe(DISMISS_KEY) === 'true');
-  }, []);
-  const dismiss = () => {
-    writeLocalStorageSafe(DISMISS_KEY, 'true');
-    setDismissed(true);
-  };
-  return { dismissed, dismiss };
+  const stored = useLocalStorageValue(DISMISS_KEY);
+  const hydrated = useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
+  const dismiss = () => writeLocalStorageValue(DISMISS_KEY, 'true');
+  return { dismissed: hydrated ? stored === 'true' : null, dismiss };
 }
 
 function PromptShell({

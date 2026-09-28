@@ -7,7 +7,7 @@
 // competing on-canvas button. The first of a planned family of composite "rail"
 // components, so the geometry stays simple + declarative.
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { RAIL_DEFAULT_POINTS } from '@livediagram/diagram';
 import type { ShapeElement } from '@livediagram/diagram';
 
@@ -113,7 +113,11 @@ function RailLabel({
   style: React.CSSProperties;
 }) {
   const [draft, setDraft] = useState(value);
-  useEffect(() => setDraft(value), [value]);
+  const [seededFrom, setSeededFrom] = useState(value);
+  if (value !== seededFrom) {
+    setSeededFrom(value);
+    setDraft(value);
+  }
   if (!editable) {
     return (
       <div

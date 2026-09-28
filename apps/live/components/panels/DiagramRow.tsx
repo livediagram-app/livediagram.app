@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import type { DiagramListItem } from '@/lib/api-client';
-import { relativeSince } from '@/lib/relative-time';
+import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DiagramActionsMenu } from '@/app/explorer/diagram-row-shared';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
@@ -76,7 +76,8 @@ export function DiagramRow({
     setEditing(false);
   };
 
-  const relative = relativeSince(item.savedAt);
+  const now = useRelativeNow();
+  const relative = relativeSince(item.savedAt, now);
   // Offline Mode (docs/specs/006-diagram/offline-mode.md): an offline diagram's row carries ownerId
   // 'offline', which drives the fixed offline thumbnail.
   const offline = item.ownerId === OFFLINE_OWNER_ID;

@@ -25,9 +25,9 @@ import { HIGHLIGHTER_DEFAULT_WIDTH } from '@/hooks/canvas/useShapeDrawing';
 // whether the gesture closed on itself, and — in Shape Pen mode — try to
 // recognise a real shape before falling back to a sketch.
 //
-// A factory called per render rather than a hook, for the same reason
-// makePortalTravel is: it needs values that change every render (the pending
-// draw, the highlighter recipe, the live tab) and owns no state of its own.
+// A factory called per render rather than a hook: it needs values that change
+// every render (the pending draw, the highlighter recipe, the live tab) and owns
+// no state of its own.
 //
 // Decision and effect are interleaved on purpose and stay that way. Each
 // branch mints its element and commits it in the same breath; teasing the two

@@ -100,4 +100,23 @@ describe('useActivityFeed', () => {
     expect(apiListActivity).not.toHaveBeenCalled();
     expect(result.current.loading).toBe(true);
   });
+
+  it('loads afresh for a new owner, ignoring a late answer for the previous one', async () => {
+    let answerFirst: (v: unknown) => void = () => {};
+    apiListActivity
+      .mockImplementationOnce(() => new Promise((r) => (answerFirst = r)))
+      .mockResolvedValueOnce({
+        actions: [action('b1', { assignedToMe: true, createdByMe: false })],
+        threads: [],
+      });
+    const { result, rerender } = renderHook(({ owner }) => useActivityFeed(owner), {
+      initialProps: { owner: 'guest' as string | null },
+    });
+    rerender({ owner: 'user_1' });
+    expect(result.current.loading).toBe(true);
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => answerFirst({ actions: [], threads: [thread] }));
+    expect(result.current.assignedToMe.map((a) => a.id)).toEqual(['b1']);
+    expect(result.current.threads).toEqual([]);
+  });
 });

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { buildElementIndex, endpointPosition, isBoxed, type Element } from '@livediagram/diagram';
 import { pointerToCanvas } from '@/lib/canvas';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Pan + marquee gesture machinery lifted out of Canvas.tsx so the
 // component file stays focused on JSX + per-element wiring. The
@@ -69,12 +70,13 @@ type Api = {
   // the document focus isn't in an input. Canvas's pointerdown
   // reads this to decide pan vs marquee.
   spaceHeldRef: RefObject<boolean>;
+  // The same, as state, for what render shows (the canvas cursor).
+  spaceHeld: boolean;
 };
 
 export function useCanvasPanAndMarquee(deps: Deps): Api {
   const [pan, setPan] = useState<PanState | null>(null);
   const [marquee, setMarquee] = useState<MarqueeState | null>(null);
-
   // The caller passes a fresh `deps` object literal every render. Keep it
   // in a ref (refreshed each render) so the pan / marquee effects can
   // depend ONLY on the gesture state (`pan` / `marquee`) and still read
@@ -82,13 +84,14 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
   // every render; paired with the move handler's setViewportOffset that
   // tripped React's "Maximum update depth exceeded" loop (re-subscribe →
   // setState → re-render → re-subscribe).
-  const depsRef = useRef(deps);
-  depsRef.current = deps;
+  const depsRef = useLatest(deps);
 
   // Held-Space modifier turns canvas drag into a pan instead of a
   // marquee. Tracked via a ref so the pointerdown handler always
-  // sees the current value without re-binding when state changes.
+  // sees the current value without re-binding when state changes,
+  // and mirrored in state for the cursor render reads.
   const spaceHeldRef = useRef(false);
+  const [spaceHeld, setSpaceHeld] = useState(false);
   useEffect(() => {
     const isTypingTarget = (t: EventTarget | null) =>
       t instanceof HTMLInputElement ||
@@ -102,10 +105,12 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       // for those.
       e.preventDefault();
       spaceHeldRef.current = true;
+      setSpaceHeld(true);
     };
     const up = (e: KeyboardEvent) => {
       if (e.code !== 'Space') return;
       spaceHeldRef.current = false;
+      setSpaceHeld(false);
     };
     document.addEventListener('keydown', down);
     document.addEventListener('keyup', up);
@@ -165,7 +170,7 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
-  }, [pan]);
+  }, [depsRef, pan]);
 
   // Marquee drag: track the current pointer position and, on
   // release, convert the screen-coord rect to canvas coords and
@@ -264,7 +269,7 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
-  }, [marquee]);
+  }, [depsRef, marquee]);
 
-  return { pan, setPan, marquee, setMarquee, spaceHeldRef };
+  return { pan, setPan, marquee, setMarquee, spaceHeldRef, spaceHeld };
 }

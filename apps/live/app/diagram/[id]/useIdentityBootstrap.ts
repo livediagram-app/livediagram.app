@@ -1,4 +1,10 @@
-import { useLayoutEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
+import {
+  useLayoutEffect,
+  type Dispatch,
+  type MutableRefObject,
+  type SetStateAction,
+  useEffectEvent,
+} from 'react';
 import type { Tab } from '@livediagram/diagram';
 import {
   apiListChangeLog,
@@ -155,7 +161,9 @@ export function useIdentityBootstrap(opts: {
     setLoadedTabIds,
   });
 
-  useLayoutEffect(() => {
+  // The bootstrap runs once auth has settled (and again on a password retry), reading everything else as
+  // it is at that moment: an effect event, so the setters and values it reads are never triggers.
+  const bootstrap = useEffectEvent(() => {
     if (hydrated) return;
     // Wait for Clerk to determine the auth state before bootstrapping.
     // Otherwise a signed-in user lands here with `clerkUserId === null`
@@ -511,6 +519,8 @@ export function useIdentityBootstrap(opts: {
       setHydrated(true);
       setLoadingDiagram(false);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
+  useLayoutEffect(() => {
+    bootstrap();
   }, [authLoaded, passwordRetry]);
 }

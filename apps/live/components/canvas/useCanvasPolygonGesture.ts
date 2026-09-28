@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import { snapToAlignment } from '@livediagram/diagram';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 const EMPTY_ID_SET: Set<string> = new Set();
 
@@ -32,8 +33,7 @@ export function useCanvasPolygonGesture({
   const [polygonCursor, setPolygonCursor] = useState<{ x: number; y: number } | null>(null);
   // Mirror for the window key handlers, which must read the latest
   // vertices without re-subscribing per click.
-  const verticesRef = useRef(polygonVertices);
-  verticesRef.current = polygonVertices;
+  const verticesRef = useLatest(polygonVertices);
 
   const polygonArmed = pendingDraw?.type === 'polygon';
 
@@ -104,12 +104,7 @@ export function useCanvasPolygonGesture({
 
   // Clear the gesture whenever the intent disarms (commit, Escape via
   // the editor's cancelDraw, or a tool switch).
-  useEffect(() => {
-    if (!polygonArmed) {
-      setPolygonVertices([]);
-      setPolygonCursor(null);
-    }
-  }, [polygonArmed]);
+  if (!polygonArmed && (polygonVertices.length > 0 || polygonCursor)) resetGesture();
 
   // Rubber-band tracking: while armed with at least one vertex, follow
   // the pointer (rAF-throttled) so the preview segment tracks the
@@ -143,31 +138,34 @@ export function useCanvasPolygonGesture({
   // - Backspace / Delete removes the last placed vertex.
   // - Escape with vertices clears them but STAYS armed (the second
   //   Escape falls through to the editor's cancelDraw and disarms).
+  //
+  // The handler is an effect event, so it reads the newest vertices and
+  // commit handler while the listener stays attached for the whole gesture.
+  const onKeyDown = useEffectEvent((e: KeyboardEvent) => {
+    const vertices = polygonVertices;
+    if (e.key === 'Enter' && vertices.length >= 2) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      finishOpen();
+      return;
+    }
+    if ((e.key === 'Backspace' || e.key === 'Delete') && vertices.length > 0) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      setPolygonVertices(vertices.slice(0, -1));
+      return;
+    }
+    if (e.key === 'Escape' && vertices.length > 0) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      resetGesture();
+    }
+  });
   useEffect(() => {
     if (!polygonArmed) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      const vertices = verticesRef.current;
-      if (e.key === 'Enter' && vertices.length >= 2) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        finishOpen();
-        return;
-      }
-      if ((e.key === 'Backspace' || e.key === 'Delete') && vertices.length > 0) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        setPolygonVertices(vertices.slice(0, -1));
-        return;
-      }
-      if (e.key === 'Escape' && vertices.length > 0) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        resetGesture();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown, { capture: true });
-    return () => window.removeEventListener('keydown', onKeyDown, { capture: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const listener = (e: KeyboardEvent) => onKeyDown(e);
+    window.addEventListener('keydown', listener, { capture: true });
+    return () => window.removeEventListener('keydown', listener, { capture: true });
   }, [polygonArmed]);
 
   return { polygonVertices, polygonCursor, beginPolygonPoint, handlePolygonDoubleClick };

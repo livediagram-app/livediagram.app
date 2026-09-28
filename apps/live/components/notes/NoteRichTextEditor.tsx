@@ -10,7 +10,7 @@
 
 import { listStyleOfText } from '@/components/rich-text/block-type';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
-import { runsPlainText, type RunBoolKey, type TextRun } from '@livediagram/diagram';
+import { type RunBoolKey, type TextRun } from '@livediagram/diagram';
 import { NOTE_BASE_PX } from './note-run-style';
 import { NoteFormatToolbar } from './NoteFormatToolbar';
 import { useNoteRichTextSession } from './useNoteRichTextSession';
@@ -32,7 +32,7 @@ export function NoteRichTextEditor({
     editorRef,
     composingRef,
     active,
-    currentRuns,
+    liveText,
     handleInput,
     onToggle,
     applyList,
@@ -44,7 +44,7 @@ export function NoteRichTextEditor({
     <div className="flex flex-col gap-1.5">
       <NoteFormatToolbar
         active={active}
-        listStyle={listStyleOfText(runsPlainText(currentRuns()))}
+        listStyle={listStyleOfText(liveText)}
         onToggle={onToggle}
         onApplyList={applyList}
         onApplyHeading={applyHeading}

@@ -42,28 +42,6 @@ export async function recordDiagramCreated(
   );
 }
 
-export async function recordDiagramRenamed(
-  env: Env,
-  diagram: DiagramRef,
-  previousName: string,
-  actorId: string,
-): Promise<void> {
-  await record(
-    env,
-    {
-      actorId,
-      sourceType: 'diagram',
-      sourceId: diagram.id,
-      eventType: 'diagram_renamed',
-      dedupeKey: dedupeKeyOnce(),
-      title: 'Diagram Renamed',
-      description: `${previousName} → ${diagram.name}`,
-      snapshot: { ...diagramSnapshot(diagram), previousName },
-    },
-    await audienceForDiagram(env, diagram),
-  );
-}
-
 export async function recordDiagramDuplicated(
   env: Env,
   copy: DiagramRef,

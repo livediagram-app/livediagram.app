@@ -3,9 +3,12 @@
 import { allDone, doneSplit, isDone, type ShapeElement } from '@livediagram/diagram';
 
 import { participantKey, type Participant } from '@/lib/identity';
-import { RuledLines } from '@/components/canvas/paper-kit';
-import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
-import { CollabButton, CollabEmpty, CollabPanel } from './collab-chrome';
+import { CollabPanel } from './collab-chrome';
+import { CollabAccentScope } from './collab-accent';
+import { DoneButton } from './done/DoneButton';
+import { DoneRing } from './done/DoneRing';
+import { DoneRoster } from './done/DoneRoster';
+import { EmptyRows } from './qa/qa-parts';
 import {
   ElementEllipsisMenu,
   ElementMenuItem,
@@ -29,48 +32,11 @@ import {
 // for everyone else (docs/specs/015-api/public-api-and-tokens.md §6), so it cannot match what was saved: keyed on
 // it, this card showed every viewer their own mark and nobody else's.
 
-function Roster({
-  title,
-  keys,
-  participants,
-  textColor,
-  muted,
-}: {
-  title: string;
-  // Document-write keys (see participantKey), matched back to the room below.
-  keys: string[];
-  participants: Participant[];
-  textColor: string;
-  // The waiting side is drawn back, so a glance lands on who is DONE.
-  muted?: boolean;
-}) {
-  if (keys.length === 0) return null;
-  return (
-    <div className="flex min-w-0 flex-col gap-1">
-      <span
-        className="text-[10px] font-semibold uppercase tracking-[0.06em] opacity-55"
-        style={{ color: textColor }}
-      >
-        {title} · {keys.length}
-      </span>
-      {/* gap-3 clears the presence RING, which is a box-shadow outside each
-          avatar's layout box and eats 4px of any gap beside it. */}
-      <div className={`flex flex-wrap items-center gap-3 ${muted ? 'opacity-45' : ''}`}>
-        {keys.map((key) => {
-          const who = participants.find((p) => participantKey(p) === key);
-          return who ? (
-            <ParticipantAvatar key={key} participant={who} size={22} withHoverCard />
-          ) : null;
-        })}
-      </div>
-    </div>
-  );
-}
-
 export function DoneCheckFace({
   element,
   label,
   textColor,
+  surface,
   selfKey,
   participants,
   onToggleMine,
@@ -80,6 +46,8 @@ export function DoneCheckFace({
   element: ShapeElement;
   label: string;
   textColor: string;
+  // The card's own fill, for the accent scope.
+  surface: string;
   // How WE are recorded on this card — see CollabApi.selfKey.
   selfKey: string;
   // The room. Includes ourselves, and is what the waiting list is derived from.
@@ -100,100 +68,88 @@ export function DoneCheckFace({
   const everyone = allDone(element.responses, keys);
 
   return (
-    <CollabPanel
-      element={element}
-      title={label.trim() || 'Everyone done?'}
-      textColor={textColor}
-      aside={keys.length ? `${done.length}/${keys.length}` : undefined}
-      // A RULED SHEET (docs/specs/012-collaboration/participant-responses.md): the running list somebody keeps during a
-      // session, feint-ruled behind the rosters.
-      //
-      // NO hardware holding it on. Two attempts went in and both came out —
-      // a clipboard's jaw across the top, then wire binder rings down the
-      // side. At the size a Done check actually sits on a board, a 5px loop
-      // and a 7px hole are not a mechanism, they are specks, and both read as
-      // debris beside the card rather than as something gripping it. The
-      // ruling alone says "sheet" at every size, which is the whole job.
-      backdrop={<RuledLines textColor={textColor} gap={17} from={42} />}
-      // The flash is the card's whole payoff: the facilitator does not have to
-      // watch it, the board tells them. Driven by a class rather than inline
-      // styles so the reduced-motion override in globals.css can reach it.
-      className={everyone ? 'lvd-done-complete' : undefined}
-      headerExtra={
-        // The shared element menu (docs/specs/012-collaboration/session-button.md), not a second one: it was written
-        // here first, and the Timer needed the same thing.
-        <ElementEllipsisMenu label="Done check options" color={textColor}>
-          {(close) => (
-            <>
-              {mine && onToggleMine ? (
-                <ElementMenuItem
-                  onPress={() => {
-                    onToggleMine();
-                    close();
-                  }}
-                >
-                  Clear my mark
-                </ElementMenuItem>
+    <CollabAccentScope element={element} textColor={textColor} surface={surface}>
+      <CollabPanel
+        element={element}
+        title={label.trim() || 'Everyone done?'}
+        textColor={textColor}
+        aside={keys.length ? `${done.length}/${keys.length}` : undefined}
+        // The flash is the card's payoff: the facilitator does not have to
+        // watch it, the board tells them. A class rather than inline styles so
+        // the reduced-motion override in canvas-motion.css can reach it.
+        className={everyone ? 'lvd-done-complete' : undefined}
+        headerExtra={
+          <ElementEllipsisMenu label="Done check options" color={textColor} align="left">
+            {(close) => (
+              <>
+                {mine && onToggleMine ? (
+                  <ElementMenuItem
+                    onPress={() => {
+                      onToggleMine();
+                      close();
+                    }}
+                  >
+                    Clear my mark
+                  </ElementMenuItem>
+                ) : null}
+                {onResetAll ? (
+                  <ElementMenuItem
+                    onPress={() => {
+                      onResetAll();
+                      close();
+                    }}
+                  >
+                    Reset everyone
+                  </ElementMenuItem>
+                ) : null}
+                {onOpenSettings ? (
+                  <ElementMenuSettingsRow
+                    onOpen={() => {
+                      onOpenSettings();
+                      close();
+                    }}
+                  />
+                ) : null}
+              </>
+            )}
+          </ElementEllipsisMenu>
+        }
+        footer={
+          keys.length ? (
+            <DoneButton mine={mine} textColor={textColor} onToggle={onToggleMine} />
+          ) : undefined
+        }
+      >
+        {keys.length === 0 ? (
+          <EmptyRows textColor={textColor} title="Nobody here yet" rows={0}>
+            Share the diagram and the card fills itself in.
+          </EmptyRows>
+        ) : (
+          <div className="flex min-h-0 flex-1 items-center gap-4">
+            <DoneRing done={done.length} total={keys.length} textColor={textColor} />
+            <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+              {everyone ? (
+                <p className="text-[13px] font-bold text-emerald-600 dark:text-emerald-400">
+                  Everyone&apos;s done!
+                </p>
               ) : null}
-              {onResetAll ? (
-                <ElementMenuItem
-                  onPress={() => {
-                    onResetAll();
-                    close();
-                  }}
-                >
-                  Reset everyone
-                </ElementMenuItem>
-              ) : null}
-              {onOpenSettings ? (
-                <ElementMenuSettingsRow
-                  onOpen={() => {
-                    onOpenSettings();
-                    close();
-                  }}
-                />
-              ) : null}
-            </>
-          )}
-        </ElementEllipsisMenu>
-      }
-      footer={
-        <CollabButton
-          tone={mine ? 'quiet' : 'loud'}
-          textColor={textColor}
-          onPress={onToggleMine}
-          hoverCard={{
-            title: mine ? "Say you're not done after all" : 'Mark yourself done',
-            description: mine
-              ? 'Takes your mark off. Nobody is stuck finished on a card they misread.'
-              : 'Adds you to the done list. Everyone in the room sees it straight away.',
-          }}
-        >
-          {mine ? "I'm not done" : "I'm done"}
-        </CollabButton>
-      }
-    >
-      {keys.length === 0 ? (
-        <CollabEmpty textColor={textColor}>
-          Nobody is in the room yet. Share the diagram and the card fills itself in.
-        </CollabEmpty>
-      ) : (
-        <div className="flex min-h-0 flex-1 flex-col justify-center gap-2">
-          {everyone ? (
-            <p className="text-[13px] font-semibold" style={{ color: textColor }}>
-              Everyone&apos;s done.
-            </p>
-          ) : null}
-          <Roster title="Done" keys={done} participants={participants} textColor={textColor} />
-          <Roster
-            title="Waiting on"
-            keys={waiting}
-            participants={participants}
-            textColor={textColor}
-            muted
-          />
-        </div>
-      )}
-    </CollabPanel>
+              <DoneRoster
+                title="Done"
+                keys={done}
+                participants={participants}
+                textColor={textColor}
+              />
+              <DoneRoster
+                title="Waiting"
+                keys={waiting}
+                participants={participants}
+                textColor={textColor}
+                waiting
+              />
+            </div>
+          </div>
+        )}
+      </CollabPanel>
+    </CollabAccentScope>
   );
 }

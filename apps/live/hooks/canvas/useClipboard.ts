@@ -39,6 +39,7 @@ import { addImageFileForDiagram } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 type ImageDescriptor = {
   id: string;
@@ -222,13 +223,11 @@ export function useClipboard(deps: ClipboardDeps) {
       toast.error(err instanceof Error ? err.message : 'Could not paste the image.');
     }
   };
-
   // Single mutable ref holding the latest paste functions. The paste
   // event listener is only re-registered when isReadOnly/editingId
   // changes, so without this the listener would call stale closures
   // that see clipboard=null even after the user has copied elements.
-  const pasteRef = useRef({ pasteFromClipboard, pasteImageFile, onPastePhoto });
-  pasteRef.current = { pasteFromClipboard, pasteImageFile, onPastePhoto };
+  const pasteRef = useLatest({ pasteFromClipboard, pasteImageFile, onPastePhoto });
 
   // A middle-button release pastes the Linux primary selection. It is never a
   // request to paste on the canvas: with an empty selection it used to drop
@@ -371,7 +370,7 @@ export function useClipboard(deps: ClipboardDeps) {
     };
     document.addEventListener('paste', onPaste);
     return () => document.removeEventListener('paste', onPaste);
-  }, [isReadOnly, editingId]);
+  }, [isReadOnly, editingId, pasteRef]);
 
   // Copied ELEMENTS pasted while a label on the canvas is open for typing. The
   // clipboard carries them as JSON text, and every label editor pastes plain
@@ -396,7 +395,7 @@ export function useClipboard(deps: ClipboardDeps) {
     };
     document.addEventListener('paste', onPasteIntoLabel, true);
     return () => document.removeEventListener('paste', onPasteIntoLabel, true);
-  }, [isReadOnly, editingId, setEditingId]);
+  }, [isReadOnly, editingId, setEditingId, pasteRef]);
 
   // `hasClipboard` backs the canvas menu's Paste row (docs/specs/008-canvas/canvas-and-palette.md): the row is
   // always THERE — a menu that changes shape with invisible state is a menu

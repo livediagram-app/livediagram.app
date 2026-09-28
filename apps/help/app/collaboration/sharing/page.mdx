@@ -16,16 +16,18 @@ Sharing turns a diagram into something other people can open. A share link lets 
 
 ## Share links
 
-Open the **Share** dialog on a diagram to create a link. Each link carries a role:
+Open the **Share** dialog on a diagram to create a link. The dialog draws every link as a **pass**, a ticket that lets whoever holds it in, and the line under its title always tells you who can get in right now: only you, or anyone holding one of your passes.
 
-- **Edit** lets the visitor change the diagram with you, live.
-- **View** lets them watch and pan and zoom, but not edit.
+Pick what the pass lets people do, then press **Create Pass**. The link is created and copied in one go, ready to paste. Each pass carries a role, printed on its coloured stub:
+
+- An **Editor** pass lets the visitor change the diagram with you, live.
+- A **Viewer** pass lets them watch and pan and zoom, but not edit.
 
 A diagram can have several links at once, so you can hand out an edit link to your team and a view link to everyone else. Whoever opens a link joins the same realtime room, so cursors and changes appear as they happen.
 
 A link opens every tab unless you [scope it to one tab](/help/collaboration/sharing/one-tab/). The person you send a one-tab link to sees that tab, and the rest of the diagram never reaches their browser.
 
-<Figure caption="The Share dialog lists an edit link and a view link, each with a role badge and a Copy button.">
+<Figure caption="The Share dialog shows an edit pass and a view pass, each with its role on the stub and a copy button in its link.">
   <ShareLinks />
 </Figure>
 
@@ -40,15 +42,15 @@ These are independent: you can use either, both, or neither. They are layered on
 
 ## Embedding a diagram
 
-An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a diagram inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: a **view** link embeds a read-only canvas with pan and zoom, while an **edit** link embeds a fully editable one. Either way it hides the editor chrome and updates as the diagram is edited. Each link row in the Share dialog has an **Embed** menu offering **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
+An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a diagram inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: a **view** link embeds a read-only canvas with pan and zoom, while an **edit** link embeds a fully editable one. Either way it hides the editor chrome and updates as the diagram is edited. Each pass in the Share dialog has an **Embed** menu offering **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
 
 <Figure caption="A diagram embedded in another page, alongside the iframe snippet that places it.">
   <EmbeddedDiagram />
 </Figure>
 
 <Tip>
-  Need to stop sharing entirely? Use **Revoke link** in the Share dialog. Anyone currently viewing
-  through it loses access, and the URL stops resolving.
+  Need to stop sharing entirely? Use the bin (**Revoke link**) on each pass in the Share dialog.
+  Anyone currently viewing through it loses access, and the URL stops resolving.
 </Tip>
 
 <Note>

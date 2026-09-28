@@ -19,7 +19,12 @@ import { usePerTabLoad } from './usePerTabLoad';
 const flush = () => act(async () => {});
 
 function setup() {
+  // Refs and state setters are stable in the editor, so they are here too; resetTabs stays fresh on
+  // purpose (the caller used to pass a new one every render).
   const loadedTabIdsRef = { current: new Set<string>() };
+  const tabsRef = { current: [] as Tab[] };
+  const lastSavedTabsRef = { current: [] as Tab[] };
+  const setLoadedTabIds = vi.fn();
   const setTabLoadErrors = vi.fn();
   const initial = { activeId: 't2', retryNonce: 0 };
   const hook = renderHook(
@@ -31,12 +36,12 @@ function setup() {
         selfId: 'me',
         sessionShareCode: null,
         sessionTabScope: null,
-        tabsRef: { current: [] as Tab[] },
+        tabsRef,
         loadedTabIdsRef,
-        setLoadedTabIds: vi.fn(),
+        setLoadedTabIds,
         setTabLoadErrors,
         retryNonce,
-        lastSavedTabsRef: { current: [] },
+        lastSavedTabsRef,
         // A fresh function every render, like the caller used to pass.
         resetTabs: () => {},
       }),

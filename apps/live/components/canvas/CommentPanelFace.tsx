@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { activeCommentCount, type ShapeElement } from '@livediagram/diagram';
 
-import { relativeSince } from '@/lib/relative-time';
+import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
 
 // The face of a Comment panel (docs/specs/012-collaboration/comment-pin.md): a card on the board that carries a
@@ -40,6 +40,7 @@ export function CommentPanelFace({
   onResolve?: () => void;
   onUnresolve?: () => void;
 }) {
+  const now = useRelativeNow();
   const touchScroll = useTouchScrollBody<HTMLDivElement>();
   const [draft, setDraft] = useState('');
   const thread = element.commentThread;
@@ -93,7 +94,7 @@ export function CommentPanelFace({
                 <span className="text-[10px] font-semibold" style={{ color: c.authorColor }}>
                   {c.authorName}
                 </span>
-                <span className="text-[9px] opacity-45">{relativeSince(c.createdAt)}</span>
+                <span className="text-[9px] opacity-45">{relativeSince(c.createdAt, now)}</span>
                 {/* Your own comments only: the same rule the popover
                         applies, so a panel cannot become a way around it. */}
                 {onDeleteComment && c.authorId && c.authorId === selfId ? (

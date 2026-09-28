@@ -26,6 +26,7 @@ import {
   isProgressShape,
   isRailShape,
   isRatingShape,
+  supportsMarkers,
   supportsTextAlign,
   supportsBorderControls,
   supportsColours,
@@ -145,8 +146,7 @@ export function ElementAppearanceSections({
   // options for the words on screen, not the empty committed label.
   const hasText =
     ((target as { label?: string }).label ?? '').trim().length > 0 || props.editingId === target.id;
-  const showMarkers =
-    target.type === 'shape' && !isProgress && !isRail && !isRating && !isChart && hasText;
+  const showMarkers = target.type === 'shape' && supportsMarkers(target.shape) && hasText;
   // Like Markers, Text Alignment only shows once there's text to align.
   const showAlignment =
     boxed &&

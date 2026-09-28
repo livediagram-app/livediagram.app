@@ -55,6 +55,9 @@ export type ArrowLabelLayoutOptions = {
   alongCapPx: number;
   fontFamilyOf?: (arrow: ArrowElement) => string | undefined;
   measureFor?: ArrowLabelMeasureFor;
+  // Which fonts had loaded when measuring (bump it when webfonts land). Part of the word-width cache key,
+  // so text first measured in a fallback face is measured again in the real one.
+  fontEpoch?: number;
 };
 
 export const DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS: ArrowLabelLayoutOptions = {
@@ -335,7 +338,7 @@ export function layoutArrowLabel(
   const lineHeightPx = fontPx * LABEL_LINE_HEIGHT;
   const family = o.fontFamilyOf?.(arrow);
   const measure = cachedMeasure(
-    `${fontPx}|${arrow.textBold ? 1 : 0}|${arrow.textItalic ? 1 : 0}|${family ?? ''}`,
+    `${o.fontEpoch ?? 0}|${fontPx}|${arrow.textBold ? 1 : 0}|${arrow.textItalic ? 1 : 0}|${family ?? ''}`,
     (o.measureFor ?? defaultMeasureFor)(fontPx, !!arrow.textBold, !!arrow.textItalic, family),
     fontPx,
   );

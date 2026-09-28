@@ -12,6 +12,7 @@ import {
   StarIcon,
   TeamIcon,
   TimelineIcon,
+  TrashIcon,
 } from '@/components/primitives/explorer-icons';
 import Link from 'next/link';
 import { SignInIcon } from '@/components/chrome/AuthControls';
@@ -362,6 +363,15 @@ export function ExplorerSidebar() {
         label="Themes"
         selected={selected.kind === 'themes'}
         onClick={() => go({ kind: 'themes' })}
+        depth={0}
+      />
+      {/* Trash (docs/specs/013-workspace/trash.md): last in the Library, where
+          people look for a diagram they deleted. Also in Settings › Account. */}
+      <SidebarRow
+        icon={<TrashIcon />}
+        label="Trash"
+        selected={selected.kind === 'trash'}
+        onClick={() => go({ kind: 'trash' })}
         depth={0}
       />
       {/* External connections (docs/specs/015-api/public-api-and-tokens.md): API tokens, signed-in only. Hidden

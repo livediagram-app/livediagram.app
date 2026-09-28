@@ -71,13 +71,14 @@
 
 /* A label in a control that keeps its height (a button, a link styled as one): trimmed to its cap
  * band like text-optical-centre, then given back half the line's leftover height above and below, so
- * the box is still one line tall and nothing around it moves (optical-alignment.md). */
+ * the box is still one line tall and nothing around it moves (optical-alignment.md). Padding, not
+ * margin: overflow clips at the padding edge, so a truncated label keeps its descenders. */
 @utility text-optical-line {
   display: inline-block;
   text-box: trim-both cap alphabetic;
-  margin-block: calc((1lh - 1cap) / 2);
+  padding-block: calc((1lh - 1cap) / 2);
   @supports not (text-box: trim-both cap alphabetic) {
-    margin-block: 0;
+    padding-block: 0;
   }
 }
 

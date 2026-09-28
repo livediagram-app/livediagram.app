@@ -72,13 +72,23 @@ export function PickerCard({
               {label}
             </p>
             {/* Count badge, pinned far right (w-full row + justify-between) so it
-                sits in the same spot on every card regardless of label length. */}
-            <span className="inline-flex h-3.5 shrink-0 items-center justify-center rounded-full bg-slate-100 px-1.5 text-[10px] font-semibold leading-none text-slate-500 dark:bg-slate-700 dark:text-slate-300">
+                sits in the same spot on every card regardless of label length.
+
+                `top-[0.5px]`: Chromium snaps a text baseline to a whole pixel,
+                and in a 14px badge the baseline that would centre a 10px
+                figure falls exactly on a half pixel, so every count sat half a
+                pixel off whichever way it snapped, right at the optical
+                audit's tolerance (docs/specs/004-interface-design/optical-alignment.md). Moving the
+                badge half a pixel puts that baseline on the grid. */}
+            <span className="inline-flex h-3.5 shrink-0 items-center justify-center relative top-[0.5px] rounded-full bg-slate-100 px-1.5 text-[10px] font-semibold leading-none text-slate-500 dark:bg-slate-700 dark:text-slate-300">
               <span className="text-optical-centre">{count}</span>
             </span>
           </div>
         )}
-        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
+        {/* A whole-pixel line height (leading-snug made 15.125px), so card
+            rows stay on whole pixels and the count badge's half-pixel fix
+            above holds on every row, not just the first. */}
+        <p className="mt-0.5 line-clamp-2 text-[11px] leading-[15px] text-slate-500 dark:text-slate-300">
           {description}
         </p>
       </div>

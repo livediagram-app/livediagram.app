@@ -8,13 +8,14 @@
 //
 // Only use for true event handlers — functions called in response to a
 // user interaction, never during render. The wrappers read the current
-// callback from a ref updated in a layout effect, so calling one during
-// render could see a stale value before the effect runs.
+// callback through useLatest, updated in an insertion effect, so calling
+// one during render could see a stale value before the commit.
 //
 // The key set must be constant across renders (it always is for a fixed
 // prop bundle); the stable wrapper object is built once on first render.
 
-import { useLayoutEffect, useRef } from 'react';
+import { useState } from 'react';
+import { useLatest } from './useLatest';
 
 type AnyFn = (...args: never[]) => unknown;
 
@@ -23,17 +24,13 @@ type AnyFn = (...args: never[]) => unknown;
 // bundle instead of being widened to AnyFn. The wrappers no-op (via
 // optional chaining) when the underlying prop is currently undefined.
 export function useStableCallbacks<T extends Record<string, AnyFn | undefined>>(fns: T): T {
-  const latest = useRef(fns);
-  useLayoutEffect(() => {
-    latest.current = fns;
-  });
-  const stable = useRef<T | null>(null);
-  if (stable.current === null) {
+  const latest = useLatest(fns);
+  const [stable] = useState(() => {
     const wrappers = {} as Record<string, AnyFn>;
     for (const key of Object.keys(fns)) {
       wrappers[key] = (...args: never[]) => latest.current[key]?.(...args);
     }
-    stable.current = wrappers as T;
-  }
-  return stable.current;
+    return wrappers as T;
+  });
+  return stable;
 }

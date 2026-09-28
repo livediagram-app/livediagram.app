@@ -9,7 +9,6 @@
 // small form, and none of it belongs in the data-shape sections beside charts
 // and rails.
 
-import { useEffect, useState } from 'react';
 import {
   AGENDA_DEFAULT_MINUTES,
   AGENDA_MAX_ITEMS,
@@ -38,6 +37,7 @@ import {
 } from '@livediagram/diagram';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
 // Each collaboration kind contributes exactly ONE section to the Tools group —
 // an agenda has Segments and nothing else, a chair has Chair and nothing else.
@@ -105,6 +105,10 @@ export function EstimateMenuSection({
   );
 }
 
+// Stable empties, so an element without rows compares equal from one render to the next.
+const NO_AGENDA_ITEMS: AgendaItem[] = [];
+const NO_DRIVERS: string[] = [];
+
 // --- Agenda (docs/specs/012-collaboration/agenda.md) -----------------------------------------------------
 
 // Mirrors the checklist's row editor (docs/specs/009-elements/checklist.md) and the record's field editor
@@ -118,9 +122,9 @@ export function AgendaMenuSection({
   sectionProps: (id: string) => { open: boolean; onToggle: () => void };
   onSetItems: (items: AgendaItem[]) => void;
 }) {
-  const items = target?.agendaItems ?? [];
-  const [rows, setRows] = useState<AgendaItem[]>(items);
-  useEffect(() => setRows(items), [items]);
+  const items = target?.agendaItems ?? NO_AGENDA_ITEMS;
+  // The row drafts follow the element's segments when they change, adjusted during render.
+  const [rows, setRows] = useFollowingDraft<AgendaItem[]>(items);
 
   const move = (from: number, to: number) => {
     if (to < 0 || to >= rows.length) return;
@@ -215,9 +219,9 @@ export function DecisionMenuSection({
   onSetDrivers: (drivers: string[]) => void;
 }) {
   const status = target?.decisionStatus ?? DEFAULT_DECISION_STATUS;
-  const drivers = target?.decisionDrivers ?? [];
-  const [rows, setRows] = useState<string[]>(drivers);
-  useEffect(() => setRows(drivers), [drivers]);
+  const drivers = target?.decisionDrivers ?? NO_DRIVERS;
+  // The row drafts follow the element's drivers when they change, adjusted during render.
+  const [rows, setRows] = useFollowingDraft<string[]>(drivers);
 
   return (
     <MenuAccordionSection title="Decision" icon={<ToolsMenuGlyph />} {...sectionProps('decision')}>

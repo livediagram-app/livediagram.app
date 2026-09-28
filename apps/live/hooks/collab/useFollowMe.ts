@@ -7,7 +7,7 @@
 // use to somebody scrolled elsewhere. Following is the missing half: instead
 // of moving the pointer to the audience, move the audience to the pointer.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { track } from '@/lib/telemetry';
 
 export type RemoteViewport = { tabId: string; pan: { x: number; y: number }; zoom: number };
@@ -64,6 +64,44 @@ export function useFollowMe({
     track('Canvas', 'Used', 'FollowMe');
   }, []);
 
+  // The follow ends by itself when the person leaves the room, during
+  // render so no frame follows somebody who has gone, with a line so the
+  // sudden freedom is explained.
+  const [departures, setDepartures] = useState(0);
+  if (followingId !== null && !livePresenceIds.includes(followingId)) {
+    setFollowingId(null);
+    setDepartures((n) => n + 1);
+  }
+  const announceDeparture = useEffectEvent(() =>
+    onNotice('The person you were following left. Your view is your own again.'),
+  );
+  useEffect(() => {
+    if (departures > 0) announceDeparture();
+  }, [departures]);
+
+  // Any canvas gesture of your own breaks it, instantly and silently — pan,
+  // zoom, pinch, arrow keys, fit-to-screen, the minimap. Grabbing the canvas
+  // IS the statement that you want your own view back, and a follow that
+  // survived it would be a fight the user cannot win. No confirmation and no
+  // toast: the pill going away says so.
+  //
+  // Watching the viewport itself rather than instrumenting each gesture is
+  // what makes that list exhaustive: every route ends in these two values, so
+  // none of them can be forgotten here or added later without being covered.
+  //
+  // Declared BEFORE the apply effect, so it compares this render's viewport
+  // with the one applied in an earlier commit. After it, it would see the
+  // apply of this very commit against a viewport that has not caught up
+  // yet, and end every follow the moment it started.
+  useEffect(() => {
+    if (!followingId) return;
+    const applied = appliedRef.current;
+    if (!applied) return;
+    if (samePan(applied.pan, viewportOffset) && applied.zoom === viewportZoom) return;
+    appliedRef.current = null;
+    setFollowingId(null);
+  }, [followingId, viewportOffset, viewportZoom]);
+
   // Apply the followed peer's viewport.
   //
   // Zoom is mirrored EXACTLY rather than re-fitted. A follower on a smaller
@@ -81,34 +119,6 @@ export function useFollowMe({
     setViewportOffset(seen.pan);
     setZoom(seen.zoom);
   }, [followingId, remoteViewports, activeId, onFollowTab, setViewportOffset, setZoom]);
-
-  // Any canvas gesture of your own breaks it, instantly and silently — pan,
-  // zoom, pinch, arrow keys, fit-to-screen, the minimap. Grabbing the canvas
-  // IS the statement that you want your own view back, and a follow that
-  // survived it would be a fight the user cannot win. No confirmation and no
-  // toast: the pill going away says so.
-  //
-  // Watching the viewport itself rather than instrumenting each gesture is
-  // what makes that list exhaustive: every route ends in these two values, so
-  // none of them can be forgotten here or added later without being covered.
-  useEffect(() => {
-    if (!followingId) return;
-    const applied = appliedRef.current;
-    if (!applied) return;
-    if (samePan(applied.pan, viewportOffset) && applied.zoom === viewportZoom) return;
-    appliedRef.current = null;
-    setFollowingId(null);
-  }, [followingId, viewportOffset, viewportZoom]);
-
-  // The follow ends by itself when the person leaves the room, with a line so
-  // the sudden freedom is explained rather than just happening.
-  useEffect(() => {
-    if (!followingId) return;
-    if (livePresenceIds.includes(followingId)) return;
-    appliedRef.current = null;
-    setFollowingId(null);
-    onNotice('The person you were following left. Your view is your own again.');
-  }, [followingId, livePresenceIds, onNotice]);
 
   return { followingId, startFollowing, stopFollowing };
 }

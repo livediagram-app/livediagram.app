@@ -19,6 +19,7 @@ import { findTour, waitForSelector, waitForTour } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
 import { TourLayoutPicker } from './TourLayoutPicker';
 import { TourPopover } from './TourPopover';
+import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 
 // Orchestrates the interactive editor tour (docs/specs/007-editor/editor-tour.md). Mounted once in
 // EditorView; renders nothing until either the /new handoff flag is
@@ -73,7 +74,10 @@ export function TourHost() {
     () => tourStepsFor({ mobile: isMobile, esBoard, toolbar }),
     [isMobile, esBoard, toolbar],
   );
-  const [pending, setPending] = useState(false);
+  // Whether this mount still owes the /new handoff an offer: read from storage on the first offer
+  // check, and resolved once offered or found already seen. Only the offer effect reads it and it
+  // never turns back on, so it is a ref rather than state.
+  const offerPendingRef = useRef<boolean | null>(null);
   const [active, setActive] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   // Direction of the last step change, for the popover content's
@@ -85,16 +89,15 @@ export function TourHost() {
   // (prepare + waits) so a fast Next/Next can't land a stale target.
   const runTokenRef = useRef(0);
   const healingRef = useRef(false);
+  // The step API is rebuilt every render through a ref so step callbacks
+  // always see fresh editor-context handlers (never stale closures).
   // endTour, reachable from the step-run effect without depending on its
-  // per-render identity (assigned below, after its definition).
+  // per-render identity (declared here, kept current below, after its definition).
   const endTourRef = useRef<(outcome: 'TourCompleted' | 'TourSkipped' | 'TourDeclined') => void>(
     () => {},
   );
 
-  // The step API is rebuilt every render through a ref so step callbacks
-  // always see fresh editor-context handlers (never stale closures).
-  const apiRef = useRef<TourApi>(null as unknown as TourApi);
-  apiRef.current = {
+  const apiRef = useLatest<TourApi>({
     compact: isMobile || panelLayout === 'minimal',
     toolbar,
     openElementContextMenu: async () => {
@@ -135,7 +138,7 @@ export function TourHost() {
       });
     },
     closeContextMenu: () => ctx.closeContextMenu(),
-  };
+  });
 
   // Peek at the /new handoff flag (NOT consume: it stays set until the
   // offer is resolved, so a reload mid-offer or mid-tour re-offers instead
@@ -145,28 +148,26 @@ export function TourHost() {
   // makes the offer once-ever for the user, however it was dismissed —
   // checked again at fire time below in case the preferences fetch lands
   // after mount.
-  useEffect(() => {
-    if (hasTourPending()) setPending(true);
-  }, []);
   const seen = ctx.userPreferences?.tourSeen === true;
   const ready = ctx.hydrated && !ctx.anyWelcomeOpen && !ctx.isReadOnly && !ctx.embedMode;
   useEffect(() => {
-    if (!pending || active || !ready) return;
+    offerPendingRef.current ??= hasTourPending();
+    if (!offerPendingRef.current || active || !ready) return;
     if (seen) {
       // Resolved elsewhere (another tab / device): tidy the stale flag.
       clearTourPending();
-      setPending(false);
+      offerPendingRef.current = false;
       return;
     }
     const t = setTimeout(() => {
-      setPending(false);
+      offerPendingRef.current = false;
       setStepIndex(0);
       setStepDir('forward');
       setActive(true);
       track('UI', 'Opened', 'TourOffer');
     }, 800);
     return () => clearTimeout(t);
-  }, [pending, active, ready, seen]);
+  }, [active, ready, seen]);
 
   // Settings relaunch (the "I've seen the editor tour" row, unchecked +
   // closed): rerun from the top — the welcome card is always step 1. Also
@@ -191,10 +192,8 @@ export function TourHost() {
   // The step list can SHRINK mid-tour (crossing the mobile breakpoint
   // drops the desktop-only step): clamp the index so the effects and
   // render below never read past the end (steps[stepIndex] would be
-  // undefined and the sync .target access threw before this guard).
-  useEffect(() => {
-    if (stepIndex > steps.length - 1) setStepIndex(steps.length - 1);
-  }, [steps, stepIndex]);
+  // undefined and the sync .target access threw before this guard). Adjusted during render.
+  if (stepIndex > steps.length - 1) setStepIndex(steps.length - 1);
 
   // Run the current step: prepare, then await the target node. The
   // previous step's rect stays on screen meanwhile, so the ring glides to
@@ -202,7 +201,7 @@ export function TourHost() {
   useEffect(() => {
     if (!active) return;
     const step = steps[stepIndex];
-    if (!step) return; // shrunk list; the clamp effect is about to fix the index
+    if (!step) return; // an empty list: nothing to run
     // Stage-view funnel (docs/specs/017-telemetry/telemetry.md): one event per step entry (Back re-entry
     // included — it's a real view). The welcome card's view is already
     // covered by Opened/TourOffer; the last View before an
@@ -241,7 +240,7 @@ export function TourHost() {
     return () => {
       cancelled = true;
     };
-  }, [active, stepIndex, steps]);
+  }, [active, apiRef, stepIndex, steps]);
 
   // Track the target while a step is showing: follow it when it moves and
   // re-run prepare when it disappears (a menu dismissed under the tour).
@@ -275,7 +274,7 @@ export function TourHost() {
       setTargetRect((prev) => (prev && rectsEqual(prev, r) ? prev : r));
     }, 150);
     return () => window.clearInterval(id);
-  }, [active, stepIndex, steps]);
+  }, [active, apiRef, stepIndex, steps]);
 
   const endTour = (outcome: 'TourCompleted' | 'TourSkipped' | 'TourDeclined') => {
     runTokenRef.current++;
@@ -295,7 +294,7 @@ export function TourHost() {
     if (outcome === 'TourDeclined') track('UI', 'Closed', 'TourOffer');
     else track('UI', 'Ended', outcome);
   };
-  endTourRef.current = endTour;
+  useAssignRef(endTourRef, endTour);
 
   if (!active) return null;
   const step = steps[Math.min(stepIndex, steps.length - 1)];

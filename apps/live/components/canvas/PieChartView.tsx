@@ -38,12 +38,17 @@ export function PieChartView({
 
   // Build slice paths (clockwise from 12 o'clock). A single 100% slice draws
   // as a full circle (an arc from a point back to itself is degenerate).
+  // Each slice starts where the ones before it end.
+  const starts: number[] = [];
   let angle = -Math.PI / 2;
+  for (const s of slices) {
+    starts.push(angle);
+    angle += (Math.max(0, s.value) / total) * Math.PI * 2;
+  }
   const wedges = slices.map((s, i) => {
     const frac = Math.max(0, s.value) / total;
-    const a0 = angle;
-    const a1 = angle + frac * Math.PI * 2;
-    angle = a1;
+    const a0 = starts[i]!;
+    const a1 = a0 + frac * Math.PI * 2;
     const color = colorAt(i, s);
     // Readout anchor: the slice's mid-angle at ~half radius (full circle
     // anchors at the top), as a viewBox point converted to a % of the box.

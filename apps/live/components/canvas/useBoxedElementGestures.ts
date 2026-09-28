@@ -1,6 +1,6 @@
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
-import { isSelfDrawingShape } from '@livediagram/diagram';
+import { opensInlineLabelEditor } from '@livediagram/diagram';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { pressLedger } from '@/lib/double-press';
@@ -176,7 +176,7 @@ export function useBoxedElementGestures({
     // double-click never enters text-edit mode for them — it would pop an
     // empty, confusing editor. (beginEdit also guards this; belt-and-braces
     // so no entry point slips through.)
-    if (element.type === 'shape' && isSelfDrawingShape(element.shape)) {
+    if (element.type === 'shape' && !opensInlineLabelEditor(element.shape)) {
       return;
     }
     // Don't gate on isPaintMode here (the page-level beginEdit decides whether
