@@ -12,5 +12,5 @@ One row per default applied where a spec is silent or qualitative.
 | D6  | whiteboard-round-one | The eraser's brush size on a whiteboard                     | Stroke 10 px, Partial 16 px (screen)                                                             |
 | D7  | whiteboard-round-one | How finely Partial cuts a stroke                            | Densify to half the brush radius (at least 1 px); 12 bisection steps per crossing                |
 | D8  | whiteboard-round-one | Whether the eraser mode persists                            | Yes, device-locally with the pens and recognition                                                |
-| D9  | whiteboard-round-one | Where the dock sits on a phone                              | Lifted above the bottom-right zoom cluster so the two never overlap                              |
+| D9  | whiteboard-round-one | Where the dock sits beside the bottom-right cluster         | Lifted above the cluster (history, layers, zoom) until the viewport is 1500 px wide              |
 | D10 | whiteboard-round-one | The highlighter's settings on a whiteboard                  | Its flyout (colour, strength) opened by pressing the active Highlighter button, as a pen's is    |

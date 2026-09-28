@@ -22,12 +22,15 @@ Scope, by file:
 | `apps/live/lib/whiteboard-prefs.ts`                        | Pens, widths, colours, recognition, eraser mode; parse / load / save     |
 | `apps/live/lib/whiteboard-tool.ts`                         | Active-tool derivation, pen intent, shapes, pointer routing              |
 | `apps/live/lib/pen-seen.ts`                                | Session-scoped "a pen has been used" flag                                |
+| `apps/live/lib/whiteboard-ink.ts`                          | `createInkProjector`: the ink projection over a list, cached per element |
+| `apps/live/lib/whiteboard-erase.ts`                        | `strokesTouched`, `partialEraseStep`: one pure eraser step               |
 | `apps/live/lib/draw-mode.ts`                               | `PendingDraw` whiteboard pen variant and arrow `ends`; `isHeldPenIntent` |
 | `apps/live/lib/draw-commit.ts`                             | `buildDrawnArrow` takes `ends` and `unpainted`                           |
 | `apps/live/hooks/canvas/commit-freehand.ts`                | The whiteboard pen commit                                                |
 | `apps/live/hooks/canvas/useCanvasEraser.ts`                | Whiteboard Stroke and Partial erase                                      |
 | `apps/live/hooks/canvas/useWhiteboard.ts`                  | The dock's state and actions                                             |
 | `apps/live/components/canvas/whiteboard/*`                 | `WhiteboardDock`, `WhiteboardFlyout`, dock icons                         |
+| `apps/telemetry/app/*`                                     | `Whiteboard` colour, description, sentences and the Whiteboards stack    |
 | `apps/live/components/canvas/boxed-element-overlays.tsx`   | `FreehandSvg` honours `penWidth` on every stroke                         |
 | `apps/live/lib/style-presets.ts`                           | A border width clears a stroke's `penWidth`                              |
 | `apps/live/lib/themes.ts`                                  | `resolveTabBackdrop` paints the board on a whiteboard                    |
@@ -99,7 +102,8 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
   - **Highlighter**: when active, toggle its flyout; else `selectCanvasTool('highlighter')`.
   - **Eraser**: when active, toggle its flyout; else `cancelDraw()`, `selectCanvasTool('eraser')`.
   - **Sticky / Text**: `setCanvasTool('select')`, arm `{ type: 'sticky' }` / `{ type: 'text' }`
-    (one-shot: after placing, the tool reads `select`).
+    (one-shot: after placing, the tool reads `select`). Both open for typing on drop
+    (`opensForTyping(intent, whiteboard)` in `draw-mode.ts`).
   - **Shapes**: toggle the shapes flyout; picking a shape arms its intent (one-shot) and closes it.
   - **Recognition**: flip `recognise`, re-arm the pen intent when a pen is held, track
     `RecognitionOn` / `RecognitionOff`.
@@ -107,8 +111,9 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
   - **More**: toggle the More flyout; picking a background writes `backgroundPattern` through the
     ordinary tab-canvas setter (undoable, synced) and tracks `Background<Name>`.
 - Changing a pen's colour or width updates `pens[p]` and re-arms the intent when `p` is held.
-- **Entering a whiteboard tab** (active tab becomes a whiteboard, editable, no intent armed, tool is
-  `select` or `pan`) arms the active pen (D2).
+- **Entering a whiteboard tab** (a new active tab, or the open tab turning into a whiteboard through
+  Quick Start; editable, no intent armed, tool `select` or `pan`) arms the active pen (D2). The hook
+  keys this on the pair of tab id and kind.
 - **Leaving a whiteboard tab** cancels a whiteboard pen intent.
 - Only one flyout is open at a time; it closes on Escape (focus returns to its dock button), on an
   outside press, on a tool change and on a tab switch.
@@ -304,12 +309,15 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Presentation and UX
 
-- Dock: bottom centre, `bottom-4` from `sm`, lifted above the zoom cluster below `sm`; buttons
+- Dock: bottom centre, `bottom-4` from 1500 px wide, lifted above the bottom-right cluster below it; buttons
   44 × 44 px; rounded panel with the editor's panel surface tokens; separators between groups
   (select | pens | highlighter, eraser | sticky, text, shapes | recognition | undo, redo | more).
 - Pen buttons: a filled nib in the pen's colour (Ink shows the ink colour), a thickness bar below
   scaled to its width.
-- Flyouts sit above their button, never move the dock; clamp to the viewport horizontally.
+- Flyouts sit above their button, never move the dock; clamp to the viewport horizontally (12 px
+  margin, measured from layout width before paint, since the pop-in starts at `scale(0)`), placed
+  with the `translate` property because the pop-in animation owns `transform`.
+- Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
 - Copy: toolbar label "Whiteboard tools"; buttons "Select", "Ink pen", "Red pen", "Blue pen",
   "Green pen", "Highlighter", "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition",
   "Undo", "Redo", "More"; pen flyout "Colour", "Width" with "Fine", "Medium", "Bold"; eraser flyout
@@ -337,27 +345,38 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Observability
 
-- Telemetry per the spec's table (`Whiteboard` category).
+- Telemetry per the spec's table (`Whiteboard` category); `Created` / `Import` is reserved for the
+  Microsoft Whiteboard import and not yet emitted. The dashboard charts the four pairs in a
+  Whiteboards stack headed by Whiteboards Created.
 - Parse fallbacks log once: `console.warn('[whiteboard] prefs reset: <reason>')`.
 - Discarded pinch strokes: `console.debug('[whiteboard] stroke discarded: pinch')`.
 
 ## Testing
 
-| Rule                                                | Test                                                             |
-| --------------------------------------------------- | ---------------------------------------------------------------- |
-| Kind reads and stamps                               | `packages/diagram/src/tab-kind.test.ts`                          |
-| Tokens meet contrast                                | `packages/diagram/src/whiteboard.test.ts`                        |
-| Ink projection table                                | `packages/diagram/src/whiteboard.test.ts`                        |
-| Stroke touch and partial split                      | `packages/diagram/src/whiteboard-stroke.test.ts`                 |
-| `penWidth` honoured on every stroke                 | `svg-render-shapes` test                                         |
-| Template kind, overrides, builder                   | `packages/templates` tests                                       |
-| Prefs parse / defaults / pen colours contrast       | `apps/live/lib/whiteboard-prefs.test.ts`                         |
-| Tool derivation, pen intent, pointer route, shapes  | `apps/live/lib/whiteboard-tool.test.ts`                          |
-| Pen commit (open, colour, width, held, recognition) | `apps/live/hooks/canvas/commit-freehand.test.ts`                 |
-| Border width clears `penWidth`                      | `apps/live/lib/style-presets.test.ts`                            |
-| Backdrop on a whiteboard                            | `apps/live/lib/themes.test.ts`                                   |
-| Dock a11y, keyboard, flyouts                        | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx` |
-| End to end                                          | playwright-cli walkthrough, light / dark, desktop / narrow       |
+| Rule                                                | Test                                                                                     |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Kind reads and stamps                               | `packages/diagram/src/tab-kind.test.ts`                                                  |
+| Tokens meet contrast                                | `packages/diagram/src/whiteboard.test.ts`                                                |
+| Ink projection table                                | `packages/diagram/src/whiteboard.test.ts`                                                |
+| Stroke touch and partial split                      | `packages/diagram/src/whiteboard-stroke.test.ts`                                         |
+| `penWidth` honoured on every stroke                 | `svg-render-shapes` test                                                                 |
+| Template kind, overrides, builder                   | `packages/templates` tests                                                               |
+| Prefs parse / defaults / pen colours contrast       | `apps/live/lib/whiteboard-prefs.test.ts`                                                 |
+| Tool derivation, pen intent, pointer route, shapes  | `apps/live/lib/whiteboard-tool.test.ts`                                                  |
+| Pen commit (open, colour, width, held, recognition) | `apps/live/hooks/canvas/commit-freehand.test.ts`                                         |
+| Border width clears `penWidth`                      | `apps/live/lib/style-presets.test.ts`                                                    |
+| Backdrop on a whiteboard                            | `apps/live/lib/default-scheme.test.ts`                                                   |
+| Dock a11y, keyboard, flyouts                        | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`                         |
+| Dock state, entering, telemetry                     | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                                          |
+| Ink projection cache                                | `apps/live/lib/whiteboard-ink.test.ts`                                                   |
+| Eraser steps                                        | `apps/live/lib/whiteboard-erase.test.ts`                                                 |
+| Pen versus touch on the canvas                      | `apps/live/hooks/canvas/useCanvasSurfaceGestures.whiteboard.test.tsx`                    |
+| A pinch discards a whiteboard stroke                | `apps/live/components/canvas/useCanvasDrawGesture.test.tsx`                              |
+| Line / arrow heads, no colour                       | `apps/live/lib/draw-commit.test.ts`                                                      |
+| No theme step for a whiteboard                      | `apps/live/components/palette/template-picker-wizard.test.tsx`                           |
+| Sticky and text open for typing                     | `apps/live/lib/draw-mode.test.ts`                                                        |
+| Telemetry vocabulary and dashboard                  | `apps/live/lib/telemetry-coverage.test.ts`, `apps/telemetry/app/metric-emitters.test.ts` |
+| End to end                                          | playwright-cli walkthrough, light / dark, desktop / narrow                               |
 
 ## Constants and configuration
 

@@ -234,9 +234,12 @@ the two erasers, shape recognition and backgrounds. Registered per
 
 The whiteboard is built in rounds and tuned with the operator between them.
 
-- **Round one** (shipped): the kind, the template and Quick Start entry, the
-  dock with every tool above, pen versus touch, the whiteboard and chalkboard
-  look, the backgrounds, telemetry and the help article.
+- **Round one** (built, being tuned): the kind, the template and Quick Start
+  entry, the dock with every tool above, pen versus touch, the whiteboard and
+  chalkboard look, the backgrounds, telemetry and the help article. Opening a
+  whiteboard, or turning a fresh tab into one, puts the active pen in hand.
+  The dock sits above the bottom-right controls until the window is wide
+  enough for both on one line.
 - **Still ahead:** the trimmed element menu (colour, width, delete, stacking,
   duplicate, comment); until then a whiteboard element opens the ordinary
   menu. The Microsoft Whiteboard import lands with its own spec.
