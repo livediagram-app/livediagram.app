@@ -571,7 +571,13 @@ export type CanvasProps = {
   // active. The canvas intercepts it in the capture phase (before element
   // select/drag) and hands the screen coords here to start an erase
   // gesture; the gesture's move/release are tracked by useCanvasEraser.
-  onEraseStart?: (clientX: number, clientY: number) => void;
+  // `frame`: where the canvas sits on screen at the press (the whiteboard's
+  // geometric erase, docs/specs/023-whiteboard/whiteboard.md).
+  onEraseStart?: (
+    clientX: number,
+    clientY: number,
+    frame?: { left: number; top: number; zoom: number },
+  ) => void;
   // Right-click on an element. Forwarded from BoxedElementView's
   // own context handler — the canvas selects the element and the
   // page opens an element context menu.

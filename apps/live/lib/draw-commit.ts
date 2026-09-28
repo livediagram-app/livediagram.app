@@ -25,6 +25,7 @@ import {
   defaultIconAnimation,
   snapToArrowPoint,
   type ArrowElement,
+  type ArrowEnds,
   type ComponentKind,
   type Element,
   type Endpoint,
@@ -146,6 +147,9 @@ export function buildDrawnArrow(
   endY: number,
   elements: Element[],
   theme: ThemeDefinition,
+  // The whiteboard's Line / Arrow shapes (docs/specs/023-whiteboard/whiteboard.md): their heads, and
+  // no colour so the board's ink shows.
+  opts: { ends?: ArrowEnds; unpainted?: boolean } = {},
 ): ArrowElement {
   const isClick = isDrawTap(startX, startY, endX, endY);
   const arrowStartX = isClick ? startX - 80 : startX;
@@ -161,8 +165,10 @@ export function buildDrawnArrow(
     type: 'arrow',
     from: snapDrawn(arrowStartX, startY),
     to: snapDrawn(arrowEndX, arrowEndY),
-    arrowEnds: 'none',
-    strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK,
+    arrowEnds: opts.ends ?? 'none',
+    ...(opts.unpainted
+      ? {}
+      : { strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK }),
   };
 }
 

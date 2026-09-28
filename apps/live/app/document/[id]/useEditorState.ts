@@ -26,6 +26,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 
+import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
@@ -2386,11 +2387,26 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     layerInertIds,
   });
 
+  // The whiteboard dock (docs/specs/023-whiteboard/whiteboard.md): device-local pens, recognition and
+  // eraser mode, and the dock presses turned into ordinary editor calls.
+  const whiteboardDock = useWhiteboard({
+    activeTab,
+    canvasTool,
+    pendingDraw,
+    editsBlocked: createBlocked,
+    setCanvasTool,
+    selectCanvasTool,
+    beginDraw,
+    cancelDraw: cancelDrawShape,
+    setBackgroundPattern,
+  });
+
   // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the
   // pointer touches, as a single-undo gesture. Canvas calls beginErase
   // from its capture-phase pointerdown. See useCanvasEraser.
   const { beginErase } = useCanvasEraser({
     config: eraserSettings.config,
+    whiteboard: whiteboardDock.whiteboard ? { mode: whiteboardDock.prefs.eraserMode } : null,
     editsBlocked,
     layerInertIds,
     activeId,
@@ -2939,6 +2955,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
+    whiteboardDock,
     // Tab-scoped share session (docs/specs/013-workspace/tab-scoped-share-links.md).
     sessionTabScope,
     isOutOfScope,

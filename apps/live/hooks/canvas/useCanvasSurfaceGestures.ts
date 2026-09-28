@@ -65,7 +65,7 @@ export function useCanvasSurfaceGestures({
   // Starts the queued draw-to-size / freehand gesture; true when it
   // claimed the press (see useCanvasDrawGesture).
   beginPendingDrawGesture: (e: ReactPointerEvent) => boolean;
-  onEraseStart?: (x: number, y: number) => void;
+  onEraseStart?: CanvasProps['onEraseStart'];
   onCanvasContextMenu?: (x: number, y: number) => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
 }) {
@@ -220,7 +220,12 @@ export function useCanvasSurfaceGestures({
       focusCanvas();
       e.preventDefault();
       e.stopPropagation();
-      onEraseStart?.(e.clientX, e.clientY);
+      const rect = wrapperRef.current?.getBoundingClientRect();
+      onEraseStart?.(
+        e.clientX,
+        e.clientY,
+        rect ? { left: rect.left, top: rect.top, zoom: viewportZoom } : undefined,
+      );
       return;
     }
     // Middle-mouse drag pans from anywhere on the canvas — empty

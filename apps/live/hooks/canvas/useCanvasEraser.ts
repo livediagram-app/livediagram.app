@@ -42,6 +42,14 @@ import {
 } from '@/lib/eraser-config';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { pointerToCanvas } from '@/lib/canvas';
+import type { WhiteboardEraserMode } from '@/lib/whiteboard-prefs';
+import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
+import { partialEraseStep, strokesTouched } from '@/lib/whiteboard-erase';
+
+// Where the transformed canvas sits on screen at the press, so a client point
+// maps to canvas coords for the whiteboard's geometric erase.
+export type EraseFrame = { left: number; top: number; zoom: number };
 
 type EraserDeps = {
   editsBlocked: boolean;
@@ -72,6 +80,9 @@ type EraserDeps = {
   ) => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
+  // On a whiteboard (docs/specs/023-whiteboard/whiteboard.md "Eraser"): a stroke is touched where its INK
+  // is, and Partial cuts strokes instead of removing them. Null elsewhere.
+  whiteboard?: { mode: WhiteboardEraserMode } | null;
 };
 
 export function useCanvasEraser(deps: EraserDeps) {
@@ -90,9 +101,79 @@ export function useCanvasEraser(deps: EraserDeps) {
   // checkpoint's marker token for the end-of-gesture log emit.
   const checkpointedRef = useRef(false);
   const gestureTokenRef = useRef<number | undefined>(undefined);
+  // Whiteboard: the press's canvas frame, the previous sample (the brush sweeps
+  // the segment between samples, so a fast swipe cannot skip a stroke) and
+  // whether a Partial step changed anything.
+  const frameRef = useRef<EraseFrame | null>(null);
+  const prevRef = useRef<{ x: number; y: number } | null>(null);
+  const cutRef = useRef(false);
+
+  const checkpointOnce = () => {
+    if (checkpointedRef.current) return;
+    gestureTokenRef.current = depsRef.current.markCheckpoint();
+    checkpointedRef.current = true;
+  };
+
+  // The whiteboard's step. Returns false when this is not a whiteboard gesture.
+  const whiteboardErase = (clientX: number, clientY: number): boolean => {
+    const { whiteboard, activeTab, tick, layerInertIds } = depsRef.current;
+    const frame = frameRef.current;
+    if (!whiteboard || !frame) return false;
+    const rect = { left: frame.left, top: frame.top } as DOMRect;
+    const at = pointerToCanvas(clientX, clientY, rect, frame.zoom);
+    const from = prevRef.current ?? at;
+    prevRef.current = at;
+    const screenRadius = WHITEBOARD_ERASER_RADIUS_PX[whiteboard.mode];
+    const r = screenRadius / frame.zoom;
+    const isProtected = (el: Element) =>
+      el.locked === true || depsRef.current.layerInertIds.has(el.id);
+    if (whiteboard.mode === 'partial') {
+      if (strokesTouched(activeTab.elements, from, at, r, isProtected).length === 0) return true;
+      checkpointOnce();
+      cutRef.current = true;
+      tick(
+        (els) => partialEraseStep(els, from, at, r, isProtected, () => crypto.randomUUID()) ?? els,
+      );
+      return true;
+    }
+    let changed = false;
+    for (const id of strokesTouched(activeTab.elements, from, at, r, isProtected)) {
+      if (erasedRef.current.has(id)) continue;
+      erasedRef.current.add(id);
+      changed = true;
+    }
+    // Everything that is not a stroke is touched as on any tab: by the DOM.
+    for (const point of eraserSamplePoints(clientX, clientY, screenRadius)) {
+      for (const { id } of elementHostsAtPoint(point.x, point.y)) {
+        if (erasedRef.current.has(id)) continue;
+        const el = activeTab.elements.find((e) => e.id === id);
+        if (!el || el.type === 'freehand' || isProtected(el) || layerInertIds.has(id)) continue;
+        erasedRef.current.add(id);
+        changed = true;
+      }
+    }
+    if (changed) removeErased();
+    return true;
+  };
+
+  // Drop everything erased so far, cascading arrows pinned to it.
+  const removeErased = () => {
+    checkpointOnce();
+    const ids = erasedRef.current;
+    depsRef.current.tick((els) =>
+      els.filter((el) => {
+        if (el.locked === true || depsRef.current.layerInertIds.has(el.id)) return true;
+        if (ids.has(el.id)) return false;
+        // Drop arrows pinned to an erased element, matching deleteSelected.
+        if (el.type === 'arrow' && arrowReferencesAny(el, ids)) return false;
+        return true;
+      }),
+    );
+  };
 
   const eraseAtPoint = (clientX: number, clientY: number) => {
-    const { activeTab, tick, markCheckpoint, layerInertIds } = depsRef.current;
+    if (whiteboardErase(clientX, clientY)) return;
+    const { activeTab, layerInertIds } = depsRef.current;
     const config = depsRef.current.config ?? DEFAULT_ERASER_CONFIG;
     let changed = false;
     // One sample for a Point brush; a ring of them for a sized one.
@@ -111,30 +192,19 @@ export function useCanvasEraser(deps: EraserDeps) {
         changed = true;
       }
     }
-    if (!changed) return;
-    // First removal of the gesture: take the single undo checkpoint now.
-    if (!checkpointedRef.current) {
-      gestureTokenRef.current = markCheckpoint();
-      checkpointedRef.current = true;
-    }
-    const ids = erasedRef.current;
-    tick((els) =>
-      els.filter((el) => {
-        if (el.locked === true || depsRef.current.layerInertIds.has(el.id)) return true;
-        if (ids.has(el.id)) return false;
-        // Drop arrows pinned to an erased element, matching deleteSelected.
-        if (el.type === 'arrow' && arrowReferencesAny(el, ids)) return false;
-        return true;
-      }),
-    );
+    // First removal of the gesture takes the single undo checkpoint.
+    if (changed) removeErased();
   };
 
-  const beginErase = (clientX: number, clientY: number) => {
+  const beginErase = (clientX: number, clientY: number, frame?: EraseFrame) => {
     const { editsBlocked, activeTab, setSelectedId, setEditingId } = depsRef.current;
     if (editsBlocked || activeTab.locked === true) return;
     erasedRef.current = new Set();
     beforeRef.current = activeTab.elements;
     checkpointedRef.current = false;
+    frameRef.current = frame ?? null;
+    prevRef.current = null;
+    cutRef.current = false;
     // Clear selection so a now-erased element's toolbar disappears.
     setSelectedId(null);
     setEditingId(null);
@@ -149,7 +219,7 @@ export function useCanvasEraser(deps: EraserDeps) {
     const onUp = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
-      if (erasedRef.current.size > 0) {
+      if (erasedRef.current.size > 0 || cutRef.current) {
         track('Element', 'Deleted', 'Eraser');
         // One activity entry for the whole gesture: diff the pre-gesture
         // list against the now-current one.

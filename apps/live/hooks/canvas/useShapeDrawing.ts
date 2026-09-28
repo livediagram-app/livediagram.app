@@ -18,7 +18,7 @@
 // hook. Verbatim relocation — no behaviour change.
 
 import { useRef, useState } from 'react';
-import { createFreehand, type Element, type Tab } from '@livediagram/document';
+import { createFreehand, isWhiteboardTab, type Element, type Tab } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -142,9 +142,16 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // frozen for the whole gesture, so writing gesture-start elements
     // wholesale would revert anything that landed mid-drag. New
     // elements default to the FRONT of z-order (see addBoxed).
+    // A whiteboard's marks wear the board's ink, not the remembered diagram
+    // style (docs/specs/023-whiteboard/whiteboard.md "Appearance").
+    const whiteboard = isWhiteboardTab(activeTab);
+    const dress = <T extends Element>(el: T): T => (whiteboard ? el : styleNewElement(el));
     if (intent.type === 'arrow') {
-      const arrow = styleNewElement(
-        buildDrawnArrow(startX, startY, endX, endY, activeTab.elements, getTheme(activeTab.theme)),
+      const arrow = dress(
+        buildDrawnArrow(startX, startY, endX, endY, activeTab.elements, getTheme(activeTab.theme), {
+          ends: intent.ends,
+          unpainted: whiteboard,
+        }),
       );
       commit((els) => [...els, arrow]);
       setSelectedId(arrow.id);
@@ -172,7 +179,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       track('Element', 'Added', componentTelemetryType(intent.kind));
       return;
     }
-    const sized = styleNewElement(
+    const sized = dress(
       buildDrawnBoxed(intent, startX, startY, endX, endY, inheritSizeRef.current, activeTab),
     );
     // Frames don't need special-casing here: the canvas + exporters

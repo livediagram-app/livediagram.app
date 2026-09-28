@@ -1,6 +1,7 @@
 import {
   createFreehand,
   createShape,
+  nearestBorderStroke,
   recogniseShape,
   simplifyPolyline,
   snapToArrowPoint,
@@ -32,6 +33,9 @@ import { HIGHLIGHTER_DEFAULT_WIDTH } from '@/hooks/canvas/useShapeDrawing';
 // Decision and effect are interleaved on purpose and stay that way. Each
 // branch mints its element and commits it in the same breath; teasing the two
 // apart would be a rewrite of behaviour nobody asked for, not a move.
+
+// Shape Pen recognition bar; see the note in makeCommitFreehand.
+const RECOGNITION_THRESHOLD = 0.4;
 
 export function makeCommitFreehand({
   editsBlocked,
@@ -81,8 +85,11 @@ export function makeCommitFreehand({
   return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean) => {
     // Disarm on a gesture too short to be a stroke — unless the marker is
     // HELD, where a stray tap must not silently put the tool down.
+    // A whiteboard pen is held too (docs/specs/023-whiteboard/whiteboard.md "Pens").
+    const whiteboardPen =
+      pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
     const disarm = () => {
-      if (!holdingMarker) setPendingDraw(null);
+      if (!holdingMarker && !whiteboardPen) setPendingDraw(null);
     };
     if (editsBlocked || rawPoints.length < 2) {
       disarm();
@@ -120,6 +127,11 @@ export function makeCommitFreehand({
       return;
     }
 
+    if (whiteboardPen) {
+      commit((els) => [...els, whiteboardStroke(simplified, whiteboardPen)]);
+      return;
+    }
+
     // Shape-recognition mode: try classifying the simplified
     // polyline before falling back to FreehandElement. Threshold
     // 0.40 leans hard toward "convert it". The bar is low on
@@ -132,7 +144,6 @@ export function makeCommitFreehand({
     // the more frustrating outcome, so erring toward conversion
     // is correct. Previous values: 0.72 (too strict), 0.55 (still
     // too strict per user feedback).
-    const RECOGNITION_THRESHOLD = 0.4;
     if (recogniseShapesMode) {
       const detected = recogniseShape(simplified);
       if (detected !== null && detected.confidence >= RECOGNITION_THRESHOLD) {
@@ -213,4 +224,46 @@ export function makeCommitFreehand({
     setPendingDraw(null);
     track('Element', 'Added', 'Freehand');
   };
+}
+
+type WhiteboardPenIntent = Extract<PendingDraw, { variant: 'whiteboard' }>;
+
+// What a whiteboard pen stroke becomes (docs/specs/023-whiteboard/whiteboard.md "Pens", "Shape
+// recognition"): with recognition on, a stroke that reads as a shape is the
+// clean shape, unfilled, in the pen's colour and nearest weight; otherwise an
+// OPEN stroke (a written "o" is ink, not a filled shape) carrying the pen's
+// width. The Ink pen records no colour, so its marks follow the board.
+// Style memory is skipped on purpose: a board's marks wear the pen, not the
+// remembered diagram style.
+function whiteboardStroke(points: { x: number; y: number }[], pen: WhiteboardPenIntent): Element {
+  const colour = pen.colour ? { strokeColor: pen.colour } : {};
+  const detected = pen.recognise ? recogniseShape(points) : null;
+  if (detected && detected.confidence >= RECOGNITION_THRESHOLD) {
+    track('Element', 'Added', detected.kind === 'line' ? 'Arrow' : titleCaseType(detected.kind));
+    if (detected.kind === 'line') {
+      const from = detected.from ?? points[0]!;
+      const to = detected.to ?? points[points.length - 1]!;
+      return {
+        id: crypto.randomUUID(),
+        type: 'arrow',
+        from: { kind: 'free', ...from },
+        to: { kind: 'free', ...to },
+        arrowEnds: 'none',
+        strokeWidth: pen.width,
+        ...colour,
+      };
+    }
+    return {
+      ...createShape(detected.kind, detected.bbox.x, detected.bbox.y),
+      x: detected.bbox.x,
+      y: detected.bbox.y,
+      width: Math.max(16, detected.bbox.width),
+      height: Math.max(16, detected.bbox.height),
+      fillColor: 'transparent',
+      strokeWidth: nearestBorderStroke(pen.width),
+      ...colour,
+    };
+  }
+  track('Element', 'Added', 'Freehand');
+  return { ...createFreehand(points, false), penWidth: pen.width, ...colour };
 }

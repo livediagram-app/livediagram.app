@@ -35,6 +35,15 @@ describe('buildDrawnArrow', () => {
     expect(out.strokeColor).toBe(NEW_ARROW_THEME_STROKE_FALLBACK);
   });
 
+  it('draws a whiteboard line or arrow with the asked-for heads and no colour', () => {
+    // docs/specs/023-whiteboard/whiteboard.md: unpainted, so it takes the board's ink.
+    const arrow = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'to', unpainted: true });
+    expect(arrow.arrowEnds).toBe('to');
+    expect(arrow.strokeColor).toBeUndefined();
+    const line = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'none', unpainted: true });
+    expect(line.arrowEnds).toBe('none');
+  });
+
   it('uses the dragged endpoints as-is on a real drag', () => {
     const out = buildDrawnArrow(10, 20, 150, 90, [], themed);
     expect(out.from).toEqual({ kind: 'free', x: 10, y: 20 });
