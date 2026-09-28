@@ -172,14 +172,14 @@ arguably a Collaborate element by this spec's own rule, and said so.
 What is left is one honest test for the category: **does this element's content
 arrive at runtime rather than being drawn by the author?**
 
-| Group              | Holds                                                            |
-| ------------------ | ---------------------------------------------------------------- |
-| **Ask**            | the three estimate scales, Temperature, Idea box, Dot vote, Poll |
-| **Tools**          | Reveal, Done, Picker, Timer                                      |
-| **Record**         | Comment panel, Agenda, Decision record, Roll call                |
-| **Reactions**      | the five pads                                                    |
-| **Selection Mode** | one button per mode (8)                                          |
-| **Navigate**       | Portal, Chair, Link card                                         |
+| Group              | Holds                                                                  |
+| ------------------ | ---------------------------------------------------------------------- |
+| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll |
+| **Tools**          | Reveal, Done, Picker, Timer                                            |
+| **Record**         | Comment panel, Agenda, Decision record, Roll call                      |
+| **Reactions**      | the five pads                                                          |
+| **Selection Mode** | one button per mode (8)                                                |
+| **Navigate**       | Portal, Chair, Link card                                               |
 
 **There is no Session group.** It held the Timer, the Dot vote and the Poll —
 a group named after the machinery that runs them rather than the job they do.

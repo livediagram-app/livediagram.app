@@ -1,0 +1,52 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Quizzes',
+  description:
+    'Put one multiple-choice question to the room: start it and the answers fan out around the question, it locks when the time runs out, and the reveal turns the right answer green and names who got it.',
+  path: '/help/palette/collaborate/quizzes/',
+});
+
+<ArticleLayout
+  title="Quizzes"
+  description="One timed question with a right answer, revealed to the room at once."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
+  subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'quizzes')}
+>
+
+A quiz is one multiple-choice question on the board. The facilitator starts it, everybody picks an answer before the time runs out, and the reveal shows the right one.
+
+## Setting one up
+
+Drop a **Quiz** from the **Ask** group in [Behaviours](/help/palette/behaviour/). It arrives with a sample question so you can see what it does. To write your own, press the **…** on the card and choose **Edit Question…**: type the question, give it two to six answers, mark the **Correct** one, and pick a **Time Limit**.
+
+Nobody else sees the question or the answers until you press **Start**, so the room cannot read ahead while you are still talking.
+
+## Running a round
+
+Press **Start**. The question moves into the middle of the circle, the answers fan out around it, and a ring around the question counts down the time.
+
+- Anyone who can edit the diagram presses an answer to pick it. Their own pick is marked **You**; pressing a different answer moves it, and pressing the same one again takes it back.
+- The circle shows how many people have answered, never what they picked.
+- **Lock Now** closes the round early, for when everyone is in.
+
+When the time is up the answers stop taking presses and the card says **Time's up**.
+
+## The reveal
+
+Press **Reveal Answer**. The right answer pops out in green, the others fade back, every answer shows how many people picked it, and the middle of the circle names who got it right. **Run Again** clears the picks and closes the card for another round.
+
+If somebody is [facilitating](/help/collaboration/facilitator/), editing, starting, locking, revealing and resetting are theirs; everybody else can still answer.
+
+## Worth knowing
+
+- The right answer is saved in the diagram like everything else on it, so it is hidden on the card, not secret. Don't use a quiz for anything that matters if someone peeks.
+- The countdown runs on each person's own clock, so a computer whose clock is a few seconds out locks a few seconds early or late.
+- Visitors on a view-only link can watch the round and the reveal but cannot answer.
+- Saving an edit resets the round, because picks made against the old answers no longer mean anything.
+
+</ArticleLayout>

@@ -142,7 +142,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Ask (3 estimate scales + temperature + idea box + Q&A board), Run the
   // room (3), Session (3), Record (3), Reactions (5), Selection
   // Mode (8 modes), Navigate (2), plus the comment pin loose on top.
-  behaviour: 36,
+  behaviour: 37,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
 };

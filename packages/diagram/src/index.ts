@@ -430,6 +430,8 @@ export * from './chart-frame';
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
 export * from './responses';
 export * from './collab-shapes';
+// Quiz (docs/specs/012-collaboration/quiz.md). A leaf module, for the same cycle.
+export * from './quiz';
 export * from './shape-geometry';
 export * from './color-wash';
 export * from './quick-swatches';

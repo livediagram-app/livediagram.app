@@ -104,6 +104,9 @@ export type ShapeKind =
   // Roll call (docs/specs/012-collaboration/roll-call.md): a frozen snapshot of who was in the room, in
   // `rollCall`.
   | 'roll-call'
+  // Quiz (docs/specs/012-collaboration/quiz.md): one multiple-choice question the facilitator opens for
+  // the room, locks on a timer and reveals, naming who answered correctly.
+  | 'quiz'
   | 'stadium'
   | 'actor'
   | 'cloud'

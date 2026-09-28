@@ -37,6 +37,7 @@ import { DEFAULT_SCHEME_ID } from '@livediagram/diagram';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
+import { useQuizElements } from '@/hooks/canvas/useQuizElements';
 import { useQaBoard } from '@/hooks/canvas/useQaBoard';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
@@ -2163,6 +2164,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
   // A checklist tick is a room press like an answer (docs/specs/012-collaboration/collab-race-hardening.md).
   const { toggleChecklistItem } = collabElements;
+  // The Quiz (docs/specs/012-collaboration/quiz.md): its own verbs, on the same facilitator-gated patch.
+  const quiz = useQuizElements({
+    activeId,
+    commitTabs,
+    applyElementDelta,
+    patchAsFacilitator: collabElements.patchAsFacilitator,
+    editsBlocked,
+    sessionToolsBlocked: facilitator.sessionToolsBlocked,
+    selfParticipant,
+  });
 
   // Keeping a poll's results (docs/specs/012-collaboration/poll-result-capture.md). Ends the poll for the room through
   // the SAME `endPoll` the plain End uses — one op, so a participant sees no
@@ -3311,6 +3322,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSessionConfigFor,
     pickerFor,
     collabElements,
+    quiz,
     qaBoard,
     setRatingSelected,
     setRatingAnimSelected,

@@ -31,6 +31,7 @@ import {
   DEFAULT_DECISION_STATUS,
   DEFAULT_ESTIMATE_SCALE,
 } from './collab-shapes';
+import { QUIZ_DEFAULT_SECONDS } from './quiz';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
 
@@ -175,6 +176,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // buttons without clipping — a card that arrives already cut off is the
   // first thing anybody sees.
   estimate: { width: 360, height: 310 },
+  // Quiz (docs/specs/012-collaboration/quiz.md): a square, because the face is a disc with the answers on a
+  // ring around it. Big enough that six answers fit round the ring at a
+  // readable size before anybody resizes it.
+  quiz: { width: 520, height: 520 },
   // Temperature check (docs/specs/012-collaboration/temperature-check.md): five buttons over five bars, plus the
   // average. Narrower than the estimate card — five chips, not eight — but
   // tall enough for all three bands.
@@ -394,6 +399,19 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
         { name: 'id', type: 'string' },
         { name: 'name', type: 'string' },
       ],
+    };
+  }
+  // Quiz (docs/specs/012-collaboration/quiz.md): arrives as a real question so a dropped card
+  // demonstrates what it does, with its aspect locked because a stretched
+  // ring stops being a ring.
+  if (kind === 'quiz') {
+    return {
+      ...base,
+      label: 'Which planet is closest to the sun?',
+      quizOptions: ['Venus', 'Mercury', 'Mars', 'Earth'],
+      quizCorrect: 1,
+      quizSeconds: QUIZ_DEFAULT_SECONDS,
+      aspectLocked: true,
     };
   }
   if (kind === 'done-check') {

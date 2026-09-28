@@ -283,6 +283,7 @@ export function EditorCanvasHost() {
     unresolveThread,
     pickerFor,
     collabElements,
+    quiz,
     qaBoard,
     followMe,
     keepPollResults,
@@ -596,6 +597,14 @@ export function EditorCanvasHost() {
           reopenQaNote: isReadOnly || runBlocked ? undefined : qaBoard.reopenQaNote,
           removeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.removeQaNote,
           clearQaBoard: isReadOnly || runBlocked ? undefined : qaBoard.clearQaBoard,
+          // The Quiz (docs/specs/012-collaboration/quiz.md). Picking is everyone's with edit rights;
+          // editing and running the round are the facilitator's, else any editor's.
+          answerQuiz: isReadOnly ? undefined : quiz.answerQuiz,
+          startQuiz: isReadOnly || runBlocked ? undefined : quiz.startQuiz,
+          lockQuiz: isReadOnly || runBlocked ? undefined : quiz.lockQuiz,
+          revealQuiz: isReadOnly || runBlocked ? undefined : quiz.revealQuiz,
+          resetQuiz: isReadOnly || runBlocked ? undefined : quiz.resetQuiz,
+          saveQuiz: isReadOnly || runBlocked ? undefined : quiz.saveQuiz,
         }}
         onEraseStart={isReadOnly ? undefined : beginErase}
         onDuplicateMultiSelected={duplicateMultiSelected}

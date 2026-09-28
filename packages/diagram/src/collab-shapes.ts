@@ -10,6 +10,7 @@
 
 import type { ShapeKind } from './index';
 import { isQaBoardShape } from './qa-board';
+import { isQuizShape } from './quiz';
 import { isSelfDrawingShape } from './data-shapes';
 
 // --- Estimate card (docs/specs/012-collaboration/estimate-card.md) ---------------------------------------------
@@ -239,7 +240,8 @@ export function isCollabPanelShape(kind: ShapeKind): boolean {
     isQaBoardShape(kind) ||
     isAgendaShape(kind) ||
     isRollCallShape(kind) ||
-    isDecisionShape(kind)
+    isDecisionShape(kind) ||
+    isQuizShape(kind)
   );
 }
 
