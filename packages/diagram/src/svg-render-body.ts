@@ -93,7 +93,9 @@ export function svgElementBody(
   // The Behaviour + Collaborate faces (docs/specs/009-elements/mode-button.md to /137), which all exported
   // as the same blank labelled box as each other.
   return svgFace(
-    svgBehaviourFace(el, label, labelColor, stroke) ?? svgCollabFace(el, label, labelColor) ?? '',
+    svgBehaviourFace(el, label, labelColor, stroke) ??
+      svgCollabFace(el, label, labelColor, stroke) ??
+      '',
     fontFamily,
   );
 }

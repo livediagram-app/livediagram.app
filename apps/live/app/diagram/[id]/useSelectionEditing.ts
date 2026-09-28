@@ -2,7 +2,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import {
   hasRichFormatting,
   isBoxed,
-  isSelfDrawingShape,
+  opensInlineLabelEditor,
   normalizeRuns,
   truncateName,
   type Element,
@@ -112,7 +112,7 @@ export function useSelectionEditing(opts: {
     // have no editable text label, so no entry point (double-click, Space,
     // type-to-edit) opens the inline editor for them.
     const el = activeTab.elements.find((e) => e.id === elementId);
-    if (el && el.type === 'shape' && isSelfDrawingShape(el.shape)) return;
+    if (el && el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return;
     setSelectedId(elementId);
     // Double-click / Space edit: select-all so a retype replaces the label.
     setEditCursorAtEnd(false);
@@ -215,7 +215,7 @@ export function useSelectionEditing(opts: {
     const labelable = isBoxed(el) || el.type === 'arrow';
     if (!labelable) return false;
     // Self-drawing data components have no editable label (see beginEdit).
-    if (el.type === 'shape' && isSelfDrawingShape(el.shape)) return false;
+    if (el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return false;
     // Type-to-edit REPLACES the whole label with the typed char, so any
     // per-range `richText` from a prior edit must be dropped — otherwise the
     // editor would re-open against the stale runs instead of the seed char.

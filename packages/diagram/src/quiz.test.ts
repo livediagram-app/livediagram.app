@@ -144,3 +144,12 @@ describe('compactQuizOptions', () => {
     expect(compactQuizOptions(['A', '', 'C'], 1)).toBeNull();
   });
 });
+
+describe('quiz label editing', () => {
+  it('never opens the inline label editor (the Edit Quiz dialog owns the question)', async () => {
+    const { opensInlineLabelEditor } = await import('./index');
+    expect(opensInlineLabelEditor('quiz')).toBe(false);
+    expect(opensInlineLabelEditor('square')).toBe(true);
+    expect(opensInlineLabelEditor('pie-chart')).toBe(false);
+  });
+});

@@ -30,6 +30,7 @@ export function QuizOption({
   mine,
   count,
   textColor,
+  stroke,
   surface,
   onPress,
 }: {
@@ -43,6 +44,8 @@ export function QuizOption({
   // How many picked it; shown only once the answer is out.
   count: number | null;
   textColor: string;
+  // The element's stroke colour, when set: the answer's border.
+  stroke?: string;
   surface: string;
   // Absent when this viewer may not pick, or the round is not open.
   onPress?: () => void;
@@ -75,7 +78,11 @@ export function QuizOption({
           height: QUIZ_OPTION_HEIGHT,
           color: ink,
           background: right ? QUIZ_CORRECT_GREEN : `linear-gradient(${wash}, ${wash}), ${surface}`,
-          borderColor: right ? QUIZ_CORRECT_GREEN : tint(textColor, mine ? 0.75 : 0.18),
+          borderColor: right
+            ? QUIZ_CORRECT_GREEN
+            : stroke
+              ? tint(stroke, mine ? 1 : 0.55)
+              : tint(textColor, mine ? 0.75 : 0.18),
           opacity: state === 'wrong' ? 0.45 : 1,
           '--lvd-quiz-dx': `${c - at.x}px`,
           '--lvd-quiz-dy': `${c - at.y}px`,

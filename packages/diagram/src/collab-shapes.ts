@@ -267,6 +267,15 @@ export function hasOwnFace(kind: ShapeKind): boolean {
   );
 }
 
+// Whether double-click, Space or typing opens the inline label editor on this
+// kind. Not on a self-drawing kind (it has no label), and not on a quiz
+// (docs/specs/012-collaboration/quiz.md): its label is the question, which the
+// Edit Quiz dialog owns, and editing it inline would print the hidden question
+// over the closed disc for anybody who double-clicked the card.
+export function opensInlineLabelEditor(kind: ShapeKind): boolean {
+  return !isSelfDrawingShape(kind) && !isQuizShape(kind);
+}
+
 // Whether text alignment does anything on this kind: not a self-drawing kind
 // (no label at all) and not one with its own face (the label is a fixed
 // title), nor an icon (a glyph with a short caption under it; the alignment

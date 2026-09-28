@@ -73,6 +73,18 @@ same rule as every Collaborate card
   who answered correctly ("3 of 5 correct" plus their avatars and names, the
   first few by name and the rest as "+N"). The facilitator sees Run again.
 
+**The element's stroke colour** draws the outlines when one is set: the
+disc's edge, the countdown ring and the answers' borders (full strength on
+your own pick, softer on the rest). Unset, they are washes of the text colour,
+so an unstyled quiz follows the tab theme. The right answer's green is not
+affected.
+
+**Double-click never edits the text.** The label is the question, and the
+Edit Quiz dialog is its only editor: editing it inline would print the hidden
+question over the closed disc, and would let anyone reword it mid-round.
+`opensInlineLabelEditor` is the kind-level gate, read by every entry point
+(double-click, Space, type-to-edit).
+
 Answers sit at even angles starting from the top (12 o'clock) and going
 clockwise, so answer A is always at the top and the order reads like a clock.
 

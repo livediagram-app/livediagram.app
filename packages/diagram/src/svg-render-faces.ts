@@ -157,7 +157,14 @@ function footerPills(x: number, y: number, labels: readonly string[], color: str
 
 // ── Collaborate panels (docs/specs/012-collaboration/estimate-card.md to /129, /137) ─────────────────────────
 
-export function svgCollabFace(el: Face, label: string, color: string): string | null {
+export function svgCollabFace(
+  el: Face,
+  label: string,
+  color: string,
+  // The resolved stroke. Only the quiz reads it, and only when the element
+  // carries its own (strokeColor), so an unstyled quiz keeps its text-tint rim.
+  stroke?: string,
+): string | null {
   const title = label.trim();
   switch (el.shape) {
     case 'estimate': {
@@ -353,7 +360,9 @@ export function svgCollabFace(el: Face, label: string, color: string): string | 
       const tally = quizTally(el);
       const disc =
         `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="${xmlEscape(color)}" opacity="0.07"/>` +
-        `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="none" stroke="${xmlEscape(color)}" stroke-width="2" opacity="0.3"/>`;
+        (el.strokeColor && stroke
+          ? `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="3"/>`
+          : `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="none" stroke="${xmlEscape(color)}" stroke-width="2" opacity="0.3"/>`);
       const centre = revealed
         ? text(c, c - 6, title.length > 34 ? `${title.slice(0, 33)}…` : title, {
             size: 13,

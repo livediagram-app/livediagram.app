@@ -70,6 +70,10 @@ export function QuizFace({
   onOpenSettings?: () => void;
 }) {
   const [editing, setEditing] = useState(false);
+  // The element's stroke colour, when one is set, draws the outlines: the
+  // disc's edge, the countdown ring and the answers' borders. Unset, they are
+  // washes of the text colour, so an unstyled quiz still follows the theme.
+  const stroke = element.strokeColor;
   // Ticks only while a round could be running, so an idle quiz costs nothing.
   const started = element.quizStartedAt !== undefined && element.quizRevealed !== true;
   const now = useNow(started);
@@ -128,8 +132,8 @@ export function QuizFace({
             cy={c}
             r={QUIZ_DISC_RADIUS}
             fill={surface}
-            stroke={tint(textColor, 0.22)}
-            strokeWidth={2}
+            stroke={stroke ?? tint(textColor, 0.22)}
+            strokeWidth={stroke ? 3 : 2}
             style={{ filter: 'drop-shadow(0 2px 6px rgb(0 0 0 / 0.18))' }}
           />
           {phase === 'open' || phase === 'locked' ? (
@@ -139,7 +143,7 @@ export function QuizFace({
                 cy={c}
                 r={RING_RADIUS}
                 fill="none"
-                stroke={tint(textColor, 0.12)}
+                stroke={tint(stroke ?? textColor, 0.14)}
                 strokeWidth={5}
               />
               <circle
@@ -148,8 +152,8 @@ export function QuizFace({
                 cy={c}
                 r={RING_RADIUS}
                 fill="none"
-                stroke={textColor}
-                strokeOpacity={0.7}
+                stroke={stroke ?? textColor}
+                strokeOpacity={stroke ? 1 : 0.7}
                 strokeWidth={5}
                 strokeLinecap="round"
                 strokeDasharray={RING_CIRCUMFERENCE}
@@ -206,6 +210,7 @@ export function QuizFace({
                 mine={mine === String(i)}
                 count={phase === 'revealed' ? (tally[i] ?? 0) : null}
                 textColor={textColor}
+                stroke={stroke}
                 surface={surface}
                 onPress={phase === 'open' && actions.answer ? () => actions.answer!(i) : undefined}
               />
