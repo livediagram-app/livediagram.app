@@ -6,6 +6,7 @@
 // below is the client-side callback shape only — not on the wire —
 // so it stays here next to the connect helper.
 import {
+  DIAGRAM_TRASHED_CLOSE,
   isMutationOpKind,
   type ParticipantPresence,
   type FacilitatorReason,
@@ -32,6 +33,10 @@ export type RoomHandlers = {
   // check against our own, which we do not know (docs/specs/015-api/public-api-and-tokens.md §6).
   onSelectionReleased?: (msg: { elementId: string; by: string }) => void;
   onClose?: () => void;
+  // The diagram went to the Trash (docs/specs/013-workspace/trash.md): the room
+  // closed this socket with DIAGRAM_TRASHED_CLOSE and will refuse every
+  // reconnect, so the connector stops and says so, once.
+  onDiagramTrashed?: () => void;
   // The room could not bridge our reconnect gap from its op log (docs/specs/012-collaboration/realtime-conflict-resolution.md,
   // Level 1): we're too far behind, or it restarted. The caller re-hydrates
   // from D1 (the same recovery the error boundary uses — a full reload).
@@ -195,9 +200,14 @@ export function connectRoom(
         // Malformed frame — ignore. Production would log here.
       }
     });
-    ws.addEventListener('close', () => {
+    ws.addEventListener('close', (event: CloseEvent) => {
       handlers.onClose?.();
       if (closed) return;
+      if (event?.code === DIAGRAM_TRASHED_CLOSE) {
+        closed = true;
+        handlers.onDiagramTrashed?.();
+        return;
+      }
       if (attempts >= MAX_RECONNECT_ATTEMPTS) return;
       const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
       attempts++;

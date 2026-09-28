@@ -151,9 +151,10 @@ const SCOPE_CTES = `
                 ELSE s.tab_id END AS scope_tab_id
       FROM diagrams d
       LEFT JOIN shared_with s ON s.diagram_id = d.id AND s.owner_id = ?1
-     WHERE d.owner_id = ?1
-        OR d.team_id IN (SELECT team_id FROM my_teams)
-        OR (s.owner_id IS NOT NULL AND d.shareable = 1)
+     WHERE d.trashed_at IS NULL
+       AND (d.owner_id = ?1
+            OR d.team_id IN (SELECT team_id FROM my_teams)
+            OR (s.owner_id IS NOT NULL AND d.shareable = 1))
   )`;
 
 type PlaceRow = {

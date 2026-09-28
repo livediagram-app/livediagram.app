@@ -1,0 +1,57 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Trash',
+  description:
+    'Deleted diagrams wait in the Trash for 30 days before they are removed for good. Restore one to put it back where it was, or delete it permanently.',
+  path: '/help/account-and-data/trash/',
+});
+
+<ArticleLayout
+  title="Trash"
+  description="Deleted the wrong diagram? It waits in the Trash for 30 days, and you can put it back exactly where it was."
+  categoryTitle="Account and Data"
+  categorySlug="account-and-data"
+>
+
+When you delete a diagram, it is not gone straight away. It moves to the **Trash**, where it waits for **30 days**. After that it is removed for good. Until then you can bring it back with everything it had: its tabs, its slide deck, its comments and history, its stars and its share links.
+
+This works the same whether you are signed in or working as a guest.
+
+## Opening the Trash
+
+Open **Settings**, go to **Account**, and choose **Open Trash**. The Trash lists everything you can restore, grouped:
+
+- **Your diagrams**: the ones you deleted from your own space.
+- **One group per team** you belong to: team diagrams go to that team's Trash, and any member of the team can restore them or delete them for good, just as any member can delete them.
+- **This browser only**: [offline diagrams](/help/privacy-and-security/offline-mode/) live only in this browser, so their Trash does too.
+
+Each diagram shows when it was deleted and how many days it has left.
+
+## Restoring a diagram
+
+Choose **Restore**. The diagram goes back to the folder it was in, or to **Unsorted** if that folder has been deleted since. Its share links work again, and anyone you shared it with can open it as before.
+
+If you open a link to a deleted diagram that you are allowed to restore, you can restore it from there too.
+
+## Deleting for good
+
+Choose **Delete permanently** to remove one diagram now, or **Empty Trash** to remove everything in one group. Both ask you to confirm, and neither can be undone.
+
+A tab that is also in another diagram is never lost when a diagram is deleted for good: it stays in the other diagram, exactly where it was.
+
+## While a diagram is in the Trash
+
+A deleted diagram disappears from your lists, Recent, Favourites, search, the Timeline and the Activity page. Anyone opening one of its share links sees that it was deleted, and anyone who still had it open is told so, and can no longer save changes to it.
+
+<Tip>
+  Taking a diagram offline is a move, not a delete, so it never goes to the Trash. Deleting your
+  account removes everything straight away, the Trash included.
+</Tip>
+
+## For scripts and AI tools
+
+Deleting a diagram through the [API](/help/account-and-data/api-tokens/) or an [AI tool](/help/account-and-data/connect-ai-mcp/) also moves it to the Trash. An AI tool can list your Trash and restore a diagram from it, but it can never delete one for good; a script using the API can, when it asks for a permanent delete.
+
+</ArticleLayout>

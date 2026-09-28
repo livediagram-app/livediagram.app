@@ -201,6 +201,15 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M4 13v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" />
     </Glyph>
   ),
+  // A bin with an arrow rising out of it: the way back. The plain bin is
+  // `deleting-your-data`.
+  trash: (
+    <Glyph>
+      <path d="M4 9h16" />
+      <path d="M6 9l1 11a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-11" />
+      <path d="M12 18V5M8.5 8.5 12 5l3.5 3.5" />
+    </Glyph>
+  ),
   'deleting-your-data': (
     <Glyph>
       <path d="M4 7h16" />

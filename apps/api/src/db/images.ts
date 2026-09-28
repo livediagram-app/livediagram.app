@@ -43,6 +43,13 @@ export async function getImage(env: Env, id: string): Promise<{ ownerId: string 
   return row ? { ownerId: row.owner_id } : null;
 }
 
+// The per-owner caps (docs/specs/009-elements/images.md "Size cap"); null = no cap.
+export type ImageCaps = { maxImages: number | null; maxBytes: number | null };
+
+// Inserts the row only while the owner stays within the caps. The check rides
+// inside the INSERT, so it is atomic: concurrent uploads that each saw room in
+// an earlier totals query cannot all land (the import pipeline uploads three
+// at once). Returns null when the caps refused it.
 export async function insertImage(
   env: Env,
   row: {
@@ -55,10 +62,14 @@ export async function insertImage(
     sha256: string;
     originalName: string | null;
   },
-): Promise<ImageSummary> {
+  caps: ImageCaps = { maxImages: null, maxBytes: null },
+): Promise<ImageSummary | null> {
   const createdAt = Date.now();
-  await env.DB.prepare(
-    'INSERT INTO images (id, owner_id, content_type, byte_size, width, height, sha256, original_name, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+  const result = await env.DB.prepare(
+    `INSERT INTO images (id, owner_id, content_type, byte_size, width, height, sha256, original_name, created_at)
+     SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
+     WHERE (?10 IS NULL OR (SELECT COUNT(*) FROM images WHERE owner_id = ?2) < ?10)
+       AND (?11 IS NULL OR (SELECT COALESCE(SUM(byte_size), 0) FROM images WHERE owner_id = ?2) + ?4 <= ?11)`,
   )
     .bind(
       row.id,
@@ -70,8 +81,11 @@ export async function insertImage(
       row.sha256,
       row.originalName,
       createdAt,
+      caps.maxImages,
+      caps.maxBytes,
     )
     .run();
+  if (!result.meta.changes) return null;
   return {
     id: row.id,
     contentType: row.contentType,

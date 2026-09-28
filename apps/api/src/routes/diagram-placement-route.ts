@@ -18,7 +18,7 @@ import {
   recordTeamDiagramAdded,
   recordTeamDiagramRemoved,
 } from '../timeline';
-import { ownsDiagram, requireOwner, type RouteContext } from './context';
+import { missingDiagram, ownsDiagram, requireOwner, type RouteContext } from './context';
 
 // Returns null when the request isn't the placement route.
 export async function handleDiagramPlacement(ctx: RouteContext): Promise<Response | null> {
@@ -46,7 +46,7 @@ export async function handleDiagramPlacement(ctx: RouteContext): Promise<Respons
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
       const existing = await getDiagram(env, id);
-      if (!existing) return notFound();
+      if (!existing) return missingDiagram(ctx, id);
       const body = (await request.json()) as { folderId?: string | null; teamId?: string | null };
       const folderId = body.folderId ?? null;
       const teamId = body.teamId !== undefined ? body.teamId : existing.teamId;

@@ -186,6 +186,15 @@ rationale: a leaked token already exposes the owner's content (that's §3.4's
 deal, revocable + 6-month-capped), but it must not be able to escalate — mint
 further credentials, grant other people membership, or destroy the account.
 
+**Deleting goes to the Trash, with an explicit way past it.** A token's
+`DELETE /api/diagrams/<id>` moves the diagram to the [Trash](../013-workspace/trash.md)
+like every other delete; `DELETE /api/diagrams/<id>?permanent=true` deletes it
+for good at once (and purges one already in the Trash). The Trash routes
+(`GET /api/trash`, `POST /api/trash/<id>/restore`, `DELETE /api/trash[/<id>]`)
+are token-usable with the same delete authority; a read-only token may list the
+Trash but not restore or purge. The MCP server, by contrast, offers no permanent
+delete at all ([MCP server §4.9](mcp-server.md)).
+
 ### 3.5 Rate limiting
 
 Key the existing `WRITE_RATE_LIMITER` on the token id (not just the owner) so a

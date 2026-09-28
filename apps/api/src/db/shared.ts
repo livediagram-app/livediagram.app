@@ -95,6 +95,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
        LEFT JOIN participants p ON p.id = d.owner_id
       WHERE s.owner_id = ?
         AND d.shareable = 1
+        AND d.trashed_at IS NULL
       ORDER BY s.last_seen DESC`,
   )
     .bind(Date.now(), ownerId)

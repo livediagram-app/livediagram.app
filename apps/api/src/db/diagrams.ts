@@ -97,11 +97,17 @@ const DIAGRAM_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id,
 // summaries, no share-code subquery. getDiagram costs 3 queries; the
 // room-ticket mint and WS upgrade run on every room join and use none
 // of the extra data.
+//
+// Both diagram reads see LIVE diagrams only: a trashed one reads as missing
+// (docs/specs/013-workspace/trash.md, "fail closed"). A door that owes an
+// authorised caller the deleted state asks getTrashedDiagramMeta on a miss.
 export async function getDiagramMeta(
   env: Env,
   id: string,
 ): Promise<{ id: string; ownerId: string; teamId: string | null; name: string } | null> {
-  const row = await env.DB.prepare('SELECT id, owner_id, team_id, name FROM diagrams WHERE id = ?')
+  const row = await env.DB.prepare(
+    'SELECT id, owner_id, team_id, name FROM diagrams WHERE id = ? AND trashed_at IS NULL',
+  )
     .bind(id)
     .first<{ id: string; owner_id: string; team_id: string | null; name: string }>();
   return row
@@ -110,7 +116,9 @@ export async function getDiagramMeta(
 }
 
 export async function getDiagram(env: Env, id: string): Promise<DiagramDTO | null> {
-  const row = await env.DB.prepare(`SELECT ${DIAGRAM_COLS} FROM diagrams WHERE id = ?`)
+  const row = await env.DB.prepare(
+    `SELECT ${DIAGRAM_COLS} FROM diagrams WHERE id = ? AND trashed_at IS NULL`,
+  )
     .bind(id)
     .first<DiagramRow>();
   return row ? rowToDiagram(env, row) : null;
@@ -136,7 +144,7 @@ function rowToSummary(row: SummaryRow): DiagramSummary {
 // the team page instead.
 export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<DiagramSummary[]> {
   const result = await env.DB.prepare(
-    `SELECT ${DIAGRAM_SUMMARY_COLS} FROM diagrams WHERE owner_id = ? AND team_id IS NULL ORDER BY saved_at DESC`,
+    `SELECT ${DIAGRAM_SUMMARY_COLS} FROM diagrams WHERE owner_id = ? AND team_id IS NULL AND trashed_at IS NULL ORDER BY saved_at DESC`,
   )
     .bind(ownerId)
     .all<SummaryRow>();
@@ -146,7 +154,7 @@ export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<Di
 // One team's shared library (docs/specs/013-workspace/team-shared-diagrams.md), any owner.
 export async function listDiagramsByTeam(env: Env, teamId: string): Promise<DiagramSummary[]> {
   const result = await env.DB.prepare(
-    `SELECT ${DIAGRAM_SUMMARY_COLS} FROM diagrams WHERE team_id = ? ORDER BY saved_at DESC`,
+    `SELECT ${DIAGRAM_SUMMARY_COLS} FROM diagrams WHERE team_id = ? AND trashed_at IS NULL ORDER BY saved_at DESC`,
   )
     .bind(teamId)
     .all<SummaryRow>();
@@ -274,8 +282,10 @@ export async function setDiagramSharePassword(
     .run();
 }
 
-// Every delete path lands here: the Explorer, a teammate on a team diagram,
-// and Take Offline. A tab another diagram still holds survives it.
+// The immediate hard delete of one diagram, which only Take Offline uses now:
+// every other delete moves the diagram to the Trash, and its purge runs
+// purgeDiagrams (docs/specs/013-workspace/trash.md). A tab another diagram
+// still holds survives either.
 export async function deleteDiagram(env: Env, id: string): Promise<void> {
   await env.DB.batch(diagramRemovalStatements(env, { column: 'id', value: id }));
   // Drop the cached SVG snapshot (docs/specs/006-diagram/diagram-snapshots.md) alongside the row so a

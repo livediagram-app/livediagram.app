@@ -2,11 +2,11 @@
 
 One shape for every "bring a board from another tool" import: a single source
 file or connected board becomes the contents of one tab, its images go through
-the existing image pipeline, and the user always gets a result plus an honest
-report. [Miro import](miro-import.md) and
-[Microsoft Whiteboard import](whiteboard-import.md) are built on it; the
-[Excalidraw](excalidraw-import-export.md) importer predates it and keeps its own
-path until it is folded in. Evidence for the platform facts below:
+the [Import image pipeline](import-image-pipeline.md), and the user always gets
+a result plus an honest report. [Miro import](miro-import.md) and
+[Microsoft Whiteboard import](whiteboard-import.md) are built on it, as the
+[Excalidraw](excalidraw-import-export.md) and [draw.io](drawio-import.md)
+importers already are. Evidence for the platform facts below:
 [Migration readiness](../../research/migration-readiness.md).
 
 ## Where it lives
@@ -15,9 +15,9 @@ path until it is folded in. Evidence for the platform facts below:
   Mermaid and Excalidraw, with the same **replace-the-tab** semantics and a
   **single undo step**. A user moving a board creates a diagram, then imports
   into its tab. No new surface is added.
-- Importers live in `apps/live/lib/board-import/`: one module per source
-  (`miro.ts`, `whiteboard.ts`) plus the shared stages (`assets.ts`,
-  `report.ts`). Lazy-loaded by `useTabImport` like the other importers. Nothing
+- Each importer is its own module in `apps/live/lib/` (beside
+  `excalidraw-import.ts`), reusing the shared image stage
+  (`apps/live/lib/import-images/`). Lazy-loaded by `useTabImport` like the other importers. Nothing
   here is needed by the MCP worker, so it stays in `apps/live`.
 
 ## Stages
@@ -32,11 +32,9 @@ throws. Only the parse stage has to be pure.
    `{ sourceKind, sourceId, title, elements, assets, report }`. No network.
    Element ids are minted fresh, with a map so connectors follow. Input the
    parser does not recognise is a named rejection, never a partial guess.
-3. **Assets** (browser, network): each `AssetRef` is fetched, decoded, resized
-   so the **longest side is at most 2048 px** (never upscaled), encoded to
-   **WebP**, hashed (SHA-256) and uploaded with `POST /api/images`
-   ([Image element + per-owner gallery](../009-elements/images.md)), which dedupes by hash. At most four
-   uploads run at once.
+3. **Assets** (browser, network): every image goes through the
+   [Import image pipeline](import-image-pipeline.md), which owns resizing,
+   encoding, upload, deduplication, concurrency and every image failure.
 4. **Commit**: the elements replace the tab in one undoable step. The commit
    target is a parameter of the stage, so a later bulk importer can commit to a
    new diagram without touching stages 1 to 3.
@@ -46,35 +44,28 @@ throws. Only the parse stage has to be pure.
 
 ## Images
 
-- **Encoding.** WebP from `canvas.toBlob` where the browser encodes it. Safari
-  cannot (its `toBlob` / `convertToBlob` ignore `image/webp` and return PNG), so
-  the encoder checks the returned blob's type and, when it is not WebP,
-  lazy-loads a **WASM WebP encoder** and encodes with it. The encoder is loaded
-  only on that path, so other browsers never download it.
-- **Gallery cap.** The server cap is the existing one: hosted 100 images or
-  100 MB per owner, unlimited on self-host by default. A `403 gallery_full`
-  stops further uploads for this import; every remaining image is committed as a
-  **placeholder** (`imageId: null`, original size, source name as title). The
-  import still succeeds.
-- **Per-image failure.** An image that cannot be fetched or decoded becomes a
-  placeholder with its own reason. No image failure fails an import.
-- **Offline diagrams.** An offline tab embeds the resized image as a `data:` URI
-  ([Offline Mode](../006-diagram/offline-mode.md)); no upload, no gallery cap.
+Owned entirely by the [Import image pipeline](import-image-pipeline.md): the
+2,048 px WebP resize (a WASM encoder where the canvas cannot encode WebP), the
+gallery cap (every image is still tried, since a duplicate costs nothing),
+named per-image failures that become placeholders, and Offline Mode embedding.
+An importer only turns its source images into pipeline requests. No image
+failure fails an import.
 
 ## The report
 
-`ImportReport` is a list of rows `{ sourceType, imported, degraded, skipped, reason? }`
-plus image totals `{ uploaded, deduped, placeholders, placeholderReason? }`.
+Every importer uses the one shared import report and its summary step in the
+Import dialog (see the [draw.io import](drawio-import.md) and the
+[Import image pipeline](import-image-pipeline.md)); a board importer adds its
+own kinds to that report rather than a second one.
 
 - Every source item lands in exactly one of **imported**, **degraded**
   (imported with a documented loss) or **skipped** (named by its source type).
 - When anything is degraded, skipped or a placeholder, the report lists the
   rows; it is never collapsed to a single success line. A partial import that
   looks complete is the failure this rule exists to prevent.
-- Copy for the cap: "12 images imported, 30 kept as placeholders: your image
-  gallery is full (100 of 100)." with a link to the Explorer image gallery.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): one
-  `track('Import', 'Completed', <sourceKind>)` per import. Counts and names
+  `Tab·Imported·<Format>` per import, like every other importer (for example
+  `Miro`, `Whiteboard`). Counts and names
   never leave the browser.
 
 ## Bulk readiness

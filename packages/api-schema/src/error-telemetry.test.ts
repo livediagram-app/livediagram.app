@@ -103,6 +103,7 @@ describe('apiRouteLabel', () => {
       'Get.Timeline',
     );
     expect(apiRouteLabel('GET', '/api/custom-themes')).toBe('Get.CustomThemes');
+    expect(apiRouteLabel('POST', '/api/trash/0b7c5f9e-1111/restore')).toBe('Post.Trash.Restore');
   });
 
   it('never echoes a share code or an unknown resource', () => {

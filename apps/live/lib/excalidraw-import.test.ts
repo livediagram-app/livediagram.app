@@ -191,12 +191,85 @@ describe('boxed element mapping', () => {
     expect(frame.label).toBe('Flow A');
   });
 
-  it('imports images as placeholder image elements', () => {
+  it('returns no image requests for a scene without images', () => {
+    const r = buildElementsFromExcalidraw(scene([rect()]));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.images).toEqual([]);
+  });
+});
+
+describe('image migration requests', () => {
+  const PNG_URL = 'data:image/png;base64,iVBORw0KGgo=';
+  const withFiles = (elements: unknown[], files: unknown) =>
+    JSON.stringify({ type: 'excalidraw', version: 2, elements, files });
+  const image = (over: Record<string, unknown> = {}) =>
+    rect({ id: 'i1', type: 'image', fileId: 'abc', roundness: null, ...over });
+
+  it('lands each image as a placeholder plus a request carrying its bytes', () => {
     const r = buildElementsFromExcalidraw(
-      scene([rect({ id: 'i1', type: 'image', fileId: 'abc', roundness: null })]),
+      withFiles([image()], { abc: { id: 'abc', mimeType: 'image/png', dataURL: PNG_URL } }),
     );
     if (!r.ok) throw new Error(r.error);
     expect(r.elements[0]).toMatchObject({ type: 'image', imageId: null });
+    expect(r.images).toEqual([
+      {
+        elementId: r.elements[0]!.id,
+        key: 'abc',
+        source: { kind: 'data-url', dataUrl: PNG_URL },
+        hint: { width: 120, height: 60 },
+      },
+    ]);
+  });
+
+  it('keys two elements showing the same file together', () => {
+    const r = buildElementsFromExcalidraw(
+      withFiles([image({ id: 'i1' }), image({ id: 'i2', x: 400 })], {
+        abc: { mimeType: 'image/png', dataURL: PNG_URL },
+      }),
+    );
+    if (!r.ok) throw new Error(r.error);
+    expect(r.images.map((i) => i.key)).toEqual(['abc', 'abc']);
+    expect(new Set(r.images.map((i) => i.elementId)).size).toBe(2);
+  });
+
+  it('gives a file the scene lacks a null source (missing bytes)', () => {
+    const r = buildElementsFromExcalidraw(withFiles([image()], {}));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.images[0]!.source).toBeNull();
+  });
+
+  it('reads a missing or malformed files map as empty', () => {
+    for (const files of [undefined, null, 'nope', [1, 2]]) {
+      const r = buildElementsFromExcalidraw(withFiles([image()], files));
+      if (!r.ok) throw new Error(r.error);
+      expect(r.images[0]!.source).toBeNull();
+    }
+  });
+
+  it('ignores a file entry without a data URL', () => {
+    const r = buildElementsFromExcalidraw(withFiles([image()], { abc: { mimeType: 'image/png' } }));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.images[0]!.source).toBeNull();
+  });
+
+  it('keys an image without a fileId by its own element', () => {
+    const r = buildElementsFromExcalidraw(withFiles([image({ fileId: null })], {}));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.images[0]).toMatchObject({ key: r.elements[0]!.id, source: null });
+  });
+
+  it('fills the box when Excalidraw had cropped the image', () => {
+    const r = buildElementsFromExcalidraw(
+      withFiles([image({ crop: { x: 0, y: 0, width: 10, height: 10 } })], {}),
+    );
+    if (!r.ok) throw new Error(r.error);
+    expect(r.elements[0]).toMatchObject({ objectFit: 'cover' });
+  });
+
+  it('leaves an uncropped image at the default fit', () => {
+    const r = buildElementsFromExcalidraw(withFiles([image({ crop: null })], {}));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.elements[0]).not.toHaveProperty('objectFit');
   });
 });
 

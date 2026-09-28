@@ -12,6 +12,7 @@ import { SettingsShortcutListRow } from './SettingsShortcutListRow';
 import { SettingsSliderRow } from './SettingsSliderRow';
 import { SettingsNoteRow } from './SettingsNoteRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
+import { SettingsTrashRow } from './SettingsTrashRow';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
@@ -179,6 +180,8 @@ export function SettingsCategoryPane({
         return <SettingsIdentityRow row={row} />;
       case 'deleteAccount':
         return <SettingsDeleteAccountRow row={row} />;
+      case 'trash':
+        return <SettingsTrashRow row={row} />;
       case 'presetSummary':
         return (
           <SettingsPresetSummaryRow

@@ -191,6 +191,15 @@ export type ReadTimelineResult = {
 // share a millisecond (a team invite fans out to twelve people in one
 // request), and ordering by occurred_at alone would make the page
 // boundary non-deterministic.
+// An event about a diagram in the Trash is hidden, not swept
+// (docs/specs/013-workspace/trash.md): a restore brings the history back, and
+// the purge sweeps it (diagramsTimelineSweepStatement). Matches the same two
+// references the sweep does, each a primary-key probe.
+const NOT_IN_TRASH = `NOT (e.source_type = 'diagram' AND EXISTS (
+  SELECT 1 FROM diagrams td
+   WHERE td.id IN (e.source_id, json_extract(e.snapshot, '$.diagramId'))
+     AND td.trashed_at IS NOT NULL))`;
+
 export async function readTimeline(
   env: Env,
   opts: ReadTimelineOptions,
@@ -198,7 +207,7 @@ export async function readTimeline(
   const binds: unknown[] = [opts.scope.scopeType, opts.scope.scopeId];
   // A dismissed membership (docs/specs/013-workspace/timeline.md §2.9) is still a row, so the
   // re-emit path can't resurrect it, but it is not part of the feed.
-  let where = 's.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL';
+  let where = `s.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL AND ${NOT_IN_TRASH}`;
 
   if (opts.cursor) {
     const parsed = parseCursor(opts.cursor);
@@ -329,6 +338,7 @@ export async function countUnseen(
          FROM timeline_event_scopes s
          JOIN timeline_events e ON e.id = s.event_id
         WHERE s.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL
+          AND ${NOT_IN_TRASH}
           AND e.occurred_at > ?3
           AND e.occurred_at <= ?5
           AND (e.actor_id IS NULL OR e.actor_id <> ?2)
@@ -421,6 +431,18 @@ export async function markTimelineEventsDeletedBySource(
   )
     .bind(sourceType, sourceId, `${sourceType}Id`)
     .run();
+}
+
+// markTimelineEventsDeletedBySource for a set of diagrams at once, as one
+// statement for the Trash purge's batch (docs/specs/013-workspace/trash.md):
+// the events of a purged diagram go with it, the way a hard delete sweeps them.
+export function diagramsTimelineSweepStatement(env: Env, ids: string[]): D1PreparedStatement {
+  return env.DB.prepare(
+    `DELETE FROM timeline_events
+      WHERE source_type = 'diagram'
+        AND (source_id IN (SELECT value FROM json_each(?1))
+             OR json_extract(snapshot, '$.diagramId') IN (SELECT value FROM json_each(?1)))`,
+  ).bind(JSON.stringify(ids));
 }
 
 // Per-entry dismissal (docs/specs/013-workspace/timeline.md §2.9): take one event off ONE scope's
