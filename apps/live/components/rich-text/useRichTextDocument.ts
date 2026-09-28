@@ -15,7 +15,7 @@
 // plain-text length === DOM textContent length and offsets are a string walk.
 
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
-import { normalizeRuns, type TextRun } from '@livediagram/diagram';
+import { normalizeRuns, type TextRun, runsPlainText } from '@livediagram/diagram';
 import {
   dataAttrsForRun,
   domSelectionToOffsets,
@@ -60,6 +60,9 @@ export function useRichTextDocument({
   const [active, setActive] = useState<ActiveFormat>(() =>
     computeActiveFormat(openingRuns, null, defaults),
   );
+  // The plain text as it stands, as state: every change to the runs ends in refreshActive, which updates
+  // it, so render reads this rather than the contentEditable (react-state-and-effects.md).
+  const [liveText, setLiveText] = useState(() => runsPlainText(openingRuns));
 
   // Collapse the selection to the true end of the editor's painted content.
   const placeCaretAtEnd = (el: HTMLElement) => {
@@ -91,6 +94,7 @@ export function useRichTextDocument({
     const offsets = domSelectionToOffsets(el);
     if (offsets) selectionRef.current = offsets;
     setActive(computeActiveFormat(runsRef.current, offsets ?? selectionRef.current, defaults));
+    setLiveText(runsPlainText(runsRef.current));
   };
 
   // Read the live DOM back into runs + refresh the toolbar. Used after every
@@ -108,7 +112,7 @@ export function useRichTextDocument({
   };
 
   // The runs as they stand right now, read from the live DOM when there is
-  // one. What a host commits.
+  // one. What a host commits (outside render: render reads `liveText`).
   const currentRuns = (): TextRun[] => {
     const el = editorRef.current;
     return el ? readRunsFromDom(el) : runsRef.current;
@@ -165,6 +169,7 @@ export function useRichTextDocument({
     selectionRef,
     composingRef,
     active,
+    liveText,
     paintRuns,
     refreshActive,
     syncFromDom,

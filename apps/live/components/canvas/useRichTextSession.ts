@@ -84,6 +84,7 @@ export function useRichTextSession({
     selectionRef,
     composingRef,
     active,
+    liveText,
     paintRuns,
     refreshActive,
     syncFromDom,
@@ -104,7 +105,7 @@ export function useRichTextSession({
   const fitted =
     multiline && textSize === 'scale' && fitBox
       ? fitMultilineFontPx({
-          text: runsPlainText(currentRuns()) || initialLabel,
+          text: liveText || initialLabel,
           width: fitBox.width,
           height: fitBox.height,
           padding: fitBox.padding,
@@ -252,6 +253,6 @@ export function useRichTextSession({
     onPatch,
     applyList,
     applyHeading,
-    currentRuns,
+    liveText,
   };
 }
