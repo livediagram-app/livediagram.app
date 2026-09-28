@@ -77,7 +77,7 @@ export function EditorAnchoredPopovers() {
               <CommentThreadPopover
                 elementId={target.id}
                 thread={target.commentThread}
-                onAddComment={(text) => {
+                onAddComment={(text, mentions) => {
                   // View-role visitors don't autosave the tab, so
                   // their addComment via the local commit alone
                   // would vanish on refresh. Persist via the
@@ -100,8 +100,10 @@ export function EditorAnchoredPopovers() {
                             target.id,
                             text,
                             sessionShareCode,
+                            mentions,
                           )
                       : undefined,
+                    mentions,
                   );
                 }}
                 onDeleteComment={(cid) => {

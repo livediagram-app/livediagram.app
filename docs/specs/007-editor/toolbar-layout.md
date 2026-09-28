@@ -227,6 +227,12 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   870px; below that it sheds tiles to More so the centred strip never runs
   under the Explorer menu button, the same fit-the-width rule a phone's strip
   uses (see "On a phone").
+- **The top corners give way to the strip.** When a centred strip would
+  reach a panel docked in a top corner (a Palette-width panel at the 16px
+  inset, so below about 1300px wide with the full twelve tiles), the top
+  corner stacks start below the strip, 68px down, exactly as they always do on
+  a phone. On a wider window they keep their inset. Without it the collapsed
+  Collaborate panel sat under the strip's right end and could not be reached.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **The category picker stays on the bar**, left of the tiles. Folding it
   into More (a category list, then the category behind a BackBar) was tried

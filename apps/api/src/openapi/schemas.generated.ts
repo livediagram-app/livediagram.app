@@ -5074,6 +5074,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Unlinked",
       "Resolved",
       "Unresolved",
+      "Mentioned",
       "Imported",
       "Aligned",
       "Undone",

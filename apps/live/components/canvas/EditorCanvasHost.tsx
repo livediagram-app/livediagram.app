@@ -535,7 +535,7 @@ export function EditorCanvasHost() {
           isReadOnly
             ? undefined
             : {
-                add: (id, text) => addComment(id, text),
+                add: (id, text, mentions) => addComment(id, text, undefined, mentions),
                 remove: deleteComment,
                 resolve: resolveThread,
                 unresolve: unresolveThread,

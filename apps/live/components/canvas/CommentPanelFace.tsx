@@ -2,13 +2,14 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import type { ShapeElement } from '@livediagram/diagram';
+import type { CommentMention, ShapeElement } from '@livediagram/diagram';
 
 import { useRelativeNow } from '@/lib/relative-time';
 import { CollabPanel, tint } from '@/components/canvas/collab/collab-chrome';
 import { CollabAccentScope } from '@/components/canvas/collab/collab-accent';
 import { CollabComposer } from '@/components/canvas/collab/CollabComposer';
 import { CommentBubbles } from '@/components/canvas/collab/comment/CommentBubbles';
+import { useMentionScope } from '@/components/canvas/collab/comment/MentionContext';
 import {
   AccentBar,
   CheckGlyph,
@@ -63,12 +64,13 @@ export function CommentPanelFace({
   selfId: string;
   // Absent on a surface with no comment session (the read-only embed, the
   // export renderer), which renders the panel readable but inert.
-  onAddComment?: (text: string) => void;
+  onAddComment?: (text: string, mentions: CommentMention[]) => void;
   onDeleteComment?: (commentId: string) => void;
   onResolve?: () => void;
   onUnresolve?: () => void;
 }) {
   const now = useRelativeNow();
+  const mentionScope = useMentionScope();
   const thread = element.commentThread;
   const comments = thread?.comments ?? [];
   const resolved = thread?.resolved === true;
@@ -112,6 +114,7 @@ export function CommentPanelFace({
       sendLabel="Send comment"
       maxLength={COMMENT_MAX_TEXT}
       onSubmit={onAddComment}
+      mentionScope={mentionScope}
     />
   );
 

@@ -212,6 +212,13 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
+      'NotifyMentionsOn',
+      'NotifyMentionsOff',
+      'Someone Mentions Me in a Comment',
+      'The comment-mention email.',
+    ),
+    toggle(
+      'UI',
       'NotifyTipsOn',
       'NotifyTipsOff',
       'Tips and Check-Ins',

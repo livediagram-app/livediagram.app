@@ -4,6 +4,7 @@
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
 import type {
+  CommentMention,
   EmbedProvider,
   EsSide,
   EventStormingNoteKind,
@@ -124,7 +125,7 @@ export type CanvasProps = {
   // the anchored popover already drives them.
   commentSelfId?: string;
   commentPanelActions?: {
-    add: (elementId: string, text: string) => void;
+    add: (elementId: string, text: string, mentions?: CommentMention[]) => void;
     remove: (elementId: string, commentId: string) => void;
     resolve: (elementId: string) => void;
     unresolve: (elementId: string) => void;

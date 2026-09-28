@@ -6,6 +6,7 @@ import { tilesForCategory } from './palette-tile-defs';
 import {
   STRIP_TILE_LIMIT,
   desktopStripTileLimit,
+  stripCrowdsTopCorners,
   phoneStripTileLimit,
   stripTilesFor,
 } from './toolbar-strip-tiles';
@@ -109,5 +110,13 @@ describe('desktopStripTileLimit', () => {
       expect(tiles).toBeLessThan(STRIP_TILE_LIMIT);
       expect(280 + tiles * 38).toBeLessThanOrEqual(width - 2 * 66);
     }
+  });
+});
+
+describe('stripCrowdsTopCorners', () => {
+  it('moves the top corners below the strip only when it would reach a docked panel', () => {
+    expect(stripCrowdsTopCorners(1100)).toBe(true);
+    expect(stripCrowdsTopCorners(1440)).toBe(false);
+    expect(stripCrowdsTopCorners(1920)).toBe(false);
   });
 });

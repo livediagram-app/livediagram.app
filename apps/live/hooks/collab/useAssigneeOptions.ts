@@ -2,13 +2,8 @@
 
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import type { ElementAction } from '@livediagram/diagram';
-import {
-  apiCheckAssigneeAccess,
-  apiGetTeam,
-  type TeamListItem,
-  type TeamMember,
-} from '@/lib/api-client';
-import { memberName } from '@/components/panels/team-pane-parts';
+import { apiCheckAssigneeAccess, apiGetTeam, type TeamListItem } from '@/lib/api-client';
+import { teamMemberRows } from './team-member-rows';
 import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';
 
 // The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4), lifted
@@ -129,24 +124,10 @@ export function useAssigneeOptions({
       pickableTeams.map(async (team) => {
         try {
           const detail = await apiGetTeam(ownerId, team.id);
-          return detail.members
-            .filter(
-              // Everyone on the team — joined AND invited (docs/specs/012-collaboration/assigned-actions.md: work
-              // gets divided while invites are in flight) — except the
-              // assigner themselves, whom the pinned Myself row covers.
-              (m: TeamMember) => m.userId !== ownerId,
-            )
-            .map((m: TeamMember): PickableMember => ({
-              // Null for an invited member the lazy claim hasn't
-              // identified yet; memberId is their key then.
-              userId: m.userId,
-              memberId: m.id,
-              pending: m.status === 'invited',
-              name: memberName(m, false, null),
-              email: m.email,
-              teamId: team.id,
-              teamName: team.name,
-            }));
+          // Everyone on the team — joined AND invited (docs/specs/012-collaboration/assigned-actions.md: work
+          // gets divided while invites are in flight) — except the assigner
+          // themselves, whom the pinned Myself row covers.
+          return teamMemberRows(detail.members, team, ownerId);
         } catch {
           return [];
         }

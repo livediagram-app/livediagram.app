@@ -7,6 +7,7 @@ import type { Comment } from '@livediagram/diagram';
 import { Glyph, GlyphDisc } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import { relativeSince } from '@/lib/relative-time';
+import { MentionText } from '@/components/primitives/MentionText';
 import { tint } from '../collab-chrome';
 import { QA_ACCENT, stopPointer } from '../qa/qa-parts';
 
@@ -92,7 +93,16 @@ export function CommentBubbles({
                       backgroundColor: mine ? tint(QA_ACCENT, 0.16) : tint(textColor, 0.06),
                     }}
                   >
-                    {c.text}
+                    <MentionText
+                      text={c.text}
+                      mentions={c.mentions}
+                      // Falls back to the text colour where no card accent is in
+                      // scope (the presentation popover reuses these bubbles).
+                      chipStyle={{
+                        color: `var(--qa-accent-ink, ${textColor})`,
+                        backgroundColor: tint(`var(--qa-accent, ${textColor})`, 0.16),
+                      }}
+                    />
                     {/* Your own comments only: the rule the popover applies,
                         so a panel cannot become a way around it. */}
                     {mine && onDelete ? (

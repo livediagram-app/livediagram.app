@@ -122,7 +122,7 @@ export type BoxedElementViewProps = {
   // comment machinery the anchored popover does.
   commentSelfId?: string;
   commentActions?: {
-    add?: (text: string) => void;
+    add?: (text: string, mentions: import('@livediagram/diagram').CommentMention[]) => void;
     remove?: (commentId: string) => void;
     resolve?: () => void;
     unresolve?: () => void;

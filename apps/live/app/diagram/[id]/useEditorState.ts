@@ -19,6 +19,7 @@ import {
   stampNewElementLayers,
   voteHidesCursors,
   type BoxedElement,
+  type CommentMention,
   type Element,
   type ShapeElement,
   type Tab,
@@ -26,6 +27,7 @@ import {
 
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
+import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
 import { useDesktopOnlyToolExit } from '@/hooks/canvas/useDesktopOnlyToolExit';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
@@ -503,6 +505,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // a delta ahead of the autosave (docs/specs/012-collaboration/collab-race-hardening.md). Shared by the comments, the
   // checklist and the collaboration elements below.
   const applyElementDelta = useElementDeltas({ activeId, tickTabs, roomRef });
+  // The mention notify (useCommentMentions, below): declared first because the
+  // comments hook takes it before the teams it depends on exist.
+  const mentionNotifyRef = useRef<(text: string, mentions: CommentMention[]) => void>(() => {});
   // Comment-thread state + handlers. The open-id drives the
   // dynamic <CommentThreadPopover> JSX gate further down; the
   // action callbacks bind to the selection popover + the popover
@@ -518,7 +523,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     deleteComment,
     resolveThread,
     unresolveThread,
-  } = useEditorComments({ applyElementDelta, selfParticipant });
+  } = useEditorComments({
+    applyElementDelta,
+    selfParticipant,
+    // Bound below, once the teams the mention list comes from have loaded.
+    onMentioned: (text, mentions) => mentionNotifyRef.current(text, mentions),
+  });
   // Per-user editor preferences (docs/specs/007-editor/user-preferences.md): the state, the ref mirrors
   // the drag hook reads, and the localStorage read + D1 sync effects.
   // See useEditorPreferences.
@@ -1029,6 +1039,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const { teams } = useTeams(clerkUserId ?? null, {
     enabled: !!clerkUserId,
   });
+  // Comment @-mentions (docs/specs/012-collaboration/comment-mentions.md): the diagram team's members as
+  // candidates, and the notify a mentioning comment fires.
+  const commentMentions = useCommentMentions({
+    ownerId: clerkUserId ?? null,
+    teams,
+    diagramTeamId,
+    diagramId,
+  });
+  useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
   // Their libraries (docs/specs/013-workspace/team-shared-diagrams.md): one sweep per team. Feeds the search
   // panel's folder group AND the floating Explorer panel (team folder
   // tree + team diagrams in Recent + the current team diagram).
@@ -3146,6 +3165,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // Slide deck (docs/specs/012-collaboration/presentation-mode.md): the whole surface in one object, like livePoll —
     // nothing outside the panel and the overlay reads into it.
     slideDeck,
+    commentMentions,
     // What the presentation is showing, or null. The canvas renders THESE
     // instead of the tab's elements while it is non-null, which is what makes
     // a slide a slide.

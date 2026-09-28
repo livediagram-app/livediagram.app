@@ -51,6 +51,17 @@ export function desktopStripTileLimit(viewportWidth: number): number {
   return fitTiles(viewportWidth - 2 * DESKTOP_MENU_CLEARANCE_PX - DESKTOP_STRIP_CHROME_PX);
 }
 
+// Whether the centred desktop strip reaches into the top corners, where a
+// docked panel (Palette width, 256px, at the 16px inset, plus an 8px gap)
+// would sit under it. The canvas chrome then starts its top corner stacks
+// below the strip, the rule a phone already follows.
+const CORNER_PANEL_CLEARANCE_PX = 16 + 256 + 8;
+
+export function stripCrowdsTopCorners(viewportWidth: number): boolean {
+  const stripWidth = DESKTOP_STRIP_CHROME_PX + desktopStripTileLimit(viewportWidth) * STRIP_TILE_PX;
+  return (viewportWidth - stripWidth) / 2 < CORNER_PANEL_CLEARANCE_PX;
+}
+
 // Categories whose body carries more than tiles: a search box, a group
 // browser, or Favourites' Edit / Reorder footer. They always get More, even
 // when the tiles alone would fit, because the rest of the body can only be

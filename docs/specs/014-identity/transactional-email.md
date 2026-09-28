@@ -49,6 +49,12 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
 10. **New comment** (#1, opt-out `notifyComments`) — when someone other than the
     owner comments on a diagram (either comment path), the owner is emailed
     **immediately** (no cron). Never includes the comment text.
+11. **Action assigned** (opt-out `notifyActionAssigned`) — a teammate assigned
+    the recipient an action ([Assigned actions](../012-collaboration/assigned-actions.md)).
+12. **Mentioned** (opt-out `notifyMentions`) — a teammate @-mentioned the
+    recipient in a comment ([Comment mentions](../012-collaboration/comment-mentions.md)). Unlike the owner's new-comment email it
+    quotes the comment (the first 280 characters): the recipient was named in
+    it, and the diagram is in their own team's library.
 
 The three opt-out lifecycle/notification categories (`notifyComments`,
 `notifyTips`, `notifyMilestones`) join the [Account settings & email notifications](profile-and-email-notifications.md) pair in `getNotificationPrefs`

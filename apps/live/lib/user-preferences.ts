@@ -159,6 +159,8 @@ export type UserPreferences = {
   notifyMilestones?: boolean;
   // "A teammate assigned me an action on a diagram element" (docs/specs/012-collaboration/assigned-actions.md).
   notifyActionAssigned?: boolean;
+  // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
+  notifyMentions?: boolean;
   // The interactive editor tour's seen-guard (docs/specs/007-editor/editor-tour.md). True once the
   // tour's welcome offer has been answered (taken, skipped, or declined),
   // so the offer never re-appears for this user — synced, so it follows

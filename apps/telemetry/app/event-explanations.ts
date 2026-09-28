@@ -89,6 +89,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Comment|Added|': 'A comment was added to an element thread.',
   'Comment|Deleted|': 'A comment was removed from a thread.',
   'Comment|Opened|': 'Someone opened the comment popover on an element.',
+  'Comment|Mentioned|': 'A comment was sent that @-mentioned at least one teammate.',
   'Comment|Resolved|': 'A comment thread was marked resolved.',
   'Comment|Unresolved|': 'A resolved comment thread was reopened.',
   'Diagram|Created|Cloud': 'A brand-new diagram was created.',
@@ -734,6 +735,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
   'UI|Toggled|NotifyActionAssignedOn':
     'Someone turned on the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
+  'UI|Toggled|NotifyMentionsOff':
+    'Someone turned off the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications.',
+  'UI|Toggled|NotifyMentionsOn':
+    'Someone turned on the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications.',
   'UI|Toggled|NotifyCommentsOff':
     'Someone turned off the email that arrives when someone comments on a diagram they own, in Settings > Notifications.',
   'UI|Toggled|NotifyCommentsOn':
@@ -827,6 +832,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Comment|Added': 'A comment was added to an element thread.',
   'Comment|Deleted': 'A comment was removed from a thread.',
   'Comment|Opened': 'Someone opened the comment popover on an element.',
+  'Comment|Mentioned': 'A comment was sent that @-mentioned at least one teammate.',
   'Comment|Resolved': 'A comment thread was marked resolved.',
   'Comment|Unresolved': 'A resolved comment thread was reopened.',
   'Diagram|Created': 'A brand-new diagram was created.',

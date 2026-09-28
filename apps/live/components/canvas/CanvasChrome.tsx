@@ -39,6 +39,8 @@ import { PhoneDockProvider } from '@/components/primitives/phone-dock-context';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
+import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
+import { stripCrowdsTopCorners } from '@/components/palette/toolbar-strip-tiles';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -160,13 +162,13 @@ export type CanvasChromeProps = CanvasProps & ChromeExtras;
 // (inset 16px = the `*-4` resting inset). Top corners stack downward,
 // bottom corners upward (flex-col-reverse) so the first panel always
 // sits flush to the corner and the rest flow away from it.
-// On a phone the Toolbar strip spans the canvas width (docs/specs/007-editor/toolbar-layout.md "On a phone"),
-// so the TOP corner stacks start below it rather than at the 16px inset, or a
-// panel docked there (the Collaborate banner) renders underneath the strip
-// where it can't be reached. The strip sits 12px down (top-3) and is 46px
-// tall; 68px leaves a 10px gap. On desktop the strip is centred and narrow,
-// so the corners are clear and keep their inset.
-const PHONE_TOOLBAR_TOP_CLEARANCE_PX = 68;
+// When the Toolbar strip reaches the top corners (always on a phone, docs/specs/007-editor/toolbar-layout.md
+// "On a phone"; on a desktop window too narrow for a centred strip to clear a
+// docked panel, stripCrowdsTopCorners) the TOP corner stacks start below it
+// rather than at the 16px inset, or a panel docked there (the Collaborate
+// banner) renders underneath the strip where it can't be reached. The strip
+// sits 12px down (top-3) and is 46px tall; 68px leaves a 10px gap.
+const TOOLBAR_TOP_CLEARANCE_PX = 68;
 
 const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
   'top-left': 'left-4 top-4 flex-col items-start',
@@ -290,7 +292,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // replaces the dock's Palette + Explorer buttons.
   const toolbarActive = toolbarLayout === true;
   // The strip only renders for an editor (not read-only) with the chrome up.
-  const stripSpansTop = toolbarActive && isMobile && !readOnly && !chromeHidden;
+  const viewportWidth = useViewportWidth();
+  const stripSpansTop =
+    toolbarActive &&
+    !readOnly &&
+    !chromeHidden &&
+    (isMobile || stripCrowdsTopCorners(viewportWidth));
   // The Explorer menu button: top-left on desktop, the far left of the strip
   // on a phone (no room for both across the top). A read-only visitor has no
   // strip, so it keeps the corner there.
@@ -342,7 +349,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               corner === 'bottom-right'
                 ? { bottom: cornerBottomInset(corner) }
                 : stripSpansTop && corner.startsWith('top')
-                  ? { top: PHONE_TOOLBAR_TOP_CLEARANCE_PX }
+                  ? { top: TOOLBAR_TOP_CLEARANCE_PX }
                   : undefined
             }
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}

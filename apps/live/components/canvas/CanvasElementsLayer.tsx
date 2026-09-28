@@ -494,7 +494,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             commentActions={
               commentPanelActions
                 ? {
-                    add: (text) => commentPanelActions.add(element.id, text),
+                    add: (text, mentions) => commentPanelActions.add(element.id, text, mentions),
                     remove: (id) => commentPanelActions.remove(element.id, id),
                     resolve: () => commentPanelActions.resolve(element.id),
                     unresolve: () => commentPanelActions.unresolve(element.id),
