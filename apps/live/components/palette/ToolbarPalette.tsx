@@ -22,6 +22,7 @@ import { CATEGORY_BANDS } from './PaletteTabBar';
 import { PaletteTile } from './PaletteTileGrid';
 import { PALETTE_TILES } from './palette-tile-defs';
 import { desktopStripTileLimit, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
+import { useStripTileLimit } from './useStripTileLimit';
 import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
@@ -125,9 +126,13 @@ export function ToolbarPalette(props: Props) {
   // of the category is behind More.
   const isMobile = useIsMobileViewport();
   const viewportWidth = useViewportWidth();
-  const stripLimit = isMobile
-    ? phoneStripTileLimit(viewportWidth)
-    : desktopStripTileLimit(viewportWidth);
+  // Measured from the strip itself (useStripTileLimit); the estimate only
+  // covers the first paint.
+  const cardRef = useRef<HTMLDivElement>(null);
+  const stripLimit = useStripTileLimit(cardRef, {
+    isMobile,
+    fallback: isMobile ? phoneStripTileLimit(viewportWidth) : desktopStripTileLimit(viewportWidth),
+  });
   const { tiles, hasMore } = stripTilesFor(category?.id ?? defaultId, {
     favouriteIds,
     hasImage: tileActions.hasImage,
@@ -279,6 +284,7 @@ export function ToolbarPalette(props: Props) {
               {/* The tour's Palette anchor (docs/specs/007-editor/editor-tour.md) is the card, not the
                 full-width row around it, so the ring frames the strip. */}
               <div
+                ref={cardRef}
                 data-tour-id="palette"
                 className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
               >

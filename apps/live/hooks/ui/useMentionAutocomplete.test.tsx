@@ -86,6 +86,36 @@ describe('mentions in the composer', () => {
     ]);
   });
 
+  it('keeps the arrow-key highlight through the key release that follows it', () => {
+    // The real browser order: keydown moves the highlight, keyup re-reads the
+    // caret. The keyup used to reset the highlight to the first row.
+    const { field, type, onSubmit } = setup();
+    type('@');
+    fireEvent.keyDown(field, { key: 'ArrowDown' });
+    fireEvent.keyUp(field, { key: 'ArrowDown' });
+    expect(screen.getByRole('option', { name: /Sam Lee/ }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    fireEvent.keyDown(field, { key: 'Enter' });
+    fireEvent.keyUp(field, { key: 'Enter' });
+    expect(field.value).toBe('@sam-lee ');
+    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(onSubmit).toHaveBeenCalledWith('@sam-lee', [
+      { userId: null, memberId: 'm-sam', name: 'Sam Lee', handle: 'sam-lee' },
+    ]);
+  });
+
+  it('starts from the top again when the query changes', () => {
+    const { field, type } = setup();
+    type('@');
+    fireEvent.keyDown(field, { key: 'ArrowDown' });
+    type('@s');
+    type('@');
+    expect(screen.getByRole('option', { name: /Priya Kaur/ }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
+  });
+
   it('drops a picked mention whose handle was deleted before sending', () => {
     const { field, type, onSubmit } = setup();
     type('@sa');

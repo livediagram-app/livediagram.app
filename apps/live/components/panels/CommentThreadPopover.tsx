@@ -234,7 +234,7 @@ export function CommentThreadPopover({
               value={draft}
               onChange={(e) => {
                 setDraft(e.target.value);
-                mention.bind.onSelect(e);
+                mention.onType(e);
               }}
               {...mention.bind}
               onKeyDown={(e) => {

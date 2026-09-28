@@ -11,6 +11,7 @@
 // save be a replace rather than a diff.
 
 import {
+  ACTION_CARD_MAX,
   elementActions,
   elementDisplayLabel,
   isBoxed,
@@ -71,7 +72,9 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
     // §1, docs/specs/008-canvas/canvas-and-palette.md), which is also what gives them a display label.
     if (!isBoxed(el)) continue;
     // One row per action: an Action panel holds a list (docs/specs/012-collaboration/action-panel.md).
-    for (const action of elementActions(el)) {
+    // Capped like the stored list, so the index stays bounded even for a tab
+    // written before the cap existed.
+    for (const action of elementActions(el).slice(0, ACTION_CARD_MAX)) {
       actions.push({
         elementId: el.id,
         actionId: action.id,

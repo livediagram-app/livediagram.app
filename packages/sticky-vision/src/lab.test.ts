@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { deltaE, labImageOf, rgbToLab } from './lab';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 
 // CIELAB (D65, sRGB), the space where "how different is this paper from the
 // wall" is a distance a person would agree with. Reference values from the
@@ -65,8 +66,6 @@ describe('labImageOf', () => {
     const height = 750;
     const data = new Uint8ClampedArray(width * height * 4);
     for (let i = 0; i < data.length; i += 1) data[i] = (i * 2654435761) >>> 24;
-    const started = performance.now();
-    labImageOf({ width, height, data });
-    expect(performance.now() - started).toBeLessThan(750);
+    expect(cpuMsOf(() => labImageOf({ width, height, data }))).toBeLessThan(750);
   });
 });

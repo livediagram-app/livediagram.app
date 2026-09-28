@@ -90,6 +90,18 @@ describe('useEditorActions on an Action panel', () => {
     expect('action' in raw(card.id)).toBe(false);
   });
 
+  it('does not re-create an action deleted while its edit dialog was open', () => {
+    const card = createShape('action-card', 0, 0);
+    const { result, list } = setup([card]);
+    act(() => result.current.saveAction(card.id, input('Doomed')));
+    const doomed = list(card.id)[0]!;
+    act(() => result.current.openAssignActionDialog(card.id, doomed.id));
+    act(() => result.current.deleteAction(card.id, doomed.id));
+    act(() => result.current.saveAction(card.id, input('Doomed, edited'), doomed.id));
+    expect(list(card.id)).toEqual([]);
+    expect(result.current.assignActionFor).toBeNull();
+  });
+
   it('opens the add dialog from the Assign Action tile, never a popover', () => {
     const card = createShape('action-card', 0, 0);
     const { result } = setup([card]);

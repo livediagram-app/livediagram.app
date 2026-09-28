@@ -29,7 +29,9 @@ session.
 
 An ordinary element carries at most one `action` ([Assigned actions](assigned-actions.md) §1). A card
 carries **`actions: ElementAction[]`**, in the order they were added, at most
-**50**. Every reader goes through one helper, **`elementActions(el)`**, which
+**50**: the editor stops adding at 50, and the api trims any longer list on
+every tab write (`capElementActions`), so neither the stored tab nor the
+Activity index can grow without bound. Every reader goes through one helper, **`elementActions(el)`**, which
 returns the card's list, or an ordinary element's single `action` as a
 one-item list, so nothing downstream branches on the kind. A card saved before
 the list existed holds a single `action`; the helper reads it as a one-item

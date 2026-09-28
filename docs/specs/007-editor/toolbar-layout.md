@@ -223,16 +223,20 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 - **The strip opens on Favourites every time**, like the floating Palette
   ([Palette Favourites](../010-palette/palette-favourites.md)). It does not remember the last category across diagrams.
 - **Twelve tiles is enough** on desktop (raised from ten, which cut Shapes and
-  Favourites short). A desktop strip shows twelve from a window of about
-  870px; below that it sheds tiles to More so the centred strip never runs
-  under the Explorer menu button, the same fit-the-width rule a phone's strip
-  uses (see "On a phone").
-- **The top corners give way to the strip.** When a centred strip would
-  reach a panel docked in a top corner (a Palette-width panel at the 16px
-  inset, so below about 1300px wide with the full twelve tiles), the top
-  corner stacks start below the strip, 68px down, exactly as they always do on
-  a phone. On a wider window they keep their inset. Without it the collapsed
-  Collaborate panel sat under the strip's right end and could not be reached.
+  Favourites short). Below that, the strip shows as many as fit, **measured**
+  rather than estimated (`useStripTileLimit`): its own chrome (the pickers,
+  More, dividers and padding, whatever they measure in the current category),
+  one tile's pitch, and the room the centred strip may take (the window less
+  the Explorer menu button on both sides; on a phone, less its gutters). The
+  rest is behind More. A longer category name or a new control keeps fitting
+  with no constant to update; an estimate stands in only for the first paint.
+- **The top corners give way to the strip.** When the strip reaches a panel
+  docked in a top corner, measured against the real corner stack
+  (`useStripCrowdsCorners`, re-checked as panels dock and the window
+  resizes), the top corner stacks start below the strip, 68px down, exactly
+  as they always do on a phone. Otherwise they keep their inset. Without it
+  a docked panel (the Laser panel, say) sat under the strip's right end and
+  could not be reached.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **The category picker stays on the bar**, left of the tiles. Folding it
   into More (a category list, then the category behind a BackBar) was tried

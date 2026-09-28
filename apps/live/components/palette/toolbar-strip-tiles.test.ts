@@ -6,7 +6,8 @@ import { tilesForCategory } from './palette-tile-defs';
 import {
   STRIP_TILE_LIMIT,
   desktopStripTileLimit,
-  stripCrowdsTopCorners,
+  fitStripTiles,
+  stripCrowdsCorners,
   phoneStripTileLimit,
   stripTilesFor,
 } from './toolbar-strip-tiles';
@@ -113,10 +114,33 @@ describe('desktopStripTileLimit', () => {
   });
 });
 
-describe('stripCrowdsTopCorners', () => {
-  it('moves the top corners below the strip only when it would reach a docked panel', () => {
-    expect(stripCrowdsTopCorners(1100)).toBe(true);
-    expect(stripCrowdsTopCorners(1440)).toBe(false);
-    expect(stripCrowdsTopCorners(1920)).toBe(false);
+describe('fitStripTiles (measured)', () => {
+  it("fits the room left after the strip's own chrome, capped at twelve", () => {
+    expect(fitStripTiles({ available: 1000, chrome: 250, pitch: 40 })).toBe(12);
+    expect(fitStripTiles({ available: 560, chrome: 250, pitch: 40 })).toBe(7);
+  });
+
+  it('follows a wider chrome (a longer category name) instead of assuming one', () => {
+    const narrow = fitStripTiles({ available: 700, chrome: 240, pitch: 38 });
+    const wide = fitStripTiles({ available: 700, chrome: 320, pitch: 38 });
+    expect(wide).toBeLessThan(narrow);
+  });
+
+  it('never drops below three, even with no pitch measured', () => {
+    expect(fitStripTiles({ available: 100, chrome: 300, pitch: 38 })).toBe(3);
+    expect(fitStripTiles({ available: 900, chrome: 200, pitch: 0 })).toBe(3);
+  });
+});
+
+describe('stripCrowdsCorners', () => {
+  const strip = { left: 300, right: 900 };
+  it('is crowded when a corner stack reaches under the strip, with a gap to spare', () => {
+    expect(stripCrowdsCorners(strip, [{ left: 890, right: 1180 }])).toBe(true);
+    expect(stripCrowdsCorners(strip, [{ left: 905, right: 1180 }])).toBe(true);
+    expect(stripCrowdsCorners(strip, [{ left: 910, right: 1180 }])).toBe(false);
+  });
+
+  it('ignores an empty corner', () => {
+    expect(stripCrowdsCorners(strip, [{ left: 800, right: 800 }])).toBe(false);
   });
 });

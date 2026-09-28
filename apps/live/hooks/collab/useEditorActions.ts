@@ -175,6 +175,12 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
     // one action (if any) is the one being edited.
     const card = deps.isActionCard(elementId);
     const existing = card && !actionId ? undefined : deps.getAction(elementId, actionId);
+    // Editing an action that is gone (a teammate deleted it while this
+    // dialog was open): saving must not quietly re-create it as a new one.
+    if (actionId && !existing) {
+      closeAssignActionDialog();
+      return;
+    }
     const name = input.name.trim();
     if (!name) return;
     if (!existing) {

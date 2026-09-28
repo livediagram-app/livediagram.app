@@ -61,6 +61,9 @@ export function useMentionAutocomplete({
   const [caret, setCaret] = useState<number | null>(null);
   // The `@` position the user dismissed with Esc; the list stays shut for it.
   const [dismissed, setDismissed] = useState<number | null>(null);
+  // The highlighted row. Typing (onType) starts it from the top again; the
+  // caret tracking that follows every key release and click leaves it alone,
+  // or the key-up after an arrow press would undo the press.
   const [highlight, setHighlight] = useState(0);
   const [picked, setPicked] = useState<CommentMention[]>([]);
 
@@ -119,9 +122,14 @@ export function useMentionAutocomplete({
     return false;
   };
 
-  // Keep the caret in step with the field (typing, clicks, arrow keys).
+  // Keep the caret in step with the field (clicks, key releases). Only the
+  // caret: see the highlight above.
   const track = (e: { currentTarget: Field }) => {
     setCaret(e.currentTarget.selectionStart);
+  };
+  // The field's text changed: follow the caret and start the list afresh.
+  const onType = (e: { currentTarget: Field }) => {
+    track(e);
     setHighlight(0);
   };
 
@@ -140,6 +148,7 @@ export function useMentionAutocomplete({
     hint,
     pick,
     onKeyDown,
+    onType,
     bind: { onSelect: track, onClick: track, onKeyUp: track },
     take,
   };

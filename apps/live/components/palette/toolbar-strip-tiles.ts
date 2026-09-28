@@ -39,8 +39,8 @@ const PHONE_STRIP_CHROME_PX = 220;
 const DESKTOP_MENU_CLEARANCE_PX = 66;
 const DESKTOP_STRIP_CHROME_PX = 280;
 
-function fitTiles(roomPx: number): number {
-  return Math.min(STRIP_TILE_LIMIT, Math.max(MIN_STRIP_TILES, Math.floor(roomPx / STRIP_TILE_PX)));
+function fitTiles(roomPx: number, pitch = STRIP_TILE_PX): number {
+  return Math.min(STRIP_TILE_LIMIT, Math.max(MIN_STRIP_TILES, Math.floor(roomPx / pitch)));
 }
 
 export function phoneStripTileLimit(viewportWidth: number): number {
@@ -51,15 +51,31 @@ export function desktopStripTileLimit(viewportWidth: number): number {
   return fitTiles(viewportWidth - 2 * DESKTOP_MENU_CLEARANCE_PX - DESKTOP_STRIP_CHROME_PX);
 }
 
-// Whether the centred desktop strip reaches into the top corners, where a
-// docked panel (Palette width, 256px, at the 16px inset, plus an 8px gap)
-// would sit under it. The canvas chrome then starts its top corner stacks
-// below the strip, the rule a phone already follows.
-const CORNER_PANEL_CLEARANCE_PX = 16 + 256 + 8;
+// The strip's tile count from MEASURED sizes (useStripTileLimit): the room
+// the strip may take, less its own chrome (pickers, More, dividers, padding),
+// over one tile's pitch. The two *StripTileLimit functions above are the same
+// rule over estimated sizes, used only before the first measurement.
+export function fitStripTiles({
+  available,
+  chrome,
+  pitch,
+}: {
+  available: number;
+  chrome: number;
+  pitch: number;
+}): number {
+  if (!(pitch > 0)) return MIN_STRIP_TILES;
+  return fitTiles(available - chrome, pitch);
+}
 
-export function stripCrowdsTopCorners(viewportWidth: number): boolean {
-  const stripWidth = DESKTOP_STRIP_CHROME_PX + desktopStripTileLimit(viewportWidth) * STRIP_TILE_PX;
-  return (viewportWidth - stripWidth) / 2 < CORNER_PANEL_CLEARANCE_PX;
+// Whether the strip reaches into a top-corner panel stack, horizontally, with
+// `gap` to spare. An empty corner (zero width) never counts. The canvas chrome
+// then starts its top corner stacks below the strip (docs/specs/007-editor/toolbar-layout.md).
+export type Span = { left: number; right: number };
+export function stripCrowdsCorners(strip: Span, corners: Span[], gap = 8): boolean {
+  return corners.some(
+    (c) => c.right - c.left > 0 && strip.left < c.right + gap && strip.right > c.left - gap,
+  );
 }
 
 // Categories whose body carries more than tiles: a search box, a group

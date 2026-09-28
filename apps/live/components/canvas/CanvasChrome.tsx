@@ -39,8 +39,7 @@ import { PhoneDockProvider } from '@/components/primitives/phone-dock-context';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
-import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
-import { stripCrowdsTopCorners } from '@/components/palette/toolbar-strip-tiles';
+import { useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 
@@ -296,12 +295,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // replaces the dock's Palette + Explorer buttons.
   const toolbarActive = toolbarLayout === true;
   // The strip only renders for an editor (not read-only) with the chrome up.
-  const viewportWidth = useViewportWidth();
-  const stripSpansTop =
-    toolbarActive &&
-    !readOnly &&
-    !chromeHidden &&
-    (isMobile || stripCrowdsTopCorners(viewportWidth));
+  const stripShown = toolbarActive && !readOnly && !chromeHidden;
   // The Explorer menu button: top-left on desktop, the far left of the strip
   // on a phone (no room for both across the top). A read-only visitor has no
   // strip, so it keeps the corner there.
@@ -330,6 +324,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
     toolbarActive,
     panelWiringFor,
   });
+
+  // Measured against the real top-corner stacks (useStripCrowdsCorners). A
+  // stack only renders while it holds a panel, so which top corners are
+  // occupied is part of what re-measures. A phone's strip always spans the top.
+  const topCornersKey = (['top-left', 'top-right'] as const)
+    .map((c) => dock.cornerStacks[c].filter((id) => panelEls[id] != null).join('+'))
+    .join('|');
+  const stripCrowds = useStripCrowdsCorners(cornerRefs, stripShown && !isMobile, topCornersKey);
+  const stripSpansTop = stripShown && (isMobile || stripCrowds);
   // Bucketing keys off the persisted placement ONLY (not which panel is
   // mid-drag): a dragged panel must stay in the same DOM parent for the
   // whole gesture — reparenting it would remount the component and drop

@@ -50,6 +50,14 @@ export default defineProject({ test: { environment: 'jsdom' } });
 - **Prefer pure-function tests.** The highest-value, lowest-cost units are the
   pure helpers: the diagram data model, the wire-format serializers, and the
   canvas geometry. Those are tested first.
+- **Speed budgets are CPU time, not wall-clock.** A test asserting that work
+  is fast (a linear scan, a converter, the sticky detector) measures it with
+  `cpuMsOf` from `@livediagram/vitest-config/cpu-time`, never
+  `performance.now()`. Turbo runs every package's suite at once, and a
+  wall-clock budget also counts the time a test waits for a core, which made
+  those tests flake on a busy machine. CPU time still catches the regression
+  the budget is for. The one exception is a test that asserts nothing WAITS
+  (no sleep, no retry delay): only wall-clock time can see a wait.
 - **Two D1 doubles in `apps/api`.** `src/test-d1.ts` records which SQL ran
   with which bindings, and has no schema. `src/test-sqlite-d1.ts` is a real
   in-memory SQLite (`node:sqlite`) with every migration applied and foreign

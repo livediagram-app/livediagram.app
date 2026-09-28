@@ -173,3 +173,54 @@ describe('Activity: an Action panel with several actions', () => {
     expect(actions.map((a) => a.name).sort()).toEqual(['Load test', 'Write the runbook']);
   });
 });
+
+// The cap (docs/specs/012-collaboration/action-panel.md "The data"): a hand-crafted save can't store or index
+// an unbounded list.
+describe('an Action panel list past the cap', () => {
+  it('is trimmed to 50 in the stored tab and the index', async () => {
+    const db = sqliteD1();
+    insert(db.sql, 'diagrams', {
+      id: 'D',
+      owner_id: 'owner',
+      name: 'Big',
+      shareable: 1,
+      saved_at: T0,
+      created_at: T0,
+    });
+    const actions = Array.from({ length: 80 }, (_, i) => ({
+      id: `a${i}`,
+      name: `Action ${i}`,
+      description: '',
+      assignee: { userId: 'owner', name: 'Me' },
+      teamId: null,
+      assignerId: 'owner',
+      assignerName: 'Me',
+      status: 'open',
+      createdAt: T0,
+      updatedAt: T0,
+    }));
+    const tab = {
+      id: 't1',
+      name: 'T',
+      elements: [
+        {
+          id: 'card',
+          type: 'shape',
+          shape: 'action-card',
+          x: 0,
+          y: 0,
+          width: 300,
+          height: 300,
+          actions,
+        },
+      ],
+    } as unknown as Tab;
+    await upsertTab(db.env, 'D', tab, 0);
+    const stored = db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get('t1') as {
+      data: string;
+    };
+    expect(JSON.parse(stored.data).elements[0].actions).toHaveLength(50);
+    const rows = db.sql.prepare('SELECT COUNT(*) AS n FROM collab_actions').get() as { n: number };
+    expect(rows.n).toBe(50);
+  });
+});

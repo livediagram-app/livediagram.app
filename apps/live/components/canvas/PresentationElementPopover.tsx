@@ -16,7 +16,13 @@
 // third rendering of a comment thread, with no delete handler and no self, so
 // the thread renders readable and inert.
 
-import { activeCommentCount, isBoxed, type BoxedElement, type Element } from '@livediagram/diagram';
+import {
+  activeCommentCount,
+  elementActions,
+  isBoxed,
+  type BoxedElement,
+  type Element,
+} from '@livediagram/diagram';
 import { CloseIcon } from '@livediagram/ui';
 
 import { CommentBubbles } from '@/components/canvas/collab/comment/CommentBubbles';
@@ -46,7 +52,7 @@ export function hasReadableDetail(element: Element): element is BoxedElement {
   if (!isBoxed(element)) return false;
   if (element.note?.trim()) return true;
   if (activeCommentCount(element.commentThread) > 0) return true;
-  return element.action !== undefined;
+  return elementActions(element).length > 0;
 }
 
 export function PresentationElementPopover({
@@ -62,8 +68,9 @@ export function PresentationElementPopover({
   const now = useRelativeNow();
   const note = element.note?.trim();
   const comments = activeCommentCount(element.commentThread);
-  // One assigned action per element (docs/specs/012-collaboration/assigned-actions.md), not a list.
-  const action = element.action;
+  // An element's actions: one on an ordinary element, an Action panel's list
+  // on a card (docs/specs/012-collaboration/action-panel.md), read the one way.
+  const actions = elementActions(element);
 
   // Clamped so a click near an edge still opens a fully visible card.
   const width = 320;
@@ -120,35 +127,40 @@ export function PresentationElementPopover({
         </Section>
       ) : null}
 
-      {action ? (
-        <Section title="Action">
-          <div className="flex flex-col">
-            <span className="flex items-baseline gap-1.5">
-              <span
-                aria-hidden
-                className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                  action.status === 'done' ? 'bg-emerald-500' : 'bg-amber-500'
-                }`}
-              />
-              <span
-                className={`min-w-0 flex-1 text-[11px] font-medium ${
-                  action.status === 'done'
-                    ? 'text-slate-400 line-through'
-                    : 'text-slate-700 dark:text-slate-200'
-                }`}
-              >
-                {action.name}
-              </span>
-            </span>
-            {action.description ? (
-              <span className="pl-3 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-                {action.description}
-              </span>
-            ) : null}
-            <span className="pl-3 text-[10px] text-slate-400 dark:text-slate-400">
-              {action.assignee.name ?? 'Teammate'} · {action.status === 'done' ? 'Done' : 'Open'}
-            </span>
-          </div>
+      {actions.length > 0 ? (
+        <Section title={actions.length === 1 ? 'Action' : 'Actions'}>
+          <ul className="flex flex-col gap-1.5">
+            {actions.map((action) => (
+              <li key={action.id} className="flex flex-col">
+                <span className="flex items-baseline gap-1.5">
+                  <span
+                    aria-hidden
+                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                      action.status === 'done' ? 'bg-emerald-500' : 'bg-amber-500'
+                    }`}
+                  />
+                  <span
+                    className={`min-w-0 flex-1 text-[11px] font-medium ${
+                      action.status === 'done'
+                        ? 'text-slate-400 line-through'
+                        : 'text-slate-700 dark:text-slate-200'
+                    }`}
+                  >
+                    {action.name}
+                  </span>
+                </span>
+                {action.description ? (
+                  <span className="pl-3 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+                    {action.description}
+                  </span>
+                ) : null}
+                <span className="pl-3 text-[10px] text-slate-400 dark:text-slate-400">
+                  {action.assignee.name ?? 'Teammate'} ·{' '}
+                  {action.status === 'done' ? 'Done' : 'Open'}
+                </span>
+              </li>
+            ))}
+          </ul>
         </Section>
       ) : null}
     </div>

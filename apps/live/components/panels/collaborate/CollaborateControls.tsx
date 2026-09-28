@@ -82,7 +82,14 @@ export function KindChips({
   onChange: (next: CollaborateKind) => void;
 }) {
   return (
-    <div role="group" aria-label="Filter by kind" className="flex items-center gap-1.5">
+    // A grid rather than a free row: All keeps its natural width and the other
+    // two share the rest, so "Comments 2" and "Actions 2" always fit the
+    // panel instead of the last chip running off its right edge.
+    <div
+      role="group"
+      aria-label="Filter by kind"
+      className="grid grid-cols-[auto_1fr_1fr] items-center gap-1"
+    >
       {KINDS.map((k) => {
         const active = k.id === value;
         return (
@@ -91,7 +98,7 @@ export function KindChips({
             type="button"
             aria-pressed={active}
             onClick={() => onChange(k.id)}
-            className={`inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-[11px] font-semibold transition-colors ${
+            className={`inline-flex h-7 min-w-0 items-center justify-center gap-1 rounded-full px-2 text-[11px] font-semibold transition-colors ${
               active
                 ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/30'
                 : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
