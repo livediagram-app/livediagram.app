@@ -115,6 +115,15 @@ vehicle that exercises code paths.
    ([Optical alignment](../004-interface-design/optical-alignment.md)). Each failure names the shape,
    the offset and why the shape was held to centring.
 
+8. **Presentation mode** (`presentation-mode.spec.ts`): a seeded two-slide deck presents from the Slide
+   Deck tool; Present frames slide one, the arrow key moves the camera to slide two, and leaving puts the
+   editor's view back exactly where it was
+   ([Presentation mode](../012-collaboration/presentation-mode.md)).
+9. **Two peers** (`realtime-peers.spec.ts`): an owner and a visitor on an edit link see each other
+   online, a visitor's edit reaches the owner live, the autosave keeps both people's edits across a
+   reload, and a visitor's walking avatar shows on the owner's canvas
+   ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).
+
 New browser-risky features should add one focused smoke here, not a
 broad suite; depth stays in unit tests where it's cheap.
 
