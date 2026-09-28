@@ -2,6 +2,7 @@ import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { Button, HoverCard } from '@livediagram/ui';
 import type { ShareLink } from '@/lib/api-client';
 import { SharePassTicket } from './SharePassTicket';
+import { usePassExit } from './usePassExit';
 import { EXPIRY_LABELS } from './share-dialog-parts';
 
 // One EXPIRED share link (docs/specs/013-workspace/share-link-expiry.md): the same pass, greyed,
@@ -18,11 +19,18 @@ export function ExpiredSharePass({
   busy: boolean;
   shareUrlFor: (code: string) => string;
   onExtend: (code: string) => void;
-  onDelete: (code: string) => void;
+  onDelete: (code: string) => Promise<void> | void;
 }) {
+  const exit = usePassExit(() => onDelete(link.code));
   const duration = link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry];
   return (
-    <SharePassTicket role={link.role} expired>
+    <SharePassTicket
+      role={link.role}
+      expired
+      fresh={exit.ticket.returning}
+      leaving={exit.ticket.leaving}
+      onLeft={exit.ticket.onLeft}
+    >
       <div className="flex items-center gap-2">
         <span className="inline-flex shrink-0 -rotate-3 items-center rounded border-2 border-rose-400 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:border-rose-500/70 dark:text-rose-300">
           <span className="text-optical-line text-optical-caps uppercase tracking-widest">
@@ -55,8 +63,8 @@ export function ExpiredSharePass({
         <span className="flex-1" />
         <button
           type="button"
-          onClick={() => onDelete(link.code)}
-          disabled={busy}
+          onClick={exit.leave}
+          disabled={busy || exit.ticket.leaving}
           aria-label="Delete expired link"
           className="rounded-md p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
         >

@@ -19,6 +19,7 @@ import { formatTimeLeftCompact } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { ShareCopyMenu } from './ShareCopyMenu';
 import { SharePassTicket } from './SharePassTicket';
+import { usePassExit } from './usePassExit';
 import {
   ClockIcon,
   CodeGlyph,
@@ -42,6 +43,7 @@ export function ActiveSharePass({
   origin,
   copied,
   fresh,
+  highlight,
   busy,
   sharePassword,
   tabs,
@@ -61,6 +63,8 @@ export function ActiveSharePass({
   copied: boolean;
   // Just issued in this dialog session.
   fresh: boolean;
+  // Just issued and still worth pointing at.
+  highlight: boolean;
   busy: boolean;
   // Non-null while the share is password-gated — the Live image offer
   // hides then (an <img> can't supply a password).
@@ -73,7 +77,7 @@ export function ActiveSharePass({
   setLiveImageTabId: (id: string | null) => void;
   shareUrlFor: (code: string) => string;
   onCopy: (code: string) => void;
-  onRevoke: (code: string) => void;
+  onRevoke: (code: string) => Promise<void> | void;
   // Change which tabs this link opens (docs/specs/013-workspace/tab-scoped-share-links.md). Null on a
   // single-tab diagram, where there is nothing to choose between.
   onRescope: ((code: string, tabId: string | null) => void) | null;
@@ -83,10 +87,17 @@ export function ActiveSharePass({
   const scoped = link.tabId !== null;
   // The bin the revoke confirmation anchors to while it is open.
   const [revokeAnchor, setRevokeAnchor] = useState<HTMLElement | null>(null);
+  const exit = usePassExit(() => onRevoke(link.code));
   const imageTabParam = scoped ? undefined : liveImageTabParam;
   const metaLabel = 'text-[10px] font-semibold uppercase tracking-wider text-slate-400';
   return (
-    <SharePassTicket role={link.role} fresh={fresh}>
+    <SharePassTicket
+      role={link.role}
+      fresh={fresh || exit.ticket.returning}
+      highlight={highlight}
+      leaving={exit.ticket.leaving}
+      onLeft={exit.ticket.onLeft}
+    >
       {/* Line 1: the link, with its copy button inside the field's right
           edge: the field IS the thing being copied, so the action lives in it. */}
       <div className="relative flex items-center">
@@ -278,7 +289,7 @@ export function ActiveSharePass({
             confirmLabel="Revoke"
             onConfirm={() => {
               setRevokeAnchor(null);
-              onRevoke(link.code);
+              exit.leave();
             }}
             onCancel={() => setRevokeAnchor(null)}
           />

@@ -4,7 +4,7 @@
 // scoped to one tab, an existing link can be rescoped, and a scoped link's
 // live image always shows its own tab.
 
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ShareLink } from '@/lib/api-client';
 import { ShareDialog } from './ShareDialog';
@@ -53,6 +53,14 @@ function renderDialog(over: Partial<ShareDialogProps> = {}) {
 afterEach(() => {
   cleanup();
 });
+
+// Finish a row's CSS animation. jsdom has no AnimationEvent, so React listens
+// for the prefixed name there (real browsers get the standard one).
+function endAnimation(el: Element) {
+  act(() => {
+    el.dispatchEvent(new Event('webkitAnimationEnd', { bubbles: true }));
+  });
+}
 
 describe('ShareDialog scope', () => {
   it('creates an All-tabs link by default', async () => {
@@ -131,6 +139,11 @@ describe('ShareDialog passes', () => {
     expect(props.onRevokeLink).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Revoke link' }));
     fireEvent.click(screen.getByRole('button', { name: 'Revoke' }));
+    // The pass closes its space first; the revoke waits for that close.
+    const row = screen.getByLabelText('View pass link').closest('li')!;
+    expect(row.className).toContain('animate-row-close');
+    expect(props.onRevokeLink).not.toHaveBeenCalled();
+    endAnimation(row);
     await vi.waitFor(() => expect(props.onRevokeLink).toHaveBeenCalledWith('CODE2345'));
   });
 
@@ -143,6 +156,20 @@ describe('ShareDialog passes', () => {
       expect(writeText).toHaveBeenCalledWith('https://x.test/diagram/shared?s=CODE2345'),
     );
     await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Copied' })).toBeTruthy());
+  });
+
+  it('opens a pass back up when its revoke fails', async () => {
+    // The handler resolves but the link stays in the list (the failure path).
+    const props = renderDialog({
+      links: [link()],
+      onRevokeLink: vi.fn().mockResolvedValue(undefined),
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Revoke link' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Revoke' }));
+    const row = screen.getByLabelText('View pass link').closest('li')!;
+    endAnimation(row);
+    await vi.waitFor(() => expect(props.onRevokeLink).toHaveBeenCalled());
+    await vi.waitFor(() => expect(row.className).toContain('animate-row-open'));
   });
 
   it('says the diagram is private until a pass is live', () => {

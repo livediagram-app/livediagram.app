@@ -111,6 +111,14 @@
     cubic-bezier(0.16, 1, 0.3, 1);
   --animate-dropdown-up: dropdown-open var(--transition-duration-micro)
     cubic-bezier(0.16, 1, 0.3, 1);
+  /* A list item that opens or closes its own space: the row's height eases
+     between 0 and its natural size (grid-template-rows 0fr <-> 1fr, on a
+     one-row grid wrapping an overflow-hidden child), so its neighbours glide
+     instead of jumping, while the content fades and settles. Share-dialog
+     passes (docs/specs/007-editor/live-app.md "Share dialog"). */
+  --animate-row-open: row-open var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-row-close: row-close var(--transition-duration-long) cubic-bezier(0.4, 0, 0.2, 1)
+    forwards;
   /* Empty-state illustration motion (--animate-empty-*) now lives in the
      shared tailwind theme (@livediagram/tailwind-config) so every app's
      EmptyState animates alike; see packages/ui/src/EmptyState.tsx. */
@@ -244,6 +252,32 @@
     transform: translateX(0);
     opacity: 1;
     max-height: 80px;
+  }
+}
+
+@keyframes row-open {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes row-close {
+  from {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transform: scale(0.98);
   }
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, useCopiedFlash } from '@livediagram/ui';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -21,6 +21,9 @@ import { ShareOfflineGate } from './ShareOfflineGate';
 import { SharePasswordSection } from './SharePasswordSection';
 import { ShareStatus } from './ShareStatus';
 import { SECTION_LABEL } from './share-dialog-parts';
+
+// How long a just-issued pass wears its highlight ring before it fades.
+const PASS_HIGHLIGHT_MS = 1400;
 
 // Share-diagram modal, built on the pass metaphor (docs/specs/007-editor/live-app.md "Share dialog"):
 // every share link is a ticket that admits whoever holds it. Top to bottom: a
@@ -55,6 +58,11 @@ export function ShareDialog({
   const { copied: copiedCode, flash } = useCopiedFlash<string>(1500);
   // The pass issued in this dialog session, which pops in on arrival.
   const [freshCode, setFreshCode] = useState<string | null>(null);
+  // ...and, for a beat after it lands, the one wearing the highlight ring
+  // (a timer, then the ring's own 250ms fade: docs/specs/004-interface-design/motion.md).
+  const [highlightCode, setHighlightCode] = useState<string | null>(null);
+  const highlightTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(highlightTimer.current), []);
   const multiTab = tabs.length > 1;
   // Which tab the Live image renders (docs/specs/013-workspace/live-image-share.md). null = the first tab,
   // which the server serves from its cached snapshot, so the URL omits
@@ -106,6 +114,9 @@ export function ShareDialog({
       const link = await onCreateLink(role, expiry, tabId);
       if (!link) return;
       setFreshCode(link.code);
+      setHighlightCode(link.code);
+      window.clearTimeout(highlightTimer.current);
+      highlightTimer.current = window.setTimeout(() => setHighlightCode(null), PASS_HIGHLIGHT_MS);
       try {
         await writeClipboard(link.code);
         toast.success('Pass created and copied');
@@ -170,7 +181,7 @@ export function ShareDialog({
                 : 'Every pass has expired. Extend one below or issue a new one.'}
             </p>
           ) : (
-            <ul className="flex flex-col gap-2">
+            <ul className="-mx-0.5 -mt-0.5 -mb-2 flex flex-col">
               {activeLinks.map((link) => (
                 <ActiveSharePass
                   key={link.code}
@@ -179,6 +190,7 @@ export function ShareDialog({
                   origin={origin}
                   copied={copiedCode === link.code}
                   fresh={freshCode === link.code}
+                  highlight={highlightCode === link.code}
                   busy={busy}
                   sharePassword={sharePassword}
                   tabs={tabs}
@@ -206,7 +218,7 @@ export function ShareDialog({
               Expired
               <CountBadge count={inactiveLinks.length} />
             </p>
-            <ul className="flex flex-col gap-2">
+            <ul className="-mx-0.5 -mt-0.5 -mb-2 flex flex-col">
               {inactiveLinks.map((link) => (
                 <ExpiredSharePass
                   key={link.code}
