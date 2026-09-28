@@ -42,16 +42,17 @@ export type TemplateKind =
   // arrow loop. An extra, alongside the other strategy / wireframing
   // starters.
   | 'flywheel'
-  // Logo-design lockup sheet: one canvas with all four common
-  // wordmark compositions side by side (icon-left / icon-above,
-  // each with and without a tagline) so a designer can pick the
-  // composition that fits, delete the rest, and iterate.
+  // Logo-design exploration sheet: six labelled artboards (horizontal /
+  // stacked lockups with and without a tagline, the mark as an app icon,
+  // a one-colour version) plus the brand palette, so a designer picks
+  // the composition that fits, deletes the rest, and iterates.
   | 'logo-design'
   // Gantt chart: a month header row plus six cascading milestone rows
   // (label + full-width track + coloured duration bar). A project-
   // planning starter, and an extra.
   | 'gantt'
-  // Live card: a compact event / status card lockup. An extra.
+  // Group card: a greeting card the whole team signs (cover + message
+  // wall). The kind id predates the name. An extra.
   | 'live-card'
   // Comparison table: a plan-comparison grid (the table element).
   | 'comparison-table'
@@ -161,7 +162,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'mindmap-tree',
     title: 'Tree mind map',
-    description: 'A left-to-right hierarchy: root, branches and their sub-topics.',
+    description: 'A left-to-right outline: a bold root, four branches and two sub-topics each.',
   },
   {
     kind: 'mindmap-bubble',
@@ -176,7 +177,8 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'retrospective',
     title: 'Retrospective',
-    description: '"What went well", "What didn\'t", "Action items".',
+    description:
+      'Went well, To improve and Ideas columns, a mood check, a vote and an Action items checklist.',
   },
   {
     kind: 'flowchart',
@@ -186,7 +188,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'swimlane',
     title: 'Swimlane flowchart',
-    description: 'A cross-functional process split across role lanes.',
+    description: 'An order from click to doorstep across four role lanes.',
     extra: true,
   },
   {
@@ -198,13 +200,13 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'approval-workflow',
     title: 'Approval workflow',
-    description: 'Two-stage sign-off with a request-changes rework loop.',
+    description: 'Manager and finance sign-off in role lanes, with rework and decline paths.',
     extra: true,
   },
   {
     kind: 'data-flow',
     title: 'Data flow diagram',
-    description: 'Entities, processes and data stores wired by data flows.',
+    description: 'A level-1 DFD of an online shop, with a key to the notation.',
     extra: true,
   },
   {
@@ -220,7 +222,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'timeline',
     title: 'Timeline',
-    description: 'Horizontal line with milestone markers, above + below.',
+    description: 'A year of milestones on one line, coloured by status, with a Today marker.',
   },
   {
     kind: 'milestone-timeline',
@@ -237,25 +239,26 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'venn',
     title: 'Venn diagram',
-    description: 'Three overlapping sets with shared and exclusive labels.',
+    description:
+      'Desirable, feasible, viable: every overlap named, with the sweet spot in the middle.',
     extra: true,
   },
   {
     kind: 'journey',
     title: 'User journey',
-    description: 'Stages a user moves through, with feeling notes below each.',
+    description: 'A journey map: stages across, doing / thinking / feeling / pains / ideas down.',
     extra: true,
   },
   {
     kind: 'fishbone',
     title: 'Fishbone',
-    description: 'Cause-and-effect spine with four contributing categories.',
+    description: 'Cause and effect: six bones of likely causes feeding one problem.',
     extra: true,
   },
   {
     kind: 'pyramid',
     title: 'Pyramid',
-    description: 'Four stacked tiers: foundation at the bottom, peak on top.',
+    description: 'A five-tier strategy pyramid, purpose down to initiatives, each tier explained.',
     extra: true,
   },
   {
@@ -268,7 +271,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'laptop-wireframe',
     title: 'Laptop wireframe',
     description:
-      'A laptop frame with header, sidebar and content placeholders for desktop UI work.',
+      'An analytics dashboard on a laptop: nav, sidebar, KPI row, a chart and a recent sign-ups table.',
     extra: true,
   },
   {
@@ -288,7 +291,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'logo-design',
     title: 'Logo design',
     description:
-      'Four wordmark lockups on one canvas (icon-left / icon-above, each with and without a tagline). Pick a composition, delete the rest, replace the placeholder icons with your own.',
+      'A brand exploration sheet: six labelled artboards of lockups (horizontal, stacked, app icon, one colour) plus a palette strip. Pick one, delete the rest, swap in your own mark.',
     extra: true,
   },
   {
@@ -300,8 +303,9 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'live-card',
-    title: 'Live card',
-    description: 'A compact event / status card lockup you can drop in and rename.',
+    title: 'Group card',
+    description:
+      'A greeting card the whole team signs: a cover with a photo, and a wall of signed notes with a slot for yours.',
     extra: true,
   },
   {
@@ -314,7 +318,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'system-architecture',
     title: 'System architecture',
     description:
-      'A request path through a small service topology: client → API gateway → services → database + cache.',
+      'A vendor-neutral logical architecture in tiered lanes: clients, edge, services and data, wired with labelled protocols.',
     extra: true,
   },
   {
@@ -383,7 +387,8 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'empathy-map',
     title: 'Empathy map',
-    description: 'Says / Thinks / Does / Feels quadrants around a central persona.',
+    description:
+      'A persona over Says / Thinks / Does / Feels quadrants, with a Pains and Gains strip.',
     extra: true,
   },
   {

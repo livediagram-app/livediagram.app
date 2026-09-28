@@ -1,227 +1,159 @@
-// Per-template element builders for the diagram-style templates: venn,
-// journey, fishbone, pyramid and flywheel. Split out of template-builders.ts
-// to keep each file under the ~1000-line budget; build-template dispatches
-// here. Each builder is pure: (cx, cy) -> Element[].
+// Per-template element builders for the diagram-style templates: pyramid and
+// flywheel, plus re-exports of the Venn, journey map and fishbone. Split out of template-builders.ts to keep each file
+// under the ~400-line target; build-template dispatches here. Each builder is
+// pure: (cx, cy) -> Element[].
 //
-// The three timelines moved to ./template-builders-timelines: they were half
-// this file and are a family of their own.
+// The three timelines moved to ./template-builders-timelines, and the Venn,
+// journey map and fishbone grew into files of their own
+// (./template-builders-venn, -journey, -fishbone); they are re-exported below
+// so build-template keeps one import for the family.
 import {
   createArrow,
   createPinnedArrow,
   createShape,
-  createSticky,
   createText,
   type Anchor,
   type Element,
 } from '@livediagram/diagram';
-import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+export { buildVenn } from './template-builders-venn';
 
-// Three overlapping outlined circles arranged in a triangle so the
-// intersections are visible. Each set gets a label rendered outside
-// the circle (toward the corner away from the centroid) and there's
-// a small "All" label at the centre intersection. Outlined-only
-// (no fill) so the overlap reads cleanly.
-export function buildVenn(cx: number, cy: number): Element[] {
-  const radius = 380;
-  // Triangle offsets — each circle sits ~0.6r from the centroid so
-  // pairwise overlap is meaningful but the three-way intersection
-  // stays a recognisable lens.
-  const offset = radius * 0.6;
-  // The classic design-thinking lenses: an idea worth building sits where
-  // Desirable (people want it), Feasible (we can build it), and Viable (it
-  // sustains a business) overlap. Concrete, recognisable, and easy to retheme.
-  const centers = [
-    { x: cx, y: cy - offset, label: 'Desirable', tx: 0, ty: -radius - 60 },
-    { x: cx - offset * 0.95, y: cy + offset * 0.55, label: 'Feasible', tx: -radius - 120, ty: 0 },
-    { x: cx + offset * 0.95, y: cy + offset * 0.55, label: 'Viable', tx: radius + 120, ty: 0 },
-  ];
-  const labelW = 320;
-  const labelH = 80;
-  const elements: Element[] = [];
-  centers.forEach((c) => {
-    elements.push({
-      ...createShape('circle', c.x - radius, c.y - radius),
-      width: radius * 2,
-      height: radius * 2,
-      fillColor: '#ffffff',
-      opacity: 0.7,
-    });
-    elements.push({
-      ...createText(c.x - labelW / 2 + c.tx, c.y - labelH / 2 + c.ty),
-      width: labelW,
-      height: labelH,
-      label: c.label,
-      textSize: 'md',
-      textAlignX: 'center',
-    });
-  });
-  // Centre label sits at the geometric centroid of the three circle
-  // centres — that's where all three lenses overlap.
-  const centroidX = (centers[0]!.x + centers[1]!.x + centers[2]!.x) / 3;
-  const centroidY = (centers[0]!.y + centers[1]!.y + centers[2]!.y) / 3;
-  elements.push({
-    ...createText(centroidX - 160, centroidY - 40),
-    width: 320,
-    height: 80,
-    label: 'Sweet spot',
-    textSize: 'lg',
-    textAlignX: 'center',
-  });
-  return elements;
-}
+export { buildJourney } from './template-builders-journey';
+export { buildFishbone } from './template-builders-fishbone';
 
-// Customer-journey scaffold: a row of stage cards connected by arrows,
-// with a sticky note under each stage capturing how the user feels at
-// that moment. Five stages is the sweet spot — more crowds; fewer
-// reads as a flowchart.
-export function buildJourney(cx: number, cy: number): Element[] {
-  const stages: { label: string; feeling: string }[] = [
-    { label: 'Awareness', feeling: 'Curious' },
-    { label: 'Consideration', feeling: 'Comparing options' },
-    { label: 'Decision', feeling: 'Confident' },
-    { label: 'Onboarding', feeling: 'Eager but uncertain' },
-    { label: 'Loyalty', feeling: 'Advocate' },
-  ];
-  const cardW = 208;
-  const cardH = 94;
-  const stickyW = 208;
-  const stickyH = 126;
-  const gap = 56;
-  const vGap = 44;
-  const totalW = stages.length * cardW + (stages.length - 1) * gap;
-  const startX = cx - totalW / 2;
-  const blockH = cardH + vGap + stickyH;
-  const cardY = cy - blockH / 2;
-  const stickyY = cardY + cardH + vGap;
+const MUTED = '#64748b';
 
-  // Stage cards + their connectors are the journey's scaffold layer
-  // (docs/specs/006-diagram/layers.md); the feeling stickies users rewrite ride the content layer.
-  const cards: Element[] = [];
-  const stickies: Element[] = [];
-  stages.forEach((s, i) => {
-    const x = startX + i * (cardW + gap);
-    cards.push({
-      ...createShape('square', x, cardY),
-      width: cardW,
-      height: cardH,
-      label: s.label,
-      textSize: 'md',
-      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-    });
-    stickies.push({
-      ...createSticky(x, stickyY),
-      width: stickyW,
-      height: stickyH,
-      label: s.feeling,
-      textSize: 'sm',
-      layerId: TEMPLATE_CONTENT_LAYER_ID,
-    });
-  });
-  // Connectors PINNED between adjacent stage cards, so they reflow when
-  // the user repositions a stage rather than floating free.
-  const arrows: Element[] = [];
-  for (let i = 0; i < cards.length - 1; i++) {
-    arrows.push({
-      ...createPinnedArrow(cards[i]!.id, 'e', cards[i + 1]!.id, 'w'),
-      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-    });
-  }
-  return [...cards, ...stickies, ...arrows];
-}
-
-// Cause-and-effect (Ishikawa) skeleton: a horizontal spine arrow
-// pointing at the "Effect" card, with four diagonal category branches
-// (two above, two below) feeding into the spine. The branches are
-// arrows so the visual reads as causes flowing INTO the spine.
-export function buildFishbone(cx: number, cy: number): Element[] {
-  const spineLength = 600;
-  const branchOffset = 130;
-  const branchSpacing = 180;
-  const effectW = 160;
-  const effectH = 70;
-  const categoryW = 130;
-  const categoryH = 40;
-
-  const spineLeft = cx - spineLength / 2;
-  const spineRight = cx + spineLength / 2;
-  const elements: Element[] = [];
-
-  // Effect card at the head of the spine. A concrete problem statement
-  // (rather than the literal word "Effect") shows what the four cause
-  // categories are meant to explain; users swap it for their own.
-  elements.push({
-    ...createShape('square', spineRight, cy - effectH / 2),
-    width: effectW,
-    height: effectH,
-    label: 'Late delivery',
-    textSize: 'md',
-    // The effect is the outcome every cause feeds into → hero preset.
-    colorPreset: 'bold',
-  });
-
-  // Spine arrow → pointing at the Effect card.
-  elements.push(createArrow(spineLeft, cy, spineRight, cy));
-
-  // Four category branches feeding into the spine. The two above sit
-  // at branchOffset above the spine; the two below sit at branchOffset
-  // below. branchSpacing pushes them apart along x so they fan out.
-  const categories = [
-    { label: 'People', x: cx - branchSpacing, above: true },
-    { label: 'Process', x: cx + branchSpacing * 0.3, above: true },
-    { label: 'Equipment', x: cx - branchSpacing, above: false },
-    { label: 'Materials', x: cx + branchSpacing * 0.3, above: false },
-  ];
-  categories.forEach((c) => {
-    const branchY = c.above ? cy - branchOffset : cy + branchOffset;
-    const cardY = c.above ? branchY - categoryH : branchY;
-    elements.push({
-      ...createShape('square', c.x - categoryW / 2, cardY),
-      width: categoryW,
-      height: categoryH,
-      label: c.label,
-      textSize: 'sm',
-    });
-    // Branch arrow from the corner of the category card down/up to
-    // a point on the spine to the right of the card.
-    const fromX = c.x;
-    const fromY = branchY;
-    const toX = c.x + 110;
-    const toY = cy;
-    elements.push(createArrow(fromX, fromY, toX, toY));
-  });
-  return elements;
-}
-
-// Four-tier pyramid built from squares of decreasing width, stacked
-// peak-up. Generic labels because the use case ranges from Maslow's
-// hierarchy to "strategy / tactics / operations / daily" decks —
-// users rename per their domain.
+// A true pyramid: one clean triangle banded into five tiers (Purpose at the
+// peak down to Initiatives at the base). Each band is a triangle sharing the
+// apex and the slope, drawn largest first, so every smaller one covers the
+// top of the one behind it and what shows is exactly that tier's band; the
+// slanted sides line up by construction. The bands ramp from a saturated
+// peak to a pale foundation (kept light enough that the dark ink every light
+// theme gives text stays legible on the locked fills), and a rail on the right gives every tier its
+// guiding question plus a worked answer, so the template teaches the model
+// while it scaffolds a real strategy.
 export function buildPyramid(cx: number, cy: number): Element[] {
-  const tiers = ['Vision', 'Strategy', 'Tactics', 'Operations'];
-  const tierH = 110;
-  const baseWidth = 760;
-  const widthStep = 140;
-  const elements: Element[] = [];
-  const totalH = tiers.length * tierH;
-  const topY = cy - totalH / 2;
-  tiers.forEach((label, i) => {
-    // First array entry renders as the apex: narrowest on top, widening
-    // down to the full-width foundation. (This used to subtract i itself,
-    // which put the WIDEST tier on top — an upside-down pyramid.)
-    const tierW = baseWidth - (tiers.length - 1 - i) * widthStep;
-    const x = cx - tierW / 2;
-    const y = topY + i * tierH;
-    elements.push({
-      ...createShape('square', x, y),
-      width: tierW,
-      height: tierH,
-      label,
+  type Tier = { label: string; question: string; answer: string; fill: string; ink: string };
+  const tiers: Tier[] = [
+    {
+      label: 'Purpose',
+      question: 'Why do we exist?',
+      answer: 'Help every team think out loud, together',
+      fill: '#3b82f6',
+      ink: '#0f172a',
+    },
+    {
+      label: 'Vision',
+      question: 'Where are we going?',
+      answer: 'The first canvas a team opens, by 2028',
+      fill: '#60a5fa',
+      ink: '#0f172a',
+    },
+    {
+      label: 'Strategy',
+      question: 'How will we win?',
+      answer: 'Free, open and faster than a whiteboard',
+      fill: '#93c5fd',
+      ink: '#0f172a',
+    },
+    {
+      label: 'Goals',
+      question: 'What will we hit this year?',
+      answer: '50k weekly teams, NPS 55',
+      fill: '#bfdbfe',
+      ink: '#0f172a',
+    },
+    {
+      label: 'Initiatives',
+      question: 'What are we doing now?',
+      answer: 'Templates, live cursors, a mobile app',
+      fill: '#e0ecff',
+      ink: '#0f172a',
+    },
+  ];
+  const baseW = 1000;
+  const tierH = 112;
+  const H = tiers.length * tierH;
+  const railGap = 64;
+  const railW = 380;
+  // The rail hangs off the right, so shift the pyramid left by half of it to
+  // keep the whole composition centred on (cx, cy).
+  const px = cx - (railGap + railW) / 2;
+  const top = cy - H / 2;
+  // Half-width of the triangle at a given y.
+  const half = (y: number) => ((y - top) / H) * (baseW / 2);
+  // The triangle silhouette spans 2..98% of its box on both axes, so a band
+  // whose visible triangle is h tall and w wide needs a box 1/0.96 larger,
+  // nudged up and left by the 2% inset.
+  const inset = 0.96;
+
+  const bands: Element[] = [];
+  const labels: Element[] = [];
+  tiers.forEach((t, i) => {
+    const y1 = top + (i + 1) * tierH;
+    const visW = half(y1) * 2;
+    const visH = y1 - top;
+    const boxW = visW / inset;
+    const boxH = visH / inset;
+    bands.push({
+      ...createShape('triangle', px - boxW / 2, top - boxH * 0.02),
+      width: boxW,
+      height: boxH,
+      label: '',
+      fillColor: t.fill,
+      // The ramp is the reading order (peak = most enduring), so it
+      // survives a theme switch.
+      themeLockFill: true,
+    });
+
+    // Tier names are overlay text (the funnel's convention): a shape's own
+    // label centres on its box, which here is the whole triangle above the
+    // band. The apex name sits in its lower, wider half.
+    const y0 = y1 - tierH;
+    const nameY = i === 0 ? y1 - 44 : (y0 + y1) / 2 - 18;
+    labels.push({
+      ...createText(px - 120, nameY),
+      width: 240,
+      height: 36,
+      label: t.label,
       textSize: 'md',
-      // The apex (first tier) is the focal point of the pyramid → hero preset.
-      ...(i === 0 ? { colorPreset: 'bold' } : {}),
+      textBold: true,
+      textAlignX: 'center',
+      textColor: t.ink,
+    });
+
+    // Rail: a dotted leader from the band's slanted edge, then the tier's
+    // guiding question over a muted worked answer.
+    const midY = (y0 + y1) / 2;
+    const railX = px + baseW / 2 + railGap;
+    labels.push({
+      ...createArrow(px + half(midY) + 14, midY, railX - 14, midY),
+      arrowEnds: 'none',
+      strokeStyle: 'dotted',
+      strokeColor: '#cbd5e1',
+      routeBehind: false,
+    });
+    labels.push({
+      ...createText(railX, midY - 32),
+      width: railW,
+      height: 30,
+      label: t.question,
+      textSize: 'md',
+      textBold: true,
+      textAlignX: 'left',
+      textColor: '#1d4ed8',
+    });
+    labels.push({
+      ...createText(railX, midY + 2),
+      width: railW,
+      height: 30,
+      label: t.answer,
+      textSize: 'sm',
+      textAlignX: 'left',
+      textColor: MUTED,
     });
   });
-  return elements;
+  // Largest band first, so each smaller one paints over the top of it.
+  return [...bands.reverse(), ...labels];
 }
 
 // Flywheel: central hub circle + four reinforcing-stage sector

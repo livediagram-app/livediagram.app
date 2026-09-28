@@ -268,7 +268,11 @@ describe('layered templates (docs/specs/006-diagram/layers.md)', () => {
     Record<TemplateKind, { names: [string, string]; scaffold: number; content: number }>
   > = {
     kanban: { names: ['Board', 'Cards'], scaffold: 9, content: 36 },
-    retrospective: { names: ['Board', 'Stickies'], scaffold: 6, content: 9 },
+    // Board: 4 column containers, 4 headers, 4 hints, 4 glyphs, the
+    // subtitle, the rail hint and the Shout-outs heading. Stickies: the
+    // title, 9 notes, the mood check, 2 session buttons, the actions
+    // checklist, the shout-out note and its sticker.
+    retrospective: { names: ['Board', 'Stickies'], scaffold: 19, content: 16 },
     'prioritization-matrix': { names: ['Axes', 'Items'], scaffold: 8, content: 5 },
     'affinity-map': { names: ['Board', 'Stickies'], scaffold: 5, content: 9 },
     'user-story-map': { names: ['Backbone', 'Stories'], scaffold: 6, content: 12 },
@@ -276,19 +280,29 @@ describe('layered templates (docs/specs/006-diagram/layers.md)', () => {
     gantt: { names: ['Grid', 'Bars'], scaffold: 25, content: 6 },
     swot: { names: ['Quadrants', 'Notes'], scaffold: 12, content: 13 },
     'business-model-canvas': { names: ['Canvas', 'Notes'], scaffold: 28, content: 19 },
-    'empathy-map': { names: ['Quadrants', 'Notes'], scaffold: 12, content: 9 },
+    // Six blocks (4 quadrants + Pains / Gains) of container, header and
+    // glyph, plus the persona card; notes are the 12 stickies plus the
+    // persona's sticker, name and goal.
+    'empathy-map': { names: ['Quadrants', 'Notes'], scaffold: 19, content: 15 },
     'sequence-diagram': { names: ['Lifelines', 'Messages'], scaffold: 8, content: 6 },
+    'system-architecture': { names: ['Tiers', 'Components'], scaffold: 4, content: 23 },
     'mobile-wireframe': { names: ['Frames', 'UI'], scaffold: 3, content: 40 },
-    'laptop-wireframe': { names: ['Frames', 'UI'], scaffold: 1, content: 21 },
+    // The laptop is lid, display, base and hinge notch.
+    'laptop-wireframe': { names: ['Frames', 'UI'], scaffold: 4, content: 22 },
     'browser-wireframe': { names: ['Frames', 'UI'], scaffold: 1, content: 28 },
     'slide-deck': { names: ['Frames', 'Content'], scaffold: 7, content: 31 },
     storyboard: { names: ['Frames', 'Content'], scaffold: 13, content: 18 },
-    timeline: { names: ['Spine', 'Milestones'], scaffold: 1, content: 15 },
+    // Spine + the three-entry status legend stay put; each of the six
+    // milestones brings a dot, a title and a date, plus the Today marker + pill.
+    timeline: { names: ['Spine', 'Milestones'], scaffold: 7, content: 20 },
     // Title + spine stay put; each of the five milestones contributes a
     // dot, a pinned stem, a date chip, a card and a description note.
     'milestone-timeline': { names: ['Spine', 'Milestones'], scaffold: 2, content: 25 },
     'milestone-timeline-vertical': { names: ['Spine', 'Milestones'], scaffold: 2, content: 25 },
-    journey: { names: ['Stages', 'Notes'], scaffold: 9, content: 5 },
+    // Title, five stage chips + their four arrows, five row bands + five
+    // gutter labels, and the Feeling row's +/- cues. Content is the twenty
+    // stickies, five mood faces and the four curve segments between them.
+    journey: { names: ['Stages', 'Notes'], scaffold: 22, content: 29 },
     // Shell: title + outer wall + 7 rooms + 7 room captions + 7 doorways
     // + the scale caption. Furniture is the 22 movable pieces.
     'floor-plan': { names: ['Rooms', 'Furniture'], scaffold: 24, content: 21 },
@@ -463,28 +477,36 @@ describe('wireframe templates', () => {
     expect(labels).toContain('Account');
   });
 
-  it('laptop-wireframe drops a laptop frame with header, sidebar nav, and dashboard cards', () => {
+  it('laptop-wireframe drops a front-on laptop around a working analytics dashboard', () => {
     const tab = buildTemplatedTab('laptop-wireframe', 'brand', 'tab-1', 'laptop');
-    const laptops = tab.elements.filter((el) => el.type === 'shape' && el.shape === 'laptop');
-    expect(laptops).toHaveLength(1);
-    // No fixed shape count — the scaffold has many small elements
-    // and that's the point. Floor it at enough to confirm we're
-    // shipping a real UI shell rather than a labelled empty frame.
-    expect(tab.elements.length).toBeGreaterThan(15);
+    // Drawn from plain shapes, not the `laptop` device shape, whose own
+    // keyboard deck took a third of the frame.
+    expect(tab.elements.some((el) => el.type === 'shape' && el.shape === 'laptop')).toBe(false);
     const labels = tab.elements
       .map((el) => ('label' in el ? el.label : undefined))
       .filter((l): l is string => Boolean(l));
-    // Top-level chrome: brand logo + primary nav pills.
-    expect(labels).toContain('Logo');
-    expect(labels).toContain('Home');
-    expect(labels).toContain('Projects');
-    // Sidebar nav rows.
-    expect(labels).toContain('Overview');
-    expect(labels).toContain('Settings');
-    // Stat cards.
-    expect(labels).toContain('Active users');
-    expect(labels).toContain('Revenue');
-    expect(labels).toContain('Conversion');
+    // Top nav, sidebar with its active page, and the page header.
+    for (const l of ['Logo', 'Home', 'Projects', 'Search…', 'Overview', 'Settings', 'Last 30 days'])
+      expect(labels).toContain(l);
+    const shapes = tab.elements.filter(
+      (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> => el.type === 'shape',
+    );
+    // Only the active nav row is tinted.
+    expect(shapes.filter((el) => el.colorPreset === 'soft').map((el) => el.label)).toEqual([
+      'Overview',
+    ]);
+    // Real KPIs with deltas rather than placeholder zeros.
+    const stats = shapes.find((el) => el.shape === 'stat-row')?.stats ?? [];
+    expect(stats).toHaveLength(4);
+    expect(stats.every((st) => st.value !== '0' && /[▲▼]/.test(st.caption))).toBe(true);
+    // A weekly chart beside a recent sign-ups table.
+    expect(shapes.find((el) => el.shape === 'line-chart')?.lineSeries).toHaveLength(2);
+    const table = tab.elements.find((el) => el.type === 'table');
+    expect(table && table.type === 'table' ? table.cells[0] : []).toEqual([
+      'Customer',
+      'Plan',
+      'When',
+    ]);
   });
 
   it('slide-deck drops four content-rich slides connected in reading order', () => {
@@ -541,29 +563,33 @@ describe('wireframe templates', () => {
 // these tests are the actual safety net.
 
 describe('board templates', () => {
-  it('retrospective drops three columns in the Mad / Sad / Glad framework', () => {
+  it('retrospective runs from a mood check to owned action items', () => {
     const tab = buildTemplatedTab('retrospective', 'brand', 'tab-1', 'retro');
     const labels = tab.elements
       .map((el) => ('label' in el ? el.label : undefined))
       .filter((l): l is string => Boolean(l));
-    // The framework lives in the three column headers. Anything
-    // else (sticky note text, container background) can move
-    // around without breaking the retro.
-    expect(labels).toContain('Mad');
-    expect(labels).toContain('Sad');
-    expect(labels).toContain('Glad');
-    // Three column containers, each its own boxed shape. Pinning
-    // the count stops a "lets merge columns" change from sneaking
-    // through.
-    const containerLabels = (['Mad', 'Sad', 'Glad'] as const).filter((name) =>
-      labels.includes(name),
+    // The three note columns plus the column that closes the retro out.
+    for (const col of ['Went well', 'To improve', 'Ideas', 'Action items']) {
+      expect(labels).toContain(col);
+    }
+    const shapes = tab.elements.filter(
+      (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> => el.type === 'shape',
     );
-    expect(containerLabels).toHaveLength(3);
-    // Sticky notes (the rows the user fills in) are the second
-    // element type that matters. The retro ships with sticky-note
-    // starters so the template isn't a "fill in blank" exercise.
+    // It opens on a fist-of-five and ships the two tools it is run with.
+    expect(shapes.find((el) => el.shape === 'temperature')?.label).toBe('How did the sprint feel?');
+    expect(shapes.filter((el) => el.shape === 'session-button').map((el) => el.session)).toEqual([
+      { tool: 'timer', minutes: 5 },
+      { tool: 'vote', dots: 3 },
+    ]);
+    // Every action names an owner and a day: "what · who · when".
+    const actions = shapes.find((el) => el.shape === 'checklist')?.checklistItems ?? [];
+    expect(actions.length).toBeGreaterThan(0);
+    expect(actions.every((a) => a.text.split(' · ').length === 3 && !a.done)).toBe(true);
+    // Nine column notes, three per column, each in its column's hue, plus the
+    // shout-out.
     const stickies = tab.elements.filter((el) => el.type === 'sticky');
-    expect(stickies.length).toBeGreaterThan(0);
+    expect(stickies).toHaveLength(10);
+    expect(new Set(stickies.map((el) => el.fillColor)).size).toBe(4);
   });
 
   it('kanban drops four lanes from Todo to Done under a sprint title', () => {
@@ -698,14 +724,24 @@ describe('planning + strategy templates', () => {
     expect(icons).toHaveLength(9);
   });
 
-  it('empathy map drops the four quadrants and stickies around a persona', () => {
+  it('empathy map puts a persona over the quadrants and a Pains / Gains strip', () => {
     const tab = buildTemplatedTab('empathy-map', 'brand', 'tab-1', 'empathy');
     const labels = labelsOf('empathy-map');
-    for (const quadrant of ['Says', 'Thinks', 'Does', 'Feels']) expect(labels).toContain(quadrant);
-    expect(tab.elements.filter((el) => el.type === 'sticky')).toHaveLength(8);
-    // The persona circle sits above the quadrants (pushed last).
-    const persona = tab.elements.filter((el) => el.type === 'shape').at(-1);
-    expect((persona as { label?: string })?.label).toContain('Priya');
+    for (const block of ['Says', 'Thinks', 'Does', 'Feels', 'Pains', 'Gains'])
+      expect(labels).toContain(block);
+    expect(tab.elements.filter((el) => el.type === 'sticky')).toHaveLength(12);
+    expect(labels.some((l) => l.startsWith('Priya'))).toBe(true);
+    // The persona sits above the grid, so nothing on the board overlaps a
+    // block header (the centred circle it replaced covered "Feels").
+    const texts = tab.elements.filter(
+      (el): el is Extract<(typeof tab.elements)[number], { type: 'text' }> => el.type === 'text',
+    );
+    const personaName = texts.find((el) => el.label?.startsWith('Priya'))!;
+    const headers = texts.filter((el) =>
+      ['Says', 'Thinks', 'Does', 'Feels'].includes(el.label ?? ''),
+    );
+    expect(headers).toHaveLength(4);
+    for (const h of headers) expect(personaName.y + personaName.height).toBeLessThan(h.y);
   });
 
   it('funnel drops four narrowing flipped-trapezoid tiers with a count rail', () => {

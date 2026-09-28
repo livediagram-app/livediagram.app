@@ -112,53 +112,55 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
     case 'timeline':
       return (
         <svg width="80" height="40" viewBox="0 0 80 50" aria-hidden>
-          <line x1="6" y1="25" x2="74" y2="25" stroke="rgb(100 116 139)" strokeWidth="1.5" />
-          {[14, 28, 42, 56, 70].map((mx, i) => (
-            <g key={mx}>
-              {/* Hover story: each event pulses as the "now" marker below
-                  sweeps past it. */}
-              <circle
-                cx={mx}
-                cy="25"
-                r="3"
-                fill="rgb(186 230 253)"
-                stroke="rgb(14 165 233)"
-                strokeWidth="1"
-                className="pv-pulse"
-                style={pv({ '--pv-at': `${900 + Math.round(((mx - 6) / 68) * 2000)}ms` })}
-              />
+          {/* Forward-pointing spine with an arrowhead at the future end. */}
+          <path
+            d="M4 25 L74 25 M71 23 L74 25 L71 27"
+            stroke="rgb(100 116 139)"
+            strokeWidth="1.25"
+            fill="none"
+          />
+          {/* Six milestones coloured by status: three done (green), one in
+              progress (blue, larger), two up next (hollow). Label bars
+              alternate above and below. */}
+          {[
+            { x: 9, fill: 'rgb(34 197 94)', stroke: 'rgb(21 128 61)', r: 2.6 },
+            { x: 20, fill: 'rgb(34 197 94)', stroke: 'rgb(21 128 61)', r: 2.6 },
+            { x: 31, fill: 'rgb(34 197 94)', stroke: 'rgb(21 128 61)', r: 2.6 },
+            { x: 42, fill: 'rgb(59 130 246)', stroke: 'rgb(29 78 216)', r: 3.6 },
+            { x: 57, fill: 'white', stroke: 'rgb(148 163 184)', r: 2.6 },
+            { x: 68, fill: 'white', stroke: 'rgb(148 163 184)', r: 2.6 },
+          ].map((m, i) => (
+            <g key={m.x}>
               <rect
-                x={mx - 6}
-                y={i % 2 === 0 ? 9 : 36}
-                width="12"
-                height="6"
-                rx="0.5"
-                fill="white"
-                stroke="rgb(148 163 184)"
-                strokeWidth="0.5"
+                x={m.x - 4.5}
+                y={i % 2 === 0 ? 14 : 32}
+                width="9"
+                height="2.5"
+                rx="0.6"
+                fill="rgb(148 163 184)"
               />
-              <line
-                x1={mx}
-                y1={i % 2 === 0 ? 15 : 31}
-                x2={mx}
-                y2={i % 2 === 0 ? 22 : 36}
-                stroke="rgb(148 163 184)"
-                strokeWidth="0.5"
+              {/* Hover story: the finished milestones tick past in turn,
+                  then the one in progress swells. */}
+              <circle
+                cx={m.x}
+                cy="25"
+                r={m.r}
+                fill={m.fill}
+                stroke={m.stroke}
+                strokeWidth="0.8"
+                className={i <= 3 ? 'pv-pulse' : undefined}
+                style={i <= 3 ? pv({ '--pv-at': `${900 + i * 450}ms` }) : undefined}
               />
             </g>
           ))}
-          {/* The "now" marker, sweeping left to right along the spine. */}
-          <rect
-            className="pv-travel"
-            opacity="0"
-            x="5"
-            y="19"
-            width="2"
-            height="12"
-            rx="1"
-            fill="rgb(239 68 68)"
-            style={pv({ '--pv-dx': '68px', '--pv-dur': '2400ms', '--pv-at': '900ms' })}
+          {/* The Today marker: a dashed red line under its pill. */}
+          <path
+            d="M49.5 13 L49.5 38"
+            stroke="rgb(225 29 72)"
+            strokeWidth="0.8"
+            strokeDasharray="1.5 1.2"
           />
+          <rect x="45" y="8" width="9" height="4.5" rx="2.25" fill="rgb(225 29 72)" />
         </svg>
       );
     case 'milestone-timeline':
@@ -310,17 +312,18 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
     case 'venn':
       return (
         <svg width="70" height="46" viewBox="0 0 70 50" aria-hidden>
-          {/* Three semi-transparent outlined circles arranged in a triangle. */}
+          {/* Three tinted, translucent circles (desirable / feasible / viable)
+              whose overlaps blend, with the sweet-spot pill in the middle. */}
           {/* Hover story: the three sets pull apart, slide back into their
-              overlap, and the shared middle lights up. */}
+              overlap, and the sweet spot pulses. */}
           <circle
             cx="35"
             cy="18"
             r="14"
-            fill="rgb(186 230 253)"
-            fillOpacity="0.45"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
+            fill="rgb(253 164 175)"
+            fillOpacity="0.5"
+            stroke="rgb(190 18 60)"
+            strokeWidth="0.8"
             className="pv-route"
             style={pv({ '--pv-dy': '-3px', '--pv-at': '900ms', '--pv-dur': '1300ms' })}
           />
@@ -328,10 +331,10 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
             cx="24"
             cy="32"
             r="14"
-            fill="rgb(254 226 226)"
-            fillOpacity="0.45"
-            stroke="rgb(248 113 113)"
-            strokeWidth="1"
+            fill="rgb(147 197 253)"
+            fillOpacity="0.5"
+            stroke="rgb(29 78 216)"
+            strokeWidth="0.8"
             className="pv-route"
             style={pv({
               '--pv-dx': '-8px',
@@ -344,10 +347,10 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
             cx="46"
             cy="32"
             r="14"
-            fill="rgb(220 252 231)"
-            fillOpacity="0.45"
-            stroke="rgb(74 222 128)"
-            strokeWidth="1"
+            fill="rgb(110 231 183)"
+            fillOpacity="0.5"
+            stroke="rgb(4 120 87)"
+            strokeWidth="0.8"
             className="pv-route"
             style={pv({
               '--pv-dx': '8px',
@@ -356,15 +359,14 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
               '--pv-dur': '1300ms',
             })}
           />
-          <circle
-            className="pv-new"
-            opacity="0"
-            cx="35"
-            cy="27"
-            r="3"
-            fill="rgb(250 204 21)"
-            stroke="rgb(202 138 4)"
-            strokeWidth="0.75"
+          <rect
+            x="29"
+            y="24.5"
+            width="12"
+            height="5"
+            rx="2.5"
+            fill="rgb(3 105 161)"
+            className="pv-pulse"
             style={pv({ '--pv-at': '2300ms' })}
           />
         </svg>
@@ -372,206 +374,207 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
     case 'journey':
       return (
         <svg width="80" height="40" viewBox="0 0 80 50" aria-hidden>
-          {/* Four stage boxes in a row with arrows between, sticky-note row below. */}
-          {[6, 24, 42, 60].map((x) => (
-            <g key={x}>
-              <rect
-                x={x}
-                y="6"
-                width="12"
-                height="9"
-                rx="1"
-                fill="rgb(186 230 253)"
-                stroke="rgb(14 165 233)"
-                strokeWidth="0.75"
-              />
-              <rect
-                x={x}
-                y="28"
-                width="12"
-                height="10"
-                rx="1"
-                fill="rgb(254 243 199)"
-                stroke="rgb(252 211 77)"
-                strokeWidth="0.75"
-              />
-            </g>
-          ))}
-          {[18, 36, 54].map((mx) => (
-            <line
-              key={mx}
-              x1={mx}
-              y1="10"
-              x2={mx + 6}
-              y2="10"
-              stroke="rgb(100 116 139)"
-              strokeWidth="1"
-              markerEnd=""
+          {/* A journey map: stage chips across the top, then five lens rows
+              (doing, thinking, feeling, pains, ideas) behind a label gutter.
+              Each lens row's stickies share a colour. */}
+          {[16, 29, 42, 55, 68].map((x) => (
+            <rect
+              key={x}
+              x={x}
+              y="3"
+              width="11"
+              height="4"
+              rx="2"
+              fill="rgb(186 230 253)"
+              stroke="rgb(14 165 233)"
+              strokeWidth="0.5"
             />
           ))}
-          {/* Hover story: the customer walks the stages left to right, and
-              a mood dot lands on each stage's note as they pass: happy,
-              unsure, frustrated, happy again. */}
           {[
-            { x: 12, fill: 'rgb(74 222 128)', at: 1100 },
-            { x: 30, fill: 'rgb(250 204 21)', at: 1650 },
-            { x: 48, fill: 'rgb(248 113 113)', at: 2200 },
-            { x: 66, fill: 'rgb(74 222 128)', at: 2750 },
+            { y: 9, h: 6, band: 'rgb(239 246 255)', note: 'rgb(191 219 254)' },
+            { y: 16.5, h: 6, band: 'rgb(245 243 255)', note: 'rgb(221 214 254)' },
+            { y: 24, h: 9, band: 'rgb(254 252 232)' },
+            { y: 34.5, h: 6, band: 'rgb(255 241 242)', note: 'rgb(254 205 211)' },
+            { y: 42, h: 6, band: 'rgb(240 253 244)', note: 'rgb(187 247 208)' },
+          ].map((row) => (
+            <g key={row.y}>
+              <rect x="3" y={row.y} width="76" height={row.h} rx="1" fill={row.band} />
+              <rect
+                x="5"
+                y={row.y + row.h / 2 - 0.8}
+                width="7"
+                height="1.6"
+                rx="0.5"
+                fill="rgb(100 116 139)"
+              />
+              {row.note &&
+                [16, 29, 42, 55, 68].map((x) => (
+                  <rect
+                    key={x}
+                    x={x + 0.5}
+                    y={row.y + 0.8}
+                    width="10"
+                    height={row.h - 1.6}
+                    fill={row.note}
+                  />
+                ))}
+            </g>
+          ))}
+          {/* Hover story: the emotion curve draws itself through the
+              stages (up, down into the painful booking, up to a regular),
+              and a face lands on each stage. */}
+          <path
+            d="M21.5 27.5 L34.5 29 L47.5 31 L60.5 26.5 L73.5 25.5"
+            stroke="rgb(245 158 11)"
+            strokeWidth="1"
+            fill="none"
+            className="pv-draw"
+            pathLength="1"
+            style={pv({ '--pv-at': '900ms', '--pv-dur': '1400ms' })}
+          />
+          {[
+            { x: 21.5, y: 27.5, at: 1000 },
+            { x: 34.5, y: 29, at: 1300 },
+            { x: 47.5, y: 31, at: 1600 },
+            { x: 60.5, y: 26.5, at: 1900 },
+            { x: 73.5, y: 25.5, at: 2200 },
           ].map((m) => (
             <circle
               key={m.x}
               className="pv-new"
               opacity="0"
               cx={m.x}
-              cy="33"
-              r="2.2"
-              fill={m.fill}
+              cy={m.y}
+              r="1.8"
+              fill="rgb(250 204 21)"
               stroke="white"
               strokeWidth="0.5"
               style={pv({ '--pv-at': `${m.at}ms` })}
             />
           ))}
-          <circle
-            className="pv-travel"
-            opacity="0"
-            cx="12"
-            cy="21.5"
-            r="2.4"
-            fill="rgb(14 165 233)"
-            stroke="white"
-            strokeWidth="0.6"
-            style={pv({ '--pv-dx': '54px', '--pv-dur': '2600ms', '--pv-at': '900ms' })}
-          />
         </svg>
       );
     case 'fishbone':
       return (
         <svg width="80" height="40" viewBox="0 0 80 50" aria-hidden>
-          {/* Horizontal spine with effect box at the right. */}
-          <line x1="6" y1="25" x2="62" y2="25" stroke="rgb(100 116 139)" strokeWidth="1.25" />
-          <rect
-            x="62"
-            y="20"
-            width="14"
-            height="10"
-            rx="1"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.75"
+          {/* The fish: a tail, a spine and the problem as its head. */}
+          <path
+            d="M4 20 L8 25 L4 30 M8 25 L62 25"
+            stroke="rgb(51 65 85)"
+            strokeWidth="1.25"
+            fill="none"
           />
-          {/* Two upper and two lower diagonal branches. */}
-          {[
-            { x1: 16, y1: 6, x2: 28, y2: 25 },
-            { x1: 36, y1: 6, x2: 48, y2: 25 },
-            { x1: 16, y1: 44, x2: 28, y2: 25 },
-            { x1: 36, y1: 44, x2: 48, y2: 25 },
-          ].map((b, i) => (
-            // Hover story: each cause bone grows in from its category to
-            // the spine, one after another.
-            <path
-              key={i}
-              d={`M${b.x1} ${b.y1} L${b.x2} ${b.y2}`}
-              stroke="rgb(100 116 139)"
-              strokeWidth="0.75"
-              className="pv-draw"
-              pathLength="1"
-              style={pv({ '--pv-at': `${900 + i * 300}ms`, '--pv-dur': '500ms' })}
-            />
-          ))}
-          {/* Small category labels at the ends of each branch. */}
-          {[
-            { x: 8, y: 4 },
-            { x: 30, y: 4 },
-            { x: 8, y: 42 },
-            { x: 30, y: 42 },
-          ].map((c, i) => (
-            <rect
-              key={i}
-              x={c.x}
-              y={c.y}
-              width="12"
-              height="5"
-              rx="0.5"
-              fill="white"
-              stroke="rgb(148 163 184)"
-              strokeWidth="0.5"
-            />
-          ))}
-          {/* ...then sub-causes branch off the bones, and the effect they
-              all feed lights up. */}
-          {[
-            { x1: 22, y1: 15.5, x2: 14, at: 2200 },
-            { x1: 42, y1: 15.5, x2: 34, at: 2350 },
-            { x1: 22, y1: 34.5, x2: 14, at: 2500 },
-            { x1: 42, y1: 34.5, x2: 34, at: 2650 },
-          ].map((t) => (
-            <line
-              key={`${t.x1}-${t.y1}`}
-              className="pv-new"
-              opacity="0"
-              x1={t.x1}
-              y1={t.y1}
-              x2={t.x2}
-              y2={t.y1}
-              stroke="rgb(14 165 233)"
-              strokeWidth="0.75"
-              style={pv({ '--pv-at': `${t.at}ms` })}
-            />
-          ))}
           <rect
-            className="pv-new"
-            opacity="0"
             x="62"
-            y="20"
-            width="14"
-            height="10"
-            rx="1"
-            fill="rgb(125 211 252)"
-            stroke="rgb(2 132 199)"
-            strokeWidth="0.9"
+            y="19.5"
+            width="15"
+            height="11"
+            rx="1.2"
+            fill="rgb(3 105 161)"
+            className="pv-pulse"
             style={pv({ '--pv-at': '3000ms' })}
           />
+          {/* Six bones at a steady slant, three above and three below, each
+              capped by a tinted category tag. */}
+          {[
+            { jx: 24, up: true, fill: 'rgb(255 228 230)', ink: 'rgb(190 18 60)' },
+            { jx: 40, up: true, fill: 'rgb(254 243 199)', ink: 'rgb(180 83 9)' },
+            { jx: 56, up: true, fill: 'rgb(219 234 254)', ink: 'rgb(29 78 216)' },
+            { jx: 24, up: false, fill: 'rgb(220 252 231)', ink: 'rgb(21 128 61)' },
+            { jx: 40, up: false, fill: 'rgb(237 233 254)', ink: 'rgb(109 40 217)' },
+            { jx: 56, up: false, fill: 'rgb(226 232 240)', ink: 'rgb(51 65 85)' },
+          ].map((b, i) => {
+            const ex = b.jx - 10;
+            const ey = b.up ? 8 : 42;
+            return (
+              <g key={i}>
+                {/* Hover story: each bone grows in from its category to the
+                    spine, one after another, then its causes branch off. */}
+                <path
+                  d={`M${ex} ${ey} L${b.jx} 25`}
+                  stroke="rgb(51 65 85)"
+                  strokeWidth="0.75"
+                  className="pv-draw"
+                  pathLength="1"
+                  style={pv({ '--pv-at': `${900 + i * 220}ms`, '--pv-dur': '420ms' })}
+                />
+                <rect
+                  x={ex - 5}
+                  y={b.up ? ey - 5 : ey}
+                  width="10"
+                  height="5"
+                  rx="2.5"
+                  fill={b.fill}
+                  stroke={b.ink}
+                  strokeWidth="0.5"
+                />
+                {[1 / 3, 2 / 3].map((t) => {
+                  const rx = ex + (b.jx - ex) * t;
+                  const ry = ey + (25 - ey) * t;
+                  return (
+                    <path
+                      key={t}
+                      className="pv-new"
+                      opacity="0"
+                      d={`M${rx - 6} ${ry} L${rx} ${ry}`}
+                      stroke="rgb(148 163 184)"
+                      strokeWidth="0.6"
+                      style={pv({ '--pv-at': `${2300 + i * 80}ms` })}
+                    />
+                  );
+                })}
+              </g>
+            );
+          })}
         </svg>
       );
     case 'pyramid':
       return (
         <svg width="70" height="46" viewBox="0 0 70 50" aria-hidden>
-          {/* Four tiers stacked; each row narrower than the one below to read as a pyramid. */}
+          {/* One clean triangle banded into five tiers, a saturated peak
+              down to a pale foundation, with a rail of explanation lines
+              on the right. */}
           {[
-            { x: 28, y: 6, w: 14, h: 9 },
-            { x: 22, y: 16, w: 26, h: 9 },
-            { x: 16, y: 26, w: 38, h: 9 },
-            { x: 10, y: 36, w: 50, h: 9 },
-          ].map((t, i) => (
-            // Hover story: the tiers stack up from the foundation, each
-            // rising from its base, and the peak crowns it last.
-            <rect
-              key={i}
-              x={t.x}
-              y={t.y}
-              width={t.w}
-              height={t.h}
-              rx="1"
-              fill={i === 0 ? 'rgb(186 230 253)' : 'rgb(241 245 249)'}
-              stroke="rgb(148 163 184)"
-              strokeWidth="0.75"
-              className="pv-grow-y"
-              style={pv({ '--pv-at': `${300 + (3 - i) * 380}ms`, '--pv-dur': '420ms' })}
-            />
-          ))}
-          <rect
-            className="pv-new"
-            opacity="0"
-            x="28"
-            y="6"
-            width="14"
-            height="9"
-            rx="1"
-            fill="rgb(125 211 252)"
-            stroke="rgb(2 132 199)"
-            strokeWidth="0.9"
-            style={pv({ '--pv-at': '2100ms' })}
-          />
+            { y0: 4, y1: 12.4, fill: 'rgb(59 130 246)' },
+            { y0: 12.4, y1: 20.8, fill: 'rgb(96 165 250)' },
+            { y0: 20.8, y1: 29.2, fill: 'rgb(147 197 253)' },
+            { y0: 29.2, y1: 37.6, fill: 'rgb(191 219 254)' },
+            { y0: 37.6, y1: 46, fill: 'rgb(224 236 255)' },
+          ].map((t, i) => {
+            // Half-width at y: the triangle spans 4..46 tall, 44 wide at its base.
+            const half = (y: number) => ((y - 4) / 42) * 22;
+            const d =
+              i === 0
+                ? `M24 ${t.y0} L${24 + half(t.y1)} ${t.y1} L${24 - half(t.y1)} ${t.y1} Z`
+                : `M${24 - half(t.y0)} ${t.y0} L${24 + half(t.y0)} ${t.y0} L${24 + half(t.y1)} ${t.y1} L${24 - half(t.y1)} ${t.y1} Z`;
+            const mid = (t.y0 + t.y1) / 2;
+            return (
+              <g key={i}>
+                {/* Hover story: the tiers stack up from the foundation to the
+                    peak, and each tier's rail line arrives with it. */}
+                <path
+                  d={d}
+                  fill={t.fill}
+                  stroke="rgb(14 165 233)"
+                  strokeWidth="0.5"
+                  className="pv-grow-y"
+                  style={pv({ '--pv-at': `${300 + (4 - i) * 320}ms`, '--pv-dur': '380ms' })}
+                />
+                <rect x="50" y={mid - 2.2} width="14" height="1.6" rx="0.5" fill="rgb(37 99 235)" />
+                <rect
+                  x="50"
+                  y={mid + 0.6}
+                  width="17"
+                  height="1.2"
+                  rx="0.5"
+                  fill="rgb(148 163 184)"
+                  className="pv-new"
+                  opacity="0"
+                  style={pv({ '--pv-at': `${500 + (4 - i) * 320}ms` })}
+                />
+              </g>
+            );
+          })}
         </svg>
       );
     case 'mobile-wireframe':
@@ -676,27 +679,42 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
     case 'laptop-wireframe':
       return (
         <svg width="80" height="44" viewBox="0 0 80 50" aria-hidden>
-          {/* Laptop body trapezoid + screen with header / sidebar / content / cards. */}
-          <polygon
-            points="4,38 76,38 72,42 8,42"
+          {/* Front-on laptop: lid with its display over a slim base. */}
+          <rect
+            x="2"
+            y="42"
+            width="76"
+            height="3"
+            rx="1.4"
             fill="rgb(226 232 240)"
             stroke="rgb(100 116 139)"
             strokeWidth="0.6"
           />
+          <rect x="34" y="42" width="12" height="1" rx="0.5" fill="rgb(148 163 184)" />
           <rect
-            x="8"
-            y="6"
-            width="64"
-            height="32"
-            rx="1.5"
+            x="7"
+            y="3"
+            width="66"
+            height="39"
+            rx="2.5"
             fill="white"
             stroke="rgb(100 116 139)"
-            strokeWidth="0.85"
+            strokeWidth="1"
           />
-          {/* Header strip */}
+          <rect
+            x="9"
+            y="5"
+            width="62"
+            height="35"
+            rx="0.8"
+            fill="white"
+            stroke="rgb(203 213 225)"
+            strokeWidth="0.4"
+          />
+          {/* Top nav + avatar */}
           <rect
             x="10"
-            y="8"
+            y="6"
             width="60"
             height="4"
             rx="0.4"
@@ -704,78 +722,99 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
             stroke="rgb(147 197 253)"
             strokeWidth="0.4"
           />
-          <circle cx="67" cy="10" r="1.4" fill="rgb(186 230 253)" />
-          {/* Sidebar */}
+          <circle cx="67.5" cy="8" r="1.3" fill="rgb(186 230 253)" />
+          {/* Sidebar, the active page tinted */}
           <rect
             x="10"
-            y="13"
-            width="14"
-            height="23"
+            y="11"
+            width="11"
+            height="28"
             rx="0.4"
             fill="rgb(241 245 249)"
             stroke="rgb(203 213 225)"
             strokeWidth="0.4"
           />
-          {[15, 19, 23, 27, 31].map((sy) => (
+          {[13, 16.5, 20, 23.5].map((sy, i) => (
             <rect
               key={sy}
-              x="11.5"
+              x="11"
               y={sy}
-              width="11"
+              width="9"
               height="2.4"
               rx="0.3"
-              fill="white"
+              fill={i === 0 ? 'rgb(186 230 253)' : 'white'}
               stroke="rgb(148 163 184)"
               strokeWidth="0.3"
             />
           ))}
-          {/* Three stat cards */}
-          {[25, 39, 53].map((cx) => (
+          {/* KPI row */}
+          {[22.5, 34.5, 46.5, 58.5].map((kx) => (
             <rect
-              key={cx}
-              x={cx}
-              y="15"
-              width="13"
-              height="8"
+              key={kx}
+              x={kx}
+              y="12"
+              width="11"
+              height="7"
               rx="0.4"
               fill="white"
               stroke="rgb(148 163 184)"
               strokeWidth="0.4"
             />
           ))}
-          {/* Wider content row */}
+          {/* Chart card + recent sign-ups table */}
           <rect
-            x="25"
-            y="25"
-            width="45"
-            height="10"
+            x="22.5"
+            y="21"
+            width="27"
+            height="18"
             rx="0.4"
             fill="white"
             stroke="rgb(148 163 184)"
             strokeWidth="0.4"
           />
-          {/* Hover story: the dashboard loads, a figure landing in each stat
-              card, then the chart draws across the content row (dashed to
-              nothing at rest so the static art is unchanged). */}
-          {[25, 39, 53].map((cx, i) => (
+          <rect
+            x="51.5"
+            y="21"
+            width="18"
+            height="18"
+            rx="0.4"
+            fill="white"
+            stroke="rgb(148 163 184)"
+            strokeWidth="0.4"
+          />
+          {[24.5, 27.5, 30.5, 33.5, 36.5].map((ty) => (
+            <line
+              key={ty}
+              x1="51.5"
+              y1={ty}
+              x2="69.5"
+              y2={ty}
+              stroke="rgb(203 213 225)"
+              strokeWidth="0.35"
+            />
+          ))}
+          {/* Hover story: the dashboard loads, a figure landing in each KPI
+              card, then the chart draws across its card (dashed to nothing
+              at rest so the static art is unchanged). */}
+          {[22.5, 34.5, 46.5, 58.5].map((kx, i) => (
             <rect
-              key={cx}
+              key={kx}
               className="pv-new"
               opacity="0"
-              x={cx + 2}
-              y="18"
-              width={[7, 9, 5][i]}
+              x={kx + 1.5}
+              y="14.3"
+              width={[6, 7, 4, 5][i]}
               height="2.4"
               rx="0.4"
               fill="rgb(14 165 233)"
-              style={pv({ '--pv-at': `${900 + i * 250}ms` })}
+              style={pv({ '--pv-at': `${900 + i * 200}ms` })}
             />
           ))}
           <path
             className="pv-draw"
             pathLength="1"
             strokeDasharray="0 1"
-            d="M27 33 L34 29.5 L41 31 L48 27.5 L55 29 L62 26.5 L68 27.5"
+            d="M24.5 35 L29 31.5 L33.5 32.5 L38 28 L42.5 27 L47.5 24"
             fill="none"
             stroke="rgb(14 165 233)"
             strokeWidth="0.9"

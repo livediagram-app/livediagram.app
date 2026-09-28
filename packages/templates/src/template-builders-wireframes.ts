@@ -4,7 +4,8 @@
 // laptop, browser) are among the largest single builders in the
 // catalogue, so splitting them out is the highest-leverage cut. The
 // slide deck (a framed-panel design template, not a device wireframe)
-// moved on to template-builders-slides.ts beside the storyboard.
+// moved on to template-builders-slides.ts beside the storyboard, and the
+// laptop dashboard grew into ./template-builders-laptop (re-exported below).
 //
 // Each function is still pure: takes a centre (cx, cy), returns a
 // fresh Element[]. Sizing constants stay inline so the geometry
@@ -13,6 +14,7 @@
 
 import { createShape, type Element } from '@livediagram/diagram';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+export { buildLaptopWireframe } from './template-builders-laptop';
 
 // All three wireframes ship pre-layered (docs/specs/006-diagram/layers.md "Layered templates"):
 // the device shells sit on a "Frames" scaffold layer, and every inner
@@ -148,94 +150,6 @@ export function buildMobileWireframe(cx: number, cy: number): Element[] {
   screens.forEach((label, i) => {
     elements.push(...buildScreen(label, startX + i * (phoneW + gap)));
   });
-  return elements;
-}
-
-// Laptop wireframe: a desktop dashboard sketched inside the laptop
-// device's display — a top nav bar (logo, nav pills, avatar), a left
-// sidebar of nav rows, and three stat cards. Geometry mirrors a
-// hand-built reference: the device frame is 1209x833 and the content
-// fills its display bezel, then the whole thing is re-centred on the
-// supplied canvas point. Colours are left to the theme
-// (recolourElementsForTheme); only the structural border-radius /
-// stroke-width hints are pinned so the chrome reads.
-export function buildLaptopWireframe(cx: number, cy: number): Element[] {
-  const laptopW = 1209;
-  const laptopH = 833;
-  const laptopX = cx - laptopW / 2;
-  const laptopY = cy - laptopH / 2;
-
-  // Offsets below are relative to the device frame's top-left.
-  type BoxOpts = {
-    label?: string;
-    size?: 'sm' | 'md';
-    left?: boolean;
-    rounded?: boolean;
-    thin?: boolean;
-  };
-  const box = (rx: number, ry: number, w: number, h: number, o: BoxOpts = {}): Element => ({
-    ...createShape('square', laptopX + rx, laptopY + ry),
-    width: w,
-    height: h,
-    textSize: o.size ?? 'md',
-    layerId: TEMPLATE_CONTENT_LAYER_ID,
-    ...(o.label !== undefined ? { label: o.label } : {}),
-    ...(o.left ? { textAlignX: 'left' as const } : {}),
-    ...(o.rounded ? { borderRadius: 'md' as const } : {}),
-    ...(o.thin ? { strokeWidth: 'thin' as const } : {}),
-  });
-  const pill = (rx: number, ry: number, w: number, h: number, label: string): Element => ({
-    ...createShape('stadium', laptopX + rx, laptopY + ry),
-    width: w,
-    height: h,
-    textSize: 'sm',
-    label,
-    layerId: TEMPLATE_CONTENT_LAYER_ID,
-  });
-  const dot = (rx: number, ry: number, w: number, h: number): Element => ({
-    ...createShape('circle', laptopX + rx, laptopY + ry),
-    width: w,
-    height: h,
-    layerId: TEMPLATE_CONTENT_LAYER_ID,
-  });
-
-  const elements: Element[] = [
-    {
-      ...createShape('laptop', laptopX, laptopY),
-      width: laptopW,
-      height: laptopH,
-      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-    },
-  ];
-
-  // Top nav bar + its chrome (logo, three nav pills, avatar).
-  elements.push(box(122, 42, 965, 75, { rounded: true, thin: true }));
-  elements.push(box(150, 63, 85, 35, { label: 'Logo', size: 'sm' }));
-  elements.push(pill(263, 59, 85, 43, 'Home'));
-  elements.push(pill(363, 59, 85, 43, 'Projects'));
-  elements.push(pill(463, 59, 85, 43, 'Reports'));
-  elements.push(dot(1024, 58, 42, 42));
-
-  // Left sidebar + nav rows, sharing the nav bar's left gutter.
-  elements.push(box(122, 131, 192, 362, { thin: true }));
-  ['Overview', 'Customers', 'Pipeline', 'Reports', 'Settings'].forEach((label, i) => {
-    elements.push(box(135, 163 + i * 52, 164, 40, { label, size: 'sm', left: true }));
-  });
-
-  // Three stat cards: container + metric label + value. Sized so the row
-  // spans the full dashboard body (sidebar edge 332 to the nav's right
-  // edge 1087) — the old 187px cards left a ~165px dead band on the right.
-  const cards: { cardX: number; label: string }[] = [
-    { cardX: 332, label: 'Active users' },
-    { cardX: 589, label: 'Revenue' },
-    { cardX: 846, label: 'Conversion' },
-  ];
-  for (const c of cards) {
-    elements.push(box(c.cardX, 134, 241, 140));
-    elements.push(box(c.cardX + 14, 154, 213, 24, { label: c.label, size: 'sm', left: true }));
-    elements.push(box(c.cardX + 14, 195, 213, 44, { label: '0', size: 'md', left: true }));
-  }
-
   return elements;
 }
 

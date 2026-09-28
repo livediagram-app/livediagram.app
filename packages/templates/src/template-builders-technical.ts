@@ -13,71 +13,139 @@
 // Element[]. Sizing constants live inline so each template is
 // self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createArrow, createPinnedArrow, createShape, type Element } from '@livediagram/diagram';
+import {
+  createArrow,
+  createPinnedArrow,
+  createShape,
+  type Anchor,
+  type Element,
+} from '@livediagram/diagram';
 import { isTechIconId } from '@livediagram/icons';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
-// A small but complete request path: a client hitting an API gateway
-// that fans out to two services, which in turn read a database and a
-// cache. Each infrastructure node is a full-colour Technology icon tile
-// (docs/specs/010-palette/technology-icons.md) — Nginx gateway, Docker / Kubernetes services, PostgreSQL
-// database, Redis cache — chosen from the vendor-neutral "Generic" set
-// so the starter reads on any stack rather than pinning one cloud. The
-// caller (the user) hitting the system is a stroke-tinted line glyph
-// (there's no brand mark for "a browser"), so it adopts the theme like
-// the rest of the catalogue while the branded tiles carry their own
-// fixed colours. Labels caption each tile (icon on top, role beneath —
-// the architecture-diagram convention createShape('icon') bakes in);
-// pinned arrows wire the flow.
+// The LOGICAL architecture of a small shop: the vendor-neutral sibling of
+// buildCloudArchitecture below, which names real AWS services. Four tiered
+// lanes (docs/specs/009-elements/lane.md), top to bottom, say where each
+// part runs: Clients, Edge, Services, Data. Every node is a labelled box
+// with a line-art icon INSIDE it, so the name sits on the node instead of
+// hanging under a tile, and the icons only say what the role is (a key for
+// auth, a cart for orders), never which vendor.
+//
+// The wiring is laid out so nothing crosses: requests fall straight down
+// the columns, the web app joins the gateway from the east and fetches its
+// assets from the CDN off its own east face, the gateway reaches the auth
+// service with a single elbow off its west face, and the asynchronous path
+// runs sideways along the services lane (orders publish to a queue a
+// worker consumes, and the same events stream down into analytics). Each edge names its protocol, which is
+// the detail an architecture review asks about first.
 export function buildSystemArchitecture(cx: number, cy: number): Element[] {
-  const tile = 128; // square side for every node tile (icons are aspect-locked)
-  const colGap = 170; // half-distance between the two side-by-side columns
+  const tiers = ['Clients', 'Edge', 'Services', 'Data'];
+  const gutter = 132; // LANE_GUTTER_PX: the lane's title strip
+  const colPitch = 300;
+  const nodeW = 216;
+  const nodeH = 72;
+  const laneH = 148;
+  const laneGap = 14;
+  const laneW = gutter + 4 * colPitch + 40;
+  const left = cx - laneW / 2;
+  const top = cy - (tiers.length * laneH + (tiers.length - 1) * laneGap) / 2;
+  // Column centres sit in the lane body, clear of the gutter.
+  const colX = (col: number) => left + gutter + 20 + colPitch / 2 + col * colPitch;
+  const laneMid = (tier: number) => top + tier * (laneH + laneGap) + laneH / 2;
 
-  // Vertical bands, top to bottom: client → gateway → services → data.
-  // Evenly spaced (~190px pitch) so each tile's caption clears the tile
-  // below it — captions render beneath the icon, so tight bands collide.
-  // Bands sit symmetric about cy (tiles are 128 tall, captions hang
-  // ~20px under the bottom rank) so the topology centres on the canvas
-  // point instead of floating above it.
-  const clientY = cy - 285;
-  const gatewayY = cy - 95;
-  const serviceY = cy + 95;
-  const dataY = cy + 285;
+  const lanes: Element[] = tiers.map((label, i) => ({
+    ...createShape('lane', left, top + i * (laneH + laneGap)),
+    width: laneW,
+    height: laneH,
+    label,
+    textSize: 'md',
+    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+  }));
 
-  // An icon tile centred on (centerX, centerY): the glyph fills the box
-  // with the role label captioned beneath. `iconId` keys the tech-icon
-  // registry for branded tiles (rendered coloured) or the line-art
-  // catalogue for the client glyph (stroke-tinted by the theme).
-  const node = (centerX: number, centerY: number, label: string, iconId: string): Element => ({
-    ...createShape('icon', centerX - tile / 2, centerY - tile / 2),
-    width: tile,
-    height: tile,
+  type Node = Extract<Element, { type: 'shape' }>;
+  const node = (
+    label: string,
+    iconId: string,
+    col: number,
+    tier: number,
+    extra: Partial<Node> = {},
+  ): Node => ({
+    ...createShape('square', colX(col) - nodeW / 2, laneMid(tier) - nodeH / 2),
+    width: nodeW,
+    height: nodeH,
     label,
     iconId,
+    iconPosition: 'left',
     textSize: 'sm',
-    // Branded tiles render at a fixed mark size (docs/specs/010-palette/technology-icons.md), so they drop
-    // unlocked like every other tech icon; the line-art client glyph keeps
-    // the lock so it can't warp.
-    ...(isTechIconId(iconId) ? { aspectLocked: false } : {}),
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
+    ...extra,
+  });
+  const store = (label: string, col: number): Node => ({
+    ...createShape('cylinder', colX(col) - nodeW / 2, laneMid(3) - nodeH / 2 - 6),
+    width: nodeW,
+    height: nodeH + 12,
+    label,
+    textSize: 'sm',
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
   });
 
-  const client = node(cx, clientY, 'Client', 'globe');
-  const gateway = node(cx, gatewayY, 'API Gateway', 'nginx');
-  const auth = node(cx - colGap, serviceY, 'Auth Service', 'docker');
-  const app = node(cx + colGap, serviceY, 'App Service', 'k8s');
-  const db = node(cx - colGap, dataY, 'Database', 'postgres');
-  const cache = node(cx + colGap, dataY, 'Cache', 'redis');
+  const mobile = node('Mobile app', 'smartphone', 1, 0);
+  const web = node('Web app', 'monitor', 2, 0);
+  const cdn = node('CDN', 'globe', 3, 1);
+  // Every request enters here, so it carries the hero preset.
+  const gateway = node('API gateway', 'shield', 1, 1, { colorPreset: 'bold' });
+  const auth = node('Auth service', 'key', 0, 2);
+  const orders = node('Orders service', 'cart', 1, 2);
+  const queue = node('Order events', 'layers', 2, 2, { colorPreset: 'soft' });
+  const worker = node('Invoice worker', 'cpu', 3, 2);
+  const usersDb = store('Users DB', 0);
+  const ordersDb = store('Orders DB', 1);
+  const analytics = store('Analytics', 2);
+  const files = node('File storage', 'hard-drive', 3, 3);
 
-  const arrows = [
-    createPinnedArrow(client.id, 's', gateway.id, 'n'),
-    createPinnedArrow(gateway.id, 's', auth.id, 'n'),
-    createPinnedArrow(gateway.id, 's', app.id, 'n'),
-    createPinnedArrow(auth.id, 's', db.id, 'n'),
-    createPinnedArrow(app.id, 's', db.id, 'n'),
-    createPinnedArrow(app.id, 's', cache.id, 'n'),
+  const edge = (
+    from: Node,
+    fromA: Anchor,
+    to: Node,
+    toA: Anchor,
+    label: string,
+    angled = false,
+  ) => ({
+    ...createPinnedArrow(from.id, fromA, to.id, toA),
+    label,
+    ...(angled ? { arrowStyle: 'angled' as const } : {}),
+    layerId: TEMPLATE_CONTENT_LAYER_ID,
+  });
+  const arrows: Element[] = [
+    edge(mobile, 's', gateway, 'n', 'HTTPS'),
+    edge(web, 's', gateway, 'e', 'HTTPS', true),
+    edge(web, 'e', cdn, 'n', 'assets', true),
+    edge(gateway, 'w', auth, 'n', 'gRPC', true),
+    edge(gateway, 's', orders, 'n', 'gRPC'),
+    edge(orders, 'e', queue, 'w', 'publish'),
+    edge(queue, 'e', worker, 'w', 'consume'),
+    edge(auth, 's', usersDb, 'n', 'SQL'),
+    edge(orders, 's', ordersDb, 'n', 'SQL'),
+    edge(queue, 's', analytics, 'n', 'stream'),
+    edge(worker, 's', files, 'n', 'PDF'),
   ];
 
-  return [client, gateway, auth, app, db, cache, ...arrows];
+  return [
+    ...lanes,
+    mobile,
+    web,
+    cdn,
+    gateway,
+    auth,
+    orders,
+    queue,
+    worker,
+    usersDb,
+    ordersDb,
+    analytics,
+    files,
+    ...arrows,
+  ];
 }
 
 // A managed-cloud topology, the vendor-flavoured sibling of the

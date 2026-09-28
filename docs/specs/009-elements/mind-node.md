@@ -303,7 +303,7 @@ tidy map rather than a picture of one: select any node and Tab and Enter grow
 it in place, and the new nodes look like the template's own.
 
 - **Mind map**: the bubble flow; a root with four branches of two leaves each.
-- **Tree mind map**: the tree flow; a root, four branches, a leaf each.
+- **Tree mind map**: the tree flow; a bold root, four tinted branches, two small leaves each.
 - **Bubble map**: the bubble flow with round nodes and a single ring.
 
 ## Deleting

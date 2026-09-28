@@ -257,24 +257,40 @@ describe('gantt milestone bars survive theming', () => {
   });
 });
 
-describe('system architecture uses full-colour technology icons', () => {
-  // The infrastructure nodes are Technology icon tiles (docs/specs/010-palette/technology-icons.md): a
-  // shape==='icon' element whose iconId resolves in the tech-icon
-  // registry renders as a branded colour tile rather than a stroke-tinted
-  // glyph. A regression that reverted the nodes to plain boxes / line
-  // glyphs would drop every tech iconId, so assert the branded set holds.
-  it('emits the gateway / service / datastore nodes as branded tiles', () => {
-    const els = buildTemplate('system-architecture', 0, 0);
-    const techIds = els
-      .filter(
-        (el): el is Extract<Element, { type: 'shape' }> =>
-          el.type === 'shape' && el.shape === 'icon',
-      )
-      .map((el) => el.iconId)
-      .filter((id): id is string => isTechIconId(id));
-    // Gateway (nginx), two services (docker / k8s), database (postgres),
-    // cache (redis) — the client glyph (globe) is line-art, not branded.
-    expect(new Set(techIds)).toEqual(new Set(['nginx', 'docker', 'k8s', 'postgres', 'redis']));
+describe('system architecture is a vendor-neutral tiered diagram', () => {
+  // The logical sibling of Cloud architecture (docs/specs/008-canvas/canvas-and-palette.md): four tier lanes
+  // holding labelled nodes, no vendor marks, every edge pinned and named.
+  const els = buildTemplate('system-architecture', 0, 0);
+  const shapes = els.filter((el): el is Extract<Element, { type: 'shape' }> => el.type === 'shape');
+
+  it('stacks the Clients / Edge / Services / Data lanes', () => {
+    expect(shapes.filter((el) => el.shape === 'lane').map((el) => el.label)).toEqual([
+      'Clients',
+      'Edge',
+      'Services',
+      'Data',
+    ]);
+  });
+
+  it('names every node on the node and uses no technology marks', () => {
+    const nodes = shapes.filter((el) => el.shape !== 'lane');
+    expect(nodes.length).toBeGreaterThan(0);
+    for (const n of nodes) {
+      expect(n.label?.length).toBeGreaterThan(0);
+      if (n.iconId) expect(isTechIconId(n.iconId)).toBe(false);
+    }
+  });
+
+  it('pins and labels every edge', () => {
+    const arrows = els.filter(
+      (el): el is Extract<Element, { type: 'arrow' }> => el.type === 'arrow',
+    );
+    expect(arrows.length).toBeGreaterThan(0);
+    for (const a of arrows) {
+      expect(a.from.kind).toBe('pinned');
+      expect(a.to.kind).toBe('pinned');
+      expect(a.label?.length).toBeGreaterThan(0);
+    }
   });
 });
 

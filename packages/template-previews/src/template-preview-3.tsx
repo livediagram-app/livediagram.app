@@ -334,83 +334,88 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'logo-design':
-      // Four mini lockups in a 2x2 grid: top-left icon-left, top-right
-      // icon-left-with-tagline, bottom-left icon-above, bottom-right
-      // icon-above-with-tagline. Matches the canvas layout the builder
-      // produces so the preview previews what users get.
+      // The exploration sheet: a 3x2 grid of artboards (horizontal, stacked,
+      // app icon / horizontal + tagline, stacked + tagline, one colour) over
+      // a four-swatch palette strip, the same composition the builder lays
+      // out, in the brand's espresso + sunrise colours.
       return (
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
-          {/* Top-left: icon left, brand only. */}
-          <circle
-            cx="9"
-            cy="11"
-            r="4"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          <rect x="16" y="9" width="18" height="4" rx="0.8" fill="rgb(15 23 42)" />
-          {/* Top-right: icon left + tagline. */}
-          <circle
-            cx="48"
-            cy="11"
-            r="4"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          <rect x="55" y="7" width="18" height="4" rx="0.8" fill="rgb(15 23 42)" />
-          <rect x="55" y="12.5" width="14" height="2.5" rx="0.5" fill="rgb(148 163 184)" />
-          {/* Bottom-left: icon above, brand only. */}
-          <circle
-            cx="14"
-            cy="32"
-            r="4"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          <rect x="5" y="39" width="18" height="4" rx="0.8" fill="rgb(15 23 42)" />
-          {/* Bottom-right: icon above + tagline. */}
-          <circle
-            cx="53"
-            cy="30"
-            r="4"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          <rect x="44" y="37" width="18" height="4" rx="0.8" fill="rgb(15 23 42)" />
-          <rect x="46" y="43" width="14" height="2.5" rx="0.5" fill="rgb(148 163 184)" />
-          {/* Hover story: the mark is tried in a new colour on each lockup in
-              turn, then one lockup is picked (a selection frame lands on it). */}
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <rect
+              key={i}
+              x={3 + (i % 3) * 25.5}
+              y={3 + Math.floor(i / 3) * 17}
+              width="23"
+              height="15"
+              rx="1"
+              fill="white"
+              stroke="rgb(203 213 225)"
+              strokeWidth="0.6"
+            />
+          ))}
+          {/* 01 horizontal and 04 horizontal + tagline. */}
+          <circle cx="8.5" cy="10.5" r="2.6" fill="rgb(245 158 11)" />
+          <rect x="12.5" y="9.3" width="10" height="2.4" rx="0.6" fill="rgb(59 31 20)" />
+          <circle cx="8.5" cy="27.5" r="2.6" fill="rgb(245 158 11)" />
+          <rect x="12.5" y="25.6" width="10" height="2.4" rx="0.6" fill="rgb(59 31 20)" />
+          <rect x="12.5" y="29" width="8" height="1.3" rx="0.4" fill="rgb(146 64 14)" />
+          {/* 02 stacked and 05 stacked + tagline. */}
+          <circle cx="40" cy="8.5" r="2.6" fill="rgb(245 158 11)" />
+          <rect x="35" y="12.5" width="10" height="2.4" rx="0.6" fill="rgb(59 31 20)" />
+          <circle cx="40" cy="24.5" r="2.6" fill="rgb(245 158 11)" />
+          <rect x="35" y="28.5" width="10" height="2.4" rx="0.6" fill="rgb(59 31 20)" />
+          <rect x="36" y="32" width="8" height="1.3" rx="0.4" fill="rgb(146 64 14)" />
+          {/* 03 app icon and 06 one colour. */}
+          <rect x="60" y="5.5" width="10" height="10" rx="2.4" fill="rgb(59 31 20)" />
+          <circle cx="65" cy="10.5" r="3.2" fill="rgb(245 158 11)" />
+          <circle cx="59.5" cy="27.5" r="2.6" fill="rgb(31 41 55)" />
+          <rect x="63.5" y="26.3" width="10" height="2.4" rx="0.6" fill="rgb(31 41 55)" />
+          {/* Palette strip. */}
+          {['rgb(59 31 20)', 'rgb(245 158 11)', 'rgb(254 243 199)', 'rgb(31 41 55)'].map(
+            (fill, i) => (
+              <rect
+                key={fill}
+                x={3 + i * 19}
+                y="39"
+                width="17"
+                height="7"
+                rx="1.5"
+                fill={fill}
+                stroke={i === 2 ? 'rgb(252 211 77)' : fill}
+                strokeWidth="0.5"
+              />
+            ),
+          )}
+          {/* Hover story: the sun rises on each mark in turn, then the
+              horizontal lockup is picked (a selection frame lands on it). */}
           {(
             [
-              [9, 11, 'rgb(14 165 233)'],
-              [48, 11, 'rgb(139 92 246)'],
-              [14, 32, 'rgb(245 158 11)'],
-              [53, 30, 'rgb(16 185 129)'],
-            ] as [number, number, string][]
-          ).map(([cx, cy, fill], i) => (
+              [8.5, 10.5, 900],
+              [40, 8.5, 1150],
+              [65, 10.5, 1400],
+              [8.5, 27.5, 1650],
+              [40, 24.5, 1900],
+            ] as [number, number, number][]
+          ).map(([cx, cy, at], i) => (
             <circle
               key={i}
               className="pv-new"
               opacity="0"
               cx={cx}
               cy={cy}
-              r="4"
-              fill={fill}
-              style={pv({ '--pv-at': `${900 + i * 300}ms` })}
+              r="1.1"
+              fill="rgb(59 31 20)"
+              style={pv({ '--pv-at': `${at}ms` })}
             />
           ))}
           <rect
             className="pv-new"
             opacity="0"
-            x="41"
-            y="4"
-            width="35"
-            height="14"
-            rx="2"
+            x="2"
+            y="2"
+            width="25"
+            height="17"
+            rx="1.5"
             fill="none"
             stroke="rgb(14 165 233)"
             strokeWidth="0.9"
@@ -468,119 +473,112 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'live-card':
-      // Left panel: hero image placeholder + bold title. Right panel:
-      // a board of avatar + message rows.
+      // The group card opened flat: a pink cover page (title, photo slot,
+      // a party sticker) beside a cream message wall of pastel notes, each
+      // with its initials badge, and a dashed slot waiting for yours.
       return (
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
           <rect
             x="3"
             y="3"
-            width="36"
+            width="28"
             height="44"
             rx="2"
-            fill="rgb(224 231 255)"
-            stroke="rgb(67 56 202)"
+            fill="rgb(253 242 248)"
+            stroke="rgb(249 168 212)"
             strokeWidth="0.6"
           />
+          <rect x="8" y="7" width="18" height="2.6" rx="0.6" fill="rgb(15 23 42)" />
           <rect
-            x="6"
-            y="6"
-            width="30"
-            height="24"
-            rx="1"
-            fill="white"
-            stroke="rgb(165 180 252)"
+            x="7"
+            y="12"
+            width="20"
+            height="20"
+            rx="1.5"
+            fill="rgb(241 245 249)"
+            stroke="rgb(148 163 184)"
             strokeWidth="0.5"
             strokeDasharray="1.5 1"
           />
-          <rect x="6" y="33" width="30" height="5" rx="1" fill="rgb(49 46 129)" />
+          <circle cx="8" cy="41" r="3.4" fill="white" stroke="rgb(226 232 240)" strokeWidth="0.4" />
+          <circle cx="8" cy="41" r="2" fill="rgb(244 114 182)" />
           <rect
-            x="41"
+            x="33"
             y="3"
-            width="36"
+            width="44"
             height="44"
             rx="2"
-            fill="rgb(224 231 255)"
-            stroke="rgb(67 56 202)"
+            fill="rgb(255 251 235)"
+            stroke="rgb(252 211 77)"
             strokeWidth="0.6"
           />
-          {[6, 16, 26, 36].map((ry) => (
-            <g key={ry}>
-              <rect
-                x="44"
-                y={ry}
-                width="30"
-                height="8"
-                rx="1"
-                fill="none"
-                stroke="rgb(99 102 241)"
-                strokeWidth="0.4"
-                strokeDasharray="1.5 1"
-              />
-              <rect
-                x="45.5"
-                y={ry + 1.5}
-                width="5"
-                height="5"
-                rx="0.8"
-                fill="white"
-                stroke="rgb(165 180 252)"
-                strokeWidth="0.4"
-              />
-              <rect x="52" y={ry + 3} width="20" height="2" rx="0.5" fill="rgb(99 102 241)" />
-            </g>
-          ))}
-          {/* Hover story: guests' messages land on the board one after another,
-              each filling an empty slot with its own avatar colour. */}
           {(
             [
-              [6, 'rgb(244 114 182)'],
-              [16, 'rgb(52 211 153)'],
-              [26, 'rgb(251 191 36)'],
-              [36, 'rgb(56 189 248)'],
-            ] as [number, string][]
-          ).map(([ry, avatar], i) => {
-            const motion = pv({ '--pv-from-y': '5px', '--pv-at': `${900 + i * 380}ms` });
-            return (
-              <g key={ry}>
-                <rect
-                  className="pv-arrive"
-                  opacity="0"
-                  x="44"
-                  y={ry}
-                  width="30"
-                  height="8"
-                  rx="1"
-                  fill="white"
-                  stroke="rgb(99 102 241)"
-                  strokeWidth="0.5"
-                  style={motion}
-                />
-                <rect
-                  className="pv-arrive"
-                  opacity="0"
-                  x="45.5"
-                  y={ry + 1.5}
-                  width="5"
-                  height="5"
-                  rx="2.5"
-                  fill={avatar}
-                  style={motion}
-                />
-                <rect
-                  className="pv-arrive"
-                  opacity="0"
-                  x="52"
-                  y={ry + 3}
-                  width="18"
-                  height="2"
-                  rx="0.5"
-                  fill="rgb(49 46 129)"
-                  style={motion}
-                />
-              </g>
-            );
-          })}
+              [36, 6, 'rgb(254 240 138)', 'rgb(202 138 4)'],
+              [56, 6, 'rgb(251 207 232)', 'rgb(219 39 119)'],
+              [36, 16, 'rgb(191 219 254)', 'rgb(37 99 235)'],
+              [56, 16, 'rgb(187 247 208)', 'rgb(22 163 74)'],
+              [36, 26, 'rgb(221 214 254)', 'rgb(124 58 237)'],
+              [56, 26, 'rgb(254 215 170)', 'rgb(234 88 12)'],
+              [36, 36, 'rgb(165 243 252)', 'rgb(8 145 178)'],
+            ] as [number, number, string, string][]
+          ).map(([x, y, paper, badge]) => (
+            <g key={`${x}-${y}`}>
+              <rect x={x} y={y} width="18" height="8" fill={paper} />
+              <rect x={x + 1.5} y={y + 2} width="11" height="1.2" rx="0.4" fill="rgb(71 85 105)" />
+              <circle cx={x + 17} cy={y + 0.5} r="1.8" fill={badge} />
+            </g>
+          ))}
+          <rect
+            x="56"
+            y="36"
+            width="18"
+            height="8"
+            rx="1"
+            fill="none"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.5"
+            strokeDasharray="1.5 1"
+          />
+          {/* Hover story: a new teammate signs the empty slot, then the
+              confetti pops on the cover. */}
+          <rect
+            className="pv-arrive"
+            opacity="0"
+            x="56"
+            y="36"
+            width="18"
+            height="8"
+            fill="rgb(254 202 202)"
+            style={pv({ '--pv-from-y': '5px', '--pv-at': '900ms' })}
+          />
+          <circle
+            className="pv-arrive"
+            opacity="0"
+            cx="73"
+            cy="36.5"
+            r="1.8"
+            fill="rgb(220 38 38)"
+            style={pv({ '--pv-from-y': '5px', '--pv-at': '1100ms' })}
+          />
+          {(
+            [
+              [22, 36, 'rgb(245 158 11)'],
+              [26, 40, 'rgb(59 130 246)'],
+              [20, 42, 'rgb(236 72 153)'],
+            ] as [number, number, string][]
+          ).map(([cx, cy, fill], i) => (
+            <circle
+              key={i}
+              className="pv-new"
+              opacity="0"
+              cx={cx}
+              cy={cy}
+              r="1.1"
+              fill={fill}
+              style={pv({ '--pv-at': `${1700 + i * 150}ms` })}
+            />
+          ))}
         </svg>
       );
     case 'comparison-table':
@@ -655,75 +653,98 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'system-architecture':
+      // Four tier lanes (Clients / Edge / Services / Data), each with its
+      // title gutter; the gateway (bold) takes both clients' requests and
+      // fans out to the services, orders publish sideways to the queue, and
+      // each service drops straight into its store.
       return (
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
-          {/* client → gateway → two services → two datastores */}
-          {[
-            [40, 11, 40, 16],
-            [40, 24, 21, 29],
-            [40, 24, 59, 29],
-            [21, 37, 19, 42],
-            [59, 37, 56, 42],
-          ].map(([x1, y1, x2, y2], i) => (
-            <line
-              key={i}
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
-              stroke="rgb(148 163 184)"
-              strokeWidth="0.7"
-            />
+          {[3, 14.5, 26, 37.5].map((y) => (
+            <g key={y}>
+              <rect
+                x="3"
+                y={y}
+                width="74"
+                height="10"
+                rx="1.2"
+                fill="rgb(240 249 255)"
+                stroke="rgb(125 211 252)"
+                strokeWidth="0.5"
+              />
+              <rect x="3" y={y} width="9" height="10" rx="1.2" fill="rgb(224 242 254)" />
+            </g>
           ))}
+          {/* Wiring: every edge is vertical or horizontal, none cross. */}
           {[
-            { x: 31, y: 3, w: 18 },
-            { x: 31, y: 16, w: 18 },
-            { x: 10, y: 29, w: 22 },
-            { x: 48, y: 29, w: 22 },
-          ].map((b, i) => (
+            'M 34 11 L 34 16.5',
+            'M 49 11 L 49 19.5 L 38.5 19.5',
+            'M 53.5 8 L 64 8 L 64 16.5',
+            'M 29.5 19.5 L 19 19.5 L 19 28',
+            'M 34 23 L 34 28',
+            'M 38.5 31 L 44.5 31',
+            'M 53.5 31 L 59.5 31',
+            'M 19 34 L 19 39.5',
+            'M 34 34 L 34 39.5',
+            'M 49 34 L 49 39.5',
+            'M 64 34 L 64 39.5',
+          ].map((d) => (
+            <path key={d} d={d} fill="none" stroke="rgb(100 116 139)" strokeWidth="0.6" />
+          ))}
+          {(
+            [
+              [29.5, 5, false],
+              [44.5, 5, false],
+              [29.5, 16.5, true],
+              [59.5, 16.5, false],
+              [14.5, 28, false],
+              [29.5, 28, false],
+              [44.5, 28, false],
+              [59.5, 28, false],
+              [59.5, 39.5, false],
+            ] as [number, number, boolean][]
+          ).map(([x, y, bold]) => (
             <rect
-              key={i}
-              x={b.x}
-              y={b.y}
-              width={b.w}
-              height="8"
-              rx="1.5"
-              fill="white"
-              stroke="rgb(100 116 139)"
-              strokeWidth="0.75"
+              key={`${x}-${y}`}
+              x={x}
+              y={y}
+              width="9"
+              height="6"
+              rx="1"
+              fill={bold ? 'rgb(3 105 161)' : 'white'}
+              stroke="rgb(14 165 233)"
+              strokeWidth="0.6"
             />
           ))}
-          {[19, 56].map((cxv) => (
+          {[19, 34, 49].map((cxv) => (
             <g key={cxv}>
               <rect
-                x={cxv - 7}
-                y="42"
-                width="14"
-                height="6"
-                fill="rgb(226 232 240)"
-                stroke="rgb(100 116 139)"
-                strokeWidth="0.75"
+                x={cxv - 4.5}
+                y="40.5"
+                width="9"
+                height="5"
+                fill="white"
+                stroke="rgb(14 165 233)"
+                strokeWidth="0.6"
               />
               <ellipse
                 cx={cxv}
-                cy="42"
-                rx="7"
-                ry="1.6"
+                cy="40.5"
+                rx="4.5"
+                ry="1.2"
                 fill="white"
-                stroke="rgb(100 116 139)"
-                strokeWidth="0.75"
+                stroke="rgb(14 165 233)"
+                strokeWidth="0.6"
               />
             </g>
           ))}
-          {/* Hover story: requests flow down the stack, client to gateway,
-              fanned out to both services, and on into their datastores. */}
+          {/* Hover story: a request drops through the gateway into orders,
+              which publishes an event the worker picks up. */}
           {(
             [
-              [40, 11, 0, 5, 900],
-              [40, 24, -19, 5, 1250],
-              [40, 24, 19, 5, 1450],
-              [21, 37, -2, 5, 1750],
-              [59, 37, -3, 5, 1950],
+              [34, 11, 0, 5, 900],
+              [34, 23, 0, 5, 1300],
+              [38.5, 31, 6, 0, 1700],
+              [53.5, 31, 6, 0, 2050],
             ] as [number, number, number, number, number][]
           ).map(([cx, cy, dx, dy, at], i) => (
             <circle
@@ -732,13 +753,13 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
               opacity="0"
               cx={cx}
               cy={cy}
-              r="1.4"
+              r="1.3"
               fill="rgb(14 165 233)"
               style={pv({
                 '--pv-dx': `${dx}px`,
                 '--pv-dy': `${dy}px`,
                 '--pv-at': `${at}ms`,
-                '--pv-dur': '1400ms',
+                '--pv-dur': '1200ms',
               })}
             />
           ))}
