@@ -104,7 +104,10 @@ rather than a generic error:
   not a "link not found". On restore the same links work again, subject to
   their own expiry ([Share-link expiry](share-link-expiry.md)).
 - **The realtime room** refuses new joins, and ends every open session the
-  moment the diagram is trashed, telling each one it was deleted.
+  moment the diagram is trashed, telling each one it was deleted. An editor that
+  loaded just before the delete and joins just after is refused, not told, so
+  it asks the api why: the same load answers `diagram_trashed`, and the editor
+  shows the deleted card.
 - **Edits and saves** are rejected with a named error, `diagram_trashed`, so an
   editor left open on another device stops and says why instead of failing
   silently.

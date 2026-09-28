@@ -256,6 +256,33 @@ describe('connectRoom when the diagram is trashed', () => {
     expect(ClosingSocket.all).toHaveLength(1);
   });
 
+  // A diagram trashed between the editor's load and its join: the upgrade is refused (the browser
+  // reports only an abnormal close, never opened), so the room says so and the editor asks the api.
+  it('reports a join refused before the socket opened, and still retries', () => {
+    const onRefused = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onRefused },
+    );
+    ClosingSocket.all[0]!.fire('close', { code: 1006 });
+    expect(onRefused).toHaveBeenCalledTimes(1);
+    vi.runOnlyPendingTimers();
+    expect(ClosingSocket.all).toHaveLength(2);
+  });
+
+  it('does not call a drop after the socket opened a refusal', () => {
+    const onRefused = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onRefused },
+    );
+    ClosingSocket.all[0]!.fire('open');
+    ClosingSocket.all[0]!.fire('close', { code: 1006 });
+    expect(onRefused).not.toHaveBeenCalled();
+  });
+
   it('still reconnects after an ordinary drop', () => {
     const onDiagramTrashed = vi.fn();
     connectRoom(

@@ -37,6 +37,10 @@ export type RoomHandlers = {
   // closed this socket with DIAGRAM_TRASHED_CLOSE and will refuse every
   // reconnect, so the connector stops and says so, once.
   onDiagramTrashed?: () => void;
+  // The room refused to open this connection (it closed before ever opening): the join was turned away
+  // at the upgrade, which the browser reports only as an abnormal close. The caller finds out why over
+  // REST, which names a trashed diagram (docs/specs/013-workspace/trash.md). Retrying carries on as usual.
+  onRefused?: () => void;
   // The room could not bridge our reconnect gap from its op log (docs/specs/012-collaboration/realtime-conflict-resolution.md,
   // Level 1): we're too far behind, or it restarted. The caller re-hydrates
   // from D1 (the same recovery the error boundary uses — a full reload).
@@ -146,7 +150,10 @@ export function connectRoom(
 
   const open = () => {
     ws = new WebSocket(url);
+    // This socket, as opposed to `opened` (any session so far).
+    let socketOpened = false;
     ws.addEventListener('open', () => {
+      socketOpened = true;
       attempts = 0;
       // The baton coming home (docs/specs/012-collaboration/facilitator.md): on a reconnect this is what tells
       // the room we are the same facilitator it granted before the refresh.
@@ -208,6 +215,7 @@ export function connectRoom(
         handlers.onDiagramTrashed?.();
         return;
       }
+      if (!socketOpened) handlers.onRefused?.();
       if (attempts >= MAX_RECONNECT_ATTEMPTS) return;
       const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
       attempts++;
