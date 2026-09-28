@@ -8,34 +8,34 @@ from real exports). A row marked _pending E-C1_ is not built until a real export
 
 Scope, by file (all under `apps/live/` unless stated):
 
-| File                                                | Role                                                                                      |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `lib/board-import/whiteboard/limits.ts`             | Named constants of this blueprint                                                         |
-| `lib/board-import/whiteboard/refusals.ts`           | `WhiteboardRefusal`, `refusalMessage`: the named rejections and their copy                |
-| `lib/board-import/whiteboard/zip.ts`                | `readZip`: central directory, stored and deflated entries, byte budget                    |
-| `lib/board-import/whiteboard/envelope.ts`           | `readWhiteboardFile`: sniff Zip / HTML / picture, find the board                          |
-| `lib/board-import/whiteboard/matrix.ts`             | `Matrix`, `parseCssTransform`, `parseSvgTransform`, `compose`, `apply`                    |
-| `packages/diagram/src/svg-path-outline.ts`          | `flattenSvgPath`: SVG path data to polylines, shared with shape outlines                  |
-| `lib/board-import/whiteboard/colour.ts`             | `readColour`: `rgba()` / `rgb()` / hex / named to `{ hex, alpha }`                        |
-| `lib/board-import/whiteboard/placement.ts`          | `anchorMatrix`, `innerMatrix`, `inlineStyle`, `px`: markup to board px                    |
-| `lib/board-import/whiteboard/canvas.ts`             | `readBoard`, `isWhiteboardCanvas`: the canvas root, anchors in stacking order, background |
-| `lib/board-import/whiteboard/ink.ts`                | `readInk`: strokes of one ink anchor, centreline or outline, width, pen                   |
-| `lib/board-import/whiteboard/items.ts`              | `readItem`: notes, text, shapes, connectors, images, reactions (E-C1)                     |
-| `lib/board-import/whiteboard/fit.ts`                | `fitToTab`: the tab budget loop over the shared `simplifyPolyline`                        |
-| `lib/board-import/whiteboard/convert.ts`            | `convertBoard`: board to elements and stroke drafts, per-kind tally                       |
-| `lib/board-import/whiteboard/import.ts`             | `importWhiteboard`: the entry point                                                       |
-| `lib/fnv1a.ts`                                      | `fnv1a32`: the hash behind `sourceId` (shared with `identity.ts`)                         |
-| `lib/board-import/whiteboard/__fixtures__/`         | Fixtures and their generator                                                              |
-| `lib/board-import/whiteboard/test-support.ts`       | DOM test helpers: a board document from markup, fixture bytes                             |
-| `hooks/persistence/useTabImport.ts`                 | The `whiteboard` format: bytes in, a new whiteboard tab in one commit, telemetry, log     |
-| `components/dialogs/ImportTabDialog.tsx`            | The Microsoft Whiteboard card (file only) and its report                                  |
-| `apps/help/app/…/import-from-microsoft-whiteboard/` | The help article                                                                          |
-| `e2e/whiteboard-import.spec.ts`                     | Fixtures through the real dialog on the production build, persistence and undo            |
+| File                                                   | Role                                                                                      |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `lib/board-import/whiteboard/limits.ts`                | Named constants of this blueprint                                                         |
+| `lib/board-import/whiteboard/refusals.ts`              | `WhiteboardRefusal`, `refusalMessage`: the named rejections and their copy                |
+| `lib/board-import/whiteboard/zip.ts`                   | `readZip`: central directory, stored and deflated entries, byte budget                    |
+| `lib/board-import/whiteboard/envelope.ts`              | `readWhiteboardFile`: sniff Zip / HTML / picture, find the board                          |
+| `lib/board-import/whiteboard/matrix.ts`                | `Matrix`, `parseCssTransform`, `parseSvgTransform`, `compose`, `apply`                    |
+| `packages/diagram/src/svg-path-outline.ts`             | `flattenSvgPath`: SVG path data to polylines, shared with shape outlines                  |
+| `lib/board-import/whiteboard/colour.ts`                | `readColour`: `rgba()` / `rgb()` / hex / named to `{ hex, alpha }`                        |
+| `lib/board-import/whiteboard/placement.ts`             | `anchorMatrix`, `innerMatrix`, `inlineStyle`, `px`: markup to board px                    |
+| `lib/board-import/whiteboard/canvas.ts`                | `readBoard`, `isWhiteboardCanvas`: the canvas root, anchors in stacking order, background |
+| `lib/board-import/whiteboard/ink.ts`                   | `readInk`: strokes of one ink anchor, centreline or outline, width, pen                   |
+| `lib/board-import/whiteboard/fit.ts`                   | `fitToTab`: the tab budget loop over the shared `simplifyPolyline`                        |
+| `lib/board-import/whiteboard/convert.ts`               | `convertBoard`: board to elements and stroke drafts, per-kind tally                       |
+| `lib/board-import/whiteboard/import.ts`                | `importWhiteboard`: the entry point                                                       |
+| `lib/fnv1a.ts`                                         | `fnv1a32`: the hash behind `sourceId` (shared with `identity.ts`)                         |
+| `lib/board-import/whiteboard/__fixtures__/generate.ts` | Writes the synthesised fixtures beside it (`board-markup.ts` builders, `zip-writer.ts`)   |
+| `hooks/persistence/useTabImport.ts`                    | The `whiteboard` format: bytes in, a new whiteboard tab in one commit, telemetry, log     |
+| `components/dialogs/ImportTabDialog.tsx`               | The Microsoft Whiteboard card (file only) and its report                                  |
+| `apps/help/app/…/import-from-microsoft-whiteboard/`    | The help article                                                                          |
 
-The shared image pipeline (`lib/import-images/`, [import image pipeline](../import-image-pipeline.md))
-and the shared import report (`lib/import-report.ts`, [draw.io import](../drawio-import.md) "The
-import report") are adopted when they reach `main`; this importer defines no image or report
-machinery of its own.
+Still to be written, each added to this table when it exists: the items reader (notes, text,
+shapes, connectors, images, reactions, from E-C1) and the end-to-end spec (fixtures through the
+real dialog on the production build, persistence and undo).
+
+The shared import image pipeline (`feat/import-images`) and the shared import report
+(`feat/drawio-import`) are adopted, and linked from here, once they reach `main`; this importer
+defines no image or report machinery of its own.
 
 ## Domain and naming
 
@@ -332,7 +332,7 @@ Fingerprint `[whiteboard-import]`, `console.info` for decisions, `console.warn` 
   `__MACOSX`), envelope sniffing, matrix parsing and composition, path flattening, colour, ink
   width estimate against synthetic strokes of known width, outline fallback, simplify and fit,
   every refusal, every fixture's elements valid.
-- Fixtures: `__fixtures__/generate.ts` writes synthesised exports mimicking E-5 (stored Zip, HTML
+- Fixtures: `lib/board-import/whiteboard/__fixtures__/generate.ts` writes synthesised exports mimicking E-5 (stored Zip, HTML
   wrapper, anchors, ink groups); real exports join once the operator permits.
 - e2e: the fixtures through the real dialog on the production build, reload persistence, undo.
 
