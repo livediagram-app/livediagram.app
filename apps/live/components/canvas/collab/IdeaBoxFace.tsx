@@ -7,6 +7,7 @@
 // one. A box that shows you your own card tells the room what you wrote the
 // moment somebody watches you type it.
 
+import { CountBadge } from '@/components/primitives/CountBadge';
 import { useState } from 'react';
 import { IDEA_MAX_TEXT, type ShapeElement } from '@livediagram/diagram';
 import { HoverCard } from '@livediagram/ui';
@@ -75,7 +76,8 @@ export function IdeaBoxFace({
                   close();
                 }}
               >
-                {cards.length ? `Empty the box (${cards.length})` : 'Empty the box'}
+                Empty the box
+                {cards.length ? <CountBadge count={cards.length} /> : null}
               </ElementMenuItem>
             ) : null}
             {onOpenSettings ? (
@@ -126,8 +128,9 @@ export function IdeaBoxFace({
               description:
                 'Shows every idea to the room. There is no closing it again: the flag protects the writing round, it is not a toggle.',
             }}
+            count={cards.length}
           >
-            {`Open the box (${cards.length})`}
+            Open the box
           </AccentBar>
         ) : null}
         {open && onScatter && cards.length > 0 ? (

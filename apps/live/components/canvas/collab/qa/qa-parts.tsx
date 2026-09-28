@@ -250,11 +250,15 @@ export function RoundAction({
 export function AccentBar({
   onPress,
   icon,
+  count,
   hoverCard,
   children,
 }: {
   onPress: () => void;
   icon?: React.ReactNode;
+  // How many things the action covers, as a badge in the accent
+  // (docs/specs/004-interface-design/counts.md), never "(3)" in the label.
+  count?: number;
   hoverCard?: { title: string; description: string };
   children: React.ReactNode;
 }) {
@@ -273,6 +277,14 @@ export function AccentBar({
     >
       {icon}
       {children}
+      {count !== undefined ? (
+        <span
+          className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-[10px] font-bold tabular-nums"
+          style={{ color: QA_ON_ACCENT, backgroundColor: QA_ACCENT }}
+        >
+          <span className="text-optical-centre">{count}</span>
+        </span>
+      ) : null}
     </button>
   );
   // `block`: the bar spans its row wherever it sits (a board body, a footer).

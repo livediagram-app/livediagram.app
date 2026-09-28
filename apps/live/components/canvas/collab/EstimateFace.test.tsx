@@ -51,7 +51,9 @@ describe('EstimateFace', () => {
   it('shows who has answered but not what, with your own pick lifted', () => {
     show(card({ responses: answers }));
     expect(screen.getByText('3 of 3 in')).toBeTruthy();
-    expect(screen.getByText('Reveal (3)')).toBeTruthy();
+    expect(screen.getByText('Reveal')).toBeTruthy();
+    // The count is a badge beside it (docs/specs/004-interface-design/counts.md), not '(3)' in the label.
+    expect(screen.queryByText(/Reveal \(/)).toBeNull();
     expect(screen.getByRole('button', { name: 'Withdraw 5' }).getAttribute('aria-pressed')).toBe(
       'true',
     );

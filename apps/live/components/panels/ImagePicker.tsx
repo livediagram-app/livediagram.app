@@ -1,5 +1,6 @@
 'use client';
 
+import { CountBadge } from '@/components/primitives/CountBadge';
 import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useEffect, useEffectEvent, useState } from 'react';
@@ -173,7 +174,8 @@ export function ImagePicker({
           Upload
         </TabButton>
         <TabButton active={tab === 'gallery'} onClick={() => setTab('gallery')}>
-          Gallery {gallery ? `(${gallery.length})` : ''}
+          Gallery
+          {gallery ? <CountBadge count={gallery.length} className="ml-1.5 align-middle" /> : null}
         </TabButton>
       </nav>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">

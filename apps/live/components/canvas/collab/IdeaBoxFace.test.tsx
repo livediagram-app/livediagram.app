@@ -38,7 +38,8 @@ describe('IdeaBoxFace', () => {
     show(box({ ideaCards: ['Flaky CI', 'Too many meetings'] }), { onReveal: vi.fn() });
     expect(screen.getByText('ideas sealed')).toBeTruthy();
     expect(screen.queryByText('Flaky CI')).toBeNull();
-    expect(screen.getByText('Open the box (2)')).toBeTruthy();
+    expect(screen.getByText('Open the box')).toBeTruthy();
+    expect(screen.queryByText(/Open the box \(/)).toBeNull();
   });
 
   it('shows every idea once open, and offers the scatter instead', () => {

@@ -61,8 +61,9 @@ export function EstimateFace({
                   description:
                     'Turns every card face up for everyone at once. You can reveal before the whole room has answered.',
                 }}
+                count={responses.length}
               >
-                {`Reveal (${responses.length})`}
+                Reveal
               </AccentBar>
             ) : null}
             {revealed && onClear ? (

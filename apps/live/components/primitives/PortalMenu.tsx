@@ -1,5 +1,6 @@
 'use client';
 
+import { CountBadge } from './CountBadge';
 import {
   useEffect,
   useLayoutEffect,
@@ -370,6 +371,7 @@ export function MenuToolButton({
 export function MenuTile({
   icon,
   label,
+  count,
   labelStyle,
   onClick,
   danger = false,
@@ -383,6 +385,9 @@ export function MenuTile({
   // own face via labelStyle, which needs no separate swatch).
   icon?: ReactNode;
   label: string;
+  // How many things the tile acts on, shown as a badge beside the label
+  // (docs/specs/004-interface-design/counts.md), never in brackets.
+  count?: number;
   // Inline style for the label span — e.g. `{ fontFamily }` so a font tile
   // previews itself.
   labelStyle?: CSSProperties;
@@ -426,7 +431,10 @@ export function MenuTile({
           {icon}
         </span>
       ) : null}
-      <span style={labelStyle}>{label}</span>
+      <span style={labelStyle}>
+        {label}
+        {count !== undefined ? <CountBadge count={count} className="ml-1 align-middle" /> : null}
+      </span>
     </button>
   );
 }

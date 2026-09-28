@@ -102,7 +102,8 @@ export function SelectionFilterMenu({ selectedElements, onFilter }: SelectionFil
                     {g.key === 'all-shapes' ? <ShapesIcon /> : <FilterIcon />}
                   </span>
                 }
-                label={`${g.label} (${g.ids.length})`}
+                label={g.label}
+                count={g.ids.length}
                 onClick={() => {
                   onFilter(new Set(g.ids));
                   setOpen(false);
