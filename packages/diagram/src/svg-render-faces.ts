@@ -542,20 +542,42 @@ export function svgCollabFace(
       );
     }
     case 'done-check': {
+      // The card as the face draws it (docs/specs/012-collaboration/done-check.md "Reading the card"): the ring
+      // at the share of marks it holds, the count in it, and the button. An
+      // export has no room to count against, so the ring reads the marks as
+      // the whole: done when there are any, drawn at full.
       const done = (el.responses ?? []).length;
       return collabCard(
         el,
         title || 'Everyone done?',
-        `${done}/${Math.max(done, 1)}`,
+        done ? `${done} done` : undefined,
         color,
-        (_w, h) =>
-          text(PAD_X, PAD_Y + TITLE_PX + 20, 'Waiting on', {
-            size: 10,
-            weight: 600,
-            color,
-            opacity: 0.6,
-            uppercase: true,
-          }) + footerPills(PAD_X, h - PAD_Y - 18, ["I'm done"], color),
+        (w, h) => {
+          const r = 30;
+          const cx = PAD_X + r + 4;
+          const cy = PAD_Y + TITLE_PX + 12 + r;
+          const circ = 2 * Math.PI * r;
+          const arc = done
+            ? `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r}" fill="none" stroke="#22c55e" stroke-width="7" stroke-linecap="round" stroke-dasharray="${r2(circ)}" stroke-dashoffset="0" transform="rotate(-90 ${r2(cx)} ${r2(cy)})"/>`
+            : '';
+          return (
+            `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r}" fill="none" stroke="${xmlEscape(color)}" stroke-opacity="0.12" stroke-width="7"/>` +
+            arc +
+            text(cx, cy + 6, String(done), { size: 18, weight: 700, color, anchor: 'middle' }) +
+            text(cx + r + 18, cy - 4, done ? `${done} marked done` : 'Nobody done yet', {
+              size: 11,
+              weight: 600,
+              color,
+            }) +
+            pill(PAD_X, h - PAD_Y - 26, w - PAD_X * 2, 26, color, 0.16) +
+            text(w / 2, h - PAD_Y - 9, "I'm done", {
+              size: 11,
+              weight: 600,
+              color,
+              anchor: 'middle',
+            })
+          );
+        },
       );
     }
     default:

@@ -115,6 +115,7 @@ export function CollabFaceRouter({
         element={element}
         label={label}
         textColor={textColor}
+        surface={surface}
         selfKey={api?.selfKey ?? ''}
         participants={api?.participants ?? []}
         // `respond` already withdraws when you send the value you already

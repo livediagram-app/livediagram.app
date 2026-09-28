@@ -136,7 +136,7 @@ mode, none of which a per-kind colour would.
 
 | Element         | Object             | What draws it                                                                                  |
 | --------------- | ------------------ | ---------------------------------------------------------------------------------------------- |
-| Done check      | a ring-binder page | ruled, punched, wire loops through the holes                                                   |
+| Done check      | (moved on)         | none: a progress ring and two rosters ([The Done check](done-check.md#reading-the-card))       |
 | Idea box        | (moved on, below)  | none: rebuilt on the Q&A board's look ([Idea box](idea-box.md#the-look))                       |
 | Estimate        | (moved on)         | none: cards to pick, face down then face up ([Estimate card](estimate-card.md#the-look))       |
 | Temperature     | (moved on)         | none: faces, bars and a mood meter ([Temperature check](temperature-check.md#the-face))        |
@@ -156,7 +156,7 @@ direction: a flat card lit by the tab theme's accent, rounded rows, a composer a
 motion that carries meaning (a vote pops, a new entry settles in) instead of printed texture. Next
 to it the paper objects read as skeuomorphic and dated, so elements move onto the Q&A board's
 parts (its accent scope, composer, rows and motion) rather than growing new textures. The Idea box
-went first, then the Temperature check, the Estimate card and the Reveal zone; the rest follow. Until an element moves, its row above still describes it.
+went first, then the Temperature check, the Estimate card, the Reveal zone and the Done check; the rest follow. Until an element moves, its row above still describes it.
 
 House rules for anything added to the kit: decorative, so `aria-hidden` and
 `pointer-events-none` without exception (these sit over cards whose controls

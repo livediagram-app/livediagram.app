@@ -64,6 +64,7 @@ describe('DoneCheckFace', () => {
     render(
       <DoneCheckFace
         element={card(['k-ada'])}
+        surface="#ffffff"
         label=""
         textColor="#000"
         selfKey="k-me"
@@ -74,14 +75,16 @@ describe('DoneCheckFace', () => {
     // And it says WHO: the roster is rendered by matching the saved key back
     // to the person, so a mismatch shows an empty Done list rather than a
     // wrong one.
-    expect(screen.getByText(/^Done · 1$/)).toBeTruthy();
-    expect(screen.getByText(/^Waiting on · 1$/)).toBeTruthy();
+    // Each roster's count is a badge beside its label (docs/specs/004-interface-design/counts.md).
+    expect(screen.getByText('Done')).toBeTruthy();
+    expect(screen.getByText('Waiting')).toBeTruthy();
   });
 
   it('completes when everyone in the room has marked themselves', () => {
     render(
       <DoneCheckFace
         element={card(['k-me', 'k-ada'])}
+        surface="#ffffff"
         label=""
         textColor="#000"
         selfKey="k-me"
@@ -89,7 +92,7 @@ describe('DoneCheckFace', () => {
       />,
     );
     expect(count()).toBe('2/2');
-    expect(screen.getByText("Everyone's done.")).toBeTruthy();
+    expect(screen.getByText("Everyone's done!")).toBeTruthy();
   });
 
   it('reads our own mark from the key we write under, not our owner id', () => {
@@ -99,6 +102,7 @@ describe('DoneCheckFace', () => {
     render(
       <DoneCheckFace
         element={card(['k-me'])}
+        surface="#ffffff"
         label=""
         textColor="#000"
         selfKey="k-me"
@@ -114,6 +118,7 @@ describe('DoneCheckFace', () => {
     render(
       <DoneCheckFace
         element={card(['k-ada'])}
+        surface="#ffffff"
         label=""
         textColor="#000"
         selfKey="k-me"
@@ -135,6 +140,7 @@ describe('DoneCheckFace', () => {
     render(
       <DoneCheckFace
         element={card(['k-me'])}
+        surface="#ffffff"
         label=""
         textColor="#000"
         selfKey="k-me"

@@ -335,17 +335,21 @@ export const ScatterGlyph = ({ size = 12 }: Glyph) =>
 export function EmptyRows({
   textColor,
   title,
+  rows = 3,
   children,
 }: {
   textColor: string;
   title: string;
+  // How many breathing rows to draw above the invitation; 0 for a card too
+  // small for them (the fixed-size Done check).
+  rows?: number;
   // The hint under the title; absent for a viewer who can't add.
   children?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col items-center gap-5 pb-2 pt-1">
       <div className="flex w-full flex-col gap-1.5" aria-hidden>
-        {[0.92, 0.7, 0.8].map((w, i) => (
+        {[0.92, 0.7, 0.8].slice(0, rows).map((w, i) => (
           <div
             key={i}
             className="qa-ghost flex items-center gap-2 rounded-xl p-2"

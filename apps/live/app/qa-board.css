@@ -237,3 +237,38 @@
 .reveal-cover:hover {
   filter: brightness(1.04);
 }
+
+/*
+ * Done check (docs/specs/012-collaboration/done-check.md "Reading the card"): the ring eases to its new
+ * share, the button settles its colour, and when the last person finishes a
+ * burst of confetti flies out from the ring once (each particle's angle is set
+ * inline as --burst-angle).
+ */
+.done-ring-arc {
+  transition:
+    stroke-dashoffset 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    stroke 300ms ease;
+}
+.done-button {
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease,
+    transform 150ms ease;
+}
+.done-button:enabled:active {
+  transform: scale(0.97);
+}
+@keyframes done-burst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--burst-angle)) translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--burst-angle)) translateY(-54px) scale(0.4);
+  }
+}
+.done-burst {
+  animation: done-burst 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
