@@ -537,7 +537,7 @@ export function useCanvasChromePanels({
   // stacking handles their coexistence). Desktop-only, gated on the map
   // setting + a few elements; hidden in zen / welcome (chromeHidden).
   const mapEnabled = settings?.showMinimap !== false;
-  const mapAccent = paletteTheme.elementStroke ?? '#0ea5e9';
+  const mapAccent = paletteTheme.elementStroke;
   const minimapWiring = panelWiringFor('minimap', props.mapPosition, props.onResetMap);
   // Hidden layers (docs/specs/006-diagram/layers.md) drop out of the miniature too, so the map
   // matches the canvas. Not rendered at all in the minimal panel layout
