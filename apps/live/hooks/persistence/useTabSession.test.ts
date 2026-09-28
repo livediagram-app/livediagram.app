@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/diagram';
 
@@ -6,14 +8,15 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 import { track } from '@/lib/telemetry';
 import { useTabSession } from './useTabSession';
 
-// useTabSession holds no React state (every handler writes through
-// commitTabs), so it runs as a plain function over a tab array we own.
+// useTabSession holds no React state (every handler writes through commitTabs), so it runs over a tab array
+// we own. It is driven through renderHook like any hook: each session() re-renders it against the tabs as
+// they stand, then hands back its handlers.
 function harness(
   initial: Partial<Tab> = {},
   opts: { editsBlocked?: boolean; sessionToolsBlocked?: boolean } = {},
 ) {
   let tabs: Tab[] = [{ id: 't1', name: 'Tab 1', elements: [], ...initial } as Tab];
-  const session = () =>
+  const hook = renderHook(() =>
     useTabSession({
       editsBlocked: opts.editsBlocked ?? false,
       sessionToolsBlocked: opts.sessionToolsBlocked ?? false,
@@ -25,7 +28,12 @@ function harness(
       emitTabMeta: vi.fn(),
       emitVote: vi.fn(),
       selfId: 'me',
-    });
+    }),
+  );
+  const session = () => {
+    hook.rerender();
+    return hook.result.current;
+  };
   return { session, tab: () => tabs[0]! };
 }
 

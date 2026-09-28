@@ -159,5 +159,13 @@ export function useFolders(
   );
 
   // Nothing loads without an owner, so there is nothing to wait for.
-  return { folders, setFolders, loading: ownerId ? loading : false, createFolder, renameFolder, deleteFolder, refresh };
+  return {
+    folders,
+    setFolders,
+    loading: ownerId ? loading : false,
+    createFolder,
+    renameFolder,
+    deleteFolder,
+    refresh,
+  };
 }

@@ -7,9 +7,8 @@ Status: in progress
 Every React component and hook in the repo keeps render pure and uses effects only to synchronise with
 something outside React. The React hooks lint rules (`eslint-plugin-react-hooks`, including its React
 Compiler rules: `refs`, `set-state-in-effect`, `purity`, `immutability`) are **errors** in every
-workspace, with no per-line suppressions. The one exemption is written in the lint config, not in code:
-test files that call a hook outside a component on purpose (to drive a hook that uses none) are exempt
-from `rules-of-hooks`.
+workspace, with no per-line suppressions. Tests drive hooks through a component (`renderHook`), like the app
+does.
 
 ## Why
 

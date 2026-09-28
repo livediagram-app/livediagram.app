@@ -5,7 +5,8 @@ import { useImageBlobUrl } from './useImageBlobUrl';
 
 const apiFetchImageBlobUrl = vi.fn<(ownerId: string, imageId: string) => Promise<string | null>>();
 vi.mock('@/lib/api-client', () => ({
-  apiFetchImageBlobUrl: (ownerId: string, imageId: string) => apiFetchImageBlobUrl(ownerId, imageId),
+  apiFetchImageBlobUrl: (ownerId: string, imageId: string) =>
+    apiFetchImageBlobUrl(ownerId, imageId),
 }));
 
 const revoked: string[] = [];
