@@ -215,12 +215,7 @@ Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestr
 
 ## What's built, what's still ahead
 
-The frontend-only prototype phase ended when the API app landed (see [Build phase](docs/specs/005-project-roadmap/prototype-scope.md) and [API app](docs/specs/015-api/api.md)). Today the editor talks to a Cloudflare Worker API backed by D1 (durable diagram storage) + Durable Objects (per-diagram realtime room). A diagram can also live **only in the browser**, in IndexedDB, if the author picks Offline Mode ([Offline Mode](docs/specs/006-diagram/offline-mode.md)) — so there are two stores, not one.
-
-`apps/live/lib/api-client.ts` is the single persistence boundary over both: `lib/api/*` sends each load / save / delete to the api or to `lib/offline/offline-store.ts` on `isOfflineId(id)`, so the rest of the editor takes the same code path either way. Listing is the exception that isn't a dispatch — the Explorer shows both sets, so it MERGES them, and still returns the offline ones when the cloud fetch fails. The one caller-decided branch is **create**, which has no registered id to dispatch on yet: the New Diagram wizard calls `offlineCreateDiagram` directly when the author chose offline, and that call is what registers the id every later operation routes on. The editor never reads or writes `localStorage` for diagrams — that is IndexedDB's job, and `localStorage` holds only the participant id and device-local preferences.
-
-- **Built:** the canvas editor (shapes including code blocks + checklists, arrows of every style with draggable curve / elbow handles, freehand sketches via the Freehand + Shape Pen tools (the Shape Pen recognises a rough shape on release; see [Two pens instead of a pen and a mode](docs/specs/008-canvas/two-pens.md)) plus the Highlighter, which is a held canvas mode rather than a palette tile (see [Highlighter](docs/specs/008-canvas/highlighter.md)), a multi-point polygon / polyline tool, marquee + multi-select, format painter, web components that lay themselves out (banner / callout / stat row / process / header / hero, see [Web components are elements; groups are gone](docs/specs/009-elements/web-components-and-no-groups.md), which also removed groups), element drop shadows (see [Element shadows](docs/specs/008-canvas/element-shadows.md)), comments with @-mentions of teammates (see [Comment mentions](docs/specs/012-collaboration/comment-mentions.md)), assigned actions (assign element-level work to a teammate, with a Collaborate panel, Action panel checklists + optional email; see [Assigned actions](docs/specs/012-collaboration/assigned-actions.md)), links, themed templates, folders, tabs groupable into one-level collapsible folders, per-tab Photoshop-style layers with a dockable Layers panel (see [Layers](docs/specs/006-diagram/layers.md)), presentation mode: full-screen slide decks built from element sets that can span tabs, run from a Slide Deck panel (see [Presentation mode](docs/specs/012-collaboration/presentation-mode.md)), and per-tab import/export covering JSON, Mermaid, Markdown, and Excalidraw (see [Mermaid import & export](docs/specs/020-import-export/mermaid.md), [Excalidraw import & export](docs/specs/020-import-export/excalidraw-import-export.md))), the api worker (REST + share links + change log + Durable Object realtime room with cursor/select/log ops), per-tab storage, Offline Mode (a diagram kept only in this browser's IndexedDB, convertible both ways with Sync Diagram / Take Offline; see [Offline Mode](docs/specs/006-diagram/offline-mode.md)), anonymous first-party telemetry + the public `/telemetry` dashboard (see [Telemetry + public transparency dashboard](docs/specs/017-telemetry/telemetry.md)), teams with Admin/Member roles + email invites in the Explorer (see [Teams](docs/specs/013-workspace/teams.md)) plus a per-team shared library of diagrams + folders any member can manage (see [Team shared diagrams](docs/specs/013-workspace/team-shared-diagrams.md)), signed-in-only API tokens for external / programmatic callers (see [Public API and API tokens](docs/specs/015-api/public-api-and-tokens.md)), an MCP server (`apps/mcp`) that connects the editor to AI tools over OAuth (see [MCP server](docs/specs/015-api/mcp-server.md)), and optional transactional + lifecycle email via Resend (welcome / week-1 / week-2 onboarding series + team-invite + account-deleted, gated on `RESEND_API_KEY`; see [Transactional & lifecycle email (Resend)](docs/specs/014-identity/transactional-email.md)).
-- **Still ahead:** finer-grained team permissions (today every member can edit every team diagram). Realtime conflict resolution shipped (granular element-op merge so concurrent edits to different elements don't clobber + an ordered room with reconnect catch-up; see [Realtime conflict resolution](docs/specs/012-collaboration/realtime-conflict-resolution.md)). Same-element concurrent edits remain last-writer-wins: the selection lock ([Live app](docs/specs/007-editor/live-app.md)) is advisory and client-only, so it makes them rare rather than impossible. A full field-level CRDT to merge them was scoped and deliberately dropped as not worth the dependency + second sync path.
+See [Build phase](docs/specs/005-project-roadmap/prototype-scope.md).
 
 ## Open source
 
@@ -281,15 +276,7 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 ## Tech stack
 
-What the product runs on. Items marked ✗ haven't shipped yet — see "What's built, what's still ahead".
-
-- **Frontend:** Next.js (`output: 'export'`), React, TypeScript 7 (native/Go compiler), Tailwind CSS — ✓
-- **APIs:** Cloudflare Workers — ✓
-- **Routing edge:** Cloudflare Workers (the router app) — ✓
-- **Database:** Cloudflare D1 (via the api worker only) — ✓
-- **Realtime:** Cloudflare Durable Objects (per-diagram room) — ✓
-- **Auth:** Clerk (optional), ✓ (frontend ClerkProvider; api worker JWT verification + hybrid `X-Owner-Id` fallback)
-- **Email:** Resend (optional) — ✓ (transactional + lifecycle email via the api worker; off without `RESEND_API_KEY`, see [Transactional & lifecycle email (Resend)](docs/specs/014-identity/transactional-email.md))
+See [Architecture](docs/development/architecture.md#tech-stack).
 
 ## Naming conventions
 
@@ -314,42 +301,9 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 
 ## Deployment
 
-See [Deployment](docs/specs/016-platform/deployment.md).
+See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment](docs/specs/016-platform/staging-environment.md).
 
-All deploys happen via **GitHub Actions** to **Cloudflare Workers** (with Static Assets for `marketing`, `live`, `telemetry`, and `help`). CI runs lint / format / typecheck / test / build / `staging:check` on every PR and push.
-
-Either environment builds once, then deploys `marketing` + `live` + `telemetry` + `help` + `api` in parallel, `mcp` once `api` is up, then `router` last (its service bindings depend on the five path-routed workers existing; mcp is its own host).
-
-**Two environments** ([Staging environment](docs/specs/016-platform/staging-environment.md)), both running those same jobs out of the reusable `deploy-reusable.yml` so they can't drift:
-
-- **Production** (`livediagram.app`) — `deploy.yml`, **manual-only** (`workflow_dispatch`, intentionally not chained to CI): trigger it from the Actions tab (it appears as **Deploy Production**) or `gh workflow run deploy.yml --ref main` once CI on `main` is green and you've decided to ship.
-- **Staging** (`staging.livediagram.app`) — `deploy-staging.yml`, **automatic** on every green CI run on `main`. Wrangler `[env.staging]` blocks give it `-staging` worker names and its own D1 / R2 / KV, so a migration runs against a real remote database one deploy before it reaches the one holding real diagrams. Public but `noindex`, stamped by the router.
-
-When you touch a worker's bindings, **add the same change to its `[env.staging]` block** — wrangler does not inherit `vars` / `d1_databases` / `r2_buckets` / `kv_namespaces` / `durable_objects` / `services` / `unsafe` into a named environment, so a binding added only at the top level is silently absent from staging. `pnpm staging:check` (in CI) dry-runs the staging configs and prints the resolved bindings.
-
-Worker names: `livediagram-marketing`, `livediagram-live`, `livediagram-telemetry`, `livediagram-help`, `livediagram-api`, `livediagram-mcp`, `livediagram-router`, matching the service-binding targets in `apps/router/wrangler.toml` (staging's are the same names suffixed `-staging`). Deploy order: marketing + live + telemetry + help + api in parallel, then `mcp` after api (it has a service binding to api; its own host `mcp.livediagram.app`, not a router path), then router last (its service bindings depend on the other five existing).
-
-Production is live at **https://livediagram.app** (`/` → marketing; `/diagram`, `/explorer`, `/new`, `/join`, ... → editor at clean routes, with only its `_next` assets under `/live`; `/telemetry` → telemetry dashboard; `/help` → help centre; `/api/*` → api).
-
-Secrets needed in the GitHub repo: `CF_API_TOKEN`, `CF_ACCOUNT_ID`. See [secrets policy](docs/specs/002-project-scope/secrets-policy.md).
-
-## Common commands
-
-Run from the repo root:
-
-| Command              | What it does                                      |
-| -------------------- | ------------------------------------------------- |
-| `pnpm install`       | Install all workspace deps                        |
-| `pnpm dev`           | `turbo run dev` across workspaces                 |
-| `pnpm build`         | `turbo run build`                                 |
-| `pnpm lint`          | `turbo run lint`                                  |
-| `pnpm typecheck`     | `turbo run typecheck`                             |
-| `pnpm test`          | `turbo run test`                                  |
-| `pnpm format`        | Prettier write across the repo                    |
-| `pnpm format:check`  | Prettier check (CI)                               |
-| `pnpm staging:check` | Dry-run the `[env.staging]` wrangler configs (CI) |
-
-Run a script in a single workspace: `pnpm --filter @livediagram/<name> <script>`.
+- When you touch a worker's bindings, add the same change to its `[env.staging]` block; `pnpm staging:check` verifies it.
 
 ## Guidelines
 
