@@ -9,7 +9,8 @@ import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
-import { tileHandler, type PaletteTileActions } from '@/components/palette/PaletteTileGrid';
+import { tileHandler } from '@/components/palette/PaletteTileGrid';
+import { useEditorTileActions } from '@/components/palette/useEditorTileActions';
 
 const SearchPanel = dynamic(() =>
   import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
@@ -38,28 +39,12 @@ export function EditorSearchPanel() {
     addIcon,
     addSticker,
     addTechIcon,
-    addText,
-    addArrow,
-    beginFreehand,
-    beginShapePen,
-    beginPolygon,
-    addSticky,
-    addTable,
     addImage,
-    addAnnotation,
-    addLinkCard,
-    addVideo,
-    addAvatar,
-    addBanner,
-    addHero,
-    addHeader,
-    addCallout,
-    addStatRow,
-    addProcess,
     setSearchOpen,
     openSettingsAt,
   } = useEditorContext();
   const { commandItems, runCommand } = useEditorCommands();
+  const tileActions = useEditorTileActions();
   // The icon catalogues load async (lib/icon-registry.ts); subscribing here
   // re-renders the panel — and rebuilds the palette items below — the moment
   // they land, so "Add to canvas" results go from shapes-only to the full
@@ -69,38 +54,6 @@ export function EditorSearchPanel() {
   useIconCatalogs();
 
   if (!searchOpen) return null;
-
-  // The same handler bundle the palette's tiles run (usePaletteCatalogue), so
-  // a non-shape result ('tile' add) places exactly what clicking its tile
-  // would. Built only while the panel is open.
-  const tileActions: PaletteTileActions = {
-    addShape,
-    addText,
-    beginFreehand,
-    beginShapePen,
-    beginPolygon,
-    addArrow,
-    addSticky,
-    addTable,
-    addImage: () => addImage?.(),
-    addAnnotation,
-    addLinkCard,
-    addVideo,
-    addSticker,
-    addComponent: (kind) =>
-      ({
-        avatar: addAvatar,
-        banner: addBanner,
-        hero: addHero,
-        header: addHeader,
-        callout: addCallout,
-        stat: addStatRow,
-        process: addProcess,
-      })[kind](),
-    addIcon,
-    addTechIcon,
-    hasImage: !!addImage,
-  };
 
   return (
     <SearchPanel

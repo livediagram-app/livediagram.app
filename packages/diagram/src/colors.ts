@@ -155,6 +155,20 @@ export function canvasSurface(backgroundColor: string | undefined | null): Canva
   return isLightColor(backgroundColor) ? 'light' : 'dark';
 }
 
+// The ink that reads on a SOLID fill of `color`: white on a dark fill, the
+// app's near-black on a light one. The Collaborate cards' accent buttons use
+// it on the canvas (CollabAccentScope) and in the export
+// (svg-render-panel-faces), so a pale theme accent never carries white text in
+// either.
+export function inkOn(color: string): string {
+  return canvasSurface(color) === 'dark' ? '#ffffff' : '#0f172a';
+}
+
+// The green that means FINISHED on the Collaborate cards: a resolved comment
+// thread, a done action (docs/specs/012-collaboration/comment-pin.md, action-panel.md). One value, so the
+// canvas and the export agree on what done looks like.
+export const COLLAB_DONE_COLOR = '#16a34a';
+
 // The ink for dark paper: the blue-slate set of the Default scheme's dark half
 // (docs/specs/008-canvas/canvas-and-palette.md) — fill a step above the backdrop, a slate-500 stroke
 // at 3:1 or better on both, white text. Sticky notes, images, link cards

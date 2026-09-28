@@ -23,6 +23,14 @@ export const QA_ON_ACCENT = 'var(--qa-on-accent)';
 // accent where it contrasts, pulled toward the theme's ink where it doesn't.
 export const QA_ACCENT_INK = 'var(--qa-accent-ink)';
 
+// The one LOUD act on a card, filled in the accent with a soft glow under it:
+// the Done check's "I'm done", the Action panel's "Add Action".
+export const LOUD_ACCENT = {
+  color: QA_ON_ACCENT,
+  backgroundColor: QA_ACCENT,
+  boxShadow: `0 8px 16px -10px ${QA_ACCENT}`,
+} as const;
+
 // Every control on the board stops the pointer at itself: a press on a vote
 // must not also select the board, which would put your name on it through the
 // docs/specs/007-editor/live-app.md selection ring at the moment you vote (the Idea box's reasoning,

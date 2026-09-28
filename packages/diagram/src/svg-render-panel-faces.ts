@@ -8,7 +8,7 @@
 // `accent` is the element's stroke, which IS the tab theme's accent: the same
 // source the canvas's CollabAccentScope reads.
 
-import { canvasSurface } from './colors';
+import { COLLAB_DONE_COLOR as DONE, inkOn as onAccent } from './colors';
 import { elementActions } from './element-action';
 import { initialsOf } from './names';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -24,13 +24,6 @@ import {
   wrapLines,
   type Face,
 } from './svg-render-face-kit';
-
-// Completion's colour, the canvas card's ACTION_DONE and the Done check's green.
-const DONE = '#16a34a';
-
-// The ink that reads ON the accent: CollabAccentScope's rule.
-const onAccent = (accent: string): string =>
-  canvasSurface(accent) === 'dark' ? '#ffffff' : '#0f172a';
 
 // The canvas glyphs' own 16-unit paths (collab/qa/qa-parts, action-parts),
 // dropped in at size: a mark redrawn by hand in a second renderer drifts.

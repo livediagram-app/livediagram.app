@@ -9,6 +9,7 @@ import { CollabPanel, tint } from '@/components/canvas/collab/collab-chrome';
 import { CollabAccentScope } from '@/components/canvas/collab/collab-accent';
 import { CollabComposer } from '@/components/canvas/collab/CollabComposer';
 import { CommentBubbles } from '@/components/canvas/collab/comment/CommentBubbles';
+import { CollabDoneChip } from '@/components/canvas/collab/CollabDoneChip';
 import { useMentionScope } from '@/components/canvas/collab/comment/MentionContext';
 import {
   AccentBar,
@@ -42,8 +43,6 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 
 // Same cap the api enforces on a comment (packages/diagram element-deltas).
 const COMMENT_MAX_TEXT = 5000;
-
-const GREEN = '#16a34a';
 
 export function CommentPanelFace({
   element,
@@ -87,13 +86,7 @@ export function CommentPanelFace({
   }, [comments.length]);
 
   const aside = resolved ? (
-    <span
-      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
-      style={{ color: GREEN, backgroundColor: tint(GREEN, 0.14) }}
-    >
-      <CheckGlyph size={10} />
-      Resolved
-    </span>
+    <CollabDoneChip>Resolved</CollabDoneChip>
   ) : comments.length > 0 && onResolve ? (
     // The thread's one other act, top right: no count there, since the
     // bubbles already show how many there are.

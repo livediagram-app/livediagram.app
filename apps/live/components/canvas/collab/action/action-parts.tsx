@@ -1,11 +1,7 @@
-// The Action panel's small parts (docs/specs/012-collaboration/action-panel.md "The card"): its glyph, the
-// green that means done, and the plus the Add Action bar wears.
+// The Action panel's small parts (docs/specs/012-collaboration/action-panel.md "The card"): its glyph and the
+// plus the Add Action bar wears. Done's green is the shared COLLAB_DONE_COLOR.
 
 import { Glyph } from '@livediagram/ui';
-
-// Completion's colour: the Done check's green, so "finished" means one thing
-// across the Collaborate cards.
-export const ACTION_DONE = '#16a34a';
 
 // A clipboard with a tick: work handed to somebody.
 export const ActionGlyph = ({ size = 12 }: { size?: number }) => (

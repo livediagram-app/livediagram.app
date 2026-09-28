@@ -3,23 +3,17 @@
 import { useState } from 'react';
 
 import { elementActions, type ShapeElement } from '@livediagram/diagram';
-import { Chip } from '@livediagram/ui';
 
-import { CollabPanel, tint } from '@/components/canvas/collab/collab-chrome';
+import { CollabPanel } from '@/components/canvas/collab/collab-chrome';
+import { CollabDoneChip } from '@/components/canvas/collab/CollabDoneChip';
 import { CollabAccentScope } from '@/components/canvas/collab/collab-accent';
 import { CelebrationBurst } from '@/components/canvas/collab/CelebrationBurst';
 import { ActionRow } from '@/components/canvas/collab/action/ActionRow';
-import {
-  ACTION_DONE,
-  ActionGlyph,
-  PlusGlyph,
-} from '@/components/canvas/collab/action/action-parts';
+import { ActionGlyph, PlusGlyph } from '@/components/canvas/collab/action/action-parts';
 import {
   AccentBar,
-  CheckGlyph,
   EmptyRows,
-  QA_ACCENT,
-  QA_ON_ACCENT,
+  LOUD_ACCENT,
   stopPointer,
 } from '@/components/canvas/collab/qa/qa-parts';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
@@ -72,13 +66,7 @@ export function ActionPanelFace({
   const [initialCount] = useState(actions.length);
 
   const aside = allDone ? (
-    <Chip
-      icon={<CheckGlyph size={10} />}
-      className="px-2 py-0.5 text-[10px] font-semibold"
-      style={{ color: ACTION_DONE, backgroundColor: tint(ACTION_DONE, 0.14) }}
-    >
-      All Done
-    </Chip>
+    <CollabDoneChip>All Done</CollabDoneChip>
   ) : open > 0 ? (
     `${open} open`
   ) : undefined;
@@ -148,11 +136,7 @@ function AddButton({ onPress }: { onPress: () => void }) {
       {...press}
       {...stopPointer}
       className="pointer-events-auto inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-semibold transition hover:scale-[1.03] active:scale-95"
-      style={{
-        color: QA_ON_ACCENT,
-        backgroundColor: QA_ACCENT,
-        boxShadow: `0 8px 16px -10px ${QA_ACCENT}`,
-      }}
+      style={LOUD_ACCENT}
     >
       <PlusGlyph size={12} />
       Add Action

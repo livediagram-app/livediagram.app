@@ -14,7 +14,7 @@ export type CommentMention = {
 };
 
 export const MENTIONS_MAX = 20;
-export const MENTION_FIELD_MAX = 100;
+const MENTION_FIELD_MAX = 100;
 
 // `Thomas McClean` -> `thomas-mcclean`: lower kebab case, accents folded,
 // anything else dropped. Empty when nothing usable is left.

@@ -12,7 +12,7 @@ import type { MentionScope } from '@/components/canvas/collab/comment/MentionCon
 import type { MentionCandidate } from '@/hooks/collab/useCommentMentions';
 
 // How many suggestions show at once.
-export const MENTION_SUGGESTIONS_MAX = 6;
+const MENTION_SUGGESTIONS_MAX = 6;
 export const MENTION_UNAVAILABLE_HINT = 'Mention teammates on a team diagram';
 
 type Field = HTMLInputElement | HTMLTextAreaElement;
