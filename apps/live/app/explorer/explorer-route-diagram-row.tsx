@@ -9,6 +9,7 @@ import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { DiagramEntryProps } from '@/app/explorer/explorer-view-props';
 import { DiagramEntryMenu, hrefForDiagram, ownerLabelFor } from './diagram-row-shared';
 import { FavouriteMarker, FolderChip, VisibilityBadge } from './diagram-badges';
+import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
 // One diagram row in the full-page /explorer list (open / rename / move /
@@ -71,6 +72,7 @@ export function DiagramRow(props: DiagramEntryProps) {
             vertical line you can scan rather than at ragged name-end
             positions (docs/specs/013-workspace/favourites.md). */}
         {favourite ? <FavouriteMarker /> : null}
+        <DriveNoticeMarker diagramId={diagram.id} />
         {titleNode}
         {folderChip ? (
           <span className="hidden shrink-0 sm:inline-flex">

@@ -3,7 +3,7 @@
 // elected tab's status to the others and their requests (an api write, a
 // flush, Sync now, an adoption) back to it.
 
-import type { DriveItemKind } from '@livediagram/api-schema';
+import type { DriveAccessToken, DriveItemKind } from '@livediagram/api-schema';
 import type { DriveMirrorStatus } from './engine';
 
 const LOCK_NAME = 'livediagram:drive-mirror';
@@ -15,7 +15,9 @@ export type DriveTabMessage =
   | { type: 'write' }
   | { type: 'flush' }
   | { type: 'sync-now' }
-  | { type: 'adopt'; kind: DriveItemKind; ldId: string; folderFileId: string };
+  | { type: 'adopt'; kind: DriveItemKind; ldId: string; folderFileId: string }
+  // Browser-only mode: a token granted in this tab, for the elected one.
+  | { type: 'token'; token: DriveAccessToken };
 
 // Hold the lock for as long as this tab runs the engine. `onElected` runs
 // once the lock is granted (at once, or when the tab holding it closes); the

@@ -121,6 +121,15 @@ export const TELEMETRY_CATEGORIES = [
   // 'Local'). Whether people ever come back for a deleted diagram is the
   // question; never a diagram or team name.
   'Trash',
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
+  // 'Linked' / 'Unlinked' (connected / disconnected, typed by token path
+  // 'Broker' | 'Browser'), 'Changed'·'NeedsReconnect' (Google stopped
+  // accepting the grant), 'Created'·'FirstMirror' (every diagram mirrored once),
+  // 'Applied' typed by the inbound change ('Rename' | 'Move' | 'Trash' |
+  // 'Restore' | 'Purge' | 'UnknownFolder'), and 'Opened' typed by the Open
+  // with outcome ('Opened' | 'ImportOffered' | 'Error'). Never a file or
+  // diagram name, never an id.
+  'Drive',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -195,6 +204,9 @@ export const TELEMETRY_ACTIONS = [
   // Trash (docs/specs/013-workspace/trash.md): a deleted diagram was brought
   // back from the Trash.
   'Restored',
+  // Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): a change made in Google
+  // Drive was applied to livediagram. Only ever paired with the 'Drive' category.
+  'Applied',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.
   'Sent',

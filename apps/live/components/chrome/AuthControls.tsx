@@ -22,11 +22,18 @@
 
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useRef, useState } from 'react';
 import { useClickOutside, SOLID_BRAND_DARK, Glyph, GlyphDisc } from '@livediagram/ui';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
+import { useDriveMirror } from '@/components/drive/drive-mirror-context';
+
+// The Drive panel only loads when opened.
+const DriveDialog = dynamic(() =>
+  import('@/components/drive/DriveDialog').then((m) => m.DriveDialog),
+);
 import {
   HEADER_ACTION_BTN,
   HEADER_ICON_SLOT_PX,
@@ -52,6 +59,8 @@ type AuthControlsProps = {
 function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
   const { authLoaded, isSignedIn, user, signOut } = useDeferredAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [driveOpen, setDriveOpen] = useState(false);
+  const drive = useDriveMirror();
   const menuRef = useRef<HTMLDivElement>(null);
   // Return here after sign-in (must run before the early returns below).
   const { signInHref } = useAuthHrefs();
@@ -145,6 +154,21 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
               Account
             </Link>
           )}
+          {/* Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): only where the
+              deployment offers it. */}
+          {drive.mode !== 'off' ? (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setMenuOpen(false);
+                setDriveOpen(true);
+              }}
+              className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+            >
+              Google Drive
+            </button>
+          ) : null}
           <button
             type="button"
             role="menuitem"
@@ -162,6 +186,7 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
           </button>
         </div>
       ) : null}
+      {driveOpen ? <DriveDialog open onClose={() => setDriveOpen(false)} /> : null}
     </div>
   );
 }

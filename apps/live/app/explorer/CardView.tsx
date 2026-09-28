@@ -14,6 +14,7 @@ import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { DiagramEntryMenu, hrefForDiagram, ownerLabelFor } from './diagram-row-shared';
 import { FavouriteMarker, FolderChip, VisibilityBadge } from './diagram-badges';
+import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
 import { SYNTHETIC_FOLDERS, visibleSyntheticFolders } from './synthetic-folders';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { FolderCard, SyntheticFolderCard } from './explorer-folder-cards';
@@ -179,6 +180,7 @@ function DiagramCard(
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           {showVisibilityBadge ? <VisibilityBadge diagram={diagram} /> : null}
           {favourite ? <FavouriteMarker /> : null}
+          <DriveNoticeMarker diagramId={diagram.id} />
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
           <RelativeTimeChip at={diagram.savedAt} />
         </div>
