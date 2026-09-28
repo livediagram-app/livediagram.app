@@ -129,12 +129,6 @@ export const TEMPERATURE_COLORS: readonly string[] = [
   '#fb7185',
 ];
 
-// The word for an average: the nearest value's (3.8 reads as Keen).
-export function temperatureMood(average: number): string {
-  const i = Math.min(4, Math.max(0, Math.round(average) - 1));
-  return TEMPERATURE_MOODS[i]!;
-}
-
 // Where an average sits on the cool-to-warm track, 0 (all 1s) to 1 (all 5s).
 export function temperaturePosition(average: number): number {
   return Math.min(1, Math.max(0, (average - 1) / 4));

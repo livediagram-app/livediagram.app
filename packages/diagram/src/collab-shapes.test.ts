@@ -4,7 +4,6 @@ import {
   estimateSpread,
   estimateSpreadLabel,
   estimateRank,
-  temperatureMood,
   temperaturePosition,
   supportsMarkers,
   supportsTextAlign,
@@ -297,10 +296,7 @@ describe('supportsMarkers', () => {
 });
 
 describe('temperature mood', () => {
-  it('names an average by its nearest value, and places it on the track', () => {
-    expect(temperatureMood(1)).toBe('Blocked');
-    expect(temperatureMood(3.8)).toBe('Keen');
-    expect(temperatureMood(4.6)).toBe('All in');
+  it('places an average on the track', () => {
     expect(temperaturePosition(1)).toBe(0);
     expect(temperaturePosition(3)).toBe(0.5);
     expect(temperaturePosition(5)).toBe(1);

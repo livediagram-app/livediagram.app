@@ -11,7 +11,6 @@ import { tint } from '@/lib/element-tint';
 // Re-exported: every collab face already reaches for it through this module,
 // and the kit it now also feeds lives one level up (see lib/element-tint.ts).
 export { tint };
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
 
 // Scales a Collaborate card's contents to the element's box (docs/specs/012-collaboration/participant-responses.md).
@@ -223,90 +222,5 @@ export function CollabPanel({
         {overlay}
       </div>
     </CollabScale>
-  );
-}
-
-// A small pill button. `tone` picks the weight: 'quiet' for the secondary act
-// (Clear, Stand), 'loud' for the one the card is for (Reveal, Take roll).
-export function CollabButton({
-  children,
-  onPress,
-  disabled,
-  tone = 'quiet',
-  textColor,
-  label,
-}: {
-  children: React.ReactNode;
-  onPress?: () => void;
-  disabled?: boolean;
-  tone?: 'quiet' | 'loud';
-  textColor: string;
-  // Accessible name where the visible text is a glyph or too terse.
-  label?: string;
-}) {
-  // The canvas-wide press guard: a press that turns into a drag moves the
-  // element instead of firing (every other on-canvas control uses it).
-  const press = usePressWithoutDrag(() => onPress?.());
-  const button = (
-    <button
-      type="button"
-      {...press}
-      disabled={disabled || !onPress}
-      aria-label={label}
-      className="pointer-events-auto shrink-0 cursor-pointer rounded-full px-3 py-1.5 text-[11px] font-semibold transition hover:brightness-95 disabled:cursor-default disabled:opacity-45"
-      style={{ color: textColor, backgroundColor: tint(textColor, tone === 'loud' ? 0.16 : 0.08) }}
-    >
-      {children}
-    </button>
-  );
-  // No hover card: a card button's label says what it does, and cards
-  // popping over a board got in the way.
-  return button;
-}
-
-// One value in a row of pickable options (an estimate chip, a 1-5 reading).
-// `mine` is the raised state: your own answer, which you can always see even
-// when everybody else's is hidden.
-export function CollabChip({
-  value,
-  mine,
-  onPress,
-  disabled,
-  textColor,
-}: {
-  value: string;
-  mine: boolean;
-  onPress?: () => void;
-  disabled?: boolean;
-  textColor: string;
-}) {
-  const press = usePressWithoutDrag(() => onPress?.());
-  return (
-    <button
-      type="button"
-      {...press}
-      disabled={disabled || !onPress}
-      aria-pressed={mine}
-      aria-label={`Choose ${value}`}
-      className="pointer-events-auto min-w-[34px] shrink-0 cursor-pointer rounded-lg border px-2 py-1.5 text-[13px] font-semibold tabular-nums transition hover:brightness-95 disabled:cursor-default disabled:opacity-45"
-      style={{
-        color: textColor,
-        backgroundColor: tint(textColor, mine ? 0.2 : 0.05),
-        borderColor: tint(textColor, mine ? 0 : 0.14),
-      }}
-    >
-      {value}
-    </button>
-  );
-}
-
-// The line a card shows before anything has happened to it. Deliberately a
-// sentence rather than a zero: an average of 0 on an unanswered temperature
-// check reads as a very unhappy room (docs/specs/012-collaboration/temperature-check.md).
-export function CollabEmpty({ children, textColor }: { children: string; textColor: string }) {
-  return (
-    <p className="py-1 text-[11px] leading-relaxed opacity-55" style={{ color: textColor }}>
-      {children}
-    </p>
   );
 }
