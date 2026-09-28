@@ -8,7 +8,7 @@ import {
   AlertGlyph,
   BrushGlyph,
   FileGlyph,
-  GearGlyph,
+  SettingsGlyph,
   LayersGlyph,
   PaletteGlyph,
   PointerGlyph,
@@ -52,7 +52,7 @@ const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
   { key: 'editing', label: 'Editing', icon: <LayersGlyph /> },
   { key: 'help', label: 'Help', icon: <FileGlyph /> },
-  { key: 'settings', label: 'Settings', icon: <GearGlyph /> },
+  { key: 'settings', label: 'Settings', icon: <SettingsGlyph /> },
   { key: 'exceptions', label: 'Exceptions', icon: <AlertGlyph /> },
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
 ];

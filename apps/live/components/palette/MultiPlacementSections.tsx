@@ -9,6 +9,7 @@ import {
   LayersGlyph,
   LayerUpIcon,
   RotationGlyph,
+  RotationMenuIcon,
   SquareMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import {
@@ -127,7 +128,7 @@ export function MultiPlacementSections({
       {boxedSel.length ? (
         <MenuAccordionSection
           title="Rotation"
-          icon={<RotationGlyph deg={45} />}
+          icon={<RotationMenuIcon />}
           {...sectionProps('m-rotation')}
         >
           <div className="grid grid-cols-4 gap-1 px-2 py-1.5">

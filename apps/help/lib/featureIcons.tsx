@@ -1,5 +1,41 @@
+import {
+  lucideAppWindow,
+  lucideBrushCleaning,
+  lucideChartPie,
+  lucideCircleDot,
+  lucideClock,
+  lucideCpu,
+  lucideFilePlus,
+  lucideFolder,
+  lucideFootprints,
+  lucideGitCommitHorizontal,
+  lucideLayoutGrid,
+  lucideLightbulb,
+  lucideLink,
+  lucideLocateFixed,
+  lucideMagnet,
+  lucideMessagesSquare,
+  lucidePalette,
+  lucidePanelLeft,
+  lucidePanelsTopLeft,
+  lucidePencilLine,
+  lucideRotateCcw,
+  lucideRoute,
+  lucideScanEye,
+  lucideSearch,
+  lucideSpade,
+  lucideSparkles,
+  lucideSquarePlus,
+  lucideStar,
+  lucideStarHalf,
+  lucideTimer,
+  lucideToggleRight,
+  lucideUsers,
+  lucideVote,
+  lucideWorkflow,
+} from '@livediagram/icons/lucide';
 import { topCategorySlug } from '@livediagram/help-registry';
-import { Glyph as UiGlyph } from '@livediagram/ui';
+import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
 import type { ReactNode } from 'react';
 
 /** Feature slug → icon (full <svg>). Used by the home grid, the features
@@ -19,8 +55,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // User Interface.
   'panel-layout': (
     <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M9 4v16M15 12h6" />
+      <Prims prims={lucidePanelLeft} />
     </Glyph>
   ),
   toolbar: (
@@ -75,20 +110,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   'avatar-mode': (
     <Glyph>
-      <circle cx="12" cy="4.5" r="2.5" />
-      <path d="M12 7.5v6" />
-      <path d="M8 10h8" />
-      <path d="M12 13.5L9 20.5M12 13.5l3 7" />
+      <Prims prims={lucideFootprints} />
     </Glyph>
   ),
   // Two figures, same construction as one. A trail between them read as stray
   // debris under their feet at this size, so the pairing is left to the label.
   'walking-together': (
     <Glyph>
-      <circle cx="7.5" cy="5.5" r="2" />
-      <path d="M7.5 8v5M5 10h5M7.5 13l-2 6M7.5 13l2 6" />
-      <circle cx="16.5" cy="5.5" r="2" />
-      <path d="M16.5 8v5M14 10h5M16.5 13l-2 6M16.5 13l2 6" />
+      <Prims prims={lucideUsers} />
     </Glyph>
   ),
   // The deck: the slide you are on, and the ones behind it.
@@ -129,7 +158,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   spotlight: (
     <Glyph>
-      <path d="M9 3l3 7M15 3l-1 7M9.5 10h5l1.2 9a1 1 0 01-1 1.2H9.3a1 1 0 01-1-1.2z" />
+      <Prims prims={lucideLocateFixed} />
     </Glyph>
   ),
   'isometric-mode': (
@@ -270,8 +299,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   drawing: (
     <Glyph>
-      <path d="M3 17.5c2-6 5 3 7-1s4-7 11-9" />
-      <path d="M16 4l4 1-1 4" />
+      <Prims prims={lucidePencilLine} />
     </Glyph>
   ),
   'selecting-and-grouping': (
@@ -308,7 +336,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   'using-tabs': (
     <Glyph>
-      <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+      <Prims prims={lucidePanelsTopLeft} />
     </Glyph>
   ),
   comments: (
@@ -358,7 +386,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   teams: (
     <Glyph>
-      <path d="M17 20v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 9a4 4 0 100-8 4 4 0 000 8zM23 20v-2a4 4 0 00-3-3.87M16 1.13a4 4 0 010 7.75" />
+      <Prims prims={lucideUsers} />
     </Glyph>
   ),
   sharing: (
@@ -474,9 +502,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // A row of tabs where only the middle one is solid: the one tab a link opens.
   'one-tab': (
     <Glyph>
-      <rect x="2" y="8" width="6" height="8" rx="1.5" strokeDasharray="2 2" />
-      <rect x="9" y="6" width="6" height="12" rx="1.5" />
-      <rect x="16" y="8" width="6" height="8" rx="1.5" strokeDasharray="2 2" />
+      <Prims prims={lucidePanelsTopLeft} />
     </Glyph>
   ),
   // A chain whose far ring is a clock: the link, and the deadline on it.
@@ -517,11 +543,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // die that `pickers` already draws.
   'casting-dots': (
     <Glyph>
-      <circle cx="6" cy="16.5" r="2" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="16.5" r="2" fill="currentColor" stroke="none" />
-      <circle cx="18" cy="16.5" r="2" />
-      <circle cx="18" cy="5.5" r="2" fill="currentColor" stroke="none" />
-      <path d="M18 8.5v4M16.3 11l1.7 1.8 1.7-1.8" />
+      <Prims prims={lucideVote} />
     </Glyph>
   ),
   // The stack, with the dots landing on one sheet of it.
@@ -578,16 +600,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   rating: (
     <Glyph>
-      <path
-        d="M5.5 5.5l1.1 2.3 2.5.4-1.8 1.7.4 2.5-2.2-1.2-2.2 1.2.4-2.5L1.9 8.2l2.5-.4z"
-        fill="currentColor"
-      />
-      <path
-        d="M12 5.5l1.1 2.3 2.5.4-1.8 1.7.4 2.5-2.2-1.2-2.2 1.2.4-2.5-1.8-1.7 2.5-.4z"
-        fill="currentColor"
-      />
-      <path d="M18.5 5.5l1.1 2.3 2.5.4-1.8 1.7.4 2.5-2.2-1.2-2.2 1.2.4-2.5-1.8-1.7 2.5-.4z" />
-      <path d="M4 17.5h16" />
+      <Prims prims={lucideStarHalf} />
     </Glyph>
   ),
   'pie-chart': (
@@ -620,11 +633,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // Explorer's `timeline` is a vertical feed, which is why this one lies flat.
   'timeline-rail': (
     <Glyph>
-      <path d="M2.5 12h19" />
-      <circle cx="6" cy="12" r="1.8" />
-      <circle cx="12" cy="12" r="1.8" />
-      <circle cx="18" cy="12" r="1.8" />
-      <path d="M6 14.5v3M12 6.5v3M18 14.5v3" />
+      <Prims prims={lucideGitCommitHorizontal} />
     </Glyph>
   ),
   // Palette → Behaviour elements. Every one of these is, physically, a button
@@ -642,10 +651,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   'mode-buttons': (
     <Glyph>
-      <rect x="3" y="14" width="18" height="7" rx="3.5" />
-      <path d="M12 11.5V6.5" />
-      <path d="M9.5 9l2.5-2.5L14.5 9" />
-      <path d="M17 3l4.5 2.5-1.9.7-.6 1.9z" />
+      <Prims prims={lucideToggleRight} />
     </Glyph>
   ),
   // A play triangle: this is the button that starts something for the room.
@@ -680,13 +686,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // censor mosaic is the one cover idiom nothing else here uses.
   'reveal-zones': (
     <Glyph>
-      <rect x="2.5" y="5" width="19" height="14" rx="2" />
-      <path d="M11.5 5v14" />
-      <path d="M5 9.5h4M5 13h3" />
-      <rect x="13.5" y="8" width="3" height="3" rx="0.5" />
-      <rect x="17" y="8" width="3" height="3" rx="0.5" />
-      <rect x="13.5" y="12.5" width="3" height="3" rx="0.5" />
-      <rect x="17" y="12.5" width="3" height="3" rx="0.5" />
+      <Prims prims={lucideScanEye} />
     </Glyph>
   ),
   // A die: the only thing in the set that says "at random" on its own.
@@ -779,9 +779,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // turns: up the near side, across above, down the far side.
   'avoiding-elements': (
     <Glyph>
-      <rect x="9" y="9" width="6" height="6" rx="1.5" />
-      <path d="M2.5 17.5h3.5V7h12.5v8" />
-      <path d="M16 13l2.5 2.5L21 13" />
+      <Prims prims={lucideRoute} />
     </Glyph>
   ),
   // One arrow ending ON another, with the snap point marked.
@@ -819,13 +817,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // The marks themselves: the traffic light, and the checkbox under it.
   'shape-markers': (
     <Glyph>
-      <rect x="3" y="4.5" width="18" height="15" rx="2" />
-      <circle cx="8" cy="9" r="1.6" fill="currentColor" stroke="none" />
-      <circle cx="12.5" cy="9" r="1.6" />
-      <circle cx="17" cy="9" r="1.6" />
-      <rect x="6.5" y="13" width="5" height="4" rx="1" />
-      <path d="M7.8 15l1.1 1.1 1.8-2" />
-      <path d="M13.5 15h4" />
+      <Prims prims={lucideCircleDot} />
     </Glyph>
   ),
   // The rough sketch, with the snap that cleans it up. One sparkle, not two: the
@@ -842,9 +834,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // seal, a row of faces) has to carry the meaning.
   'comment-panels': (
     <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M6 8.5h8a1 1 0 011 1v1.5a1 1 0 01-1 1H8l-2 2v-2a1 1 0 01-1-1V9.5a1 1 0 011-1z" />
-      <path d="M12 16.5h6" />
+      <Prims prims={lucideMessagesSquare} />
     </Glyph>
   ),
   // A clipboard with its one task ticked: an action, owned and done.
@@ -858,10 +848,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // Planning poker: a fanned hand with the face card still turned down.
   'estimate-cards': (
     <Glyph>
-      <rect x="3.5" y="6" width="9" height="13" rx="1.5" transform="rotate(-12 8 12.5)" />
-      <rect x="11" y="5" width="10" height="14" rx="1.5" />
-      <path d="M14.5 9.5a1.5 1.5 0 113 0c0 1.2-1.5 1.3-1.5 2.5" />
-      <path d="M16 15h.01" />
+      <Prims prims={lucideSpade} />
     </Glyph>
   ),
   // A fist-of-five gauge: the dial and where the room is pointing.
@@ -875,10 +862,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // A ballot box: the slot, and a submission going into it unseen.
   'idea-boxes': (
     <Glyph>
-      <rect x="3.5" y="10" width="17" height="10.5" rx="2" />
-      <path d="M9 13.5h6" />
-      <rect x="8.5" y="3" width="7" height="5.5" rx="1" />
-      <path d="M12 8.5v1.5" />
+      <Prims prims={lucideLightbulb} />
     </Glyph>
   ),
   // A ranked queue: an upvote chevron beside the top row, shorter rows below.
@@ -960,10 +944,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // Two helpers, not one: a question asked, and a sweep that tidies.
   'ai-tools': (
     <Glyph>
-      <path d="M2.5 6.5A2 2 0 014.5 4.5h7a2 2 0 012 2v4a2 2 0 01-2 2H7l-3 2.5v-2.5A2 2 0 012.5 10.5z" />
-      <path d="M6.3 7.6a1.6 1.6 0 013.2 0c0 1.1-1.6 1.3-1.6 2.4" />
-      <path d="M18 13.5l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" />
-      <path d="M17 5.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" />
+      <Prims prims={lucideSparkles} />
     </Glyph>
   ),
   // An element snapped onto the grid, with the nudge that put it there. Drawn as
@@ -1116,8 +1097,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   'how-it-works': (
     <Glyph>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" />
+      <Prims prims={lucideWorkflow} />
     </Glyph>
   ),
   undo: (
@@ -1140,13 +1120,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   'session-tools': (
     <Glyph>
-      <circle cx="12" cy="13" r="8" />
-      <path d="M12 9v4l2 2M9 2h6" />
+      <Prims prims={lucideTimer} />
     </Glyph>
   ),
   'data-elements': (
     <Glyph>
-      <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+      <Prims prims={lucideChartPie} />
     </Glyph>
   ),
   'style-presets': (
@@ -1156,10 +1135,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   'layout-cleanup': (
     <Glyph>
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" />
+      <Prims prims={lucideLayoutGrid} />
     </Glyph>
   ),
   annotations: (
@@ -1170,8 +1146,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   technology: (
     <Glyph>
-      <rect x="4" y="4" width="16" height="16" rx="2" />
-      <path d="M9 4v16M15 4v16M4 9h16M4 15h16" />
+      <Prims prims={lucideCpu} />
     </Glyph>
   ),
   // Palette → Palette Settings.
@@ -1179,7 +1154,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // rather than describing a feature.
   favourites: (
     <Glyph>
-      <path d="M12 4l2.4 5 5.6.8-4 3.9 1 5.5-5-2.7-5 2.7 1-5.5-4-3.9 5.6-.8z" />
+      <Prims prims={lucideStar} />
     </Glyph>
   ),
   // Two overlapping panels with the back one showing through.
@@ -1229,9 +1204,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   'reset-palette-position': (
     <Glyph>
-      <path d="M3 12a9 9 0 109-9 9 9 0 00-6.4 2.6L3 8" />
-      <path d="M3 4v4h4" />
-      <rect x="14" y="4" width="6" height="6" rx="1" />
+      <Prims prims={lucideRotateCcw} />
     </Glyph>
   ),
   // Canvas guides. The four layer entries are deliberately NOT four variations
@@ -1345,9 +1318,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // problem these glyphs exist to solve.
   snapping: (
     <Glyph>
-      <path d="M4.5 4.5v7a7.5 7.5 0 0015 0v-7" />
-      <path d="M10 4.5v7a2 2 0 004 0v-7" />
-      <path d="M4.5 4.5h5.5M14 4.5h5.5" />
+      <Prims prims={lucideMagnet} />
     </Glyph>
   ),
   // Explorer section guides — the five landing cards. `folders` and `unsorted`
@@ -1407,8 +1378,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // Explorer section guides.
   recent: (
     <Glyph>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
+      <Prims prims={lucideClock} />
     </Glyph>
   ),
   'shared-with-you': (
@@ -1421,7 +1391,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   'personal-space': (
     <Glyph>
-      <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <Prims prims={lucideFolder} />
     </Glyph>
   ),
   'team-spaces': (
@@ -1440,11 +1410,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   'themes-library': (
     <Glyph>
-      <circle cx="13.5" cy="6.5" r=".8" />
-      <circle cx="17.5" cy="10.5" r=".8" />
-      <circle cx="8.5" cy="7.5" r=".8" />
-      <circle cx="6.5" cy="12.5" r=".8" />
-      <path d="M12 3a9 9 0 1 0 0 18c.9 0 1.6-.7 1.6-1.6 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1a1.6 1.6 0 0 1 1.6-1.6H16a5 5 0 0 0 5-5C21 6 16.9 3 12 3z" />
+      <Prims prims={lucidePalette} />
     </Glyph>
   ),
   // Tabs guides.
@@ -1456,8 +1422,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   'linking-tabs': (
     <Glyph>
-      <path d="M10 13a4 4 0 0 0 5.7.3l2.6-2.6a4 4 0 0 0-5.7-5.7l-1.3 1.3" />
-      <path d="M14 11a4 4 0 0 0-5.7-.3L5.7 13.3a4 4 0 0 0 5.7 5.7l1.3-1.3" />
+      <Prims prims={lucideLink} />
     </Glyph>
   ),
   'add-to-diagram': (
@@ -1481,9 +1446,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   'tab-cleanup': (
     <Glyph>
-      <path d="M3 21l6-6" />
-      <path d="M9 9l6 6 5-5a3 3 0 0 0-4-4z" />
-      <path d="M14 6l4 4" />
+      <Prims prims={lucideBrushCleaning} />
     </Glyph>
   ),
   // Search Panel guides. Six articles about one control, so by the rule the
@@ -1517,28 +1480,19 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // A tab above, and the element inside it that the search jumped to.
   'search-tabs-and-elements': (
     <Glyph>
-      <rect x="2.5" y="4" width="8" height="3.5" rx="1" />
-      <rect x="12" y="4" width="8" height="3.5" rx="1" />
-      <rect x="6" y="11" width="9" height="6.5" rx="1.5" />
-      <path d="M15.5 15l5 2.2-2.1.7-.6 2.1z" />
+      <Prims prims={lucideSearch} />
     </Glyph>
   ),
   // A shape arriving on the canvas from above.
   'search-add-to-canvas': (
     <Glyph>
-      <path d="M3 9.5V8a2 2 0 012-2h4M15 6h4a2 2 0 012 2v1.5" />
-      <path d="M3 15v3a2 2 0 002 2h14a2 2 0 002-2v-3" />
-      <rect x="8.5" y="12.5" width="7" height="5" rx="1" />
-      <path d="M12 3v6M9.8 7l2.2 2 2.2-2" />
+      <Prims prims={lucideSquarePlus} />
     </Glyph>
   ),
   // A new tab, opened from the panel.
   'search-create-tab': (
     <Glyph>
-      <path d="M3 9h5l1.5-2H14v2" />
-      <rect x="3" y="9" width="18" height="11" rx="2" />
-      <path d="M14 7h4a2 2 0 012 2" />
-      <path d="M12 11.5v6M9 14.5h6" />
+      <Prims prims={lucideFilePlus} />
     </Glyph>
   ),
   // Search Panel guide.
@@ -1575,8 +1529,7 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
   // A window with a title bar: the chrome around everything else.
   'user-interface': (
     <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M3 9h18M6.5 6.5h.01M9 6.5h.01" />
+      <Prims prims={lucideAppWindow} />
     </Glyph>
   ),
   // A frame with shapes drawn inside it.
@@ -1599,9 +1552,7 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
   // Two sheets behind a front one.
   tabs: (
     <Glyph>
-      <path d="M3 8h5l1.5-2H14v3" />
-      <rect x="3" y="8" width="18" height="12" rx="2" />
-      <path d="M14 6h4a2 2 0 0 1 2 2" />
+      <Prims prims={lucidePanelsTopLeft} />
     </Glyph>
   ),
   // A folder tree.
@@ -1615,9 +1566,7 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
   // Two people.
   collaboration: (
     <Glyph>
-      <circle cx="9" cy="8" r="3" />
-      <path d="M3.5 20a5.5 5.5 0 0 1 11 0" />
-      <path d="M16 6.5a3 3 0 0 1 0 6M17 15.5a5.5 5.5 0 0 1 3.5 4.5" />
+      <Prims prims={lucideUsers} />
     </Glyph>
   ),
   // A wrench, matching the per-feature `tools` glyph above.

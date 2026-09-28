@@ -18,8 +18,8 @@ Derived from [Iconography](../iconography.md).
 | Element field      | `iconWeight?: IconWeight`                                                                                            | `BoxedElement` in `element-types.ts`                 |
 | Vendored Lucide    | one `lucide<Name>` export per glyph in `packages/icons/src/lucide.generated.ts`, subpath `@livediagram/icons/lucide` | written by `packages/icons/scripts/vendor-lucide.ts` |
 | Vendor manifest    | `packages/icons/lucide-manifest.json`                                                                                | pinned version + glyph names                         |
-| Centring exception | `CENTRING_EXCEPTIONS`                                                                                                | `packages/icons/src/centring.ts`                     |
-| Art allow-list     | `ICON_ART_ALLOWLIST`                                                                                                 | packages/eslint-config/raw-svg.js (planned)          |
+| Centring exception | `CENTRING_EXCEPTIONS`, `ASYMMETRIC`                                                                                  | each centring test (named glyph → reason)            |
+| Art allow-list     | `ICON_ART_ALLOWLIST`, `RAW_ICON_SVG`                                                                                 | `packages/eslint-config/raw-svg.js`                  |
 
 "Glyph" is the rendered icon; "icon" in `shape: 'icon'` is the canvas element. Do not use either as a synonym for the other in code.
 
@@ -94,6 +94,8 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 - The icon context menu gains a **Weight** accordion section of three tiles (Thin, Regular, Bold), each drawing the selected glyph at that weight (`IconWeightTiles`). The multi-selection menu shows the same row when the selection holds a line-art icon.
 - Copy: row label "Weight"; tiles "Thin", "Regular", "Bold".
 - Hover previews the weight live, as the Size row does.
+- Menu icons: `MENU_ICON_PX = 14` (rows, section headers, tiles) and `QUICK_ACTION_ICON_PX = 16` (icon-only buttons), exported from `apps/live/components/palette/context-menu-icons.tsx`; every menu glyph module sizes to them.
+- Contact sheet: `pnpm icons:sheet` renders every exported `*Icon` / `*Glyph` of the editor's icon modules and `@livediagram/ui`, plus every palette tile, at 1x and 4x into `$ICON_SHEET_DIR` (default `/tmp/icon-sheet`), then screenshots each page (dark, 2x) (`apps/live/scripts/icon-sheet/`).
 
 ## Accessibility
 
@@ -118,7 +120,7 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 | --------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | On-screen weight by size          | `weight.test.ts`; `icons.test.tsx` (every shared icon); e2e `icon-weight.spec.ts` (computed non-scaling) |
 | Ink insets                        | `ink.test.ts`, `glyph-ink.test.tsx`                                                                      |
-| One weight whatever viewBox       | `Glyph.test.tsx`: 16u@16px and 24u@24px give the same px                                                 |
+| One weight whatever viewBox       | `icons.test.tsx` (Glyph weight): 16, 20 and 24 units at 16px give the same px                            |
 | Glyph centred within 0.5px        | `centring.test.ts` over every exported glyph in both homes                                               |
 | Vendored, pinned, attributed      | `lucide-vendor.test.ts`: pinned version, manifest equals exports, file current, licence verbatim         |
 | Icon weight default + map         | `icon-weight.test.ts`                                                                                    |
@@ -127,8 +129,12 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 | Weight on elements                | `style-presets.test.ts` (`applyIconWeightToEl`), `format-painter.test.ts`                                |
 | Furniture silhouettes distinct    | `icon-catalog.test.ts`: no two ids share prims                                                           |
 | No same-provider tech glyph dupes | `tech-icon-catalog.test.ts`                                                                              |
-| No raw svg outside homes          | lint rule `livediagram/no-raw-svg` + its rule test                                                       |
-| Contact sheet drift               | Playwright snapshot of `pnpm icons:sheet` output                                                         |
+| No raw svg outside homes          | `no-restricted-syntax` with `RAW_ICON_SVG` (literal width 8–24px), `raw-svg.test.ts`                     |
+| Tech tiles centred                | `tech-centring.test.ts` (32px tile; rotated-orbit glyphs named in `CENTRED_BY_CONSTRUCTION`)             |
+| Menu icons: one step, centred     | `context-menu-icons.test.tsx` (`MENU_ICON_PX` 14, `QUICK_ACTION_ICON_PX` 16; `ASYMMETRIC` exceptions)    |
+| Palette tile step                 | `palette-tile-defs.test.tsx` (`TILE_GLYPH_PX` 18)                                                        |
+| Settings glyphs centred           | `settings-icons.test.tsx`                                                                                |
+| Contact sheet drift               | `pnpm icons:sheet` (on-demand review sheets)                                                             |
 
 ## Constants and configuration
 

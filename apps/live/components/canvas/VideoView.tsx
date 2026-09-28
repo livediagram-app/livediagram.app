@@ -264,10 +264,10 @@ function PlayerControls({
         active={controls}
       >
         {/* A pointer arrow: "the pointer goes to the player". */}
-        <path d="M4 3l8 5-3.4 1.2L7.4 13z" fill="currentColor" stroke="none" />
+        <path d="M4 3l8 5-3.4 1.2L7.4 13z" />
       </ControlButton>
       <ControlButton onClick={onStop} label="Stop video">
-        <rect x="4.5" y="4.5" width="7" height="7" rx="1.2" fill="currentColor" stroke="none" />
+        <rect x="4.5" y="4.5" width="7" height="7" rx="1.2" />
       </ControlButton>
       {openUrl ? (
         <HoverCard
@@ -321,9 +321,9 @@ function ControlButton({
             : 'bg-black/60 text-white hover:bg-black/80'
         }`}
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+        <Glyph size={14} units={16} filled>
           {children}
-        </svg>
+        </Glyph>
       </button>
     </Tooltip>
   );

@@ -5,11 +5,12 @@
 // Undo / Redo button, and the icon set (Undo / Redo re-used by
 // CanvasChrome's dock, plus the history ActivityIcon).
 
+import { lucideUndo2 } from '@livediagram/icons/lucide';
 import { useEffect, useRef } from 'react';
 import type { ChangeLogEntry } from '@/lib/api-client';
 import { formatRelativeTimeShort, useRelativeNow } from '@/lib/relative-time';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
-import { HoverCard, Glyph } from '@livediagram/ui';
+import { Glyph, HoverCard, lucideGlyph } from '@livediagram/ui';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // Save-status badge that lived in the footer; the Activity panel
@@ -240,14 +241,7 @@ export function RedoIcon() {
   );
 }
 
-function RevertIcon() {
-  return (
-    <Glyph size={10} units={12}>
-      <path d="M2.5 5h6.25A2.25 2.25 0 0 1 11 7.25v0A2.25 2.25 0 0 1 8.75 9.5H5" />
-      <path d="M4.5 2.5L2 5L4.5 7.5" />
-    </Glyph>
-  );
-}
+const RevertIcon = lucideGlyph(lucideUndo2, 10);
 
 // Clock-with-counter-clockwise-arrow — the universal "history" icon.
 // Lines up with the Activity panel's role as the editorial timeline.

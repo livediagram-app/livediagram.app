@@ -1,4 +1,13 @@
+import {
+  lucideAppWindow,
+  lucideBraces,
+  lucideChartColumn,
+  lucideKey,
+  lucideMail,
+  lucideUsers,
+} from '@livediagram/icons/lucide';
 import type { ReactNode } from 'react';
+import { Prims } from '@livediagram/ui';
 import { Glyph } from './featureIcons';
 
 /**
@@ -17,9 +26,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
   // Braces, not angle brackets: `code-blocks` in featureIcons is already `</>`.
   'api-overview': (
     <Glyph>
-      <path d="M9 4.5C6.5 4.5 6.5 10 4 10c2.5 0 2.5 5.5 5 5.5" />
-      <path d="M15 4.5c2.5 0 2.5 5.5 5 5.5-2.5 0-2.5 5.5-5 5.5" />
-      <path d="M6.5 20h11" />
+      <Prims prims={lucideBraces} />
     </Glyph>
   ),
   // A key. Nothing else in either icon set is one, and it is the plainest
@@ -68,10 +75,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
   // `roles-and-invites` is an envelope with a person on it.
   'email-notifications': (
     <Glyph>
-      <path d="M2.5 7A1.5 1.5 0 014 5.5h11A1.5 1.5 0 0116.5 7v8A1.5 1.5 0 0115 16.5H4A1.5 1.5 0 012.5 15z" />
-      <path d="M2.5 7l7 4.5L16.5 7" />
-      <path d="M17 12.5a2.5 2.5 0 015 0v2.5h-5z" />
-      <path d="M18.7 17a1 1 0 001.6 0" />
+      <Prims prims={lucideMail} />
     </Glyph>
   ),
   // ---- Supported devices ----
@@ -131,9 +135,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
   ),
   'who-is-it-for': (
     <Glyph>
-      <circle cx="9" cy="8" r="3.2" />
-      <path d="M3 20a6 6 0 0 1 12 0" />
-      <path d="M16 5.5a3.2 3.2 0 0 1 0 6.4M21 20a6 6 0 0 0-4-5.65" />
+      <Prims prims={lucideUsers} />
     </Glyph>
   ),
   'why-livediagram': (
@@ -233,8 +235,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
   ),
   'what-we-collect': (
     <Glyph>
-      <path d="M3 20h18" />
-      <path d="M6 20v-5M11 20V8M16 20v-8" />
+      <Prims prims={lucideChartColumn} />
     </Glyph>
   ),
   'share-link-security': (
@@ -285,8 +286,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
   ),
   'cannot-sign-in': (
     <Glyph>
-      <circle cx="8" cy="15" r="5" />
-      <path d="M11.5 11.5L21 2M17 6l3 3M14 9l2.5 2.5" />
+      <Prims prims={lucideKey} />
     </Glyph>
   ),
   'collaboration-issues': (
@@ -297,8 +297,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
   ),
   'browser-compatibility': (
     <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M3 8.5h18M6.5 6.2h.01M9.5 6.2h.01" />
+      <Prims prims={lucideAppWindow} />
     </Glyph>
   ),
   'missing-changes': (

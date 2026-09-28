@@ -3,6 +3,18 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
+import { ICON_ART_ALLOWLIST, RAW_ICON_SVG } from './raw-svg.js';
+
+// Native `title` is not a hint: it waits on the browser's timer, never
+// shows on keyboard focus or touch, cannot be dismissed and ignores
+// dark mode. `iframe` and `abbr` keep it as an accessible name
+// (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md).
+const NATIVE_TITLE = {
+  selector:
+    "JSXOpeningElement[name.name=/^(?!(iframe|abbr)$)[a-z]/] > JSXAttribute[name.name='title']",
+  message:
+    'Native title is not a hint. Use Tooltip (a name) or HoverCard (a title and description) from @livediagram/ui.',
+};
 
 export default tseslint.config(
   {
@@ -60,20 +72,13 @@ export default tseslint.config(
       ...Object.fromEntries(
         Object.keys(reactHooks.configs.recommended.rules).map((rule) => [rule, 'error']),
       ),
-      // Native `title` is not a hint: it waits on the browser's timer, never
-      // shows on keyboard focus or touch, cannot be dismissed and ignores
-      // dark mode. `iframe` and `abbr` keep it as an accessible name
-      // (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md).
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector:
-            "JSXOpeningElement[name.name=/^(?!(iframe|abbr)$)[a-z]/] > JSXAttribute[name.name='title']",
-          message:
-            'Native title is not a hint. Use Tooltip (a name) or HoverCard (a title and description) from @livediagram/ui.',
-        },
-      ],
+      'no-restricted-syntax': ['error', NATIVE_TITLE, RAW_ICON_SVG],
     },
+  },
+  {
+    // Art keeps its own paint; only the title rule applies there.
+    files: ICON_ART_ALLOWLIST,
+    rules: { 'no-restricted-syntax': ['error', NATIVE_TITLE] },
   },
   prettier,
 );

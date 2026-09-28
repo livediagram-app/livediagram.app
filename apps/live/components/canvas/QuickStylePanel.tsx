@@ -6,7 +6,7 @@
 // handful of them, and never grows into the old Editor panel.
 
 import { useRef, useState, type PointerEvent } from 'react';
-import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-icons';
+import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-style-previews';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useQuickStylePlacement } from '@/hooks/ui/useQuickStylePlacement';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

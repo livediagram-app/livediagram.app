@@ -14,17 +14,13 @@
 
 import type { ShapeElement, Tab } from '@livediagram/diagram';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
-import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { MENU_ICON_PX, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { portalName, portalSites } from '@/lib/portals';
-import { Glyph } from '@livediagram/ui';
+import { PlusIcon } from '@livediagram/ui';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
 function PlusGlyph() {
-  return (
-    <Glyph size={13} units={13} strokeLinejoin="miter">
-      <path d="M6.5 2.4v8.2M2.4 6.5h8.2" />
-    </Glyph>
-  );
+  return <PlusIcon size={MENU_ICON_PX} />;
 }
 
 export function PortalMenuSection({

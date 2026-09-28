@@ -9,7 +9,6 @@ vi.mock('./db', () => ({
   listDiagramsByOwner: async () => [],
   deleteOldChangeLogEntries: async () => {},
   deleteOldEvents: async () => {},
-  deleteOldUnusedImages: async () => {},
 }));
 
 import worker from './index';

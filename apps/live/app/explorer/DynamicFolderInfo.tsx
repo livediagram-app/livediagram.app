@@ -1,3 +1,6 @@
+import { lucideInfo } from '@livediagram/icons/lucide';
+import { Glyph, Prims } from '@livediagram/ui';
+
 import type { SelectedNode } from './views';
 
 // "Dynamic" (synthetic) folders aren't real folder rows — they're a live
@@ -29,17 +32,8 @@ export function DynamicFolderInfo({ selected }: { selected: SelectedNode }) {
 
 function InfoIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 14 14"
-      aria-hidden
-      fill="none"
-      className="mt-px shrink-0 text-slate-400"
-    >
-      <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3" />
-      <path d="M7 6.2v3.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-      <circle cx="7" cy="4.3" r="0.75" fill="currentColor" />
-    </svg>
+    <Glyph size={14} units={24} className="mt-px shrink-0 text-slate-400">
+      <Prims prims={lucideInfo} />
+    </Glyph>
   );
 }

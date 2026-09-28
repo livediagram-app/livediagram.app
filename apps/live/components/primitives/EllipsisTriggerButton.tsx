@@ -1,16 +1,11 @@
+import { EllipsisIcon } from '@livediagram/ui';
 import { forwardRef, type MouseEvent, type PointerEvent } from 'react';
 
 // The three-dot glyph every ⋯ trigger draws. Exported for the few menus
 // whose trigger is not this button (a toolbar chip, a tab) but should
 // still show the same dots.
 export function EllipsisGlyph({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 14 14" aria-hidden>
-      <circle cx="3" cy="7" r="1.25" fill="currentColor" />
-      <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-      <circle cx="11" cy="7" r="1.25" fill="currentColor" />
-    </svg>
-  );
+  return <EllipsisIcon size={size} />;
 }
 
 const SIZE_CLASS = {

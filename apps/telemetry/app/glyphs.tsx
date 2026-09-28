@@ -10,7 +10,12 @@
 // stay as pure-render presentational markup. Adding a new glyph means
 // appending one function here and one branch in EventIcon.
 
-import { Glyph } from '@livediagram/ui';
+import {
+  lucideSlidersHorizontal,
+  lucideSquareDashed,
+  lucideUndo2,
+} from '@livediagram/icons/lucide';
+import { Glyph, lucideGlyph } from '@livediagram/ui';
 
 export function RectGlyph() {
   return (
@@ -124,14 +129,8 @@ export function SunGlyph() {
     </Glyph>
   );
 }
-export function GearGlyph() {
-  return (
-    <Glyph size={14} units={14}>
-      <circle cx="7" cy="7" r="2" />
-      <path d="M7 1.5 L7 3 M7 11 L7 12.5 M1.5 7 L3 7 M11 7 L12.5 7 M3 3 L4.2 4.2 M9.8 9.8 L11 11 M3 11 L4.2 9.8 M9.8 4.2 L11 3" />
-    </Glyph>
-  );
-}
+// Settings: sliders, the same mark as the editor's Settings button.
+export const SettingsGlyph = lucideGlyph(lucideSlidersHorizontal, 14);
 export function KeyboardGlyph() {
   return (
     <Glyph size={14} units={14}>
@@ -331,14 +330,7 @@ export function MoveGlyph() {
     </Glyph>
   );
 }
-export function RevertGlyph() {
-  return (
-    <Glyph size={14} units={14}>
-      <path d="M2 7 L4.5 4.5 L7 7" />
-      <path d="M4.5 4.5 L4.5 9 A 3.5 3.5 0 0 0 8 12.5" />
-    </Glyph>
-  );
-}
+export const RevertGlyph = lucideGlyph(lucideUndo2, 14);
 export function AlignGlyph() {
   return (
     <Glyph size={14} units={14}>
@@ -493,17 +485,8 @@ export function PaletteGlyph() {
     </Glyph>
   );
 }
-export function CanvasGlyph() {
-  return (
-    <Glyph size={14} units={14}>
-      <rect x="1.5" y="2.5" width="11" height="9" rx="0.5" />
-      <path
-        d="M1.5 5.5 L12.5 5.5 M1.5 8.5 L12.5 8.5 M4.5 2.5 L4.5 11.5 M8 2.5 L8 11.5"
-        strokeWidth="0.6"
-      />
-    </Glyph>
-  );
-}
+// The canvas: an open, dashed frame.
+export const CanvasGlyph = lucideGlyph(lucideSquareDashed, 14);
 export function TemplateGlyph() {
   return (
     <Glyph size={14} units={14}>

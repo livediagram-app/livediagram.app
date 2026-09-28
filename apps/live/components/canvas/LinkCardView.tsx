@@ -1,8 +1,9 @@
 'use client';
 
+import { lucideFile, lucideLink, lucidePanelsTopLeft } from '@livediagram/icons/lucide';
 import { useState } from 'react';
 import { defaultTextColor, type LinkCardElement } from '@livediagram/diagram';
-import { Glyph } from '@livediagram/ui';
+import { Glyph, Prims } from '@livediagram/ui';
 
 // Inner content of a link-card element (docs/specs/009-elements/link-cards.md): a favicon / glyph + title +
 // destination row, with the OG image as a top banner when a URL has unfurled.
@@ -164,26 +165,17 @@ export function LinkCardView({
 // favicon failed / hasn't unfurled): a small kind-appropriate glyph so the
 // row never collapses to a bare label.
 function LinkGlyph({ kind }: { kind: NonNullable<LinkCardElement['link']>['kind'] }) {
+  // A diagram is a document, a tab or element jump a panel, anything else a URL.
+  const prims =
+    kind === 'diagram'
+      ? lucideFile
+      : kind === 'tab' || kind === 'element'
+        ? lucidePanelsTopLeft
+        : lucideLink;
   return (
     <span className="flex h-4 w-4 shrink-0 items-center justify-center text-slate-400 dark:text-slate-400">
-      <Glyph size={13} units={16}>
-        {kind === 'diagram' ? (
-          // Stacked-pages glyph for a diagram link.
-          <>
-            <rect x="3.5" y="2.5" width="7" height="9" rx="1" />
-            <path d="M5.5 13.5h6a1 1 0 0 0 1-1v-7" />
-          </>
-        ) : kind === 'tab' || kind === 'element' ? (
-          // Tab glyph for an in-diagram tab / element jump.
-          <path d="M2.5 12V5.5a1 1 0 0 1 1-1H7l1.2 1.4h4.3a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1Z" />
-        ) : (
-          // Chain-link glyph for an external URL.
-          <>
-            <path d="M6.5 9.5 9.5 6.5" />
-            <path d="M7.5 4.5 8.7 3.3a2.4 2.4 0 0 1 3.4 3.4l-1.2 1.2" />
-            <path d="M8.5 11.5 7.3 12.7a2.4 2.4 0 0 1-3.4-3.4l1.2-1.2" />
-          </>
-        )}
+      <Glyph size={13} units={24}>
+        <Prims prims={prims} />
       </Glyph>
     </span>
   );

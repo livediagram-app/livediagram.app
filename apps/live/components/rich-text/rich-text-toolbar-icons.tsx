@@ -1,4 +1,7 @@
-import { Glyph } from '@livediagram/ui';
+import { EllipsisIcon as SharedEllipsisIcon, lucideGlyph } from '@livediagram/ui';
+import { lucideALargeSmall } from '@livediagram/icons/lucide';
+
+import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 // Inline SVG icons for the rich-text toolbars (the overflow ellipsis and the
 // font-family glyph). Pure presentational; split out of RichTextToolbar.
 //
@@ -6,22 +9,8 @@ import { Glyph } from '@livediagram/ui';
 // the buttons they labelled: both toolbars now use the block-type picker
 // (docs/specs/009-elements/block-type-picker.md), which is a word list, not a row of pictograms.
 export function EllipsisIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
-      <circle cx="4" cy="8" r="1.4" fill="currentColor" />
-      <circle cx="8" cy="8" r="1.4" fill="currentColor" />
-      <circle cx="12" cy="8" r="1.4" fill="currentColor" />
-    </svg>
-  );
+  return <SharedEllipsisIcon size={16} />;
 }
 
-// A serif "A" — the font/typeface glyph for the Font submenu row.
-export function FontGlyph() {
-  return (
-    <Glyph size={14} units={16} filled>
-      <text x="8" y="12" textAnchor="middle" fontSize="12" fontFamily="Georgia, serif">
-        A
-      </text>
-    </Glyph>
-  );
-}
+// The font / typeface glyph for the Font submenu row.
+export const FontGlyph = lucideGlyph(lucideALargeSmall, MENU_ICON_PX);

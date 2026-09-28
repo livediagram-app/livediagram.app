@@ -1,5 +1,8 @@
 'use client';
 
+import { lucideGlyph } from '@livediagram/ui';
+import { lucidePalette } from '@livediagram/icons/lucide';
+
 // The Explorer "Themes" section (docs/specs/011-theme/custom-themes.md): manage the owner's saved
 // custom themes. Lists each as a swatch preview + name with icon actions
 // (edit / duplicate / delete), and a New-theme card. Editing / creating
@@ -163,21 +166,4 @@ function IconBtn({
 }
 
 // Artist's palette — the empty-state badge glyph for custom themes.
-function PaletteIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M12 3a9 9 0 1 0 0 18 1.8 1.8 0 0 0 1.8-1.8 1.8 1.8 0 0 1 1.8-1.8H17a3.5 3.5 0 0 0 3.5-3.5A8.6 8.6 0 0 0 12 3Z" />
-      <circle cx="7.5" cy="11" r="1" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="7.5" r="1" fill="currentColor" stroke="none" />
-      <circle cx="16.3" cy="11" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
+const PaletteIcon = lucideGlyph(lucidePalette, 28);

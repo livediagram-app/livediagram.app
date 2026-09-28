@@ -36,6 +36,7 @@ import {
   LineGlyph,
   PointerGlyph,
   RotationGlyph,
+  RotationMenuIcon,
   SizeMenuIcon,
   SquareMenuIcon,
   CopyIcon,
@@ -309,7 +310,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         {boxed && !esNote ? (
           <MenuAccordionSection
             title="Rotation"
-            icon={<RotationGlyph deg={45} />}
+            icon={<RotationMenuIcon />}
             {...sectionProps('rotation')}
           >
             <div className="grid grid-cols-4 gap-1 px-2 py-1.5">

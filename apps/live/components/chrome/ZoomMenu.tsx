@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckIcon } from '@livediagram/ui';
+import { CheckIcon, Glyph } from '@livediagram/ui';
 import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
 
 // The zoom-percentage button in the middle of the ZoomControls dock
@@ -131,15 +131,18 @@ export function ZoomMenu({ zoom, onSetZoom, onFitToScreen }: ZoomMenuProps) {
 // standalone Fit button used to carry.
 function FitGlyph() {
   return (
-    <svg width="13" height="13" viewBox="0 0 14 14" aria-hidden>
-      <path
-        d="M4.5 1.5H3A1.5 1.5 0 0 0 1.5 3v1.5M9.5 1.5H11A1.5 1.5 0 0 1 12.5 3v1.5M4.5 12.5H3A1.5 1.5 0 0 1 1.5 11V9.5M9.5 12.5H11A1.5 1.5 0 0 0 12.5 11V9.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
+    <Glyph size={13} units={14}>
+      <path d="M4.5 1.5H3A1.5 1.5 0 0 0 1.5 3v1.5M9.5 1.5H11A1.5 1.5 0 0 1 12.5 3v1.5M4.5 12.5H3A1.5 1.5 0 0 1 1.5 11V9.5M9.5 12.5H11A1.5 1.5 0 0 0 12.5 11V9.5" />
+      <rect
+        x="5"
+        y="5.5"
+        width="4"
+        height="3"
+        rx="0.75"
+        fill="currentColor"
+        stroke="none"
+        opacity="0.55"
       />
-      <rect x="5" y="5.5" width="4" height="3" rx="0.75" fill="currentColor" opacity="0.55" />
-    </svg>
+    </Glyph>
   );
 }

@@ -41,7 +41,7 @@ CREATE TABLE tabs (
 );
 ```
 
-A `tabs` row is the tab's body and nothing else. Which diagrams contain it, and its order and folder in each, live on the `diagram_tabs` link ([Tab ↔ diagram many-to-many](tab-diagram-many-to-many.md)). Nothing on the row points at a diagram, so nothing cascades from `diagrams` into `tabs`: removing a tab from a diagram, deleting a diagram and deleting an account each drop a tab explicitly once no diagram links it. `change_log`, `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its history and index rows with it.
+A `tabs` row is the tab's body and nothing else. Which diagrams contain it, and its order and folder in each, live on the `diagram_tabs` link ([Tab ↔ diagram many-to-many](tab-diagram-many-to-many.md)). Nothing on the row points at a diagram, so nothing cascades from `diagrams` into `tabs`: removing a tab from a diagram, deleting a diagram and deleting an account each drop a tab explicitly once no diagram links it. `change_log`, `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its history and index rows with it. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
 
 The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `diagram_id` + `order_index` columns and the `diagram_id` foreign key.
 

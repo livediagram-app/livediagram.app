@@ -1,5 +1,6 @@
+import { lucideClipboardPaste } from '@livediagram/icons/lucide';
 import { hexish } from '@/components/palette/palette-controls';
-import { ChevronDownIcon, CopyIcon, Glyph } from '@livediagram/ui';
+import { ChevronDownIcon, CopyIcon, Glyph, Prims } from '@livediagram/ui';
 
 export type Painter = {
   copied: string | null;
@@ -146,15 +147,8 @@ export function ResetGlyph() {
 
 function PasteGlyph() {
   return (
-    <Glyph
-      size={11}
-      units={16}
-      className="text-brand-700 dark:text-brand-200"
-      strokeLinecap="butt"
-      strokeLinejoin="miter"
-    >
-      <path d="M3 3l4 4M3 7V3h4" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M7 13h6M10 10v6" strokeLinecap="round" />
+    <Glyph size={11} units={24} className="text-brand-700 dark:text-brand-200">
+      <Prims prims={lucideClipboardPaste} />
     </Glyph>
   );
 }
