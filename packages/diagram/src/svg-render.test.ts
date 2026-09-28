@@ -1047,7 +1047,10 @@ describe('arrows as the canvas draws them (docs/specs/008-canvas/arrow-route-beh
   it('paints in array order, so an arrow sent behind a box stays behind it', () => {
     const svg = renderElementsToSvg(tab([row[0]!, row[2]!, pinnedArrow('x', 'a', 'c'), row[1]!]));
     const arrowAt = svg.indexOf('mask id="lvd-ko-x"');
-    const boxAt = svg.indexOf('<rect x="200"');
+    // Box b sits at x = 200; its border is drawn inside the box, as the canvas
+    // draws it (docs/specs/020-import-export/export-fidelity.md), so its rect starts half a border in.
+    const boxAt = svg.search(/<rect x="20[01](\.\d+)?"/);
+    expect(boxAt).toBeGreaterThan(-1);
     expect(arrowAt).toBeGreaterThan(-1);
     expect(arrowAt).toBeLessThan(boxAt);
   });
