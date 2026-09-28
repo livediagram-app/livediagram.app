@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import type { TeamInviteLinkInfo } from '@livediagram/api-schema';
 import { Brand, Button, buttonClassName, ButtonContent } from '@livediagram/ui';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { clerkEnabled } from '@/lib/clerk-config';
-import { ensureGuestSelfId } from '@/lib/local-identity';
+import { ensureGuestSelfId, getGuestSelfId, subscribeGuestSelfId } from '@/lib/local-identity';
+
+const noGuestId = () => null;
 import { track } from '@/lib/telemetry';
 import { apiJoinTeamByInviteLink, apiResolveTeamInviteLink } from '@/lib/api-client';
 
@@ -30,7 +32,13 @@ export function TeamInviteJoin() {
   // export and the first client render agree — no hydration mismatch — and read from the URL after.
   const token = useSyncExternalStore(noSubscription, readUrlToken, beforeHydration);
 
-  const ownerId = useMemo(() => clerkUserId ?? ensureGuestSelfId(), [clerkUserId]);
+  // The guest id is read from its store; a browser without one mints it once auth has settled (below),
+  // and the store re-renders this with it. Render never writes storage.
+  const guestId = useSyncExternalStore(subscribeGuestSelfId, getGuestSelfId, noGuestId);
+  const ownerId = clerkUserId ?? guestId;
+  useEffect(() => {
+    if (authLoaded && !clerkUserId) ensureGuestSelfId();
+  }, [authLoaded, clerkUserId]);
   // What the api said about the token; a link without one is invalid without asking.
   const [lookup, setLookup] = useState<Resolved>('loading');
   const resolved: Resolved = authLoaded && token !== undefined && !token ? 'invalid' : lookup;
@@ -39,7 +47,7 @@ export function TeamInviteJoin() {
 
   // Resolve once auth has settled (so ownerId / the bearer are stable).
   useEffect(() => {
-    if (!authLoaded || !token) return;
+    if (!authLoaded || !token || !ownerId) return;
     let cancelled = false;
     void apiResolveTeamInviteLink(ownerId, token)
       .then((res) => {
@@ -54,7 +62,7 @@ export function TeamInviteJoin() {
   }, [authLoaded, token, ownerId]);
 
   const join = useCallback(async () => {
-    if (!token || joining) return;
+    if (!token || !ownerId || joining) return;
     setJoining(true);
     setJoinError(null);
     try {

@@ -6,10 +6,10 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TeamInviteJoin } from './TeamInviteJoin';
+import { clearGuestSelfId, getGuestSelfId, setGuestIdentity } from '@/lib/local-identity';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true }));
-vi.mock('@/lib/local-identity', () => ({ ensureGuestSelfId: () => 'guest' }));
 vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({
   useClerkApiBootstrap: () => ({ authLoaded: true, isSignedIn: false, clerkUserId: null }),
 }));
@@ -24,6 +24,7 @@ const visit = (search: string) => window.history.replaceState(null, '', `/join${
 afterEach(() => {
   cleanup();
   resolve.mockReset();
+  clearGuestSelfId();
 });
 
 describe('TeamInviteJoin', () => {
@@ -34,10 +35,23 @@ describe('TeamInviteJoin', () => {
       memberCount: 3,
       alreadyMember: false,
     });
+    setGuestIdentity('guest', null);
     render(<TeamInviteJoin />);
     await act(async () => {});
     expect(resolve).toHaveBeenCalledWith('guest', 'abc');
     expect(screen.getByText('Platform')).toBeTruthy();
+  });
+
+  it('mints a guest id for a first-time browser and resolves with it', async () => {
+    visit('?token=abc');
+    resolve.mockResolvedValue(null);
+    expect(getGuestSelfId()).toBeNull();
+    render(<TeamInviteJoin />);
+    await act(async () => {});
+    const minted = getGuestSelfId();
+    expect(minted).toBeTruthy();
+    expect(resolve).toHaveBeenCalledTimes(1);
+    expect(resolve).toHaveBeenCalledWith(minted, 'abc');
   });
 
   it('calls a link without a token invalid, without asking', async () => {
