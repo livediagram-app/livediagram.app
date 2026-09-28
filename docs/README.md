@@ -17,6 +17,7 @@ These docs are the practical guide: what the app does, how to run it locally, ho
 - ./development/contributing.md - when proposing a change: specs-first workflow, code style, tests, PRs
 - ./operations/self-hosting.md - when running your own copy on Cloudflare Workers + D1, optionally with Clerk
 - ./research/README.md - when you need measurements and experiment reports, such as sticky detection in wall photos
+- ./research/migration-readiness.md - when designing the Google Drive mirror or importing boards from Miro or Microsoft Whiteboard
 - ./demo/sticky-vision/index.html - when watching the sticky detector run live on a synthetic wall (`pnpm demo:sticky-vision`)
 
 ## How docs relate to specs

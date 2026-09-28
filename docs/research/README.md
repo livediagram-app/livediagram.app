@@ -4,6 +4,12 @@ Follow the references below only as needed; never upfront.
 
 Research holds dated measurements and experiment reports. They record what was measured and decided at the time; the specs state what the product does now.
 
+## Migration
+
+How boards from Google Drive, Miro and Microsoft Whiteboard can come into livediagram: verified platform facts, costs and the decisions taken. The resulting specs live in docs/specs/020-import-export/.
+
+- ./migration-readiness.md - when designing the Google Drive mirror or a Miro or Whiteboard import: sourced findings, cost model, Drive sync cadences
+
 ## Vision
 
 How the event-storming photo import finds sticky notes in a wall photo and reads their handwriting.
