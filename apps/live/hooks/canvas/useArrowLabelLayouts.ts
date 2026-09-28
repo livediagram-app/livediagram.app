@@ -67,7 +67,12 @@ export function useArrowLabelLayouts(
     const next = new Map<ElementId, ArrowLabelRender>();
     if (!hasArrows) return next;
     const fontFamilyOf = (a: ArrowElement) => arrowLabelFontStack(a, tabFont);
-    const pass = arrowLabelPass(elements, { ...stableOptions, fontFamilyOf });
+    // The font epoch makes words measured in a fallback face measure again once webfonts land.
+    const pass = arrowLabelPass(elements, {
+      ...stableOptions,
+      fontFamilyOf,
+      fontEpoch: fontsReady ? 1 : 0,
+    });
     for (const el of elements) {
       if (el.type !== 'arrow') continue;
       const knockouts = pass.knockoutsOf(el.id);
@@ -75,8 +80,6 @@ export function useArrowLabelLayouts(
       if (layout || knockouts.length > 0) next.set(el.id, { layout, knockouts });
     }
     return next;
-    // fontsReady re-runs the layout when webfonts land: canvas measurement reads them.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [elements, hasArrows, tabFont, fontsReady, stableOptions]);
 
   // Lays out an arrow's label for text being typed, against the other labels
@@ -94,9 +97,10 @@ export function useArrowLabelLayouts(
           ...DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
           ...stableOptions,
           fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
+          fontEpoch: fontsReady ? 1 : 0,
         },
       });
-  }, [renders, elements, tabFont, stableOptions]);
+  }, [renders, elements, tabFont, stableOptions, fontsReady]);
 
   // Stable per layout pass: the selection derivation is memoised on it.
   return useMemo(
