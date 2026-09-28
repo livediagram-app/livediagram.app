@@ -5,10 +5,9 @@ import { FormatCard } from './FormatCard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
-import type { ImportImageProgress, ImportImageReport as Report } from '@/lib/import-images';
+import type { ImportImageProgress } from '@/lib/import-images';
 import type { ImportReport } from '@/lib/import-report';
 import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
-import { ImportImageReport } from './ImportImageReport';
 import { ImportSummary } from './ImportSummary';
 import { DialogHeader } from './DialogHeader';
 import { Glyph } from '@livediagram/ui';
@@ -99,12 +98,10 @@ export function ImportTabDialog({
   onClose,
 }: ImportTabDialogProps) {
   const [active, setActive] = useState<Format | null>(null);
-  // Set once an import that met images has replaced the tab: the dialog then
-  // shows how they came across instead of closing.
-  const [report, setReport] = useState<Report | null>(null);
-  // A draw.io import that degraded anything shows its summary before closing
+  // Set once an import that met images or changed anything on the way in has
+  // replaced the tab: the dialog then shows the report instead of closing
   // (docs/specs/020-import-export/drawio-import.md "The import report").
-  const [summary, setSummary] = useState<ImportReport | null>(null);
+  const [report, setReport] = useState<ImportReport | null>(null);
   const activeFormat = active ? FORMATS.find((f) => f.key === active) : null;
 
   return (
@@ -112,23 +109,21 @@ export function ImportTabDialog({
       <DialogHeader
         title="Import to tab"
         subtitle={
-          summary
-            ? 'Here is what changed on the way in.'
-            : report
-              ? "Here's how your images came across."
-              : activeFormat
-                ? `Paste your ${activeFormat.title}, or import a file.`
-                : 'Pick a format to import into the current tab.'
+          report
+            ? report.notes.length > 0
+              ? 'Here is what changed on the way in.'
+              : "Here's how your images came across."
+            : activeFormat
+              ? `Paste your ${activeFormat.title}, or import a file.`
+              : 'Pick a format to import into the current tab.'
         }
       >
         <HelpArticleLink article="importTabs" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
       <div className="flex-1 overflow-y-auto px-6 py-5">
-        {summary && activeFormat ? (
-          <ImportSummary formatTitle={activeFormat.title} report={summary} onDone={onClose} />
-        ) : report ? (
-          <ImportImageReport report={report} onDone={onClose} />
+        {report ? (
+          <ImportSummary report={report} onDone={onClose} />
         ) : (
           <ImportChooser
             tabName={tabName}
@@ -136,13 +131,7 @@ export function ImportTabDialog({
             onPick={setActive}
             onImportFile={onImportFile}
             onImportText={onImportText}
-            onDone={(outcome) =>
-              outcome.report
-                ? setSummary(outcome.report)
-                : outcome.images
-                  ? setReport(outcome.images)
-                  : onClose()
-            }
+            onDone={(outcome) => (outcome.report ? setReport(outcome.report) : onClose())}
           />
         )}
       </div>

@@ -65,7 +65,7 @@ test('an Excalidraw scene brings its images into the gallery and reports them', 
   await dismissQuickTour(page);
   await importExcalidrawFile(page, 'board.excalidraw', boardWithImages());
 
-  const report = page.getByTestId('import-image-report');
+  const report = page.getByTestId('import-report');
   await expect(report).toContainText('Import complete');
   await expect(report).toContainText('3 images imported');
   await expect(report).toContainText('1 left as a placeholder');
@@ -105,7 +105,7 @@ test('a full gallery leaves placeholders and says so, never failing the import',
   );
   await importExcalidrawFile(page, 'board.excalidraw', boardWithImages());
 
-  const report = page.getByTestId('import-image-report');
+  const report = page.getByTestId('import-report');
   await expect(report).toContainText('4 left as placeholders');
   await expect(report.locator('[data-failure="gallery-full"]')).toContainText('3');
   await expect(report).toContainText('Your image gallery is full.');
@@ -160,7 +160,7 @@ test('without canvas WebP, images are still stored as WebP via the WASM encoder'
   // Nothing is fetched until an image needs encoding.
   expect(wasmRequests).toEqual([]);
   await importExcalidrawFile(page, 'board.excalidraw', boardWithImages());
-  await expect(page.getByTestId('import-image-report')).toContainText('3 images imported');
+  await expect(page.getByTestId('import-report')).toContainText('3 images imported');
 
   const images = await page.evaluate(async () => {
     const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';

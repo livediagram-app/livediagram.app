@@ -6,6 +6,7 @@ import {
   describeImportNote,
   importSummaryLine,
   namesLine,
+  reportHasNews,
 } from './import-report';
 
 describe('ReportTally', () => {
@@ -114,5 +115,19 @@ describe('attachPendingImages', () => {
         },
       ]),
     ).toEqual({ pages, placed: 0 });
+  });
+});
+
+describe('reportHasNews', () => {
+  const base = { source: 'drawio' as const, pages: 1, elements: 3, notes: [] };
+  it('is true when anything changed or any image was met', () => {
+    expect(reportHasNews(base)).toBe(false);
+    expect(reportHasNews({ ...base, notes: [{ kind: 'label-moved', count: 1 }] })).toBe(true);
+    expect(
+      reportHasNews({ ...base, images: { imported: 0, deduped: 0, placeholders: {} } }),
+    ).toBe(false);
+    expect(
+      reportHasNews({ ...base, images: { imported: 1, deduped: 0, placeholders: {} } }),
+    ).toBe(true);
   });
 });

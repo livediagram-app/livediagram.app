@@ -4,6 +4,7 @@
 // so "nothing degrades silently" is one vocabulary rather than one per format.
 
 import type { Element } from '@livediagram/diagram';
+import { importImageReportTotal, type ImportImageReport } from './import-images';
 
 export type ImportNoteKind =
   | 'shape-unmatched'
@@ -50,14 +51,22 @@ export type ImportNote = {
   moreNames?: number;
 };
 
-export type ImportSource = 'drawio';
+export type ImportSource = 'drawio' | 'excalidraw';
 
 export type ImportReport = {
   source: ImportSource;
   pages: number;
   elements: number;
   notes: ImportNote[];
+  /** How the images the import met came across (the import image pipeline's report). */
+  images?: ImportImageReport;
 };
+
+/** Whether a finished import has anything to tell: a change on the way in, or
+ *  images it met. A report without news closes the Import dialog. */
+export function reportHasNews(report: ImportReport): boolean {
+  return report.notes.length > 0 || (!!report.images && importImageReportTotal(report.images) > 0);
+}
 
 /** An embedded image an import could not store itself, shaped like the
  *  shared import image pipeline's request (plus the tab it lands on): the seam

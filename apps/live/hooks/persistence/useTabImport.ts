@@ -144,7 +144,12 @@ export function useTabImport({
       backgroundColor: result.backgroundColor,
     });
     track('Tab', 'Imported', EXCALIDRAW_TELEMETRY_TYPE[scene.container]);
-    return images ? { status: 'done', images } : { status: 'done' };
+    return images
+      ? {
+          status: 'done',
+          report: { source: 'excalidraw', pages: 1, elements: elements.length, notes: [], images },
+        }
+      : { status: 'done' };
   };
 
   // draw.io (docs/specs/020-import-export/drawio-import.md): the first page

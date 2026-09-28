@@ -44,10 +44,28 @@ describe('ImportTabDialog, draw.io', () => {
         notes: [{ kind: 'label-moved', count: 2 }],
       },
     });
-    await screen.findByRole('region', { name: 'Imported from draw.io' });
+    await screen.findByTestId('import-report');
+    expect(screen.getByText('Here is what changed on the way in.')).toBeTruthy();
     expect(screen.queryByText(/This replaces everything/)).toBeNull();
     expect(onClose).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('shows the same report for an import that only met images', async () => {
+    open({
+      status: 'done',
+      report: {
+        source: 'excalidraw',
+        pages: 1,
+        elements: 2,
+        notes: [],
+        images: { imported: 2, deduped: 0, placeholders: {} },
+      },
+    });
+    expect((await screen.findByTestId('import-report-images')).textContent).toContain(
+      '2 images imported',
+    );
+    expect(screen.getByText("Here's how your images came across.")).toBeTruthy();
   });
 });
