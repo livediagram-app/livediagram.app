@@ -9,17 +9,21 @@ import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
 import { apiAddComment, apiDeleteComment } from '@/lib/api-client';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 
-const CommentThreadPopover = dynamic(() =>
-  import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
+const CommentThreadPopover = dynamic(
+  () => import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
+  { ssr: false },
 );
-const NotePopover = dynamic(() =>
-  import('@/components/notes/NotePopover').then((m) => m.NotePopover),
+const NotePopover = dynamic(
+  () => import('@/components/notes/NotePopover').then((m) => m.NotePopover),
+  { ssr: false },
 );
-const ActionPopover = dynamic(() =>
-  import('@/components/panels/ActionPopover').then((m) => m.ActionPopover),
+const ActionPopover = dynamic(
+  () => import('@/components/panels/ActionPopover').then((m) => m.ActionPopover),
+  { ssr: false },
 );
-const AssignActionDialog = dynamic(() =>
-  import('@/components/dialogs/AssignActionDialog').then((m) => m.AssignActionDialog),
+const AssignActionDialog = dynamic(
+  () => import('@/components/dialogs/AssignActionDialog').then((m) => m.AssignActionDialog),
+  { ssr: false },
 );
 
 // Popovers anchored to a specific canvas element: the comment thread and

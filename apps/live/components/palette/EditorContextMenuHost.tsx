@@ -8,8 +8,9 @@ import { getTheme, shapeColorPresets, tableColorPresets } from '@/lib/themes';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
-const EditorContextMenu = dynamic(() =>
-  import('@/components/palette/EditorContextMenu').then((m) => m.EditorContextMenu),
+const EditorContextMenu = dynamic(
+  () => import('@/components/palette/EditorContextMenu').then((m) => m.EditorContextMenu),
+  { ssr: false },
 );
 
 // The element / multi-selection context menu's wiring, lifted out of

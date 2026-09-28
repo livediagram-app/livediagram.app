@@ -12,8 +12,9 @@ import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
 import { tileHandler } from '@/components/palette/PaletteTileGrid';
 import { useEditorTileActions } from '@/components/palette/useEditorTileActions';
 
-const SearchPanel = dynamic(() =>
-  import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
+const SearchPanel = dynamic(
+  () => import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
+  { ssr: false },
 );
 
 // The editor's search panel (docs/specs/008-canvas/canvas-and-palette.md "Search panel" + docs/specs/007-editor/command-palette.md): searches diagrams, folders, shared +

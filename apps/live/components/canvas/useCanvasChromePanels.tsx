@@ -23,17 +23,22 @@ import { useCanvasToolPanels } from './useCanvasToolPanels';
 // top-right panel). Most diagrams never accumulate comments, so deferring
 // the 164-line panel + its relative-time formatting
 // dependencies keeps the editor's initial chunk lean.
-const CollaboratePanel = dynamic(() =>
-  import('@/components/panels/CollaboratePanel').then((m) => m.CollaboratePanel),
+const CollaboratePanel = dynamic(
+  () => import('@/components/panels/CollaboratePanel').then((m) => m.CollaboratePanel),
+  { ssr: false },
 );
 
 // Lazy for the same reason, and more so: the poll panel (docs/specs/012-collaboration/live-poll.md) only
 // mounts while a poll is actually running, which is rare and brief.
-const PollPanel = dynamic(() => import('@/components/panels/PollPanel').then((m) => m.PollPanel));
+const PollPanel = dynamic(() => import('@/components/panels/PollPanel').then((m) => m.PollPanel), {
+  ssr: false,
+});
 
 // Same again for the vote panel (docs/specs/012-collaboration/session-tools.md): only on screen while a
 // dot-vote is running.
-const VotePanel = dynamic(() => import('@/components/panels/VotePanel').then((m) => m.VotePanel));
+const VotePanel = dynamic(() => import('@/components/panels/VotePanel').then((m) => m.VotePanel), {
+  ssr: false,
+});
 
 // Lazy for the same reason: the Actions panel (docs/specs/012-collaboration/assigned-actions.md) only mounts when
 // the active tab has at least one element with an OPEN assigned action.

@@ -7,14 +7,17 @@ import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { resolveTabBackdrop } from '@/lib/themes';
 
-const ExportTabDialog = dynamic(() =>
-  import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
+const ExportTabDialog = dynamic(
+  () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
+  { ssr: false },
 );
-const ImportTabDialog = dynamic(() =>
-  import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
+const ImportTabDialog = dynamic(
+  () => import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
+  { ssr: false },
 );
-const ShareDialog = dynamic(() =>
-  import('@/components/dialogs/ShareDialog').then((m) => m.ShareDialog),
+const ShareDialog = dynamic(
+  () => import('@/components/dialogs/ShareDialog').then((m) => m.ShareDialog),
+  { ssr: false },
 );
 
 // Tab-scoped export / import dialogs + the diagram share dialog. Each is

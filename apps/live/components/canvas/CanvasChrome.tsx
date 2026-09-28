@@ -15,8 +15,9 @@ import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // picker's JS. The /live/new entry keeps the static import because
 // the picker is the whole UI there.
 import dynamic from 'next/dynamic';
-const TemplatePicker = dynamic(() =>
-  import('@/components/palette/TemplatePicker').then((m) => m.TemplatePicker),
+const TemplatePicker = dynamic(
+  () => import('@/components/palette/TemplatePicker').then((m) => m.TemplatePicker),
+  { ssr: false },
 );
 
 import { ThemeBrushIcon } from '@/components/palette/palette-icons';

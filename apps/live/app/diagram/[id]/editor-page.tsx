@@ -14,15 +14,20 @@ import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
 
-const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound));
-const ApiErrorPage = dynamic(() =>
-  import('@/components/chrome/ApiErrorPage').then((m) => m.ApiErrorPage),
+const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
+  ssr: false,
+});
+const ApiErrorPage = dynamic(
+  () => import('@/components/chrome/ApiErrorPage').then((m) => m.ApiErrorPage),
+  { ssr: false },
 );
-const DiagramTrashedCard = dynamic(() =>
-  import('@/components/chrome/DiagramTrashedCard').then((m) => m.DiagramTrashedCard),
+const DiagramTrashedCard = dynamic(
+  () => import('@/components/chrome/DiagramTrashedCard').then((m) => m.DiagramTrashedCard),
+  { ssr: false },
 );
-const SharePasswordGate = dynamic(() =>
-  import('@/components/dialogs/SharePasswordGate').then((m) => m.SharePasswordGate),
+const SharePasswordGate = dynamic(
+  () => import('@/components/dialogs/SharePasswordGate').then((m) => m.SharePasswordGate),
+  { ssr: false },
 );
 
 const LOAD_ERROR_MESSAGE =

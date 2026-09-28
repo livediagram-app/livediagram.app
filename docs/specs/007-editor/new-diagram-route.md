@@ -432,6 +432,12 @@ it cannot tell the difference from a direct visit.
   parallel with identity and the create request. If it is not ready at
   handoff, the opening screen holds at the "Opening your diagram" stage
   until it is.
+- **The opening screen is the editor's outermost Suspense fallback, so no lazy
+  piece inside the editor may suspend up to it.** Every `next/dynamic` import
+  in the live app passes `ssr: false` (or a `loading` component), which gives
+  it a boundary of its own; without one, the first open of Settings or Search
+  swapped the whole editor for the opening screen until the dialog's chunk
+  landed. `lib/dynamic-has-boundary.test.ts` guards it.
 - **`replaceState`, not `pushState`:** `/new` is a one-shot creator, so the
   editor URL takes its history entry. Reload and Back behave exactly as they
   do after a direct `/diagram/<id>` visit.

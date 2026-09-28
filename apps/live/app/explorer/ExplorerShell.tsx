@@ -25,8 +25,9 @@ import { useExplorerState } from './useExplorerState';
 // gated on `searchOpen`, never default-rendered, and dropping ~375
 // lines from the Explorer's initial chunk pays for itself immediately
 // on the first paint of the dashboard.
-const SearchPanel = dynamic(() =>
-  import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
+const SearchPanel = dynamic(
+  () => import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
+  { ssr: false },
 );
 
 // Sidebar width. Wide enough for ~3 levels of indented folder names,
