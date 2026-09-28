@@ -73,7 +73,7 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
       <Link
         href={signInHref}
         aria-label="Sign in"
-        className={`${HEADER_PILL} ${HEADER_PILL_SECONDARY} max-sm:w-[34px] max-sm:px-0`}
+        className={`${HEADER_PILL} ${HEADER_PILL_SECONDARY} max-sm:w-8 max-sm:px-0`}
       >
         <HeaderGlyph>
           <SignInIcon size={14} arrowNudge />
@@ -105,7 +105,7 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
         onClick={() => setMenuOpen((open) => !open)}
         aria-label="Account menu"
         aria-expanded={menuOpen}
-        className={`${HEADER_PILL} ${HEADER_PILL_SECONDARY} gap-2 pr-2 pl-[5px] max-sm:pr-[5px]`}
+        className={`${HEADER_PILL} ${HEADER_PILL_SECONDARY} gap-2 pr-2 pl-1 max-sm:pr-1`}
       >
         <GlyphDisc
           size={HEADER_AVATAR_PX}

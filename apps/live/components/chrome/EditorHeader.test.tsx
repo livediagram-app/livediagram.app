@@ -63,7 +63,7 @@ describe('EditorHeader pills', () => {
     expect(disc.querySelector('.text-optical-centre')?.textContent).toBe('W');
   });
 
-  it('shows the live beacon on Share only while the diagram is shared', () => {
+  it('shows the live dot on Share only while the diagram is shared', () => {
     const { container, rerender } = render(
       <EditorHeader
         diagramName="d"

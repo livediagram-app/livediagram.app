@@ -143,7 +143,7 @@ export function EditorHeader({
       </div>
       {/* Right-edge actions: pills, primary Share first in weight
           (docs/specs/007-editor/live-app.md "Header actions"). */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         {onMakeCopy ? (
           <HoverCard title="Make a copy" description="Duplicate this diagram into your own files.">
             <button
@@ -170,20 +170,21 @@ export function EditorHeader({
               className={`${HEADER_PILL} ${HEADER_PILL_PRIMARY} px-3`}
               aria-pressed={shareable}
             >
+              {/* Shared: a live dot takes the icon's place. The label stays
+                  "Share" in both states (the user dislikes the verb changing
+                  to "Shared"); aria-pressed carries the state for assistive
+                  tech, the green SharedBadge by the title says it in words. */}
               <HeaderGlyph>
-                <ShareIcon />
+                {shareable ? (
+                  <span aria-hidden className="relative flex h-2 w-2">
+                    <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400 opacity-75 [animation-duration:2s]" />
+                    <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
+                  </span>
+                ) : (
+                  <ShareIcon />
+                )}
               </HeaderGlyph>
               <ButtonContent>Share</ButtonContent>
-              {/* The live beacon on the pill's corner: the shared state, since
-                  the label stays "Share" in both states (the user dislikes the
-                  verb changing to "Shared"). aria-pressed carries it for
-                  assistive tech, the green SharedBadge in words. */}
-              {shareable ? (
-                <span aria-hidden className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                  <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400 opacity-75 [animation-duration:2s]" />
-                  <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
-                </span>
-              ) : null}
             </button>
           </HoverCard>
         ) : null}
