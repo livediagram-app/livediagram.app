@@ -1,6 +1,6 @@
 import { AppearanceToggle } from '@/components/chrome/AppearanceToggle';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from '@/components/chrome/chrome-button';
-import { GearIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
+import { SettingsIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, HoverCard } from '@livediagram/ui';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
@@ -72,7 +72,7 @@ export function ChromeControls({
       {onOpenSettings ? (
         <HoverCard title={settingsLabel} description={settingsDescription}>
           <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>
-            <GearIcon />
+            <SettingsIcon />
             <ChromeLabel show={labelled}>Settings</ChromeLabel>
           </button>
         </HoverCard>

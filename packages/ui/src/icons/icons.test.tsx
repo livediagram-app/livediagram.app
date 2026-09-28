@@ -50,3 +50,16 @@ describe('shared chrome icons', () => {
     expect(onScreenPx(svg)).toBeCloseTo(2, 5);
   });
 });
+
+describe('Glyph weight', () => {
+  // The stroke is non-scaling, so the grid a glyph is drawn on never changes its on-screen weight.
+  it('draws the same on-screen stroke whatever the viewBox', () => {
+    const at = (units: number) =>
+      render(<icons.Glyph size={16} units={units} />)
+        .container.querySelector('svg')!
+        .getAttribute('stroke-width');
+    expect(at(16)).toBe(String(ICON_STROKE_PX));
+    expect(at(24)).toBe(at(16));
+    expect(at(20)).toBe(at(16));
+  });
+});

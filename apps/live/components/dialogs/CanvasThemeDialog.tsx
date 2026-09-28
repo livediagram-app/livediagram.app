@@ -13,10 +13,11 @@
 // New-diagram picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
+import { lucideGrid3x3 } from '@livediagram/icons/lucide';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useRef } from 'react';
 import type { BackgroundPattern } from '@livediagram/diagram';
-import { useEscape, useFocusTrap, Glyph } from '@livediagram/ui';
+import { Glyph, lucideGlyph, useEscape, useFocusTrap } from '@livediagram/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
@@ -341,17 +342,9 @@ function TabButton({
 }
 
 // Compact 14px glyphs for the tab bar.
-function BackgroundTabIcon() {
-  return (
-    <Glyph size={14} units={16} strokeLinecap="butt" strokeLinejoin="miter">
-      <rect x="2.5" y="2.5" width="11" height="11" rx="2" />
-      <circle cx="6" cy="6" r="0.6" fill="currentColor" stroke="none" />
-      <circle cx="10" cy="6" r="0.6" fill="currentColor" stroke="none" />
-      <circle cx="6" cy="10" r="0.6" fill="currentColor" stroke="none" />
-      <circle cx="10" cy="10" r="0.6" fill="currentColor" stroke="none" />
-    </Glyph>
-  );
-}
+// The canvas background: a pattern grid.
+const BackgroundTabIcon = lucideGlyph(lucideGrid3x3, 14);
+
 function FontTabIcon() {
   return (
     <Glyph size={14} units={16}>

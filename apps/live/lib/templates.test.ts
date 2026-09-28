@@ -291,7 +291,7 @@ describe('layered templates (docs/specs/006-diagram/layers.md)', () => {
     journey: { names: ['Stages', 'Notes'], scaffold: 9, content: 5 },
     // Shell: title + outer wall + 7 rooms + 7 room captions + 7 doorways
     // + the scale caption. Furniture is the 22 movable pieces.
-    'floor-plan': { names: ['Rooms', 'Furniture'], scaffold: 24, content: 22 },
+    'floor-plan': { names: ['Rooms', 'Furniture'], scaffold: 24, content: 21 },
   };
 
   it('pins each layered template’s names and scaffold / content split', () => {

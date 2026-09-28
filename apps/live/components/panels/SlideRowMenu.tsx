@@ -16,7 +16,8 @@
 import { DuplicateIcon, PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useRef, useState } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
-import { PlusIcon, Glyph } from '@livediagram/ui';
+import { lucideGlyph, PlusIcon } from '@livediagram/ui';
+import { lucideGroup, lucideMinus } from '@livediagram/icons/lucide';
 
 import { slideName, type Slide } from '@livediagram/diagram';
 
@@ -31,22 +32,9 @@ import {
 import { EyeIcon, EyeOffIcon } from '@/components/panels/layers-panel-icons';
 import { NoteMenuIcon } from '@/components/palette/context-menu-icons';
 
-function SelectionIcon() {
-  return (
-    <Glyph size={14} units={16} strokeLinecap="butt">
-      <rect x="1.8" y="1.8" width="5.5" height="5.5" rx="1" />
-      <rect x="8.7" y="8.7" width="5.5" height="5.5" rx="1" />
-    </Glyph>
-  );
-}
-
-function MinusIcon() {
-  return (
-    <Glyph size={14} units={16} strokeLinejoin="miter">
-      <path d="M3.5 8h9" />
-    </Glyph>
-  );
-}
+// Add / remove the current selection to a slide.
+const SelectionIcon = lucideGlyph(lucideGroup, 14);
+const MinusIcon = lucideGlyph(lucideMinus, 14);
 
 export function SlideRowMenu({
   slide,

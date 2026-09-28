@@ -303,6 +303,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
+      '@livediagram/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -464,6 +467,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
+      '@livediagram/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client

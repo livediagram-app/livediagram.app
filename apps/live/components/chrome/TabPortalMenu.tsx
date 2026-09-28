@@ -7,7 +7,6 @@ import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
 import {
   ClearIcon,
-  CopyIcon,
   FolderMenuIcon,
   MoveIcon,
   TabLockIcon,
@@ -30,7 +29,7 @@ import {
   AddTabToFolderDialog,
 } from '@/components/dialogs/TabOrganiseDialogs';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
-import { useEscape } from '@livediagram/ui';
+import { DuplicateIcon, useEscape } from '@livediagram/ui';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 
 // The unified tab / canvas portal menu (actions, copy-to-diagram, and
@@ -300,7 +299,7 @@ export function PortalMenu({
                 onClick={onRename}
               />
               <MenuToolButton
-                icon={<CopyIcon />}
+                icon={<DuplicateIcon />}
                 label="Duplicate"
                 description="Create a copy of this tab in this diagram."
                 onClick={onDuplicate}

@@ -1,8 +1,12 @@
 // images — gallery rows (docs/specs/009-elements/images.md). Bytes live in R2; D1 carries the
-// metadata + owner. Usage / reference scans parse tab bodies to find
-// which diagrams place each image.
+// metadata + owner. Which diagrams place each image comes from the image
+// reference index (db/image-refs.ts), never from a tab body.
 
-import { isBoxed, type Tab } from '@livediagram/diagram';
+import {
+  imageRefIndexDiagramStatement,
+  imageRefIndexOwnerStatement,
+  isImageRefIndexComplete,
+} from './image-refs';
 import { imageRowToSummary, type ImageRow } from '../image-row';
 import type { Env, ImageSummary } from '../types';
 
@@ -97,111 +101,6 @@ export async function deleteImage(env: Env, id: string): Promise<void> {
   await env.DB.prepare('DELETE FROM images WHERE id = ?').bind(id).run();
 }
 
-// Pure decision behind the daily unused-image sweep (docs/specs/009-elements/images.md
-// "Retention"). Given the candidate ids (images already filtered to
-// "older than the 30-day floor") and every tab body in the store,
-// return the ids that NO diagram references — the set safe to delete.
-//
-// Pulled out of `deleteOldUnusedImages` so the reference scan has a
-// unit-test surface without a live D1 / R2 binding (the delete loop
-// itself needs one). Same split as the change_log / events sweeps.
-//
-// The scan is store-wide, not owner-scoped: a shared tab (docs/specs/006-diagram/tab-diagram-many-to-many.md) can
-// place an image inside another owner's diagram, so a candidate is kept
-// the moment ANY tab references it. An unparseable tab is skipped
-// (treated as no reference) the same way `imageUsageByOwner` does;
-// because candidates are only ever removed from the delete set, a
-// malformed tab can never cause a referenced image to be reaped.
-export function unusedImageIds(candidateIds: string[], tabBodies: string[]): string[] {
-  const candidates = new Set(candidateIds);
-  for (const body of tabBodies) {
-    if (candidates.size === 0) break;
-    let tab: Tab;
-    try {
-      tab = JSON.parse(body) as Tab;
-    } catch {
-      continue;
-    }
-    for (const el of tab.elements ?? []) {
-      if (!isBoxed(el) || el.type !== 'image') continue;
-      const imageId = (el as { imageId?: string | null }).imageId;
-      if (imageId) candidates.delete(imageId);
-    }
-  }
-  return [...candidates];
-}
-
-// R2 delete() accepts up to 1000 keys per call; chunk the sweep's
-// deletes to stay under that ceiling. The matching D1 row deletes ride
-// the same chunk as one DB.batch.
-const IMAGE_DELETE_CHUNK = 1000;
-
-// Daily retention sweep (docs/specs/009-elements/images.md "Retention"). Deletes images that are
-// BOTH older than `cutoff` AND referenced by no diagram, from R2 first
-// then D1 (matching DELETE /api/images/:id). Returns the number of
-// images deleted.
-//
-// A no-op returning 0 when the worker has no R2 binding: a self-host
-// without image storage has nothing to sweep. Newer-than-cutoff images
-// are exempt regardless of usage, so a freshly uploaded image that
-// hasn't been placed on the canvas yet isn't reaped out from under the
-// user.
-export async function deleteOldUnusedImages(env: Env, cutoff: number): Promise<number> {
-  if (!env.IMAGES) return 0;
-  const images = env.IMAGES;
-
-  const candidateRows = await env.DB.prepare('SELECT id FROM images WHERE created_at < ?')
-    .bind(cutoff)
-    .all<{ id: string }>();
-  const candidateIds = (candidateRows.results ?? []).map((r) => r.id);
-  if (candidateIds.length === 0) return 0;
-
-  // One pass over every tab body to learn which candidates are still
-  // referenced. Store-wide (not owner-scoped) on purpose — see
-  // `unusedImageIds`. Paged by rowid keyset so the sweep's memory is
-  // bounded by ONE page of tab bodies, not the whole store: tabs run up
-  // to MAX_TAB_BYTES each, so an unbounded `SELECT data FROM tabs`
-  // eventually exceeds the Worker memory ceiling — and the cron's
-  // catch-and-log would then silently disable image retention forever.
-  // The LIKE prefilter skips tabs that can't reference an image at all
-  // (candidates only ever leave the delete set, so a skipped tab can
-  // never cause a referenced image to be reaped — the filter can only
-  // keep MORE images alive if it ever over-matched).
-  const SCAN_PAGE = 200;
-  let unused = candidateIds;
-  let lastRowId = 0;
-  while (unused.length > 0) {
-    const page = await env.DB.prepare(
-      `SELECT rowid AS rid, data FROM tabs WHERE rowid > ? AND data LIKE '%"imageId"%' ORDER BY rowid LIMIT ?`,
-    )
-      .bind(lastRowId, SCAN_PAGE)
-      .all<{ rid: number; data: string }>();
-    const rows = page.results ?? [];
-    if (rows.length === 0) break;
-    lastRowId = rows[rows.length - 1]!.rid;
-    unused = unusedImageIds(
-      unused,
-      rows.map((r) => r.data),
-    );
-    if (rows.length < SCAN_PAGE) break;
-  }
-  if (unused.length === 0) return 0;
-
-  let deleted = 0;
-  for (let i = 0; i < unused.length; i += IMAGE_DELETE_CHUNK) {
-    const chunk = unused.slice(i, i + IMAGE_DELETE_CHUNK);
-    // R2 first: a partial failure then leaves a D1 row whose object is
-    // gone (re-swept next run), never an orphaned R2 object no candidate
-    // query would re-surface.
-    await images.delete(chunk);
-    await env.DB.batch(
-      chunk.map((id) => env.DB.prepare('DELETE FROM images WHERE id = ?').bind(id)),
-    );
-    deleted += chunk.length;
-  }
-  return deleted;
-}
-
 // Total image count + summed byte_size for one owner. Drives the
 // soft-cap enforcement in POST /api/images (docs/specs/009-elements/images.md) plus the usage
 // bar surfaced in the picker. Single grouped query so the worker
@@ -221,67 +120,42 @@ export async function imageTotalsByOwner(
   };
 }
 
-// Build a map of imageId → list of the owner's diagrams that use it.
-// Used by the Explorer Image Gallery so the user can spot unused
-// images (empty list, safe to delete) vs. live ones (which diagrams
-// would break on delete).
+// Map of imageId → the owner's diagrams that place it, each diagram once,
+// ordered by name. Drives the Explorer Image Gallery's "Used in N diagrams"
+// badge, so an image with no entry reads as unused. One query over the
+// reference index; a shared tab (docs/specs/006-diagram/tab-diagram-many-to-many.md)
+// is attributed to every one of the owner's diagrams that links it.
 //
-// Single pass over the owner's diagrams + their joined tabs: one
-// query, then JSON-parse each tab body and walk its elements.
-// O(diagrams + tabs + elements) per call, with no per-image work.
-// Tabs that share an id across diagrams (per docs/specs/006-diagram/tab-diagram-many-to-many.md) get attributed
-// to every diagram that references them, which is the user-facing
-// truth.
+// While the index backfill is incomplete the owner's tabs are indexed first,
+// so an older image never reads as unused (and gets deleted by hand).
 export async function imageUsageByOwner(
   env: Env,
   ownerId: string,
 ): Promise<Record<string, { id: string; name: string }[]>> {
+  if (!(await isImageRefIndexComplete(env))) {
+    await imageRefIndexOwnerStatement(env, ownerId).run();
+  }
   const rows = await env.DB.prepare(
-    `SELECT d.id AS diagram_id, d.name AS diagram_name, t.data AS tab_data
+    `SELECT DISTINCT r.image_id, d.id AS diagram_id, d.name AS diagram_name
        FROM diagrams d
        JOIN diagram_tabs dt ON dt.diagram_id = d.id
-       JOIN tabs t ON t.id = dt.tab_id
-      WHERE d.owner_id = ?`,
+       JOIN image_refs r ON r.tab_id = dt.tab_id
+      WHERE d.owner_id = ?
+      ORDER BY d.name, d.id`,
   )
     .bind(ownerId)
-    .all<{ diagram_id: string; diagram_name: string; tab_data: string }>();
-  // diagramId → already-attributed image ids (avoids double-counting
-  // when an image is reused across multiple tabs of one diagram, or
-  // a shared tab attaches the diagram twice via the many-to-many).
-  const seen = new Map<string, Set<string>>();
+    .all<{ image_id: string; diagram_id: string; diagram_name: string }>();
   const usage: Record<string, { id: string; name: string }[]> = {};
   for (const row of rows.results ?? []) {
-    let tab: Tab;
-    try {
-      tab = JSON.parse(row.tab_data) as Tab;
-    } catch {
-      continue;
-    }
-    for (const el of tab.elements ?? []) {
-      if (!isBoxed(el) || el.type !== 'image') continue;
-      const imageId = (el as { imageId?: string | null }).imageId;
-      if (!imageId) continue;
-      let dedupe = seen.get(row.diagram_id);
-      if (!dedupe) {
-        dedupe = new Set();
-        seen.set(row.diagram_id, dedupe);
-      }
-      if (dedupe.has(imageId)) continue;
-      dedupe.add(imageId);
-      const list = usage[imageId] ?? [];
-      list.push({ id: row.diagram_id, name: row.diagram_name });
-      usage[imageId] = list;
-    }
+    (usage[row.image_id] ??= []).push({ id: row.diagram_id, name: row.diagram_name });
   }
   return usage;
 }
 
-// Used by the byte-read endpoint to authorise share-code readers: a
-// visitor with a valid X-Share-Code for diagram `d` can read image
-// `id` IFF some tab on diagram `d` references that image via an
-// ImageElement. Iterates the diagram's tabs and looks for the id
-// in any image element. Sparse scan: most tabs have no image
-// elements at all.
+// The byte-read endpoint's share check: a visitor with read access to
+// diagram `d` may read image `id` only when one of `d`'s tabs places it. Read
+// from the reference index, never a tab body; while the backfill is
+// incomplete, the diagram's own tabs are indexed first.
 export async function diagramReferencesImage(
   env: Env,
   diagramId: string,
@@ -289,33 +163,17 @@ export async function diagramReferencesImage(
   // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md): only their tab counts.
   onlyTabId: string | null = null,
 ): Promise<boolean> {
-  // Tabs live behind diagram_tabs (many-to-many per docs/specs/006-diagram/tab-diagram-many-to-many.md).
-  const rows = await env.DB.prepare(
-    `SELECT t.data
-       FROM diagram_tabs dt
-       JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.diagram_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}`,
-  )
-    .bind(...(onlyTabId === null ? [diagramId] : [diagramId, onlyTabId]))
-    .all<{ data: string }>();
-  for (const row of rows.results ?? []) {
-    try {
-      const tab = JSON.parse(row.data) as Tab;
-      for (const el of tab.elements ?? []) {
-        if (
-          isBoxed(el) &&
-          el.type === 'image' &&
-          (el as { imageId?: string | null }).imageId === imageId
-        ) {
-          return true;
-        }
-      }
-    } catch {
-      // Malformed JSON in a tab row is its own bug; for the auth
-      // check we conservatively treat unparseable tabs as having
-      // no image references rather than throwing the request away.
-      continue;
-    }
+  if (!(await isImageRefIndexComplete(env))) {
+    await imageRefIndexDiagramStatement(env, diagramId).run();
   }
-  return false;
+  const row = await env.DB.prepare(
+    `SELECT 1 AS present
+       FROM diagram_tabs dt
+       JOIN image_refs r ON r.tab_id = dt.tab_id AND r.image_id = ?
+      WHERE dt.diagram_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
+      LIMIT 1`,
+  )
+    .bind(...(onlyTabId === null ? [imageId, diagramId] : [imageId, diagramId, onlyTabId]))
+    .first<{ present: number }>();
+  return row !== null;
 }

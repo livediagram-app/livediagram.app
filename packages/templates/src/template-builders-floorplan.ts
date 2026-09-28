@@ -93,10 +93,11 @@ const ROOMS: Room[] = [
     w: 3.2,
     h: 3.4,
     furniture: [
-      // A 1.9 m box draws a double bed (the artwork's 18/24 inset lands
-      // on ~1.4 x 1.4 m of mattress) with its headboard to the wall.
-      { icon: 'bed', cx: 1.05, cy: 1.05, size: 1.85 },
-      { icon: 'wardrobe', cx: 2.5, cy: 2.7, size: 1.3 },
+      // A 1.85 m box draws a double bed (the artwork spans 15/24 across and
+      // 18/24 down: ~1.2 x 1.4 m) with its headboard to the north wall,
+      // set down far enough to clear the room caption.
+      { icon: 'bed', cx: 1.05, cy: 1.2, size: 1.85 },
+      { icon: 'wardrobe', cx: 2.6, cy: 2.8, size: 1.2 },
     ],
   },
   {
@@ -106,7 +107,7 @@ const ROOMS: Room[] = [
     w: 2.6,
     h: 3.4,
     furniture: [
-      { icon: 'bed', cx: 0.9, cy: 1.0, size: 1.6 },
+      { icon: 'bed', cx: 0.9, cy: 1.2, size: 1.6 },
       { icon: 'wardrobe', cx: 1.9, cy: 2.7, size: 1.2 },
     ],
   },
@@ -144,24 +145,24 @@ const ROOMS: Room[] = [
     name: 'Bathroom',
     x: 4.4,
     y: 4.6,
-    w: 2.4,
+    w: 2.8,
     h: 2.8,
     furniture: [
       { icon: 'bathtub', cx: 1.05, cy: 0.95, size: 1.7 },
       { icon: 'toilet', cx: 0.6, cy: 2.3, size: 0.8 },
-      { icon: 'sink', cx: 1.7, cy: 2.3, size: 0.8 },
+      { icon: 'sink', cx: 2.1, cy: 2.3, size: 0.8 },
     ],
   },
   {
     name: 'Study',
-    x: 6.8,
+    x: 7.2,
     y: 4.6,
-    w: 3.4,
+    w: 3.0,
     h: 2.8,
     furniture: [
-      { icon: 'desk', cx: 1.1, cy: 0.95, size: 1.6 },
-      { icon: 'chair', cx: 1.1, cy: 2.1, size: 0.7, rotation: 180 },
-      { icon: 'plant', cx: 3.0, cy: 0.5, size: 0.7 },
+      // The desk glyph draws its own chair, so it needs no second one.
+      { icon: 'desk', cx: 1.1, cy: 1.3, size: 1.6 },
+      { icon: 'plant', cx: 2.55, cy: 2.35, size: 0.7 },
     ],
   },
 ];
@@ -190,14 +191,15 @@ const DOOR_SWING = {
 const DOORS: { cx: number; cy: number; opens: keyof typeof DOOR_SWING }[] = [
   // Hall's north wall: living room, bedroom, guest room.
   { cx: 2.6, cy: 3.4, opens: 'north' },
-  { cx: 6.0, cy: 3.4, opens: 'north' },
-  { cx: 9.0, cy: 3.4, opens: 'north' },
+  // Each clear of its room's wardrobe.
+  { cx: 5.7, cy: 3.4, opens: 'north' },
+  { cx: 8.2, cy: 3.4, opens: 'north' },
   // Hall's south wall: kitchen, bathroom, study.
   { cx: 3.85, cy: 4.6, opens: 'south' },
-  // Hard against the bathroom's east side: anywhere further left and
-  // the swing crosses either the bath or the room caption.
-  { cx: 6.35, cy: 4.6, opens: 'south' },
-  { cx: 8.4, cy: 4.6, opens: 'south' },
+  // Bathroom and study doors hard against each room's east side: further
+  // left, the swing crosses the bath, the desk or the room caption.
+  { cx: 6.75, cy: 4.6, opens: 'south' },
+  { cx: 9.65, cy: 4.6, opens: 'south' },
   // Front door, in the west outer wall at the end of the hall.
   { cx: 0, cy: 4.0, opens: 'east' },
 ];

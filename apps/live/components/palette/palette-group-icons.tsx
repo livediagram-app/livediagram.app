@@ -1,4 +1,5 @@
-import { Glyph } from '@livediagram/ui';
+import { lucideSmile } from '@livediagram/icons/lucide';
+import { Glyph, lucideGlyph } from '@livediagram/ui';
 // Glyphs for the collapsible tile groups inside a palette category
 // (PaletteTileGroup). Kept beside the tab icons rather than inline in the tab
 // bodies, so the category files stay a list of what's in them.
@@ -26,15 +27,8 @@ export function WebGroupIcon() {
   );
 }
 
-/** Behaviour → Reactions: a burst, which is what every one of them throws. */
-export function ReactionGroupIcon() {
-  return (
-    <Glyph size={18} units={24} strokeLinejoin="miter">
-      <path d="M12 3.5v3.2M12 17.3v3.2M3.5 12h3.2M17.3 12h3.2M6 6l2.3 2.3M15.7 15.7 18 18M18 6l-2.3 2.3M8.3 15.7 6 18" />
-      <circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none" />
-    </Glyph>
-  );
-}
+/** Behaviour → Reactions: a smile, the feeling every one of them throws. */
+export const ReactionGroupIcon = lucideGlyph(lucideSmile, 18);
 
 /** Behaviour → Selection Mode: a pointer, the thing being switched. */
 export function ModeGroupIcon() {

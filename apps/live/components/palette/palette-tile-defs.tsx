@@ -36,6 +36,8 @@ import {
 import {
   lucideCircle,
   lucideDiamond,
+  lucideFileText,
+  lucideGlobe,
   lucideImage,
   lucideMoveRight,
   lucidePanelTop,
@@ -47,9 +49,18 @@ import {
 } from '@livediagram/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
 
+import {
+  CodeBlockTileArt,
+  FigmaTileArt,
+  LoomTileArt,
+  NoteTileArt,
+  VimeoTileArt,
+  YouTubeTileArt,
+} from '@/components/palette/palette-tile-art';
+
 // Every palette tile glyph is drawn at this size (docs/specs/004-interface-design/iconography.md), so a strip of
 // tiles reads as one set.
-const TILE_GLYPH_PX = 18;
+export const TILE_GLYPH_PX = 18;
 
 // Lucide's sticky-note as its two paths: the note body takes the paper fill, the corner fold does not.
 const pathD = (i: number) => {
@@ -503,19 +514,14 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description: 'Click to place points. Click the start to close, double-click to finish a line.',
     action: { type: 'polygon' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <Glyph size={TILE_GLYPH_PX} units={18}>
         {/* Irregular polygon with visible vertex dots: reads as
             "place points", distinct from the fixed shape tiles. */}
-        <path
-          d="M4 14 L5.5 6 L12.5 4 L15 10 L10 15 Z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-        <circle cx="5.5" cy="6" r="1.4" fill="currentColor" />
-        <circle cx="12.5" cy="4" r="1.4" fill="currentColor" />
-        <circle cx="10" cy="15" r="1.4" fill="currentColor" />
-      </svg>
+        <path d="M4 14 L5.5 6 L12.5 4 L15 10 L10 15 Z" />
+        <circle cx="5.5" cy="6" r="1.4" fill="currentColor" stroke="none" />
+        <circle cx="12.5" cy="4" r="1.4" fill="currentColor" stroke="none" />
+        <circle cx="10" cy="15" r="1.4" fill="currentColor" stroke="none" />
+      </Glyph>
     ),
   },
   {
@@ -574,21 +580,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description: 'Monospace code snippet with syntax highlighting. Double-click to edit.',
     noTint: true,
     action: { type: 'shape', kind: 'code-block' },
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        {/* Dark editor card with angle brackets: the tile mirrors the
-            element's fixed dark identity, so it stays untinted. */}
-        <rect x="1.5" y="2.5" width="15" height="13" rx="2" fill="rgb(15 23 42)" />
-        <path
-          d="M7 7 L5 9 L7 11 M11 7 L13 9 L11 11"
-          fill="none"
-          stroke="rgb(148 163 184)"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+    icon: <CodeBlockTileArt />,
   },
   {
     // Selection Mode buttons (docs/specs/009-elements/mode-button.md): one tile per mode, grouped, so the
@@ -608,7 +600,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <AvatarModeIcon />,
+    icon: <AvatarModeIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-select',
@@ -625,7 +617,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <SelectIcon />,
+    icon: <SelectIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-pan',
@@ -642,7 +634,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <PanIcon />,
+    icon: <PanIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-laser',
@@ -659,7 +651,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <LaserIcon />,
+    icon: <LaserIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-spotlight',
@@ -676,7 +668,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <SpotlightIcon />,
+    icon: <SpotlightIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-eraser',
@@ -693,7 +685,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <EraserIcon />,
+    icon: <EraserIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-format',
@@ -710,7 +702,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <FormatPainterIcon />,
+    icon: <FormatPainterIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-highlighter',
@@ -727,7 +719,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <HighlighterIcon />,
+    icon: <HighlighterIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-isometric',
@@ -744,7 +736,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <IsometricIcon />,
+    icon: <IsometricIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Portal (docs/specs/009-elements/portal-element.md): step in here, come out of the portal it is linked to.
@@ -787,7 +779,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that starts a countdown for everyone in the room. Pressing it again pauses, and again continues. Set the minutes from its right-click menu.',
     filled: true,
     action: { type: 'shape', kind: 'session-button', session: 'timer' },
-    icon: <TimerIcon />,
+    icon: <TimerIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:session-stopwatch',
@@ -801,7 +793,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set — a stopwatch has no length.',
     filled: true,
     action: { type: 'shape', kind: 'session-button', session: 'stopwatch' },
-    icon: <TimerIcon />,
+    icon: <TimerIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:session-vote',
@@ -844,7 +836,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A cover over part of the canvas. Click it to uncover it just for you, or reveal it for everyone from the menu.',
     filled: true,
     action: { type: 'shape', kind: 'reveal' },
-    icon: <RevealIcon />,
+    icon: <RevealIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Done check (docs/specs/012-collaboration/done-check.md): who has finished, live.
@@ -955,7 +947,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Press it to choose at random — one of the people in the room, or one of the options you write on it.',
     filled: true,
     action: { type: 'shape', kind: 'picker' },
-    icon: <PickerIcon />,
+    icon: <PickerIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Bring Focus (docs/specs/012-collaboration/bring-focus.md): Navigate, beside Portal and Chair, because all
@@ -994,7 +986,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Furniture for Avatar mode: walk your character into one and it sits down. Give the room a seating plan.',
     filled: true,
     action: { type: 'shape', kind: 'chair' },
-    icon: <ChairIcon />,
+    icon: <ChairIcon size={TILE_GLYPH_PX} />,
   },
   // --- Collaborate (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) ----------------------------------
   // Elements that collect what the ROOM thinks. Rows with a blurb, like
@@ -1057,7 +1049,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses the classic story-point scale, where the gaps widen as the numbers grow so nobody argues over 6 versus 7.',
     filled: true,
     action: { type: 'shape', kind: 'estimate', estimateScale: 'fibonacci' },
-    icon: <EstimateIcon />,
+    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:estimate-tshirt',
@@ -1071,7 +1063,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses sizes rather than numbers, for a room that starts haggling the moment it sees a digit.',
     filled: true,
     action: { type: 'shape', kind: 'estimate', estimateScale: 'tshirt' },
-    icon: <EstimateIcon />,
+    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:estimate-powers',
@@ -1085,7 +1077,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses doubling steps, for sizing where each step up is meant to feel twice the work.',
     filled: true,
     action: { type: 'shape', kind: 'estimate', estimateScale: 'powers' },
-    icon: <EstimateIcon />,
+    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:temperature',
@@ -1099,7 +1091,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A fist-of-five gauge. Everyone registers 1 to 5 and the bars and average move as the answers land.',
     filled: true,
     action: { type: 'shape', kind: 'temperature' },
-    icon: <TemperatureIcon />,
+    icon: <TemperatureIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:idea-box',
@@ -1113,7 +1105,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Anyone can drop in an idea without their name on it. Nothing shows until you open the box.',
     filled: true,
     action: { type: 'shape', kind: 'idea-box' },
-    icon: <IdeaBoxIcon />,
+    icon: <IdeaBoxIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:qa-board',
@@ -1127,7 +1119,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Anyone can add a note, named or anonymous, and upvote others. The most wanted rise to the top; the facilitator spotlights one to discuss.',
     filled: true,
     action: { type: 'shape', kind: 'qa-board' },
-    icon: <QaBoardIcon />,
+    icon: <QaBoardIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:agenda',
@@ -1141,7 +1133,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'The run of the session. Press a segment and it starts the tab timer for that long and marks where the room is.',
     filled: true,
     action: { type: 'shape', kind: 'agenda' },
-    icon: <AgendaIcon />,
+    icon: <AgendaIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:decision',
@@ -1155,7 +1147,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A decision on the diagram beside the thing it decided: the statement, a status, the date, and what drove it.',
     filled: true,
     action: { type: 'shape', kind: 'decision' },
-    icon: <DecisionIcon />,
+    icon: <DecisionIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:roll-call',
@@ -1169,7 +1161,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Press Take roll and it records everyone in the room at that moment, and keeps them after they leave.',
     filled: true,
     action: { type: 'shape', kind: 'roll-call' },
-    icon: <RollCallIcon />,
+    icon: <RollCallIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:checklist',
@@ -1216,18 +1208,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description:
       'Embeds a YouTube link on the canvas. Double-click it to set the link; it loads when you press play.',
     action: { type: 'video', provider: 'youtube' },
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden
-        dangerouslySetInnerHTML={{
-          __html: `<rect x="2" y="5" width="20" height="14" rx="4" fill="currentColor" /><path d="M10.5 8.75 16 12l-5.5 3.25z" fill="#ffffff" />`,
-        }}
-      />
-    ),
+    icon: <YouTubeTileArt />,
   },
   {
     id: 'media:embed-vimeo',
@@ -1239,18 +1220,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description:
       'Embeds a Vimeo link on the canvas. Double-click it to set the link; it loads when you press play.',
     action: { type: 'video', provider: 'vimeo' },
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden
-        dangerouslySetInnerHTML={{
-          __html: `<rect x="2" y="4" width="20" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.7" /><path d="M7 9c1.6-1.5 3 .4 3.4 2 .5 2 1 3.6 2 1.4C13.6 9.9 12.4 8 15 8c2 0 2.4 2.2 1.3 4.4C15 15.4 12.6 17 11 16c-1.7-1-2-4.2-2.6-5.4-.4-.8-.9-.4-1.4 0z" fill="currentColor" stroke="none" />`,
-        }}
-      />
-    ),
+    icon: <VimeoTileArt />,
   },
   {
     id: 'media:embed-loom',
@@ -1262,18 +1232,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description:
       'Embeds a Loom link on the canvas. Double-click it to set the link; it loads when you press play.',
     action: { type: 'video', provider: 'loom' },
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden
-        dangerouslySetInnerHTML={{
-          __html: `<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7" /><circle cx="12" cy="12" r="3.2" fill="currentColor" /><path d="M12 3v5M12 16v5M3 12h5M16 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />`,
-        }}
-      />
-    ),
+    icon: <LoomTileArt />,
   },
   {
     id: 'media:embed-figma',
@@ -1285,18 +1244,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description:
       'Embeds a Figma link on the canvas. Double-click it to set the link; it loads when you press play.',
     action: { type: 'video', provider: 'figma' },
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden
-        dangerouslySetInnerHTML={{
-          __html: `<rect x="7" y="2.5" width="5" height="6" rx="3" fill="none" stroke="currentColor" stroke-width="1.6" /><rect x="12" y="2.5" width="5" height="6" rx="3" fill="none" stroke="currentColor" stroke-width="1.6" /><rect x="7" y="8.5" width="5" height="6" rx="3" fill="none" stroke="currentColor" stroke-width="1.6" /><circle cx="14.5" cy="11.5" r="3" fill="none" stroke="currentColor" stroke-width="1.6" /><rect x="7" y="14.5" width="5" height="6" rx="3" fill="none" stroke="currentColor" stroke-width="1.6" />`,
-        }}
-      />
-    ),
+    icon: <FigmaTileArt />,
   },
   {
     id: 'media:embed-gdocs',
@@ -1309,16 +1257,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Embeds a Google Docs link on the canvas. Double-click it to set the link; it loads when you press play.',
     action: { type: 'video', provider: 'gdocs' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden
-        dangerouslySetInnerHTML={{
-          __html: `<path d="M6 2.5h7l5 5v14H6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" /><path d="M13 2.5v5h5M9 12h6M9 15.5h6M9 19h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />`,
-        }}
-      />
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideFileText} />
+      </Glyph>
     ),
   },
   {
@@ -1332,16 +1273,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Embeds any website on the canvas. Double-click it to set the address; it loads when you press play. Some sites refuse to be framed and will come up blank.',
     action: { type: 'video', provider: 'website' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden
-        dangerouslySetInnerHTML={{
-          __html: `<circle cx="12" cy="12" r="9.2" stroke="currentColor" stroke-width="1.6" /><path d="M2.8 12h18.4M12 2.8c2.6 2.6 3.9 5.8 3.9 9.2s-1.3 6.6-3.9 9.2c-2.6-2.6-3.9-5.8-3.9-9.2s1.3-6.6 3.9-9.2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />`,
-        }}
-      />
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideGlobe} />
+      </Glyph>
     ),
   },
   {
@@ -1467,20 +1401,12 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'timeline-rail' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <line
-          x1="2"
-          y1="12"
-          x2="16"
-          y2="12"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-        />
-        <circle cx="4.5" cy="6" r="1.8" fill="currentColor" />
-        <circle cx="9" cy="6" r="1.8" fill="currentColor" />
-        <circle cx="13.5" cy="6" r="1.8" fill="currentColor" />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={18}>
+        <path d="M2 12h14" />
+        <circle cx="4.5" cy="6" r="1.8" fill="currentColor" stroke="none" />
+        <circle cx="9" cy="6" r="1.8" fill="currentColor" stroke="none" />
+        <circle cx="13.5" cy="6" r="1.8" fill="currentColor" stroke="none" />
+      </Glyph>
     ),
   },
   // --- Data (docs/specs/009-elements/pie-chart.md) -------------------------------------------------------
@@ -1494,10 +1420,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'pie-chart' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
-        <circle cx="12" cy="12" r="9" fill="currentColor" opacity="0.25" />
-        <path d="M12 12 L12 3 A9 9 0 0 1 20.5 15 Z" fill="currentColor" />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={24} filled>
+        <circle cx="12" cy="12" r="9" opacity="0.25" />
+        <path d="M12 12 L12 3 A9 9 0 0 1 20.5 15 Z" />
+      </Glyph>
     ),
   },
   {
@@ -1562,19 +1488,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'progress-bar' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <rect
-          x="2"
-          y="6.5"
-          width="14"
-          height="5"
-          rx="2.5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-        />
-        <rect x="2" y="6.5" width="8" height="5" rx="2.5" fill="currentColor" />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={18}>
+        <rect x="2" y="6.5" width="14" height="5" rx="2.5" />
+        <rect x="2" y="6.5" width="8" height="5" rx="2.5" fill="currentColor" stroke="none" />
+      </Glyph>
     ),
   },
   {
@@ -1603,12 +1520,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'rating' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
-        <path
-          d="M12 2.6l2.7 5.47 6.04.88-4.37 4.26 1.03 6.02L12 16.85 6.6 19.23l1.03-6.02L3.26 8.95l6.04-.88z"
-          fill="currentColor"
-        />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={24} filled>
+        <path d="M12 2.6l2.7 5.47 6.04.88-4.37 4.26 1.03 6.02L12 16.85 6.6 19.23l1.03-6.02L3.26 8.95l6.04-.88z" />
+      </Glyph>
     ),
   },
   // --- Components (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): each one element that lays itself out -
@@ -1859,47 +1773,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The glyph mirrors the note's stationery silhouette (docs/specs/021-event-storming/event-storming.md): a
     // standard square, a WIDE rect for the prose kinds, a small square for
     // the actor — so the row's picture says the shape before the blurb does.
-    icon:
-      note.size === 'wide' ? (
-        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-          <rect
-            x="1.5"
-            y="5"
-            width="15"
-            height="9"
-            fill={note.fill}
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ) : note.size === 'small' ? (
-        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-          <rect
-            x="5"
-            y="5"
-            width="8"
-            height="8"
-            fill={note.fill}
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ) : (
-        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-          <rect
-            x="3"
-            y="3"
-            width="12"
-            height="12"
-            fill={note.fill}
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ),
+    icon: <NoteTileArt size={note.size} fill={note.fill} />,
   })),
 ];
 
