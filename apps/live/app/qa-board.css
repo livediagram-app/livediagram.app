@@ -313,12 +313,41 @@
   animation: pad-ring 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .est-scale {
+  background-color: var(--est-row);
+  border-color: var(--est-border);
   transition:
-    transform 200ms ease,
-    border-color 200ms ease,
-    background-color 200ms ease;
+    background-color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 120ms ease;
 }
 .est-scale:enabled:hover {
-  transform: translateY(-2px);
-  border-color: var(--qa-accent);
+  background-color: var(--est-row-hover);
+  border-color: var(--est-border-hover);
+}
+.est-scale:enabled:active {
+  transform: scale(0.985);
+}
+.est-scale:focus-visible {
+  box-shadow: 0 0 0 3px var(--qa-accent-soft);
+  border-color: var(--est-border-hover);
+}
+/* The row's little hand of cards fans out under the pointer. */
+.est-fan-card {
+  transform: rotate(calc(var(--est-fan-i) * 5deg));
+  transform-origin: 50% 110%;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.est-scale:enabled:hover .est-fan-card {
+  transform: rotate(calc(var(--est-fan-i) * 10deg)) translateY(-1px);
+}
+.est-chevron {
+  opacity: 0.5;
+  transition:
+    transform 150ms ease,
+    opacity 150ms ease;
+}
+.est-scale:enabled:hover .est-chevron {
+  opacity: 1;
+  transform: translateX(2px);
 }

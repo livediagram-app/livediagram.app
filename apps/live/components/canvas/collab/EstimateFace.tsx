@@ -69,26 +69,13 @@ export function EstimateFace({
               <AccentBar
                 onPress={() => onSetRevealed(true)}
                 icon={<EyeGlyph />}
-                hoverCard={{
-                  title: 'Reveal every answer',
-                  description:
-                    'Turns every card face up for everyone at once. You can reveal before the whole room has answered.',
-                }}
                 count={responses.length}
               >
                 Reveal
               </AccentBar>
             ) : null}
             {revealed && onClear ? (
-              <AccentBar
-                onPress={onClear}
-                icon={<ReopenGlyph />}
-                hoverCard={{
-                  title: 'Start a new round',
-                  description:
-                    'Clears every answer and turns the card face down for the next story.',
-                }}
-              >
+              <AccentBar onPress={onClear} icon={<ReopenGlyph />}>
                 New round
               </AccentBar>
             ) : null}

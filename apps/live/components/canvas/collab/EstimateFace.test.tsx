@@ -56,7 +56,7 @@ describe('EstimateFace', () => {
         onChooseScale={onChooseScale}
       />,
     );
-    expect(screen.getByText('Pick a scale to estimate on')).toBeTruthy();
+    expect(screen.getByText('Choose a scale')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Pick 8' })).toBeNull();
     const tshirt = screen.getByRole('button', { name: 'Estimate in T-shirt' });
     fireEvent.pointerDown(tshirt);
@@ -73,7 +73,9 @@ describe('EstimateFace', () => {
 
   it('shows who has answered but not what, with your own pick lifted', () => {
     show(card({ responses: answers }));
-    expect(screen.getByText('3 of 3 in')).toBeTruthy();
+    // The count lives once, in the header.
+    expect(screen.getByText('3/3 answered')).toBeTruthy();
+    expect(screen.queryByText('3 of 3 in')).toBeNull();
     expect(screen.getByText('Reveal')).toBeTruthy();
     // The count is a badge beside it (docs/specs/004-interface-design/counts.md), not '(3)' in the label.
     expect(screen.queryByText(/Reveal \(/)).toBeNull();

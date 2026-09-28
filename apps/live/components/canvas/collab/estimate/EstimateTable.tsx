@@ -1,6 +1,6 @@
 // The room's cards (docs/specs/012-collaboration/estimate-card.md "The two states"). Before the reveal, one
 // face-down card per person who has answered, their avatar on it, and a slim
-// "4 of 6 in" bar: who, deliberately not what. After it, every card face up,
+// progress bar (the count is in the header): who, deliberately not what. After it, every card face up,
 // sorted low to high in a short flip cascade, the spread called out, and the
 // lowest and highest cards ringed, because they are who should talk first.
 
@@ -48,13 +48,8 @@ export function EstimateTable({
             </Card>
           ))}
         </div>
-        <div className="flex w-full max-w-[220px] flex-col gap-1">
-          <span
-            className="text-center text-[10.5px] font-semibold"
-            style={{ color: textColor, opacity: 0.7 }}
-          >
-            {responses.length} of {inRoom} in
-          </span>
+        {/* Progress only: the count itself is in the header ("3/5 answered"). */}
+        <div className="flex w-full max-w-[220px] flex-col">
           <span
             className="h-1.5 overflow-hidden rounded-full"
             style={{ backgroundColor: tint(textColor, 0.08) }}

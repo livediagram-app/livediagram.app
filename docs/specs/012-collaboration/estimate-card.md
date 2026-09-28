@@ -37,9 +37,11 @@ estimated, so it edits and exports like any other label.
 
 The three scales are the same card with different answers, so the palette has
 **one** Estimate tile, not a tile per scale. A new card arrives with no scale
-and asks for one on the canvas: **"Pick a scale to estimate on"** over the three
-scales as cards, each showing its values (the values are what is being chosen
-between, not the names). One press sets it, as an ordinary undoable edit that
+and asks for one on the canvas: **"Choose a scale"** ("Everyone picks privately
+from these cards") over the three scales as rows, each with a small fan of three
+of its cards, its name, and every value as a quiet line (the values are what is
+being chosen between, not the names). Hovering a row washes it in the accent,
+fans its cards out and nudges its chevron; nothing jumps. One press sets it, as an ordinary undoable edit that
 anyone who can edit may make, and the card becomes the normal estimate card. A
 viewer who can't edit sees "Waiting for a scale". The element menu's **Scale**
 changes it afterwards, as before.
@@ -47,8 +49,9 @@ changes it afterwards, as before.
 ## The two states
 
 **Before reveal**, the card shows the scale as a row of cards to pick from with
-**your own pick lifted**, and the room as a count, "4 of 6 in", plus a face-down
-card for each person who has answered, their avatar on it. Deliberately who,
+**your own pick lifted**, and the room as a face-down card for each person who
+has answered, their avatar on it, over a slim progress bar; the count is the
+header's "4/6 answered", shown once. Deliberately who,
 not what: knowing that Sam has answered is what stops the wait, knowing Sam said
 13 is the thing being prevented. You can change your pick freely; it replaces
 ([Per-participant responses](participant-responses.md)).
@@ -86,12 +89,13 @@ rubber stamp after the reveal, and Reveal / Clear pills side by side.
   width, each capped so a wide card doesn't turn them into slabs. Your pick
   fills in the accent, lifts, and pops; pressing it again withdraws it.
 - **Face down, then face up.** Before the reveal each answer is a small
-  face-down card in the accent's tint with its person's avatar, beside a slim
-  progress bar ("4 of 6 in"). On the reveal they flip face up in a short
+  face-down card in the accent's tint with its person's avatar, over a slim
+  progress bar; the count is the header's "4/6 answered", shown once. On the reveal they flip face up in a short
   cascade, sorted low to high.
 - **The one action** is the Q&A board's dashed accent bar, at the foot of the
-  card under the cards it acts on: **Reveal (4)** while hidden, **New round**
-  once revealed.
+  card under the cards it acts on: **Reveal** with its count as a badge while
+  hidden, **New round** once revealed. No hover card on either: the label says
+  what it does.
 - **Empty**, a quiet line of face-down ghost cards over "No picks yet" and
   "Your pick stays hidden from everyone until the reveal."
 - The spread and the value order live in `@livediagram/diagram`
