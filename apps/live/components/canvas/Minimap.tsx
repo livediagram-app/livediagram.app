@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, type Ref } from 'react';
+import { useMemo, useRef } from 'react';
 import {
   boundsOfPoints,
   endpointPosition,
@@ -17,7 +17,6 @@ import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-regist
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MapSize } from '@/lib/user-preferences';
-import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // Panel body heights per map size. Tailwind classes rather than inline styles
@@ -54,7 +53,11 @@ type MinimapProps = {
   viewportZoom: number;
   setViewportOffset: (offset: { x: number; y: number }) => void;
   setViewportZoom: (zoom: number) => void;
-  mainRef: Ref<HTMLElement>;
+  // The canvas <main>'s size, measured by the Canvas that owns it. Not observed here: the map renders
+  // INSIDE <main>, and a child's layout effect runs before its parent's ref attaches, so a map mounted
+  // in the same commit as the canvas (any diagram opened with enough elements) would read a null ref,
+  // never measure, and lose its current-view window.
+  mainSize: { width: number; height: number };
   // The tab's resolved paper colour (the backdrop the canvas paints). The map
   // paints the same paper behind its miniature, so a card reads against the
   // colour it sits on in the canvas rather than a fixed grey.
@@ -105,7 +108,7 @@ export function Minimap({
   viewportZoom,
   setViewportOffset,
   setViewportZoom,
-  mainRef,
+  mainSize,
   paperColor,
   accentColor,
   position,
@@ -117,11 +120,6 @@ export function Minimap({
 }: MinimapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef(false);
-  // mainRef is the canvas <main>; read it fresh (it's an object ref at runtime,
-  // but the prop type allows a callback ref, so narrow defensively).
-  const getMain = () => (mainRef && typeof mainRef !== 'function' ? mainRef.current : null);
-  // Its size, for the current-view window: observed, not read while rendering.
-  const mainSize = useObservedSize(mainRef);
 
   // Which paper the canvas is (light / dark), from the SAME context the canvas
   // elements read (docs/specs/008-canvas/minimap.md "Fidelity"). The renderer
@@ -175,14 +173,13 @@ export function Minimap({
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;
     const ctm = svg?.getScreenCTM();
-    const r = getMain()?.getBoundingClientRect();
-    if (!svg || !ctm || !r) return null;
+    if (!svg || !ctm || !mainSize.width) return null;
     const pt = svg.createSVGPoint();
     pt.x = clientX;
     pt.y = clientY;
     const world = pt.matrixTransform(ctm.inverse());
-    const nx = r.width / 2 - world.x;
-    const ny = r.height / 2 - world.y;
+    const nx = mainSize.width / 2 - world.x;
+    const ny = mainSize.height / 2 - world.y;
     // Only write when it actually changes: setting an equal-valued new object
     // every render would re-render forever (max update depth).
     if (nx !== viewportOffset.x || ny !== viewportOffset.y) {
@@ -213,8 +210,8 @@ export function Minimap({
   }
   const vb = `${x0} ${y0} ${x1 - x0} ${y1 - y0}`;
 
-  const w = mainSize?.width ?? 0;
-  const h = mainSize?.height ?? 0;
+  const w = mainSize.width;
+  const h = mainSize.height;
   const z = viewportZoom || 1;
   const viewCx = w / 2 - viewportOffset.x;
   const viewCy = h / 2 - viewportOffset.y;

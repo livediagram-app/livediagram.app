@@ -547,7 +547,7 @@ export function useCanvasChromePanels({
         viewportZoom={viewportZoom}
         setViewportOffset={props.setViewportOffset}
         setViewportZoom={props.setViewportZoom}
-        mainRef={props.mainRef}
+        mainSize={props.mainSize}
         paperColor={props.tabBackgroundColor}
         accentColor={mapAccent}
         position={minimapWiring.position}

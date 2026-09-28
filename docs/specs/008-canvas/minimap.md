@@ -73,6 +73,11 @@ letterboxing handled for free.
 - `components/canvas/Minimap.tsx` — the SVG overview inside a `MovablePanel`
   (move / minimise / reset come from the shared panel). The element wireframe is
   memoised on `elements` so panning only re-renders the viewport rectangle.
+  The `<main>` size (`W`,`H` above) comes in as a prop, measured by `Canvas`,
+  which owns `<main>`. The map must not observe `<main>` itself: it renders
+  inside `<main>`, and a child's layout effect runs before its parent's ref
+  attaches, so a map mounted with the canvas never measures and loses the
+  viewport rectangle.
 - `hooks/ui/useIsMobileViewport.ts` — a reactive (`useSyncExternalStore`)
   version of `isMobileViewportSync` so the panel mounts / unmounts when the
   viewport crosses the `sm` breakpoint.

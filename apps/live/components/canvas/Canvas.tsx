@@ -807,6 +807,7 @@ export function Canvas(props: CanvasProps) {
       <CanvasChrome
         {...props}
         isPaintMode={isPaintMode}
+        mainSize={mainSize}
         avatarConfig={avatarLook.config}
         onChangeAvatarField={avatarLook.setField}
         laserConfig={props.laserConfig}

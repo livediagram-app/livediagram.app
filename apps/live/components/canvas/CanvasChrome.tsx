@@ -47,6 +47,8 @@ import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 // state) and threads into the chrome alongside its own props.
 type ChromeExtras = {
   isPaintMode: boolean;
+  // The canvas <main>'s measured size (the Map's current-view window reads it; see Minimap.tsx).
+  mainSize: { width: number; height: number };
   // True when every element has scrolled out of view: show the nudge above
   // the Fit button (useOffscreenContent in Canvas).
   offscreenContent: boolean;
