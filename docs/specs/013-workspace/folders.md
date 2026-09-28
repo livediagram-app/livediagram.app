@@ -182,7 +182,9 @@ split by separators:
    list, `/explorer/recent`).
 2. **Share** (owners only, the header Share button's gate) and
    **Export** (the active tab, as the tab menu's Export).
-3. **Search**, **GitHub** (the open-source repo, new tab), **Settings**.
+3. **Search**, **GitHub** (the open-source repo, new tab), **Licences** (the
+   third-party licences page, new tab, see
+   [Third-party licences](../002-project-scope/third-party-licences.md)), **Settings**.
 
 A row whose handler the host doesn't pass is absent, and a band left
 empty takes its separator with it (the Explorer behind an error screen

@@ -37,6 +37,10 @@ export function SiteFooter() {
           >
             Privacy
           </a>
+          {/* Third-party licences (docs/specs/002-project-scope/third-party-licences.md). */}
+          <a href="/licences" className="hover:text-slate-900 dark:hover:text-slate-100">
+            Licences
+          </a>
           <a href="/status" className="hover:text-slate-900 dark:hover:text-slate-100">
             Status
           </a>
