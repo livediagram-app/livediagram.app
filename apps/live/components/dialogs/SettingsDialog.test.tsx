@@ -50,8 +50,8 @@ describe('SettingsDialog', () => {
     setViewport(false);
     Element.prototype.scrollIntoView = vi.fn();
     renderDialog(setPowerUserMode({}, true).prefs);
-    fireEvent.click(screen.getByRole('button', { name: 'Change Panel Layout in Appearance' }));
-    // Appearance is open, with the Panel Layout row ringed.
+    fireEvent.click(screen.getByRole('button', { name: 'Change Panel Layout in Panels' }));
+    // Panels is open, with the Panel Layout row ringed.
     expect(screen.getByRole('radiogroup', { name: 'Panel Layout' })).toBeTruthy();
     const ringed = document.querySelector('[data-settings-row="panelLayout"]');
     expect(ringed?.className).toContain('ring-2');

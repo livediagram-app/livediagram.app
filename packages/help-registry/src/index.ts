@@ -164,7 +164,7 @@ export const categories: Category[] = [
     slug: 'user-interface',
     title: 'User Interface',
     description:
-      'Get your bearings in the editor: the panels, toolbar, context menus, minimap, zoom and tab bars, quick controls, and power user mode.',
+      'Get your bearings in the editor: the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls, and power user mode.',
     articleCount: 9,
     kind: 'feature',
   },
@@ -287,10 +287,10 @@ export const articles: Article[] = [
   },
   {
     slug: 'minimap',
-    title: 'Minimap',
+    title: 'Map',
     description:
       'The bottom-left Map: a zoomed-out overview with a box for your view. Tap or drag to navigate.',
-    keywords: 'map overview navigate viewport birds eye locate where am i',
+    keywords: 'minimap mini map overview navigate viewport birds eye locate where am i',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },

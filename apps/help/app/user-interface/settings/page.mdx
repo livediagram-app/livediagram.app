@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Settings',
   description:
-    'The livediagram Settings dialog: minimal panels, the minimap, the welcome tour, notifications, reduce motion, the AI assistant and anonymous usage events, and how preferences follow you between devices.',
+    'The livediagram Settings dialog: minimal panels, the Map, the welcome tour, notifications, reduce motion, the AI assistant and anonymous usage events, and how preferences follow you between devices.',
   path: '/help/user-interface/settings/',
 });
 
@@ -21,11 +21,21 @@ They are grouped, and **one group is open at a time**, so the dialog is a short 
 
 ## Editor
 
-- **Panel Layout** — Floating (the default), Minimal, or Toolbar. Minimal replaces the floating Explorer, Palette, Editor and AI panels with a compact button bar that opens each as a popover. Good when you want the canvas back. A phone can use Minimal or Toolbar, and starts in Toolbar; Floating shows as Toolbar there. See [Minimal Panels](/help/palette/minimal-panels/) and [Toolbar Layout](/help/palette/toolbar-layout/).
-- **Show minimap** — the small overview of the whole tab in the bottom-left corner, once a tab has a few elements and the Activity panel is minimised. Desktop only. See [The Minimap](/help/user-interface/minimap/).
+- **Middle-Mouse Pan**: hold the middle mouse button and drag to pan the canvas from anywhere, whatever tool is active. Turn it off to leave the middle button to your browser.
 - **Welcome Tour Completed** — ticked once you have taken or dismissed the tour, which is how it only offers itself once. **Untick it and close Settings to run the tour again.** See [The Welcome Tour](/help/getting-started/welcome-tour/).
 
 - **Power User Mode** — applies a set of recommended settings in one go, and unlocks **Minimal Chrome**, which hides labels and hints while keeping every control. Switching it off puts back the settings you did not change. See [Power User Mode](/help/user-interface/power-user-mode/).
+
+## Panels
+
+- **Panel Layout**: Floating (the default), Minimal, or Toolbar. Minimal replaces the floating Explorer, Palette, Editor and AI panels with a compact button bar that opens each as a popover. Good when you want the canvas back. A phone can use Minimal or Toolbar, and starts in Toolbar; Floating shows as Toolbar there. See [Minimal Panels](/help/palette/minimal-panels/) and [Toolbar Layout](/help/palette/toolbar-layout/).
+- **Panel Opacity**: fades the floating panels so the canvas shows through. See [Panel Opacity](/help/palette/panel-opacity/).
+
+**Panels** folds open to three sub-categories, one per panel. Click **Panels** (or its arrow) to show them, and again to fold them away:
+
+- **Layers**: layer thumbnails, element counts, and previewing a layer on hover. See [Layers](/help/canvas/layers/).
+- **Activity**: previewing a revert while you hover its entry.
+- **Map**: **Show Map** (the small overview of the whole tab in the bottom-left corner, once a tab has a few elements), dimming everything outside your view, and the Map's size. Desktop only. See [The Map](/help/user-interface/minimap/).
 
 ## Keyboard
 
@@ -54,7 +64,7 @@ Everything in this dialog is **stored against your identity, not your browser**,
 
 Two things to know about where settings live:
 
-- **The canvas-behaviour toggles** live here too, under **Editor** and **Appearance**: [auto-attach arrows](/help/palette/auto-attach-arrows/), [alignment guides](/help/palette/alignment-guides/), [quick-add on hover](/help/palette/quick-add-on-hover/) and [panel opacity](/help/palette/panel-opacity/). They used to sit in the palette's own gear menu; every setting now has one home.
+- **The canvas-behaviour toggles** live here too, under **Editor** and **Panels**: [auto-attach arrows](/help/palette/auto-attach-arrows/), [alignment guides](/help/palette/alignment-guides/), [quick-add on hover](/help/palette/quick-add-on-hover/) and [panel opacity](/help/palette/panel-opacity/). They used to sit in the palette's own gear menu; every setting now has one home.
 - **Tool settings are per device**, not per account: the eraser's brush, the laser's pen, the presenter's settings, and the **Keyboard Shortcuts** switch in the **Keyboard** category that [turns single-key shortcuts off](/help/tips-and-tricks/keyboard-shortcuts/). These are about the machine you are sitting at, so they deliberately do not follow you to another one.
 
 <Note>

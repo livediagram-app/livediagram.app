@@ -9,7 +9,10 @@
 // or present-but-unsearchable. Matching runs over the same description +
 // keyword synonyms the in-dialog search uses.
 
-import { SETTINGS_CATEGORIES } from '@/components/dialogs/settings/settings-catalogue';
+import {
+  SETTINGS_CATEGORIES,
+  settingsCategoryPath,
+} from '@/components/dialogs/settings/settings-catalogue';
 import type { SettingSearchItem } from './search';
 
 /** The built settings catalogue passed to the SearchPanel. Static, built once. */
@@ -17,12 +20,14 @@ export const SETTINGS_SEARCH_ITEMS: SettingSearchItem[] = SETTINGS_CATEGORIES.fl
   category.rows.map((row) => ({
     id: `setting:${category.id}/${row.key}`,
     title: row.label,
-    // The category and section names are part of the haystack for the same
-    // reason they are in the dialog's own search: "layers" should find the
-    // three layer rows without appearing in any of their labels.
-    keywords: `${category.label} ${row.section ?? ''} ${row.description} ${row.keywords ?? ''}`,
+    // The category path and section names are part of the haystack for the
+    // same reason they are in the dialog's own search: "panels" should find
+    // the layer rows without appearing in any of their labels.
+    keywords: `${settingsCategoryPath(category)} ${row.section ?? ''} ${row.description} ${row.keywords ?? ''}`,
     categoryId: category.id,
-    categoryLabel: category.label,
+    // A sub-category reads as its path ("in Panels › Layers"), the way the
+    // dialog's sidebar nests it.
+    categoryLabel: settingsCategoryPath(category),
     rowKey: row.key,
   })),
 );

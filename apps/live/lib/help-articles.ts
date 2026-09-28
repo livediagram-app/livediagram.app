@@ -252,7 +252,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
   },
   minimap: {
-    title: 'Learn about the Minimap',
+    title: 'Learn about the Map',
     description: 'Tips for finding your way around a big diagram.',
   },
   sessionPolls: {

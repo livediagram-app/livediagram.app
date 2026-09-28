@@ -115,7 +115,7 @@ on screen sideways as well as vertically, whatever the trigger's position.
 ## The setting
 
 `panelLayout?: 'floating' | 'minimal' | 'toolbar'` ([User preferences](user-preferences.md)), shown in
-Settings → Appearance → Layout as a three-way **Panel Layout** choice. It
+Settings → Panels as a three-way **Panel Layout** choice. It
 replaces the Minimal Panel Layout toggle. The editor tour's welcome card ([Interactive editor tour ("Show me around")](editor-tour.md))
 offers the same choice, drawn with the same pictures, so a new user picks a
 layout on their first diagram.

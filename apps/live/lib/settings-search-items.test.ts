@@ -20,7 +20,7 @@ describe('SETTINGS_SEARCH_ITEMS', () => {
     for (const item of SETTINGS_SEARCH_ITEMS) {
       const category = SETTINGS_CATEGORIES.find((c) => c.id === item.categoryId);
       expect(category, item.id).toBeTruthy();
-      expect(category!.label, item.id).toBe(item.categoryLabel);
+      expect(item.categoryLabel, item.id).toContain(category!.label);
       expect(
         category!.rows.map((r) => r.key),
         item.id,

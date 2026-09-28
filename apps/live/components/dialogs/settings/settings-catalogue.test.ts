@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { HELP_ARTICLES } from '@/lib/help-articles';
-import { SETTINGS_CATEGORIES, visibleCategories } from './settings-catalogue';
+import { SETTINGS_CATEGORIES, settingsCategoryPath, visibleCategories } from './settings-catalogue';
 import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
 import type { SettingsRowSpec } from './settings-catalogue';
 import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-preferences';
@@ -207,5 +207,31 @@ describe('settings catalogue', () => {
         }
       }
     }
+  });
+});
+
+// Panels holds sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
+describe('settings sub-categories', () => {
+  it('nests Layers, Activity and Map under Panels, directly after it and in that order', () => {
+    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
+    const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);
+    expect(children).toEqual(['layers', 'activity', 'map']);
+    const at = ids.indexOf('panels');
+    expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
+  });
+
+  it('keeps Panel Layout and Panel Opacity on Panels itself, and Show Map under Map', () => {
+    const keys = (id: string) =>
+      SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows.map((r) => r.key);
+    expect(keys('panels')).toEqual(['panelLayout', 'panelOpacity']);
+    expect(keys('map')[0]).toBe('showMinimap');
+  });
+
+  it('names a sub-category by its path', () => {
+    const map = SETTINGS_CATEGORIES.find((c) => c.id === 'map')!;
+    expect(settingsCategoryPath(map)).toBe('Panels › Map');
+    expect(settingsCategoryPath(SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!)).toBe(
+      'Panels',
+    );
   });
 });
