@@ -37,6 +37,10 @@ const readState = (): OpenWithState | null => {
   return cachedState;
 };
 const beforeHydration = (): OpenWithState | null | undefined => undefined;
+// This page's own path and query, for the sign-in return; empty while
+// prerendering, where there is no window.
+const readHere = () => `${window.location.pathname}${window.location.search}`;
+const hereBeforeHydration = () => '';
 
 type Phase =
   | { kind: 'loading' }
@@ -49,6 +53,7 @@ export function DriveOpen() {
   const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
   const drive = useDriveMirror();
   const state = useSyncExternalStore(noSubscription, readState, beforeHydration);
+  const here = useSyncExternalStore(noSubscription, readHere, hereBeforeHydration);
   const [phase, setPhase] = useState<Phase>({ kind: 'loading' });
   const [token, setToken] = useState<string | null>(null);
 
@@ -131,7 +136,7 @@ export function DriveOpen() {
   };
 
   if (authLoaded && !isSignedIn) {
-    const back = encodeURIComponent(`${window.location.pathname}${window.location.search}`);
+    const back = encodeURIComponent(here);
     return (
       <LandingCard>
         <Heading>Sign in to open this diagram</Heading>

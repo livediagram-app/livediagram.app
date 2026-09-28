@@ -31,8 +31,9 @@ import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { useDriveMirror } from '@/components/drive/drive-mirror-context';
 
 // The Drive panel only loads when opened.
-const DriveDialog = dynamic(() =>
-  import('@/components/drive/DriveDialog').then((m) => m.DriveDialog),
+const DriveDialog = dynamic(
+  () => import('@/components/drive/DriveDialog').then((m) => m.DriveDialog),
+  { ssr: false },
 );
 import {
   HEADER_ACTION_BTN,
