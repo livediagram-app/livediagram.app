@@ -54,7 +54,7 @@ test('a multi-page draw.io file becomes a tab per page, with a summary', async (
   await dismissQuickTour(page);
   await importFile(page, 'multi-page.drawio');
 
-  const summary = page.getByRole('region', { name: 'Imported from draw.io' });
+  const summary = page.getByTestId('import-report');
   await expect(summary).toBeVisible();
   await expect(summary).toContainText('3 pages became 3 tabs, 17 elements.');
   await expect(summary).toContainText('1 group was dropped; its shapes kept their places.');
@@ -102,13 +102,19 @@ for (const file of [
     await startBlankDiagram(page);
     await dismissQuickTour(page);
     await importFile(page, file);
-    const summary = page.getByRole('region', { name: 'Imported from draw.io' });
+    const summary = page.getByTestId('import-report');
     // A clean import closes the dialog; one that changed anything summarises.
     const dialogs = page.getByRole('dialog');
     await expect
       .poll(async () => (await summary.isVisible()) || (await dialogs.count()) === 0)
       .toBe(true);
     if (await summary.isVisible()) {
+      if (file === 'cloud-architecture.drawio.svg') {
+        await expect(summary.getByTestId('import-report-images')).toContainText('1 image imported');
+        await expect(summary.getByTestId('import-report-notes')).toContainText(
+          '1 image links to a file outside the diagram',
+        );
+      }
       await shot(page, `${file}-2-summary`);
       await page.getByRole('button', { name: 'Done' }).click();
     }
@@ -118,6 +124,18 @@ for (const file of [
     await expect
       .poll(async () => (await storedTabs(page))[0]?.elements ?? 0, { timeout: 15_000 })
       .toBeGreaterThan(5);
+    if (file === 'cloud-architecture.drawio.svg') {
+      // The embedded logo came across into the gallery through the import image
+      // pipeline; the web-linked status badge stayed a placeholder, never fetched.
+      await expect(page.locator('[data-canvas-a11y-root]')).toBeVisible();
+      const images = await page.evaluate(async () => {
+        const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
+        const res = await fetch('/api/images', { headers: { 'X-Owner-Id': owner } });
+        return ((await res.json()) as { images: { contentType: string }[] }).images;
+      });
+      // A 1 px PNG already beats its WebP, so the pipeline keeps it as PNG.
+      expect(images.map((i) => i.contentType)).toEqual(['image/png']);
+    }
     expectNoPageErrors(pageErrors);
   });
 }
