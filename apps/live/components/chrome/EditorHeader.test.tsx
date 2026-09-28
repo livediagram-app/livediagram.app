@@ -2,9 +2,9 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// Header pills (docs/specs/007-editor/live-app.md "Header actions" +
-// docs/specs/004-interface-design/blueprints/optical-alignment.md "Header pills"): every icon sits in
-// one shared slot and the account pill leads with its identity disc.
+// Header stack row (docs/specs/004-interface-design/optical-alignment.md, "A stack row shares one line"):
+// every header action holds its glyph in the same 20px icon slot, so an avatar beside a 13px icon no
+// longer drops its label below its neighbour's.
 
 vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true }));
 vi.mock('@/components/providers/deferred-auth', () => ({
@@ -21,7 +21,7 @@ vi.mock('@/components/chrome/auth-shared', () => ({
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { EditorHeader } = await import('./EditorHeader');
-const { HEADER_AVATAR_PX, HEADER_ICON_SLOT_PX } = await import('./header-action');
+const { HEADER_ICON_SLOT_PX } = await import('./header-action');
 
 afterEach(cleanup);
 
@@ -38,59 +38,36 @@ function renderHeader() {
   );
 }
 
-// The header actions are pills (docs/specs/007-editor/live-app.md "Header actions").
-describe('EditorHeader pills', () => {
-  it('uses a 16px icon slot and a 24px account disc', () => {
-    expect(HEADER_ICON_SLOT_PX).toBe(16);
-    expect(HEADER_AVATAR_PX).toBe(24);
+describe('EditorHeader stack row', () => {
+  it('uses a 20px slot', () => {
+    expect(HEADER_ICON_SLOT_PX).toBe(20);
   });
 
-  it.each([['Copy'], ['Share']])('%s holds its glyph in the shared slot', (name) => {
-    renderHeader();
-    const action = screen.getByRole('button', { name: new RegExp(name) });
-    const slot = action.firstElementChild as HTMLElement;
-    expect(slot.dataset.optical).toBe('slot');
-    expect(slot.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
-    expect(slot.style.height).toBe(`${HEADER_ICON_SLOT_PX}px`);
-  });
+  it.each([['Copy'], ['Share'], ['Account menu']])(
+    '%s holds its glyph in the shared slot',
+    (name) => {
+      renderHeader();
+      const action = screen.getByRole('button', { name: new RegExp(name) });
+      const slot = action.firstElementChild as HTMLElement;
+      expect(slot.dataset.optical).toBe('slot');
+      expect(slot.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
+      expect(slot.style.height).toBe(`${HEADER_ICON_SLOT_PX}px`);
+    },
+  );
 
-  it('leads the account pill with the identity disc', () => {
+  it('draws the account initial as a glyph disc filling the slot', () => {
     renderHeader();
-    const disc = screen.getByRole('button', { name: 'Account menu' })
+    const slot = screen.getByRole('button', { name: 'Account menu' })
       .firstElementChild as HTMLElement;
+    const disc = slot.firstElementChild as HTMLElement;
     expect(disc.dataset.optical).toBe('disc');
-    expect(disc.style.width).toBe(`${HEADER_AVATAR_PX}px`);
+    expect(disc.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
     expect(disc.querySelector('.text-optical-centre')?.textContent).toBe('W');
-  });
-
-  it('shows the live dot on Share only while the diagram is shared', () => {
-    const { container, rerender } = render(
-      <EditorHeader
-        diagramName="d"
-        showShare
-        shareable={false}
-        onOpenShare={() => {}}
-        onRename={() => {}}
-      />,
-    );
-    expect(container.querySelector('.animate-ping')).toBeNull();
-    rerender(
-      <EditorHeader
-        diagramName="d"
-        showShare
-        shareable
-        onOpenShare={() => {}}
-        onRename={() => {}}
-      />,
-    );
-    const share = screen.getByRole('button', { name: /Share/ });
-    expect(share.getAttribute('aria-pressed')).toBe('true');
-    expect(share.querySelector('.animate-ping')).not.toBeNull();
   });
 });
 
-// The account menu's Account item opens Settings in place (docs/specs/007-editor/live-app.md
-// "Header actions") instead of navigating to the Explorer.
+// The account menu's Account item opens Settings in place
+// (docs/specs/007-editor/user-preferences.md) instead of navigating to the Explorer.
 describe('EditorHeader account menu', () => {
   it('opens Settings on Account in place when the host can', () => {
     const onOpenAccount = vi.fn();

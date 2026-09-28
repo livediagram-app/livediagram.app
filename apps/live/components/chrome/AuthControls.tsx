@@ -23,22 +23,19 @@
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import {
-  useClickOutside,
-  SOLID_BRAND_DARK,
-  ButtonContent,
-  Glyph,
-  GlyphDisc,
-} from '@livediagram/ui';
+import { useClickOutside, SOLID_BRAND_DARK, Glyph, GlyphDisc } from '@livediagram/ui';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import {
-  HEADER_AVATAR_PX,
-  HEADER_PILL,
-  HEADER_PILL_SECONDARY,
+  HEADER_ACTION_BTN,
+  HEADER_ICON_SLOT_PX,
   HeaderGlyph,
 } from '@/components/chrome/header-action';
+
+// Shared tone for the (non-Share) header actions — slate text, subtle hover.
+const HEADER_ACTION_TONE =
+  'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800';
 
 // Account self-deletion now lives on the Explorer profile page (docs/specs/014-identity/profile-and-email-notifications.md),
 // reachable from the "Profile" item below, so the destructive action has one
@@ -67,20 +64,11 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
 
   if (!isSignedIn) {
     return (
-      // Below sm the pill folds to a round icon button so the title keeps its
-      // room (docs/specs/007-editor/live-app.md "Header actions"); the label
-      // stays in the accessible name.
-      <Link
-        href={signInHref}
-        aria-label="Sign in"
-        className={`${HEADER_PILL} ${HEADER_PILL_SECONDARY} max-sm:w-8 max-sm:px-0`}
-      >
+      <Link href={signInHref} className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}>
         <HeaderGlyph>
-          <SignInIcon size={14} arrowNudge />
+          <SignInIcon />
         </HeaderGlyph>
-        <span className="max-sm:hidden">
-          <ButtonContent>Sign in</ButtonContent>
-        </span>
+        Sign in
       </Link>
     );
   }
@@ -99,35 +87,28 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
   })();
 
   return (
-    <div className="relative flex items-center" ref={menuRef}>
+    <div className="relative flex h-full" ref={menuRef}>
       <button
         type="button"
         onClick={() => setMenuOpen((open) => !open)}
         aria-label="Account menu"
         aria-expanded={menuOpen}
-        className={`${HEADER_PILL} ${HEADER_PILL_SECONDARY} gap-2 pr-2 pl-1 max-sm:pr-1`}
+        className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
-        <GlyphDisc
-          size={HEADER_AVATAR_PX}
-          className={`bg-gradient-to-br from-brand-400 to-brand-600 text-[11px] font-semibold text-white ${SOLID_BRAND_DARK}`}
-        >
-          {initial}
-        </GlyphDisc>
-        <span className="max-w-[8rem] truncate max-sm:hidden">
-          <ButtonContent>{pillLabel ?? 'Account'}</ButtonContent>
-        </span>
-        <Glyph
-          size={12}
-          units={16}
-          className={`text-slate-400 transition ${menuOpen ? 'rotate-180' : ''}`}
-        >
-          <path d="M4 6l4 4 4-4" />
-        </Glyph>
+        <HeaderGlyph>
+          <GlyphDisc
+            size={HEADER_ICON_SLOT_PX}
+            className={`bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+          >
+            {initial}
+          </GlyphDisc>
+        </HeaderGlyph>
+        <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>
       </button>
       {menuOpen ? (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-2 w-56 rounded-md border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
+          className="absolute right-0 top-full mt-1 w-56 rounded-md border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
           {displayName ? (
             <div className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
@@ -196,19 +177,12 @@ function AuthControlsDisabled(_props: AuthControlsProps) {
 // Sign-in pill reads as a peer of those buttons. Exported because the
 // Explorer's "Sign in to use teams" sidebar link (docs/specs/013-workspace/teams.md) renders
 // the same glyph so the two sign-in affordances read as one action.
-// `arrowNudge` steps the arrow 2px towards the door while an enclosing
-// `group` is hovered, the gesture of walking in (the header's Sign in pill).
-export function SignInIcon({
-  size = 13,
-  arrowNudge = false,
-}: { size?: number; arrowNudge?: boolean } = {}) {
+export function SignInIcon({ size = 13 }: { size?: number } = {}) {
   return (
     <Glyph size={size} units={16}>
       <path d="M9 3h3.5A1.5 1.5 0 0 1 14 4.5v7A1.5 1.5 0 0 1 12.5 13H9" />
-      <g className={arrowNudge ? 'transition-transform group-hover:translate-x-0.5' : undefined}>
-        <path d="M2 8h7" />
-        <path d="M6 5l3 3-3 3" />
-      </g>
+      <path d="M2 8h7" />
+      <path d="M6 5l3 3-3 3" />
     </Glyph>
   );
 }

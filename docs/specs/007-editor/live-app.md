@@ -119,14 +119,9 @@ Two words, two owners, and the naming is deliberate: **Appearance** is yours, a 
 
 ## Header actions
 
-The right edge of the editor header (and the Explorer's header, which mounts the same account control) holds the diagram's primary actions as **compact buttons**: 32px tall, `rounded-md`, 13px medium text with the icon beside it, vertically centred in the 56px bar with a 6px gap. There is **one solid primary** (Share) and everything else is **borderless**, so the bar stays quiet and the one thing to press stands out. Three earlier looks were rejected: full-height, edge-flush tab blocks with a 10px label under the icon (toolbar furniture, and Share had no more presence than Sign in), round gradient pills (dated), and bordered boxes matching the section switch (still boxy). Classes live in `apps/live/components/chrome/header-action.tsx`.
+The right edge of the header holds Share (owner), Copy (visitor), and Sign in or the account control as full-height, edge-flush actions, each an icon stacked over a small label (`HEADER_ACTION_BTN` in `apps/live/components/chrome/header-action.tsx`); Share fills brand while the diagram is shared. Pill, gradient, bordered and ink-button restyles were tried and dropped in favour of this simpler look.
 
-- **Share** (owner only) is the primary: near-black ink with a white label and a hairline inner highlight (inverted in dark mode: white with dark ink), one step lighter on hover. The label is always "Share" (the user dislikes it flipping to "Shared"). The shared state is a **live dot**: a pinging emerald dot takes the share icon's place inside the button (an ambient indicator per [Motion](../004-interface-design/motion.md)), plus `aria-pressed`. The green SharedBadge by the title still says it in words.
-- **Sign in** (signed out, Clerk enabled) is borderless text with the door glyph; hover lays a soft slate fill behind it and nudges the arrow 2px towards the door, the gesture of walking in. Below `sm` it collapses to a square icon-only button (its accessible name stays "Sign in") so the title keeps its room.
-- **Account** (signed in) is a secondary button borderless, holding the identity disc (24px, inset 4px: the concentric rule), the first name (truncated at 16 characters, hidden below `sm`) and a chevron that turns over while the menu is open. Its menu's **Account** item opens the host page's own Settings dialog on the Account category, in place (the editor via `openSettingsOn('account')`, the Explorer via its settings state); it navigates to `/explorer?settings=account` only when the host passes no handler.
-- **Copy** (a visitor's "Make a copy") is borderless like Sign in.
-
-Every button has a visible `focus-visible` ring in brand, and its text runs sit in `text-optical-line` ([Optical alignment](../004-interface-design/optical-alignment.md)).
+The account menu's **Account** item opens the host page's own Settings dialog on the Account category, in place (the editor via `openSettingsOn('account')`, the Explorer via its settings state); it navigates to `/explorer?settings=account` only when the host passes no handler.
 
 ## Share dialog
 

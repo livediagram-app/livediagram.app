@@ -1,14 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
-import { Brand, ButtonContent, ProductNav, HoverCard, Glyph } from '@livediagram/ui';
+import { Brand, ProductNav, HoverCard, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
-import {
-  HEADER_PILL,
-  HEADER_PILL_PRIMARY,
-  HEADER_PILL_SECONDARY,
-  HeaderGlyph,
-} from '@/components/chrome/header-action';
+import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
 
 // Sync state surfaced as a small pill next to the diagram title. The
 // editor is autosave-driven, so silent failures (offline, API down,
@@ -141,21 +136,21 @@ export function EditorHeader({
           </div>
         )}
       </div>
-      {/* Right-edge actions: pills, primary Share first in weight
-          (docs/specs/007-editor/live-app.md "Header actions"). */}
-      <div className="flex items-center gap-1.5">
+      {/* Right-edge actions: full-height, flush to the top / bottom / right of
+          the bar (the -mr-4 cancels the header's right padding). */}
+      <div className="-mr-4 flex items-stretch self-stretch">
         {onMakeCopy ? (
           <HoverCard title="Make a copy" description="Duplicate this diagram into your own files.">
             <button
               type="button"
               onClick={onMakeCopy}
               disabled={copying}
-              className={`${HEADER_PILL} ${HEADER_PILL_SECONDARY}`}
+              className={`${HEADER_ACTION_BTN} text-slate-600 enabled:hover:bg-brand-50 enabled:hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-200 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-brand-200`}
             >
               <HeaderGlyph>
                 <CopyIcon />
               </HeaderGlyph>
-              <ButtonContent>{copying ? 'Copying' : 'Copy'}</ButtonContent>
+              {copying ? 'Copying' : 'Copy'}
             </button>
           </HoverCard>
         ) : null}
@@ -167,27 +162,27 @@ export function EditorHeader({
             <button
               type="button"
               onClick={onOpenShare}
-              className={`${HEADER_PILL} ${HEADER_PILL_PRIMARY} px-3`}
+              className={`${HEADER_ACTION_BTN} ${
+                shareable
+                  ? `bg-brand-500 text-white hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`
+                  : 'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
+              }`}
               aria-pressed={shareable}
             >
-              {/* Shared: a live dot takes the icon's place. The label stays
-                  "Share" in both states (the user dislikes the verb changing
-                  to "Shared"); aria-pressed carries the state for assistive
-                  tech, the green SharedBadge by the title says it in words. */}
               <HeaderGlyph>
-                {shareable ? (
-                  <span aria-hidden className="relative flex h-2 w-2">
-                    <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400 opacity-75 [animation-duration:2s]" />
-                    <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
-                  </span>
-                ) : (
-                  <ShareIcon />
-                )}
+                <ShareIcon />
               </HeaderGlyph>
-              <ButtonContent>Share</ButtonContent>
+              {/* Label stays "Share" in both states — the user dislikes the
+                  verb changing to "Shared". State is communicated by the
+                  brand-500 fill + aria-pressed flip + the green SharedBadge by
+                  the title. */}
+              <span>Share</span>
             </button>
           </HoverCard>
         ) : null}
+        {/* Explorer + Help used to sit here as top-right links; both now live
+            in the ProductNav apps menu next to the logo, so the header keeps
+            just its primary actions. */}
         <AuthControls onOpenAccount={onOpenAccount} />
       </div>
     </header>
@@ -196,7 +191,7 @@ export function EditorHeader({
 
 function CopyIcon() {
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={13} units={16}>
       <rect x="5" y="5" width="8" height="8.5" rx="1.5" />
       <path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" />
     </Glyph>
@@ -205,7 +200,7 @@ function CopyIcon() {
 
 function ShareIcon() {
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={13} units={16}>
       <circle cx="4" cy="8" r="1.6" />
       <circle cx="12" cy="3.5" r="1.6" />
       <circle cx="12" cy="12.5" r="1.6" />

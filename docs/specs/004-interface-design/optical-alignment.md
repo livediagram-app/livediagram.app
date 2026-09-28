@@ -31,7 +31,7 @@ opposite of what a diagramming tool has to look like.
 - **Ink box**: the bounding box of the pixels a glyph actually paints.
 - **Optical offset**: the distance, per axis, from the centre of the shape's box to the centre of
   the glyph (the cap band vertically for text; the ink box otherwise).
-- **Stack**: an action drawn as an icon over a label.
+- **Stack**: an action drawn as an icon over a label, such as a header action.
 - **Stack row**: stacks standing side by side in one row.
 
 ## The rules
@@ -61,7 +61,8 @@ opposite of what a diagramming tool has to look like.
   with a disc filling its height follows the concentric rule instead: the disc sits as far from the
   chip's leading edge as from its top and bottom, and the trailing side may be roomier
   ([Colour scheme](color-scheme.md#usage-rules)).
-- **A stack row shares one line.** Every stack in a row reserves the same icon slot, whatever it holds: an icon, an avatar, a spinner. Labels in a row share one
+- **A stack row shares one line.** Every stack in a row reserves the same icon slot (**20px** in the
+  editor header), whatever it holds: an icon, an avatar, a spinner. Labels in a row share one
   baseline and icons share one centre.
 - **SVG text centres on its cap band too.** Text drawn in SVG (canvas badges, the export, marketing
   art) sits on the alphabetic baseline, placed half the face's cap height below the shape's centre.
