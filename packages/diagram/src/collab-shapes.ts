@@ -10,6 +10,7 @@
 
 import type { ShapeKind } from './index';
 import { isQaBoardShape } from './qa-board';
+import { isQuizShape } from './quiz';
 import { isSelfDrawingShape } from './data-shapes';
 
 // --- Estimate card (docs/specs/012-collaboration/estimate-card.md) ---------------------------------------------
@@ -239,7 +240,8 @@ export function isCollabPanelShape(kind: ShapeKind): boolean {
     isQaBoardShape(kind) ||
     isAgendaShape(kind) ||
     isRollCallShape(kind) ||
-    isDecisionShape(kind)
+    isDecisionShape(kind) ||
+    isQuizShape(kind)
   );
 }
 
@@ -263,6 +265,15 @@ export function hasOwnFace(kind: ShapeKind): boolean {
     kind === 'reaction-pad' ||
     kind === 'portal'
   );
+}
+
+// Whether double-click, Space or typing opens the inline label editor on this
+// kind. Not on a self-drawing kind (it has no label), and not on a quiz
+// (docs/specs/012-collaboration/quiz.md): its label is the question, which the
+// Edit Quiz dialog owns, and editing it inline would print the hidden question
+// over the closed disc for anybody who double-clicked the card.
+export function opensInlineLabelEditor(kind: ShapeKind): boolean {
+  return !isSelfDrawingShape(kind) && !isQuizShape(kind);
 }
 
 // Whether text alignment does anything on this kind: not a self-drawing kind

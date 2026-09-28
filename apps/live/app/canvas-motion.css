@@ -1402,6 +1402,89 @@
   }
 }
 
+/* Quiz (docs/specs/012-collaboration/quiz.md). Three motions, all driven by
+   classes so the reduced-motion block below can reach every one:
+   - the answers FAN OUT from the disc when a round opens, one after another
+     (each pill sets --lvd-quiz-dx / --lvd-quiz-dy to the offset back to the
+     centre and --lvd-quiz-delay for its place in the order);
+   - the right answer POPS and glows green on the reveal;
+   - the countdown ring drains, which is a transition on stroke-dashoffset
+     rather than an animation, so a late joiner lands on the right fraction. */
+@keyframes lvd-quiz-fan {
+  from {
+    opacity: 0;
+    transform: translate(var(--lvd-quiz-dx, 0), var(--lvd-quiz-dy, 0)) scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.lvd-quiz-fan {
+  animation: lvd-quiz-fan 520ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  animation-delay: var(--lvd-quiz-delay, 0ms);
+}
+
+@keyframes lvd-quiz-correct {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgb(22 163 74 / 0);
+  }
+  40% {
+    transform: scale(1.14);
+    box-shadow: 0 0 0 10px rgb(22 163 74 / 0.35);
+  }
+  100% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 5px rgb(22 163 74 / 0.25);
+  }
+}
+
+.lvd-quiz-correct {
+  animation: lvd-quiz-correct 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.lvd-quiz-ring {
+  transition: stroke-dashoffset 250ms linear;
+}
+
+/* Who picked each answer, arriving just after the right one pops. */
+@keyframes lvd-quiz-pickers {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.lvd-quiz-pickers {
+  animation: lvd-quiz-pickers 360ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  animation-delay: var(--lvd-quiz-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Every state stays; only the motion goes. The answers are simply in place
+     and the right one is simply green, with its ring held steady. */
+  .lvd-quiz-fan {
+    animation: none;
+  }
+  .lvd-quiz-correct {
+    animation: none;
+    transform: scale(1.06);
+    box-shadow: 0 0 0 5px rgb(22 163 74 / 0.25);
+  }
+  .lvd-quiz-ring {
+    transition: none;
+  }
+  .lvd-quiz-pickers {
+    animation: none;
+  }
+}
+
 /* The animation targets the canvas SURFACE, never the content wrapper inside
    it. That wrapper carries the pan/zoom transform
    (`scale(z) translate(x, y)`), and a CSS animation on `transform` REPLACES

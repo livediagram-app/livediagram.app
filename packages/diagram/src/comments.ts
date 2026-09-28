@@ -146,6 +146,11 @@ const LIVE_ELEMENT_FIELDS = [
   'rollCall',
   'agendaCurrent',
   'pickerResult',
+  // A quiz round's state (docs/specs/012-collaboration/quiz.md): started, locked and revealed are room
+  // presses, not edits, so an undo must not un-start somebody's round.
+  'quizStartedAt',
+  'quizLockedAt',
+  'quizRevealed',
   // The Q&A board's notes (docs/specs/012-collaboration/qa-board.md) are written by its endpoint, never by
   // an undoable edit, so a snapshot's copy is only ever older.
   'qaNotes',
@@ -161,6 +166,9 @@ type LiveFieldBag = { commentThread?: CommentThread; action?: ElementAction } & 
   | 'rollCall'
   | 'agendaCurrent'
   | 'pickerResult'
+  | 'quizStartedAt'
+  | 'quizLockedAt'
+  | 'quizRevealed'
   | 'qaNotes'
   | 'qaRev'
 >;

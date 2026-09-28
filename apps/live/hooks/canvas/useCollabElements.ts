@@ -268,6 +268,9 @@ export function useCollabElements({
   };
 
   return {
+    // For a sibling hook whose verbs run the room the same way (the quiz,
+    // useQuizElements), so the facilitator line is drawn in one place.
+    patchAsFacilitator,
     toggleChecklistItem,
     respond,
     setResponsesRevealed,

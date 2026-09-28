@@ -1035,6 +1035,34 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // Quiz (docs/specs/012-collaboration/quiz.md): one question with a right answer, opened on a timer and
+    // revealed by the facilitator. In Ask, beside the poll and the estimate,
+    // because it is putting a question to the room.
+    id: 'collab:quiz',
+    tileGroup: 'ask',
+    blurb: 'A timed question with a right answer',
+    caption: 'Quiz',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add quiz',
+    description:
+      'One multiple-choice question for the room. Start it and the answers fan out around the question for everyone to pick; it locks when the time runs out, then Reveal turns the right answer green and names who got it.',
+    filled: true,
+    action: { type: 'shape', kind: 'quiz' },
+    icon: (
+      <Glyph size={18} units={24}>
+        {/* A disc with a question mark, answers around it. */}
+        <circle cx="12" cy="12" r="4.6" />
+        <path d="M10.7 10.9a1.4 1.4 0 1 1 1.9 1.3c-.4.2-.6.5-.6.9" />
+        <circle cx="12" cy="14.5" r=".35" />
+        <circle cx="12" cy="2.8" r="1.4" />
+        <circle cx="21.2" cy="12" r="1.4" />
+        <circle cx="12" cy="21.2" r="1.4" />
+        <circle cx="2.8" cy="12" r="1.4" />
+      </Glyph>
+    ),
+  },
+  {
     // Estimate cards (docs/specs/012-collaboration/estimate-card.md): one tile per SCALE, grouped. Which scale a
     // team estimates on is a standing decision, not something you change per
     // card, so it belongs at the moment you reach for one.

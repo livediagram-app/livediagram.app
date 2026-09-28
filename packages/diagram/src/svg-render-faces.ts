@@ -20,6 +20,16 @@ import { SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { agendaTotalMinutes, DEFAULT_CHAIR_FACING } from './collab-shapes';
 import { CHAIR_FACING_ROTATION, CHAIR_GEOMETRY, chairSeatFill } from './shape-geometry';
 import { qaView } from './qa-board';
+import {
+  QUIZ_CORRECT_GREEN,
+  QUIZ_DESIGN_SIZE,
+  QUIZ_DISC_RADIUS,
+  QUIZ_OPTION_HEIGHT,
+  QUIZ_OPTION_WIDTH,
+  quizCorrectKeys,
+  quizOptionCentres,
+  quizTally,
+} from './quiz';
 import { REACTION_DEFAULT, REACTION_EMOJI } from './data-shapes';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -147,7 +157,14 @@ function footerPills(x: number, y: number, labels: readonly string[], color: str
 
 // ── Collaborate panels (docs/specs/012-collaboration/estimate-card.md to /129, /137) ─────────────────────────
 
-export function svgCollabFace(el: Face, label: string, color: string): string | null {
+export function svgCollabFace(
+  el: Face,
+  label: string,
+  color: string,
+  // The resolved stroke. Only the quiz reads it, and only when the element
+  // carries its own (strokeColor), so an unstyled quiz keeps its text-tint rim.
+  stroke?: string,
+): string | null {
   const title = label.trim();
   switch (el.shape) {
     case 'estimate': {
@@ -327,6 +344,77 @@ export function svgCollabFace(el: Face, label: string, color: string): string | 
                 color,
                 opacity: 0.45,
               })) + footerPills(PAD_X, h - PAD_Y - 18, ['Take roll'], color),
+      );
+    }
+    case 'quiz': {
+      // Quiz (docs/specs/012-collaboration/quiz.md): the disc and its ring of answers. A still image
+      // cannot run a countdown, so an unrevealed card exports as the closed
+      // disc (the question stays hidden, as it is on the board) and a revealed
+      // one exports the question with the right answer in green.
+      const scale = Math.min(el.width, el.height) / QUIZ_DESIGN_SIZE;
+      const ox = el.x + (el.width - QUIZ_DESIGN_SIZE * scale) / 2;
+      const oy = el.y + (el.height - QUIZ_DESIGN_SIZE * scale) / 2;
+      const c = QUIZ_DESIGN_SIZE / 2;
+      const revealed = el.quizRevealed === true;
+      const options = el.quizOptions ?? [];
+      const tally = quizTally(el);
+      const disc =
+        `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="${xmlEscape(color)}" opacity="0.07"/>` +
+        (el.strokeColor && stroke
+          ? `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="3"/>`
+          : `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="none" stroke="${xmlEscape(color)}" stroke-width="2" opacity="0.3"/>`);
+      const centre = revealed
+        ? text(c, c - 6, title.length > 34 ? `${title.slice(0, 33)}…` : title, {
+            size: 13,
+            weight: 600,
+            color,
+            anchor: 'middle',
+          }) +
+          text(
+            c,
+            c + 16,
+            `${quizCorrectKeys(el).length} of ${(el.responses ?? []).length} correct`,
+            {
+              size: 10,
+              color,
+              anchor: 'middle',
+              opacity: 0.6,
+              uppercase: true,
+            },
+          )
+        : text(c, c + 16, '?', { size: 48, weight: 700, color, anchor: 'middle', opacity: 0.8 });
+      const answers = revealed
+        ? quizOptionCentres(options.length)
+            .map((p, i) => {
+              const right = i === el.quizCorrect;
+              const x = p.x - QUIZ_OPTION_WIDTH / 2;
+              const y = p.y - QUIZ_OPTION_HEIGHT / 2;
+              const body = options[i] ?? '';
+              return (
+                `<rect x="${r2(x)}" y="${r2(y)}" width="${QUIZ_OPTION_WIDTH}" height="${QUIZ_OPTION_HEIGHT}" rx="14"` +
+                ` fill="${right ? QUIZ_CORRECT_GREEN : xmlEscape(color)}" opacity="${right ? 1 : 0.1}"/>` +
+                text(p.x, p.y + 4, body.length > 18 ? `${body.slice(0, 17)}…` : body, {
+                  size: 12,
+                  weight: 600,
+                  color: right ? '#ffffff' : color,
+                  anchor: 'middle',
+                }) +
+                text(p.x, y + QUIZ_OPTION_HEIGHT - 6, String(tally[i] ?? 0), {
+                  size: 9,
+                  color: right ? '#ffffff' : color,
+                  anchor: 'middle',
+                  opacity: 0.7,
+                })
+              );
+            })
+            .join('')
+        : '';
+      return (
+        `<g transform="translate(${r2(ox)} ${r2(oy)}) scale(${r2(scale)})">` +
+        disc +
+        centre +
+        answers +
+        `</g>`
       );
     }
     case 'done-check': {

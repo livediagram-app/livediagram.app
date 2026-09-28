@@ -483,6 +483,9 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
   // which is what the canvas does too (isSvgRenderedShape excludes it).
   'chair',
+  // A quiz (docs/specs/012-collaboration/quiz.md) paints its own disc and ring of answers; a box behind
+  // them would frame a circle in a square.
+  'quiz',
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md) that lay out their own surfaces: an accent bar
   // (banner, header), a row of cards, circles and connectors. A callout is
   // NOT here: its card is an ordinary bordered box with content inside.

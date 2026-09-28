@@ -223,6 +223,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone made the lines of the selected shapes or arrows thin, medium, or thick from the quick style panel.',
   'Element|Changed|QuickTextAlign':
     'Someone aligned the text of the selected shapes left, centre, or right from the quick style panel.',
+  'Element|Changed|Quiz':
+    'Someone ran a Quiz element: edited its question, started or locked a round, picked an answer, revealed the right one, or reset it.',
   'Element|Changed|Rating': "Someone changed a star-rating element's score.",
   'Element|Changed|RatingAnim':
     'Someone gave a star-rating element a looping animation, changed its speed, or turned it off.',
