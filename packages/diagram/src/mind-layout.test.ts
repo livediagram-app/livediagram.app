@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { createPinnedArrow, createShape } from './factories';
-import { MIND_CHILD_GAP_X, MIND_SIBLING_GAP_Y, MIND_FLOWS, type MindFlow } from './mind-flow';
 import {
+  MIND_CHILD_GAP_X,
   MIND_CHILD_GAP_Y,
-  isMindTreeTidy,
-  layoutMindTree,
-  reanchorMindConnectors,
-} from './mind-layout';
+  MIND_SIBLING_GAP_Y,
+  MIND_FLOWS,
+  type MindFlow,
+} from './mind-flow';
+import { isMindTreeTidy, layoutMindTree, reanchorMindConnectors } from './mind-layout';
 import type { ArrowElement, Element, ShapeElement } from './index';
 
 // docs/specs/009-elements/mind-node.md "A tidy map stays tidy".

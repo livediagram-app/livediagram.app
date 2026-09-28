@@ -16,16 +16,13 @@
 
 import {
   MIND_CHILD_GAP_X,
+  MIND_CHILD_GAP_Y,
   MIND_SIBLING_GAP_Y,
   mindConnectorAnchors,
   type MindFlow,
 } from './mind-flow';
 import { isMindNode, mindChildren } from './mind-map';
 import type { ArrowElement, Element, ElementId, ShapeElement } from './index';
-
-/** Gap between a parent and its children in the downward flow, where the
- *  levels stack vertically. Matches free placement's downward gap. */
-export const MIND_CHILD_GAP_Y = MIND_SIBLING_GAP_Y + MIND_CHILD_GAP_X / 2;
 
 /** How far a node may sit from its laid-out slot and still count as tidy.
  *  Rounding in the layout itself is the only drift a tidy map ever has. */
