@@ -1,5 +1,4 @@
-import { lucideInfo } from '@livediagram/icons/lucide';
-import { Glyph, Prims } from '@livediagram/ui';
+import { InfoNote } from '@/components/primitives/InfoNote';
 
 import type { SelectedNode } from './views';
 
@@ -22,18 +21,5 @@ const DYNAMIC_FOLDER_INFO: Partial<Record<SelectedNode['kind'], string>> = {
 export function DynamicFolderInfo({ selected }: { selected: SelectedNode }) {
   const text = DYNAMIC_FOLDER_INFO[selected.kind];
   if (!text) return null;
-  return (
-    <div className="mb-3 flex items-start gap-2.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-[11px] leading-snug text-slate-500 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
-      <InfoIcon />
-      <span>{text}</span>
-    </div>
-  );
-}
-
-function InfoIcon() {
-  return (
-    <Glyph size={14} units={24} className="mt-px shrink-0 text-slate-400">
-      <Prims prims={lucideInfo} />
-    </Glyph>
-  );
+  return <InfoNote className="mb-3">{text}</InfoNote>;
 }

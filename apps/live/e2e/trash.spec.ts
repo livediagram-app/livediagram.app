@@ -60,7 +60,7 @@ test('delete, find it in Settings › Trash, restore it', async ({ page, baseURL
   await expect(group).toContainText('30 days left');
 
   await group.getByRole('button', { name: 'Restore Quarterly plan' }).click();
-  await expect(page.getByText('The Trash is empty')).toBeVisible();
+  await expect(page.getByText('Nothing in the Trash right now')).toBeVisible();
   const back = await page.request.get(`${apiBase}/diagrams/${id}`, {
     headers: { 'X-Owner-Id': owner },
   });
@@ -125,7 +125,7 @@ test('delete permanently and Empty Trash, each confirmed', async ({ page, baseUR
   await group.getByRole('button', { name: 'Empty Trash' }).click();
   await expect(page.getByText('Delete 2 diagrams in your Trash for good?')).toBeVisible();
   await page.getByRole('button', { name: 'Empty Trash' }).last().click();
-  await expect(page.getByText('The Trash is empty')).toBeVisible();
+  await expect(page.getByText('Nothing in the Trash right now')).toBeVisible();
 
   const trash = await page.request.get(`${apiBase}/trash`, { headers });
   expect(await trash.json()).toEqual({ trash: [] });

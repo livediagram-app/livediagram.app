@@ -185,13 +185,14 @@ room`; open sessions still stop at their next save (I5).
   working, and visitors see that it was deleted." The "Diagram deleted" toast is unchanged.
 - Settings › Account, section "Your Data", row "Trash" with an "Open Trash" link and the footnote "Deleted
   diagrams wait here for 30 days before they are removed for good. Restore one to put it back where it was."
-- Trash view: intro "Deleted diagrams wait here for 30 days, then they are removed for good. Restoring one
+- Trash view: intro, in an `InfoNote` (the small info-glyph note the Dynamic folders use), "Deleted diagrams wait here for 30 days, then they are removed for good. Restoring one
   puts it back where it was." Groups "Your diagrams", each team by name (A to Z), "This browser only" with
   "Offline diagrams, kept only in this browser." Row: name, "Deleted {d MMM} · {n} days left" ("1 day left",
   "Removed at the next clean-up" at 0). Actions "Restore" (no confirmation), "Delete permanently" and
   "Empty Trash" (confirm popovers: "Delete "{name}" for good? This cannot be undone." / "Delete {n}
   diagrams in {your Trash | {team}'s Trash, for the whole team | this browser's Trash} for good? ...").
-  Loading "Loading…"; empty state "The Trash is empty".
+  Loading "Loading…"; empty state "Nothing in the Trash right now" / "Delete a diagram and it is kept
+  here for 30 days, so you can restore it."
 - Deleted card: eyebrow "Deleted", title "This diagram was deleted"; allowed: "It is in the Trash ({n}
   days left). Restore it to put it back where it was." with Restore (then a reload); otherwise "It is no
   longer available. If it is restored, this link works again." Always "Go to Explorer".
