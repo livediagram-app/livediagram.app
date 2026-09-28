@@ -1,6 +1,7 @@
 'use client';
 
 import { truncateName } from '@livediagram/diagram';
+import dynamic from 'next/dynamic';
 import {
   useEffect,
   useEffectEvent,
@@ -12,7 +13,7 @@ import {
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import { TemplatePicker, type NewDiagramSettings } from '@/components/palette/TemplatePicker';
-import { DiagramBuildAnimation } from '@/components/canvas/DiagramBuildAnimation';
+import { DiagramLoading } from '@/components/chrome/DiagramLoading';
 import { RecentDiagramsCard } from './RecentDiagramsCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
@@ -39,6 +40,16 @@ import { WIZARD_BYPASS_PARAMS, wizardBypassKind } from '@/lib/new-diagram-params
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
+
+// In-place handoff (docs/specs/007-editor/new-diagram-route.md): once a diagram is created, this page
+// renders the editor itself under the rewritten /diagram/<id> URL instead of paying for a second page
+// load. `loadEditor` is also called on mount to fetch the chunk ahead; if it still isn't in at
+// handoff, the opening screen holds at its "opening" stage.
+const loadEditor = () => import('@/app/diagram/[id]/editor-page');
+const EditorPage = dynamic(loadEditor, {
+  ssr: false,
+  loading: () => <DiagramLoading stage="opening" />,
+});
 
 // The wizard bypass a /new URL asks for, if any (docs/specs/007-editor/new-diagram-route.md). The URL does
 // not change under the page, so nothing needs to subscribe.
@@ -84,6 +95,10 @@ export default function NewDiagramPage() {
         ? { id: baseId, name: seed.name, color: seed.color, status: 'online' }
         : PENDING_SELF;
   const [submitting, setSubmitting] = useState(false);
+  // Set once the created diagram has been handed to the in-place editor. The ref mirrors it for the
+  // bfcache listener, which must stand down once this document IS the editor.
+  const [openedId, setOpenedId] = useState<string | null>(null);
+  const handedOff = useRef(false);
   // How many diagrams the user owns (null until known). Reported by
   // RecentDiagramsCard's fetch; gates the interactive tour's welcome offer
   // (docs/specs/007-editor/editor-tour.md), which is for brand-new (zero-diagram) users only.
@@ -153,6 +168,9 @@ export default function NewDiagramPage() {
 
   useEffect(() => {
     document.title = 'New diagram | livediagram';
+    // Fetch the editor's chunk while identity + the create run. Fire-and-forget: a failure here
+    // just leaves `dynamic` to retry the import at handoff.
+    loadEditor().catch(() => {});
   }, []);
 
   // Back/forward-cache restore: creating navigates away with
@@ -163,7 +181,7 @@ export default function NewDiagramPage() {
   // state so the page is usable again.
   useEffect(() => {
     const onPageShow = (e: PageTransitionEvent) => {
-      if (!e.persisted) return;
+      if (!e.persisted || handedOff.current) return;
       // A bypass auto-creates on mount, so a bfcache restore would
       // either strand the user on a frozen "Creating…" card or (if we
       // re-fired the create) trap Back behind a page that always navigates
@@ -333,7 +351,12 @@ export default function NewDiagramPage() {
     if (diagramCount === 0) {
       markTourPending();
     }
-    window.location.assign(`/diagram/${diagramId}`);
+    // Hand off in place: the editor URL takes /new's history entry, and the editor mounts here,
+    // reading the id from the rewritten path exactly as a direct visit would.
+    handedOff.current = true;
+    document.documentElement.removeAttribute('data-just-draw');
+    window.history.replaceState(null, '', `/diagram/${diagramId}`);
+    setOpenedId(diagramId);
   };
 
   // Just-Draw fast path (docs/specs/007-editor/new-diagram-route.md): fire the Skip-defaults create on mount.
@@ -361,6 +384,9 @@ export default function NewDiagramPage() {
     fireBypass(bypassKind);
   }, [bypassKind]);
 
+  // Keyed on the id so a second handoff (not reachable today) would remount a fresh editor.
+  if (openedId) return <EditorPage key={openedId} />;
+
   if (createError) {
     return (
       <div className="flex h-dvh flex-col">
@@ -387,36 +413,11 @@ export default function NewDiagramPage() {
     );
   }
 
-  // A bypass never shows the wizard: a lightweight creating card
-  // holds the screen for the beat between mount and the editor navigation
-  // (the auto-create effect above). It carries the shared nodes-and-arrows
-  // build animation rather than a spinner — the editor's "Loading your
-  // diagram…" screen shows the same illustration, so create → load reads
-  // as one continuous moment (docs/specs/007-editor/new-diagram-route.md). Create failures fall through to
+  // A bypass never shows the wizard: the opening screen, at its "creating" stage, holds the screen
+  // from mount to the handoff (docs/specs/007-editor/new-diagram-route.md). The editor's own load
+  // renders the same screen, so create → open reads as one moment. Create failures fall through to
   // the retryable error card branch before this one.
-  if (bypassKind) {
-    return (
-      <div className="flex h-dvh flex-col">
-        <EditorHeader
-          diagramName="New diagram"
-          hideTitle
-          showShare={false}
-          shareable={false}
-          onOpenShare={() => {}}
-          onRename={() => {}}
-        />
-        <main className="relative flex-1 overflow-hidden bg-slate-50 dark:bg-slate-950">
-          <AnimatedLinesBackdrop />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-white px-8 py-6 text-slate-700 shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-              <DiagramBuildAnimation />
-              <p className="text-sm font-medium">Creating your diagram…</p>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  if (bypassKind) return <DiagramLoading stage="creating" />;
 
   return (
     <div className="flex h-dvh flex-col">
@@ -426,7 +427,7 @@ export default function NewDiagramPage() {
           beat until then. The script runs as the HTML parses, BEFORE the
           wizard markup below paints, and flags the root element; the style
           rule hides the wizard-only content under that flag until React
-          swaps in the creating card. */}
+          swaps in the opening screen. */}
       <script
         dangerouslySetInnerHTML={{
           __html:
