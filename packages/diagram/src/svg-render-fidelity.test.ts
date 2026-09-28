@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { renderElementsToSvg } from './svg-render';
 import { createShape } from './factories';
 import { wrapLabel } from './svg-render-primitives';
+import { SELECTION_MODES } from './selection-mode';
+import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
 import type { ShapeElement, Tab } from './index';
 
 // The Behaviour faces export the way the canvas draws them
@@ -91,5 +93,15 @@ describe('wrapLabel', () => {
 
   it('keeps an over-long word whole for an icon caption', () => {
     expect(wrapLabel('smartwatch', 50, (s) => s.length * 7)).toEqual(['smartwatch']);
+  });
+});
+
+describe('Mode button glyph (docs/specs/020-import-export/export-fidelity.md)', () => {
+  it('draws the mode’s own glyph from the shared data, not a placeholder ring', () => {
+    for (const mode of SELECTION_MODES) expect(MODE_GLYPHS[mode], mode).toBeDefined();
+    const el = { ...createShape('mode-button', 0, 0), mode: 'eraser' as const };
+    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] } as unknown as Tab);
+    const eraser = MODE_GLYPHS.eraser!.prims[0] as { d: string };
+    expect(svg).toContain(eraser.d);
   });
 });

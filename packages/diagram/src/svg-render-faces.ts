@@ -23,6 +23,29 @@ import { borderOf } from './svg-render-border';
 import { REVEAL_COVER_BASE, type CanvasSurface } from './colors';
 import { collabAccent, glow, pill, text, type Face } from './svg-render-face-kit';
 import { svgActionPanel, svgCommentPanel } from './svg-render-panel-faces';
+import { glyphStrokePx, iconPrimsMarkup, strokeUnits } from '@livediagram/icons';
+import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
+
+// The canvas draws a mode glyph at the palette's 14px weight and scales the
+// SVG to 22px on the button face, with non-scaling strokes, so its lines stay
+// at the palette's on-screen weight. The export reproduces that: the same
+// prims at 22px, every stroke converted from on-screen px to the glyph's units.
+const MODE_GLYPH_PX = 22;
+const MODE_GLYPH_SOURCE_PX = 14;
+function modeGlyph(mode: string, cx: number, cy: number, color: string): string {
+  const g = MODE_GLYPHS[mode];
+  if (!g) return '';
+  const toUnits = (px: number) => strokeUnits(px, MODE_GLYPH_PX, g.units);
+  const prims = g.prims.map((p) => (p.sw !== undefined ? { ...p, sw: toUnits(p.sw) } : p));
+  const half = MODE_GLYPH_PX / 2;
+  return (
+    `<svg x="${r2(cx - half)}" y="${r2(cy - half)}" width="${MODE_GLYPH_PX}" height="${MODE_GLYPH_PX}"` +
+    ` viewBox="0 0 ${g.units} ${g.units}" color="${xmlEscape(color)}" fill="none" stroke="${xmlEscape(color)}"` +
+    ` stroke-width="${r2(toUnits(glyphStrokePx(MODE_GLYPH_SOURCE_PX)))}" stroke-linecap="round" stroke-linejoin="round">` +
+    iconPrimsMarkup(prims) +
+    `</svg>`
+  );
+}
 
 /** The Behaviour kinds this module draws a face for, so the caller knows not
  *  to print the generic centred label over the top of one. */
@@ -82,16 +105,16 @@ export function svgBehaviourFace(
       );
     }
     case 'mode-button': {
-      // ModeButtonFace: the glyph in a translucent chip over the label, or,
-      // with no label, a "Switch to" kicker over the mode's name. The palette
-      // glyph itself lives in the editor, so the chip carries a plain ring.
+      // ModeButtonFace: the mode's glyph in a translucent chip over the label,
+      // or, with no label, a "Switch to" kicker over the mode's name. The
+      // glyph is the SAME drawing the canvas uses (MODE_GLYPHS).
       const derived = !title;
       const chipY = cy - (derived ? 16 : 11.5);
       const mode = SELECTION_MODE_LABEL[el.mode ?? DEFAULT_BUTTON_MODE];
       return (
         keycapEdge(el, color) +
         `<circle cx="${r2(cx)}" cy="${r2(chipY)}" r="17.5" fill="${xmlEscape(color)}" fill-opacity="0.055" stroke="${xmlEscape(color)}" stroke-opacity="0.07"/>` +
-        `<circle cx="${r2(cx)}" cy="${r2(chipY)}" r="8" fill="none" stroke="${xmlEscape(color)}" stroke-width="1.6"/>` +
+        modeGlyph(el.mode ?? DEFAULT_BUTTON_MODE, cx, chipY, color) +
         (derived
           ? text(cx, cy + 18, 'Switch to', {
               size: 9,

@@ -19,6 +19,18 @@ export type IconPrim =
   // <text> so a non-emoji character wouldn't render hollow either.
   | { t: 'text'; text: string; x: number; y: number; size: number };
 
+// Optional paint on ONE primitive, for the few glyphs that mix a filled dot or
+// a heavier / fainter stroke into line art (the selection-mode glyphs,
+// mode-glyphs.ts). Everything else leaves paint to the wrapper, as before.
+export type PrimStyle = {
+  // Filled in the current colour, unstroked (a dot).
+  fill?: boolean;
+  // Stroke width in the glyph's own units.
+  sw?: number;
+  opacity?: number;
+};
+export type StyledPrim = IconPrim & PrimStyle;
+
 export type IconDef = {
   id: string;
   label: string;
