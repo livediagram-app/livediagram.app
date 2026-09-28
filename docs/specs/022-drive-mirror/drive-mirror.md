@@ -49,7 +49,7 @@ this spec does not restate it.
   and past popup blockers), requesting `drive.file` and `drive.install` with
   offline access. `prompt=consent` is used only when no refresh token is
   stored, so the user normally consents once.
-- **Exchange:** Google redirects back to the live app with a code and the
+- **Exchange:** Google redirects back to the live app at `/drive/connected` with a code and the
   `state` value the app set; the app posts both to the api, which checks
   `state`, exchanges the code with the client secret, encrypts the refresh
   token and stores it. The browser never sees the refresh token.
