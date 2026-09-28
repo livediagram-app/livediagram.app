@@ -1,10 +1,11 @@
 // Mermaid ER diagram -> DiagramGraph (docs/specs/020-import-export/mermaid.md). Import-only: entities are
-// square boxes (attribute blocks fold into the label, one `type name` per
-// line), relationships are edges whose cardinality maps onto arrow ends —
+// Entity elements (the name is the title, each attribute a field row with its
+// type and any PK / FK / UK marker as the row's type text), relationships are edges whose cardinality maps onto arrow ends —
 // a "many" side (crow's foot) gets the open-V head on that end, one-to-one
 // renders headless, and non-identifying (dotted) relationships render
 // dashed. Export always emits flowchart text.
 
+import type { EntityField } from './data-shapes';
 import type { GraphEdge, GraphNode } from './graph-authoring';
 import { cleanLine, decodeLabel, type ParseMermaidResult } from './mermaid-shared';
 
@@ -17,23 +18,24 @@ const REL_RE =
   /^([A-Za-z0-9_-]+)\s+(\|o|\|\||\}o|\}\|)(--|\.\.)(o\||\|\||o\{|\|\{)\s+([A-Za-z0-9_-]+)\s*(?::\s*(\S.*))?$/;
 // `CUSTOMER {` opens an attribute block; `CUSTOMER {}` is an empty one.
 const BLOCK_OPEN_RE = /^([A-Za-z0-9_-]+)\s*\{\s*(\})?$/;
-// `string name PK "comment"` — keep `type name`, drop keys + comments.
-const ATTR_RE = /^([A-Za-z0-9_()[\]]+)\s+([A-Za-z0-9_-]+)/;
+// `string name PK, FK "comment"` — keep the type, name and key markers, drop
+// the comment.
+const ATTR_RE =
+  /^([A-Za-z0-9_()[\]]+)\s+([A-Za-z0-9_-]+)(?:\s+((?:PK|FK|UK)(?:\s*,\s*(?:PK|FK|UK))*))?/;
 
 export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
   const nodes = new Map<string, GraphNode>();
   const edges: GraphEdge[] = [];
-  let block: { id: string; attrs: string[] } | null = null;
+  let block: { id: string; attrs: EntityField[] } | null = null;
 
   const touch = (id: string) => {
-    if (!nodes.has(id)) nodes.set(id, { id, label: id, shape: 'square' });
+    if (!nodes.has(id)) nodes.set(id, { id, label: id, fields: [] });
     return nodes.get(id)!;
   };
 
   const closeBlock = () => {
     if (!block) return;
-    const n = touch(block.id);
-    n.label = block.attrs.length ? [block.id, ...block.attrs].join('\n') : block.id;
+    touch(block.id).fields = block.attrs;
     block = null;
   };
 
@@ -48,7 +50,10 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
         continue;
       }
       const attr = ATTR_RE.exec(line);
-      if (attr) block.attrs.push(`${attr[1]} ${attr[2]}`);
+      if (attr) {
+        const keys = attr[3]?.replace(/\s+/g, '');
+        block.attrs.push({ name: attr[2]!, type: keys ? `${attr[1]} ${keys}` : attr[1]! });
+      }
       continue;
     }
 

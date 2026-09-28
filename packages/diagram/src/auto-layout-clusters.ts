@@ -17,6 +17,7 @@ import {
   type GraphCluster,
 } from './graph-authoring';
 import { unionRects, type Rect } from './geometry-primitives';
+import { bowReciprocalEdges } from './arrow-reciprocal';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
 // Space between a frame's border and its members: the top band is deeper so
@@ -114,8 +115,10 @@ export function layoutClusteredGraph(
   const sized = new Set(graph.nodes.map((n) => n.id));
 
   if (clusters.length === 0) {
-    return sweepEdgelessNodes(
-      autoLayoutElements(graphToElements(graph, makeEdgeId), { direction, fixedSizeIds: sized }),
+    return bowReciprocalEdges(
+      sweepEdgelessNodes(
+        autoLayoutElements(graphToElements(graph, makeEdgeId), { direction, fixedSizeIds: sized }),
+      ),
     );
   }
 
@@ -223,7 +226,9 @@ export function layoutClusteredGraph(
   // catches free nodes with no edges at all — frames and cluster members
   // are deliberately placed, so they're exempt.
   const deliberate = new Set([...frameIds, ...clusterOf.keys()]);
-  return sweepEdgelessNodes([...placedFrames, ...placedNodes, ...arrows], deliberate);
+  return bowReciprocalEdges(
+    sweepEdgelessNodes([...placedFrames, ...placedNodes, ...arrows], deliberate),
+  );
 }
 
 // A group's members that no arrow inside the group touches (the usual case: a
@@ -244,9 +249,14 @@ function lineUpLoose(
   let cursor = block
     ? (direction === 'TB' ? block.x + block.width : block.y + block.height) + SIBLING_GAP
     : 0;
+  // Centred on one line, not aligned by an edge: a rank is its members'
+  // shared main-axis centre, which orderMembersByNeighbours groups by.
   const main = block ? (direction === 'TB' ? block.y : block.x) : 0;
+  const mainLen = (m: BoxedElement) => (direction === 'TB' ? m.height : m.width);
+  const band = Math.max(...loose.map(mainLen));
   for (const m of loose) {
-    pos.set(m.id, direction === 'TB' ? { x: cursor, y: main } : { x: main, y: cursor });
+    const along = main + (band - mainLen(m)) / 2;
+    pos.set(m.id, direction === 'TB' ? { x: cursor, y: along } : { x: along, y: cursor });
     cursor += (direction === 'TB' ? m.width : m.height) + SIBLING_GAP;
   }
   return members.map((m) => {

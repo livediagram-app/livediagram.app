@@ -12,6 +12,7 @@ import type {
   TabResponse,
 } from '@livediagram/api-schema';
 import { coerceShapeKind, isValidTab, type Element, type Tab } from '@livediagram/diagram';
+import { lanesToFront, normaliseElement, normaliseElements } from './element-normalise';
 import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
 import { TRASH_RETENTION_DAYS, type TrashedDiagram } from '@livediagram/api-schema';
 import { ApiError, apiFetch, apiJson, reportApiFailure } from './api';
@@ -190,7 +191,11 @@ export function registerTools(server: McpServer, env: Env): void {
           tabs.push(buildGraphTab(tabId, t.name, input.graph, args.theme));
           continue;
         }
-        const candidate: unknown = { id: tabId, name: t.name, elements: t.elements ?? [] };
+        const candidate: unknown = {
+          id: tabId,
+          name: t.name,
+          elements: normaliseElements(t.elements ?? []),
+        };
         if (!t.elements || !isValidTab(candidate)) {
           return errorResult(
             `Invalid elements in tab "${t.name}". Provide "elements" (or a "template" kind ` +
@@ -252,7 +257,11 @@ export function registerTools(server: McpServer, env: Env): void {
       }
       const input = resolveGraphInput(args);
       if (input.error) return errorResult(input.error);
-      const candidate: unknown = { id: tabId, name: args.name, elements: args.elements ?? [] };
+      const candidate: unknown = {
+        id: tabId,
+        name: args.name,
+        elements: normaliseElements(args.elements ?? []),
+      };
       if (!templateKind && !input.graph && (!args.elements || !isValidTab(candidate))) {
         return errorResult(
           'Invalid input. Provide a "graph" (nodes + edges), "mermaid", "elements", or a "template" kind ' +
@@ -323,23 +332,31 @@ export function registerTools(server: McpServer, env: Env): void {
         if (input.graph) {
           nextElements = layoutGraph(input.graph);
         } else if (args.elements) {
-          nextElements = args.elements;
+          nextElements = normaliseElements(args.elements);
         } else {
           return errorResult('replace mode requires "graph", "mermaid" or "elements".');
         }
       } else {
         if (!args.ops) return errorResult('ops mode requires "ops".');
         const byId = new Map<string, unknown>(tab.elements.map((e) => [e.id, e as unknown]));
+        // Only the elements an edit touches are made safe (§4.7a); the rest of
+        // the diagram is left exactly as it is.
+        const touched = new Set<string>();
         for (const op of args.ops) {
           const el = op.element as { id?: string } | undefined;
           if (op.op === 'remove' && op.elementId) byId.delete(op.elementId);
-          else if (op.op === 'add' && el?.id) byId.set(el.id, el);
-          else if (op.op === 'update' && op.elementId) {
+          else if (op.op === 'add' && el?.id) {
+            byId.set(el.id, el);
+            touched.add(el.id);
+          } else if (op.op === 'update' && op.elementId) {
             const prev = (byId.get(op.elementId) as Record<string, unknown>) ?? {};
             byId.set(op.elementId, { ...prev, ...(el ?? {}) });
+            touched.add(op.elementId);
           }
         }
-        nextElements = [...byId.values()];
+        nextElements = lanesToFront(
+          [...byId].map(([id, el]) => (touched.has(id) ? normaliseElement(el) : el)),
+        );
       }
 
       const candidate: unknown = { id: tabId, name: tab.name, elements: nextElements };

@@ -274,7 +274,8 @@ returning a compact description of the element schema: the element types
 (`shape` / `text` / `sticky` / `arrow` / `table` / …), the shape vocabulary,
 required fields, the pinned-arrow anchor convention (`from.e → to.w` etc.), and
 the design rules that make diagrams read well (don't set colours — the theme
-owns them; size siblings consistently; prefer pinned arrows). This is **how the
+owns them, a sticky's own colours excepted; size siblings consistently; prefer
+pinned arrows), and the content fields of the kinds that carry content (§4.7a). This is **how the
 model produces high-quality diagrams**: the schema is presented once, declaratively,
 rather than baked verbatim into every tool description. The same essentials are
 also summarised in the MCP server `instructions` and in the `create`/`update`
@@ -380,6 +381,59 @@ they do ask for it outright: short headings, detail in the note, related nodes
 grouped, a direction and style that fit the subject. Nodes are set in one fixed
 text size (`sm`, what the sizing measures against), not the shape default that
 scales text to fill each box.
+
+### 4.7a Content-carrying element kinds
+
+Six kinds hold content of their own, and the element format documents their
+fields so a model can fill them rather than guess: **sticky**, **table**,
+**code block**, **entity**, **lane**, and the three **charts** (bar, line, pie).
+Every other kind stays listed by name only. The field notes are facts about what
+each field does (§4.15), carried on the tools' element argument and in the
+schema resource (§4.6), short enough not to bloat every tool definition.
+
+| Kind                              | Content fields                                                     | Facts the notes state                                                                                                                                                                                                               |
+| --------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sticky` (type)                   | `label`; optional `fillColor` + `textColor`                        | The theme never recolours a sticky, so its own colours are kept; the notes list the palette's sticky pairs (classic, lemon, peach, rose, lilac, sky, mint, teal, slate, paper, charcoal, ink). Unset, it is the classic amber note. |
+| `table` (type)                    | `cells` (rows of strings), `headerRow`, `headerColumn`, `zebra`    | The first row is the header when `headerRow` is set.                                                                                                                                                                                |
+| `code-block` (shape)              | `code` (up to 4000 chars), `codeLanguage`, `codeTheme`, `codeWrap` | The languages and themes are listed; the block draws itself, so `label` is not shown.                                                                                                                                               |
+| `entity` (shape)                  | `label` (the title), `entityFields` `[{ name, type? }]` (up to 40) | Keys go in the type text (`uuid PK`).                                                                                                                                                                                               |
+| `lane` (shape)                    | `label` (the title), `headerFill`                                  | Contents sit inside the lane's box; lanes are placed one under another.                                                                                                                                                             |
+| `bar-chart` / `pie-chart` (shape) | `pieSlices` `[{ label, value }]`                                   | A chart draws no title: a caption is a separate `text` element. Categories show in the legend.                                                                                                                                      |
+| `line-chart` (shape)              | `lineCategories` (x labels), `lineSeries` `[{ name, values }]`     | The same, with one value per category.                                                                                                                                                                                              |
+
+**The sticky exception to "the theme owns colours".** The design rule that a
+model leaves colours to the theme (§4.6) holds for every themed element; a
+sticky is not themed at all (it keeps its amber across every theme), so its
+`fillColor` / `textColor` are content, and the notes say so.
+
+**The server makes these kinds safe to author** (`apps/mcp/src/element-normalise.ts`),
+before validation, on every element path (create, add_tab, update in either
+mode), so a near-miss draws correctly instead of failing the call or drawing
+wrongly:
+
+- **Every element takes the presentation defaults the editor's own factory
+  gives a new one of its kind** for the fields it leaves out: `textSize` (`md`
+  for shapes, stickies and tables, `sm` for text) and, where the kind sets
+  them, the title alignment and padding (an entity's top-left title, a lane's
+  left title strip and `lg` padding, a frame's header). Unset, text scales to
+  fill its box, so a lane or entity title came out as one giant word across
+  its contents and a sticky's note filled it edge to edge; a box drawn in the
+  editor never arrives that way. This applies to every element on these paths,
+  not only the six.
+- A **table**'s ragged rows are padded to the widest (`normalizeTable`, the same
+  pass the editor runs on load), so every row renders.
+- An unknown **codeLanguage** becomes `plain` and an unknown **codeTheme** is
+  dropped (the default), rather than failing the whole tab validation.
+- An **entity**'s height grows to fit its rows (`entityHeight`: a 34 px title
+  band plus 26 px a row), since rows past the box are not drawn.
+- **Chart** data is coerced: a slice or value that is not a finite number
+  becomes 0, labels become strings, and each series' `values` is padded or cut
+  to the category count. Empty data draws the built-in sample, which the notes
+  state.
+- **Lanes move to the front of the element list** (their order among themselves
+  kept), so they paint behind everything: a lane has a fill, and one listed after
+  its contents covered them. It also makes each lane the backmost box under its
+  contents, which is what lets dragging it in the editor carry them.
 
 ### 4.8 `share_diagram`
 

@@ -125,6 +125,10 @@ export function svgArrow(
   // inlines several renders of the same arrow (thumbnails, the minimap) gives
   // each its own prefix so no render borrows another's mask.
   maskIdPrefix = 'lvd-ko-',
+  // The boxes an arrow may pass behind: the ones this render draws. An export
+  // that leaves hidden layers out must not break a line around a box that
+  // isn't in the picture. Defaults to every element.
+  occluders: Iterable<Element> = elements,
 ): string {
   // Same converging-fan offset the live canvas applies (see
   // arrow-endpoint-spread.ts), so exports match what's on screen.
@@ -156,7 +160,7 @@ export function svgArrow(
   // (docs/specs/008-canvas/arrow-route-behind.md), and around the label knockouts. Both go in one
   // mask, the same one ArrowView mints, so the export shows the same gaps.
   const holes = [
-    ...routeBehindHoles(arrow, from, to, elements).map((h) => ({ ...h, rx: ROUTE_BEHIND_MARGIN })),
+    ...routeBehindHoles(arrow, from, to, occluders).map((h) => ({ ...h, rx: ROUTE_BEHIND_MARGIN })),
     ...labels.knockoutsOf(arrow.id).map((k) => ({ ...k, rx: KNOCKOUT_RADIUS_PX })),
   ];
   const maskId =

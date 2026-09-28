@@ -22,7 +22,8 @@ arrows.
   States and transitions are nodes and edges; composite states reuse the
   cluster/frame machinery.
 - **ER diagrams** (`erDiagram`) — **import only**. Entities and
-  relationships are nodes and edges; attributes fold into the entity label.
+  relationships are nodes and edges; each entity becomes an Entity element
+  with its attributes as field rows.
 
 Import is per-dialect; **export always emits flowchart text**. The canvas has
 no semantic layer (a state and a flowchart node are both just shapes once
@@ -112,10 +113,16 @@ LR` line sets the layout direction (TB default).
 ## ER diagram coverage (import)
 
 - **Header**: `erDiagram` (no direction syntax; lays out TB).
-- **Entities**: square boxes. An attribute block (`CUSTOMER { string name
-… }`) folds into the label — entity name first line, one `type name`
-  attribute per line. Key/comment columns (PK / FK / UK, "comment") are
-  dropped from the label.
+- **Entities**: [Entity](../009-elements/entity.md) elements (`shape:
+'entity'`), the canvas's own record box: the entity name is the title and
+  each attribute (`CUSTOMER { string name PK "comment" }`) is a field row,
+  `name` with its type as the row's type text. Key markers (PK / FK / UK)
+  stay in the type text (`string PK`), the convention the ER template uses;
+  comments are dropped. The box is sized to its rows (a title band plus a row
+  each). This replaced square boxes whose label held the name and every
+  attribute on its own line, which read as a paragraph and did not survive a
+  label cap (the MCP's, [MCP server](../015-api/mcp-server.md) §4.7, flattened
+  it to "SHARE_LINK text code text diagram_id…").
 - **Relationships**: `A ||--o{ B : label` becomes an edge labelled `label`.
   Cardinality maps onto arrow ends: a "many" side (crow's foot, `{` / `}`)
   gets an open-V arrowhead on that end (`ends`: the many side(s), `head:

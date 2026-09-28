@@ -11,7 +11,17 @@
 // not a second validator).
 import { GRAPH_LABEL_MAX } from './graph-input';
 import { z } from 'zod';
-import { ANCHORS, ELEMENT_TYPES, SHAPE_KINDS, THEMES } from '@livediagram/diagram';
+import {
+  ANCHORS,
+  CODE_LANGUAGES,
+  CODE_MAX_LENGTH,
+  CODE_THEMES,
+  ELEMENT_TYPES,
+  ENTITY_MAX_FIELDS,
+  SHAPE_KINDS,
+  STICKY_PRESETS,
+  THEMES,
+} from '@livediagram/diagram';
 
 export const SCHEMA_RESOURCE_URI = 'livediagram://schema/elements';
 
@@ -19,6 +29,31 @@ const types = [...ELEMENT_TYPES].join(', ');
 const anchors = [...ANCHORS].join(', ');
 const shapeKinds = [...SHAPE_KINDS].join(', ');
 const themeIds = THEMES.map((t) => t.id).join(', ');
+
+// The content fields of the kinds that carry content (docs/specs/015-api/mcp-server.md §4.7a), as
+// facts. One copy, shared by the tool argument and the schema resource; the
+// vocabularies come from packages/diagram so they can't drift.
+const stickyPairs = STICKY_PRESETS.map((p) => `${p.name.toLowerCase()} ${p.fill}/${p.text}`).join(
+  ', ',
+);
+const CONTENT_KINDS =
+  'Content-carrying kinds: ' +
+  'type "sticky": a note whose "label" is its text; the theme never recolours it, so its own ' +
+  `"fillColor" + "textColor" are kept (palette pairs, fill/text: ${stickyPairs}); unset it is ` +
+  'the classic amber note. ' +
+  'type "table": "cells" is rows of strings (ragged rows are padded), "headerRow" / ' +
+  '"headerColumn" style the first row / column, "zebra" tints alternate rows. ' +
+  `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +
+  `${CODE_LANGUAGES.join(', ')}), "codeTheme" (${CODE_THEMES.map((t) => t.id).join(', ')}; ` +
+  'default midnight, dark), "codeWrap"; the block draws itself and shows no label. ' +
+  'shape "entity": "label" is the title, "entityFields" is [{ "name", "type"? }] rows (up to ' +
+  `${ENTITY_MAX_FIELDS}; keys go in the type, e.g. "uuid PK"); the box grows to fit its rows. ` +
+  'shape "lane": a swimlane whose "label" is the title in its left strip; elements fully inside ' +
+  'its box belong to it, lanes are placed one under another, and they paint behind everything. ' +
+  'shape "bar-chart" / "pie-chart": "pieSlices" is [{ "label", "value" }]; categories show in ' +
+  'the legend. shape "line-chart": "lineCategories" is the x labels, "lineSeries" is ' +
+  '[{ "name", "values" }] with one value per category. A chart draws no title (a caption is a ' +
+  'separate "text" element) and draws sample data when its data is empty.';
 
 // Self-contained element schema, attached to each tool's element argument so the
 // model reads it straight from the tool definition (see the comment above).
@@ -35,7 +70,8 @@ const ELEMENT_SCHEMA_HINT =
   'either { "kind": "pinned", "elementId", "anchor" } (anchors: ' +
   `${anchors}; preferred, so arrows track their shapes) or ` +
   '{ "kind": "free", "x", "y" }; an arrow may carry a "label". ' +
-  'Do NOT set colours; the theme owns fill, stroke, and text.';
+  'The theme owns fill, stroke, and text colour on every element except a sticky. ' +
+  CONTENT_KINDS;
 
 export function elementSchemaDoc(): string {
   return `# livediagram element schema
@@ -62,6 +98,9 @@ Boxed elements (shape, text, sticky, table, image, annotation) carry:
     that has a label is a "shape" with a "label" (use shape: "square"), not a
     "text". Defaulting to "text" for nodes makes a diagram of floating words
     with no boxes; reach for "shape" unless you specifically want loose text.
+
+## Content-carrying kinds
+${CONTENT_KINDS}
 
 ## Arrows
 type "arrow" with "from" and "to" endpoints. PREFER pinned endpoints so arrows
@@ -104,7 +143,8 @@ tabs in a create_diagram call.
   "diamond" for a decision, "cylinder" for a datastore) for every box in the
   diagram. Reserve type "text" for stand-alone titles / captions.
 - Do NOT set colours. The theme owns fill / stroke / text colour; omit them and
-  the diagram inherits a coherent palette.
+  the diagram inherits a coherent palette. A sticky is the exception: it is not
+  themed, so its own fillColor / textColor are kept.
 - Size sibling nodes consistently (e.g. every box 160x64).
 - Prefer pinned arrows (node -> node) so they track their shapes when moved.
 - Give every node an id and a short, clear label.
@@ -133,7 +173,9 @@ shortened with the full text kept in the node's note). Raw "elements" are for a 
 arrangement (a cycle as a ring, a grid) or mixed non-node content. Either way:
 use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
 "text" (text is only for titles/captions), prefer pinned arrows (node -> node),
-and do NOT set colours, the theme owns them. For a standard artefact (kanban, flowchart, SWOT,
+and the theme owns colours (a sticky keeps its own). Stickies, tables, code blocks,
+entities, lanes and charts carry content fields, documented on each tool's
+element argument. For a standard artefact (kanban, flowchart, SWOT,
 gantt, wireframe, ...) check list_templates first and pass its kind as
 "template" on create_diagram / add_tab — the hand-tuned scaffold beats
 rebuilding one from raw elements — then fill in real labels with

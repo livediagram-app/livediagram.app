@@ -16,6 +16,7 @@
 import { SHAPE_DEFAULT_SIZE } from './factories';
 import { ARROW_THICKNESS_PX } from './arrow-style';
 import { coerceShapeKind } from './validate';
+import { ENTITY_MAX_FIELDS, ENTITY_MAX_TEXT, entityHeight, type EntityField } from './data-shapes';
 // `Element` is defined on the barrel (index.ts); a type-only import back into
 // it is erased at runtime, so the cycle is harmless — the package's sanctioned
 // pattern (auto-layout.ts does the same).
@@ -36,6 +37,10 @@ export type GraphNode = {
   // Optional detail behind the heading: becomes the element's note, which the
   // editor shows on the element (docs/specs/015-api/mcp-server.md §4.7).
   note?: string;
+  // Field rows: the node becomes an entity (docs/specs/009-elements/entity.md), a titled record box, with
+  // `label` as its title. What an ER import makes of each table
+  // (docs/specs/020-import-export/mermaid.md).
+  fields?: EntityField[];
 };
 
 export type GraphEdge = {
@@ -107,6 +112,12 @@ export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
 // The side of an unlabelled circle node (see graphToElements).
 export const DOT_SIZE = 28;
 const CHAR_PX = 7.4;
+// Capitals set about 30% wider than the average glyph CHAR_PX assumes, so an
+// all-caps name ("TEAM_MEMBER", an ER table) was sized short and wrapped
+// mid-word. Text length in average-glyph units.
+const CAPS_WIDTH = 1.3;
+const glyphUnits = (text: string) =>
+  [...text].reduce((sum, ch) => sum + (ch >= 'A' && ch <= 'Z' ? CAPS_WIDTH : 1), 0);
 const LINE_PX = 19;
 const PAD_PX = 40;
 const MAX_BOX_W = 240;
@@ -119,11 +130,40 @@ export function labelBoxSize(
   const text = (label ?? '').trim();
   if (!text) return { width: base.width, height: base.height };
   const roomy = shape === 'diamond' ? 1.45 : 1;
-  const oneLine = text.length * CHAR_PX * roomy + PAD_PX;
+  const units = glyphUnits(text);
+  const oneLine = units * CHAR_PX * roomy + PAD_PX;
   const width = Math.round(Math.min(MAX_BOX_W * roomy, Math.max(base.width, oneLine)));
-  const lines = Math.max(1, Math.ceil((text.length * CHAR_PX * roomy) / (width - PAD_PX)));
+  const lines = Math.max(1, Math.ceil((units * CHAR_PX * roomy) / (width - PAD_PX)));
   const height = Math.round(Math.max(base.height, lines * LINE_PX + 28) * (lines > 1 ? roomy : 1));
   return { width, height };
+}
+
+// An entity node: title-aligned top-left (the title otherwise sits centred over
+// the rows), wide enough for its longest row, tall enough for every row.
+function entityNode(n: GraphNode, raw: EntityField[]): Element {
+  const clip = (t: string) => t.slice(0, ENTITY_MAX_TEXT);
+  const fields = raw
+    .slice(0, ENTITY_MAX_FIELDS)
+    .map((f) => ({ name: clip(f.name), ...(f.type ? { type: clip(f.type) } : {}) }));
+  const widest = Math.max(
+    glyphUnits(n.label ?? ''),
+    ...fields.map((f) => glyphUnits(f.name) + glyphUnits(f.type ?? '') + 2),
+  );
+  return {
+    id: n.id,
+    type: 'shape' as const,
+    shape: 'entity' as const,
+    x: 0,
+    y: 0,
+    width: Math.round(Math.min(360, Math.max(200, widest * CHAR_PX + PAD_PX))),
+    height: entityHeight(fields.length),
+    textSize: 'sm' as const,
+    textAlignX: 'left' as const,
+    textAlignY: 'top' as const,
+    ...(n.label !== undefined ? { label: n.label } : {}),
+    entityFields: fields,
+    ...(n.note ? { note: n.note } : {}),
+  };
 }
 
 export function graphToElements(
@@ -138,6 +178,7 @@ export function graphToElements(
     // junction. Drawn at the default circle size it read as an empty box
     // waiting for text. Solid in the theme's accent via the preset binding,
     // which a theme walk resolves (docs/specs/020-import-export/mermaid.md).
+    if (n.fields) return entityNode(n, n.fields);
     if (shape === 'circle' && !(n.label ?? '').trim()) {
       return {
         id: n.id,

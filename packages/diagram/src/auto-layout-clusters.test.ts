@@ -228,3 +228,30 @@ describe('group members (docs/specs/020-import-export/mermaid.md)', () => {
     expect(byId(els, 'a').width).toBeLessThan(byId(els, 'b').width);
   });
 });
+
+describe('group member order', () => {
+  it('orders lined-up members of different sizes by their outside neighbours', () => {
+    // Two sources in one rank, top first. The members arrive in the other
+    // order (a wired to the bottom source, b to the top one), so only the
+    // neighbour ordering puts b above a.
+    const els = layoutClusteredGraph(
+      {
+        nodes: [
+          { id: 'top', label: 'Top source' },
+          { id: 'bottom', label: 'Bottom source' },
+          { id: 'a', label: 'Orders' },
+          { id: 'b', label: 'Payments service that talks to Stripe' },
+        ],
+        edges: [
+          { from: 'top', to: 'b' },
+          { from: 'bottom', to: 'a' },
+        ],
+        clusters: [{ id: 'g', label: 'Core', members: ['a', 'b'] }],
+      },
+      { direction: 'LR', makeEdgeId: makeIds() },
+    );
+    const cy = (id: string) => byId(els, id).y + byId(els, id).height / 2;
+    expect(cy('top')).toBeLessThan(cy('bottom'));
+    expect(cy('b')).toBeLessThan(cy('a'));
+  });
+});

@@ -507,6 +507,7 @@ export * from './arrow-path-hits';
 export * from './arrow-rebind';
 export * from './arrow-endpoint-spread';
 export * from './arrow-orthogonal';
+export * from './arrow-reciprocal';
 // Arrows breaking around intervening boxes at render time (docs/specs/008-canvas/arrow-route-behind.md).
 export * from './arrow-behind';
 // Tab + diagram name length cap (docs/specs/006-diagram/name-length.md).

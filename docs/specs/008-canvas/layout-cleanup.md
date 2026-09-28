@@ -96,6 +96,18 @@ already line up runs straight rather than drawing a zero-length elbow with a
 sideways head (`arrow-orthogonal.ts`). The bends are ordinary curve points, so
 the author can drag them like any other.
 
+### Two-way edges bow apart
+
+In laid-out graph input (a Mermaid import, the MCP's `graph` / `mermaid`), a
+pair of straight arrows between the same two boxes in opposite directions (a
+state diagram's Private -> Shared and Shared -> Private) is curved apart, each
+bowing to its own side of the line between the boxes (`arrow-reciprocal.ts`):
+at least `RECIPROCAL_BOW` (36), and for a labelled pair running up and down, far
+enough for the two labels to sit side by side (a curve's label moves half its
+bow), capped at 140. Drawn straight they lay on top of each other, only the
+fan-out's few pixels apart, with their labels colliding. Arrows that already
+carry a curve or a routing are left as they are.
+
 ### Layout styles
 
 One layered layout can't express every diagram: a mindmap wants its root in the

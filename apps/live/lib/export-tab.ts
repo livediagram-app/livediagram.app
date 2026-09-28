@@ -282,7 +282,7 @@ export async function renderTabToCanvas(
   };
   for (const { el, alpha } of ordered) {
     if (el.type === 'arrow') {
-      const svg = svgArrow(el, tab.elements, surface, tabFont, labels);
+      const svg = svgArrow(el, tab.elements, surface, tabFont, labels, undefined, els);
       arrowRun.push(alpha < 1 ? `<g opacity="${r2(alpha)}">${svg}</g>` : svg);
       continue;
     }
