@@ -434,6 +434,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Ended|VoteReview':
     "Someone finished reviewing a dot vote's ranked results, closing out the vote for everyone.",
   'Tab|Imported|Excalidraw': 'Someone imported a tab from an Excalidraw file.',
+  'Tab|Imported|ExcalidrawPng':
+    'Someone imported a tab from a PNG exported by Excalidraw with its scene embedded.',
+  'Tab|Imported|ExcalidrawSvg':
+    'Someone imported a tab from an SVG exported by Excalidraw with its scene embedded.',
   'Tab|Linked|': 'A tab was linked into another diagram.',
   'Tab|Loaded|':
     "A tab's content was fetched for viewing (the first tab when a diagram opens, then each tab switched to).",

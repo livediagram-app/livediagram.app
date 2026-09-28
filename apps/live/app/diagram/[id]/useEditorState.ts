@@ -1879,6 +1879,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     diagramList,
     ownerId: selfParticipant.id,
+    diagramId,
     createTab,
     commit,
     commitTabs,
