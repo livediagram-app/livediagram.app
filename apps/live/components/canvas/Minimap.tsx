@@ -18,6 +18,7 @@ import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MapSize } from '@/lib/user-preferences';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { selectionBoxColors } from '@/lib/selection-box';
 
 // Panel body heights per map size. Tailwind classes rather than inline styles
 // so the dark-mode / responsive tooling still applies.
@@ -62,9 +63,9 @@ type MinimapProps = {
   // paints the same paper behind its miniature, so a card reads against the
   // colour it sits on in the canvas rather than a fixed grey.
   paperColor: string;
-  // The active tab theme's accent (matches the on-canvas selection), used to
-  // colour the current-view highlight instead of a fixed brand blue.
-  accentColor: string;
+  // The active tab theme's own stroke (null when it sets none), used to colour
+  // the current-view window like the canvas marquee (selectionBoxColors).
+  accentColor: string | null;
   // Panel position (null = default corner) + its move handler, shared with
   // the other floating panels via the docking layout.
   position: { x: number; y: number } | null;
@@ -126,6 +127,7 @@ export function Minimap({
   // resolves every unstyled colour against it, so a Behaviour card that is a
   // dark card on a dark canvas is a dark card here too, not the light skin.
   const surface = useCanvasSurface();
+  const viewColors = selectionBoxColors(accentColor, surface);
   // Re-render once the async icon catalogues land so Technology marks pop in.
   const iconsLoaded = useIconCatalogs();
   // One pass builds the full-fidelity markup (the SAME headless renderer the
@@ -291,8 +293,8 @@ export function Minimap({
                 width={vx1 - vx}
                 height={vy1 - vy}
                 rx={3}
-                fill={`color-mix(in srgb, ${accentColor} 14%, transparent)`}
-                stroke={accentColor}
+                fill={viewColors.fill}
+                stroke={viewColors.stroke}
                 strokeWidth={1.75}
                 vectorEffect="non-scaling-stroke"
               />

@@ -889,7 +889,7 @@ On a touch device, the canvas surface declares `touch-action: none` and `user-se
 
 ## Marquee box-select
 
-**Press-and-drag the empty canvas background** (without holding Space) to draw a translucent selection rectangle. On release, every boxed element whose bounding box is **fully enclosed** by the rectangle is multi-selected (containment, not intersection — you must drag a box right around an element to catch it). Releasing inside a sub-4-pixel area is treated as a click and deselects.
+**Press-and-drag the empty canvas background** (without holding Space) to draw a translucent selection rectangle. On release, every boxed element whose bounding box is **fully enclosed** by the rectangle is multi-selected (containment, not intersection — you must drag a box right around an element to catch it). Releasing inside a sub-4-pixel area is treated as a click and deselects. The rectangle is outlined in the tab theme's accent over a faint wash of it. On light paper that is the accent at full strength (a 12% wash; the brand sky `#0ea5e9` when the theme sets no stroke). On dark paper the same saturated accent glares, so the border drops to 80% and the wash to 10%, and a theme with no stroke falls back to `blue-500` (`#3b82f6`), the blue of the dark selection ring, rather than sky's cyan. The paper decides, not the viewer's Appearance: a Midnight-schemed tab in light chrome gets the dark treatment. The Map's current-view window uses the same colours ([Map](minimap.md)).
 
 A multi-selection is mutually exclusive with the single-element selection:
 

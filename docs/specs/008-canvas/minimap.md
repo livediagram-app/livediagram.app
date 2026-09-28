@@ -34,7 +34,9 @@ lets you jump the viewport anywhere with a tap or drag.
   every arrow with its true curved / elbow path — not a grey wireframe. The
   area **outside the current view is dimmed**, leaving a lit window (outlined
   in the tab theme's accent, matching the on-canvas selection) that reads at
-  a glance as where you are.
+  a glance as where you are. The window is coloured exactly like the canvas
+  marquee, softened on dark paper ([Marquee select](canvas-and-palette.md)),
+  both from one helper (`selectionBoxColors`, `apps/live/lib/selection-box.ts`).
 - **Fidelity: the map paints the canvas's paper.** An element with no colour
   of its own takes its colours from the paper it sits on (`CanvasSurface`,
   light or dark, derived from the tab's resolved backdrop), so the map reads
