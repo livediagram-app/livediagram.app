@@ -19,7 +19,6 @@ const timeline = vi.hoisted(() => ({
   recordDiagramCreated: vi.fn(async () => {}),
   recordDiagramDuplicated: vi.fn(async () => {}),
   recordDiagramOffline: vi.fn(async () => {}),
-  recordDiagramRenamed: vi.fn(async () => {}),
   recordDiagramSynced: vi.fn(async () => {}),
   recordVisitorCopied: vi.fn(async () => {}),
   recordVisitorOpened: vi.fn(async () => {}),

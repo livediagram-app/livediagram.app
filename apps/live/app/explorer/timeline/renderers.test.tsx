@@ -53,8 +53,8 @@ describe('diagram cards', () => {
     // card must not link at nothing.
     const gone = render(
       event({
-        eventType: 'diagram_renamed',
-        title: 'Diagram Renamed',
+        eventType: 'diagram_created',
+        title: 'Diagram Created',
         snapshot: { diagramName: 'Old' },
       }),
     );

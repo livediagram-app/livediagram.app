@@ -141,6 +141,8 @@ type TimelineRow = {
   description: string | null;
   occurred_at: number;
   snapshot: string;
+  // The diagram's name NOW, when the event is about one that still exists.
+  current_diagram_name?: string | null;
 };
 
 function rowToEvent(row: TimelineRow): TimelineEvent {
@@ -155,6 +157,11 @@ function rowToEvent(row: TimelineRow): TimelineEvent {
     // still worth showing — title and description carry the meaning,
     // the snapshot only enriches it. Fall through with {}.
   }
+  // An entry names its diagram as it is called NOW, not as it was called
+  // when the event happened: a rename is not a timeline moment, so older
+  // entries follow it instead (docs/specs/013-workspace/timeline.md §4.2). A diagram that is
+  // gone keeps the name it had.
+  if (row.current_diagram_name) snapshot = { ...snapshot, diagramName: row.current_diagram_name };
   return {
     id: row.id,
     sourceType: row.source_type,
@@ -195,6 +202,11 @@ export type ReadTimelineResult = {
 // (docs/specs/013-workspace/trash.md): a restore brings the history back, and
 // the purge sweeps it (diagramsTimelineSweepStatement). Matches the same two
 // references the sweep does, each a primary-key probe.
+// Renames are not timeline moments (docs/specs/013-workspace/timeline.md §4.2): entries show each
+// diagram's current name instead. Nothing records them any more; this keeps
+// the ones written before that out of every feed and count.
+const NOT_A_RENAME = `e.event_type <> 'diagram_renamed'`;
+
 const NOT_IN_TRASH = `NOT (e.source_type = 'diagram' AND EXISTS (
   SELECT 1 FROM diagrams td
    WHERE td.id IN (e.source_id, json_extract(e.snapshot, '$.diagramId'))
@@ -207,7 +219,7 @@ export async function readTimeline(
   const binds: unknown[] = [opts.scope.scopeType, opts.scope.scopeId];
   // A dismissed membership (docs/specs/013-workspace/timeline.md §2.9) is still a row, so the
   // re-emit path can't resurrect it, but it is not part of the feed.
-  let where = `s.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL AND ${NOT_IN_TRASH}`;
+  let where = `s.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL AND ${NOT_IN_TRASH} AND ${NOT_A_RENAME}`;
 
   if (opts.cursor) {
     const parsed = parseCursor(opts.cursor);
@@ -237,9 +249,13 @@ export async function readTimeline(
   binds.push(opts.limit + 1);
   const res = await env.DB.prepare(
     `SELECT e.id, e.actor_id, e.source_type, e.source_id, e.event_type,
-            e.title, e.description, e.occurred_at, e.snapshot
+            e.title, e.description, e.occurred_at, e.snapshot,
+            cd.name AS current_diagram_name
        FROM timeline_event_scopes s
        JOIN timeline_events e ON e.id = s.event_id
+       LEFT JOIN diagrams cd
+         ON cd.id = COALESCE(json_extract(e.snapshot, '$.diagramId'),
+                             CASE WHEN e.source_type = 'diagram' THEN e.source_id END)
       WHERE ${where}
       ORDER BY e.occurred_at DESC, e.id DESC
       LIMIT ?${binds.length}`,
@@ -339,6 +355,7 @@ export async function countUnseen(
          JOIN timeline_events e ON e.id = s.event_id
         WHERE s.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL
           AND ${NOT_IN_TRASH}
+          AND ${NOT_A_RENAME}
           AND e.occurred_at > ?3
           AND e.occurred_at <= ?5
           AND (e.actor_id IS NULL OR e.actor_id <> ?2)

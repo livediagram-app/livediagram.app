@@ -58,7 +58,6 @@ import { notifyMilestone } from '../email/notifications';
 import {
   recordDiagramCreated,
   recordDiagramDuplicated,
-  recordDiagramRenamed,
   recordDiagramSynced,
   recordVisitorCopied,
 } from '../timeline';
@@ -300,12 +299,8 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         await reorderTabs(env, id, body.tabIds);
       }
       const diagram = await getDiagram(env, id);
-      // docs/specs/013-workspace/timeline.md §4.2: a rename only. The same PUT also carries tab
-      // reorders and deck writes, and neither is a timeline moment —
-      // the feed would fill with "Renamed X → X" on every save.
-      if (diagram && typeof body.name === 'string' && body.name !== existing.name) {
-        ctx.waitUntil?.(recordDiagramRenamed(env, diagram, existing.name, owner));
-      }
+      // A rename is not a timeline moment (docs/specs/013-workspace/timeline.md §4.2): the feed reads
+      // every diagram's CURRENT name instead, so older entries follow it.
       // Redacted like the GET: an edit-role share visitor passes gateEdit, and
       // a guest owner's id is a credential (see redact-diagram.ts).
       return json({ diagram: diagram ? redactDiagramForReader(diagram, owner) : diagram });

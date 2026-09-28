@@ -320,8 +320,8 @@ that also holds its `diagram_created` event.** The rule:
   later timestamp: the card says when the diagram was made, and "then
   edited until 16:40" is the kind of detail the sentence-per-row layout
   tried to carry and nobody read.
-- Only the create/edit pair. A rename, a share, or a comment on the day
-  of creation is new information and stays.
+- Only the create/edit pair. A share, or a comment on the day of
+  creation, is new information and stays.
 
 Pure, in `packages/ui/src/timeline/sameDayCreate.ts`, tested directly.
 
@@ -1051,10 +1051,19 @@ Team events use the analogous `audienceForTeam(env, teamId)`.
 
 ### 4.2 Diagram lifecycle and editing
 
+**A diagram rename is not an event.** Every entry names its diagram as it is
+called **now**: the feed reads each diagram's current name when it is served
+(`readTimeline` joins `diagrams` on the event's diagram and overrides the
+snapshot's `diagramName`), so renaming a diagram updates every older entry
+about it, and a separate "Renamed" card would only repeat what those now say.
+Nothing records `diagram_renamed` any more, and the rows written before this
+change are filtered out of every feed and the unread count. A diagram that no
+longer exists keeps the name it had. Team renames are still events: a team's
+name is not re-read onto older entries.
+
 | `eventType`                          | Fires when                                                                    | Title / description                                          |
 | ------------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `diagram_created`                    | `POST /api/diagrams`                                                          | "Diagram Created" / "Payments architecture"                  |
-| `diagram_renamed`                    | `PUT` where the name changes                                                  | "Diagram Renamed" / "Payments v1 → Payments architecture"    |
 | `diagram_duplicated`                 | duplicate route                                                               | "Diagram Duplicated" / "Copy of Payments architecture"       |
 | `diagram_moved`                      | folder change                                                                 | "Moved to a Folder" / "Payments architecture → Architecture" |
 | `diagram_edited`                     | tab save (coalesced)                                                          | "Diagram Updated" / "You worked on Payments architecture"    |
