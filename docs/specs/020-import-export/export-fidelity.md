@@ -57,6 +57,22 @@ keeps its existing import and there is still only one table.
 `boxedNeedsSvgRaster` reads it, so the PNG path rasterises exactly the kinds the
 canvas-2D drawers cannot draw. Adding a body to a kind wires up both exports.
 
+**Borders are the element's own.** A shape's export border uses its stroke
+width, dash pattern and radius (`svg-render-border.ts`), inset by half the
+stroke the way the canvas's CSS border sits inside the box. A self-painting
+kind keeps the wrapper's 4px corners (the Reveal cover).
+
+**The Collaborate cards share one kit.** Every card is laid out in the canvas
+panel's design units (`collabCard`: 16/14 padding, a 24px header row, the body
+10px under it), takes its accent from the element's stroke exactly as
+`CollabAccentScope` does (`collabAccent`: the accent, the ink that reads on
+it, and the accent as text mixed 40% toward the text colour on a card of the
+same tone), and draws its controls from the shared parts
+(`svg-render-collab-parts.ts`: the dashed accent bar, the composer, accent
+chips, count boxes, the 16-unit glyphs). The done green is `COLLAB_DONE_COLOR`.
+Cards whose rows reflow (Q&A board, Idea box, Comment panel, Action panel,
+Agenda, Roll call) lay out at the element's own size rather than scaling.
+
 **A self-painting element gets no box and no label.** `SELF_PAINTING_SHAPES`
 already said which kinds draw their own body; the export now honours it, so a
 chart is not framed in a rectangle that is not on the board, and a rail does not
@@ -77,6 +93,12 @@ would be worse than the gap:
 - **Who is in the room.** An export has no presence, so a Done check has
   nobody to wait on: it draws the people who marked themselves done, not a
   waiting list.
+- **Editor chrome.** The `…` settings menu in a card's header, the Start
+  button on a timer, a hover card. A card's title therefore sits where the
+  header puts it without the menu beside it.
+- **The progress track on dark paper.** The canvas paints a fixed light
+  track; the export keeps the element's fill on dark paper so its percentage
+  stays readable.
 
 ### The behaviour cards export as they look
 
@@ -91,6 +113,28 @@ record's status badge with its glyph, and the soft accent glows behind the
 Reveal zone and the Idea box. What stays out is motion (a bob, a sweep, a
 flip) and live clocks, as above.
 
+The cards export their **controls** too, at rest: the Agenda's progress bar,
+step markers and the current step's minutes; the Q&A board and Idea box
+composers, accent bars and "Most wanted" rows; the Estimate card's pick cards,
+face-down room cards and Reveal / New Round footer; the Temperature check's
+bars and meter; the Comment panel's grouped bubbles, Resolve chip and composer;
+the Action panel's rings, checks and Add Action bar; the Roll call's avatar
+stack, time chip and Take again bar. The Behaviour faces draw what the canvas
+draws: a timer Session button is the idle dial (ticks, "TIMER", its length); a
+Mode button is a keycap with its glyph chip over the label, or "Switch to" and
+the mode's name (`SELECTION_MODE_LABEL`) when it has none; a Portal is its
+bloom, mouth and lit rim (dim when unpaired); a Reaction pad is its soft wash,
+the emoji on its glowing spot and the label chip; a Reveal cover carries the
+lock disc and the gesture chip; a Picker shows its reel window; a chair prints
+its label under the seat. A Page draws its masthead inside the border, starts
+its body label under the rule, and turns back its bottom-right corner over the
+paper. A box label breaks a word wider than its line between characters, as
+the canvas's `break-words` does; an icon caption keeps the word whole.
+
+One mark is not yet shared: the Mode button's glyph lives in the editor's
+palette icons, so the export's chip carries a plain ring until those glyphs
+move into a package.
+
 ## Checking it
 
 `packages/diagram/src/export-consistency.test.ts` holds the wiring rather than
@@ -100,4 +144,6 @@ label, and that every kind whose body the SVG draws is one the PNG rasterises.
 
 The pixels are checked by eye, which is what found all of this: seed a tab with
 a dense grid of one family of elements, screenshot the canvas in focus mode, and
-render the same tab's export beside it.
+render the same tab's export beside it, in both light and dark paper.
+`svg-render-fidelity.test.ts` and the per-card tests pin the marks each face
+draws.

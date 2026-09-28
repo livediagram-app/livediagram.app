@@ -56,7 +56,8 @@ describe('Comment panel export', () => {
       commentThread: { resolved: true, comments: [comment(1, 'Tom', 'Done here.')] },
     };
     const svg = svgOf(el);
-    expect(svg).toContain('RESOLVED');
+    expect(svg).toContain('>Resolved<');
+    expect(svg).toContain('Reopen Thread');
     expect(svg).not.toContain('Reply…');
   });
 });
@@ -73,7 +74,7 @@ describe('Action panel export', () => {
       ...(createShape('action-card', 0, 0) as ShapeElement),
       actions: [action('open'), { ...action('done'), id: 'b', name: 'Load test' }],
     });
-    for (const s of ['Confirm the retry', 'Load test', 'Sam Lee', '1 OPEN', '+ Add Action'])
+    for (const s of ['Confirm the retry', 'Load test', 'Sam Lee', '1 OPEN', '>Add Action<'])
       expect(svg).toContain(s);
   });
 
@@ -83,6 +84,7 @@ describe('Action panel export', () => {
       action: action('done'),
     });
     expect(svg).toContain('Confirm the retry');
-    expect(svg).toContain('ALL DONE');
+    expect(svg).toContain('>All Done<');
+    expect(svg).toMatch(/text-decoration="line-through">Confirm the retry budget</);
   });
 });

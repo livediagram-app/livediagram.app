@@ -21,6 +21,8 @@ import { iconCaptionBand } from './icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
 import type { ExportLabel, ExportRun } from './svg-render-labels';
 import { PADDING_PX } from './index';
+import { pageBodyTop } from './svg-render-page';
+import { borderOf } from './svg-render-border';
 import type { BoxedElement, TextRun } from './index';
 
 export const EXPORT_PADDING = 32;
@@ -93,6 +95,8 @@ export type BoxedExportOptions = {
   // colours of their own (docs/specs/007-editor/live-app.md). Defaults to light, so a caller that
   // doesn't say gets exactly the output it always got.
   surface?: CanvasSurface;
+  // The paper colour under the element, for what cuts through to it (a page's fold).
+  paper?: string;
   // The tab theme's categorical ramp, for the chart elements (docs/specs/009-elements/pie-chart.md). The
   // canvas hands its charts the same list; without it they fall back to the
   // built-in one, which is what a caller with no theme in hand wants.
@@ -257,6 +261,11 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
   const alignX = el.textAlignX ?? defaults.x;
   const alignY = el.textAlignY ?? defaults.y;
   const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
+  // A page's body starts under its masthead, so its label does too.
+  const isPage = el.type === 'shape' && el.shape === 'page';
+  const bodyTop = isPage ? pageBodyTop(el, pad) : el.y;
+  // ...and inside its border, lining up with the masthead.
+  const bodyInset = isPage ? borderOf(el).width : 0;
   // A workshop note exports in capitals, exactly as the board paints it
   // (docs/specs/021-event-storming/event-storming.md) — a shared PNG that quietly restored sentence case would
   // stop being the board people were looking at.
@@ -267,14 +276,14 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
           alignX === 'right'
             ? el.x + el.width - pad
             : alignX === 'left'
-              ? el.x + pad
+              ? el.x + pad + bodyInset
               : el.x + el.width / 2,
         y:
           alignY === 'top'
-            ? el.y + pad + baseSize / 2
+            ? bodyTop + pad + baseSize / 2
             : alignY === 'bottom'
               ? el.y + el.height - pad - baseSize / 2
-              : el.y + el.height / 2,
+              : (bodyTop + el.y + el.height) / 2,
         anchor: alignX === 'right' ? 'end' : alignX === 'left' ? 'start' : 'middle',
         valign: alignY,
         maxWidth: labelMaxWidth(el, pad),

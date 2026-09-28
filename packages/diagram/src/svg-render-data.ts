@@ -185,27 +185,3 @@ export function svgEntityRows(el: Data, textColor: string, fontFamily?: string):
     .join('');
   return divider + rows;
 }
-
-/** A page's masthead (docs/specs/009-elements/page-element.md): title, subtitle and the rule under them. */
-export function svgPageMasthead(el: Data, padding: number, fontFamily?: string): string {
-  const title = el.pageTitle ?? '';
-  const subtitle = el.pageSubtitle ?? '';
-  const x = el.x + padding;
-  const rule = el.strokeColor ?? '#d4d4d8';
-  const titleY = el.y + padding + 19;
-  const subtitleY = titleY + 16;
-  const parts: string[] = [];
-  if (title)
-    parts.push(
-      `<text x="${r2(x)}" y="${r2(titleY)}"${sans(fontFamily)} font-size="19" font-weight="600" fill="#0f172a">${xmlEscape(title)}</text>`,
-    );
-  if (subtitle)
-    parts.push(
-      `<text x="${r2(x)}" y="${r2(subtitleY)}"${sans(fontFamily)} font-size="12" font-weight="500" fill="#64748b">${xmlEscape(subtitle)}</text>`,
-    );
-  const ruleY = subtitleY + 10;
-  parts.push(
-    `<path d="M ${r2(x)} ${r2(ruleY)} L ${r2(el.x + el.width - padding)} ${r2(ruleY)}" stroke="${xmlEscape(rule)}" stroke-width="1"/>`,
-  );
-  return parts.join('');
-}

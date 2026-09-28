@@ -8,6 +8,7 @@
 import { SHAPE_DEFAULT_SIZE } from './shape-factory';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { canvasSurface, hexToRgb, inkOn } from './colors';
 
 export type Face = BoxedElement & { type: 'shape' };
 
@@ -33,12 +34,18 @@ export const text = (
     anchor?: 'start' | 'middle' | 'end';
     opacity?: number;
     uppercase?: boolean;
+    // Struck through: a done step, a finished action.
+    strike?: boolean;
+    // Letter spacing in em, as the canvas's tracking-[...] classes set it.
+    tracking?: number;
   },
 ): string =>
   `<text x="${r2(x)}" y="${r2(y)}" font-size="${o.size ?? BODY_PX}"` +
   ` font-weight="${o.weight ?? 400}" fill="${xmlEscape(o.color)}"` +
   `${o.anchor && o.anchor !== 'start' ? ` text-anchor="${o.anchor}"` : ''}` +
-  `${o.opacity !== undefined ? ` opacity="${o.opacity}"` : ''}>` +
+  `${o.opacity !== undefined ? ` opacity="${o.opacity}"` : ''}` +
+  `${o.strike ? ' text-decoration="line-through"' : ''}` +
+  `${o.tracking ? ` letter-spacing="${o.tracking}em"` : ''}>` +
   `${xmlEscape(o.uppercase ? body.toUpperCase() : body)}</text>`;
 
 export const pill = (
@@ -163,7 +170,7 @@ export function moodFace(
   const u = size / 16;
   const mouth = mouths[Math.min(4, Math.max(0, value - 1))]!;
   return (
-    `<g transform="translate(${r2(cx - 8 * u)} ${r2(cy - 8 * u)}) scale(${r2(u)})" fill="none" stroke="${xmlEscape(color)}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">` +
+    `<g transform="translate(${r2(cx - 8 * u)} ${r2(cy - 8 * u)}) scale(${r2(u)})" fill="none" stroke="${xmlEscape(color)}" stroke-width="${r2(1.5 / u)}" stroke-linecap="round" stroke-linejoin="round">` +
     `<circle cx="8" cy="8" r="6.4"/>` +
     `<circle cx="5.9" cy="6.6" r=".75" fill="${xmlEscape(color)}" stroke="none"/>` +
     `<circle cx="10.1" cy="6.6" r=".75" fill="${xmlEscape(color)}" stroke="none"/>` +
@@ -220,4 +227,31 @@ export function wrapLines(body: string, width: number, size: number, max: number
     lines[max - 1] = `${lines[max - 1]!.slice(0, perLine - 1).trimEnd()}…`;
   }
   return lines;
+}
+
+// The accent a modern Collaborate card paints with, resolved the way the
+// canvas's CollabAccentScope does it (docs/specs/012-collaboration/idea-box.md "The look"): the element's
+// themed stroke IS the accent; `on` is the ink that reads on a solid accent
+// fill; `ink` is the accent as TEXT on the card, pulled 60% toward the text
+// colour when the accent sits on the same side of light as the card (where a
+// pale accent on a pale card would vanish as a word).
+export type CollabAccent = { accent: string; on: string; ink: string };
+
+/** `color-mix(in srgb, a share, b)` for two hexes, as a hex; `a` when either
+ *  won't parse. SVG exports can't rely on CSS color-mix. */
+export function mixHex(a: string, b: string, share: number): string {
+  const x = hexToRgb(a);
+  const y = hexToRgb(b);
+  if (!x || !y) return a;
+  const m = (p: number, q: number) =>
+    Math.round(share * p + (1 - share) * q)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${m(x.r, y.r)}${m(x.g, y.g)}${m(x.b, y.b)}`;
+}
+
+export function collabAccent(stroke: string, fill: string, textColor: string): CollabAccent {
+  const on = inkOn(stroke);
+  if (canvasSurface(stroke) !== canvasSurface(fill)) return { accent: stroke, on, ink: stroke };
+  return { accent: stroke, on, ink: mixHex(stroke, textColor, 0.4) };
 }
