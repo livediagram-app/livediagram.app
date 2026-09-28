@@ -25,7 +25,7 @@ Taken by the operator on 2026-09-27, after the first version of this report.
 | Miro route         | **REST API only**; what it cannot read is reported as lost. No clipboard decoding.                                                                            | [Miro import](../specs/020-import-export/miro-import.md)                       |
 | Whiteboard account | The boards are on a **personal** Microsoft account: the exported image is the import route.                                                                   | [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) |
 | Drive's role       | Drive is a **mirror** of cloud diagrams, never a save location.                                                                                               | [Save Locations](../specs/006-diagram/save-locations.md)                       |
-| Drive bin          | Maps to the livediagram **Trash**, specified separately (soft delete for 30 days, team Trash, local Trash for Offline Mode, api and MCP deletes go to Trash). | [Trash](../specs/013-workspace/trash.md) (PR #178)                             |
+| Drive bin          | Maps to the livediagram **Trash**, specified separately (soft delete for 30 days, team Trash, local Trash for Offline Mode, api and MCP deletes go to Trash). | [Trash](../specs/013-workspace/trash.md)                                       |
 | Safari images      | A **WASM WebP encoder**, loaded only when the browser cannot encode WebP.                                                                                     | [Board import](../specs/020-import-export/board-import.md)                     |
 
 ## Headlines
