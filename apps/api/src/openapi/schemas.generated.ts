@@ -5298,6 +5298,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Unhelpful",
       "Returned",
       "Restored",
+      "Applied",
       "Sent",
       "Api",
       "Client",
@@ -5334,7 +5335,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Activity",
       "Page",
       "Cta",
-      "Trash"
+      "Trash",
+      "Drive"
     ],
     "type": "string"
   },

@@ -47,8 +47,10 @@ this spec does not restate it.
   **Last synced**, and **Disconnect**.
 - **Consent:** the authorisation-code flow in **redirect mode** (works on iOS
   and past popup blockers), requesting `drive.file` and `drive.install` with
-  offline access. `prompt=consent` is used only when no refresh token is
-  stored, so the user normally consents once.
+  offline access. `prompt=consent` is used only when no usable refresh token
+  is stored, which is exactly when the connect flow runs (a first connect, or
+  a reconnect after Google dropped the grant), so the user normally consents
+  once.
 - **State:** before redirecting, the app asks the api for a `state` value
   (`POST /api/drive/state`, with the redirect URI it will use). The api signs
   it with `DRIVE_TOKEN_KEY`, binding the user, the redirect URI and a
@@ -82,9 +84,9 @@ this spec does not restate it.
   folder and page token), `GET` / `PUT /api/drive/items` and
   `DELETE /api/drive/items/:kind/:ldId` (the mirrored items),
   `POST` / `DELETE /api/drive/lease` (the cross-device lease).
-- Every Drive route answers only a **Clerk session**: not the guest header,
-  and not an API token, since a token that could mint Google access would
-  outlive the person's attention to it.
+- Every Drive route answers only a **Clerk session** (`401 sign_in_required`
+  otherwise): not the guest header, and not an API token, since a token that
+  could mint Google access would outlive the person's attention to it.
 - `GET /api/capabilities` reports `driveMode`: `off`, `browser` (client id
   only) or `broker` (client id, secret and key), so the app knows which
   token path to take.
@@ -220,6 +222,9 @@ the same result, so the mirror handles this openly, never silently:
 Named constants in one cadence module of the mirror code, with the values and budget from
 [Migration readiness, proposed sync cadence](../../research/migration-readiness.md#proposed-sync-cadence):
 
+- **Any livediagram page may run it** (the Explorer, the editor, the wizard),
+  never an embed and never the Drive routes themselves; it starts once the
+  signed-in session has settled.
 - **One tab syncs per browser**, elected with the Web Locks API; across
   devices, a short lease row in D1 keeps two browsers from writing the same
   diagram at once. The lease lasts 15 minutes, is renewed only when a pass
@@ -250,6 +255,9 @@ Named constants in one cadence module of the mirror code, with the values and bu
     `ldDiagramId`: offer **Import a copy** only.
   - **Not a livediagram file**, or unreadable: a clear error page.
 - A signed-out visitor is asked to sign in first, then continues.
+- A signed-in user with no usable Drive access (never connected, or the grant
+  was dropped) is offered **Allow access**, which runs the connect flow and
+  comes back to the same file.
 - Opening with "Open with" grants livediagram access to that one file, which is
   what makes the import possible under `drive.file`.
 - **Double-click** opening is the goal; Google documents only the "Open with"
@@ -334,6 +342,13 @@ and 10,000 users, about $18.50 a month at 10 million. No Durable Object is
 used. Google's Drive API is free within its quotas; the cadence keeps 10
 million users at about 80% of the free daily threshold.
 
+The research model counted only the page token's D1 writes. Two more are
+inherent in the design: one item row per upload or applied change (about six
+an active user-day at this cadence) and the lease (renewed at most every ten
+minutes of writing). Together they add about $70 a month at 10 million users
+(200,000 active a day, about 12 row writes each, at $1 per million), and
+nothing measurable at 10,000.
+
 ## Privacy
 
 The privacy policy states what livediagram does with Google user data under
@@ -343,10 +358,12 @@ and never uses Drive data for anything but the mirror.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
-Preset-enum events only: connected, disconnected, reconnect needed, first
-mirror finished, an inbound change applied (by type: `Rename`, `Move`,
-`Trash`, `Restore`, `Purge`, `UnknownFolder`), an Open with (by outcome:
-`Opened`, `ImportOffered`, `Error`).
+Preset-enum events only, category `Drive`: connected and disconnected
+(`Linked` / `Unlinked`, typed `Broker` or `Browser`), reconnect needed
+(`Changed` `NeedsReconnect`), first mirror finished (`Created` `FirstMirror`,
+once per connection per browser), an inbound change applied (`Applied`, by
+type: `Rename`, `Move`, `Trash`, `Restore`, `Purge`, `UnknownFolder`), an Open
+with (`Opened`, by outcome: `Opened`, `ImportOffered`, `Error`).
 
 ## Non-goals
 

@@ -280,7 +280,8 @@ export class DriveMirrorEngine {
       this.onPassError(err, kind);
     } finally {
       this.applying = false;
-      if (kind !== 'flush') this.schedulePoll();
+      // Disconnected or awaiting a reconnect: nothing to poll until a trigger.
+      if (kind !== 'flush' && this.status.state === 'idle') this.schedulePoll();
     }
   }
 

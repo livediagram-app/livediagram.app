@@ -264,3 +264,23 @@ describe('disconnect and reconnect', () => {
     expect(w.ld.items.size).toBe(2);
   });
 });
+
+describe('idle states', () => {
+  it('stops polling while disconnected, and starts again on the next trigger', async () => {
+    const w = world();
+    w.ld.connection = null;
+    const { engine } = makeEngine(w);
+    await engine.start();
+    expect(w.timers.pending()).toEqual([]);
+    w.ld.connection = {
+      status: 'connected',
+      hasRefreshToken: true,
+      rootFolderId: null,
+      pageToken: null,
+      pageTokenSavedAt: null,
+      connectedAt: w.clock.now,
+    };
+    await engine.syncNow();
+    expect(w.timers.pending()).toEqual([DRIVE_POLL_INTERVAL_MS]);
+  });
+});
