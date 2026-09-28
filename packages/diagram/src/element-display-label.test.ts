@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createShape } from './factories';
 import type { BoxedElement } from './index';
 import { elementDisplayLabel } from './element-display-label';
 
@@ -34,5 +35,15 @@ describe('elementDisplayLabel', () => {
 
   it('names an empty table plainly', () => {
     expect(elementDisplayLabel(table([['', '']]))).toBe('Table');
+  });
+});
+
+describe('an unlabelled Comment or Action panel', () => {
+  it('is named by what it is, not "Untitled"', () => {
+    expect(elementDisplayLabel(createShape('action-card', 0, 0) as never)).toBe('Action Panel');
+    expect(elementDisplayLabel(createShape('comment-pin', 0, 0) as never)).toBe('Comment Panel');
+    expect(
+      elementDisplayLabel({ ...createShape('action-card', 0, 0), label: 'Follow-ups' } as never),
+    ).toBe('Follow-ups');
   });
 });

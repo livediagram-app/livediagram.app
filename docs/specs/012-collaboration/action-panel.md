@@ -2,9 +2,10 @@
 
 Status: **implemented**.
 
-A **Collaborate** element: a card on the board carrying ONE assigned action
-([Assigned actions](assigned-actions.md)): its name, description, who it is assigned to, and whether it is
-done. It is read where it sits rather than opened, and configured from the card.
+A **Collaborate** element: a card on the board carrying a **list of assigned
+actions** ([Assigned actions](assigned-actions.md)): each with its name, description, who it is assigned to,
+and whether it is done. It is read where it sits rather than opened, and every
+action on it is added, completed and edited from the card.
 
 The shape kind is `action-card`. It is the action sibling of the Comment panel
 ([The Comment Panel](comment-pin.md)), built the same way for the same reasons.
@@ -24,65 +25,76 @@ shape is a small badge that opens a popover for one reader, while a follow-up
 the room agreed on belongs on the board, in the export, and in everyone's
 session.
 
+## The data: a list, and one way to read it
+
+An ordinary element carries at most one `action` ([Assigned actions](assigned-actions.md) §1). A card
+carries **`actions: ElementAction[]`**, in the order they were added, at most
+**50**. Every reader goes through one helper, **`elementActions(el)`**, which
+returns the card's list, or an ordinary element's single `action` as a
+one-item list, so nothing downstream branches on the kind. A card saved before
+the list existed holds a single `action`; the helper reads it as a one-item
+list and the card's first edit writes it back as `actions`. No migration.
+
+Each action keeps its own stable `id`, which is what every mutation, the
+Activity index row and the timeline event key on.
+
 ## It reuses the existing wiring, entirely
 
 The panel introduces **no action machinery of its own**. It is an element whose
-only job is to hold an `action`, so:
+only job is to hold actions, so:
 
-- **Configuring** it opens the SAME Assign Action dialog the element menu's
+- **Adding or editing** an action opens the SAME Assign Action dialog the element menu's
   Assign Action tile opens (`openAssignActionDialog`): assignee picker, name,
   description, the email toggle, the team-library nudges: all of [Assigned actions](assigned-actions.md) §2,
   unchanged.
-- **Complete / Reopen** call the same `completeAction` / `reopenAction`, so the
+- **Complete / Reopen** call the same `completeAction` / `reopenAction`
+  (addressed by action id on a card), so the
   same telemetry fires and the same non-undoable carve-out applies (Cmd+Z must
   never silently unassign someone's work).
-- The action is found by the Collaborate panel, the Activity page and the
-  assignment email because it is an ordinary `el.action`. Nothing indexes the
-  panel specially.
-
-If it ever grows a second way to store an action, that is the bug.
+- Every action is found by the Collaborate panel (one row per action), the
+  Activity page (one index row per action) and the assignment email because
+  they all read `elementActions(el)`. Nothing indexes the panel specially.
 
 ## The card
 
 The card is built from the same parts as the modern Collaborate cards (the Q&A
 board, the Idea box, the Decision record; [Idea box](idea-box.md) "The look"):
 the tab theme's **accent** (the element's own stroke, `CollabAccentScope`),
-and the shared `CollabPanel` frame that scales with the element. It carries
+and the shared `CollabPanel` frame, which reflows with the element. It carries
 **no `…`**: it has no settings of its own, every act is on the card, and
 right-click opens the ordinary element menu.
 
-- **Empty** (dropped fresh, no action yet): the title reads **Action**, and
-  the body is an invitation rather than a placeholder: a clipboard-check glyph
-  in a soft accent disc, **No Action Yet**, the line "Give someone a clear next
-  step, with their name on it.", and one loud accent button, **Set Up
-  Action**, which opens the Assign Action dialog for this card. The dialog
-  prefills the action name from the element's label as it does for any
-  element, so the card ships with **no label**, since a default caption would
-  become every new action's name.
-- **With an action**: the **name is the title** (up to two lines, set large,
-  the Decision record's treatment), with a **status chip** beside it: **Open**
-  in the accent, **Done** in green. Under it, the **description** (muted,
-  scrolls when long), then the **assignee row**: a soft tinted row with the
-  assignee's initials in an accent disc, "Assigned to you" or "Assigned to
-  {name}", and "from {assigner} · {when}" beneath.
-- **The footer** carries the one act the card is for: **Mark Complete**, a
-  full-width accent button with a check. Pressing it strikes the title
-  through, turns the chip green, and throws the Done check's confetti burst
-  once (a card that loads already done does not celebrate). Once done the
-  button turns quiet and reads **Reopen**. **Edit** is a small round pencil
-  beside it, which reopens the dialog prefilled.
+- **Empty** (dropped fresh, no actions yet): the title reads **Actions**, and
+  the body is an invitation: a clipboard-check glyph in a soft accent disc,
+  **No Actions Yet**, the line "Give someone a clear next step, with their name
+  on it.", and one loud accent button, **Add Action**, which opens the Assign
+  Action dialog to create the card's first action. The card ships with **no
+  label**, since the dialog would prefill every new action's name from it.
+- **With actions**: the title is the card's label, or **Actions** when it has
+  none, with the open count as a quiet caption ("2 open") or a green **All
+  Done** chip once every action is done. Below it, **one row per action**, in
+  the order added:
+  - a **round check** on the left: pressing it completes the action (it fills
+    green with a pop, and the card throws the Done check's confetti when that
+    was the last open one), pressing it again reopens it;
+  - the action's **name** (up to two lines, struck through and muted once
+    done) and under it the **assignee**: their initials in a small accent disc
+    and "You" or their name;
+  - pressing the rest of the row opens the dialog to **edit** that action.
+- **The footer** is a dashed accent bar, **Add Action**, which opens the dialog
+  to append another. The list scrolls when it outgrows the card.
 - A completed action softens (title struck through and muted, the accent
   swapped for green) but stays on the board: finished work is still a record
   of what was agreed.
-- **Delete** is not on the face. Deleting the card deletes its action with it
-  ([Assigned actions](assigned-actions.md) §3), and the element menu's Collaborate → View Action popover keeps
-  its two-step Delete for clearing the action off a card you want to reuse.
+- **Delete** lives in the dialog: editing a card's action shows a two-step
+  **Delete Action** in its footer, the popover's rule ([Assigned actions](assigned-actions.md) §3). Deleting the
+  card deletes all its actions with it.
 - **Read-only** surfaces (a view-role visitor, the embed, a presentation) show
   the card readable but with no buttons, like the popover ([Assigned actions](assigned-actions.md) §7). An
   empty card there says **No Action Yet** with no invitation line.
-- **Export** draws the same card (`svg-render-faces.ts`): the status chip, the
-  title, the description, and the assignee row with its initials disc, so a
-  PNG or SVG of the board reads like the board.
+- **Export** draws the same card (`svg-render-panel-faces.ts`): the header, then
+  as many rows as fit, each with its check (filled once done), name and
+  assignee, so a PNG or SVG of the board reads like the board.
 
 The generic action **badge** is suppressed on this kind: the card IS the badge,
 and a badge in its corner repeating what the card says is one too many. It is the
@@ -104,19 +116,16 @@ connection to lay out, export and explain.
   every other card gets. Excluded from `isSvgRenderedShape`, which is
   allow-by-default.
 - **Not votable** ([Session tools (timer + voting)](session-tools.md)): it is a task, not a candidate.
-- Sized for its content, 260 x 190 by default, and resizable like the Comment
-  panel.
-- **Export**: the headless renderer draws the action's name, assignee and
-  status (or "No action yet"), so a panel reads in an image the way it reads
-  on the board.
+- Sized for a few rows, 300 x 300 by default, and resizable. It **reflows**
+  like the Comment panel: resizing makes room for more actions, not bigger type.
 - Telemetry: placing it is the ordinary element-created event with type
   `ActionPanel`; everything done from the card fires [Assigned actions](assigned-actions.md)'s existing
   `Action` events.
 
 ## Not in scope
 
-- More than one action per card. One action per element is [Assigned actions](assigned-actions.md)'s rule,
-  and a list of actions is what the Collaborate panel already is.
+- More than one action on an ordinary element. [Assigned actions](assigned-actions.md)' one-per-element rule
+  stands; the card is the place for a list.
 - A composer on the face. Assigning needs the picker, the team context and the
   email toggle, which is a dialog's worth of decisions, so the card opens the
   dialog rather than growing a second, smaller one.

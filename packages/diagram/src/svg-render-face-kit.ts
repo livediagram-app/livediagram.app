@@ -64,11 +64,14 @@ export function collabCard(
   body: (w: number, h: number) => string,
 ): string {
   const design = SHAPE_DEFAULT_SIZE[el.shape] ?? { width: el.width, height: el.height };
-  // The Q&A board, the Idea box and the Comment panel reflow rather than
-  // scale (docs/specs/012-collaboration/qa-board.md, idea-box.md, comment-pin.md): a bigger board shows more rows at the same size, on the
+  // The Q&A board, the Idea box and the Comment and Action panels reflow
+  // rather than scale (docs/specs/012-collaboration/qa-board.md, idea-box.md, comment-pin.md, action-panel.md): a bigger board shows more rows at the same size, on the
   // canvas and so in the export too.
   const scale =
-    el.shape === 'qa-board' || el.shape === 'idea-box' || el.shape === 'comment-pin'
+    el.shape === 'qa-board' ||
+    el.shape === 'idea-box' ||
+    el.shape === 'comment-pin' ||
+    el.shape === 'action-card'
       ? 1
       : Math.min(el.width / design.width, el.height / design.height);
   // The inner box in design units, so a card larger than its default still

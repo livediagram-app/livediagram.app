@@ -41,7 +41,7 @@ export function SideTabs({
             role="tab"
             aria-selected={active}
             onClick={() => onChange(s.id)}
-            className={`relative z-10 flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-semibold transition-colors ${
+            className={`relative z-10 flex items-center justify-center gap-1.5 rounded-md px-2 py-2 text-[11px] font-semibold transition-colors ${
               active
                 ? 'text-slate-800 dark:text-slate-100'
                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
@@ -82,7 +82,7 @@ export function KindChips({
   onChange: (next: CollaborateKind) => void;
 }) {
   return (
-    <div role="group" aria-label="Filter by kind" className="flex items-center gap-1">
+    <div role="group" aria-label="Filter by kind" className="flex items-center gap-1.5">
       {KINDS.map((k) => {
         const active = k.id === value;
         return (
@@ -91,7 +91,7 @@ export function KindChips({
             type="button"
             aria-pressed={active}
             onClick={() => onChange(k.id)}
-            className={`inline-flex h-6 items-center gap-1 rounded-full px-2 text-[10px] font-semibold transition-colors ${
+            className={`inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-[11px] font-semibold transition-colors ${
               active
                 ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/30'
                 : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'

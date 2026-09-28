@@ -65,6 +65,19 @@ export function createElementAction(input: {
   };
 }
 
+// An Action panel holds at most this many (docs/specs/012-collaboration/action-panel.md "The data").
+export const ACTION_CARD_MAX = 50;
+
+// Every action an element carries, as a list: an Action panel's `actions`,
+// or an ordinary element's single `action` as a one-item list. A card saved
+// before the list existed still holds a lone `action`, read the same way.
+// The ONE way anything reads actions, so nothing branches on the kind.
+export function elementActions(el: object): ElementAction[] {
+  const e = el as { action?: ElementAction; actions?: ElementAction[] };
+  if (Array.isArray(e.actions)) return e.actions;
+  return e.action ? [e.action] : [];
+}
+
 // Whether the action should surface (badge, Actions Panel). Done actions
 // stay on the element (reopenable) but stop shouting.
 export function isOpenAction(action: ElementAction | undefined): action is ElementAction {

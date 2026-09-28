@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { apiSetDiagramFolder } from '@/lib/api-client';
-import { isBoxed } from '@livediagram/diagram';
+import { elementActions, isBoxed } from '@livediagram/diagram';
 
 import { track } from '@/lib/telemetry';
 import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
@@ -46,6 +46,7 @@ export function EditorAnchoredPopovers() {
     actionPopoverOpenId,
     closeActionPopover,
     assignActionFor,
+    assignActionId,
     openAssignActionDialog,
     closeAssignActionDialog,
     saveAction,
@@ -169,6 +170,7 @@ export function EditorAnchoredPopovers() {
               (el) => el.id === assignActionFor && isBoxed(el),
             );
             if (!target || !isBoxed(target)) return null;
+            const cardTarget = target.type === 'shape' && target.shape === 'action-card';
             // Default action name (docs/specs/012-collaboration/assigned-actions.md §2): the element's own text —
             // its label, or a table's first non-empty cell. Null when the
             // element is unlabelled (the field just starts empty).
@@ -182,8 +184,17 @@ export function EditorAnchoredPopovers() {
             return (
               <AssignActionDialog
                 open
-                existing={target.action ?? null}
-                elementLabel={targetLabel || null}
+                // On an Action panel the dialog edits the named action, or adds
+                // one (docs/specs/012-collaboration/action-panel.md); elsewhere the element's one action.
+                existing={
+                  cardTarget
+                    ? ((assignActionId
+                        ? elementActions(target).find((a) => a.id === assignActionId)
+                        : undefined) ?? null)
+                    : (target.action ?? null)
+                }
+                // A card's title names the LIST, not each action on it.
+                elementLabel={cardTarget ? null : targetLabel || null}
                 teams={teams}
                 ownerId={clerkUserId ?? null}
                 selfUserId={actionSelfId}
@@ -206,7 +217,12 @@ export function EditorAnchoredPopovers() {
                   setDiagramTeamId(teamId);
                   return true;
                 }}
-                onSubmit={(input) => saveAction(target.id, input)}
+                onSubmit={(input) => saveAction(target.id, input, assignActionId)}
+                onDelete={
+                  cardTarget && assignActionId && !isReadOnly
+                    ? () => deleteAction(target.id, assignActionId)
+                    : undefined
+                }
                 onClose={closeAssignActionDialog}
               />
             );

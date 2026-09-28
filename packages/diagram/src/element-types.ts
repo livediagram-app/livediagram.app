@@ -402,6 +402,9 @@ export type ShapeElement = {
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
+  // An Action panel's list (docs/specs/012-collaboration/action-panel.md "The data"): the card holds many
+  // actions where an ordinary element holds one. Read through elementActions.
+  actions?: ElementAction[];
   // Optional note. Distinct from `commentThread`: one note per
   // element, no author / timestamp / multi-message structure, just a
   // small document the user can leave on any shape / text / sticky to

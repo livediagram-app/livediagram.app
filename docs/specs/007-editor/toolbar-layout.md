@@ -94,10 +94,10 @@ popover path (`handleDockButtonClick` with the button passed as its own
 anchor, `computeDockAnchor(..., 'button')`), so the popover hangs from the
 button's left edge instead of tucking against the right like the dock's do.
 
-Layers and Activity open as **popovers over their bottom-row buttons**, as
-in Minimal ([Live app](live-app.md)): they are not corner panels here. Every other panel
-(Collaborate, AI, the minimap, Poll, Vote and the tool panels) behaves exactly
-as in **Floating**, docking in its corner. Layers and Activity render outside
+Layers, Activity and Collaborate open as **popovers over their bottom-row
+buttons**, as in Minimal ([Live app](live-app.md)): they are not corner panels here. Every
+other panel (AI, the minimap, Poll, Vote and the tool panels) behaves exactly
+as in **Floating**, docking in its corner. Layers, Activity and Collaborate render outside
 the corner layer in this layout, since a popover positions against the
 canvas and a corner stack would move it.
 
@@ -133,8 +133,8 @@ layout on their first diagram.
 
 Toolbar works below `sm` too, and a phone in Toolbar gets the desktop
 chrome rather than the mobile dock ([Live app](live-app.md)): no top-right button bar, panels
-in their corners, Layers and Activity as popovers over their bottom-row
-buttons. Only
+in their corners, Layers, Activity and Collaborate as popovers over their
+bottom-row buttons. Only
 Floating is still desktop only. **On a phone Floating resolves to Toolbar**
 (`resolvePanelLayout(prefs, { mobile: true })`), so Toolbar is the phone
 default: a user who never chose, or chose Floating, gets the strip there and
@@ -241,8 +241,9 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 - **The menu button opens the Explorer**, not a menu of its own (an earlier
   cut had New / Recent / Search / Settings entries).
 - **The other panels follow Floating**, not Minimal: they dock in their
-  corners rather than behind a top-right button bar. Layers and Activity are
-  the exception, popovers over their bottom-row buttons as in Minimal.
+  corners rather than behind a top-right button bar. Layers, Activity and
+  Collaborate are the exception, popovers over their bottom-row buttons as in
+  Minimal.
 
 ## Help
 

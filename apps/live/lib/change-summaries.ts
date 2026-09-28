@@ -11,7 +11,7 @@
 // group falls back to the honest-but-vague "Edited X".
 
 import type { ArrowElement, BoxedElement, Element } from '@livediagram/diagram';
-import { isBoxed } from '@livediagram/diagram';
+import { elementActions, isBoxed } from '@livediagram/diagram';
 import { article, describeMany, describeOne, kindLabel } from './element-names';
 import type { ChangeLogKind } from './api-client';
 
@@ -291,12 +291,15 @@ export function summarizeEdits(pairs: EditedPair[]): string {
     return `Edited the points on ${subject}`;
   if (keys.has('points') && allIn(keys, SKETCH_KEYS)) return `Reshaped ${subject}`;
   if (allIn(keys, ['commentThread'])) return `Updated comments on ${subject}`;
-  if (allIn(keys, ['action'])) {
-    const had = pairs.every((p) => 'action' in p.before && p.before.action);
-    const has = pairs.every((p) => 'action' in p.after && p.after.action);
-    if (!had && has) return `Assigned an action on ${subject}`;
-    if (had && !has) return `Removed the action from ${subject}`;
-    return `Updated the action on ${subject}`;
+  // `actions` is an Action panel's list (docs/specs/012-collaboration/action-panel.md); a card's first edit
+  // moves a lone `action` into it, so the two keys change together. Counted
+  // through elementActions so both shapes read the same.
+  if (allIn(keys, ['action', 'actions'])) {
+    const before = pairs.reduce((n, p) => n + elementActions(p.before).length, 0);
+    const after = pairs.reduce((n, p) => n + elementActions(p.after).length, 0);
+    if (after > before) return `Assigned an action on ${subject}`;
+    if (after < before) return `Removed an action from ${subject}`;
+    return `Updated an action on ${subject}`;
   }
   if (allIn(keys, ['aspectLocked'])) {
     const lockedAspect = uniformAfter(pairs, (el) =>

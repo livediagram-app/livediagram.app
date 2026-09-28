@@ -204,8 +204,8 @@ export function svgBehaviourFace(
       // docs/specs/012-collaboration/comment-pin.md "The look": the thread as bubbles, the composer.
       return svgCommentPanel(el, title, color, stroke);
     case 'action-card':
-      // docs/specs/012-collaboration/action-panel.md "The card": name, status, assignee, Mark Complete.
-      return svgActionPanel(el, color, stroke);
+      // docs/specs/012-collaboration/action-panel.md "The card": a row per action, the Add Action bar.
+      return svgActionPanel(el, title, color, stroke);
     case 'portal': {
       // The ring, which is the whole element: an ellipse with a bright rim.
       const rx = Math.min(el.width, el.height) * 0.22;

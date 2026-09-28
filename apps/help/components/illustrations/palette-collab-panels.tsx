@@ -53,54 +53,78 @@ export function CommentPanelCard() {
   );
 }
 
-/** An action panel: the action's name with its Open chip, the description,
- *  who it is for, and the one loud act, Mark Complete. */
+/** An action panel: a row per action, each with its round check, name and
+ *  assignee, the header's open count, and the dashed Add Action bar. */
 export function ActionPanelCard() {
   const x = 100;
-  const y = 12;
+  const y = 10;
   const w = 220;
+  const rows = [
+    { name: 'Confirm the retry budget', who: 'Sam', done: false },
+    { name: 'Write the runbook', who: 'Priya', done: true },
+    { name: 'Load test the queue', who: 'You', done: false },
+  ];
   return (
-    <Scene w={420} h={222}>
-      <CollabCard x={x} y={y} w={w} h={198} title="Confirm the retry budget">
-        <rect x={x + w - 52} y={y + 10} width={40} height={14} rx={7} className="fill-brand-100" />
-        <Label x={x + w - 32} y={y + 17} anchor="middle" size={8} weight={600} tone="accent">
-          Open
-        </Label>
-        <Label x={x + 14} y={y + 48} size={9} tone="muted">
-          Check p99 latency with the payments
-        </Label>
-        <Label x={x + 14} y={y + 61} size={9} tone="muted">
-          team before we ship.
-        </Label>
-        <rect x={x + 12} y={y + 96} width={w - 24} height={38} rx={11} className="fill-slate-100" />
-        <Avatar cx={x + 32} cy={y + 115} r={12} initial="S" colour="brand" />
-        <Label x={x + 52} y={y + 111} size={9.5} weight={600} tone="strong">
-          Assigned to Sam
-        </Label>
-        <Label x={x + 52} y={y + 124} size={8} tone="muted">
-          from Priya · 2 hours ago
-        </Label>
+    <Scene w={420} h={226}>
+      <CollabCard x={x} y={y} w={w} h={204} title="Actions" aside="2 OPEN">
+        {rows.map((r, i) => {
+          const ry = y + 38 + i * 42;
+          return (
+            <g key={r.name}>
+              <rect x={x + 10} y={ry} width={w - 20} height={36} rx={9} className="fill-slate-50" />
+              <circle
+                cx={x + 26}
+                cy={ry + 13}
+                r={7}
+                className={r.done ? 'fill-emerald-500' : 'fill-white stroke-brand-400'}
+                strokeWidth={1.8}
+              />
+              {r.done ? (
+                <Label
+                  x={x + 26}
+                  y={ry + 13.5}
+                  anchor="middle"
+                  size={8}
+                  weight={700}
+                  tone="onAccent"
+                >
+                  ✓
+                </Label>
+              ) : null}
+              <Label
+                x={x + 40}
+                y={ry + 13}
+                size={9.5}
+                weight={600}
+                tone={r.done ? 'muted' : 'strong'}
+              >
+                {r.name}
+              </Label>
+              <Avatar
+                cx={x + 45}
+                cy={ry + 27}
+                r={5}
+                initial={r.who[0]!}
+                colour={r.done ? 'emerald' : 'brand'}
+              />
+              <Label x={x + 54} y={ry + 27.5} size={8} tone="muted">
+                {r.who}
+              </Label>
+            </g>
+          );
+        })}
         <rect
-          x={x + 12}
-          y={y + 146}
-          width={w - 60}
-          height={32}
-          rx={11}
-          className="fill-brand-500"
+          x={x + 10}
+          y={y + 168}
+          width={w - 20}
+          height={24}
+          rx={8}
+          className="fill-brand-50 stroke-brand-300"
+          strokeWidth={1.2}
+          strokeDasharray="4 3"
         />
-        <Label
-          x={x + 12 + (w - 60) / 2}
-          y={y + 162}
-          anchor="middle"
-          size={10}
-          weight={600}
-          tone="onAccent"
-        >
-          ✓ Mark Complete
-        </Label>
-        <circle cx={x + w - 28} cy={y + 162} r={16} className="fill-slate-100" />
-        <Label x={x + w - 28} y={y + 163} anchor="middle" size={11} tone="body">
-          ✎
+        <Label x={x + w / 2} y={y + 180} anchor="middle" size={9} weight={600} tone="accent">
+          + Add Action
         </Label>
       </CollabCard>
     </Scene>

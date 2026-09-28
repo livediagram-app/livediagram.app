@@ -89,7 +89,9 @@ export type PanelLayout = {
 export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   explorer: 'top-left',
   palette: 'top-right',
-  collaborate: 'top-right',
+  // Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): with Layers, above the cluster button
+  // it minimises into.
+  collaborate: 'bottom-right',
   ai: 'top-right',
   activity: 'bottom-left',
   minimap: 'bottom-left',
@@ -129,9 +131,9 @@ export function defaultPanelLayout(): PanelLayout {
   // Order within a corner matters (it's the stack order); list them in
   // the order they stacked historically rather than PANEL_IDS order.
   corners['top-left'] = ['explorer'];
-  corners['top-right'] = ['palette', 'vote', 'poll', 'collaborate', 'ai'];
+  corners['top-right'] = ['palette', 'vote', 'poll', 'ai'];
   corners['bottom-left'] = ['activity', 'minimap'];
-  corners['bottom-right'] = ['layers'];
+  corners['bottom-right'] = ['layers', 'collaborate'];
   return { corners, free: {} };
 }
 

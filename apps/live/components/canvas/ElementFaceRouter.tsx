@@ -324,10 +324,12 @@ export function ElementFaceRouter({
            SAME action machinery the popover and the Assign Action dialog do. */
         <ActionPanelFace
           element={element}
+          label={label}
           textColor={textColor}
           surface={cardFill}
           selfId={actionSelfId ?? null}
-          onConfigure={actionActions?.configure}
+          onAdd={actionActions?.add}
+          onEdit={actionActions?.edit}
           onComplete={actionActions?.complete}
           onReopen={actionActions?.reopen}
         />

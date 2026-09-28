@@ -11,11 +11,11 @@
 // save be a replace rather than a diff.
 
 import {
+  elementActions,
   elementDisplayLabel,
   isBoxed,
   type Comment,
   type Element,
-  type ElementAction,
 } from '@livediagram/diagram';
 
 export type CollabActionRow = {
@@ -59,10 +59,6 @@ export type CollabIndexRows = {
   threads: CollabThreadRow[];
 };
 
-function actionOf(el: Element): ElementAction | undefined {
-  return (el as { action?: ElementAction }).action;
-}
-
 function threadOf(el: Element): { comments?: Comment[]; resolved?: boolean } | undefined {
   return (el as { commentThread?: { comments?: Comment[]; resolved?: boolean } }).commentThread;
 }
@@ -74,8 +70,8 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
     // Actions and threads only ever hang off boxed elements (docs/specs/012-collaboration/assigned-actions.md
     // §1, docs/specs/008-canvas/canvas-and-palette.md), which is also what gives them a display label.
     if (!isBoxed(el)) continue;
-    const action = actionOf(el);
-    if (action) {
+    // One row per action: an Action panel holds a list (docs/specs/012-collaboration/action-panel.md).
+    for (const action of elementActions(el)) {
       actions.push({
         elementId: el.id,
         actionId: action.id,

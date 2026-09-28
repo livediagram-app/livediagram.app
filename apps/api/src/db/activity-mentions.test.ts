@@ -125,3 +125,51 @@ describe('Activity: comment mentions', () => {
     expect(threads.map((t) => t.mentionsYou)).toEqual([false]);
   });
 });
+
+// An Action panel's list (docs/specs/012-collaboration/action-panel.md "The data"): every action on one card
+// is its own Activity row, through the real table and its per-action key.
+describe('Activity: an Action panel with several actions', () => {
+  it('lists each action on the card as its own row', async () => {
+    const db = sqliteD1();
+    insert(db.sql, 'diagrams', {
+      id: 'D',
+      owner_id: 'owner',
+      name: 'Payments',
+      shareable: 1,
+      saved_at: T0,
+      created_at: T0,
+    });
+    const action = (id: string, name: string) => ({
+      id,
+      name,
+      description: '',
+      assignee: { userId: 'owner', name: 'Me' },
+      teamId: null,
+      assignerId: 'owner',
+      assignerName: 'Me',
+      status: 'open',
+      createdAt: T0,
+      updatedAt: T0,
+    });
+    const tab = {
+      id: 't1',
+      name: 'Flow',
+      elements: [
+        {
+          id: 'card',
+          type: 'shape',
+          shape: 'action-card',
+          x: 0,
+          y: 0,
+          width: 300,
+          height: 300,
+          label: '',
+          actions: [action('a1', 'Write the runbook'), action('a2', 'Load test')],
+        },
+      ],
+    } as unknown as Tab;
+    await upsertTab(db.env, 'D', tab, 0);
+    const { actions } = await readActivity(db.env, 'owner', { limit: 10 });
+    expect(actions.map((a) => a.name).sort()).toEqual(['Load test', 'Write the runbook']);
+  });
+});

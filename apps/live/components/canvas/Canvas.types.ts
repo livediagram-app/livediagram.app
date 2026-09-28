@@ -135,9 +135,10 @@ export type CanvasProps = {
   // drives an action. Absent on a read-only surface: the card renders inert.
   actionSelfId?: string | null;
   actionPanelActions?: {
-    configure: (elementId: string) => void;
-    complete: (elementId: string) => void;
-    reopen: (elementId: string) => void;
+    // Opens the Assign Action dialog: to add (no action id) or edit one.
+    configure: (elementId: string, actionId?: string | null) => void;
+    complete: (elementId: string, actionId?: string | null) => void;
+    reopen: (elementId: string, actionId?: string | null) => void;
   };
   onSetSessionConfig?: (
     element: import('@livediagram/diagram').ShapeElement,
@@ -521,7 +522,7 @@ export type CanvasProps = {
   onOpenActionForElement: (elementId: string) => void;
   // The Collaborate panel row's round check (docs/specs/012-collaboration/assigned-actions.md §5): complete
   // (done) or reopen the action in place. Absent for a read-only visitor.
-  onToggleActionDone?: (elementId: string, done: boolean) => void;
+  onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
   onRevertChange: (entry: ChangeLogEntry) => void;
   // Hover-to-preview for a row's Revert (docs/specs/012-collaboration/activity-and-audit.md): enter shows the
   // revert result live on the canvas, leave restores. Nothing commits.

@@ -62,34 +62,27 @@ describe('Comment panel export', () => {
 });
 
 describe('Action panel export', () => {
-  it('offers Set Up Action with no action', () => {
+  it('offers Add Action with no actions', () => {
     const svg = svgOf(createShape('action-card', 0, 0) as ShapeElement);
-    expect(svg).toContain('No Action Yet');
-    expect(svg).toContain('Set Up Action');
+    expect(svg).toContain('No Actions Yet');
+    expect(svg).toContain('Add Action');
   });
 
-  it('shows the name, the Open chip, the assignee and Mark Complete', () => {
+  it('draws a row per action with its assignee, and the open count', () => {
     const svg = svgOf({
       ...(createShape('action-card', 0, 0) as ShapeElement),
-      action: action('open'),
+      actions: [action('open'), { ...action('done'), id: 'b', name: 'Load test' }],
     });
-    for (const s of [
-      'Confirm the retry',
-      'Open',
-      'Assigned to Sam Lee',
-      'from Priya',
-      'Mark Complete',
-    ])
+    for (const s of ['Confirm the retry', 'Load test', 'Sam Lee', '1 OPEN', '+ Add Action'])
       expect(svg).toContain(s);
   });
 
-  it('turns to Done and Reopen once complete', () => {
+  it('reads a card saved with a single action, and says All done once finished', () => {
     const svg = svgOf({
       ...(createShape('action-card', 0, 0) as ShapeElement),
       action: action('done'),
     });
-    expect(svg).toContain('Done');
-    expect(svg).toContain('Reopen');
-    expect(svg).not.toContain('Mark Complete');
+    expect(svg).toContain('Confirm the retry');
+    expect(svg).toContain('ALL DONE');
   });
 });

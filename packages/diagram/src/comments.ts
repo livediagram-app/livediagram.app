@@ -144,6 +144,7 @@ export function stampCommentAuthor(
 const LIVE_ELEMENT_FIELDS = [
   'commentThread',
   'action',
+  'actions',
   'responses',
   'responsesRevealed',
   'collabRound',
@@ -162,7 +163,11 @@ const LIVE_ELEMENT_FIELDS = [
   'qaNotes',
   'qaRev',
 ] as const;
-type LiveFieldBag = { commentThread?: CommentThread; action?: ElementAction } & Pick<
+type LiveFieldBag = {
+  commentThread?: CommentThread;
+  action?: ElementAction;
+  actions?: ElementAction[];
+} & Pick<
   ShapeElement,
   | 'responses'
   | 'responsesRevealed'

@@ -137,7 +137,7 @@ CREATE TABLE collab_actions (
   assigner_id TEXT NOT NULL, assigner_name TEXT,
   team_id TEXT,
   created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,
-  PRIMARY KEY (tab_id, element_id),
+  PRIMARY KEY (tab_id, element_id, action_id),
   FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE
 );
 
@@ -159,8 +159,10 @@ CREATE TABLE collab_threads (
   ([Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md)); the diagram is resolved at read time through
   `diagram_tabs`, which is also what makes deletion free: a tab's rows
   die with it (FK cascade), and a diagram's tabs die with the diagram.
-- **One row per element per kind** ([Assigned actions](../012-collaboration/assigned-actions.md): at most one action per
-  element; one thread per element), so a save is a full replace of the
+- **One row per action, one per thread.** An ordinary element carries at most
+  one action and an Action panel a list ([The Action Panel](../012-collaboration/action-panel.md)), so `collab_actions` is keyed
+  `(tab_id, element_id, action_id)` (migration 0053); an element has one
+  thread. Either way a save is a full replace of the
   tab's rows: `DELETE … WHERE tab_id = ?` for each table, then one
   `INSERT` per element that carries the thing. Idempotent, and it
   handles an action being deleted, moved, completed, or reassigned
@@ -317,7 +319,8 @@ a diagram the reader has lost access to, and it is what keeps the
 `json_each` participant scan bounded to one person's library.
 
 A tab linked into two visible diagrams would list twice; the read
-dedupes on (tab, element), preferring the diagram the reader owns,
+dedupes on (tab, element) for a thread and (tab, element, action) for an
+action, preferring the diagram the reader owns,
 then a team's, then a shared one.
 
 ## 5. Explorer integration

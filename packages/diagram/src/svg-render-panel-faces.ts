@@ -9,6 +9,7 @@
 // source the canvas's CollabAccentScope reads.
 
 import { canvasSurface } from './colors';
+import { elementActions } from './element-action';
 import { initialsOf } from './names';
 import { r2, xmlEscape } from './svg-render-primitives';
 import {
@@ -37,7 +38,6 @@ const BUBBLE_D =
   'M3 2.8h10a1.2 1.2 0 0 1 1.2 1.2v6.2a1.2 1.2 0 0 1-1.2 1.2H7.4L4.2 14v-2.6H3a1.2 1.2 0 0 1-1.2-1.2V4A1.2 1.2 0 0 1 3 2.8Z';
 const CLIPBOARD_D =
   'M5.5 2.8h5M5.5 2.8a1 1 0 0 0-1 1v.2h7v-.2a1 1 0 0 0-1-1M4.5 3.4H3.6a1 1 0 0 0-1 1v8.6a1 1 0 0 0 1 1h8.8a1 1 0 0 0 1-1V4.4a1 1 0 0 0-1-1h-.9M5.6 9.2l1.7 1.7 3.2-3.6';
-const PENCIL_D = 'M10.6 3.1 12.9 5.4 6 12.3l-3 .7.7-3 6.9-6.9ZM9.4 4.3l2.3 2.3';
 
 const glyph = (cx: number, cy: number, size: number, color: string, d: string): string => {
   const k = size / 16;
@@ -126,100 +126,69 @@ export function svgCommentPanel(el: Face, title: string, color: string, accent: 
   });
 }
 
-export function svgActionPanel(el: Face, color: string, accent: string): string {
-  const action = el.action;
-  if (!action) {
-    return collabCard(el, 'Action', undefined, color, (w, h) => {
+export function svgActionPanel(el: Face, title: string, color: string, accent: string): string {
+  const actions = elementActions(el);
+  const open = actions.filter((a) => a.status !== 'done').length;
+  const allDone = actions.length > 0 && open === 0;
+  const aside = allDone ? 'All done' : open ? `${open} open` : undefined;
+  return collabCard(el, title || 'Actions', aside, color, (w, h) => {
+    if (actions.length === 0) {
       const cy = h / 2 + 4;
       return (
         `<circle cx="${r2(w / 2)}" cy="${r2(cy - 24)}" r="14" fill="${xmlEscape(accent)}" fill-opacity="0.14"/>` +
         glyph(w / 2, cy - 24, 14, accent, CLIPBOARD_D) +
-        text(w / 2, cy + 4, 'No Action Yet', { size: 12, weight: 600, color, anchor: 'middle' }) +
-        pill(w / 2 - 50, cy + 18, 100, 28, accent, 1) +
-        text(w / 2, cy + 36, 'Set Up Action', {
+        text(w / 2, cy + 4, 'No Actions Yet', { size: 12, weight: 600, color, anchor: 'middle' }) +
+        pill(w / 2 - 52, cy + 18, 104, 28, accent, 1) +
+        text(w / 2, cy + 36, 'Add Action', {
           size: 11,
           weight: 600,
           color: onAccent(accent),
           anchor: 'middle',
         })
       );
-    });
-  }
-  const done = action.status === 'done';
-  const hue = done ? DONE : accent;
-  // The name is the title here (two lines, set large), so the kit's own
-  // one-line title is left empty and the header drawn below.
-  return collabCard(el, '', undefined, color, (w, h) => {
-    const chipW = done ? 50 : 48;
-    const chip =
-      pill(w - PAD_X - chipW, PAD_Y, chipW, 18, hue, 0.14) +
-      text(w - PAD_X - chipW / 2, PAD_Y + 12.5, done ? 'Done' : 'Open', {
-        size: 10,
+    }
+    // One row per action, as many as fit above the Add Action bar.
+    const barH = 30;
+    const barY = h - PAD_Y - barH;
+    const top = PAD_Y + TITLE_PX + 14;
+    const rowH = 48;
+    const fit = Math.max(1, Math.floor((barY - 8 - top) / (rowH + 6)));
+    const rows = actions
+      .slice(0, fit)
+      .map((a, i) => {
+        const y = top + i * (rowH + 6);
+        const done = a.status === 'done';
+        const who = a.assignee.name?.trim() || 'Teammate';
+        const name = wrapLines(a.name, w - PAD_X * 2 - 44, 12.5, 1)[0] ?? a.name;
+        const check = done
+          ? `<circle cx="${r2(PAD_X + 19)}" cy="${r2(y + 16)}" r="10" fill="${DONE}"/>` +
+            checkMark(PAD_X + 19, y + 16, 12, '#ffffff')
+          : `<circle cx="${r2(PAD_X + 19)}" cy="${r2(y + 16)}" r="9" fill="none" stroke="${xmlEscape(accent)}" stroke-opacity="0.6" stroke-width="2"/>`;
+        return (
+          roundRect(PAD_X, y, w - PAD_X * 2, rowH, 12, color, 0.04) +
+          check +
+          text(PAD_X + 38, y + 20, name, {
+            size: 12.5,
+            weight: 600,
+            color,
+            opacity: done ? 0.5 : 1,
+          }) +
+          personDisc(PAD_X + 46, y + 35, 7, color, {
+            initials: initialsOf(who),
+            fill: done ? DONE : accent,
+          }) +
+          text(PAD_X + 58, y + 38.5, who, { size: 10.5, color, opacity: 0.65 })
+        );
+      })
+      .join('');
+    const bar =
+      `<rect x="${r2(PAD_X)}" y="${r2(barY)}" width="${r2(w - PAD_X * 2)}" height="${barH}" rx="12" fill="${xmlEscape(accent)}" fill-opacity="0.05" stroke="${xmlEscape(accent)}" stroke-opacity="0.45" stroke-dasharray="4 3"/>` +
+      text(w / 2, barY + 19, '+ Add Action', {
+        size: 11,
         weight: 600,
-        color: hue,
+        color: accent,
         anchor: 'middle',
       });
-    const nameLines = wrapLines(action.name, w - PAD_X * 2 - chipW - 8, 15, 2);
-    const name = nameLines
-      .map((line, i) =>
-        text(PAD_X, PAD_Y + 14 + i * 20, line, {
-          size: 15,
-          weight: 600,
-          color,
-          opacity: done ? 0.55 : 1,
-        }),
-      )
-      .join('');
-    const strike = done
-      ? nameLines
-          .map(
-            (line, i) =>
-              `<path d="M ${r2(PAD_X)} ${r2(PAD_Y + 9 + i * 20)} h ${r2(Math.min(w - PAD_X * 2, line.length * 15 * 0.47))}" stroke="${xmlEscape(color)}" stroke-width="1.2" opacity="0.55"/>`,
-          )
-          .join('')
-      : '';
-    const y = PAD_Y + 14 + nameLines.length * 20 + 4;
-    const description = action.description
-      ? wrapLines(action.description, w - PAD_X * 2, 11.5, 3)
-          .map((line, i) =>
-            text(PAD_X, y + i * 16, line, { size: 11.5, color, opacity: done ? 0.45 : 0.7 }),
-          )
-          .join('')
-      : '';
-    const footerY = h - PAD_Y - 34;
-    const rowY = footerY - 10 - 42;
-    const assignee = action.assignee.name?.trim() || 'Teammate';
-    const row =
-      roundRect(PAD_X, rowY, w - PAD_X * 2, 42, 12, color, 0.05) +
-      personDisc(PAD_X + 22, rowY + 21, 14, color, { initials: initialsOf(assignee), fill: hue }) +
-      text(PAD_X + 44, rowY + 18, `Assigned to ${assignee}`, { size: 11.5, weight: 600, color }) +
-      (action.assignerName
-        ? text(PAD_X + 44, rowY + 32, `from ${action.assignerName}`, {
-            size: 10,
-            color,
-            opacity: 0.55,
-          })
-        : '');
-    const btnW = w - PAD_X * 2 - 42;
-    const button = done
-      ? roundRect(PAD_X, footerY, btnW, 34, 12, color, 0.08) +
-        text(PAD_X + btnW / 2, footerY + 21.5, 'Reopen', {
-          size: 12,
-          weight: 600,
-          color,
-          anchor: 'middle',
-        })
-      : roundRect(PAD_X, footerY, btnW, 34, 12, accent, 1) +
-        checkMark(PAD_X + btnW / 2 - 50, footerY + 17, 13, onAccent(accent)) +
-        text(PAD_X + btnW / 2 + 8, footerY + 21.5, 'Mark Complete', {
-          size: 12,
-          weight: 600,
-          color: onAccent(accent),
-          anchor: 'middle',
-        });
-    const edit =
-      `<circle cx="${r2(w - PAD_X - 17)}" cy="${r2(footerY + 17)}" r="17" fill="${xmlEscape(color)}" fill-opacity="0.08"/>` +
-      glyph(w - PAD_X - 17, footerY + 17, 14, color, PENCIL_D);
-    return chip + name + strike + description + row + button + edit;
+    return rows + bar;
   });
 }

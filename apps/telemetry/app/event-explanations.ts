@@ -591,6 +591,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|ActionSignInNudge':
     'A signed-out visitor opened the "Assign action" dialog and saw the sign-in nudge, since a guest can only assign work to themself. Counted once per dialog open.',
   'UI|Opened|Activity': 'Someone expanded the Activity panel.',
+  'UI|Opened|Collaborate': 'Someone opened the Collaborate panel from its bottom-bar button.',
   'UI|Opened|BehaviourGroup':
     "Someone opened a category inside the palette's Behaviours tab (session tools like polls, votes, and record-keeping elements).",
   'UI|Opened|CanvasStyle':

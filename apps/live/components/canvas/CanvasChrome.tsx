@@ -41,6 +41,8 @@ import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
 import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
 import { stripCrowdsTopCorners } from '@/components/palette/toolbar-strip-tiles';
+import { CollaborateClusterButton } from './CollaborateClusterButton';
+import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -209,6 +211,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     toolbarLayout,
     layersMinimized,
     onToggleLayersMinimized,
+    commentRows,
+    actionRows,
     onOpenCanvasTheme,
     onChooseTemplate,
     offscreenContent,
@@ -311,15 +315,21 @@ export function CanvasChrome(props: CanvasChromeProps) {
   );
 
   // Floating panel elements + their wiring live in useCanvasChromePanels.
-  const { panelEls, toolbarExplorerEl, toolbarClusterEls, clusterPopovers, paletteTint } =
-    useCanvasChromePanels({
-      props,
-      chromeHidden,
-      isMobile,
-      dockingActive,
-      toolbarActive,
-      panelWiringFor,
-    });
+  const {
+    panelEls,
+    toolbarExplorerEl,
+    toolbarClusterEls,
+    collaborateEl,
+    clusterPopovers,
+    paletteTint,
+  } = useCanvasChromePanels({
+    props,
+    chromeHidden,
+    isMobile,
+    dockingActive,
+    toolbarActive,
+    panelWiringFor,
+  });
   // Bucketing keys off the persisted placement ONLY (not which panel is
   // mid-drag): a dragged panel must stay in the same DOM parent for the
   // whole gesture — reparenting it would remount the component and drop
@@ -437,6 +447,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {toolbarClusterEls}
         </>
       ) : null}
+      {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5), in every layout: it
+          positions against the canvas, so it renders outside the corner
+          layer, as Toolbar's cluster popovers do. */}
+      {zenMode ? null : collaborateEl}
       {toolbarActive && !readOnly ? (
         <ToolbarPalette
           key={props.esBoard ? 'es-board' : 'standard'}
@@ -462,7 +476,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         minimalPanels={minimalPanels}
         toolbarLayout={toolbarActive}
         readOnly={readOnly}
-        hasCollaborate={props.commentRows.length > 0 || props.actionRows.length > 0}
         hasAi={!!aiPanel}
         hasPoll={!!props.pollPanel}
         hasVote={!!props.tabVote}
@@ -515,10 +528,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Activity strip
-          (with inline Undo / Redo), the Layers button, the Theme & Canvas
+          (with inline Undo / Redo), the Layers button, the Collaborate button
+          (only while the tab has a thread or an action), the Theme & Canvas
           paintbrush, then the Zoom controls. Activity + Layers minimise into
           their buttons in desktop Floating and open as popovers above them
-          everywhere else (clusterPopovers, docs/specs/007-editor/live-app.md). */}
+          everywhere else (clusterPopovers, docs/specs/007-editor/live-app.md); Collaborate is a popover
+          in every layout. */}
       <div
         // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
         // as its one way back out, and a deck has its own way out plus no
@@ -555,6 +570,16 @@ export function CanvasChrome(props: CanvasChromeProps) {
                     ? undefined
                     : (button) => handleDockButtonClick('layers', button, true)
                 }
+              />
+            ) : null}
+            {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): right after Layers, only while
+                the tab has a comment thread or an action. A view-role visitor
+                gets it too: they read threads and answer them. */}
+            {!zenMode && (commentRows.length > 0 || actionRows.length > 0) ? (
+              <CollaborateClusterButton
+                openCount={kindCounts('open', commentRows, actionRows).all}
+                popoverOpen={activeMobilePanel === 'collaborate'}
+                onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
               />
             ) : null}
             {/* Theme & Canvas dock button (docs/specs/011-theme/canvas-and-theme-dialog.md): the paintbrush right of

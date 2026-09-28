@@ -505,9 +505,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             actionActions={
               actionPanelActions
                 ? {
-                    configure: () => actionPanelActions.configure(element.id),
-                    complete: () => actionPanelActions.complete(element.id),
-                    reopen: () => actionPanelActions.reopen(element.id),
+                    add: () => actionPanelActions.configure(element.id, null),
+                    edit: (id) => actionPanelActions.configure(element.id, id),
+                    complete: (id) => actionPanelActions.complete(element.id, id),
+                    reopen: (id) => actionPanelActions.reopen(element.id, id),
                   }
                 : undefined
             }

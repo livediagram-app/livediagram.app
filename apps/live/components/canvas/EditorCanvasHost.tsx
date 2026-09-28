@@ -31,6 +31,7 @@ export function EditorCanvasHost() {
   const {
     activeId,
     activeTab,
+    scrollIntoView,
     activeTabLoadState,
     activeTabLocked,
     presentingElements,
@@ -380,6 +381,14 @@ export function EditorCanvasHost() {
   // The layout this viewport shows (a phone has no Floating, docs/specs/007-editor/toolbar-layout.md).
   const isMobile = useIsMobileViewport();
   const panelLayout = resolvePanelLayout(userPreferences, { mobile: isMobile });
+  // The Collaborate panel's jump to a conversation card (docs/specs/012-collaboration/assigned-actions.md §5):
+  // true when the row's element is that kind of card, now centred in view.
+  const jumpToCard = (id: string, shape: 'comment-pin' | 'action-card'): boolean => {
+    const el = activeTab.elements.find((e) => e.id === id);
+    if (!el || el.type !== 'shape' || el.shape !== shape) return false;
+    scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
+    return true;
+  };
   const backdrop = resolveTabBackdrop(activeTab, appearance);
   const activeTabChangeLog = useMemo(
     () => changeLog.filter((entry) => entry.tabId === activeId),
@@ -830,15 +839,21 @@ export function EditorCanvasHost() {
         onResetCommentsPanel={() => setCommentsPanelPosition(null)}
         onOpenCommentsForElement={(id) => {
           setSelectedId(id);
-          openComments(id);
+          // A Comment panel IS the thread (docs/specs/012-collaboration/assigned-actions.md §5): go to it
+          // rather than open a popover repeating it beside the card.
+          if (!jumpToCard(id, 'comment-pin')) openComments(id);
         }}
         actionRows={actionRows}
         onOpenActionForElement={(id) => {
           setSelectedId(id);
-          openActionPopover(id);
+          // An Action panel IS the action: the same jump.
+          if (!jumpToCard(id, 'action-card')) openActionPopover(id);
         }}
         onToggleActionDone={
-          isReadOnly ? undefined : (id, done) => (done ? completeAction(id) : reopenAction(id))
+          isReadOnly
+            ? undefined
+            : (id, done, actionId) =>
+                done ? completeAction(id, actionId) : reopenAction(id, actionId)
         }
         onRevertChange={revertChange}
         onPreviewRevert={previewRevert}

@@ -3671,6 +3671,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
       },
+      "actions": {
+        "items": {
+          "$ref": "#/components/schemas/ElementAction"
+        },
+        "type": "array"
+      },
       "agendaCurrent": {
         "type": "number"
       },

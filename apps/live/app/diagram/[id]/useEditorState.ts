@@ -18,6 +18,7 @@ import {
   slideBounds,
   stampNewElementLayers,
   voteHidesCursors,
+  elementActions,
   type BoxedElement,
   type CommentMention,
   type Element,
@@ -1456,6 +1457,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     openActionPopover,
     closeActionPopover,
     assignActionFor,
+    assignActionId,
     openAssignActionDialog,
     closeAssignActionDialog,
     openAssignAction,
@@ -1466,10 +1468,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useEditorActions({
     activeId,
     tickTabs,
-    getAction: (elementId) => {
+    getAction: (elementId, actionId) => {
       const el = activeTab.elements.find((e) => e.id === elementId);
-      return el && isBoxed(el) ? el.action : undefined;
+      if (!el || !isBoxed(el)) return undefined;
+      const list = elementActions(el);
+      return actionId ? list.find((a) => a.id === actionId) : list[0];
     },
+    isActionCard: (elementId) =>
+      activeTab.elements.some(
+        (e) => e.id === elementId && e.type === 'shape' && e.shape === 'action-card',
+      ),
     // The signed-in account, or the hydrated guest participant identity
     // (guests may self-assign, docs/specs/012-collaboration/assigned-actions.md §2). Null only pre-hydration.
     self: {
@@ -3166,6 +3174,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // nothing outside the panel and the overlay reads into it.
     slideDeck,
     commentMentions,
+    // Bring an element into view (the Collaborate panel's jump to a card).
+    scrollIntoView,
     // What the presentation is showing, or null. The canvas renders THESE
     // instead of the tab's elements while it is non-null, which is what makes
     // a slide a slide.
@@ -3430,6 +3440,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     actionPopoverOpenId,
     actionRows,
     assignActionFor,
+    assignActionId,
     closeActionPopover,
     closeAssignActionDialog,
     completeAction,

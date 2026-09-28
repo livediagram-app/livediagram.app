@@ -47,14 +47,14 @@ function RowShell({
       style={{ '--stagger-i': index } as CSSProperties}
     >
       <div
-        className={`flex items-start gap-2.5 rounded-xl px-2 py-2 transition-colors ${
+        className={`flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors ${
           mine
             ? 'bg-brand-50/70 hover:bg-brand-50 dark:bg-brand-500/10 dark:hover:bg-brand-500/15'
             : 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800/80'
         }`}
       >
         {/* One lead column width for both kinds, so the text lines up. */}
-        <span className="flex w-6 shrink-0 justify-center pt-px">{lead}</span>
+        <span className="flex w-6 shrink-0 justify-center pt-0.5">{lead}</span>
         <button
           type="button"
           onClick={onClick}
@@ -122,13 +122,13 @@ export function ActionRowItem({
     >
       <span className="min-w-0 flex-1">
         <span
-          className={`line-clamp-2 text-xs font-semibold leading-snug ${
+          className={`line-clamp-2 text-[13px] font-semibold leading-snug ${
             shownDone ? 'text-slate-400 line-through' : 'text-slate-800 dark:text-slate-100'
           }`}
         >
           {row.actionName}
         </span>
-        <span className="mt-0.5 block truncate text-[10px] text-slate-500 dark:text-slate-400">
+        <span className="mt-[3px] block truncate text-[11px] text-slate-500 dark:text-slate-400">
           {row.label} · {formatRelativeTimeCompact(now - row.createdAt)}
         </span>
       </span>
@@ -195,17 +195,17 @@ export function CommentRowItem({
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline gap-2">
           <span
-            className={`min-w-0 flex-1 truncate text-xs font-semibold ${
+            className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${
               row.resolved ? 'text-slate-400' : 'text-slate-800 dark:text-slate-100'
             }`}
           >
             {row.label}
           </span>
-          <span className="shrink-0 text-[10px] text-slate-400">
+          <span className="shrink-0 text-[11px] text-slate-400">
             {formatRelativeTimeCompact(now - row.latestAt)}
           </span>
         </span>
-        <span className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        <span className="mt-[3px] line-clamp-2 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
           <span className={`font-semibold ${AUTHOR_INK}`} style={authorVars(color)}>
             {firstName(row.latestAuthorName)}:
           </span>{' '}

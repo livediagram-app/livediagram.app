@@ -66,10 +66,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // conversation (three or four bubbles) above the composer. It reflows, so a
   // resize makes room for more of the thread.
   'comment-pin': { width: 300, height: 320 },
-  // Action panel (docs/specs/012-collaboration/action-panel.md): fits a two-line name, a couple of lines of
-  // description, the assignee row and the Mark Complete footer. It scales, so
-  // a card placed at an older, smaller default scales its contents to fit.
-  'action-card': { width: 290, height: 260 },
+  // Action panel (docs/specs/012-collaboration/action-panel.md): sized for a few actions above the Add
+  // Action bar. It reflows, so a resize makes room for more actions.
+  'action-card': { width: 300, height: 300 },
   // Done check: taller than the other room-response panels because it stacks
   // TWO rosters (done and waiting) plus the all-done line. At 190 a two-person
   // room already overflowed by a few pixels and the body grew a scrollbar.
