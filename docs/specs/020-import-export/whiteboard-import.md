@@ -37,7 +37,7 @@ shipped strings. The standalone Windows, iOS and Android apps retired on
 - The import lands on a **whiteboard tab** ([Whiteboard](../023-whiteboard/whiteboard.md)).
 - The image becomes one `image` element at the tab's origin, sized to the
   picture's aspect ratio, through the asset stage: resized to the longest side
-  of [Board import](board-import.md) (2,048 px), WebP, uploaded, or embedded in an
+  of the [Import image pipeline](import-image-pipeline.md) (2,048 px), WebP, uploaded, or embedded in an
   offline tab.
 - The report says what the user now has: "1 board imported as a picture. Ink,
   notes and text are part of the image and cannot be edited."
