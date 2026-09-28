@@ -258,6 +258,7 @@ describe('supportsTextAlign', () => {
       'reaction-pad',
       'portal',
       'mode-button',
+      'quiz',
       'stat-row',
       'sticker',
       'icon',

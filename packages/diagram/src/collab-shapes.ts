@@ -352,7 +352,8 @@ export function hasOwnFace(kind: ShapeKind): boolean {
     kind === 'comment-pin' ||
     kind === 'action-card' ||
     kind === 'reaction-pad' ||
-    kind === 'portal'
+    kind === 'portal' ||
+    isQuizShape(kind)
   );
 }
 

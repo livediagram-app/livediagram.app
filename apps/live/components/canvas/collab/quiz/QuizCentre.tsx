@@ -89,15 +89,7 @@ export function QuizCentre({
             <Meta textColor={textColor}>Waiting for a question</Meta>
           )
         ) : actions.start ? (
-          <CollabButton
-            tone="loud"
-            textColor={textColor}
-            onPress={actions.start}
-            hoverCard={{
-              title: 'Start the quiz',
-              description: `Shows the question to everyone and gives them ${seconds} seconds to answer.`,
-            }}
-          >
+          <CollabButton tone="loud" textColor={textColor} onPress={actions.start}>
             Start
           </CollabButton>
         ) : (
@@ -135,15 +127,7 @@ export function QuizCentre({
         <Question text={question} textColor={textColor} />
         <Meta textColor={textColor}>{answered} answered</Meta>
         {actions.reveal ? (
-          <CollabButton
-            tone="loud"
-            textColor={textColor}
-            onPress={actions.reveal}
-            hoverCard={{
-              title: 'Reveal the answer',
-              description: 'Shows everyone the right answer and who picked it.',
-            }}
-          >
+          <CollabButton tone="loud" textColor={textColor} onPress={actions.reveal}>
             Reveal Answer
           </CollabButton>
         ) : (
