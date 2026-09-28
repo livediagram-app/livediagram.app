@@ -11,7 +11,6 @@ function convert(xml: string, attrs = '') {
   const page = convertPage(readGraph(model(xml, attrs)), {
     tally,
     pageIdToTab: new Map(),
-    tabId: 't',
     images: [],
     imageKeys: new Map(),
   });
@@ -73,7 +72,7 @@ describe('convertPage', () => {
   });
 
   it('requests each embedded image once per distinct picture, and never a URL', () => {
-    const images: import('@/lib/import-report').PendingImage[] = [];
+    const images: import('@/lib/import-images').ImportImageRequest[] = [];
     const tally = new ReportTally();
     const img = (id: string, src: string) =>
       vertex(id, `shape=image;image=${src};`, 'width="20" height="10"', 'parent="1"');
@@ -87,19 +86,17 @@ describe('convertPage', () => {
             img('e', 'data:image/svg+xml,%3Csvg%2F%3E'),
         ),
       ),
-      { tally, pageIdToTab: new Map(), tabId: 't', images, imageKeys: new Map() },
+      { tally, pageIdToTab: new Map(), images, imageKeys: new Map() },
     );
-    expect(images.map((i) => [i.key, i.source.dataUrl])).toEqual([
+    expect(images.map((i) => [i.key, i.source?.kind === 'data-url' && i.source.dataUrl])).toEqual([
       ['drawio-image-1', 'data:image/png;base64,QUJD'],
       ['drawio-image-1', 'data:image/png;base64,QUJD'],
       ['drawio-image-2', 'data:image/svg+xml;base64,PHN2Zy8+'],
       ['drawio-image-3', 'data:image/svg+xml,%3Csvg%2F%3E'],
     ]);
     expect(images[0]!.hint).toEqual({ width: 20, height: 10 });
-    expect(tally.notes()).toEqual([
-      { kind: 'image-placeholder', count: 4 },
-      { kind: 'image-unavailable', count: 1 },
-    ]);
+    // Embedded images are the pipeline's to report; only the one it never sees is a note.
+    expect(tally.notes()).toEqual([{ kind: 'image-unavailable', count: 1 }]);
   });
 
   it('leaves one layer implicit', () => {

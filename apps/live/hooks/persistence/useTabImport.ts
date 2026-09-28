@@ -154,22 +154,36 @@ export function useTabImport({
 
   // draw.io (docs/specs/020-import-export/drawio-import.md): the first page
   // replaces the active tab, every further page becomes a new tab after it,
-  // all in ONE commit so a single undo takes the whole import back. Images go
-  // through the pending-image seam BEFORE the tabs change, for the same reason.
-  const importDrawioInput = async (input: DrawioInput): Promise<ImportOutcome> => {
-    const [{ importDrawio }, { applyDrawioPages }, { attachPendingImages }] = await Promise.all([
-      import('@/lib/drawio/import'),
-      import('./drawio-apply'),
-      import('@/lib/import-report'),
-    ]);
+  // all in ONE commit so a single undo takes the whole import back. Embedded
+  // images go through the import image pipeline BEFORE the tabs change, for
+  // the same reason, in one pass across every page.
+  const importDrawioInput = async (
+    input: DrawioInput,
+    onProgress?: ImportProgressListener,
+  ): Promise<ImportOutcome> => {
+    const [{ importDrawio }, { applyDrawioPages }, { attachDrawioImages }, { reportHasNews }] =
+      await Promise.all([
+        import('@/lib/drawio/import'),
+        import('./drawio-apply'),
+        import('@/lib/drawio/images'),
+        import('@/lib/import-report'),
+      ]);
     const result = await importDrawio(input, {
       tabIdForPage: (index) => (index === 0 ? activeId : crypto.randomUUID()),
     });
     if (!result.ok) return { status: 'error', error: result.error };
-    const { pages, placed } = await attachPendingImages(result.pages, result.images);
-    if (result.images.length > 0) {
-      console.info('[drawio-import] pending-images', { count: result.images.length, placed });
-    }
+    const { pages, images } = await attachDrawioImages(
+      result.pages,
+      result.images,
+      async (elements, requests) => {
+        const [{ attachImportImages }, { createBrowserImportImageSession }] = await Promise.all([
+          import('@/lib/import-images'),
+          import('@/lib/import-images/browser'),
+        ]);
+        const session = createBrowserImportImageSession({ ownerId, diagramId });
+        return attachImportImages(elements, requests, session, onProgress);
+      },
+    );
     setImportError(null);
     commitTabs((ts) => applyDrawioPages(ts, activeId, pages, createTab));
     for (const page of pages.slice(1)) markTabLoaded(page.tabId);
@@ -178,13 +192,14 @@ export function useTabImport({
     setFormatSourceId(null);
     if ((pages[0]?.elements.length ?? 0) > 0) requestFit();
     track('Tab', 'Imported', 'Drawio');
-    const { report } = result;
+    const report = { ...result.report, ...(images ? { images } : {}) };
     console.info('[drawio-import] applied', {
       pages: report.pages,
       elements: report.elements,
       notes: Object.fromEntries(report.notes.map((n) => [n.kind, n.count])),
+      ...(images ? { images } : {}),
     });
-    return report.notes.length > 0 ? { status: 'done', report } : { status: 'done' };
+    return reportHasNews(report) ? { status: 'done', report } : { status: 'done' };
   };
 
   const importTextIntoActiveTab = async (
@@ -197,7 +212,7 @@ export function useTabImport({
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
 
-    if (format === 'drawio') return importDrawioInput({ kind: 'text', text });
+    if (format === 'drawio') return importDrawioInput({ kind: 'text', text }, onProgress);
     if (format === 'excalidraw') return importExcalidraw(text, onProgress);
 
     if (format === 'mermaid') {
@@ -262,10 +277,10 @@ export function useTabImport({
     if (!picked) return { status: 'cancelled' };
     // A .drawio.png is binary, so draw.io reads the bytes.
     if (format === 'drawio') {
-      return importDrawioInput({
-        kind: 'bytes',
-        bytes: new Uint8Array(await picked.file.arrayBuffer()),
-      });
+      return importDrawioInput(
+        { kind: 'bytes', bytes: new Uint8Array(await picked.file.arrayBuffer()) },
+        onProgress,
+      );
     }
     // An Excalidraw PNG export is binary, so that format reads the bytes.
     if (format === 'excalidraw') {

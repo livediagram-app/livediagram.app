@@ -3,14 +3,12 @@
 // set of kinds, a count each, and the copy the Import dialog's summary shows,
 // so "nothing degrades silently" is one vocabulary rather than one per format.
 
-import type { Element } from '@livediagram/diagram';
 import { importImageReportTotal, type ImportImageReport } from './import-images';
 
 export type ImportNoteKind =
   | 'shape-unmatched'
   | 'shape-approximated'
   | 'icon-substituted'
-  | 'image-placeholder'
   | 'image-unavailable'
   | 'arrowhead-approximated'
   | 'connection-loosened'
@@ -28,7 +26,6 @@ export const IMPORT_NOTE_ORDER: readonly ImportNoteKind[] = [
   'shape-unmatched',
   'shape-approximated',
   'icon-substituted',
-  'image-placeholder',
   'image-unavailable',
   'arrowhead-approximated',
   'connection-loosened',
@@ -67,18 +64,6 @@ export type ImportReport = {
 export function reportHasNews(report: ImportReport): boolean {
   return report.notes.length > 0 || (!!report.images && importImageReportTotal(report.images) > 0);
 }
-
-/** An embedded image an import could not store itself, shaped like the
- *  shared import image pipeline's request (plus the tab it lands on): the seam
- *  for that pipeline (docs/specs/020-import-export/drawio-import.md "Images").
- *  Requests sharing a `key` carry the same bytes and are stored once. */
-export type PendingImage = {
-  tabId: string;
-  elementId: string;
-  key: string;
-  source: { kind: 'data-url'; dataUrl: string };
-  hint: { width: number; height: number };
-};
 
 const DEFAULT_NAMES_MAX = 5;
 
@@ -133,10 +118,8 @@ export function describeImportNote({ kind, count: n }: ImportNote): string {
       return `${s('shape', 'shapes')} came in as the nearest livediagram shape.`;
     case 'icon-substituted':
       return `${s('vendor icon', 'vendor icons')} came in as the matching livediagram icon.`;
-    case 'image-placeholder':
-      return `${s('image', 'images')} came in as ${plural(n, 'a placeholder', 'placeholders')}. Select one and upload the picture to fill it.`;
     case 'image-unavailable':
-      return `${s('image', 'images')} ${plural(n, 'links', 'link')} to files outside the diagram and came in as ${plural(n, 'a placeholder', 'placeholders')} or ${plural(n, 'was', 'were')} left out.`;
+      return `${s('image', 'images')} ${plural(n, 'links to a file', 'link to files')} outside the diagram and came in as ${plural(n, 'a placeholder', 'placeholders')} or ${plural(n, 'was', 'were')} left out.`;
     case 'arrowhead-approximated':
       return `${s('connection uses', 'connections use')} arrowheads livediagram doesn't draw; ${plural(n, 'it has', 'they have')} the nearest one.`;
     case 'connection-loosened':
@@ -171,18 +154,4 @@ export function namesLine(note: ImportNote): string | null {
 export function importSummaryLine({ pages, elements }: ImportReport): string {
   const items = `${elements} ${plural(elements, 'element', 'elements')}`;
   return pages > 1 ? `${pages} pages became ${pages} tabs, ${items}.` : `Imported ${items}.`;
-}
-
-/**
- * Store the images an import could not store itself and fill their
- * placeholders. The seam for the shared import image pipeline: until it lands,
- * nothing is stored and every placeholder stays (and stays counted). The
- * pipeline replaces this body with its session and `attachImportImages` per page.
- */
-export async function attachPendingImages<P extends { tabId: string; elements: Element[] }>(
-  pages: P[],
-  images: PendingImage[],
-): Promise<{ pages: P[]; placed: number }> {
-  void images;
-  return { pages, placed: 0 };
 }

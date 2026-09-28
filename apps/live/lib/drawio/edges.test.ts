@@ -16,7 +16,6 @@ function convert(xml: string) {
   const page = convertPage(readGraph(model(xml)), {
     tally,
     pageIdToTab: new Map(),
-    tabId: 't',
     images: [],
     imageKeys: new Map(),
   });

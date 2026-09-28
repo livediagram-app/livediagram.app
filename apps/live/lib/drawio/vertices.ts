@@ -13,7 +13,7 @@ import {
   type StickyElement,
   type TextElement,
 } from '@livediagram/diagram';
-import type { PendingImage } from '@/lib/import-report';
+import type { ImportImageRequest } from '@/lib/import-images';
 import type { DrawioCell, Rect } from './cells';
 import { readLabel } from './label';
 import {
@@ -25,8 +25,7 @@ import { shapeTurn, type VertexClass } from './shapes';
 import { boxedProps, radiusPreset, textProps, type ConvertContext } from './vertex-props';
 
 export type PageContext = ConvertContext & {
-  tabId: string;
-  images: PendingImage[];
+  images: ImportImageRequest[];
   /** One key per distinct embedded image, across the whole import. */
   imageKeys: Map<string, string>;
 };
@@ -161,14 +160,13 @@ function buildImage(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string):
       key = `drawio-image-${ctx.imageKeys.size + 1}`;
       ctx.imageKeys.set(dataUrl, key);
     }
+    // The shared import image pipeline stores it and reports how it came across.
     ctx.images.push({
-      tabId: ctx.tabId,
       elementId: id,
       key,
       source: { kind: 'data-url', dataUrl },
       hint: { width: rect.width, height: rect.height },
     });
-    ctx.tally.add('image-placeholder');
   } else {
     // A web or library URL: never fetched from a third party.
     ctx.tally.add('image-unavailable');

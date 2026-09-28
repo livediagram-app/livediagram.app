@@ -6,7 +6,8 @@
 // bulk import reuse this unchanged. Never throws.
 
 import type { Element, Layer } from '@livediagram/diagram';
-import { ReportTally, type ImportReport, type PendingImage } from '@/lib/import-report';
+import type { ImportImageRequest } from '@/lib/import-images';
+import { ReportTally, type ImportReport } from '@/lib/import-report';
 import { readGraph } from './cells';
 import { convertPage } from './convert-page';
 import { readDrawioPages, type DrawioInput } from './envelope';
@@ -30,7 +31,7 @@ export type ImportedPage = {
 };
 
 export type DrawioImportResult =
-  | { ok: true; pages: ImportedPage[]; images: PendingImage[]; report: ImportReport }
+  | { ok: true; pages: ImportedPage[]; images: ImportImageRequest[]; report: ImportReport }
   | { ok: false; error: string };
 
 export type DrawioImportOptions = {
@@ -58,7 +59,7 @@ export async function importDrawio(
     const kept = sources.slice(0, DRAWIO_MAX_PAGES);
     const tabIds = kept.map((_, i) => options.tabIdForPage(i));
     const pageIdToTab = new Map(kept.map((p, i) => [p.id, tabIds[i]!]));
-    const images: PendingImage[] = [];
+    const images: ImportImageRequest[] = [];
     const imageKeys = new Map<string, string>();
     const pages: ImportedPage[] = [];
 
@@ -68,7 +69,6 @@ export async function importDrawio(
       const converted = convertPage(graph, {
         tally,
         pageIdToTab,
-        tabId: tabIds[index]!,
         images,
         imageKeys,
       });

@@ -246,7 +246,6 @@ describe('cloud-architecture.drawio', () => {
           },
           { kind: 'shape-approximated', count: 1 },
           { kind: 'icon-substituted', count: 7 },
-          { kind: 'image-placeholder', count: 1 },
           { kind: 'image-unavailable', count: 1 },
           { kind: 'label-moved', count: 2 },
         ],
@@ -280,7 +279,6 @@ describe('cloud-architecture.drawio', () => {
       expect(logo).toMatchObject({ imageId: null });
       expect(images).toEqual([
         {
-          tabId: 'tab-1',
           elementId: logo.id,
           key: 'drawio-image-1',
           source: {

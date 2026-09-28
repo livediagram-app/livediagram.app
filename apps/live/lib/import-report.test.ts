@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   IMPORT_NOTE_ORDER,
-  attachPendingImages,
   ReportTally,
   describeImportNote,
   importSummaryLine,
@@ -61,8 +60,8 @@ describe('describeImportNote', () => {
     expect(describeImportNote({ kind: 'shape-unmatched', count: 3 })).toBe(
       '3 shapes had no livediagram match and came in as labelled boxes.',
     );
-    expect(describeImportNote({ kind: 'image-placeholder', count: 2 })).toBe(
-      '2 images came in as placeholders. Select one and upload the picture to fill it.',
+    expect(describeImportNote({ kind: 'image-unavailable', count: 1 })).toBe(
+      '1 image links to a file outside the diagram and came in as a placeholder or was left out.',
     );
   });
 
@@ -101,33 +100,16 @@ describe('importSummaryLine', () => {
   });
 });
 
-describe('attachPendingImages', () => {
-  it('places nothing until the image pipeline lands', async () => {
-    const pages = [{ tabId: 't', elements: [] }];
-    expect(
-      await attachPendingImages(pages, [
-        {
-          tabId: 't',
-          elementId: 'e',
-          key: 'k',
-          source: { kind: 'data-url', dataUrl: 'data:image/png;base64,AA==' },
-          hint: { width: 1, height: 1 },
-        },
-      ]),
-    ).toEqual({ pages, placed: 0 });
-  });
-});
-
 describe('reportHasNews', () => {
   const base = { source: 'drawio' as const, pages: 1, elements: 3, notes: [] };
   it('is true when anything changed or any image was met', () => {
     expect(reportHasNews(base)).toBe(false);
     expect(reportHasNews({ ...base, notes: [{ kind: 'label-moved', count: 1 }] })).toBe(true);
-    expect(
-      reportHasNews({ ...base, images: { imported: 0, deduped: 0, placeholders: {} } }),
-    ).toBe(false);
-    expect(
-      reportHasNews({ ...base, images: { imported: 1, deduped: 0, placeholders: {} } }),
-    ).toBe(true);
+    expect(reportHasNews({ ...base, images: { imported: 0, deduped: 0, placeholders: {} } })).toBe(
+      false,
+    );
+    expect(reportHasNews({ ...base, images: { imported: 1, deduped: 0, placeholders: {} } })).toBe(
+      true,
+    );
   });
 });

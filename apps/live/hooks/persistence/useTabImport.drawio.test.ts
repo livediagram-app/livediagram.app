@@ -13,6 +13,17 @@ import { track } from '@/lib/telemetry';
 import { useTabImport } from './useTabImport';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+// The pipeline's browser seam (canvas codec + gallery upload): stored as if uploaded.
+const store = vi.fn(async () => ({
+  ok: true as const,
+  imageId: 'img-1',
+  width: 1,
+  height: 1,
+  kind: 'uploaded' as const,
+}));
+vi.mock('@/lib/import-images/browser', () => ({
+  createBrowserImportImageSession: vi.fn(() => ({ store })),
+}));
 
 const fixture = (name: string) =>
   readFileSync(join(__dirname, '../../lib/drawio/__fixtures__', name), 'utf8');
@@ -69,6 +80,25 @@ describe('useTabImport, draw.io', () => {
     expect(await api.importTextIntoActiveTab('drawio', fixture('flowchart.drawio'))).toEqual({
       status: 'error',
       error: 'This tab is locked. Unlock it before importing.',
+    });
+  });
+
+  it('stores embedded images through the import image pipeline before the tab changes', async () => {
+    const { deps, api, tabs } = setup([{ id: 'a', name: 'Board', elements: [] }]);
+    const progress = vi.fn();
+    const outcome = await api.importTextIntoActiveTab(
+      'drawio',
+      fixture('cloud-architecture.drawio'),
+      progress,
+    );
+    expect(store).toHaveBeenCalledOnce();
+    expect(deps.commitTabs).toHaveBeenCalledOnce();
+    const logo = tabs()[0]!.elements.find((e) => e.type === 'image' && e.alt === 'Team logo');
+    expect(logo).toMatchObject({ imageId: 'img-1', naturalWidth: 1, naturalHeight: 1 });
+    expect(progress).toHaveBeenLastCalledWith({ done: 1, total: 1 });
+    expect(outcome).toMatchObject({
+      status: 'done',
+      report: { source: 'drawio', images: { imported: 1, deduped: 0, placeholders: {} } },
     });
   });
 });
