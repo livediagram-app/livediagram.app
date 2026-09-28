@@ -2,6 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { useDismissibleBanner } from './useDismissibleBanner';
+import { storageEvent } from '@/lib/testing/storage-event';
 
 afterEach(() => window.localStorage.clear());
 
@@ -24,12 +25,12 @@ describe('useDismissibleBanner', () => {
     const { result } = renderHook(() => useDismissibleBanner('banner-d'));
     act(() => {
       window.localStorage.setItem('banner-d', '1');
-      window.dispatchEvent(new StorageEvent('storage', { key: 'banner-d', newValue: '1' }));
+      window.dispatchEvent(storageEvent({ key: 'banner-d', newValue: '1' }));
     });
     expect(result.current.dismissed).toBe(true);
     act(() => {
       window.localStorage.removeItem('banner-d');
-      window.dispatchEvent(new StorageEvent('storage', { key: 'banner-d', newValue: null }));
+      window.dispatchEvent(storageEvent({ key: 'banner-d', newValue: null }));
     });
     expect(result.current.dismissed).toBe(false);
   });

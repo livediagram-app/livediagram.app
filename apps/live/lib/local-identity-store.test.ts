@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { storageEvent } from '@/lib/testing/storage-event';
 import {
   clearGuestSelfId,
   ensureGuestSelfId,
@@ -43,7 +44,7 @@ describe('guest id store', () => {
   it('notifies when another tab changes storage', () => {
     const onChange = vi.fn();
     subscribeGuestSelfId(onChange);
-    window.dispatchEvent(new StorageEvent('storage', { key: null }));
+    window.dispatchEvent(storageEvent({ key: null }));
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 });

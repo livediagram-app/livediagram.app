@@ -2,6 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useLocalStorageValue, writeLocalStorageValue } from './useLocalStorageValue';
+import { storageEvent } from '@/lib/testing/storage-event';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -28,7 +29,7 @@ describe('useLocalStorageValue', () => {
     act(() => writeLocalStorageValue('lsv-c', 'z'));
     act(() => {
       window.localStorage.clear();
-      window.dispatchEvent(new StorageEvent('storage', { key: null }));
+      window.dispatchEvent(storageEvent({ key: null }));
     });
     expect(result.current).toBeNull();
   });
