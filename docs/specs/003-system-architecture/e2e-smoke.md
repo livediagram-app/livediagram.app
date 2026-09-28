@@ -42,6 +42,8 @@ Cost controls, all in `e2e.yml`:
 The suite runs against the **real production build** — the live app's
 `output: 'export'` static bundle plus the real api worker on local D1 —
 so it exercises exactly what ships, not a dev-only code path.
+The stack serves whatever `apps/live/out` holds and never rebuilds it, so locally run
+`pnpm --filter @livediagram/live build` first; an old `out/` fails audits for code that has since changed.
 
 `scripts/e2e-stack.mjs` boots the two-process stack Playwright's
 `webServer` waits on:
