@@ -13,3 +13,15 @@ describe('SiteFooter', () => {
     );
   });
 });
+
+describe('SiteFooter legal strip', () => {
+  // WCAG 1.4.3: slate 400 is 2.6:1 on white; slate 500 is 4.8:1, the nav's own colour.
+  it('sets its small print in a colour that meets AA on white', () => {
+    const strip = /<div class="([^"]*text-xs[^"]*)">/
+      .exec(html.slice(html.indexOf('</nav>')))![1]!
+      .split(' ');
+    expect(strip).toContain('text-slate-500');
+    expect(strip).toContain('dark:text-slate-400');
+    expect(strip).not.toContain('text-slate-400');
+  });
+});

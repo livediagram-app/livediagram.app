@@ -15,9 +15,20 @@
     // Marketing's build also generates the /licences page from what EVERY app
     // bundles (docs/specs/002-project-scope/third-party-licences.md), so any
     // app's or package's source, or the lockfile, is an input: a change there
-    // must never replay a cached page that lists stale works.
+    // must never replay a cached page that lists stale works. It runs after the
+    // other apps' builds because Next's analyzer uses an app's Turbopack build
+    // cache (.next/cache) whatever its distDir: beside that app's own build, the
+    // two processes corrupt it.
     "@livediagram/marketing#build": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build",
+        "@livediagram/live#build",
+        "@livediagram/help#build",
+        "@livediagram/telemetry#build",
+        "@livediagram/api#build",
+        "@livediagram/mcp#build",
+        "@livediagram/router#build"
+      ],
       "inputs": [
         "$TURBO_DEFAULT$",
         ".env*",
