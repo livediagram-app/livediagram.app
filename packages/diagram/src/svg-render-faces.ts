@@ -97,10 +97,13 @@ function collabCard(
   body: (w: number, h: number) => string,
 ): string {
   const design = SHAPE_DEFAULT_SIZE[el.shape] ?? { width: el.width, height: el.height };
-  // The Q&A board reflows rather than scales (docs/specs/012-collaboration/qa-board.md): a bigger board shows
-  // more rows at the same size, on the canvas and so in the export too.
+  // The Q&A board and the Idea box reflow rather than scale (docs/specs/012-collaboration/qa-board.md,
+  // idea-box.md): a bigger board shows more rows at the same size, on the
+  // canvas and so in the export too.
   const scale =
-    el.shape === 'qa-board' ? 1 : Math.min(el.width / design.width, el.height / design.height);
+    el.shape === 'qa-board' || el.shape === 'idea-box'
+      ? 1
+      : Math.min(el.width / design.width, el.height / design.height);
   // The inner box in design units, so a card larger than its default still
   // paints edge to edge rather than leaving a band of bare card.
   const w = el.width / scale;
@@ -211,23 +214,60 @@ export function svgCollabFace(
       );
     }
     case 'idea-box': {
-      const count = (el.responses ?? []).length;
+      // Drawn the way the face now looks (docs/specs/012-collaboration/idea-box.md "The look"): the ideas as
+      // rows once the box is open, a sealed count while it is closed (never
+      // the text), and the composer at the foot.
+      const cards = el.ideaCards ?? [];
+      const count = cards.length;
       return collabCard(
         el,
         title || 'Ideas',
         count ? `${count} ${count === 1 ? 'idea' : 'ideas'}` : undefined,
         color,
-        (w, h) =>
-          // The input row and its Add pill: the two marks that say "you write
-          // into this one".
-          `<rect x="${r2(PAD_X)}" y="${r2(PAD_Y + TITLE_PX + 8)}" width="${r2(w - PAD_X * 2 - 34)}" height="18" rx="4" fill="none" stroke="${xmlEscape(color)}" stroke-width="1" opacity="0.3"/>` +
-          footerPills(w - PAD_X - 30, PAD_Y + TITLE_PX + 8, ['Add'], color) +
-          text(PAD_X, PAD_Y + TITLE_PX + 44, 'Nothing in the box yet', {
-            size: 10,
-            color,
-            opacity: 0.45,
-          }) +
-          footerPills(PAD_X, h - PAD_Y - 18, ['Open the box'], color),
+        (w, h) => {
+          const composerH = 26;
+          const composerY = h - PAD_Y - composerH;
+          const composer =
+            pill(PAD_X, composerY, w - PAD_X * 2, composerH, color, 0.05) +
+            text(PAD_X + 10, composerY + 16.5, 'Add an idea…', { size: 10, color, opacity: 0.45 }) +
+            `<circle cx="${r2(w - PAD_X - 13)}" cy="${r2(composerY + composerH / 2)}" r="9" fill="${xmlEscape(color)}" opacity="0.85"/>`;
+          const top = PAD_Y + TITLE_PX + 14;
+          if (count === 0) {
+            return (
+              text(PAD_X, top + 14, 'Nothing in the box yet', { size: 10, color, opacity: 0.45 }) +
+              composer
+            );
+          }
+          if (el.ideasRevealed !== true) {
+            const cy = (top + composerY) / 2;
+            return (
+              text(w / 2, cy, String(count), { size: 22, weight: 700, color, anchor: 'middle' }) +
+              text(w / 2, cy + 16, count === 1 ? 'idea sealed' : 'ideas sealed', {
+                size: 10,
+                weight: 600,
+                color,
+                anchor: 'middle',
+                opacity: 0.7,
+              }) +
+              composer
+            );
+          }
+          const rowH = 26;
+          const fit = Math.max(1, Math.floor((composerY - top - 6) / rowH));
+          const maxChars = Math.max(8, Math.floor((w - PAD_X * 2 - 16) / 5.6));
+          const rows = cards
+            .slice(0, fit)
+            .map((card, i) => {
+              const y = top + i * rowH;
+              const body = card.length > maxChars ? `${card.slice(0, maxChars - 1)}…` : card;
+              return (
+                pill(PAD_X, y, w - PAD_X * 2, rowH - 5, color, 0.06) +
+                text(PAD_X + 8, y + 14, body, { size: 10.5, color })
+              );
+            })
+            .join('');
+          return rows + composer;
+        },
       );
     }
     case 'qa-board': {

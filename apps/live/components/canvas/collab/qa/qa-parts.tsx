@@ -88,17 +88,18 @@ export function relTime(at: number, now = Date.now()): string {
   return `${Math.round(h / 24)}d`;
 }
 
-// Who wrote it: an initial in their colour, or the mask.
+// Who wrote it: an initial in their colour, or the mask. The Idea box's cards
+// always take the mask (they have nowhere to store an author).
 export function AuthorChip({
-  note,
+  author,
   textColor,
   size = 16,
 }: {
-  note: QaNote;
+  author: QaNote['author'];
   textColor: string;
   size?: number;
 }) {
-  if (!note.author) {
+  if (!author) {
     return (
       <span className="inline-flex min-w-0 items-center gap-1" style={{ color: textColor }}>
         <span
@@ -111,17 +112,17 @@ export function AuthorChip({
       </span>
     );
   }
-  const initial = note.author.name.trim().charAt(0).toUpperCase() || '?';
+  const initial = author.name.trim().charAt(0).toUpperCase() || '?';
   return (
     <span className="inline-flex min-w-0 items-center gap-1" style={{ color: textColor }}>
       <GlyphDisc
         size={size}
         className={`font-bold text-white ${IDENTITY_FILL}`}
-        style={{ ...identityVars(note.author.color), fontSize: size * 0.55 }}
+        style={{ ...identityVars(author.color), fontSize: size * 0.55 }}
       >
         {initial}
       </GlyphDisc>
-      <span className="truncate opacity-70">{note.author.name}</span>
+      <span className="truncate opacity-70">{author.name}</span>
     </span>
   );
 }
@@ -242,3 +243,141 @@ export function RoundAction({
     </HoverCard>
   );
 }
+
+// The one facilitator action a board offers above its rows, as a dashed bar
+// in the accent: the Q&A board's "Discuss the top note", the Idea box's "Open
+// the box" and "Scatter to sticky notes" (docs/specs/012-collaboration/idea-box.md "The look").
+export function AccentBar({
+  onPress,
+  icon,
+  hoverCard,
+  children,
+}: {
+  onPress: () => void;
+  icon?: React.ReactNode;
+  hoverCard?: { title: string; description: string };
+  children: React.ReactNode;
+}) {
+  const press = usePressWithoutDrag(onPress);
+  const bar = (
+    <button
+      type="button"
+      {...press}
+      {...stopPointer}
+      className="pointer-events-auto flex w-full shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-dashed py-2 text-[11px] font-semibold transition hover:brightness-110"
+      style={{
+        color: QA_ACCENT_INK,
+        borderColor: tint(QA_ACCENT, 0.45),
+        backgroundColor: tint(QA_ACCENT, 0.05),
+      }}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+  return hoverCard ? (
+    <HoverCard title={hoverCard.title} description={hoverCard.description}>
+      {bar}
+    </HoverCard>
+  ) : (
+    bar
+  );
+}
+
+// A padlock: the Idea box's sealed state.
+export const LockGlyph = ({ size = 12 }: Glyph) =>
+  svg(
+    size,
+    <>
+      <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
+      <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
+    </>,
+  );
+
+// An open eye: reveal.
+export const EyeGlyph = ({ size = 12 }: Glyph) =>
+  svg(
+    size,
+    <>
+      <path d="M1.8 8S4.2 3.8 8 3.8 14.2 8 14.2 8 11.8 12.2 8 12.2 1.8 8 1.8 8Z" />
+      <circle cx="8" cy="8" r="1.8" />
+    </>,
+  );
+
+// Scatter: three small cards fanning out.
+export const ScatterGlyph = ({ size = 12 }: Glyph) =>
+  svg(
+    size,
+    <>
+      <rect x="2" y="6" width="5" height="5" rx="1" />
+      <rect x="9" y="3" width="5" height="5" rx="1" />
+      <rect x="8" y="10" width="4" height="4" rx="1" />
+    </>,
+  );
+
+// An empty board: faint rows that breathe (qa-ghost), so it reads as waiting,
+// not broken, and below them, spaced off the rows, a small invitation: a
+// sparkle in the accent, a title, and the hint in softer ink kept to a
+// readable measure. The Q&A board's and the Idea box's empty state.
+export function EmptyRows({
+  textColor,
+  title,
+  children,
+}: {
+  textColor: string;
+  title: string;
+  // The hint under the title; absent for a viewer who can't add.
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-5 pb-2 pt-1">
+      <div className="flex w-full flex-col gap-1.5" aria-hidden>
+        {[0.92, 0.7, 0.8].map((w, i) => (
+          <div
+            key={i}
+            className="qa-ghost flex items-center gap-2 rounded-xl p-2"
+            style={{ backgroundColor: tint(textColor, 0.04), animationDelay: `${i * 300}ms` }}
+          >
+            <span
+              className="h-8 w-8 rounded-lg"
+              style={{ backgroundColor: tint(textColor, 0.08) }}
+            />
+            <span
+              className="h-2 rounded-full"
+              style={{ width: `${w * 70}%`, backgroundColor: tint(textColor, 0.1) }}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-col items-center gap-1.5 text-center">
+        <GlyphDisc
+          size={28}
+          style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
+        >
+          <SparkGlyph size={14} />
+        </GlyphDisc>
+        <p className="mt-1 text-[12.5px] font-semibold leading-tight" style={{ color: textColor }}>
+          {title}
+        </p>
+        {children ? (
+          <p
+            className="max-w-[30ch] text-[11px] leading-relaxed"
+            style={{ color: textColor, opacity: 0.55 }}
+          >
+            {children}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+// A four-point sparkle: something new is wanted here.
+export const SparkGlyph = ({ size = 12 }: Glyph) =>
+  svg(
+    size,
+    <>
+      <path d="M8 2.2 9.3 6.7 13.8 8 9.3 9.3 8 13.8 6.7 9.3 2.2 8 6.7 6.7Z" />
+      <path d="M12.6 2.4v2.4M11.4 3.6h2.4" />
+    </>,
+  );

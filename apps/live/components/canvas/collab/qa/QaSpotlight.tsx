@@ -126,7 +126,7 @@ export function QaSpotlight({
             {note.text}
           </p>
           <div className="text-[10.5px]">
-            <AuthorChip note={note} textColor={textColor} />
+            <AuthorChip author={note.author} textColor={textColor} />
           </div>
         </div>
       </div>

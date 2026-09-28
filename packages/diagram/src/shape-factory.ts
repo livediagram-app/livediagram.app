@@ -184,9 +184,11 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // average. Narrower than the estimate card — five chips, not eight — but
   // tall enough for all three bands.
   temperature: { width: 300, height: 270 },
-  // Idea box (docs/specs/012-collaboration/idea-box.md): a box that holds a stack of cards, so it arrives
-  // sized like a retro column rather than a sticky.
-  'idea-box': { width: 320, height: 340 },
+  // Idea box (docs/specs/012-collaboration/idea-box.md): a list of ideas over the composer, so it arrives
+  // sized like a retro column rather than a sticky, and tall enough for its
+  // empty state (the breathing rows plus the invitation under them) above the
+  // composer without scrolling.
+  'idea-box': { width: 340, height: 420 },
   // Q&A board (docs/specs/012-collaboration/qa-board.md): a spotlight over a ranked list over the add field,
   // so it arrives tall enough for five or six notes before it scrolls.
   'qa-board': { width: 360, height: 460 },

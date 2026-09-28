@@ -876,3 +876,27 @@ describe('caption colour on dark paper', () => {
     );
   });
 });
+
+// The Idea box export (docs/specs/012-collaboration/idea-box.md "The look"): its count comes from the ideas
+// themselves, a closed box never prints a word of them, and an open one does.
+describe('idea box export', () => {
+  const box = (o: Partial<ShapeElement>) =>
+    renderElementsToSvg(
+      tab([
+        shape('b', { shape: 'idea-box', width: 300, height: 320, label: 'What slowed us?', ...o }),
+      ]),
+    );
+
+  it('counts the ideas and keeps a closed box sealed', () => {
+    const svg = box({ ideaCards: ['Flaky CI', 'Too many meetings'] });
+    expect(svg).toContain('2 IDEAS');
+    expect(svg).toContain('ideas sealed');
+    expect(svg).not.toContain('Flaky CI');
+  });
+
+  it('shows the ideas once the box is open', () => {
+    const svg = box({ ideaCards: ['Flaky CI'], ideasRevealed: true });
+    expect(svg).toContain('Flaky CI');
+    expect(svg).not.toContain('sealed');
+  });
+});

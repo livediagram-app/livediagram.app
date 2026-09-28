@@ -327,41 +327,80 @@ export function TemperatureCheckCard() {
  *  out of it. */
 export function IdeaBoxCard() {
   const x = 100;
-  const y = 16;
+  const y = 12;
   const w = 220;
+  const cx = x + w / 2;
   return (
-    <Scene w={420} h={206}>
-      <CollabCard x={x} y={y} w={w} h={172} title="What slowed us down?" aside="7 ideas">
+    <Scene w={420} h={222}>
+      <CollabCard x={x} y={y} w={w} h={198} title="What slowed us down?" aside="7 IDEAS">
+        {/* The facilitator's one action, the Q&A board's dashed accent bar. */}
         <rect
-          x={x + 60}
-          y={y + 44}
-          width={100}
-          height={48}
-          rx={8}
-          className="fill-slate-50 stroke-slate-300"
-          strokeWidth={1.5}
-          strokeDasharray="5 4"
-        />
-        <Label x={x + 110} y={y + 66} anchor="middle" size={20} weight={700} tone="accent">
-          7
-        </Label>
-        <Label x={x + 110} y={y + 82} anchor="middle" size={8} weight={600} tone="muted">
-          HELD UNTIL YOU OPEN IT
-        </Label>
-        <rect
-          x={x + 14}
-          y={y + 102}
-          width={192}
+          x={x + 12}
+          y={y + 40}
+          width={w - 24}
           height={22}
           rx={7}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
+          className="fill-brand-50 stroke-brand-300"
+          strokeWidth={1.2}
+          strokeDasharray="4 3"
         />
-        <Label x={x + 24} y={y + 113} size={9} tone="muted">
+        <Label x={cx} y={y + 51} anchor="middle" size={9.5} weight={600} tone="accent">
+          Open the box (7)
+        </Label>
+        {/* Sealed: a lock, the count, and no text. */}
+        <rect
+          x={x + 12}
+          y={y + 70}
+          width={w - 24}
+          height={74}
+          rx={9}
+          className="fill-slate-50 stroke-slate-200"
+          strokeWidth={1.2}
+        />
+        <circle cx={cx} cy={y + 87} r={9} className="fill-brand-100" />
+        <rect
+          x={cx - 3.5}
+          y={y + 86}
+          width={7}
+          height={5.5}
+          rx={1.2}
+          className="fill-none stroke-brand-600"
+          strokeWidth={1.2}
+        />
+        <path
+          d={`M${cx - 2} ${y + 86}v-1.6a2 2 0 0 1 4 0v1.6`}
+          className="fill-none stroke-brand-600"
+          strokeWidth={1.2}
+        />
+        <Label x={cx} y={y + 113} anchor="middle" size={18} weight={700} tone="strong">
+          7
+        </Label>
+        <Label x={cx} y={y + 131} anchor="middle" size={8.5} weight={600} tone="muted">
+          ideas sealed
+        </Label>
+        {/* The composer at the foot, with its Anonymous chip. */}
+        <rect
+          x={x + 12}
+          y={y + 152}
+          width={w - 24}
+          height={38}
+          rx={11}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1.2}
+        />
+        <Label x={x + 22} y={y + 164} size={9} tone="muted">
           Add an idea…
         </Label>
-        <CardButton x={x + 14} y={y + 134} w={100} label="Open the box" loud />
-        <CardButton x={x + 122} y={y + 134} w={84} label="Scatter" />
+        <circle cx={x + w - 25} cy={y + 164} r={8} className="fill-brand-500" />
+        <path
+          d={`M${x + w - 25} ${y + 168}v-7M${x + w - 28} ${y + 164}l3-3 3 3`}
+          className="fill-none stroke-white"
+          strokeWidth={1.3}
+        />
+        <rect x={x + 18} y={y + 174} width={56} height={11} rx={5.5} className="fill-brand-50" />
+        <Label x={x + 46} y={y + 180} anchor="middle" size={7} weight={600} tone="accent">
+          Anonymous
+        </Label>
       </CollabCard>
     </Scene>
   );
