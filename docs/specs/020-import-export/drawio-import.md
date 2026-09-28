@@ -345,6 +345,10 @@ These differ from draw.io for every file and are not worth a line each time:
 - draw.io comments, tags, metadata and the file's edit history.
 - Tooltips and custom properties on connections (a livediagram arrow has no note); on shapes they
   become the note.
+- A single word wider than its shape: livediagram's smallest label size (14 px) is larger than
+  draw.io's default 12 px, so a long word in a narrow shape (a `:PaymentGateway` lifeline) wraps
+  mid-word as livediagram wraps any label. The shape is not widened and the text is not shrunk
+  (operator decision): both would change what the author drew.
 - The white-and-black default colours (see properties): the theme paints them.
 
 ## UI
