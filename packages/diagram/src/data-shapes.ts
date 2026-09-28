@@ -138,12 +138,6 @@ export const ENTITY_MAX_TEXT = 80;
 // entity's attribute list, a rough class sketch) don't carry one, and an empty
 // column reads better than a placeholder.
 export type EntityField = { name: string; type?: string };
-// The box an entity needs to show every row: a title band, then one row per
-// field, the pitch the ER / UML templates lay out (the render stops drawing
-// rows that run past the box, so a shorter box silently loses fields).
-export const ENTITY_TITLE_PX = 34;
-export const ENTITY_ROW_PX = 26;
-export const entityHeight = (rows: number): number => ENTITY_TITLE_PX + rows * ENTITY_ROW_PX;
 export const CHECKLIST_MAX_TEXT = 200;
 // All three seed rows are unchecked, per docs/specs/009-elements/checklist.md. A seeded `done: true` made
 // a freshly-dropped checklist render its first row ticked and struck through,

@@ -297,6 +297,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       return band.elements.map((element) => ({ element, layerOpacity }));
     });
   }, [elements, tabLayers, layerPreviewId]);
+  // The elements actually drawn, for the arrows' pass-behind breaks: a box on
+  // a hidden layer must not cut a gap in a line (docs/specs/008-canvas/arrow-route-behind.md).
+  const drawnElements = useMemo(() => ordered.map((o) => o.element), [ordered]);
   // Whether the single selected element is a timeline rail — gates the rail's
   // "Add point" action on the quick-connect "+" (docs/specs/009-elements/timeline-rail.md).
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
@@ -385,6 +388,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 <ArrowView
                   arrow={element}
                   elementIndex={elementIndex!}
+                  occluders={drawnElements}
                   labelRender={arrowLabels.renderOf(element.id)}
                   draftLayout={arrowLabels.draftLayout}
                   isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}

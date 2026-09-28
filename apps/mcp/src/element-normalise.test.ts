@@ -41,7 +41,11 @@ describe('content kinds', () => {
     const [e] = normaliseElements([
       { id: 'e', type: 'shape', shape: 'entity', ...box, label: 'User', entityFields: fields },
     ]);
-    expect(e).toMatchObject({ textAlignX: 'left', textAlignY: 'top', height: entityHeight(6) });
+    expect(e).toMatchObject({
+      textAlignX: 'left',
+      textAlignY: 'top',
+      height: entityHeight(6, 'md'),
+    });
   });
 
   it('keeps an alignment the model chose', () => {

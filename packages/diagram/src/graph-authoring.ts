@@ -16,7 +16,8 @@
 import { SHAPE_DEFAULT_SIZE } from './factories';
 import { ARROW_THICKNESS_PX } from './arrow-style';
 import { coerceShapeKind } from './validate';
-import { ENTITY_MAX_FIELDS, ENTITY_MAX_TEXT, entityHeight, type EntityField } from './data-shapes';
+import { ENTITY_MAX_FIELDS, ENTITY_MAX_TEXT, type EntityField } from './data-shapes';
+import { entityHeight } from './entity-geometry';
 // `Element` is defined on the barrel (index.ts); a type-only import back into
 // it is erased at runtime, so the cycle is harmless — the package's sanctioned
 // pattern (auto-layout.ts does the same).
@@ -156,7 +157,7 @@ function entityNode(n: GraphNode, raw: EntityField[]): Element {
     x: 0,
     y: 0,
     width: Math.round(Math.min(360, Math.max(200, widest * CHAR_PX + PAD_PX))),
-    height: entityHeight(fields.length),
+    height: entityHeight(fields.length, 'sm'),
     textSize: 'sm' as const,
     textAlignX: 'left' as const,
     textAlignY: 'top' as const,

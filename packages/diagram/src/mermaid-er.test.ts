@@ -3,7 +3,7 @@ import { parseMermaid } from './mermaid';
 import { layoutClusteredGraph } from './auto-layout-clusters';
 import { isValidTab } from './validate';
 import { graphToElements } from './graph-authoring';
-import { entityHeight } from './data-shapes';
+import { entityHeight } from './entity-geometry';
 
 // Tested through parseMermaid so the dispatch is covered too.
 describe('parseMermaid: ER diagrams', () => {
@@ -67,7 +67,7 @@ describe('parseMermaid: ER diagrams', () => {
       label: 'A',
       textAlignX: 'left',
       textAlignY: 'top',
-      height: entityHeight(2),
+      height: entityHeight(2, 'sm'),
       entityFields: [
         { name: 'id', type: 'int PK' },
         { name: 'name', type: 'text' },

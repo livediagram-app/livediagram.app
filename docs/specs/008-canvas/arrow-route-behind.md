@@ -53,7 +53,11 @@ a wrong obstacle **erases a line that should be visible**:
   swallowed the **arrowhead** and left the line running into nothing.
   Whatever we would cut is exactly what must not contain an endpoint.
 
-Everything else opaque — shapes, stickies, images, tables, link cards — cuts.
+Everything else opaque — shapes, stickies, images, tables, link cards — cuts,
+**provided it is being drawn**: a box on a hidden layer, or one a thumbnail or
+export leaves out, never cuts (a gap around nothing reads as a broken line).
+The canvas hands each arrow the elements it paints; each export and thumbnail
+hands it the ones it draws.
 **Every** crossed box does, not just the first: the mask below takes N holes
 for the cost of one, so a single-box limit would be extra code for less.
 

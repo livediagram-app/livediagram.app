@@ -16,7 +16,12 @@
 import { capBandBaselineY } from '@livediagram/icons';
 import { clampPercent, clampRating, RATING_DEFAULT, RATING_MAX } from './data-shapes';
 import { RAIL_DEFAULT_POINTS } from './data-shapes';
-import { labelFontPx } from './label-font';
+import {
+  ENTITY_BODY_PAD_PX,
+  ENTITY_ROW_GAP_PX,
+  ENTITY_ROW_TEXT_PX,
+  entityHeaderHeight,
+} from './entity-geometry';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 
@@ -159,13 +164,12 @@ export function svgTimelineRail(
  */
 export function svgEntityRows(el: Data, textColor: string, fontFamily?: string): string {
   const rule = el.strokeColor ?? MUTED_RULE;
-  // The same header height the canvas computes: the label's px times its line
-  // height, plus its vertical padding, floored at the historical 30.
-  const headerH = Math.max(30, Math.round(labelFontPx(el.textSize ?? 'scale') * 1.25) + 10);
+  // The same geometry the canvas draws (entity-geometry.ts).
+  const headerH = entityHeaderHeight(el.textSize);
   const divider = `<path d="M ${r2(el.x)} ${r2(el.y + headerH)} L ${r2(el.x + el.width)} ${r2(el.y + headerH)}" stroke="${xmlEscape(rule)}" stroke-width="1"/>`;
   const fields = el.entityFields ?? [];
-  const rowH = 11 * 1.25 + 3;
-  const top = el.y + headerH + 6;
+  const rowH = ENTITY_ROW_TEXT_PX + ENTITY_ROW_GAP_PX;
+  const top = el.y + headerH + ENTITY_BODY_PAD_PX;
   const rows = fields
     .map((f, i) => {
       const y = top + i * rowH + 8;

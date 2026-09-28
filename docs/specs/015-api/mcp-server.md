@@ -424,8 +424,10 @@ wrongly:
   pass the editor runs on load), so every row renders.
 - An unknown **codeLanguage** becomes `plain` and an unknown **codeTheme** is
   dropped (the default), rather than failing the whole tab validation.
-- An **entity**'s height grows to fit its rows (`entityHeight`: a 34 px title
-  band plus 26 px a row), since rows past the box are not drawn.
+- An **entity**'s height grows to fit its rows (`entityHeight`, the geometry
+  the canvas and the export draw with: the title bar, 13.75 px a row, 3 px
+  between rows, 6 px above and below the list), since rows past the box are not
+  drawn.
 - **Chart** data is coerced: a slice or value that is not a finite number
   becomes 0, labels become strings, and each series' `values` is padded or cut
   to the category count. Empty data draws the built-in sample, which the notes

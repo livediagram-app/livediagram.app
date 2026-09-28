@@ -18,6 +18,7 @@ import {
   isCodeThemeId,
   normalizeTable,
   type TableElement,
+  type TextSize,
 } from '@livediagram/diagram';
 
 type Raw = Record<string, unknown>;
@@ -51,7 +52,7 @@ function normaliseCodeBlock(el: Raw): Raw {
 // past the box.
 function normaliseEntity(el: Raw): Raw {
   const rows = Array.isArray(el.entityFields) ? el.entityFields.length : 0;
-  const needed = entityHeight(rows);
+  const needed = entityHeight(rows, el.textSize as TextSize | undefined);
   return typeof el.height === 'number' && el.height < needed ? { ...el, height: needed } : el;
 }
 

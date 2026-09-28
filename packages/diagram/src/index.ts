@@ -423,6 +423,7 @@ export * from './comments';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
 export * from './data-shapes';
+export * from './entity-geometry';
 export * from './code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
