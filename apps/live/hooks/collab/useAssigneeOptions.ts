@@ -16,7 +16,7 @@ import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePi
 // member list (joined AND invited), the preselect-on-edit resolution,
 // the per-pick server access check, and the by-team grouping the picker
 // renders. The dialog keeps the `assignee` selection state itself (its
-// open-seed effect writes it alongside the name / description fields)
+// seeds it on open, alongside the name / description fields)
 // and passes it through.
 // Whether the picked teammate can actually open this diagram
 // (docs/specs/012-collaboration/assigned-actions.md §4), asked of the server per selection. 'error'

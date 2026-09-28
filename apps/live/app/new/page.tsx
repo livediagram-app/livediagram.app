@@ -27,7 +27,12 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { accepted } from '@/lib/accepted';
-import { ensureGuestSelfId, markNameConfirmed } from '@/lib/local-identity';
+import {
+  ensureGuestSelfId,
+  getGuestSelfId,
+  subscribeGuestSelfId,
+  markNameConfirmed,
+} from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
 import { WIZARD_BYPASS_PARAMS, wizardBypassKind } from '@/lib/new-diagram-params';
@@ -49,15 +54,35 @@ const noBypass = () => null;
 // the editor route picks it up cleanly. The Explorer is NOT rendered here:
 // the wizard's "Open Existing Diagram" button sends users to /explorer
 // instead, keeping this screen focused on creating.
+const PENDING_SELF: Participant = {
+  id: 'pending',
+  name: 'Guest',
+  color: '#0ea5e9',
+  status: 'online',
+};
+const noGuestId = () => null;
+
 export default function NewDiagramPage() {
   // Stable placeholder so the first paint matches the SSG render; the
   // real participant lands once `useLayoutEffect` runs.
-  const [self, setSelf] = useState<Participant>({
-    id: 'pending',
-    name: 'Guest',
-    color: '#0ea5e9',
-    status: 'online',
-  });
+  // Clerk wiring (token provider + guest to authed migration), the same
+  // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
+  const { authLoaded, clerkUserId } = useClerkApiBootstrap();
+
+  // Who is creating (docs/specs/003-system-architecture/react-state-and-effects.md): derived during render.
+  // The base is the Clerk id once auth has settled, else the guest id read from its store, with a name and
+  // colour seeded once per visit. `selfOverride` holds what replaces it: the stored profile, the name
+  // chosen in the wizard, or the commit's fallback. Until auth settles it is the 'pending' placeholder.
+  const guestId = useSyncExternalStore(subscribeGuestSelfId, getGuestSelfId, noGuestId);
+  const [seed] = useState(() => ({ name: randomName(), color: randomColor() }));
+  const [selfOverride, setSelf] = useState<Participant | null>(null);
+  const baseId = authLoaded ? (clerkUserId ?? guestId) : null;
+  const self: Participant =
+    selfOverride && (baseId === null || selfOverride.id === baseId)
+      ? selfOverride
+      : baseId
+        ? { id: baseId, name: seed.name, color: seed.color, status: 'online' }
+        : PENDING_SELF;
   const [submitting, setSubmitting] = useState(false);
   // How many diagrams the user owns (null until known). Reported by
   // RecentDiagramsCard's fetch; gates the interactive tour's welcome offer
@@ -77,10 +102,6 @@ export default function NewDiagramPage() {
     // The Settings step's choices (docs/specs/006-diagram/offline-mode.md): diagram name, placement, offline.
     settings: NewDiagramSettings;
   } | null>(null);
-
-  // Clerk wiring (token provider + guest to authed migration), the same
-  // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
-  const { authLoaded, clerkUserId } = useClerkApiBootstrap();
 
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): the public-page CTA that brought this visit
   // here, if any. Counts the arrival now and the diagram once it's committed.
@@ -168,24 +189,24 @@ export default function NewDiagramPage() {
     // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): once-per-browser-per-UTC-day,
     // gated inside the helper. Auth has settled, so guest vs signed-in is known.
     trackDailyReturn(!!clerkUserId);
+    // A guest's id is minted here if this browser has none; the store re-renders the page with it before
+    // paint.
     const selfId = clerkUserId ?? ensureGuestSelfId();
-    const local: Participant = {
-      id: selfId,
-      name: randomName(),
-      color: randomColor(),
-      status: 'online',
-    };
-    setSelf(local);
-
+    const local: Participant = { id: selfId, name: seed.name, color: seed.color, status: 'online' };
+    let cancelled = false;
     void (async () => {
       const stored = await apiLoadSelf(selfId).catch(() => null);
+      if (cancelled) return;
       if (stored) {
         setSelf({ ...stored, status: 'online' });
       } else {
         await apiSaveSelf(local).catch(() => {});
       }
     })();
-  }, [authLoaded, clerkUserId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoaded, clerkUserId, seed]);
   // Identity for the commit path. Clerk's chunk loads deferred, so a fast
   // click-through (or an e2e robot) can reach Create while `self` is still
   // the 'pending' placeholder — the identity bootstrap above hasn't run.
