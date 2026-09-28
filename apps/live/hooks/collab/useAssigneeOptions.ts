@@ -15,7 +15,7 @@ import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePi
 // out of AssignActionDialog: the pinned Myself row, the diagram team's
 // member list (joined AND invited), the preselect-on-edit resolution,
 // the per-pick server access check, and the by-team grouping the picker
-// renders. The dialog keeps the `assignee` selection state itself (its
+// renders. The dialog keeps the `assignee` selection state itself (and
 // seeds it on open, alongside the name / description fields)
 // and passes it through.
 // Whether the picked teammate can actually open this diagram
