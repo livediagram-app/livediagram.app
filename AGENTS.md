@@ -201,6 +201,7 @@ packages/
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
+  licences/     # build-time generator of the /licences page from what each app bundles
   eslint-config/  # shared ESLint flat config
   prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
