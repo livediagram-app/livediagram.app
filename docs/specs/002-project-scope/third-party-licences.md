@@ -67,9 +67,13 @@ reach a deployed artefact, and nothing else.
   into the api, MCP and router workers; they run on Cloudflare, not on anyone's device, and are
   listed in full all the same. A work shipped on both sides appears in both, with each side's apps.
 - **Entries are collapsed.** Each is a native disclosure showing the name, version, licence id and
-  apps; opening it loads its texts. A vendored or embedded work also says what carries it.
+  apps; opening it loads its texts. A vendored or embedded work also says what carries it. The
+  disclosure marker is the platform's own, so no chevron is drawn once per entry.
 - **Texts load lazily** from static plain-text files deduplicated by content (dozens of packages
-  share an identical Apache-2.0 text), so the page's HTML holds no licence text at all. Every text
+  share an identical Apache-2.0 text), so the page's HTML holds no licence text at all. The page
+  weighs about 174 KB (20 KB compressed) for 54 works, half the landing page; a static export ships
+  each entry twice (HTML and its React payload), so the entries use short classes and a build-time
+  budget keeps texts from ever being inlined. Every text
   also has a direct "Plain text" link, which works without JavaScript.
 - **Zero layout shift.** A text's box has a fixed height computed at build time from its line count
   (capped, then it scrolls), so loading, failing or finishing never moves anything. The summary row
@@ -84,6 +88,9 @@ reach a deployed artefact, and nothing else.
 
 - The page is regenerated on every marketing build, locally, in CI and in the deploy workflow alike,
   from a clean analysis each time. Nothing generated is committed.
+- The marketing build runs after every other app's build. Next's analyzer uses an app's Turbopack
+  build cache whatever output directory it is given, and beside that app's own build the two
+  processes corrupt it, so the two never run at once.
 - The generator's logic is unit-tested with synthetic analyzer and metafile data; the CI build runs
   it for real, so a Next or wrangler change that breaks the analysis fails CI with a named error.
 - A post-build check fails the marketing build if the page, any referenced text or the HTML budget

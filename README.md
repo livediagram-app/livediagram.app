@@ -6,7 +6,7 @@ A collaborative diagram editor that works without signing in. Open a link, draw,
 
 ```
 apps/        marketing site + editor + telemetry dashboard + help centre + api + mcp server + router
-packages/    shared diagram model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, telemetry client, configs
+packages/    shared diagram model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, telemetry client, licences generator, configs
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
 marketing/   off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
@@ -46,4 +46,4 @@ The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps).
 
 [MIT](LICENSE). Anyone can self-host. A free hosted version runs alongside at [livediagram.app](https://livediagram.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — Clerk (auth), Resend (transactional email), and OpenAI (the AI assistant), each gated on its own key — and the editor runs fully without any of them.
 
-Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livediagram.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

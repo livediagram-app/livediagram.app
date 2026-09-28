@@ -11,24 +11,29 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `packages/licences/src/metafile.ts`                                       | Decodes a wrangler (esbuild) metafile into sources                    |
 | `packages/licences/src/package-path.ts`                                   | Package root, store-path version, vendored boundaries                 |
 | `packages/licences/src/licence-files.ts`                                  | Licence file pattern, text normalisation, text hash                   |
+| `packages/licences/src/homepage.ts`                                       | A package's https-only "Source" link                                  |
 | `packages/licences/src/licence-id.ts`                                     | `license` field normalisation, text recognition, SPDX allowlist check |
 | `packages/licences/src/texts.ts`                                          | `TEXT_SOURCES`: every committed text, its source URL and sha256       |
 | `packages/licences/src/overrides.ts`                                      | `OVERRIDES`: texts for exact package versions that ship none          |
 | `packages/licences/src/embedded-works.ts`                                 | `EMBEDDED_WORKS`: what is inside binaries and vendored source         |
 | `packages/licences/src/collect.ts`                                        | One app's bundle to its works                                         |
 | `packages/licences/src/manifest.ts`                                       | All apps' works to the page manifest and its deduplicated texts       |
-| `packages/licences/src/types.ts`, `src/index.ts`                          | The manifest contract the page reads                                  |
+| `packages/licences/src/contract.ts` (the package entry)                   | The manifest contract the page reads                                  |
 | `packages/licences/texts/*.txt`                                           | The committed override and embedded-work texts                        |
 | `packages/licences/scripts/generate.ts`                                   | IO: runs the bundlers, writes the manifest and the texts              |
+| `packages/licences/src/verify-export.ts`                                  | What is wrong with an exported page, and the HTML budget              |
 | `packages/licences/scripts/verify.ts`                                     | Post-build check of the exported page                                 |
+| `packages/licences/scripts/log.ts`                                        | The fingerprinted log lines                                           |
 | `apps/marketing/lib/licences-manifest.ts`                                 | Loads and checks `generated/licences.json` at build time              |
 | `apps/marketing/app/licences/page.tsx`                                    | The `/licences` route                                                 |
 | `apps/marketing/components/licences/LicencesView.tsx`                     | Server-rendered sections and entries                                  |
 | `apps/marketing/components/licences/LicenceTexts.tsx`                     | Client: lazy texts in fixed-height boxes                              |
+| `apps/marketing/app/licences.css`                                         | The entries' short `lic-*` classes, imported by `globals.css`         |
 | `apps/marketing/app/sitemap.ts`                                           | Lists `/licences`                                                     |
-| `packages/ui/src/SiteFooter.tsx`                                          | "Licences" footer link                                                |
+| `packages/ui/src/SiteFooter.tsx`                                          | "Licences" footer link; legal strip at AA contrast                    |
+| `packages/ui/src/ShareRail.tsx`                                           | Its "Share" label at AA contrast (found by the page's axe run)        |
 | `apps/live/components/panels/ExplorerHeaderMenu.tsx`                      | "Licences" row beside GitHub                                          |
-| `apps/live/components/chrome/tab-bar-icons.tsx`                           | `ScaleIcon` (vendored Lucide `scale`)                                 |
+| `apps/live/components/chrome/tab-bar-icons.tsx`                           | `ScaleIcon` (vendored Lucide `scale`, at `MENU_ICON_PX`)              |
 | `packages/icons/lucide-manifest.json`                                     | Gains `scale`                                                         |
 | `turbo.json`, `apps/marketing/package.json`, `package.json`, `.gitignore` | Build wiring                                                          |
 
@@ -56,7 +61,10 @@ British `licence` everywhere except the npm `license` field and file names.
 
 The generator is a pure pipeline around two IO edges:
 
-1. **Bundle** (IO, `generate.ts`). For each app in `LICENCE_APPS` order, sequentially (D11):
+1. **Bundle** (IO, `generate.ts`). Turbo runs the marketing build after all six other apps' builds
+   (`turbo.json`): the analyzer reads and writes `<app>/.next/cache/turbopack` and
+   `<app>/.next/diagnostics` whatever `NEXT_DISTDIR` says, and beside that app's `next build` the
+   Turbopack persistent cache panics. For each app in `LICENCE_APPS` order, sequentially (D11):
    - `next` apps: remove `<app>/.next-analyze`, run `node <next bin> experimental-analyze -o` in the
      app directory with `NEXT_DISTDIR=.next-analyze`, then read every file named `analyze.data`
      under `<app>/.next-analyze/diagnostics/analyze/data/`. None found: `AnalyzeDataMissing`.
@@ -70,8 +78,8 @@ The generator is a pure pipeline around two IO edges:
      `node_modules/<name>` (scoped names take two segments). The package root's `package.json` must
      hold a string `name` equal to that directory name and a string `version`
      (`PackageManifestInvalid`).
-   - The path's `.pnpm/<storeKey>/node_modules/<name>` segment is required
-     (`StorePathUnrecognised`); `storeKey` is `<name with / as +>@<version>` optionally followed by
+   - The path's `.pnpm/<store key>/node_modules/<name>` segment is required
+     (`StorePathUnrecognised`); the store key is `<name with / as +>@<version>` optionally followed by
      `_<peers>`. A version that differs from `package.json`'s is `VersionMismatch`.
    - Directories strictly between the root and the file that hold a `package.json` with a string
      `name` and at least one licence file are **vendored works** (name: the directory's basename, with
@@ -85,7 +93,7 @@ The generator is a pure pipeline around two IO edges:
      `name@version`, else `LicenceTextMissing`. An embedded work's texts come from its table entry: a
      committed file, or a file inside a package that this bundle ships
      (`EmbeddedPackageNotShipped`).
-   - Licence id: see "Interfaces and contracts"; then `assertLicenceAllowed`.
+   - Licence id: see "Interfaces and contracts"; then `isLicenceAllowed`, else `LicenceNotAllowed`.
 4. **Assemble** (pure). `buildManifest(collected)` groups works by side, merges the same work's apps,
    deduplicates texts by hash, sorts, and reports unused overrides and embedded works.
 5. **Write** (IO). Removes and rewrites `<out>/public/licences/texts/`, writes one `<hash>.txt` per
@@ -102,6 +110,12 @@ export type AppId = 'live' | 'marketing' | 'help' | 'telemetry' | 'api' | 'mcp' 
 export type LicenceApp = { id: AppId; label: string; side: Side; bundler: 'next' | 'worker' };
 
 export type AppBundle = { app: AppId; sources: string[]; assets: string[] };
+
+// undefined for no such file, [] for no such directory.
+export type FileReader = {
+  readText(path: string): string | undefined;
+  listFiles(dir: string): string[];
+};
 
 export type TextRef =
   | { label: string; file: string } // packages/licences/texts/<file>, listed in TEXT_SOURCES
@@ -141,7 +155,7 @@ export type LicencesManifest = {
 
 - **`analyze.data`**: a 4-byte big-endian length `n`, then `n` bytes of UTF-8 JSON, then binary
   data the generator ignores. The JSON must hold arrays `sources` (`{ path: string,
-parent_source_index?: number }`), `chunk_parts` (`{ source_index: number, output_file_index:
+parent_source_index?: number | null }`, the tree root carrying `null`), `chunk_parts` (`{ source_index: number, output_file_index:
 number }`) and `output_files` (`{ filename: string }`); a source's full path is its parents' paths
   concatenated. Client output files are those whose `filename` starts with `[client-fs]/`. A
   client source path starting `[project]/` is repo-relative after the prefix; other prefixes
@@ -212,15 +226,20 @@ copy in the same box.
 
 ## Performance and limits
 
-- Analyzer time measured: marketing 1.8 s, telemetry 2.1 s, help 4.0 s, live 7.6 s; each worker
-  under 1 s. Sequential total under 20 s, added to the marketing build only.
+- Measured in a full `pnpm build`: live 7.9 s, help 6.1 s, telemetry 3.0 s, marketing 2.5 s, each
+  worker about 1 s; about 22 s on the marketing build only, which now starts once the editor's
+  build finishes (the full build took 59 s).
 - HTML carries summaries only; texts load on open. The largest text, ONNX Runtime's third-party
   notices, is 327 KB (about 80 KB compressed) and is fetched only when its entry opens.
+- Page weight measured: 173.8 KB raw, 20.3 KB gzipped for 54 works. A static export ships the
+  server-rendered entries twice (HTML and RSC payload), so repeated chrome is short `lic-*`
+  classes (per-element utilities made it 353 KB) and no per-entry SVG (D16).
 - Budget: `LICENCES_HTML_BUDGET_BYTES` (D14) on the exported `licences.html`, checked by `verify.ts`.
 
 ## Presentation and UX
 
-Route `/licences`, marketing's `Header` and `Footer`, content column `max-w-3xl`.
+Route `/licences`, the shared `SiteHeader` without a funnel surface (D15) and marketing's `Footer`,
+content column `max-w-3xl`.
 
 - Title (h1): "Open-source licences".
 - Lead: "livediagram is MIT licensed and built on the work of many open-source projects. These are
@@ -230,9 +249,10 @@ Route `/licences`, marketing's `Header` and `Footer`, content column `max-w-3xl`
   centre and the telemetry dashboard." Section h2 "On our servers", intro: "Bundled into the API,
   MCP server and router, which run on Cloudflare rather than on your device."
 - Each section shows its work count: "{n} works".
-- Entry summary: chevron, name (medium weight), version, licence id (monospace), then the app chips
-  ("Editor", "Website", "Help centre", "Telemetry", "API", "MCP server", "Router") under an
-  accessible label "Ships in".
+- Entry summary: the native disclosure marker (D16), name (medium weight), version, then a row of
+  licence id (monospace) and app chips ("Editor", "Website", "Help centre", "Telemetry", "API",
+  "MCP server", "Router") after a visually hidden "Ships in". A hanging indent keeps a wrapped name,
+  version or chip row aligned past the marker.
 - Entry body: for a vendored or embedded work "Inside {carrier}."; for a homepage, a "Source" link;
   then per text: its label as a heading-sized line, a "Plain text" link, and the text box.
 - Text box states: loading "Loading {label}…", loaded (the text), error "This text could not be
@@ -243,11 +263,14 @@ Route `/licences`, marketing's `Header` and `Footer`, content column `max-w-3xl`
 
 - `details`/`summary` native keyboard (Enter, Space) and state announcement; the summary holds an
   `h3` with the name; a `focus-visible` ring (`ring-2 ring-brand-500`) on the summary.
+- Links name what they open: `aria-label` "Source of {name}" and "Plain text of {label} for {name}",
+  each starting with its visible text (2.5.3), and at least 24 px tall (2.5.8).
 - Each text box is a `<pre tabIndex={0} role="region" aria-label="{label} for {name}">` with
   `aria-busy` while loading, so keyboard users can scroll it (WCAG 2.1.1).
-- Chips and meta text use slate 600 on white and slate 300 on slate 900 (both over 4.5:1). The
-  chevron is decorative (`aria-hidden`); its rotation uses `duration-micro` and
-  `motion-reduce:transition-none`.
+- Chips and meta text use slate 600 or 700 on white and slate 200 or 300 on slate 900 (all over
+  4.5:1). Nothing moves: the native marker swaps without animation.
+- axe (`wcag2a` to `wcag22aa`) with an entry open: no violations in dark; in light only the
+  sitewide brand-500 wordmark and primary button, which are design tokens outside this page.
 
 ## Web Experience
 
@@ -257,6 +280,9 @@ Route `/licences`, marketing's `Header` and `Footer`, content column `max-w-3xl`
   `margin-top`/`padding-top` on `details[open]`.
 - INP: opening an entry is native; the fetch starts in a `toggle` listener and does no layout work
   beyond setting text.
+- Measured with texts delayed 800 ms: a box is 446 px loading and loaded, the next entry moves
+  0 px, the 327 KB notices scroll inside a fixed 506 px box, and CLS is 0 (the only shifts are the
+  user's own opens, which CLS excludes).
 
 ## Observability
 
@@ -268,25 +294,29 @@ Every line is `[licences] <fingerprint> key=value …` on stdout (errors on stde
 
 ## Testing
 
-| Spec rule                                                      | Test                                            |
-| -------------------------------------------------------------- | ----------------------------------------------- |
-| Every app is registered, sides right                           | `apps.test.ts` (reads `apps/*`)                 |
-| Client output only; strict analyze format                      | `analyze-data.test.ts`                          |
-| Worker bundles from the metafile; strict format                | `metafile.test.ts`                              |
-| Package root, store-path version, vendored boundaries          | `package-path.test.ts`                          |
-| Licence files incl. NOTICE; normalisation; hash                | `licence-files.test.ts`                         |
-| Licence id rules and allowlist                                 | `licence-id.test.ts`                            |
-| Missing text fails; override applies to exact version only     | `collect.test.ts`                               |
-| Unreviewed binary fails; embedded works by asset and source    | `collect.test.ts`                               |
-| Committed texts listed and intact; tables reference real files | `texts.test.ts`                                 |
-| Sections, merged apps, dedup, order, unused report             | `manifest.test.ts`                              |
-| Runs for real on the real apps                                 | CI build job (`pnpm build`)                     |
-| Exported page, texts and HTML budget                           | `verify.ts` in the marketing build              |
-| Page renders sections, entries, links; fixed box heights       | `apps/marketing/components/licences/*.test.tsx` |
-| Manifest missing or invalid fails the page                     | `apps/marketing/lib/licences-manifest.test.ts`  |
-| Footer link                                                    | `packages/ui/src/SiteFooter.test.tsx`           |
-| Explorer ⋯ row opens `/licences` in a new tab                  | `ExplorerHeaderMenu.test.tsx`                   |
-| `/licences` and its texts reach marketing                      | `apps/router/src/index.test.ts`                 |
+| Spec rule                                                      | Test                                              |
+| -------------------------------------------------------------- | ------------------------------------------------- |
+| Every app is registered, sides right                           | `apps.test.ts` (reads `apps/*`)                   |
+| Client output only; strict analyze format                      | `analyze-data.test.ts`                            |
+| Worker bundles from the metafile; strict format                | `metafile.test.ts`                                |
+| Package root, store-path version, vendored boundaries          | `package-path.test.ts`                            |
+| Licence files incl. NOTICE; normalisation; hash                | `licence-files.test.ts`                           |
+| Licence id rules and allowlist                                 | `licence-id.test.ts`                              |
+| Missing text fails; override applies to exact version only     | `collect.test.ts`                                 |
+| Unreviewed binary fails; embedded works by asset and source    | `collect.test.ts`                                 |
+| Committed texts listed and intact; tables reference real files | `texts.test.ts`                                   |
+| Sections, merged apps, dedup, order, unused report             | `manifest.test.ts`                                |
+| Runs for real on the real apps                                 | CI build job (`pnpm build`)                       |
+| Exported page, texts and HTML budget                           | `verify-export.test.ts`; `verify.ts` in the build |
+| Source links https only                                        | `homepage.test.ts`                                |
+| Named error codes                                              | `errors.test.ts`                                  |
+| Page renders sections, entries, links; fixed box heights       | `apps/marketing/components/licences/*.test.tsx`   |
+| Manifest missing or invalid fails the page                     | `apps/marketing/lib/licences-manifest.test.ts`    |
+| Footer link; AA small print                                    | `packages/ui/src/SiteFooter.test.tsx`             |
+| Share rail label at AA                                         | `packages/ui/src/ShareRail.test.tsx`              |
+| Sitemap lists `/licences`                                      | `apps/marketing/app/sitemap.test.ts`              |
+| Explorer ⋯ row opens `/licences` in a new tab                  | `ExplorerHeaderMenu.test.tsx`                     |
+| `/licences` and its texts reach marketing                      | `apps/router/src/index.test.ts`                   |
 
 ## Constants and configuration
 
@@ -298,7 +328,7 @@ Every line is `[licences] <fingerprint> key=value …` on stdout (errors on stde
 | `TEXTS_URL_PREFIX`           | `/licences/texts/`                    | Under the page's own path on marketing          | fixed               |
 | `TEXT_BOX_MAX_LINES`         | 24                                    | D1: a licence's opening fits; long ones scroll  | 12 to 40            |
 | `TEXT_BOX_LINE_HEIGHT_REM`   | 1.25                                  | D2: Tailwind `text-xs leading-5`                | tied to the class   |
-| `LICENCES_HTML_BUDGET_BYTES` | see D14                               | D14: measured page plus headroom                | measured × 1.5 to 3 |
+| `LICENCES_HTML_BUDGET_BYTES` | 260,000                               | D14: 1.5 times the 173.5 KB first measured      | measured × 1.3 to 2 |
 
 ## Assets and external resources
 
@@ -308,4 +338,4 @@ the list, the files and the checksums in step. Regenerating one means fetching t
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md), rows D1 to D14.
+See [DEFAULTS.md](DEFAULTS.md), rows D1 to D16.

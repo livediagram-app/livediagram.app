@@ -123,7 +123,8 @@ After the one-time Cloudflare setup:
 git clone https://github.com/livediagram-app/livediagram.app livediagram
 cd livediagram
 pnpm install
-pnpm build           # static export for marketing + live + telemetry + help
+pnpm build           # static export for marketing + live + telemetry + help,
+                     # plus the generated /licences page (no network needed)
 # Then deploy each worker (run from the repo root):
 pnpm --filter @livediagram/marketing exec wrangler deploy
 pnpm --filter @livediagram/live exec wrangler deploy
