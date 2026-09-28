@@ -9,7 +9,6 @@
 // small form, and none of it belongs in the data-shape sections beside charts
 // and rails.
 
-import { useState } from 'react';
 import {
   AGENDA_DEFAULT_MINUTES,
   AGENDA_MAX_ITEMS,
@@ -38,6 +37,7 @@ import {
 } from '@livediagram/diagram';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
 // Each collaboration kind contributes exactly ONE section to the Tools group —
 // an agenda has Segments and nothing else, a chair has Chair and nothing else.
@@ -123,13 +123,8 @@ export function AgendaMenuSection({
   onSetItems: (items: AgendaItem[]) => void;
 }) {
   const items = target?.agendaItems ?? NO_AGENDA_ITEMS;
-  const [rows, setRows] = useState<AgendaItem[]>(items);
   // The row drafts follow the element's segments when they change, adjusted during render.
-  const [followed, setFollowed] = useState(items);
-  if (items !== followed) {
-    setFollowed(items);
-    setRows(items);
-  }
+  const [rows, setRows] = useFollowingDraft<AgendaItem[]>(items);
 
   const move = (from: number, to: number) => {
     if (to < 0 || to >= rows.length) return;
@@ -225,13 +220,8 @@ export function DecisionMenuSection({
 }) {
   const status = target?.decisionStatus ?? DEFAULT_DECISION_STATUS;
   const drivers = target?.decisionDrivers ?? NO_DRIVERS;
-  const [rows, setRows] = useState<string[]>(drivers);
   // The row drafts follow the element's drivers when they change, adjusted during render.
-  const [followed, setFollowed] = useState(drivers);
-  if (drivers !== followed) {
-    setFollowed(drivers);
-    setRows(drivers);
-  }
+  const [rows, setRows] = useFollowingDraft<string[]>(drivers);
 
   return (
     <MenuAccordionSection title="Decision" icon={<ToolsMenuGlyph />} {...sectionProps('decision')}>

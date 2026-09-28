@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-
 import { MAX_SIZE_PX, MIN_SIZE_PX } from '@/hooks/canvas/useShapeStyleSetters';
 import { MenuActionButton } from '@/components/primitives/PortalMenu';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
+import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
 // The element menu's Size category (docs/specs/008-canvas/element-size.md): the exact width and height in
 // canvas pixels, the aspect-ratio lock, and the reset-to-default-proportion
@@ -29,15 +28,10 @@ function SizeField({
   value: number;
   onCommit: (n: number) => void;
 }) {
-  const [draft, setDraft] = useState(String(Math.round(value)));
   // Follow the element when it changes underneath us — a drag-resize, an undo,
   // or the aspect lock carrying this dimension after the other one was typed.
   // Adjusted during render.
-  const [followed, setFollowed] = useState(value);
-  if (!Object.is(value, followed)) {
-    setFollowed(value);
-    setDraft(String(Math.round(value)));
-  }
+  const [draft, setDraft] = useFollowingDraft(value, (v) => String(Math.round(v)));
 
   const commit = () => {
     const n = Number(draft);
