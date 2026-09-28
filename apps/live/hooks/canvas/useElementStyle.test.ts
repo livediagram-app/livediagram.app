@@ -1,3 +1,6 @@
+// @vitest-environment jsdom
+
+import { renderHook } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import {
   createArrow,
@@ -9,7 +12,7 @@ import {
 import { useElementStyle } from './useElementStyle';
 
 // useElementStyle builds plain handler closures from its deps (no internal
-// React hooks), so it can be exercised directly. These tests pin the
+// React hooks), so one render gives the handlers the tests drive. These tests pin the
 // selection-wide setters to a MULTI-selection (selectedId null, two shapes in
 // currentSelectionIds), guarding against the "applies to the single selection
 // only" regression where a setter reads selectedId instead of the selection
@@ -18,28 +21,27 @@ import { useElementStyle } from './useElementStyle';
 function harness(elements: Element[], selection: Set<string>) {
   const tab: Tab = { id: 'tab1', name: 'Tab', elements };
   let committed = tab;
-  // useElementStyle builds plain closures from its deps (no internal React
-  // hooks), so calling it outside a component is safe here.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const style = useElementStyle({
-    currentSelectionIds: () => new Set(selection),
-    selectionPrimary: () => elements.find((e) => selection.has(e.id)) ?? null,
-    selectedId: null, // multi-select: no single id
-    activeTab: committed,
-    activeId: 'tab1',
-    editsBlocked: false,
-    commit: (map) => {
-      committed = { ...committed, elements: map(committed.elements) };
-    },
-    commitActiveTab: (map) => {
-      committed = map(committed);
-    },
-    tickTabs: (map) => {
-      committed = map([committed])[0]!;
-    },
-    markCheckpoint: () => 1,
-    scheduleElementChangeLog: () => {},
-  });
+  const style = renderHook(() =>
+    useElementStyle({
+      currentSelectionIds: () => new Set(selection),
+      selectionPrimary: () => elements.find((e) => selection.has(e.id)) ?? null,
+      selectedId: null, // multi-select: no single id
+      activeTab: committed,
+      activeId: 'tab1',
+      editsBlocked: false,
+      commit: (map) => {
+        committed = { ...committed, elements: map(committed.elements) };
+      },
+      commitActiveTab: (map) => {
+        committed = map(committed);
+      },
+      tickTabs: (map) => {
+        committed = map([committed])[0]!;
+      },
+      markCheckpoint: () => 1,
+      scheduleElementChangeLog: () => {},
+    }),
+  ).result.current;
   return { style, result: () => committed.elements, tab: () => committed };
 }
 

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { elementDisplayLabel, type BoxedElement } from '@livediagram/diagram';
-import { useRelativeTimeTick } from '@/lib/relative-time';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import {
   ActionRowItem,
@@ -100,7 +99,6 @@ export function CollaboratePanel({
   forceDockMode,
   onMobileClose,
 }: CollaboratePanelProps) {
-  useRelativeTimeTick();
   // Kind filter (left of the Open / Resolved control): All -> Comments
   // -> Actions, cycled by one compact button so the narrow panel
   // doesn't grow a second segmented row. Open/Resolved counts follow

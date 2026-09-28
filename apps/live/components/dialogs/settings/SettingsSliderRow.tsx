@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { SettingsRowShell } from './SettingsRowShell';
 import type { SettingsSliderRowSpec } from './settings-catalogue';
+import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
 // A range setting (panel opacity). Dragging shows live feedback but only
 // COMMITS on release: writeUserPreferences PUTs the whole preferences blob
@@ -17,12 +17,9 @@ export function SettingsSliderRow({
   value: number;
   onCommit: (next: number) => void;
 }) {
-  const [draft, setDraft] = useState(value);
   // Follow the stored value when it changes elsewhere (the Palette popover
-  // sets the same preference), except while this slider is mid-drag.
-  useEffect(() => {
-    setDraft(value);
-  }, [value]);
+  // sets the same preference); adjusted during render.
+  const [draft, setDraft] = useFollowingDraft(value);
 
   return (
     <SettingsRowShell

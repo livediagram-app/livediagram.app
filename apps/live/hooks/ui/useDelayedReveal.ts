@@ -16,12 +16,16 @@ import { useEffect, useState } from 'react';
 // countdown; gate those on the returned value at render time instead.
 export function useDelayedReveal(delayMs: number, enabled = true): boolean {
   const [revealed, setRevealed] = useState(false);
+  // Disabling hides at once (adjusted during render, not a frame later in an
+  // effect), and clears the reveal so a later re-enable waits again.
+  const [wasEnabled, setWasEnabled] = useState(enabled);
+  if (enabled !== wasEnabled) {
+    setWasEnabled(enabled);
+    if (!enabled) setRevealed(false);
+  }
 
   useEffect(() => {
-    if (!enabled) {
-      setRevealed(false);
-      return;
-    }
+    if (!enabled) return;
     const id = window.setTimeout(() => setRevealed(true), delayMs);
     return () => window.clearTimeout(id);
   }, [delayMs, enabled]);

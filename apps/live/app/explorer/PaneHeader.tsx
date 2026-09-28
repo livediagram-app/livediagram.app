@@ -7,7 +7,7 @@
 // its private hamburger / caret icons) stands on its own.
 import { DiagramIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { Button, Glyph } from '@livediagram/ui';
-import { useRef, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { MenuTile, PortalMenu } from '@/components/primitives/PortalMenu';
@@ -101,7 +101,8 @@ export function PaneHeader({
         : { label: folderLabel ?? 'New Folder', onClick: onCreateFolder! }
       : null;
   const [createOpen, setCreateOpen] = useState(false);
-  const createRef = useRef<HTMLButtonElement>(null);
+  // In state, so the menu anchors to the button on the render that opens it.
+  const [createButton, setCreateButton] = useState<HTMLButtonElement | null>(null);
   return (
     <div className="mb-4">
       <div className="mb-2 flex items-center justify-between gap-3">
@@ -146,7 +147,7 @@ export function PaneHeader({
             ) : null}
             {createMode.kind === 'menu' ? (
               <Button
-                ref={createRef}
+                ref={setCreateButton}
                 size="xs"
                 onClick={() => setCreateOpen((o) => !o)}
                 aria-haspopup="menu"
@@ -161,7 +162,7 @@ export function PaneHeader({
             {showViewToggle ? <ViewToggle mode={viewMode!} onChange={onSetViewMode!} /> : null}
             {createOpen ? (
               <PortalMenu
-                anchor={createRef.current}
+                anchor={createButton}
                 placement="below"
                 onClose={() => setCreateOpen(false)}
               >

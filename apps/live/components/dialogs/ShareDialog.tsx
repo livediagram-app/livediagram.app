@@ -15,7 +15,7 @@ import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { initialsOf, randomName } from '@/lib/identity';
 import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
-import { useRelativeTimeTick } from '@/lib/relative-time';
+import { useRelativeNow } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { EXPIRY_LABELS, RoleButton, ScopeOptions } from './share-dialog-parts';
@@ -88,8 +88,7 @@ export function ShareDialog({
   // Periodic re-render so the countdown chips stay honest and a link
   // that lapses while the dialog is open migrates to Inactive without
   // a refetch (same tick the Explorer's "Updated" column uses).
-  useRelativeTimeTick();
-  const now = Date.now();
+  const now = useRelativeNow();
   const activeLinks = links.filter((l) => l.expiresAt === null || l.expiresAt > now);
   const inactiveLinks = links.filter((l) => l.expiresAt !== null && l.expiresAt <= now);
 

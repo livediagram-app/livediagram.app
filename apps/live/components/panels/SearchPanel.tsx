@@ -190,10 +190,12 @@ export function SearchPanel({
   const flatItems = useMemo(() => groups.flatMap((g) => g.items), [groups]);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Reset highlight when the result set changes.
-  useEffect(() => {
+  // Reset highlight when the query changes, during render.
+  const [highlightedFor, setHighlightedFor] = useState(query);
+  if (query !== highlightedFor) {
+    setHighlightedFor(query);
     setActiveIndex(0);
-  }, [query]);
+  }
 
   const handleSelect = (item: SearchResultItem) => {
     // Help opens the article in a new tab and records the SAME per-article

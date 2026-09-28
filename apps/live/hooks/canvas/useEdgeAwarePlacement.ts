@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffectEvent, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 type XY = { x: number; y: number };
@@ -15,10 +15,11 @@ type Bounds = { x: number; y: number; width: number; height: number };
 // a box that fits neither side could otherwise ping-pong above<->below forever,
 // an infinite synchronous re-render that trips React's "Maximum update depth".
 // `adjust` is the one-shot edge nudge and is deliberately NOT an effect
-// dependency, so the effect never re-enters on its own setAdjust. `zoom` is
+// trigger, so the effect never re-enters on its own setAdjust. `zoom` is
 // folded into the geometry signature (a zoom change earns a fresh flip
-// decision) but kept out of the dep array — the effect re-runs on the
-// bounds / offset / placeAbove changes that actually move the box.
+// decision) but does not trigger either — the effect re-runs on the
+// bounds / offset / placeAbove changes that actually move the box, and the
+// placement itself is an effect event reading the newest nudge and zoom.
 //
 // The box ref must be attached to the floating element so its measured rect can
 // be checked against the viewport. `style` is the ready-to-spread placement:
@@ -38,7 +39,7 @@ export function useEdgeAwarePlacement(
   const flippedRef = useRef(false);
   const [placeAbove, setPlaceAbove] = useState(true);
 
-  useLayoutEffect(() => {
+  const place = useEffectEvent(() => {
     const node = ref.current;
     if (!node) return;
     const sig = `${bounds.x},${bounds.y},${bounds.width},${bounds.height},${canvasOffset.x},${canvasOffset.y},${zoom}`;
@@ -89,8 +90,11 @@ export function useEdgeAwarePlacement(
     const nx = dx / zoom;
     const ny = dy / zoom;
     if (nx !== adjust.x || ny !== adjust.y) setAdjust({ x: nx, y: ny });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bounds.x, bounds.y, bounds.width, bounds.height, canvasOffset.x, canvasOffset.y, placeAbove]);
+  });
+  useLayoutEffect(
+    () => place(),
+    [bounds.x, bounds.y, bounds.width, bounds.height, canvasOffset.x, canvasOffset.y, placeAbove],
+  );
 
   const baseLeft = bounds.x + bounds.width / 2;
   const baseTop = placeAbove ? bounds.y - gap : bounds.y + bounds.height + gap;

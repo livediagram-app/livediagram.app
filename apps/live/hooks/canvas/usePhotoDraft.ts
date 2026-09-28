@@ -32,6 +32,7 @@ import {
 } from '@/lib/photo-detect';
 import { detectorTelemetryType } from '@/lib/photo-model/telemetry';
 import { track } from '@/lib/telemetry';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // A photo import, as ONE long gesture (docs/specs/021-event-storming/event-storming.md Phase 8, Phase 9).
 //
@@ -204,8 +205,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   const [state, setState] = useState<PhotoDraftState>(EMPTY);
   const [review, setReview] = useState<PhotoReview | null>(null);
   // Latest review, for guards inside callbacks whose deps do not re-run on it.
-  const reviewRef = useRef<PhotoReview | null>(null);
-  reviewRef.current = review;
+  const reviewRef = useLatest<PhotoReview | null>(review);
   const abortRef = useRef<AbortController | null>(null);
   // The object URL the overlay is showing. Held so it can be handed back to
   // the browser when the review closes: an unrevoked one pins the whole
@@ -217,8 +217,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   const runRef = useRef(0);
   // The board as it stood before the draft landed, for the activity-log diff.
   const beforeRef = useRef<Element[] | null>(null);
-  const live = useRef(deps);
-  live.current = deps;
+  const live = useLatest(deps);
   // The photo as picked, kept for the review's life: a box the author moves
   // is cut again from it, at full resolution.
   const fileRef = useRef<File | null>(null);
@@ -232,10 +231,13 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
 
   const draftOpen = draftNotesOf(deps.activeTab.elements).length > 0;
 
-  const fail = useCallback((token: string) => {
-    setState({ ...EMPTY, error: token });
-    live.current.toastError(ERROR_TOASTS[token] ?? ERROR_TOASTS.ai_error!);
-  }, []);
+  const fail = useCallback(
+    (token: string) => {
+      setState({ ...EMPTY, error: token });
+      live.current.toastError(ERROR_TOASTS[token] ?? ERROR_TOASTS.ai_error!);
+    },
+    [live],
+  );
 
   // Close the review and give the photograph back to the browser.
   const closeReview = useCallback(() => {
@@ -282,7 +284,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         { maxZoom: 1 },
       );
     },
-    [],
+    [live],
   );
 
   // The words arrive AFTER the review is already on screen: the crops are read
@@ -374,7 +376,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         if (abortRef.current === controller) abortRef.current = null;
       }
     },
-    [readerCallbacks],
+    [readerCallbacks, live],
   );
 
   // A box the author moved, resized or drew, read again (docs/specs/021-event-storming/event-storming.md Phase 9).
@@ -491,7 +493,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
 
       enqueue(() => readWords(detection, controller, run));
     },
-    [closeReview, enqueue, fail, nextPaint, readWords],
+    [closeReview, enqueue, fail, nextPaint, readWords, reviewRef, live],
   );
 
   // Add the ticked boxes as the on-canvas draft. The one write of the review:
@@ -552,7 +554,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         error: null,
       });
     },
-    [review, frameElements, cancelRereads],
+    [review, frameElements, cancelRereads, live],
   );
 
   const cancelReview = useCallback(() => {
@@ -581,7 +583,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     beforeRef.current = null;
     setPhotoDraftView(null);
     setState(EMPTY);
-  }, []);
+  }, [live]);
 
   const discard = useCallback(() => {
     const d = live.current;
@@ -598,7 +600,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     beforeRef.current = null;
     setPhotoDraftView(null);
     setState(EMPTY);
-  }, []);
+  }, [live]);
 
   const cancelReading = useCallback(() => {
     runRef.current += 1;

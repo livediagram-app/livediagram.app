@@ -1,5 +1,5 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { Portal } from '@/components/primitives/Portal';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
@@ -124,7 +124,7 @@ export function PortalMenu({
   // (rather than the jarring full-screen modal). Rendered inside this
   // menu's container so the outside-click handler treats it as "inside".
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const deleteRowRef = useRef<HTMLDivElement>(null);
+  const [deleteRow, setDeleteRow] = useState<HTMLDivElement | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
@@ -132,7 +132,7 @@ export function PortalMenu({
   // Position at the given point (canvas right-click / footer button) or, for
   // the tab ellipsis, above the anchor button right-aligned to it. Measured
   // each time the menu opens so it stays attached even after layout shifts.
-  useReposition(() => {
+  const reposition = useCallback(() => {
     if (point) {
       setPos({ left: point.x, top: point.y });
       return;
@@ -141,6 +141,7 @@ export function PortalMenu({
     const r = anchor.getBoundingClientRect();
     setPos({ left: r.right, top: r.top });
   }, [anchor, point]);
+  useReposition(reposition);
 
   // After the menu mounts, nudge it back on-screen if it overflows any
   // edge (e.g. Tab 1 is near the left and the menu opens left of its
@@ -328,7 +329,7 @@ export function PortalMenu({
                   the everyday verbs: both change what the tab will let you
                   do next rather than doing something to it. The confirm
                   popover anchors to this wrapper. */}
-              <div ref={deleteRowRef} className="ml-auto flex items-center gap-0.5">
+              <div ref={setDeleteRow} className="ml-auto flex items-center gap-0.5">
                 <MenuToolButton
                   icon={<TabLockIcon />}
                   label={locked ? 'Unlock tab' : 'Lock tab'}
@@ -458,9 +459,9 @@ export function PortalMenu({
           </>
         ) : null}
       </div>
-      {confirmingDelete && deleteRowRef.current ? (
+      {confirmingDelete && deleteRow ? (
         <ConfirmPopover
-          anchor={deleteRowRef.current}
+          anchor={deleteRow}
           message="Delete this tab? Its content can't be recovered."
           confirmLabel="Delete"
           onConfirm={() => {

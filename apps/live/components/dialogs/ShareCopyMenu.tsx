@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
@@ -42,7 +42,8 @@ export function ShareCopyMenu({
   // (the menu only closes on a click outside its own DOM).
   header?: ReactNode;
 }) {
-  const ref = useRef<HTMLButtonElement>(null);
+  // The button the menu anchors to, held in state so the menu's first render has it.
+  const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
   const toast = useToast();
 
@@ -61,7 +62,7 @@ export function ShareCopyMenu({
     <>
       <HoverCard title={hoverCardTitle} description={hoverCardDescription}>
         <button
-          ref={ref}
+          ref={setAnchor}
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-haspopup="menu"
@@ -73,7 +74,7 @@ export function ShareCopyMenu({
         </button>
       </HoverCard>
       {open ? (
-        <PortalMenu anchor={ref.current} placement="below" onClose={() => setOpen(false)}>
+        <PortalMenu anchor={anchor} placement="below" onClose={() => setOpen(false)}>
           {header ? (
             <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-700">
               {header}

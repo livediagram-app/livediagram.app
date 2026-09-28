@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   Button,
   CloseIcon,
@@ -14,7 +14,7 @@ import { useReposition } from '@/hooks/canvas/useReposition';
 import type { Comment, CommentThread } from '@livediagram/diagram';
 import { initialsOf } from '@/lib/identity';
 import { isMobileViewportSync } from '@/lib/responsive';
-import { formatRelativeTimeCompact } from '@/lib/relative-time';
+import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
@@ -84,7 +84,7 @@ export function CommentThreadPopover({
   // Resolve the element's on-screen rect (after the canvas transform has
   // been applied), then place the popover just to the right with a small
   // gap. Re-measures on resize / scroll so it stays attached during pans.
-  useReposition(() => {
+  const reposition = useCallback(() => {
     const node = document.querySelector(`[data-element-id="${elementId}"]`);
     if (!node) return;
     const rect = node.getBoundingClientRect();
@@ -99,6 +99,7 @@ export function CommentThreadPopover({
     top = Math.max(EDGE_MARGIN, top);
     setPos({ left, top });
   }, [elementId]);
+  useReposition(reposition);
 
   // Don't close on a click that lands on a comment badge: those are
   // the popover's own toggle, and parent state handles flip-flop.
@@ -254,6 +255,7 @@ function CommentRow({
   // affordance. Editable rows pass the bound delete handler.
   onDelete?: () => void;
 }) {
+  const now = useRelativeNow();
   return (
     <li className={`group flex gap-2 py-2 ${resolved ? 'opacity-60' : ''}`}>
       <GlyphDisc
@@ -271,7 +273,7 @@ function CommentRow({
             {comment.authorName}
           </span>
           <span className="text-slate-400 dark:text-slate-400">
-            {formatRelativeTimeCompact(Date.now() - comment.createdAt)}
+            {formatRelativeTimeCompact(now - comment.createdAt)}
           </span>
         </div>
         <p className="mt-0.5 whitespace-pre-wrap text-xs text-slate-700 dark:text-slate-200">

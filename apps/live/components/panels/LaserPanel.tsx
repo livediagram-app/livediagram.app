@@ -13,7 +13,7 @@
 // Nothing here is a diagram edit: the pen is device-local (see
 // lib/laser-config) and rides your laser samples so peers see the same beam.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   laserColour,
   laserLifetimeMs,
@@ -35,34 +35,36 @@ type Row = 'width' | 'colour' | 'trail' | 'effect';
 // stroke can't show. Points are regenerated on a timer with fresh timestamps so
 // the trail keeps sweeping instead of fading out and staying gone.
 function PenPreview({ config, colour }: { config: LaserConfig; colour: string }) {
-  const [tick, setTick] = useState(0);
+  // The instant the current sweep was drawn at: state set by the timer, so render stays pure.
+  const [sweptAt, setSweptAt] = useState(() => performance.now());
   const lifetime = laserLifetimeMs(config);
   useEffect(() => {
     // Redraw a sweep a little more often than the trail's own lifetime, so
     // there is always a stroke on screen at every trail length.
-    const id = window.setInterval(() => setTick((t) => t + 1), Math.max(500, lifetime * 0.6));
+    const id = window.setInterval(
+      () => setSweptAt(performance.now()),
+      Math.max(500, lifetime * 0.6),
+    );
     return () => window.clearInterval(id);
   }, [lifetime]);
 
   // A gentle S-curve across the box, sampled back in time so the tail is
   // already fading when it appears — the same shape a hand sweeping across a
   // diagram makes.
-  const startedAt = useRef(performance.now());
-  startedAt.current = performance.now();
   const points = Array.from({ length: 24 }, (_, i) => {
     const p = i / 23;
     return {
       x: 8 + p * 208,
       y: 26 - Math.sin(p * Math.PI * 1.2) * 12,
       // Oldest first: the last point is "now", so the head sits at the end.
-      t: startedAt.current - (1 - p) * lifetime * 0.8,
+      t: sweptAt - (1 - p) * lifetime * 0.8,
     };
   });
 
   return (
     <div className="relative mb-1 h-14 overflow-hidden rounded-lg bg-slate-900/95 dark:bg-slate-950">
       <LaserOverlay
-        key={tick}
+        key={sweptAt}
         zoom={1}
         trails={[{ participantId: 'preview', color: colour, points, config }]}
       />

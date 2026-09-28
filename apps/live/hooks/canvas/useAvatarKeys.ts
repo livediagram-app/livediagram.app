@@ -7,8 +7,9 @@
 // Space is a one-shot: the jump + flag wave fires on the initial press and
 // autorepeat is ignored, so holding Space doesn't pogo.
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { anyModalOpen } from '@/lib/modal-guard';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 export type AvatarHeldKeys = { up: boolean; down: boolean; left: boolean; right: boolean };
 
@@ -49,8 +50,7 @@ export function useAvatarKeys({
   // The listeners attach once per mode entry, so they must reach the LATEST
   // callbacks rather than the closures from the render that attached them
   // (the same live-ref convention useEditorKeyboardShortcuts documents).
-  const liveRef = useRef({ onSteer, onJump });
-  liveRef.current = { onSteer, onJump };
+  const liveRef = useLatest({ onSteer, onJump });
 
   useEffect(() => {
     if (!active) return;
@@ -90,8 +90,7 @@ export function useAvatarKeys({
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);
     };
-    // onSteer / onJump are reached through liveRef, so the effect only needs
-    // to re-attach when the mode flips.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active]);
+    // onSteer / onJump are reached through liveRef, so the effect only
+    // re-attaches when the mode flips (both refs are stable).
+  }, [active, heldRef, liveRef]);
 }

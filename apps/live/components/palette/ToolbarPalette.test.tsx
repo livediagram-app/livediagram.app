@@ -5,6 +5,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
+import { savePaletteFavourites } from '@/lib/palette-favourites';
 
 const mobile = vi.hoisted(() => ({ value: false }));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
@@ -132,6 +133,19 @@ describe('ToolbarPalette', () => {
     expect(document.querySelector('[data-toolbar-more]')).not.toBeNull();
     pickCategory('shapes');
     expect(document.querySelector('[data-toolbar-more]')).toBeNull();
+  });
+
+  // The Favourites body writes its edits straight to storage; the strip catches up on close
+  // (docs/specs/010-palette/palette-favourites.md).
+  it('shows favourites edited under More once it closes', () => {
+    show();
+    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    act(() => savePaletteFavourites(['shapes:diamond']));
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+    expect(within(strip()).getByRole('button', { name: 'Add diamond' })).toBeTruthy();
+    expect(within(strip()).queryByRole('button', { name: 'Add square' })).toBeNull();
   });
 
   it('closes More on Escape', () => {

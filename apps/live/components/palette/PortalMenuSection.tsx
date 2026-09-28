@@ -12,12 +12,12 @@
 // hover card, and in the linked portal's label — never drawn on the canvas ring,
 // where a caption over the energy looked like a sticker on a window.
 
-import { useEffect, useState } from 'react';
 import type { ShapeElement, Tab } from '@livediagram/diagram';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { MENU_ICON_PX, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { portalName, portalSites } from '@/lib/portals';
 import { PlusIcon } from '@livediagram/ui';
+import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
 function PlusGlyph() {
   return <PlusIcon size={MENU_ICON_PX} />;
@@ -43,11 +43,10 @@ export function PortalMenuSection({
 }) {
   // Typed locally and committed on blur / Enter, like every other text field in
   // the editor: committing per keystroke would push one history entry per
-  // letter. Re-seeded when the menu opens on a different portal.
-  const [name, setName] = useState(portal.label ?? '');
-  useEffect(() => {
-    setName(portal.label ?? '');
-  }, [portal.id, portal.label]);
+  // letter. Re-seeded (during render) on a different portal or a label changed elsewhere.
+  const label = portal.label ?? '';
+  // Reset by another portal or a new label: both are in the key.
+  const [name, setName] = useFollowingDraft(`${portal.id}\u0000${label}`, () => label);
 
   // Every OTHER portal in the diagram, this tab first — a link can cross tabs
   // (walk through here, come out on the Detail tab), so the candidate list is

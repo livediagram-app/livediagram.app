@@ -4,9 +4,10 @@
 // values, the local laser trail, the active tab). Pure derivation:
 // no handlers, no setters, nothing here mutates state.
 
-import { useCallback, useMemo, type MutableRefObject } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { Tab } from '@livediagram/diagram';
 import type { Participant } from '@/lib/identity';
+import type { PresenceClock } from './usePresenceState';
 import type { LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
 import type { AvatarPresence } from '@livediagram/api-schema';
@@ -31,7 +32,7 @@ type PresenceRowsDeps = {
   tabs: Tab[];
   // Everything below comes from usePresenceState / useEditorBroadcast.
   livePresence: Participant[];
-  lastSeenRef: MutableRefObject<Map<string, number>>;
+  presenceClock: PresenceClock;
   remoteTabFocus: Map<string, string>;
   remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>;
   remoteSelections: Map<string, RemoteSelection>;
@@ -58,7 +59,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     selfParticipant,
     tabs,
     livePresence,
-    lastSeenRef,
+    presenceClock,
     remoteTabFocus,
     remoteCursors,
     remoteSelections,
@@ -94,9 +95,8 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   // 'away' (orange ring). Cheap signal that someone's not where you
   // are right now without leaving the TabBar.
   //
-  // Deliberately not memoised: it reads Date.now() + lastSeenRef so
-  // each render re-derives fresh idle statuses (the presence-state
-  // 30s tick drives the periodic refresh).
+  // Statuses derive from the presence clock (usePresenceState): its tick moves idle peers to away, and a
+  // returning peer's first op moves them back at once.
   const participantsByTab = buildParticipantsByTab({
     diagramShareable,
     diagramTeamId,
@@ -106,8 +106,8 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     remoteTabFocus,
     livePresence,
     livePresenceById,
-    lastSeen: lastSeenRef.current,
-    now: Date.now(),
+    lastSeen: presenceClock.lastSeen,
+    now: presenceClock.now,
   });
   // Cursor rows joined with presence so we get a fresh colour + name on
   // every render and don't have to denormalise them into each `cursor`

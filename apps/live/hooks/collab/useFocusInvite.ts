@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press puts on your
 // screen, and what taking it does.
@@ -53,8 +54,7 @@ export function useFocusInvite(deps: {
   const [invite, setInvite] = useState<FocusInvite | null>(null);
   // Live ref so the timer and the accept path read the current handlers
   // without re-arming on every render.
-  const ref = useRef(deps);
-  ref.current = deps;
+  const ref = useLatest(deps);
 
   // Expiry is per invitation, so a second one restarts the clock rather than
   // inheriting the remains of the first one's.
@@ -74,15 +74,13 @@ export function useFocusInvite(deps: {
       if (ref.current.isAlreadyThere(tabId, at, zoom)) return;
       setInvite({ from, tabId, at, zoom });
     },
-    [],
+    [ref],
   );
-
   // The live invitation in a ref as well as in state, so accepting can read it
   // without doing the work inside a setState UPDATER: React runs those during
   // the render phase, and navigating from one updates the page while this is
   // rendering (which React says, loudly).
-  const liveRef = useRef<FocusInvite | null>(null);
-  liveRef.current = invite;
+  const liveRef = useLatest<FocusInvite | null>(invite);
 
   const acceptFocus = useCallback(() => {
     const current = liveRef.current;
@@ -92,7 +90,7 @@ export function useFocusInvite(deps: {
     // looking at the right coordinates of the wrong board.
     ref.current.onFollowTab(current.tabId);
     ref.current.onCentreOn(current.at, current.zoom);
-  }, []);
+  }, [ref, liveRef]);
 
   const dismissFocus = useCallback(() => setInvite(null), []);
 

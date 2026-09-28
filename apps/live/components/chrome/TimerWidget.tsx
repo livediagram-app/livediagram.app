@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { timerDone, type TabTimer } from '@livediagram/diagram';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { TimerPillBody, timerFillStyle } from '@/components/chrome/timer-pill';
+import { useNow } from '@/hooks/ui/useNow';
 
 // Floating session-timer pill (docs/specs/012-collaboration/session-tools.md). Renders the active tab's
 // countdown / stopwatch, ticking LOCALLY off the timer's absolute anchor
@@ -28,16 +28,8 @@ export function TimerWidget({
   // except by going back into the tab menu that started it.
   onClear: () => void;
 }) {
-  // Re-render ~4x/sec while running so the clock advances. Paused timers
-  // are static, so we don't spin a timer then.
-  const [, setTick] = useState(0);
-  useEffect(() => {
-    if (!timer.running) return;
-    const id = setInterval(() => setTick((n) => n + 1), 250);
-    return () => clearInterval(id);
-  }, [timer.running]);
-
-  const now = Date.now();
+  // The clock advances ~4x a second while running. Paused timers are static, so nothing spins then.
+  const now = useNow(timer.running);
   const done = timerDone(timer, now);
 
   return (

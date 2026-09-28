@@ -1,4 +1,6 @@
-/* eslint-disable react-hooks/rules-of-hooks -- the two hooks useDiagramActions calls are mocked below, so it runs as a plain function here. */
+// @vitest-environment jsdom
+
+import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const trackMock = vi.fn();
@@ -17,23 +19,26 @@ vi.mock('@/hooks/ui/useToast', () => ({
 
 const { useDiagramActions } = await import('./useDiagramActions');
 
+// The two hooks useDiagramActions calls are mocked above; one render gives its actions.
 function actions() {
-  return useDiagramActions({
-    diagramId: null,
-    diagramName: '',
-    diagramList: [],
-    setDiagramList: vi.fn(),
-    confirm: vi.fn() as never,
-    ownerId: 'me',
-    hookDeleteFolder: vi.fn(),
-    sharedDiagrams: [],
-    setSharedDiagrams: vi.fn(),
-    copying: false,
-    setCopying: vi.fn(),
-    sessionShareCode: null,
-    refreshTeamLibraries: vi.fn(),
-    refreshDiagramList: vi.fn(),
-  });
+  return renderHook(() =>
+    useDiagramActions({
+      diagramId: null,
+      diagramName: '',
+      diagramList: [],
+      setDiagramList: vi.fn(),
+      confirm: vi.fn() as never,
+      ownerId: 'me',
+      hookDeleteFolder: vi.fn(),
+      sharedDiagrams: [],
+      setSharedDiagrams: vi.fn(),
+      copying: false,
+      setCopying: vi.fn(),
+      sessionShareCode: null,
+      refreshTeamLibraries: vi.fn(),
+      refreshDiagramList: vi.fn(),
+    }),
+  ).result.current;
 }
 
 const flush = () => new Promise((r) => setTimeout(r, 0));

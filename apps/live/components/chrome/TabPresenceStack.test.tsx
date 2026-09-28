@@ -34,4 +34,15 @@ describe('TabPresenceStack', () => {
     expect(view.container.querySelectorAll('.animate-pop-out')).toHaveLength(0);
     expect(view.container.querySelectorAll('.animate-pop-in')).toHaveLength(1);
   });
+
+  it('pops an arrival in, and keeps a leaver who comes back', () => {
+    const view = render(<TabPresenceStack participants={[ada]} selfId="me" selfRole="edit" />);
+    view.rerender(<TabPresenceStack participants={[ada, bo]} selfId="me" selfRole="edit" />);
+    expect(view.container.querySelectorAll('.animate-pop-in')).toHaveLength(2);
+    view.rerender(<TabPresenceStack participants={[ada]} selfId="me" selfRole="edit" />);
+    view.rerender(<TabPresenceStack participants={[ada, bo]} selfId="me" selfRole="edit" />);
+    act(() => vi.advanceTimersByTime(MOTION_MS.micro));
+    expect(view.container.querySelectorAll('.animate-pop-out')).toHaveLength(0);
+    expect(view.container.querySelectorAll('.animate-pop-in')).toHaveLength(2);
+  });
 });

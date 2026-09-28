@@ -1,6 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useEffectEvent,
+} from 'react';
 import {
   isEventStormingTab,
   onlyDraftNotesChanged,
@@ -128,7 +136,7 @@ import { usePanelLayout } from './usePanelLayout';
 import { usePresenceRows } from './usePresenceRows';
 import { usePresenceState } from './usePresenceState';
 import { useEditorDialogs } from './useEditorDialogs';
-import { useElementHelpers } from './useElementHelpers';
+import { useElementHelpers, selectionIds } from './useElementHelpers';
 import { useElementCreation } from './useElementCreation';
 import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
@@ -142,6 +150,7 @@ import { useEditorUiState } from './editor-ui-state';
 import { useTabScope } from './useTabScope';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
+import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 
 // Activity-log past/future stacks share the cap with the
 // state-snapshot stack: we can't undo past what useDiagramHistory
@@ -196,11 +205,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // synchronous mutation.
   const entryHistoryRef = useRef<EntryHistory>(emptyEntryHistory());
   const historyTokenRef = useRef(0);
-  // Active-layer stamp for the commit choke point below (docs/specs/006-diagram/layers.md). A ref
-  // (not state): commitTabs is defined before the layers slice computes,
-  // so the slice refreshes this every render and the closure reads the
-  // latest value at commit time.
-  const activeLayerStampRef = useRef<{ tabId: string; layerId: string } | null>(null);
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]): number => {
     const token = ++historyTokenRef.current;
     entryHistoryRef.current = entryHistoryPush(entryHistoryRef.current, token);
@@ -233,12 +237,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     });
     return token;
   };
-  // While a photo draft is open it OWNS the history (docs/specs/021-event-storming/event-storming.md Phase 8): the
-  // landing and every correction the author makes to a draft note are one
-  // gesture, ending at Add (the step stands) or Discard (it is thrown away).
-  // A ref, because `commit` / `markCheckpoint` are defined long before the
-  // draft hook and read it at call time.
-  const photoDraftOpenRef = useRef(false);
   const markCheckpoint = (): number => {
     // A gesture inside the draft (dragging a draft note) must not push a step
     // of its own, or Undo after Add would stop at that drag instead of taking
@@ -296,8 +294,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // here. Same runtime string, searchable source.
   const tabSig = tabs.map((t) => `${t.id}\u0000${t.name}`).join('\u0001');
   const tabSummaries = useMemo(
-    () => tabs.map((t) => ({ id: t.id, name: t.name })),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    () =>
+      tabSig === ''
+        ? []
+        : tabSig.split('\u0001').map((entry) => {
+            const [id = '', name = ''] = entry.split('\u0000');
+            return { id, name };
+          }),
     [tabSig],
   );
 
@@ -594,6 +597,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     livePresence,
     setLivePresence,
     lastSeenRef,
+    presenceClock,
+    markSeen,
     remoteTabFocus,
     setRemoteTabFocus,
     remoteSelections,
@@ -718,6 +723,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const lastSavedNameRef = useRef<string>('');
   // Peer ops that land while a save is in flight (docs/specs/012-collaboration/collab-race-hardening.md); see save-baseline.
   const remoteOpJournalRef = useRef<RemoteOpJournal>(createRemoteOpJournal());
+  // Peer ops applied to `tabs`, as state: the journal's count as of this render, for the autosave.
+  const [opsApplied, setOpsApplied] = useState(0);
+  const countAppliedOp = useCallback(() => setOpsApplied((n) => n + 1), []);
 
   // True while a hover-preview is on screen (set by useStylePreview). Style
   // previews mutate `tabs` via tickTabs so they render live, but they must
@@ -749,6 +757,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     lastSavedNameRef,
     loadedTabIdsRef,
     remoteOpJournalRef,
+    opsApplied,
     previewingRef,
     roomRef,
     setSaveStatus,
@@ -839,8 +848,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const pollCollaboratorsRef = useRef<readonly PollCandidate[]>([]);
   // Our collab key, for the poll's answers and host (docs/specs/012-collaboration/collab-race-hardening.md). A ref: the poll
   // hook's handlers stay stable while identity hydrates.
-  const pollSelfKeyRef = useRef(voteSelfId);
-  pollSelfKeyRef.current = voteSelfId;
+  const pollSelfKeyRef = useLatest(voteSelfId);
   const livePoll = useLivePoll({
     roomRef,
     sessionBlockedRef,
@@ -872,9 +880,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   }, []);
   // Reaction bursts (docs/specs/009-elements/reaction-pad.md): ephemeral, per-client, never document state.
   const reactions = useReactionBursts();
-  const receiveFocusRef = useRef<
-    ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
-  >(null);
 
   // Who is running this session (docs/specs/012-collaboration/facilitator.md). Declared before the room
   // connection because the socket hands it every answer and asks it for the
@@ -889,7 +894,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // announcement reads correctly.
     nameOf: (presenceId) => livePresence.find((p) => p.id === presenceId)?.name ?? 'Somebody',
   });
-  sessionBlockedRef.current = facilitator.sessionToolsBlocked;
+  useAssignRef(sessionBlockedRef, facilitator.sessionToolsBlocked);
 
   // The facilitator has freed an element we were holding (docs/specs/007-editor/live-app.md lock,
   // docs/specs/012-collaboration/facilitator.md). Only our socket is sent this, so there is no target id to check.
@@ -914,7 +919,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       // explanation reads as a bug rather than as somebody running a session.
       toast.info('The facilitator freed an element you were holding');
     },
-    [setSelectedId, setEditingId, setMultiSelectedIds],
+    [setSelectedId, setEditingId, setMultiSelectedIds, toast],
   );
 
   // The Q&A board (docs/specs/012-collaboration/qa-board.md). Up here, ahead of the room, because the room
@@ -938,8 +943,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selfParticipant,
     sessionShareCode,
     lastSeenRef,
+    markSeen,
     selfParticipantRef,
     saveBaseline: { tabs: lastSavedTabsRef, name: lastSavedNameRef, journal: remoteOpJournalRef },
+    countAppliedOp,
     sessionShareCodeRef,
     roomRef,
     applyRemoteTabs,
@@ -1068,49 +1075,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Local-first rather than round-tripping through the server: the press has
   // to feel instant, and a burst is not shared state that could disagree — it
   // is the same animation run independently on every machine.
+  const { play: playReaction } = reactions;
   const fireReaction = useCallback(
     (element: ShapeElement) => {
-      const played = reactions.play(element.id, element.reaction);
+      const played = playReaction(element.id, element.reaction);
       broadcastReaction(element.id, played);
       track('Element', 'Used', 'ReactionPad');
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [reactions.play, broadcastReaction],
-  );
-
-  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else to come and look at this
-  // element, at our zoom, on our tab.
-  //
-  // Sends the element's CENTRE rather than our pan: two people rarely have the
-  // same window size, so copying a pan lands the element off-centre for anyone
-  // whose canvas is a different shape. Our own view does not move — we are
-  // already looking at it.
-  const pressFocusButton = useCallback(
-    (element: ShapeElement) => {
-      const at = { x: element.x + element.width / 2, y: element.y + element.height / 2 };
-      const sent = broadcastFocusHere(at, zoomRef.current);
-      const node = canvasMainRef.current;
-      // A press that moves nobody is invisible from this side, so say which
-      // kind of nobody it was: an empty room, or a room already looking at it.
-      // `livePresence` is peers ONLY (the room excludes the asker from every
-      // presence list it sends), so one other person is length 1.
-      toast.info(
-        FOCUS_PRESS_MESSAGE[
-          focusPressOutcome({
-            sent,
-            peerIds: livePresence.map((p) => p.id),
-            viewports: remoteViewports,
-            size: { width: node?.offsetWidth ?? 0, height: node?.offsetHeight ?? 0 },
-            tabId: activeId,
-            at,
-            zoom: zoomRef.current,
-          })
-        ],
-      );
-      track('Element', 'Used', 'BringFocus');
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [broadcastFocusHere, livePresence, remoteViewports, activeId],
+    [playReaction, broadcastReaction],
   );
 
   // Same trick for selfParticipant — the WS effect intentionally
@@ -1146,6 +1118,40 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     scrollIntoView,
   } = useEditorViewport({ activeTab, selectedId });
 
+  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else to come and look at this
+  // element, at our zoom, on our tab.
+  //
+  // Sends the element's CENTRE rather than our pan: two people rarely have the
+  // same window size, so copying a pan lands the element off-centre for anyone
+  // whose canvas is a different shape. Our own view does not move — we are
+  // already looking at it.
+  const pressFocusButton = useCallback(
+    (element: ShapeElement) => {
+      const at = { x: element.x + element.width / 2, y: element.y + element.height / 2 };
+      const sent = broadcastFocusHere(at, zoomRef.current);
+      const node = canvasMainRef.current;
+      // A press that moves nobody is invisible from this side, so say which
+      // kind of nobody it was: an empty room, or a room already looking at it.
+      // `livePresence` is peers ONLY (the room excludes the asker from every
+      // presence list it sends), so one other person is length 1.
+      toast.info(
+        FOCUS_PRESS_MESSAGE[
+          focusPressOutcome({
+            sent,
+            peerIds: livePresence.map((p) => p.id),
+            viewports: remoteViewports,
+            size: { width: node?.offsetWidth ?? 0, height: node?.offsetHeight ?? 0 },
+            tabId: activeId,
+            at,
+            zoom: zoomRef.current,
+          })
+        ],
+      );
+      track('Element', 'Used', 'BringFocus');
+    },
+    [broadcastFocusHere, livePresence, remoteViewports, activeId, zoomRef, canvasMainRef, toast],
+  );
+
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
   // presentation Start runs. Placed after the viewport because presenting
   // frames each slide through it.
@@ -1172,13 +1178,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     },
     loadAllTabs,
   });
-  // Seed the deck once the diagram's stored blob arrives.
+  // Seed the deck once the diagram's stored blob arrives. Triggered only when a stored deck appears or
+  // the diagram changes: hydrating on every deck edit would fight the editing verbs, so the blob itself
+  // is read at that moment (an effect event), not depended on.
+  const hydrateStoredDeck = useEffectEvent(() => slideDeck.hydrateDeck(diagramPresentation));
+  const hasStoredDeck = diagramPresentation !== null;
   useEffect(() => {
-    slideDeck.hydrateDeck(diagramPresentation);
-    // Only when the STORED value changes: hydrating on every deck edit would
-    // fight the editing verbs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [diagramPresentation === null, diagramId]);
+    hydrateStoredDeck();
+  }, [hasStoredDeck, diagramId]);
 
   // What the presentation is showing right now, if anything.
   const presentingStep =
@@ -1189,21 +1196,31 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     () => (presentingStep ? resolveSlide(presentingStep.slide, presentingStep.tab) : null),
     [presentingStep],
   );
-  // Read by the resize observer below, which must not re-subscribe per slide.
-  const presentingStepRef = useRef(presentingStep);
-  presentingStepRef.current = presentingStep;
-  const configRef = useRef(slideDeck.config);
-  configRef.current = slideDeck.config;
 
   // Where the editor was looking before the deck took over, so exiting puts it
   // back. Without this you left a presentation zoomed to whatever the last
   // slide needed — often 250% on one box — and had to hunt for your diagram.
-  const preShowViewRef = useRef<{
+  const [preShowView, setPreShowView] = useState<{
     tabId: string;
     zoom: number;
     offset: { x: number; y: number };
   } | null>(null);
   const presenting = slideDeck.presentingAt !== null;
+  // Captured on the way in, restored on the way out: state adjusted during render on the transition
+  // (docs/specs/003-system-architecture/react-state-and-effects.md), so the restore lands in the same
+  // commit as the exit instead of one frame later.
+  const [wasPresenting, setWasPresenting] = useState(presenting);
+  if (presenting !== wasPresenting) {
+    setWasPresenting(presenting);
+    if (presenting) {
+      setPreShowView({ tabId: activeId, zoom: viewportZoom, offset: viewportOffset });
+    } else if (preShowView) {
+      setPreShowView(null);
+      setActiveId(preShowView.tabId);
+      setViewportZoom(preShowView.zoom);
+      setViewportOffset(preShowView.offset);
+    }
+  }
   // Every editor keyboard surface is off while a deck is running (docs/specs/012-collaboration/presentation-mode.md).
   // The overlay owns the keyboard then — it consumes the keys it uses, but
   // everything else fell straight through to the editor, so pressing G in
@@ -1212,24 +1229,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // switch the shortcut hooks already have, and it covers a surface added
   // later without anybody remembering to.
   const keyboardEnabled = shortcutsEnabled && !presenting;
-  useEffect(() => {
-    if (presenting) {
-      // Capture once, on the way in. Re-capturing per slide would remember the
-      // presentation's own camera rather than the user's.
-      preShowViewRef.current ??= { tabId: activeId, zoom: viewportZoom, offset: viewportOffset };
-      return;
-    }
-    const before = preShowViewRef.current;
-    preShowViewRef.current = null;
-    if (!before) return;
-    setActiveId(before.tabId);
-    setViewportZoom(before.zoom);
-    setViewportOffset(before.offset);
-    // Only on the transition in or out of presenting. The captured values are
-    // read through the ref, so this must not re-run as they change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presenting]);
-
   // Presenting moves the editor to the slide's tab and frames the slide. Both
   // are ordinary view state, and the effect above puts them back on exit.
   //
@@ -1237,18 +1236,25 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // the new slide's elements by the time this runs, so fitting after paint
   // showed one frame of the new content under the OLD slide's camera. That is
   // the flash of "small in the corner" a deferred fit produces.
+  const presentingSlideId = presentingStep?.slide.id;
+  const presentingTabId = presentingStep?.tab.id;
+  const [framedSlideId, setFramedSlideId] = useState(presentingSlideId);
+  if (presentingSlideId !== framedSlideId) {
+    setFramedSlideId(presentingSlideId);
+    if (presentingTabId !== undefined && presentingTabId !== activeId) setActiveId(presentingTabId);
+  }
+  // A slide fills the screen by default. The editor's own fit caps at 100%
+  // because a small diagram blown up looks broken in a workspace; a slide is
+  // the only thing on a projector, so a one-box slide SHOULD be a big box —
+  // unless the presenter has picked "Actual size" from the cog.
+  const frameSlide = useEffectEvent((elements: NonNullable<typeof presentingElements>) => {
+    const bounds = slideBounds(elements);
+    if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
+  });
+  const slideZoom = slideDeck.config.zoom;
   useLayoutEffect(() => {
-    if (!presentingStep || !presentingElements) return;
-    if (presentingStep.tab.id !== activeId) setActiveId(presentingStep.tab.id);
-    const bounds = slideBounds(presentingElements);
-    if (!bounds) return;
-    // A slide fills the screen by default. The editor's own fit caps at 100%
-    // because a small diagram blown up looks broken in a workspace; a slide is
-    // the only thing on a projector, so a one-box slide SHOULD be a big box —
-    // unless the presenter has picked "Actual size" from the cog.
-    fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presentingStep?.slide.id, presentingElements, slideDeck.config.zoom]);
+    if (presentingElements) frameSlide(presentingElements);
+  }, [presentingSlideId, presentingElements, slideZoom]);
 
   // ...and fit again whenever the canvas CHANGES SIZE while presenting.
   //
@@ -1263,28 +1269,27 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // the chrome changes the canvas's height without the WINDOW changing size at
   // all. This covers that, fullscreen arriving late, fullscreen being refused,
   // an ordinary resize, and a phone rotating.
+  const refitSlide = useEffectEvent(() => {
+    if (!presentingStep) return;
+    const bounds = slideBounds(resolveSlide(presentingStep.slide, presentingStep.tab));
+    if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
+  });
   useEffect(() => {
     const node = canvasMainRef.current;
     if (!presenting || !node || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(() => {
-      const step = presentingStepRef.current;
-      if (!step) return;
-      const bounds = slideBounds(resolveSlide(step.slide, step.tab));
-      if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(configRef.current) });
-    });
+    const observer = new ResizeObserver(() => refitSlide());
     observer.observe(node);
     return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presenting]);
+  }, [presenting, canvasMainRef]);
 
   // Publish where WE are looking, on change (docs/specs/012-collaboration/follow-me-viewport.md). Unsolicited by design
   // — see the RoomOp comment — and throttled to ~10 Hz inside the broadcaster,
   // so an idle participant sends nothing at all.
+  // `broadcastViewport` is re-created every render, so it is called through an effect event; the viewport
+  // (and the tab) are the trigger.
+  const publishViewport = useEffectEvent(() => broadcastViewport(viewportOffset, viewportZoom));
   useEffect(() => {
-    broadcastViewport(viewportOffset, viewportZoom);
-    // `broadcastViewport` is re-created every render; the viewport IS the
-    // trigger.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    publishViewport();
   }, [viewportOffset, viewportZoom, activeId]);
 
   // Follow-me viewport (docs/specs/012-collaboration/follow-me-viewport.md): pin our pan / zoom / tab to a peer's until
@@ -1319,7 +1324,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onCentreOn: centreOn,
     isAlreadyThere: (tabId, at, zoom) => tabId === activeId && isCentredOn(at, zoom),
   });
-  receiveFocusRef.current = focusInvite.receiveFocusHere;
+  const receiveFocusRef = useLatest<
+    ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
+  >(focusInvite.receiveFocusHere);
 
   // Server capabilities (docs/specs/007-editor/ai-assistance.md). Fetched once at mount; determines
   // whether the AI panel option is shown in Settings and rendered.
@@ -1368,7 +1375,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selfParticipant,
     tabs,
     livePresence,
-    lastSeenRef,
+    presenceClock,
     remoteTabFocus,
     remoteCursors,
     remoteSelections,
@@ -1512,7 +1519,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // on this route now; the historical new-diagram welcome lives on
   // /live/new.
   const anyWelcomeOpen = identityOnlyScreenOpen;
-
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
   // Single emission point for activity-log entries. Every editorial
@@ -1531,8 +1537,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // (a repeat edit folds into the newest entry only while that entry
   // is still ours). A ref, not the state value, so the emit callbacks
   // read the current list instead of a stale closure.
-  const changeLogRef = useRef(persistence.changeLog);
-  changeLogRef.current = persistence.changeLog;
+  const changeLogRef = useLatest(persistence.changeLog);
   const { emitChange, emitTabMeta } = useActivityLogEmitter({
     diagramId,
     selfParticipant,
@@ -1675,7 +1680,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     layerInertIds,
   } = layersState;
   // Refresh the commit choke point's stamp (see commitTabs above).
-  activeLayerStampRef.current = { tabId: activeId, layerId: activeLayerId };
+  // Active-layer stamp for the commit choke point below (docs/specs/006-diagram/layers.md). A ref
+  // (not state): commitTabs is defined before the layers slice computes,
+  // so the slice refreshes this every render and the closure reads the
+  // latest value at commit time.
+  const activeLayerStampRef = useLatest<{ tabId: string; layerId: string } | null>({
+    tabId: activeId,
+    layerId: activeLayerId,
+  });
 
   // Is this an event-storming board (docs/specs/021-event-storming/event-storming.md)? One layer, so this is just
   // tab data — it drives the palette, the stationery and the note menu.
@@ -1696,17 +1708,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   // A layer turning hidden or locked (locally or by a peer) drops its
-  // elements from any live selection — the same guarantee delete gives.
-  useEffect(() => {
-    if (layerInertIds.size === 0) return;
+  // elements from any live selection — the same guarantee delete gives. Adjusted during render when the
+  // inert set changes (it is memoised), so a hidden element is never shown selected for a frame.
+  const [prunedForInertIds, setPrunedForInertIds] = useState(layerInertIds);
+  if (layerInertIds !== prunedForInertIds) {
+    setPrunedForInertIds(layerInertIds);
     if (selectedId && layerInertIds.has(selectedId)) setSelectedId(null);
     if ([...multiSelectedIds].some((id) => layerInertIds.has(id))) {
       setMultiSelectedIds(new Set([...multiSelectedIds].filter((id) => !layerInertIds.has(id))));
     }
-    // Selection state is read, not watched: this only needs to run when
-    // the inert set itself changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layerInertIds]);
+  }
 
   // Apply AI-returned elements as a single undo block (docs/specs/007-editor/ai-assistance.md).
   // Generate handles both modifications and additions in one pass:
@@ -1830,7 +1841,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // The hidden file input the palette row and the command-palette entry open.
   // Keep the history-ownership ref (declared beside `commit`) in step with
   // whether a draft is actually open.
-  photoDraftOpenRef.current = photoDraft.draftOpen;
+  // While a photo draft is open it OWNS the history (docs/specs/021-event-storming/event-storming.md Phase 8): the
+  // landing and every correction the author makes to a draft note are one
+  // gesture, ending at Add (the step stands) or Discard (it is thrown away).
+  // A ref, because `commit` / `markCheckpoint` are defined long before the
+  // draft hook and read it at call time.
+  const photoDraftOpenRef = useLatest(photoDraft.draftOpen);
   const photoImportAvailable = esBoard;
   // One draft at a time: while one is open the entry points say so rather
   // than starting a second import over the first.
@@ -2441,8 +2457,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
   // action per choice. The panel itself decides where and whether it shows.
   const quickSelectionIds = useMemo(
-    () => currentSelectionIds(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- the selection IS these two
+    () => selectionIds(selectedId, multiSelectedIds),
     [selectedId, multiSelectedIds],
   );
   const swatchOverrides = useSwatchOverrides({

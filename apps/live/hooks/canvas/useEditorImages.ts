@@ -27,7 +27,7 @@
 // CRUD; this hook only relocates the code, it doesn't change that
 // contract.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { createImage, isBoxed, type Element } from '@livediagram/diagram';
 import { apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/api-client';
 import { isDataImageId } from '@/lib/offline/offline-images';
@@ -94,11 +94,12 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // newly-uploaded image surfaces without a diagram reload. View-
   // role visitors skip the fetch (the accordion is hidden for them
   // anyway via the !isReadOnly gate at the call site).
+  // The owner is read when the load runs, not a trigger of its own (it is
+  // set on mount and stable for the session).
+  const loadRecentImages = useEffectEvent(() => refreshRecentImages(ownerId));
   useEffect(() => {
     if (!diagramId || isReadOnly || embedMode) return;
-    refreshRecentImages(ownerId);
-    // ownerId is stable for the session (set on mount).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadRecentImages();
   }, [diagramId, isReadOnly, embedMode]);
 
   // Placing a NEW image lives in useElementCreation.addImage: it arms the

@@ -233,11 +233,12 @@ function Flyout({
   const [trackNonce, setTrackNonce] = useState(0);
   const retrack = useCallback(() => setTrackNonce((n) => n + 1), []);
 
-  useReposition(() => {
+  const reposition = useCallback(() => {
     if (!open) return;
     measure();
     retrack();
   }, [open, measure, retrack]);
+  useReposition(reposition);
 
   // Re-clamp when a section inside the flyout expands and grows the panel.
   useEffect(() => {

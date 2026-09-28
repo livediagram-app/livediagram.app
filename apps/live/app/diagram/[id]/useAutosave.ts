@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useEffectEvent,
   useRef,
   type Dispatch,
   type MutableRefObject,
@@ -52,6 +53,8 @@ export function useAutosave(opts: {
   // Peer ops that arrive while a save is in flight, so the save's success
   // doesn't roll the baseline back to before them (docs/specs/012-collaboration/collab-race-hardening.md, save-baseline.ts).
   remoteOpJournalRef: MutableRefObject<RemoteOpJournal>;
+  // How many peer ops this render's `tabs` include: state, bumped in the same batch that applies each op.
+  opsApplied: number;
   // True while a hover-preview is on screen. Previews mutate `tabs` (so they
   // render live) but must never be persisted; the debounced save below skips
   // while this is set, and the click-commit clears it and saves normally.
@@ -76,6 +79,7 @@ export function useAutosave(opts: {
     lastSavedNameRef,
     loadedTabIdsRef,
     remoteOpJournalRef,
+    opsApplied,
     previewingRef,
     roomRef,
     setSaveStatus,
@@ -83,6 +87,10 @@ export function useAutosave(opts: {
     setDiagramList,
     onDiagramTrashed,
   } = opts;
+
+  // The caller passes a fresh function each render; read it when a save is refused (an effect event), so
+  // it never re-arms the debounced save.
+  const reportTrashed = useEffectEvent(() => onDiagramTrashed());
 
   // Set once the server has told us we may not write to this diagram at all
   // (403). Unlike a network failure that's worth another go on the next edit,
@@ -103,8 +111,9 @@ export function useAutosave(opts: {
   // timer firing in between would diff a pre-op screen against a post-op
   // baseline and broadcast the peer's element back in its older form. The
   // timer below stands down when more ops have arrived than this render has;
-  // applying one always re-renders, and this value in the deps re-arms it.
-  const opsInRender = remoteOpJournalRef.current.next;
+  // applying one always re-renders, and this value in the deps re-arms it. It is state (opsApplied, bumped
+  // in the batch that applies each op), so render reads no ref.
+  const opsInRender = opsApplied;
 
   // A different diagram gets a clean slate: the block is about THIS one.
   useEffect(() => {
@@ -144,9 +153,18 @@ export function useAutosave(opts: {
     };
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
-    // Omitted deps are all refs + state setters (stable by React's guarantee).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, diagramId, isReadOnly, tabs, diagramName, selfId, sessionShareCode]);
+  }, [
+    hydrated,
+    diagramId,
+    isReadOnly,
+    tabs,
+    diagramName,
+    selfId,
+    sessionShareCode,
+    lastSavedTabsRef,
+    lastSavedNameRef,
+    loadedTabIdsRef,
+  ]);
 
   useEffect(() => {
     if (!hydrated || !diagramId) return;
@@ -272,7 +290,7 @@ export function useAutosave(opts: {
         .catch((err: unknown) => {
           if (isDiagramTrashedError(err)) {
             writesForbiddenRef.current = true;
-            onDiagramTrashed();
+            reportTrashed();
             return;
           }
           reportSaveFailure(err);
@@ -283,7 +301,23 @@ export function useAutosave(opts: {
         .finally(() => closeSaveWindow(journal));
     }, 600);
     return () => window.clearTimeout(handle);
-    // Omitted deps are all refs + state setters (stable by React's guarantee).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, diagramId, tabs, diagramName, selfId, isReadOnly, sessionShareCode, opsInRender]);
+  }, [
+    hydrated,
+    diagramId,
+    tabs,
+    diagramName,
+    selfId,
+    isReadOnly,
+    sessionShareCode,
+    opsInRender,
+    lastSavedTabsRef,
+    lastSavedNameRef,
+    loadedTabIdsRef,
+    previewingRef,
+    remoteOpJournalRef,
+    roomRef,
+    setDiagramList,
+    setSaveStatus,
+    setSavedAt,
+  ]);
 }

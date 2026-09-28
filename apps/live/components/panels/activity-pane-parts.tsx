@@ -22,7 +22,7 @@ import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-me
 import { collabDeepLinkHref, type CollabPopover } from '@/lib/collab-deep-link';
 import { helpArticleHref } from '@/lib/help-articles';
 import { initialsOf } from '@/lib/identity';
-import { formatRelativeTimeShort } from '@/lib/relative-time';
+import { formatRelativeTimeShort, useRelativeNow } from '@/lib/relative-time';
 
 // One titled card-list. The container matches the List view's so the
 // page reads as an Explorer section rather than a panel that escaped
@@ -134,6 +134,7 @@ function ActivityRowShell({
   avatar: { name: string; detail: string; colorClass?: string; color?: string };
   at: number;
 }) {
+  const now = useRelativeNow();
   return (
     <li>
       <Link
@@ -178,7 +179,7 @@ function ActivityRowShell({
             </GlyphDisc>
           </HoverCard>
           <span className="text-[10px] text-slate-400 dark:text-slate-400">
-            {formatRelativeTimeShort(Date.now() - at)}
+            {formatRelativeTimeShort(now - at)}
           </span>
         </span>
       </Link>

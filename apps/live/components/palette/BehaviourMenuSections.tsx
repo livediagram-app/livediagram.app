@@ -10,7 +10,6 @@
 // small form (a tool picker plus its one setting, a source plus a list), and
 // none of it belongs in the data-shape sections beside charts and rails.
 
-import { useEffect, useState } from 'react';
 import {
   REACTION_DEFAULT,
   REACTION_EMOJI,
@@ -30,6 +29,7 @@ import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { SessionElementSettings } from '@/components/canvas/SessionElementSettings';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { PickerIcon, RevealIcon } from '@/components/palette/palette-icons';
+import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
 const fieldClass =
   'mt-1 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
@@ -51,8 +51,10 @@ function LinesRow({
   max: number;
   onCommit: (next: string[]) => void;
 }) {
-  const [draft, setDraft] = useState(lines.join('\n'));
-  useEffect(() => setDraft(lines.join('\n')), [lines]);
+  const joined = lines.join('\n');
+  // Follows the element's lines when they change, adjusted during render. Compared as text: callers
+  // pass a fresh `[]` while the element has none, and that must not wipe an uncommitted draft.
+  const [draft, setDraft] = useFollowingDraft(joined);
   const commit = () => {
     const next = draft
       .split('\n')
@@ -60,7 +62,7 @@ function LinesRow({
       .filter((line) => line.length > 0)
       .slice(0, max);
     setDraft(next.join('\n'));
-    if (next.join('\n') !== lines.join('\n')) onCommit(next);
+    if (next.join('\n') !== joined) onCommit(next);
   };
   return (
     <div className="px-3 pt-2">

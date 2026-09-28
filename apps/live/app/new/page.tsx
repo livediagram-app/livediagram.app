@@ -1,7 +1,14 @@
 'use client';
 
 import { truncateName } from '@livediagram/diagram';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import { TemplatePicker, type NewDiagramSettings } from '@/components/palette/TemplatePicker';
@@ -20,12 +27,24 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { accepted } from '@/lib/accepted';
-import { ensureGuestSelfId, markNameConfirmed } from '@/lib/local-identity';
+import {
+  ensureGuestSelfId,
+  getGuestSelfId,
+  subscribeGuestSelfId,
+  markNameConfirmed,
+} from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
 import { WIZARD_BYPASS_PARAMS, wizardBypassKind } from '@/lib/new-diagram-params';
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
+import { useLatest } from '@/hooks/ui/useLatest';
+
+// The wizard bypass a /new URL asks for, if any (docs/specs/007-editor/new-diagram-route.md). The URL does
+// not change under the page, so nothing needs to subscribe.
+const subscribeNever = () => () => {};
+const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
+const noBypass = () => null;
 
 // Folder shape the Settings step's placement browser consumes.
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-diagram-route.md.
@@ -35,15 +54,35 @@ import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 // the editor route picks it up cleanly. The Explorer is NOT rendered here:
 // the wizard's "Open Existing Diagram" button sends users to /explorer
 // instead, keeping this screen focused on creating.
+const PENDING_SELF: Participant = {
+  id: 'pending',
+  name: 'Guest',
+  color: '#0ea5e9',
+  status: 'online',
+};
+const noGuestId = () => null;
+
 export default function NewDiagramPage() {
   // Stable placeholder so the first paint matches the SSG render; the
   // real participant lands once `useLayoutEffect` runs.
-  const [self, setSelf] = useState<Participant>({
-    id: 'pending',
-    name: 'Guest',
-    color: '#0ea5e9',
-    status: 'online',
-  });
+  // Clerk wiring (token provider + guest to authed migration), the same
+  // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
+  const { authLoaded, clerkUserId } = useClerkApiBootstrap();
+
+  // Who is creating (docs/specs/003-system-architecture/react-state-and-effects.md): derived during render.
+  // The base is the Clerk id once auth has settled, else the guest id read from its store, with a name and
+  // colour seeded once per visit. `selfOverride` holds what replaces it: the stored profile, the name
+  // chosen in the wizard, or the commit's fallback. Until auth settles it is the 'pending' placeholder.
+  const guestId = useSyncExternalStore(subscribeGuestSelfId, getGuestSelfId, noGuestId);
+  const [seed] = useState(() => ({ name: randomName(), color: randomColor() }));
+  const [selfOverride, setSelf] = useState<Participant | null>(null);
+  const baseId = authLoaded ? (clerkUserId ?? guestId) : null;
+  const self: Participant =
+    selfOverride && (baseId === null || selfOverride.id === baseId)
+      ? selfOverride
+      : baseId
+        ? { id: baseId, name: seed.name, color: seed.color, status: 'online' }
+        : PENDING_SELF;
   const [submitting, setSubmitting] = useState(false);
   // How many diagrams the user owns (null until known). Reported by
   // RecentDiagramsCard's fetch; gates the interactive tour's welcome offer
@@ -63,10 +102,6 @@ export default function NewDiagramPage() {
     // The Settings step's choices (docs/specs/006-diagram/offline-mode.md): diagram name, placement, offline.
     settings: NewDiagramSettings;
   } | null>(null);
-
-  // Clerk wiring (token provider + guest to authed migration), the same
-  // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
-  const { authLoaded, clerkUserId } = useClerkApiBootstrap();
 
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): the public-page CTA that brought this visit
   // here, if any. Counts the arrival now and the diagram once it's committed.
@@ -103,19 +138,17 @@ export default function NewDiagramPage() {
   // default name) the moment it mounts and lands on the editor. The ?folder /
   // ?team placement context above still applies.
   //
-  // Detected in a layout effect, NOT a window-reading state initializer: the
-  // static export prerenders this page without a query string, so an
-  // initializer that returns a kind on the client makes the hydration render
-  // disagree with the server HTML. The layout effect flips the state before
-  // the post-hydration paint, and the pre-paint window before hydration is
-  // covered by the inline script + style guard rendered below. That guard
-  // can't validate a template kind, so when the query names one we don't
-  // know the effect lifts the guard and the wizard shows as normal.
-  const [bypassKind, setBypassKind] = useState<TemplateKind | null>(null);
+  // Read from the URL as an external store whose server snapshot is "no
+  // bypass", NOT a window-reading state initializer: the static export
+  // prerenders this page without a query string, so the hydration render has
+  // to match the server HTML. The kind lands on the render after hydration;
+  // until then the inline script + style guard rendered below keeps the
+  // wizard hidden. That guard can't validate a template kind, so when the
+  // query names one we don't know, the layout effect lifts it before the
+  // first post-hydration paint and the wizard shows as normal.
+  const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
   useLayoutEffect(() => {
-    const kind = wizardBypassKind(window.location.search);
-    if (kind) setBypassKind(kind);
-    else document.documentElement.removeAttribute('data-just-draw');
+    if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
 
   useEffect(() => {
@@ -156,25 +189,24 @@ export default function NewDiagramPage() {
     // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): once-per-browser-per-UTC-day,
     // gated inside the helper. Auth has settled, so guest vs signed-in is known.
     trackDailyReturn(!!clerkUserId);
+    // A guest's id is minted here if this browser has none; the store re-renders the page with it before
+    // paint.
     const selfId = clerkUserId ?? ensureGuestSelfId();
-    const local: Participant = {
-      id: selfId,
-      name: randomName(),
-      color: randomColor(),
-      status: 'online',
-    };
-    setSelf(local);
-
+    const local: Participant = { id: selfId, name: seed.name, color: seed.color, status: 'online' };
+    let cancelled = false;
     void (async () => {
       const stored = await apiLoadSelf(selfId).catch(() => null);
+      if (cancelled) return;
       if (stored) {
         setSelf({ ...stored, status: 'online' });
       } else {
         await apiSaveSelf(local).catch(() => {});
       }
     })();
-  }, [authLoaded, clerkUserId]);
-
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoaded, clerkUserId, seed]);
   // Identity for the commit path. Clerk's chunk loads deferred, so a fast
   // click-through (or an e2e robot) can reach Create while `self` is still
   // the 'pending' placeholder — the identity bootstrap above hasn't run.
@@ -183,8 +215,7 @@ export default function NewDiagramPage() {
   // (fetching with the real id) 404s. So the commit resolves identity
   // itself: wait out the bootstrap (bounded — authLoaded flips by the
   // 5 s Clerk timeout at the latest), then fall back to the guest id.
-  const selfRef = useRef(self);
-  selfRef.current = self;
+  const selfRef = useLatest(self);
   const resolveSelf = async (): Promise<Participant> => {
     const deadline = Date.now() + 8000;
     while (selfRef.current.id === 'pending' && Date.now() < deadline) {
@@ -312,20 +343,22 @@ export default function NewDiagramPage() {
   // here: the create fires before RecentDiagramsCard reports a count — which
   // is the behaviour we want for someone who asked to just draw.
   const bypassFired = useRef(false);
-  useEffect(() => {
-    if (!bypassKind || bypassFired.current) return;
-    bypassFired.current = true;
+  const fireBypass = useEffectEvent((kind: TemplateKind) => {
     // Wizard-bypass adoption signal (docs/specs/017-telemetry/telemetry.md): a fixed preset per entry
     // point, never user content. (The template itself is reported by the
     // usual Diagram / Created event the commit fires.)
-    track('UI', 'Used', bypassKind === 'blank' ? 'JustDraw' : 'TemplateLink');
+    track('UI', 'Used', kind === 'blank' ? 'JustDraw' : 'TemplateLink');
     const params = new URLSearchParams(window.location.search);
-    void commitNewDiagram(bypassKind, '', 'brand', {
+    void commitNewDiagram(kind, '', 'brand', {
       saveLocation: DEFAULT_SAVE_LOCATION,
       folderId: params.get('folder'),
       teamId: params.get('team'),
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
+  useEffect(() => {
+    if (!bypassKind || bypassFired.current) return;
+    bypassFired.current = true;
+    fireBypass(bypassKind);
   }, [bypassKind]);
 
   if (createError) {

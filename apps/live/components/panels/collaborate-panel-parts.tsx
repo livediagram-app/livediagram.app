@@ -1,6 +1,6 @@
 'use client';
 
-import { formatRelativeTimeShort } from '@/lib/relative-time';
+import { formatRelativeTimeShort, useRelativeNow } from '@/lib/relative-time';
 import { initialsOf } from '@/lib/identity';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 import type { ActionRow, CommentRow } from './CollaboratePanel';
@@ -82,6 +82,7 @@ function RowShell({
   at: number;
   onClick: () => void;
 }) {
+  const now = useRelativeNow();
   return (
     <li>
       <button
@@ -106,9 +107,7 @@ function RowShell({
               {initialsOf(avatar.name)}
             </GlyphDisc>
           </HoverCard>
-          <span className="text-[10px] text-slate-400">
-            {formatRelativeTimeShort(Date.now() - at)}
-          </span>
+          <span className="text-[10px] text-slate-400">{formatRelativeTimeShort(now - at)}</span>
         </span>
       </button>
     </li>

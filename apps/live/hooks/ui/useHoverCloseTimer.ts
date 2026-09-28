@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useLatest } from './useLatest';
 
 // The delay that lets a pointer cross the gap between a trigger and the menu
 // it opened without the menu closing underneath it. Hover-open surfaces all
@@ -21,8 +22,7 @@ export function useHoverCloseTimer(
   const timer = useRef<number | null>(null);
   // Latest-callback ref, so a fresh `close` identity each render doesn't have
   // to re-arm anything (the same convention useClickOutside and useEscape use).
-  const latest = useRef(close);
-  latest.current = close;
+  const latest = useLatest(close);
 
   const cancel = () => {
     if (timer.current !== null) {

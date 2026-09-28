@@ -6,7 +6,7 @@
 // paint + caret, and reporting every edit up so the popover always holds the
 // current value.
 
-import { useLayoutEffect } from 'react';
+import { useEffectEvent, useLayoutEffect } from 'react';
 import {
   runsPlainText,
   type ListStyle,
@@ -76,16 +76,17 @@ export function useNoteRichTextSession({
   // Mount: paint the initial runs, focus, and park the caret at the END so
   // reopening a note continues it rather than replacing it on the next
   // keystroke (a note is a document; the label editor's select-all would put
-  // a paragraph one keypress away from being wiped).
-  useLayoutEffect(() => {
+  // a paragraph one keypress away from being wiped). Mount-only: an effect event, run once.
+  const openEditor = useEffectEvent(() => {
     const el = editorRef.current;
     if (!el) return;
     paintRuns();
     el.focus();
     placeCaretAtEnd(el);
     refreshActive();
-    // Mount-only; every read is a ref.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
+  useLayoutEffect(() => {
+    openEditor();
   }, []);
 
   return { ...doc, handleInput, onToggle, applyList, applyHeading, applyLink };

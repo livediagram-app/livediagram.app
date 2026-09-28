@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef } from 'react';
 import { isBoxed, isVotable, isVoteHost, type Tab } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 
@@ -71,14 +71,17 @@ export function useVoteReview({
   // (not just an edge-pull pan) so every pick lands mid-screen — for
   // followers as much as the host, which is the point of sharing it.
   const focusId = focus?.id ?? null;
+  // The pan follows the focus, never geometry churn mid-review: centring
+  // reads the elements as an effect event.
   const lastCentred = useRef<string | null>(null);
+  const centreOn = useEffectEvent((id: string) => {
+    const el = activeTab.elements.find((e) => e.id === id);
+    if (el && isBoxed(el)) scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
+  });
   useEffect(() => {
     if (!focusId || lastCentred.current === focusId) return;
     lastCentred.current = focusId;
-    const el = activeTab.elements.find((e) => e.id === focusId);
-    if (el && isBoxed(el)) scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
-    // The pan follows the focus, never geometry churn mid-review.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    centreOn(focusId);
   }, [focusId]);
 
   const clampSet = (i: number) => setVoteReviewIndex(Math.max(0, Math.min(results.length - 1, i)));

@@ -157,6 +157,18 @@ describe('surviving reconnects and refreshes (docs/specs/012-collaboration/colla
     expect(ops[1]).toMatchObject({ kind: 'poll-answer', value: 'pizza', key: 'me' });
   });
 
+  it('hosts the poll it starts, until it ends or a peer poll replaces it', () => {
+    const { result } = withKey('me');
+    act(() => result.current.startPoll({ question: 'Lunch?', style: 'text', options: [] }));
+    expect(result.current.isHost).toBe(true);
+    act(() => result.current.endPoll());
+    expect(result.current.isHost).toBe(false);
+    act(() => result.current.startPoll({ question: 'Tea?', style: 'text', options: [] }));
+    act(() => result.current.receivePoll({ ...poll('peer'), startedAt: Date.now() + 1000 }));
+    expect(result.current.poll?.id).toBe('peer');
+    expect(result.current.isHost).toBe(false);
+  });
+
   it('stays on the newer of two polls started at once', () => {
     const { result } = withKey('me');
     act(() => result.current.receivePoll({ ...poll('late'), startedAt: 9 }));

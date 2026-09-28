@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
+import { expect, expectNoPageErrors, test, openJustDraw } from './fixtures';
 
 // The quick style panel and style memory, end to end (docs/specs/008-canvas/quick-style-panel.md). Unit
 // tests prove the rules; only the editor proves a choice lands, is remembered
@@ -17,15 +17,7 @@ async function openBoard(page: Page, layout?: 'floating' | 'toolbar'): Promise<v
       localStorage.setItem(key, JSON.stringify({ ...prefs, panelLayout }));
     }, layout);
   }
-  await page.goto('/new');
-  const canvas = page.locator(CANVAS);
-  await expect(async () => {
-    if (!(await canvas.isVisible())) {
-      await page.getByRole('button', { name: /^just draw$/i }).click({ timeout: 2_000 });
-    }
-    await canvas.waitFor({ timeout: 3_000 });
-  }).toPass({ timeout: 20_000 });
-  await dismissQuickTour(page);
+  await openJustDraw(page);
 }
 
 // The saved elements of the diagram's first tab, read through the api.

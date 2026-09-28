@@ -17,7 +17,7 @@
 // beginFreehand, commitFreehand) is consumed by the Canvas + keyboard
 // hook. Verbatim relocation — no behaviour change.
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { createFreehand, type Element, type Tab } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
@@ -255,23 +255,24 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // you put it down. The gesture underneath is unchanged, so the mode is
   // expressed by keeping the freehand-marker intent armed for as long as the
   // tool is selected — entering re-arms it here, each committed stroke re-arms
-  // it in commitFreehand, and leaving drops it.
+  // it in commitFreehand, and leaving drops it. Picking and putting down are
+  // adjusted while rendering, keyed on the tool (every setter here is state of
+  // the same editor component).
   const holdingMarker = canvasTool === 'highlighter';
-  useEffect(() => {
+  const [markerHeld, setMarkerHeld] = useState(holdingMarker);
+  if (holdingMarker !== markerHeld) {
+    setMarkerHeld(holdingMarker);
     if (holdingMarker) {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
       setEditingId(null);
       setPendingDraw(MARKER_INTENT);
-      return;
+    } else {
+      // Only the marker's own intent: leaving the tool must not cancel a draw
+      // the user armed from the palette while holding it.
+      setPendingDraw((p) => (p?.type === 'freehand' && p.variant === 'highlighter' ? null : p));
     }
-    // Only the marker's own intent: leaving the tool must not cancel a draw
-    // the user armed from the palette while holding it.
-    setPendingDraw((p) => (p?.type === 'freehand' && p.variant === 'highlighter' ? null : p));
-    // The setters are stable state setters; re-running on them would fight the
-    // commit path's re-arm.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [holdingMarker]);
+  }
 
   // The shape pen (docs/specs/008-canvas/two-pens.md): the same gesture, but the stroke is run through
   // shape recognition on release. Which pen you picked IS the setting.

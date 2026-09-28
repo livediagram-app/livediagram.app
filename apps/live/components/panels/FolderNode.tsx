@@ -66,13 +66,17 @@ export function FolderNode({
   // Drop a dragged diagram on the header to file it here (docs/specs/013-workspace/folders.md).
   const drop = useDiagramDropTarget(folder.id, tree.rows.onMoveDiagramToFolder);
 
-  // Auto-enter rename mode for freshly-created folders.
+  // Auto-enter rename mode for freshly-created folders: entered during render when this folder
+  // becomes the pending one, and the tree told (an effect) so it clears the request.
+  const isPendingRename = pendingRenameId === folder.id;
+  const [wasPendingRename, setWasPendingRename] = useState(false);
+  if (isPendingRename !== wasPendingRename) {
+    setWasPendingRename(isPendingRename);
+    if (isPendingRename) setEditing(true);
+  }
   useEffect(() => {
-    if (pendingRenameId === folder.id) {
-      setEditing(true);
-      onRenameFolderCommitted?.();
-    }
-  }, [pendingRenameId, folder.id, onRenameFolderCommitted]);
+    if (isPendingRename) onRenameFolderCommitted?.();
+  }, [isPendingRename, onRenameFolderCommitted]);
 
   const commitRename = (name: string) => {
     const next = name.trim();

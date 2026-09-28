@@ -11,7 +11,6 @@
 
 import { useEffect } from 'react';
 import { track } from '@/lib/telemetry';
-import { useRelativeTimeTick } from '@/lib/relative-time';
 import type { ActivityFeed } from '@/app/explorer/useActivityFeed';
 import { SkeletonRows } from '@/app/explorer/views';
 import {
@@ -23,7 +22,6 @@ import {
 } from './activity-pane-parts';
 
 export function ActivityPane({ feed }: { feed: ActivityFeed }) {
-  useRelativeTimeTick();
   // Once per visit to the section, not per fetch: the feed re-reads on
   // return-to-tab and a guest signing in, neither of which is a visit.
   useEffect(() => {

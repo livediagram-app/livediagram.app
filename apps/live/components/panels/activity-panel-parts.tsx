@@ -8,9 +8,10 @@
 import { lucideUndo2 } from '@livediagram/icons/lucide';
 import { useEffect, useRef } from 'react';
 import type { ChangeLogEntry } from '@/lib/api-client';
-import { formatRelativeTimeShort, useRelativeTimeTick } from '@/lib/relative-time';
+import { formatRelativeTimeShort, useRelativeNow } from '@/lib/relative-time';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { Glyph, HoverCard, lucideGlyph } from '@livediagram/ui';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Save-status badge that lived in the footer; the Activity panel
 // title is its new home — same factual content, paired with the
@@ -114,8 +115,8 @@ export function ActivityRow({
   onClick: () => void;
 }) {
   // Re-render every 30s so the "2 min ago" string doesn't stick.
-  useRelativeTimeTick();
-  const relative = formatRelativeTimeShort(Date.now() - entry.createdAt);
+  const now = useRelativeNow();
+  const relative = formatRelativeTimeShort(now - entry.createdAt);
   const previewable = canRevert && entry.elementIds.length > 0;
   const hoveringRef = useRef(false);
   const endHover = () => {
@@ -123,12 +124,11 @@ export function ActivityRow({
     hoveringRef.current = false;
     onHoverEnd();
   };
-  const endHoverRef = useRef(endHover);
-  endHoverRef.current = endHover;
+  const endHoverRef = useLatest(endHover);
   // If the row unmounts under the pointer (a peer's op removed the
   // entry, the log got cleared), pointerleave never fires — end the
   // preview here so the canvas doesn't stay stuck on it.
-  useEffect(() => () => endHoverRef.current(), []);
+  useEffect(() => () => endHoverRef.current(), [endHoverRef]);
   return (
     <li
       className="group relative"

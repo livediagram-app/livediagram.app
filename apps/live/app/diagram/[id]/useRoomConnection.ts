@@ -1,4 +1,10 @@
-import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  type Dispatch,
+  type MutableRefObject,
+  type SetStateAction,
+} from 'react';
 import type { QaNote, Tab } from '@livediagram/diagram';
 import {
   CHANGE_LOG_LIST_LIMIT,
@@ -14,7 +20,12 @@ import {
   type RoomHandlers,
 } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
-import { createPresenceCoalescer, type CursorPos, type LaserTrail } from './presence-coalescer';
+import {
+  createPresenceCoalescer,
+  type CursorPos,
+  type LaserTrail,
+  type PresenceCoalescer,
+} from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs } from './room-op-apply';
@@ -40,11 +51,15 @@ export function useRoomConnection(opts: {
   selfParticipant: Participant;
   sessionShareCode: string | null;
   lastSeenRef: MutableRefObject<Map<string, number>>;
+  // Bumps a peer's last-seen (usePresenceState), publishing when they arrive or return from idle.
+  markSeen: (participantId: string) => void;
   selfParticipantRef: MutableRefObject<Participant>;
   // The autosave's baseline (docs/specs/012-collaboration/collab-race-hardening.md): every document op a peer sends is
   // folded into it as well as into the tabs on screen, so the next local save
   // neither mistakes it for ours nor ships it back out.
   saveBaseline: SaveBaselineRefs;
+  // Counts a peer op applied to `tabs` (useEditorState's opsApplied, read by the autosave).
+  countAppliedOp: () => void;
   sessionShareCodeRef: MutableRefObject<string | null>;
   roomRef: MutableRefObject<ReturnType<typeof connectRoom> | null>;
   // Merge a peer's tab / diagram-meta change into the present, PRESERVING
@@ -120,8 +135,10 @@ export function useRoomConnection(opts: {
     selfParticipant,
     sessionShareCode,
     lastSeenRef,
+    markSeen,
     selfParticipantRef,
     saveBaseline,
+    countAppliedOp,
     sessionShareCodeRef,
     roomRef,
     applyRemoteTabs,
@@ -149,6 +166,275 @@ export function useRoomConnection(opts: {
     resyncFromServer,
   } = opts;
 
+  // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
+  // change goes out over the open socket rather than warranting a reconnect.
+  const connectAs = useEffectEvent(() => ({
+    self: {
+      id: selfParticipant.id,
+      key: selfParticipant.key,
+      name: selfParticipant.name,
+      color: selfParticipant.color,
+    },
+    shareCode: sessionShareCode,
+  }));
+  // The facilitator token is read on demand by the room, always as it is now.
+  const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
+
+  // The room's handlers, as effect events: the socket opens once per diagram (the effect below), and each
+  // message still runs against the current props, which is what a handler must see.
+  const roomPresence = useEffectEvent(
+    (participants: Parameters<NonNullable<RoomHandlers['onPresence']>>[0]) => {
+      const now = Date.now();
+      setLivePresence(
+        participants.map((p) => ({
+          id: p.id,
+          // The peer's document-write id (docs/specs/012-collaboration/participant-responses.md), claimed in their
+          // hello and relayed unchanged — it is what joins their saved
+          // answer on a done check / estimate card back to their avatar.
+          // `p.id` cannot: the room mints that per socket (docs/specs/015-api/public-api-and-tokens.md §6),
+          // so it matches nothing that was ever written down.
+          ...(p.key ? { key: p.key } : {}),
+          name: p.name,
+          color: p.color,
+          // Status + lastActiveAt are derived locally rather than
+          // carried on the wire — the server doesn't track idle
+          // time. Seed any peer we haven't seen with `now` so the
+          // hover card reads "Active just now" until their first op
+          // arrives.
+          status: 'online',
+          lastActiveAt: lastSeenRef.current.get(p.id) ?? now,
+          // Role is server-verified (api worker resolved it at WS
+          // upgrade from the share-code / owner-id query params
+          // and stamped it onto the broadcast row). Optional on the
+          // wire so a connection without role info still parses.
+          ...(p.role ? { role: p.role } : {}),
+        })),
+      );
+      // Seed lastSeen for any presence-arrival we haven't tracked yet, publishing it so the next
+      // render has their `lastActiveAt`.
+      for (const p of participants) {
+        if (!lastSeenRef.current.has(p.id)) markSeen(p.id);
+      }
+      // Unique-colour reconciliation. Every client computes the
+      // same allocation on every presence update; we only act when
+      // (a) someone else in the room shares our colour and (b) our
+      // participant id sorts later than theirs — that way only the
+      // later-joining peer yields, the earlier one keeps their
+      // colour, and every client converges on the same assignment
+      // without a server-side allocator. Persisting the new colour
+      // via setSelfParticipant flushes through the autosave effect
+      // and the next hello broadcast carries the fixed colour.
+      // selfParticipantRef instead of selfParticipant because this
+      // effect's deps intentionally omit the participant — without
+      // the ref we'd act on a stale snapshot.
+      const live = selfParticipantRef.current;
+      const me = participants.find((p) => p.id === live.id);
+      if (me) {
+        const conflictHolder = participants.find((p) => p.id !== live.id && p.color === live.color);
+        if (conflictHolder && live.id > conflictHolder.id) {
+          const taken = new Set(participants.filter((p) => p.id !== live.id).map((p) => p.color));
+          const fresh = nextFreeColor(taken, undefined);
+          if (fresh !== live.color) {
+            setSelfParticipant((prev) => ({ ...prev, color: fresh }));
+          }
+        }
+      }
+      // Drop selections AND cursors for any participant who's no
+      // longer connected. Stops stale presence indicators from
+      // sticking after a tab close or network drop.
+      const present = new Set(participants.map((p) => p.id));
+      // Drop tab-focus entries for people who left so their avatar
+      // dot doesn't linger on a tab they no longer occupy, AND seed
+      // from the presence list: the room echoes each peer's current
+      // tab here, so a late joiner immediately sees where everyone
+      // already is instead of defaulting them to the first tab until
+      // they next switch. Skip self — the remote map never holds it
+      // (the live relay excludes the sender), and our own tab is
+      // tracked from local activeId. A fresh Map guarantees re-render.
+      const selfId = selfParticipantRef.current.id;
+      setRemoteTabFocus((prev) => {
+        const next = new Map(pruneMapToPresent(prev, present));
+        for (const p of participants) {
+          if (p.tabId && p.id !== selfId) next.set(p.id, p.tabId);
+        }
+        return next;
+      });
+      setRemoteSelections((prev) => pruneMapToPresent(prev, present));
+      setRemoteCursors((prev) => pruneMapToPresent(prev, present));
+      // A peer who disconnects takes their character with them (docs/specs/008-canvas/avatar-mode.md),
+      // so a closed tab can't leave someone standing on the canvas forever.
+      setRemoteAvatars((prev) => pruneMapToPresent(prev, present));
+      // Same for the lastSeen idle tracker (a plain ref, not state):
+      // drop departed peers so it can't grow unbounded over a
+      // long-lived room with people joining / leaving via share links.
+      for (const id of [...lastSeenRef.current.keys()]) {
+        if (!present.has(id)) lastSeenRef.current.delete(id);
+      }
+    },
+  );
+
+  const roomOp = useEffectEvent(
+    (
+      from: Parameters<NonNullable<RoomHandlers['onOp']>>[0],
+      op: Parameters<NonNullable<RoomHandlers['onOp']>>[1],
+      presence: PresenceCoalescer,
+    ) => {
+      // Any op from a peer counts as "they're still here". Bumps
+      // the idle timer used by the avatar's away/offline status
+      // derivation. Cursor packets are the most frequent so this
+      // doubles as a perfectly fine activity heartbeat.
+      markSeen(from);
+      if (
+        op.kind === 'tab' ||
+        op.kind === 'el' ||
+        op.kind === 'vote' ||
+        op.kind === 'el-delta' ||
+        op.kind === 'tab-meta' ||
+        op.kind === 'diagram-meta'
+      ) {
+        // A document change from a peer: a whole tab, one element (docs/specs/012-collaboration/realtime-conflict-resolution.md),
+        // one dot (docs/specs/012-collaboration/session-tools.md), one answer / idea / tick / comment (docs/specs/012-collaboration/collab-race-hardening.md),
+        // non-element tab fields, or the diagram's name
+        // and tab list. One pure function applies each (room-op-apply.ts),
+        // to the tabs on screen AND to the autosave's baseline, so the
+        // change is known to be the peer's and is never saved or broadcast
+        // back as if it were ours (docs/specs/012-collaboration/collab-race-hardening.md).
+        if (op.kind === 'diagram-meta') setDiagramName(op.name);
+        applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
+        foldRemoteOpIntoBaseline(saveBaseline, op);
+        // In the same batch as the tabs update, so the render that shows the op also counts it.
+        countAppliedOp();
+      } else if (op.kind === 'select') {
+        setRemoteSelections((prev) => {
+          const next = new Map(prev);
+          // tabId scopes the badge + docs/specs/007-editor/live-app.md lock to the sender's tab;
+          // absent (older peer) = tab-unknown, shown everywhere.
+          next.set(from, { elementId: op.elementId, tabId: op.tabId });
+          return next;
+        });
+      } else if (op.kind === 'cursor') {
+        // Coalesced: buffered and committed once per animation frame
+        // (see createPresenceCoalescer). Cursor
+        // packets arrive at up to 30 Hz PER PEER, and a setState per
+        // packet re-rendered the whole editor tree per message.
+        presence.cursor(
+          from,
+          op.x !== null && op.y !== null ? { tabId: op.tabId, x: op.x, y: op.y } : null,
+        );
+      } else if (op.kind === 'laser') {
+        // Same coalescing as cursors; points accumulate in the buffer
+        // and land in one Map commit per frame.
+        presence.laser(from, {
+          tabId: op.tabId,
+          point: { x: op.x, y: op.y, t: performance.now() },
+          // The sender's pen (docs/specs/008-canvas/laser-panel.md), parsed field by field so a token
+          // from a newer client costs that field and not the trail.
+          config: op.look ? parseLaserConfig(op.look) : undefined,
+        });
+      } else if (op.kind === 'avatar') {
+        // Latest-wins per peer (no accumulation, unlike laser points): the
+        // character has one position at a time.
+        presence.avatar(from, op.avatar ? { tabId: op.tabId, avatar: op.avatar } : null);
+      } else if (op.kind === 'viewport') {
+        // Latest-wins per peer, like the avatar: a camera has one position.
+        // Applied straight through rather than batched with the presence
+        // flush — a follower's view should track the presenter's hand, and a
+        // 10 Hz stream needs no coalescing.
+        setRemoteViewports((prev) => {
+          const next = new Map(prev);
+          next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom });
+          return next;
+        });
+      } else if (op.kind === 'avatar-push') {
+        // A shove is ADDRESSED: the room delivers it to the named session and
+        // nobody else, so anything that arrives here was aimed at us. We
+        // can't check that ourselves — peers are identified by server-minted
+        // presence ids precisely so nobody learns anyone's real owner id
+        // (docs/specs/015-api/public-api-and-tokens.md §6), and that includes not recognising our own. Nothing is
+        // written to the document either way: our client decides what to do
+        // with the request, and does nothing if we've left the mode.
+        receiveAvatarPush(op.dx, op.dy);
+      } else if (op.kind === 'reaction') {
+        // No tab check here, unlike the laser: a burst is keyed to the
+        // ELEMENT, and only the active tab's elements are rendered, so a
+        // burst for a pad on another tab has nothing to draw itself on and
+        // expires quietly.
+        receiveReaction(op.elementId, op.reaction);
+      } else if (op.kind === 'focus-here') {
+        // No tab check: the invitation names its own tab and taking it is
+        // what switches you, so one sent from another tab is exactly the
+        // case this element exists for.
+        receiveFocusHere(from, op.tabId, op.at, op.zoom);
+      } else if (op.kind === 'tab-focus') {
+        setRemoteTabFocus((prev) => {
+          const next = new Map(prev);
+          next.set(from, op.tabId);
+          return next;
+        });
+      } else if (op.kind === 'poll-start') {
+        // Live poll (docs/specs/012-collaboration/live-poll.md). Purely ephemeral: it lands in the poll
+        // hook's memory and never touches tabs, autosave, or the change
+        // log, so there is nothing here to persist or undo.
+        receivePoll(op.poll);
+      } else if (op.kind === 'poll-answer') {
+        // `from` keys the answer so a peer changing their mind replaces
+        // it. It is never rendered — results carry no identity.
+        receivePollAnswer(from, op.pollId, op.value, op.key);
+      } else if (op.kind === 'poll-end') {
+        receivePollEnd(op.pollId);
+      } else if (op.kind === 'log') {
+        // Remote participant just emitted an audit entry. Prepend it
+        // to the local list (de-duped by id so a sender that round-
+        // trips its own op doesn't show a duplicate). Cap at the same
+        // limit the server hydrates so the panel stays consistent.
+        setChangeLog((prev) => {
+          if (prev.some((e) => e.id === op.entry.id)) return prev;
+          return [op.entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT);
+        });
+      } else if (op.kind === 'log-remove') {
+        setChangeLog((prev) => prev.filter((e) => e.id !== op.entryId));
+      } else if (op.kind === 'qa') {
+        // The api's word on a Q&A board (docs/specs/012-collaboration/qa-board.md). System-only: the worker
+        // sends it through /broadcast after the write is already in D1, and
+        // the room refuses it from a client socket, so the sender check is
+        // defence in depth like share-revoked's below.
+        if (from === 'system') receiveQa(op.tabId, op.elementId, op.notes, op.rev);
+      } else if (op.kind === 'share-revoked' || op.kind === 'share-rescoped') {
+        // The owner revoked or rescoped a share link (share-link-ops.ts).
+        // A session hydrated with that exact code leaves the editor on a
+        // revoke and reloads into the new scope on a rescope; the room
+        // closes its socket either way. Everyone else keeps their session.
+        const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
+        if (effect === 'leave') window.location.assign('/explorer');
+        else if (effect === 'reload') window.location.reload();
+      } else if (op.kind === 'diagram-trashed') {
+        // The diagram went to the Trash. System-only, like the share ops:
+        // the room refuses it from a client socket.
+        if (from === 'system') receiveDiagramTrashed();
+      }
+    },
+  );
+
+  const roomFacilitator = useEffectEvent(
+    (msg: Parameters<NonNullable<RoomHandlers['onFacilitator']>>[0]) => receiveFacilitator(msg),
+  );
+
+  const roomSelectionReleased = useEffectEvent(
+    (msg: Parameters<NonNullable<RoomHandlers['onSelectionReleased']>>[0]) =>
+      receiveSelectionReleased(msg),
+  );
+
+  const roomDiagramTrashed = useEffectEvent(() => receiveDiagramTrashed());
+  const roomResync = useEffectEvent(() => {
+    // The room couldn't bridge our reconnect gap from its op log
+    // (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1) -- we fell too far behind or it restarted.
+    // Re-fetch the tab rows from D1 IN PLACE (docs/specs/012-collaboration/resync-without-reload.md). This used to
+    // be a full page reload, on the assumption it was rare; live
+    // telemetry said otherwise, and a reload also destroyed the
+    // viewport, selection, and undo history to fix stale content.
+    void resyncFromServer();
+  });
+
   useEffect(() => {
     // Open the realtime room for a shared diagram OR a team diagram
     // (docs/specs/013-workspace/team-shared-diagrams.md): team members collaborate live on a team diagram with
@@ -170,245 +456,12 @@ export function useRoomConnection(opts: {
     });
 
     const handlers: RoomHandlers = {
-      onPresence: (participants) => {
-        const now = Date.now();
-        setLivePresence(
-          participants.map((p) => ({
-            id: p.id,
-            // The peer's document-write id (docs/specs/012-collaboration/participant-responses.md), claimed in their
-            // hello and relayed unchanged — it is what joins their saved
-            // answer on a done check / estimate card back to their avatar.
-            // `p.id` cannot: the room mints that per socket (docs/specs/015-api/public-api-and-tokens.md §6),
-            // so it matches nothing that was ever written down.
-            ...(p.key ? { key: p.key } : {}),
-            name: p.name,
-            color: p.color,
-            // Status + lastActiveAt are derived locally rather than
-            // carried on the wire — the server doesn't track idle
-            // time. Seed any peer we haven't seen with `now` so the
-            // hover card reads "Active just now" until their first op
-            // arrives.
-            status: 'online',
-            lastActiveAt: lastSeenRef.current.get(p.id) ?? now,
-            // Role is server-verified (api worker resolved it at WS
-            // upgrade from the share-code / owner-id query params
-            // and stamped it onto the broadcast row). Optional on the
-            // wire so a connection without role info still parses.
-            ...(p.role ? { role: p.role } : {}),
-          })),
-        );
-        // Seed lastSeen for any presence-arrival we haven't tracked
-        // yet — without this the next render still shows
-        // `lastActiveAt = undefined` because the merge happens
-        // synchronously above before the ref write.
-        for (const p of participants) {
-          if (!lastSeenRef.current.has(p.id)) {
-            lastSeenRef.current.set(p.id, now);
-          }
-        }
-        // Unique-colour reconciliation. Every client computes the
-        // same allocation on every presence update; we only act when
-        // (a) someone else in the room shares our colour and (b) our
-        // participant id sorts later than theirs — that way only the
-        // later-joining peer yields, the earlier one keeps their
-        // colour, and every client converges on the same assignment
-        // without a server-side allocator. Persisting the new colour
-        // via setSelfParticipant flushes through the autosave effect
-        // and the next hello broadcast carries the fixed colour.
-        // selfParticipantRef instead of selfParticipant because this
-        // effect's deps intentionally omit the participant — without
-        // the ref we'd act on a stale snapshot.
-        const live = selfParticipantRef.current;
-        const me = participants.find((p) => p.id === live.id);
-        if (me) {
-          const conflictHolder = participants.find(
-            (p) => p.id !== live.id && p.color === live.color,
-          );
-          if (conflictHolder && live.id > conflictHolder.id) {
-            const taken = new Set(participants.filter((p) => p.id !== live.id).map((p) => p.color));
-            const fresh = nextFreeColor(taken, undefined);
-            if (fresh !== live.color) {
-              setSelfParticipant((prev) => ({ ...prev, color: fresh }));
-            }
-          }
-        }
-        // Drop selections AND cursors for any participant who's no
-        // longer connected. Stops stale presence indicators from
-        // sticking after a tab close or network drop.
-        const present = new Set(participants.map((p) => p.id));
-        // Drop tab-focus entries for people who left so their avatar
-        // dot doesn't linger on a tab they no longer occupy, AND seed
-        // from the presence list: the room echoes each peer's current
-        // tab here, so a late joiner immediately sees where everyone
-        // already is instead of defaulting them to the first tab until
-        // they next switch. Skip self — the remote map never holds it
-        // (the live relay excludes the sender), and our own tab is
-        // tracked from local activeId. A fresh Map guarantees re-render.
-        const selfId = selfParticipantRef.current.id;
-        setRemoteTabFocus((prev) => {
-          const next = new Map(pruneMapToPresent(prev, present));
-          for (const p of participants) {
-            if (p.tabId && p.id !== selfId) next.set(p.id, p.tabId);
-          }
-          return next;
-        });
-        setRemoteSelections((prev) => pruneMapToPresent(prev, present));
-        setRemoteCursors((prev) => pruneMapToPresent(prev, present));
-        // A peer who disconnects takes their character with them (docs/specs/008-canvas/avatar-mode.md),
-        // so a closed tab can't leave someone standing on the canvas forever.
-        setRemoteAvatars((prev) => pruneMapToPresent(prev, present));
-        // Same for the lastSeen idle tracker (a plain ref, not state):
-        // drop departed peers so it can't grow unbounded over a
-        // long-lived room with people joining / leaving via share links.
-        for (const id of [...lastSeenRef.current.keys()]) {
-          if (!present.has(id)) lastSeenRef.current.delete(id);
-        }
-      },
-      onOp: (from, op) => {
-        // Any op from a peer counts as "they're still here". Bumps
-        // the idle timer used by the avatar's away/offline status
-        // derivation. Cursor packets are the most frequent so this
-        // doubles as a perfectly fine activity heartbeat.
-        lastSeenRef.current.set(from, Date.now());
-        if (
-          op.kind === 'tab' ||
-          op.kind === 'el' ||
-          op.kind === 'vote' ||
-          op.kind === 'el-delta' ||
-          op.kind === 'tab-meta' ||
-          op.kind === 'diagram-meta'
-        ) {
-          // A document change from a peer: a whole tab, one element (docs/specs/012-collaboration/realtime-conflict-resolution.md),
-          // one dot (docs/specs/012-collaboration/session-tools.md), one answer / idea / tick / comment (docs/specs/012-collaboration/collab-race-hardening.md),
-          // non-element tab fields, or the diagram's name
-          // and tab list. One pure function applies each (room-op-apply.ts),
-          // to the tabs on screen AND to the autosave's baseline, so the
-          // change is known to be the peer's and is never saved or broadcast
-          // back as if it were ours (docs/specs/012-collaboration/collab-race-hardening.md).
-          if (op.kind === 'diagram-meta') setDiagramName(op.name);
-          applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
-          foldRemoteOpIntoBaseline(saveBaseline, op);
-        } else if (op.kind === 'select') {
-          setRemoteSelections((prev) => {
-            const next = new Map(prev);
-            // tabId scopes the badge + docs/specs/007-editor/live-app.md lock to the sender's tab;
-            // absent (older peer) = tab-unknown, shown everywhere.
-            next.set(from, { elementId: op.elementId, tabId: op.tabId });
-            return next;
-          });
-        } else if (op.kind === 'cursor') {
-          // Coalesced: buffered and committed once per animation frame
-          // (see createPresenceCoalescer). Cursor
-          // packets arrive at up to 30 Hz PER PEER, and a setState per
-          // packet re-rendered the whole editor tree per message.
-          presence.cursor(
-            from,
-            op.x !== null && op.y !== null ? { tabId: op.tabId, x: op.x, y: op.y } : null,
-          );
-        } else if (op.kind === 'laser') {
-          // Same coalescing as cursors; points accumulate in the buffer
-          // and land in one Map commit per frame.
-          presence.laser(from, {
-            tabId: op.tabId,
-            point: { x: op.x, y: op.y, t: performance.now() },
-            // The sender's pen (docs/specs/008-canvas/laser-panel.md), parsed field by field so a token
-            // from a newer client costs that field and not the trail.
-            config: op.look ? parseLaserConfig(op.look) : undefined,
-          });
-        } else if (op.kind === 'avatar') {
-          // Latest-wins per peer (no accumulation, unlike laser points): the
-          // character has one position at a time.
-          presence.avatar(from, op.avatar ? { tabId: op.tabId, avatar: op.avatar } : null);
-        } else if (op.kind === 'viewport') {
-          // Latest-wins per peer, like the avatar: a camera has one position.
-          // Applied straight through rather than batched with the presence
-          // flush — a follower's view should track the presenter's hand, and a
-          // 10 Hz stream needs no coalescing.
-          setRemoteViewports((prev) => {
-            const next = new Map(prev);
-            next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom });
-            return next;
-          });
-        } else if (op.kind === 'avatar-push') {
-          // A shove is ADDRESSED: the room delivers it to the named session and
-          // nobody else, so anything that arrives here was aimed at us. We
-          // can't check that ourselves — peers are identified by server-minted
-          // presence ids precisely so nobody learns anyone's real owner id
-          // (docs/specs/015-api/public-api-and-tokens.md §6), and that includes not recognising our own. Nothing is
-          // written to the document either way: our client decides what to do
-          // with the request, and does nothing if we've left the mode.
-          receiveAvatarPush(op.dx, op.dy);
-        } else if (op.kind === 'reaction') {
-          // No tab check here, unlike the laser: a burst is keyed to the
-          // ELEMENT, and only the active tab's elements are rendered, so a
-          // burst for a pad on another tab has nothing to draw itself on and
-          // expires quietly.
-          receiveReaction(op.elementId, op.reaction);
-        } else if (op.kind === 'focus-here') {
-          // No tab check: the invitation names its own tab and taking it is
-          // what switches you, so one sent from another tab is exactly the
-          // case this element exists for.
-          receiveFocusHere(from, op.tabId, op.at, op.zoom);
-        } else if (op.kind === 'tab-focus') {
-          setRemoteTabFocus((prev) => {
-            const next = new Map(prev);
-            next.set(from, op.tabId);
-            return next;
-          });
-        } else if (op.kind === 'poll-start') {
-          // Live poll (docs/specs/012-collaboration/live-poll.md). Purely ephemeral: it lands in the poll
-          // hook's memory and never touches tabs, autosave, or the change
-          // log, so there is nothing here to persist or undo.
-          receivePoll(op.poll);
-        } else if (op.kind === 'poll-answer') {
-          // `from` keys the answer so a peer changing their mind replaces
-          // it. It is never rendered — results carry no identity.
-          receivePollAnswer(from, op.pollId, op.value, op.key);
-        } else if (op.kind === 'poll-end') {
-          receivePollEnd(op.pollId);
-        } else if (op.kind === 'log') {
-          // Remote participant just emitted an audit entry. Prepend it
-          // to the local list (de-duped by id so a sender that round-
-          // trips its own op doesn't show a duplicate). Cap at the same
-          // limit the server hydrates so the panel stays consistent.
-          setChangeLog((prev) => {
-            if (prev.some((e) => e.id === op.entry.id)) return prev;
-            return [op.entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT);
-          });
-        } else if (op.kind === 'log-remove') {
-          setChangeLog((prev) => prev.filter((e) => e.id !== op.entryId));
-        } else if (op.kind === 'qa') {
-          // The api's word on a Q&A board (docs/specs/012-collaboration/qa-board.md). System-only: the worker
-          // sends it through /broadcast after the write is already in D1, and
-          // the room refuses it from a client socket, so the sender check is
-          // defence in depth like share-revoked's below.
-          if (from === 'system') receiveQa(op.tabId, op.elementId, op.notes, op.rev);
-        } else if (op.kind === 'share-revoked' || op.kind === 'share-rescoped') {
-          // The owner revoked or rescoped a share link (share-link-ops.ts).
-          // A session hydrated with that exact code leaves the editor on a
-          // revoke and reloads into the new scope on a rescope; the room
-          // closes its socket either way. Everyone else keeps their session.
-          const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
-          if (effect === 'leave') window.location.assign('/explorer');
-          else if (effect === 'reload') window.location.reload();
-        } else if (op.kind === 'diagram-trashed') {
-          // The diagram went to the Trash. System-only, like the share ops:
-          // the room refuses it from a client socket.
-          if (from === 'system') receiveDiagramTrashed();
-        }
-      },
-      onFacilitator: (msg) => receiveFacilitator(msg),
-      onSelectionReleased: (msg) => receiveSelectionReleased(msg),
-      onDiagramTrashed: () => receiveDiagramTrashed(),
-      onResync: () => {
-        // The room couldn't bridge our reconnect gap from its op log
-        // (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1) -- we fell too far behind or it restarted.
-        // Re-fetch the tab rows from D1 IN PLACE (docs/specs/012-collaboration/resync-without-reload.md). This used to
-        // be a full page reload, on the assumption it was rare; live
-        // telemetry said otherwise, and a reload also destroyed the
-        // viewport, selection, and undo history to fix stale content.
-        void resyncFromServer();
-      },
+      onPresence: (participants) => roomPresence(participants),
+      onOp: (from, op) => roomOp(from, op, presence),
+      onFacilitator: (msg) => roomFacilitator(msg),
+      onSelectionReleased: (msg) => roomSelectionReleased(msg),
+      onDiagramTrashed: () => roomDiagramTrashed(),
+      onResync: () => roomResync(),
     };
     // Team diagrams need a one-time room ticket (docs/specs/015-api/api.md): membership is
     // keyed on the VERIFIED Clerk id, which a WS upgrade can't carry, so
@@ -420,33 +473,29 @@ export function useRoomConnection(opts: {
     let cancelled = false;
     let openedRoom: ReturnType<typeof connectRoom> | null = null;
     void (async () => {
+      const { self, shareCode } = connectAs();
       const ticket = diagramTeamId
-        ? await apiCreateRoomTicket(selfParticipant.id, diagramId, sessionShareCode)
+        ? await apiCreateRoomTicket(self.id, diagramId, shareCode)
         : null;
       if (cancelled) return;
       openedRoom = connectRoom(
         diagramId,
-        {
-          id: selfParticipant.id,
-          key: selfParticipant.key,
-          name: selfParticipant.name,
-          color: selfParticipant.color,
-        },
+        self,
         handlers,
         {
           // The api worker resolves role from these on WS upgrade and
           // stamps it into the participant row via X-Verified-Role so
           // peers see a trustworthy Viewer / Editor badge.
           ticket,
-          shareCode: sessionShareCode,
+          shareCode,
           // Always send our own id as `o`: the worker checks it against
           // the diagram's owner to resolve the edit role (team membership
           // rides the ticket above instead — a bare id isn't trusted for
           // it). A share-link visitor's id just won't match, and their
           // role comes from the code.
-          ownerId: selfParticipant.id,
+          ownerId: self.id,
         },
-        readFacilitatorToken,
+        roomReadFacilitatorToken,
       );
       roomRef.current = openedRoom;
     })();
@@ -456,9 +505,16 @@ export function useRoomConnection(opts: {
       openedRoom?.close();
       roomRef.current = null;
     };
-    // selfParticipant.id is stable across the session; name/color
-    // changes don't warrant a reconnect. Deliberately omitted from
-    // the dep list.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, diagramId, diagramShareable, diagramTeamId]);
+  }, [
+    hydrated,
+    diagramId,
+    diagramShareable,
+    diagramTeamId,
+    roomRef,
+    setLivePresence,
+    setRemoteSelections,
+    setRemoteCursors,
+    setRemoteLaserTrails,
+    setRemoteAvatars,
+  ]);
 }

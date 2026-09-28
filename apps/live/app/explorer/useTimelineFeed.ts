@@ -149,12 +149,13 @@ export function useTimelineFeed(
   //               the stretch the page covers it is authoritative
   //               (reconcileEvents), so a card the server has since
   //               swept or the reader dismissed elsewhere goes too.
-  const load = useCallback(
-    async (mode: 'replace' | 'merge') => {
-      if (!ownerId) return;
+  //
+  // The read settles state only from its response, so the load effect below
+  // only starts it; `load` adds the skeleton for a replace asked for later.
+  const fetchFirstPage = useCallback(
+    (owner: string, mode: 'replace' | 'merge') => {
       const id = (requestId.current += 1);
       if (mode === 'replace') {
-        setLoading(true);
         // A replace is a new feed (or a deliberate re-read), which is
         // exactly when the period cache below stops applying: it
         // remembers which periods have been fetched keyed on the period
@@ -167,55 +168,73 @@ export function useTimelineFeed(
         // nothing was thrown away, so nothing needs re-fetching.
         fetchedRanges.current.clear();
       }
-      const page = await apiListTimeline(ownerId, {
+      return apiListTimeline(owner, {
         limit: TIMELINE_PAGE_SIZE,
         scope: stableScope,
-      });
-      if (id !== requestId.current) return;
-      if (!page) {
-        setError(true);
-        setLoading(false);
-        // A 'merge' keeps everything it had — a stale feed beats an
-        // alarm, and the next return to the tab re-reads it. A
-        // 'replace' has nothing legitimate to keep: the list on screen
-        // either belongs to the feed we just navigated away from, or is
-        // the empty one the reader pressed Try again about. Either way
-        // the pane now shows the failed state rather than claiming the
-        // feed is empty (docs/specs/013-workspace/timeline.md §2.4).
-        if (mode === 'replace') {
-          setEvents([]);
-          setCursor(undefined);
+      }).then((page) => {
+        if (id !== requestId.current) return;
+        if (!page) {
+          setError(true);
+          setLoading(false);
+          // A 'merge' keeps everything it had — a stale feed beats an
+          // alarm, and the next return to the tab re-reads it. A
+          // 'replace' has nothing legitimate to keep: the list on screen
+          // either belongs to the feed we just navigated away from, or is
+          // the empty one the reader pressed Try again about. Either way
+          // the pane now shows the failed state rather than claiming the
+          // feed is empty (docs/specs/013-workspace/timeline.md §2.4).
+          if (mode === 'replace') {
+            setEvents([]);
+            setCursor(undefined);
+          }
+          return;
         }
-        return;
-      }
-      setError(false);
-      if (mode === 'replace') {
-        setEvents(page.events);
-        setCursor(page.nextCursor);
-      } else {
-        setEvents((prev) => reconcileEvents(prev, page));
-        // The cursor is a keyset position at the TAIL of what's loaded,
-        // so events arriving at the head don't invalidate it. Replacing
-        // it here would re-page ground the reader already has. The one
-        // case that DOES need it is recovering from a first read that
-        // never landed: there is no tail yet, so take this page's.
-        setCursor((prev) => prev ?? page.nextCursor);
-      }
-      // First value wins. The server holds the watermark still for a
-      // visit window, but a re-read — triggered by the owner id
-      // changing, or by coming back to the tab — would otherwise
-      // replace it with a newer one and drop the New markers the reader
-      // hasn't looked at yet.
-      setLastSeenAt((prev) => prev ?? page.lastSeenAt);
-      setLoading(false);
+        setError(false);
+        if (mode === 'replace') {
+          setEvents(page.events);
+          setCursor(page.nextCursor);
+        } else {
+          setEvents((prev) => reconcileEvents(prev, page));
+          // The cursor is a keyset position at the TAIL of what's loaded,
+          // so events arriving at the head don't invalidate it. Replacing
+          // it here would re-page ground the reader already has. The one
+          // case that DOES need it is recovering from a first read that
+          // never landed: there is no tail yet, so take this page's.
+          setCursor((prev) => prev ?? page.nextCursor);
+        }
+        // First value wins. The server holds the watermark still for a
+        // visit window, but a re-read — triggered by the owner id
+        // changing, or by coming back to the tab — would otherwise
+        // replace it with a newer one and drop the New markers the reader
+        // hasn't looked at yet.
+        setLastSeenAt((prev) => prev ?? page.lastSeenAt);
+        setLoading(false);
+      });
     },
-    [ownerId, stableScope],
+    [stableScope],
   );
 
+  const load = useCallback(
+    async (mode: 'replace' | 'merge') => {
+      if (!ownerId) return;
+      if (mode === 'replace') setLoading(true);
+      await fetchFirstPage(ownerId, mode);
+    },
+    [ownerId, fetchFirstPage],
+  );
+
+  // A different feed shows the skeleton from its first render.
+  const feedOwner = enabled ? ownerId : null;
+  const feedKey = feedOwner ? `${feedOwner}\0${scopeKey}` : null;
+  const [loadingFeed, setLoadingFeed] = useState(feedKey);
+  if (feedKey !== loadingFeed) {
+    setLoadingFeed(feedKey);
+    if (feedKey) setLoading(true);
+  }
+
   useEffect(() => {
-    if (!enabled || !ownerId) return;
-    void load('replace');
-  }, [enabled, ownerId, scopeKey, load]);
+    if (feedOwner) void fetchFirstPage(feedOwner, 'replace');
+  }, [feedOwner, fetchFirstPage]);
 
   // Coming back to a tab that has been open since yesterday (docs/specs/013-workspace/timeline.md
   // §2.4a). Also how a feed that failed to load heals itself without

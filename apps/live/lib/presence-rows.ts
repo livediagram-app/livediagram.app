@@ -49,7 +49,7 @@ export function buildParticipantsByTab(input: {
   remoteTabFocus: Map<string, string>;
   livePresence: Participant[];
   livePresenceById: Map<string, Participant>;
-  lastSeen: Map<string, number>;
+  lastSeen: ReadonlyMap<string, number>;
   now: number;
 }): Map<string, Participant[]> {
   const {

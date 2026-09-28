@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, dismissQuickTour, expectNoPageErrors } from './fixtures';
+import { expect, test, expectNoPageErrors, openJustDraw } from './fixtures';
 
 // Palette drag-to-canvas (docs/specs/010-palette/palette-drag-ghost.md) from the Toolbar layout's strip
 // (docs/specs/007-editor/toolbar-layout.md): a row found by searching the More popover drags onto the
@@ -13,18 +13,7 @@ async function openToolbarBoard(page: Page): Promise<void> {
     const prefs = JSON.parse(localStorage.getItem(key) ?? '{}');
     localStorage.setItem(key, JSON.stringify({ ...prefs, panelLayout: 'toolbar' }));
   });
-  await page.goto('/new');
-  // Retried: on a cold dev server the first click can land before hydration.
-  // A click that already worked leaves the wizard, so the retry only waits for
-  // the canvas then: clicking again would look for a button that is gone.
-  const canvas = page.locator(CANVAS);
-  await expect(async () => {
-    if (!(await canvas.isVisible())) {
-      await page.getByRole('button', { name: /^just draw$/i }).click({ timeout: 2_000 });
-    }
-    await canvas.waitFor({ timeout: 3_000 });
-  }).toPass({ timeout: 20_000 });
-  await dismissQuickTour(page);
+  await openJustDraw(page);
 }
 
 async function searchMore(page: Page, query: string): Promise<void> {

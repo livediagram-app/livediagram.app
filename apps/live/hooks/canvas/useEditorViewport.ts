@@ -8,10 +8,11 @@
 // useEditorDrag so the helpers always read fresh tab elements
 // without re-creating themselves on every parent render.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/diagram';
 import { computeFitToScreen, computeViewportCenter } from '@/lib/viewport';
 import { viewIsCentredOn } from '@/lib/focus-audience';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Breakpoint at which we initialise the viewport at 60% zoom rather
 // than 100%, so a mobile visitor lands on a usable overview instead
@@ -115,14 +116,12 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   useEffect(() => {
     viewportOffsetRef.current = viewportOffset;
   }, [viewportOffset]);
-
   // depsRef means the helpers below can be stable across renders
   // (useCallback empty-dep) AND always read the latest activeTab.
   // The drag hook is the only consumer that holds a long-lived
   // reference; everyone else calls into the helpers fresh each
   // time, so this is mostly defensive.
-  const depsRef = useRef(deps);
-  depsRef.current = deps;
+  const depsRef = useLatest(deps);
 
   const getViewportCenter = useCallback(() => {
     const rect = canvasMainRef.current?.getBoundingClientRect();
@@ -225,6 +224,10 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // move / resize / remote change doesn't trigger it.
   const prevIdsRef = useRef<Set<string>>(new Set());
   const offFirstRunRef = useRef(true);
+  // The scroll is the response, not a trigger: an effect event.
+  const scrollToNew = useEffectEvent((x: number, y: number, w: number, h: number) =>
+    scrollIntoView(x, y, w, h),
+  );
   useEffect(() => {
     const els = deps.activeTab.elements;
     const ids = new Set(els.map((el) => el.id));
@@ -240,8 +243,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     if (!sel || prev.has(sel) || !ids.has(sel)) return;
     const el = els.find((e) => e.id === sel);
     if (!el || !isBoxed(el)) return;
-    scrollIntoView(el.x, el.y, el.width, el.height);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    scrollToNew(el.x, el.y, el.width, el.height);
   }, [deps.activeTab.elements, deps.selectedId]);
 
   const fitToScreen = useCallback(() => {
@@ -259,7 +261,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     const { zoom, offset } = computeFitToScreen(rect, bbox);
     setViewportZoom(zoom);
     setViewportOffset(offset);
-  }, []);
+  }, [depsRef]);
 
   // Frame an ARBITRARY rectangle, which is what presenting a slide needs
   // (docs/specs/012-collaboration/presentation-mode.md): the deck decides what is on screen, so the box to fit is the

@@ -14,13 +14,13 @@ import {
 // steps out of it. One function behind both the portal face's click and the
 // avatar's walk-in, so the two can't drift apart.
 //
-// A plain factory rather than a hook, called on each render with fresh values.
-// That is deliberate: the avatar hook needs `enterPortal` (for the walk-in) and
-// `enterPortal` needs the avatar hook (to place the character), so the canvas
-// breaks the cycle with a ref it repoints every render. A hook here would have
-// to own that ref and would still be called after the avatar hook, which is the
-// half of the cycle that cannot move. Keeping it a factory leaves the ref
-// visible at the seam where the cycle actually is.
+// A hook that owns no state: it builds the two actions from this render's values.
+// It is a hook because it is handed the viewport ref, which it reads only when
+// somebody travels, never while rendering; a hook boundary is where that is
+// allowed (docs/specs/003-system-architecture/react-state-and-effects.md). The
+// avatar hook needs `enterPortal` (for the walk-in) and `enterPortal` needs the
+// avatar hook (to place the character), so the canvas breaks that cycle with a
+// latest-value ref, visible at the seam where the cycle actually is.
 
 export type PortalTravelDeps = {
   /** The active tab's elements — the fallback when there are no tabs to search. */
@@ -42,7 +42,7 @@ export type PortalTravelDeps = {
   teleportTo: (point: { x: number; y: number }, ignorePortalId: string) => void;
 };
 
-export function makePortalTravel({
+export function usePortalTravel({
   elements,
   tabs,
   activeTabId,

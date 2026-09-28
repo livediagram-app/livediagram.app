@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useRef, useState, type RefObject } from 'react';
 import {
   clearCellStyle,
   setCellStyle,
@@ -13,7 +13,7 @@ import { track } from '@/lib/telemetry';
 // The cell-selection slice (docs/specs/008-canvas/canvas-and-palette.md multi-cell selection + the per-cell
 // context menu), lifted out of TableView: the anchor + shift-click
 // extras, the menu's screen position, the long-press that opens it on
-// touch, the whole-selection style / clear commits, and the effects
+// touch, the whole-selection style / clear commits, and the adjustments
 // that clamp or close the selection as the grid changes. TableView
 // mounts the returned state into its cell context and control layer.
 export function useTableCellSelection({
@@ -124,38 +124,47 @@ export function useTableCellSelection({
     setCellMenuPos(menuPositionFor(inSelection ? selectionCells() : [cell]));
   });
 
-  useEffect(() => {
-    // After a row/column delete a stale selection can point past the
-    // grid — the per-cell toolbar would then float over a non-existent
-    // CSS track and target an out-of-range cell. Clamp it (which also
-    // hides the toolbar) so it can't act on a cell that no longer exists.
-    setSelectedCell((s) => (s && (s.r >= rows || s.c >= cols) ? null : s));
-    setExtraCells((prev) => {
-      const next = new Set(
-        [...prev].filter((k) => {
-          const [r, c] = k.split(':').map(Number);
-          return (r ?? rows) < rows && (c ?? cols) < cols;
-        }),
-      );
-      return next.size === prev.size ? prev : next;
-    });
-  }, [rows, cols]);
+  // The adjustments below react to a CHANGE of their input, made while
+  // rendering (docs/specs/003-system-architecture/react-state-and-effects.md):
+  // each compares against the input it last saw, kept in state.
+  //
+  // After a row/column delete a stale selection can point past the
+  // grid — the per-cell toolbar would then float over a non-existent
+  // CSS track and target an out-of-range cell. Clamp it (which also
+  // hides the toolbar) so it can't act on a cell that no longer exists.
+  const [seenGrid, setSeenGrid] = useState({ rows, cols });
+  if (seenGrid.rows !== rows || seenGrid.cols !== cols) {
+    setSeenGrid({ rows, cols });
+    if (selectedCell && (selectedCell.r >= rows || selectedCell.c >= cols)) setSelectedCell(null);
+    const kept = new Set(
+      [...extraCells].filter((k) => {
+        const [r, c] = k.split(':').map(Number);
+        return (r ?? rows) < rows && (c ?? cols) < cols;
+      }),
+    );
+    if (kept.size !== extraCells.size) setExtraCells(kept);
+  }
 
   // The cell menu belongs to its opening gesture: editing or losing the
   // anchor closes it rather than leaving it over a stale cell. Editing also
   // collapses the shift-click extras — a double-click edit targets one cell.
-  useEffect(() => {
+  const [seenAnchor, setSeenAnchor] = useState({ selectedCell, editing });
+  if (seenAnchor.selectedCell !== selectedCell || seenAnchor.editing !== editing) {
+    setSeenAnchor({ selectedCell, editing });
     if (!selectedCell || editing) setCellMenuPos(null);
-    if (editing) setExtraCells((prev) => (prev.size ? new Set() : prev));
-  }, [selectedCell, editing]);
+    if (editing && extraCells.size) setExtraCells(new Set());
+  }
 
-  useEffect(() => {
+  // Deselecting the table clears its cell selection and menu.
+  const [seenSelected, setSeenSelected] = useState(isSelected);
+  if (seenSelected !== isSelected) {
+    setSeenSelected(isSelected);
     if (!isSelected) {
       setSelectedCell(null);
       setExtraCells(new Set());
       setCellMenuPos(null);
     }
-  }, [isSelected]);
+  }
 
   // Apply one style patch to EVERY selected cell in a single commit —
   // sequential commits would each read the same stale element and clobber

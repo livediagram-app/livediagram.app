@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Touch long-press detector. Touch devices never fire `contextmenu`, so a
 // press-and-hold is the conventional way to open an element's context menu
@@ -34,8 +35,7 @@ export function useLongPress(onLongPress: (clientX: number, clientY: number) => 
   }>({ fire: null, reveal: null });
   const [pressPoint, setPressPoint] = useState<{ x: number; y: number } | null>(null);
   // Read the latest callback without re-arming listeners each render.
-  const cbRef = useRef(onLongPress);
-  cbRef.current = onLongPress;
+  const cbRef = useLatest(onLongPress);
 
   const clearTimers = () => {
     if (timers.current.fire !== null) clearTimeout(timers.current.fire);

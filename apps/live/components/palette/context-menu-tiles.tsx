@@ -7,7 +7,7 @@
 // live here; the Progress picker stays in EditorContextMenu (it pairs with the
 // local MenuToggleRow) but reuses TileLabel + SpeedTiles from this module.
 
-import { useRef, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   ANIMATION_SPEEDS,
   ARROW_FLOWS,
@@ -44,15 +44,15 @@ const NOOP = () => {};
 // mutates, so without this, hovering a tile would flip the Speed row on/off and
 // reflow the menu — and a bottom-anchored menu growing upward slides a different
 // tile under the cursor before the click lands, committing the wrong one (the
-// reported race). The ref captures the committed value at open (useRef ignores
+// reported race). The state captures the committed value at open (useState ignores
 // later args) and only changes on a real pick, so hovering never reflows.
 function useSpeedRowGate<T>(committed: T | null, onSet: (v: T | null) => void) {
-  const ref = useRef(committed);
+  const [picked, setPicked] = useState(committed);
   const handleSet = (v: T | null) => {
-    ref.current = v;
+    setPicked(v);
     onSet(v);
   };
-  return { showSpeed: ref.current !== null, handleSet };
+  return { showSpeed: picked !== null, handleSet };
 }
 
 // Prepend the "None" option to a kinds list for the picker tile grids. The

@@ -3,6 +3,7 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { clamp } from '@livediagram/diagram';
 import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Wheel + touch viewport gestures on the canvas:
 //   - Pinch-to-zoom on touch screens + trackpad pinch / Ctrl- or
@@ -42,8 +43,7 @@ type Api = {
 };
 
 export function useCanvasPinchZoom(deps: Deps): Api {
-  const depsRef = useRef(deps);
-  depsRef.current = deps;
+  const depsRef = useLatest(deps);
   const isPinchingRef = useRef(false);
 
   useEffect(() => {
@@ -200,7 +200,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       document.removeEventListener('touchcancel', onTouchEnd);
       document.removeEventListener('wheel', onWheel, { capture: true });
     };
-  }, []); // stable — all mutable state read through depsRef at call time
+  }, [depsRef]); // stable — all mutable state read through depsRef at call time
 
   return { isPinchingRef };
 }

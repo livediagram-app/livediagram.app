@@ -8,6 +8,7 @@ import type { ApiToken } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { EmptyState, Tooltip, Glyph } from '@livediagram/ui';
 import { TOKEN_REVOKE_MESSAGE } from './token-copy';
+import { useRelativeNow } from '@/lib/relative-time';
 
 const DAY = 86_400_000;
 const EXPIRES_SOON = 14 * DAY;
@@ -70,6 +71,7 @@ export function TokensPane({
   error: string | null;
   onRevoke: (id: string) => void;
 }) {
+  const now = useRelativeNow();
   const [confirm, setConfirm] = useState<{ id: string; anchor: HTMLElement } | null>(null);
 
   return (
@@ -94,7 +96,7 @@ export function TokensPane({
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {tokens.map((t) => {
             const status = tokenStatus(t);
-            const expired = t.expiresAt - Date.now() <= 0;
+            const expired = t.expiresAt - now <= 0;
             const rows: [string, string][] = [
               ['Created', fmtDate(t.createdAt)],
               ['Last used', t.lastUsedAt ? relative(t.lastUsedAt) : 'Never'],

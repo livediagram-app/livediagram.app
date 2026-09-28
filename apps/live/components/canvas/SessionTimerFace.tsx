@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { DialTicks } from '@/components/canvas/paper-kit';
 
 import { formatTimerClock, timerDone, type TabTimer } from '@livediagram/diagram';
@@ -16,6 +15,7 @@ import {
   ElementMenuSettingsRow,
 } from '@/components/canvas/ElementEllipsisMenu';
 import { SessionTimerSettings } from '@/components/canvas/SessionElementSettings';
+import { useNow } from '@/hooks/ui/useNow';
 
 // The face of a Timer session element (docs/specs/012-collaboration/session-button.md) once it is a real timer
 // rather than a button that starts one somewhere else.
@@ -63,17 +63,10 @@ export function SessionTimerFace({
   /** The way out of the presets to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
   onOpenSettings?: () => void;
 }) {
-  // Re-render 4x a second while running so the clock advances, exactly as the
-  // chrome pill does. A paused or absent timer is static, so nothing spins.
-  const [, setTick] = useState(0);
+  // The clock advances 4x a second while running, exactly as the chrome pill's does. A paused or absent
+  // timer is static, so nothing spins.
   const running = timer?.running === true;
-  useEffect(() => {
-    if (!running) return;
-    const id = window.setInterval(() => setTick((n) => n + 1), 250);
-    return () => window.clearInterval(id);
-  }, [running]);
-
-  const now = Date.now();
+  const now = useNow(running);
   const done = timer ? timerDone(timer, now) : false;
   // The canvas treats a press on an element as select-and-maybe-drag, so the
   // controls stop the gesture before it reaches the canvas — otherwise the

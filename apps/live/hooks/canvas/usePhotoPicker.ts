@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, type ChangeEvent } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Opening the photo picker exactly once per intent (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
@@ -42,8 +43,7 @@ export function usePhotoPicker(deps: {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const pendingRef = useRef(false);
   const releaseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const live = useRef(deps);
-  live.current = deps;
+  const live = useLatest(deps);
 
   // The lock outlives the dialog CLOSING, and that beat is the entire point.
   // Chrome on Linux delivers a double-click as:
@@ -80,7 +80,7 @@ export function usePhotoPicker(deps: {
     pendingRef.current = true;
     live.current.onOpen?.();
     inputRef.current?.click();
-  }, []);
+  }, [live]);
 
   const onChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +95,7 @@ export function usePhotoPicker(deps: {
       event.target.value = '';
       if (file) live.current.onFile(file);
     },
-    [release],
+    [release, live],
   );
 
   return { inputRef, open, onChange };

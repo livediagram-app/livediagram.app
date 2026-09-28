@@ -18,6 +18,7 @@ import { anyModalOpen } from '@/lib/modal-guard';
 import { announce } from '@/lib/announcer';
 import { describeMany, describeOne } from '@/lib/element-names';
 import { track } from '@/lib/telemetry';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // The traversal step, pure so it's unit-testable: which element index a
 // Tab (dir 1) / Shift+Tab (dir -1) press should select, or null when the
@@ -62,8 +63,7 @@ type CanvasA11yDeps = {
 export function useCanvasA11y(deps: CanvasA11yDeps): void {
   // Live ref so the mount-once listener reads current state without
   // re-subscribing per keystroke (the editor-shortcuts hub's pattern).
-  const ref = useRef(deps);
-  ref.current = deps;
+  const ref = useLatest(deps);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -106,7 +106,7 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [ref]);
 
   // Announce selection changes: single ("Selected 'Login'"), multi (the
   // change-log style summary), and clearing. Keyed on a stable string so
@@ -132,5 +132,5 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       return;
     }
     if (hadSelection) announce('Selection cleared');
-  }, [selectionKey]);
+  }, [selectionKey, ref]);
 }

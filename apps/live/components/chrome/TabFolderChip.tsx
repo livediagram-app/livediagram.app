@@ -92,9 +92,12 @@ export function TabFolderChip({
   // Escape closes it too — via the shared hook, which registers the same
   // document-level bubble listener this effect used to open-code.
   useEscape(() => setOpen(false), { enabled: open });
-  useEffect(() => {
+  // Switching tabs closes it, during render.
+  const [openedOn, setOpenedOn] = useState(activeId);
+  if (activeId !== openedOn) {
+    setOpenedOn(activeId);
     setOpen(false);
-  }, [activeId]);
+  }
 
   // Participants viewing the folder's HIDDEN member tabs, deduped by id —
   // the inline active pill shows its own stack, so it's excluded here.

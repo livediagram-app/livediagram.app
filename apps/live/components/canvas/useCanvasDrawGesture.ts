@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from 'react';
+import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livediagram/diagram';
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -123,13 +123,12 @@ export function useCanvasDrawGesture({
   // set when a snap is actually in effect, so the preview (a dot + guides
   // in CanvasChrome) appears exactly when the start would latch.
   const [drawHover, setDrawHover] = useState<{ x: number; y: number } | null>(null);
+  // A stamp has its own ghost (useStampGhost); the corner-snap dot is for
+  // shapes drawn to size. Out of that state, the dot goes at once.
+  const hoverSnaps = !!pendingDraw && !drawDrag && !penPoints && !stampAt;
+  if (!hoverSnaps && drawHover) setDrawHover(null);
   useEffect(() => {
-    // A stamp has its own ghost (useStampGhost); the corner-snap dot is for
-    // shapes drawn to size.
-    if (!pendingDraw || drawDrag || penPoints || stampAt) {
-      setDrawHover(null);
-      return;
-    }
+    if (!hoverSnaps) return;
     const wrapperEl = wrapperRef.current;
     const onMove = (e: PointerEvent) => {
       const rect = wrapperEl?.getBoundingClientRect();
@@ -145,7 +144,7 @@ export function useCanvasDrawGesture({
     };
     window.addEventListener('pointermove', onMove);
     return () => window.removeEventListener('pointermove', onMove);
-  }, [pendingDraw, drawDrag, penPoints, viewportZoom, elements, wrapperRef, stampAt]);
+  }, [hoverSnaps, viewportZoom, elements, wrapperRef]);
 
   // Window-level move + up listeners for the draw gesture. Attached
   // only while a drag is in flight so the canvas pays nothing in the
@@ -156,15 +155,122 @@ export function useCanvasDrawGesture({
   // pointerup hands raw start + end to onCommitDraw and lets the
   // editor decide how to interpret them (box vs line). Pointercancel
   // + Escape go through the keyboard hook's onCancelDraw path.
-  useEffect(() => {
-    if (!drawDrag || !pendingDraw) return;
-    const wrapperEl = wrapperRef.current;
+  //
+  // The listeners attach once per drag; what they do is an effect event,
+  // so every move reads the zoom, elements, stamp and commit handler as
+  // they are now rather than as they were at the press.
+  type DrawDrag = { startX: number; startY: number; currentX: number; currentY: number };
+  // One pointer move of the drag: the snapped next state, or null to leave it as it is.
+  const nextDrawDrag = useEffectEvent((e: PointerEvent, latest: DrawDrag): DrawDrag | null => {
+    if (!pendingDraw) return null;
+    const rect = wrapperRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+    // A 2-finger pinch took over: freeze the draw at its last good
+    // position so finger-1's moves don't size the element to the
+    // pinch-warped pointer (pan + editor-drag bail the same way).
+    if (isPinchingRef?.current) return null;
     const isBoxIntent = pendingDraw.type !== 'arrow';
     // Snap threshold scales inversely with zoom so the "feel" is
     // consistent: a 6-screen-pixel halo at any zoom level, big enough
     // to grab edges without surprise-snapping while the user is
     // still freely placing.
     const snapPx = 6 / viewportZoom;
+    const { x: rawX, y: rawY } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
+    if (stampAt) {
+      // A stamp is carried, not sized: the ghost follows the pointer and the
+      // drop is its centre.
+      const placed = stampAt(rawX, rawY);
+      const c = stampCentre(placed);
+      showStamp(placed);
+      return { startX: c.x, startY: c.y, currentX: c.x, currentY: c.y };
+    }
+    let endX = rawX;
+    let endY = rawY;
+    // 1:1 aspect lock on shift. Mirrors Figma / Photoshop: hold
+    // shift while drawing to get a perfect square / circle. Picks
+    // the dominant axis (the one the user moved further) and
+    // matches the other to it, preserving the drag's direction so
+    // the box still grows where the cursor is.
+    if (e.shiftKey) {
+      const dx = endX - latest.startX;
+      const dy = endY - latest.startY;
+      const absMax = Math.max(Math.abs(dx), Math.abs(dy));
+      endX = latest.startX + (dx === 0 ? absMax : Math.sign(dx) * absMax);
+      endY = latest.startY + (dy === 0 ? absMax : Math.sign(dy) * absMax);
+    }
+    // Element-edge snap for box intents. Arrows skip this: their
+    // endpoints don't read as a bounding box (the natural snap
+    // there is per-end anchor pinning, handled by the existing
+    // arrow drag-handle flow after creation).
+    if (isBoxIntent) {
+      const x = Math.min(latest.startX, endX);
+      const y = Math.min(latest.startY, endY);
+      const width = Math.max(1, Math.abs(endX - latest.startX));
+      const height = Math.max(1, Math.abs(endY - latest.startY));
+      const mode: 'se' | 'sw' | 'ne' | 'nw' =
+        endX >= latest.startX
+          ? endY >= latest.startY
+            ? 'se'
+            : 'ne'
+          : endY >= latest.startY
+            ? 'sw'
+            : 'nw';
+      const snapped = snapResizeBounds(
+        { x, y, width, height },
+        mode,
+        elements,
+        EMPTY_ID_SET,
+        snapPx,
+        1,
+      );
+      endX = mode === 'se' || mode === 'ne' ? snapped.x + snapped.width : snapped.x;
+      endY = mode === 'se' || mode === 'sw' ? snapped.y + snapped.height : snapped.y;
+    } else {
+      // Arrow: first try to latch the moving endpoint onto a nearby ARROW's
+      // line (docs/specs/008-canvas/arrow-to-arrow.md), so drawing a message onto another arrow connects as
+      // you draw (the dots render in CanvasChrome). That takes precedence
+      // over the element edge/centre alignment snap below.
+      const arrowHit = snapToArrowPoint(
+        { x: endX, y: endY },
+        elements,
+        ARROW_SNAP_THRESHOLD_PX,
+        '',
+      );
+      if (arrowHit) {
+        endX = arrowHit.x;
+        endY = arrowHit.y;
+      } else {
+        // Else snap to nearby element edge / centre lines (a point snap) so
+        // it can latch onto a shape's edge or corner as you draw, the way
+        // the box corner does. (Per-end anchor pinning still happens via the
+        // arrow drag-handle flow after creation.)
+        const snap = snapToAlignment(
+          { x: endX, y: endY, width: 0, height: 0 },
+          elements,
+          EMPTY_ID_SET,
+          snapPx,
+        );
+        endX += snap.dx;
+        endY += snap.dy;
+      }
+    }
+    return { ...latest, currentX: endX, currentY: endY };
+  });
+  const commitDrawDrag = useEffectEvent((snapshot: DrawDrag) => {
+    if (!pendingDraw) return;
+    onCommitDraw(
+      pendingDraw,
+      snapshot.startX,
+      snapshot.startY,
+      snapshot.currentX,
+      snapshot.currentY,
+    );
+  });
+  // The drag as the press left it: where the listeners start from.
+  const drawDragAtPress = useEffectEvent(() => drawDrag);
+  const dragging = drawDrag !== null;
+  useEffect(() => {
+    if (!dragging || !pendingDraw) return;
     // Local mutable mirror of drawDrag. The effect's setDrawDrag
     // updater used to call onCommitDraw inline, which re-entered
     // the editor's commit handler (a parent setState) from inside
@@ -173,112 +279,19 @@ export function useCanvasDrawGesture({
     // in a closure variable lets onMove update it synchronously and
     // onUp call onCommitDraw cleanly OUTSIDE any setState updater.
     // setDrawDrag is now only used to trigger preview re-renders.
-    let latest: { startX: number; startY: number; currentX: number; currentY: number } | null =
-      drawDrag;
+    let latest: DrawDrag | null = drawDragAtPress();
     const onMove = (e: PointerEvent) => {
-      const rect = wrapperEl?.getBoundingClientRect();
-      if (!rect || !latest) return;
-      // A 2-finger pinch took over: freeze the draw at its last good
-      // position so finger-1's moves don't size the element to the
-      // pinch-warped pointer (pan + editor-drag bail the same way).
-      if (isPinchingRef?.current) return;
-      const { x: rawX, y: rawY } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-      if (stampAt) {
-        // A stamp is carried, not sized: the ghost follows the pointer and the
-        // drop is its centre.
-        const placed = stampAt(rawX, rawY);
-        const c = stampCentre(placed);
-        showStamp(placed);
-        latest = { startX: c.x, startY: c.y, currentX: c.x, currentY: c.y };
-        setDrawDrag(latest);
-        return;
-      }
-      let endX = rawX;
-      let endY = rawY;
-      // 1:1 aspect lock on shift. Mirrors Figma / Photoshop: hold
-      // shift while drawing to get a perfect square / circle. Picks
-      // the dominant axis (the one the user moved further) and
-      // matches the other to it, preserving the drag's direction so
-      // the box still grows where the cursor is.
-      if (e.shiftKey) {
-        const dx = endX - latest.startX;
-        const dy = endY - latest.startY;
-        const absMax = Math.max(Math.abs(dx), Math.abs(dy));
-        endX = latest.startX + (dx === 0 ? absMax : Math.sign(dx) * absMax);
-        endY = latest.startY + (dy === 0 ? absMax : Math.sign(dy) * absMax);
-      }
-      // Element-edge snap for box intents. Arrows skip this: their
-      // endpoints don't read as a bounding box (the natural snap
-      // there is per-end anchor pinning, handled by the existing
-      // arrow drag-handle flow after creation).
-      if (isBoxIntent) {
-        const x = Math.min(latest.startX, endX);
-        const y = Math.min(latest.startY, endY);
-        const width = Math.max(1, Math.abs(endX - latest.startX));
-        const height = Math.max(1, Math.abs(endY - latest.startY));
-        const mode: 'se' | 'sw' | 'ne' | 'nw' =
-          endX >= latest.startX
-            ? endY >= latest.startY
-              ? 'se'
-              : 'ne'
-            : endY >= latest.startY
-              ? 'sw'
-              : 'nw';
-        const snapped = snapResizeBounds(
-          { x, y, width, height },
-          mode,
-          elements,
-          EMPTY_ID_SET,
-          snapPx,
-          1,
-        );
-        endX = mode === 'se' || mode === 'ne' ? snapped.x + snapped.width : snapped.x;
-        endY = mode === 'se' || mode === 'sw' ? snapped.y + snapped.height : snapped.y;
-      } else {
-        // Arrow: first try to latch the moving endpoint onto a nearby ARROW's
-        // line (docs/specs/008-canvas/arrow-to-arrow.md), so drawing a message onto another arrow connects as
-        // you draw (the dots render in CanvasChrome). That takes precedence
-        // over the element edge/centre alignment snap below.
-        const arrowHit = snapToArrowPoint(
-          { x: endX, y: endY },
-          elements,
-          ARROW_SNAP_THRESHOLD_PX,
-          '',
-        );
-        if (arrowHit) {
-          endX = arrowHit.x;
-          endY = arrowHit.y;
-        } else {
-          // Else snap to nearby element edge / centre lines (a point snap) so
-          // it can latch onto a shape's edge or corner as you draw, the way
-          // the box corner does. (Per-end anchor pinning still happens via the
-          // arrow drag-handle flow after creation.)
-          const snap = snapToAlignment(
-            { x: endX, y: endY, width: 0, height: 0 },
-            elements,
-            EMPTY_ID_SET,
-            snapPx,
-          );
-          endX += snap.dx;
-          endY += snap.dy;
-        }
-      }
-      latest = { ...latest, currentX: endX, currentY: endY };
-      setDrawDrag(latest);
+      if (!latest) return;
+      const next = nextDrawDrag(e, latest);
+      if (!next) return;
+      latest = next;
+      setDrawDrag(next);
     };
     const onUp = () => {
       const snapshot = latest;
       latest = null;
       setDrawDrag(null);
-      if (snapshot) {
-        onCommitDraw(
-          pendingDraw,
-          snapshot.startX,
-          snapshot.startY,
-          snapshot.currentX,
-          snapshot.currentY,
-        );
-      }
+      if (snapshot) commitDrawDrag(snapshot);
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
@@ -286,8 +299,7 @@ export function useCanvasDrawGesture({
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [drawDrag !== null, pendingDraw]);
+  }, [dragging, pendingDraw]);
 
   // Pen-gesture sampling loop. While penPoints is non-null and the
   // freehand intent is the active pendingDraw, accumulate pointer
@@ -295,20 +307,34 @@ export function useCanvasDrawGesture({
   // and schedules ONE setPenPoints per requestAnimationFrame, so a
   // 120 Hz pointer doesn't pump thousands of React renders. On
   // pointerup we hand the polyline to onCommitFreehand (which
-  // simplifies + smooths it) and clear the gesture state.
+  // simplifies + smooths it) and clear the gesture state. As with the
+  // drag, the listeners attach once per stroke and read the zoom and the
+  // commit handler as they are now.
+  const penSample = useEffectEvent((e: PointerEvent): { x: number; y: number } | null => {
+    const rect = wrapperRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+    // Stop sampling once a 2-finger pinch takes over, so the committed
+    // polyline doesn't pick up the pinch-warped finger-1 path.
+    if (isPinchingRef?.current) return null;
+    return pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
+  });
+  const commitPenStroke = useEffectEvent((stroke: { x: number; y: number }[]) => {
+    // Recognition is which PEN you picked, not a preference (docs/specs/008-canvas/two-pens.md):
+    // the Shape Pen converts, plain Freehand and the highlighter never do.
+    if (pendingDraw?.type !== 'freehand' || stroke.length < 2) return;
+    onCommitFreehand(stroke, pendingDraw.variant === 'shape-pen');
+  });
+  // The stroke as the press left it: where the sampling starts from.
+  const penAtPress = useEffectEvent(() => penPoints ?? []);
+  const penning = penPoints !== null && pendingDraw?.type === 'freehand';
   useEffect(() => {
-    if (!penPoints || !pendingDraw || pendingDraw.type !== 'freehand') return;
-    const wrapperEl = wrapperRef.current;
-    let buffer: { x: number; y: number }[] = penPoints;
+    if (!penning) return;
+    let buffer = penAtPress();
     let rafId: number | null = null;
     const onMove = (e: PointerEvent) => {
-      const rect = wrapperEl?.getBoundingClientRect();
-      if (!rect) return;
-      // Stop sampling once a 2-finger pinch takes over, so the committed
-      // polyline doesn't pick up the pinch-warped finger-1 path.
-      if (isPinchingRef?.current) return;
-      const { x, y } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-      buffer = [...buffer, { x, y }];
+      const point = penSample(e);
+      if (!point) return;
+      buffer = [...buffer, point];
       if (rafId !== null) return;
       rafId = window.requestAnimationFrame(() => {
         rafId = null;
@@ -322,11 +348,7 @@ export function useCanvasDrawGesture({
       }
       const snapshot = buffer;
       setPenPoints(null);
-      if (snapshot.length >= 2) {
-        // Recognition is which PEN you picked, not a preference (docs/specs/008-canvas/two-pens.md):
-        // the Shape Pen converts, plain Freehand and the highlighter never do.
-        onCommitFreehand(snapshot, pendingDraw?.variant === 'shape-pen');
-      }
+      commitPenStroke(snapshot);
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
@@ -335,8 +357,7 @@ export function useCanvasDrawGesture({
       window.removeEventListener('pointerup', onUp);
       if (rafId !== null) window.cancelAnimationFrame(rafId);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [penPoints !== null, pendingDraw]);
+  }, [penning, pendingDraw]);
 
   return { drawDrag, penPoints, drawHover, beginPendingDrawGesture };
 }

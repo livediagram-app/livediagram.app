@@ -198,7 +198,9 @@ center`, or shrink-wrapped content (its in-flow children, text and gaps fill the
    `baseline = firstClientRect.top + measureText('H').fontBoundingBoxAscent`;
    `capMid = baseline - measureText('H').actualBoundingBoxAscent / 2`; offset `capMid - boxMidY`.
    Text rendered in capitals (by content, or `text-transform: uppercase`) is judged by its own ink
-   instead (a third screenshot, hiding only the glyph fill).
+   instead (a third screenshot, hiding only the glyph fill). A tailed capital (Q, J) runs past the baseline
+   by design, so for that reading it stands in as its tail-less twin (O, I: same cap shape and overshoot),
+   and the text is restored straight after.
 4. **Ink.** Clip on the device-pixel grid, one pixel out, keeping the shape's exact box inside it.
    Screenshot; inject `[probe] * { visibility: hidden } [probe] { -webkit-text-fill-color: transparent }`;
    screenshot again; the ink box is every pixel whose summed RGB difference exceeds 96 (D46). A shape

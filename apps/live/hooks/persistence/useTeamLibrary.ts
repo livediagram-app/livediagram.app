@@ -29,24 +29,36 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   const [diagrams, setDiagrams] = useState<DiagramSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Sets state only from the response callbacks, so the load effect below
+  // only starts the request.
   const refresh = useCallback(async () => {
     if (!ownerId) return;
-    try {
-      const lib = await apiGetTeamLibrary(ownerId, teamId);
-      setFolders(lib.folders);
-      setDiagrams(lib.diagrams);
-    } catch {
-      // Transient failure: keep whatever is on screen, next refresh
-      // reconciles (same posture as useFolders).
-    } finally {
-      setLoading(false);
-    }
+    await apiGetTeamLibrary(ownerId, teamId)
+      .then(
+        (lib) => {
+          setFolders(lib.folders);
+          setDiagrams(lib.diagrams);
+        },
+        () => {
+          // Transient failure: keep whatever is on screen, next refresh
+          // reconciles (same posture as useFolders).
+        },
+      )
+      .finally(() => setLoading(false));
   }, [ownerId, teamId]);
 
-  useEffect(() => {
+  // Another team (or owner) starts from an empty, loading library, cleared
+  // during render so the previous team's tree never shows under this one.
+  const libraryKey = `${ownerId}\0${teamId}`;
+  const [loadedKey, setLoadedKey] = useState(libraryKey);
+  if (libraryKey !== loadedKey) {
+    setLoadedKey(libraryKey);
     setFolders([]);
     setDiagrams([]);
     setLoading(true);
+  }
+
+  useEffect(() => {
     void refresh();
   }, [refresh]);
 

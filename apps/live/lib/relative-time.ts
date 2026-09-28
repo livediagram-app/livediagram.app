@@ -46,12 +46,10 @@ export function formatRelativeTime(deltaMs: number): string {
   );
 }
 
-// Verbose relative time elapsed since a past timestamp — the
-// `formatRelativeTime(Date.now() - ts)` idiom the diagram / folder / shared /
-// participant rows all spelled out. Evaluated at call time, so it refreshes on
-// each render; pair with useRelativeTimeTick where a live-updating row is wanted.
-export function relativeSince(timestamp: number): string {
-  return formatRelativeTime(Date.now() - timestamp);
+// Verbose relative time elapsed since a past timestamp, at `now`: the instant from useRelativeNow()
+// in a component, so render stays pure and every row on the page agrees.
+export function relativeSince(timestamp: number, now: number): string {
+  return formatRelativeTime(now - timestamp);
 }
 
 // Forward-looking compact countdown ("6d left" / "3h left"), used by
@@ -91,9 +89,9 @@ export function formatRelativeTimeShort(deltaMs: number): string {
   );
 }
 
-// Re-render every 30 seconds so any inline relative-time strings stay
-// fresh. Returns a tick counter the caller doesn't need to read; just
-// calling the hook is enough to subscribe to the re-render cadence.
+// The clock relative-time strings read: the instant of the latest shared tick, every 30 seconds
+// (docs/specs/003-system-architecture/react-state-and-effects.md). Render never reads Date.now(); it
+// reads this, so every row on a page agrees and refreshes on the same tick.
 //
 // All subscribers share ONE module-level interval: the editor mounts
 // up to ~8 surfaces calling this hook (Explorer panel, ActivityPanel,
@@ -108,21 +106,24 @@ export function formatRelativeTimeShort(deltaMs: number): string {
 // SSR (`getServerSnapshot` returns 0 deterministically so the SSR
 // HTML and the first client render agree) and lets every consumer
 // subscribe + unsubscribe without each hook owning its own state.
+export const RELATIVE_TICK_MS = 30_000;
+
 const tickListeners = new Set<() => void>();
-// `window.setInterval` returns a number in the DOM lib; we pin the
-// type explicitly because TypeScript also resolves `setInterval` from
-// the Node types via the build's @types/node, and falling back to
-// `ReturnType<typeof setInterval>` picks up the NodeJS `Timeout` type.
+// `window.setInterval` returns a number in the DOM lib; pinned because the build's @types/node would
+// otherwise resolve `setInterval` to NodeJS's `Timeout`.
 let tickIntervalId: number | null = null;
-let tickValue = 0;
+let tickNow = Date.now();
 
 function subscribeTick(listener: () => void): () => void {
   tickListeners.add(listener);
   if (tickIntervalId === null && typeof window !== 'undefined') {
+    // Idle since the last subscriber left (or never started): catch the clock up before ticking again.
+    // The new subscriber is the only listener, and useSyncExternalStore re-reads after subscribing.
+    tickNow = Date.now();
     tickIntervalId = window.setInterval(() => {
-      tickValue = (tickValue + 1) | 0;
+      tickNow = Date.now();
       for (const fn of tickListeners) fn();
-    }, 30_000);
+    }, RELATIVE_TICK_MS);
   }
   return () => {
     tickListeners.delete(listener);
@@ -133,14 +134,11 @@ function subscribeTick(listener: () => void): () => void {
   };
 }
 
-function getTickSnapshot(): number {
-  return tickValue;
-}
+const getTickSnapshot = () => tickNow;
+// Prerendered HTML carries no relative times (they render from data loaded on the client), so the
+// server snapshot only has to be stable.
+const getTickServerSnapshot = () => 0;
 
-function getTickServerSnapshot(): number {
-  return 0;
-}
-
-export function useRelativeTimeTick(): number {
+export function useRelativeNow(): number {
   return useSyncExternalStore(subscribeTick, getTickSnapshot, getTickServerSnapshot);
 }

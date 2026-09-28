@@ -296,3 +296,26 @@ describe('layoutArrowLabels: refinements', () => {
     expect(l.center.x + l.width / 2).toBeLessThanOrEqual(250);
   });
 });
+
+// Word widths are cached, so a label first measured in a fallback face would keep those widths after the
+// real webfont loads. The font epoch (which fonts had loaded) is part of the cache key.
+describe('arrow label measurement across a font load', () => {
+  const layoutWith = (perChar: number, fontEpoch: number) =>
+    layoutArrowLabels([arrow('a', [0, 0], [600, 0], 'Webfont label')], {
+      measureFor: () => (s) => s.length * perChar,
+      fontFamilyOf: () => 'EpochTestFace',
+      fontEpoch,
+    }).get('a')!;
+
+  it('re-measures when the font epoch moves on', () => {
+    const fallback = layoutWith(5, 0);
+    const loaded = layoutWith(9, 1);
+    expect(loaded.width).toBeGreaterThan(fallback.width);
+  });
+
+  it('reuses its widths within one epoch', () => {
+    const first = layoutWith(5, 2);
+    const again = layoutWith(9, 2);
+    expect(again.width).toBe(first.width);
+  });
+});

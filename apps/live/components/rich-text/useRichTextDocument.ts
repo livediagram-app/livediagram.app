@@ -14,8 +14,8 @@
 // runs paint as a flat list of sibling <span>s with literal '\n' text, so
 // plain-text length === DOM textContent length and offsets are a string walk.
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { normalizeRuns, type TextRun } from '@livediagram/diagram';
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
+import { normalizeRuns, type TextRun, runsPlainText } from '@livediagram/diagram';
 import {
   dataAttrsForRun,
   domSelectionToOffsets,
@@ -49,15 +49,20 @@ export function useRichTextDocument({
   trackFormat: (command: string) => void;
 }) {
   const editorRef = useRef<HTMLDivElement>(null);
-  const runsRef = useRef<TextRun[]>(normalizeRuns(initialRuns));
+  // The runs the editor opens with, normalised once.
+  const [openingRuns] = useState(() => normalizeRuns(initialRuns));
+  const runsRef = useRef<TextRun[]>(openingRuns);
   const composingRef = useRef(false);
   const selectionRef = useRef<{ start: number; end: number } | null>(null);
   const pendingSelectionRef = useRef<{ start: number; end: number } | null>(null);
   const skipFirstVersionEffect = useRef(true);
   const [version, setVersion] = useState(0);
   const [active, setActive] = useState<ActiveFormat>(() =>
-    computeActiveFormat(runsRef.current, null, defaults),
+    computeActiveFormat(openingRuns, null, defaults),
   );
+  // The plain text as it stands, as state: every change to the runs ends in refreshActive, which updates
+  // it, so render reads this rather than the contentEditable (react-state-and-effects.md).
+  const [liveText, setLiveText] = useState(() => runsPlainText(openingRuns));
 
   // Collapse the selection to the true end of the editor's painted content.
   const placeCaretAtEnd = (el: HTMLElement) => {
@@ -89,6 +94,7 @@ export function useRichTextDocument({
     const offsets = domSelectionToOffsets(el);
     if (offsets) selectionRef.current = offsets;
     setActive(computeActiveFormat(runsRef.current, offsets ?? selectionRef.current, defaults));
+    setLiveText(runsPlainText(runsRef.current));
   };
 
   // Read the live DOM back into runs + refresh the toolbar. Used after every
@@ -106,19 +112,16 @@ export function useRichTextDocument({
   };
 
   // The runs as they stand right now, read from the live DOM when there is
-  // one. What a host commits.
+  // one. What a host commits (outside render: render reads `liveText`).
   const currentRuns = (): TextRun[] => {
     const el = editorRef.current;
     return el ? readRunsFromDom(el) : runsRef.current;
   };
 
   // A format apply bumps `version`: re-paint from the new runs and restore
-  // the selection (+ focus, in case a toolbar control had stolen it).
-  useLayoutEffect(() => {
-    if (skipFirstVersionEffect.current) {
-      skipFirstVersionEffect.current = false;
-      return;
-    }
+  // the selection (+ focus, in case a toolbar control had stolen it). The repaint is an effect event,
+  // so it paints with the newest run style and defaults while only a version bump triggers it.
+  const repaint = useEffectEvent(() => {
     const el = editorRef.current;
     if (!el) return;
     paintRuns();
@@ -129,18 +132,24 @@ export function useRichTextDocument({
       pendingSelectionRef.current = null;
     }
     refreshActive();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
+  useLayoutEffect(() => {
+    if (skipFirstVersionEffect.current) {
+      skipFirstVersionEffect.current = false;
+      return;
+    }
+    repaint();
   }, [version]);
 
   // Keep the toolbar active-state in sync as the caret / selection moves.
+  const onSelectionChange = useEffectEvent(() => {
+    if (document.activeElement !== editorRef.current) return;
+    refreshActive();
+  });
   useEffect(() => {
-    const onSel = () => {
-      if (document.activeElement !== editorRef.current) return;
-      refreshActive();
-    };
+    const onSel = () => onSelectionChange();
     document.addEventListener('selectionchange', onSel);
     return () => document.removeEventListener('selectionchange', onSel);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const actions = useRichTextFormatActions({
@@ -160,6 +169,7 @@ export function useRichTextDocument({
     selectionRef,
     composingRef,
     active,
+    liveText,
     paintRuns,
     refreshActive,
     syncFromDom,

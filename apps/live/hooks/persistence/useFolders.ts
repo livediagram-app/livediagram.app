@@ -63,28 +63,36 @@ export function useFolders(
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(autoLoad);
 
+  // Settles `loading` from the response callbacks, never synchronously, so
+  // the auto-load effect below only starts the request.
+  const load = useCallback(
+    (owner: string) =>
+      apiListFolders(owner)
+        .then(setFolders, () => {
+          // Silent failure: a transient hiccup shouldn't wipe whatever
+          // we've already loaded. The next refresh will retry.
+        })
+        .finally(() => setLoading(false)),
+    [],
+  );
+
   const refresh = useCallback(async () => {
     if (!ownerId) return;
     setLoading(true);
-    try {
-      const list = await apiListFolders(ownerId);
-      setFolders(list);
-    } catch {
-      // Silent failure: a transient hiccup shouldn't wipe whatever
-      // we've already loaded. The next refresh will retry.
-    } finally {
-      setLoading(false);
-    }
-  }, [ownerId]);
+    await load(ownerId);
+  }, [ownerId, load]);
+
+  // A newly auto-loading owner is loading from its first render.
+  const autoLoadOwner = autoLoad ? ownerId : null;
+  const [loadingFor, setLoadingFor] = useState(autoLoadOwner);
+  if (autoLoadOwner !== loadingFor) {
+    setLoadingFor(autoLoadOwner);
+    if (autoLoadOwner) setLoading(true);
+  }
 
   useEffect(() => {
-    if (!autoLoad) return;
-    if (!ownerId) {
-      setLoading(false);
-      return;
-    }
-    void refresh();
-  }, [autoLoad, ownerId, refresh]);
+    if (autoLoadOwner) void load(autoLoadOwner);
+  }, [autoLoadOwner, load]);
 
   const createFolder = useCallback(
     async (input: { name?: string; parentId?: string | null }) => {
@@ -150,5 +158,14 @@ export function useFolders(
     [ownerId],
   );
 
-  return { folders, setFolders, loading, createFolder, renameFolder, deleteFolder, refresh };
+  // Nothing loads without an owner, so there is nothing to wait for.
+  return {
+    folders,
+    setFolders,
+    loading: ownerId ? loading : false,
+    createFolder,
+    renameFolder,
+    deleteFolder,
+    refresh,
+  };
 }

@@ -36,6 +36,11 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
   // Re-render once the async icon catalogues land so icon glyphs pop in.
   const iconsLoaded = useIconCatalogs();
   return useMemo(() => {
+    // The resolvers find nothing until the catalogues land; gating them on the
+    // flag makes the rebuild on landing a real input of this memo.
+    const art = iconsLoaded
+      ? { resolveIconArt: resolveIconArtLoaded, resolveStickerArt: resolveStickerArtLoaded }
+      : {};
     const out = new Map<string, SlideThumb>();
     if (deck.slides.length === 0) return out;
     const byId = new Map(tabs.map((t) => [t.id, t]));
@@ -52,8 +57,7 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
         if (el.type !== 'arrow') {
           parts.push(
             svgBoxed(el, {
-              resolveIconArt: resolveIconArtLoaded,
-              resolveStickerArt: resolveStickerArtLoaded,
+              ...art,
               tabFont: tab.font,
             }),
           );
@@ -81,7 +85,5 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
       });
     }
     return out;
-    // iconsLoaded re-runs the build when the catalogue chunk lands.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deck, tabs, iconsLoaded]);
 }

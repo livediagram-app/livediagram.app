@@ -6,6 +6,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { NoteGhost } from '@/components/canvas/NoteGhost';
+import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
 
 type CanvasDrawPreviewProps = {
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
@@ -39,6 +40,11 @@ export function CanvasDrawPreview({
   viewportZoom,
   wrapperRef,
 }: CanvasDrawPreviewProps) {
+  const showsPen = !!penPoints && pendingDraw?.type === 'freehand' && penPoints.length >= 2;
+  const showsPolygon = pendingDraw?.type === 'polygon' && polygonVertices.length > 0;
+  const showsBox = !!drawDrag && !!pendingDraw && !stamp;
+  // Where canvas (0, 0) sits on screen, measured only while a preview shows.
+  const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox);
   return (
     <>
       {stamp && pendingDraw?.type === 'sticky' ? (
@@ -66,9 +72,9 @@ export function CanvasDrawPreview({
           overlay layer as the draw-to-size box preview. Switches to
           the committed FreehandSvg after release (the next render
           tick once the new element lands in `elements`). */}
-      {penPoints && pendingDraw?.type === 'freehand' && penPoints.length >= 2
+      {showsPen && penPoints && pendingDraw?.type === 'freehand'
         ? (() => {
-            const rect = wrapperRef.current?.getBoundingClientRect();
+            const rect = origin;
             if (!rect) return null;
             // Build an SVG polyline string from the sampled canvas-
             // coord points, converted to client coords via the
@@ -109,9 +115,9 @@ export function CanvasDrawPreview({
       {/* Polygon-tool preview (docs/specs/008-canvas/polygon-tool.md): the placed segments, a rubber-band
           segment to the live cursor, a dot per vertex, and a snap ring on
           the START vertex once the cursor is within closing range. */}
-      {pendingDraw?.type === 'polygon' && polygonVertices.length > 0
+      {showsPolygon && pendingDraw?.type === 'polygon'
         ? (() => {
-            const rect = wrapperRef.current?.getBoundingClientRect();
+            const rect = origin;
             if (!rect) return null;
             const toClient = (p: { x: number; y: number }) => ({
               x: rect.left + p.x * viewportZoom,
@@ -160,9 +166,9 @@ export function CanvasDrawPreview({
           })()
         : null}
 
-      {drawDrag && pendingDraw && !stamp
+      {showsBox && drawDrag && pendingDraw
         ? (() => {
-            const rect = wrapperRef.current?.getBoundingClientRect();
+            const rect = origin;
             if (!rect) return null;
             // Arrow intent: render the drag as a line from the start
             // point to the current point, with a small chevron-like

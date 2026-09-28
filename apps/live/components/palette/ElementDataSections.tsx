@@ -29,6 +29,10 @@ import {
   SELECTION_MODES,
   type AnimationSpeed,
   type ArrowFlow,
+  type ChecklistItem,
+  type EntityField,
+  type LegendItem,
+  type PieSlice,
   type ElementAnimation,
   type IconAnimation,
 } from '@livediagram/diagram';
@@ -134,6 +138,13 @@ type ElementDataSectionsProps = {
   sectionProps: Scaffold['sectionProps'];
   flyoutProps: Scaffold['flyoutProps'];
 };
+
+// Row editors re-seed their draft when handed a different array, so the fallbacks for an element
+// without rows are one stable array each rather than a fresh one per render (which reset the draft).
+const DEFAULT_PIE_ROWS: PieSlice[] = PIE_DEFAULT_SLICES.map((s) => ({ ...s }));
+const NO_ENTITY_FIELDS: EntityField[] = [];
+const NO_CHECKLIST_ITEMS: ChecklistItem[] = [];
+const NO_LEGEND_ITEMS: LegendItem[] = [];
 
 // The mode tiles' glyphs — the palette picker's own icons, so a button's
 // configured mode is recognisable from the same artwork everywhere (docs/specs/009-elements/mode-button.md).
@@ -296,7 +307,7 @@ export function ElementDataSections({
               ) : (
                 <PieDataEditor
                   palette={chartFallbackPalette}
-                  slices={shapeTarget?.pieSlices ?? PIE_DEFAULT_SLICES.map((s) => ({ ...s }))}
+                  slices={shapeTarget?.pieSlices ?? DEFAULT_PIE_ROWS}
                   onChange={props.onSetPieData}
                 />
               )}
@@ -364,7 +375,7 @@ export function ElementDataSections({
               {...sectionProps('entity')}
             >
               <EntityFieldsEditor
-                fields={shapeTarget?.entityFields ?? []}
+                fields={shapeTarget?.entityFields ?? NO_ENTITY_FIELDS}
                 onChange={props.onSetEntityFields}
               />
             </MenuAccordionSection>
@@ -377,7 +388,7 @@ export function ElementDataSections({
               {...sectionProps('checklist')}
             >
               <ChecklistRowsEditor
-                items={shapeTarget?.checklistItems ?? []}
+                items={shapeTarget?.checklistItems ?? NO_CHECKLIST_ITEMS}
                 onChange={props.onSetChecklistItems}
                 onToggle={
                   shapeTarget && props.onToggleChecklistItem
@@ -395,7 +406,7 @@ export function ElementDataSections({
               {...sectionProps('legend')}
             >
               <LegendDataEditor
-                items={shapeTarget?.legendItems ?? []}
+                items={shapeTarget?.legendItems ?? NO_LEGEND_ITEMS}
                 palette={chartFallbackPalette}
                 onChange={props.onSetLegendItems}
               />

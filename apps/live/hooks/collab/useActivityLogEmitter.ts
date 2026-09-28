@@ -96,6 +96,9 @@ type Api = {
 };
 
 export function useActivityLogEmitter(deps: Deps): Api {
+  // The undo buffer this hook writes into, held by name so the write is to
+  // the ref the page owns, not to the deps object.
+  const { entryHistoryRef } = deps;
   // The last entry THIS client appended with a coalesce key. A fresh
   // emit merges into it only while it's still the log's newest entry
   // (nothing — remote entry, undo, revert — landed in between) and
@@ -174,11 +177,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
     // (docs/specs/012-collaboration/activity-and-audit.md), so the panel shows a consistent "most recent N".
     deps.setChangeLog((prev) => [entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
     if (opts?.undoable !== false) {
-      deps.entryHistoryRef.current = entryHistoryFill(
-        deps.entryHistoryRef.current,
-        entry,
-        opts?.fillToken,
-      );
+      entryHistoryRef.current = entryHistoryFill(entryHistoryRef.current, entry, opts?.fillToken);
     }
     if (deps.diagramId) {
       apiAppendChangeLogEntry(

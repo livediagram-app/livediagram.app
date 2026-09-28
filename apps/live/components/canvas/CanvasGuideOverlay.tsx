@@ -6,6 +6,7 @@ import {
 } from '@livediagram/diagram';
 import { getTheme, type ThemeId } from '@/lib/themes';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
+import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
 
 type Marquee = { startX: number; startY: number; currentX: number; currentY: number } | null;
 
@@ -37,6 +38,12 @@ export function CanvasGuideOverlay({
   wrapperRef,
 }: CanvasGuideOverlayProps) {
   const accentColor = getTheme(tabThemeId).elementStroke ?? '#0ea5e9';
+  // Where canvas (0, 0) sits on screen, measured only while a canvas-space guide shows (the marquee is
+  // already in client coords).
+  const origin = useCanvasClientOrigin(
+    wrapperRef,
+    alignGuides.length > 0 || allSnapTargets.length > 0 || !!drawHover || distGuides.length > 0,
+  );
   return (
     <>
       {/* Alignment guides. While a move / resize snap is in effect,
@@ -49,7 +56,7 @@ export function CanvasGuideOverlay({
           opacity so it reads as helper chrome, not content. */}
       {alignGuides.length > 0
         ? (() => {
-            const rect = wrapperRef.current?.getBoundingClientRect();
+            const rect = origin;
             if (!rect) return null;
             const theme = getTheme(tabThemeId);
             const color = theme.elementStroke ?? deriveTextColorForBg(theme.backgroundColor);
@@ -93,7 +100,7 @@ export function CanvasGuideOverlay({
           guides above. */}
       {allSnapTargets.length > 0
         ? (() => {
-            const rect = wrapperRef.current?.getBoundingClientRect();
+            const rect = origin;
             if (!rect) return null;
             return (
               <svg
@@ -126,7 +133,7 @@ export function CanvasGuideOverlay({
           guide lines above show what it aligned to). */}
       {drawHover
         ? (() => {
-            const rect = wrapperRef.current?.getBoundingClientRect();
+            const rect = origin;
             if (!rect) return null;
             const x = rect.left + drawHover.x * viewportZoom;
             const y = rect.top + drawHover.y * viewportZoom;
@@ -154,7 +161,7 @@ export function CanvasGuideOverlay({
           read at a glance. Same canvas→screen conversion as above. */}
       {distGuides.length > 0
         ? (() => {
-            const rect = wrapperRef.current?.getBoundingClientRect();
+            const rect = origin;
             if (!rect) return null;
             const cx = (v: number) => rect.left + v * viewportZoom;
             const cy = (v: number) => rect.top + v * viewportZoom;

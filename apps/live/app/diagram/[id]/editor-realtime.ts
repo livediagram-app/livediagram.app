@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 
 import { connectRoom, type ShareLink, type ShareRole } from '@/lib/api-client';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Sharing, session-permission and realtime-room infrastructure for the
 // editor: the shareable / team / share-code flags that decide whether
@@ -86,8 +87,7 @@ export function useEditorRealtime() {
   // op handler checks "is the revoked code mine?" and needs the
   // up-to-date sessionShareCode rather than the value captured at
   // mount.
-  const sessionShareCodeRef = useRef(sessionShareCode);
-  sessionShareCodeRef.current = sessionShareCode;
+  const sessionShareCodeRef = useLatest(sessionShareCode);
 
   return {
     roomRef,
