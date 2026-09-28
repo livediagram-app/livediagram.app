@@ -57,6 +57,7 @@ export async function runTimelineExpirySweep(env: Env, now = Date.now()): Promis
        FROM share_links s
        JOIN diagrams d ON d.id = s.diagram_id
       WHERE s.expires_at IS NOT NULL AND s.expires_at > ?1 AND s.expires_at <= ?2
+        AND d.trashed_at IS NULL
       ORDER BY s.expires_at ASC LIMIT ?3`,
   )
     .bind(now, now + WINDOW_MS, SWEEP_LIMIT)

@@ -7,7 +7,13 @@ import type { Env } from '../types';
 // a deliberate access-trust property (a foreign id can't be distinguished
 // from a missing one until ownership is proven), so it's worth pinning.
 
-const { db } = vi.hoisted(() => ({ db: { getDiagram: vi.fn(), getMembership: vi.fn() } }));
+const { db } = vi.hoisted(() => ({
+  db: {
+    getDiagram: vi.fn(),
+    getMembership: vi.fn(),
+    getTrashedDiagramMeta: vi.fn(async () => null),
+  },
+}));
 vi.mock('../db', () => db);
 
 const { access } = vi.hoisted(() => ({

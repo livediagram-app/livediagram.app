@@ -5,6 +5,8 @@ import { FormatCard } from './FormatCard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
+import type { ImportImageProgress, ImportImageReport as Report } from '@/lib/import-images';
+import { ImportImageReport } from './ImportImageReport';
 import { DialogHeader } from './DialogHeader';
 import { Glyph } from '@livediagram/ui';
 
@@ -17,10 +19,17 @@ type ImportTabDialogProps = {
   // Runs a file import for the chosen format: opens the file picker,
   // parses, and replaces the active tab. Returns an outcome so this
   // dialog can close / stay open / show an error without throwing.
-  onImportFile: (format: Format) => Promise<ImportOutcome>;
+  onImportFile: (
+    format: Format,
+    onProgress: (progress: ImportImageProgress) => void,
+  ) => Promise<ImportOutcome>;
   // Runs a text import (the paste/write path) for the chosen format,
   // bypassing the file picker (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md).
-  onImportText: (format: Format, text: string) => Promise<ImportOutcome>;
+  onImportText: (
+    format: Format,
+    text: string,
+    onProgress: (progress: ImportImageProgress) => void,
+  ) => Promise<ImportOutcome>;
   onClose: () => void;
 };
 
@@ -63,7 +72,7 @@ const FORMATS: {
     key: 'excalidraw',
     title: 'Excalidraw',
     description:
-      'A .excalidraw scene. Keeps shapes, labels, connections, and drawings. Paste it or pick a file.',
+      'A .excalidraw scene, or a PNG / SVG exported with the scene. Keeps shapes, labels, connections, drawings, and images.',
     placeholder: '{\n  "type": "excalidraw",\n  "version": 2,\n  "elements": [ … ]\n}',
   },
 ];
@@ -80,6 +89,9 @@ export function ImportTabDialog({
   onClose,
 }: ImportTabDialogProps) {
   const [active, setActive] = useState<Format | null>(null);
+  // Set once an import that met images has replaced the tab: the dialog then
+  // shows how they came across instead of closing.
+  const [report, setReport] = useState<Report | null>(null);
   const activeFormat = active ? FORMATS.find((f) => f.key === active) : null;
 
   return (
@@ -87,64 +99,100 @@ export function ImportTabDialog({
       <DialogHeader
         title="Import to tab"
         subtitle={
-          activeFormat
-            ? `Paste your ${activeFormat.title}, or import a file.`
-            : 'Pick a format to import into the current tab.'
+          report
+            ? "Here's how your images came across."
+            : activeFormat
+              ? `Paste your ${activeFormat.title}, or import a file.`
+              : 'Pick a format to import into the current tab.'
         }
       >
         <HelpArticleLink article="importTabs" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
       <div className="flex-1 overflow-y-auto px-6 py-5">
-        {/* Destructive-action warning — this overwrites the tab. */}
-        <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-          <span className="mt-0.5 shrink-0">
-            <WarningIcon />
-          </span>
-          <span>
-            This replaces everything on{' '}
-            <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
-            content. Undo (⌘Z / Ctrl&#8209;Z) brings it back.
-          </span>
-        </div>
-        {activeFormat ? (
-          <TextImportPanel
-            formatTitle={activeFormat.title}
-            placeholder={activeFormat.placeholder}
-            /* Quiet footnote for this format. It used to sit under the picker
-               grid, where it asked "Importing a Markdown outline?" of a reader
-               who had not picked a format yet — an answer to a question nobody
-               had. */
-            note={
-              activeFormat.note ? (
-                <HelpArticleLink
-                  article={activeFormat.note.article}
-                  variant="text"
-                  label={activeFormat.note.label}
-                />
-              ) : null
-            }
-            onImportText={(text) => onImportText(activeFormat.key, text)}
-            onImportFile={() => onImportFile(activeFormat.key)}
-            onDone={onClose}
-            onBack={() => setActive(null)}
-          />
+        {report ? (
+          <ImportImageReport report={report} onDone={onClose} />
         ) : (
-          <div className="grid grid-cols-3 gap-3">
-            {FORMATS.map((f) => (
-              <FormatCard
-                key={f.key}
-                title={f.title}
-                description={f.description}
-                onClick={() => setActive(f.key)}
-              >
-                <FormatIcon kind={f.key} />
-              </FormatCard>
-            ))}
-          </div>
+          <ImportChooser
+            tabName={tabName}
+            activeFormat={activeFormat ?? null}
+            onPick={setActive}
+            onImportFile={onImportFile}
+            onImportText={onImportText}
+            onDone={(outcome) => (outcome.images ? setReport(outcome.images) : onClose())}
+          />
         )}
       </div>
     </Dialog>
+  );
+}
+
+// The warning plus either the format grid or the chosen format's panel.
+function ImportChooser({
+  tabName,
+  activeFormat,
+  onPick,
+  onImportFile,
+  onImportText,
+  onDone,
+}: {
+  tabName: string;
+  activeFormat: (typeof FORMATS)[number] | null;
+  onPick: (format: Format | null) => void;
+  onImportFile: ImportTabDialogProps['onImportFile'];
+  onImportText: ImportTabDialogProps['onImportText'];
+  onDone: (outcome: Extract<ImportOutcome, { status: 'done' }>) => void;
+}) {
+  return (
+    <>
+      {/* Destructive-action warning — this overwrites the tab. */}
+      <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+        <span className="mt-0.5 shrink-0">
+          <WarningIcon />
+        </span>
+        <span>
+          This replaces everything on{' '}
+          <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
+          content. Undo (⌘Z / Ctrl&#8209;Z) brings it back.
+        </span>
+      </div>
+      {activeFormat ? (
+        <TextImportPanel
+          formatTitle={activeFormat.title}
+          placeholder={activeFormat.placeholder}
+          /* Quiet footnote for this format. It used to sit under the picker
+               grid, where it asked "Importing a Markdown outline?" of a reader
+               who had not picked a format yet — an answer to a question nobody
+               had. */
+          note={
+            activeFormat.note ? (
+              <HelpArticleLink
+                article={activeFormat.note.article}
+                variant="text"
+                label={activeFormat.note.label}
+              />
+            ) : null
+          }
+          onImportText={(text, onProgress) => onImportText(activeFormat.key, text, onProgress)}
+          onImportFile={(onProgress) => onImportFile(activeFormat.key, onProgress)}
+          onDone={onDone}
+          onBack={() => onPick(null)}
+        />
+      ) : (
+        <div className="grid grid-cols-3 gap-3">
+          {FORMATS.map((f) => (
+            <FormatCard
+              key={f.key}
+              title={f.title}
+              description={f.description}
+              onClick={() => onPick(f.key)}
+            >
+              <FormatIcon kind={f.key} />
+            </FormatCard>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 

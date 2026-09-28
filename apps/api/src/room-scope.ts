@@ -6,7 +6,7 @@
 // withheld from, and refused from, a scoped session.
 
 // Ops that carry no tab and say nothing about one, which a scoped session
-// still receives: session tools and the worker's share-link notices.
+// still receives: session tools and the worker's share-link and Trash notices.
 const TAB_LESS_DELIVERED = new Set([
   'log-remove',
   'poll-start',
@@ -14,6 +14,7 @@ const TAB_LESS_DELIVERED = new Set([
   'poll-end',
   'share-revoked',
   'share-rescoped',
+  'diagram-trashed',
 ]);
 
 // The tab-less ops a scoped session may itself send.

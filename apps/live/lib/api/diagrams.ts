@@ -16,11 +16,11 @@ import type { Tab } from '@livediagram/diagram';
 import { dedupeInFlight } from '../dedupe';
 import {
   isOfflineId,
-  offlineDeleteDiagram,
   offlineListDiagrams,
   offlineLoadDiagram,
   offlineSaveDiagramMeta,
 } from '../offline/offline-store';
+import { offlinePurgeExpiredTrash, offlineTrashDiagram } from '../offline/offline-trash';
 import {
   API_BASE,
   apiDelete,
@@ -162,8 +162,10 @@ export async function apiCreateDiagram(
   return diagram;
 }
 
+// Moves the diagram to the Trash (docs/specs/013-workspace/trash.md): the
+// api's for a cloud diagram, this browser's for an Offline Mode one.
 export async function apiDeleteDiagram(ownerId: string, id: string): Promise<void> {
-  if (await isOfflineId(id)) return offlineDeleteDiagram(id);
+  if (await isOfflineId(id)) return offlineTrashDiagram(id, Date.now());
   // Owner-gated server-side as of the security fix — without the
   // identity headers the worker would 400 / 403. apiHeaders prefers
   // the Clerk Bearer when a token provider is registered, falls
@@ -178,6 +180,9 @@ async function _apiListDiagrams(ownerId: string): Promise<DiagramSummary[]> {
   // Offline diagrams (docs/specs/006-diagram/offline-mode.md) are browser-local; list them alongside the
   // cloud ones. If the cloud fetch fails but offline diagrams exist (e.g. no
   // network), still return those rather than failing the whole Explorer.
+  // The local Trash keeps its 30 days by being swept whenever the app lists
+  // diagrams (docs/specs/013-workspace/trash.md, "The local Trash").
+  await offlinePurgeExpiredTrash(Date.now()).catch(() => 0);
   const offline = await offlineListDiagrams().catch(() => [] as DiagramSummary[]);
   try {
     const res = await apiFetch(`${API_BASE}/diagrams`, { headers: await apiHeaders(ownerId) });

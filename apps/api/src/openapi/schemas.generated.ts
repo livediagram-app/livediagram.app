@@ -5028,6 +5028,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Helpful",
       "Unhelpful",
       "Returned",
+      "Restored",
       "Sent",
       "Api",
       "Client",
@@ -5063,7 +5064,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Timeline",
       "Activity",
       "Page",
-      "Cta"
+      "Cta",
+      "Trash"
     ],
     "type": "string"
   },
@@ -5503,6 +5505,44 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "stopwatch"
     ],
     "type": "string"
+  },
+  "TrashedDiagram": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "purgeAt": {
+        "type": "number"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "trashedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "teamId",
+      "teamName",
+      "trashedAt",
+      "purgeAt"
+    ],
+    "type": "object"
   },
   "UnfurlResult": {
     "additionalProperties": false,

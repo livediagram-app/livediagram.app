@@ -12,8 +12,8 @@ import {
   resolveDiagramGrant,
   type DiagramGrant,
 } from '../auth/diagram-access';
-import { getDiagram, getMembership } from '../db';
-import { forbidden, missingAuth, notFound } from '../responses';
+import { getDiagram, getMembership, getTrashedDiagramMeta } from '../db';
+import { diagramTrashed, forbidden, missingAuth, notFound } from '../responses';
 import type { DiagramDTO, Env } from '../types';
 
 export type RouteContext = {
@@ -221,6 +221,17 @@ export async function mayDeleteDiagram(
   return membership?.status === 'joined';
 }
 
+// The answer for a diagram id no LIVE row holds (docs/specs/013-workspace/trash.md):
+// 410 `diagram_trashed` when it is in the Trash and the caller could have
+// opened it (owner, joined team member, share-code holder), else the 404 a
+// never-existing id gets, so the deleted state leaks nothing to a stranger.
+export async function missingDiagram(ctx: RouteContext, diagramId: string): Promise<Response> {
+  const trashed = await getTrashedDiagramMeta(ctx.env, diagramId);
+  if (!trashed) return notFound();
+  const grant = await gateGrant(ctx, diagramId, trashed.ownerId, trashed.teamId);
+  return grant ? diagramTrashed() : notFound();
+}
+
 // Owner-only resource: resolve the caller, load the diagram, and confirm
 // the caller owns it. Returns the diagram, or 400 (no owner) / 404
 // (missing) / 403 (foreign). 404-before-403 means a foreign id can't be
@@ -235,7 +246,7 @@ export async function requireOwnedDiagram(
   const owner = ctx.resolveOwner();
   if (!owner) return missingAuth();
   const existing = await getDiagram(ctx.env, diagramId);
-  if (!existing) return notFound();
+  if (!existing) return missingDiagram(ctx, diagramId);
   if (!(await ownsDiagram(ctx, existing))) return forbidden();
   return existing;
 }
@@ -254,7 +265,7 @@ export async function requireDiagramGrant(
   const owner = ctx.resolveOwner();
   if (!owner) return missingAuth();
   const diagram = await getDiagram(ctx.env, diagramId);
-  if (!diagram) return notFound();
+  if (!diagram) return missingDiagram(ctx, diagramId);
   const grant = await gateGrant(ctx, diagramId, diagram.ownerId, diagram.teamId);
   if (!grant || (mode === 'edit' && grant.role !== 'edit')) return forbidden();
   return { diagram, grant };

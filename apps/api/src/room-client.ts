@@ -136,3 +136,25 @@ export async function broadcastShareOp(
     console.warn(`[room-broadcast] ${op.kind} did not reach the room`, diagramId, err);
   }
 }
+
+// Tell a diagram's realtime room that the diagram was moved to the Trash
+// (docs/specs/013-workspace/trash.md): every open session hears the deleted
+// state, and the room closes every socket. Only for a diagram with a room.
+// Best-effort like the share-op broadcast: the D1 write is the change, and a
+// session the room misses still has every save refused with diagram_trashed.
+export async function broadcastDiagramTrashed(
+  env: Env,
+  diagram: { id: string; shareable: boolean; teamId: string | null },
+): Promise<void> {
+  try {
+    const stub = roomStubFor(env, diagram);
+    if (!stub) return;
+    await stub.fetch('https://room/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ op: { kind: 'diagram-trashed' } }),
+    });
+  } catch (err) {
+    console.warn('[room-broadcast] diagram-trashed did not reach the room', diagram.id, err);
+  }
+}

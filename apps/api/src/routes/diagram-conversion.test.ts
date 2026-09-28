@@ -33,6 +33,9 @@ const db = vi.hoisted(() => ({
   getDiagram: vi.fn(),
   upsertDiagramMeta: vi.fn(async () => {}),
   deleteDiagram: vi.fn(async () => {}),
+  trashDiagram: vi.fn(async () => true),
+  purgeDiagrams: vi.fn(async () => 1),
+  getTrashedDiagramMeta: vi.fn(async () => null),
   getFolder: vi.fn(),
   setDiagramFolder: vi.fn(),
   getMembership: vi.fn(),
@@ -103,6 +106,8 @@ beforeEach(() => {
   for (const fn of Object.values(timeline)) fn.mockClear();
   db.getDiagram.mockReset();
   db.deleteDiagram.mockClear();
+  db.trashDiagram.mockClear();
+  vi.mocked(markTimelineEventsDeletedBySource).mockClear();
 });
 
 describe('DELETE /diagrams/:id — take offline vs real delete', () => {
@@ -114,18 +119,15 @@ describe('DELETE /diagrams/:id — take offline vs real delete', () => {
     expect(timeline.recordDiagramOffline).toHaveBeenCalledTimes(1);
   });
 
-  it('records nothing for a real delete: the diagram leaves no card behind', async () => {
-    // docs/specs/013-workspace/timeline.md §3.5: the history is swept and no tombstone follows. From the
-    // feed's point of view the diagram never existed.
+  it('records nothing for a real delete: the diagram goes to the Trash', async () => {
+    // docs/specs/013-workspace/trash.md: its history is hidden while it waits
+    // (and comes back on restore), so nothing is swept and no card is added.
     db.getDiagram.mockResolvedValue(diagram);
     const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1');
     expect((await handleDiagrams(ctx)).status).toBe(204);
     await settle();
-    expect(vi.mocked(markTimelineEventsDeletedBySource)).toHaveBeenCalledWith(
-      expect.anything(),
-      'diagram',
-      'd1',
-    );
+    expect(db.trashDiagram).toHaveBeenCalledWith(expect.anything(), 'd1', expect.any(Number));
+    expect(vi.mocked(markTimelineEventsDeletedBySource)).not.toHaveBeenCalled();
     expect(timeline.recordDiagramOffline).not.toHaveBeenCalled();
   });
 
@@ -139,7 +141,7 @@ describe('DELETE /diagrams/:id — take offline vs real delete', () => {
     expect(timeline.recordDiagramOffline).not.toHaveBeenCalled();
   });
 
-  it('deletes the server row either way', async () => {
+  it('removes the server row on Take Offline, bypassing the Trash', async () => {
     db.getDiagram.mockResolvedValue(diagram);
     const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', conversion('offline'));
     await handleDiagrams(ctx);
@@ -147,6 +149,7 @@ describe('DELETE /diagrams/:id — take offline vs real delete', () => {
     // Taking a diagram offline really does remove the server copy — only the
     // event that describes it changes.
     expect(db.deleteDiagram).toHaveBeenCalled();
+    expect(db.trashDiagram).not.toHaveBeenCalled();
   });
 });
 
@@ -161,7 +164,7 @@ describe("a non-owner cannot convert someone else's diagram", () => {
     db.getMembership.mockResolvedValue({ status: 'joined' });
   });
 
-  it('treats a joined teammates declared conversion as a plain delete', async () => {
+  it('treats a joined teammates declared conversion as a plain delete, to the team Trash', async () => {
     const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', {
       owner: 'bob',
       clerkUserId: 'bob',
@@ -170,11 +173,8 @@ describe("a non-owner cannot convert someone else's diagram", () => {
     expect((await handleDiagrams(ctx)).status).toBe(204);
     await settle();
     expect(timeline.recordDiagramOffline).not.toHaveBeenCalled();
-    expect(vi.mocked(markTimelineEventsDeletedBySource)).toHaveBeenCalledWith(
-      expect.anything(),
-      'diagram',
-      'd1',
-    );
+    expect(db.trashDiagram).toHaveBeenCalledWith(expect.anything(), 'd1', expect.any(Number));
+    expect(db.deleteDiagram).not.toHaveBeenCalled();
   });
 
   it('still honours the conversion when the owner does it on a team diagram', async () => {

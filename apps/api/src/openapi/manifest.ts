@@ -124,7 +124,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['id', 'name'],
     },
     responseSchema: wrap('diagram', 'Diagram'),
-    statuses: [201, 400, 401, 403, 413],
+    statuses: [201, 400, 401, 403, 410, 413],
   },
   {
     method: 'GET',
@@ -135,7 +135,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('diagram', 'Diagram'),
-    statuses: [200, 401, 404],
+    statuses: [200, 401, 404, 410],
   },
   {
     method: 'PUT',
@@ -153,17 +153,26 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       },
     },
     responseSchema: wrap('diagram', 'Diagram'),
-    statuses: [200, 400, 401, 403, 404],
+    statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'DELETE',
     path: '/diagrams/{id}',
     segment: 'diagrams',
     tag: 'Diagrams',
-    summary: 'Delete a diagram.',
+    summary:
+      'Move a diagram to the Trash, restorable for 30 days. With permanent=true, delete it for good. 410 when it is already in the Trash (without permanent).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    statuses: [204, 401, 403, 404],
+    query: [
+      {
+        name: 'permanent',
+        required: false,
+        description:
+          '"true" deletes the diagram for good instead of moving it to the Trash; also purges one already in the Trash.',
+      },
+    ],
+    statuses: [204, 401, 403, 404, 410],
   },
   {
     method: 'GET',
@@ -174,7 +183,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('sharedTabs', 'SharedTabsSummary'),
-    statuses: [200, 400, 401, 403, 404],
+    statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'POST',
@@ -186,7 +195,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     requestSchema: { type: 'object', properties: { name: { type: 'string' } } },
     responseSchema: wrap('diagram', 'Diagram'),
-    statuses: [201, 401, 403, 404],
+    statuses: [201, 401, 403, 404, 410],
   },
   {
     method: 'PUT',
@@ -203,7 +212,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         teamId: { type: ['string', 'null'] },
       },
     },
-    statuses: [204, 400, 401, 403, 404],
+    statuses: [204, 400, 401, 403, 404, 410],
   },
   {
     method: 'GET',
@@ -214,7 +223,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('tab', 'Tab'),
-    statuses: [200, 401, 403, 404],
+    statuses: [200, 401, 403, 404, 410],
   },
   {
     method: 'PUT',
@@ -226,7 +235,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     requestSchema: 'Tab',
     responseSchema: wrap('tab', 'Tab'),
-    statuses: [200, 400, 401, 403, 404, 409, 413],
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
   },
   {
     method: 'DELETE',
@@ -236,7 +245,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Delete one tab from a diagram.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    statuses: [204, 401, 403, 404],
+    statuses: [204, 401, 403, 404, 410],
   },
   {
     method: 'POST',
@@ -250,7 +259,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: { elementId: { type: 'string' }, text: { type: 'string' } },
       required: ['elementId', 'text'],
     },
-    statuses: [201, 400, 401, 403, 404],
+    statuses: [201, 400, 401, 403, 404, 410],
   },
   {
     method: 'DELETE',
@@ -259,7 +268,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Diagrams',
     summary: 'Delete a comment.',
     auth: 'guest-or-clerk',
-    statuses: [204, 401, 403, 404],
+    statuses: [204, 401, 403, 404, 410],
   },
   {
     method: 'POST',
@@ -299,7 +308,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       },
       required: ['notes', 'rev', 'voterId'],
     },
-    statuses: [200, 400, 401, 403, 404, 409, 413],
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
   },
   {
     method: 'POST',
@@ -309,7 +318,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Add (link) an existing tab into this diagram.',
     auth: 'guest-or-clerk',
     responseSchema: wrap('tab', 'TabSummary'),
-    statuses: [200, 401, 403, 404],
+    statuses: [200, 401, 403, 404, 410],
   },
   {
     method: 'GET',
@@ -320,7 +329,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: listOf('links', 'ShareLink'),
-    statuses: [200, 401, 403, 404],
+    statuses: [200, 401, 403, 404, 410],
   },
   {
     method: 'POST',
@@ -340,7 +349,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['role'],
     },
     responseSchema: wrap('link', 'ShareLink'),
-    statuses: [201, 400, 401, 403, 404],
+    statuses: [201, 400, 401, 403, 404, 410],
   },
   {
     method: 'DELETE',
@@ -350,7 +359,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Revoke all share links for a diagram.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    statuses: [200, 401, 403, 404],
+    statuses: [200, 401, 403, 404, 410],
   },
   {
     method: 'PUT',
@@ -365,7 +374,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: { password: { type: ['string', 'null'] } },
       required: ['password'],
     },
-    statuses: [200, 400, 401, 403, 404],
+    statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'DELETE',
@@ -375,7 +384,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Revoke one share link by its code.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    statuses: [204, 401, 403, 404],
+    statuses: [204, 401, 403, 404, 410],
   },
   {
     method: 'PUT',
@@ -391,7 +400,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['tabId'],
     },
     responseSchema: wrap('link', 'ShareLink'),
-    statuses: [200, 400, 401, 403, 404],
+    statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'POST',
@@ -402,7 +411,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('link', 'ShareLink'),
-    statuses: [200, 400, 401, 403, 404],
+    statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'GET',
@@ -431,7 +440,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: { ticket: { type: 'string' } },
       required: ['ticket'],
     },
-    statuses: [200, 404],
+    statuses: [200, 404, 410],
   },
   {
     method: 'GET',
@@ -457,7 +466,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: listOf('entries', 'ChangeLogEntry'),
-    statuses: [200, 401, 403, 404],
+    statuses: [200, 401, 403, 404, 410],
   },
   {
     method: 'POST',
@@ -469,7 +478,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     requestSchema: 'ChangeLogEntry',
     responseSchema: wrap('entry', 'ChangeLogEntry'),
-    statuses: [201, 400, 401, 403, 404, 409, 413],
+    statuses: [201, 400, 401, 403, 404, 409, 410, 413],
   },
   {
     method: 'DELETE',
@@ -479,7 +488,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Delete one change-log entry.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    statuses: [204, 401, 403, 404],
+    statuses: [204, 401, 403, 404, 410],
   },
   {
     method: 'DELETE',
@@ -489,7 +498,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: "Clear a tab's change-log entries.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    statuses: [204, 401, 403, 404],
+    statuses: [204, 401, 403, 404, 410],
   },
 
   // ---- Folders ----
@@ -577,7 +586,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: { image: ref('ImageSummary'), deduped: { type: 'boolean' } },
       required: ['image', 'deduped'],
     },
-    statuses: [200, 400, 401, 403, 413, 415, 503],
+    statuses: [200, 400, 401, 403, 409, 413, 415, 503],
   },
   {
     method: 'GET',
@@ -751,7 +760,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       },
       required: ['diagram', 'role', 'tabId'],
     },
-    statuses: [200, 401, 403, 404],
+    statuses: [200, 401, 403, 404, 410],
   },
   {
     method: 'GET',
@@ -770,7 +779,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     ],
     responseSchema: { type: 'string' },
     responseMediaType: 'image/svg+xml',
-    statuses: [200, 404],
+    statuses: [200, 404, 410],
   },
 
   // ---- Participants ----
@@ -857,6 +866,58 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Un-star a diagram for the caller.',
     auth: 'guest-or-clerk',
     statuses: [204, 401],
+  },
+
+  // ---- Trash (docs/specs/013-workspace/trash.md) ----
+  {
+    method: 'GET',
+    path: '/trash',
+    segment: 'trash',
+    tag: 'Trash',
+    summary:
+      'The diagrams the caller may restore: their personal Trash and every joined team Trash, newest first.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: listOf('trash', 'TrashedDiagram'),
+    statuses: [200, 400, 401],
+  },
+  {
+    method: 'DELETE',
+    path: '/trash',
+    segment: 'trash',
+    tag: 'Trash',
+    summary: 'Empty the personal Trash, or one team Trash with team=<id> (joined members only).',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [{ name: 'team', required: false, description: 'Empty this team Trash instead.' }],
+    responseSchema: {
+      type: 'object',
+      properties: { purged: { type: 'number' } },
+      required: ['purged'],
+    },
+    statuses: [200, 400, 401, 404],
+  },
+  {
+    method: 'POST',
+    path: '/trash/{id}/restore',
+    segment: 'trash',
+    tag: 'Trash',
+    summary:
+      'Restore a diagram from the Trash to its folder, or Unsorted when that folder is gone.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: wrap('diagram', 'Diagram'),
+    statuses: [200, 400, 401, 404],
+  },
+  {
+    method: 'DELETE',
+    path: '/trash/{id}',
+    segment: 'trash',
+    tag: 'Trash',
+    summary: 'Delete a diagram in the Trash for good.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    statuses: [204, 400, 401, 404],
   },
 
   // ---- Timeline (docs/specs/013-workspace/timeline.md) ----
