@@ -49,6 +49,9 @@ type EditorHeaderProps = {
   // active tab's theme stroke so the header subtly echoes the canvas.
   brandAccent?: string;
   onOpenShare: () => void;
+  // Opens the editor's Settings on its Account category (the account menu's
+  // Account item), so it doesn't navigate away from the diagram.
+  onOpenAccount?: () => void;
   onRename: (name: string) => void;
   // Bumped by the command palette's "Rename diagram" action to enter inline
   // edit mode (the palette can't reach this component's local editing state).
@@ -70,6 +73,7 @@ export function EditorHeader({
   readOnly = false,
   brandAccent,
   onOpenShare,
+  onOpenAccount,
   onRename,
   renameNonce = 0,
   rolePill,
@@ -179,7 +183,7 @@ export function EditorHeader({
         {/* Explorer + Help used to sit here as top-right links; both now live
             in the ProductNav apps menu next to the logo, so the header keeps
             just its primary actions. */}
-        <AuthControls />
+        <AuthControls onOpenAccount={onOpenAccount} />
       </div>
     </header>
   );

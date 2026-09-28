@@ -26,7 +26,7 @@ The live worker (`apps/live/src/worker.ts`) sends `X-Frame-Options: DENY` on eve
 
 ## Share dialog
 
-Each link row in the ShareDialog gains a **"Embed" copy button** next to the URL copy. It copies an `<iframe>` snippet built by `buildEmbedSnippet` (`apps/live/lib/embed.ts`, unit-tested): the embed URL for that link's code, a sensible default size (800×500), a hairline border, and `allowfullscreen`. When the diagram has a share password set, a hint under the buttons notes that viewers will be prompted for it inside the embed.
+Each pass in the ShareDialog ([Live app → Share dialog](../007-editor/live-app.md#share-dialog)) carries an **Embed** menu beside Live image, offering **Copy embed URL** and **Copy iframe**. The iframe is an `<iframe>` snippet built by `buildEmbedSnippet` (`apps/live/lib/embed.ts`, unit-tested): the embed URL for that link's code, a sensible default size (800×500), a hairline border, and `allowfullscreen`. When the diagram has a share password set, a hint under the buttons notes that viewers will be prompted for it inside the embed.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 

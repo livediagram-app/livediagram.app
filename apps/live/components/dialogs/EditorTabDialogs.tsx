@@ -41,7 +41,6 @@ export function EditorTabDialogs() {
     shareLinks,
     sharePassword,
     shareUrlFor,
-    nameConfirmed,
     clerkUserId,
     clerkDisplayName,
     diagramId,
@@ -100,7 +99,6 @@ export function EditorTabDialogs() {
           sharePassword={sharePassword}
           shareUrlFor={shareUrlFor}
           tabs={tabs}
-          nameConfirmed={nameConfirmed}
           // Signed-in via Clerk → name is locked to the account
           // display name (same rule as the welcome modal, docs/specs/014-identity/auth-and-guest-access.md).
           // Guests pass undefined so the input + shuffle stay live.

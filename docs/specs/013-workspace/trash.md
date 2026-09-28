@@ -61,10 +61,15 @@ Trash are always confirmed. Restore is not: it destroys nothing.
 deleted a moment ago shows 30 and one due within the day shows 1. A diagram
 past its 30 days but not yet swept reads "Removed at the next clean-up".
 
-The Trash is reached from Settings only, never a sidebar row or the account
-menu, so it stays out of the way of everyday work: **Settings › Account** has
-a **Trash** row, for everyone, guests and deployments without accounts
-included, because Settings is the one menu every deployment has. The view itself lives at `/explorer/trash`.
+The Trash is reached two ways, never from the account menu: the **Trash** row
+at the end of the Explorer sidebar's **Library** section (beside Image Gallery
+and Themes, the other things that hold your stuff rather than being it), and
+**Settings › Account**'s **Trash** row, for everyone, guests and deployments
+without accounts included, because Settings is the one menu every deployment
+has. It was Settings-only at first, to stay out of the way of everyday work,
+but a deleted diagram's first question is "where did it go", and the sidebar is
+where people look. The row is selected while the Trash is open. The view itself
+lives at `/explorer/trash`.
 
 Empty Trash empties **one group**: your diagrams, one team's, or this
 browser's. Emptying a team's Trash is said to be for the whole team in its

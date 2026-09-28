@@ -93,8 +93,8 @@ Changing a link's scope broadcasts a system op `share-rescoped { code }`. Sessio
 
 ## Owner experience (Share dialog)
 
-- **New link** gains a **Tabs** select beside the role toggle ("Tabs this link opens"): "All tabs" (default), then each tab by name, in bar order. It only shows when the diagram has more than one tab, and then the row wraps onto two lines: role and tabs, then lifetime and Create.
-- Each active link card shows its scope as a select ("All tabs" / a tab name). Changing it rescopes the link at once. A single-tab diagram shows no scope control; its links are All tabs.
+- The composer's fine print gains an **Opens** row, a select under **Valid** ("Tabs this link opens"): "All tabs" (default), then each tab by name, in bar order. It only shows when the diagram has more than one tab.
+- Each active pass shows its scope beside **Opens** as a select ("All tabs" / a tab name); a single-tab diagram leaves the term off, since every pass opens every tab. Changing it rescopes the link at once. A single-tab diagram shows no scope control; its links are All tabs.
 - A scoped link's **Live image** has no tab picker: it always renders the link's tab.
 - A scoped link's Embed shows its tab, because the embed resolves through the same code.
 

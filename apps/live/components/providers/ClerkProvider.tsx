@@ -37,6 +37,16 @@ export function ClerkProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const staticClerkRoute = STATIC_CLERK_ROUTES.some((r) => pathname?.startsWith(r));
   const configured = clerkEnabled && !!clerkPublishableKey && !staticClerkRoute;
+  // While the bridge stands down, nothing publishes, so the last state it
+  // published would outlive it. Signing in by email code returns to the app
+  // with a SOFT navigation (router.push), keeping this provider mounted: the
+  // editor then booted on a stale "settled guest" state, skipped the wait for
+  // the guest-data migration, loaded the diagram under the new account before
+  // it owned it, and showed a 404 that a refresh cleared. Resetting here makes
+  // every return from an auth page start "not settled", like a fresh load.
+  if (staticClerkRoute && authState !== DEFERRED_AUTH_DEFAULT) {
+    setAuthState(DEFERRED_AUTH_DEFAULT);
+  }
   return (
     <DeferredAuthContext.Provider value={authState}>
       {children}

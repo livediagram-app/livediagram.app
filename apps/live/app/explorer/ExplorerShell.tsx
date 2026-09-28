@@ -121,7 +121,12 @@ function ShellChrome({ children }: { children: ReactNode }) {
           <Brand href="/" size="md" />
           <ProductNav current="explorer" showOnMobile />
         </div>
-        <AuthControls />
+        <AuthControls
+          onOpenAccount={() => {
+            setSettingsCategory('account');
+            setSettingsOpen(true);
+          }}
+        />
       </header>
 
       <main
