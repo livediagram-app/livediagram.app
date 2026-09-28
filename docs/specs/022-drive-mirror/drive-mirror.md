@@ -182,8 +182,7 @@ the same result, so the mirror handles this openly, never silently:
 
 ## Cadence
 
-Named constants in one module
-(`apps/live/lib/drive-mirror/cadence.ts`), with the values and budget from
+Named constants in one cadence module of the mirror code, with the values and budget from
 [Migration readiness, proposed sync cadence](../../research/migration-readiness.md#proposed-sync-cadence):
 
 - **One tab syncs per browser**, elected with the Web Locks API; across

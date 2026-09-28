@@ -5,8 +5,7 @@ file or connected board becomes the contents of one tab, its images go through
 the [Import image pipeline](import-image-pipeline.md), and the user always gets
 a result plus an honest report. [Miro import](miro-import.md) and
 [Microsoft Whiteboard import](whiteboard-import.md) are built on it, as the
-[Excalidraw](excalidraw-import-export.md) and [draw.io](drawio-import.md)
-importers already are. Evidence for the platform facts below:
+[Excalidraw](excalidraw-import-export.md) importer already is. Evidence for the platform facts below:
 [Migration readiness](../../research/migration-readiness.md).
 
 ## Where it lives
@@ -54,8 +53,7 @@ failure fails an import.
 ## The report
 
 Every importer uses the one shared import report and its summary step in the
-Import dialog (see the [draw.io import](drawio-import.md) and the
-[Import image pipeline](import-image-pipeline.md)); a board importer adds its
+Import dialog (see the [Import image pipeline](import-image-pipeline.md)); a board importer adds its
 own kinds to that report rather than a second one.
 
 - Every source item lands in exactly one of **imported**, **degraded**
