@@ -34,6 +34,9 @@ export type ShapePart =
       width: number;
       height: number;
       rx?: number;
+      // Only set once a part is mapped into a box (svg-shape-fit.ts), where a
+      // stretch turns round corners elliptical; the table itself never uses it.
+      ry?: number;
     }
   | { tag: 'ellipse'; role: ShapePartRole; cx: number; cy: number; rx: number; ry: number }
   | { tag: 'circle'; role: ShapePartRole; cx: number; cy: number; r: number };

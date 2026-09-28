@@ -97,6 +97,15 @@ to the visible path and the selection halo:
 - The holes are memoised on the element-map identity, so a pan or selection
   re-render doesn't rescan every element per arrow.
 
+## Exports
+
+The shared SVG arrow renderer (`svgArrow` in `packages/diagram/src/svg-render-arrows.ts`)
+punches the same holes into the same mask as the label knockouts, so every
+export shows the gaps the canvas shows: SVG, PNG / PDF (which rasterise the
+arrows from that markup), server snapshots and thumbnails, and the MCP's inline
+preview. It used to skip them, so an arrow the canvas drew passing behind a box
+came out drawn straight across it.
+
 ## Relationship to [Arrow collision avoidance at draw time](arrow-collision-avoidance.md)
 
 [Arrow collision avoidance at draw time](arrow-collision-avoidance.md) bows a **freshly drawn** arrow

@@ -23,14 +23,19 @@ import {
   type GraphEdge,
   type GraphNode,
   type LayoutStyle,
+  withOrthogonalBends,
 } from '@livediagram/diagram';
 
 export const GRAPH_LABEL_MAX = 40;
 
+// A node may name its group itself (`group`), as well as or instead of being
+// listed in the group's `members`: the natural shape for a model to write.
+export type GraphInputNode = GraphNode & { group?: string };
+
 export type GraphInput = {
-  nodes: GraphNode[];
+  nodes: GraphInputNode[];
   edges: GraphEdge[];
-  groups?: GraphCluster[];
+  groups?: (Omit<GraphCluster, 'members'> & { members?: string[] })[];
   direction?: 'down' | 'right';
   style?: LayoutStyle;
   lines?: ArrowStyle;
@@ -42,13 +47,16 @@ export type GraphInput = {
 const CLAUSE_START =
   /\s(?:which|that|who|whom|whose|where|when|for|to|with|by|holding|sending|serving|served|handling|storing|running|using|used|responsible)\s/i;
 
-// A label within `max` characters. When it runs over, the heading is the noun
-// phrase before the first clause word, if there is one of at least two words;
-// otherwise the text is cut at a word boundary and marked with an ellipsis.
-// Returns the text unchanged when it already fits.
+// A label within `max` characters. When it runs over, bracketed asides go
+// first ("Web client (React SPA served from the CDN)" is "Web client"); then
+// the heading is the noun phrase before the first clause word, if there is one
+// of at least two words; otherwise the text is cut at a word boundary and
+// marked with an ellipsis. Returns the text unchanged when it already fits.
 export function capLabel(text: string, max = GRAPH_LABEL_MAX): { label: string; cut: boolean } {
-  const clean = text.replace(/\s+/g, ' ').trim();
-  if (clean.length <= max) return { label: clean, cut: false };
+  const whole = text.replace(/\s+/g, ' ').trim();
+  if (whole.length <= max) return { label: whole, cut: false };
+  const clean = whole.replace(/\s*[([][^)\]]*[)\]]/g, '').trim() || whole;
+  if (clean.length <= max) return { label: clean, cut: true };
   const clause = CLAUSE_START.exec(clean);
   if (clause) {
     const head = clean.slice(0, clause.index).replace(/[\s,;:.-]+$/, '');
@@ -66,7 +74,10 @@ export function capLabel(text: string, max = GRAPH_LABEL_MAX): { label: string; 
 export function conciseGraph(input: GraphInput): GraphInput {
   return {
     ...input,
-    nodes: input.nodes.map((n) => {
+    groups: withNodeGroups(input)?.map((g) =>
+      g.label ? { ...g, label: capLabel(g.label).label } : g,
+    ),
+    nodes: input.nodes.map(({ group: _group, ...n }) => {
       if (!n.label) return n;
       const { label, cut } = capLabel(n.label);
       if (!cut) return { ...n, label };
@@ -74,8 +85,24 @@ export function conciseGraph(input: GraphInput): GraphInput {
       return { ...n, label, note: n.note ? `${full}\n\n${n.note}` : full };
     }),
     edges: input.edges.map((e) => (e.label ? { ...e, label: capLabel(e.label).label } : e)),
-    groups: input.groups?.map((g) => (g.label ? { ...g, label: capLabel(g.label).label } : g)),
   };
+}
+
+// The groups with every node's own `group` folded into its members. A group id
+// no group declares is created, labelled with the id.
+function withNodeGroups(input: GraphInput): GraphCluster[] | undefined {
+  const tagged = input.nodes.filter((n) => n.group);
+  if (!input.groups && tagged.length === 0) return undefined;
+  const groups = (input.groups ?? []).map((g) => ({ ...g, members: [...(g.members ?? [])] }));
+  for (const n of tagged) {
+    let g = groups.find((x) => x.id === n.group);
+    if (!g) {
+      g = { id: n.group!, label: n.group!, members: [] };
+      groups.push(g);
+    }
+    if (!g.members.includes(n.id)) g.members.push(n.id);
+  }
+  return groups;
 }
 
 const DEFAULT_LINES: Record<LayoutStyle, ArrowStyle> = {
@@ -96,15 +123,28 @@ export function layoutGraph(input: GraphInput): Element[] {
         ? ('TB' as const)
         : undefined;
   const style: LayoutStyle = g.groups?.length ? 'flow' : (g.style ?? 'flow');
-  const graph = { nodes: g.nodes, edges: g.edges, clusters: g.groups };
+  const graph = {
+    nodes: g.nodes,
+    edges: g.edges,
+    clusters: g.groups as GraphCluster[] | undefined,
+  };
   const laid =
     style === 'flow'
       ? layoutClusteredGraph(graph, { direction })
-      : sweepEdgelessNodes(autoLayoutElements(graphToElements(graph), { direction, style }));
+      : sweepEdgelessNodes(
+          autoLayoutElements(graphToElements(graph), {
+            direction,
+            style,
+            // Boxes keep their label-fitted sizes, as in the flow layout.
+            fixedSizeIds: new Set(graph.nodes.map((n) => n.id)),
+          }),
+        );
   const lines = g.lines ?? DEFAULT_LINES[style];
-  return lines === 'straight'
-    ? laid
-    : laid.map((el) => (el.type === 'arrow' ? { ...el, arrowStyle: lines } : el));
+  if (lines === 'straight') return laid;
+  const styled = laid.map((el) => (el.type === 'arrow' ? { ...el, arrowStyle: lines } : el));
+  // Angled lines bend twice (down, across, down), the org-chart shape, along
+  // the flow; a tree always flows down, and so does a flow left on auto.
+  return lines === 'angled' ? withOrthogonalBends(styled, direction ?? 'TB') : styled;
 }
 
 // The same graph from Mermaid, through the editor's own importer: its direction

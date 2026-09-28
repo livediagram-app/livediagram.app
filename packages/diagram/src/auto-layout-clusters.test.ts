@@ -189,3 +189,42 @@ describe('sweepEdgelessNodes', () => {
     expect(byId(els, 'fixed')).toMatchObject({ x: 10, y: 10 });
   });
 });
+
+describe('group members (docs/specs/020-import-export/mermaid.md)', () => {
+  const graph: DiagramGraph = {
+    nodes: [
+      { id: 'gw', label: 'Gateway' },
+      { id: 'a', label: 'Orders' },
+      { id: 'b', label: 'Payments' },
+      { id: 'c', label: 'Notify' },
+      { id: 'q', label: 'Queue' },
+    ],
+    edges: [
+      { from: 'gw', to: 'a' },
+      { from: 'gw', to: 'b' },
+      { from: 'q', to: 'c' },
+      { from: 'a', to: 'q' },
+    ],
+    clusters: [{ id: 'core', label: 'Core', members: ['a', 'b', 'c'] }],
+  };
+
+  it('lines up members no inner arrow touches across the flow, not in a grid', () => {
+    const els = layoutClusteredGraph(graph, { direction: 'LR', makeEdgeId: makeIds() });
+    const xs = new Set(['a', 'b', 'c'].map((id) => byId(els, id).x));
+    expect(xs.size).toBe(1);
+  });
+
+  it('keeps each node its label-fitted size', () => {
+    const els = layoutClusteredGraph(
+      {
+        nodes: [
+          { id: 'a', label: 'CTO' },
+          { id: 'b', label: 'Platform and site reliability' },
+        ],
+        edges: [{ from: 'a', to: 'b' }],
+      },
+      { makeEdgeId: makeIds() },
+    );
+    expect(byId(els, 'a').width).toBeLessThan(byId(els, 'b').width);
+  });
+});

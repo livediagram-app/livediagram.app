@@ -83,10 +83,24 @@ describe('layoutGraph', () => {
   it('routes arrows per style: angled for a tree, curved for a mind map, or as asked', () => {
     const arrows = (els: ReturnType<typeof layoutGraph>) =>
       els.filter((e) => e.type === 'arrow') as { arrowStyle?: string }[];
-    expect(arrows(layoutGraph({ ...chain, style: 'tree' }))[0]!.arrowStyle).toBe('angled');
-    expect(arrows(layoutGraph({ ...chain, style: 'mindmap' }))[0]!.arrowStyle).toBe('curved');
-    expect(arrows(layoutGraph(chain))[0]!.arrowStyle ?? 'straight').toBe('straight');
-    expect(arrows(layoutGraph({ ...chain, lines: 'angled' }))[0]!.arrowStyle).toBe('angled');
+    // A branch, so the children sit off to each side (a lined-up angled
+    // arrow has nothing to bend and runs straight).
+    const branch = {
+      nodes: [
+        { id: 'r', label: 'Root' },
+        { id: 'a', label: 'Left' },
+        { id: 'b', label: 'Right' },
+      ],
+      edges: [
+        { from: 'r', to: 'a' },
+        { from: 'r', to: 'b' },
+      ],
+    };
+    expect(arrows(layoutGraph({ ...branch, style: 'tree' }))[0]!.arrowStyle).toBe('angled');
+    expect(arrows(layoutGraph({ ...branch, style: 'mindmap' }))[0]!.arrowStyle).toBe('curved');
+    expect(arrows(layoutGraph(branch))[0]!.arrowStyle ?? 'straight').toBe('straight');
+    expect(arrows(layoutGraph({ ...branch, lines: 'angled' }))[0]!.arrowStyle).toBe('angled');
+    expect(arrows(layoutGraph({ ...chain, lines: 'angled' }))[0]!.arrowStyle).toBe('straight');
   });
 
   it('draws groups as frames around their members', () => {
@@ -149,5 +163,55 @@ describe('Mermaid', () => {
     expect(
       resolveGraphInput({ graph: { nodes: [{ id: 'x' }], edges: [] } }).graph?.nodes[0]!.id,
     ).toBe('x');
+  });
+});
+
+describe('review fixes (docs/specs/015-api/mcp-server.md §4.7)', () => {
+  it('drops a bracketed aside before anything else', () => {
+    expect(capLabel('Web client (React single page application served from the CDN)')).toEqual({
+      label: 'Web client',
+      cut: true,
+    });
+  });
+
+  it('takes a group named on the node, as well as from members', () => {
+    const els = layoutGraph({
+      nodes: [
+        { id: 'a', label: 'Orders', group: 'core' },
+        { id: 'b', label: 'Payments', group: 'core' },
+        { id: 'c', label: 'Gateway' },
+      ],
+      edges: [
+        { from: 'c', to: 'a' },
+        { from: 'c', to: 'b' },
+      ],
+    });
+    const frame = els.find((e) => e.id === 'core') as Record<string, unknown>;
+    expect(frame).toMatchObject({ shape: 'frame', label: 'core' });
+  });
+
+  it('bends a tree line down, across, then down into the child', () => {
+    const els = layoutGraph({
+      style: 'tree',
+      nodes: [
+        { id: 'r', label: 'CEO' },
+        { id: 'a', label: 'CTO' },
+        { id: 'b', label: 'CFO' },
+      ],
+      edges: [
+        { from: 'r', to: 'a' },
+        { from: 'r', to: 'b' },
+      ],
+    });
+    const arrows = els.filter((e) => e.type === 'arrow') as unknown as {
+      from: { anchor: string };
+      to: { anchor: string };
+      curvePoints?: unknown[];
+    }[];
+    for (const a of arrows) {
+      expect(a.from.anchor).toBe('s');
+      expect(a.to.anchor).toBe('n');
+      expect(a.curvePoints).toHaveLength(2);
+    }
   });
 });

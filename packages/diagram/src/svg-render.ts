@@ -458,8 +458,8 @@ export function boxedNeedsSvgRaster(
 
 // Render a tab's elements to a complete SVG string on a solid background, sized
 // to the content bounds with padding. Layer bands paint bottom -> top with
-// frame sections behind their band-mates (docs/specs/006-diagram/layers.md + docs/specs/008-canvas/canvas-and-palette.md), boxed elements
-// before arrows. Hidden layers are skipped, so server snapshots (docs/specs/006-diagram/diagram-snapshots.md) and
+// frame sections behind their band-mates (docs/specs/006-diagram/layers.md + docs/specs/008-canvas/canvas-and-palette.md), everything else
+// in array order as on the canvas. Hidden layers are skipped, so server snapshots (docs/specs/006-diagram/diagram-snapshots.md) and
 // MCP inline images match what the canvas shows. No isometric projection or
 // backdrop pattern — those are in-app export extras (apps/live/lib/export-tab).
 export function renderElementsToSvg(
@@ -505,14 +505,14 @@ export function renderElementsToSvg(
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(visible);
   if (shadowDefs) parts.push(shadowDefs);
-  // Per band: boxed first, then arrows; a dimmed layer wraps its band in
-  // a <g opacity> (docs/specs/006-diagram/layers.md).
+  // Per band, in the canvas's paint order (docs/specs/006-diagram/layers.md): arrows and boxes
+  // interleave by array order, so an arrow sent behind a box stays behind it.
+  // A dimmed layer wraps its band in a <g opacity>.
   for (const band of layerBands(tab.elements, tab.layers)) {
-    const inner: string[] = [];
-    for (const el of band.elements) {
-      if (el.type !== 'arrow')
-        inner.push(
-          svgBoxed(el, {
+    const inner = band.elements.map((el) =>
+      el.type === 'arrow'
+        ? svgArrow(el, tab.elements, surface, tab.font, labels)
+        : svgBoxed(el, {
             resolveImageHref: opts.resolveImageHref,
             resolveIconArt: opts.resolveIconArt,
             resolveStickerArt: opts.resolveStickerArt,
@@ -520,11 +520,7 @@ export function renderElementsToSvg(
             surface,
             chartPalette,
           }),
-        );
-    }
-    for (const el of band.elements) {
-      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface, tab.font, labels));
-    }
+    );
     const opacity = layerOpacityOf(band.layer);
     parts.push(
       opacity < 1 ? `<g opacity="${r2(opacity)}">${inner.join('\n')}</g>` : inner.join('\n'),

@@ -293,9 +293,9 @@ or the same thing written as **`mermaid`**:
 
 ```
 graph: {
-  nodes:  [{ id, label?, shape?, note? }],
+  nodes:  [{ id, label?, shape?, note?, group? }],
   edges:  [{ from, to, label? }],
-  groups?: [{ id, label?, members: [nodeId, ...] }],
+  groups?: [{ id, label?, members?: [nodeId, ...] }],
   direction?: 'down' | 'right',
   style?:  'flow' | 'tree' | 'mindmap',
   lines?:  'straight' | 'angled' | 'curved',
@@ -317,19 +317,23 @@ Provide **one** of `graph` / `mermaid` / `elements` / `template`, not several.
 in the box and is capped at **40 characters** (`GRAPH_LABEL_MAX`). The cap is a
 plain fact in the tool's description, not an instruction (§4.15), and the server
 enforces it rather than rejecting the call. A longer label becomes a heading:
-the noun phrase before its first clause word when there is one ("Orders service
-which creates orders" becomes "Orders service", "Message queue for async
-events" becomes "Message queue"), otherwise the text cut at a word boundary with
-an ellipsis. Either way the **full text moves into the node's `note`**
+bracketed asides go first ("Web client (React SPA served from the CDN)" becomes
+"Web client"); then the noun phrase before its first clause word when there is
+one ("Orders service which creates orders" becomes "Orders service", "Message
+queue for async events" becomes "Message queue"); otherwise the text cut at a
+word boundary with an ellipsis. Either way the **full text moves into the node's `note`**
 (prepended to any note the model gave), which the editor shows as the element's
 note. A model now has somewhere to put the explanation, so the box keeps the
 heading; this is what stops a verbose model filling a diagram with sentences.
 Edge labels are capped the same way (overflow is dropped, an arrow has no note).
 
 **Boxes fit their labels.** Each node is sized from its label (estimated text
-width and line count, within a sane range), and the layout's peer sizing then
-gives every node of a tier the size its longest label needs, so text neither
-spills nor leaves a sentence-sized box.
+width and line count, within a sane range) and **keeps that size** through the
+layout: the peer sizing that Tidy Up applies (every box of a tier as big as its
+longest label) is skipped for graph input, where it let one long label inflate
+every box ("CTO" drawn as wide as "Platform and site reliability"). An
+unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.md)
+"Node boxes and text").
 
 **Layout choices** (defaults in brackets):
 
@@ -338,14 +342,25 @@ spills nor leaves a sentence-sized box.
   chart, a hierarchy), `mindmap` the radial layout around the first node.
 - `groups`: named clusters drawn as frames around their members and laid out as
   one block each (the clustered layout the editor's Mermaid import uses); an edge
-  may point at a group id. With groups, `style` is flow.
+  may point at a group id. With groups, `style` is flow. A node may name its
+  group itself (`group`), the shape a model reaches for first; it joins that
+  group's members, and a group id nothing declares is created with the id as its
+  label. `members` is then optional.
 - `lines` (`straight` for flow, `angled` for tree, `curved` for mindmap): the
-  arrows' routing, from the editor's own arrow styles.
+  arrows' routing, from the editor's own arrow styles. Angled lines **bend
+  twice** along the flow (down, across at half height, down into the child's
+  top), the org-chart shape; one whose ends already line up runs straight
+  ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice").
 
 The flow layout reduces crossings: after ranking, a few up-and-down barycentre
 passes reorder each rank, and a new order is kept only when it crosses fewer
 edges ([Layout cleanup](../008-canvas/layout-cleanup.md)), so graph input, whose
-nodes all start at one point, no longer lays out in arbitrary input order.
+nodes all start at one point, no longer lays out in arbitrary input order. It
+also gives long edges a lane, places each node by its neighbours instead of
+centring its rank, and has every edge to a later rank leave and land on the
+faces that point along the flow (the same page). An arrow that still crosses an
+unrelated box passes behind it with a gap, on the canvas and in the preview
+([Arrows pass behind intervening boxes](../008-canvas/arrow-route-behind.md)).
 
 **`mermaid`** is parsed by the editor's own importer (`parseMermaid`:
 flowcharts with subgraphs, state diagrams and ER diagrams, [Mermaid](../020-import-export/mermaid.md)) into the same
@@ -585,6 +600,12 @@ Worker (no DOM, no React).
   draws shapes/arrows/colours but no text, so the calling model gets a text-less
   preview it can't self-check against. A diagram's own font choice falls back to
   Inter in the preview; the structured elements still carry the true font.
+- **No scaled strokes.** resvg ignores `vector-effect="non-scaling-stroke"`, so
+  the renderer never relies on it: stretched silhouettes (frames, cylinders,
+  device frames) are mapped into the element box point by point
+  (`svg-shape-fit.ts`) rather than nested in a scaled `<svg>`. Before that, a
+  frame's border in the preview grew with the frame, several pixels thick on a
+  large group.
 - **Image-element embedding.** When a rendered tab has image elements,
   `imageResult` prefetches their bytes (owner-authed via the caller's token,
   `GET /api/images/:id`) and inlines them as base64 data URIs through the

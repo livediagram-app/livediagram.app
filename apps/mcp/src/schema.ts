@@ -210,6 +210,12 @@ const graphField = z
               'Detail behind the heading: longer explanation, context or a description. ' +
                 "Stored as the element's note, which the editor shows on the element.",
             ),
+          group: z
+            .string()
+            .optional()
+            .describe(
+              "Id of the group this node sits in; the same as listing it in that group's members.",
+            ),
         }),
       )
       .min(1)
@@ -231,7 +237,10 @@ const graphField = z
         z.object({
           id: z.string().describe('Unique id (an edge may point at a group).'),
           label: z.string().optional().describe("The group's heading, drawn on its frame."),
-          members: z.array(z.string()).describe('The node ids inside this group.'),
+          members: z
+            .array(z.string())
+            .optional()
+            .describe('The node ids inside this group (or set "group" on each node).'),
         }),
       )
       .optional()

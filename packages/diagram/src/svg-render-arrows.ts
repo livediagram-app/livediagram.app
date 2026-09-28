@@ -14,6 +14,7 @@ import {
 import { BORDER_DASH_ARRAY } from './border-style';
 import { defaultArrowLabelColor, defaultArrowStrokeColor, type CanvasSurface } from './colors';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
+import { ROUTE_BEHIND_MARGIN, routeBehindHoles } from './arrow-behind';
 import { endpointPosition } from './geometry';
 import { svgWrappedLabel } from './svg-render-labels';
 import { KNOCKOUT_RADIUS_PX, arrowLabelPass, type ArrowLabelPass } from './arrow-label-layout';
@@ -151,12 +152,16 @@ export function svgArrow(
   );
   const dash = BORDER_DASH_ARRAY[arrow.strokeStyle ?? 'solid'];
   const dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
-  const knockouts = labels.knockoutsOf(arrow.id);
+  // The line breaks around unrelated boxes it crosses, as on the canvas
+  // (docs/specs/008-canvas/arrow-route-behind.md), and around the label knockouts. Both go in one
+  // mask, the same one ArrowView mints, so the export shows the same gaps.
+  const holes = [
+    ...routeBehindHoles(arrow, from, to, elements).map((h) => ({ ...h, rx: ROUTE_BEHIND_MARGIN })),
+    ...labels.knockoutsOf(arrow.id).map((k) => ({ ...k, rx: KNOCKOUT_RADIUS_PX })),
+  ];
   const maskId =
-    knockouts.length > 0
-      ? `${maskIdPrefix}${String(arrow.id)}`.replace(/[^a-zA-Z0-9_-]/g, '')
-      : null;
-  if (maskId) parts.push(svgKnockoutMask(maskId, knockouts));
+    holes.length > 0 ? `${maskIdPrefix}${String(arrow.id)}`.replace(/[^a-zA-Z0-9_-]/g, '') : null;
+  if (maskId) parts.push(svgArrowMask(maskId, holes));
   const maskAttr = maskId ? ` mask="url(#${xmlEscape(maskId)})"` : '';
   parts.push(
     `<path d="${d}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"${dashAttr}${maskAttr}/>`,
@@ -207,16 +212,17 @@ export function arrowLabelFontStack(arrow: ArrowElement, tabFont?: string): stri
   return resolveFontStack(arrow.font) ?? resolveFontStack(tabFont);
 }
 
-// A mask that paints the line everywhere except the label knockouts. The
-// region is stated explicitly: the default is the path's bbox plus 10%, which
-// collapses to a hairline on a straight horizontal line.
+// A mask that paints the line everywhere except its holes (label knockouts and
+// the boxes it passes behind). The region is stated explicitly: the default is
+// the path's bbox plus 10%, which collapses to a hairline on a straight
+// horizontal line.
 const MASK_ORIGIN = -1e6;
 const MASK_SIZE = 2e6;
-function svgKnockoutMask(id: string, rects: Rect[]): string {
+function svgArrowMask(id: string, rects: (Rect & { rx: number })[]): string {
   const holes = rects
     .map(
       (k) =>
-        `<rect x="${r2(k.x)}" y="${r2(k.y)}" width="${r2(k.width)}" height="${r2(k.height)}" rx="${KNOCKOUT_RADIUS_PX}" fill="black"/>`,
+        `<rect x="${r2(k.x)}" y="${r2(k.y)}" width="${r2(k.width)}" height="${r2(k.height)}" rx="${r2(k.rx)}" fill="black"/>`,
     )
     .join('');
   return (

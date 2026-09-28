@@ -6,6 +6,7 @@
 
 import { remapElementRefs, type Element, type Tab } from '@livediagram/diagram';
 import { mergeImportedTab } from '@/lib/import-merge';
+import { getTheme } from '@/lib/themes';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
 import { track } from '@/lib/telemetry';
@@ -151,13 +152,20 @@ export function useTabImport({
     if (format === 'excalidraw') return importExcalidraw(text, onProgress);
 
     if (format === 'mermaid') {
-      const { parseMermaid, layoutClusteredGraph } = await import('@livediagram/diagram');
+      const { parseMermaid, layoutClusteredGraph, rederiveColorPresetForTheme } =
+        await import('@livediagram/diagram');
       const parsed = parseMermaid(text);
       if (!parsed.ok) return { status: 'error', error: parsed.error };
       // Uncoloured elements inherit the tab's theme at render, so no
-      // explicit recolour is needed. The cluster-aware layout honours the
-      // flowchart direction (TB / LR) and draws subgraphs as frames.
-      const elements = layoutClusteredGraph(parsed.graph, { direction: parsed.direction });
+      // explicit recolour is needed; only a preset-bound node (a state
+      // diagram's solid start / end dot) takes its colours from the theme
+      // now. The cluster-aware layout honours the flowchart direction
+      // (TB / LR) and draws subgraphs as frames.
+      const theme = getTheme(active?.theme);
+      const elements = layoutClusteredGraph(parsed.graph, { direction: parsed.direction }).map(
+        (el) =>
+          el.type === 'shape' && el.colorPreset ? rederiveColorPresetForTheme(el, theme) : el,
+      );
       replaceActiveTabContent({
         id: activeId,
         name: active?.name ?? '',

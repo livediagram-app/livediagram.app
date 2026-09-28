@@ -104,6 +104,8 @@ export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
 // (no DOM here), tuned to the default label face at its default size; the
 // layout's peer sizing then gives a whole tier the size its longest label
 // needs. A diamond's text only fits its inner half, so it gets more room.
+// The side of an unlabelled circle node (see graphToElements).
+export const DOT_SIZE = 28;
 const CHAR_PX = 7.4;
 const LINE_PX = 19;
 const PAD_PX = 40;
@@ -132,6 +134,23 @@ export function graphToElements(
 
   const nodes: Element[] = graph.nodes.map((n) => {
     const shape = coerceShapeKind(n.shape);
+    // An unlabelled circle is a dot: a state diagram's start / end, or a
+    // junction. Drawn at the default circle size it read as an empty box
+    // waiting for text. Solid in the theme's accent via the preset binding,
+    // which a theme walk resolves (docs/specs/020-import-export/mermaid.md).
+    if (shape === 'circle' && !(n.label ?? '').trim()) {
+      return {
+        id: n.id,
+        type: 'shape' as const,
+        shape,
+        x: 0,
+        y: 0,
+        width: DOT_SIZE,
+        height: DOT_SIZE,
+        colorPreset: 'solid',
+        ...(n.note ? { note: n.note } : {}),
+      };
+    }
     const { width, height } = labelBoxSize(n.label, shape);
     return {
       id: n.id,

@@ -50,6 +50,52 @@ edges** than the one it started from. A graph whose nodes all start at one point
 its input order, and a hand-arranged one is only changed where that removes a
 crossing.
 
+### Long edges keep a lane
+
+An edge that skips ranks (a branch that rejoins two ranks down) has no node in
+the ranks it passes, so nothing kept a real node off its line: in a checkout
+flow the "Yes" arrow from a decision ran straight through the "No" branch's box
+to the step both lead to. The flow layout now splits such an edge into a chain
+of **lane** nodes, one per rank it crosses (`LANE_WIDTH` = 32 across the rank,
+nothing along it), which take part in ordering and placement like any node and
+are dropped once placed (`auto-layout-long-edges.ts`). Only forward edges are
+split; a back edge (a cycle) is drawn as it lands.
+
+### Nodes sit by their neighbours
+
+Ranks used to be packed and centred on the widest one, so a node sat wherever
+its rank's width put it. Now each node is pulled toward the weighted mean
+position of its neighbours in the adjacent rank, in alternating downward and
+upward sweeps (four pairs, then one pass using both sides), and the wanted
+positions are made legal (order kept, `SIBLING_GAP` between boxes) by isotonic
+regression, the closest legal positions to the wanted ones
+(`auto-layout-placement.ts`). An edge between two lane nodes pulls with weight
+8, one lane end 2, a plain edge 1, so a long edge runs straight and the node it
+skips moves aside. A final pass **straightens one-to-one links**: a node whose
+only neighbour above has it as its only neighbour below sits right under it when
+there is room, so a plain chain runs dead straight instead of drifting a few
+pixels per rank.
+
+### Edges use the flow faces
+
+In the flow and tree layouts, an edge to a later rank leaves by the face that
+points down the flow and lands on the opposite one (`s` to `n` top to bottom,
+`e` to `w` left to right), however far across the rank its target sits. Picked
+by angle alone, a parent with wide-spread children left by its side and entered
+each child's side. Same-rank and backward edges, and every mindmap spoke, still
+pick by angle (`reanchorArrow`'s `axis`).
+
+### Angled lines bend twice
+
+An angled arrow on its own is an L: from a parent's bottom to a child's top it
+runs down to the child's level and meets the child's top edge sideways. Laid-out
+graph input (the MCP's `graph` / `mermaid`, [MCP server](../015-api/mcp-server.md))
+gives each angled arrow two bends through `curvePoints` (down to half height,
+across, down into the child), the shape an org chart is read in; one whose ends
+already line up runs straight rather than drawing a zero-length elbow with a
+sideways head (`arrow-orthogonal.ts`). The bends are ordinary curve points, so
+the author can drag them like any other.
+
 ### Layout styles
 
 One layered layout can't express every diagram: a mindmap wants its root in the

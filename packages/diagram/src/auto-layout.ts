@@ -35,6 +35,8 @@ import {
 } from './auto-layout-shared';
 import { positionTreeComponent } from './auto-layout-tree';
 import { reduceCrossings } from './auto-layout-crossings';
+import { LANE_WIDTH, splitLongEdges } from './auto-layout-long-edges';
+import { placeCrossAxis } from './auto-layout-placement';
 import { positionMindmapComponent } from './auto-layout-mindmap';
 
 export type LayoutDirection = 'TB' | 'LR';
@@ -114,23 +116,34 @@ function layerComponent(ids: ElementId[], edges: Edge[]): Map<ElementId, number>
 }
 
 // Place one component into local coords (top-left per node). Ranks stack along
-// the main axis; within a rank, nodes lay out along the cross axis and each
-// rank is centred against the widest one. Within-rank order starts from the
-// model's original cross position (respecting its spatial intent) and is then
-// refined to cross fewer edges (auto-layout-crossings.ts).
+// the main axis; within a rank, nodes lay out along the cross axis. Long edges
+// are split into lane nodes first (auto-layout-long-edges.ts) so they reserve
+// a path. Within-rank order starts from the model's original cross position
+// (respecting its spatial intent) and is then refined to cross fewer edges
+// (auto-layout-crossings.ts); each node then settles by its neighbours
+// (auto-layout-placement.ts) instead of wherever its rank's width puts it.
 function positionComponent(
-  ids: ElementId[],
-  layer: Map<ElementId, number>,
+  realIds: ElementId[],
+  realLayer: Map<ElementId, number>,
   size: Map<ElementId, Size>,
   centers: Map<ElementId, Pt>,
   dir: LayoutDirection,
-  edges: Edge[],
+  realEdges: Edge[],
 ): PlacedComponent {
+  const { ids, edges, layer, lanes } = splitLongEdges(realIds, realEdges, realLayer);
   const byLayer = new Map<number, ElementId[]>();
   for (const id of ids) pushTo(byLayer, layer.get(id)!, id);
   const layers = [...byLayer.keys()].sort((a, b) => a - b);
 
-  const crossOf = (id: ElementId) => (dir === 'TB' ? centers.get(id)!.x : centers.get(id)!.y);
+  // A lane starts where its edge's source is, so the first order keeps it
+  // beside the nodes it runs between.
+  const laneSource = new Map<ElementId, ElementId>();
+  for (const e of edges)
+    if (lanes.has(e.to)) laneSource.set(e.to, laneSource.get(e.from) ?? e.from);
+  const crossOf = (id: ElementId): number => {
+    const c = centers.get(laneSource.get(id) ?? id)!;
+    return dir === 'TB' ? c.x : c.y;
+  };
   for (const L of layers) byLayer.get(L)!.sort((a, b) => crossOf(a) - crossOf(b));
   const refined = reduceCrossings(
     layers.map((L) => byLayer.get(L)!),
@@ -139,8 +152,10 @@ function positionComponent(
   );
   layers.forEach((L, i) => byLayer.set(L, refined[i]!));
 
-  const mainSize = (id: ElementId) => (dir === 'TB' ? size.get(id)!.h : size.get(id)!.w);
-  const crossSize = (id: ElementId) => (dir === 'TB' ? size.get(id)!.w : size.get(id)!.h);
+  const mainSize = (id: ElementId) =>
+    lanes.has(id) ? 0 : dir === 'TB' ? size.get(id)!.h : size.get(id)!.w;
+  const crossSize = (id: ElementId) =>
+    lanes.has(id) ? LANE_WIDTH : dir === 'TB' ? size.get(id)!.w : size.get(id)!.h;
 
   const layerMainStart = new Map<number, number>();
   const layerMainSize = new Map<number, number>();
@@ -152,33 +167,55 @@ function positionComponent(
     mainCursor += lm + LAYER_GAP;
   }
 
-  const crossPosLocal = new Map<ElementId, number>();
+  // Start packed and centred against the widest rank, then let each node
+  // settle by its neighbours.
   const layerCrossTotal = new Map<number, number>();
   for (const L of layers) {
-    let c = 0;
+    const rank = byLayer.get(L)!;
+    const total =
+      rank.reduce((sum, id) => sum + crossSize(id), 0) + SIBLING_GAP * (rank.length - 1);
+    layerCrossTotal.set(L, total);
+  }
+  const widest = Math.max(0, ...layerCrossTotal.values());
+  const start = new Map<ElementId, number>();
+  for (const L of layers) {
+    let c = (widest - layerCrossTotal.get(L)!) / 2;
     for (const id of byLayer.get(L)!) {
-      crossPosLocal.set(id, c);
+      start.set(id, c + crossSize(id) / 2);
       c += crossSize(id) + SIBLING_GAP;
     }
-    layerCrossTotal.set(L, Math.max(0, c - SIBLING_GAP));
   }
-  const maxCross = Math.max(0, ...layers.map((L) => layerCrossTotal.get(L)!));
+  const centre = placeCrossAxis(
+    layers.map((L) => byLayer.get(L)!),
+    edges,
+    crossSize,
+    SIBLING_GAP,
+    lanes,
+    start,
+  );
+  let minCross = Infinity;
+  let maxCross = -Infinity;
+  for (const id of realIds) {
+    minCross = Math.min(minCross, centre.get(id)! - crossSize(id) / 2);
+    maxCross = Math.max(maxCross, centre.get(id)! + crossSize(id) / 2);
+  }
 
   const pos = new Map<ElementId, Pt>();
   for (const L of layers) {
-    const offset = (maxCross - layerCrossTotal.get(L)!) / 2;
     const lm = layerMainSize.get(L)!;
     for (const id of byLayer.get(L)!) {
+      if (lanes.has(id)) continue;
       const mainPos = layerMainStart.get(L)! + (lm - mainSize(id)) / 2;
-      const crossPos = offset + crossPosLocal.get(id)!;
+      const crossPos = centre.get(id)! - crossSize(id) / 2 - minCross;
       pos.set(id, dir === 'TB' ? { x: crossPos, y: mainPos } : { x: mainPos, y: crossPos });
     }
   }
   const mainExtent = mainCursor - LAYER_GAP;
+  const crossExtent = maxCross - minCross;
   return {
     pos,
-    width: dir === 'TB' ? maxCross : mainExtent,
-    height: dir === 'TB' ? mainExtent : maxCross,
+    width: dir === 'TB' ? crossExtent : mainExtent,
+    height: dir === 'TB' ? mainExtent : crossExtent,
   };
 }
 
@@ -298,7 +335,9 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
       if (!p || !s) return el;
       return { ...el, x: p.x + dx, y: p.y + dy, width: s.w, height: s.h };
     }
-    if (el.type === 'arrow') return reanchorArrow(el, finalCenters);
+    // Mindmap spokes run every way, so only flow and tree have an axis.
+    if (el.type === 'arrow')
+      return reanchorArrow(el, finalCenters, style === 'mindmap' ? undefined : dir);
     return el;
   });
 }

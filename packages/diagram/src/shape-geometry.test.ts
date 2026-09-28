@@ -11,6 +11,7 @@ import {
   type ShapePart,
 } from './shape-geometry';
 import { scaledPolygonPoints } from './svg-render-shapes';
+import { boxFit, fitShapePart } from './svg-shape-fit';
 import { SHAPE_KINDS } from './validate';
 import type { ShapeKind, Tab } from './index';
 
@@ -42,12 +43,13 @@ function partMark(part: ShapePart): string {
     case 'rect':
       return (
         `<rect x="${n(part.x)}" y="${n(part.y)}" width="${n(part.width)}" height="${n(part.height)}"` +
-        (part.rx !== undefined ? ` rx="${n(part.rx)}"` : '')
+        (part.rx !== undefined ? ` rx="${n(part.rx)}"` : '') +
+        (part.ry !== undefined ? ` ry="${n(part.ry)}"` : '')
       );
     case 'ellipse':
-      return `<ellipse cx="${part.cx}" cy="${part.cy}" rx="${part.rx}" ry="${part.ry}"`;
+      return `<ellipse cx="${n(part.cx)}" cy="${n(part.cy)}" rx="${n(part.rx)}" ry="${n(part.ry)}"`;
     case 'circle':
-      return `<circle cx="${part.cx}" cy="${part.cy}" r="${part.r}"`;
+      return `<circle cx="${n(part.cx)}" cy="${n(part.cy)}" r="${n(part.r)}"`;
   }
 }
 
@@ -61,12 +63,38 @@ describe('the shape geometry table', () => {
     (kind) => {
       const svg = renderElementsToSvg(tabOf([shapeAt(kind)]));
       const geometry = shapeGeometry(kind, 160 / 100)!;
-      expect(svg).toContain(
-        `viewBox="${geometry.viewBox}" preserveAspectRatio="${geometry.preserveAspectRatio}"`,
-      );
-      for (const part of geometry.parts) expect(svg).toContain(partMark(part));
+      const fit = boxFit(geometry, { x: 10, y: 20, width: 160, height: 100 });
+      for (const part of geometry.parts) expect(svg).toContain(partMark(fitShapePart(part, fit)));
+      // Mapped into the box, never a stretched viewBox: resvg (the MCP
+      // preview) ignores non-scaling-stroke and would scale the border.
+      expect(svg).not.toContain('preserveAspectRatio="none"');
     },
   );
+
+  it('maps a stretched part into the box, stroke untouched', () => {
+    const frame = shapeGeometry('frame', 1.6)!;
+    const fit = boxFit(frame, { x: 10, y: 20, width: 160, height: 100 });
+    expect(fitShapePart(frame.parts[0]!, fit)).toMatchObject({
+      x: 11.6,
+      y: 21,
+      width: 156.8,
+      height: 98,
+    });
+    const cylinder = shapeGeometry('cylinder', 2)!;
+    const body = fitShapePart(
+      cylinder.parts[0]!,
+      boxFit(cylinder, { x: 0, y: 0, width: 200, height: 100 }),
+    );
+    expect(body).toMatchObject({ d: 'M 0 15 L 200 15 L 200 85 A 100 12 0 0 1 0 85 Z' });
+  });
+
+  it('keeps a proportional part proportional and centred', () => {
+    const fit = boxFit(
+      { viewBox: '0 0 90 130', preserveAspectRatio: 'xMidYMid meet' },
+      { x: 0, y: 0, width: 180, height: 130 },
+    );
+    expect(fit).toEqual({ sx: 1, sy: 1, ox: 45, oy: 0 });
+  });
 
   it('the export draws the diamond natively from the table points', () => {
     const svg = renderElementsToSvg(tabOf([shapeAt('diamond')]));

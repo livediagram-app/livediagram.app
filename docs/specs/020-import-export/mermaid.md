@@ -99,9 +99,10 @@ LR` line sets the layout direction (TB default).
   `state "Long description" as s1`, or `s1 : description` (the description
   becomes the label). `<<choice>>` states render as diamonds; `<<fork>>` /
   `<<join>>` as squares.
-- **Start / end**: each `[*]` becomes a circle — an empty-label start node
-  when it's a transition source, an end node when it's a target (one of
-  each per diagram, matching Mermaid's semantics).
+- **Start / end**: each `[*]` becomes an empty-label circle, drawn as a small
+  solid dot ("Node boxes and text" below): a start node when it's a
+  transition source, an end node when it's a target (one of each per
+  diagram, matching Mermaid's semantics).
 - **Transitions**: `A --> B` with an optional `: label`.
 - **Composite states**: `state Name { … }` becomes a cluster → frame, same
   as a flowchart subgraph; nested composites fold into their top-level
@@ -215,6 +216,20 @@ A graph's nodes (a Mermaid import, the MCP's graph input) are sized to their
 labels and set in one fixed text size (`sm`), not the shape default that
 scales text to fill each box: fitted boxes with scaling text made a short
 heading huge beside a long one set small (`labelBoxSize` in `graph-authoring.ts`).
+The clustered layout **keeps those sizes** rather than stretching each box to
+its widest peer, so one long label no longer inflates every box.
+
+An **unlabelled circle is a dot**: 28 px, solid in the theme's accent through
+the `solid` colour preset (resolved when the import applies the tab's theme).
+That is what a state diagram's `[*]` start and end become; drawn at the default
+circle size they read as large empty boxes waiting for text.
+
+Inside a subgraph, members that no arrow **inside** the subgraph touches (a
+"Core services" group of peers wired only to things outside it) are **lined up
+across the flow** in one row or column, not wrapped into a grid, and every
+group's members that share a rank are then ordered by where their neighbours
+outside the group ended up, so arrows from outside reach each member without
+crossing another.
 
 A subgraph's frame carries its title as a **header**: top-left, bold, at the
 nodes' size, in the band the clustered layout reserves above the members (it
