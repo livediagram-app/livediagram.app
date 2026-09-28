@@ -9,6 +9,7 @@
 // isValidTab in the diagram package stays the runtime guard, so
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
+import { GRAPH_LABEL_MAX } from './graph-input';
 import { z } from 'zod';
 import { ANCHORS, ELEMENT_TYPES, SHAPE_KINDS, THEMES } from '@livediagram/diagram';
 
@@ -126,7 +127,9 @@ documented inline on each tool's element argument, so the tool definitions are
 the complete reference for it. The EASIEST way to author a node/edge diagram (flowchart, org chart,
 architecture, dependency graph) is the "graph" argument: give just nodes + edges
 by id and the server builds the boxes + arrows and lays them out — no
-coordinates, no anchors. Reach for raw "elements" only for a deliberate
+coordinates, no anchors; the same graph can be given as Mermaid text
+("mermaid"). A node's label is its heading (up to 40 characters, longer ones
+shortened with the full text kept in the node's note). Raw "elements" are for a deliberate
 arrangement (a cycle as a ring, a grid) or mixed non-node content. Either way:
 use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
 "text" (text is only for titles/captions), prefer pinned arrows (node -> node),
@@ -185,13 +188,27 @@ const graphField = z
       .array(
         z.object({
           id: z.string().describe('Unique id the edges reference.'),
-          label: z.string().optional().describe('Text inside the box.'),
+          label: z
+            .string()
+            .optional()
+            .describe(
+              `The heading in the box, at most ${GRAPH_LABEL_MAX} characters. A longer label is ` +
+                "shortened at a word boundary and its full text is kept in the node's note. " +
+                'The box is sized to fit the label.',
+            ),
           shape: z
             .string()
             .optional()
             .describe(
               `Shape kind (${shapeKinds}); default "square". Use "diamond" for a ` +
                 'decision, "cylinder" for a datastore, "stadium" for start/end.',
+            ),
+          note: z
+            .string()
+            .optional()
+            .describe(
+              'Detail behind the heading: longer explanation, context or a description. ' +
+                "Stored as the element's note, which the editor shows on the element.",
             ),
         }),
       )
@@ -200,17 +217,63 @@ const graphField = z
     edges: z
       .array(
         z.object({
-          from: z.string().describe('Source node id.'),
-          to: z.string().describe('Target node id.'),
-          label: z.string().optional().describe('Optional text on the arrow.'),
+          from: z.string().describe('Source node or group id.'),
+          to: z.string().describe('Target node or group id.'),
+          label: z
+            .string()
+            .optional()
+            .describe(`Optional text on the arrow, at most ${GRAPH_LABEL_MAX} characters.`),
         }),
       )
-      .describe('Directed connections between node ids. An edge to an unknown id is dropped.'),
+      .describe('Directed connections between ids. An edge to an unknown id is dropped.'),
+    groups: z
+      .array(
+        z.object({
+          id: z.string().describe('Unique id (an edge may point at a group).'),
+          label: z.string().optional().describe("The group's heading, drawn on its frame."),
+          members: z.array(z.string()).describe('The node ids inside this group.'),
+        }),
+      )
+      .optional()
+      .describe(
+        'Named clusters (e.g. "Frontend", "Backend"): each is drawn as a frame around its ' +
+          'members and laid out as one block.',
+      ),
+    direction: z
+      .enum(['down', 'right'])
+      .optional()
+      .describe(
+        'Flow direction: "down" (top to bottom) or "right" (left to right). Default: auto.',
+      ),
+    style: z
+      .enum(['flow', 'tree', 'mindmap'])
+      .optional()
+      .describe(
+        'Layout: "flow" (layered, the default; the layout for processes and systems), "tree" ' +
+          '(a tidy hierarchy, the layout for org charts), "mindmap" (radial around the first ' +
+          'node). With groups the layout is flow.',
+      ),
+    lines: z
+      .enum(['straight', 'angled', 'curved'])
+      .optional()
+      .describe('Arrow routing. Default: straight for flow, angled for tree, curved for mindmap.'),
   })
   .optional()
   .describe(
     'A node/edge graph the server turns into laid-out boxes + arrows — the ' +
-      'easiest way to author. Provide graph OR elements OR template, not more than one.',
+      'easiest way to author. Provide one of graph, mermaid, elements or template.',
+  );
+
+// The same graph as Mermaid (docs/specs/015-api/mcp-server.md §4.7): parsed by the editor's own
+// importer, so a model can write the notation it already knows.
+const mermaidField = z
+  .string()
+  .optional()
+  .describe(
+    'The diagram as Mermaid text: a flowchart (graph / flowchart, with subgraphs), a state ' +
+      'diagram (stateDiagram) or an ER diagram (erDiagram). Parsed into the same graph as the ' +
+      '"graph" input: subgraphs become groups, the direction is kept, and the same label limit ' +
+      'applies. Provide one of graph, mermaid, elements or template.',
   );
 
 export const findDiagramsShape = {
@@ -226,6 +289,7 @@ export const readDiagramShape = {
 const tabShape = z.object({
   name: z.string().describe('Name of the tab.'),
   graph: graphField,
+  mermaid: mermaidField,
   elements: elementArray.optional(),
   template: templateField,
 });
@@ -255,6 +319,7 @@ export const addTabShape = {
     .describe('The diagram to add a tab to (from find_diagrams / read_diagram).'),
   name: z.string().describe('Name of the new tab.'),
   graph: graphField,
+  mermaid: mermaidField,
   elements: elementArray.optional(),
   template: templateField,
   layout: layoutField,
@@ -266,6 +331,7 @@ export const updateDiagramShape = {
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
   mode: z.enum(['replace', 'ops']).describe('"replace" the whole tab, or apply granular "ops".'),
   graph: graphField,
+  mermaid: mermaidField,
   elements: elementArray
     .optional()
     .describe(`Replace mode: the full new element list. ${ELEMENT_SCHEMA_HINT}`),

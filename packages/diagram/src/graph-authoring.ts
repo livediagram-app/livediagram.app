@@ -33,6 +33,9 @@ export type GraphNode = {
   // Optional web address — becomes the element's URL link (docs/specs/020-import-export/mermaid.md:
   // Mermaid `click A "https://…"`).
   link?: string;
+  // Optional detail behind the heading: becomes the element's note, which the
+  // editor shows on the element (docs/specs/015-api/mcp-server.md §4.7).
+  note?: string;
 };
 
 export type GraphEdge = {
@@ -95,6 +98,32 @@ export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
 // `makeEdgeId` mints each arrow's id (defaults to crypto.randomUUID, which
 // exists in both the Worker and Node runtimes); injectable for
 // deterministic tests.
+// A box that fits its label (docs/specs/015-api/mcp-server.md §4.7 "Boxes fit their labels"): the
+// shape's default size at least, widened to the label's estimated one-line
+// width up to a cap, then taller by a line for each wrap past it. An estimate
+// (no DOM here), tuned to the default label face at its default size; the
+// layout's peer sizing then gives a whole tier the size its longest label
+// needs. A diamond's text only fits its inner half, so it gets more room.
+const CHAR_PX = 7.4;
+const LINE_PX = 19;
+const PAD_PX = 40;
+const MAX_BOX_W = 240;
+
+export function labelBoxSize(
+  label: string | undefined,
+  shape: string,
+): { width: number; height: number } {
+  const base = SHAPE_DEFAULT_SIZE[coerceShapeKind(shape)];
+  const text = (label ?? '').trim();
+  if (!text) return { width: base.width, height: base.height };
+  const roomy = shape === 'diamond' ? 1.45 : 1;
+  const oneLine = text.length * CHAR_PX * roomy + PAD_PX;
+  const width = Math.round(Math.min(MAX_BOX_W * roomy, Math.max(base.width, oneLine)));
+  const lines = Math.max(1, Math.ceil((text.length * CHAR_PX * roomy) / (width - PAD_PX)));
+  const height = Math.round(Math.max(base.height, lines * LINE_PX + 28) * (lines > 1 ? roomy : 1));
+  return { width, height };
+}
+
 export function graphToElements(
   graph: DiagramGraph,
   makeEdgeId: () => string = () => crypto.randomUUID(),
@@ -103,7 +132,7 @@ export function graphToElements(
 
   const nodes: Element[] = graph.nodes.map((n) => {
     const shape = coerceShapeKind(n.shape);
-    const { width, height } = SHAPE_DEFAULT_SIZE[shape];
+    const { width, height } = labelBoxSize(n.label, shape);
     return {
       id: n.id,
       type: 'shape' as const,
@@ -112,8 +141,13 @@ export function graphToElements(
       y: 0,
       width,
       height,
+      // One fixed size for every node's text, the size labelBoxSize measures
+      // against. The default 'scale' fills each box, so a short heading came
+      // out huge beside a long one set small.
+      textSize: 'sm' as const,
       ...(n.label !== undefined ? { label: n.label } : {}),
       ...(n.link !== undefined ? { link: { kind: 'url' as const, url: n.link } } : {}),
+      ...(n.note ? { note: n.note } : {}),
     };
   });
 

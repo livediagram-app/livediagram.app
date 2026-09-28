@@ -34,6 +34,7 @@ import {
   type Size,
 } from './auto-layout-shared';
 import { positionTreeComponent } from './auto-layout-tree';
+import { reduceCrossings } from './auto-layout-crossings';
 import { positionMindmapComponent } from './auto-layout-mindmap';
 
 export type LayoutDirection = 'TB' | 'LR';
@@ -114,15 +115,16 @@ function layerComponent(ids: ElementId[], edges: Edge[]): Map<ElementId, number>
 
 // Place one component into local coords (top-left per node). Ranks stack along
 // the main axis; within a rank, nodes lay out along the cross axis and each
-// rank is centred against the widest one. Within-rank order follows the
-// model's original cross position (cheap crossing reduction that respects its
-// spatial intent).
+// rank is centred against the widest one. Within-rank order starts from the
+// model's original cross position (respecting its spatial intent) and is then
+// refined to cross fewer edges (auto-layout-crossings.ts).
 function positionComponent(
   ids: ElementId[],
   layer: Map<ElementId, number>,
   size: Map<ElementId, Size>,
   centers: Map<ElementId, Pt>,
   dir: LayoutDirection,
+  edges: Edge[],
 ): PlacedComponent {
   const byLayer = new Map<number, ElementId[]>();
   for (const id of ids) pushTo(byLayer, layer.get(id)!, id);
@@ -130,6 +132,12 @@ function positionComponent(
 
   const crossOf = (id: ElementId) => (dir === 'TB' ? centers.get(id)!.x : centers.get(id)!.y);
   for (const L of layers) byLayer.get(L)!.sort((a, b) => crossOf(a) - crossOf(b));
+  const refined = reduceCrossings(
+    layers.map((L) => byLayer.get(L)!),
+    edges,
+    layer,
+  );
+  layers.forEach((L, i) => byLayer.set(L, refined[i]!));
 
   const mainSize = (id: ElementId) => (dir === 'TB' ? size.get(id)!.h : size.get(id)!.w);
   const crossSize = (id: ElementId) => (dir === 'TB' ? size.get(id)!.w : size.get(id)!.h);
@@ -258,7 +266,7 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
     } else if (style === 'mindmap') {
       placed = positionMindmapComponent(comp, edges, size, centers);
     } else {
-      placed = positionComponent(comp, layerComponent(comp, edges), size, centers, dir);
+      placed = positionComponent(comp, layerComponent(comp, edges), size, centers, dir, edges);
     }
     for (const id of comp) {
       const p = placed.pos.get(id)!;

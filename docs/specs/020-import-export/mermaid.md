@@ -208,3 +208,15 @@ is a flat, human-readable _summary_ to paste into a doc. Mermaid is the
 connection-faithful text round-trip; Markdown is the outline-in / readable
 summary-out. Full reasoning in [Markdown import](markdown-import.md) ("Still useful
 after Mermaid?").
+
+## Node boxes and text
+
+A graph's nodes (a Mermaid import, the MCP's graph input) are sized to their
+labels and set in one fixed text size (`sm`), not the shape default that
+scales text to fill each box: fitted boxes with scaling text made a short
+heading huge beside a long one set small (`labelBoxSize` in `graph-authoring.ts`).
+
+A subgraph's frame carries its title as a **header**: top-left, bold, at the
+nodes' size, in the band the clustered layout reserves above the members (it
+used to be centred and scaled to fill the frame, a giant word across the nodes
+inside).

@@ -288,26 +288,83 @@ Emitting raw `elements` with `x/y/width/height`, a shape vocabulary, and
 arrow-endpoint anchor objects is the biggest source of model error (it's why
 `coerceShapeKind`, the validation error paths, and auto-layout-on-replace all
 exist). So `create_diagram`, `add_tab`, and `update_diagram` (replace mode)
-accept an alternative **`graph`** input — the connection graph and nothing else:
+accept an alternative **`graph`** input — the connection graph and nothing else —
+or the same thing written as **`mermaid`**:
 
 ```
-graph: { nodes: [{ id, label?, shape? }], edges: [{ from, to, label? }] }
+graph: {
+  nodes:  [{ id, label?, shape?, note? }],
+  edges:  [{ from, to, label? }],
+  groups?: [{ id, label?, members: [nodeId, ...] }],
+  direction?: 'down' | 'right',
+  style?:  'flow' | 'tree' | 'mindmap',
+  lines?:  'straight' | 'angled' | 'curved',
+}
+mermaid: "flowchart LR\n  A[Idea] --> B{Worth it?} ..."
 ```
 
 The server turns each node into a `shape` box and each edge into a pinned
-arrow, then **always auto-lays-it-out** (a graph carries no positions). The
-model expresses only intent — which nodes exist, what points at what — and
-never touches geometry, anchors, or endpoint shapes. Off-vocabulary shape kinds
-are coerced; an edge to an unknown node id is dropped rather than producing a
-broken arrow. This is the **preferred path for any node/edge diagram**
-(flowcharts, org charts, architecture, dependency graphs); `elements` stays for
-deliberate arrangements (a ring, a grid) and mixed non-node content.
+arrow, then **always lays it out** (a graph carries no positions). The model
+expresses only intent — which nodes exist, what points at what, how they group
+— and never touches geometry, anchors, or endpoint shapes. Off-vocabulary shape
+kinds are coerced; an edge to an unknown node id is dropped rather than
+producing a broken arrow. This is the **preferred path for any node/edge
+diagram** (flowcharts, org charts, architecture, dependency graphs); `elements`
+stays for deliberate arrangements (a ring, a grid) and mixed non-node content.
+Provide **one** of `graph` / `mermaid` / `elements` / `template`, not several.
 
-The translation (`graphToElements`) is a pure function in `packages/diagram`
-beside the layout it feeds, so the public API can adopt it later; the MCP tab
-builders (`buildGraphTab`) live in `apps/mcp/src/tab-builders.ts` — split out of
-`tool-helpers.ts` so they're render-free and unit-testable. Provide **one** of
-`graph` / `elements` / `template`, not several.
+**A label is a heading; detail goes in the note.** A node's `label` is the text
+in the box and is capped at **40 characters** (`GRAPH_LABEL_MAX`). The cap is a
+plain fact in the tool's description, not an instruction (§4.15), and the server
+enforces it rather than rejecting the call. A longer label becomes a heading:
+the noun phrase before its first clause word when there is one ("Orders service
+which creates orders" becomes "Orders service", "Message queue for async
+events" becomes "Message queue"), otherwise the text cut at a word boundary with
+an ellipsis. Either way the **full text moves into the node's `note`**
+(prepended to any note the model gave), which the editor shows as the element's
+note. A model now has somewhere to put the explanation, so the box keeps the
+heading; this is what stops a verbose model filling a diagram with sentences.
+Edge labels are capped the same way (overflow is dropped, an arrow has no note).
+
+**Boxes fit their labels.** Each node is sized from its label (estimated text
+width and line count, within a sane range), and the layout's peer sizing then
+gives every node of a tier the size its longest label needs, so text neither
+spills nor leaves a sentence-sized box.
+
+**Layout choices** (defaults in brackets):
+
+- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right).
+- `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
+  chart, a hierarchy), `mindmap` the radial layout around the first node.
+- `groups`: named clusters drawn as frames around their members and laid out as
+  one block each (the clustered layout the editor's Mermaid import uses); an edge
+  may point at a group id. With groups, `style` is flow.
+- `lines` (`straight` for flow, `angled` for tree, `curved` for mindmap): the
+  arrows' routing, from the editor's own arrow styles.
+
+The flow layout reduces crossings: after ranking, a few up-and-down barycentre
+passes reorder each rank, and a new order is kept only when it crosses fewer
+edges ([Layout cleanup](../008-canvas/layout-cleanup.md)), so graph input, whose
+nodes all start at one point, no longer lays out in arbitrary input order.
+
+**`mermaid`** is parsed by the editor's own importer (`parseMermaid`:
+flowcharts with subgraphs, state diagrams and ER diagrams, [Mermaid](../020-import-export/mermaid.md)) into the same
+graph, its direction and subgraphs becoming `direction` and `groups`, and then
+takes the same path, label cap included. A dialect it cannot read comes back as
+an error naming what is supported.
+
+The translation (`graphToElements`, the sizing, the clustered layout) is pure
+code in `packages/diagram` beside the layout it feeds, so the public API can
+adopt it later; the MCP side (`graph-input.ts`: the label cap, choosing the
+layout, the lines, Mermaid) lives in `apps/mcp/src` and is unit-tested there.
+The cap is the MCP's alone: the editor's Mermaid import never truncates what a
+person typed.
+
+The **prompts** (§4.10) are messages the user sends, not tool descriptions, so
+they do ask for it outright: short headings, detail in the note, related nodes
+grouped, a direction and style that fit the subject. Nodes are set in one fixed
+text size (`sm`, what the sizing measures against), not the shape default that
+scales text to fill each box.
 
 ### 4.8 `share_diagram`
 

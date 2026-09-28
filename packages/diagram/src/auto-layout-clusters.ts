@@ -147,6 +147,14 @@ export function layoutClusteredGraph(
       width: b.width + 2 * FRAME_PAD,
       height: b.height + FRAME_TOP + FRAME_PAD,
       label: c.label ?? c.id,
+      // A header in the band FRAME_TOP reserves: top-left, bold, at the nodes'
+      // own size. Left at the shape defaults it was centred and scaled to fill
+      // the frame, a giant word across its members (docs/specs/020-import-export/mermaid.md).
+      textAlignY: 'top' as const,
+      textAlignX: 'left' as const,
+      textSize: 'sm' as const,
+      textBold: true,
+      padding: 'lg' as const,
     };
   });
   const freeNodes = graphToElements(

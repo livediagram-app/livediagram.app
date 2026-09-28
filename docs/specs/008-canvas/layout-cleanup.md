@@ -38,6 +38,18 @@ import) to place nodes they never drew.
 - One undoable op (`commit` snapshots the pre-layout state) and one activity-log
   entry, so it can be reverted in a single step.
 
+### Fewer crossings
+
+The flow layout ranks nodes, then orders each rank. The first order follows the
+nodes' current positions, which respects a drawing the author (or a model)
+already arranged. It is then refined by a few alternating barycentre sweeps
+(each node moved toward the average position of its neighbours in the rank
+above, then below), and the refined order is **kept only if it crosses fewer
+edges** than the one it started from. A graph whose nodes all start at one point
+(the MCP's graph input, an import) therefore gets a readable order instead of
+its input order, and a hand-arranged one is only changed where that removes a
+crossing.
+
 ### Layout styles
 
 One layered layout can't express every diagram: a mindmap wants its root in the
