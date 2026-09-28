@@ -95,22 +95,100 @@ export function collabCard(
   );
 }
 
-/** The footer's action pills, which say what the card DOES. */
-export function footerPills(
+// ── Marks for the behaviour cards' modern look (docs/specs/020-import-export/export-fidelity.md) ──────────
+
+/** A person as a disc: their initials on their colour, or, with no name to
+ *  go on (a Done check's or an Estimate's opaque key), a neutral disc with a
+ *  head-and-shoulders mark. `ring` separates overlapping discs in a stack. */
+export function personDisc(
+  cx: number,
+  cy: number,
+  r: number,
+  color: string,
+  person?: { initials: string; fill: string },
+  ring?: string,
+): string {
+  const edge = ring
+    ? ` stroke="${xmlEscape(ring)}" stroke-width="${r2(Math.max(1.5, r * 0.2))}"`
+    : '';
+  if (person) {
+    return (
+      `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r2(r)}" fill="${xmlEscape(person.fill)}"${edge}/>` +
+      text(cx, cy + r * 0.36, person.initials, {
+        size: r * 0.9,
+        weight: 600,
+        color: '#ffffff',
+        anchor: 'middle',
+      })
+    );
+  }
+  return (
+    `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r2(r)}" fill="${xmlEscape(color)}" fill-opacity="0.14"${edge}/>` +
+    `<circle cx="${r2(cx)}" cy="${r2(cy - r * 0.22)}" r="${r2(r * 0.3)}" fill="${xmlEscape(color)}" fill-opacity="0.45"/>` +
+    `<path d="M ${r2(cx - r * 0.52)} ${r2(cy + r * 0.62)} a ${r2(r * 0.52)} ${r2(r * 0.46)} 0 0 1 ${r2(r * 1.04)} 0 z" fill="${xmlEscape(color)}" fill-opacity="0.45"/>`
+  );
+}
+
+/** A check mark centred at (cx, cy), `size` across. */
+export function checkMark(cx: number, cy: number, size: number, color: string, width = 2): string {
+  const u = size / 16;
+  const p = (x: number, y: number) => `${r2(cx + (x - 8) * u)} ${r2(cy + (y - 8) * u)}`;
+  return `<path d="M ${p(3.5, 8.5)} L ${p(6.5, 11.5)} L ${p(12.5, 4.5)}" fill="none" stroke="${xmlEscape(color)}" stroke-width="${r2(width)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
+
+/** A padlock centred at (cx, cy), `size` across. */
+export function lockMark(cx: number, cy: number, size: number, color: string): string {
+  const u = size / 16;
+  const x = (v: number) => r2(cx + (v - 8) * u);
+  const y = (v: number) => r2(cy + (v - 8) * u);
+  return (
+    `<rect x="${x(3.5)}" y="${y(7)}" width="${r2(9 * u)}" height="${r2(6.5 * u)}" rx="${r2(1.5 * u)}" fill="none" stroke="${xmlEscape(color)}" stroke-width="${r2(1.5 * u)}"/>` +
+    `<path d="M ${x(5.5)} ${y(7)} V ${y(5)} a ${r2(2.5 * u)} ${r2(2.5 * u)} 0 0 1 ${r2(5 * u)} 0 V ${y(7)}" fill="none" stroke="${xmlEscape(color)}" stroke-width="${r2(1.5 * u)}"/>`
+  );
+}
+
+/** One of the Temperature check's faces (TEMPERATURE_FACE_MOUTHS), centred at
+ *  (cx, cy), `size` across, value 1..5. */
+export function moodFace(
+  cx: number,
+  cy: number,
+  size: number,
+  value: number,
+  color: string,
+  mouths: readonly string[],
+): string {
+  const u = size / 16;
+  const mouth = mouths[Math.min(4, Math.max(0, value - 1))]!;
+  return (
+    `<g transform="translate(${r2(cx - 8 * u)} ${r2(cy - 8 * u)}) scale(${r2(u)})" fill="none" stroke="${xmlEscape(color)}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">` +
+    `<circle cx="8" cy="8" r="6.4"/>` +
+    `<circle cx="5.9" cy="6.6" r=".75" fill="${xmlEscape(color)}" stroke="none"/>` +
+    `<circle cx="10.1" cy="6.6" r=".75" fill="${xmlEscape(color)}" stroke="none"/>` +
+    `<path d="${mouth}"${value === 5 ? ` fill="${xmlEscape(color)}" fill-opacity="0.25"` : ''}/>` +
+    `</g>`
+  );
+}
+
+/** A soft radial glow of `color` from a corner of the box (0..1 fractions),
+ *  as the Reveal zone and the Idea box paint behind their content. The id
+ *  must be unique in the document, so pass the element's. */
+export function glow(
+  id: string,
   x: number,
   y: number,
-  labels: readonly string[],
+  w: number,
+  h: number,
   color: string,
+  at: { cx: number; cy: number },
+  opacity: number,
+  rx = 0,
 ): string {
-  let cx = x;
-  return labels
-    .map((value) => {
-      const w = value.length * 5.6 + 18;
-      const out =
-        pill(cx, y, w, 18, color, 0.14) +
-        text(cx + w / 2, y + 12.5, value, { size: 10, weight: 600, color, anchor: 'middle' });
-      cx += w + 8;
-      return out;
-    })
-    .join('');
+  const gid = `glow-${xmlEscape(id)}`;
+  return (
+    `<defs><radialGradient id="${gid}" cx="${at.cx}" cy="${at.cy}" r="1">` +
+    `<stop offset="0" stop-color="${xmlEscape(color)}" stop-opacity="${opacity}"/>` +
+    `<stop offset="0.6" stop-color="${xmlEscape(color)}" stop-opacity="0"/>` +
+    `</radialGradient></defs>` +
+    `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" rx="${r2(rx)}" fill="url(#${gid})"/>`
+  );
 }

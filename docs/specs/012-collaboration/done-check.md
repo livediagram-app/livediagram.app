@@ -113,4 +113,5 @@ with two plain avatar lists and a grey pill button.
   avatar's layout box and eats 4px of any gap beside it).
 - The card stays **fixed-size at 280x220**. Durations are canvas motion, in
   `qa-board.css`, and collapse under reduced motion. The export draws the same
-  card: the ring at its share with the count, and the button.
+  card: the ring, a check in it once anyone is done, a neutral disc with a
+  green check per person done (an export has no names to show), and the button.

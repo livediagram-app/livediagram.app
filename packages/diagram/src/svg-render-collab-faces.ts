@@ -11,11 +11,18 @@ import {
   estimateRank,
   estimateSpread,
   estimateSpreadLabel,
+  estimateScalePending,
   estimateValues,
+  ESTIMATE_SCALE_LABELS,
+  ESTIMATE_SCALE_VALUES,
+  ESTIMATE_SCALES,
   TEMPERATURE_COLORS,
+  TEMPERATURE_FACE_MOUTHS,
   TEMPERATURE_VALUES,
   temperaturePosition,
+  type RollCallEntry,
 } from './collab-shapes';
+import { initialsOf } from './names';
 import { responseStats, responseTally } from './responses';
 import { qaView } from './qa-board';
 import {
@@ -31,8 +38,12 @@ import {
 import { r2, xmlEscape } from './svg-render-primitives';
 import {
   BODY_PX,
+  checkMark,
   collabCard,
-  footerPills,
+  glow,
+  lockMark,
+  moodFace,
+  personDisc,
   PAD_X,
   PAD_Y,
   pill,
@@ -54,11 +65,13 @@ export function svgCollabFace(
   const title = label.trim();
   switch (el.shape) {
     case 'estimate': {
-      // The card as the face draws it (docs/specs/012-collaboration/estimate-card.md "The look"): the scale's
-      // cards, then, once revealed, every answer face up low to high with the
-      // spread; hidden answers stay hidden in the export too.
+      // The card as the face draws it (docs/specs/012-collaboration/estimate-card.md "The look"): the scale
+      // chooser while the card has no scale; otherwise the scale's cards over
+      // the room's cards, face down before the reveal (hidden answers stay
+      // hidden in the export too) and face up after, sorted low to high with
+      // the spread and its two ends ringed. An estimate stores an opaque key
+      // per answer, not a name, so people are neutral discs.
       const scale = el.estimateScale;
-      const values = estimateValues(scale);
       const responses = el.responses ?? [];
       const revealed = el.responsesRevealed === true;
       return collabCard(
@@ -68,51 +81,100 @@ export function svgCollabFace(
         color,
         (w, h) => {
           const inner = w - PAD_X * 2;
+          const top = PAD_Y + TITLE_PX + 10;
+          if (estimateScalePending(el)) {
+            const rowH = 42;
+            return (
+              text(PAD_X, top + 14, 'Choose a scale', { size: 12, weight: 600, color }) +
+              ESTIMATE_SCALES.map((sc, i) => {
+                const y = top + 26 + i * (rowH + 6);
+                return (
+                  `<rect x="${r2(PAD_X)}" y="${r2(y)}" width="${r2(inner)}" height="${rowH}" rx="10" fill="${xmlEscape(color)}" fill-opacity="0.04" stroke="${xmlEscape(color)}" stroke-opacity="0.14"/>` +
+                  text(PAD_X + 12, y + 18, ESTIMATE_SCALE_LABELS[sc], {
+                    size: 11.5,
+                    weight: 600,
+                    color,
+                  }) +
+                  text(PAD_X + 12, y + 32, ESTIMATE_SCALE_VALUES[sc].join(' · '), {
+                    size: 10,
+                    color,
+                    opacity: 0.55,
+                  })
+                );
+              }).join('')
+            );
+          }
+          const values = estimateValues(scale);
           const gap = 5;
           const cw = Math.min(46, (inner - gap * (values.length - 1)) / values.length);
           const rowW = cw * values.length + gap * (values.length - 1);
           const x0 = PAD_X + (inner - rowW) / 2;
-          const top = PAD_Y + TITLE_PX + 10;
           const picks = values
             .map((v, i) => {
               const x = x0 + i * (cw + gap);
               return (
-                pill(x, top, cw, 40, color, 0.06) +
-                text(x + cw / 2, top + 24, v, { size: 13, weight: 700, color, anchor: 'middle' })
+                `<rect x="${r2(x)}" y="${r2(top)}" width="${r2(cw)}" height="44" rx="10" fill="${xmlEscape(color)}" fill-opacity="0.05" stroke="${xmlEscape(color)}" stroke-opacity="0.14"/>` +
+                text(x + cw / 2, top + 27, v, { size: 13, weight: 700, color, anchor: 'middle' })
               );
             })
             .join('');
-          const mid = (top + 40 + h - PAD_Y) / 2;
+          const tableTop = top + 60;
+          const mid = (tableTop + h - PAD_Y) / 2;
           if (responses.length === 0) {
             return (
               picks +
-              text(w / 2, mid, 'No picks yet', { size: 10, color, anchor: 'middle', opacity: 0.45 })
+              text(w / 2, mid, 'No picks yet', { size: 11, weight: 600, color, anchor: 'middle' })
             );
           }
+          const card = (x: number, y: number, face: string | null, ring: boolean): string =>
+            `<rect x="${r2(x)}" y="${r2(y)}" width="34" height="46" rx="8" fill="${xmlEscape(color)}" fill-opacity="${face === null ? 0.16 : 0.05}" stroke="${xmlEscape(color)}" stroke-opacity="${ring ? 0.85 : face === null ? 0.35 : 0.18}" stroke-width="${ring ? 2 : 1}"/>` +
+            (face === null
+              ? ''
+              : text(x + 17, y + 28, face, { size: 14, weight: 700, color, anchor: 'middle' })) +
+            personDisc(x + 17, y + 48, 7, color);
+          const shown = responses.slice(0, 8);
+          const handW = shown.length * 34 + (shown.length - 1) * 8;
+          const hx = w / 2 - handW / 2;
           if (!revealed) {
             return (
               picks +
-              text(w / 2, mid, `${responses.length} in, hidden until the reveal`, {
+              shown.map((_, i) => card(hx + i * 42, tableTop + 8, null, false)).join('') +
+              text(w / 2, tableTop + 84, `${responses.length} in, hidden until the reveal`, {
                 size: 10,
                 color,
                 anchor: 'middle',
-                opacity: 0.6,
+                opacity: 0.55,
               })
             );
           }
-          const sorted = responses
-            .map((r) => r.value)
-            .sort((p, q) => estimateRank(scale, p) - estimateRank(scale, q));
-          const answers = sorted.join('  ');
+          const sorted = [...shown].sort(
+            (p, q) => estimateRank(scale, p.value) - estimateRank(scale, q.value),
+          );
+          const spread = estimateSpread(
+            scale,
+            responses.map((r) => r.value),
+          );
+          const label = estimateSpreadLabel(spread);
+          const chipW = label.length * 6 + 20;
           return (
             picks +
-            text(w / 2, mid - 8, estimateSpreadLabel(estimateSpread(scale, sorted)), {
-              size: 11,
+            pill(w / 2 - chipW / 2, tableTop, chipW, 20, color, 0.1) +
+            text(w / 2, tableTop + 14, label, {
+              size: 10.5,
               weight: 700,
               color,
               anchor: 'middle',
             }) +
-            text(w / 2, mid + 12, answers, { size: 12, weight: 600, color, anchor: 'middle' })
+            sorted
+              .map((r, i) =>
+                card(
+                  hx + i * 42,
+                  tableTop + 30,
+                  r.value,
+                  spread.kind === 'range' && (r.value === spread.low || r.value === spread.high),
+                ),
+              )
+              .join('')
           );
         },
       );
@@ -135,16 +197,13 @@ export function svgCollabFace(
           const gap = 6;
           const col = (inner - gap * 4) / 5;
           const top = PAD_Y + TITLE_PX + 10;
+          // Each value as its face over its number, the buttons as the card draws them.
           const chips = TEMPERATURE_VALUES.map((value, i) => {
             const x = PAD_X + i * (col + gap);
             return (
-              pill(x, top, col, 34, color, 0.06) +
-              text(x + col / 2, top + 21.5, value, {
-                size: 12,
-                weight: 700,
-                color,
-                anchor: 'middle',
-              })
+              `<rect x="${r2(x)}" y="${r2(top)}" width="${r2(col)}" height="40" rx="10" fill="${xmlEscape(color)}" fill-opacity="0.04" stroke="${xmlEscape(color)}" stroke-opacity="0.1"/>` +
+              moodFace(x + col / 2, top + 15, 18, i + 1, color, TEMPERATURE_FACE_MOUTHS) +
+              text(x + col / 2, top + 35, value, { size: 10, weight: 700, color, anchor: 'middle' })
             );
           }).join('');
           const meterY = h - PAD_Y - 30;
@@ -211,9 +270,18 @@ export function svgCollabFace(
           }
           if (el.ideasRevealed !== true) {
             const cy = (top + composerY) / 2;
+            // The sealed panel: a tinted plate, the lock in its disc, the count.
             return (
-              text(w / 2, cy, String(count), { size: 22, weight: 700, color, anchor: 'middle' }) +
-              text(w / 2, cy + 16, count === 1 ? 'idea sealed' : 'ideas sealed', {
+              `<rect x="${r2(PAD_X)}" y="${r2(cy - 52)}" width="${r2(w - PAD_X * 2)}" height="96" rx="12" fill="${xmlEscape(color)}" fill-opacity="0.04" stroke="${xmlEscape(color)}" stroke-opacity="0.08"/>` +
+              `<circle cx="${r2(w / 2)}" cy="${r2(cy - 26)}" r="14" fill="${xmlEscape(color)}" fill-opacity="0.14"/>` +
+              lockMark(w / 2, cy - 26, 15, color) +
+              text(w / 2, cy + 6, String(count), {
+                size: 22,
+                weight: 700,
+                color,
+                anchor: 'middle',
+              }) +
+              text(w / 2, cy + 22, count === 1 ? 'idea sealed' : 'ideas sealed', {
                 size: 10,
                 weight: 600,
                 color,
@@ -347,61 +415,126 @@ export function svgCollabFace(
       );
     }
     case 'decision': {
-      // The card as the face draws it (docs/specs/012-collaboration/decision-record.md "The face"): its real
-      // status (it always printed "Proposed"), the drivers under "Because",
-      // each with an arrow in the status colour, and the date.
+      // The card as the face draws it (docs/specs/012-collaboration/decision-record.md "The face"): the status
+      // as a badge with its glyph in the status hue, a soft glow of it from the
+      // top corner, the drivers under "Because" with arrow markers, the date.
       const status = el.decisionStatus ?? DEFAULT_DECISION_STATUS;
       const hue = DECISION_STATUS_HUES[status];
       const drivers = el.decisionDrivers ?? [];
-      return collabCard(
-        el,
-        title || 'We will …',
-        DECISION_STATUS_LABELS[status],
-        color,
-        (_w, h) => {
-          const top = PAD_Y + TITLE_PX + 22;
-          const head = text(PAD_X, top, 'BECAUSE', { size: 8.5, weight: 700, color: hue });
-          const body = drivers.length
-            ? drivers
-                .slice(0, 5)
-                .map(
-                  (d, i) =>
-                    text(PAD_X, top + 16 + i * 16, '→', { size: 10, weight: 700, color: hue }) +
-                    text(PAD_X + 12, top + 16 + i * 16, d, { size: BODY_PX, color }),
-                )
-                .join('')
-            : text(PAD_X, top + 16, 'No drivers yet', { size: 10, color, opacity: 0.45 });
-          const date = el.decisionDate
-            ? text(PAD_X, h - PAD_Y - 4, el.decisionDate, { size: 10, color, opacity: 0.6 })
-            : '';
-          return head + body + date;
-        },
-      );
+      const labelText = DECISION_STATUS_LABELS[status];
+      // The frame draws no title here: the statement wraps to three lines in
+      // the room left of the badge, at the size the canvas sets it (15px).
+      return collabCard(el, '', undefined, color, (w, h) => {
+        const badgeW = labelText.length * 6 + 30;
+        const bx = w - PAD_X - badgeW;
+        const by = PAD_Y + 1;
+        const badge =
+          pill(bx, by, badgeW, 18, hue, 0.16) +
+          statusGlyph(status, bx + 11, by + 9, hue) +
+          text(bx + 20, by + 12.5, labelText, { size: 10, weight: 600, color: hue });
+        const statement = wrapLines(title || 'We will …', w - PAD_X * 2 - badgeW - 8, 15, 3);
+        const heading = statement
+          .map((line, i) =>
+            text(PAD_X, PAD_Y + 14 + i * 19, line, { size: 15, weight: 600, color }),
+          )
+          .join('');
+        const top = PAD_Y + 14 + (statement.length - 1) * 19 + 26;
+        const head = heading + text(PAD_X, top, 'BECAUSE', { size: 8.5, weight: 700, color: hue });
+        const body = drivers.length
+          ? drivers
+              .slice(0, 5)
+              .map((d, i) => {
+                const y = top + 18 + i * 18;
+                return (
+                  `<circle cx="${r2(PAD_X + 6)}" cy="${r2(y - 4)}" r="6" fill="${xmlEscape(hue)}" fill-opacity="0.16"/>` +
+                  text(PAD_X + 6, y - 1, '→', {
+                    size: 8,
+                    weight: 700,
+                    color: hue,
+                    anchor: 'middle',
+                  }) +
+                  text(PAD_X + 18, y, d, { size: BODY_PX, color })
+                );
+              })
+              .join('')
+          : text(PAD_X, top + 18, '+ Add what drove this from the element’s menu.', {
+              size: 10,
+              color,
+              opacity: 0.45,
+            });
+        const dateW = (el.decisionDate?.length ?? 0) * 5.8 + 16;
+        const date = el.decisionDate
+          ? pill(PAD_X, h - PAD_Y - 18, dateW, 18, color, 0.07) +
+            text(PAD_X + 8, h - PAD_Y - 5.5, el.decisionDate, { size: 10, color, opacity: 0.75 })
+          : '';
+        return (
+          glow(`decision-${el.id}`, 0, 0, w, h, hue, { cx: 0, cy: 0 }, 0.16, 10) +
+          badge +
+          head +
+          body +
+          date
+        );
+      });
     }
     case 'roll-call': {
+      // The card as the face draws it (docs/specs/012-collaboration/roll-call.md "The face"): a header block
+      // with the count large, an overlapping stack of the first few people as
+      // initial discs on their colours, and the time taken; then everyone as a
+      // chip; Take roll at the foot.
       const entries = el.rollCall ?? [];
-      return collabCard(
-        el,
-        title || 'Roll call',
-        entries.length ? `${entries.length} present` : undefined,
-        color,
-        (_w, h) =>
-          (entries.length
-            ? entries
-                .slice(0, 6)
-                .map((e, i) =>
-                  text(PAD_X, PAD_Y + TITLE_PX + 20 + i * 15, e.name ?? '', {
-                    size: BODY_PX,
-                    color,
-                  }),
-                )
-                .join('')
-            : text(PAD_X, PAD_Y + TITLE_PX + 20, 'Nobody recorded yet', {
-                size: 10,
-                color,
-                opacity: 0.45,
-              })) + footerPills(PAD_X, h - PAD_Y - 18, ['Take roll'], color),
-      );
+      return collabCard(el, title || 'Roll call', undefined, color, (w, h) => {
+        const inner = w - PAD_X * 2;
+        const foot =
+          `<rect x="${r2(PAD_X)}" y="${r2(h - PAD_Y - 28)}" width="${r2(inner)}" height="28" rx="10" fill="${xmlEscape(color)}" fill-opacity="0.05" stroke="${xmlEscape(color)}" stroke-opacity="0.35" stroke-dasharray="4 3"/>` +
+          text(w / 2, h - PAD_Y - 10, entries.length ? 'Take again' : 'Take roll', {
+            size: 11,
+            weight: 600,
+            color,
+            anchor: 'middle',
+          });
+        if (entries.length === 0) {
+          return (
+            text(w / 2, (PAD_Y + TITLE_PX + h - PAD_Y - 28) / 2, 'Nobody recorded yet', {
+              size: 11,
+              weight: 600,
+              color,
+              anchor: 'middle',
+            }) + foot
+          );
+        }
+        const top = PAD_Y + TITLE_PX + 10;
+        const person = (e: RollCallEntry) => ({ initials: initialsOf(e.name), fill: e.color });
+        const block =
+          `<rect x="${r2(PAD_X)}" y="${r2(top)}" width="${r2(inner)}" height="46" rx="12" fill="${xmlEscape(color)}" fill-opacity="0.04"/>` +
+          text(PAD_X + 12, top + 26, String(entries.length), { size: 20, weight: 700, color }) +
+          text(PAD_X + 12, top + 38, 'PRESENT', { size: 8, weight: 600, color, opacity: 0.55 }) +
+          entries
+            .slice(0, 5)
+            .map((e, i) =>
+              personDisc(PAD_X + 70 + i * 19, top + 23, 11, color, person(e), '#ffffff'),
+            )
+            .join('');
+        let cx = PAD_X;
+        let cy = top + 58;
+        const chips = entries
+          .slice(0, 12)
+          .map((e) => {
+            const cw = Math.min(inner, e.name.length * 5.6 + 34);
+            if (cx + cw > PAD_X + inner) {
+              cx = PAD_X;
+              cy += 26;
+            }
+            if (cy + 22 > h - PAD_Y - 34) return '';
+            const out =
+              pill(cx, cy, cw, 22, color, 0.06) +
+              personDisc(cx + 11, cy + 11, 9, color, person(e)) +
+              text(cx + 24, cy + 15, e.name, { size: 10.5, weight: 500, color });
+            cx += cw + 6;
+            return out;
+          })
+          .join('');
+        return block + chips + foot;
+      });
     }
     case 'quiz': {
       // Quiz (docs/specs/012-collaboration/quiz.md): the disc and its ring of answers. A still image
@@ -496,12 +629,31 @@ export function svgCollabFace(
           return (
             `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r}" fill="none" stroke="${xmlEscape(color)}" stroke-opacity="0.12" stroke-width="7"/>` +
             arc +
-            text(cx, cy + 6, String(done), { size: 18, weight: 700, color, anchor: 'middle' }) +
-            text(cx + r + 18, cy - 4, done ? `${done} marked done` : 'Nobody done yet', {
-              size: 11,
-              weight: 600,
-              color,
-            }) +
+            (done
+              ? checkMark(cx, cy, 26, '#22c55e', 2.6)
+              : text(cx, cy + 6, '0', { size: 18, weight: 700, color, anchor: 'middle' })) +
+            // Who is done, as the roster: an export has no names for them (a
+            // done check stores an opaque key per mark), so neutral discs,
+            // each wearing the green check.
+            (done
+              ? text(cx + r + 18, cy - 14, 'DONE', { size: 9, weight: 700, color, opacity: 0.6 }) +
+                Array.from({ length: Math.min(done, 6) }, (_, i) => {
+                  const px = cx + r + 30 + i * 26;
+                  return (
+                    personDisc(px, cy + 6, 10, color) +
+                    `<circle cx="${r2(px + 8)}" cy="${r2(cy + 14)}" r="5" fill="#22c55e"/>` +
+                    checkMark(px + 8, cy + 14, 7, '#ffffff', 1.6)
+                  );
+                }).join('') +
+                (done > 6
+                  ? text(cx + r + 30 + 6 * 26, cy + 10, `+${done - 6}`, {
+                      size: 10,
+                      weight: 700,
+                      color,
+                      opacity: 0.6,
+                    })
+                  : '')
+              : text(cx + r + 18, cy + 4, 'Nobody done yet', { size: 11, weight: 600, color })) +
             pill(PAD_X, h - PAD_Y - 26, w - PAD_X * 2, 26, color, 0.16) +
             text(w / 2, h - PAD_Y - 9, "I'm done", {
               size: 11,
@@ -516,4 +668,41 @@ export function svgCollabFace(
     default:
       return null;
   }
+}
+
+/** The Decision record status glyph (as its badge draws it), centred at (cx, cy). */
+function statusGlyph(status: string, cx: number, cy: number, hue: string): string {
+  const k = `stroke="${xmlEscape(hue)}" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"`;
+  if (status === 'accepted') return checkMark(cx, cy, 11, hue, 1.6);
+  if (status === 'rejected')
+    return `<path d="M ${r2(cx - 3)} ${r2(cy - 3)} L ${r2(cx + 3)} ${r2(cy + 3)} M ${r2(cx + 3)} ${r2(cy - 3)} L ${r2(cx - 3)} ${r2(cy + 3)}" ${k}/>`;
+  if (status === 'superseded')
+    return `<path d="M ${r2(cx - 3.5)} ${r2(cy + 2)} a 3.5 3.5 0 0 1 6 -2.5 M ${r2(cx + 3)} ${r2(cy - 3.5)} v 2.5 h -2.5" ${k}/>`;
+  return `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="3.2" ${k} stroke-dasharray="1.6 1.6"/>`;
+}
+
+/** Break `body` into at most `max` lines that fit `width` at `size`px (an
+ *  estimate of the face's advance), the last one ending in an ellipsis when
+ *  the text runs on: the export's version of the canvas's line clamp. */
+function wrapLines(body: string, width: number, size: number, max: number): string[] {
+  const perLine = Math.max(8, Math.floor(width / (size * 0.52)));
+  const words = body.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let line = '';
+  for (const word of words) {
+    const next = line ? `${line} ${word}` : word;
+    if (next.length <= perLine) {
+      line = next;
+      continue;
+    }
+    if (line) lines.push(line);
+    line = word;
+    if (lines.length === max) break;
+  }
+  if (line && lines.length < max) lines.push(line);
+  const used = lines.join(' ').length;
+  if (lines.length === max && used < body.trim().length) {
+    lines[max - 1] = `${lines[max - 1]!.slice(0, perLine - 1).trimEnd()}…`;
+  }
+  return lines;
 }

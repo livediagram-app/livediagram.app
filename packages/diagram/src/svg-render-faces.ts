@@ -17,7 +17,7 @@ import { DEFAULT_CHAIR_FACING } from './collab-shapes';
 import { CHAIR_FACING_ROTATION, CHAIR_GEOMETRY, chairSeatFill } from './shape-geometry';
 import { REACTION_DEFAULT, REACTION_EMOJI, REACTION_HUES } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
-import { pill, rule, text, type Face } from './svg-render-face-kit';
+import { glow, pill, rule, text, type Face } from './svg-render-face-kit';
 
 /** The Behaviour kinds this module draws a face for, so the caller knows not
  *  to print the generic centred label over the top of one. */
@@ -91,7 +91,30 @@ export function svgBehaviourFace(
       if (el.revealed === true) return '';
       return (
         `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="10" fill="#f1f5f9"/>` +
-        `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="10" fill="${xmlEscape(stroke)}" fill-opacity="0.12" stroke="${xmlEscape(stroke)}" stroke-opacity="0.55" stroke-width="1.5"/>` +
+        // The two soft glows of its accent, from opposite corners, then the border.
+        glow(
+          `reveal-a-${el.id}`,
+          el.x,
+          el.y,
+          el.width,
+          el.height,
+          stroke,
+          { cx: 0, cy: 0 },
+          0.22,
+          10,
+        ) +
+        glow(
+          `reveal-b-${el.id}`,
+          el.x,
+          el.y,
+          el.width,
+          el.height,
+          stroke,
+          { cx: 1, cy: 1 },
+          0.16,
+          10,
+        ) +
+        `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="10" fill="none" stroke="${xmlEscape(stroke)}" stroke-opacity="0.55" stroke-width="1.5"/>` +
         `<circle cx="${r2(cx)}" cy="${r2(cy - 20)}" r="16" fill="${xmlEscape(stroke)}" fill-opacity="0.14"/>` +
         `<rect x="${r2(cx - 5)}" y="${r2(cy - 21)}" width="10" height="8" rx="1.8" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>` +
         `<path d="M ${r2(cx - 3)} ${r2(cy - 21)} v -2.5 a 3 3 0 0 1 6 0 v 2.5" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>` +

@@ -948,6 +948,64 @@ describe('estimate card export', () => {
   it('shows the sorted answers and the spread once revealed', () => {
     const svg = card({ responses: answers, responsesRevealed: true });
     expect(svg).toContain('Spread 3 → 13');
-    expect(svg).toContain('3  5  13');
+    // Face-up cards, low to high, after the spread chip.
+    const at = (v: string) => svg.indexOf(`>${v}</text>`, svg.indexOf('Spread 3 → 13'));
+    expect(at('3')).toBeGreaterThan(0);
+    expect(at('3')).toBeLessThan(at('5'));
+    expect(at('5')).toBeLessThan(at('13'));
+  });
+});
+
+// The behaviour cards export their marks (docs/specs/020-import-export/export-fidelity.md "The behaviour
+// cards export as they look").
+describe('behaviour card marks in the export', () => {
+  const one = (o: Partial<ShapeElement>) => renderElementsToSvg(tab([shape('x', o)]));
+
+  it('an estimate with no scale exports its scale chooser, not Fibonacci', () => {
+    const svg = one({ shape: 'estimate', width: 360, height: 310 });
+    expect(svg).toContain('Choose a scale');
+    expect(svg).toContain('T-shirt');
+    expect(svg).not.toContain('>21<');
+  });
+
+  it('a temperature check draws its five faces', () => {
+    const svg = one({ shape: 'temperature', width: 320, height: 300 });
+    // One mouth path per face, from the shared shapes.
+    expect(svg).toContain('M5.2 11.4Q8 8.9 10.8 11.4');
+    expect(svg).toContain('M5 9.4Q8 13.4 11 9.4Z');
+  });
+
+  it('a roll call draws its people as initials on their colours', () => {
+    const svg = one({
+      shape: 'roll-call',
+      width: 300,
+      height: 240,
+      rollCall: [
+        { name: 'Curious Falcon', color: '#8b5cf6', at: 1 },
+        { name: 'Brave Heron', color: '#f43f5e', at: 1 },
+      ],
+    });
+    expect(svg).toContain('>CF<');
+    expect(svg).toContain('#8b5cf6');
+    expect(svg).toContain('Brave Heron');
+    expect(svg).toContain('PRESENT');
+  });
+
+  it('a decision record draws its status badge in the status hue, not a caption', () => {
+    const svg = one({ shape: 'decision', width: 320, height: 220, decisionStatus: 'accepted' });
+    expect(svg).toContain('Accepted');
+    expect(svg).toContain('#22c55e');
+    expect(svg).not.toContain('ACCEPTED');
+  });
+
+  it('a done check draws a disc with a check for each person done', () => {
+    const svg = one({
+      shape: 'done-check',
+      width: 280,
+      height: 220,
+      responses: ['a', 'b'].map((participantId) => ({ participantId, value: 'done', at: 1 })),
+    });
+    expect(svg).toContain('DONE');
+    expect(svg.match(/fill="#22c55e"/g)?.length).toBeGreaterThanOrEqual(2);
   });
 });
