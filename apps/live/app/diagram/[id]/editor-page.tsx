@@ -188,11 +188,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   }
 
   if (loadingDiagram) {
-    return (
-      <div className="flex h-dvh flex-col">
-        <DiagramLoading />
-      </div>
-    );
+    return <DiagramLoading stage="opening" />;
   }
 
   return (

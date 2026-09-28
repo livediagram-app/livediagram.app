@@ -352,21 +352,21 @@ documented Skip defaults (Blank template, Default theme, the template's
 default diagram name) without walking the wizard:
 
 - **`/new?blank=1`** — the query param bypasses the wizard entirely. The
-  page renders a lightweight "Creating your diagram…" card instead of the
-  wizard, commits the blank diagram as soon as identity resolves, and
-  navigates to `/diagram/<id>`. Any truthy presence of `blank` counts.
-  The card carries the shared `DiagramBuildAnimation` illustration (the
-  looping nodes-and-arrows build the sso-callback and diagram-loading
-  screens use, reduced-motion aware), not a plain spinner — it hands off
-  visually to the editor's "Loading your diagram…" screen, which shows
-  the same animation, so create → load reads as one continuous moment.
+  page renders the opening screen (below) at its "Creating your diagram"
+  stage instead of the wizard, commits the blank diagram as soon as
+  identity resolves, and hands off to the editor in place (below). Any
+  truthy presence of `blank` counts.
   The placement context params compose with it
   (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a caller can
   Just Draw straight into a folder or team library. A failed create shows
   the same retryable error card as the wizard path. This is the URL that
   outside surfaces link to (the marketing header + hero "Just Draw"
   buttons, see [Marketing site](../019-marketing/marketing-site.md)).
-  - Restoring the page from the back/forward cache (Back from the editor)
+  - The handoff replaces the `/new?blank=1` history entry with
+    `/diagram/<id>`, so Back from the editor returns to the page before
+    `/new` (usually the marketing site), never to a page that would mint
+    another blank diagram. Should the browser still restore a bypass
+    `/new` from the back/forward cache before the handoff happened, it
     redirects to the plain `/new` wizard rather than silently minting
     another blank diagram or trapping the user behind a page that always
     navigates forward again.
@@ -382,13 +382,13 @@ default diagram name) without walking the wizard:
     tiny inline script ahead of the wizard markup that reads
     `location.search` **before first paint** and flags
     `<html data-just-draw>`; a matching style rule hides the wizard-only
-    content under that flag, and React then swaps in the creating card at
+    content under that flag, and React then swaps in the opening screen at
     hydration (detected pre-paint in a layout effect, so the trees always
     match).
 - **`/new?template=<kind>`** — the same bypass for a named template: the
   page commits that template (Default theme, the template's default name)
   the moment identity resolves and lands on the editor, with the same
-  creating card, bfcache-restore redirect, placement params and error card
+  opening screen, in-place handoff, bfcache-restore redirect, placement params and error card
   as `?blank=1`. `blank` wins when both are present. An unknown kind is
   ignored and the plain wizard shows (the pre-hydration guard can't
   validate a kind, so the layout effect lifts it), so a stale link never
@@ -410,6 +410,67 @@ default diagram name) without walking the wizard:
   desktop (`sm+`) only — mobile keeps the footer Skip as the compact
   escape. One click commits the Skip defaults immediately (disabled while
   a create is in flight, like Create).
+
+### In-place handoff to the editor
+
+Every commit from `/new` (Create, Skip, Just Draw, and both bypass URLs)
+opens the editor **without a page load**. Once the diagram is persisted and
+placed, the page rewrites the address bar to `/diagram/<id>` with
+`history.replaceState` and renders the editor component (`EditorPage`, the
+same component `/diagram/<id>` and the not-found slot render) in its own
+place. The editor reads the id from `window.location.pathname` on mount, so
+it cannot tell the difference from a direct visit.
+
+- **Why:** a hard navigation paid for a second full page load: the editor's
+  document, a second Clerk settle, a second identity round trip, and a
+  second, visually different loading screen after "Creating…". The in-place
+  swap keeps the one Clerk session, the one document, and one continuous
+  opening screen.
+- **The editor code is fetched ahead.** `/new` starts loading the editor's
+  chunk as soon as it mounts (a bypass needs it within a second; a wizard
+  visitor almost always goes on to create), so the chunk downloads in
+  parallel with identity and the create request. If it is not ready at
+  handoff, the opening screen holds at the "Opening your diagram" stage
+  until it is.
+- **`replaceState`, not `pushState`:** `/new` is a one-shot creator, so the
+  editor URL takes its history entry. Reload and Back behave exactly as they
+  do after a direct `/diagram/<id>` visit.
+- **Nothing crosses the handoff but the URL and `sessionStorage`.** The
+  tour's pending flag (`markTourPending`) is written before the swap and
+  read by the editor on mount, as it was across the hard navigation.
+- A failed create never hands off: the retryable error card shows instead.
+
+### The opening screen
+
+One screen covers the whole wait from the click to the editor: `/new`'s
+creating stage and the editor's own load (`DiagramLoading`) render the same
+full-screen component, so the handoff above never visibly changes screens.
+Its label moves from **"Creating your diagram"** to **"Opening your
+diagram"**; everything else stays put.
+
+- **Surface:** headerless and full height, on the canvas colour
+  (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
+  edges and two slowly drifting, blurred brand-tinted glows behind the
+  centre. Dark-aware like every screen ([Live app](live-app.md)).
+- **Centrepiece:** the shared `DiagramBuildAnimation`, a small live diagram
+  being drawn by a collaborator cursor labelled "You": the cursor places a
+  card, drags a connector that draws under it to the next card, and so on
+  until three cards are wired; a pulse of light then runs along each
+  connector before the whole diagram dissolves and the loop restarts. The
+  cards are white (dark: slate) with a coloured accent each, and the
+  connectors blend from their source colour to their target colour.
+- **Continuity:** the loop's phase is measured from the first time the
+  animation mounts in the document, so a remount (the creating stage giving
+  way to the editor's load) continues the drawing where it was instead of
+  restarting it.
+- **Progress:** the label sits under the animation with a slim indeterminate
+  bar below it. After 10 seconds in the editor's load the screen adds
+  "This is taking longer than usual." with a Refresh button.
+- **Reduced motion:** the drawing sits finished, the cursor, pulses, glows
+  and bar are still.
+- `DiagramBuildAnimation` stays a bare illustration (no surface of its own),
+  so the sso-callback and OAuth consent cards keep composing it inside their
+  own card.
 
 Skip and Just Draw honour the URL placement context (the `?folder` /
 `?team` pre-seed): the blank diagram files where the Settings step's
