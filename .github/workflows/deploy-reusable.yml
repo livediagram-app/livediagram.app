@@ -134,6 +134,11 @@ jobs:
           # mcp-staging.livediagram.app so a staging OAuth flow stays inside
           # staging (docs/specs/016-platform/staging-environment.md).
           NEXT_PUBLIC_MCP_ORIGIN: ${{ inputs.mcp_origin }}
+          # The Google Picker's browser API key for the Drive mirror's "Show this
+          # folder to livediagram" (docs/specs/022-drive-mirror/drive-mirror.md). Publishable
+          # (restrict it by HTTP referrer in the Cloud Console); unset leaves the
+          # mirror working and the folder adoption button hidden.
+          NEXT_PUBLIC_GOOGLE_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_API_KEY }}
         run: pnpm build
 
       - name: Upload marketing build

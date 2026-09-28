@@ -126,6 +126,7 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'migrate',
   'guest-id',
   'participants',
+  'drive',
 ]);
 
 // The fixed words that appear BELOW a resource in the api's routes
@@ -161,6 +162,12 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
   'refresh',
   'invites',
   'restore',
+  // The Google Drive mirror's sub-routes (docs/specs/022-drive-mirror/drive-mirror.md).
+  'state',
+  'connect',
+  'connection',
+  'items',
+  'lease',
 ]);
 
 /**

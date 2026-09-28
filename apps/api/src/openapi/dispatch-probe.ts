@@ -166,6 +166,10 @@ export async function probeDispatch(
     DIAGRAM_ROOM: trap('DIAGRAM_ROOM'),
     TELEMETRY_ENABLED: 'true',
     OPENAI_API_KEY: 'probe-key',
+    // The Drive mirror in broker mode (docs/specs/022-drive-mirror/drive-mirror.md).
+    GOOGLE_CLIENT_ID: 'probe-client',
+    GOOGLE_CLIENT_SECRET: 'probe-secret',
+    DRIVE_TOKEN_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
   } as unknown as Env;
   const pending: Promise<unknown>[] = [];
   const executionCtx = {

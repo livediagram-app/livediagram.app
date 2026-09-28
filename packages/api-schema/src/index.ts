@@ -14,6 +14,7 @@
 // continues to use `StoredDiagram` — so this extraction is a
 // drop-in. New code should prefer the canonical names here.
 
+import type { DriveMode } from './drive';
 import type { BackgroundPattern, ShapeKind, Tab } from '@livediagram/diagram';
 
 export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
@@ -492,7 +493,7 @@ export { sha256Hex } from './sha256';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
 // workers and the editor (see ./bytes.ts).
-export { bytesToBase64, bytesToBase64Url } from './bytes';
+export { base64ToBytes, bytesToBase64, bytesToBase64Url } from './bytes';
 
 // Image magic-number sniffing and the server-side image embedder both
 // workers render tabs with (see ./image-sniff.ts, ./embed-images.ts).
@@ -544,6 +545,9 @@ export type CapabilitiesResponse = {
   // since they'd be inert without an email backend. Optional so an older
   // client / a fail-closed default still parses.
   emailEnabled?: boolean;
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): how the deployment
+  // gets Google access tokens. Optional so an older worker parses as 'off'.
+  driveMode?: DriveMode;
 };
 
 // Per-day buckets for the trend charts on the dashboard. `days` is
@@ -574,3 +578,4 @@ export * from './timeline';
 export * from './activity';
 export * from './responses';
 export * from './trash';
+export * from './drive';

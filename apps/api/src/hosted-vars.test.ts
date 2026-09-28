@@ -88,6 +88,13 @@ describe('hosted-vars script', () => {
     expect(buildEnv({ IMAGE_MAX_PER_OWNER: '1' })).toEqual([]);
   });
 
+  it('hands the Google client id to the frontends (docs/specs/022-drive-mirror/drive-mirror.md)', async () => {
+    const { buildEnv } = await load();
+    expect(buildEnv({ GOOGLE_CLIENT_ID: '123-abc.apps.googleusercontent.com' })).toEqual([
+      'NEXT_PUBLIC_GOOGLE_CLIENT_ID=123-abc.apps.googleusercontent.com',
+    ]);
+  });
+
   it('rejects a malformed profile rather than deploying half of it', async () => {
     const { readHostedVars } = await load();
     const dir = mkdtempSync(join(tmpdir(), 'hosted-vars-'));

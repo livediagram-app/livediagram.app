@@ -84,10 +84,14 @@ export async function deleteFolder(env: Env, id: string): Promise<void> {
   // diagrams fall to Unsorted. ON DELETE SET NULL on both FKs would
   // do the same thing, but we run it explicitly so the behaviour is
   // visible in code (and not dependent on SQLite enforcing the FK,
-  // which is opt-in via PRAGMA).
-  await env.DB.prepare('UPDATE folders SET parent_id = NULL WHERE parent_id = ?').bind(id).run();
-  await env.DB.prepare('UPDATE diagrams SET folder_id = NULL WHERE folder_id = ?').bind(id).run();
-  await env.DB.prepare('DELETE FROM folders WHERE id = ?').bind(id).run();
+  // which is opt-in via PRAGMA). One batch, so the folder and its Drive
+  // mirror row (docs/specs/022-drive-mirror/drive-mirror.md, "Data") go together.
+  await env.DB.batch([
+    env.DB.prepare('UPDATE folders SET parent_id = NULL WHERE parent_id = ?').bind(id),
+    env.DB.prepare('UPDATE diagrams SET folder_id = NULL WHERE folder_id = ?').bind(id),
+    env.DB.prepare("DELETE FROM drive_items WHERE item_kind = 'folder' AND ld_id = ?").bind(id),
+    env.DB.prepare('DELETE FROM folders WHERE id = ?').bind(id),
+  ]);
 }
 
 // Cycle check for folder moves. Walks the proposed ancestor chain

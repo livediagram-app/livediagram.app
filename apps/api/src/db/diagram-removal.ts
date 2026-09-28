@@ -39,6 +39,12 @@ export function diagramRemovalStatements(
     // image_refs has no FK (docs/specs/009-elements/images.md, "Reference index"), so the doomed
     // tabs' references go explicitly, first, while the links that name them still exist.
     env.DB.prepare(`DELETE FROM image_refs WHERE tab_id IN (${doomedTabs})`).bind(value, value),
+    // The Google Drive mirror's rows (docs/specs/022-drive-mirror/drive-mirror.md, "Data"):
+    // a removed diagram is no longer mirrored. The browser finishes the Drive
+    // side from its own memory of the rows it saw.
+    env.DB.prepare(
+      `DELETE FROM drive_items WHERE item_kind = 'diagram' AND ld_id IN (${doomed})`,
+    ).bind(value),
     // Before the diagrams DELETE: its cascade takes the links this reads.
     env.DB.prepare(
       `DELETE FROM tabs

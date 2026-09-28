@@ -38,6 +38,18 @@ compatibility_date = "2026-05-29"
 # per IP) remains the only other control.
 AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
 
+# Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md). No binding
+# of its own: it rides the D1 database above (drive_connections, drive_items).
+#   - GOOGLE_CLIENT_ID: plain var, livediagram.app's own OAuth client, so it
+#     lives in `hosted-vars.json` (a fork has its own Google project and must
+#     not inherit ours); the hosted build also bakes it into the live app as
+#     NEXT_PUBLIC_GOOGLE_CLIENT_ID (scripts/hosted-vars.mjs build-env).
+#   - GOOGLE_CLIENT_SECRET, DRIVE_TOKEN_KEY: secrets, set by hand exactly like
+#     RESEND_API_KEY: `wrangler secret put GOOGLE_CLIENT_SECRET` and
+#     `wrangler secret put DRIVE_TOKEN_KEY` (base64 of 32 random bytes).
+# Without GOOGLE_CLIENT_ID every /api/drive route answers 503 and the live app
+# shows no Drive entry, which is the self-host default.
+
 # D1 database holding diagrams + participants. The local binding name
 # (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
 # is the Cloudflare-side name (must be created via `wrangler d1 create
@@ -387,5 +399,11 @@ crons = ["0 3 * * *"]
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and
 # OPENAI_API_KEY are provisioned by hand exactly as they are for production:
 #   cd apps/api && wrangler secret put RESEND_API_KEY --env staging
+# The Drive mirror's GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY likewise:
+#   cd apps/api && wrangler secret put DRIVE_TOKEN_KEY --env staging
+# with a DRIVE_TOKEN_KEY of its own, never production's, so a staging row can
+# never open a production refresh token. GOOGLE_CLIENT_ID reaches staging from
+# hosted-vars.json like the other hosted vars; the Google client lists
+# staging.livediagram.app/drive/connected as a second redirect URI.
 # Worker secrets are per-environment, so staging's never collide with
 # production's.

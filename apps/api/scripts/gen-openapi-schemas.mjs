@@ -62,6 +62,10 @@ export const ROOT_TYPES = [
   'ReadNotesResponse',
   'CapabilitiesResponse',
   'UnfurlResult',
+  'DriveConnection',
+  'DriveItem',
+  'DriveLease',
+  'DriveAccessToken',
 ];
 
 // Recursively rewrite the generator's draft-07 `#/definitions/<Name>` refs to

@@ -7,6 +7,7 @@ import { deleteCollabIndexForOwner, recordOwnerAlias } from './collab-index';
 import { thumbnailKey } from './diagrams';
 import { diagramRemovalStatements } from './diagram-removal';
 import { detachUserFromTeams } from './teams';
+import { disconnectDrive } from '../drive/disconnect';
 import type { Env } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard
@@ -105,6 +106,10 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
   // auth_accounts (docs/specs/017-telemetry/telemetry.md): the first-seen row the sign-up count keys on.
   await env.DB.prepare('DELETE FROM auth_accounts WHERE owner_id = ?').bind(ownerId).run();
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): revoke the grant
+  // at Google and drop the connection and every mirror row. The Drive files are
+  // the user's and stay.
+  await disconnectDrive(env, ownerId);
   // shared_with rows POINTING AT this owner's diagrams die with the
   // diagrams (FK cascade), but the rows this owner accumulated by
   // visiting OTHER people's diagrams are keyed on their owner_id and
