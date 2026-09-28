@@ -23,7 +23,6 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { spinFrameDelays, spinReel, type PickerCandidate } from '@/lib/picker';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { ReelWindow } from '@/components/canvas/paper-kit';
-import { HoverCard } from '@livediagram/ui';
 
 export function PickerFace({
   label,
@@ -160,25 +159,16 @@ export function PickerFace({
         </span>
       </span>
       {onRoll ? (
-        <HoverCard
-          title={empty ? 'Nothing to pick from' : 'Pick one'}
-          description={
-            empty
-              ? 'Add options from the Picker menu, or switch it to pick from the people in the room.'
-              : 'Chooses at random and shows everyone the same answer.'
-          }
+        <button
+          type="button"
+          {...press}
+          disabled={empty}
+          aria-label="Pick at random"
+          className="pointer-events-auto mt-0.5 cursor-pointer rounded-full bg-black/[0.06] px-3 py-1 text-[11px] font-semibold transition hover:bg-black/[0.1] disabled:cursor-default disabled:opacity-50 dark:bg-white/10 dark:hover:bg-white/15"
+          style={{ color: textColor }}
         >
-          <button
-            type="button"
-            {...press}
-            disabled={empty}
-            aria-label="Pick at random"
-            className="pointer-events-auto mt-0.5 cursor-pointer rounded-full bg-black/[0.06] px-3 py-1 text-[11px] font-semibold transition hover:bg-black/[0.1] disabled:cursor-default disabled:opacity-50 dark:bg-white/10 dark:hover:bg-white/15"
-            style={{ color: textColor }}
-          >
-            {spinning ? 'Picking…' : result ? 'Again' : 'Pick'}
-          </button>
-        </HoverCard>
+          {spinning ? 'Picking…' : result ? 'Again' : 'Pick'}
+        </button>
       ) : null}
     </div>
   );

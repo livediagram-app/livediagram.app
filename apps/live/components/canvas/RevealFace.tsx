@@ -22,7 +22,7 @@ import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { tint } from '@/lib/element-tint';
 import { LockGlyph } from '@/components/canvas/collab/qa/qa-parts';
-import { HoverCard, Glyph, GlyphDisc } from '@livediagram/ui';
+import { Glyph, GlyphDisc } from '@livediagram/ui';
 
 // The cover's base, from the PAPER under it rather than the app's appearance,
 // so a dark theme in light mode still gets a dark cover (docs/specs/009-elements/reveal-zone.md "The look").
@@ -75,20 +75,14 @@ export function RevealFace({
       // Only the pill takes pointers, so a locally-revealed zone doesn't sit
       // between the user and the content they came to read.
       <div className="pointer-events-none absolute inset-0">
-        <HoverCard
-          className="pointer-events-auto absolute right-1.5 top-1.5"
-          title="Hide it again"
-          description="Only affects your screen."
+        <button
+          type="button"
+          {...pillPress}
+          className="flex cursor-pointer items-center gap-1 rounded-full bg-slate-900/75 px-2.5 py-1 text-[10px] font-semibold text-white shadow-lg ring-1 ring-white/10 backdrop-blur transition hover:bg-slate-900/90"
         >
-          <button
-            type="button"
-            {...pillPress}
-            className="flex cursor-pointer items-center gap-1 rounded-full bg-slate-900/75 px-2.5 py-1 text-[10px] font-semibold text-white shadow-lg ring-1 ring-white/10 backdrop-blur transition hover:bg-slate-900/90"
-          >
-            <EyeOffIcon />
-            Hide
-          </button>
-        </HoverCard>
+          <EyeOffIcon />
+          Hide
+        </button>
       </div>
     );
   }

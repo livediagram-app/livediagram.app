@@ -64,12 +64,6 @@ export function RollCallFace({
           tone={entries.length ? 'quiet' : 'loud'}
           textColor={textColor}
           onPress={onTakeRoll}
-          hoverCard={{
-            title: entries.length ? 'Take the roll again' : 'Take the roll',
-            description: entries.length
-              ? 'Replaces the list with whoever is in the room now — the usual reason is latecomers.'
-              : 'Records everyone in the room at this moment, and keeps them after they leave.',
-          }}
         >
           {entries.length ? 'Take again' : 'Take roll'}
         </CollabButton>

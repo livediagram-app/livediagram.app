@@ -3,7 +3,6 @@
 // quiet and reads "I'm not done", the same press to take it back.
 
 import { useState } from 'react';
-import { HoverCard } from '@livediagram/ui';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { CheckGlyph, QA_ACCENT, QA_ON_ACCENT, stopPointer } from '../qa/qa-parts';
@@ -20,39 +19,29 @@ export function DoneButton({
   const [initial] = useState(mine);
   const press = usePressWithoutDrag(() => onToggle?.());
   return (
-    <HoverCard
-      block
-      title={mine ? "Say you're not done after all" : 'Mark yourself done'}
-      description={
+    <button
+      type="button"
+      {...press}
+      {...stopPointer}
+      disabled={!onToggle}
+      className="done-button pointer-events-auto flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-semibold disabled:cursor-default disabled:opacity-50"
+      style={
         mine
-          ? 'Takes your mark off. Nobody is stuck finished on a card they misread.'
-          : 'Adds you to the done list. Everyone in the room sees it straight away.'
+          ? { color: textColor, backgroundColor: tint(textColor, 0.08) }
+          : {
+              color: QA_ON_ACCENT,
+              backgroundColor: QA_ACCENT,
+              boxShadow: `0 8px 16px -10px ${QA_ACCENT}`,
+            }
       }
     >
-      <button
-        type="button"
-        {...press}
-        {...stopPointer}
-        disabled={!onToggle}
-        className="done-button pointer-events-auto flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-semibold disabled:cursor-default disabled:opacity-50"
-        style={
-          mine
-            ? { color: textColor, backgroundColor: tint(textColor, 0.08) }
-            : {
-                color: QA_ON_ACCENT,
-                backgroundColor: QA_ACCENT,
-                boxShadow: `0 8px 16px -10px ${QA_ACCENT}`,
-              }
-        }
+      <span
+        key={mine ? 'mine' : 'not'}
+        className={`inline-flex items-center gap-1.5 ${mine !== initial ? 'qa-pop' : ''}`}
       >
-        <span
-          key={mine ? 'mine' : 'not'}
-          className={`inline-flex items-center gap-1.5 ${mine !== initial ? 'qa-pop' : ''}`}
-        >
-          {mine ? null : <CheckGlyph size={13} />}
-          {mine ? "I'm not done" : "I'm done"}
-        </span>
-      </button>
-    </HoverCard>
+        {mine ? null : <CheckGlyph size={13} />}
+        {mine ? "I'm not done" : "I'm done"}
+      </span>
+    </button>
   );
 }

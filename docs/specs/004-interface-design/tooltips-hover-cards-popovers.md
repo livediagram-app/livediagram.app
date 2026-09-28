@@ -55,6 +55,26 @@ A control has at most one hint. If a hover card is present, it carries the name 
 - **White card** on light pages, with a border, a soft shadow and a pointer.
 - Hover cards are not part of the tooltip warm-up; they have no delay to skip.
 
+### On canvas elements, sparingly
+
+The Behaviour and Collaborate elements sit on a board people are working
+across, so a card that opens on every pass gets in the way. On them a hover
+card is kept **only where it says something the face cannot**:
+
+- an **icon-only control** (the Q&A board's per-row Discuss / Done / Remove);
+- **a person** (an avatar's name card);
+- something the face deliberately **does not draw** (where a Portal leads, since
+  the ring carries no caption);
+- a control whose press is **not what it looks like** (a dot-vote tally, where a
+  click takes your dot back).
+
+Never on a **labelled button** (Reveal, New round, Open the box, Take roll,
+I'm done, Pick, Hide: the label is the whole story), never on a vote arrow or a
+chip, and never over a **whole element** (the Reaction pad's card covered the
+pad, so it opened every time the pointer crossed it). Anything worth saying
+about a removed one lives in the element's help article and its accessible
+name.
+
 ## Behaviour shared by both hints
 
 These meet WCAG 2.2 AA, including 1.4.13 Content on Hover or Focus.

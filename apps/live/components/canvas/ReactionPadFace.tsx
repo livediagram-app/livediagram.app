@@ -1,17 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  REACTION_EMOJI,
-  REACTION_HINT,
-  REACTION_HUES,
-  REACTION_LABEL,
-  type Reaction,
-} from '@livediagram/diagram';
+import { REACTION_EMOJI, REACTION_HUES, REACTION_LABEL, type Reaction } from '@livediagram/diagram';
 
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '@/lib/element-tint';
-import { HoverCard } from '@livediagram/ui';
 
 // The face of a Reaction Pad (docs/specs/009-elements/reaction-pad.md): a big pressable glyph over a
 // spotlight in the reaction's own colour, the label under it ("The look").
@@ -121,20 +114,13 @@ export function ReactionPadFace({
   }
 
   return (
-    <HoverCard
-      block
-      className="h-full w-full"
-      title={`${REACTION_LABEL[reaction]} pad`}
-      description={`${REACTION_HINT[reaction]}. Press it, or walk a character onto it in Avatar mode.`}
+    <button
+      type="button"
+      {...press}
+      aria-label={`Set off ${REACTION_LABEL[reaction]}`}
+      className="pad-button pointer-events-auto relative h-full w-full cursor-pointer rounded-[inherit] [container-type:size]"
     >
-      <button
-        type="button"
-        {...press}
-        aria-label={`Set off ${REACTION_LABEL[reaction]}`}
-        className="pad-button pointer-events-auto relative h-full w-full cursor-pointer rounded-[inherit] [container-type:size]"
-      >
-        {face}
-      </button>
-    </HoverCard>
+      {face}
+    </button>
   );
 }

@@ -10,7 +10,6 @@
 import { CountBadge } from '@/components/primitives/CountBadge';
 import { useState } from 'react';
 import { IDEA_MAX_TEXT, type ShapeElement } from '@livediagram/diagram';
-import { HoverCard } from '@livediagram/ui';
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { CollabComposer } from './CollabComposer';
@@ -120,29 +119,12 @@ export function IdeaBoxFace({
         }
       >
         {!open && onReveal && cards.length > 0 ? (
-          <AccentBar
-            onPress={onReveal}
-            icon={<EyeGlyph />}
-            hoverCard={{
-              title: 'Open the box',
-              description:
-                'Shows every idea to the room. There is no closing it again: the flag protects the writing round, it is not a toggle.',
-            }}
-            count={cards.length}
-          >
+          <AccentBar onPress={onReveal} icon={<EyeGlyph />} count={cards.length}>
             Open the box
           </AccentBar>
         ) : null}
         {open && onScatter && cards.length > 0 ? (
-          <AccentBar
-            onPress={onScatter}
-            icon={<ScatterGlyph />}
-            hoverCard={{
-              title: 'Scatter to sticky notes',
-              description:
-                'Turns each idea into an ordinary sticky note beside the box, still with nobody’s name on it.',
-            }}
-          >
+          <AccentBar onPress={onScatter} icon={<ScatterGlyph />}>
             Scatter to sticky notes
           </AccentBar>
         ) : null}
@@ -178,17 +160,12 @@ export function IdeaBoxFace({
 // element exists to give.
 function AnonymousBadge() {
   return (
-    <HoverCard
-      title="Always anonymous"
-      description="Nobody’s name is stored with an idea, and adding one writes nothing to the change log."
+    <span
+      className="pointer-events-auto inline-flex items-center gap-1 rounded-full py-0.5 pl-1 pr-2 text-[10px] font-semibold"
+      style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
     >
-      <span
-        className="pointer-events-auto inline-flex items-center gap-1 rounded-full py-0.5 pl-1 pr-2 text-[10px] font-semibold"
-        style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
-      >
-        <MaskGlyph size={11} />
-        Anonymous
-      </span>
-    </HoverCard>
+      <MaskGlyph size={11} />
+      Anonymous
+    </span>
   );
 }

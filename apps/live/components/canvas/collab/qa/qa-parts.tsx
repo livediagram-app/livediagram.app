@@ -197,15 +197,9 @@ export function VotePill({
       ) : null}
     </button>
   );
-  if (frozen || !onToggle) return body;
-  return (
-    <HoverCard
-      title={mine ? 'Withdraw your vote' : 'Upvote'}
-      description="One vote per person per note. The most voted rise to the top."
-    >
-      {body}
-    </HoverCard>
-  );
+  // No hover card: an up-arrow over a count is a vote, and a card popping on
+  // every row as the pointer crossed the queue got in the way.
+  return body;
 }
 
 // A small round icon button, for the facilitator's per-row actions.
@@ -251,7 +245,6 @@ export function AccentBar({
   onPress,
   icon,
   count,
-  hoverCard,
   children,
 }: {
   onPress: () => void;
@@ -259,11 +252,11 @@ export function AccentBar({
   // How many things the action covers, as a badge in the accent
   // (docs/specs/004-interface-design/counts.md), never "(3)" in the label.
   count?: number;
-  hoverCard?: { title: string; description: string };
   children: React.ReactNode;
 }) {
   const press = usePressWithoutDrag(onPress);
-  const bar = (
+  // No hover card: the bar's label is the whole story.
+  return (
     <button
       type="button"
       {...press}
@@ -286,14 +279,6 @@ export function AccentBar({
         </span>
       ) : null}
     </button>
-  );
-  // `block`: the bar spans its row wherever it sits (a board body, a footer).
-  return hoverCard ? (
-    <HoverCard block title={hoverCard.title} description={hoverCard.description}>
-      {bar}
-    </HoverCard>
-  ) : (
-    bar
   );
 }
 
