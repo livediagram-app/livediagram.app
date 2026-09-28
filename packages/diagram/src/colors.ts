@@ -11,6 +11,7 @@ import {
 } from './index';
 import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
 import { MODE_BUTTON_SKIN } from './selection-mode';
+import { hasOwnFace } from './collab-shapes';
 
 // Per-type default padding bucket (was beside the Padding type).
 export function defaultPadding(element: BoxedElement): Padding {
@@ -528,9 +529,15 @@ export function supportsBorderControls(element: Element): boolean {
 // Of the web components (docs/specs/009-elements/web-components-and-no-groups.md), the header takes the icon as its logo
 // and the callout as its badge glyph; the banner, stat row and process have
 // nowhere to put one, so an icon dropped on them stands alone.
+//
+// Nor do the Behaviour and Collaborate elements that draw their own face
+// (hasOwnFace: the collaboration cards, the buttons, the picker, the reveal
+// cover, the chair...): their face never renders an inline icon, so one folded
+// in would be invisible. Dropped on them, it stands alone too.
 export function acceptsInlineIcon(element: Element): element is ShapeElement {
   return (
     element.type === 'shape' &&
+    !hasOwnFace(element.shape) &&
     element.shape !== 'icon' &&
     element.shape !== 'sticker' &&
     element.shape !== 'frame' &&
