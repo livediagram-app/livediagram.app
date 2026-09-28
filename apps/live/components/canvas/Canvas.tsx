@@ -538,6 +538,12 @@ export function Canvas(props: CanvasProps) {
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     node?.focus({ preventScroll: true });
   }, [mainRef]);
+  // Mind map (docs/specs/009-elements/mind-node.md): the growers the label editor and the "+" reach.
+  const { onGrowMindNode, onAbandonMindNode } = props;
+  const mindGrow = useMemo(
+    () => ({ grow: onGrowMindNode, abandon: onAbandonMindNode }),
+    [onGrowMindNode, onAbandonMindNode],
+  );
   return (
     <main
       ref={mainRef}
@@ -665,7 +671,7 @@ export function Canvas(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-        <MindGrowProvider value={props.onGrowMindNode}>
+        <MindGrowProvider value={mindGrow}>
           <CanvasElementsLayer
             {...props}
             // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),

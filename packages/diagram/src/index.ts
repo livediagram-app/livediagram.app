@@ -399,6 +399,8 @@ export * from './arrow-avoidance';
 export * from './nearest-towards';
 export * from './mind-flow';
 export * from './mind-map';
+export * from './mind-layout';
+export * from './mind-grow';
 export * from './youtube';
 export * from './arrow-path';
 export * from './arrow-label';

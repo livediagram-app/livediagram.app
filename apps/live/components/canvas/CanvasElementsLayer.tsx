@@ -655,7 +655,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               // there is a grower (not the share view, embed, or exports).
               onGrowMind={
                 selectedIsMind && growMind
-                  ? (relation) => growMind(selectedElement.id, relation)
+                  ? (relation) => growMind.grow(selectedElement.id, relation)
                   : undefined
               }
             />
