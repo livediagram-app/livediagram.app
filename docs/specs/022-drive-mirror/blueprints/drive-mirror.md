@@ -10,7 +10,7 @@ Scope, by file:
 | File                                                  | Role                                                                        |
 | ----------------------------------------------------- | --------------------------------------------------------------------------- |
 | `packages/api-schema/src/drive.ts`                    | Wire types, `DriveMode`, `DRIVE_*` shared constants, `driveFileName`        |
-| `apps/api/migrations/0052_drive_mirror.sql`           | `drive_connections`, `drive_items`                                          |
+| `apps/api/migrations/0054_drive_mirror.sql`           | `drive_connections`, `drive_items`                                          |
 | `apps/api/src/drive/config.ts`                        | `driveMode(env)`, the Google OAuth origin                                   |
 | `apps/api/src/drive/crypto.ts`                        | AES-GCM seal / open of the refresh token                                    |
 | `apps/api/src/drive/state.ts`                         | Signed consent `state`                                                      |
@@ -416,7 +416,7 @@ from `exportedAt`, D3). `parseDiagramEnvelope(text)` returns the envelope or a n
 
 ## Data and persistence
 
-`0052_drive_mirror.sql`:
+`0054_drive_mirror.sql`:
 
 ```sql
 CREATE TABLE drive_connections (
