@@ -274,7 +274,8 @@ returning a compact description of the element schema: the element types
 (`shape` / `text` / `sticky` / `arrow` / `table` / …), the shape vocabulary,
 required fields, the pinned-arrow anchor convention (`from.e → to.w` etc.), and
 the design rules that make diagrams read well (don't set colours — the theme
-owns them; size siblings consistently; prefer pinned arrows). This is **how the
+owns them, a sticky's own colours excepted; size siblings consistently; prefer
+pinned arrows), and the content fields of the kinds that carry content (§4.7a). This is **how the
 model produces high-quality diagrams**: the schema is presented once, declaratively,
 rather than baked verbatim into every tool description. The same essentials are
 also summarised in the MCP server `instructions` and in the `create`/`update`
@@ -288,26 +289,153 @@ Emitting raw `elements` with `x/y/width/height`, a shape vocabulary, and
 arrow-endpoint anchor objects is the biggest source of model error (it's why
 `coerceShapeKind`, the validation error paths, and auto-layout-on-replace all
 exist). So `create_diagram`, `add_tab`, and `update_diagram` (replace mode)
-accept an alternative **`graph`** input — the connection graph and nothing else:
+accept an alternative **`graph`** input — the connection graph and nothing else —
+or the same thing written as **`mermaid`**:
 
 ```
-graph: { nodes: [{ id, label?, shape? }], edges: [{ from, to, label? }] }
+graph: {
+  nodes:  [{ id, label?, shape?, note?, group? }],
+  edges:  [{ from, to, label? }],
+  groups?: [{ id, label?, members?: [nodeId, ...] }],
+  direction?: 'down' | 'right',
+  style?:  'flow' | 'tree' | 'mindmap',
+  lines?:  'straight' | 'angled' | 'curved',
+}
+mermaid: "flowchart LR\n  A[Idea] --> B{Worth it?} ..."
 ```
 
 The server turns each node into a `shape` box and each edge into a pinned
-arrow, then **always auto-lays-it-out** (a graph carries no positions). The
-model expresses only intent — which nodes exist, what points at what — and
-never touches geometry, anchors, or endpoint shapes. Off-vocabulary shape kinds
-are coerced; an edge to an unknown node id is dropped rather than producing a
-broken arrow. This is the **preferred path for any node/edge diagram**
-(flowcharts, org charts, architecture, dependency graphs); `elements` stays for
-deliberate arrangements (a ring, a grid) and mixed non-node content.
+arrow, then **always lays it out** (a graph carries no positions). The model
+expresses only intent — which nodes exist, what points at what, how they group
+— and never touches geometry, anchors, or endpoint shapes. Off-vocabulary shape
+kinds are coerced; an edge to an unknown node id is dropped rather than
+producing a broken arrow. This is the **preferred path for any node/edge
+diagram** (flowcharts, org charts, architecture, dependency graphs); `elements`
+stays for deliberate arrangements (a ring, a grid) and mixed non-node content.
+Provide **one** of `graph` / `mermaid` / `elements` / `template`, not several.
 
-The translation (`graphToElements`) is a pure function in `packages/diagram`
-beside the layout it feeds, so the public API can adopt it later; the MCP tab
-builders (`buildGraphTab`) live in `apps/mcp/src/tab-builders.ts` — split out of
-`tool-helpers.ts` so they're render-free and unit-testable. Provide **one** of
-`graph` / `elements` / `template`, not several.
+**A label is a heading; detail goes in the note.** A node's `label` is the text
+in the box and is capped at **40 characters** (`GRAPH_LABEL_MAX`). The cap is a
+plain fact in the tool's description, not an instruction (§4.15), and the server
+enforces it rather than rejecting the call. A longer label becomes a heading:
+bracketed asides go first ("Web client (React SPA served from the CDN)" becomes
+"Web client"); then the noun phrase before its first clause word when there is
+one ("Orders service which creates orders" becomes "Orders service", "Message
+queue for async events" becomes "Message queue"); otherwise the text cut at a
+word boundary with an ellipsis. Either way the **full text moves into the node's `note`**
+(prepended to any note the model gave), which the editor shows as the element's
+note. A model now has somewhere to put the explanation, so the box keeps the
+heading; this is what stops a verbose model filling a diagram with sentences.
+Edge labels are capped the same way (overflow is dropped, an arrow has no note).
+
+**Boxes fit their labels.** Each node is sized from its label (estimated text
+width and line count, within a sane range) and **keeps that size** through the
+layout: the peer sizing that Tidy Up applies (every box of a tier as big as its
+longest label) is skipped for graph input, where it let one long label inflate
+every box ("CTO" drawn as wide as "Platform and site reliability"). An
+unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.md)
+"Node boxes and text").
+
+**Layout choices** (defaults in brackets):
+
+- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right).
+- `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
+  chart, a hierarchy), `mindmap` the radial layout around the first node.
+- `groups`: named clusters drawn as frames around their members and laid out as
+  one block each (the clustered layout the editor's Mermaid import uses); an edge
+  may point at a group id. With groups, `style` is flow. A node may name its
+  group itself (`group`), the shape a model reaches for first; it joins that
+  group's members, and a group id nothing declares is created with the id as its
+  label. `members` is then optional.
+- `lines` (`straight` for flow, `angled` for tree, `curved` for mindmap): the
+  arrows' routing, from the editor's own arrow styles. Angled lines **bend
+  twice** along the flow (down, across at half height, down into the child's
+  top), the org-chart shape; one whose ends already line up runs straight
+  ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice").
+
+The flow layout reduces crossings: after ranking, a few up-and-down barycentre
+passes reorder each rank, and a new order is kept only when it crosses fewer
+edges ([Layout cleanup](../008-canvas/layout-cleanup.md)), so graph input, whose
+nodes all start at one point, no longer lays out in arbitrary input order. It
+also gives long edges a lane, places each node by its neighbours instead of
+centring its rank, and has every edge to a later rank leave and land on the
+faces that point along the flow (the same page). An arrow that still crosses an
+unrelated box passes behind it with a gap, on the canvas and in the preview
+([Arrows pass behind intervening boxes](../008-canvas/arrow-route-behind.md)).
+
+**`mermaid`** is parsed by the editor's own importer (`parseMermaid`:
+flowcharts with subgraphs, state diagrams and ER diagrams, [Mermaid](../020-import-export/mermaid.md)) into the same
+graph, its direction and subgraphs becoming `direction` and `groups`, and then
+takes the same path, label cap included. A dialect it cannot read comes back as
+an error naming what is supported.
+
+The translation (`graphToElements`, the sizing, the clustered layout) is pure
+code in `packages/diagram` beside the layout it feeds, so the public API can
+adopt it later; the MCP side (`graph-input.ts`: the label cap, choosing the
+layout, the lines, Mermaid) lives in `apps/mcp/src` and is unit-tested there.
+The cap is the MCP's alone: the editor's Mermaid import never truncates what a
+person typed.
+
+The **prompts** (§4.10) are messages the user sends, not tool descriptions, so
+they do ask for it outright: short headings, detail in the note, related nodes
+grouped, a direction and style that fit the subject. Nodes are set in one fixed
+text size (`sm`, what the sizing measures against), not the shape default that
+scales text to fill each box.
+
+### 4.7a Content-carrying element kinds
+
+Six kinds hold content of their own, and the element format documents their
+fields so a model can fill them rather than guess: **sticky**, **table**,
+**code block**, **entity**, **lane**, and the three **charts** (bar, line, pie).
+Every other kind stays listed by name only. The field notes are facts about what
+each field does (§4.15), carried on the tools' element argument and in the
+schema resource (§4.6), short enough not to bloat every tool definition.
+
+| Kind                              | Content fields                                                     | Facts the notes state                                                                                                                                                                                                               |
+| --------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sticky` (type)                   | `label`; optional `fillColor` + `textColor`                        | The theme never recolours a sticky, so its own colours are kept; the notes list the palette's sticky pairs (classic, lemon, peach, rose, lilac, sky, mint, teal, slate, paper, charcoal, ink). Unset, it is the classic amber note. |
+| `table` (type)                    | `cells` (rows of strings), `headerRow`, `headerColumn`, `zebra`    | The first row is the header when `headerRow` is set.                                                                                                                                                                                |
+| `code-block` (shape)              | `code` (up to 4000 chars), `codeLanguage`, `codeTheme`, `codeWrap` | The languages and themes are listed; the block draws itself, so `label` is not shown.                                                                                                                                               |
+| `entity` (shape)                  | `label` (the title), `entityFields` `[{ name, type? }]` (up to 40) | Keys go in the type text (`uuid PK`).                                                                                                                                                                                               |
+| `lane` (shape)                    | `label` (the title), `headerFill`                                  | Contents sit inside the lane's box; lanes are placed one under another.                                                                                                                                                             |
+| `bar-chart` / `pie-chart` (shape) | `pieSlices` `[{ label, value }]`                                   | A chart draws no title: a caption is a separate `text` element. Categories show in the legend.                                                                                                                                      |
+| `line-chart` (shape)              | `lineCategories` (x labels), `lineSeries` `[{ name, values }]`     | The same, with one value per category.                                                                                                                                                                                              |
+
+**The sticky exception to "the theme owns colours".** The design rule that a
+model leaves colours to the theme (§4.6) holds for every themed element; a
+sticky is not themed at all (it keeps its amber across every theme), so its
+`fillColor` / `textColor` are content, and the notes say so.
+
+**The server makes these kinds safe to author** (`apps/mcp/src/element-normalise.ts`),
+before validation, on every element path (create, add_tab, update in either
+mode), so a near-miss draws correctly instead of failing the call or drawing
+wrongly:
+
+- **Every element takes the presentation defaults the editor's own factory
+  gives a new one of its kind** for the fields it leaves out: `textSize` (`md`
+  for shapes, stickies and tables, `sm` for text) and, where the kind sets
+  them, the title alignment and padding (an entity's top-left title, a lane's
+  left title strip and `lg` padding, a frame's header). Unset, text scales to
+  fill its box, so a lane or entity title came out as one giant word across
+  its contents and a sticky's note filled it edge to edge; a box drawn in the
+  editor never arrives that way. This applies to every element on these paths,
+  not only the six.
+- A **table**'s ragged rows are padded to the widest (`normalizeTable`, the same
+  pass the editor runs on load), so every row renders.
+- An unknown **codeLanguage** becomes `plain` and an unknown **codeTheme** is
+  dropped (the default), rather than failing the whole tab validation.
+- An **entity**'s height grows to fit its rows (`entityHeight`, the geometry
+  the canvas and the export draw with: the title bar, 13.75 px a row, 3 px
+  between rows, 6 px above and below the list), since rows past the box are not
+  drawn.
+- **Chart** data is coerced: a slice or value that is not a finite number
+  becomes 0, labels become strings, and each series' `values` is padded or cut
+  to the category count. Empty data draws the built-in sample, which the notes
+  state.
+- **Lanes move to the front of the element list** (their order among themselves
+  kept), so they paint behind everything: a lane has a fill, and one listed after
+  its contents covered them. It also makes each lane the backmost box under its
+  contents, which is what lets dragging it in the editor carry them.
 
 ### 4.8 `share_diagram`
 
@@ -528,6 +656,12 @@ Worker (no DOM, no React).
   draws shapes/arrows/colours but no text, so the calling model gets a text-less
   preview it can't self-check against. A diagram's own font choice falls back to
   Inter in the preview; the structured elements still carry the true font.
+- **No scaled strokes.** resvg ignores `vector-effect="non-scaling-stroke"`, so
+  the renderer never relies on it: stretched silhouettes (frames, cylinders,
+  device frames) are mapped into the element box point by point
+  (`svg-shape-fit.ts`) rather than nested in a scaled `<svg>`. Before that, a
+  frame's border in the preview grew with the frame, several pixels thick on a
+  large group.
 - **Image-element embedding.** When a rendered tab has image elements,
   `imageResult` prefetches their bytes (owner-authed via the caller's token,
   `GET /api/images/:id`) and inlines them as base64 data URIs through the

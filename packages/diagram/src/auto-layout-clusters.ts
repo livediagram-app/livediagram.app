@@ -17,6 +17,7 @@ import {
   type GraphCluster,
 } from './graph-authoring';
 import { unionRects, type Rect } from './geometry-primitives';
+import { bowReciprocalEdges } from './arrow-reciprocal';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
 // Space between a frame's border and its members: the top band is deeper so
@@ -108,9 +109,16 @@ export function layoutClusteredGraph(
   const direction = opts.direction;
   const clusters = sanitizeClusters(graph);
 
+  // Every node arrives sized to its own label (graphToElements), so the
+  // layout keeps those sizes rather than stretching each box to its widest
+  // peer: one long label no longer inflates every box, and a dot stays a dot.
+  const sized = new Set(graph.nodes.map((n) => n.id));
+
   if (clusters.length === 0) {
-    return sweepEdgelessNodes(
-      autoLayoutElements(graphToElements(graph, makeEdgeId), { direction }),
+    return bowReciprocalEdges(
+      sweepEdgelessNodes(
+        autoLayoutElements(graphToElements(graph, makeEdgeId), { direction, fixedSizeIds: sized }),
+      ),
     );
   }
 
@@ -125,13 +133,15 @@ export function layoutClusteredGraph(
       nodes: graph.nodes.filter((n) => memberSet.has(n.id)),
       edges: graph.edges.filter((e) => memberSet.has(e.from) && memberSet.has(e.to)),
     };
-    const laid = sweepEdgelessNodes(
+    const laid = lineUpLoose(
       autoLayoutElements(
         graphToElements(induced, () => `tmp-${makeEdgeId()}`),
-        { direction },
-      ),
+        { direction, fixedSizeIds: sized },
+      ).filter(isBoxed),
+      new Set(induced.edges.flatMap((e) => [e.from, e.to])),
+      direction ?? 'TB',
     );
-    memberEls.set(c.id, laid.filter(isBoxed));
+    memberEls.set(c.id, laid);
   }
 
   // 2. Contract: one frame element per cluster, sized to its members' block,
@@ -147,6 +157,14 @@ export function layoutClusteredGraph(
       width: b.width + 2 * FRAME_PAD,
       height: b.height + FRAME_TOP + FRAME_PAD,
       label: c.label ?? c.id,
+      // A header in the band FRAME_TOP reserves: top-left, bold, at the nodes'
+      // own size. Left at the shape defaults it was centred and scaled to fill
+      // the frame, a giant word across its members (docs/specs/020-import-export/mermaid.md).
+      textAlignY: 'top' as const,
+      textAlignX: 'left' as const,
+      textSize: 'sm' as const,
+      textBold: true,
+      padding: 'lg' as const,
     };
   });
   const freeNodes = graphToElements(
@@ -166,7 +184,7 @@ export function layoutClusteredGraph(
 
   const contracted = autoLayoutElements([...frames, ...freeNodes, ...contractedArrows], {
     direction,
-    fixedSizeIds: frameIds,
+    fixedSizeIds: new Set([...frameIds, ...sized]),
   });
   const placedById = new Map(contracted.filter(isBoxed).map((el) => [el.id, el]));
 
@@ -183,6 +201,10 @@ export function layoutClusteredGraph(
     for (const m of members) placedNodes.push({ ...m, x: m.x + dx, y: m.y + dy });
   }
 
+  // 3b. Within each group, order members that share a rank by where their
+  // outside neighbours ended up, so edges into the group don't cross it.
+  orderMembersByNeighbours(clusters, placedNodes, placedFrames, graph, direction ?? 'TB');
+
   // 4. Real arrows over the final geometry: every edge whose endpoints name
   // a node or a frame, re-anchored to the sides that face. Self-loops are
   // kept (the clusterless graphToElements path keeps them, and dropping
@@ -198,11 +220,105 @@ export function layoutClusteredGraph(
   );
   const arrows: ArrowElement[] = graph.edges
     .filter((e) => known.has(e.from) && known.has(e.to))
-    .map((e) => reanchorArrow(edgeToArrow(e, makeEdgeId()), centers));
+    .map((e) => reanchorArrow(edgeToArrow(e, makeEdgeId()), centers, direction ?? 'TB'));
 
   // Frames first so they render behind their members. The final sweep only
   // catches free nodes with no edges at all — frames and cluster members
   // are deliberately placed, so they're exempt.
   const deliberate = new Set([...frameIds, ...clusterOf.keys()]);
-  return sweepEdgelessNodes([...placedFrames, ...placedNodes, ...arrows], deliberate);
+  return bowReciprocalEdges(
+    sweepEdgelessNodes([...placedFrames, ...placedNodes, ...arrows], deliberate),
+  );
+}
+
+// A group's members that no arrow inside the group touches (the usual case: a
+// "Core services" box of peers wired only to things outside it). Row-wrapping
+// them like loose content scattered them into a grid; line them up across the
+// flow instead, beside whatever the group's own arrows placed, so arrows from
+// outside reach each one without crossing another.
+function lineUpLoose(
+  members: BoxedElement[],
+  wired: Set<string>,
+  direction: LayoutDirection,
+): BoxedElement[] {
+  const placed = members.filter((m) => wired.has(m.id));
+  const loose = members.filter((m) => !wired.has(m.id));
+  if (loose.length === 0) return members;
+  const block = placed.length ? bbox(placed) : null;
+  const pos = new Map<string, Pt>();
+  let cursor = block
+    ? (direction === 'TB' ? block.x + block.width : block.y + block.height) + SIBLING_GAP
+    : 0;
+  // Centred on one line, not aligned by an edge: a rank is its members'
+  // shared main-axis centre, which orderMembersByNeighbours groups by.
+  const main = block ? (direction === 'TB' ? block.y : block.x) : 0;
+  const mainLen = (m: BoxedElement) => (direction === 'TB' ? m.height : m.width);
+  const band = Math.max(...loose.map(mainLen));
+  for (const m of loose) {
+    const along = main + (band - mainLen(m)) / 2;
+    pos.set(m.id, direction === 'TB' ? { x: cursor, y: along } : { x: along, y: cursor });
+    cursor += (direction === 'TB' ? m.width : m.height) + SIBLING_GAP;
+  }
+  return members.map((m) => {
+    const p = pos.get(m.id);
+    return p ? { ...m, x: p.x, y: p.y } : m;
+  });
+}
+
+// Reorders, in place, each group's members that share a rank (same main-axis
+// centre) by the mean cross position of their neighbours outside the group.
+// The slots stay where they are: the members are re-packed into the same span
+// with the same gaps, so the frame still fits.
+function orderMembersByNeighbours(
+  clusters: GraphCluster[],
+  nodes: BoxedElement[],
+  frames: BoxedElement[],
+  graph: DiagramGraph,
+  direction: LayoutDirection,
+): void {
+  const index = new Map(nodes.map((n, i) => [n.id, i]));
+  const byId = new Map([...nodes, ...frames].map((el) => [el.id, el]));
+  const cross = (el: BoxedElement) =>
+    direction === 'TB' ? el.x + el.width / 2 : el.y + el.height / 2;
+  const mainOf = (el: BoxedElement) =>
+    Math.round(direction === 'TB' ? el.y + el.height / 2 : el.x + el.width / 2);
+  const crossStart = (el: BoxedElement) => (direction === 'TB' ? el.x : el.y);
+  const crossLen = (el: BoxedElement) => (direction === 'TB' ? el.width : el.height);
+  for (const c of clusters) {
+    const inside = new Set(c.members);
+    const ranks = new Map<number, BoxedElement[]>();
+    for (const id of c.members) {
+      const el = nodes[index.get(id)!]!;
+      const k = mainOf(el);
+      (ranks.get(k) ?? ranks.set(k, []).get(k)!).push(el);
+    }
+    for (const rank of ranks.values()) {
+      if (rank.length < 2) continue;
+      rank.sort((a, b) => crossStart(a) - crossStart(b));
+      const gaps = rank
+        .slice(1)
+        .map((el, i) => crossStart(el) - crossStart(rank[i]!) - crossLen(rank[i]!));
+      const keyed = rank.map((el, i) => {
+        const outside: number[] = [];
+        for (const e of graph.edges) {
+          const other = e.from === el.id ? e.to : e.to === el.id ? e.from : null;
+          if (other === null || inside.has(other)) continue;
+          const o = byId.get(other);
+          if (o) outside.push(cross(o));
+        }
+        const key = outside.length
+          ? outside.reduce((a, b) => a + b, 0) / outside.length
+          : cross(el);
+        return { el, key, i };
+      });
+      keyed.sort((a, b) => a.key - b.key || a.i - b.i);
+      let cursor = crossStart(rank[0]!);
+      keyed.forEach(({ el }, k) => {
+        const moved = direction === 'TB' ? { ...el, x: cursor } : { ...el, y: cursor };
+        nodes[index.get(el.id)!] = moved;
+        byId.set(el.id, moved);
+        cursor += crossLen(el) + (gaps[k] ?? 0);
+      });
+    }
+  }
 }

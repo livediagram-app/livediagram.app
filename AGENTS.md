@@ -200,6 +200,7 @@ packages/
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
+  sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   licences/     # build-time generator of the /licences page from what each app bundles
   eslint-config/  # shared ESLint flat config

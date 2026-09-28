@@ -149,7 +149,18 @@ export function spanningForest(
 
 // Choose anchor faces + a straight style from the final relative position of
 // the two endpoints (the load-bearing visual fix: arrows point the right way).
-export function reanchorArrow(a: ArrowElement, centers: Map<ElementId, Pt>): ArrowElement {
+//
+// With a flow `axis` (a layered or tree layout), an edge to a later rank always
+// leaves by the face that points down the flow and lands on the opposite one,
+// however far across the rank its target sits. Judged by angle alone, a parent
+// with wide-spread children left by its side and entered each child's side,
+// which is not how an org chart or a flowchart reads. Same-rank and backward
+// edges still pick by angle.
+export function reanchorArrow(
+  a: ArrowElement,
+  centers: Map<ElementId, Pt>,
+  axis?: 'TB' | 'LR',
+): ArrowElement {
   if (a.from.kind !== 'pinned' || a.to.kind !== 'pinned') return a;
   const s = centers.get(a.from.elementId);
   const t = centers.get(a.to.elementId);
@@ -158,7 +169,10 @@ export function reanchorArrow(a: ArrowElement, centers: Map<ElementId, Pt>): Arr
   const dy = t.y - s.y;
   let fromA: Anchor;
   let toA: Anchor;
-  if (Math.abs(dy) >= Math.abs(dx)) {
+  const along = axis === 'TB' ? dy : axis === 'LR' ? dx : 0;
+  if (along > LAYER_GAP / 2) {
+    [fromA, toA] = axis === 'TB' ? ['s', 'n'] : ['e', 'w'];
+  } else if (Math.abs(dy) >= Math.abs(dx)) {
     [fromA, toA] = dy >= 0 ? ['s', 'n'] : ['n', 's'];
   } else {
     [fromA, toA] = dx >= 0 ? ['e', 'w'] : ['w', 'e'];

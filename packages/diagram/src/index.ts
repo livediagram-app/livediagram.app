@@ -423,6 +423,7 @@ export * from './comments';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
 export * from './data-shapes';
+export * from './entity-geometry';
 export * from './code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
@@ -506,6 +507,8 @@ export * from './geometry';
 export * from './arrow-path-hits';
 export * from './arrow-rebind';
 export * from './arrow-endpoint-spread';
+export * from './arrow-orthogonal';
+export * from './arrow-reciprocal';
 // Arrows breaking around intervening boxes at render time (docs/specs/008-canvas/arrow-route-behind.md).
 export * from './arrow-behind';
 // Tab + diagram name length cap (docs/specs/006-diagram/name-length.md).

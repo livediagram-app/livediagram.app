@@ -103,3 +103,16 @@ describe('graphToElements', () => {
     expect(xs.size + ys.size).toBeGreaterThan(2);
   });
 });
+
+describe('unlabelled circles (docs/specs/020-import-export/mermaid.md)', () => {
+  it('become small solid dots, a state diagram start / end', () => {
+    const [dot] = graphToElements({ nodes: [{ id: 's', label: '', shape: 'circle' }], edges: [] });
+    expect(dot).toMatchObject({ width: 28, height: 28, colorPreset: 'solid' });
+  });
+
+  it('leave a labelled circle a normal box', () => {
+    const [c] = graphToElements({ nodes: [{ id: 's', label: 'Hub', shape: 'circle' }], edges: [] });
+    expect(c).not.toHaveProperty('colorPreset');
+    expect((c as { width: number }).width).toBeGreaterThan(28);
+  });
+});
