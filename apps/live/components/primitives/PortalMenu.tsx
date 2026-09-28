@@ -8,6 +8,7 @@ import {
   type CSSProperties,
   type PointerEventHandler,
   type ReactNode,
+  useCallback,
 } from 'react';
 import { ChevronDownIcon, HoverCard } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
@@ -43,7 +44,7 @@ export function PortalMenu({ anchor, placement = 'below', onClose, children }: P
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
 
-  useReposition(() => {
+  const reposition = useCallback(() => {
     if (!anchor) return;
     const r = anchor.getBoundingClientRect();
     setPos({
@@ -51,6 +52,7 @@ export function PortalMenu({ anchor, placement = 'below', onClose, children }: P
       top: placement === 'below' ? r.bottom : r.top,
     });
   }, [anchor, placement]);
+  useReposition(reposition);
 
   useLayoutEffect(() => {
     const node = ref.current;

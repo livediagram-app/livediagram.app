@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   Button,
   CloseIcon,
@@ -84,7 +84,7 @@ export function CommentThreadPopover({
   // Resolve the element's on-screen rect (after the canvas transform has
   // been applied), then place the popover just to the right with a small
   // gap. Re-measures on resize / scroll so it stays attached during pans.
-  useReposition(() => {
+  const reposition = useCallback(() => {
     const node = document.querySelector(`[data-element-id="${elementId}"]`);
     if (!node) return;
     const rect = node.getBoundingClientRect();
@@ -99,6 +99,7 @@ export function CommentThreadPopover({
     top = Math.max(EDGE_MARGIN, top);
     setPos({ left, top });
   }, [elementId]);
+  useReposition(reposition);
 
   // Don't close on a click that lands on a comment badge: those are
   // the popover's own toggle, and parent state handles flip-flop.

@@ -1,5 +1,5 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { Portal } from '@/components/primitives/Portal';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
@@ -133,7 +133,7 @@ export function PortalMenu({
   // Position at the given point (canvas right-click / footer button) or, for
   // the tab ellipsis, above the anchor button right-aligned to it. Measured
   // each time the menu opens so it stays attached even after layout shifts.
-  useReposition(() => {
+  const reposition = useCallback(() => {
     if (point) {
       setPos({ left: point.x, top: point.y });
       return;
@@ -142,6 +142,7 @@ export function PortalMenu({
     const r = anchor.getBoundingClientRect();
     setPos({ left: r.right, top: r.top });
   }, [anchor, point]);
+  useReposition(reposition);
 
   // After the menu mounts, nudge it back on-screen if it overflows any
   // edge (e.g. Tab 1 is near the left and the menu opens left of its

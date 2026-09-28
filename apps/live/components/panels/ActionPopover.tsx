@@ -12,7 +12,7 @@ import {
   Glyph,
   GlyphDisc,
 } from '@livediagram/ui';
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import type { ElementAction } from '@livediagram/diagram';
 import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
@@ -64,7 +64,7 @@ export function ActionPopover({
 
   // Anchor to the element's live rect, flipping left when there's no
   // room on the right — the CommentThreadPopover placement.
-  useReposition(() => {
+  const reposition = useCallback(() => {
     const node = document.querySelector(`[data-element-id="${elementId}"]`);
     if (!node) return;
     const rect = node.getBoundingClientRect();
@@ -77,6 +77,7 @@ export function ActionPopover({
     top = Math.max(EDGE_MARGIN, top);
     setPos({ left, top });
   }, [elementId]);
+  useReposition(reposition);
 
   // Don't close on a click landing on the element's action badge — that
   // is this popover's own toggle (parent state handles the flip-flop).
