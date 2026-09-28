@@ -29,6 +29,16 @@ facilitator, nothing about this element changes.
 - It carries its own **label** ("Answers", "Estimates"), so a cover says what it is covering.
 - **`ShapeElement.revealed`** is the SHARED state, and it is off by default.
 
+## The look
+
+Built in the behaviour elements' current direction ([Participant responses](../012-collaboration/participant-responses.md): the paper kit is being retired). It replaced a light grey panel with a dashed border and diagonal scratch-panel hatching, which read as a disabled box rather than as something laid over the board on purpose.
+
+- **An opaque panel in the canvas's own tone** (light on light paper, deep slate on dark, from the paper under it, not the app's appearance), lit by two soft glows of the element's accent (its themed stroke), with a **solid** accent border. Still fully opaque: a cover you can read through is not a cover, and a blur would imply the content is protected, which it isn't.
+- **A slow sweep of light** crosses it every few seconds, the one ambient motion that says "something is under here" from across the room. Canvas motion, in `qa-board.css`; it stops under reduced motion.
+- **In the middle**: a lock in an accent disc, the label large ("Answers"), and a pill with the gesture ("Double-click to reveal", "Double-tap" on touch).
+- **Uncovered for you**, only a small **Hide** pill in the corner, in the same family (blurred dark glass, an eye with a slash).
+- The export draws the same cover: the tinted panel, its border, the lock, the label and the gesture.
+
 ## Two ways to uncover
 
 Deliberately two, because the two cases are different:

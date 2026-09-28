@@ -230,28 +230,6 @@ export function FoldCrease({ textColor, at = '50%' }: { textColor: string; at?: 
 }
 
 /**
- * Close diagonal hatching — the scratch panel over something not yet revealed.
- *
- * The Reveal zone's cover was a flat wash, which reads as "this element is
- * disabled". Hatching reads as a surface deliberately laid OVER something, and
- * that is the difference between a cover and a blank.
- */
-export function Hatching({ textColor, pitch = 7 }: { textColor: string; pitch?: number }) {
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none absolute inset-0 rounded-[inherit]"
-      style={{
-        backgroundImage: `repeating-linear-gradient(-45deg, ${tint(
-          textColor,
-          0.14,
-        )} 0 1.5px, transparent 1.5px ${pitch}px)`,
-      }}
-    />
-  );
-}
-
-/**
  * The moulded edge of a keycap: a lit top, a shaded skirt, and the drop that
  * makes it stand off the board.
  *

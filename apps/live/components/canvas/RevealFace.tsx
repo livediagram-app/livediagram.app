@@ -1,5 +1,5 @@
-// The face of a Reveal zone (docs/specs/009-elements/reveal-zone.md): a frosted cover over whatever it
-// overlaps, with the two ways to take it off.
+// The face of a Reveal zone (docs/specs/009-elements/reveal-zone.md): an opaque, accent-lit cover over
+// whatever it overlaps ("The look"), with the two ways to take it off.
 //
 // The cover is opaque rather than blurred ON PURPOSE. A blur would imply the
 // content underneath is protected, and it isn't: everything under a cover is
@@ -19,15 +19,21 @@
 
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
-import { Hatching } from '@/components/canvas/paper-kit';
-import { HoverCard, Glyph } from '@livediagram/ui';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { tint } from '@/lib/element-tint';
+import { LockGlyph } from '@/components/canvas/collab/qa/qa-parts';
+import { HoverCard, Glyph, GlyphDisc } from '@livediagram/ui';
 
-function EyeIcon({ off = false }: { off?: boolean }) {
+// The cover's base, from the PAPER under it rather than the app's appearance,
+// so a dark theme in light mode still gets a dark cover (docs/specs/009-elements/reveal-zone.md "The look").
+const COVER_BASE = { light: '#f1f5f9', dark: '#172131' } as const;
+
+function EyeOffIcon() {
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={13} units={16}>
       <path d="M1.6 8s2.4-4 6.4-4 6.4 4 6.4 4-2.4 4-6.4 4-6.4-4-6.4-4z" />
       <circle cx="8" cy="8" r="1.8" />
-      {off ? <path d="M2.4 2.4l11.2 11.2" /> : null}
+      <path d="M2.4 2.4l11.2 11.2" />
     </Glyph>
   );
 }
@@ -43,6 +49,7 @@ export function RevealFace({
 }: {
   label: string;
   textColor: string;
+  // The element's themed stroke: the cover's accent.
   strokeColor: string;
   revealedForAll: boolean;
   revealedForMe: boolean;
@@ -53,8 +60,10 @@ export function RevealFace({
   const coverPress = usePressWithoutDrag(onToggleForMe, { requireDouble: true });
   const pillPress = usePressWithoutDrag(onToggleForMe);
   const coarse = useCoarsePointer();
+  const paper = useCanvasSurface();
   const gesture = coarse ? 'Double-tap' : 'Double-click';
   const uncovered = revealedForAll || revealedForMe;
+  const accent = strokeColor;
 
   // Uncovered for the room: nothing to draw. The element is still selectable
   // by its outline in Select mode (the selection chrome renders regardless),
@@ -67,16 +76,16 @@ export function RevealFace({
       // between the user and the content they came to read.
       <div className="pointer-events-none absolute inset-0">
         <HoverCard
-          className="pointer-events-auto absolute right-1 top-1"
+          className="pointer-events-auto absolute right-1.5 top-1.5"
           title="Hide it again"
           description="Only affects your screen."
         >
           <button
             type="button"
             {...pillPress}
-            className="flex cursor-pointer items-center gap-1 rounded-full bg-slate-900/80 px-2 py-1 text-[10px] font-medium text-white shadow-sm transition hover:bg-slate-900"
+            className="flex cursor-pointer items-center gap-1 rounded-full bg-slate-900/75 px-2.5 py-1 text-[10px] font-semibold text-white shadow-lg ring-1 ring-white/10 backdrop-blur transition hover:bg-slate-900/90"
           >
-            <EyeIcon off />
+            <EyeOffIcon />
             Hide
           </button>
         </HoverCard>
@@ -86,44 +95,50 @@ export function RevealFace({
 
   // No hover card on the cover. It wrapped the WHOLE element, so hovering
   // anywhere on a reveal popped a card over the selection toolbar sitting
-  // just above it — and it was redundant besides: the face already shows the
+  // just above it, and it was redundant besides: the face already shows the
   // label and "<gesture> to reveal" in the middle of it, and the button's
   // aria-label carries the same for screen readers.
   return (
-    <>
-      <button
-        type="button"
-        aria-label={`${label.trim() || 'Hidden'} — ${gesture.toLowerCase()} to reveal`}
-        {...coverPress}
-        // The cover itself: a solid frosted panel, dashed to read as
-        // temporary rather than as a box someone drew.
-        // FULLY opaque. This was bg-slate-100/95, and that 5% let the thing
-        // being hidden show straight through — which defeats the entire
-        // element: a cover you can read through is not a cover. (The hover
-        // state was already opaque, so the two disagreed.)
-        className="pointer-events-auto relative flex h-full w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[inherit] border-2 border-dashed bg-slate-100 transition hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700"
-        style={{ borderColor: strokeColor }}
+    <button
+      type="button"
+      aria-label={`${label.trim() || 'Hidden'}, ${gesture.toLowerCase()} to reveal`}
+      {...coverPress}
+      // FULLY opaque, on purpose: a cover you can read through is not a
+      // cover. The base is the paper's tone, lit by two soft glows of the
+      // accent, with a solid accent border (it replaced a dashed grey panel
+      // with scratch-panel hatching, which read as a disabled box).
+      className="reveal-cover pointer-events-auto relative flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-[inherit] border-[1.5px] px-3"
+      style={{
+        borderColor: tint(accent, 0.55),
+        backgroundColor: COVER_BASE[paper],
+        backgroundImage: `radial-gradient(120% 90% at 0% 0%, ${tint(accent, 0.22)}, transparent 60%), radial-gradient(110% 90% at 100% 100%, ${tint(accent, 0.16)}, transparent 55%)`,
+      }}
+    >
+      {/* The slow sweep of light: "something is under here". */}
+      <span aria-hidden className="reveal-sweep pointer-events-none absolute inset-0" />
+      <GlyphDisc
+        size={40}
+        className="relative"
+        style={{
+          color: accent,
+          backgroundColor: tint(accent, 0.14),
+          boxShadow: `0 0 0 6px ${tint(accent, 0.07)}`,
+        }}
       >
-        {/* A SCRATCH PANEL (docs/specs/012-collaboration/participant-responses.md). A flat wash read as "this element is
-            disabled"; hatching reads as a surface laid deliberately OVER
-            something, which is the difference between a cover and a blank. */}
-        <Hatching textColor={textColor} />
-        <span style={{ color: textColor }} className="relative opacity-70">
-          <EyeIcon />
-        </span>
-        <span
-          className="relative px-3 text-center text-[13px] font-semibold"
-          style={{ color: textColor }}
-        >
-          {label.trim() || 'Hidden'}
-        </span>
-        <span
-          className="relative text-[10px] font-medium uppercase tracking-[0.08em] opacity-60"
-          style={{ color: textColor }}
-        >
-          {gesture} to reveal
-        </span>
-      </button>
-    </>
+        <LockGlyph size={18} />
+      </GlyphDisc>
+      <span
+        className="relative text-center text-[14px] font-semibold leading-tight"
+        style={{ color: textColor }}
+      >
+        {label.trim() || 'Hidden'}
+      </span>
+      <span
+        className="relative rounded-full px-2.5 py-1 text-[10.5px] font-semibold"
+        style={{ color: textColor, backgroundColor: tint(textColor, 0.07) }}
+      >
+        {gesture} to reveal
+      </span>
+    </button>
   );
 }

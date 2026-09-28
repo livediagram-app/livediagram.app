@@ -565,17 +565,6 @@ export function svgCollabFace(
 
 // ── Behaviour elements (docs/specs/009-elements/mode-button.md to /107, /135, /136) ───────────────────
 
-/** The eye a reveal's cover carries, drawn at `size` about (cx, cy). */
-function eye(cx: number, cy: number, size: number, color: string): string {
-  const w = size;
-  const h = size * 0.62;
-  return (
-    `<path d="M ${r2(cx - w / 2)} ${r2(cy)} Q ${r2(cx)} ${r2(cy - h)} ${r2(cx + w / 2)} ${r2(cy)} Q ${r2(cx)} ${r2(cy + h)} ${r2(cx - w / 2)} ${r2(cy)} Z"` +
-    ` fill="none" stroke="${xmlEscape(color)}" stroke-width="1.5"/>` +
-    `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r2(size * 0.17)}" fill="${xmlEscape(color)}"/>`
-  );
-}
-
 export function svgBehaviourFace(
   el: Face,
   label: string,
@@ -625,21 +614,23 @@ export function svgBehaviourFace(
         text(cx, cy + 16, title || 'Session', { size: 12, weight: 600, color, anchor: 'middle' })
       );
     case 'reveal': {
-      // The cover: a dashed panel with its eye and its instruction. The
-      // scratch-panel hatching is the one mark not reproduced.
+      // The cover as the face draws it (docs/specs/009-elements/reveal-zone.md "The look"): an opaque panel
+      // washed with its accent, a solid accent border, a lock, the label and
+      // the gesture. The sweep of light is motion and isn't reproduced.
       if (el.revealed === true) return '';
       return (
-        `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
-        ` fill="#f1f5f9" stroke="${xmlEscape(stroke)}" stroke-width="2" stroke-dasharray="6 4"/>` +
-        eye(cx, cy - 14, 22, color) +
-        text(cx, cy + 8, title || 'Hidden', { size: 13, weight: 600, color, anchor: 'middle' }) +
-        text(cx, cy + 24, 'Double-click to reveal', {
+        `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="10" fill="#f1f5f9"/>` +
+        `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="10" fill="${xmlEscape(stroke)}" fill-opacity="0.12" stroke="${xmlEscape(stroke)}" stroke-opacity="0.55" stroke-width="1.5"/>` +
+        `<circle cx="${r2(cx)}" cy="${r2(cy - 20)}" r="16" fill="${xmlEscape(stroke)}" fill-opacity="0.14"/>` +
+        `<rect x="${r2(cx - 5)}" y="${r2(cy - 21)}" width="10" height="8" rx="1.8" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>` +
+        `<path d="M ${r2(cx - 3)} ${r2(cy - 21)} v -2.5 a 3 3 0 0 1 6 0 v 2.5" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>` +
+        text(cx, cy + 12, title || 'Hidden', { size: 14, weight: 600, color, anchor: 'middle' }) +
+        text(cx, cy + 30, 'Double-click to reveal', {
           size: 10,
-          weight: 500,
+          weight: 600,
           color,
           anchor: 'middle',
           opacity: 0.6,
-          uppercase: true,
         })
       );
     }

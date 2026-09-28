@@ -12,6 +12,7 @@ import {
   carriesSharedSettingsMenu,
   elementKindLabel,
   isCollabPanelShape,
+  ownColours,
   isSelfDrawingShape,
   isWebComponentShape,
   type ShapeMarker,
@@ -269,7 +270,7 @@ export function ElementFaceRouter({
           label={label}
           textColor={textColor}
           strokeColor={
-            remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
+            remoteBorderColor ?? ownColours(element).stroke ?? defaultStrokeColor(element, surface)
           }
           revealedForAll={element.revealed === true}
           revealedForMe={!!revealedForMe}
