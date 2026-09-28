@@ -248,28 +248,6 @@ export function keycapEdge(textColor: string): React.CSSProperties {
 }
 
 /**
- * The tread of a floor pad: concentric rings out from the middle.
- *
- * A Reaction pad has two triggers — a click, and an Avatar-mode character
- * walking onto it — so it has to look like a thing you can stand on. Rings
- * from the centre are what a pressure pad looks like from above.
- */
-export function PadTread({ textColor }: { textColor: string }) {
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
-      style={{
-        backgroundImage: `repeating-radial-gradient(circle at 50% 42%, ${tint(
-          textColor,
-          0.07,
-        )} 0 1px, transparent 1px 11px)`,
-      }}
-    />
-  );
-}
-
-/**
  * A ring of minute ticks around a dial, with the quarters called out.
  *
  * Only the top arc is drawn, because the element is a wide pill rather than a

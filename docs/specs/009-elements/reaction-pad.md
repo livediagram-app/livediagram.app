@@ -46,9 +46,31 @@ celebration.
   Fires on **arrival**, so standing on a pad throws one burst rather than one
   per frame; stepping off and back on is a deliberate second press.
 
-The pad is drawn as a floor pad, not a button — large centred glyph, label
-beneath — because a thing you can stand on has to look like a thing you can
-stand on.
+The pad is drawn as something you can stand on, not a button, because a thing
+you can walk onto has to look like one.
+
+## The look
+
+Built in the behaviour elements' current direction ([Participant responses](../012-collaboration/participant-responses.md):
+the paper kit is being retired). It replaced printed concentric "tread" rings
+around the emoji.
+
+- **Each reaction has a colour**, a fixed pair of hues (`REACTION_HUES` in
+  `@livediagram/diagram`): confetti amber to rose, sparkles violet to cyan,
+  hearts pink to purple, applause amber to orange, fireworks indigo to
+  fuchsia. A soft glow of it sits behind the emoji. Fixed rather than the
+  theme's, for the same reason the Temperature check's are: the reaction's
+  feeling is its identity, and five pads recoloured by a theme would read as
+  five of the same thing.
+- **A spotlight to stand on.** Under the emoji, a glowing ellipse in the
+  reaction's colour, the modern version of the floor plate: it says "stand
+  here" to an Avatar-mode character without drawing hardware.
+- **Alive, not busy.** The emoji bobs gently (an ambient loop), lifts and
+  brightens under the pointer, and on a press squashes and throws a ring out
+  from the spot. All of it stops under reduced motion; the burst itself is
+  unchanged.
+- **The label** is a small pill under the spot.
+- The export draws the glow, the spot, the emoji and the label.
 
 ## The burst is not state
 

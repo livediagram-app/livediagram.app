@@ -272,3 +272,43 @@
 .done-burst {
   animation: done-burst 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/*
+ * Reaction pad (docs/specs/009-elements/reaction-pad.md "The look"): the emoji bobs gently (ambient),
+ * lifts under the pointer, squashes on a press, and each press throws a ring
+ * out from the spot it stands on.
+ */
+@keyframes pad-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4%);
+  }
+}
+.pad-emoji {
+  animation: pad-bob 2.8s ease-in-out infinite;
+  transition: filter 200ms ease;
+}
+.pad-button:hover .pad-emoji {
+  animation-play-state: paused;
+  transform: translateY(-6%) scale(1.08);
+  filter: brightness(1.08);
+}
+.pad-button:active .pad-emoji {
+  transform: translateY(0) scale(0.9, 0.84);
+}
+@keyframes pad-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+.pad-ring {
+  animation: pad-ring 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}

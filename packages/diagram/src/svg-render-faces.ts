@@ -41,7 +41,7 @@ import {
   quizOptionCentres,
   quizTally,
 } from './quiz';
-import { REACTION_DEFAULT, REACTION_EMOJI } from './data-shapes';
+import { REACTION_DEFAULT, REACTION_EMOJI, REACTION_HUES } from './data-shapes';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 
@@ -680,9 +680,15 @@ export function svgBehaviourFace(
       // it (46% of the smaller side). Whether it paints in colour depends on
       // the renderer's emoji font, which is the same bargain every other
       // emoji in an export makes.
-      const glyph = REACTION_EMOJI[el.reaction ?? REACTION_DEFAULT];
-      const size = Math.min(el.width, el.height) * 0.46;
+      const reaction = el.reaction ?? REACTION_DEFAULT;
+      const glyph = REACTION_EMOJI[reaction];
+      const [from, to] = REACTION_HUES[reaction];
+      const size = Math.min(el.width, el.height) * 0.4;
+      const ey = cy - (title ? 4 : 0) + size * 0.5;
+      // The reaction's glow and the spot it stands on (docs/specs/009-elements/reaction-pad.md "The look").
       return (
+        `<ellipse cx="${r2(cx)}" cy="${r2(cy - 4)}" rx="${r2(el.width * 0.42)}" ry="${r2(el.height * 0.4)}" fill="${from}" fill-opacity="0.16"/>` +
+        `<ellipse cx="${r2(cx)}" cy="${r2(ey)}" rx="${r2(el.width * 0.22)}" ry="${r2(el.height * 0.05)}" fill="${to}" fill-opacity="0.35"/>` +
         `<text x="${r2(cx)}" y="${r2(cy - (title ? 4 : 0))}" text-anchor="middle" dominant-baseline="central"` +
         ` font-size="${r2(size)}">${xmlEscape(glyph)}</text>` +
         (title
