@@ -159,20 +159,26 @@ export function useFacilitator(deps: {
     track('Facilitator', 'Started', 'Claimed');
   }, [ref]);
 
-  const grantFacilitator = useCallback((presenceId: string) => {
-    ref.current.send({ kind: 'facilitator', action: 'grant', to: presenceId });
-    track('Facilitator', 'Changed', 'Granted');
-  }, [ref]);
+  const grantFacilitator = useCallback(
+    (presenceId: string) => {
+      ref.current.send({ kind: 'facilitator', action: 'grant', to: presenceId });
+      track('Facilitator', 'Changed', 'Granted');
+    },
+    [ref],
+  );
 
   const releaseFacilitator = useCallback(() => {
     ref.current.send({ kind: 'facilitator', action: 'release' });
     track('Facilitator', 'Ended', 'Released');
   }, [ref]);
 
-  const releaseSelectionLock = useCallback((presenceId: string, elementId: string) => {
-    ref.current.send({ kind: 'facilitator', action: 'unlock', target: presenceId, elementId });
-    track('Facilitator', 'Changed', 'Unlocked');
-  }, [ref]);
+  const releaseSelectionLock = useCallback(
+    (presenceId: string, elementId: string) => {
+      ref.current.send({ kind: 'facilitator', action: 'unlock', target: presenceId, elementId });
+      track('Facilitator', 'Changed', 'Unlocked');
+    },
+    [ref],
+  );
 
   return {
     facilitatorId,

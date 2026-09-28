@@ -38,7 +38,8 @@ export function useStableHandlers<T extends Record<string, AnyFn | undefined>>(h
   return useMemo(() => {
     const present = new Set(presenceKey === '' ? [] : presenceKey.split('\0'));
     const out: Record<string, AnyFn | undefined> = {};
-    for (const key of Object.keys(wrappers)) out[key] = present.has(key) ? wrappers[key] : undefined;
+    for (const key of Object.keys(wrappers))
+      out[key] = present.has(key) ? wrappers[key] : undefined;
     return out as T;
   }, [presenceKey, wrappers]);
 }

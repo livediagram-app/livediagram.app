@@ -23,7 +23,9 @@ function setup() {
 describe('useFacilitator', () => {
   it('takes the baton when the frame carries our token, and keeps the token', () => {
     const { hook } = setup();
-    act(() => hook.result.current.receiveFacilitator({ holder: 'p1', reason: 'claim', token: 'tk' }));
+    act(() =>
+      hook.result.current.receiveFacilitator({ holder: 'p1', reason: 'claim', token: 'tk' }),
+    );
     expect(hook.result.current.facilitatorId).toBe('p1');
     expect(hook.result.current.isFacilitator).toBe(true);
     expect(hook.result.current.readFacilitatorToken()).toBe('tk');
@@ -39,7 +41,9 @@ describe('useFacilitator', () => {
 
   it('starts a different diagram as a fresh session', () => {
     const { hook, deps } = setup();
-    act(() => hook.result.current.receiveFacilitator({ holder: 'p1', reason: 'state', token: 'tk' }));
+    act(() =>
+      hook.result.current.receiveFacilitator({ holder: 'p1', reason: 'state', token: 'tk' }),
+    );
     hook.rerender({ ...deps, diagramId: 'd2' });
     expect(hook.result.current.facilitatorId).toBeNull();
     expect(hook.result.current.isFacilitator).toBe(false);

@@ -177,11 +177,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
     // (docs/specs/012-collaboration/activity-and-audit.md), so the panel shows a consistent "most recent N".
     deps.setChangeLog((prev) => [entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
     if (opts?.undoable !== false) {
-      entryHistoryRef.current = entryHistoryFill(
-        entryHistoryRef.current,
-        entry,
-        opts?.fillToken,
-      );
+      entryHistoryRef.current = entryHistoryFill(entryHistoryRef.current, entry, opts?.fillToken);
     }
     if (deps.diagramId) {
       apiAppendChangeLogEntry(

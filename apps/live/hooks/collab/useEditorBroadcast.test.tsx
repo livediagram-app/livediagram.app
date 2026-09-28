@@ -52,9 +52,7 @@ describe('useEditorBroadcast hidden cursors', () => {
   it('retracts the cursor once when a hide-cursors vote opens, and sends nothing while it runs', () => {
     const { hook, deps, sent } = setup();
     hook.rerender({ ...deps, cursorsHidden: true });
-    expect(sent).toEqual([
-      { kind: 'op', op: { kind: 'cursor', tabId: 'tab1', x: null, y: null } },
-    ]);
+    expect(sent).toEqual([{ kind: 'op', op: { kind: 'cursor', tabId: 'tab1', x: null, y: null } }]);
     act(() => hook.result.current.broadcastCursor({ x: 1, y: 1 }));
     expect(sent).toHaveLength(1);
   });

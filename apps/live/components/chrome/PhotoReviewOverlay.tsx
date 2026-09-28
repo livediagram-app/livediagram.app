@@ -382,12 +382,7 @@ export function PhotoReviewOverlay({
           </div>
         )}
         <div className="pointer-events-none absolute right-2 top-2">
-          <ZoomControls
-            zoom={view.zoom}
-            onZoomIn={zoomIn}
-            onZoomOut={zoomOut}
-            onFit={fit}
-          />
+          <ZoomControls zoom={view.zoom} onZoomIn={zoomIn} onZoomOut={zoomOut} onFit={fit} />
         </div>
         <PhotoStatus
           detecting={detecting}
