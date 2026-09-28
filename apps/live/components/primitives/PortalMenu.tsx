@@ -55,9 +55,12 @@ export function PortalMenu({ anchor, placement = 'below', onClose, children }: P
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node || !pos) return;
-    const next = clampToViewport(node.getBoundingClientRect(), adjust);
-    if (next.x !== adjust.x || next.y !== adjust.y) setAdjust(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Clamped relative to the adjust already applied, so re-measuring after a nudge settles.
+    const rect = node.getBoundingClientRect();
+    setAdjust((prev) => {
+      const next = clampToViewport(rect, prev);
+      return next.x === prev.x && next.y === prev.y ? prev : next;
+    });
   }, [pos]);
 
   useEffect(() => {

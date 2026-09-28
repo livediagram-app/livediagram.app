@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Button, CloseIcon, useEscape } from '@livediagram/ui';
 import type { Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
@@ -21,6 +21,12 @@ import { DEFAULT_SAVE_LOCATION, type SaveLocationId } from '@/lib/save-locations
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
 import { PencilIcon } from './template-picker-icons';
 import { WizardSteps } from './template-picker-wizard';
+
+// Whether this render is past hydration, as a store with nothing to subscribe to: prerender and
+// hydration read the server snapshot, every later render the client one.
+const noSubscription = () => () => {};
+const isClient = () => true;
+const isServer = () => false;
 
 // What the welcome wizard's Settings step (docs/specs/006-diagram/offline-mode.md) hands back on Create.
 export type NewDiagramSettings = {
@@ -234,11 +240,11 @@ export function TemplatePicker({
   // Shuffle ONLY after mount. The lazy initializer would run at static
   // prerender AND at hydration with different Math.random results, so the
   // server HTML wouldn't match the client (a hydration error). Render the
-  // stable catalogue order first, then shuffle on mount.
-  const [templates, setTemplates] = useState(LISTED_TEMPLATES);
-  useEffect(() => {
-    setTemplates(shufflePinned(LISTED_TEMPLATES, (t) => t.kind === 'blank'));
-  }, []);
+  // stable catalogue order while prerendering and hydrating, then the shuffle; a client-side mount
+  // (no hydration) shows the shuffle from its first render.
+  const hydrated = useSyncExternalStore(noSubscription, isClient, isServer);
+  const [shuffled] = useState(() => shufflePinned(LISTED_TEMPLATES, (t) => t.kind === 'blank'));
+  const templates = hydrated ? shuffled : LISTED_TEMPLATES;
   const trimmedName = name.trim();
   const effectiveName = trimmedName || participant.name;
   // Keyword filter over the shuffled catalogue. Matches title /

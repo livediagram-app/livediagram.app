@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button, CloseIcon } from '@livediagram/ui';
 import type { LineSeries } from '@livediagram/diagram';
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -25,15 +25,10 @@ export function LineDataDialog({
   onCommit: (categories: string[], series: LineSeries[]) => void;
   onClose: () => void;
 }) {
+  // Seeded once on mount; the dialog owns the draft while open (re-seeding on
+  // every external commit would fight the user's typing).
   const [cats, setCats] = useState<string[]>(categories);
   const [rows, setRows] = useState<LineSeries[]>(series);
-  // Seed once on mount; the dialog owns the draft while open (re-seeding on
-  // every external commit would fight the user's typing).
-  useEffect(() => {
-    setCats(categories);
-    setRows(series);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   const commit = (c: string[], s: LineSeries[]) => {
     setCats(c);
     setRows(s);

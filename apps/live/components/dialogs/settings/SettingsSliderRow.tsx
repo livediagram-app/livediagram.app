@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { SettingsRowShell } from './SettingsRowShell';
 import type { SettingsSliderRowSpec } from './settings-catalogue';
 
@@ -19,10 +19,12 @@ export function SettingsSliderRow({
 }) {
   const [draft, setDraft] = useState(value);
   // Follow the stored value when it changes elsewhere (the Palette popover
-  // sets the same preference), except while this slider is mid-drag.
-  useEffect(() => {
+  // sets the same preference); adjusted during render.
+  const [followed, setFollowed] = useState(value);
+  if (!Object.is(value, followed)) {
+    setFollowed(value);
     setDraft(value);
-  }, [value]);
+  }
 
   return (
     <SettingsRowShell

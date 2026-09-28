@@ -9,7 +9,7 @@
 // small form, and none of it belongs in the data-shape sections beside charts
 // and rails.
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   AGENDA_DEFAULT_MINUTES,
   AGENDA_MAX_ITEMS,
@@ -105,6 +105,10 @@ export function EstimateMenuSection({
   );
 }
 
+// Stable empties, so an element without rows compares equal from one render to the next.
+const NO_AGENDA_ITEMS: AgendaItem[] = [];
+const NO_DRIVERS: string[] = [];
+
 // --- Agenda (docs/specs/012-collaboration/agenda.md) -----------------------------------------------------
 
 // Mirrors the checklist's row editor (docs/specs/009-elements/checklist.md) and the record's field editor
@@ -118,9 +122,14 @@ export function AgendaMenuSection({
   sectionProps: (id: string) => { open: boolean; onToggle: () => void };
   onSetItems: (items: AgendaItem[]) => void;
 }) {
-  const items = target?.agendaItems ?? [];
+  const items = target?.agendaItems ?? NO_AGENDA_ITEMS;
   const [rows, setRows] = useState<AgendaItem[]>(items);
-  useEffect(() => setRows(items), [items]);
+  // The row drafts follow the element's segments when they change, adjusted during render.
+  const [followed, setFollowed] = useState(items);
+  if (items !== followed) {
+    setFollowed(items);
+    setRows(items);
+  }
 
   const move = (from: number, to: number) => {
     if (to < 0 || to >= rows.length) return;
@@ -215,9 +224,14 @@ export function DecisionMenuSection({
   onSetDrivers: (drivers: string[]) => void;
 }) {
   const status = target?.decisionStatus ?? DEFAULT_DECISION_STATUS;
-  const drivers = target?.decisionDrivers ?? [];
+  const drivers = target?.decisionDrivers ?? NO_DRIVERS;
   const [rows, setRows] = useState<string[]>(drivers);
-  useEffect(() => setRows(drivers), [drivers]);
+  // The row drafts follow the element's drivers when they change, adjusted during render.
+  const [followed, setFollowed] = useState(drivers);
+  if (drivers !== followed) {
+    setFollowed(drivers);
+    setRows(drivers);
+  }
 
   return (
     <MenuAccordionSection title="Decision" icon={<ToolsMenuGlyph />} {...sectionProps('decision')}>

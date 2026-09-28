@@ -170,12 +170,23 @@ export function ExportTabDialog({
   const suffix = isSelection ? ' - selection' : '';
   const baseName = sanitizeFilename(`${diagramName || 'diagram'} - ${tab.name || 'tab'}${suffix}`);
 
+  // A new image load (format picked, tab or image context changed) is not ready until it lands;
+  // adjusted during render so the panel never shows the previous load as ready.
+  const [loadInputs, setLoadInputs] = useState({ active, tab, imageContext });
+  if (
+    loadInputs.active !== active ||
+    loadInputs.tab !== tab ||
+    loadInputs.imageContext !== imageContext
+  ) {
+    setLoadInputs({ active, tab, imageContext });
+    if (active && !isTextFormat(active)) setPreviewReady(false);
+  }
+
   // When an image format is picked, load the icon catalogues + image bitmaps
   // so the preview (and export) renders the real glyphs, not placeholders.
   useEffect(() => {
     if (!active || isTextFormat(active)) return;
     let cancelled = false;
-    setPreviewReady(false);
     void (async () => {
       await ensureIconCatalogs();
       const images = imageContext ? await loadTabImages(tab, imageContext) : undefined;

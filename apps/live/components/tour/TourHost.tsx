@@ -74,7 +74,10 @@ export function TourHost() {
     () => tourStepsFor({ mobile: isMobile, esBoard, toolbar }),
     [isMobile, esBoard, toolbar],
   );
-  const [pending, setPending] = useState(false);
+  // Whether this mount still owes the /new handoff an offer: read from storage on the first offer
+  // check, and resolved once offered or found already seen. Only the offer effect reads it and it
+  // never turns back on, so it is a ref rather than state.
+  const offerPendingRef = useRef<boolean | null>(null);
   const [active, setActive] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   // Direction of the last step change, for the popover content's
@@ -145,28 +148,26 @@ export function TourHost() {
   // makes the offer once-ever for the user, however it was dismissed —
   // checked again at fire time below in case the preferences fetch lands
   // after mount.
-  useEffect(() => {
-    if (hasTourPending()) setPending(true);
-  }, []);
   const seen = ctx.userPreferences?.tourSeen === true;
   const ready = ctx.hydrated && !ctx.anyWelcomeOpen && !ctx.isReadOnly && !ctx.embedMode;
   useEffect(() => {
-    if (!pending || active || !ready) return;
+    offerPendingRef.current ??= hasTourPending();
+    if (!offerPendingRef.current || active || !ready) return;
     if (seen) {
       // Resolved elsewhere (another tab / device): tidy the stale flag.
       clearTourPending();
-      setPending(false);
+      offerPendingRef.current = false;
       return;
     }
     const t = setTimeout(() => {
-      setPending(false);
+      offerPendingRef.current = false;
       setStepIndex(0);
       setStepDir('forward');
       setActive(true);
       track('UI', 'Opened', 'TourOffer');
     }, 800);
     return () => clearTimeout(t);
-  }, [pending, active, ready, seen]);
+  }, [active, ready, seen]);
 
   // Settings relaunch (the "I've seen the editor tour" row, unchecked +
   // closed): rerun from the top — the welcome card is always step 1. Also
@@ -191,10 +192,8 @@ export function TourHost() {
   // The step list can SHRINK mid-tour (crossing the mobile breakpoint
   // drops the desktop-only step): clamp the index so the effects and
   // render below never read past the end (steps[stepIndex] would be
-  // undefined and the sync .target access threw before this guard).
-  useEffect(() => {
-    if (stepIndex > steps.length - 1) setStepIndex(steps.length - 1);
-  }, [steps, stepIndex]);
+  // undefined and the sync .target access threw before this guard). Adjusted during render.
+  if (stepIndex > steps.length - 1) setStepIndex(steps.length - 1);
 
   // Run the current step: prepare, then await the target node. The
   // previous step's rect stays on screen meanwhile, so the ring glides to
@@ -202,7 +201,7 @@ export function TourHost() {
   useEffect(() => {
     if (!active) return;
     const step = steps[stepIndex];
-    if (!step) return; // shrunk list; the clamp effect is about to fix the index
+    if (!step) return; // an empty list: nothing to run
     // Stage-view funnel (docs/specs/017-telemetry/telemetry.md): one event per step entry (Back re-entry
     // included — it's a real view). The welcome card's view is already
     // covered by Opened/TourOffer; the last View before an

@@ -5,7 +5,8 @@
 // context-menu-tiles.tsx). Both want the same two behaviours, so they live here
 // rather than being copied into each.
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Wrap a preview callback so it only fires for a desktop MOUSE pointer:
 // hovering a tile previews live, but touch / pen taps must not — on those a tap
@@ -20,10 +21,9 @@ export const onMouseHover =
 // Revert any in-flight hover preview when the tile surface unmounts — the menu
 // closing, the section collapsing, or the selection changing can all happen
 // while the pointer is still over a tile, and a pointerleave does NOT fire on
-// unmount. A latest-callback ref keeps the cleanup from capturing a stale
+// unmount. A latest-value ref keeps the cleanup from capturing a stale
 // revert closure.
 export function useRevertOnUnmount(onPreviewEnd: () => void) {
-  const ref = useRef(onPreviewEnd);
-  ref.current = onPreviewEnd;
-  useEffect(() => () => ref.current(), []);
+  const ref = useLatest(onPreviewEnd);
+  useEffect(() => () => ref.current(), [ref]);
 }

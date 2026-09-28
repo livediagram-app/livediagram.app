@@ -10,7 +10,7 @@
 // small form (a tool picker plus its one setting, a source plus a list), and
 // none of it belongs in the data-shape sections beside charts and rails.
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   REACTION_DEFAULT,
   REACTION_EMOJI,
@@ -51,8 +51,15 @@ function LinesRow({
   max: number;
   onCommit: (next: string[]) => void;
 }) {
-  const [draft, setDraft] = useState(lines.join('\n'));
-  useEffect(() => setDraft(lines.join('\n')), [lines]);
+  const joined = lines.join('\n');
+  const [draft, setDraft] = useState(joined);
+  // Follows the element's lines when they change, adjusted during render. Compared as text: callers
+  // pass a fresh `[]` while the element has none, and that must not wipe an uncommitted draft.
+  const [followed, setFollowed] = useState(joined);
+  if (joined !== followed) {
+    setFollowed(joined);
+    setDraft(joined);
+  }
   const commit = () => {
     const next = draft
       .split('\n')
@@ -60,7 +67,7 @@ function LinesRow({
       .filter((line) => line.length > 0)
       .slice(0, max);
     setDraft(next.join('\n'));
-    if (next.join('\n') !== lines.join('\n')) onCommit(next);
+    if (next.join('\n') !== joined) onCommit(next);
   };
   return (
     <div className="px-3 pt-2">

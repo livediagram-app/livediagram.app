@@ -83,13 +83,22 @@ function SlideRow({
 }) {
   const [draft, setDraft] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
+  // The draft is seeded during render from the name it is renaming (null while not renaming), and
+  // re-seeded if that name changes underneath.
+  const name = slide.name ?? '';
+  const [renamingFrom, setRenamingFrom] = useState<string | null>(null);
+  if (renaming && renamingFrom !== name) {
+    setRenamingFrom(name);
+    setDraft(name);
+  } else if (!renaming && renamingFrom !== null) {
+    setRenamingFrom(null);
+  }
   useEffect(() => {
-    if (renaming) {
-      setDraft(slide.name ?? '');
-      // Select rather than just focus: renaming usually replaces the name.
-      window.setTimeout(() => inputRef.current?.select(), 0);
-    }
-  }, [renaming, slide.name]);
+    if (!renaming) return;
+    // Select rather than just focus: renaming usually replaces the name.
+    const t = window.setTimeout(() => inputRef.current?.select(), 0);
+    return () => window.clearTimeout(t);
+  }, [renaming, name]);
 
   const commit = () => {
     onRename(draft);

@@ -1,7 +1,7 @@
 'use client';
 
 import { DiagramIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Button, Glyph } from '@livediagram/ui';
 import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { ViewToggle } from '@/app/explorer/ViewToggle';
@@ -41,7 +41,8 @@ export function TeamLibraryHeader({
   setRenamingFolderId: (id: string | null) => void;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
-  const createRef = useRef<HTMLButtonElement>(null);
+  // The create button, held in state so its menu anchors on its first render.
+  const [createButton, setCreateButton] = useState<HTMLButtonElement | null>(null);
   return (
     <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-900/40">
       <nav aria-label="Team folders" className="flex min-w-0 flex-wrap items-center text-xs">
@@ -84,7 +85,7 @@ export function TeamLibraryHeader({
         <ViewToggle mode={viewMode} onChange={setViewMode} />
         <div className="relative">
           <Button
-            ref={createRef}
+            ref={setCreateButton}
             onClick={() => setCreateOpen((o) => !o)}
             aria-haspopup="menu"
             aria-expanded={createOpen}
@@ -101,7 +102,7 @@ export function TeamLibraryHeader({
           </Button>
           {createOpen ? (
             <PortalMenu
-              anchor={createRef.current}
+              anchor={createButton}
               placement="below"
               onClose={() => setCreateOpen(false)}
             >

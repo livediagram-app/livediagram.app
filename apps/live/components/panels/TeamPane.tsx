@@ -1,7 +1,7 @@
 'use client';
 
 import { PencilIcon, PlusIcon, TrashIcon } from '@/components/primitives/explorer-icons';
-import { useCallback, useEffect, useRef, useState, type ComponentProps } from 'react';
+import { useCallback, useEffect, useState, type ComponentProps } from 'react';
 import { Button, CircleXIcon } from '@livediagram/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { apiGetTeam, type TeamMember } from '@/lib/api-client';
@@ -14,6 +14,7 @@ import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { TeamInviteLinkDialog } from '@/components/dialogs/TeamInviteLinkDialog';
 import { TeamSharedDiagrams } from '@/components/panels/TeamSharedDiagrams';
 import { TeamTimeline } from './ScopedTimeline';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Right-pane team view for the Explorer (docs/specs/013-workspace/teams.md): one calm card —
 // header (organisation + member count + an overflow menu for the
@@ -60,21 +61,34 @@ export function TeamPane({
   const [editOpen, setEditOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLButtonElement>(null);
+  // The overflow button, held in state so its menu anchors on its first render.
+  const [menuButton, setMenuButton] = useState<HTMLButtonElement | null>(null);
+  // Read at its newest when a load lands: callers pass it inline, and it must not make refresh (and
+  // with it the load below) change identity on every caller render.
+  const onLoadResultRef = useLatest(onLoadResult);
 
-  const refresh = useCallback(async () => {
-    try {
-      const d = await apiGetTeam(ownerId, teamId);
-      setDetail(d);
-      setFailed(false);
-      onLoadResult?.(true);
-    } catch {
-      setFailed(true);
-      onLoadResult?.(false);
-    } finally {
-      setLoading(false);
-    }
-  }, [ownerId, teamId, onLoadResult]);
+  // Loads the team; the outcome lands only while `isCurrent` holds, so a slow reply for the team the
+  // pane has since left never overwrites the one it shows.
+  const load = useCallback(
+    (isCurrent: () => boolean = () => true): Promise<void> =>
+      apiGetTeam(ownerId, teamId).then(
+        (d) => {
+          if (!isCurrent()) return;
+          setDetail(d);
+          setFailed(false);
+          setLoading(false);
+          onLoadResultRef.current?.(true);
+        },
+        () => {
+          if (!isCurrent()) return;
+          setFailed(true);
+          setLoading(false);
+          onLoadResultRef.current?.(false);
+        },
+      ),
+    [ownerId, teamId, onLoadResultRef],
+  );
+  const refresh = useCallback(() => load(), [load]);
 
   // Mutation handlers + the notice / invite-form state they own — see
   // useTeamPaneActions.
@@ -91,17 +105,24 @@ export function TeamPane({
     removeMember,
   } = useTeamPaneActions({ ownerId, teamId, detail, refresh, onTeamsChanged, onLeftTeam });
 
-  useEffect(() => {
+  // A different team (or viewer) starts over from the skeleton, reset during render; the load itself
+  // is the effect.
+  const [loadedFor, setLoadedFor] = useState({ ownerId, teamId });
+  if (loadedFor.ownerId !== ownerId || loadedFor.teamId !== teamId) {
+    setLoadedFor({ ownerId, teamId });
     setDetail(null);
     setLoading(true);
     setFailed(false);
     setNotice(null);
     setInviteEmail('');
-    void refresh();
-    // setNotice / setInviteEmail are stable useState setters from the
-    // actions hook; refresh is the only real dependency.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refresh]);
+  }
+  useEffect(() => {
+    let current = true;
+    void load(() => current);
+    return () => {
+      current = false;
+    };
+  }, [load]);
 
   if (loading) {
     return (
@@ -186,18 +207,14 @@ export function TeamPane({
               </button>
             ) : null}
             <EllipsisTriggerButton
-              ref={menuRef}
+              ref={setMenuButton}
               label="Team actions"
               expanded={menuOpen}
               onClick={() => setMenuOpen((o) => !o)}
             />
           </div>
           {menuOpen ? (
-            <PortalMenu
-              anchor={menuRef.current}
-              placement="below"
-              onClose={() => setMenuOpen(false)}
-            >
+            <PortalMenu anchor={menuButton} placement="below" onClose={() => setMenuOpen(false)}>
               {/* Icon-over-label tiles; columns track the role-gated items
                   (admin sees Edit + Delete, a leavable member sees Leave) so
                   a shorter menu never renders a fractional-width tile. */}

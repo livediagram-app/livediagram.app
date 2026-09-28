@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { MAX_SIZE_PX, MIN_SIZE_PX } from '@/hooks/canvas/useShapeStyleSetters';
 import { MenuActionButton } from '@/components/primitives/PortalMenu';
@@ -32,11 +32,12 @@ function SizeField({
   const [draft, setDraft] = useState(String(Math.round(value)));
   // Follow the element when it changes underneath us — a drag-resize, an undo,
   // or the aspect lock carrying this dimension after the other one was typed.
-  // Skipped while focused, so a resize arriving mid-edit can't rewrite what
-  // the user is halfway through typing.
-  useEffect(() => {
+  // Adjusted during render.
+  const [followed, setFollowed] = useState(value);
+  if (!Object.is(value, followed)) {
+    setFollowed(value);
     setDraft(String(Math.round(value)));
-  }, [value]);
+  }
 
   const commit = () => {
     const n = Number(draft);

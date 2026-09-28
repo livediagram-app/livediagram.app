@@ -17,7 +17,6 @@ import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { useLatest } from '@/hooks/ui/useLatest';
 
 // Assign Action dialog (docs/specs/012-collaboration/assigned-actions.md §2). The picker always offers a pinned
 // **Myself** row (the feature is not sign-in gated: a signed-out user can
@@ -33,6 +32,9 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // about your own action. Picking a teammate also fires a REAL access
 // check (docs/specs/012-collaboration/assigned-actions.md §4) so the "can't open this diagram" hint only shows
 // when the server says so.
+
+// What the per-open seed last filled the fields from; a new object per seed.
+type SeedTarget = { existing: ElementAction | null; elementLabel: string | null };
 
 type AssignActionDialogProps = {
   open: boolean;
@@ -117,19 +119,29 @@ export function AssignActionDialog({
   // and preselects Myself — the common self-assignment is zero-click.
   // The email offer re-defaults to on each time (docs/specs/012-collaboration/assigned-actions.md: default on; it
   // only renders for a non-self assignee anyway).
-  // selfRow via a ref so a late identity settle (Clerk name resolving
-  // after the dialog opened) can't re-run the seed and wipe mid-typing
-  // edits.
-  const selfRowRef = useLatest(selfRow);
-  useEffect(() => {
-    if (!open) return;
+  // The seed is adjusted during render against the target it last seeded for, so the first commit
+  // already shows the seeded fields. selfRow is read but is not a trigger: a late identity settle
+  // (Clerk name resolving after the dialog opened) can't re-seed and wipe mid-typing edits.
+  const [seededFor, setSeededFor] = useState<SeedTarget | null>(null);
+  if (!open && seededFor !== null) setSeededFor(null);
+  if (
+    open &&
+    (seededFor === null ||
+      seededFor.existing !== existing ||
+      seededFor.elementLabel !== elementLabel)
+  ) {
+    setSeededFor({ existing, elementLabel });
     setName(existing?.name ?? elementLabel ?? '');
     setDescription(existing?.description ?? '');
-    setAssignee(existing ? null : selfRowRef.current);
+    setAssignee(existing ? null : selfRow);
     setNotifyEmail(true);
+  }
+  // Focus + select once the seeded name is on screen, so typing replaces it.
+  useEffect(() => {
+    if (!seededFor) return;
     nameRef.current?.focus();
     nameRef.current?.select();
-  }, [open, existing, elementLabel, selfRowRef]);
+  }, [seededFor]);
 
   // Signed-out impression: the Myself-only picker with the sign-in
   // nudge. One emit per open so the funnel is measurable (docs/specs/017-telemetry/telemetry.md).
