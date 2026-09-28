@@ -4,7 +4,7 @@
 // error-body envelope, CORS preflight header set) have a single
 // canonical home that the next route can grep for.
 
-import { DIAGRAM_CONVERSION_HEADER } from '@livediagram/api-schema';
+import { DIAGRAM_CONVERSION_HEADER, DIAGRAM_TRASHED_ERROR } from '@livediagram/api-schema';
 
 // CORS for the browser. Live app runs at the same hostname as the
 // API (router worker stitches them together) so this is mostly a
@@ -109,6 +109,12 @@ export function rateLimited(): Response {
 // so the client can branch to its "sign in to use teams" surface.
 export function signInRequired(): Response {
   return json({ error: 'sign_in_required' }, { status: 401 });
+}
+
+// A diagram in the Trash (docs/specs/013-workspace/trash.md), answered only to a
+// caller who could have opened it: the deleted state, not a not-found.
+export function diagramTrashed(): Response {
+  return json({ error: DIAGRAM_TRASHED_ERROR }, { status: 410 });
 }
 
 // A write that collides with existing state (duplicate invite email,

@@ -20,6 +20,7 @@ import { apiCreateFolder } from '@/lib/api-client';
 import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { track } from '@/lib/telemetry';
 import { folderDescendants } from '@/lib/folder-tree';
+import { TEAM_TRASH_RESTORE_HINT } from '@/lib/trash-copy';
 
 // "Shared diagrams" on the team page (docs/specs/013-workspace/team-shared-diagrams.md): the team's folder
 // tree + diagrams, navigated with a small breadcrumb instead of a
@@ -170,9 +171,9 @@ export function TeamSharedDiagrams({
     const ok = await confirm({
       title: 'Delete team diagram?',
       message: [
-        `"${d?.name || 'This diagram'}" will be permanently deleted for the whole team.`,
+        `"${d?.name || 'This diagram'}" will be deleted for the whole team.`,
         notice,
-        "This can't be undone.",
+        TEAM_TRASH_RESTORE_HINT,
       ]
         .filter(Boolean)
         .join(' '),

@@ -156,6 +156,11 @@ export type SettingsShortcutListRowSpec = RowBase & { kind: 'shortcutList' };
 export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
 export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 
+// The Trash (docs/specs/013-workspace/trash.md): not a preference, a way in.
+// Here for everyone, guests and self-hosts without accounts included, because
+// Settings is the one menu every deployment has.
+export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
+
 // What power user mode's preset set, as a live readout: each line's value is
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
@@ -171,6 +176,7 @@ export type SettingsRowSpec =
   | SettingsShortcutListRowSpec
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
+  | SettingsTrashRowSpec
   | SettingsPresetSummaryRowSpec;
 
 export type SettingsCategorySpec = {
@@ -670,6 +676,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           'Your name and email come from your account and are changed there, not here. Signing in keeps your diagrams across browsers and devices; without it they belong to this browser alone.',
         helpArticle: 'guestVsAccount',
+      },
+      {
+        kind: 'trash',
+        key: 'trash',
+        section: 'Your Data',
+        label: 'Trash',
+        keywords:
+          'trash bin recycle deleted undo undelete restore recover get back diagram permanently empty',
+        description:
+          'Deleted diagrams wait here for 30 days before they are removed for good. Restore one to put it back where it was.',
+        helpArticle: 'trash',
       },
       {
         kind: 'deleteAccount',

@@ -24,7 +24,21 @@ export default defineConfig({
     baseURL: BASE_URL,
     trace: 'on-first-retry',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    // Opt-in (E2E_WEBKIT=1, after `playwright install webkit`): the image import
+    // pipeline's Safari path (docs/specs/020-import-export/import-image-pipeline.md). Kept
+    // out of CI's default run to spare its minutes; the same specs run in Chromium.
+    ...(process.env.E2E_WEBKIT === '1'
+      ? [
+          {
+            name: 'webkit',
+            use: { ...devices['Desktop Safari'] },
+            testMatch: /import-images\.spec\.ts/,
+          },
+        ]
+      : []),
+  ],
   webServer: {
     command: 'node ../../scripts/e2e-stack.mjs',
     url: BASE_URL,

@@ -759,6 +759,18 @@ describe('DiagramRoom op-role enforcement', () => {
     expect(opsReceived(victim.ws)).toHaveLength(0);
   });
 
+  it("never relays 'diagram-trashed' from a client socket, even at edit role", () => {
+    // A forged one would end everyone's session with the deleted state.
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const victim = connect(room, 'victim', 'view');
+    victim.ws.sent.length = 0;
+
+    sendFrame(room, editor.ws, { kind: 'op', op: { kind: 'diagram-trashed' } });
+
+    expect(opsReceived(victim.ws)).toHaveLength(0);
+  });
+
   it('drops frames over the size cap before they fan out', () => {
     const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');
@@ -1799,6 +1811,27 @@ describe('DiagramRoom tab-scoped sessions', () => {
       expect(other.closed).toBeUndefined();
     });
   }
+
+  it('closes every socket with 4004 when the diagram is trashed, after telling them', async () => {
+    // docs/specs/013-workspace/trash.md: open sessions end the moment the
+    // diagram goes to the Trash, each told why.
+    const { room, state } = newRoom();
+    const owner = makeSocket() as FakeSocket & { closed?: [number, string] };
+    const visitor = makeSocket() as FakeSocket & { closed?: [number, string] };
+    scopedSession(state, owner, presence('p-o', 'edit'), null);
+    scopedSession(state, visitor, presence('p-v', 'view'), 't2', 'CODE2345');
+    await room.fetch(
+      new Request('https://room/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ op: { kind: 'diagram-trashed' } }),
+      }),
+    );
+    for (const ws of [owner, visitor]) {
+      expect(ops(ws)).toEqual([{ kind: 'diagram-trashed' }]);
+      expect(ws.closed).toEqual([4004, 'diagram-trashed']);
+    }
+  });
 
   it('pins the scope and code on the session at admission', () => {
     const { room } = newRoom();

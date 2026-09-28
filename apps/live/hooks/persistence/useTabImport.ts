@@ -7,6 +7,7 @@
 import { remapElementRefs, type Element, type Tab } from '@livediagram/diagram';
 import { mergeImportedTab } from '@/lib/import-merge';
 import type { ImportOutcome } from '@/lib/import-tab';
+import type { ImportImageProgress } from '@/lib/import-images';
 import { track } from '@/lib/telemetry';
 
 // Re-mint element ids (and remap pinned-arrow endpoints) so imported
@@ -28,8 +29,21 @@ export const remintElementIds = (elements: Element[]): Element[] => {
   return remapElementRefs(next, idMap);
 };
 
+export type ImportFormat = 'json' | 'markdown' | 'mermaid' | 'excalidraw';
+export type ImportProgressListener = (progress: ImportImageProgress) => void;
+
+const EXCALIDRAW_TELEMETRY_TYPE = {
+  json: 'Excalidraw',
+  png: 'ExcalidrawPng',
+  svg: 'ExcalidrawSvg',
+} as const;
+
 type TabImportDeps = {
   tabs: Tab[];
+  // Who stores the imported images, and whether this diagram is an Offline
+  // Mode one that embeds them instead (docs/specs/020-import-export/import-image-pipeline.md).
+  ownerId: string;
+  diagramId: string | null;
   activeId: string;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   setSelectedId: (id: string | null) => void;
@@ -43,6 +57,8 @@ type TabImportDeps = {
 
 export function useTabImport({
   tabs,
+  ownerId,
+  diagramId,
   activeId,
   commitTabs,
   setSelectedId,
@@ -72,31 +88,67 @@ export function useTabImport({
   // the exact same parse + replace. The parsers are lazy-loaded so their
   // code stays out of the editor's initial bundle. Never throws — returns
   // the outcome the dialog renders (close / stay / show error).
+  // Excalidraw: a scene as JSON text, or inside a PNG / SVG export; its images
+  // go through the import image pipeline BEFORE the tab changes, so the whole
+  // import stays one undo step (docs/specs/020-import-export/excalidraw-import-export.md).
+  const importExcalidraw = async (
+    input: Uint8Array | string,
+    onProgress?: ImportProgressListener,
+  ): Promise<ImportOutcome> => {
+    const active = tabs.find((t) => t.id === activeId);
+    const [{ extractExcalidrawScene }, { buildElementsFromExcalidraw }] = await Promise.all([
+      import('@/lib/excalidraw-embedded'),
+      import('@/lib/excalidraw-import'),
+    ]);
+    const scene = await extractExcalidrawScene(input);
+    if (!scene.ok) return { status: 'error', error: scene.error };
+    const result = buildElementsFromExcalidraw(scene.text);
+    if (!result.ok) return { status: 'error', error: result.error };
+    let elements = result.elements;
+    let images;
+    if (result.images.length > 0) {
+      const [{ attachImportImages }, { createBrowserImportImageSession }] = await Promise.all([
+        import('@/lib/import-images'),
+        import('@/lib/import-images/browser'),
+      ]);
+      const session = createBrowserImportImageSession({ ownerId, diagramId });
+      ({ elements, report: images } = await attachImportImages(
+        elements,
+        result.images,
+        session,
+        onProgress,
+      ));
+    }
+    console.info('[excalidraw-import]', {
+      container: scene.container,
+      elements: elements.length,
+      images: result.images.length,
+      skipped: result.skipped,
+    });
+    // Ids are already re-minted inside the converter (docs/specs/020-import-export/excalidraw-import-export.md), so this
+    // skips the JSON path's remintElementIds step.
+    replaceActiveTabContent({
+      id: activeId,
+      name: active?.name ?? '',
+      elements,
+      theme: active?.theme,
+      backgroundColor: result.backgroundColor,
+    });
+    track('Tab', 'Imported', EXCALIDRAW_TELEMETRY_TYPE[scene.container]);
+    return images ? { status: 'done', images } : { status: 'done' };
+  };
+
   const importTextIntoActiveTab = async (
-    format: 'json' | 'markdown' | 'mermaid' | 'excalidraw',
+    format: ImportFormat,
     text: string,
+    onProgress?: ImportProgressListener,
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
 
-    if (format === 'excalidraw') {
-      const { buildElementsFromExcalidraw } = await import('@/lib/excalidraw-import');
-      const result = buildElementsFromExcalidraw(text);
-      if (!result.ok) return { status: 'error', error: result.error };
-      // Ids are already re-minted inside the converter (docs/specs/020-import-export/excalidraw-import-export.md), so this
-      // skips the JSON path's remintElementIds step.
-      replaceActiveTabContent({
-        id: activeId,
-        name: active?.name ?? '',
-        elements: result.elements,
-        theme: active?.theme,
-        backgroundColor: result.backgroundColor,
-      });
-      track('Tab', 'Imported', 'Excalidraw');
-      return { status: 'done' };
-    }
+    if (format === 'excalidraw') return importExcalidraw(text, onProgress);
 
     if (format === 'mermaid') {
       const { parseMermaid, layoutClusteredGraph } = await import('@livediagram/diagram');
@@ -138,7 +190,8 @@ export function useTabImport({
   // file and paste paths converge on one parser. Returns the dialog
   // outcome; 'cancelled' when the file picker is dismissed.
   const importIntoActiveTab = async (
-    format: 'json' | 'markdown' | 'mermaid' | 'excalidraw',
+    format: ImportFormat,
+    onProgress?: ImportProgressListener,
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
@@ -150,11 +203,15 @@ export function useTabImport({
         : format === 'mermaid'
           ? '.mmd,.mermaid,.txt,text/plain'
           : format === 'excalidraw'
-            ? '.excalidraw,.json,application/json'
+            ? '.excalidraw,.json,application/json,.png,image/png,.svg,image/svg+xml'
             : '.json,application/json';
     const { pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile(accept);
     if (!picked) return { status: 'cancelled' };
+    // An Excalidraw PNG export is binary, so that format reads the bytes.
+    if (format === 'excalidraw') {
+      return importExcalidraw(new Uint8Array(await picked.file.arrayBuffer()), onProgress);
+    }
     return importTextIntoActiveTab(format, picked.text);
   };
 

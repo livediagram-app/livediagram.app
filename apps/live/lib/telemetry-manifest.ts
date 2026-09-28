@@ -157,6 +157,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Timeline·Selected',
   'Token·Created',
   'Token·Removed',
+  // Trash (docs/specs/013-workspace/trash.md): opened from Settings, and a
+  // diagram restored / deleted for good / a group emptied, typed by which Trash.
+  'Trash·Cleared',
+  'Trash·Deleted',
+  'Trash·Opened',
+  'Trash·Restored',
   'UI·Added',
   'UI·Changed',
   'UI·Closed',

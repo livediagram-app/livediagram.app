@@ -42,6 +42,7 @@ const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
   gallery: 'imageGallery',
   themes: 'customThemes',
   tokens: 'apiTokens',
+  trash: 'trash',
   unsorted: 'unsorted',
   offline: 'offlineMode',
   folder: 'folders',
@@ -56,6 +57,7 @@ const GalleryPane = dynamic(() =>
 const TokensPane = dynamic(() =>
   import('@/components/panels/TokensPane').then((m) => m.TokensPane),
 );
+const TrashSection = dynamic(() => import('./TrashSection').then((m) => m.TrashSection));
 const ThemesPane = dynamic(() =>
   import('@/components/panels/ThemesPane').then((m) => m.ThemesPane),
 );
@@ -211,6 +213,7 @@ export function ExplorerPane() {
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
           selected.kind === 'tokens' ||
+          selected.kind === 'trash' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           // Generated / Offline are read-through dynamic views, not places
@@ -232,6 +235,7 @@ export function ExplorerPane() {
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
           selected.kind === 'tokens' ||
+          selected.kind === 'trash' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           selected.kind === 'recent' ||
@@ -298,6 +302,8 @@ export function ExplorerPane() {
         ) : null
       ) : selected.kind === 'themes' ? (
         <ThemesPane />
+      ) : selected.kind === 'trash' ? (
+        <TrashSection />
       ) : selected.kind === 'tokens' ? (
         // Signed-in only (docs/specs/015-api/public-api-and-tokens.md). Reached via the sidebar only when signed
         // in, but a guest could deep-link /explorer/tokens — show a sign-in

@@ -20,7 +20,7 @@ import { isParticipantQaAction, parseQaAction, qaVoterId, type QaNote } from '@l
 import { getDiagram, getParticipant } from '../db';
 import type { QaWriteRequest } from '../qa-board-write';
 import { badRequest, conflict, forbidden, json, notFound } from '../responses';
-import { gateEdit, gateRead, requireOwner, type RouteContext } from './context';
+import { gateEdit, gateRead, missingDiagram, requireOwner, type RouteContext } from './context';
 
 export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
@@ -37,7 +37,7 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
   const existing = await getDiagram(env, id);
-  if (!existing) return notFound();
+  if (!existing) return missingDiagram(ctx, id);
 
   let body: { elementId?: unknown; action?: unknown };
   try {

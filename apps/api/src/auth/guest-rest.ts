@@ -47,4 +47,6 @@ export const OWNER_SCOPED_SEGMENTS = new Set([
   // keyed on the resolved owner, and the owner's starred diagrams.
   'activity',
   'favourites',
+  // The Trash lists deleted diagrams' names and restores / purges them.
+  'trash',
 ]);

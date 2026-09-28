@@ -49,6 +49,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Activity:
     "The Explorer's Activity page (open actions and comment threads across every diagram): opening it, clicking a row through to the diagram (split by action vs thread), and retrying a failed read.",
   Token: 'API tokens: created by hand or by an AI tool connecting over MCP, and revoked.',
+  Trash:
+    'The Trash deleted diagrams wait in for 30 days: opened, restored from, deleted from for good, and emptied.',
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Email:
     'Emails the product sends (welcome, onboarding, team invites, notifications). Which email only, never who received it.',
@@ -94,6 +96,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   // Amber, so the inbox reads apart from the Timeline's deep sky beside it.
   Activity: '#d97706',
   Token: '#d946ef',
+  // Warm stone: a quiet backstop, apart from Diagram's sky and Error's red.
+  Trash: '#78716c',
   Mcp: '#f43f5e',
   Email: '#0d9488',
   Error: '#dc2626',

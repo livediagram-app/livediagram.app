@@ -5,10 +5,11 @@ import {
   getDiagramSharePassword,
   getParticipant,
   getShareLink,
+  getTrashedDiagramMeta,
   recordSharedAccess,
 } from '../db';
 import { notifyDiagramJoin } from '../email/notifications';
-import { forbidden, json, notFound, svgImage } from '../responses';
+import { diagramTrashed, forbidden, json, notFound, svgImage } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
 import { sharePasswordStatus } from '../auth/share-access';
 import { getDiagramTabImageSvg, getDiagramThumbnailSvg } from '../thumbnail';
@@ -36,7 +37,9 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
     const link = await getShareLink(env, code);
     if (link) {
       const d = await getDiagram(env, link.diagramId);
-      if (!d) return notFound();
+      // The code is the credential: its holder hears the diagram was deleted
+      // (docs/specs/013-workspace/trash.md), and the link works again on restore.
+      if (!d) return missingSharedDiagram(env, link.diagramId);
       // Password gate (docs/specs/013-workspace/share-password.md): a protected diagram won't resolve
       // until the visitor supplies the matching X-Share-Password.
       // 401 = none supplied (show the prompt), 403 = wrong one (show
@@ -116,7 +119,7 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   const link = await getShareLink(env, code);
   if (!link) return notFound();
   const d = await getDiagram(env, link.diagramId);
-  if (!d) return notFound();
+  if (!d) return missingSharedDiagram(env, link.diagramId);
   if (await getDiagramSharePassword(env, d.id)) return notFound();
   // `?tab=<id>` (docs/specs/013-workspace/live-image-share.md) picks a specific tab; without it we serve the
   // cached first-tab snapshot (the default, shared with the Explorer
@@ -150,4 +153,13 @@ export async function passwordGate(
   if (status === 'missing') return json({ error: 'password_required' }, { status: 401 });
   if (status === 'invalid') return forbidden('password_invalid');
   return null;
+}
+
+// A live share code whose diagram no live row holds: in the Trash, the
+// deleted state; otherwise the not-found of any dead code.
+async function missingSharedDiagram(
+  env: RouteContext['env'],
+  diagramId: string,
+): Promise<Response> {
+  return (await getTrashedDiagramMeta(env, diagramId)) ? diagramTrashed() : notFound();
 }

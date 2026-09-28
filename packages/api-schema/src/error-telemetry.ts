@@ -119,6 +119,7 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'oauth',
   'account',
   'favourites',
+  'trash',
   'timeline',
   'activity',
   'preferences',
@@ -159,6 +160,7 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
   'summary',
   'refresh',
   'invites',
+  'restore',
 ]);
 
 /**

@@ -178,6 +178,10 @@ const TAGS = [
   { name: 'Diagrams', description: 'Create, read, update, and delete diagrams and their tabs.' },
   { name: 'Sharing', description: 'Share links, passwords, and the diagrams shared with you.' },
   { name: 'Folders', description: 'Organise diagrams into a personal or team folder tree.' },
+  {
+    name: 'Trash',
+    description: 'Deleted diagrams, restorable for 30 days before they are purged.',
+  },
   { name: 'Images', description: 'Upload, list, and reference image assets.' },
   { name: 'Themes', description: 'Saved custom themes.' },
   { name: 'Activity', description: 'Per-diagram change log.' },

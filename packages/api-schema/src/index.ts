@@ -573,3 +573,4 @@ export * from './error-telemetry';
 export * from './timeline';
 export * from './activity';
 export * from './responses';
+export * from './trash';

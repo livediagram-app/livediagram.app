@@ -43,6 +43,7 @@ import {
   gateEdit,
   gateGrant,
   gateRead,
+  missingDiagram,
   ownsDiagram,
   requireOwner,
   shareCodeOf,
@@ -74,7 +75,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
     const existing = await getDiagram(env, id);
-    if (!existing) return notFound();
+    if (!existing) return missingDiagram(ctx, id);
 
     if (request.method === 'GET') {
       // Naming the tab confines a tab-scoped link to its own tab
@@ -287,7 +288,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
     const existing = await getDiagram(env, id);
-    if (!existing) return notFound();
+    if (!existing) return missingDiagram(ctx, id);
     const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId);
     if (!allowed) return deniedOnTab(ctx, existing);
     let body: { elementId?: unknown; text?: unknown };
@@ -373,7 +374,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
     const existing = await getDiagram(env, id);
-    if (!existing) return notFound();
+    if (!existing) return missingDiagram(ctx, id);
     const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId);
     if (!allowed) return deniedOnTab(ctx, existing);
     const tab = await getTab(env, id, tabId);
@@ -418,7 +419,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
     const existing = await getDiagram(env, id);
-    if (!existing) return notFound();
+    if (!existing) return missingDiagram(ctx, id);
     // `ownsDiagram`, not a bare id compare: on a TEAM diagram the owner id is
     // a Clerk id every teammate can read, so it must be proven with a verified
     // account id rather than the X-Owner-Id header (see routes/context.ts).

@@ -29,6 +29,7 @@ export const ROOT_TYPES = [
   'Diagram',
   'DiagramSummary',
   'SharedTabsSummary',
+  'TrashedDiagram',
   'DiagramSource',
   'TabSummary',
   'Tab',

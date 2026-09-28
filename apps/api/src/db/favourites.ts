@@ -7,12 +7,16 @@ import type { Env } from '../types';
 // full rows here would duplicate that (and would have to re-implement the
 // team-membership visibility rules the diagram list already applies).
 //
-// No join through `diagrams`, so this stays a single-table read. The FK
-// cascade means a deleted diagram's stars go with it, so an id returned
-// here always pointed at a live diagram at query time.
+// The FK cascade means a purged diagram's stars go with it; a diagram in the
+// Trash keeps its stars for the restore but is left out here
+// (docs/specs/013-workspace/trash.md), a primary-key probe per star. So an id
+// returned here always pointed at a live diagram at query time.
 export async function listFavouriteIds(env: Env, ownerId: string): Promise<string[]> {
   const res = await env.DB.prepare(
-    'SELECT diagram_id FROM favourites WHERE owner_id = ?1 ORDER BY created_at DESC',
+    `SELECT f.diagram_id FROM favourites f
+      WHERE f.owner_id = ?1
+        AND NOT EXISTS (SELECT 1 FROM diagrams d WHERE d.id = f.diagram_id AND d.trashed_at IS NOT NULL)
+      ORDER BY f.created_at DESC`,
   )
     .bind(ownerId)
     .all<{ diagram_id: string }>();

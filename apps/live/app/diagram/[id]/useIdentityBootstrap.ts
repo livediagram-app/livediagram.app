@@ -29,6 +29,7 @@ import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { resolveDiagramSession } from './editor-page-helpers';
 import { makeSeedFetchedDiagram } from './seed-fetched-diagram';
+import { isDiagramTrashedError } from '@/lib/diagram-trashed';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -65,6 +66,8 @@ export function useIdentityBootstrap(opts: {
     setDiagramPresentation: SetState<string | null>;
     setDiagramNotFound: SetState<boolean>;
     setLoadError: SetState<boolean>;
+    // The diagram is in the Trash (docs/specs/013-workspace/trash.md).
+    setDiagramTrashed: (trashed: boolean) => void;
     setDiagramOwnerColor: SetState<string | null>;
     setDiagramOwnerId: SetState<string | null>;
     setDiagramOwnerName: SetState<string | null>;
@@ -113,6 +116,7 @@ export function useIdentityBootstrap(opts: {
     setDiagramPresentation,
     setDiagramNotFound,
     setLoadError,
+    setDiagramTrashed,
     setDiagramOwnerColor,
     setDiagramOwnerId,
     setDiagramOwnerName,
@@ -291,11 +295,14 @@ export function useIdentityBootstrap(opts: {
         let resolution;
         try {
           resolution = await apiLoadShared(shareCodeParam, self.id);
-        } catch {
+        } catch (err) {
           // Couldn't reach the server to resolve the share link (network
           // / 5xx). Retryable, so show the error page instead of the
-          // "link revoked / diagram gone" NotFound below.
-          setLoadError(true);
+          // "link revoked / diagram gone" NotFound below. Unless the link's
+          // diagram is in the Trash (docs/specs/013-workspace/trash.md): the
+          // visitor sees that it was deleted.
+          if (isDiagramTrashedError(err)) setDiagramTrashed(true);
+          else setLoadError(true);
           seedExplorerLists();
           setHydrated(true);
           setLoadingDiagram(false);
@@ -425,12 +432,15 @@ export function useIdentityBootstrap(opts: {
         let fetched;
         try {
           fetched = await apiLoadDiagram(self.id, id);
-        } catch {
+        } catch (err) {
           // The load FAILED (network down / 5xx) — not a clean 404.
           // Surface a retryable error page rather than NotFound, which
-          // would wrongly tell the user the diagram doesn't exist.
+          // would wrongly tell the user the diagram doesn't exist. A diagram
+          // in the Trash (docs/specs/013-workspace/trash.md) is neither: it
+          // gets the deleted card.
           setDiagramId(id);
-          setLoadError(true);
+          if (isDiagramTrashedError(err)) setDiagramTrashed(true);
+          else setLoadError(true);
           seedExplorerLists();
           setHydrated(true);
           setLoadingDiagram(false);

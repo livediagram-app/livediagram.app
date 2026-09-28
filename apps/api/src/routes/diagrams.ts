@@ -25,8 +25,8 @@ import {
   copyDiagram,
   deleteChangeLogEntry,
   deleteChangeLogForTab,
-  deleteDiagram,
   getDiagram,
+  getTrashedDiagramMeta,
   getFolder,
   countDiagramsByOwner,
   getParticipant,
@@ -43,6 +43,7 @@ import {
 import {
   badRequest,
   conflict,
+  diagramTrashed,
   forbidden,
   json,
   noContent,
@@ -57,12 +58,11 @@ import { notifyMilestone } from '../email/notifications';
 import {
   recordDiagramCreated,
   recordDiagramDuplicated,
-  recordDiagramOffline,
   recordDiagramRenamed,
   recordDiagramSynced,
   recordVisitorCopied,
 } from '../timeline';
-import { markTimelineEventsDeletedBySource } from '../db/timeline';
+import { handleDiagramDelete } from './diagram-delete-route';
 import { handleDiagramPlacement } from './diagram-placement-route';
 import { handleDiagramSharedTabs } from './diagram-shared-tabs-route';
 import { forkTakenTabIds } from '../tab-id-fork';
@@ -72,7 +72,7 @@ import type { ChangeLogEntryDTO, DiagramDTO } from '../types';
 import {
   gateEdit,
   gateGrant,
-  mayDeleteDiagram,
+  missingDiagram,
   requireDiagramGrant,
   requireOwnedDiagram,
   requireOwner,
@@ -119,6 +119,10 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // through PUT, which gates on edit access).
       const clash = await getDiagram(env, body.id);
       if (clash && clash.ownerId !== owner) return forbidden();
+      // An id in the Trash is taken just the same (docs/specs/013-workspace/trash.md):
+      // its owner hears the deleted state, anyone else the same refusal.
+      const binned = clash ? null : await getTrashedDiagramMeta(env, body.id);
+      if (binned) return binned.ownerId === owner ? diagramTrashed() : forbidden();
       if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
         return badRequest('presentation too large');
       }
@@ -214,7 +218,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // diagram by raw id (not just via a share link). A miss returns
       // 404 (not 403) so a guessed UUID can't probe existence.
       const d = await getDiagram(env, id);
-      if (!d) return notFound();
+      if (!d) return missingDiagram(ctx, id);
       const grant = await gateGrant(ctx, id, d.ownerId, d.teamId);
       // Redacted for every non-owner, exactly as the share-code resolver
       // does (docs/specs/014-identity/auth-and-guest-access.md): the gate above admits any valid share code, view
@@ -256,7 +260,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // permanent zero-tab ghost row, e.g. a client path that missed the
       // Offline Mode dispatch (docs/specs/006-diagram/offline-mode.md) writing an offline diagram's id to
       // the server. Diagrams are only ever created via POST /diagrams now.
-      if (!existing) return notFound();
+      if (!existing) return missingDiagram(ctx, id);
       const now = Date.now();
       const ownerId = existing.ownerId;
       // Anyone with the diagram id could previously rewrite it.
@@ -307,46 +311,9 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       return json({ diagram: diagram ? redactDiagramForReader(diagram, owner) : diagram });
     }
     if (request.method === 'DELETE') {
-      // Owner or joined teammate, never a share-link visitor (mayDeleteDiagram).
-      // Resolve the caller first (400 with no auth), then 404 on a missing
-      // diagram (no existence leak), then 403 on a caller with no claim.
-      const owner = requireOwner(ctx);
-      if (owner instanceof Response) return owner;
-      const existing = await getDiagram(env, id);
-      if (!existing) return notFound();
-      const allowed = await mayDeleteDiagram(ctx, existing);
-      if (!allowed) return forbidden();
-      // docs/specs/013-workspace/timeline.md §3.5: a deleted diagram leaves NO trace on the Timeline.
-      // Its history is swept and no tombstone is written — from the feed's
-      // point of view it never existed. (There used to be a "Diagram
-      // Deleted" card; it was noise the reader had asked to be rid of.)
-      //
-      // "Take offline" (docs/specs/006-diagram/offline-mode.md) reaches this same DELETE — the server copy
-      // really does go — but the diagram is not gone, it moved into the
-      // caller's browser, and THAT is worth a card. Honoured for the OWNER
-      // only: the DELETE is also reachable by any joined member of the
-      // diagram's team (see the gate above, docs/specs/013-workspace/team-shared-diagrams.md), and the Explorer
-      // offers Take Offline on a team-library row without checking who owns
-      // it. When a teammate does it the diagram moves into THEIR browser and
-      // leaves the owner's account for good — from the owner's and the
-      // team's side that is a deletion, and a deletion records nothing.
-      const conversion =
-        owner === existing.ownerId
-          ? readDiagramConversion(request.headers.get(DIAGRAM_CONVERSION_HEADER))
-          : null;
-      await deleteDiagram(env, id);
-      ctx.waitUntil?.(
-        markTimelineEventsDeletedBySource(env, 'diagram', id)
-          .then(() =>
-            conversion === 'offline'
-              ? // Owner-only: an offline diagram exists in exactly one browser,
-                // so no teammate has a stake in it.
-                recordDiagramOffline(env, existing, owner)
-              : undefined,
-          )
-          .catch((err) => console.error('timeline diagram delete failed', err)),
-      );
-      return noContent();
+      // Trash, permanent delete and Take Offline: diagram-delete-route.ts
+      // (docs/specs/013-workspace/trash.md).
+      return handleDiagramDelete(ctx, id);
     }
   }
 
@@ -363,7 +330,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
       const source = await getDiagram(env, id);
-      if (!source) return notFound();
+      if (!source) return missingDiagram(ctx, id);
       // Authorisation: any of (a) owner, (b) holder of any
       // share code (view or edit) for this diagram, (c)
       // visitor with an active shared_with row for the source.

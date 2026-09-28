@@ -28,3 +28,4 @@ export * from './telemetry';
 export * from './timeline';
 export * from './collab-index';
 export * from './ws-tickets';
+export * from './trash';

@@ -24,6 +24,8 @@ vi.mock('../db', () => ({
   // need stub entries so the share.ts module can finish evaluating
   // its top-level imports.
   getDiagram: vi.fn(),
+  // Trashed diagrams answer 410 (docs/specs/013-workspace/trash.md); none here.
+  getTrashedDiagramMeta: vi.fn(async () => null),
   getDiagramSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
   getShareLink: vi.fn(),
   getParticipant: vi.fn(),

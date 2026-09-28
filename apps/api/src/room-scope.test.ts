@@ -66,6 +66,7 @@ describe('opForScope (what a scoped session receives)', () => {
       'poll-end',
       'share-revoked',
       'share-rescoped',
+      'diagram-trashed',
     ]) {
       const op = { kind };
       expect(opForScope(op, SCOPE), kind).toBe(op);

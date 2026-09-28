@@ -143,8 +143,9 @@ export function DeleteAccountDialog({
               Delete account
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              This permanently removes your diagrams, folders, and participant record from the
-              livediagram server, then deletes your account. This cannot be undone.
+              This permanently removes your diagrams (including any in the Trash), folders, and
+              participant record from the livediagram server, then deletes your account. This cannot
+              be undone.
             </p>
           </div>
 

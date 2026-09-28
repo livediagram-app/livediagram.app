@@ -563,6 +563,12 @@ export function useExplorerState() {
     acceptInvite,
     declineInvite,
     refreshTeams,
+    // After a restore from the Trash (docs/specs/013-workspace/trash.md): the
+    // diagram is back in a personal or team list.
+    refreshLibraries: () => {
+      if (ownerId) void refresh(ownerId);
+      refreshTeamLibraries();
+    },
     teamModalOpen,
     setTeamModalOpen,
   };

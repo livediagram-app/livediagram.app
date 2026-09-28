@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useEffectEvent,
   useRef,
   type Dispatch,
   type MutableRefObject,
@@ -19,6 +20,7 @@ import {
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { saveFailureStatus } from './save-failure';
 import { isDiagramDeleted } from '@/lib/diagram-tombstones';
+import { isDiagramTrashedError } from '@/lib/diagram-trashed';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 import {
@@ -61,6 +63,9 @@ export function useAutosave(opts: {
   setSaveStatus: Dispatch<SetStateAction<SaveStatus>>;
   setSavedAt: Dispatch<SetStateAction<number | null>>;
   setDiagramList: Dispatch<SetStateAction<DiagramListItem[]>>;
+  // A save refused because the diagram is in the Trash
+  // (docs/specs/013-workspace/trash.md): writes stop, the editor shows why.
+  onDiagramTrashed: () => void;
 }) {
   const {
     hydrated,
@@ -80,7 +85,12 @@ export function useAutosave(opts: {
     setSaveStatus,
     setSavedAt,
     setDiagramList,
+    onDiagramTrashed,
   } = opts;
+
+  // The caller passes a fresh function each render; read it when a save is refused (an effect event), so
+  // it never re-arms the debounced save.
+  const reportTrashed = useEffectEvent(() => onDiagramTrashed());
 
   // Set once the server has told us we may not write to this diagram at all
   // (403). Unlike a network failure that's worth another go on the next edit,
@@ -278,6 +288,11 @@ export function useAutosave(opts: {
           );
         })
         .catch((err: unknown) => {
+          if (isDiagramTrashedError(err)) {
+            writesForbiddenRef.current = true;
+            reportTrashed();
+            return;
+          }
           reportSaveFailure(err);
           const status = saveFailureStatus(err);
           if (status === 'forbidden') writesForbiddenRef.current = true;

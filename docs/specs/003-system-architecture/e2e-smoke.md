@@ -23,7 +23,10 @@ workflow, `e2e.yml`, triggered on:
 
 Cost controls, all in `e2e.yml`:
 
-- **Chromium only** (`--project=chromium`); no Firefox / WebKit.
+- **Chromium only** (`--project=chromium`); no Firefox / WebKit. A `webkit` project exists
+  only when `E2E_WEBKIT=1` is set (after `playwright install webkit`) and runs just
+  `import-images.spec.ts`, the image import pipeline's Safari path
+  ([Import image pipeline](../020-import-export/import-image-pipeline.md)); CI never sets it.
 - **Browser binary cached** on `~/.cache/ms-playwright` keyed by the
   Playwright version, so the ~120 MB download happens once per version
   bump, not per run.
@@ -129,7 +132,7 @@ broad suite; depth stays in unit tests where it's cheap.
 
 ## Layout
 
-- `apps/live/playwright.config.ts` — chromium project, `webServer` →
+- `apps/live/playwright.config.ts` — chromium project (plus the opt-in webkit one), `webServer` →
   `scripts/e2e-stack.mjs`, `reuseExistingServer` locally.
 - `apps/live/e2e/*.spec.ts` — the specs above; a shared `expectNoErrors`
   fixture installs the console/pageerror listener.

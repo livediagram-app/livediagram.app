@@ -118,6 +118,10 @@ export function useRoomConnection(opts: {
   // A Q&A board's authoritative state after a server write (docs/specs/012-collaboration/qa-board.md).
   // Stable, like the poll handlers, so it can't reopen the socket.
   receiveQa: (tabId: string, elementId: string, notes: QaNote[], rev: number) => void;
+  // The diagram went to the Trash (docs/specs/013-workspace/trash.md): the
+  // worker's diagram-trashed op, or the room closing the socket with 4004.
+  // Stable, like the others, so it can't reopen the socket.
+  receiveDiagramTrashed: () => void;
   // Re-hydrate tab content from D1 when the room can't replay our gap
   // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the poll handlers, so it can't reopen the
   // socket — the effect's dep list stays [hydrated, diagramId, shareable].
@@ -158,6 +162,7 @@ export function useRoomConnection(opts: {
     receivePollAnswer,
     receivePollEnd,
     receiveQa,
+    receiveDiagramTrashed,
     resyncFromServer,
   } = opts;
 
@@ -402,6 +407,10 @@ export function useRoomConnection(opts: {
         const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
         if (effect === 'leave') window.location.assign('/explorer');
         else if (effect === 'reload') window.location.reload();
+      } else if (op.kind === 'diagram-trashed') {
+        // The diagram went to the Trash. System-only, like the share ops:
+        // the room refuses it from a client socket.
+        if (from === 'system') receiveDiagramTrashed();
       }
     },
   );
@@ -415,6 +424,7 @@ export function useRoomConnection(opts: {
       receiveSelectionReleased(msg),
   );
 
+  const roomDiagramTrashed = useEffectEvent(() => receiveDiagramTrashed());
   const roomResync = useEffectEvent(() => {
     // The room couldn't bridge our reconnect gap from its op log
     // (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1) -- we fell too far behind or it restarted.
@@ -450,6 +460,7 @@ export function useRoomConnection(opts: {
       onOp: (from, op) => roomOp(from, op, presence),
       onFacilitator: (msg) => roomFacilitator(msg),
       onSelectionReleased: (msg) => roomSelectionReleased(msg),
+      onDiagramTrashed: () => roomDiagramTrashed(),
       onResync: () => roomResync(),
     };
     // Team diagrams need a one-time room ticket (docs/specs/015-api/api.md): membership is

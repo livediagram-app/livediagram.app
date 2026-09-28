@@ -44,7 +44,7 @@ function setup() {
     previewingRef: { current: false },
     roomRef: { current: null },
   };
-  const useSubject = (tabs: Tab[], opsApplied: number) =>
+  const useSubject = (tabs: Tab[], opsApplied: number, onDiagramTrashed: () => void = () => {}) =>
     useAutosave({
       hydrated: true,
       diagramId: 'd1',
@@ -58,6 +58,7 @@ function setup() {
       setSaveStatus: vi.fn(),
       setSavedAt: vi.fn(),
       setDiagramList: vi.fn(),
+      onDiagramTrashed,
     });
   return { journal, useSubject };
 }
@@ -85,5 +86,34 @@ describe('useAutosave and peer ops', () => {
     rerender({ tabs: [tab('mine')], n: 1 });
     act(() => vi.advanceTimersByTime(600));
     expect(apiSaveTab).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('useAutosave and the Trash', () => {
+  it('reports a save refused as trashed to the current callback, and stops writing', async () => {
+    const { DiagramTrashedError } = await import('@/lib/diagram-trashed');
+    apiSaveTab.mockImplementation(() => Promise.reject(new DiagramTrashedError('d1')));
+    const { useSubject } = setup();
+    const first = vi.fn();
+    const second = vi.fn();
+    const { rerender } = renderHook(({ tabs, cb }) => useSubject(tabs, 0, cb), {
+      initialProps: { tabs: [tab('mine')], cb: first },
+    });
+    // A new callback identity (the caller's inline arrow) must not re-arm the debounce...
+    rerender({ tabs: [tab('mine')], cb: second });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(apiSaveTab).toHaveBeenCalledTimes(1);
+    // ...and the refusal reaches the callback the caller passes now.
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(first).not.toHaveBeenCalled();
+    // Writes stop: a later edit is not sent.
+    rerender({ tabs: [tab('edited again')], cb: second });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(apiSaveTab).toHaveBeenCalledTimes(1);
+    apiSaveTab.mockImplementation(() => Promise.resolve());
   });
 });
