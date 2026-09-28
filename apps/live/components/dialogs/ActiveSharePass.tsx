@@ -1,23 +1,41 @@
 import { TrashIcon } from '@/components/primitives/explorer-icons';
-import { Button, LinkIcon, Select, HoverCard } from '@livediagram/ui';
+import {
+  Button,
+  CheckIcon,
+  CopyIcon,
+  HoverCard,
+  LinkIcon,
+  LockIcon,
+  Select,
+} from '@livediagram/ui';
 import type { ShareLink } from '@/lib/api-client';
 import { buildEmbedSnippet, embedUrlFor } from '@/lib/embed';
 import { liveImageHtml, liveImageMarkdown, liveImageUrlFor } from '@/lib/live-image';
 import { formatTimeLeftCompact } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { ShareCopyMenu } from './ShareCopyMenu';
-import { CodeGlyph, EXPIRY_LABELS, ImageGlyph, ScopeOptions } from './share-dialog-parts';
+import { SharePassTicket } from './SharePassTicket';
+import {
+  ClockIcon,
+  CodeGlyph,
+  EXPIRY_LABELS,
+  ImageGlyph,
+  ScopeOptions,
+} from './share-dialog-parts';
 
-// One ACTIVE share-link card (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/embeds.md + docs/specs/013-workspace/share-link-expiry.md + docs/specs/013-workspace/live-image-share.md),
-// lifted out of ShareDialog: the role + time-left badges and the
-// selectable URL on line 1, then Copy / Embed / Live image (with the
-// per-tab picker) and the far-edge revoke on line 2. All mutations and
-// the live-image tab selection come through the dialog's handlers.
-export function ActiveShareLinkRow({
+// One ACTIVE share link, drawn as a pass (docs/specs/007-editor/live-app.md "The pass metaphor";
+// docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/embeds.md +
+// docs/specs/013-workspace/share-link-expiry.md + docs/specs/013-workspace/live-image-share.md).
+// Three lines on the ticket body: the link and its Copy button; what the pass is printed with
+// (tabs it opens, how long it is valid, the password tag); the other hand-over routes (Embed,
+// Live image) with Revoke at the far edge. All mutations and the live-image tab selection come
+// through the dialog's handlers.
+export function ActiveSharePass({
   link,
   now,
   origin,
-  copiedCode,
+  copied,
+  fresh,
   busy,
   sharePassword,
   tabs,
@@ -33,7 +51,10 @@ export function ActiveShareLinkRow({
   link: ShareLink;
   now: number;
   origin: string;
-  copiedCode: string | null;
+  // This pass's Copy button is flashing "Copied".
+  copied: boolean;
+  // Just issued in this dialog session.
+  fresh: boolean;
   busy: boolean;
   // Non-null while the share is password-gated — the Live image offer
   // hides then (an <img> can't supply a password).
@@ -55,63 +76,87 @@ export function ActiveShareLinkRow({
   // so the URL carries no `?tab=` and the picker has nothing to offer.
   const scoped = link.tabId !== null;
   const imageTabParam = scoped ? undefined : liveImageTabParam;
+  const metaLabel = 'text-[10px] font-semibold uppercase tracking-wider text-slate-400';
   return (
-    <li
-      key={link.code}
-      className="flex flex-col gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-2 dark:border-slate-700 dark:bg-slate-800/60"
-    >
-      {/* Line 1: what the link is + where it points. The
-                  URL gets the row's spare width so it stays
-                  readable as badges accumulate. */}
+    <SharePassTicket role={link.role} fresh={fresh}>
+      {/* Line 1: the link itself, and the one filled button on the card. */}
       <div className="flex items-center gap-2">
-        <span
-          className={
-            link.role === 'edit'
-              ? 'inline-flex shrink-0 items-center rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-800 dark:bg-brand-500/20 dark:text-brand-200'
-              : 'inline-flex shrink-0 items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-200'
-          }
-        >
-          <span className="text-optical-line text-optical-caps">
-            {link.role === 'edit' ? 'Edit' : 'View'}
-          </span>
-        </span>
-        {link.expiresAt !== null ? (
-          <HoverCard
-            title="Expiring link"
-            description={`Created with a ${
-              link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]
-            } lifetime. When it runs out the link stops working and moves to Inactive.`}
-          >
-            <span className="inline-flex shrink-0 items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">
-              {formatTimeLeftCompact(link.expiresAt - now)}
-            </span>
-          </HoverCard>
-        ) : null}
         <input
           readOnly
           value={shareUrlFor(link.code)}
           onFocus={(e) => e.currentTarget.select()}
-          className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-slate-700 outline-none focus:border-brand-400 dark:text-slate-300"
+          aria-label={`${link.role === 'edit' ? 'Edit' : 'View'} pass link`}
+          className="min-w-0 flex-1 truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-[11px] text-slate-700 outline-none focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"
         />
-      </div>
-      {/* Line 2: actions. Copy is the everyday one and
-                  keeps the filled style; Embed (docs/specs/013-workspace/embeds.md) stays a
-                  labelled button so it's discoverable; revoke
-                  sits apart at the far edge. */}
-      <div className="flex items-center gap-2">
-        <Button onClick={() => onCopy(link.code)} size="xs" className="shadow-sm">
-          {copiedCode === link.code ? 'Copied' : 'Copy link'}
+        <Button onClick={() => onCopy(link.code)} size="xs" className="shrink-0 shadow-sm">
+          {copied ? <CheckIcon /> : <CopyIcon />}
+          {copied ? 'Copied' : 'Copy'}
         </Button>
+      </div>
+
+      {/* Line 2: what the pass is printed with. */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600 dark:text-slate-300">
+        <span className="inline-flex items-center gap-1.5">
+          <span className={metaLabel}>Opens</span>
+          {onRescope ? (
+            <HoverCard
+              title="Tabs"
+              description="Which tabs this pass opens. Changing it takes effect at once: anyone using it reloads into the new choice."
+            >
+              <Select
+                size="sm"
+                variant="ghost"
+                value={link.tabId ?? ''}
+                onChange={(e) => onRescope(link.code, e.target.value || null)}
+                disabled={busy}
+                aria-label={`Tabs link ${link.code} opens`}
+                className="max-w-36"
+              >
+                <ScopeOptions tabs={tabs} />
+              </Select>
+            </HoverCard>
+          ) : (
+            <span className="font-medium">All tabs</span>
+          )}
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className={metaLabel}>Valid</span>
+          {link.expiresAt !== null ? (
+            <HoverCard
+              title="Expiring pass"
+              description={`Issued with a ${
+                link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]
+              } lifetime. When it runs out the link stops working and moves to Expired, where you can extend it.`}
+            >
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 font-medium text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">
+                <ClockIcon />
+                {formatTimeLeftCompact(link.expiresAt - now)}
+              </span>
+            </HoverCard>
+          ) : (
+            <span className="font-medium">Never expires</span>
+          )}
+        </span>
+        {sharePassword ? (
+          <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-300">
+            <LockIcon size={11} />
+            Password
+          </span>
+        ) : null}
+      </div>
+
+      {/* Line 3: the other ways to hand it over, revoke apart at the far edge. */}
+      <div className="flex items-center gap-1.5">
         {/* Embed (docs/specs/013-workspace/embeds.md): copy the embed as a raw URL or an
-                    <iframe> snippet. Embeds honour the link's role,
-                    so the hover card says which one this row hands out. */}
+            <iframe> snippet. Embeds honour the link's role, so the hover card
+            says which one this pass hands out. */}
         <ShareCopyMenu
           label="Embed"
           hoverCardTitle="Embed"
           hoverCardDescription={`Copy an embed of this diagram as a URL or an <iframe> snippet for wikis, Notion, and docs. ${
             link.role === 'edit'
-              ? 'This edit link embeds an editable canvas.'
-              : 'This view link embeds a read-only canvas.'
+              ? 'This edit pass embeds an editable canvas.'
+              : 'This view pass embeds a read-only canvas.'
           }`}
           trackType="EmbedCode"
           items={[
@@ -129,11 +174,10 @@ export function ActiveShareLinkRow({
             },
           ]}
         />
-        {/* Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md): an <img>-able SVG
-                    URL. Hidden while a password is set — an <img>
-                    can't supply one, so the server refuses an
-                    image for gated shares and offering it here
-                    would mislead. */}
+        {/* Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md):
+            an <img>-able SVG URL. Hidden while a password is set: an <img>
+            can't supply one, so the server refuses an image for gated shares
+            and offering it here would mislead. */}
         {sharePassword ? null : (
           <ShareCopyMenu
             label="Live image"
@@ -142,9 +186,8 @@ export function ActiveShareLinkRow({
             trackType="LiveImage"
             header={
               // Per-tab picker (docs/specs/013-workspace/live-image-share.md): only worth showing
-              // when there's more than one tab. Selecting the
-              // first tab clears back to the cached default
-              // (null → no `?tab=`).
+              // when there's more than one tab. Selecting the first tab
+              // clears back to the cached default (null → no `?tab=`).
               tabs.length > 1 && !scoped ? (
                 <label className="flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                   Tab
@@ -191,23 +234,6 @@ export function ActiveShareLinkRow({
           />
         )}
         <span className="flex-1" />
-        {onRescope ? (
-          <HoverCard
-            title="Tabs"
-            description="Which tabs this link opens. Changing it takes effect at once: anyone using the link reloads into the new choice."
-          >
-            <Select
-              size="sm"
-              value={link.tabId ?? ''}
-              onChange={(e) => onRescope(link.code, e.target.value || null)}
-              disabled={busy}
-              aria-label={`Tabs link ${link.code} opens`}
-              className="max-w-36"
-            >
-              <ScopeOptions tabs={tabs} />
-            </Select>
-          </HoverCard>
-        ) : null}
         <HoverCard
           title="Revoke link"
           description="The URL stops working immediately for everyone holding it."
@@ -223,6 +249,6 @@ export function ActiveShareLinkRow({
           </button>
         </HoverCard>
       </div>
-    </li>
+    </SharePassTicket>
   );
 }

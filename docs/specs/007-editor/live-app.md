@@ -121,13 +121,30 @@ Two words, two owners, and the naming is deliberate: **Appearance** is yours, a 
 
 The "Share this diagram" modal (`apps/live/components/dialogs/ShareDialog.tsx`, opened from the header Share button, owner-only) follows the same dialog conventions as Settings / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
 
-Its sections are ordered by frequency of use, top to bottom:
+### The pass metaphor
 
-1. **Your name** (guests only) — the identity peers see on cursors and comments, placed first so a guest sets it before minting the links that will carry it. Signed-in users' names come from their Clerk account, so the row hides entirely for them.
-2. **New link** — role toggle (Edit / View-only) + lifetime dropdown ([Share-link expiry](../013-workspace/share-link-expiry.md)) + Create. The dialog's primary action; the first-run empty state points up at it.
-3. **Active links** — one card per live link: a first line with the role badge, the countdown chip for expiring links ([Share-link expiry](../013-workspace/share-link-expiry.md)), and the URL; a second line with the actions (Copy link, Embed per [Read-only embeds (`/embed`)](../013-workspace/embeds.md), revoke). Two lines so the URL keeps its space as badges and actions accumulate.
-4. **Inactive links** ([Share-link expiry](../013-workspace/share-link-expiry.md)) — only when non-empty: Expired badge, struck-through URL, Extend + Delete.
-5. **Options band** — the share **password** ([Share password](../013-workspace/share-password.md); applies to every link, with a hint that covers the embed prompt too).
+A share link is presented as a **pass**: a ticket that admits whoever holds it. The metaphor answers the three questions an owner actually has, in the order they have them: _who can get in_ (the list of passes), _what does a new one let them do_ (the role), and _how do I hand it over_ (copy). Every link-level fact reads as something printed on the ticket (the role on its stub, the tabs it admits, how long it is valid), so the owner scans cards rather than parsing rows of controls.
+
+A pass is a card split by a perforated edge (a dashed rule with a notch punched out top and bottom, in the dialog's own background colour):
+
+- **Stub** (left): the role's glyph over its word, `EDIT` or `VIEW`, on a solid role colour: brand for edit, violet for view. The colour is the role at a glance across the whole list.
+- **Body** (right), three lines:
+  1. The link, in a monospaced read-only field (select-on-focus for a manual copy), and the pass's **Copy** button, the one filled button on the card.
+  2. What it is printed with: **Opens** the tabs it admits (the rescope picker, [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md), shown only on a multi-tab diagram, otherwise the static text "All tabs"), **Valid** for how long ("Never expires" or the countdown, [Share-link expiry](../013-workspace/share-link-expiry.md)), and a **Password** tag while the diagram has a share password.
+  3. The other ways to hand it over, **Embed** ([Read-only embeds](../013-workspace/embeds.md)) and **Live image** ([Live image](../013-workspace/live-image-share.md), hidden while a password is set), with **Revoke** at the far edge.
+
+Passes are listed newest first. Files: `ShareDialog.tsx` (orchestration), `ShareStatus.tsx`, `ShareComposer.tsx`, `SharePassTicket.tsx` (the ticket shell), `ActiveSharePass.tsx`, `ExpiredSharePass.tsx`, `SharePasswordSection.tsx`, `ShareIdentity.tsx`, with the role catalogue (`ROLE_PASS`) in `share-dialog-parts.tsx`.
+
+An **expired** pass keeps the same card, greyed: a muted stub, the URL struck through, a rose `Expired` stamp, and **Extend** + **Delete** in place of the hand-over actions.
+
+### Layout, top to bottom
+
+1. **Header**: the title and a **status line** (`ShareStatus`, `role="status"`) that states the diagram's exposure in one phrase, with a dot: "Private: only you can open it." (slate) when no active pass exists, otherwise "Shared: anyone holding the pass / one of the N passes can get in" (a pinging emerald live dot, an ambient indicator per [Motion](../004-interface-design/motion.md)), ending ", with the password." when a password is set. This replaces the static explanation of roles, which the role cards below now carry.
+2. **Issue a pass** (the primary action): two large **role cards** side by side (a radio group, arrow keys move between them; stacked below `sm`), **Can Edit** ("Draws with you in real time.") and **Can View** ("Watches, pans and zooms. Can't change a thing."), each with its glyph and the stub colour it will print with; then a sentence of options, "Opens [All tabs] Valid [Never expires / For 1 week / For 1 month / For 6 months]" (the tabs picker only on a multi-tab diagram), then one full-width button, **Create & Copy Edit Pass** / **Create & Copy View Pass**. Creating copies the new link to the clipboard straight away (a toast confirms "Pass created and copied"; if the clipboard refuses, the toast says the pass was created and to copy it from the card), and the new pass pops into the list with its Copy button reading "Copied".
+3. **Passes** (active, newest first) with a count. Empty state: a dashed ghost ticket reading "No passes yet. Only you can open this diagram." When every pass has expired it reads "Every pass has expired. Extend one below or issue a new one."
+4. **Expired passes** ([Share-link expiry](../013-workspace/share-link-expiry.md)), only when non-empty.
+5. **Password** ([Share password](../013-workspace/share-password.md)): a switch row (the shared `SettingsToggleRow`), "Password Protection", with the hint "Everyone opening a pass must enter it first, embeds included." Switching it on reveals the field (kept in the clear so the owner can always read it) with **Save**; with a password saved, **Remove** clears it, and switching it off removes it too. A password cannot be switched off without removing it, so the switch never disagrees with what the server enforces.
+6. **Footer**: for guests only, **Sharing as**: the identity avatar, an inline name field, and a shuffle button. This is the name peers see on cursors and comments. It sits in the footer so it is always visible without leading the dialog with a form; it is saved when a pass is created (as before) and whenever the dialog closes (Done, the close button, Esc, or the backdrop). Signed-in users' names come from their Clerk account, so the identity hides. **Done** closes.
 
 ## Destructive actions
 

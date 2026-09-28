@@ -142,7 +142,7 @@ function ShareDialog({ variant }: { variant: ShareVariant }) {
               strokeWidth={1.5}
             />
             <Label x={dx + 16} y={dy + 150} size={8} weight={700} tone="muted">
-              PASSWORD
+              PASSWORD PROTECTION
             </Label>
             <rect
               x={dx + 16}
@@ -171,7 +171,7 @@ function ShareDialog({ variant }: { variant: ShareVariant }) {
               strokeWidth={1.5}
             />
             <Label x={dx + 16} y={dy + 150} size={8} weight={700} tone="muted">
-              LINK EXPIRES
+              VALID
             </Label>
             {/* Dropdown */}
             <rect
@@ -184,7 +184,7 @@ function ShareDialog({ variant }: { variant: ShareVariant }) {
               strokeWidth={2}
             />
             <Label x={dx + 28} y={dy + 174} size={11} weight={600} tone="body">
-              1 Month
+              For 1 month
             </Label>
             <path
               d={`M${dx + 122} ${dy + 170} l5 5 l5 -5`}
@@ -203,7 +203,7 @@ function ShareDialog({ variant }: { variant: ShareVariant }) {
               className="fill-white stroke-slate-200"
               strokeWidth={1.5}
             />
-            {['1 Week', '1 Month', '6 Months'].map((opt, i) => {
+            {['For 1 week', 'For 1 month', 'For 6 months'].map((opt, i) => {
               const oy = dy + 192 + i * 19;
               const on = i === 1;
               return (
@@ -237,47 +237,71 @@ function ShareDialog({ variant }: { variant: ShareVariant }) {
   );
 }
 
-/** A single share-link row: a role badge, a faux URL field, and a Copy button. */
+/** A single share link drawn as a pass (docs/specs/007-editor/live-app.md "The pass metaphor"):
+ *  a role-coloured stub, a perforated edge, a faux URL field, and a Copy button. */
 function ShareLinkRow({ x, y, role }: { x: number; y: number; role: 'Edit' | 'View' }) {
   const edit = role === 'Edit';
+  const w = 276;
+  const h = 34;
+  const stub = 46;
   return (
     <g>
-      {/* Role pill (a role dropdown): label left, caret clear to its right */}
       <rect
         x={x}
-        y={y}
-        width={54}
-        height={26}
-        rx={7}
-        className={edit ? 'fill-brand-500 stroke-brand-600' : 'fill-slate-100 stroke-slate-300'}
+        y={y - 4}
+        width={w}
+        height={h}
+        rx={8}
+        className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={x + 12} y={y + 13} size={10} weight={600} tone={edit ? 'onAccent' : 'body'}>
-        {role}
-      </Label>
+      {/* Stub: the role at a glance, brand for edit and violet for view. */}
       <path
-        d={`M${x + 42} ${y + 11} l3.5 3.5 l3.5 -3.5`}
-        fill="none"
-        className={edit ? 'stroke-white' : 'stroke-slate-400'}
+        d={`M${x + 8} ${y - 4} h${stub - 8} v${h} h${-(stub - 8)} a8 8 0 0 1 -8 -8 v${-(h - 16)} a8 8 0 0 1 8 -8 Z`}
+        className={edit ? 'fill-brand-500' : 'fill-violet-500 dark:fill-violet-700'}
+      />
+      <Label x={x + stub / 2} y={y + 13} anchor="middle" size={8} weight={700} tone="onAccent">
+        {role.toUpperCase()}
+      </Label>
+      {/* Perforation, with a notch punched out top and bottom. */}
+      <line
+        x1={x + stub}
+        y1={y}
+        x2={x + stub}
+        y2={y + h - 8}
+        className="stroke-slate-300"
         strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        strokeDasharray="3 3"
+      />
+      <circle
+        cx={x + stub}
+        cy={y - 4}
+        r={4}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <circle
+        cx={x + stub}
+        cy={y + h - 4}
+        r={4}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
       />
       {/* URL field */}
       <rect
-        x={x + 60}
-        y={y}
+        x={x + stub + 10}
+        y={y + 1}
         width={150}
-        height={26}
-        rx={7}
+        height={24}
+        rx={6}
         className="fill-slate-50 stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={x + 70} y={y + 13} size={10} tone="muted">
+      <Label x={x + stub + 20} y={y + 13} size={10} tone="muted">
         livediagram.app/d/…
       </Label>
       {/* Copy button */}
-      <Button x={x + 216} y={y} w={60} h={26} label="Copy" variant="default" />
+      <Button x={x + w - 64} y={y + 1} w={56} h={24} label="Copy" variant="primary" />
     </g>
   );
 }

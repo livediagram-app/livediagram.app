@@ -1,42 +1,55 @@
-import type { ShareLinkExpiry } from '@/lib/api-client';
-import { HoverCard, Glyph } from '@livediagram/ui';
+import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
+import { Glyph, lucideGlyph } from '@livediagram/ui';
+import { lucideClock, lucideEye, lucidePencilLine } from '@livediagram/icons/lucide';
 
-// Presentational parts of the share dialog: the expiry-label lookup and
-// the Role segmented button + the Embed / Live image glyphs. Split out of ShareDialog.
+// Presentational parts of the share dialog: the expiry-label lookup, the
+// role catalogue every pass surface reads (docs/specs/007-editor/live-app.md
+// "The pass metaphor"), and the Embed / Live image glyphs. Split out of
+// ShareDialog.
 export const EXPIRY_LABELS: Record<Exclude<ShareLinkExpiry, 'never'>, string> = {
   week: '1 week',
   month: '1 month',
   sixMonths: '6 months',
 };
 
-export function RoleButton({
-  active,
-  label,
-  description,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  description: string;
-  onClick: () => void;
-}) {
-  return (
-    <HoverCard title={label} description={description} block>
-      <button
-        type="button"
-        onClick={onClick}
-        aria-pressed={active}
-        className={
-          active
-            ? 'w-full rounded-sm bg-white px-2 py-1 text-xs font-semibold text-slate-800 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-            : 'w-full rounded-sm px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-white/60 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700/60 dark:hover:text-slate-200'
-        }
-      >
-        {label}
-      </button>
-    </HoverCard>
-  );
-}
+const EditPassIcon = lucideGlyph(lucidePencilLine, 18);
+const ViewPassIcon = lucideGlyph(lucideEye, 18);
+export const ClockIcon = lucideGlyph(lucideClock, 12);
+
+// One entry per role. The stub colour is the role at a glance, so the
+// composer's role card, the pass stub and nothing else use it: brand for
+// edit, violet for view.
+export const ROLE_PASS: Record<
+  ShareRole,
+  {
+    // The word printed on the pass stub.
+    stamp: string;
+    title: string;
+    blurb: string;
+    Icon: typeof EditPassIcon;
+    // Solid fill: the pass stub and the role card's icon tile.
+    solid: string;
+    // The selected role card's border + tint.
+    selected: string;
+  }
+> = {
+  edit: {
+    stamp: 'Edit',
+    title: 'Can Edit',
+    blurb: 'Draws with you in real time.',
+    Icon: EditPassIcon,
+    solid: 'bg-brand-500 text-white dark:bg-brand-600',
+    selected: 'border-brand-500 bg-brand-50/70 dark:border-brand-400 dark:bg-brand-500/10',
+  },
+  view: {
+    stamp: 'View',
+    title: 'Can View',
+    blurb: "Watches, pans and zooms. Can't change a thing.",
+    Icon: ViewPassIcon,
+    solid: 'bg-violet-500 text-white dark:bg-violet-500/60',
+    selected: 'border-violet-500 bg-violet-50/70 dark:border-violet-400 dark:bg-violet-500/10',
+  },
+};
 
 // Menu-item glyphs for the Embed / Live image copy menus.
 export function ImageGlyph() {
@@ -71,3 +84,7 @@ export function ScopeOptions({ tabs }: { tabs: { id: string; name: string }[] })
     </>
   );
 }
+
+// The uppercase section caption the dialog's bands share.
+export const SECTION_LABEL =
+  'text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';

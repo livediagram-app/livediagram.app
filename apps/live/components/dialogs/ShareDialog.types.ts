@@ -24,11 +24,13 @@ export type ShareDialogProps = {
   lockedName?: string | null;
   onSaveName: (name: string) => Promise<void> | void;
   // `tabId` scopes the new link to one tab (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
+  // Resolves to the created link, which the dialog copies straight away;
+  // undefined when creation failed (the handler has already toasted).
   onCreateLink: (
     role: ShareRole,
     expiry: ShareLinkExpiry,
     tabId: string | null,
-  ) => Promise<void> | void;
+  ) => Promise<ShareLink | undefined | void> | void;
   onRevokeLink: (code: string) => Promise<void> | void;
   // Change which tabs an existing link opens; null widens it to All tabs.
   onRescopeLink: (code: string, tabId: string | null) => Promise<void> | void;

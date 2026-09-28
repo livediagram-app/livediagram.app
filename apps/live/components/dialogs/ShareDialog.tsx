@@ -1,51 +1,39 @@
 'use client';
 
-import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { useState } from 'react';
-import {
-  Button,
-  LinkIcon,
-  RefreshIcon,
-  Select,
-  TextInput,
-  HoverCard,
-  GlyphDisc,
-} from '@livediagram/ui';
+import { Button, useCopiedFlash } from '@livediagram/ui';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { initialsOf, randomName } from '@/lib/identity';
+import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { useRelativeNow } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
-import { EXPIRY_LABELS, RoleButton, ScopeOptions } from './share-dialog-parts';
-import { ActiveShareLinkRow } from './ShareLinkRow';
-import type { ShareDialogProps } from './ShareDialog.types';
-import { SharePasswordSection } from './SharePasswordSection';
-import { ShareOfflineGate } from './ShareOfflineGate';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { useCopiedFlash } from '@livediagram/ui';
+import { ActiveSharePass } from './ActiveSharePass';
 import { DialogHeader } from './DialogHeader';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
+import { ExpiredSharePass } from './ExpiredSharePass';
+import { ShareComposer } from './ShareComposer';
+import type { ShareDialogProps } from './ShareDialog.types';
+import { ShareIdentity } from './ShareIdentity';
+import { ShareOfflineGate } from './ShareOfflineGate';
+import { SharePasswordSection } from './SharePasswordSection';
+import { ShareStatus } from './ShareStatus';
+import { SECTION_LABEL } from './share-dialog-parts';
 
-// Human labels for the expiry choices (docs/specs/013-workspace/share-link-expiry.md), shared by the create
-// dropdown and the inactive rows' Extend button.
-
-// Share-diagram modal. Layout per docs/specs/007-editor/live-app.md ("Share dialog"): the
-// guest-only name row first (so a guest sets the identity their links
-// will carry), then the create row (the dialog's primary action), the
-// active link cards, the inactive (expired) links when any exist
-// (docs/specs/013-workspace/share-link-expiry.md), and finally the share password (docs/specs/013-workspace/share-password.md) as the quiet
-// options band. Backdrop + dark-mode treatment match Settings /
-// Shortcuts / Export.
+// Share-diagram modal, built on the pass metaphor (docs/specs/007-editor/live-app.md "Share dialog"):
+// every share link is a ticket that admits whoever holds it. Top to bottom: a
+// status line saying who can open the diagram right now, the composer that
+// issues (and copies) a pass, the live passes, the expired ones
+// (docs/specs/013-workspace/share-link-expiry.md), the password switch
+// (docs/specs/013-workspace/share-password.md), and a footer carrying the
+// guest's "Sharing as" name.
 export function ShareDialog({
   participant,
   links,
   sharePassword,
   shareUrlFor,
   tabs,
-  nameConfirmed,
   lockedName,
   onSaveName,
   onCreateLink,
@@ -57,94 +45,86 @@ export function ShareDialog({
   onSyncToCloud,
   onClose,
 }: ShareDialogProps) {
-  // When a Clerk display name is supplied, the input always reads
-  // that value — even if the participant record was originally
-  // created under a guest alias.
+  // When a Clerk display name is supplied, the name is the account's and the
+  // guest identity row hides (docs/specs/007-editor/live-app.md).
   const [name, setName] = useState(lockedName ?? participant.name);
-  const toast = useToast();
   const nameLocked = !!lockedName;
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
   const { copied: copiedCode, flash } = useCopiedFlash<string>(1500);
-  const [newRole, setNewRole] = useState<ShareRole>('edit');
-  // Lifetime for the next link (docs/specs/013-workspace/share-link-expiry.md). Never = the pre-expiry
-  // default: the link works until revoked.
-  const [newExpiry, setNewExpiry] = useState<ShareLinkExpiry>('never');
-  // Which tabs the next link opens (docs/specs/013-workspace/tab-scoped-share-links.md): '' = All tabs, else a
-  // tab id. Only offered when there is more than one tab to choose between.
-  const [newScope, setNewScope] = useState('');
+  // The pass issued in this dialog session, which pops in on arrival.
+  const [freshCode, setFreshCode] = useState<string | null>(null);
   const multiTab = tabs.length > 1;
   // Which tab the Live image renders (docs/specs/013-workspace/live-image-share.md). null = the first tab,
   // which the server serves from its cached snapshot, so the URL omits
-  // `?tab=`. Diagram-wide: the same choice applies to every share link's
-  // image. Any other tab id is threaded straight into the image URL.
+  // `?tab=`. Diagram-wide: the same choice applies to every pass's image.
   const [liveImageTabId, setLiveImageTabId] = useState<string | null>(null);
   const firstTabId = tabs[0]?.id;
   const liveImageTabParam = liveImageTabId ?? undefined;
 
-  const trimmedName = name.trim();
-  const effectiveName = trimmedName || participant.name;
-  void nameConfirmed;
-
-  // Periodic re-render so the countdown chips stay honest and a link
-  // that lapses while the dialog is open migrates to Inactive without
-  // a refetch (same tick the Explorer's "Updated" column uses).
+  // Periodic re-render so the countdown chips stay honest and a pass that
+  // lapses while the dialog is open migrates to Expired without a refetch.
   const now = useRelativeNow();
-  const activeLinks = links.filter((l) => l.expiresAt === null || l.expiresAt > now);
-  const inactiveLinks = links.filter((l) => l.expiresAt !== null && l.expiresAt <= now);
+  // Newest first, so a pass just issued lands at the top where the eye is.
+  const newestFirst = [...links].sort((a, b) => b.createdAt - a.createdAt);
+  const activeLinks = newestFirst.filter((l) => l.expiresAt === null || l.expiresAt > now);
+  const inactiveLinks = newestFirst.filter((l) => l.expiresAt !== null && l.expiresAt <= now);
 
-  const create = async () => {
+  // The guest's draft name is saved when a pass is issued (the pass carries
+  // it) and when the dialog closes, whichever comes first.
+  const saveName = async () => {
+    const next = name.trim() || participant.name;
+    if (!nameLocked && next !== participant.name) await onSaveName(next);
+  };
+
+  const close = () => {
+    void saveName();
+    onClose();
+  };
+
+  const withBusy = async (run: () => Promise<void> | void) => {
     setBusy(true);
     try {
-      if (effectiveName !== participant.name) await onSaveName(effectiveName);
-      await onCreateLink(newRole, newExpiry, multiTab && newScope ? newScope : null);
+      await run();
     } finally {
       setBusy(false);
     }
   };
 
-  const revoke = async (code: string) => {
-    setBusy(true);
-    try {
-      await onRevokeLink(code);
-    } finally {
-      setBusy(false);
-    }
+  const writeClipboard = async (code: string) => {
+    await navigator.clipboard.writeText(shareUrlFor(code));
+    flash(code);
+    track('UI', 'Copied', 'ShareLink');
   };
 
-  const rescope = async (code: string, tabId: string | null) => {
-    setBusy(true);
-    try {
-      await onRescopeLink(code, tabId);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const extend = async (code: string) => {
-    setBusy(true);
-    try {
-      await onExtendLink(code);
-    } finally {
-      setBusy(false);
-    }
-  };
+  // Issue a pass and copy it straight away: the owner opened this dialog to
+  // hand something over, so the created link should already be in hand.
+  const issue = (role: ShareRole, expiry: ShareLinkExpiry, tabId: string | null) =>
+    withBusy(async () => {
+      await saveName();
+      const link = await onCreateLink(role, expiry, tabId);
+      if (!link) return;
+      setFreshCode(link.code);
+      try {
+        await writeClipboard(link.code);
+        toast.success('Pass created and copied');
+      } catch {
+        // The clipboard can refuse once the click's activation has lapsed
+        // behind the network round trip; the pass is there to copy by hand.
+        toast.info('Pass created. Copy it from its card.');
+      }
+    });
 
   const copy = async (code: string) => {
-    const url = shareUrlFor(code);
     try {
-      await navigator.clipboard.writeText(url);
-      flash(code);
-      track('UI', 'Copied', 'ShareLink');
+      await writeClipboard(code);
     } catch {
-      // Browsers without clipboard permission can't write; tell the
-      // user so the dead button isn't a mystery (the link field stays
-      // selectable for a manual copy).
+      // Browsers without clipboard permission can't write; say so, so the
+      // dead button isn't a mystery (the link field stays selectable).
       toast.error('Could not copy the link. Select it to copy manually.');
     }
   };
 
-  const sectionLabel =
-    'text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
   // Origin for the embed / live-image snippets. Guarded so a build-time
   // prerender (the dialog isn't shown then) doesn't touch window.
   const origin = typeof window === 'undefined' ? '' : window.location.origin;
@@ -158,170 +138,42 @@ export function ShareDialog({
   return (
     <Dialog
       open
-      onClose={onClose}
+      onClose={close}
       ariaLabel="Share this diagram"
       size="lg"
       className="max-h-[calc(100%-2rem)]"
     >
       <DialogHeader
         title="Share this diagram"
-        subtitle="Anyone with an editor link joins in real time; a view-only link lets people watch without changing anything."
+        subtitle={<ShareStatus passes={activeLinks.length} password={sharePassword !== null} />}
       >
         <HelpArticleLink article="sharing" size="md" />
-        <DialogCloseButton onClick={onClose} />
+        <DialogCloseButton onClick={close} />
       </DialogHeader>
 
       <div className="flex flex-col gap-5 overflow-y-auto px-6 py-5">
-        {/* Guests only, and first: the name peers will see on the
-                links minted below. Signed-in users' display names come
-                from their Clerk account, so there's nothing to edit and
-                the row hides entirely (docs/specs/007-editor/live-app.md). */}
-        {nameLocked ? null : (
-          <div className="flex flex-col gap-1.5">
-            <p className={sectionLabel}>Your name</p>
-            <div className="flex items-center gap-2.5">
-              <GlyphDisc
-                size={32}
-                as="div"
-                role="img"
-                aria-label={`Your avatar colour: ${participant.color}`}
-                style={{
-                  ...identityVars(participant.color),
-                }}
-                className={`text-xs font-semibold text-white ${IDENTITY_FILL}`}
-              >
-                {initialsOf(effectiveName)}
-              </GlyphDisc>
-              <TextInput
-                id="share-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={participant.name}
-                aria-label="Your name"
-                className="min-w-0 flex-1"
-              />
-              <HoverCard title="Shuffle name" description="Pick a different random name.">
-                <button
-                  type="button"
-                  onClick={() => setName(randomName())}
-                  aria-label="Generate a different name"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                >
-                  <RefreshIcon />
-                </button>
-              </HoverCard>
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              What collaborators see on your cursor and comments.
-            </p>
-          </div>
-        )}
+        <ShareComposer tabs={tabs} busy={busy} onIssue={issue} />
 
-        {/* Primary action: mint a link. The empty state below
-                points back up here. */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-1.5">
-            <p className={sectionLabel}>New link</p>
-            <HelpArticleLink article="shareLinkExpiry" />
-          </div>
-          {/* Three controls that do NOT fit one line on a phone: the role
-              toggle alone wants most of the width, which squeezed the expiry
-              select down to "Never exp" and left Create cramped against the
-              edge. Below sm: it becomes two rows — role on its own, then
-              expiry (growing) beside Create. From sm: up it is the single row
-              it always was. */}
-          {/* With more than one tab a fourth control, the scope, joins in and
-              the row no longer fits the dialog: role + scope take the first
-              line, expiry + Create the second. */}
-          <div
-            className={
-              multiTab ? 'flex flex-col gap-2' : 'flex flex-col gap-2 sm:flex-row sm:items-center'
-            }
-          >
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <div className="flex flex-1 items-stretch gap-1 rounded-md border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800">
-                <RoleButton
-                  active={newRole === 'edit'}
-                  onClick={() => setNewRole('edit')}
-                  label="Edit"
-                  description="Full read / write access: visitors can change anything."
-                />
-                <RoleButton
-                  active={newRole === 'view'}
-                  onClick={() => setNewRole('view')}
-                  label="View only"
-                  description="Read-only: visitors can look but not edit."
-                />
-              </div>
-              {multiTab ? (
-                <HoverCard
-                  title="Tabs"
-                  description="Share every tab, or just one. Visitors on a one-tab link see the other tabs locked, and never receive their content."
-                  className="min-w-0 sm:w-44"
-                >
-                  <Select
-                    value={newScope}
-                    onChange={(e) => setNewScope(e.target.value)}
-                    aria-label="Tabs this link opens"
-                    className="w-full"
-                  >
-                    <ScopeOptions tabs={tabs} />
-                  </Select>
-                </HoverCard>
-              ) : null}
-            </div>
-            <div className="flex items-center gap-2">
-              {/* The growth goes on the HOVER CARD, which is the actual flex
-                  child — the Select sits inside its wrapper span, so flex-1
-                  there would have had nothing to grow against. */}
-              <HoverCard
-                title="Link lifetime"
-                description="The link stops working after this long and moves to Inactive, where you can extend or delete it. Never keeps it working until you revoke it."
-                className={multiTab ? 'min-w-0 flex-1' : 'min-w-0 flex-1 sm:flex-none'}
-              >
-                <Select
-                  value={newExpiry}
-                  onChange={(e) => setNewExpiry(e.target.value as ShareLinkExpiry)}
-                  aria-label="Link lifetime"
-                  className="w-full"
-                >
-                  <option value="never">Never expires</option>
-                  <option value="week">Expires in 1 week</option>
-                  <option value="month">Expires in 1 month</option>
-                  <option value="sixMonths">Expires in 6 months</option>
-                </Select>
-              </HoverCard>
-              <Button onClick={create} disabled={busy} size="xs" className="shrink-0 shadow-sm">
-                <LinkIcon />
-                Create
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <p className={sectionLabel}>
-            Active links{activeLinks.length > 0 ? ` (${activeLinks.length})` : ''}
+        <section className="flex flex-col gap-2" aria-labelledby="share-passes-heading">
+          <p id="share-passes-heading" className={SECTION_LABEL}>
+            Passes{activeLinks.length > 0 ? ` (${activeLinks.length})` : ''}
           </p>
           {activeLinks.length === 0 ? (
-            <p className="rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-3 py-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400">
-              {links.length === 0 ? (
-                <>
-                  No share links yet. Pick a role above and click <strong>Create</strong>.
-                </>
-              ) : (
-                'No active share links. Extend an expired link below or create a new one.'
-              )}
+            <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+              {links.length === 0
+                ? 'No passes yet. Only you can open this diagram.'
+                : 'Every pass has expired. Extend one below or issue a new one.'}
             </p>
           ) : (
-            <ul className="flex flex-col gap-1.5">
+            <ul className="flex flex-col gap-2">
               {activeLinks.map((link) => (
-                <ActiveShareLinkRow
+                <ActiveSharePass
                   key={link.code}
                   link={link}
                   now={now}
                   origin={origin}
-                  copiedCode={copiedCode}
+                  copied={copiedCode === link.code}
+                  fresh={freshCode === link.code}
                   busy={busy}
                   sharePassword={sharePassword}
                   tabs={tabs}
@@ -331,62 +183,36 @@ export function ShareDialog({
                   setLiveImageTabId={setLiveImageTabId}
                   shareUrlFor={shareUrlFor}
                   onCopy={copy}
-                  onRevoke={revoke}
-                  onRescope={multiTab ? rescope : null}
+                  onRevoke={(code) => withBusy(() => onRevokeLink(code))}
+                  onRescope={
+                    multiTab ? (code, tabId) => withBusy(() => onRescopeLink(code, tabId)) : null
+                  }
                 />
               ))}
             </ul>
           )}
-        </div>
+        </section>
 
-        {/* Inactive (expired) links — docs/specs/013-workspace/share-link-expiry.md. Only rendered when
-                there's something in it, so the dialog stays unchanged
-                for owners who never use expiry. */}
+        {/* Expired passes (docs/specs/013-workspace/share-link-expiry.md): only when there's
+            something in it, so owners who never use expiry never see it. */}
         {inactiveLinks.length > 0 ? (
-          <div className="flex flex-col gap-2">
-            <p className={sectionLabel}>Inactive links ({inactiveLinks.length})</p>
-            <ul className="flex flex-col gap-1">
+          <section className="flex flex-col gap-2" aria-labelledby="share-expired-heading">
+            <p id="share-expired-heading" className={SECTION_LABEL}>
+              Expired ({inactiveLinks.length})
+            </p>
+            <ul className="flex flex-col gap-2">
               {inactiveLinks.map((link) => (
-                <li
+                <ExpiredSharePass
                   key={link.code}
-                  className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50/60 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800/40"
-                >
-                  <span className="inline-flex shrink-0 items-center rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/30">
-                    <span className="text-optical-line text-optical-caps">Expired</span>
-                  </span>
-                  <input
-                    readOnly
-                    value={shareUrlFor(link.code)}
-                    onFocus={(e) => e.currentTarget.select()}
-                    className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-slate-400 line-through outline-none dark:text-slate-400"
-                  />
-                  <HoverCard
-                    title={`Extend ${link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}`}
-                    description="Reactivates this link for another round of the lifetime chosen when it was created, counted from now."
-                  >
-                    <Button
-                      variant="secondary"
-                      size="xs"
-                      onClick={() => extend(link.code)}
-                      disabled={busy}
-                      className="whitespace-nowrap"
-                    >
-                      Extend {link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]}
-                    </Button>
-                  </HoverCard>
-                  <button
-                    type="button"
-                    onClick={() => revoke(link.code)}
-                    disabled={busy}
-                    aria-label="Delete expired link"
-                    className="rounded-md p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
-                  >
-                    <TrashIcon />
-                  </button>
-                </li>
+                  link={link}
+                  busy={busy}
+                  shareUrlFor={shareUrlFor}
+                  onExtend={(code) => withBusy(() => onExtendLink(code))}
+                  onDelete={(code) => withBusy(() => onRevokeLink(code))}
+                />
               ))}
             </ul>
-          </div>
+          </section>
         ) : null}
 
         <SharePasswordSection
@@ -394,12 +220,14 @@ export function ShareDialog({
           onSetPassword={onSetPassword}
           busy={busy}
           setBusy={setBusy}
-          sectionLabel={sectionLabel}
         />
       </div>
 
       <DialogFooter>
-        <Button variant="secondary" size="xs" onClick={onClose}>
+        {nameLocked ? null : (
+          <ShareIdentity participant={participant} name={name} onChange={setName} />
+        )}
+        <Button variant="secondary" size="xs" onClick={close}>
           Done
         </Button>
       </DialogFooter>

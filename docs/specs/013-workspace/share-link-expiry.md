@@ -1,6 +1,6 @@
 # Share-link expiry
 
-Share links ([Auth + guest access](../014-identity/auth-and-guest-access.md), [API app](../015-api/api.md)) can be given a lifetime at creation. When the lifetime runs out the link stops granting access everywhere, but stays visible to the owner in an "Inactive share links" section of the Share dialog, where it can be deleted or extended.
+Share links ([Auth + guest access](../014-identity/auth-and-guest-access.md), [API app](../015-api/api.md)) can be given a lifetime at creation. When the lifetime runs out the link stops granting access everywhere, but stays visible to the owner in an "Expired" section of the Share dialog, where it can be deleted or extended.
 
 ## Why
 
@@ -46,9 +46,9 @@ Owner-side paths that must still see expired rows (the Share dialog's list, dele
 
 ## Share dialog
 
-- The "Create new link" row gains an expiry dropdown next to the role toggle: Never (default), 1 Week, 1 Month, 6 Months.
-- **Active share links** (existing section): links with a deadline show a compact countdown chip ("6d left").
-- **Inactive share links** (new section, rendered under Active only when non-empty): each expired link shows an "Expired" badge, its URL (no Copy/Embed — it doesn't work), a Delete action (same revoke endpoint), and an **Extend** action labelled with the link's creation duration ("Extend 1 week"). Extending moves the link back to Active with a fresh deadline.
+- The composer's **Valid** dropdown sets the lifetime: Never expires (default), For 1 week, For 1 month, For 6 months.
+- **Passes** (the active list): links with a deadline show a compact countdown chip ("6d left") beside Valid.
+- **Expired** (rendered under Passes only when non-empty, see [Live app → Share dialog](../007-editor/live-app.md#share-dialog)): each expired pass is greyed with an "Expired" stamp, its URL struck through (no Copy/Embed — it doesn't work), a Delete action (same revoke endpoint), and an **Extend** action labelled with the link's creation duration ("Extend 1 week"). Extending moves the link back to Passes with a fresh deadline.
 
 ## Telemetry
 

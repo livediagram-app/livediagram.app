@@ -98,3 +98,55 @@ describe('ShareDialog scope', () => {
     expect(screen.queryByText('Tab', { selector: 'label' })).toBeNull();
   });
 });
+
+// The pass redesign (docs/specs/007-editor/live-app.md "Share dialog").
+describe('ShareDialog passes', () => {
+  it('issues a view pass from the Can View card and copies it', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+    const created = link({ code: 'NEW23456', role: 'view' });
+    const props = renderDialog({ onCreateLink: vi.fn().mockResolvedValue(created) });
+    fireEvent.click(screen.getByRole('radio', { name: /Can View/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create & Copy View Pass' }));
+    await vi.waitFor(() => expect(props.onCreateLink).toHaveBeenCalledWith('view', 'never', null));
+    await vi.waitFor(() =>
+      expect(writeText).toHaveBeenCalledWith('https://x.test/diagram/shared?s=NEW23456'),
+    );
+  });
+
+  it('says the diagram is private until a pass is live', () => {
+    renderDialog();
+    expect(screen.getByRole('status').textContent).toMatch(/Private: only you can open it/);
+    cleanup();
+    renderDialog({ links: [link()], sharePassword: 'pw' });
+    expect(screen.getByRole('status').textContent).toMatch(
+      /anyone holding the pass can get in, with the password/,
+    );
+  });
+
+  it('lists an expired pass under Expired with Extend', () => {
+    renderDialog({ links: [link({ expiry: 'week', expiresAt: 5 })] });
+    expect(screen.getByText('Expired (1)')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Extend 1 week' })).toBeTruthy();
+  });
+
+  it('reveals the password field behind the switch, and removes a saved one when switched off', async () => {
+    const onSetPassword = vi.fn().mockResolvedValue(null);
+    renderDialog({ onSetPassword });
+    expect(screen.queryByLabelText('Share password')).toBeNull();
+    fireEvent.click(screen.getByRole('switch', { name: /Password Protection/ }));
+    expect(screen.getByLabelText('Share password')).toBeTruthy();
+    cleanup();
+    renderDialog({ onSetPassword, sharePassword: 'pw' });
+    fireEvent.click(screen.getByRole('switch', { name: /Password Protection/ }));
+    await vi.waitFor(() => expect(onSetPassword).toHaveBeenCalledWith(null));
+  });
+
+  it("saves a guest's edited name when the dialog closes", async () => {
+    const props = renderDialog({ lockedName: null });
+    fireEvent.change(screen.getByLabelText('Your name'), { target: { value: 'Grace' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    await vi.waitFor(() => expect(props.onSaveName).toHaveBeenCalledWith('Grace'));
+    expect(props.onClose).toHaveBeenCalled();
+  });
+});

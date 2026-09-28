@@ -79,8 +79,8 @@ export function useShareLinks(deps: ShareLinksDeps) {
     role: ShareRole,
     expiry: ShareLinkExpiry = 'never',
     tabId: string | null = null,
-  ) => {
-    if (!diagramId) return;
+  ): Promise<ShareLink | undefined> => {
+    if (!diagramId) return undefined;
     confirmName();
     try {
       const link = await apiCreateShareLink(selfParticipant.id, diagramId, role, expiry, tabId);
@@ -100,8 +100,11 @@ export function useShareLinks(deps: ShareLinksDeps) {
         track('Diagram', 'Shared', expiryType);
       }
       if (tabId) track('Diagram', 'Shared', 'TabScoped');
+      // Returned so the Share dialog can copy the new pass straight away.
+      return link;
     } catch {
       toast.error('Could not create the share link. Try again.');
+      return undefined;
     }
   };
 
