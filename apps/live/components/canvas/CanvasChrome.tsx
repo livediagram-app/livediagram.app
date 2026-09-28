@@ -39,6 +39,9 @@ import { PhoneDockProvider } from '@/components/primitives/phone-dock-context';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
+import { useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
+import { CollaborateClusterButton } from './CollaborateClusterButton';
+import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -160,6 +163,14 @@ export type CanvasChromeProps = CanvasProps & ChromeExtras;
 // (inset 16px = the `*-4` resting inset). Top corners stack downward,
 // bottom corners upward (flex-col-reverse) so the first panel always
 // sits flush to the corner and the rest flow away from it.
+// When the Toolbar strip reaches the top corners (always on a phone, docs/specs/007-editor/toolbar-layout.md
+// "On a phone"; on a desktop window too narrow for a centred strip to clear a
+// docked panel, stripCrowdsTopCorners) the TOP corner stacks start below it
+// rather than at the 16px inset, or a panel docked there (the Collaborate
+// banner) renders underneath the strip where it can't be reached. The strip
+// sits 12px down (top-3) and is 46px tall; 68px leaves a 10px gap.
+const TOOLBAR_TOP_CLEARANCE_PX = 68;
+
 const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
   'top-left': 'left-4 top-4 flex-col items-start',
   'top-right': 'right-4 top-4 flex-col items-end',
@@ -199,6 +210,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     toolbarLayout,
     layersMinimized,
     onToggleLayersMinimized,
+    commentRows,
+    actionRows,
     onOpenCanvasTheme,
     onChooseTemplate,
     offscreenContent,
@@ -281,6 +294,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // Toolbar layout (docs/specs/007-editor/toolbar-layout.md) in force: honoured on a phone too, where it
   // replaces the dock's Palette + Explorer buttons.
   const toolbarActive = toolbarLayout === true;
+  // The strip only renders for an editor (not read-only) with the chrome up.
+  const stripShown = toolbarActive && !readOnly && !chromeHidden;
   // The Explorer menu button: top-left on desktop, the far left of the strip
   // on a phone (no room for both across the top). A read-only visitor has no
   // strip, so it keeps the corner there.
@@ -294,15 +309,30 @@ export function CanvasChrome(props: CanvasChromeProps) {
   );
 
   // Floating panel elements + their wiring live in useCanvasChromePanels.
-  const { panelEls, toolbarExplorerEl, toolbarClusterEls, clusterPopovers, paletteTint } =
-    useCanvasChromePanels({
-      props,
-      chromeHidden,
-      isMobile,
-      dockingActive,
-      toolbarActive,
-      panelWiringFor,
-    });
+  const {
+    panelEls,
+    toolbarExplorerEl,
+    toolbarClusterEls,
+    collaborateEl,
+    clusterPopovers,
+    paletteTint,
+  } = useCanvasChromePanels({
+    props,
+    chromeHidden,
+    isMobile,
+    dockingActive,
+    toolbarActive,
+    panelWiringFor,
+  });
+
+  // Measured against the real top-corner stacks (useStripCrowdsCorners). A
+  // stack only renders while it holds a panel, so which top corners are
+  // occupied is part of what re-measures. A phone's strip always spans the top.
+  const topCornersKey = (['top-left', 'top-right'] as const)
+    .map((c) => dock.cornerStacks[c].filter((id) => panelEls[id] != null).join('+'))
+    .join('|');
+  const stripCrowds = useStripCrowdsCorners(cornerRefs, stripShown && !isMobile, topCornersKey);
+  const stripSpansTop = stripShown && (isMobile || stripCrowds);
   // Bucketing keys off the persisted placement ONLY (not which panel is
   // mid-drag): a dragged panel must stay in the same DOM parent for the
   // whole gesture — reparenting it would remount the component and drop
@@ -328,7 +358,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ref={(el) => {
               cornerRefs.current[corner] = el;
             }}
-            style={corner === 'bottom-right' ? { bottom: cornerBottomInset(corner) } : undefined}
+            style={
+              corner === 'bottom-right'
+                ? { bottom: cornerBottomInset(corner) }
+                : stripSpansTop && corner.startsWith('top')
+                  ? { top: TOOLBAR_TOP_CLEARANCE_PX }
+                  : undefined
+            }
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
           >
             {children.map((id) => (
@@ -414,6 +450,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {toolbarClusterEls}
         </>
       ) : null}
+      {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5), in every layout: it
+          positions against the canvas, so it renders outside the corner
+          layer, as Toolbar's cluster popovers do. */}
+      {zenMode ? null : collaborateEl}
       {toolbarActive && !readOnly ? (
         <ToolbarPalette
           key={props.esBoard ? 'es-board' : 'standard'}
@@ -439,7 +479,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         minimalPanels={minimalPanels}
         toolbarLayout={toolbarActive}
         readOnly={readOnly}
-        hasCollaborate={props.commentRows.length > 0 || props.actionRows.length > 0}
         hasAi={!!aiPanel}
         hasPoll={!!props.pollPanel}
         hasVote={!!props.tabVote}
@@ -492,10 +531,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Activity strip
-          (with inline Undo / Redo), the Layers button, the Theme & Canvas
+          (with inline Undo / Redo), the Layers button, the Collaborate button
+          (only while the tab has a thread or an action), the Theme & Canvas
           paintbrush, then the Zoom controls. Activity + Layers minimise into
           their buttons in desktop Floating and open as popovers above them
-          everywhere else (clusterPopovers, docs/specs/007-editor/live-app.md). */}
+          everywhere else (clusterPopovers, docs/specs/007-editor/live-app.md); Collaborate is a popover
+          in every layout. */}
       <div
         // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
         // as its one way back out, and a deck has its own way out plus no
@@ -532,6 +573,16 @@ export function CanvasChrome(props: CanvasChromeProps) {
                     ? undefined
                     : (button) => handleDockButtonClick('layers', button, true)
                 }
+              />
+            ) : null}
+            {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): right after Layers, only while
+                the tab has a comment thread or an action. A view-role visitor
+                gets it too: they read threads and answer them. */}
+            {!zenMode && (commentRows.length > 0 || actionRows.length > 0) ? (
+              <CollaborateClusterButton
+                openCount={kindCounts('open', commentRows, actionRows).all}
+                popoverOpen={activeMobilePanel === 'collaborate'}
+                onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
               />
             ) : null}
             {/* Theme & Canvas dock button (docs/specs/011-theme/canvas-and-theme-dialog.md): the paintbrush right of

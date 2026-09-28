@@ -154,6 +154,8 @@ export const TELEMETRY_ACTIONS = [
   'Unlinked',
   'Resolved',
   'Unresolved',
+  // Comment (docs/specs/012-collaboration/comment-mentions.md): a comment was sent with at least one @-mention.
+  'Mentioned',
   'Imported',
   'Aligned',
   'Undone',

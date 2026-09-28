@@ -149,6 +149,7 @@ export function ToolbarStripRail({
     <div
       // Clipped sideways only, so a shrinking rail hides the outgoing tiles
       // past its edge while pressed rings and the pop's overshoot still show.
+      data-strip-rail=""
       className={`relative flex items-center overflow-x-clip [overflow-clip-margin:3px]${
         animate ? ' transition-[width] duration-short ease-out' : ''
       }`}

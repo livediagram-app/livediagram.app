@@ -1,7 +1,7 @@
 // tabs — one row per tab, linked to diagrams through the
 // diagram_tabs many-to-many table (migration 0011 / docs/specs/006-diagram/tab-diagram-many-to-many.md).
 
-import type { Tab } from '@livediagram/diagram';
+import { capElementActions, type Tab } from '@livediagram/diagram';
 import { rowToTab, type TabRow } from '../tab-row';
 import type { SharedTabsSummary } from '@livediagram/api-schema';
 import type { Env, TabDTO } from '../types';
@@ -78,9 +78,12 @@ export async function getTabData(
 export async function upsertTab(
   env: Env,
   diagramId: string,
-  tab: Tab,
+  input: Tab,
   orderIndex: number,
 ): Promise<void> {
+  // Action panel lists are bounded here, the one place every tab write
+  // meets (docs/specs/012-collaboration/action-panel.md "The data").
+  const tab = { ...input, elements: capElementActions(input.elements) };
   const { id, name, ...rest } = tab;
   const data = JSON.stringify(rest);
   const now = Date.now();
@@ -127,7 +130,8 @@ export async function upsertTab(
 export async function seedTabs(env: Env, diagramId: string, tabs: Tab[]): Promise<void> {
   if (tabs.length === 0) return;
   const now = Date.now();
-  const stmts = tabs.flatMap((tab, idx) => {
+  const capped = tabs.map((t) => ({ ...t, elements: capElementActions(t.elements) }));
+  const stmts = capped.flatMap((tab, idx) => {
     const { id, name, ...rest } = tab;
     const data = JSON.stringify(rest);
     return [
@@ -149,7 +153,7 @@ export async function seedTabs(env: Env, diagramId: string, tabs: Tab[]): Promis
   stmts.push(env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId));
   // Index rows for every seeded tab (docs/specs/013-workspace/activity-page.md §2.1): a JSON import or a
   // copy from a share link can carry actions and threads in on create.
-  for (const tab of tabs) {
+  for (const tab of capped) {
     stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
     stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements)));
   }

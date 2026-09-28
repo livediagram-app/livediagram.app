@@ -264,6 +264,14 @@ export const COMMENTS_RESOLVED: Metric = {
   title: 'Comments Resolved',
 };
 
+export const COMMENTS_MENTIONED: Metric = {
+  category: 'Comment',
+  action: 'Mentioned',
+  type: null,
+  title: 'Comments With Mentions',
+  blurb: 'A comment was sent that @-mentioned at least one teammate.',
+};
+
 export const TEAMS_CREATED: Metric = {
   category: 'Team',
   action: 'Created',
@@ -486,6 +494,7 @@ export const DISCUSSION: MetricStack = {
     COMMENTS_ADDED,
     COMMENT_POPOVERS_OPENED,
     COMMENTS_RESOLVED,
+    COMMENTS_MENTIONED,
     COMMENTS_REOPENED,
     COMMENTS_DELETED,
   ],

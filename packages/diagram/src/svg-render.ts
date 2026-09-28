@@ -7,10 +7,7 @@
 //
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
-import { techGlyphStrokeUnits } from '@livediagram/icons';
 
-import { DEFAULT_ICON_SIZE, ICON_SIZE_PX, iconBandBounds, techIconMarkBounds } from './icon-size';
-import { iconWeightPx } from './icon-weight';
 import {
   hasShapeSilhouette,
   scaledPolygonPoints,
@@ -24,11 +21,13 @@ import {
 } from './svg-render-shapes';
 import { BORDER_RADIUS_PX } from './border-style';
 import { canvasSurface } from './colors';
+import { svgIconShape, svgImageShape } from './svg-render-image-icon';
 import { DIAMOND_POINTS } from './shape-geometry';
 import { svgTableShape } from './svg-render-table';
 // Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
+import { svgPageFold } from './svg-render-page';
 import { isCollabPanelShape } from './collab-shapes';
 import { isSelfDrawingShape } from './data-shapes';
 import { svgHeroCaption } from './svg-render-web';
@@ -100,7 +99,6 @@ import {
   exportFontFamily,
   exportFontIds,
   type BoxedExportOptions,
-  type ExportIconArt,
   type ResolveIconArt,
   type ResolveImageHref,
   type ResolveStickerArt,
@@ -111,6 +109,7 @@ import { googleFontsHref } from './fonts';
 import { boundsOfPoints, type Point } from './geometry-primitives';
 import { getBuiltInTheme } from './themes';
 import { themeChartPalette } from './theme-presets';
+import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -144,73 +143,7 @@ export function contentBounds(
 // colours + label, using the SAME element-type defaults the editor renders so
 // a theme-deferring element exports with its rendered look.
 
-// Inline a bitmap as a clipped <image>. The data URL is embedded so the SVG
-// stays self-contained when downloaded; preserveAspectRatio maps objectFit
-// ('cover' → slice/crop, 'contain' → meet/letterbox) and a per-element
-// clipPath rounds the corners (a 'full'-radius avatar clamps to a circle). A
-// white backing rect matches the on-screen white background behind the bitmap
-// so a letterboxed 'contain' image doesn't show the page colour in its margins.
-function svgImageShape(
-  el: BoxedElement,
-  href: string,
-  objectFit: 'cover' | 'contain',
-  radius: number,
-): string {
-  const x = r2(el.x);
-  const y = r2(el.y);
-  const w = r2(el.width);
-  const h = r2(el.height);
-  const rr = r2(Math.min(radius, el.width / 2, el.height / 2));
-  const par = objectFit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet';
-  // Unique, XML-id-safe clip id per element (element ids are unique per tab).
-  const clipId = `lvd-img-${String(el.id).replace(/[^a-zA-Z0-9_-]/g, '')}`;
-  return (
-    `<clipPath id="${clipId}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rr}" ry="${rr}"/></clipPath>` +
-    `<g clip-path="url(#${clipId})">` +
-    `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#ffffff"/>` +
-    `<image x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="${par}" href="${href}"/>` +
-    `</g>`
-  );
-}
-
-// A shape==='icon' element's glyph as a nested <svg> positioned over the
-// element box — nesting reproduces the editor's scaling exactly (the canvas
-// renders the glyph as an absolutely-positioned svg over the element).
-// Line art: viewBox 0 0 24 24 scaled into the glyph band opposite the
-// caption (iconBandBounds — the same inverse-alignment bands as Technology
-// marks, mirroring IconGlyph). The stroke width is divided by the glyph
-// scale so it lands at ~2 rendered units — the on-canvas glyph strokes are
-// non-scaling 2px. Technology marks: self-coloured tile art at its fixed
-// preset size in the band (TechIconGlyph).
-export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: string): string {
-  if (art.colored) {
-    // A Technology mark renders at its fixed preset size (docs/specs/010-palette/technology-icons.md), centred
-    // in the glyph band and clamped to the box — techIconMarkBounds is the
-    // single source of that geometry (shared with the connector anchors in
-    // geometry.ts), mirroring TechIconGlyph exactly. The band sits OPPOSITE
-    // the caption's vertical alignment so moving the text never stacks it
-    // over the mark; no label = the whole box. The glyph weight follows the
-    // preset's size (techGlyphStrokeUnits), exactly as TechIconArt draws it.
-    const mark = techIconMarkBounds(el);
-    const preset = (el.type === 'shape' ? el.iconSize : undefined) ?? DEFAULT_ICON_SIZE;
-    const strokeWidth = techGlyphStrokeUnits(ICON_SIZE_PX[preset]);
-    return (
-      `<svg x="${r2(mark.x)}" y="${r2(mark.y)}" width="${r2(mark.width)}" height="${r2(mark.height)}"` +
-      ` viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible"` +
-      ` stroke-width="${strokeWidth}">${art.markup}</svg>`
-    );
-  }
-  const band = iconBandBounds(el);
-  const scale = Math.min(band.width / 24, band.height / 24);
-  const px = iconWeightPx(el.type === 'shape' ? el.iconWeight : undefined);
-  const strokeWidth = scale > 0 ? px / scale : px;
-  return (
-    `<svg x="${r2(band.x)}" y="${r2(band.y)}" width="${r2(band.width)}" height="${r2(band.height)}"` +
-    ` viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible"` +
-    ` fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${r2(strokeWidth)}"` +
-    ` stroke-linecap="round" stroke-linejoin="round">${art.markup}</svg>`
-  );
-}
+export { svgIconShape } from './svg-render-image-icon';
 
 export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): string {
   const { opacity, shape, label } = describeBoxedExport(el, opts);
@@ -276,10 +209,13 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
       // A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image.
       (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
   } else if (shape.kind === 'ellipse') {
-    shapeStr = `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(el.width / 2)}" ry="${r2(el.height / 2)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
+    // Inset by half the border, as the canvas's CSS border sits inside.
+    const b = el.type === 'shape' ? borderOf(el) : { width: 1.5, dash: null };
+    shapeStr = `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(Math.max(0, el.width / 2 - b.width / 2))}" ry="${r2(Math.max(0, el.height / 2 - b.width / 2))}" fill="${xmlEscape(shape.fill)}"${strokeAttrs(shape.stroke, b.width, b.dash)}/>`;
   } else if (shape.kind === 'diamond') {
     // Native at element coordinates, from the shared table's points.
-    shapeStr = `<polygon points="${scaledPolygonPoints(DIAMOND_POINTS, el.x, el.y, el.width, el.height)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5" stroke-linejoin="round"/>`;
+    const b = el.type === 'shape' ? borderOf(el) : { width: 1.5, dash: null };
+    shapeStr = `<polygon points="${scaledPolygonPoints(DIAMOND_POINTS, el.x, el.y, el.width, el.height)}" fill="${xmlEscape(shape.fill)}"${strokeAttrs(shape.stroke, b.width, b.dash)} stroke-linejoin="round"/>`;
   } else if (shape.kind === 'rect') {
     // Shape silhouettes (hexagon / cylinder / document / devices / actor /
     // frame ...) mirror the editor overlay's geometry; kinds without one
@@ -313,6 +249,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
       fill: shape.fill,
       chartPalette: opts.chartPalette,
       label: label?.text ?? el.label ?? '',
+      surface,
     });
     // A SELF-PAINTING element's body is its own: the canvas gives it a
     // wrapper with no border and no background (element-variant.ts), and the
@@ -328,7 +265,17 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
       silhouette ??
       (selfPainting && face
         ? ''
-        : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`);
+        : el.type === 'shape'
+          ? // A shape's border is the element's own (width, dash, radius), inset
+            // like the canvas's CSS border (svg-render-border). A stadium and a
+            // mind node keep their silhouette radius.
+            borderedRect(
+              el,
+              shape.fill,
+              shape.stroke,
+              el.shape === 'stadium' || el.shape === 'mind-node' ? rx : undefined,
+            )
+          : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`);
     // What the canvas draws ON the box: a lane's title gutter (docs/specs/009-elements/lane.md) and a
     // browser frame's chrome strip (docs/specs/008-canvas/canvas-and-palette.md).
     const onBox =
@@ -336,7 +283,9 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
         ? svgLaneGutter(el, shape.stroke)
         : el.type === 'shape' && el.shape === 'browser'
           ? svgBrowserChrome(el, shape.stroke)
-          : '';
+          : el.type === 'shape' && el.shape === 'page'
+            ? svgPageFold(el, shape.fill, shape.stroke, opts.paper ?? '#ffffff')
+            : '';
     shapeStr = box + onBox + face;
   } else if (shape.kind === 'icon') {
     shapeStr = svgIconShape(el, shape.art, shape.stroke);
@@ -359,7 +308,9 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     // it, so the generic centred label would print it a second time.
     (el.type === 'shape' &&
       (isCollabPanelShape(el.shape) ||
-        BEHAVIOUR_FACE_SHAPES.has(el.shape) ||
+        // A chair's face is furniture only; its label is the ordinary one,
+        // bottom-aligned under the seat, exactly as the canvas prints it.
+        (BEHAVIOUR_FACE_SHAPES.has(el.shape) && el.shape !== 'chair') ||
         // A web component (docs/specs/009-elements/web-components-and-no-groups.md) writes its label in its own region.
         isWebComponentShape(el.shape)))
       ? ''
@@ -380,6 +331,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
               label.text,
               label.maxWidth,
               labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
+              !(el.type === 'shape' && el.shape === 'icon'),
             ),
             label.x,
             label.y,
@@ -523,6 +475,7 @@ export function renderElementsToSvg(
             resolveStickerArt: opts.resolveStickerArt,
             tabFont: tab.font,
             surface,
+            paper: bg,
             chartPalette,
           }),
     );

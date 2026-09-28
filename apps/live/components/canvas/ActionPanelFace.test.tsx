@@ -53,54 +53,84 @@ describe('action panel registration', () => {
   });
 });
 
-describe('ActionPanelFace', () => {
-  it('offers to set up an action when it has none', () => {
-    const onConfigure = vi.fn();
-    render(
-      <ActionPanelFace element={card()} textColor="#000" selfId={null} onConfigure={onConfigure} />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Set Up Action' }));
-    expect(onConfigure).toHaveBeenCalledOnce();
+describe('ActionPanelFace (docs/specs/012-collaboration/action-panel.md "The card")', () => {
+  const second = (status: 'open' | 'done' = 'open') => ({
+    ...createElementAction({
+      name: 'Load test the queue',
+      description: '',
+      assignee: { userId: 'u-priya', name: 'Priya' },
+      teamId: null,
+      assigner: { id: 'u-alex', name: 'Alex' },
+    }),
+    status,
+  });
+  const listCard = (...actions: ReturnType<typeof second>[]): ShapeElement => ({
+    ...card(),
+    actions,
   });
 
-  it('shows the action and completes it through the handler it was given', () => {
+  it('offers to add the first action when it has none', () => {
+    const onAdd = vi.fn();
+    render(<ActionPanelFace element={card()} textColor="#000" selfId={null} onAdd={onAdd} />);
+    expect(screen.getByText('No Actions Yet')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Add Action' }));
+    expect(onAdd).toHaveBeenCalledOnce();
+  });
+
+  it('lists every action, and completes the one whose check is pressed', () => {
+    const a = second();
+    const b = { ...second(), name: 'Write the runbook' };
     const onComplete = vi.fn();
     render(
       <ActionPanelFace
-        element={withAction()}
+        element={listCard(a, b)}
         textColor="#000"
-        selfId="u-sam"
-        onConfigure={() => {}}
+        selfId="u-priya"
         onComplete={onComplete}
         onReopen={() => {}}
       />,
     );
-    expect(screen.getByText('Confirm the retry budget')).toBeTruthy();
-    expect(screen.getByText('Assigned to you')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
-    expect(onComplete).toHaveBeenCalledOnce();
+    expect(screen.getByText('Load test the queue')).toBeTruthy();
+    expect(screen.getByText('Write the runbook')).toBeTruthy();
+    expect(screen.getByText('2 open')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Complete Write the runbook' }));
+    expect(onComplete).toHaveBeenCalledWith(b.id);
   });
 
-  it('offers Reopen once done', () => {
+  it('reads a card saved with a single action as a one-item list', () => {
+    render(<ActionPanelFace element={withAction()} textColor="#000" selfId="u-sam" />);
+    expect(screen.getByText('Confirm the retry budget')).toBeTruthy();
+    expect(screen.getByText('You')).toBeTruthy();
+  });
+
+  it('reopens a done action, edits on the row, and adds another from the bar', () => {
+    const done = second('done');
     const onReopen = vi.fn();
+    const onEdit = vi.fn();
+    const onAdd = vi.fn();
     render(
       <ActionPanelFace
-        element={withAction('done')}
+        element={listCard(done)}
         textColor="#000"
-        selfId="someone-else"
-        onComplete={() => {}}
+        selfId={null}
         onReopen={onReopen}
+        onEdit={onEdit}
+        onAdd={onAdd}
       />,
     );
-    expect(screen.getByText('Assigned to Sam')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Complete' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Reopen' }));
-    expect(onReopen).toHaveBeenCalledOnce();
+    expect(screen.getByText('All Done')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Reopen Load test the queue' }));
+    expect(onReopen).toHaveBeenCalledWith(done.id);
+    fireEvent.click(screen.getByText('Load test the queue'));
+    expect(onEdit).toHaveBeenCalledWith(done.id);
+    fireEvent.click(screen.getByRole('button', { name: 'Add Action' }));
+    expect(onAdd).toHaveBeenCalledOnce();
   });
 
   it('renders readable but inert without handlers (read-only surfaces)', () => {
-    render(<ActionPanelFace element={withAction()} textColor="#000" selfId={null} />);
-    expect(screen.getByText('Confirm the retry budget')).toBeTruthy();
-    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    render(<ActionPanelFace element={listCard(second())} textColor="#000" selfId={null} />);
+    expect(screen.getByText('Load test the queue')).toBeTruthy();
+    for (const b of screen.queryAllByRole('button'))
+      expect((b as HTMLButtonElement).disabled).toBe(true);
   });
 });

@@ -337,6 +337,11 @@ describe('canvas tool commands', () => {
     expect(ids({ ...base, isMobile: true })).toContain('tool:laser');
   });
 
+  it('withholds Slide Deck on mobile', () => {
+    expect(ids({ ...base, isMobile: true })).not.toContain('tool:slide-deck');
+    expect(ids(base)).toContain('tool:slide-deck');
+  });
+
   it('gives a read-only visitor the presenting tools but not the editing ones', () => {
     const got = ids({ ...base, isReadOnly: true }).filter((id) => id.startsWith('tool:'));
     expect(got).toContain('tool:laser');

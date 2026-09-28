@@ -178,6 +178,8 @@ export function ElementFaceRouter({
   // A collaboration panel has a title row, and the `…` leads its title
   // (CollabSettingsSlot); everything else keeps it in the top-right corner.
   const inTitleRow = element.type === 'shape' && isCollabPanelShape(element.shape);
+  // A card's own fill, for the modern collab faces' accent scope.
+  const cardFill = element.fillColor ?? defaultFillColor(element, surface);
   const settingsMenu =
     settingsButton && !inTitleRow ? (
       <span className="absolute right-1 top-1 z-10">{settingsButton}</span>
@@ -308,7 +310,9 @@ export function ElementFaceRouter({
            only job is to carry a commentThread. */
         <CommentPanelFace
           element={element}
+          label={label}
           textColor={textColor}
+          surface={cardFill}
           selfId={commentSelfId ?? ''}
           onAddComment={commentActions?.add}
           onDeleteComment={commentActions?.remove}
@@ -320,9 +324,12 @@ export function ElementFaceRouter({
            SAME action machinery the popover and the Assign Action dialog do. */
         <ActionPanelFace
           element={element}
+          label={label}
           textColor={textColor}
+          surface={cardFill}
           selfId={actionSelfId ?? null}
-          onConfigure={actionActions?.configure}
+          onAdd={actionActions?.add}
+          onEdit={actionActions?.edit}
           onComplete={actionActions?.complete}
           onReopen={actionActions?.reopen}
         />

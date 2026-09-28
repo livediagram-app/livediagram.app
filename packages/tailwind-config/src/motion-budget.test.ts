@@ -10,6 +10,7 @@ import {
   scanSource,
   scanStylesheet,
 } from './motion-budget';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 
 const T = MOTION_TOKENS;
 
@@ -156,9 +157,9 @@ describe('scanStylesheet', () => {
 
   it('scans a pathological run of comment openers in linear time', () => {
     const hostile = '/*' + 'a/*'.repeat(100_000);
-    const started = performance.now();
-    scan(hostile);
-    expect(performance.now() - started).toBeLessThan(250);
+    // CPU time, not wall-clock (cpuMsOf): a quadratic scan still blows the
+    // budget, a busy machine running every suite at once does not.
+    expect(cpuMsOf(() => scan(hostile))).toBeLessThan(250);
   });
 
   it('ignores non-motion declarations that mention time-like words', () => {
@@ -176,9 +177,9 @@ describe('scanSource', () => {
 
   it('scans a pathological run of comment openers in linear time', () => {
     const hostile = '/*' + 'a/*'.repeat(100_000);
-    const started = performance.now();
-    scan(hostile);
-    expect(performance.now() - started).toBeLessThan(250);
+    // CPU time, not wall-clock (cpuMsOf): a quadratic scan still blows the
+    // budget, a busy machine running every suite at once does not.
+    expect(cpuMsOf(() => scan(hostile))).toBeLessThan(250);
   });
 
   it('passes numeric and token duration classes within the ceiling', () => {

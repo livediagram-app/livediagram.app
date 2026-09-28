@@ -61,8 +61,9 @@ export function collabIndexStatements(
       env.DB.prepare(
         `INSERT INTO collab_threads
            (tab_id, element_id, element_label, resolved, comment_count, participant_ids,
-            latest_text, latest_author_name, latest_author_color, first_at, latest_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            mentioned_ids, latest_text, latest_author_name, latest_author_color, first_at,
+            latest_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(
         tabId,
         t.elementId,
@@ -70,6 +71,7 @@ export function collabIndexStatements(
         t.resolved ? 1 : 0,
         t.commentCount,
         JSON.stringify(t.participantIds),
+        JSON.stringify(t.mentionedIds),
         t.latestText,
         t.latestAuthorName,
         t.latestAuthorColor,
@@ -103,9 +105,11 @@ export function collabIndexCopyStatements(
     env.DB.prepare(
       `INSERT INTO collab_threads
          (tab_id, element_id, element_label, resolved, comment_count, participant_ids,
-          latest_text, latest_author_name, latest_author_color, first_at, latest_at)
+          mentioned_ids, latest_text, latest_author_name, latest_author_color, first_at,
+          latest_at)
        SELECT ?1, element_id, element_label, resolved, comment_count, participant_ids,
-              latest_text, latest_author_name, latest_author_color, first_at, latest_at
+              mentioned_ids, latest_text, latest_author_name, latest_author_color, first_at,
+              latest_at
          FROM collab_threads WHERE tab_id = ?2`,
     ).bind(toTabId, fromTabId),
   ];
@@ -192,6 +196,7 @@ type ThreadRow = PlaceRow & {
   latest_at: number;
   you_commented: number;
   on_your_diagram: number;
+  mentions_you: number;
 };
 
 const ACTIONS_SQL = `${SCOPE_CTES}
@@ -222,7 +227,11 @@ const THREADS_SQL = `${SCOPE_CTES}
          v.via, v.share_code, t.name AS tab_name,
          CASE WHEN EXISTS (SELECT 1 FROM json_each(ct.participant_ids) je
                             WHERE je.value IN (SELECT id FROM me)) THEN 1 ELSE 0 END AS you_commented,
-         CASE WHEN v.owner_id = ?1 THEN 1 ELSE 0 END AS on_your_diagram
+         CASE WHEN v.owner_id = ?1 THEN 1 ELSE 0 END AS on_your_diagram,
+         CASE WHEN EXISTS (SELECT 1 FROM json_each(ct.mentioned_ids) jm
+                            WHERE jm.value IN (SELECT id FROM me)
+                               OR jm.value IN (SELECT id FROM my_members)) THEN 1 ELSE 0 END
+           AS mentions_you
     FROM collab_threads ct
     JOIN diagram_tabs dt ON dt.tab_id = ct.tab_id
     JOIN visible v ON v.id = dt.diagram_id
@@ -231,7 +240,10 @@ const THREADS_SQL = `${SCOPE_CTES}
      AND (v.scope_tab_id IS NULL OR v.scope_tab_id = ct.tab_id)
      AND (v.owner_id = ?1
           OR EXISTS (SELECT 1 FROM json_each(ct.participant_ids) je
-                      WHERE je.value IN (SELECT id FROM me)))
+                      WHERE je.value IN (SELECT id FROM me))
+          OR EXISTS (SELECT 1 FROM json_each(ct.mentioned_ids) jm
+                      WHERE jm.value IN (SELECT id FROM me)
+                         OR jm.value IN (SELECT id FROM my_members)))
    ORDER BY ct.latest_at DESC
    LIMIT ?3`;
 
@@ -244,7 +256,10 @@ function dedupePlaces<R extends PlaceRow>(rows: R[]): R[] {
   const best = new Map<string, R>();
   for (const row of rows) {
     if (row.via === 'shared' && !row.share_code) continue;
-    const key = `${row.tab_id}:${row.element_id}`;
+    // An action row is one of possibly many on its element (an Action panel,
+    // docs/specs/012-collaboration/action-panel.md), so its own id is part of what makes it one row.
+    const actionId = (row as { action_id?: string }).action_id;
+    const key = `${row.tab_id}:${row.element_id}${actionId ? `:${actionId}` : ''}`;
     const cur = best.get(key);
     if (!cur || VIA_RANK[row.via] < VIA_RANK[cur.via]) best.set(key, row);
   }
@@ -302,6 +317,7 @@ export async function readActivity(
       firstAt: r.first_at,
       youCommented: r.you_commented === 1,
       onYourDiagram: r.on_your_diagram === 1,
+      mentionsYou: r.mentions_you === 1,
     }),
   );
   return { actions, threads };

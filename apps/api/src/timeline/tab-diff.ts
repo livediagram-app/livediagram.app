@@ -16,14 +16,21 @@
 // Kept out of ../comments.ts on purpose: that module is the author
 // trust boundary, and it should stay small enough to audit.
 
-import type { Comment, Element, ElementAction } from '@livediagram/diagram';
+import {
+  elementActions,
+  type Comment,
+  type Element,
+  type ElementAction,
+} from '@livediagram/diagram';
 
 function threadOf(el: Element): { comments?: Comment[]; resolved?: boolean } | undefined {
   return (el as { commentThread?: { comments?: Comment[]; resolved?: boolean } }).commentThread;
 }
 
-function actionOf(el: Element): ElementAction | undefined {
-  return (el as { action?: ElementAction }).action;
+// Every action on an element: an Action panel's list, or an ordinary
+// element's one (docs/specs/012-collaboration/action-panel.md "The data").
+function actionsOf(el: Element): ElementAction[] {
+  return elementActions(el);
 }
 
 // Comments present in `next` whose id isn't in `prev`. Ordered as the
@@ -76,13 +83,11 @@ export function newlyResolvedThreads(
 export function newActions(next: Element[], prev: Element[]): ElementAction[] {
   const seen = new Set<string>();
   for (const el of prev) {
-    const action = actionOf(el);
-    if (action) seen.add(action.id);
+    for (const action of actionsOf(el)) seen.add(action.id);
   }
   const added: ElementAction[] = [];
   for (const el of next) {
-    const action = actionOf(el);
-    if (action && !seen.has(action.id)) added.push(action);
+    for (const action of actionsOf(el)) if (!seen.has(action.id)) added.push(action);
   }
   return added;
 }
@@ -94,13 +99,13 @@ export function newActions(next: Element[], prev: Element[]): ElementAction[] {
 export function completedActions(next: Element[], prev: Element[]): ElementAction[] {
   const previousStatus = new Map<string, string>();
   for (const el of prev) {
-    const action = actionOf(el);
-    if (action) previousStatus.set(action.id, action.status);
+    for (const action of actionsOf(el)) previousStatus.set(action.id, action.status);
   }
   const done: ElementAction[] = [];
   for (const el of next) {
-    const action = actionOf(el);
-    if (action?.status === 'done' && previousStatus.get(action.id) === 'open') done.push(action);
+    for (const action of actionsOf(el)) {
+      if (action.status === 'done' && previousStatus.get(action.id) === 'open') done.push(action);
+    }
   }
   return done;
 }

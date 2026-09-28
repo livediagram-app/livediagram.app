@@ -62,14 +62,13 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   lane: { width: 900, height: 200 },
   // Reaction pad: a press-me square, sized like the other Behaviour buttons.
   'reaction-pad': { width: 150, height: 110 },
-  // Comment pin: a marker, deliberately small. It is a place on the board,
-  // not a card — the thread it holds opens in the existing popover.
-  // Comment panel: a card, sized for a couple of comments. Collapsed it
-  // shrinks to its summary bar (docs/specs/012-collaboration/comment-pin.md).
-  'comment-pin': { width: 260, height: 190 },
-  // Action panel (docs/specs/012-collaboration/action-panel.md): the Comment panel's size, which fits a name, a
-  // couple of lines of description, the assignee row and the footer.
-  'action-card': { width: 260, height: 190 },
+  // Comment panel (docs/specs/012-collaboration/comment-pin.md "The look"): a card sized for a short
+  // conversation (three or four bubbles) above the composer. It reflows, so a
+  // resize makes room for more of the thread.
+  'comment-pin': { width: 300, height: 320 },
+  // Action panel (docs/specs/012-collaboration/action-panel.md): sized for a few actions above the Add
+  // Action bar. It reflows, so a resize makes room for more actions.
+  'action-card': { width: 300, height: 300 },
   // Done check: taller than the other room-response panels because it stacks
   // TWO rosters (done and waiting) plus the all-done line. At 190 a two-person
   // room already overflowed by a few pixels and the body grew a scrollbar.

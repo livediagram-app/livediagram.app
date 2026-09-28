@@ -1203,6 +1203,31 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/teams/{id}/notify-mention',
+    segment: 'teams',
+    tag: 'Teams',
+    summary:
+      "Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md). The diagram must be in this team's library; each mention must be a member of the team. Best-effort; a recipient may have opted out.",
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        diagramId: { type: 'string' },
+        commentText: { type: 'string' },
+        mentions: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { userId: { type: 'string' }, memberId: { type: 'string' } },
+          },
+        },
+      },
+      required: ['diagramId', 'commentText', 'mentions'],
+    },
+    statuses: [202, 400, 401, 403, 404],
+  },
+  {
+    method: 'POST',
     path: '/teams/{id}/members/{memberId}/accept',
     segment: 'teams',
     tag: 'Teams',

@@ -4,7 +4,12 @@
 // under a diagram id lives here.
 
 import type { Tab } from '@livediagram/diagram';
-import { applyElementDelta, isValidTab, preferNewerQaAll } from '@livediagram/diagram';
+import {
+  applyElementDelta,
+  isValidTab,
+  preferNewerQaAll,
+  sanitizeMentions,
+} from '@livediagram/diagram';
 import { broadcastShareOp, mergeRoomLedger, relayElementDelta } from '../room-client';
 import { MAX_TAB_BYTES, bodyExceedsCap } from '../limits';
 import {
@@ -291,9 +296,9 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     if (!existing) return missingDiagram(ctx, id);
     const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId);
     if (!allowed) return deniedOnTab(ctx, existing);
-    let body: { elementId?: unknown; text?: unknown };
+    let body: { elementId?: unknown; text?: unknown; mentions?: unknown };
     try {
-      body = (await request.json()) as { elementId?: unknown; text?: unknown };
+      body = (await request.json()) as { elementId?: unknown; text?: unknown; mentions?: unknown };
     } catch {
       return badRequest('invalid json');
     }
@@ -306,6 +311,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     if (!tab) return notFound();
     const target = tab.elements.find((el) => el.id === elementId);
     if (!target || target.type === 'arrow') return notFound();
+    const mentions = sanitizeMentions(body.mentions);
     const writer = await getParticipant(env, owner);
     const authorName = writer?.name ?? 'Anonymous';
     const authorColor = writer?.color ?? '#94a3b8';
@@ -319,6 +325,8 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       // delete this comment via the DELETE endpoint below. Server-set,
       // never read from the client.
       authorId: owner,
+      // Cleaned, never trusted (docs/specs/012-collaboration/comment-mentions.md "Trust").
+      ...(mentions ? { mentions } : {}),
     };
     // The same append the editor makes (it unresolves a resolved thread),
     // through the one shared definition of it.

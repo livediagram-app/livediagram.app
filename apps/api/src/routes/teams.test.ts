@@ -41,11 +41,12 @@ vi.mock('../db', () => db);
 // Observe the docs/specs/012-collaboration/assigned-actions.md notify dispatch without exercising the email stack.
 vi.mock('../email/notifications', () => ({
   notifyActionAssigned: vi.fn().mockResolvedValue(undefined),
+  notifyMentioned: vi.fn().mockResolvedValue(undefined),
   notifyInviteResponse: vi.fn().mockResolvedValue(undefined),
 }));
 
 import type { RouteContext } from './context';
-import { notifyActionAssigned } from '../email/notifications';
+import { notifyActionAssigned, notifyMentioned } from '../email/notifications';
 import { handleTeams } from './teams';
 
 // Clerk-session context ('user-1'); verifiedUserId may diverge for the
@@ -737,5 +738,90 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     await post(body, { clerkEmail: 'sam@x.com' });
     const input = vi.mocked(notifyActionAssigned).mock.calls[0]![1];
     expect(input.assignerName).toBe('sam@x.com');
+  });
+});
+
+describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comment-mentions.md)', () => {
+  const body = {
+    diagramId: 'd1',
+    commentText: 'Can you look, @priya?',
+    mentions: [{ userId: 'user-2', memberId: 'm2' }],
+  };
+  const post = (b: unknown = body, opts: Parameters<typeof makeCtx>[2] = {}) =>
+    handleTeams(makeCtx('POST', '/api/teams/t1/notify-mention', { body: b, ...opts }));
+  const members = [
+    member(),
+    member({ id: 'm2', userId: 'user-2', role: 'member', email: 'priya@x.com' }),
+    member({ id: 'm3', userId: null, role: 'member', status: 'invited', email: 'inv@x.com' }),
+  ];
+
+  beforeEach(() => {
+    db.getTeam.mockResolvedValue(team);
+    db.getMembership.mockImplementation(async (_env: Env, _t: string, userId: string) =>
+      userId === 'user-1' ? member() : null,
+    );
+    db.listTeamMembers.mockResolvedValue(members);
+    db.getDiagramMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: 't1', name: 'Q3' });
+    db.getParticipant.mockResolvedValue({ id: 'user-1', name: 'Sam', color: '#f00' });
+  });
+
+  it('202 + emails each mentioned member with server-derived names', async () => {
+    const res = await post();
+    expect(res.status).toBe(202);
+    expect(notifyMentioned).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        recipientUserId: 'user-2',
+        recipientFallbackEmail: 'priya@x.com',
+        authorName: 'Sam',
+        diagram: { id: 'd1', name: 'Q3' },
+        commentText: 'Can you look, @priya?',
+      }),
+    );
+  });
+
+  it('reaches an invited member by their membership row', async () => {
+    await post({ ...body, mentions: [{ memberId: 'm3' }] });
+    expect(vi.mocked(notifyMentioned).mock.calls[0]![1].recipientFallbackEmail).toBe('inv@x.com');
+  });
+
+  it('skips the caller, strangers and duplicates silently', async () => {
+    const res = await post({
+      ...body,
+      mentions: [
+        { userId: 'user-1' },
+        { userId: 'nobody' },
+        { memberId: 'm2' },
+        { userId: 'user-2' },
+      ],
+    });
+    expect(res.status).toBe(202);
+    expect(notifyMentioned).toHaveBeenCalledOnce();
+  });
+
+  it('404 when the diagram is not in this team’s library', async () => {
+    db.getDiagramMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
+    const res = await post();
+    expect(res.status).toBe(404);
+    expect(notifyMentioned).not.toHaveBeenCalled();
+  });
+
+  it('403 when the caller is still only invited', async () => {
+    db.getMembership.mockResolvedValue(member({ status: 'invited' }));
+    expect((await post()).status).toBe(403);
+  });
+
+  it('401 for a token caller (mutations need the interactive session)', async () => {
+    const res = await post(body, { clerkUserId: null, verifiedUserId: 'user-1' });
+    expect(res.status).toBe(401);
+  });
+
+  it('400 on a missing or oversized body', async () => {
+    expect((await post({ diagramId: 'd1', mentions: [] })).status).toBe(400);
+    expect((await post({ ...body, commentText: 'x'.repeat(5001) })).status).toBe(400);
+    expect(
+      (await post({ ...body, mentions: Array.from({ length: 21 }, () => ({ userId: 'user-2' })) }))
+        .status,
+    ).toBe(400);
   });
 });

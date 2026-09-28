@@ -561,6 +561,18 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
       {
         kind: 'toggle',
+        key: 'notifyMentions',
+        keywords: 'email mention tag at comment',
+        section: 'Email',
+        label: 'Someone Mentions Me in a Comment',
+        description: 'When a teammate @mentions you in a comment.',
+        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
+        read: (p) => p.notifyMentions !== false,
+        write: (p, v) => ({ ...p, notifyMentions: v }),
+        event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
+      },
+      {
+        kind: 'toggle',
         key: 'notifyTips',
         keywords: 'email tips onboarding nudge newsletter',
         section: 'Email',

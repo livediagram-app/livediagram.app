@@ -8,6 +8,9 @@ import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
+import { tileHandler } from '@/components/palette/PaletteTileGrid';
+import { useEditorTileActions } from '@/components/palette/useEditorTileActions';
 
 const SearchPanel = dynamic(() =>
   import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
@@ -36,10 +39,12 @@ export function EditorSearchPanel() {
     addIcon,
     addSticker,
     addTechIcon,
+    addImage,
     setSearchOpen,
     openSettingsAt,
   } = useEditorContext();
   const { commandItems, runCommand } = useEditorCommands();
+  const tileActions = useEditorTileActions();
   // The icon catalogues load async (lib/icon-registry.ts); subscribing here
   // re-renders the panel — and rebuilds the palette items below — the moment
   // they land, so "Add to canvas" results go from shapes-only to the full
@@ -93,7 +98,7 @@ export function EditorSearchPanel() {
         setActiveId(tabId);
         setSelectedId(elementId);
       }}
-      paletteItems={isReadOnly ? undefined : buildPaletteSearchItems()}
+      paletteItems={isReadOnly ? undefined : buildPaletteSearchItems({ hasImage: !!addImage })}
       onAddPaletteItem={
         isReadOnly
           ? undefined
@@ -107,7 +112,10 @@ export function EditorSearchPanel() {
                 });
               else if (add.type === 'icon') addIcon(add.iconId);
               else if (add.type === 'sticker') addSticker(add.stickerId);
-              else addTechIcon(add.iconId);
+              else if (add.type === 'tile') {
+                const def = PALETTE_TILES.find((t) => t.id === add.tileId);
+                if (def) tileHandler(def, tileActions)();
+              } else addTechIcon(add.iconId);
             }
       }
       commandItems={commandItems}

@@ -16,7 +16,7 @@
 //     scales and sinks. Hover is desktop-only — a touch device has no hover, and
 //     a sticky :hover after a tap reads as a stuck button.
 
-import type { SelectionMode } from '@livediagram/diagram';
+import { SELECTION_MODE_LABEL, type SelectionMode } from '@livediagram/diagram';
 import { keycapEdge } from '@/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import {
@@ -45,17 +45,9 @@ const MODE_ICON: Record<SelectionMode, React.ReactNode> = {
   highlighter: <HighlighterIcon />,
 };
 
-export const MODE_LABEL: Record<SelectionMode, string> = {
-  select: 'Select',
-  pan: 'Hand',
-  laser: 'Laser',
-  spotlight: 'Spotlight',
-  avatar: 'Avatar',
-  eraser: 'Eraser',
-  format: 'Format',
-  isometric: 'Isometric',
-  highlighter: 'Highlighter',
-};
+// The mode names come from the shared table the export reads too
+// (SELECTION_MODE_LABEL), so a face and its export always agree.
+export const MODE_LABEL: Record<SelectionMode, string> = SELECTION_MODE_LABEL;
 
 // The glyphs are 13px for the palette; on a button face they need to read from
 // across a room, so the wrapper scales the child SVG up. CSS beats the SVG's own

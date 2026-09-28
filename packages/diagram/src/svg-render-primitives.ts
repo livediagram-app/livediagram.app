@@ -31,11 +31,15 @@ export function labelMaxWidth(el: BoxedElement, pad = 8): number {
   return Math.max(8, el.width - pad * 2);
 }
 
-// Greedy word-wrap to a max pixel width, preserving explicit newlines.
+// Greedy word-wrap to a max pixel width, preserving explicit newlines. With
+// `breakWords`, a word wider than the line breaks between characters, as a
+// box label's break-words does on the canvas ("smartwat" / "ch" on a narrow
+// watch face); without it (an icon caption) the word stays whole.
 export function wrapLabel(
   text: string,
   maxWidth: number,
   measure: (s: string) => number,
+  breakWords = false,
 ): string[] {
   const out: string[] = [];
   for (const para of text.split('\n')) {
@@ -44,13 +48,20 @@ export function wrapLabel(
       out.push('');
       continue;
     }
-    let cur = words[0]!;
-    for (let i = 1; i < words.length; i++) {
-      const w = words[i]!;
-      if (measure(`${cur} ${w}`) <= maxWidth) cur += ` ${w}`;
+    let cur = '';
+    for (const word of words) {
+      if (!cur) cur = word;
+      else if (measure(`${cur} ${word}`) <= maxWidth) cur += ` ${word}`;
       else {
         out.push(cur);
-        cur = w;
+        cur = word;
+      }
+      // Too wide on its own line: peel off what fits, a character at a time.
+      while (breakWords && measure(cur) > maxWidth && cur.length > 1) {
+        let n = cur.length - 1;
+        while (n > 1 && measure(cur.slice(0, n)) > maxWidth) n--;
+        out.push(cur.slice(0, n));
+        cur = cur.slice(n);
       }
     }
     out.push(cur);

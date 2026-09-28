@@ -71,6 +71,7 @@ export function useCanvasChromePanels({
   // Activity + Layers in the Toolbar layout: popovers over their cluster
   // buttons, rendered outside the corner layer (then their panelEls are null).
   toolbarClusterEls: ReactNode;
+  collaborateEl: ReactNode;
   // True when Layers + Activity open as popovers over their cluster buttons
   // (every layout but desktop Floating).
   clusterPopovers: boolean;
@@ -159,6 +160,7 @@ export function useCanvasChromePanels({
     onNewDiagram,
     explorerMenuActions,
     onOpenActionForElement,
+    onToggleActionDone,
     onOpenCommentsForElement,
     onOpenDiagram,
     onRedo,
@@ -362,21 +364,39 @@ export function useCanvasChromePanels({
     />
   );
 
+  // Layers + Activity open as popovers over their bottom-right cluster
+  // buttons in the dock layouts (minimal, a phone outside Toolbar) and in
+  // Toolbar (docs/specs/007-editor/toolbar-layout.md); only the desktop Floating layout docks them as
+  // corner panels that minimise into those buttons.
+  const clusterPopovers = !dockingActive || toolbarActive;
+
+  // Collaborate panel (docs/specs/012-collaboration/assigned-actions.md §5): a popover hanging above its
+  // cluster button after Layers, in every layout (the button opens it through
+  // the dock's one-open-at-a-time slot; mobileOpenOverride gates the render).
+  // Mounted only while the tab has a thread or an action, the button's gate.
   const collaborateEl =
     !chromeHidden && (commentRows.length > 0 || actionRows.length > 0) ? (
       <CollaboratePanel
         position={collaborateWiring.position}
         commentRows={commentRows}
         actionRows={actionRows}
-        stackBelowY={stackBelowY}
         onMoveTo={onMoveCommentsPanel}
         onReset={collaborateWiring.onReset}
-        dock={collaborateWiring.dock}
-        onCommentRowClick={onOpenCommentsForElement}
-        onActionRowClick={onOpenActionForElement}
+        // It steps aside once a row takes you somewhere, or on a phone it
+        // would cover the card you just went to.
+        onCommentRowClick={(id) => {
+          onOpenCommentsForElement(id);
+          closeMobilePanel();
+        }}
+        onActionRowClick={(id) => {
+          onOpenActionForElement(id);
+          closeMobilePanel();
+        }}
+        onToggleActionDone={onToggleActionDone}
         mobileOpenOverride={activeMobilePanel === 'collaborate'}
         mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
+        forceDockMode
+        dismissOnOutside
         onMobileClose={closeMobilePanel}
       />
     ) : null;
@@ -395,12 +415,6 @@ export function useCanvasChromePanels({
         onMobileClose={closeMobilePanel}
       />
     ) : null;
-
-  // Layers + Activity open as popovers over their bottom-right cluster
-  // buttons in the dock layouts (minimal, a phone outside Toolbar) and in
-  // Toolbar (docs/specs/007-editor/toolbar-layout.md); only the desktop Floating layout docks them as
-  // corner panels that minimise into those buttons.
-  const clusterPopovers = !dockingActive || toolbarActive;
 
   const activityEl = chromeHidden ? null : (
     <ActivityPanel
@@ -534,6 +548,7 @@ export function useCanvasChromePanels({
         setViewportOffset={props.setViewportOffset}
         setViewportZoom={props.setViewportZoom}
         mainRef={props.mainRef}
+        paperColor={props.tabBackgroundColor}
         accentColor={mapAccent}
         position={minimapWiring.position}
         onMove={props.onMoveMap}
@@ -600,7 +615,8 @@ export function useCanvasChromePanels({
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     explorer: toolbarActive ? null : explorerEl,
     palette: paletteEl,
-    collaborate: collaborateEl,
+    // Collaborate renders outside the corner layer (collaborateEl, below).
+    collaborate: null,
     ai: aiEl,
     activity: toolbarActive ? null : activityEl,
     minimap: minimapEl,
@@ -620,6 +636,7 @@ export function useCanvasChromePanels({
     toolbarExplorerEl: toolbarActive ? explorerEl : null,
     // Toolbar's cluster popovers, rendered beside the corner layer rather than
     // in it (see panelEls).
+    collaborateEl,
     toolbarClusterEls: toolbarActive ? (
       <>
         {activityEl}

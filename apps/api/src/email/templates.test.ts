@@ -8,6 +8,9 @@ import {
   week1Email,
   week2Email,
   welcomeEmail,
+  mentionedEmail,
+  mentionQuote,
+  MENTION_QUOTE_CHARS,
 } from './templates';
 
 const env = { APP_BASE_URL: 'https://app.test' } as unknown as Env;
@@ -79,5 +82,24 @@ describe('email templates', () => {
     const e = inviteResponseEmail(env, '<b>x</b>', 'a@b.test', true);
     expect(e.html).not.toContain('<b>x</b>');
     expect(e.html).toContain('&lt;b&gt;');
+  });
+});
+
+describe('mentionedEmail (docs/specs/012-collaboration/comment-mentions.md)', () => {
+  it('quotes the comment escaped, and cuts a long one at a word', () => {
+    const e = mentionedEmail(env, 'Sam <b>', 'Roadmap', 'd1', 'look <here> please');
+    expect(e.kind).toBe('Mentioned');
+    expect(e.html).toContain('look &lt;here&gt; please');
+    expect(e.html).toContain('Sam &lt;b&gt;');
+    const long = `${'word '.repeat(100)}end`;
+    const quoted = mentionQuote(long);
+    expect(quoted.length).toBeLessThanOrEqual(MENTION_QUOTE_CHARS + 1);
+    expect(quoted.endsWith('word…')).toBe(true);
+  });
+
+  it('falls back to "A teammate" without an author name', () => {
+    expect(mentionedEmail(env, null, 'Roadmap', 'd1', 'hi').subject).toBe(
+      'A teammate mentioned you in Roadmap',
+    );
   });
 });

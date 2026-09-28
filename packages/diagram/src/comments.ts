@@ -7,6 +7,7 @@
 
 import type { Element, ShapeElement, Tab } from './index';
 import type { ElementAction } from './element-action';
+import type { CommentMention } from './comment-mentions';
 import { isComment, keepLocalTicks } from './element-deltas';
 
 // A single comment inside a thread. The author is the participant who
@@ -29,6 +30,9 @@ export type Comment = {
   // so a visitor only ever sees their own author id. Optional so
   // comments written before this field existed still parse.
   authorId?: string;
+  // Teammates this comment @-tags (docs/specs/012-collaboration/comment-mentions.md). The handles also sit in
+  // `text` as typed; this is who they resolve to. Absent when none.
+  mentions?: CommentMention[];
 };
 
 // Threads live on elements (currently boxed only). `resolved` is sticky:
@@ -41,6 +45,7 @@ export type CommentThread = {
 export function createComment(
   text: string,
   author: { id?: string; name: string; color: string },
+  mentions?: CommentMention[],
 ): Comment {
   return {
     id: crypto.randomUUID(),
@@ -49,6 +54,7 @@ export function createComment(
     authorName: author.name,
     authorColor: author.color,
     authorId: author.id,
+    ...(mentions?.length ? { mentions } : {}),
   };
 }
 
@@ -138,6 +144,7 @@ export function stampCommentAuthor(
 const LIVE_ELEMENT_FIELDS = [
   'commentThread',
   'action',
+  'actions',
   'responses',
   'responsesRevealed',
   'collabRound',
@@ -156,7 +163,11 @@ const LIVE_ELEMENT_FIELDS = [
   'qaNotes',
   'qaRev',
 ] as const;
-type LiveFieldBag = { commentThread?: CommentThread; action?: ElementAction } & Pick<
+type LiveFieldBag = {
+  commentThread?: CommentThread;
+  action?: ElementAction;
+  actions?: ElementAction[];
+} & Pick<
   ShapeElement,
   | 'responses'
   | 'responsesRevealed'

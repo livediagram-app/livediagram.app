@@ -229,3 +229,40 @@ describe('summarizeChange — mixed commits', () => {
     ).toBe('Added a Square & edited a Square');
   });
 });
+
+describe('actions on an Action panel (docs/specs/012-collaboration/action-panel.md)', () => {
+  const act = (id: string, status: 'open' | 'done' = 'open') =>
+    ({
+      id,
+      name: id,
+      description: '',
+      assignee: { userId: 'u', name: 'U' },
+      teamId: null,
+      assignerId: 'u',
+      assignerName: 'U',
+      status,
+      createdAt: 1,
+      updatedAt: 1,
+    }) as const;
+  const card = (overrides: Partial<ShapeElement>) =>
+    shape('c', { shape: 'action-card', ...overrides });
+
+  it('names adding, removing and updating one of the list', () => {
+    expect(edit(card({ actions: [act('a')] }), card({ actions: [act('a'), act('b')] }))).toMatch(
+      /^Assigned an action on/,
+    );
+    expect(edit(card({ actions: [act('a'), act('b')] }), card({ actions: [act('a')] }))).toMatch(
+      /^Removed an action from/,
+    );
+    expect(edit(card({ actions: [act('a')] }), card({ actions: [act('a', 'done')] }))).toMatch(
+      /^Updated an action on/,
+    );
+  });
+
+  it('reads a card moving its lone action into the list as an update, not a new one', () => {
+    const { actions: _none, ...legacy } = card({ action: act('a') });
+    expect(edit(legacy as ShapeElement, card({ actions: [act('a', 'done')] }))).toMatch(
+      /^Updated an action on/,
+    );
+  });
+});

@@ -5,6 +5,7 @@ import type { BoardNote } from './event-storming-photo-match';
 import type { PhotoAddition } from './event-storming-photo';
 import { eventStormingNoteSize, type EventStormingNoteKind } from './event-storming';
 import { ES_LANE_PITCH, ES_NOTE_GAP, isOnLane, laneIndexAt } from './event-storming-lanes';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 
 // Photo import placement (docs/specs/021-event-storming/event-storming.md "Always on a lane", Photo import).
 // The photographs that matter are the dense ones: rows closer together than a
@@ -126,9 +127,8 @@ describe('placeNewNotes', () => {
 
   it('places the densest labelled wall (272 notes) quickly', () => {
     const notes = denseWall(mulberry32(7), { rows: 16, perRow: 17 });
-    const started = performance.now();
-    placeNewNotes(notes, []);
-    expect(performance.now() - started).toBeLessThan(100);
+    // CPU time, not wall-clock (cpuMsOf): immune to other suites sharing the box.
+    expect(cpuMsOf(() => placeNewNotes(notes, []))).toBeLessThan(100);
   });
 });
 

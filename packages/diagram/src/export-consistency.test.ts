@@ -127,7 +127,9 @@ describe('a self-painting element gets no box drawn round it', () => {
   // The element's own rect: the one the canvas does not draw for a chart and
   // does draw for a record. Matched by its size, since the legend's swatches
   // are rects too.
-  const elementRect = /<rect[^>]*width="200"[^>]*height="160"/;
+  // The element's box: its border is inset by half the 2px stroke, as the
+  // canvas's CSS border sits inside the box (svg-render-border).
+  const elementRect = /<rect[^>]*width="198"[^>]*height="158"/;
 
   it('leaves a chart unframed, the way the canvas does', () => {
     const svg = renderElementsToSvg(

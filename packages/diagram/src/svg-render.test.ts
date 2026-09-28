@@ -816,8 +816,17 @@ describe('chrome the canvas draws on a box', () => {
   });
 
   it('rounds a mind node the way the canvas does', () => {
+    // 12px outside the border, so 11 at the centre of the inset 2px stroke.
     const svg = renderElementsToSvg(tab([shape('mn', { shape: 'mind-node' })]));
-    expect(svg).toContain('rx="12"');
+    expect(svg).toContain('rx="11"');
+  });
+
+  it("draws a shape's own border width, dash and radius, inside the box", () => {
+    const svg = renderElementsToSvg(
+      tab([shape('s', { strokeWidth: 'thick', strokeStyle: 'dashed', borderRadius: 'lg' })]),
+    );
+    // 4px stroke inset by 2, radius 24 less 2, the canvas's dashed pattern.
+    expect(svg).toMatch(/<rect[^>]*rx="22"[^>]*stroke-width="4" stroke-dasharray="6 5"/);
   });
 });
 
@@ -941,7 +950,10 @@ describe('estimate card export', () => {
 
   it('keeps answers hidden until the reveal', () => {
     const svg = card({ responses: answers });
-    expect(svg).toContain('3 in, hidden until the reveal');
+    // Face down in the accent with the Reveal act and its count, as the card
+    // draws it, and no spread until then.
+    expect(svg).toContain('>Reveal<');
+    expect(svg).toContain('3/3 ANSWERED');
     expect(svg).not.toContain('Spread');
   });
 
@@ -1035,7 +1047,10 @@ describe('arrows as the canvas draws them (docs/specs/008-canvas/arrow-route-beh
   it('paints in array order, so an arrow sent behind a box stays behind it', () => {
     const svg = renderElementsToSvg(tab([row[0]!, row[2]!, pinnedArrow('x', 'a', 'c'), row[1]!]));
     const arrowAt = svg.indexOf('mask id="lvd-ko-x"');
-    const boxAt = svg.indexOf('<rect x="200"');
+    // Box b sits at x = 200; its border is drawn inside the box, as the canvas
+    // draws it (docs/specs/020-import-export/export-fidelity.md), so its rect starts half a border in.
+    const boxAt = svg.search(/<rect x="20[01](\.\d+)?"/);
+    expect(boxAt).toBeGreaterThan(-1);
     expect(arrowAt).toBeGreaterThan(-1);
     expect(arrowAt).toBeLessThan(boxAt);
   });

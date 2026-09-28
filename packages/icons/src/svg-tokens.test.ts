@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { svgElements } from './svg-tokens';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 
 describe('svgElements', () => {
   it('reads each element tag and its attributes', () => {
@@ -26,10 +27,12 @@ describe('svgElements', () => {
   });
 
   it('stays linear on hostile input', () => {
-    const start = performance.now();
-    svgElements('<path ' + 'A'.repeat(200_000));
-    svgElements('<path'.repeat(50_000));
-    svgElements('<a b="'.repeat(50_000));
-    expect(performance.now() - start).toBeLessThan(200);
+    // CPU time, not wall-clock (cpuMsOf): immune to other suites sharing the box.
+    const spent = cpuMsOf(() => {
+      svgElements('<path ' + 'A'.repeat(200_000));
+      svgElements('<path'.repeat(50_000));
+      svgElements('<a b="'.repeat(50_000));
+    });
+    expect(spent).toBeLessThan(200);
   });
 });

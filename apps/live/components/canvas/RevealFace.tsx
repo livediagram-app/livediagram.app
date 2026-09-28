@@ -19,14 +19,14 @@
 
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { REVEAL_COVER_BASE } from '@livediagram/diagram';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { tint } from '@/lib/element-tint';
 import { LockGlyph } from '@/components/canvas/collab/qa/qa-parts';
 import { Glyph, GlyphDisc } from '@livediagram/ui';
 
-// The cover's base, from the PAPER under it rather than the app's appearance,
-// so a dark theme in light mode still gets a dark cover (docs/specs/009-elements/reveal-zone.md "The look").
-const COVER_BASE = { light: '#f1f5f9', dark: '#172131' } as const;
+// The cover's base comes from the PAPER under it (REVEAL_COVER_BASE, shared
+// with the headless renderer; docs/specs/009-elements/reveal-zone.md "The look").
 
 function EyeOffIcon() {
   return (
@@ -104,7 +104,7 @@ export function RevealFace({
       className="reveal-cover pointer-events-auto relative flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-[inherit] border-[1.5px] px-3"
       style={{
         borderColor: tint(accent, 0.55),
-        backgroundColor: COVER_BASE[paper],
+        backgroundColor: REVEAL_COVER_BASE[paper],
         backgroundImage: `radial-gradient(120% 90% at 0% 0%, ${tint(accent, 0.22)}, transparent 60%), radial-gradient(110% 90% at 100% 100%, ${tint(accent, 0.16)}, transparent 55%)`,
       }}
     >

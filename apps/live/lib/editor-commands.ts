@@ -176,10 +176,12 @@ const CANVAS_TOOLS: {
     // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). A presenter tool like the Laser and Spotlight,
     // so it needs content for the same reason: there is nothing to put on a
     // slide on an empty canvas. Picking it opens the panel; Start presents.
+    // Desktop-only: the deck workbench has no room beside a phone's canvas.
     id: 'slide-deck',
     name: 'Slide Deck',
     keywords: 'slide deck present presentation slideshow slides talk demo walkthrough',
     needsContent: true,
+    desktopOnly: true,
   },
   {
     id: 'isometric',

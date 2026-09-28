@@ -60,10 +60,12 @@ export function stripIdentity(el: Element): Element {
     commentThread?: unknown;
     responses?: unknown;
     action?: unknown;
+    actions?: unknown;
   };
   delete out.commentThread;
   delete out.responses;
   delete out.action;
+  delete out.actions;
   return out;
 }
 

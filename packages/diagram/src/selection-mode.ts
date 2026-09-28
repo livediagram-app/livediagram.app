@@ -37,6 +37,20 @@ export type SelectionMode = (typeof SELECTION_MODES)[number];
 // Select.
 export const DEFAULT_BUTTON_MODE: SelectionMode = 'avatar';
 
+// What each mode is called on a Mode Button's face ("Switch to Avatar"): the
+// canvas face and the export both name the destination from here.
+export const SELECTION_MODE_LABEL: Record<SelectionMode, string> = {
+  select: 'Select',
+  pan: 'Hand',
+  laser: 'Laser',
+  spotlight: 'Spotlight',
+  avatar: 'Avatar',
+  eraser: 'Eraser',
+  format: 'Format',
+  isometric: 'Isometric',
+  highlighter: 'Highlighter',
+};
+
 export function isSelectionMode(value: unknown): value is SelectionMode {
   return typeof value === 'string' && (SELECTION_MODES as readonly string[]).includes(value);
 }

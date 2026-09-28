@@ -12,6 +12,7 @@ import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
+import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound));
 const ApiErrorPage = dynamic(() =>
@@ -201,7 +202,10 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
         ownerId={state.selfParticipant?.id ?? null}
         onThemeDeleted={state.resetTabsUsingTheme}
       >
-        <EditorView />
+        {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
+        <MentionContext.Provider value={state.commentMentions}>
+          <EditorView />
+        </MentionContext.Provider>
       </CustomThemeProvider>
     </EditorContext.Provider>
   );

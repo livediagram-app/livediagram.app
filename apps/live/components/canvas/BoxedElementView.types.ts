@@ -122,7 +122,7 @@ export type BoxedElementViewProps = {
   // comment machinery the anchored popover does.
   commentSelfId?: string;
   commentActions?: {
-    add?: (text: string) => void;
+    add?: (text: string, mentions: import('@livediagram/diagram').CommentMention[]) => void;
     remove?: (commentId: string) => void;
     resolve?: () => void;
     unresolve?: () => void;
@@ -130,10 +130,13 @@ export type BoxedElementViewProps = {
   // Action panel (docs/specs/012-collaboration/action-panel.md): who I am, and the action mutators for THIS
   // element, bound by id the way commentActions are.
   actionSelfId?: string | null;
+  // An Action panel holds a list (docs/specs/012-collaboration/action-panel.md): add one, or edit / complete /
+  // reopen the named one.
   actionActions?: {
-    configure: () => void;
-    complete: () => void;
-    reopen: () => void;
+    add: () => void;
+    edit: (actionId: string) => void;
+    complete: (actionId: string) => void;
+    reopen: (actionId: string) => void;
   };
   // Per-element session settings from the element's own `…` menu (docs/specs/012-collaboration/session-button.md).
   onSetSessionConfig?: (

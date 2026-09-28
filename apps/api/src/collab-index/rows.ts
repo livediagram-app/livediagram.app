@@ -11,11 +11,12 @@
 // save be a replace rather than a diff.
 
 import {
+  ACTION_CARD_MAX,
+  elementActions,
   elementDisplayLabel,
   isBoxed,
   type Comment,
   type Element,
-  type ElementAction,
 } from '@livediagram/diagram';
 
 export type CollabActionRow = {
@@ -44,6 +45,9 @@ export type CollabThreadRow = {
   // Comments written before `authorId` existed contribute nothing here;
   // the thread still indexes, it just can't be attributed to them.
   participantIds: string[];
+  // Distinct user ids and team member ids @-mentioned anywhere in the thread
+  // (docs/specs/012-collaboration/comment-mentions.md), so the Activity page lists it for them.
+  mentionedIds: string[];
   latestText: string;
   latestAuthorName: string;
   latestAuthorColor: string;
@@ -56,10 +60,6 @@ export type CollabIndexRows = {
   threads: CollabThreadRow[];
 };
 
-function actionOf(el: Element): ElementAction | undefined {
-  return (el as { action?: ElementAction }).action;
-}
-
 function threadOf(el: Element): { comments?: Comment[]; resolved?: boolean } | undefined {
   return (el as { commentThread?: { comments?: Comment[]; resolved?: boolean } }).commentThread;
 }
@@ -71,8 +71,10 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
     // Actions and threads only ever hang off boxed elements (docs/specs/012-collaboration/assigned-actions.md
     // §1, docs/specs/008-canvas/canvas-and-palette.md), which is also what gives them a display label.
     if (!isBoxed(el)) continue;
-    const action = actionOf(el);
-    if (action) {
+    // One row per action: an Action panel holds a list (docs/specs/012-collaboration/action-panel.md).
+    // Capped like the stored list, so the index stays bounded even for a tab
+    // written before the cap existed.
+    for (const action of elementActions(el).slice(0, ACTION_CARD_MAX)) {
       actions.push({
         elementId: el.id,
         actionId: action.id,
@@ -99,7 +101,13 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
       let latest = comments[0]!;
       let first = comments[0]!;
       const participants: string[] = [];
+      const mentioned: string[] = [];
       for (const c of comments) {
+        for (const m of c.mentions ?? []) {
+          for (const id of [m.userId, m.memberId]) {
+            if (id && !mentioned.includes(id)) mentioned.push(id);
+          }
+        }
         if (c.createdAt > latest.createdAt) latest = c;
         if (c.createdAt < first.createdAt) first = c;
         if (c.authorId && !participants.includes(c.authorId)) participants.push(c.authorId);
@@ -110,6 +118,7 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
         resolved: thread.resolved === true,
         commentCount: comments.length,
         participantIds: participants,
+        mentionedIds: mentioned,
         latestText: latest.text,
         latestAuthorName: latest.authorName,
         latestAuthorColor: latest.authorColor,

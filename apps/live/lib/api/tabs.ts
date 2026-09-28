@@ -1,7 +1,7 @@
 // Per-tab calls: lazy load, upsert (the autosave path), comment append,
 // cross-diagram link, and delete.
 import type { TabResponse, TabSummary } from '@livediagram/api-schema';
-import { normalizeTable, type Tab } from '@livediagram/diagram';
+import { normalizeTable, type CommentMention, type Tab } from '@livediagram/diagram';
 import { dedupeInFlight } from '../dedupe';
 import {
   isOfflineId,
@@ -214,6 +214,8 @@ export async function apiAddComment(
   elementId: string,
   text: string,
   shareCode: string | null = null,
+  // Teammates the comment @-tags (docs/specs/012-collaboration/comment-mentions.md); cleaned server-side.
+  mentions?: CommentMention[],
 ): Promise<{
   id: string;
   text: string;
@@ -226,7 +228,7 @@ export async function apiAddComment(
     {
       method: 'POST',
       headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
-      body: JSON.stringify({ elementId, text }),
+      body: JSON.stringify({ elementId, text, ...(mentions?.length ? { mentions } : {}) }),
     },
   );
   return expectOk<{

@@ -28,7 +28,7 @@
 // ticks. Keeping that rule in one file makes the policy auditable.
 
 import { useState } from 'react';
-import { createComment } from '@livediagram/diagram';
+import { createComment, type CommentMention } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';
 
@@ -46,6 +46,9 @@ type EditorCommentsDeps = {
   // delete-own affordance (it equals the server `owner` the API
   // stamps, for guests and Clerk users alike).
   selfParticipant: { id: string; name: string; color: string };
+  // A comment with @-mentions just landed (docs/specs/012-collaboration/comment-mentions.md): count it and
+  // ask the api to email the people named. Absent where nobody can be named.
+  onMentioned?: (text: string, mentions: CommentMention[]) => void;
 };
 
 // A view-role write through the dedicated comment endpoints (docs/specs/015-api/api.md). The
@@ -62,7 +65,12 @@ type EditorCommentsApi = {
   // Returns the minted comment id. With `persist` (view-role visitors, who
   // don't autosave the tab), the hook runs it, adopts the server-minted id
   // via `replaceCommentId`, and counts the add only once the server took it.
-  addComment: (elementId: string, text: string, persist?: PersistAdd) => string;
+  addComment: (
+    elementId: string,
+    text: string,
+    persist?: PersistAdd,
+    mentions?: CommentMention[],
+  ) => string;
   // Swap a comment's id in place — the view-role persist path gets the
   // authoritative id back from POST /comments, and without adopting it
   // the visitor's own delete sends an id the server doesn't have (the
@@ -87,14 +95,24 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
   };
   const closeComments = () => setCommentThreadOpenId(null);
 
-  const addComment = (elementId: string, text: string, persist?: PersistAdd): string => {
+  const addComment = (
+    elementId: string,
+    text: string,
+    persist?: PersistAdd,
+    mentions?: CommentMention[],
+  ): string => {
     // Mint OUTSIDE the updater: state updaters must stay pure (strict
     // mode re-invokes them), and the caller needs the id.
-    const comment = createComment(text, {
-      id: deps.selfParticipant.id,
-      name: deps.selfParticipant.name,
-      color: deps.selfParticipant.color,
-    });
+    const comment = createComment(
+      text,
+      {
+        id: deps.selfParticipant.id,
+        name: deps.selfParticipant.name,
+        color: deps.selfParticipant.color,
+      },
+      mentions,
+    );
+    if (mentions?.length) deps.onMentioned?.(text, mentions);
     // Adding a comment unresolves a resolved thread (applyElementDelta):
     // the new message is itself a signal the conversation isn't done.
     deps.applyElementDelta(elementId, { kind: 'comment-add', comment });

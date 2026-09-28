@@ -234,7 +234,9 @@ describe('the shared settings ellipsis (docs/specs/008-canvas/canvas-and-palette
   it('is on every Behaviours card except the chair and the ones with their own', () => {
     expect(carriesSharedSettingsMenu('chair')).toBe(false);
     expect(carriesSharedSettingsMenu('done-check')).toBe(false);
-    expect(carriesSharedSettingsMenu('comment-pin')).toBe(true);
+    expect(carriesSharedSettingsMenu('comment-pin')).toBe(false);
+    expect(carriesSharedSettingsMenu('action-card')).toBe(false);
+    expect(carriesSharedSettingsMenu('picker')).toBe(true);
     expect(carriesSharedSettingsMenu('square')).toBe(false);
   });
 });
