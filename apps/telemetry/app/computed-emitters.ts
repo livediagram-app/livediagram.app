@@ -241,6 +241,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
   },
+  'apps/live/hooks/canvas/useWhiteboard.ts Whiteboard·Selected': {
+    values: ['Ink', 'Red', 'Blue', 'Green', 'Custom'],
+    open: 'penTelemetryType: the preset name of the pen, or Custom once recoloured',
+  },
   'apps/live/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
     values: ['Banner', 'Callout', 'StatRow'],
     open: 'elementTelemetryType of the web component a row was added to',

@@ -54,6 +54,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Email:
     'Emails the product sends (welcome, onboarding, team invites, notifications). Which email only, never who received it.',
+  Whiteboard:
+    'Whiteboard tabs, drawn on with a dock of pens: a whiteboard created (from the New Diagram wizard or as a new tab), a pen picked, the eraser mode or board background changed, and shape recognition switched on or off. Never what was drawn.',
   Error:
     'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) client-side uncaught exceptions, and warnings (a degradation the author was carried through, such as a spent AI budget failing over to the in-browser reader). Never a message, stack, or URL.',
 };
@@ -101,6 +103,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Mcp: '#f43f5e',
   Email: '#0d9488',
   Error: '#dc2626',
+  // Warm stone, the marker on a whiteboard: apart from every blue and green.
+  Whiteboard: '#78716c',
 };
 export const categoryColor = (c: string, appearance: Appearance = 'light') =>
   forAppearance(CATEGORY_COLORS[c as TelemetryCategory] ?? '#94a3b8', appearance);

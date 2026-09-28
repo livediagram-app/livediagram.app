@@ -30,6 +30,7 @@ import {
   PANELS_OPENED,
   PHOTO_IMPORT,
   POLLS,
+  WHITEBOARDS,
   PRESENTATIONS,
   SETTINGS_CHANGED,
   SHARING_AND_JOINING,
@@ -95,6 +96,7 @@ export const GROUPS: MetricGroup[] = [
     metrics: [
       AI_ASSISTANCE,
       PHOTO_IMPORT,
+      WHITEBOARDS,
       OFFLINE_MODE,
       LAYERS_FEATURE,
       PALETTE_USE,

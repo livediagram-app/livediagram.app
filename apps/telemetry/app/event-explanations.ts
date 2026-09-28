@@ -14,6 +14,27 @@
 // can send gets a real sentence, free of code names and jargon.
 
 export const EXACT: Readonly<Record<string, string>> = {
+  'Whiteboard|Created|Template':
+    'Someone started a new diagram as a whiteboard, a plain board drawn on with pens, from the New Diagram wizard.',
+  'Whiteboard|Created|NewTab':
+    'Someone added a whiteboard tab, a plain board drawn on with pens, to a diagram from Quick Start.',
+  'Whiteboard|Selected|Ink':
+    "Someone picked up a whiteboard's Ink pen, which draws in the board's own marker or chalk colour.",
+  'Whiteboard|Selected|Red': "Someone picked up a whiteboard's Red pen.",
+  'Whiteboard|Selected|Blue': "Someone picked up a whiteboard's Blue pen.",
+  'Whiteboard|Selected|Green': "Someone picked up a whiteboard's Green pen.",
+  'Whiteboard|Selected|Custom':
+    'Someone picked up a whiteboard pen after changing its colour, or changed a pen to a new colour.',
+  'Whiteboard|Changed|EraserStroke': "Someone set a whiteboard's eraser to remove whole strokes.",
+  'Whiteboard|Changed|EraserPartial':
+    "Someone set a whiteboard's eraser to rub out only the part of a stroke under it.",
+  'Whiteboard|Changed|BackgroundPlain': 'Someone gave a whiteboard a plain background.',
+  'Whiteboard|Changed|BackgroundDots': 'Someone gave a whiteboard a dotted background.',
+  'Whiteboard|Changed|BackgroundGrid': 'Someone gave a whiteboard a grid background.',
+  'Whiteboard|Toggled|RecognitionOn':
+    'Someone turned on shape recognition on a whiteboard, so a roughly drawn shape becomes a clean one.',
+  'Whiteboard|Toggled|RecognitionOff':
+    'Someone turned off shape recognition on a whiteboard, so strokes stay as drawn.',
   'AI|Toggled|AiOff': 'Someone turned off the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiOn': 'Someone turned on the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiSuggestedPromptsOff': 'Someone turned off Suggested Prompts for the AI Assistant.',
@@ -813,6 +834,10 @@ export const EXACT: Readonly<Record<string, string>> = {
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
+  'Whiteboard|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
+  'Whiteboard|Selected': 'Someone picked up one of the pens on a whiteboard.',
+  'Whiteboard|Changed': "Someone changed a whiteboard's eraser mode or board background.",
+  'Whiteboard|Toggled': 'Someone switched shape recognition on a whiteboard on or off.',
   'Cta|Opened':
     'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',
   'Cta|Created':
