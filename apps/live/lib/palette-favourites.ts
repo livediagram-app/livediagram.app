@@ -12,7 +12,10 @@ const PALETTE_FAVOURITES_KEY = 'livediagram:v2:palette-favourites';
 // starting state has no ragged last row. The order is deliberate rather than
 // alphabetical: the three shapes anyone reaches for first, then the things you
 // put ON a diagram (text, arrow, frame, note, image), then the Shape Pen and a
-// table, then the two session elements a facilitated board wants to hand.
+// table, then the two structured cards technical diagrams lean on: a code
+// block and an entity. Timer and Comment panel held those two slots; they
+// are session tools a facilitator reaches for on purpose, so they live in
+// Collaborate rather than on everyone's first screen.
 //
 // The Highlighter used to hold the tenth slot. It moved to the tool dropdown
 // when it became a held mode (docs/specs/008-canvas/highlighter.md), so there is no tile to favourite any
@@ -31,8 +34,8 @@ export const DEFAULT_PALETTE_FAVOURITES: readonly string[] = [
   'tools:image',
   'tools:shape-pen',
   'tools:table',
-  'tools:session-timer',
-  'collab:comment-pin',
+  'tools:code-block',
+  'tools:entity',
 ];
 
 // Dynamic icon favourites (`icon:<iconId>` / `tech:<iconId>`, docs/specs/010-palette/palette-favourites.md) are

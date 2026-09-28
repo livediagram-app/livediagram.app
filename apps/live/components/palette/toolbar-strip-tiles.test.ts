@@ -3,7 +3,12 @@
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tilesForCategory } from './palette-tile-defs';
-import { STRIP_TILE_LIMIT, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
+import {
+  STRIP_TILE_LIMIT,
+  desktopStripTileLimit,
+  phoneStripTileLimit,
+  stripTilesFor,
+} from './toolbar-strip-tiles';
 
 const NONE = { favouriteIds: [], hasImage: true };
 
@@ -88,5 +93,21 @@ describe('phoneStripTileLimit', () => {
     // The strip's measured overhead at 390px (menu button, pickers, More,
     // dividers, padding) was 220px, tiles ~38px: the count must fit 390 - 24.
     expect(220 + phoneStripTileLimit(390) * 38).toBeLessThanOrEqual(390 - 24);
+  });
+});
+
+describe('desktopStripTileLimit', () => {
+  it('shows the full twelve on an ordinary desktop window', () => {
+    expect(desktopStripTileLimit(1024)).toBe(STRIP_TILE_LIMIT);
+    expect(desktopStripTileLimit(1440)).toBe(STRIP_TILE_LIMIT);
+  });
+
+  it('sheds tiles on a narrow window so the centred strip clears the menu button', () => {
+    // Menu button clearance (66px) on both sides, 280px of strip chrome, ~38px tiles.
+    for (const width of [640, 700, 800]) {
+      const tiles = desktopStripTileLimit(width);
+      expect(tiles).toBeLessThan(STRIP_TILE_LIMIT);
+      expect(280 + tiles * 38).toBeLessThanOrEqual(width - 2 * 66);
+    }
   });
 });

@@ -21,7 +21,7 @@ import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { CATEGORY_BANDS } from './PaletteTabBar';
 import { PaletteTile } from './PaletteTileGrid';
 import { PALETTE_TILES } from './palette-tile-defs';
-import { STRIP_TILE_LIMIT, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
+import { desktopStripTileLimit, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
 import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
@@ -121,10 +121,13 @@ export function ToolbarPalette(props: Props) {
   const [categoryId, setCategoryId] = useState(defaultId);
   const category = tabs.find((t) => t.id === categoryId) ?? tabs[0];
 
-  // A phone gets a shorter strip; the rest of the category is behind More.
+  // The strip holds as many tiles as the window fits, up to twelve; the rest
+  // of the category is behind More.
   const isMobile = useIsMobileViewport();
   const viewportWidth = useViewportWidth();
-  const stripLimit = isMobile ? phoneStripTileLimit(viewportWidth) : STRIP_TILE_LIMIT;
+  const stripLimit = isMobile
+    ? phoneStripTileLimit(viewportWidth)
+    : desktopStripTileLimit(viewportWidth);
   const { tiles, hasMore } = stripTilesFor(category?.id ?? defaultId, {
     favouriteIds,
     hasImage: tileActions.hasImage,

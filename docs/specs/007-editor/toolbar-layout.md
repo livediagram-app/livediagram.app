@@ -22,7 +22,7 @@ to the top centre of the canvas, the way Excalidraw's tool bar works:
 - **Then the category picker.** The same banded category grid ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)),
   as a compact trigger showing the current category's glyph and name. It
   sits directly before the tiles it chooses, so it reads as their label.
-- **Then the current category's first ten tiles**, icon-only, each with its
+- **Then the current category's first twelve tiles** (fewer on a narrow window, see "Decided in review"), icon-only, each with its
   hover card, shortcut letter, drag-to-place, theme tint and pressed state. They
   are the same tiles as the Palette's (`palette-tile-defs`, [Palette Favourites](../010-palette/palette-favourites.md)),
   rendered by the same `PaletteTile`, so one change reaches both layouts.
@@ -42,12 +42,12 @@ search field, when the category has one, so typing filters straight away (a cate
 its catalogue a moment later focuses the field as soon as it appears); on a phone it does not,
 because focusing would raise the keyboard over the popover.
 
-More appears when the category has more than ten tiles, and always for
+More appears when the category has more than twelve tiles, and always for
 Favourites, Icons, Stickers, Technology and Behaviours, whose bodies carry
 more than tiles (search, group browsing, Edit / Reorder). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
-For Icons / Stickers / Technology the strip's ten are the first ten of the
+For Icons / Stickers / Technology the strip's twelve are the first twelve of the
 catalogue in its own order, after any the user has used (below).
 
 In the Favourites body, More shows no **Reorder / Edit** footer: the order
@@ -217,8 +217,11 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 
 - **The strip opens on Favourites every time**, like the floating Palette
   ([Palette Favourites](../010-palette/palette-favourites.md)). It does not remember the last category across diagrams.
-- **Ten tiles is enough** on desktop: the strip does not adapt to the
-  window width there. A phone's strip does (see "On a phone").
+- **Twelve tiles is enough** on desktop (raised from ten, which cut Shapes and
+  Favourites short). A desktop strip shows twelve from a window of about
+  870px; below that it sheds tiles to More so the centred strip never runs
+  under the Explorer menu button, the same fit-the-width rule a phone's strip
+  uses (see "On a phone").
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **The category picker stays on the bar**, left of the tiles. Folding it
   into More (a category list, then the category behind a BackBar) was tried

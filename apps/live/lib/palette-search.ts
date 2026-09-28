@@ -92,6 +92,20 @@ const SHAPE_TILES = PALETTE_TILES.filter(
   (t) => t.action.type === 'shape' && t.action.kind !== 'icon' && t.action.kind !== 'sticker',
 );
 
+// Every tile that is NOT a shape: Text, Arrow, Sticky note, Table, Image, the
+// pens, embeds, web components, event-storming notes. Search used to offer
+// shapes only, so none of these could be added from it. They are keyed on
+// the tile id and run through the tile's own handler (tileHandler), which is
+// what keeps a search add identical to clicking the tile. Dynamic icon /
+// sticker / tech tiles are left to the catalogue enumeration below.
+const OTHER_TILES = PALETTE_TILES.filter(
+  (t) =>
+    t.action.type !== 'shape' &&
+    t.action.type !== 'icon' &&
+    t.action.type !== 'tech-icon' &&
+    t.action.type !== 'sticker',
+);
+
 // A function, not a module-load constant: the icon catalogues load as an
 // async chunk (lib/icon-registry.ts), so the list must be rebuilt once they
 // land. The shape entries are always present; icon / tech entries appear as
@@ -99,7 +113,11 @@ const SHAPE_TILES = PALETTE_TILES.filter(
 // useIconCatalogs, so it re-renders — and rebuilds this list — on load; the
 // build is a few hundred tiny objects, cheap enough to run per open-panel
 // render without memoisation.
-export function buildPaletteSearchItems(): PaletteSearchItem[] {
+// `hasImage` hides the tiles that need image uploads (Image, Avatar, Hero)
+// when the editor has none, as the palette's own grids do (visibleTiles).
+export function buildPaletteSearchItems({
+  hasImage = true,
+}: { hasImage?: boolean } = {}): PaletteSearchItem[] {
   return [
     ...SHAPE_TILES.map((tile) => {
       const action = tile.action as {
@@ -133,6 +151,12 @@ export function buildPaletteSearchItems(): PaletteSearchItem[] {
         },
       };
     }),
+    ...OTHER_TILES.filter((t) => !t.needsImage || hasImage).map((tile) => ({
+      id: `tile:${tile.id}`,
+      name: tileDisplayName(tile),
+      keywords: `${tile.label} ${tile.blurb ?? ''} ${tile.description}`,
+      add: { type: 'tile' as const, tileId: tile.id },
+    })),
     // Line art only. The catalogue still carries the legacy emoji entries so
     // elements from before docs/specs/010-palette/stickers.md keep rendering, but offering them here would add
     // a second way to place something that is a sticker now.

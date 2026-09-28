@@ -8,6 +8,8 @@ import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
+import { tileHandler, type PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 
 const SearchPanel = dynamic(() =>
   import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
@@ -36,6 +38,24 @@ export function EditorSearchPanel() {
     addIcon,
     addSticker,
     addTechIcon,
+    addText,
+    addArrow,
+    beginFreehand,
+    beginShapePen,
+    beginPolygon,
+    addSticky,
+    addTable,
+    addImage,
+    addAnnotation,
+    addLinkCard,
+    addVideo,
+    addAvatar,
+    addBanner,
+    addHero,
+    addHeader,
+    addCallout,
+    addStatRow,
+    addProcess,
     setSearchOpen,
     openSettingsAt,
   } = useEditorContext();
@@ -49,6 +69,38 @@ export function EditorSearchPanel() {
   useIconCatalogs();
 
   if (!searchOpen) return null;
+
+  // The same handler bundle the palette's tiles run (usePaletteCatalogue), so
+  // a non-shape result ('tile' add) places exactly what clicking its tile
+  // would. Built only while the panel is open.
+  const tileActions: PaletteTileActions = {
+    addShape,
+    addText,
+    beginFreehand,
+    beginShapePen,
+    beginPolygon,
+    addArrow,
+    addSticky,
+    addTable,
+    addImage: () => addImage?.(),
+    addAnnotation,
+    addLinkCard,
+    addVideo,
+    addSticker,
+    addComponent: (kind) =>
+      ({
+        avatar: addAvatar,
+        banner: addBanner,
+        hero: addHero,
+        header: addHeader,
+        callout: addCallout,
+        stat: addStatRow,
+        process: addProcess,
+      })[kind](),
+    addIcon,
+    addTechIcon,
+    hasImage: !!addImage,
+  };
 
   return (
     <SearchPanel
@@ -93,7 +145,7 @@ export function EditorSearchPanel() {
         setActiveId(tabId);
         setSelectedId(elementId);
       }}
-      paletteItems={isReadOnly ? undefined : buildPaletteSearchItems()}
+      paletteItems={isReadOnly ? undefined : buildPaletteSearchItems({ hasImage: !!addImage })}
       onAddPaletteItem={
         isReadOnly
           ? undefined
@@ -107,7 +159,10 @@ export function EditorSearchPanel() {
                 });
               else if (add.type === 'icon') addIcon(add.iconId);
               else if (add.type === 'sticker') addSticker(add.stickerId);
-              else addTechIcon(add.iconId);
+              else if (add.type === 'tile') {
+                const def = PALETTE_TILES.find((t) => t.id === add.tileId);
+                if (def) tileHandler(def, tileActions)();
+              } else addTechIcon(add.iconId);
             }
       }
       commandItems={commandItems}

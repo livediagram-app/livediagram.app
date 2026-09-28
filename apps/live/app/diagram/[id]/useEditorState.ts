@@ -26,6 +26,8 @@ import {
 
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
+import { useDesktopOnlyToolExit } from '@/hooks/canvas/useDesktopOnlyToolExit';
+import { isMobileViewportSync } from '@/lib/responsive';
 import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
 import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
@@ -357,6 +359,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     useCanvasTool({
       defaultPan: embedMode,
     });
+  useDesktopOnlyToolExit(canvasTool, setCanvasTool);
   // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
   const { formatToolActive, exitFormatTool } = useFormatTool({
@@ -419,6 +422,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // (docs/specs/013-workspace/tab-scoped-share-links.md): the server withholds it and refuses writes.
     if (tool === 'slide-deck' && tabScopeRef.current !== null) {
       toast.info("The slide deck isn't shared with you");
+      return;
+    }
+    // Desktop-only (docs/specs/012-collaboration/presentation-mode.md): the pickers
+    // already hide it on a phone, so this catches any path that still asks.
+    if (tool === 'slide-deck' && isMobileViewportSync()) {
+      toast.info('Slide Deck is only available on a larger screen');
       return;
     }
     // Spotlight and Avatar mode (docs/specs/008-canvas/avatar-mode.md) are both non-editing presenter

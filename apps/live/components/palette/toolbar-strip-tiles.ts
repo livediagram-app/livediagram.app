@@ -21,19 +21,34 @@ import { visibleTiles } from './PaletteTileGrid';
 // so before they land those categories simply return no tiles and still ask
 // for More, which is where their loading note lives.
 
-export const STRIP_TILE_LIMIT = 10;
+export const STRIP_TILE_LIMIT = 12;
+const STRIP_TILE_PX = 38;
+const MIN_STRIP_TILES = 3;
 // A phone's strip fits as many tiles as its width allows once the side
 // gutters, the Explorer menu button, the icon-only selection mode + category
 // picker, More, the dividers and the card's padding are paid for: three on a
 // 390px phone, four from about 410px.
 const PHONE_GUTTERS_PX = 24;
 const PHONE_STRIP_CHROME_PX = 220;
-const STRIP_TILE_PX = 38;
-const PHONE_MIN_TILES = 3;
+// A desktop strip is centred, so it has to clear the Explorer menu button
+// (top-left, 12px in, 46px wide, plus an 8px gap) on BOTH sides. Its own
+// chrome is wider than a phone's because the category picker shows its name:
+// measured at 239px with "Favourites", padded for a longer name like
+// "Event Storming". Twelve tiles fit from about 870px; a narrower window
+// sheds tiles to More rather than running the strip under the menu button.
+const DESKTOP_MENU_CLEARANCE_PX = 66;
+const DESKTOP_STRIP_CHROME_PX = 280;
+
+function fitTiles(roomPx: number): number {
+  return Math.min(STRIP_TILE_LIMIT, Math.max(MIN_STRIP_TILES, Math.floor(roomPx / STRIP_TILE_PX)));
+}
 
 export function phoneStripTileLimit(viewportWidth: number): number {
-  const room = viewportWidth - PHONE_GUTTERS_PX - PHONE_STRIP_CHROME_PX;
-  return Math.min(STRIP_TILE_LIMIT, Math.max(PHONE_MIN_TILES, Math.floor(room / STRIP_TILE_PX)));
+  return fitTiles(viewportWidth - PHONE_GUTTERS_PX - PHONE_STRIP_CHROME_PX);
+}
+
+export function desktopStripTileLimit(viewportWidth: number): number {
+  return fitTiles(viewportWidth - 2 * DESKTOP_MENU_CLEARANCE_PX - DESKTOP_STRIP_CHROME_PX);
 }
 
 // Categories whose body carries more than tiles: a search box, a group
@@ -70,7 +85,7 @@ function allTilesFor(categoryId: string, favouriteIds: readonly string[]): Palet
         .filter((t): t is PaletteTileDef => t !== undefined);
     // Catalogue order is a placeholder for "the ones people use" (docs/specs/007-editor/toolbar-layout.md).
     // Sliced BEFORE building tile defs so a 180-glyph catalogue doesn't build
-    // 180 JSX glyphs to show ten.
+    // 180 JSX glyphs to show twelve.
     case 'icons':
       return getLineArtIconCatalog()
         .slice(0, STRIP_TILE_LIMIT + 1)
