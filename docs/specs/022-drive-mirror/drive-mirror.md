@@ -49,6 +49,11 @@ this spec does not restate it.
   and past popup blockers), requesting `drive.file` and `drive.install` with
   offline access. `prompt=consent` is used only when no refresh token is
   stored, so the user normally consents once.
+- **State:** before redirecting, the app asks the api for a `state` value
+  (`POST /api/drive/state`, with the redirect URI it will use). The api signs
+  it with `DRIVE_TOKEN_KEY`, binding the user, the redirect URI and a
+  10-minute expiry, so a code can only be redeemed by the user who asked for
+  it, and only against the redirect URI it was issued for.
 - **Exchange:** Google redirects back to the live app at `/drive/connected` with a code and the
   `state` value the app set; the app posts both to the api, which checks
   `state`, exchanges the code with the client secret, encrypts the refresh
@@ -59,7 +64,9 @@ this spec does not restate it.
   the panel. It is resumable: a closed tab continues where it stopped on the
   next visit.
 - The `livediagram` root folder may be **moved anywhere** in Drive and
-  renamed; it is tracked by id, not by name or place.
+  renamed; it is tracked by id, not by name or place. It carries the
+  `appProperties` `ldRoot` (the deployment's host), so a reconnect finds it
+  again rather than making a second one.
 
 ## Tokens
 
@@ -70,6 +77,17 @@ this spec does not restate it.
   shortly before expiry, so about once per active hour per user.
 - `DELETE /api/drive/connection`: revokes the grant at Google, deletes the
   stored token and mirror rows. Drive files stay.
+- The browser's own bookkeeping, all small rows owned by the caller:
+  `GET` / `PUT /api/drive/connection` (the connection summary; the root
+  folder and page token), `GET` / `PUT /api/drive/items` and
+  `DELETE /api/drive/items/:kind/:ldId` (the mirrored items),
+  `POST` / `DELETE /api/drive/lease` (the cross-device lease).
+- Every Drive route answers only a **Clerk session**: not the guest header,
+  and not an API token, since a token that could mint Google access would
+  outlive the person's attention to it.
+- `GET /api/capabilities` reports `driveMode`: `off`, `browser` (client id
+  only) or `broker` (client id, secret and key), so the app knows which
+  token path to take.
 - The refresh token is encrypted with AES-GCM under a worker secret
   (`DRIVE_TOKEN_KEY`) before it reaches D1, and is never returned by any route.
 - One refresh token per user, shared by all their devices, keeps well inside
@@ -96,7 +114,9 @@ this spec does not restate it.
   wide, under 2 MB). There is no separate preview file.
 - **`appProperties`:** `ldDiagramId` (the diagram id) and `ldOrigin` (the
   deployment's host), so a file maps back to its diagram after any rename or
-  move, and a file from another deployment is recognised as foreign.
+  move, and a file from another deployment is recognised as foreign. Mirrored
+  folders carry `ldFolderId` and `ldOrigin` the same way, so a folder
+  restored from the bin, or met again after a reconnect, is recognised too.
 
 ## Folders
 
@@ -151,7 +171,19 @@ folder id):
   write, so a rename made in Drive while away is not overwritten by a stale
   local name.
 - **Both sides changed the same attribute** since the last sync: the later
-  change wins, by Drive's change `time` against the livediagram change's time.
+  change wins, by Drive's change `time` against the livediagram change's time
+  (a diagram's `savedAt`, a folder's `updatedAt`). "Changed since the last
+  sync" is judged against the item row: Drive's side against the stored Drive
+  state, livediagram's side against `ld_name` and the stored parent. A change
+  whose value livediagram already holds is recorded, not applied.
+- **Restoring from the bin places the diagram where its file sits** in Drive,
+  so restoring a binned folder brings back its diagrams inside it.
+- **A permanent delete only purges from the Trash.** `removed` also means
+  "livediagram lost access", so a live diagram whose file is removed is not
+  deleted; its file is re-created on the next write.
+- **A file whose contents were edited in Drive** (a new `md5Checksum`) is
+  rewritten from livediagram on the next outbound pass, so the canonical copy
+  comes back without waiting for the next edit.
 - Inbound changes go through the ordinary api routes (rename, move, delete,
   restore), so authorisation, the change log and realtime rooms behave exactly
   as if the user had done it in livediagram.
@@ -165,7 +197,10 @@ the same result, so the mirror handles this openly, never silently:
 
 - The diagram moves to **Unsorted**, and a notice in the Drive panel (and on
   the diagram's Explorer row) says so: "Moved in Drive to a folder livediagram
-  can't see."
+  can't see." The notice is kept on the item row, so every device shows it; it
+  clears when the diagram is moved again from either side, when the folder is
+  adopted, or when the user dismisses it. A folder moved into one is placed at
+  the top level with the same notice in the panel.
 - **Adopting a folder:** the notice offers **Show this folder to livediagram**,
   which opens the Google Picker with folder selection. Picking the folder
   grants livediagram access to it; livediagram then creates the matching
@@ -187,7 +222,9 @@ Named constants in one cadence module of the mirror code, with the values and bu
 
 - **One tab syncs per browser**, elected with the Web Locks API; across
   devices, a short lease row in D1 keeps two browsers from writing the same
-  diagram at once.
+  diagram at once. The lease lasts 15 minutes, is renewed only when a pass
+  has something to write and under 5 minutes remain, and is released when the
+  tab hides, so a device that walks away hands over at once.
 - **Arrival:** one `changes.list` catch-up, then re-upload of every diagram
   saved since its last mirrored revision.
 - **While visible:** poll every 20 minutes, and on focus when the last poll is
@@ -243,6 +280,17 @@ D1, owned by the api worker:
   `(owner_id, drive_file_id)`.
 - Deleting a diagram, folder or account deletes its rows in the same batch as
   the rest of the removal.
+- `refresh_token_enc` is empty for a browser-only connection (client id only).
+- `drive_items` also keeps `ld_name` (the livediagram name the Drive name
+  mirrors, since Drive may store a name differently), and `notice` with
+  `notice_parent_id` for the [unseen-folder notice](#folders-livediagram-cannot-see).
+- **Finishing a removal in Drive.** Because a purge or a folder deletion takes
+  the row with it, each browser remembers the rows it last saw. A row that
+  disappears while its diagram or folder is gone from livediagram is finished
+  in Drive by the next pass in any browser that saw it: a binned file is
+  deleted for good, anything else goes to the bin (a diagram taken offline,
+  a deleted folder once its contents have moved up). A file nobody saw go is
+  left to Drive's own 30-day bin.
 
 ## Errors and edge cases
 
@@ -264,13 +312,19 @@ D1, owned by the api worker:
 
 - Env on the api worker: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
   `DRIVE_TOKEN_KEY`; the live app reads the client id as
-  `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Documented in each `.env.example`.
+  `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, and the Google Picker's browser key as
+  `NEXT_PUBLIC_GOOGLE_API_KEY`. Documented in each `.env.example`. The api's
+  `GOOGLE_CLIENT_ID` switches the feature on at all; without it every Drive
+  route answers `503 drive_not_configured`.
 - **All three unset:** no Drive entry in the account menu.
 - **Client id only (no secret):** browser-only tokens via the Google Identity
   Services token model. Google cannot renew those without a click, so when a
   token lapses the panel shows **Resume sync** instead of syncing silently.
 - A mirror is per Google project: files created by one deployment are foreign
   to another (`ldOrigin`), and are imported as copies.
+- `GOOGLE_OAUTH_BASE_URL` on the api worker points the token exchange and
+  revoke at another origin. It exists for the test suite's fake Google and is
+  never set by a real deployment.
 
 ## Costs
 
