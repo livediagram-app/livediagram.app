@@ -20,6 +20,12 @@ export function markDiagramDeleted(id: string): void {
   deleted.add(id);
 }
 
+// A restore from the Trash (docs/specs/013-workspace/trash.md) in the same page
+// session lets the diagram be written again.
+export function unmarkDiagramDeleted(id: string): void {
+  deleted.delete(id);
+}
+
 export function isDiagramDeleted(id: string): boolean {
   return deleted.has(id);
 }

@@ -13,6 +13,7 @@
 import type { ChangeLogEntry, Diagram, DiagramSummary, TabSummary } from '@livediagram/api-schema';
 import { migrateStoredTab, stampTabKind } from '@livediagram/diagram';
 import type { Tab } from '@livediagram/diagram';
+import { DiagramTrashedError } from '../diagram-trashed';
 
 // Sentinel owner id stamped on offline diagrams. They have no server owner;
 // this keeps the wire shape valid and is never sent anywhere.
@@ -44,6 +45,10 @@ export type OfflineDiagramRecord = {
   // no row in, so its star has to live here instead. Optional so records
   // written before the field existed stay valid.
   favourite?: boolean;
+  // When the diagram was moved to this browser's local Trash
+  // (docs/specs/013-workspace/trash.md, see ./offline-trash.ts). Absent = live.
+  // A trashed record keeps everything else so a restore is exact.
+  trashedAt?: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -216,6 +221,12 @@ const indexedDbBackend: OfflineBackend = {
 
 let backend: OfflineBackend = indexedDbBackend;
 
+// The current backend, for ./offline-trash.ts, which reads and rewrites whole
+// records the same way the ops below do.
+export function offlineBackend(): OfflineBackend {
+  return backend;
+}
+
 // Test seam: swap in an in-memory backend. Also resets the id cache.
 export function __setOfflineBackend(b: OfflineBackend | null): void {
   backend = b ?? indexedDbBackend;
@@ -289,6 +300,12 @@ function forgetId(id: string): void {
 // chain serialises all read-modify-write ops; each is a couple of IndexedDB
 // round-trips, so queueing adds no perceptible latency.
 let writeChain: Promise<unknown> = Promise.resolve();
+
+// A record the editor may still write: present, and not in the local Trash
+// (an editor left open on a binned diagram must not keep changing it).
+function writable(rec: OfflineDiagramRecord | undefined): rec is OfflineDiagramRecord {
+  return rec !== undefined && rec.trashedAt === undefined;
+}
 export function serializeOfflineWrite<T>(op: () => Promise<T>): Promise<T> {
   const next = writeChain.then(op, op);
   writeChain = next.then(
@@ -298,13 +315,16 @@ export function serializeOfflineWrite<T>(op: () => Promise<T>): Promise<T> {
   return next;
 }
 
+// Live records only: a trashed one waits in the local Trash.
 export async function offlineListDiagrams(): Promise<DiagramSummary[]> {
   const recs = await backend.all();
-  return recs.map(recordToSummary);
+  return recs.filter((r) => r.trashedAt === undefined).map(recordToSummary);
 }
 
+// A trashed record reads as the deleted state, the local twin of the api's 410.
 export async function offlineLoadDiagram(id: string): Promise<Diagram | null> {
   const rec = await backend.get(id);
+  if (rec?.trashedAt !== undefined) throw new DiagramTrashedError(id);
   return rec ? recordToDiagram(rec) : null;
 }
 
@@ -340,7 +360,7 @@ export async function offlineSaveDiagramMeta(
 ): Promise<void> {
   await serializeOfflineWrite(async () => {
     const rec = await backend.get(id);
-    if (!rec) return;
+    if (!writable(rec)) return;
     await backend.put(applyMeta(rec, patch, now));
   });
 }
@@ -355,7 +375,7 @@ export async function offlineSetDiagramFolder(
 ): Promise<void> {
   await serializeOfflineWrite(async () => {
     const rec = await backend.get(id);
-    if (!rec) return;
+    if (!writable(rec)) return;
     await backend.put({ ...rec, folderId, savedAt: now });
   });
 }
@@ -374,7 +394,7 @@ export async function offlineSetFavourite(id: string, favourite: boolean): Promi
 
 export async function offlineListFavouriteIds(): Promise<string[]> {
   const recs = await backend.all();
-  return recs.filter((r) => r.favourite).map((r) => r.id);
+  return recs.filter((r) => r.favourite && r.trashedAt === undefined).map((r) => r.id);
 }
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {
@@ -386,7 +406,7 @@ export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise
     // old create-on-first-write bug). Records are only ever created by
     // offlineCreateDiagram / offlinePutRecord.
     const rec = await backend.get(id);
-    if (!rec) return;
+    if (!writable(rec)) return;
     await backend.put(upsertTab(rec, tab, now));
   });
 }
@@ -394,7 +414,7 @@ export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise
 export async function offlineDeleteTab(id: string, tabId: string, now: number): Promise<void> {
   await serializeOfflineWrite(async () => {
     const rec = await backend.get(id);
-    if (!rec) return;
+    if (!writable(rec)) return;
     await backend.put(removeTab(rec, tabId, now));
   });
 }

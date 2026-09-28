@@ -21,6 +21,7 @@ import {
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
 import { markDiagramDeleted } from '@/lib/diagram-tombstones';
 import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
+import { TRASH_RESTORE_HINT } from '@/lib/trash-copy';
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -122,8 +123,8 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
   // their library rather than a dead row. Deleting any other diagram
   // removes the row optimistically: a fire-and-forget DELETE followed
   // by an immediate list refetch used to race, repainting the row the
-  // API hadn't yet committed. Not undoable; the menu is an explicit
-  // action.
+  // API hadn't yet committed. It goes to the Trash (docs/specs/013-workspace/trash.md),
+  // which the confirmation mentions once; there is no undo toast.
   //
   // `beforeRemove` runs after the delete is CONFIRMED and before the
   // row is pulled, so the caller can play a row exit animation (the
@@ -146,9 +147,9 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
       const ok = await confirm({
         title: `Delete "${target?.name || 'this diagram'}"?`,
         message: [
-          'Its tabs, change-log entries, and share links are removed.',
+          'Its share links stop working, and visitors see that it was deleted.',
           notice,
-          'Visitors holding a share link will see a 404. This cannot be undone.',
+          TRASH_RESTORE_HINT,
         ]
           .filter(Boolean)
           .join(' '),

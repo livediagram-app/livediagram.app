@@ -10,6 +10,7 @@ import {
   deleteOldEvents,
   deleteOldSessionSightings,
   deleteOldTimelineEvents,
+  purgeExpiredTrash,
   resolveApiToken,
 } from './db';
 import {
@@ -52,6 +53,7 @@ import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
 import { handleShared } from './routes/shared';
 import { handleTelemetry } from './routes/telemetry';
+import { handleTrash } from './routes/trash';
 import type { Env } from './types';
 
 export { DiagramRoom };
@@ -296,6 +298,8 @@ export default {
           return await handleAccount(ctx);
         case 'favourites':
           return await handleFavourites(ctx);
+        case 'trash':
+          return await handleTrash(ctx);
         case 'timeline':
           return await handleTimeline(ctx);
         case 'activity':
@@ -344,6 +348,7 @@ export default {
   //   - events,     60-day floor (docs/specs/017-telemetry/telemetry.md "Retention").
   //   - images,     30-day floor, unused only, after the reference-index backfill
   //                 (docs/specs/009-elements/images.md "Retention").
+  //   - trash,      30 days after deletion (docs/specs/013-workspace/trash.md).
   // All are no-ops when nothing is over the floor; all use
   // `ctx.waitUntil` so they run concurrently and the worker can
   // exit as soon as the schedule callback returns.
@@ -391,6 +396,13 @@ export default {
         runTimelineExpirySweep(env)
           .then((count) => console.log(`timeline expiry sweep: emitted ${count} events`))
           .catch((err) => console.error('timeline expiry sweep failed', err)),
+      );
+      // docs/specs/013-workspace/trash.md: purge what has been in the Trash for
+      // 30 days, oldest first, capped per run (TRASH_PURGE_MAX_BATCHES).
+      ctx.waitUntil(
+        purgeExpiredTrash(env, now)
+          .then((count) => console.log(`trash sweep: purged ${count} diagrams`))
+          .catch((err) => console.error('trash sweep failed', err)),
       );
       // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
       // then reap unused images. runImageRetention logs its own outcome.

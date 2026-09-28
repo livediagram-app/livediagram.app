@@ -10,6 +10,7 @@ import {
   CALLS_TO_ACTION,
   COUNTDOWNS,
   DIAGRAM_ACTIONS,
+  TRASH,
   DISCUSSION,
   EDITOR_CHROME,
   EDITOR_SEARCH,
@@ -80,6 +81,7 @@ export const GROUPS: MetricGroup[] = [
     title: 'Content',
     metrics: [
       DIAGRAM_ACTIONS,
+      TRASH,
       TAB_ACTIONS,
       ELEMENTS_ADDED,
       ELEMENT_EDITING,

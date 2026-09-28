@@ -122,6 +122,7 @@ export function useExplorerPane({
       selected.kind === 'gallery' ||
       selected.kind === 'themes' ||
       selected.kind === 'tokens' ||
+      selected.kind === 'trash' ||
       selected.kind === 'team' ||
       selected.kind === 'invites'
     ) {
@@ -203,6 +204,7 @@ export function useExplorerPane({
     if (selected.kind === 'gallery') return 'Image Gallery';
     if (selected.kind === 'themes') return 'Themes';
     if (selected.kind === 'tokens') return 'API Tokens';
+    if (selected.kind === 'trash') return 'Trash';
     if (selected.kind === 'team') {
       return teams.find((t) => t.id === selected.id)?.name ?? 'Team';
     }
@@ -229,6 +231,7 @@ export function useExplorerPane({
     if (selected.kind === 'gallery') return [{ name: 'Image Gallery' }];
     if (selected.kind === 'themes') return [{ name: 'Themes' }];
     if (selected.kind === 'tokens') return [{ name: 'API Tokens' }];
+    if (selected.kind === 'trash') return [{ name: 'Trash' }];
     if (selected.kind === 'team') return [{ name: paneTitle }];
     if (selected.kind === 'invites') return [{ name: 'Invites' }];
     if (selected.kind === 'all') return [{ name: 'Personal Space' }];
