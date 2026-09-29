@@ -82,6 +82,17 @@ describe('SettingsDialog', () => {
     expect(screen.queryByRole('button', { name: /^Settings$/ })).toBeNull();
   });
 
+  it('holds one fixed desktop height whichever category is picked', () => {
+    // jsdom has no layout, so this pins the contract rather than pixels: a
+    // HEIGHT, not only a max-height, so a short category cannot shrink it.
+    setViewport(false);
+    renderDialog();
+    const dialog = screen.getByRole('dialog', { name: 'Settings' });
+    expect(dialog.className).toContain('sm:h-[min(42rem,calc(100%-6rem))]');
+    fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
+    expect(dialog.className).toContain('sm:h-[min(42rem,calc(100%-6rem))]');
+  });
+
   it('swaps the pane when another category is picked, keeping the rail', () => {
     setViewport(false);
     renderDialog();

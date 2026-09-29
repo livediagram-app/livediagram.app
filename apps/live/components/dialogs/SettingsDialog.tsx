@@ -164,11 +164,12 @@ export function SettingsDialog({
       // behind it (panel layout, opacity, the minimap), so blurring that
       // canvas out hides the very thing you are adjusting.
       backdrop="desktop-light"
-      // Capped on desktop: unbounded, a category with a dozen rows stretched
-      // the dialog from the top of the screen to the bottom, which reads as a
-      // page rather than a modal. The pane scrolls inside instead. The phone
-      // layout still fills its screen, which is what a pushed pane wants.
-      className="max-h-[calc(100%-2rem)] sm:max-h-[min(42rem,calc(100%-6rem))]"
+      // One fixed height on desktop, not a cap: sized to content, the frame
+      // jumped between categories as the reader moved down the rail. 42rem
+      // holds every short category whole and keeps a long one a modal rather
+      // than a page; the pane scrolls inside. The phone layout still fills
+      // its screen, which is what a pushed pane wants.
+      className="max-h-[calc(100%-2rem)] sm:h-[min(42rem,calc(100%-6rem))] sm:max-h-[min(42rem,calc(100%-6rem))]"
     >
       <header className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
         {showBack ? (
