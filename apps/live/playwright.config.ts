@@ -67,7 +67,7 @@ export default defineConfig({
     stderr: 'pipe',
     env: clerkStub
       ? {
-          E2E_LIVE_OUT: 'out-clerk-stub',
+          E2E_LIVE_OUT: '.next/out-clerk-stub',
           E2E_LIVE_PORT: STUB_PORTS.live,
           E2E_API_PORT: STUB_PORTS.api,
           E2E_MARKETING_PORT: STUB_PORTS.marketing,

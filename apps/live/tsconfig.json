@@ -18,5 +18,5 @@
     ".next/types/**/*.ts",
     ".next-dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", ".next", ".next-dev", "out", "out-clerk-stub"]
+  "exclude": ["node_modules", ".next", ".next-dev", "out"]
 }

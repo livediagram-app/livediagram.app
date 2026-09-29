@@ -13,7 +13,7 @@ are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `apps/live/components/dialogs/settings/SettingsAccountRows.tsx` | Identity card draws `AccountAvatar` at `IDENTITY_AVATAR_PX`                       |
 | `apps/live/e2e/clerk-stub/clerk-stub.ts`                        | Installs a fake `window.Clerk` with a chosen user before the page loads           |
 | `apps/live/e2e/clerk-stub/profile-picture.spec.ts`              | The end-to-end states against a Clerk-enabled build                               |
-| `apps/live/scripts/build-clerk-stub.mjs`                        | Builds the Clerk-enabled export the stub runs against (`out-clerk-stub/`)         |
+| `apps/live/scripts/build-clerk-stub.mjs`                        | Builds the Clerk-enabled export the stub runs against (`.next/out-clerk-stub/`)   |
 | `apps/live/playwright.config.ts`, `scripts/e2e-stack.mjs`       | The `clerk-stub` project, its ports and its export directory                      |
 
 ## Domain and naming

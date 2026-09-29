@@ -91,14 +91,15 @@ extra boot.
 
 Clerk is a build-time switch ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
 guest-mode `out/` can never show a signed-in user. The specs in `apps/live/e2e/clerk-stub/` run
-against a second export, `apps/live/out-clerk-stub/`, built by `pnpm build:clerk-stub` with a
+against a second export, `apps/live/.next/out-clerk-stub/` (inside `.next/`, so every ignore and
+source scanner already skips it), built by `pnpm build:clerk-stub` with a
 publishable key for a host that cannot resolve. Each spec installs a fake `window.Clerk`
 (`e2e/clerk-stub/clerk-stub.ts`) before the page loads, which @clerk/react takes in place of
 downloading clerk-js, so a chosen user (name, email, pictures) sits behind the real hooks with no
 Clerk account, secret or network.
 
 `pnpm --filter @livediagram/live test:e2e:clerk-stub` sets `E2E_CLERK_STUB=1`, which adds the
-`clerk-stub` project and boots the stack with `E2E_LIVE_OUT=out-clerk-stub` on its own ports
+`clerk-stub` project and boots the stack with `E2E_LIVE_OUT=.next/out-clerk-stub` on its own ports
 (live `:3015`, api `:8788`, marketing `:3016`), so a guest stack already up on `:3002` is never
 reused for it. The stub's session token verifies nowhere, so api reads fail in these specs; they
 assert on chrome, not data. `e2e.yml` builds and runs them after the smoke suite.

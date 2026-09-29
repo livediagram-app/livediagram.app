@@ -32,8 +32,6 @@ export default tseslint.config(
       // Next.js `output: 'export'` static export directory — same status as
       // `.next/`: build output, not source.
       '**/out/**',
-      // The live app's Clerk-stub export for the signed-in e2e specs.
-      '**/out-clerk-stub/**',
       '**/.turbo/**',
       // Cloudflare Wrangler local state / esbuild artifacts; never
       // source. Generated on every `wrangler dev` run.

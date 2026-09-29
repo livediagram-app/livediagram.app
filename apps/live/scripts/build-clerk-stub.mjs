@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Builds the live app with Clerk switched ON, into `out-clerk-stub/`, for the signed-in e2e
+// Builds the live app with Clerk switched ON, into `.next/out-clerk-stub/`, for the signed-in e2e
 // specs (docs/specs/014-identity/blueprints/profile-picture.md). Clerk is a build-time switch
 // (lib/clerk-config.ts), so the guest-mode `out/` cannot show a signed-in user at all.
 //
@@ -12,7 +12,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const APP_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const CLERK_STUB_OUT = 'out-clerk-stub';
+// Inside `.next/`, which every build ignore, lint, format and source scanner already skips.
+const CLERK_STUB_OUT = '.next/out-clerk-stub';
 const STUB_KEY = `pk_test_${Buffer.from('clerk.stub.invalid$').toString('base64')}`;
 
 console.log(`[clerk-stub] building ${CLERK_STUB_OUT}/ with Clerk on (stub key)`);
