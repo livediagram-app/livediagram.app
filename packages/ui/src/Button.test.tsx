@@ -42,3 +42,15 @@ describe('Button label', () => {
     expect(container.querySelector('a > .text-optical-line')?.textContent).toBe('Start drawing');
   });
 });
+
+// A reversible action that still deserves a pause (Disconnect Google Drive):
+// amber, never the rose of a destructive one.
+describe('Button warning variant', () => {
+  it('paints amber with dark text, distinct from danger', () => {
+    const { container } = render(<Button variant="warning">Disconnect</Button>);
+    const cls = container.querySelector('button')!.className;
+    expect(cls).toContain('bg-amber-400');
+    expect(cls).toContain('text-slate-900');
+    expect(cls).not.toContain('rose');
+  });
+});

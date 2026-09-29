@@ -16,6 +16,10 @@ export type DriveMirrorContextValue = {
   status: DriveMirrorStatus;
   // Whether "Show this folder to livediagram" can be offered (a Picker key).
   canAdopt: boolean;
+  // Connect pressed and the page not yet gone to Google; and why the last
+  // attempt could not start, if it could not.
+  connecting: boolean;
+  connectError: string | null;
   connect(): Promise<void>;
   resume(): Promise<void>;
   syncNow(): void;
@@ -40,12 +44,17 @@ export const DRIVE_MIRROR_OFF: DriveMirrorContextValue = {
   resolved: true,
   status: DRIVE_STATUS_INITIAL,
   canAdopt: false,
+  connecting: false,
+  connectError: null,
   connect: noop,
   resume: noop,
   syncNow: () => {},
   disconnect: noop,
   adopt: noop,
 };
+
+export const DRIVE_CONNECT_FAILED =
+  "Couldn't start connecting to Google Drive. Check your connection and try again.";
 
 export const DriveMirrorContext = createContext<DriveMirrorContextValue>(DRIVE_MIRROR_OFF);
 

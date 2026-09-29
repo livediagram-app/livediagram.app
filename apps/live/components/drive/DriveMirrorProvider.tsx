@@ -38,6 +38,7 @@ import {
 } from '@/lib/drive/tab-election';
 import { localSeenStore } from '@/lib/drive/tombstones';
 import {
+  DRIVE_CONNECT_FAILED,
   DRIVE_MIRROR_OFF,
   DRIVE_STATUS_INITIAL,
   DriveMirrorContext,
@@ -62,6 +63,18 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
   const confirm = useConfirm();
   const [serverMode, setServerMode] = useState<DriveMode | undefined>(undefined);
   const [status, setStatus] = useState<DriveMirrorStatus>(DRIVE_STATUS_INITIAL);
+  // Connect in flight, from the press until the page leaves for Google
+  // (docs/specs/022-drive-mirror/drive-mirror.md, "What the row says").
+  const [connecting, setConnecting] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+  // Back from Google out of the bfcache: the page is live again, not leaving.
+  useEffect(() => {
+    const onShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setConnecting(false);
+    };
+    window.addEventListener('pageshow', onShow);
+    return () => window.removeEventListener('pageshow', onShow);
+  }, []);
   const runtime = useRef<Runtime | null>(null);
   const signedIn = !!isSignedIn && authLoaded && !!clerkUserId;
   const quiet = QUIET_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
@@ -169,8 +182,10 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     else rt.channel.post({ type: 'token', token });
   }, []);
 
-  const connect = useCallback(async () => {
-    if (!clerkUserId || mode === 'off') return;
+  // Broker mode leaves for Google and never returns here (connecting stays
+  // set); browser mode hands the token to the engine and is done.
+  const startConnect = useCallback(async () => {
+    if (!clerkUserId) return;
     if (mode === 'broker') {
       // Redirect mode: works on iOS and past popup blockers. A refresh token
       // is stored only after this, so the consent is asked for.
@@ -197,7 +212,21 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     await apiPutDriveConnection(clerkUserId, {});
     track('Drive', 'Linked', 'Browser');
     handToEngine(token);
+    setConnecting(false);
   }, [clerkUserId, mode, user?.email, handToEngine]);
+
+  const connect = useCallback(async () => {
+    if (!clerkUserId || mode === 'off') return;
+    setConnecting(true);
+    setConnectError(null);
+    try {
+      await startConnect();
+    } catch (err) {
+      driveWarn('connect-failed', { error: err instanceof Error ? err.message : String(err) });
+      setConnectError(DRIVE_CONNECT_FAILED);
+      setConnecting(false);
+    }
+  }, [clerkUserId, mode, startConnect]);
 
   const resume = useCallback(async () => {
     if (mode !== 'browser') return connect();
@@ -216,7 +245,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
       title: 'Disconnect Google Drive?',
       message: 'Your files stay in Drive; livediagram stops updating them.',
       confirmLabel: 'Disconnect',
-      variant: 'danger',
+      variant: 'warning',
     });
     if (!ok) return;
     await apiDisconnectDrive(clerkUserId);
@@ -263,13 +292,15 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
             resolved,
             status,
             canAdopt: !!googlePickerApiKey,
+            connecting,
+            connectError,
             connect,
             resume,
             syncNow,
             disconnect,
             adopt,
           },
-    [mode, resolved, status, connect, resume, syncNow, disconnect, adopt],
+    [mode, resolved, status, connecting, connectError, connect, resume, syncNow, disconnect, adopt],
   );
 
   return (

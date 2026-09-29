@@ -8,14 +8,14 @@ import { SOLID_BRAND_DARK_CONTROL } from './brand-classes';
 // it, disabled opacity bounced between 50 and 60. Codifying the three
 // variants + size scale here makes those one decision instead of N.
 //
-// `variant` is the intent (brand primary / destructive / neutral
-// outline); `size` is the padding+type scale (sm is the dialog-action
+// `variant` is the intent (brand primary / destructive / warning /
+// neutral outline); `size` is the padding+type scale (sm is the dialog-action
 // rhythm, lg the large CTA, cta / cta-sm the public sites' call-to-action
 // pill). Everything else (onClick, type, disabled, aria-*, ref) passes
 // straight through, so this is a drop-in for a raw <button>. Extra `className` is appended last so a caller
 // can still add layout (w-full, mt-…) without re-stating the look.
 
-export type ButtonVariant = 'primary' | 'danger' | 'secondary';
+export type ButtonVariant = 'primary' | 'danger' | 'warning' | 'secondary';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'cta-sm' | 'cta';
 
 const BASE =
@@ -24,6 +24,10 @@ const BASE =
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: `bg-brand-500 text-white hover:bg-brand-600 focus-visible:outline-brand-500 ${SOLID_BRAND_DARK_CONTROL}`,
   danger: 'bg-rose-600 text-white hover:bg-rose-700 focus-visible:outline-rose-500',
+  // Reversible but worth a pause (disconnecting a sync). Dark text on amber:
+  // slate-900 on amber-400 is 10:1, on the amber-500 hover 8:1, in both themes.
+  warning:
+    'bg-amber-400 text-slate-900 hover:bg-amber-500 focus-visible:outline-amber-500 dark:focus-visible:outline-amber-400',
   secondary:
     'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800',
 };

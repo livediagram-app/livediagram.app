@@ -35,14 +35,28 @@ export function lastSyncedText(at: number | null, now: number): string {
   return at === null ? 'Not synced yet' : `Last synced ${relativeSince(at, now)}`;
 }
 
+// Every wording the state pill can show: it is always as wide as the longest.
+export const DRIVE_SYNC_BADGES = [
+  'Checking',
+  'Not connected',
+  'Connecting',
+  'Synced',
+  'Syncing',
+  'Copying',
+  'Needs attention',
+] as const;
+export type DriveSyncBadge = (typeof DRIVE_SYNC_BADGES)[number];
+
 export type DriveSyncTone = 'off' | 'ok' | 'busy' | 'attention';
 export type DriveSyncAction = 'connect' | 'reconnect' | 'resume' | 'syncNow' | null;
 
 export type DriveSyncCopy = {
-  badge: string;
+  badge: DriveSyncBadge;
   tone: DriveSyncTone;
   text: string;
   action: DriveSyncAction;
+  // The text is why the last Connect could not start.
+  failed?: true;
 };
 
 const attention = (text: string, action: DriveSyncAction): DriveSyncCopy => ({
@@ -54,7 +68,10 @@ const attention = (text: string, action: DriveSyncAction): DriveSyncCopy => ({
 
 // Where the mirror stands, in plain words, and the one thing to press.
 // Notices are listed by the row itself, each with its own action.
-export function driveSyncCopy(status: DriveMirrorStatus, connecting: boolean): DriveSyncCopy {
+export function driveSyncCopy(
+  status: DriveMirrorStatus,
+  connect: { connecting: boolean; connectError: string | null },
+): DriveSyncCopy {
   switch (status.state) {
     case 'starting':
       return {
@@ -64,13 +81,25 @@ export function driveSyncCopy(status: DriveMirrorStatus, connecting: boolean): D
         action: null,
       };
     case 'disconnected':
+      if (connect.connectError && !connect.connecting) {
+        return {
+          badge: 'Not connected',
+          tone: 'off',
+          text: connect.connectError,
+          action: 'connect',
+          failed: true,
+        };
+      }
       return {
-        badge: connecting ? 'Connecting' : 'Not connected',
+        badge: connect.connecting ? 'Connecting' : 'Not connected',
         tone: 'off',
         text: 'Keep a copy of your documents in your own Google Drive, in folders that match yours, updated while livediagram is open.',
         action: 'connect',
       };
     case 'needs_reconnect':
+      if (connect.connectError && !connect.connecting) {
+        return { ...attention(connect.connectError, 'reconnect'), failed: true };
+      }
       return attention(
         "Google Drive stopped accepting livediagram's access, so syncing is paused. Nothing was deleted. Reconnect to carry on.",
         'reconnect',

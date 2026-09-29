@@ -14,7 +14,10 @@ import { routeGoogle, startFakeGoogle, TestIdentity } from './drive-support';
 // drive build), writing to E2E_DRIVE_PR_SHOTS (default /tmp/ld-drive-pr-shots).
 
 test.describe.configure({ mode: 'serial' });
-test.use({ viewport: { width: 1280, height: 800 } });
+// E2E_DRIVE_SHOTS_SCALE=2 captures the same states at 2x, named `…@2x.png`.
+const SCALE = Number(process.env.E2E_DRIVE_SHOTS_SCALE ?? 1);
+const AT = SCALE === 1 ? '' : `@${SCALE}x`;
+test.use({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: SCALE });
 
 const OUT = process.env.E2E_DRIVE_PR_SHOTS ?? '/tmp/ld-drive-pr-shots';
 const RUN = Math.random().toString(36).slice(2, 8);
@@ -41,11 +44,11 @@ test.afterAll(async () => {
     (s) => `- \`${s.file}\` - ${s.shows}. Source: FAKE Google (e2e harness).`,
   );
   writeFileSync(
-    `${OUT}/README.md`,
+    `${OUT}/README${AT}.md`,
     [
       '# Google Drive mirror screenshots',
       '',
-      'Captured by `apps/live/e2e/drive-shots.spec.ts` at 1280 x 800, light and dark, against the fake Google.',
+      `Captured by \`apps/live/e2e/drive-shots.spec.ts\` at 1280 x 800, device scale ${SCALE}, light and dark, against the fake Google.`,
       '',
       ...lines,
       '',
@@ -73,7 +76,7 @@ for (const theme of THEMES) {
     let token: string;
 
     async function shot(page: Page, name: string, shows: string) {
-      const file = `${name}-${theme}.png`;
+      const file = `${name}-${theme}${AT}.png`;
       await pause(350); // let fades finish
       await page.screenshot({ path: `${OUT}/${file}` });
       shots.push({ file, shows: `${shows} (${theme})` });

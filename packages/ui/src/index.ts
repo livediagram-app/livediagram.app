@@ -13,6 +13,7 @@ export {
 export { TextInput, type TextInputProps } from './TextInput';
 export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
 export { Tooltip, type TooltipProps } from './Tooltip';
+export { StableLabel } from './StableLabel';
 export { HoverCard, type HoverCardProps } from './HoverCard';
 export { EmptyState } from './EmptyState';
 export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';

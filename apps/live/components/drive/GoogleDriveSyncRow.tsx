@@ -7,17 +7,18 @@
 // Connect, Sync now and Disconnect.
 
 import { useState, type ReactNode } from 'react';
-import { Button, Glyph } from '@livediagram/ui';
+import { Button, Glyph, StableLabel } from '@livediagram/ui';
 import { SettingsRowShell } from '@/components/dialogs/settings/SettingsRowShell';
 import type { SettingsCloudSyncRowSpec } from '@/components/dialogs/settings/settings-catalogue';
 import {
+  DRIVE_SYNC_BADGES,
   driveRhythmText,
   driveSyncCopy,
   lastSyncedText,
   type DriveSyncTone,
 } from '@/lib/drive/cloud-sync-copy';
 import { useRelativeNow } from '@/lib/relative-time';
-import { useDriveMirror } from './drive-mirror-context';
+import { DRIVE_CONNECT_FAILED, useDriveMirror } from './drive-mirror-context';
 import { DRIVE_NOTICE_TEXT } from './DriveNoticeMarker';
 
 // The state pill: a glyph and a word, so the colour is never the only signal.
@@ -56,6 +57,11 @@ const TONE: Record<DriveSyncTone, { className: string; glyph: ReactNode }> = {
   },
 };
 
+// Every button label pair: a button is as wide as its longer wording.
+const CONNECT_LABELS = ['Connect Google Drive', 'Connecting…'] as const;
+const RECONNECT_LABELS = ['Reconnect', 'Connecting…'] as const;
+const SYNC_LABELS = ['Sync now', 'Syncing…'] as const;
+
 function StatePill({ tone, children }: { tone: DriveSyncTone; children: string }) {
   const { className, glyph } = TONE[tone];
   return (
@@ -66,7 +72,7 @@ function StatePill({ tone, children }: { tone: DriveSyncTone; children: string }
       <Glyph size={12} units={16}>
         {glyph}
       </Glyph>
-      {children}
+      <StableLabel options={DRIVE_SYNC_BADGES} current={children} />
     </span>
   );
 }
@@ -75,7 +81,7 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
   const drive = useDriveMirror();
   const { status } = drive;
   const now = useRelativeNow();
-  const [busy, setBusy] = useState<null | 'connect' | 'resume' | 'disconnect' | 'adopt'>(null);
+  const [busy, setBusy] = useState<null | 'resume' | 'disconnect' | 'adopt'>(null);
   const run = (kind: NonNullable<typeof busy>, action: () => Promise<void> | void) => async () => {
     setBusy(kind);
     try {
@@ -84,7 +90,16 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
       setBusy(null);
     }
   };
-  const copy = driveSyncCopy(status, busy === 'connect');
+  // Connecting is the provider's, so it holds until the page leaves for Google.
+  const { connecting } = drive;
+  const copy = driveSyncCopy(status, { connecting, connectError: drive.connectError });
+  // The text slot holds both the usual words and the failure, so a failed
+  // Connect changes no heights.
+  const usual = driveSyncCopy(status, { connecting, connectError: null }).text;
+  const texts =
+    copy.action === 'connect' || copy.action === 'reconnect'
+      ? [usual, DRIVE_CONNECT_FAILED]
+      : [usual];
   const connected = status.state === 'idle' || status.state === 'syncing';
   const paused = status.state === 'needs_reconnect' || status.state === 'needs_resume';
   const syncing = status.state === 'syncing';
@@ -107,9 +122,13 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
             <StatePill tone={copy.tone}>{copy.badge}</StatePill>
           </div>
 
-          <p aria-live="polite" className="text-sm text-slate-700 dark:text-slate-200">
-            {copy.text}
-          </p>
+          <div
+            aria-live="polite"
+            data-drive-text
+            className={`text-sm ${copy.failed ? 'text-rose-700 dark:text-rose-300' : 'text-slate-700 dark:text-slate-200'}`}
+          >
+            <StableLabel options={texts} current={copy.text} block />
+          </div>
 
           {status.progress ? (
             <div
@@ -169,7 +188,8 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
             <span className="flex items-center gap-2">
               {connected || paused ? (
                 <Button
-                  variant="secondary"
+                  // Reversible, and the Drive files stay: a warning, not a danger.
+                  variant="warning"
                   size="sm"
                   disabled={busy !== null}
                   onClick={run('disconnect', drive.disconnect)}
@@ -181,20 +201,28 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
                 <Button
                   variant="primary"
                   size="sm"
-                  disabled={busy !== null}
-                  onClick={run('connect', drive.connect)}
+                  disabled={busy !== null || connecting}
+                  onClick={() => void drive.connect()}
                 >
-                  {busy === 'connect' ? 'Connecting…' : 'Connect Google Drive'}
+                  <StableLabel
+                    options={CONNECT_LABELS}
+                    current={connecting ? 'Connecting…' : 'Connect Google Drive'}
+                    itemClassName="text-optical-line"
+                  />
                 </Button>
               ) : null}
               {copy.action === 'reconnect' ? (
                 <Button
                   variant="primary"
                   size="sm"
-                  disabled={busy !== null}
-                  onClick={run('connect', drive.connect)}
+                  disabled={busy !== null || connecting}
+                  onClick={() => void drive.connect()}
                 >
-                  {busy === 'connect' ? 'Connecting…' : 'Reconnect'}
+                  <StableLabel
+                    options={RECONNECT_LABELS}
+                    current={connecting ? 'Connecting…' : 'Reconnect'}
+                    itemClassName="text-optical-line"
+                  />
                 </Button>
               ) : null}
               {copy.action === 'resume' ? (
@@ -211,11 +239,14 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
                 <Button
                   variant="primary"
                   size="sm"
-                  className="min-w-[6rem]"
                   disabled={busy !== null || syncing}
                   onClick={() => drive.syncNow()}
                 >
-                  {syncing ? 'Syncing…' : 'Sync now'}
+                  <StableLabel
+                    options={SYNC_LABELS}
+                    current={syncing ? 'Syncing…' : 'Sync now'}
+                    itemClassName="text-optical-line"
+                  />
                 </Button>
               ) : null}
             </span>

@@ -1,8 +1,8 @@
 'use client';
 
 // The avatar's cloud badge (docs/specs/022-drive-mirror/drive-mirror.md, "At a glance";
-// blueprint "The cloud badge"): a cloud with a tick, arrows or an exclamation
-// mark, laid over the avatar's corner as a button of its own that opens
+// blueprint "The cloud badge"): a small disc with a cloud, arrows or an
+// exclamation mark, laid over the avatar's corner as a button of its own that opens
 // Settings on Account > Cloud Sync. Absolutely placed, so nothing moves as it
 // appears or changes. The glyph, not the colour alone, tells the states apart.
 
@@ -28,6 +28,10 @@ export function useDriveIndicator(): DriveIndicator {
   return driveIndicator(status, mode, longPass === status, now);
 }
 
+// The badge's size in px: a small corner badge, about a quarter of the
+// avatar's area (D24).
+export const DRIVE_BADGE_PX = 12;
+
 // Fill per state; each carries a white glyph at 3:1 or better in both themes.
 const FILL: Record<Exclude<DriveIndicator['kind'], 'none'>, string> = {
   synced: 'fill-emerald-600',
@@ -35,53 +39,39 @@ const FILL: Record<Exclude<DriveIndicator['kind'], 'none'>, string> = {
   attention: 'fill-amber-600',
 };
 
-function CloudGlyph({ kind }: { kind: Exclude<DriveIndicator['kind'], 'none'> }) {
-  const cloud = (
-    <>
-      <circle cx="6" cy="10.5" r="3.8" />
-      <circle cx="11.5" cy="7.2" r="5" />
-      <circle cx="16.5" cy="10.3" r="3.9" />
-      <rect x="6" y="9" width="10.5" height="5.3" />
-    </>
-  );
+// A disc in the state's colour inside a ring in the header's background (the
+// button's text colour), holding a white glyph that differs per state: a
+// cloud when synced, turning arrows while syncing, an exclamation mark.
+function BadgeGlyph({ kind }: { kind: Exclude<DriveIndicator['kind'], 'none'> }) {
   return (
-    // Square like every Glyph: the 22 × 16 cloud sits 3 units down.
-    <Glyph size={26} units={22} weight={2} className="overflow-visible">
-      <g transform="translate(0 3)">
-        {/* A halo in the header's own colour (the button's text colour) parts the
-            cloud from the avatar. */}
-        <g fill="currentColor" stroke="currentColor" strokeWidth="3">
-          {cloud}
-        </g>
-        <g className={FILL[kind]} stroke="none">
-          {cloud}
-        </g>
-        <g
-          fill="none"
-          stroke="white"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          {kind === 'synced' ? <path d="M8.4 10.7l1.8 1.8 3.4-3.6" /> : null}
-          {kind === 'attention' ? (
-            <>
-              <path d="M11.2 7.4v3.3" />
-              <circle cx="11.2" cy="12.9" r="0.4" fill="white" />
-            </>
-          ) : null}
-          {kind === 'syncing' ? (
-            <g
-              data-drive-spin
-              className="origin-center [transform-box:fill-box] motion-safe:animate-[spin_1.6s_linear_infinite]"
-            >
-              <path d="M8.6 10.4a2.7 2.7 0 0 1 4.8-1.3" />
-              <path d="M13.6 7.7v1.6H12" />
-              <path d="M13.8 11.4a2.7 2.7 0 0 1-4.8 1.3" />
-              <path d="M8.8 14.1v-1.6h1.6" />
-            </g>
-          ) : null}
-        </g>
+    <Glyph size={DRIVE_BADGE_PX} units={16} weight={1.5} className="overflow-visible">
+      <circle cx="8" cy="8" r="9" fill="currentColor" stroke="none" />
+      <circle cx="8" cy="8" r="7.5" className={FILL[kind]} stroke="none" />
+      <g fill="none" stroke="white">
+        {kind === 'synced' ? (
+          <path
+            fill="white"
+            stroke="none"
+            d="M5.1 11.2h5.9a2.1 2.1 0 0 0 .3-4.2A3 3 0 0 0 5.6 6.2a2.5 2.5 0 0 0-.5 5z"
+          />
+        ) : null}
+        {kind === 'attention' ? (
+          <>
+            <path d="M8 4.4v4.4" />
+            <path d="M8 11.5v.1" />
+          </>
+        ) : null}
+        {kind === 'syncing' ? (
+          <g
+            data-drive-spin
+            className="origin-center [transform-box:fill-box] motion-safe:animate-[spin_1.6s_linear_infinite]"
+          >
+            <path d="M4.6 7.4a3.5 3.5 0 0 1 6.3-1.6" />
+            <path d="M11.2 3.9v2.2H9" />
+            <path d="M11.4 8.6a3.5 3.5 0 0 1-6.3 1.6" />
+            <path d="M4.8 12.1V9.9H7" />
+          </g>
+        ) : null}
       </g>
     </Glyph>
   );
@@ -106,11 +96,12 @@ export function DriveSyncBadge({
             data-drive-badge={indicator.kind}
             aria-label={indicator.label}
             onClick={onOpen}
-            // Over the avatar's upper-right corner (a 28 px target): the account
-            // button's glyph is centred, 20 px, with its label beneath (HEADER_ACTION_BTN).
-            className="absolute left-1/2 top-1/2 z-10 flex h-7 w-7 translate-x-0.5 -translate-y-[27px] cursor-pointer items-center justify-center rounded-md text-white outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-900 dark:focus-visible:ring-brand-400"
+            // A 24 px target centred 8 px right of and 15 px above the avatar's
+            // centre, on its upper-right corner: the account button's glyph is
+            // centred, 20 px, with its label beneath (HEADER_ACTION_BTN).
+            className="absolute left-1/2 top-1/2 z-10 flex h-6 w-6 -translate-x-1 -translate-y-[27px] cursor-pointer items-center justify-center rounded-full text-white outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-900 dark:focus-visible:ring-brand-400"
           >
-            <CloudGlyph kind={indicator.kind} />
+            <BadgeGlyph kind={indicator.kind} />
           </button>
         </Tooltip>
       ) : null}

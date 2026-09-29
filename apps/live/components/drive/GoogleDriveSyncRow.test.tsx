@@ -6,12 +6,13 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DriveMirrorStatus } from '@/lib/drive/engine';
-import { driveRhythmText } from '@/lib/drive/cloud-sync-copy';
+import { DRIVE_SYNC_BADGES, driveRhythmText } from '@/lib/drive/cloud-sync-copy';
 import {
   SETTINGS_CATEGORIES,
   type SettingsCloudSyncRowSpec,
 } from '@/components/dialogs/settings/settings-catalogue';
 import {
+  DRIVE_CONNECT_FAILED,
   DRIVE_MIRROR_OFF,
   DRIVE_STATUS_INITIAL,
   DriveMirrorContext,
@@ -46,15 +47,51 @@ function show(status: Partial<DriveMirrorStatus>, over: Partial<DriveMirrorConte
 }
 
 describe('GoogleDriveSyncRow', () => {
-  it('offers Connect when not connected, and says it is connecting', async () => {
-    let finish = () => {};
-    const connect = vi.fn(() => new Promise<void>((r) => (finish = r)));
-    show({ state: 'disconnected' }, { connect });
-    expect(screen.getByText('Not connected')).toBeTruthy();
+  it('offers Connect when not connected', () => {
+    const value = show({ state: 'disconnected' });
+    expect(
+      screen.getByText('Not connected', { selector: '[data-stable-option]:not(.invisible)' }),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Connect Google Drive' }));
-    expect(connect).toHaveBeenCalledOnce();
-    expect(await screen.findByRole('button', { name: 'Connecting…' })).toBeTruthy();
-    finish();
+    expect(value.connect).toHaveBeenCalledOnce();
+  });
+
+  it('says Connecting while the provider connects, the button held', () => {
+    show({ state: 'disconnected' }, { connecting: true });
+    const button = screen.getByRole('button', { name: 'Connecting…' });
+    expect(button).toHaveProperty('disabled', true);
+    expect(
+      screen.getByText('Connecting', { selector: '[data-stable-option]:not(.invisible)' }),
+    ).toBeTruthy();
+  });
+
+  it('says why Connect could not start, back at Not connected', () => {
+    show({ state: 'disconnected' }, { connectError: DRIVE_CONNECT_FAILED });
+    expect(screen.getByText(DRIVE_CONNECT_FAILED)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Connect Google Drive' })).toHaveProperty(
+      'disabled',
+      false,
+    );
+  });
+
+  it('keeps every wording of the pill and buttons in place, so nothing reflows', () => {
+    show({ state: 'idle', lastSyncedAt: Date.now() });
+    const pill = document.querySelector('[data-drive-state]')!;
+    expect([...pill.querySelectorAll('[data-stable-option]')].map((n) => n.textContent)).toEqual([
+      ...DRIVE_SYNC_BADGES,
+    ]);
+    const sync = screen.getByRole('button', { name: 'Sync now' });
+    expect([...sync.querySelectorAll('[data-stable-option]')].map((n) => n.textContent)).toEqual([
+      'Sync now',
+      'Syncing…',
+    ]);
+  });
+
+  it('paints Disconnect as a warning, not a danger', () => {
+    show({ state: 'idle', lastSyncedAt: 1 });
+    const cls = screen.getByRole('button', { name: 'Disconnect' }).className;
+    expect(cls).toContain('bg-amber-400');
+    expect(cls).not.toContain('rose');
   });
 
   it('names the folder, the rhythm and the last sync, with Sync now and Disconnect', () => {
@@ -80,7 +117,9 @@ describe('GoogleDriveSyncRow', () => {
 
   it('offers Reconnect and Resume sync when paused', () => {
     const value = show({ state: 'needs_reconnect' });
-    expect(screen.getByText('Needs attention')).toBeTruthy();
+    expect(
+      screen.getByText('Needs attention', { selector: '[data-stable-option]:not(.invisible)' }),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Reconnect' }));
     expect(value.connect).toHaveBeenCalledOnce();
     cleanup();
