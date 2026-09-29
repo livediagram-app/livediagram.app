@@ -59,7 +59,9 @@ describe('EditorHeader stack row', () => {
     renderHeader();
     const slot = screen.getByRole('button', { name: 'Account menu' })
       .firstElementChild as HTMLElement;
-    const disc = slot.firstElementChild as HTMLElement;
+    // The disc sits in a positioning wrapper that carries the Drive sync mark
+    // (docs/specs/022-drive-mirror/drive-mirror.md, "At a glance").
+    const disc = slot.querySelector('[data-optical="disc"]') as HTMLElement;
     expect(disc.dataset.optical).toBe('disc');
     expect(disc.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
     expect(disc.querySelector('.text-optical-centre')?.textContent).toBe('W');
