@@ -254,6 +254,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     };
     let election = electDriveTab(onElected, onLost);
     channel.post({ type: 'hello' });
+    driveLog('tab-ready', {});
     // Back from a finished connection: whichever tab runs the mirror syncs now,
     // not at its next focus or poll. This tab, if elected, starts anyway.
     if (announceConnected.current) {
