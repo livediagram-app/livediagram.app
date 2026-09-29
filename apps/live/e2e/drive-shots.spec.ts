@@ -229,7 +229,7 @@ for (const theme of THEMES) {
       await shot(
         page,
         'cloud-sync-4-synced',
-        'Cloud Sync once synced: the folder name, the rhythm, Last synced, Sync now',
+        'Cloud Sync once synced: the time beside the pill, the folder name, the rhythm, Sync now',
       );
       await closeSettings(page);
       await badgeShot(
@@ -297,7 +297,7 @@ for (const theme of THEMES) {
       await shot(
         page,
         'cloud-sync-6-needs-attention',
-        'Cloud Sync with a folder notice and Show this folder to livediagram',
+        'Cloud Sync with a folder notice in place of the rhythm, and Show folder',
       );
       await closeSettings(page);
       await badgeShot(
@@ -364,7 +364,7 @@ for (const theme of THEMES) {
       google.fake.expireAccessTokens();
       row = await openCloudSync(page, 'badge');
       await row
-        .getByRole('button', { name: /Sync now|Show this folder/ })
+        .getByRole('button', { name: /Sync now|Show folder/ })
         .first()
         .isVisible();
       const sync = row.getByRole('button', { name: 'Sync now' });

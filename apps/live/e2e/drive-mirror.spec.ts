@@ -311,7 +311,9 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await expect(page.getByRole('heading', { name: 'Cloud Sync' })).toBeFocused();
   await expect(textOf(panel)).toHaveText(`Copied to your Google Drive, in “${ROOT_NAME}”.`);
   await expect(detailOf(panel)).toContainText('Checks for changes every 2 minutes');
-  await expect(panel).toContainText('Last synced');
+  await expect(panel.locator('[data-drive-since] [data-stable-option]:not(.invisible)')).toHaveText(
+    /ago|just now/,
+  );
   await settled(page);
   await expectStable(panel);
   await page.screenshot({ path: `${SHOTS}/02-connected.png` });
@@ -486,13 +488,22 @@ test('a change made in Drive reaches the open Explorer within two minutes, no re
 });
 
 test('the Cloud Sync buttons never cover anything, at three widths', async ({
+  browser,
   page,
   pageErrors,
 }) => {
   // Connected (USER) and not connected (a user of its own), wide, medium and
   // the phone layout, the narrowest Settings has.
   for (const user of [USER, `${USER}_widths`]) {
-    const tab = user === USER ? page : await page.context().newPage();
+    // Another user is another browser: tabs of one browser share the mirror.
+    const other =
+      user === USER
+        ? null
+        : await browser.newContext({
+            baseURL: test.info().project.use.baseURL,
+            colorScheme: 'dark',
+          });
+    const tab = other ? await other.newPage() : page;
     await signIn(tab, user);
     for (const width of [1280, 900, 390]) {
       await tab.setViewportSize({ width, height: 800 });
@@ -507,7 +518,7 @@ test('the Cloud Sync buttons never cover anything, at three widths', async ({
         path: `${SHOTS}/08-${user === USER ? 'connected' : 'not-connected'}-${width}.png`,
       });
     }
-    if (tab !== page) await tab.close();
+    await other?.close();
   }
   expectNoPageErrors(pageErrors);
 });

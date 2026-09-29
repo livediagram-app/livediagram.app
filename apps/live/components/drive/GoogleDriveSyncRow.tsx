@@ -90,7 +90,8 @@ function StatePill({
   return (
     <span
       data-drive-state={tone}
-      className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}
+      // Centred, so a short word sits in the middle of the width its phase reserves.
+      className={`inline-flex shrink-0 items-center justify-center gap-1 rounded-full border px-2 py-0.5 text-center text-xs font-medium ${className}`}
     >
       <Glyph size={12} units={16}>
         {glyph}
