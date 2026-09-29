@@ -29,6 +29,7 @@ import { sessionsEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { useDriveMirror } from '@/components/drive/drive-mirror-context';
+import { DriveSyncMark, useDriveIndicator } from '@/components/drive/DriveSyncMark';
 
 // The Drive panel only loads when opened.
 const DriveDialog = dynamic(
@@ -62,6 +63,7 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [driveOpen, setDriveOpen] = useState(false);
   const drive = useDriveMirror();
+  const driveMark = useDriveIndicator();
   const menuRef = useRef<HTMLDivElement>(null);
   // Return here after sign-in (must run before the early returns below).
   const { signInHref } = useAuthHrefs();
@@ -101,17 +103,23 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
       <button
         type="button"
         onClick={() => setMenuOpen((open) => !open)}
-        aria-label="Account menu"
+        // The Drive mirror's state rides in the name (docs/specs/022-drive-mirror/drive-mirror.md,
+        // "At a glance"), beside the mark on the avatar.
+        aria-label={driveMark.label ? `Account menu, ${driveMark.label}` : 'Account menu'}
         aria-expanded={menuOpen}
         className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
         <HeaderGlyph>
-          <GlyphDisc
-            size={HEADER_ICON_SLOT_PX}
-            className={`bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
-          >
-            {initial}
-          </GlyphDisc>
+          {/* The mark overlays the disc, so the button never moves. */}
+          <span className="relative inline-flex">
+            <GlyphDisc
+              size={HEADER_ICON_SLOT_PX}
+              className={`bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+            >
+              {initial}
+            </GlyphDisc>
+            <DriveSyncMark indicator={driveMark} />
+          </span>
         </HeaderGlyph>
         <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>
       </button>
