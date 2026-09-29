@@ -78,7 +78,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
 
   // Open a diagram from a list row. The current diagram (editor only)
   // is already autosaved, so a hard navigation loses nothing; path
-  // scheme per docs/specs/007-editor/new-diagram-route.md. Shared-list rows pass a share code so the
+  // scheme per docs/specs/007-editor/new-document-route.md. Shared-list rows pass a share code so the
   // non-owner can actually load the target; without it the editor's
   // hydration goes through the owner-only `/api/documents/:id` path
   // and 404s.

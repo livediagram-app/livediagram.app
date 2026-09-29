@@ -9,53 +9,53 @@ in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                                             | Role                                                                                     |
-| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/trash.ts`                                               | The clock and the wire: retention, days left, error code, close code, `TrashedDocument`   |
-| `apps/api/migrations/0051_document_trash.sql`                                     | `diagrams.trashed_at` + the partial index                                                |
+| File                                                                             | Role                                                                                        |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/trash.ts`                                               | The clock and the wire: retention, days left, error code, close code, `TrashedDocument`     |
+| `apps/api/migrations/0051_diagram_trash.sql`                                     | `diagrams.trashed_at` + the partial index                                                   |
 | `apps/api/src/db/trash.ts`                                                       | `trashDocument`, `restoreDocument`, `purgeDocuments`, `purgeExpiredTrash`, `listTrash`, ... |
-| `apps/api/src/db/document-removal.ts`                                            | `documentRemovalStatements` takes `{ ids }` besides one id / one owner                    |
-| `apps/api/src/db/documents.ts`                                                   | `getDocument`, `getDocumentMeta`, both lists: live rows only                               |
-| `apps/api/src/db/{shared,favourites,collab-index,tabs,timeline}.ts`              | The reads that leave trashed diagrams out; `documentsTimelineSweepStatement`              |
-| `apps/api/src/timeline/expiry-sweep.ts`                                          | No expiry warning for a trashed diagram's links                                          |
-| `apps/api/src/routes/context.ts`                                                 | `missingDocument`: 410 or 404 on a miss; the guards use it                                |
-| `apps/api/src/routes/document-delete-route.ts`                                   | `DELETE /api/documents/:id`: trash, `?permanent=true`, Take Offline                       |
-| `apps/api/src/routes/trash.ts`                                                   | `/api/trash` list, restore, purge one, empty                                             |
-| `apps/api/src/routes/{diagrams,share,diagram-room-routes,...}.ts`                | The doors: 410 through `missingDocument`; the ws upgrade refuses                          |
-| `apps/api/src/room-client.ts`, `document-room.ts`, `room-scope.ts`               | `broadcastDocumentTrashed`; the room closes every socket with 4004                        |
-| `apps/api/src/index.ts`, `auth/guest-rest.ts`                                    | `trash` dispatch + guest-signature scope; the cron's `purgeExpiredTrash`                 |
-| `apps/api/src/openapi/manifest.ts`, `document.ts`, `scripts/gen-openapi-...`     | The Trash tag and routes; 410 on the diagram doors; `TrashedDocument` schema              |
-| `apps/mcp/src/{tools,schema}.ts`                                                 | `delete_document` to the Trash only; `list_trash`, `restore_document`                      |
-| `apps/live/lib/api/trash.ts`                                                     | `apiListTrash`, `apiRestoreDocument`, `apiPurgeDocument`, `apiEmptyTrash`                  |
-| `apps/live/lib/offline/offline-trash.ts`, `offline-store.ts`                     | The local Trash on the IndexedDB record                                                  |
+| `apps/api/src/db/document-removal.ts`                                            | `documentRemovalStatements` takes `{ ids }` besides one id / one owner                      |
+| `apps/api/src/db/documents.ts`                                                   | `getDocument`, `getDocumentMeta`, both lists: live rows only                                |
+| `apps/api/src/db/{shared,favourites,collab-index,tabs,timeline}.ts`              | The reads that leave trashed diagrams out; `documentsTimelineSweepStatement`                |
+| `apps/api/src/timeline/expiry-sweep.ts`                                          | No expiry warning for a trashed diagram's links                                             |
+| `apps/api/src/routes/context.ts`                                                 | `missingDocument`: 410 or 404 on a miss; the guards use it                                  |
+| `apps/api/src/routes/document-delete-route.ts`                                   | `DELETE /api/documents/:id`: trash, `?permanent=true`, Take Offline                         |
+| `apps/api/src/routes/trash.ts`                                                   | `/api/trash` list, restore, purge one, empty                                                |
+| `apps/api/src/routes/{diagrams,share,diagram-room-routes,...}.ts`                | The doors: 410 through `missingDocument`; the ws upgrade refuses                            |
+| `apps/api/src/room-client.ts`, `document-room.ts`, `room-scope.ts`               | `broadcastDocumentTrashed`; the room closes every socket with 4004                          |
+| `apps/api/src/index.ts`, `auth/guest-rest.ts`                                    | `trash` dispatch + guest-signature scope; the cron's `purgeExpiredTrash`                    |
+| `apps/api/src/openapi/manifest.ts`, `document.ts`, `scripts/gen-openapi-...`     | The Trash tag and routes; 410 on the diagram doors; `TrashedDocument` schema                |
+| `apps/mcp/src/{tools,schema}.ts`                                                 | `delete_document` to the Trash only; `list_trash`, `restore_document`                       |
+| `apps/live/lib/api/trash.ts`                                                     | `apiListTrash`, `apiRestoreDocument`, `apiPurgeDocument`, `apiEmptyTrash`                   |
+| `apps/live/lib/offline/offline-trash.ts`, `offline-store.ts`                     | The local Trash on the IndexedDB record                                                     |
 | `apps/live/lib/document-trashed.ts`, `document-tombstones.ts`                    | `DocumentTrashedError`, `isDocumentTrashedError`; `unmarkDocumentDeleted`                   |
-| `apps/live/lib/trash-groups.ts`, `trash-copy.ts`                                 | Grouping and days-left copy; the confirmation line                                       |
-| `apps/live/hooks/persistence/useTrash.ts`, `components/panels/TrashPane.tsx`     | The Trash view                                                                           |
-| `apps/live/app/explorer/{TrashSection.tsx,trash/page.tsx,routes.ts,views.tsx}`   | The `/explorer/trash` route, no sidebar row                                              |
-| `apps/live/components/dialogs/settings/{settings-catalogue.ts,SettingsTrashRow}` | Settings › Account › Trash, the one way in                                               |
-| `apps/live/app/document/[id]/{useDocumentTrashed,useIdentityBootstrap,...}.ts`    | The deleted state: load, room, autosave                                                  |
-| `apps/live/components/chrome/DocumentTrashedCard.tsx`, `editor-page.tsx`         | The deleted card, Restore when allowed                                                   |
-| `apps/help/app/account-and-data/trash/page.mdx`, help registry, article icon     | The help article                                                                         |
-| `apps/telemetry/app/catalogue/{content,connections}.ts`, explanations, vocab     | The Trash stack; the two MCP tool charts                                                 |
+| `apps/live/lib/trash-groups.ts`, `trash-copy.ts`                                 | Grouping and days-left copy; the confirmation line                                          |
+| `apps/live/hooks/persistence/useTrash.ts`, `components/panels/TrashPane.tsx`     | The Trash view                                                                              |
+| `apps/live/app/explorer/{TrashSection.tsx,trash/page.tsx,routes.ts,views.tsx}`   | The `/explorer/trash` route, no sidebar row                                                 |
+| `apps/live/components/dialogs/settings/{settings-catalogue.ts,SettingsTrashRow}` | Settings › Account › Trash, the one way in                                                  |
+| `apps/live/app/document/[id]/{useDocumentTrashed,useIdentityBootstrap,...}.ts`   | The deleted state: load, room, autosave                                                     |
+| `apps/live/components/chrome/DocumentTrashedCard.tsx`, `editor-page.tsx`         | The deleted card, Restore when allowed                                                      |
+| `apps/help/app/account-and-data/trash/page.mdx`, help registry, article icon     | The help article                                                                            |
+| `apps/telemetry/app/catalogue/{content,connections}.ts`, explanations, vocab     | The Trash stack; the two MCP tool charts                                                    |
 
 ## Domain and naming
 
-| Term               | Identifier                                                  | Meaning                                             |
-| ------------------ | ----------------------------------------------------------- | --------------------------------------------------- |
-| Trash              | `trash` (route segment, telemetry category `Trash`)         | Where a deleted diagram waits                       |
-| Trashed            | `diagrams.trashed_at` (epoch ms), `trashedAt`               | In the Trash since that time; NULL / absent = live  |
-| Trash (verb)       | `trashDocument`, `offlineTrashDocument`                       | Move a live diagram in                              |
-| Restore            | `restoreDocument`, `apiRestoreDocument`, `restore_document`    | Bring it back to its place                          |
-| Purge              | `purgeDocuments`, `apiPurgeDocument`, `offlinePurgeDocument`   | Remove for good, through `documentRemovalStatements` |
-| Empty Trash        | `apiEmptyTrash(scope)`, `DELETE /api/trash[?team=]`         | Purge one group                                     |
-| Group / scope      | `TrashGroup`, `TrashScope` (`personal`, `team`, `local`)    | One Trash in the view; one Empty Trash              |
-| Local Trash        | `offline-trash.ts`                                          | This browser's, for Offline Mode records            |
-| Retention          | `TRASH_RETENTION_DAYS` / `TRASH_RETENTION_MS`               | 30 days                                             |
-| Days left          | `trashDaysLeft`, `daysLeftLabel`                            | Whole days to the purge, rounded up, floor 0        |
-| Deleted state      | `DOCUMENT_TRASHED_ERROR` (`document_trashed`), 410            | What a door answers an authorised caller            |
-| Deleted card       | `DocumentTrashedCard`                                        | The editor's surface for it                         |
-| Trashed op / close | `diagram-trashed` (system op), `DOCUMENT_TRASHED_CLOSE` 4004 | The room telling open sessions                      |
-| Permanent          | `?permanent=true`                                           | REST only: trash + purge in one call                |
+| Term               | Identifier                                                   | Meaning                                              |
+| ------------------ | ------------------------------------------------------------ | ---------------------------------------------------- |
+| Trash              | `trash` (route segment, telemetry category `Trash`)          | Where a deleted diagram waits                        |
+| Trashed            | `diagrams.trashed_at` (epoch ms), `trashedAt`                | In the Trash since that time; NULL / absent = live   |
+| Trash (verb)       | `trashDocument`, `offlineTrashDocument`                      | Move a live diagram in                               |
+| Restore            | `restoreDocument`, `apiRestoreDocument`, `restore_document`  | Bring it back to its place                           |
+| Purge              | `purgeDocuments`, `apiPurgeDocument`, `offlinePurgeDocument` | Remove for good, through `documentRemovalStatements` |
+| Empty Trash        | `apiEmptyTrash(scope)`, `DELETE /api/trash[?team=]`          | Purge one group                                      |
+| Group / scope      | `TrashGroup`, `TrashScope` (`personal`, `team`, `local`)     | One Trash in the view; one Empty Trash               |
+| Local Trash        | `offline-trash.ts`                                           | This browser's, for Offline Mode records             |
+| Retention          | `TRASH_RETENTION_DAYS` / `TRASH_RETENTION_MS`                | 30 days                                              |
+| Days left          | `trashDaysLeft`, `daysLeftLabel`                             | Whole days to the purge, rounded up, floor 0         |
+| Deleted state      | `DOCUMENT_TRASHED_ERROR` (`document_trashed`), 410           | What a door answers an authorised caller             |
+| Deleted card       | `DocumentTrashedCard`                                        | The editor's surface for it                          |
+| Trashed op / close | `diagram-trashed` (system op), `DOCUMENT_TRASHED_CLOSE` 4004 | The room telling open sessions                       |
+| Permanent          | `?permanent=true`                                            | REST only: trash + purge in one call                 |
 
 Banned: "recycle bin", "bin" (except in the help article's keywords), "soft delete" in copy, "undelete",
 "archive".
@@ -67,16 +67,16 @@ set), **gone** (no row). Offline records mirror it with `trashedAt` absent / set
 
 | From    | Event                                                 | To      | Guard                                                  |
 | ------- | ----------------------------------------------------- | ------- | ------------------------------------------------------ |
-| live    | `DELETE /api/documents/:id`                            | trashed | `mayDeleteDocument`                                     |
-| live    | `DELETE ...?permanent=true`                           | gone    | `mayDeleteDocument`; trash then purge                   |
-| live    | owner's `DELETE` with `X-Diagram-Conversion: offline` | gone    | caller is the owner; `deleteDocument` (hard)            |
+| live    | `DELETE /api/documents/:id`                           | trashed | `mayDeleteDocument`                                    |
+| live    | `DELETE ...?permanent=true`                           | gone    | `mayDeleteDocument`; trash then purge                  |
+| live    | owner's `DELETE` with `X-Diagram-Conversion: offline` | gone    | caller is the owner; `deleteDocument` (hard)           |
 | live    | teammate's `DELETE` with the offline conversion       | trashed | the conversion is ignored for a non-owner              |
 | live    | account deletion                                      | gone    | `deleteAccount`, owner selector, trashed rows included |
-| trashed | `POST /api/trash/:id/restore`, `restore_document`      | live    | `mayDeleteDocument` on the trashed row                  |
-| trashed | `DELETE /api/trash/:id`, `DELETE ...?permanent=true`  | gone    | `mayDeleteDocument`                                     |
+| trashed | `POST /api/trash/:id/restore`, `restore_document`     | live    | `mayDeleteDocument` on the trashed row                 |
+| trashed | `DELETE /api/trash/:id`, `DELETE ...?permanent=true`  | gone    | `mayDeleteDocument`                                    |
 | trashed | `DELETE /api/trash[?team=]`                           | gone    | personal: owner; team: joined member (verified id)     |
 | trashed | daily cron, `trashed_at <= now - TRASH_RETENTION_MS`  | gone    | none                                                   |
-| trashed | `DELETE /api/documents/:id` (plain)                    | trashed | answers 410; the first `trashed_at` stands             |
+| trashed | `DELETE /api/documents/:id` (plain)                   | trashed | answers 410; the first `trashed_at` stands             |
 
 Invariants:
 
@@ -101,14 +101,14 @@ the deleted card ahead of every other status while `trashed` is true.
 
 REST (all `guest-or-clerk`, token-usable; a read-only token may only `GET`):
 
-| Method | Path                               | Success                                      | Failures                                                                        |
-| ------ | ---------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------- |
+| Method | Path                                | Success                                      | Failures                                                                        |
+| ------ | ----------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------- |
 | DELETE | `/api/documents/:id`                | 204                                          | 400 no caller; 404 missing / stranger; 403 no delete claim; 410 already trashed |
 | DELETE | `/api/documents/:id?permanent=true` | 204                                          | 400; 404; 403                                                                   |
-| GET    | `/api/trash`                       | 200 `{ trash: TrashedDocument[] }`            | 400                                                                             |
-| POST   | `/api/trash/:id/restore`           | 200 `{ diagram }` (redacted for a non-owner) | 400; 404 (missing, live, or no claim)                                           |
-| DELETE | `/api/trash/:id`                   | 204                                          | 400; 404                                                                        |
-| DELETE | `/api/trash[?team=<id>]`           | 200 `{ purged: number }`                     | 400; 404 team not joined                                                        |
+| GET    | `/api/trash`                        | 200 `{ trash: TrashedDocument[] }`           | 400                                                                             |
+| POST   | `/api/trash/:id/restore`            | 200 `{ diagram }` (redacted for a non-owner) | 400; 404 (missing, live, or no claim)                                           |
+| DELETE | `/api/trash/:id`                    | 204                                          | 400; 404                                                                        |
+| DELETE | `/api/trash[?team=<id>]`            | 200 `{ purged: number }`                     | 400; 404 team not joined                                                        |
 
 Every `/api/documents/:id/*` door and `/api/share/:code` (+ `image.svg`): 410 `{ error: 'document_trashed' }`
 when the id is trashed and the caller has a grant (`gateGrant`), else 404. `/api/share/:code` answers 410 to
@@ -133,10 +133,10 @@ stops reconnecting.
 
 ## Data and persistence
 
-| Field                            | Class | Notes                                                        |
-| -------------------------------- | ----- | ------------------------------------------------------------ |
-| `diagrams.trashed_at`            | state | INTEGER NULL, epoch ms; partial index `documents_trashed_idx` |
-| `OfflineDocumentRecord.trashedAt` | state | optional number; absent on every record written before it    |
+| Field                             | Class | Notes                                                         |
+| --------------------------------- | ----- | ------------------------------------------------------------- |
+| `diagrams.trashed_at`             | state | INTEGER NULL, epoch ms; partial index `documents_trashed_idx` |
+| `OfflineDocumentRecord.trashedAt` | state | optional number; absent on every record written before it     |
 
 Migration 0051 adds the column and index; every existing row is live (NULL). No backfill. 0050 belongs to
 the image reference index; the two are independent (D1). Snapshot and restore are the row itself: nothing
@@ -226,7 +226,7 @@ room`; open sessions still stop at their next save (I5).
 | `[trash] purged local <n>`                                | editor, local sweep       |
 | `[trash] cloud list failed`                               | editor, warn              |
 | `[trash] open diagram is in the Trash`                    | editor                    |
-| `Http410.<Action>.DocumentTrashed`                         | editor error telemetry    |
+| `Http410.<Action>.DocumentTrashed`                        | editor error telemetry    |
 
 ## Testing
 
@@ -256,7 +256,7 @@ room`; open sessions still stop at their next save (I5).
 | `TRASH_RETENTION_DAYS`    | 30    | Operator decision                         | 7 to 90      |
 | `TRASH_PURGE_BATCH`       | 100   | ~4 KB bound per `json_each` list (D3)     | 10 to 500    |
 | `TRASH_PURGE_MAX_BATCHES` | 20    | Well inside one invocation's query budget | 1 to 200     |
-| `DOCUMENT_TRASHED_CLOSE`   | 4004  | Next free code beside 4003                | 4000 to 4999 |
+| `DOCUMENT_TRASHED_CLOSE`  | 4004  | Next free code beside 4003                | 4000 to 4999 |
 
 No new environment variable or binding; self-hosting needs only the migration.
 

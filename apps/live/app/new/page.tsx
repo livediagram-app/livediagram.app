@@ -63,7 +63,7 @@ const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
 const noBypass = () => null;
 
 // Folder shape the Settings step's placement browser consumes.
-// Dedicated welcome / create-new flow, see docs/specs/007-editor/new-diagram-route.md.
+// Dedicated welcome / create-new flow, see docs/specs/007-editor/new-document-route.md.
 // Owns identity bootstrap, template + theme choice (a two-step wizard),
 // and the actual "commit a new diagram" handoff. Once the user picks (or
 // skips), we POST the seeded diagram and navigate to /document/<id> where

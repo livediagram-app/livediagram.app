@@ -141,7 +141,7 @@ export function useIdentityBootstrap(opts: {
   } = set;
 
   // The tab-seeding + owner-field body both arrival branches share —
-  // see seed-fetched-diagram.ts.
+  // see seed-fetched-document.ts.
   const seedFetchedDocument = makeSeedFetchedDocument({
     activeId,
     resetTabs,
@@ -358,7 +358,7 @@ export function useIdentityBootstrap(opts: {
           });
           const codeForVisitor = session.sessionShareCode;
           // Tab seeding + name + owner fields (shared with the owner-URL
-          // branch below) — see seed-fetched-diagram.ts. Visitors present
+          // branch below) — see seed-fetched-document.ts. Visitors present
           // their session share code on the eager first-tab fetch.
           // Scope first: seeding makes the scoped tab active, and the active-tab
           // guard refuses any other (docs/specs/013-workspace/tab-scoped-share-links.md).
@@ -462,7 +462,7 @@ export function useIdentityBootstrap(opts: {
         }
         // Past the `!fetched` return above, so the diagram is loaded.
         // Tab seeding + name + owner fields (shared with the visitor
-        // branch above) — see seed-fetched-diagram.ts. The owner's
+        // branch above) — see seed-fetched-document.ts. The owner's
         // eager first-tab fetch presents no share code.
         await seedFetchedDocument(self.id, fetched, null, null);
         // An offline diagram (docs/specs/006-document/offline-mode.md) is yours by construction — its

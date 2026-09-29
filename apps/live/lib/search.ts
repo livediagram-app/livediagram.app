@@ -67,7 +67,7 @@ type ElementItem = {
   label: string;
   // Element.type literal so callers can show a per-type icon.
   // 'shape' / 'text' / 'sticky' / 'image' / 'freehand' / 'arrow'
-  // line up with the boxed + arrow unions in packages/diagram.
+  // line up with the boxed + arrow unions in packages/document.
   type:
     | 'shape'
     | 'text'

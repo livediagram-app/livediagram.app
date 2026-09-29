@@ -238,7 +238,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // does (docs/specs/014-identity/auth-and-guest-access.md): the gate above admits any valid share code, view
       // or edit, so this is the same audience — and a guest owner's id IS
       // their credential. This door was returning it intact while the
-      // share door blanked it. See redact-diagram.ts.
+      // share door blanked it. See redact-document.ts.
       // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) sees the other tabs locked.
       if (!grant) return notFound();
       const liveDoc = redactDocumentForScope(
@@ -398,7 +398,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   }
 
   // /api/documents/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md); the
-  // scope-change policy lives in diagram-placement-route.ts.
+  // scope-change policy lives in document-placement-route.ts.
   {
     const placementResp = await handleDocumentPlacement(ctx);
     if (placementResp) return placementResp;
@@ -452,7 +452,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   if (subResp) return subResp;
 
   // Realtime-room admission (docs/specs/015-api/api.md): the one-time WS ticket mint +
-  // the Durable Object upgrade — see diagram-room-routes.ts.
+  // the Durable Object upgrade — see document-room-routes.ts.
   const roomResp = await handleDocumentRoomRoutes(ctx);
   if (roomResp) return roomResp;
 

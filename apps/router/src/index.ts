@@ -3,7 +3,7 @@
 // don't exist and each app is a plain HTTP origin to proxy instead.
 // See docs/specs/016-platform/router-app.md.
 
-import { legacyEditorRedirect } from './legacy-editor-route';
+import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
 
 export interface Env {
@@ -173,6 +173,8 @@ async function route(request: Request, env: Env): Promise<Response> {
     // static app — same prefix-strip as the live app's assets.
     return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
   }
+  const legacyHelp = legacyHelpRedirect(url);
+  if (legacyHelp) return legacyHelp;
   if (hasPrefix(url.pathname, HELP_PATH)) {
     // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
     // prefix-strip as telemetry.

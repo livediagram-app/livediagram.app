@@ -39,7 +39,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // Requests going out and data coming back.
-  'working-with-diagrams': (
+  'working-with-documents': (
     <Glyph>
       <rect x="2.5" y="4" width="7" height="6" rx="1.5" />
       <rect x="14.5" y="14" width="7" height="6" rx="1.5" />
@@ -286,7 +286,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
   ),
 
   // ---- Troubleshooting ----
-  'diagram-not-loading': (
+  'document-not-loading': (
     <Glyph>
       <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
       <path d="M14 3v6h6" />

@@ -193,7 +193,7 @@ export function useSelectionEditing(opts: {
     // Parallel auto-rename for the active tab while its name still matches
     // the default `Tab N` pattern: the first element's label becomes the
     // tab name. Fires at most once per tab (any non-default name stops the
-    // gate, including the auto-renamed value itself). See docs/specs/006-document/diagram-structure.md.
+    // gate, including the auto-renamed value itself). See docs/specs/006-document/document-structure.md.
     if (trimmed && /^Tab \d+$/.test(activeTab.name)) {
       const firstEl = activeTab.elements[0];
       if (firstEl && firstEl.id === elementId) {

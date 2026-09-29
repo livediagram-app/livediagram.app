@@ -404,7 +404,7 @@ export const articles: Article[] = [
     categorySlug: 'getting-started',
   },
   {
-    slug: 'sharing-your-diagram',
+    slug: 'sharing-your-document',
     title: 'Sharing Your Diagram',
     description: 'Hand a link to anyone and edit together in real time.',
     keywords: 'share link collaborate invite send url realtime together',
@@ -582,7 +582,7 @@ export const articles: Article[] = [
     categorySlug: 'developers',
   },
   {
-    slug: 'working-with-diagrams',
+    slug: 'working-with-documents',
     title: 'Working with Diagrams',
     description: 'Worked examples: list, read, create, and update diagrams, tabs, and folders.',
     keywords: 'examples curl crud create update list read api requests',
@@ -697,7 +697,7 @@ export const articles: Article[] = [
 
   // ---- Troubleshooting ----
   {
-    slug: 'diagram-not-loading',
+    slug: 'document-not-loading',
     title: 'A Diagram Will Not Load',
     description: 'What to check when a diagram is blank or stuck loading.',
     keywords: 'blank stuck loading error broken empty spinner wont open 404',
@@ -1258,7 +1258,7 @@ export const articles: Article[] = [
     categorySlug: 'tabs',
   },
   {
-    slug: 'add-to-diagram',
+    slug: 'add-to-document',
     title: 'Add a Tab to Another Diagram',
     description: 'Add the active tab to another diagram you own; both share the same live tab.',
     keywords: 'reuse share tab sync across diagrams move copy live',
@@ -2070,7 +2070,7 @@ export const articles: Article[] = [
     parentSlug: 'teams',
   },
   {
-    slug: 'team-shared-diagrams',
+    slug: 'team-shared-documents',
     title: 'Team Shared Diagrams',
     description: 'A per-team folder tree every member can manage.',
     keywords: 'shared library folder team files workspace common',
@@ -2348,7 +2348,7 @@ export const articles: Article[] = [
     categorySlug: 'search-panel',
   },
   {
-    slug: 'search-diagrams',
+    slug: 'search-documents',
     title: 'Finding Diagrams and Folders',
     description: 'Search across your diagrams, folders, and the diagrams shared with you.',
     keywords: 'find lookup locate files library open',

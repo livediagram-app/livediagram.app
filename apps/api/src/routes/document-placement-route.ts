@@ -1,7 +1,7 @@
 // /api/documents/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md), split out
 // of routes/documents.ts: the scope-change policy is the densest rule
 // block under the diagram resource, so it owns its own module the way
-// the tab / share sub-paths own diagram-subresource-routes.ts.
+// the tab / share sub-paths own document-subresource-routes.ts.
 
 import {
   getDocument,

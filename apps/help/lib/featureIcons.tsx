@@ -465,7 +465,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // A folder handed outward: the team library is a folder every member can reach.
   // `search-teams` is a folder with people INSIDE it, which is a different claim.
-  'team-shared-diagrams': (
+  'team-shared-documents': (
     <Glyph>
       <path d="M2.5 8A1.5 1.5 0 014 6.5h4L9.5 8.5h5A1.5 1.5 0 0116 10v7.5A1.5 1.5 0 0114.5 19H4A1.5 1.5 0 012.5 17.5z" />
       <path d="M17.5 8.5H22" />
@@ -1433,7 +1433,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideLink} />
     </Glyph>
   ),
-  'add-to-diagram': (
+  'add-to-document': (
     <Glyph>
       <rect x="3" y="3" width="12" height="12" rx="2" />
       <path d="M9 21h10a2 2 0 0 0 2-2V9" />
@@ -1468,7 +1468,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M11 13.5h7" />
     </Glyph>
   ),
-  'search-diagrams': (
+  'search-documents': (
     <Glyph>
       <path d="M3 7a1.5 1.5 0 011.5-1.5h4L10 7.5h8A1.5 1.5 0 0119.5 9v8.5A1.5 1.5 0 0118 19H4.5A1.5 1.5 0 013 17.5z" />
       <rect x="5.5" y="11" width="4.5" height="3.5" rx="0.5" />

@@ -7,7 +7,7 @@ import { useCallback, useEffect, useEffectEvent, useRef, useState, type RefObjec
 // 1. Pin the active tab into the URL fragment (#t=<tabId>) so a refresh
 //    lands on the same tab. replaceState so switches don't pollute
 //    history; skipped pre-hydration to avoid writing a placeholder id.
-//    (The read side lives in seed-fetched-diagram.ts.)
+//    (The read side lives in seed-fetched-document.ts.)
 // 2. Fit the viewport to the tab's content, once per tab entry, as soon as
 //    that content has loaded. The entry is claimed then even when the tab
 //    is empty, so what the user adds afterwards, the first shape included,

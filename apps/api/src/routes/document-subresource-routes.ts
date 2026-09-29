@@ -57,7 +57,7 @@ import {
 } from './context';
 
 // Tab-content sub-resource routes for /api/documents/<id>/...,
-// split out of diagrams.ts. Returns a Response when it handles the path, or
+// split out of documents.ts. Returns a Response when it handles the path, or
 // null to let the main dispatcher fall through to the remaining routes.
 export async function handleDocumentSubresources(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
@@ -459,7 +459,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   }
 
   // /api/documents/<id>/share* — the share-link family lives in
-  // diagram-share-routes.ts.
+  // document-share-routes.ts.
   {
     const shareResp = await handleDocumentShareRoutes(ctx);
     if (shareResp) return shareResp;

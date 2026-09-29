@@ -596,7 +596,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <TabCopyArt />,
-        href: '/help/tabs/add-to-diagram/',
+        href: '/help/tabs/add-to-document/',
         title: 'Reuse a tab in another diagram',
         description:
           "Copy a tab's full contents into another diagram you own, as a ready-made starting point you can take further.",

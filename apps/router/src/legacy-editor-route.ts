@@ -12,3 +12,23 @@ export function legacyEditorRedirect(url: URL): Response | null {
   next.pathname = EDITOR_PATH + pathname.slice(LEGACY_EDITOR_PATH.length);
   return Response.redirect(next.toString(), 308);
 }
+
+// Help articles about the container moved when it became a document; the old addresses are
+// links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
+const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
+  'tabs/add-to-diagram': 'tabs/add-to-document',
+  'troubleshooting/diagram-not-loading': 'troubleshooting/document-not-loading',
+  'collaboration/teams/team-shared-diagrams': 'collaboration/teams/team-shared-documents',
+  'search-panel/the-search-panel/search-diagrams': 'search-panel/the-search-panel/search-documents',
+  'getting-started/sharing-your-diagram': 'getting-started/sharing-your-document',
+  'developers/working-with-diagrams': 'developers/working-with-documents',
+};
+
+export function legacyHelpRedirect(url: URL): Response | null {
+  const match = /^\/help\/(.+?)(\/?)$/.exec(url.pathname);
+  const next = match ? LEGACY_HELP_ARTICLES[match[1]!] : undefined;
+  if (!match || !next) return null;
+  const target = new URL(url.toString());
+  target.pathname = `/help/${next}${match[2]}`;
+  return Response.redirect(target.toString(), 308);
+}
