@@ -45,6 +45,16 @@ this spec does not restate it.
 - **Where:** the account menu's **Google Drive** entry opens a small panel:
   connection state, **Connect Google Drive**, and once connected, **Sync now**,
   **Last synced**, and **Disconnect**.
+- **At a glance:** a small mark on the avatar (the account menu's button) says
+  how the mirror is doing without opening anything: **syncing** (with the
+  first mirror's progress while it copies), **synced**, or **needs attention**
+  (reconnect or resume needed, an error, a notice, or a copy that could not be
+  read). The details stay in the panel. The mark overlays the avatar, so it
+  never moves the button as it appears or changes; the button's accessible
+  name carries the state, a polite status region announces changes (no
+  toasts), and it does not animate under reduced motion. Nothing shows while
+  Drive is not connected. A syncing moment shorter than about half a second
+  (the cheap check below) does not flash the mark.
 - **Consent:** the authorisation-code flow in **redirect mode** (works on iOS
   and past popup blockers), requesting `drive.file` and `drive.install` with
   offline access. `prompt=consent` is used only when no usable refresh token
@@ -156,20 +166,20 @@ The browser reads `changes.list` from the stored page token and applies each
 change whose file it recognises (by `appProperties.ldDiagramId` or a recorded
 folder id):
 
-| In Drive                                             | In livediagram                                                                                  |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| File copied (Drive's "Make a copy")                  | A new diagram, as if Duplicate was pressed ([Copies made in Drive](#copies-made-in-drive))      |
-| File renamed                                         | Diagram renamed (the `.livediagram` extension is dropped; an empty name keeps the old one)      |
-| File moved to another mirrored folder                | Diagram moved to that folder                                                                    |
-| File moved to the root folder                        | Diagram moved to Unsorted                                                                       |
-| File moved to a folder livediagram cannot see        | Diagram moved to Unsorted, with a notice (see below)                                            |
-| File moved outside the `livediagram` tree entirely   | Same as a folder livediagram cannot see                                                         |
-| File moved to the bin                                | Diagram moved to Trash ([Trash](../013-workspace/trash.md))                                     |
-| File restored from the bin                           | Diagram restored from Trash                                                                     |
-| File permanently deleted (`removed`, or bin emptied) | Diagram purged from Trash                                                                       |
-| Folder renamed / moved between mirrored folders      | Folder renamed / moved                                                                          |
-| Folder moved to the bin                              | Its diagrams go to Trash and the folder is removed; restoring the folder in Drive restores both |
-| File contents edited                                 | Ignored; the next outbound write replaces them                                                  |
+| In Drive                                             | In livediagram                                                                                                       |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| File copied (Drive's "Make a copy")                  | A new diagram, as if Duplicate was pressed, **pending verification** ([Copies made in Drive](#copies-made-in-drive)) |
+| File renamed                                         | Diagram renamed (the `.livediagram` extension is dropped; an empty name keeps the old one)                           |
+| File moved to another mirrored folder                | Diagram moved to that folder                                                                                         |
+| File moved to the root folder                        | Diagram moved to Unsorted                                                                                            |
+| File moved to a folder livediagram cannot see        | Diagram moved to Unsorted, with a notice (see below)                                                                 |
+| File moved outside the `livediagram` tree entirely   | Same as a folder livediagram cannot see                                                                              |
+| File moved to the bin                                | Diagram moved to Trash ([Trash](../013-workspace/trash.md))                                                          |
+| File restored from the bin                           | Diagram restored from Trash                                                                                          |
+| File permanently deleted (`removed`, or bin emptied) | Diagram purged from Trash                                                                                            |
+| Folder renamed / moved between mirrored folders      | Folder renamed / moved                                                                                               |
+| Folder moved to the bin                              | Its diagrams go to Trash and the folder is removed; restoring the folder in Drive restores both                      |
+| File contents edited                                 | Ignored; the next outbound write replaces them                                                                       |
 
 - **Our own writes are not echoes.** For each mirrored item the api stores the
   last state livediagram wrote (`name`, `parents`, `trashed`, `md5Checksum`,
@@ -198,6 +208,14 @@ folder id):
 
 ## Copies made in Drive
 
+**Pending verification on real Drive.** Everything in this section works only
+if Drive puts a copy the user made into livediagram's change feed (it is not a
+file livediagram created, and `drive.file` may not cover it) and the copy
+keeps the original's `appProperties`. The first test against the staging
+Google client showed no trace of a copy at all, which is either of those
+failing. Until a rerun tells which, this is the intended behaviour, not a
+promise the help centre makes.
+
 Copying a `.livediagram` file in Drive makes a **new diagram**, exactly as if
 the user had pressed **Duplicate** in livediagram, and the copy then mirrors
 that new diagram.
@@ -225,6 +243,11 @@ that new diagram.
   a copy the user made, and whether the copy keeps `appProperties`, is not yet
   verified on real Drive. A copy livediagram is never shown, or one without
   `appProperties`, is not recognised as livediagram's and nothing happens.
+- **Traceable.** A file livediagram is shown but does not take as its own
+  (no `ldOrigin` of this deployment) is logged quietly
+  (`[drive-mirror] inbound-not-ours`, with whether it carried any
+  `appProperties` at all), so a copy that lost its properties can be told
+  from one Drive never showed.
 - **Never silent.** A copy livediagram recognises but cannot turn into a
   diagram (its contents unreadable while the original is gone) is listed in
   the Drive panel: "A copy made in Drive ({name}) couldn't be read, so no
@@ -272,15 +295,35 @@ Named constants in one cadence module of the mirror code, with the values and bu
   tab hides, so a device that walks away hands over at once.
 - **Arrival:** one `changes.list` catch-up, then re-upload of every diagram
   saved since its last mirrored revision.
-- **While visible:** poll every 20 minutes, and on focus when the last poll is
-  over 5 minutes old; never while hidden.
+- **While visible:** check Drive every **2 minutes**, and on focus (at most
+  once every 30 seconds); never while hidden. Each check first asks for
+  `changes.getStartPageToken` (5 units) and reads `changes.list` (about 100
+  units) only when that token differs from the stored one. The gate never
+  skips a real change: the start token names the position after the latest
+  change, so an equal token means nothing new since the stored one; it only
+  saves cost. The arrival catch-up and **Sync now** use the same gate.
+- **Diagnostic:** with `localStorage['livediagram:v2:drive-diagnostics'] = '1'`
+  every check logs `drive: start-token moved=<bool> listed=<n>`, which is how
+  the unverified point below (research E-A3) is settled against real Drive.
 - **Writes:** a diagram is mirrored after 60 seconds without edits, at most
   once per 5 minutes, and flushed when the tab hides or the user leaves the
   diagram.
 - **Back-off:** on `403 userRateLimitExceeded` or `429`, the intervals double
-  (capped), returning to normal after an hour without errors.
+  (the check up to 60 minutes, writes up to 30), returning to normal after an
+  hour without errors.
 - The page token is written to D1 only when it changed, at most every 10
   minutes and on flush.
+
+## Other views follow
+
+When a check applies a change from Drive, every open view that lists or shows
+documents re-reads itself without a reload: the Explorer (Recent, folders,
+Unsorted, the Trash view), the editor's own Explorer panel and folders, the
+New Diagram page's recent list, and the open editor itself (its title after a
+rename, its folder after a move, the deleted card after a move to the Trash).
+Every open tab follows, not only the one that ran the check. It rides the
+existing "something was just written" signal the Timeline already listens to,
+marked as coming from Drive so a view re-reads only for those.
 
 ## Open with
 
@@ -423,8 +466,25 @@ and accepted by the api's redirect check, which takes any `https` origin at
 Near zero on our side; the traffic is browser to Google. See the
 [cost model](../../research/migration-readiness.md#cost-model): about $0 at 50
 and 10,000 users, about $18.50 a month at 10 million. No Durable Object is
-used. Google's Drive API is free within its quotas; the cadence keeps 10
-million users at about 80% of the free daily threshold.
+used. Google's Drive API is free within its quotas.
+
+**Google's daily threshold** (400M units per project per day) at 10 million
+users, by the research assumptions (200,000 active connected users a day):
+
+| Cadence                                          | Share of 400M units/day | Depends on E-A3 |
+| ------------------------------------------------ | ----------------------- | --------------- |
+| The research's proposal (20-minute poll)         | about 80%               | no              |
+| A plain 2-minute `changes.list`                  | about 330%              | no              |
+| 2 minutes, gated on `getStartPageToken` (chosen) | about 95%               | **yes**         |
+
+The gated figure holds only if the start token moves just for changes
+livediagram can see (research E-A3, **unverified**). If it also moves for the
+rest of the user's Drive, a busy Drive makes most checks list anyway and the
+cost drifts back towards the plain 2-minute figure. The diagnostic under
+[Cadence](#cadence) settles it; until then 95% is the planning figure, and
+past the threshold Google has announced charges, not a hard stop. Push
+notifications, which would remove polling Google altogether, are a separate
+follow-up ([Prototype scope](../005-project-roadmap/prototype-scope.md)).
 
 The research model counted only the page token's D1 writes. Two more are
 inherent in the design: one item row per upload or applied change (about six

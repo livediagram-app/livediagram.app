@@ -54,6 +54,8 @@ These are the meaningful gaps between today and "full product":
 - **Per-user grants beyond teams + share links** — a diagram is private, shared via a link with a role, or part of a team's shared library (teams with Admin/Member roles shipped — see [Teams](../013-workspace/teams.md) + [Team shared diagrams](../013-workspace/team-shared-diagrams.md)). There are still no per-diagram per-user grants outside those.
 - **Same-element concurrent edits are last-writer-wins.** Edits to different elements merge ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)), and the fields many people write at once merge as deltas, but two people changing the same element at the same moment still lose one edit. The advisory selection lock ([Live app](../007-editor/live-app.md)) makes that rare; it does not prevent it. A field-level CRDT that would close it was scoped and deliberately dropped, so this gap stays open by choice.
 
+- **Google Drive push instead of polling (follow-up, not built).** The Drive mirror checks Google every 2 minutes while a tab is visible ([Google Drive mirror](../022-drive-mirror/drive-mirror.md), "Costs"). To research: Drive push (`changes.watch`) delivering to a Worker that marks the user's D1 row, with the browser asking our api every 2 minutes instead of Google. Renewing a watch needs the server to hold access tokens, which changes the mirror's "the server only brokers tokens" principle, so it gets its own spec and decision first.
+
 ## Hard rules carried forward
 
 These were called out at prototype time and still apply:
