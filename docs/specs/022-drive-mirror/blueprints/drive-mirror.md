@@ -661,6 +661,12 @@ path that starts with one `/`, holds no backslash and no control character, and 
 anything else is `/explorer`. Settings deep links (`?settings`, `?section`) stay in the URL while Settings is open
 and are removed when it closes, in the Explorer (`useExplorerState`) and the editor (`useEditorDialogs`).
 
+**Arrival after a connection.** On success `/drive/connected` sets the one-shot outcome `connected` (beside
+`cancelled`). The provider reads it on first render: it posts `sync-now` on the tab channel once the channel opens
+(the elected tab, possibly another one, runs a pass at once; an elected engine left `disconnected` never polls), and
+reports `connecting: true` while the status is `starting` or `disconnected`, until the first other status or
+`SETTING_UP_MAX_MS` (30 s). Connect and Disconnect end it.
+
 **One shape.** The row is five fixed parts: the header (label and state pill), the text slot, the detail slot, and
 the footer (last-synced text on the left, **Disconnect** and the primary button on the right). The text slot holds
 every text the row can show for the current root name and progress (`driveSyncTexts`); the detail slot holds the

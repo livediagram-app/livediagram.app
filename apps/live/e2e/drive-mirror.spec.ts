@@ -46,10 +46,11 @@ async function api(
   method: string,
   path: string,
   data?: unknown,
+  bearer = token,
 ) {
   const res = await page.request.fetch(`${apiBase}${path}`, {
     method,
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
     ...(data ? { data } : {}),
   });
   expect(res.ok(), `${method} ${path} ${res.status()}`).toBe(true);
@@ -520,5 +521,49 @@ test('leaving for Google comes back to Cloud Sync: a cancel, and Back', async ({
   await closeSettings(page);
   expect(new URL(page.url()).search).toBe('');
 
+  expectNoPageErrors(pageErrors);
+});
+
+test('a connection made in one tab starts syncing at once while another tab runs the mirror', async ({
+  context,
+  page,
+  pageErrors,
+}) => {
+  // The tab that runs the mirror is elected per browser (Web Locks): here the
+  // first tab, so the tab that connects is not it. The row must reach the first
+  // copy without waiting for a focus, visibility or poll trigger.
+  const user = `${USER}_tabs`;
+  const other = await context.newPage();
+  await signIn(other, user);
+  await other.goto('/explorer/recent');
+  await expect(other.getByRole('button', { name: 'Account menu' })).toBeVisible();
+  await signIn(page, user);
+  await api(
+    page,
+    'POST',
+    '/diagrams',
+    {
+      id: `${PLAN}-tabs`,
+      name: 'Tabs plan',
+      tabs: [{ id: `e2e-tab-tabs-${RUN}`, name: 'Tab 1', elements: [] }],
+    },
+    identity.token(user, EMAIL),
+  );
+  await page.goto('/explorer/recent');
+  const panel = await openCloudSync(page, 'menu');
+  await expect(pillOf(panel)).toHaveText('Not connected');
+  await panel.getByRole('button', { name: 'Connect Google Drive' }).click();
+  await page.waitForURL(/\/explorer\/recent\?settings=account&section=cloud-sync/);
+  const row = page.locator('[data-cloud-sync="googleDrive"]');
+  // Never "Not connected" once the connection exists: Connecting until the
+  // mirror reports, then the first copy or Synced, within seconds.
+  await expect(pillOf(row)).toHaveText(/Connecting|Copying|Syncing|Synced/, { timeout: 1000 });
+  await expect(pillOf(row)).toHaveText(/Copying|Synced/, { timeout: 5000 });
+  await expect
+    .poll(() => google.fake.appFiles(user).some((f) => f.name === 'Tabs plan.livediagram'), {
+      timeout: 10_000,
+    })
+    .toBe(true);
+  await other.close();
   expectNoPageErrors(pageErrors);
 });

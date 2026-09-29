@@ -6,6 +6,7 @@ import {
   takeConsent,
   withSettingsTarget,
   markConnectCancelled,
+  markConnectConnected,
   peekConnectOutcome,
   clearConnectOutcome,
 } from './consent';
@@ -92,6 +93,16 @@ describe('a cancel at Google', () => {
     expect(peekConnectOutcome(s)).toBeNull();
     markConnectCancelled(s);
     expect(peekConnectOutcome(s)).toBe('cancelled');
+    clearConnectOutcome(s);
+    expect(peekConnectOutcome(s)).toBeNull();
+  });
+});
+
+describe('a finished connection', () => {
+  it('is told to the page it returns to, once', () => {
+    const s = storage();
+    markConnectConnected(s);
+    expect(peekConnectOutcome(s)).toBe('connected');
     clearConnectOutcome(s);
     expect(peekConnectOutcome(s)).toBeNull();
   });

@@ -9,7 +9,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { apiDriveConnect } from '@/lib/api-client';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-import { markConnectCancelled, takeConsent } from '@/lib/drive/consent';
+import { markConnectCancelled, markConnectConnected, takeConsent } from '@/lib/drive/consent';
 import { driveLog, driveWarn } from '@/lib/drive/log';
 import { track } from '@/lib/telemetry';
 import { Body, Heading, LandingCard, PrimaryLink } from '@/components/chrome/LandingCard';
@@ -60,6 +60,7 @@ async function redeem(query: NonNullable<Query>, ownerId: string): Promise<Phase
   }
   track('Drive', 'Linked', 'Broker');
   driveLog('connected', {});
+  markConnectConnected(sessionStorage);
   // Replaces this page, so Back never lands on a spent code.
   window.location.replace(returnPath);
   return null;

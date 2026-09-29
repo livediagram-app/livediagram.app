@@ -106,8 +106,15 @@ export function markConnectCancelled(storage: SessionLike): void {
   storage.setItem(OUTCOME_KEY, 'cancelled');
 }
 
-export function peekConnectOutcome(storage: SessionLike): 'cancelled' | null {
-  return storage.getItem(OUTCOME_KEY) === 'cancelled' ? 'cancelled' : null;
+// A finished connection, for the page the user comes back to: the tab that
+// runs the mirror may be another one, which must start at once.
+export function markConnectConnected(storage: SessionLike): void {
+  storage.setItem(OUTCOME_KEY, 'connected');
+}
+
+export function peekConnectOutcome(storage: SessionLike): 'cancelled' | 'connected' | null {
+  const outcome = storage.getItem(OUTCOME_KEY);
+  return outcome === 'cancelled' || outcome === 'connected' ? outcome : null;
 }
 
 export function clearConnectOutcome(storage: SessionLike): void {

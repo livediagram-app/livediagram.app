@@ -65,7 +65,10 @@ this spec does not restate it.
     with Cloud Sync open. The same place is carried through the consent (kept
     in this browser's session against the consent state, and accepted only as
     a same-origin path), so a finished connection, and a **cancel at Google**,
-    come back there too. A cancel is not an error: the row says, calmly, "You
+    come back there too. Back from a finished connection the row says
+    **Connecting** (never Not connected: the connection exists) until the
+    mirror reports, and the mirror syncs at once, even when another tab of the
+    same browser is the one running it. A cancel is not an error: the row says, calmly, "You
     cancelled at Google, so Google Drive isn't connected. Connect again
     whenever you like."
   - **Connected:** "Your documents are copied to Google Drive, in the folder

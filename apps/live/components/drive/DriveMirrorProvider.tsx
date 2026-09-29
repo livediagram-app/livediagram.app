@@ -58,6 +58,10 @@ import { DriveReconnectBanner } from './DriveReconnectBanner';
 // and the Drive routes do their own one-off work.
 const QUIET_PATHS = ['/embed', '/drive'];
 
+// How long the row says Connecting after a finished connection if no mirror
+// reports on it.
+const SETTING_UP_MAX_MS = 30_000;
+
 type Runtime = {
   tokens: BrowserTokens;
   channel: DriveTabChannel;
@@ -75,11 +79,31 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
   // (docs/specs/022-drive-mirror/drive-mirror.md, "What the row says").
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
-  // Came back from a cancel at Google: said once, calmly.
-  // Read on the first render (a pure peek), cleared from storage once mounted.
-  const [connectNote, setConnectNote] = useState<'cancelled' | null>(() =>
+  // How a trip to Google ended, read on the first render (a pure peek) and
+  // cleared from storage once mounted.
+  const [outcome] = useState(() =>
     typeof window === 'undefined' ? null : peekConnectOutcome(sessionStorage),
   );
+  // A cancel at Google: said once, calmly.
+  const [connectNote, setConnectNote] = useState<'cancelled' | null>(
+    outcome === 'cancelled' ? 'cancelled' : null,
+  );
+  // A finished connection: the connection exists, so until the mirror reports
+  // on it the row says Connecting, never Not connected. The tab that runs the
+  // mirror may be another one, still showing what it saw before; it is asked
+  // to sync at once (below), and its first report ends this.
+  const [settingUp, setSettingUp] = useState(outcome === 'connected');
+  const announceConnected = useRef(outcome === 'connected');
+  const showStatus = useCallback((next: DriveMirrorStatus) => {
+    setStatus(next);
+    if (next.state !== 'starting' && next.state !== 'disconnected') setSettingUp(false);
+  }, []);
+  // A mirror that never reports (no tab can run it) does not hold the row forever.
+  useEffect(() => {
+    if (!settingUp) return;
+    const timer = window.setTimeout(() => setSettingUp(false), SETTING_UP_MAX_MS);
+    return () => window.clearTimeout(timer);
+  }, [settingUp]);
   useEffect(() => {
     clearConnectOutcome(sessionStorage);
   }, []);
@@ -113,13 +137,13 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     if (mode === 'off' || quiet || !clerkUserId) return;
     const tokens = createBrowserTokens(mode, clerkUserId);
     const publish = (next: DriveMirrorStatus) => {
-      setStatus(next);
+      showStatus(next);
       channel.post({ type: 'status', status: next });
     };
     const onMessage = (message: DriveTabMessage) => {
       const engine = runtime.current?.engine;
       if (message.type === 'status') {
-        if (!engine) setStatus(message.status);
+        if (!engine) showStatus(message.status);
         return;
       }
       // A change from Drive landed in the elected tab: this tab's views re-read.
@@ -155,6 +179,13 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
       void engine.start();
     });
     channel.post({ type: 'hello' });
+    // Back from a finished connection: whichever tab runs the mirror syncs now,
+    // not at its next focus or poll. This tab, if elected, starts anyway.
+    if (announceConnected.current) {
+      announceConnected.current = false;
+      driveLog('connected-announce', {});
+      channel.post({ type: 'sync-now' });
+    }
 
     const unsubscribeWrites = subscribeApiWrites((signal) => {
       // A change from Drive is not an edit to write back.
@@ -188,7 +219,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
       channel.close();
       runtime.current = null;
     };
-  }, [mode, quiet, clerkUserId]);
+  }, [mode, quiet, clerkUserId, showStatus]);
 
   const handToEngine = useCallback((token: DriveAccessToken) => {
     const rt = runtime.current;
@@ -240,6 +271,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     setConnecting(true);
     setConnectError(null);
     setConnectNote(null);
+    setSettingUp(false);
     try {
       await startConnect();
     } catch (err) {
@@ -276,6 +308,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     if (rt?.tokens.mode === 'browser') rt.tokens.source.clear();
     if (rt?.tokens.mode === 'broker') rt.tokens.source.clear();
     const next = { ...DRIVE_STATUS_INITIAL, state: 'disconnected' as const };
+    setSettingUp(false);
     setStatus(next);
     rt?.channel.post({ type: 'status', status: next });
     syncNow();
@@ -313,7 +346,9 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
             resolved,
             status,
             canAdopt: !!googlePickerApiKey,
-            connecting,
+            connecting:
+              connecting ||
+              (settingUp && (status.state === 'starting' || status.state === 'disconnected')),
             connectError,
             connectNote,
             connect,
@@ -327,6 +362,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
       resolved,
       status,
       connecting,
+      settingUp,
       connectError,
       connectNote,
       connect,
