@@ -9,7 +9,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { apiDriveConnect } from '@/lib/api-client';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-import { takeConsent } from '@/lib/drive/consent';
+import { markConnectCancelled, takeConsent } from '@/lib/drive/consent';
 import { driveLog, driveWarn } from '@/lib/drive/log';
 import { track } from '@/lib/telemetry';
 import { Body, Heading, LandingCard, PrimaryLink } from '@/components/chrome/LandingCard';
@@ -37,9 +37,13 @@ type Phase = 'working' | 'denied' | 'invalid' | 'failed';
 // Redeem the code once; the phase to show, or null while leaving the page.
 async function redeem(query: NonNullable<Query>, ownerId: string): Promise<Phase | null> {
   if (query.error) {
-    driveWarn('consent-refused', { error: query.error });
-    takeConsent(sessionStorage, query.state);
-    return 'denied';
+    driveLog('consent-refused', { error: query.error });
+    // Back to exactly where they started, Cloud Sync open, saying so calmly.
+    const back = takeConsent(sessionStorage, query.state);
+    if (!back) return 'denied';
+    markConnectCancelled(sessionStorage);
+    window.location.replace(back);
+    return null;
   }
   if (!query.code || !query.state || redeemed.has(query.code)) return null;
   redeemed.add(query.code);
@@ -56,7 +60,8 @@ async function redeem(query: NonNullable<Query>, ownerId: string): Promise<Phase
   }
   track('Drive', 'Linked', 'Broker');
   driveLog('connected', {});
-  window.location.assign(returnPath);
+  // Replaces this page, so Back never lands on a spent code.
+  window.location.replace(returnPath);
   return null;
 }
 
@@ -85,8 +90,10 @@ export function DriveConnected() {
     return (
       <LandingCard>
         <Heading>Google Drive wasn&apos;t connected</Heading>
-        <Body>Nothing changed. You can connect it any time from your account menu.</Body>
-        <PrimaryLink href="/explorer">Back</PrimaryLink>
+        <Body>
+          Nothing changed. You can connect it any time from Settings, Account, Cloud Sync.
+        </Body>
+        <PrimaryLink href="/explorer?settings=account&section=cloud-sync">Back</PrimaryLink>
       </LandingCard>
     );
   }
@@ -98,9 +105,11 @@ export function DriveConnected() {
           {phase === 'invalid'
             ? 'This connection was not started from this browser, or it took too long.'
             : 'Google did not accept the connection.'}{' '}
-          Try again from your account menu.
+          Try again from Settings, Account, Cloud Sync.
         </Body>
-        <PrimaryLink href="/explorer">Back to your diagrams</PrimaryLink>
+        <PrimaryLink href="/explorer?settings=account&section=cloud-sync">
+          Back to Cloud Sync
+        </PrimaryLink>
       </LandingCard>
     );
   }

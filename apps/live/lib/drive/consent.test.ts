@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { googleConsentUrl, rememberConsent, safeReturnPath, takeConsent } from './consent';
+import {
+  googleConsentUrl,
+  rememberConsent,
+  safeReturnPath,
+  takeConsent,
+  withSettingsTarget,
+  markConnectCancelled,
+  peekConnectOutcome,
+  clearConnectOutcome,
+} from './consent';
 
 function storage() {
   const map = new Map<string, string>();
@@ -49,6 +58,56 @@ describe('safeReturnPath', () => {
     expect(safeReturnPath('https://evil.example')).toBe('/explorer');
     expect(safeReturnPath('/drive/connected?code=x')).toBe('/explorer');
     expect(safeReturnPath(null)).toBe('/explorer');
+  });
+
+  it('refuses every way out of this origin', () => {
+    for (const bad of [
+      '/\\evil.example',
+      '/\\/evil.example',
+      '\\\\evil.example',
+      'javascript:alert(1)',
+      ' /explorer',
+      '/explorer\n//evil.example',
+      '/explorer\t',
+      '/%5C%5Cevil.example'.replace('%5C%5C', '\\\\'),
+      '',
+      'explorer',
+      'http:/evil.example',
+    ]) {
+      expect(safeReturnPath(bad), JSON.stringify(bad)).toBe('/explorer');
+    }
+  });
+
+  it('keeps a query and a hash', () => {
+    expect(safeReturnPath('/explorer/recent?settings=account&section=cloud-sync')).toBe(
+      '/explorer/recent?settings=account&section=cloud-sync',
+    );
+    expect(safeReturnPath('/diagram/a?x=1#t')).toBe('/diagram/a?x=1#t');
+  });
+});
+
+describe('a cancel at Google', () => {
+  it('is said once', () => {
+    const s = storage();
+    expect(peekConnectOutcome(s)).toBeNull();
+    markConnectCancelled(s);
+    expect(peekConnectOutcome(s)).toBe('cancelled');
+    clearConnectOutcome(s);
+    expect(peekConnectOutcome(s)).toBeNull();
+  });
+});
+
+describe('withSettingsTarget', () => {
+  it('names the Settings category and section in the path, keeping the rest', () => {
+    expect(withSettingsTarget('/explorer/recent', 'account', 'cloud-sync')).toBe(
+      '/explorer/recent?settings=account&section=cloud-sync',
+    );
+    expect(withSettingsTarget('/diagram/a?view=1#t', 'account', 'cloud-sync')).toBe(
+      '/diagram/a?view=1&settings=account&section=cloud-sync#t',
+    );
+    expect(
+      withSettingsTarget('/explorer?settings=privacy&section=x', 'account', 'cloud-sync'),
+    ).toBe('/explorer?settings=account&section=cloud-sync');
   });
 });
 

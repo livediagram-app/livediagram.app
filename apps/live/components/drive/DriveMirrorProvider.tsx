@@ -6,6 +6,7 @@
 // their api writes to it and showing its status.
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { DRIVE_CONNECT_FAILED } from '@/lib/drive/cloud-sync-copy';
 import { usePathname } from 'next/navigation';
 import type { DriveAccessToken, DriveMode } from '@livediagram/api-schema';
 import {
@@ -25,7 +26,15 @@ import {
   type BrowserTokens,
 } from '@/lib/drive/browser-engine';
 import { driveUiMode, googleClientId, googlePickerApiKey } from '@/lib/drive/config';
-import { driveRedirectUri, googleConsentUrl, rememberConsent } from '@/lib/drive/consent';
+import {
+  driveRedirectUri,
+  googleConsentUrl,
+  rememberConsent,
+  clearConnectOutcome,
+  peekConnectOutcome,
+  withSettingsTarget,
+} from '@/lib/drive/consent';
+import { CLOUD_SYNC_SECTION_ID } from '@/lib/cloud-sync/providers';
 import type { DriveMirrorEngine, DriveMirrorNotice, DriveMirrorStatus } from '@/lib/drive/engine';
 import { googleFolderPicker, requestBrowserAccessToken } from '@/lib/drive/google-scripts';
 import { driveLog, driveWarn } from '@/lib/drive/log';
@@ -38,7 +47,6 @@ import {
 } from '@/lib/drive/tab-election';
 import { localSeenStore } from '@/lib/drive/tombstones';
 import {
-  DRIVE_CONNECT_FAILED,
   DRIVE_MIRROR_OFF,
   DRIVE_STATUS_INITIAL,
   DriveMirrorContext,
@@ -67,6 +75,14 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
   // (docs/specs/022-drive-mirror/drive-mirror.md, "What the row says").
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
+  // Came back from a cancel at Google: said once, calmly.
+  // Read on the first render (a pure peek), cleared from storage once mounted.
+  const [connectNote, setConnectNote] = useState<'cancelled' | null>(() =>
+    typeof window === 'undefined' ? null : peekConnectOutcome(sessionStorage),
+  );
+  useEffect(() => {
+    clearConnectOutcome(sessionStorage);
+  }, []);
   // Back from Google out of the bfcache: the page is live again, not leaving.
   useEffect(() => {
     const onShow = (e: PageTransitionEvent) => {
@@ -191,11 +207,15 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
       // is stored only after this, so the consent is asked for.
       const redirectUri = driveRedirectUri(window.location.origin);
       const state = await apiDriveState(clerkUserId, redirectUri);
-      rememberConsent(
-        sessionStorage,
-        state,
+      // This page's own history entry names Cloud Sync, so Back from Google
+      // reopens it; the same place is where the consent comes back to.
+      const here = withSettingsTarget(
         `${window.location.pathname}${window.location.search}${window.location.hash}`,
+        'account',
+        CLOUD_SYNC_SECTION_ID,
       );
+      window.history.replaceState(null, '', here);
+      rememberConsent(sessionStorage, state, here);
       driveLog('consent-redirect', {});
       window.location.assign(
         googleConsentUrl({
@@ -219,6 +239,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     if (!clerkUserId || mode === 'off') return;
     setConnecting(true);
     setConnectError(null);
+    setConnectNote(null);
     try {
       await startConnect();
     } catch (err) {
@@ -294,13 +315,26 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
             canAdopt: !!googlePickerApiKey,
             connecting,
             connectError,
+            connectNote,
             connect,
             resume,
             syncNow,
             disconnect,
             adopt,
           },
-    [mode, resolved, status, connecting, connectError, connect, resume, syncNow, disconnect, adopt],
+    [
+      mode,
+      resolved,
+      status,
+      connecting,
+      connectError,
+      connectNote,
+      connect,
+      resume,
+      syncNow,
+      disconnect,
+      adopt,
+    ],
   );
 
   return (

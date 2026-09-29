@@ -6,13 +6,18 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DriveMirrorStatus } from '@/lib/drive/engine';
-import { DRIVE_SYNC_BADGES, driveRhythmText } from '@/lib/drive/cloud-sync-copy';
+import {
+  DRIVE_CONNECT_CANCELLED,
+  DRIVE_CONNECT_FAILED,
+  DRIVE_PRIMARY_LABELS,
+  DRIVE_SYNC_BADGES,
+  driveRhythmText,
+} from '@/lib/drive/cloud-sync-copy';
 import {
   SETTINGS_CATEGORIES,
   type SettingsCloudSyncRowSpec,
 } from '@/components/dialogs/settings/settings-catalogue';
 import {
-  DRIVE_CONNECT_FAILED,
   DRIVE_MIRROR_OFF,
   DRIVE_STATUS_INITIAL,
   DriveMirrorContext,
@@ -76,6 +81,21 @@ describe('GoogleDriveSyncRow', () => {
     );
   });
 
+  it('says the user cancelled at Google, calmly, in the reserved text slot', () => {
+    show({ state: 'disconnected' }, { connectNote: 'cancelled' });
+    const shown = screen.getByText(DRIVE_CONNECT_CANCELLED, {
+      selector: '[data-stable-option]:not(.invisible)',
+    });
+    expect(shown.closest('[data-drive-text]')?.className).not.toContain('rose');
+  });
+
+  it('reserves the cancelled wording while Not connected, so it appears without reflow', () => {
+    show({ state: 'disconnected' });
+    expect(
+      screen.getByText(DRIVE_CONNECT_CANCELLED, { selector: '[data-stable-option]' }),
+    ).toBeTruthy();
+  });
+
   it('keeps every wording of the pill and buttons in place, so nothing reflows', () => {
     show({ state: 'idle', lastSyncedAt: Date.now() });
     const pill = document.querySelector('[data-drive-state]')!;
@@ -84,8 +104,7 @@ describe('GoogleDriveSyncRow', () => {
     ]);
     const sync = screen.getByRole('button', { name: 'Sync now' });
     expect([...sync.querySelectorAll('[data-stable-option]')].map((n) => n.textContent)).toEqual([
-      'Sync now',
-      'Syncing…',
+      ...DRIVE_PRIMARY_LABELS,
     ]);
   });
 
@@ -114,10 +133,31 @@ describe('GoogleDriveSyncRow', () => {
     show({ state: 'syncing', progress: { done: 3, total: 12 } });
     expect(screen.getByText('Copying 3 of 12 to Google Drive.')).toBeTruthy();
     expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('3');
+    expect(screen.getByText('3 of 12 documents copied')).toBeTruthy();
+    // Nothing to press while it copies: the button keeps its place, unseen.
+    expect(screen.queryByRole('button', { name: /Sync now|Syncing/ })).toBeNull();
+  });
+
+  it('holds Sync now while syncing, keeping focus', () => {
+    show({ state: 'syncing', lastSyncedAt: Date.now() });
     const syncing = screen.getByRole('button', { name: 'Syncing…' });
-    // Held, but focusable: a pressed Sync now keeps focus.
     expect(syncing.getAttribute('aria-disabled')).toBe('true');
     expect(syncing).toHaveProperty('disabled', false);
+  });
+
+  it('keeps Disconnect and the primary button in place, unseen when idle', () => {
+    show({ state: 'disconnected' });
+    const hidden = document.querySelector('[data-cloud-sync] .invisible button');
+    expect(hidden?.textContent).toBe('Disconnect');
+  });
+
+  it('reserves the notice, the progress and the rhythm in one detail slot', () => {
+    show({ state: 'idle', lastSyncedAt: 1 });
+    const detail = document.querySelector('[data-drive-detail]')!;
+    expect(detail.getAttribute('data-drive-detail')).toBe('rhythm');
+    expect(detail.querySelectorAll('.invisible')).toHaveLength(2);
+    expect(detail.textContent).toContain('documents copied');
+    expect(detail.textContent).toContain("can't see");
   });
 
   it('offers Reconnect and Resume sync when paused', () => {

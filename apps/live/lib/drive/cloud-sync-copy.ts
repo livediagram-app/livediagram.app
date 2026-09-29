@@ -35,6 +35,21 @@ export function lastSyncedText(at: number | null, now: number): string {
   return at === null ? 'Not synced yet' : `Last synced ${relativeSince(at, now)}`;
 }
 
+export const DRIVE_CONNECT_FAILED =
+  "Couldn't start connecting to Google Drive. Check your connection and try again.";
+export const DRIVE_CONNECT_CANCELLED =
+  "You cancelled at Google, so Google Drive isn't connected. Connect again whenever you like.";
+
+// Every wording the row's primary button can show: it is as wide as the longest.
+export const DRIVE_PRIMARY_LABELS = [
+  'Connect Google Drive',
+  'Connecting…',
+  'Reconnect',
+  'Resume sync',
+  'Sync now',
+  'Syncing…',
+] as const;
+
 // Every wording the state pill can show: it is always as wide as the longest.
 export const DRIVE_SYNC_BADGES = [
   'Checking',
@@ -68,9 +83,16 @@ const attention = (text: string, action: DriveSyncAction): DriveSyncCopy => ({
 
 // Where the mirror stands, in plain words, and the one thing to press.
 // Notices are listed by the row itself, each with its own action.
+// Where a Connect stands: in flight, failed to start, or cancelled at Google.
+export type DriveConnectState = {
+  connecting: boolean;
+  connectError: string | null;
+  connectNote: 'cancelled' | null;
+};
+
 export function driveSyncCopy(
   status: DriveMirrorStatus,
-  connect: { connecting: boolean; connectError: string | null },
+  connect: DriveConnectState,
 ): DriveSyncCopy {
   switch (status.state) {
     case 'starting':
@@ -88,6 +110,14 @@ export function driveSyncCopy(
           text: connect.connectError,
           action: 'connect',
           failed: true,
+        };
+      }
+      if (connect.connectNote === 'cancelled' && !connect.connecting) {
+        return {
+          badge: 'Not connected',
+          tone: 'off',
+          text: DRIVE_CONNECT_CANCELLED,
+          action: 'connect',
         };
       }
       return {
@@ -149,4 +179,31 @@ export function driveSyncCopy(
       : 'Your documents are copied to Google Drive.',
     action: 'syncNow',
   };
+}
+
+const QUIET: DriveConnectState = { connecting: false, connectError: null, connectNote: null };
+
+// Every text the row can show for this root name and progress: the text slot
+// lays them all out, so it is always as tall as the longest and no state
+// change moves what sits below it (Layout stability).
+export function driveSyncTexts(status: DriveMirrorStatus): string[] {
+  const at = (over: Partial<DriveMirrorStatus>) =>
+    driveSyncCopy(
+      { ...status, error: null, leaseHeldElsewhere: false, notices: [], ...over },
+      QUIET,
+    ).text;
+  const texts = [
+    at({ state: 'starting' }),
+    at({ state: 'disconnected' }),
+    DRIVE_CONNECT_FAILED,
+    DRIVE_CONNECT_CANCELLED,
+    at({ state: 'needs_reconnect' }),
+    at({ state: 'needs_resume' }),
+    at({ state: 'idle', progress: status.progress ?? { done: 0, total: 0 } }),
+    at({ state: 'idle', progress: null, error: 'rate_limited' }),
+    at({ state: 'idle', progress: null, error: 'offline' }),
+    at({ state: 'idle', progress: null, leaseHeldElsewhere: true }),
+    at({ state: 'idle', progress: null }),
+  ];
+  return [...new Set(texts)];
 }

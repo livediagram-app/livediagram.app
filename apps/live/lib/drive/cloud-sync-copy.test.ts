@@ -5,7 +5,10 @@ import {
   DRIVE_WRITE_MIN_INTERVAL_MS,
 } from './cadence';
 import {
+  DRIVE_CONNECT_CANCELLED,
+  DRIVE_CONNECT_FAILED,
   DRIVE_SYNC_BADGES,
+  driveSyncTexts,
   driveRhythmText,
   driveSyncCopy,
   durationWords,
@@ -62,16 +65,16 @@ describe('lastSyncedText', () => {
   });
 });
 
-const IDLE = { connecting: false, connectError: null };
+const IDLE = { connecting: false, connectError: null, connectNote: null };
 
 describe('driveSyncCopy', () => {
   it('says Connecting from the press, and why it could not start if it failed', () => {
     expect(
-      driveSyncCopy(status({ state: 'disconnected' }), { connecting: true, connectError: null }),
+      driveSyncCopy(status({ state: 'disconnected' }), { ...IDLE, connecting: true }),
     ).toMatchObject({ badge: 'Connecting', action: 'connect' });
     expect(
       driveSyncCopy(status({ state: 'disconnected' }), {
-        connecting: false,
+        ...IDLE,
         connectError: 'Could not start.',
       }),
     ).toMatchObject({
@@ -83,10 +86,48 @@ describe('driveSyncCopy', () => {
     // The failure takes the description's place, so nothing is added below it.
     expect(
       driveSyncCopy(status({ state: 'needs_reconnect' }), {
-        connecting: false,
+        ...IDLE,
         connectError: 'Could not start.',
       }),
     ).toMatchObject({ text: 'Could not start.', action: 'reconnect', failed: true });
+  });
+
+  it('lists every text the row can show now, so its text slot never changes height', () => {
+    const s = status({ progress: { done: 3, total: 12 } });
+    const texts = driveSyncTexts(s);
+    for (const over of [
+      { state: 'starting' as const },
+      { state: 'disconnected' as const },
+      { state: 'needs_reconnect' as const },
+      { state: 'needs_resume' as const },
+      { error: 'rate_limited' as const },
+      { error: 'offline' as const },
+      { leaseHeldElsewhere: true },
+      { progress: null },
+      {},
+    ]) {
+      expect(texts).toContain(driveSyncCopy(status({ ...s, ...over }), IDLE).text);
+    }
+    expect(texts).toContain(DRIVE_CONNECT_FAILED);
+    expect(texts).toContain(DRIVE_CONNECT_CANCELLED);
+    expect(new Set(texts).size).toBe(texts.length);
+  });
+
+  it('says calmly that the user cancelled at Google, until Connect is pressed again', () => {
+    expect(
+      driveSyncCopy(status({ state: 'disconnected' }), { ...IDLE, connectNote: 'cancelled' }),
+    ).toMatchObject({ badge: 'Not connected', text: DRIVE_CONNECT_CANCELLED, action: 'connect' });
+    expect(
+      driveSyncCopy(status({ state: 'disconnected' }), { ...IDLE, connectNote: 'cancelled' })
+        .failed,
+    ).toBeFalsy();
+    expect(
+      driveSyncCopy(status({ state: 'disconnected' }), {
+        connecting: true,
+        connectError: null,
+        connectNote: 'cancelled',
+      }).badge,
+    ).toBe('Connecting');
   });
 
   it('only ever shows a badge from the one list the pill sizes itself to', () => {
@@ -102,7 +143,7 @@ describe('driveSyncCopy', () => {
     for (const over of states) {
       for (const connecting of [false, true]) {
         expect(DRIVE_SYNC_BADGES).toContain(
-          driveSyncCopy(status(over), { connecting, connectError: null }).badge,
+          driveSyncCopy(status(over), { ...IDLE, connecting }).badge,
         );
       }
     }

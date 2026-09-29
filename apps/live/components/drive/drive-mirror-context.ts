@@ -20,6 +20,8 @@ export type DriveMirrorContextValue = {
   // attempt could not start, if it could not.
   connecting: boolean;
   connectError: string | null;
+  // The user came back from cancelling at Google.
+  connectNote: 'cancelled' | null;
   connect(): Promise<void>;
   resume(): Promise<void>;
   syncNow(): void;
@@ -46,15 +48,13 @@ export const DRIVE_MIRROR_OFF: DriveMirrorContextValue = {
   canAdopt: false,
   connecting: false,
   connectError: null,
+  connectNote: null,
   connect: noop,
   resume: noop,
   syncNow: () => {},
   disconnect: noop,
   adopt: noop,
 };
-
-export const DRIVE_CONNECT_FAILED =
-  "Couldn't start connecting to Google Drive. Check your connection and try again.";
 
 export const DriveMirrorContext = createContext<DriveMirrorContextValue>(DRIVE_MIRROR_OFF);
 
