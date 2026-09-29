@@ -3,7 +3,10 @@
 import { useMemo, useRef, useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
-import { SettingsCategoryList } from '@/components/dialogs/settings/SettingsCategoryList';
+import {
+  SettingsCategoryList,
+  SettingsSubcategoryLinks,
+} from '@/components/dialogs/settings/SettingsCategoryList';
 import { SettingsCategoryPane } from '@/components/dialogs/settings/SettingsCategoryPane';
 import { NavChevron } from '@/components/primitives/NavChevron';
 import { SearchInput } from '@/components/primitives/SearchInput';
@@ -147,8 +150,12 @@ export function SettingsDialog({
   };
 
   // The phone shows the root list until a category is picked; desktop always
-  // shows the split. Only the phone's pushed pane gets a back control.
+  // shows the split. Only the phone's pushed pane gets a back control, and a
+  // sub-category's goes back to its parent's pane, the screen that pushed it.
   const showBack = isMobile && selected !== null;
+  const backTo = selected?.parent
+    ? (categories.find((c) => c.id === selected.parent) ?? null)
+    : null;
 
   return (
     <Dialog
@@ -175,11 +182,11 @@ export function SettingsDialog({
         {showBack ? (
           <button
             type="button"
-            onClick={() => setSelectedId(null)}
+            onClick={() => setSelectedId(backTo?.id ?? null)}
             className="-ml-1.5 flex items-center gap-0.5 rounded-md py-1 pr-2 pl-1 text-sm font-medium text-brand-600 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
           >
             <NavChevron direction="back" />
-            Settings
+            {backTo?.label ?? 'Settings'}
           </button>
         ) : null}
         <h2 className="flex-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
@@ -248,6 +255,15 @@ export function SettingsDialog({
                 setGoTo({ categoryId, rowKey });
               }}
             />
+            {/* A phone's way down to a parent's sub-categories: the root
+                list has no accordion to open, so the pane lists them. */}
+            {isMobile ? (
+              <SettingsSubcategoryLinks
+                parent={selected}
+                categories={categories}
+                onSelect={select}
+              />
+            ) : null}
           </div>
         ) : result.searching && !isMobile ? (
           <div className="flex min-w-0 flex-1 items-center justify-center px-6 py-10">

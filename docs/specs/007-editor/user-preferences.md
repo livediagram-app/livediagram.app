@@ -453,10 +453,18 @@ and the dialog stays as the one complete, browsable index of them.
   expands it, and clicking it again folds it away, handing the selection back
   to the parent if a sub-category held it, so the open pane is never one the
   list has just hidden. A disclosure chevron inside the parent's row (the
-  row's highlight takes it in) toggles it without changing the pane, and is
-  how a phone expands it, since tapping the row there pushes the parent's
-  pane. It is held open while one of its sub-categories is the current pane
-  (a search result, a link, a remembered view) or holds a search hit. A
+  row's highlight takes it in) toggles it without changing the pane. It is
+  held open while one of its sub-categories is the current pane (a search
+  result, a link, a remembered view) or holds a search hit. **A phone has no
+  accordion to work**: the parent is an ordinary row that pushes its pane,
+  and that pane ends with its sub-categories as rows in the root list's
+  grouped card, each pushing its own pane, the way iOS Settings nests a
+  screen. Back from a sub-category returns to its parent's pane (the back
+  control reads "Panels"), and back from there to the root list. On the
+  phone's root list the sub-categories show beneath the parent only for a
+  search hit. (A disclosure chevron on the phone was tried and dropped: its
+  right-pointing arrow read as the row's own "go" arrow, so the
+  sub-categories behind it went unfound.) A
   sub-category carries a plain 16px glyph rather than a tile: its panel's own
   mark in the editor (Lucide layers for Layers, the Activity panel's clock;
   the Map, which has no toolbar button, takes Lucide map). Search matches a

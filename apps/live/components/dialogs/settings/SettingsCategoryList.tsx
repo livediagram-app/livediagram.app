@@ -23,9 +23,12 @@ type ListCategory = SettingsCategorySpec & { matchCount?: number };
 // tile) only while it is expanded, so they do not take up the list all the
 // time. It starts
 // collapsed, and is held open while one of its sub-categories is the current
-// pane or holds a search hit, so neither is ever hidden. A disclosure chevron
-// on the parent toggles it in both layouts; on desktop the parent's own row
-// does too (see `activateParent`), while on a phone that row pushes its pane.
+// pane or holds a search hit, so neither is ever hidden. On desktop the
+// parent's row and a disclosure chevron beside it both toggle it (see
+// `activateParent`). A phone has no accordion to work: the parent is an
+// ordinary row that pushes its pane, and that pane lists the sub-categories
+// (`SettingsSubcategoryLinks`), the way iOS Settings nests a screen. Its
+// sub-categories only show beneath it on the root list for a search hit.
 export function SettingsCategoryList({
   categories,
   selected,
@@ -60,8 +63,8 @@ export function SettingsCategoryList({
   // Desktop: the parent row opens its own pane and its sub-categories; a
   // second click folds them away again, handing the selection back to the
   // parent if a sub-category held it, so the open pane is never one the list
-  // has just hidden. A phone keeps the row for navigation (it pushes the
-  // parent's pane) and folds with the chevron alone.
+  // has just hidden. A phone keeps the row for navigation: it pushes the
+  // parent's pane.
   const activateParent = (category: ListCategory, open: boolean) => {
     if (isRoot) {
       onSelect(category.id);
@@ -129,14 +132,21 @@ export function SettingsCategoryList({
               searching={searching}
               isRoot={isRoot}
               onClick={() => activateParent(category, open)}
-              disclosure={{
-                open,
-                controls: listId,
-                label: `${open ? 'Hide' : 'Show'} ${category.label} sub-categories`,
-                // Nothing to fold while it is held open.
-                locked: open && !expanded.has(category.id),
-                onToggle: () => toggle(category.id),
-              }}
+              // A phone gets no disclosure: its right-pointing chevron read as
+              // the row's own "go" arrow, so the sub-categories behind it went
+              // unfound. The pushed pane lists them instead.
+              disclosure={
+                isRoot
+                  ? undefined
+                  : {
+                      open,
+                      controls: listId,
+                      label: `${open ? 'Hide' : 'Show'} ${category.label} sub-categories`,
+                      // Nothing to fold while it is held open.
+                      locked: open && !expanded.has(category.id),
+                      onToggle: () => toggle(category.id),
+                    }
+              }
             />
             {open ? (
               <div
@@ -155,6 +165,42 @@ export function SettingsCategoryList({
           </div>
         );
       })}
+    </nav>
+  );
+}
+
+// A parent's sub-categories as rows at the foot of its pushed pane on a
+// phone (Panels: Layers, Activity, Map), each pushing its own pane. The
+// phone's way down to them, drawn as the root list's grouped card so the rows
+// read as the same navigation, one level in.
+export function SettingsSubcategoryLinks({
+  parent,
+  categories,
+  onSelect,
+}: {
+  parent: SettingsCategorySpec;
+  categories: readonly SettingsCategorySpec[];
+  onSelect: (id: SettingsCategorySpec['id']) => void;
+}) {
+  const children = categories.filter((c) => c.parent === parent.id);
+  if (children.length === 0) return null;
+  return (
+    <nav
+      aria-label={`${parent.label} sub-categories`}
+      className="mt-6 flex flex-col divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 dark:divide-slate-800 dark:border-slate-700"
+    >
+      {children.map((c) => (
+        <CategoryRow
+          key={c.id}
+          label={c.label}
+          icon={<SettingsSubcategoryIcon id={c.id as SettingsSubcategoryId} />}
+          nested={false}
+          current={false}
+          count={0}
+          isRoot
+          onClick={() => onSelect(c.id)}
+        />
+      ))}
     </nav>
   );
 }

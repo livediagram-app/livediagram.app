@@ -86,12 +86,16 @@ describe('SettingsCategoryList sub-categories', () => {
     expect((row('Panels') as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it('pushes the Panels pane from its row on a phone, folding with the chevron alone', () => {
+  it('pushes the Panels pane from its row on a phone, with no accordion to work', () => {
     const { onSelect } = mount(null, { variant: 'root' });
+    expect(screen.queryByRole('button', { name: /Panels sub-categories/ })).toBeNull();
     fireEvent.click(row('Panels'));
     expect(onSelect).toHaveBeenCalledWith('panels');
     expect(queryRow('Layers')).toBeNull();
-    fireEvent.click(disclosure());
+  });
+
+  it('shows a sub-category search hit beneath Panels on a phone', () => {
+    const { onSelect } = mount(null, { variant: 'root', matchCounts: { layers: 1 } });
     fireEvent.click(row('Layers'));
     expect(onSelect).toHaveBeenLastCalledWith('layers');
   });
