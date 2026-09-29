@@ -181,7 +181,7 @@ test.describe('Power user mode', () => {
     });
 
     // Change one preset setting while the mode is on, reached from the readout.
-    await dialog(page).getByRole('button', { name: 'Change Panel Layout in Appearance' }).click();
+    await dialog(page).getByRole('button', { name: 'Change Panel Layout in Panels' }).click();
     await dialog(page).getByRole('radio', { name: 'Minimal' }).click();
     await dialog(page).getByRole('button', { name: 'Editor' }).click();
     const readout = dialog(page).getByRole('list', { name: 'Set By Power User Mode' });
