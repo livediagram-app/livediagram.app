@@ -15,7 +15,7 @@ import { ActivityIcon } from '@/components/panels/activity-panel-parts';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
 
 // The categories that carry a tile: every top-level one. A sub-category
-// (Layers, Activity, Map under Panels) draws none of its own.
+// (one per panel, under Panels) draws none of its own.
 export type SettingsIconId =
   | 'account'
   | 'editor'

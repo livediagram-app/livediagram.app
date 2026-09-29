@@ -12,17 +12,25 @@ import {
 
 type ListCategory = SettingsCategorySpec & { matchCount?: number };
 
+// The phone's grouped card: the root list, and a parent pane's sub-category
+// links, which read as the same navigation one level in.
+const ROOT_CARD =
+  'flex flex-col divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 dark:divide-slate-800 dark:border-slate-700';
+
+function childrenOf<C extends SettingsCategorySpec>(categories: readonly C[], id: string): C[] {
+  return categories.filter((c) => c.parent === id);
+}
+
 // The category list, in both of its jobs: the ROOT SCREEN on a phone (tap a
 // row to push its pane) and the SIDEBAR on desktop (click a row to swap the
 // pane beside it). One component for both because the row is the same row ,
 // only the chevron and the selected highlight differ, and splitting it would
 // be how the two drift apart.
 //
-// A category with sub-categories (Panels: Layers, Activity, Map) is an
+// A category with sub-categories (Panels, one per panel) is an
 // ACCORDION: its sub-categories sit indented beneath it (a plain glyph, no
 // tile) only while it is expanded, so they do not take up the list all the
-// time. It starts
-// collapsed, and is held open while one of its sub-categories is the current
+// time. It starts collapsed, and is held open while one of its sub-categories is the current
 // pane or holds a search hit, so neither is ever hidden. On desktop the
 // parent's row and a disclosure chevron beside it both toggle it (see
 // `activateParent`). A phone has no accordion to work: the parent is an
@@ -51,7 +59,6 @@ export function SettingsCategoryList({
 }) {
   const isRoot = variant === 'root';
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
-  const childrenOf = (id: string) => categories.filter((c) => c.parent === id);
   const toggle = (id: string) =>
     setExpanded((prev) => {
       const next = new Set(prev);
@@ -76,27 +83,24 @@ export function SettingsCategoryList({
       return;
     }
     toggle(category.id);
-    if (childrenOf(category.id).some((c) => c.id === selected)) onSelect(category.id);
+    if (childrenOf(categories, category.id).some((c) => c.id === selected)) onSelect(category.id);
   };
 
   return (
     <nav
       aria-label="Settings categories"
-      className={
-        isRoot
-          ? 'flex flex-col divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 dark:divide-slate-800 dark:border-slate-700'
-          : 'flex flex-col gap-0.5 p-2'
-      }
+      className={isRoot ? ROOT_CARD : 'flex flex-col gap-0.5 p-2'}
     >
       {categories.map((category) => {
         if (category.parent) return null; // Drawn beneath its parent.
-        const children = childrenOf(category.id);
-        // Held open while a sub-category is current or holds a search hit.
+        const children = childrenOf(categories, category.id);
+        // Held open while a sub-category holds a search hit or (on the
+        // sidebar, the only list with a selection or a disclosure) is current.
+        const searchHit = searching === true && children.some((c) => (c.matchCount ?? 0) > 0);
         const open =
           children.length > 0 &&
-          (expanded.has(category.id) ||
-            children.some((c) => c.id === selected) ||
-            (searching === true && children.some((c) => (c.matchCount ?? 0) > 0)));
+          (searchHit ||
+            (!isRoot && (expanded.has(category.id) || children.some((c) => c.id === selected))));
         const rowFor = (c: ListCategory, nested: boolean) => (
           <CategoryRow
             key={c.id}
@@ -123,7 +127,6 @@ export function SettingsCategoryList({
             <CategoryRow
               label={category.label}
               icon={<SettingsCategoryIcon id={category.id as SettingsIconId} />}
-              nested={false}
               current={selected === category.id}
               count={category.matchCount ?? 0}
               // A parent stays reachable while its sub-categories match, even
@@ -170,9 +173,7 @@ export function SettingsCategoryList({
 }
 
 // A parent's sub-categories as rows at the foot of its pushed pane on a
-// phone (Panels: Layers, Activity, Map), each pushing its own pane. The
-// phone's way down to them, drawn as the root list's grouped card so the rows
-// read as the same navigation, one level in.
+// phone, each pushing its own pane: the phone's way down to them.
 export function SettingsSubcategoryLinks({
   parent,
   categories,
@@ -182,21 +183,15 @@ export function SettingsSubcategoryLinks({
   categories: readonly SettingsCategorySpec[];
   onSelect: (id: SettingsCategorySpec['id']) => void;
 }) {
-  const children = categories.filter((c) => c.parent === parent.id);
+  const children = childrenOf(categories, parent.id);
   if (children.length === 0) return null;
   return (
-    <nav
-      aria-label={`${parent.label} sub-categories`}
-      className="mt-6 flex flex-col divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 dark:divide-slate-800 dark:border-slate-700"
-    >
+    <nav aria-label={`${parent.label} sub-categories`} className={`mt-6 ${ROOT_CARD}`}>
       {children.map((c) => (
         <CategoryRow
           key={c.id}
           label={c.label}
           icon={<SettingsSubcategoryIcon id={c.id as SettingsSubcategoryId} />}
-          nested={false}
-          current={false}
-          count={0}
           isRoot
           onClick={() => onSelect(c.id)}
         />
@@ -209,14 +204,15 @@ export function SettingsSubcategoryLinks({
 // is indented by about half a tile, so its plain glyph starts inside the
 // parent's tile column and its label a little inside the parent's label:
 // enough to read as nested, without the deep indent of lining the glyph up
-// under the parent's label. A parent row carries a disclosure chevron beside
-// its main button (a sibling, since a button cannot hold a button).
+// under the parent's label. A parent row on the sidebar carries a disclosure
+// chevron beside its main button (a sibling, since a button cannot hold a
+// button); the phone's root list has none.
 function CategoryRow({
   label,
   icon,
-  nested,
-  current,
-  count,
+  nested = false,
+  current = false,
+  count = 0,
   reachable = false,
   searching,
   isRoot,
@@ -225,13 +221,14 @@ function CategoryRow({
 }: {
   label: string;
   icon: ReactNode;
-  nested: boolean;
-  current: boolean;
-  count: number;
+  nested?: boolean;
+  current?: boolean;
+  count?: number;
   reachable?: boolean;
   searching?: boolean;
   isRoot: boolean;
   onClick: () => void;
+  // Sidebar only.
   disclosure?: {
     open: boolean;
     controls: string;
@@ -257,7 +254,7 @@ function CategoryRow({
       type="button"
       disabled={empty}
       onClick={onClick}
-      aria-expanded={disclosure && !isRoot ? disclosure.open : undefined}
+      aria-expanded={disclosure?.open}
       // The sidebar is a set of alternatives with one current, which is
       // what aria-current names. The root list is navigation, so its
       // rows make no such claim.
@@ -289,10 +286,8 @@ function CategoryRow({
       ) : null}
       {/* Only the phone root screen gets a chevron: it is the one that
           actually goes somewhere. On the sidebar the pane is already
-          on screen, so a "there's more this way" arrow would lie. A parent
-          row leaves it to its disclosure chevron: two side by side would
-          read as one control drawn twice. */}
-      {isRoot && !disclosure ? <NavChevron className="text-slate-400" /> : null}
+          on screen, so a "there's more this way" arrow would lie. */}
+      {isRoot ? <NavChevron className="text-slate-400" /> : null}
     </button>
   );
   if (!disclosure) return button;
@@ -306,9 +301,7 @@ function CategoryRow({
         aria-expanded={disclosure.open}
         aria-controls={disclosure.controls}
         aria-label={disclosure.label}
-        className={`flex h-8 w-8 shrink-0 items-center justify-center text-slate-400 transition hover:text-slate-700 disabled:cursor-default disabled:opacity-40 disabled:hover:text-slate-400 dark:hover:text-slate-200 ${
-          isRoot ? 'mr-1.5' : 'mr-0.5'
-        }`}
+        className="mr-0.5 flex h-8 w-8 shrink-0 items-center justify-center text-slate-400 transition hover:text-slate-700 disabled:cursor-default disabled:opacity-40 disabled:hover:text-slate-400 dark:hover:text-slate-200"
       >
         <NavChevron
           className={`transition-transform motion-reduce:transition-none ${disclosure.open ? 'rotate-90' : ''}`}

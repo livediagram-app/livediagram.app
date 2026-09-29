@@ -160,9 +160,7 @@ export function SettingsDialog({
   // shows the split. Only the phone's pushed pane gets a back control, and a
   // sub-category's goes back to its parent's pane, the screen that pushed it.
   const showBack = isMobile && selected !== null;
-  const backTo = selected?.parent
-    ? (categories.find((c) => c.id === selected.parent) ?? null)
-    : null;
+  const backTo = categories.find((c) => c.id === selected?.parent) ?? null;
 
   return (
     <Dialog

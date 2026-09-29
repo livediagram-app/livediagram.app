@@ -41,7 +41,7 @@ import type { SettingsIllustrationId } from './settings-illustrations';
 // to. A guest flipping them would be writing preferences that can never
 // apply, so they are absent rather than dead.
 // Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
-// A panel's rows need its Enable switch on (`preferences`, the live values),
+// `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
 export type SettingsRowContext = {
   emailEnabled: boolean;
@@ -74,8 +74,7 @@ type RowBase = {
   // description: a test fails if a row that needs them has none.
   keywords?: string;
   // Sub-heading this row sits under, within its category. A category holding
-  // several unrelated clusters (Panels covers Layers, Activity and the
-  // minimap) reads as one long undifferentiated list without them. Rows
+  // several unrelated clusters (Editor's Power User rows) reads as one long undifferentiated list without them. Rows
   // sharing a section must be ADJACENT; the pane groups consecutive runs, so
   // a section cannot be split and silently re-headed further down.
   section?: string;
@@ -187,8 +186,8 @@ export type SettingsRowSpec =
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
   label: string;
-  // The top-level category this is a sub-category of (Panels holds Layers,
-  // Activity and Map). The list nests it, untiled and indented, beneath its
+  // The top-level category this is a sub-category of (Panels holds one per
+  // panel). The list nests it, untiled and indented, beneath its
   // parent; it is still its own pane. A parent's sub-categories follow it
   // directly, like a section's rows.
   parent?: SettingsIconId;
@@ -204,8 +203,8 @@ const MINIMAP_DESKTOP_ONLY =
 
 // The panel switches (docs/specs/007-editor/user-preferences.md), each on
 // unless stored `false`. One row per Panels sub-category, first in its pane,
-// with that panel's other rows nested beneath it and offered only while it
-// is on (`whilePanelOn`).
+// with that panel's other rows nested beneath it (`parent`), so they are
+// offered only while it is on (see `visibleCategories`).
 function panelSwitch(
   key: PanelSwitch,
   row: Pick<SettingsToggleRowSpec, 'label' | 'keywords' | 'description' | 'event'>,
@@ -217,10 +216,6 @@ function panelSwitch(
     read: (p) => panelEnabled(p, key),
     write: (p, v) => ({ ...p, [key]: v }),
   };
-}
-
-function whilePanelOn(key: PanelSwitch | 'showMinimap') {
-  return (ctx: SettingsRowContext) => ctx.preferences?.[key] !== false;
 }
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
@@ -423,7 +418,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'layersShowPreview',
         parent: 'layersPanelEnabled',
-        available: whilePanelOn('layersPanelEnabled'),
         keywords: 'thumbnail preview layer picture',
         illustration: 'layerThumbnails',
         label: 'Layer Thumbnails',
@@ -437,7 +431,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'layersShowCount',
         parent: 'layersPanelEnabled',
-        available: whilePanelOn('layersPanelEnabled'),
         keywords: 'number badge count layer',
         label: 'Layer Element Counts',
         description:
@@ -450,7 +443,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'layerHoverPreview',
         parent: 'layersPanelEnabled',
-        available: whilePanelOn('layersPanelEnabled'),
         keywords: 'highlight hover layer preview',
         label: 'Preview Layer on Hover',
         description:
@@ -477,7 +469,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'activityRevertHoverPreview',
         parent: 'activityPanelEnabled',
-        available: whilePanelOn('activityPanelEnabled'),
         keywords: 'undo history revert preview hover activity',
         label: 'Preview Revert on Hover',
         description:
@@ -494,11 +485,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     parent: 'panels',
     rows: [
       {
+        // The Map's switch, written out rather than a panelSwitch: it keeps its
+        // older key and telemetry tokens so stored choices and the dashboard
+        // carry over the rename from "Show Map".
         kind: 'toggle',
         key: 'showMinimap',
+        keywords: 'minimap overview thumbnail navigator birds eye hide show turn off',
         illustration: 'showMinimap',
         label: 'Enable Map',
-        keywords: 'minimap overview thumbnail navigator birds eye hide show turn off',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
         description:
           'Shows the Map, a small overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Tap or drag it to jump around; scroll on it to zoom. Desktop only.',
@@ -510,7 +504,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'mapDimOutside',
         parent: 'showMinimap',
-        available: whilePanelOn('showMinimap'),
         keywords: 'shade minimap viewport dim',
         illustration: 'mapDimOutside',
         label: 'Dim Outside the View',
@@ -525,7 +518,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'choice',
         key: 'mapSize',
         parent: 'showMinimap',
-        available: whilePanelOn('showMinimap'),
         keywords: 'minimap height short medium tall',
         label: 'Map Size',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
@@ -831,8 +823,26 @@ export function visibleCategories(
   ctx: SettingsRowContext,
 ): SettingsCategorySpec[] {
   return SETTINGS_CATEGORIES.filter((c) => !c.requiresAi || aiCapable)
-    .map((c) => ({ ...c, rows: c.rows.filter((r) => !r.available || r.available(ctx)) }))
+    .map((c) => ({
+      ...c,
+      rows: c.rows.filter(
+        (r) => (!r.available || r.available(ctx)) && parentSwitchOn(c, r, ctx.preferences),
+      ),
+    }))
     .filter((c) => c.rows.length > 0);
+}
+
+// A row nested under a switch (`parent`) is offered only while that switch is
+// on, when the live preferences are known. One rule for every nested row, so
+// a new panel's rows follow its Enable switch with no extra wiring.
+function parentSwitchOn(
+  category: SettingsCategorySpec,
+  row: SettingsRowSpec,
+  preferences: UserPreferences | undefined,
+): boolean {
+  if (!row.parent || !preferences) return true;
+  const parent = category.rows.find((r) => r.key === row.parent);
+  return parent?.kind !== 'toggle' || parent.read(preferences);
 }
 
 // A category's name as a path from the top level: "Panels › Layers" for a

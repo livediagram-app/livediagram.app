@@ -253,10 +253,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // the same panels, so each panel stays hidden in either state.
   const chromeHidden = welcomeOpen || zenMode === true;
   // Panels turned off in Settings (docs/specs/007-editor/user-preferences.md) take their cluster
-  // buttons with them; Undo / Redo stay.
-  const activityOn = panelEnabled(settings, 'activityPanelEnabled');
-  const layersOn = panelEnabled(settings, 'layersPanelEnabled');
-  const collaborateOn = panelEnabled(settings, 'collaboratePanelEnabled');
+  // buttons with them (Undo / Redo stay). Read once here and handed to
+  // useCanvasChromePanels, so a button and its panel share one value.
+  const panelsOn = {
+    activity: panelEnabled(settings, 'activityPanelEnabled'),
+    layers: panelEnabled(settings, 'layersPanelEnabled'),
+    collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
+  };
 
   // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
@@ -333,6 +336,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     dockingActive,
     toolbarActive,
     panelWiringFor,
+    panelsOn,
   });
 
   // Measured against the real top-corner stacks (useStripCrowdsCorners). A
@@ -561,9 +565,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* With the Activity panel off there is no panel to carry Undo /
                 Redo in Floating, so the strip shows in every layout, as just
                 those two. */}
-            {!zenMode && !readOnly && (!activityOn || clusterPopovers || activityMinimized) ? (
+            {!zenMode &&
+            !readOnly &&
+            (!panelsOn.activity || clusterPopovers || activityMinimized) ? (
               <ActivityClusterStrip
-                showActivity={activityOn}
+                showActivity={panelsOn.activity}
                 popoverOpen={clusterPopovers && activeMobilePanel === 'activity'}
                 onExpand={onToggleActivityMinimized}
                 onTogglePopover={
@@ -578,7 +584,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               />
             ) : null}
             {/* Layers (docs/specs/006-diagram/layers.md): see LayersClusterButton. */}
-            {!zenMode && !readOnly && layersOn && (clusterPopovers || layersMinimized) ? (
+            {!zenMode && !readOnly && panelsOn.layers && (clusterPopovers || layersMinimized) ? (
               <LayersClusterButton
                 popoverOpen={clusterPopovers && activeMobilePanel === 'layers'}
                 onExpand={onToggleLayersMinimized}
@@ -592,7 +598,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): right after Layers, only while
                 the tab has a comment thread or an action. A view-role visitor
                 gets it too: they read threads and answer them. */}
-            {!zenMode && collaborateOn && (commentRows.length > 0 || actionRows.length > 0) ? (
+            {!zenMode &&
+            panelsOn.collaborate &&
+            (commentRows.length > 0 || actionRows.length > 0) ? (
               <CollaborateClusterButton
                 openCount={kindCounts('open', commentRows, actionRows).all}
                 popoverOpen={activeMobilePanel === 'collaborate'}

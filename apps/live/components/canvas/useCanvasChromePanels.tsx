@@ -9,7 +9,6 @@ import type { PanelId } from '@/lib/panel-layout';
 import { ActivityPanel } from '@/components/panels/ActivityPanel';
 import { LayersPanel } from '@/components/panels/LayersPanel';
 import { visibleLayerElements } from '@livediagram/diagram';
-import { panelEnabled } from '@/lib/user-preferences';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
@@ -59,6 +58,7 @@ export function useCanvasChromePanels({
   dockingActive,
   toolbarActive,
   panelWiringFor,
+  panelsOn,
 }: {
   props: CanvasChromeProps;
   chromeHidden: boolean;
@@ -69,6 +69,9 @@ export function useCanvasChromePanels({
   // instead of floating in its corner.
   toolbarActive: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
+  // Which panels are on in Settings (docs/specs/007-editor/user-preferences.md), read by CanvasChrome
+  // so each panel and its cluster button agree.
+  panelsOn: { activity: boolean; layers: boolean; collaborate: boolean };
 }): {
   panelEls: Partial<Record<PanelId, ReactNode>>;
   // The Explorer, when it belongs to the Toolbar layout's menu button rather
@@ -382,9 +385,7 @@ export function useCanvasChromePanels({
   // Mounted only while the tab has a thread or an action, the button's gate,
   // and never while its Settings switch is off (docs/specs/007-editor/user-preferences.md).
   const collaborateEl =
-    !chromeHidden &&
-    panelEnabled(settings, 'collaboratePanelEnabled') &&
-    (commentRows.length > 0 || actionRows.length > 0) ? (
+    !chromeHidden && panelsOn.collaborate && (commentRows.length > 0 || actionRows.length > 0) ? (
       <CollaboratePanel
         position={collaborateWiring.position}
         commentRows={commentRows}
@@ -428,7 +429,7 @@ export function useCanvasChromePanels({
   // Off in Settings (docs/specs/007-editor/user-preferences.md): no panel; Undo / Redo stay in the
   // cluster strip, which CanvasChrome then shows in every layout.
   const activityEl =
-    chromeHidden || !panelEnabled(settings, 'activityPanelEnabled') ? null : (
+    chromeHidden || !panelsOn.activity ? null : (
       <ActivityPanel
         position={activityWiring.position}
         // As a popover there is no minimised panel to expand: the cluster
@@ -470,10 +471,7 @@ export function useCanvasChromePanels({
   // pop it open (mobileOpenOverride gates the actual render).
   // Its Settings switch removes it outright; layers themselves keep applying.
   const layersEl =
-    !chromeHidden &&
-    !readOnly &&
-    panelEnabled(settings, 'layersPanelEnabled') &&
-    (clusterPopovers ? true : !layersMinimized) ? (
+    !chromeHidden && !readOnly && panelsOn.layers && (clusterPopovers ? true : !layersMinimized) ? (
       <LayersPanel
         layers={layers}
         tabFont={props.tabFont}
