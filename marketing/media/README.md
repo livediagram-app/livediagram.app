@@ -35,6 +35,18 @@ captioned with what it shows so copywriters can match it to a claim in
 | `palette.PNG`  | The mobile palette popover open above the dock, showing the shapes / tools / devices accordions. |
 | `search.PNG`   | The search panel on mobile, surfacing results across diagrams, folders, tabs, and elements.      |
 
+## Icons (`icons/`)
+
+The brand mark. Its source is the apps' shared `apps/*/app/icon.svg`.
+
+| File                                   | Background                                                                                                       |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `livediagram-icon-{256,512,1024}.png`  | White. For surfaces that show the icon as a tile, such as social previews.                                       |
+| `livediagram-icon-transparent-<n>.png` | Transparent, at 16, 32, 64, 128, 256 and 512. For surfaces that draw their own background, such as Google Drive. |
+
+Regenerate the transparent set after changing the mark with `pnpm icons:brand`
+(`apps/live/scripts/brand-icons/render.mjs`, rendered by Playwright's Chromium).
+
 ## Guidance
 
 - **Brand color** is sky blue `#0EA5E9` ("livediagram blue"). Page background
@@ -56,6 +68,7 @@ media/
   README.md      this file
   desktop/       desktop product screenshots (see table above)
   mobile/        mobile product screenshots (see table above)
+  icons/         the brand mark as PNGs (see table above)
 ```
 
 Likely additions as the asset set grows:
