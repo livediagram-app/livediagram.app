@@ -95,12 +95,18 @@ simple = { limit = 120, period = 60 }
 # instance per diagram id; clients connect via WebSocket through the
 # `/api/diagrams/<id>/ws` endpoint.
 [[durable_objects.bindings]]
-name = "DIAGRAM_ROOM"
-class_name = "DiagramRoom"
+name = "DOCUMENT_ROOM"
+class_name = "DocumentRoom"
 
 [[migrations]]
 tag = "v1"
 new_classes = ["DiagramRoom"]
+
+# The class was DiagramRoom until the container became a document
+# (docs/specs/006-document/document.md). A rename keeps every room's storage.
+[[migrations]]
+tag = "v2"
+renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 
 # Scheduled jobs the worker handles via the `scheduled` export. One
 # entry per cron; each fires the same handler with `event.cron` set
@@ -367,15 +373,19 @@ namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
 # A different script is a different Durable Object namespace, so staging's
-# DIAGRAM_ROOM instances are separate from production's for free. The class
+# DOCUMENT_ROOM instances are separate from production's for free. The class
 # still needs its own migration tag in this environment.
 [[env.staging.durable_objects.bindings]]
-name = "DIAGRAM_ROOM"
-class_name = "DiagramRoom"
+name = "DOCUMENT_ROOM"
+class_name = "DocumentRoom"
 
 [[env.staging.migrations]]
 tag = "v1"
 new_classes = ["DiagramRoom"]
+
+[[env.staging.migrations]]
+tag = "v2"
+renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 
 # The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
 # staging too, against staging's own data. Restated rather than inherited so

@@ -34,7 +34,7 @@ export async function recordDocumentCreated(
       sourceType: 'document',
       sourceId: liveDoc.id,
       eventType: 'document_created',
-      title: 'Diagram Created',
+      title: 'Document Created',
       description: liveDoc.name,
       snapshot: documentSnapshot(liveDoc),
     },
@@ -55,7 +55,7 @@ export async function recordDocumentDuplicated(
       sourceType: 'document',
       sourceId: copy.id,
       eventType: 'document_duplicated',
-      title: 'Diagram Duplicated',
+      title: 'Document Duplicated',
       description: `${sourceName} → ${copy.name}`,
       snapshot: { ...documentSnapshot(copy), sourceName },
     },
@@ -174,7 +174,7 @@ export async function recordDocumentEdited(
       sourceId: liveDoc.id,
       eventType: 'document_edited',
       dedupeKey: dedupeKeyForDay(actorId, now),
-      title: 'Diagram Updated',
+      title: 'Document Updated',
       // Actor-relative copy is resolved by the renderer ("You worked
       // on X" vs "Priya edited X"), so the stored description stays
       // viewer-agnostic and one row serves the whole audience.

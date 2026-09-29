@@ -568,7 +568,7 @@ export function TimelineStacking() {
       <TimelineEventBubble
         y={46}
         tint="sky"
-        title="Diagrams Updated"
+        title="Documents Updated"
         meta="5 events · click to expand"
       />
       <Label x={40} y={132} size={9.5} tone="muted">

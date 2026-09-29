@@ -13,7 +13,7 @@ function event(over: Partial<TimelineEvent> = {}): TimelineEvent {
     sourceType: 'document',
     sourceId: 'd1',
     eventType: 'document_created',
-    title: 'Diagram Created',
+    title: 'Document Created',
     occurredAt: 1_700_000_000_000,
     actorId: ME,
     ...over,
@@ -69,14 +69,14 @@ describe('useTimelineControls', () => {
       const created = event({
         id: 'c',
         eventType: 'document_created',
-        title: 'Diagram Created',
+        title: 'Document Created',
         occurredAt: noon,
         snapshot: { documentId: 'd1', documentName: 'Payments' },
       } as Partial<TimelineEvent>);
       const edited = event({
         id: 'e',
         eventType: 'document_edited',
-        title: 'Diagram Updated',
+        title: 'Document Updated',
         occurredAt: noon + 3 * 60 * 60 * 1000,
         snapshot: { documentId: 'd1', documentName: 'Payments' },
       } as Partial<TimelineEvent>);

@@ -40,7 +40,7 @@ describe('useTimelineStackSlots', () => {
     // through the element's props rather than a full render: the menu
     // itself is the single-card component, tested on its own.
     const props = (slots!.menu as { props: { onRemove: () => void; subject: string } }).props;
-    expect(props.subject).toBe('Diagrams Renamed · 3 events');
+    expect(props.subject).toBe('Documents Renamed · 3 events');
     props.onRemove();
     expect(onDismiss).toHaveBeenCalledWith(['a', 'b', 'c']);
   });

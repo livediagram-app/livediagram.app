@@ -163,7 +163,7 @@ export async function probeDispatch(
   const env = {
     DB: trap('DB'),
     IMAGES: trap('IMAGES'),
-    DOCUMENT_ROOM: trap('DIAGRAM_ROOM'),
+    DOCUMENT_ROOM: trap('DOCUMENT_ROOM'),
     TELEMETRY_ENABLED: 'true',
     OPENAI_API_KEY: 'probe-key',
   } as unknown as Env;

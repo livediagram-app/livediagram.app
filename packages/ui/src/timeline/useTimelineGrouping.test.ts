@@ -16,7 +16,7 @@ function event(occurredAt: number): TimelineEvent {
     sourceType: 'document',
     sourceId: `s${seq}`,
     eventType: 'document_edited',
-    title: 'Diagram Updated',
+    title: 'Document Updated',
     description: null,
     occurredAt,
     actorId: null,

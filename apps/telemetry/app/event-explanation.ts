@@ -36,9 +36,9 @@ function pattern(category: string, action: string, type: string): string | null 
         : null;
     case 'Element|Added':
       return `Someone added ${withArticle(words(type))} to the canvas.`;
-    case 'Diagram|Exported':
+    case 'Document|Exported':
       return `Someone exported a tab as ${type}.`;
-    case 'Diagram|Joined':
+    case 'Document|Joined':
       return `Someone came into a diagram through ${withArticle(`${words(type)}-role`)} share link. Counted once per person per diagram, not on every revisit.`;
     case 'Tab|Imported':
       return `Someone imported a tab from ${withArticle(type)} file.`;

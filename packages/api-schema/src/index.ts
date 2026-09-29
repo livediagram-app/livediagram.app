@@ -574,3 +574,4 @@ export * from './timeline';
 export * from './activity';
 export * from './responses';
 export * from './trash';
+export { upgradeLegacyPreferences } from './legacy-preferences';

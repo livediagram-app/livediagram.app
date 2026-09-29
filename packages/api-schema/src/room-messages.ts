@@ -157,7 +157,7 @@ export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
   'qa',
-  'diagram-trashed',
+  'document-trashed',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -527,7 +527,7 @@ export type RoomOp =
   // The diagram went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.
-  | { kind: 'diagram-trashed' };
+  | { kind: 'document-trashed' };
 
 // Client-side narrowings of `ClientMessage` / `ServerMessage` that
 // pin `op` to `RoomOp` for type-safe send/receive in the editor.

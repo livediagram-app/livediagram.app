@@ -759,14 +759,14 @@ describe('DocumentRoom op-role enforcement', () => {
     expect(opsReceived(victim.ws)).toHaveLength(0);
   });
 
-  it("never relays 'diagram-trashed' from a client socket, even at edit role", () => {
+  it("never relays 'document-trashed' from a client socket, even at edit role", () => {
     // A forged one would end everyone's session with the deleted state.
     const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');
     const victim = connect(room, 'victim', 'view');
     victim.ws.sent.length = 0;
 
-    sendFrame(room, editor.ws, { kind: 'op', op: { kind: 'diagram-trashed' } });
+    sendFrame(room, editor.ws, { kind: 'op', op: { kind: 'document-trashed' } });
 
     expect(opsReceived(victim.ws)).toHaveLength(0);
   });
@@ -1824,12 +1824,12 @@ describe('DocumentRoom tab-scoped sessions', () => {
       new Request('https://room/broadcast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ op: { kind: 'diagram-trashed' } }),
+        body: JSON.stringify({ op: { kind: 'document-trashed' } }),
       }),
     );
     for (const ws of [owner, visitor]) {
-      expect(ops(ws)).toEqual([{ kind: 'diagram-trashed' }]);
-      expect(ws.closed).toEqual([4004, 'diagram-trashed']);
+      expect(ops(ws)).toEqual([{ kind: 'document-trashed' }]);
+      expect(ws.closed).toEqual([4004, 'document-trashed']);
     }
   });
 

@@ -152,7 +152,7 @@ export async function broadcastDocumentTrashed(
     await stub.fetch('https://room/broadcast', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ op: { kind: 'diagram-trashed' } }),
+      body: JSON.stringify({ op: { kind: 'document-trashed' } }),
     });
   } catch (err) {
     console.warn('[room-broadcast] diagram-trashed did not reach the room', liveDoc.id, err);

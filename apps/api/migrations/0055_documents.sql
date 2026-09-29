@@ -29,3 +29,52 @@ DROP INDEX idx_share_links_diagram_created;
 CREATE INDEX idx_share_links_document_created ON share_links (document_id, created_at);
 DROP INDEX idx_share_links_diagram_role_created;
 CREATE INDEX idx_share_links_document_role_created ON share_links (document_id, role, created_at);
+
+-- Stored values that name the container.
+
+-- Timeline: source, scope and event types, the titles written with each event, and the
+-- snapshot keys the cards read.
+UPDATE timeline_events SET source_type = 'document' WHERE source_type = 'diagram';
+UPDATE timeline_events SET event_type = 'document' || substr(event_type, 8)
+  WHERE event_type LIKE 'diagram\_%' ESCAPE '\';
+UPDATE timeline_events SET event_type = 'team_document' || substr(event_type, 13)
+  WHERE event_type LIKE 'team\_diagram\_%' ESCAPE '\';
+UPDATE timeline_events SET title = 'Document Created' WHERE title = 'Diagram Created';
+UPDATE timeline_events SET title = 'Document Duplicated' WHERE title = 'Diagram Duplicated';
+UPDATE timeline_events SET title = 'Document Updated' WHERE title = 'Diagram Updated';
+UPDATE timeline_events
+  SET snapshot = replace(replace(snapshot, '"diagramId":', '"documentId":'), '"diagramName":', '"documentName":')
+  WHERE snapshot LIKE '%"diagramId":%' OR snapshot LIKE '%"diagramName":%';
+UPDATE timeline_event_scopes SET scope_type = 'document' WHERE scope_type = 'diagram';
+UPDATE timeline_scope_state SET scope_type = 'document' WHERE scope_type = 'diagram';
+
+-- Element links to another document, inside tab bodies and change-log states. A link is
+-- written as {"kind":"diagram","diagramId":…}; the tab's own "kind":"diagram" is the tab kind
+-- and never has a diagramId beside it, so it is left alone.
+UPDATE tabs SET data = replace(data, '"kind":"diagram","diagramId":', '"kind":"document","documentId":')
+  WHERE data LIKE '%"diagramId":%';
+UPDATE change_log
+  SET before_state = replace(before_state, '"kind":"diagram","diagramId":', '"kind":"document","documentId":'),
+      after_state = replace(after_state, '"kind":"diagram","diagramId":', '"kind":"document","documentId":')
+  WHERE before_state LIKE '%"diagramId":%' OR after_state LIKE '%"diagramId":%';
+
+-- The notification opt-out: a lost `false` would start sending emails someone turned off.
+UPDATE user_preferences
+  SET prefs = replace(prefs, '"notifyDiagramJoin":', '"notifyDocumentJoin":')
+  WHERE prefs LIKE '%"notifyDiagramJoin":%' AND prefs NOT LIKE '%"notifyDocumentJoin":%';
+
+-- Telemetry history, so the public dashboard's lines continue under the new names.
+UPDATE events SET category = 'Document' WHERE category = 'Diagram';
+UPDATE events SET type = 'Document'
+  WHERE type = 'Diagram' AND ((category = 'Team' AND action IN ('Added', 'Moved', 'Removed'))
+    OR (category = 'Element' AND action = 'Linked'));
+UPDATE events SET type = 'DocumentToTeam' WHERE category = 'Action' AND action = 'Moved' AND type = 'DiagramToTeam';
+UPDATE events SET type = 'DocumentJoined' WHERE category = 'Email' AND action = 'Sent' AND type = 'DiagramJoined';
+UPDATE events SET type = 'NotifyDocumentJoinOn' WHERE category = 'UI' AND type = 'NotifyDiagramJoinOn';
+UPDATE events SET type = 'NotifyDocumentJoinOff' WHERE category = 'UI' AND type = 'NotifyDiagramJoinOff';
+UPDATE events SET type = '/document' WHERE category = 'Page' AND action = 'View' AND type = '/diagram';
+UPDATE events SET type = replace(replace(type, 'Diagrams', 'Documents'), 'Diagram', 'Document')
+  WHERE category = 'Mcp' AND action = 'Used' AND type LIKE '%Diagram%';
+UPDATE events
+  SET type = replace(replace(replace(replace(type, '.Diagrams.', '.Documents.'), '.Diagram.', '.Document.'), 'DiagramMeta', 'DocumentMeta'), 'Diagram', 'Document')
+  WHERE category = 'Error' AND type LIKE '%Diagram%';

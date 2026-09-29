@@ -449,10 +449,10 @@ export class DocumentRoom implements DurableObject {
   // (docs/specs/013-workspace/trash.md): the diagram is in the Trash, and its
   // admission refuses every new join until it is restored.
   private closeAllIfTrashed(op: unknown): void {
-    if ((op as { kind?: unknown } | null)?.kind !== 'diagram-trashed') return;
+    if ((op as { kind?: unknown } | null)?.kind !== 'document-trashed') return;
     for (const ws of this.state.getWebSockets()) {
       try {
-        ws.close(DOCUMENT_TRASHED_CLOSE, 'diagram-trashed');
+        ws.close(DOCUMENT_TRASHED_CLOSE, 'document-trashed');
       } catch {
         // Already gone.
       }

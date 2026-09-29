@@ -56,7 +56,7 @@ describe('buildMetrics', () => {
     // `category|action|` is how the api encodes an event with no type. A ''
     // here would render as a stray separator in the label and never match a
     // null-typed row in the window counts.
-    const [m] = buildMetrics(daily({ 'Diagram|Created|': [1] }));
+    const [m] = buildMetrics(daily({ 'Document|Created|': [1] }));
     expect(m!.type).toBeNull();
   });
 

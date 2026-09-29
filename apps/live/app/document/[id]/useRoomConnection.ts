@@ -409,7 +409,7 @@ export function useRoomConnection(opts: {
         const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
         if (effect === 'leave') window.location.assign('/explorer');
         else if (effect === 'reload') window.location.reload();
-      } else if (op.kind === 'diagram-trashed') {
+      } else if (op.kind === 'document-trashed') {
         // The diagram went to the Trash. System-only, like the share ops:
         // the room refuses it from a client socket.
         if (from === 'system') receiveDocumentTrashed();

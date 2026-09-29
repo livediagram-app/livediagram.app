@@ -23,7 +23,7 @@ function event(over: Partial<TimelineEvent>): TimelineEvent {
     sourceType: 'document',
     sourceId: 'd1',
     eventType: 'document_created',
-    title: 'Diagram Created',
+    title: 'Document Created',
     description: 'stored description',
     occurredAt: 1_700_000_000_000,
     actorId: ME,
@@ -54,7 +54,7 @@ describe('diagram cards', () => {
     const gone = render(
       event({
         eventType: 'document_created',
-        title: 'Diagram Created',
+        title: 'Document Created',
         snapshot: { documentName: 'Old' },
       }),
     );
@@ -113,12 +113,12 @@ describe('diagram cards', () => {
   });
 
   it('says "by you" for the reader’s own edits and names anyone else', () => {
-    const mine = render(event({ eventType: 'document_edited', title: 'Diagram Updated' }));
+    const mine = render(event({ eventType: 'document_edited', title: 'Document Updated' }));
     expect(mine.meta).toBe('by you');
     const theirs = render(
       event({
         eventType: 'document_edited',
-        title: 'Diagram Updated',
+        title: 'Document Updated',
         actorId: 'priya',
         snapshot: { documentId: 'd1', documentName: 'Payments', authorName: 'Priya' },
       }),

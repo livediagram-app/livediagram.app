@@ -17,6 +17,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // their own `localStorage.setItem` (like `lib/telemetry.ts`'s
 // in-memory gate cache) still refresh promptly.
 
+import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
 import { apiGetPreferences, apiPutPreferences } from './api-client';
@@ -301,7 +302,7 @@ export function readUserPreferences(): UserPreferences {
     if (typeof parsed !== 'object' || parsed === null) return {};
     // Keep unknown keys: forward-compat for future-versioned flags
     // a different client may have written.
-    return parsed as UserPreferences;
+    return upgradeLegacyPreferences(parsed as Record<string, unknown>) as UserPreferences;
   } catch {
     return {};
   }
@@ -347,7 +348,10 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
   const remote = await apiGetPreferences(ownerId);
   if (remote === null) return null;
   const local = readUserPreferences();
-  const merged: UserPreferences = { ...local, ...(remote as UserPreferences) };
+  const merged: UserPreferences = {
+    ...local,
+    ...(upgradeLegacyPreferences(remote as Record<string, unknown>) as UserPreferences),
+  };
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));

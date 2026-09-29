@@ -14,7 +14,7 @@ const TAB_LESS_DELIVERED = new Set([
   'poll-end',
   'share-revoked',
   'share-rescoped',
-  'diagram-trashed',
+  'document-trashed',
 ]);
 
 // The tab-less ops a scoped session may itself send.

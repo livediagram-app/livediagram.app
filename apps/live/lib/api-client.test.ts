@@ -310,10 +310,10 @@ describe('response helpers (observed through api callers)', () => {
       ).resolves.toBeUndefined();
     });
 
-    it('throws "save diagram meta failed: <status>" on 500', async () => {
+    it('throws "save document meta failed: <status>" on 500', async () => {
       stubFetch(500);
       await expect(apiSaveDocumentMeta('owner', { id: 'd-1', name: 'New' })).rejects.toThrow(
-        'save diagram meta failed: 500',
+        'save document meta failed: 500',
       );
     });
   });

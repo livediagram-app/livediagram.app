@@ -65,7 +65,7 @@ function event(over: Partial<TimelineEvent>): TimelineEvent {
     sourceType: 'document',
     sourceId: 'd1',
     eventType: 'document_created',
-    title: 'Diagram Created',
+    title: 'Document Created',
     description: null,
     occurredAt: 1,
     actorId: 'me',

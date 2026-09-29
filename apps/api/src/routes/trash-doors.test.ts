@@ -228,7 +228,7 @@ describe('DELETE /api/documents/:id', () => {
   it('ends the realtime sessions with the deleted state', async () => {
     const db = world();
     await call(db, 'DELETE', '/api/documents/A', { owner: 'owner', waitUntil: (p) => void p });
-    await vi.waitFor(() => expect(db.broadcasts).toEqual([{ op: { kind: 'diagram-trashed' } }]));
+    await vi.waitFor(() => expect(db.broadcasts).toEqual([{ op: { kind: 'document-trashed' } }]));
   });
 
   it('deletes for good with ?permanent=true', async () => {

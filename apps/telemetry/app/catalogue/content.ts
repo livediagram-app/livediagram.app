@@ -104,7 +104,7 @@ export const DOCUMENTS_CREATED: Metric = {
   category: 'Document',
   action: 'Created',
   allTypes: true,
-  title: 'Diagrams Created',
+  title: 'Documents Created',
   blurb:
     'New diagrams from the New Diagram wizard, stored in the cloud or offline in this browser.',
 };
@@ -113,7 +113,7 @@ export const DOCUMENTS_RENAMED: Metric = {
   category: 'Document',
   action: 'Renamed',
   type: null,
-  title: 'Diagrams Renamed',
+  title: 'Documents Renamed',
 };
 
 export const DOCUMENTS_DELETED: Metric = {
@@ -128,7 +128,7 @@ export const DOCUMENTS_DUPLICATED: Metric = {
   category: 'Document',
   action: 'Duplicated',
   allTypes: true,
-  title: 'Diagrams Duplicated',
+  title: 'Documents Duplicated',
   blurb: 'A diagram copied from the Explorer, or a shared diagram cloned into your own account.',
 };
 
@@ -140,7 +140,7 @@ export const CREATED_OFFLINE = chart(
   'Document',
   'Created',
   'Created Offline',
-  'A new diagram kept only in this browser (Offline Mode), never sent to the server. Part of Diagrams Created.',
+  'A new diagram kept only in this browser (Offline Mode), never sent to the server. Part of Documents Created.',
   { types: ['Offline'] },
 );
 
@@ -227,7 +227,7 @@ export const DOCUMENT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Diagram Actions',
   blurb:
-    'Diagrams opened, made, renamed, deleted and duplicated, and how new ones were started: Just Draw, a template link, or offline. Those three are part of Diagrams Created.',
+    'Diagrams opened, made, renamed, deleted and duplicated, and how new ones were started: Just Draw, a template link, or offline. Those three are part of Documents Created.',
   members: [
     DOCUMENTS_LOADED,
     DOCUMENTS_CREATED,

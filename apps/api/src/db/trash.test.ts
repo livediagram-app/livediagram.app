@@ -370,7 +370,7 @@ describe('purgeDocuments', () => {
         source_type: 'document',
         source_id: source,
         event_type: 'document_created',
-        title: 'Diagram Created',
+        title: 'Document Created',
         occurred_at: T0,
         snapshot,
         created_at: T0,

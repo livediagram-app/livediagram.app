@@ -92,34 +92,35 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Comment|Mentioned|': 'A comment was sent that @-mentioned at least one teammate.',
   'Comment|Resolved|': 'A comment thread was marked resolved.',
   'Comment|Unresolved|': 'A resolved comment thread was reopened.',
-  'Diagram|Created|Cloud': 'A brand-new diagram was created.',
-  'Diagram|Created|Offline': 'A brand-new diagram was created.',
-  'Diagram|Deleted|': 'A diagram was deleted.',
-  'Diagram|Duplicated|': 'A diagram was duplicated into a new one.',
-  'Diagram|Duplicated|Copy': 'A diagram was duplicated into a new one.',
-  'Diagram|Joined|Edit':
+  'Document|Created|Cloud': 'A brand-new diagram was created.',
+  'Document|Created|Offline': 'A brand-new diagram was created.',
+  'Document|Deleted|': 'A diagram was deleted.',
+  'Document|Duplicated|': 'A diagram was duplicated into a new one.',
+  'Document|Duplicated|Copy': 'A diagram was duplicated into a new one.',
+  'Document|Joined|Edit':
     'Someone came into a diagram through an edit-role share link. Counted once per person per diagram, not on every revisit.',
-  'Diagram|Loaded|':
+  'Document|Loaded|':
     'A diagram was opened, counted on every open (including a page refresh and the first open of a diagram just created).',
-  'Diagram|Moved|': 'A diagram was moved into (or out of) a folder.',
-  'Diagram|Moved|SavedToCloud':
+  'Document|Moved|': 'A diagram was moved into (or out of) a folder.',
+  'Document|Moved|SavedToCloud':
     'Someone synced an offline diagram to their account, turning it into a cloud diagram kept on the server.',
-  'Diagram|Moved|TakenOffline':
+  'Document|Moved|TakenOffline':
     'Someone took a diagram offline, moving it out of their account into this browser only.',
-  'Diagram|Redone|': 'Someone hit Redo on a diagram edit.',
-  'Diagram|Removed|ShareLink':
+  'Document|Redone|': 'Someone hit Redo on a diagram edit.',
+  'Document|Removed|ShareLink':
     "Someone revoked a share link from a diagram's Share dialog, so it stops working.",
-  'Diagram|Renamed|': 'A diagram was renamed.',
-  'Diagram|Reverted|': 'Someone reverted a single change from the diagram activity log.',
-  'Diagram|Shared|Edit': 'Someone generated an edit-role share link for a diagram.',
-  'Diagram|Shared|ExpiryWeek': 'Someone set a share link to expire after a week, when creating it.',
-  'Diagram|Shared|Extended':
+  'Document|Renamed|': 'A diagram was renamed.',
+  'Document|Reverted|': 'Someone reverted a single change from the diagram activity log.',
+  'Document|Shared|Edit': 'Someone generated an edit-role share link for a diagram.',
+  'Document|Shared|ExpiryWeek':
+    'Someone set a share link to expire after a week, when creating it.',
+  'Document|Shared|Extended':
     'Someone re-armed an expiring share link for another full round of its original lifetime.',
-  'Diagram|Shared|PasswordCleared': "Someone removed the password from a diagram's share link.",
-  'Diagram|Shared|PasswordSet': "Someone set a password on a diagram's share link.",
-  'Diagram|Shared|View': 'Someone generated a view-role share link for a diagram.',
-  'Diagram|Undone|': 'Someone hit Undo on a diagram edit.',
-  'Diagram|Used|Multiplayer':
+  'Document|Shared|PasswordCleared': "Someone removed the password from a diagram's share link.",
+  'Document|Shared|PasswordSet': "Someone set a password on a diagram's share link.",
+  'Document|Shared|View': 'Someone generated a view-role share link for a diagram.',
+  'Document|Undone|': 'Someone hit Undo on a diagram edit.',
+  'Document|Used|Multiplayer':
     'A diagram was open with at least one other person live in the room, counted once per diagram per visit. The one event that counts collaboration happening rather than being offered.',
   'Element|Changed|Agenda':
     'Someone pressed a segment on an Agenda element, starting its timer and marking it as the current item.',
@@ -276,7 +277,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Grouped|': 'A multi-selection was grouped (before groups were removed).',
   'Element|Linked|ArrowPoint':
     "Someone dragged an arrow's end onto another element, pinning that end to it so the arrow follows if the element moves.",
-  'Element|Linked|Diagram': 'Someone linked an element to another diagram.',
+  'Element|Linked|Document': 'Someone linked an element to another diagram.',
   'Element|Linked|Tab': 'Someone linked an element to another tab.',
   'Element|Linked|Url': 'Someone linked an element to a web address.',
   'Element|Locked|': "An element's lock was turned on (no edits allowed).",
@@ -465,7 +466,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Unlocked|': 'A tab was unlocked (edits resume).',
   'Tab|Voted|Poll':
     'Someone answered a live poll. Counted once per person per poll, even if they change their answer.',
-  'Team|Added|Diagram': "A diagram was added to a team's shared library.",
+  'Team|Added|Document': "A diagram was added to a team's shared library.",
   'Team|Added|Member':
     'An admin invited someone to a team by email. This counts invitations sent, not accepted: that is Joined.',
   'Team|Changed|': "Someone updated a team's name or organisation in its settings.",
@@ -475,9 +476,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned down a team invite. Read against Joined: the two are the accept rate on an invitation.',
   'Team|Deleted|': 'An admin deleted a team.',
   'Team|Joined|': 'Someone accepted a team invite, by email or by invite link.',
-  'Team|Moved|Diagram':
+  'Team|Moved|Document':
     "A diagram already in a team's shared library was moved: re-foldered within the team, moved to a different team, or taken back to the owner's personal space.",
-  'Team|Removed|Diagram': 'An admin removed a member who had joined the team.',
+  'Team|Removed|Document': 'An admin removed a member who had joined the team.',
   'Team|Removed|Link': "A team's shareable invite link was turned off.",
   'Team|Removed|Self': 'Someone left a team they had joined.',
   'Team|Shared|Link':
@@ -839,23 +840,23 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Comment|Mentioned': 'A comment was sent that @-mentioned at least one teammate.',
   'Comment|Resolved': 'A comment thread was marked resolved.',
   'Comment|Unresolved': 'A resolved comment thread was reopened.',
-  'Diagram|Created': 'A brand-new diagram was created.',
-  'Diagram|Deleted': 'A diagram was deleted.',
-  'Diagram|Duplicated': 'A diagram was duplicated into a new one.',
-  'Diagram|Joined':
+  'Document|Created': 'A brand-new diagram was created.',
+  'Document|Deleted': 'A diagram was deleted.',
+  'Document|Duplicated': 'A diagram was duplicated into a new one.',
+  'Document|Joined':
     'Someone came into a diagram through a share link. Counted once per person per diagram, not on every revisit.',
-  'Diagram|Loaded':
+  'Document|Loaded':
     'A diagram was opened, counted on every open (including a page refresh and the first open of a diagram just created).',
-  'Diagram|Moved': 'A diagram was moved into (or out of) a folder.',
-  'Diagram|Redone': 'Someone hit Redo on a diagram edit.',
-  'Diagram|Removed':
+  'Document|Moved': 'A diagram was moved into (or out of) a folder.',
+  'Document|Redone': 'Someone hit Redo on a diagram edit.',
+  'Document|Removed':
     "Someone removed something from a diagram's sharing, such as revoking a share link.",
-  'Diagram|Renamed': 'A diagram was renamed.',
-  'Diagram|Reverted': 'Someone reverted a single change from the diagram activity log.',
-  'Diagram|Shared':
+  'Document|Renamed': 'A diagram was renamed.',
+  'Document|Reverted': 'Someone reverted a single change from the diagram activity log.',
+  'Document|Shared':
     "Someone created or changed a diagram's share link: its role, how long it lasts, or its password.",
-  'Diagram|Undone': 'Someone hit Undo on a diagram edit.',
-  'Diagram|Used': 'A diagram was used in a particular way, such as with other people live in it.',
+  'Document|Undone': 'Someone hit Undo on a diagram edit.',
+  'Document|Used': 'A diagram was used in a particular way, such as with other people live in it.',
   'Element|Changed':
     "Someone changed a property of one or more selected elements, from a style panel, the right-click menu, or an element's own controls.",
   'Element|Copied': 'Someone copied one or more selected elements to the clipboard.',
