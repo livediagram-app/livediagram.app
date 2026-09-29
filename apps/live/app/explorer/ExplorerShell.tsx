@@ -206,7 +206,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
           placement browser (docs/specs/006-document/offline-mode.md's Save In UI) for every document
           (personal or team) and for folder re-parenting. It offers
           "Personal Space" plus each team as a space (for document moves);
-          `moveDiagramTo` routes the pick from the subject's current
+          `moveDocumentTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}
       {moveTarget

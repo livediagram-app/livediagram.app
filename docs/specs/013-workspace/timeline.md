@@ -810,7 +810,10 @@ for a run (§10).
 
 ## 3. Data model
 
+<!-- legacy-names -->
+
 Migration `0042_timeline.sql`. Three tables, owned by the api worker. Migration `0055_documents.sql` renamed the `diagram` source and scope types, the `diagram_*` and `team_diagram_*` event types, the stored titles ("Diagram Created" and so on) and the snapshot keys `diagramId` / `diagramName` to their document forms ([Document](../006-document/document.md#renaming-from-diagram)).
+<!-- /legacy-names -->
 
 ### 3.1 `timeline_events`
 

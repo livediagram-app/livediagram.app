@@ -40,6 +40,9 @@ have cloud documents and offline documents side by side.
 - The app keeps a small **local index** of offline document ids (also in
   IndexedDB) so the Explorer can list them and the persistence layer knows which
   ids resolve locally vs to the API.
+
+<!-- legacy-names -->
+
 - **Store rename (version 2).** Offline documents were kept in the `diagrams` object store until
   the container became a document ([Document](document.md#renaming-from-diagram)). Opening
   version 2 of `livediagram-offline` moves every record into `documents` inside the upgrade
@@ -52,6 +55,8 @@ have cloud documents and offline documents side by side.
   trade-off plainly — at the chooser, on the document (see the badge), and in the
   help article. "Offline" means _yours only_, with the responsibility that
   implies.
+
+<!-- /legacy-names -->
 
 ## What's different in an offline document
 

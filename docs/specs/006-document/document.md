@@ -48,6 +48,8 @@ Prose follows the context:
   `application/vnd.livediagram+json` ([Google Drive mirror](../022-drive-mirror/drive-mirror.md)):
   both name the app that opens the file, not what is inside it.
 
+<!-- legacy-names -->
+
 ## Renaming from diagram
 
 The container was called a diagram until the domain language settled on document. Everything
@@ -78,3 +80,4 @@ that named it moved in one change:
   changes from others until it reloads.
 
 Files that hold the old names on purpose are named `legacy-*`.
+<!-- /legacy-names -->

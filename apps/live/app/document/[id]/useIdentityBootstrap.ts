@@ -195,7 +195,7 @@ export function useIdentityBootstrap(opts: {
     const initialUrl = new URL(window.location.href);
     // Clean routing (docs/specs/016-platform/router-app.md): the editor lives at `/document/<id>`, no
     // `/live` prefix. Match the id straight off the path.
-    // `placeholder` (the static-export build artefact) reads as no id. An old /diagram/<id>
+    // `placeholder` (the static-export build artefact) reads as no id. An old /document/<id>
     // address can still arrive while a deploy rolls out; the bar is corrected to /document/<id>.
     const { id: initialId, legacy } = documentIdFromPath(initialUrl.pathname);
     if (initialId && legacy) {

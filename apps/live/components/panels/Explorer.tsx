@@ -334,11 +334,11 @@ function ExplorerImpl({
 
       {/* Move-destination modal (docs/specs/013-workspace/folders.md), the same shared placement
           browser as the /explorer page. With the scope-aware
-          onMoveDiagramTo wired (signed-in sessions with teams), the picker
+          onMoveDocumentTo wired (signed-in sessions with teams), the picker
           offers every space — Personal Space plus each team — so a team document
           can be re-homed to the personal tree (and vice versa) right from
           the editor. Purely personal picks keep the optimistic
-          onMoveDiagramToFolder path. */}
+          onMoveDocumentToFolder path. */}
       {moveTarget && (onMoveDocumentToFolder || onMoveDocumentTo)
         ? (() => {
             const teamRow = moveTarget.teamId

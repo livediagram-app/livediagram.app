@@ -258,6 +258,8 @@ from a guest-only self-host, because the whole canvas / guest model stays fully
 available without an account ([Auth + guest access](../014-identity/auth-and-guest-access.md)). No new
 SaaS dependency beyond the optional Clerk that teams already need.
 
+<!-- legacy-names -->
+
 ### 3.8 Deprecated diagram routes
 
 The container was called a diagram before it became a document ([Document](../006-document/document.md)). The public routes moved from `/api/diagrams…` to `/api/documents…`; the old paths stay served until **30 April 2027** so scripts written against them keep working (`apps/api/src/legacy-documents-alias.ts`):
@@ -269,6 +271,7 @@ The container was called a diagram before it became a document ([Document](../00
 - A WebSocket upgrade on the old path passes through unchanged.
 
 After the sunset the alias module and this section go; `/api/diagrams…` then answers 404 like any unknown route.
+<!-- /legacy-names -->
 
 ## 4. `X-Owner-Id` trust change
 

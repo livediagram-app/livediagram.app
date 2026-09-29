@@ -74,7 +74,7 @@ export default {
     if (url.pathname === '/explorer' || url.pathname === '/explorer/') {
       return Response.redirect(`${url.origin}/explorer/timeline`, 302);
     }
-    // `/document` (and its old name `/diagram`, see ../lib/legacy-editor-path) shares one HTML file. We
+    // `/document` (and its old name `/document`, see ../lib/legacy-editor-path) shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL
     // stays `/document/<id>` (that's the whole point of the path
     // scheme).

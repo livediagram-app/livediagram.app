@@ -76,7 +76,7 @@ export function McpArt() {
             <div className="text-slate-600 dark:text-slate-300">
               ▸{' '}
               <span className="font-semibold text-brand-600 dark:text-brand-300">
-                create_diagram
+                create_document
               </span>
             </div>
             <div className="text-slate-400">&quot;auth flow&quot; → livediagram</div>

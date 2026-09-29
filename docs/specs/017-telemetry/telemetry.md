@@ -46,7 +46,10 @@ CREATE TABLE events (
 CREATE INDEX idx_events_ts ON events (ts);
 ```
 
+<!-- legacy-names -->
+
 **Renamed history.** Migration `0055_documents.sql` carried every stored event that named the container over to its new name when it became a document ([Document](../006-document/document.md#renaming-from-diagram)): the `Diagram` category, the `Diagram` type under Team and Element·Linked, `DiagramToTeam`, `DiagramJoined`, `NotifyDiagramJoinOn/Off`, the `/diagram` page, the MCP tool tokens and the error route and page labels. Types that name a drawing (`ErDiagram`) or the tab kind are unchanged, so the dashboard reads one continuous line per event.
+<!-- /legacy-names -->
 
 No owner/IP column — rows are anonymous by construction. If write volume ever outgrows D1, the migration path is Workers Analytics Engine (write-optimised, same Cloudflare account, no new vendor); the ingest + summary contract stays the same.
 

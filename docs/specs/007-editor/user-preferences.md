@@ -80,6 +80,8 @@ who signs up keeps the settings they'd already chosen. Idempotent
 in the same shape as the existing migrations: a second call with
 the same `guestOwnerId` moves zero rows.
 
+<!-- legacy-names -->
+
 ### Renamed keys
 
 - **Renamed key.** `notifyDiagramJoin` became `notifyDocumentJoin` when the container became a
@@ -87,6 +89,8 @@ the same `guestOwnerId` moves zero rows.
   (`packages/api-schema/src/legacy-preferences.ts`) renames it wherever an older copy can still
   arrive: the browser's cache on read, the server's copy before the merge, and the api's
   notification check. An opt-out is never lost; when both keys exist, the new one wins.
+
+<!-- /legacy-names -->
 
 ### Self-host degradation
 
