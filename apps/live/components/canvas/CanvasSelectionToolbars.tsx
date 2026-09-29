@@ -3,7 +3,7 @@ import {
   elementKindLabel,
   elementSupportsText,
   isMindNode,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import type { deriveCanvasSelection } from '@/lib/canvas-selection';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -119,7 +119,7 @@ export function CanvasSelectionToolbars({
                 }
               : {})}
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
-            // Intra-layer z-order (docs/specs/006-diagram/layers.md): stack within the element's own
+            // Intra-layer z-order (docs/specs/006-document/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these
             // are the missing nudge for two things on the same one.
             onBringToFront={readOnly || !selected ? undefined : props.onBringSelectedToFront}

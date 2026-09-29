@@ -12,7 +12,7 @@ A guest can open `/new`, create a document, and use the full canvas without an a
 
 ## Routes
 
-- `/new` — welcome / template-picker flow for creating a new document (the app's entry point). See [14-new-diagram-route.md](new-document-route.md).
+- `/new` — welcome / template-picker flow for creating a new document (the app's entry point). See [New document route](new-document-route.md).
 - `/document/<id>` — the editor itself, scoped to one document id. Static-exports a single `/document/placeholder` page; the live worker rewrites all `/document/<id>` paths to it at the edge, and the client reads the real id from the path.
 - `/explorer/*`, `/sign-in`, `/get-started`, `/sso-callback`, `/embed` — the library, auth, and read-only embed surfaces.
 
@@ -22,7 +22,7 @@ The editor talks to the Cloudflare Worker API documented in [11-api.md](../015-a
 
 `localStorage` is still used for **identity bootstrap only** — a `crypto.randomUUID()` participant id under `livediagram:v2:self-id`, plus a `livediagram:v2:name-confirmed` flag once the user has named themselves. Everything else flows through the API.
 
-The document shape follows [05-diagram-structure.md](../006-document/document-structure.md) — a document has tabs, and elements can link across tabs.
+The document shape follows [Document structure](../006-document/document-structure.md) — a document has tabs, and elements can link across tabs.
 
 ## Layout
 

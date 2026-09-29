@@ -1,6 +1,6 @@
 # Image element + per-owner gallery
 
-Users can drop an image element on the canvas, upload the bytes, and reuse anything they've previously uploaded from a per-owner gallery. Images live in Cloudflare R2, with a D1 table indexing them. See [05-diagram-structure.md](../006-document/document-structure.md) for the broader element model and [11-api.md](../015-api/api.md) for the API conventions this spec extends.
+Users can drop an image element on the canvas, upload the bytes, and reuse anything they've previously uploaded from a per-owner gallery. Images live in Cloudflare R2, with a D1 table indexing them. See [Document structure](../006-document/document-structure.md) for the broader element model and [11-api.md](../015-api/api.md) for the API conventions this spec extends.
 
 ## Element model
 
