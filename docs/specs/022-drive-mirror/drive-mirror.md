@@ -339,6 +339,50 @@ D1, owned by the api worker:
   revoke at another origin. It exists for the test suite's fake Google and is
   never set by a real deployment.
 
+## Hosted deployment: one Google project per environment
+
+livediagram.app runs **two Google Cloud projects**, one for production and one
+for staging, so each environment has its own OAuth client id, client secret,
+Picker key and Drive UI integration:
+
+- A project has exactly one Drive UI integration **Open URL**, so with one
+  project "Open with" could never be tried on staging once production claimed
+  it.
+- `drive.file` access is per project: a file one project created is foreign to
+  the other, so staging's test files never mix with real users' mirrors.
+- Consent screens and test users stay apart.
+
+Within an environment the api worker and the live build always carry the
+**same** client id: both come from that environment's entry in the hosted
+profile, and every deploy proves it (the worker's live vars, and the built
+live app, checked against the entry). While an entry is empty the Drive mirror
+is off in that environment (no Drive entry, every route `503`). Each
+environment's Picker key is its own secret: `NEXT_PUBLIC_GOOGLE_API_KEY` for
+production, `NEXT_PUBLIC_GOOGLE_API_KEY_STAGING` for staging; the client secret
+and `DRIVE_TOKEN_KEY` were already per environment.
+
+What the operator configured (changed only by the operator):
+
+| Setting                                                  | Production                                               | Staging                                                                             |
+| -------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| JavaScript origins                                       | `https://livediagram.app`, `https://www.livediagram.app` | `https://staging.livediagram.app`, `http://localhost:3000`, `http://localhost:3002` |
+| Redirect URIs                                            | each origin + `/drive/connected`                         | each origin + `/drive/connected`                                                    |
+| Drive UI Open URL                                        | `https://livediagram.app/drive/open`                     | `https://staging.livediagram.app/drive/open`                                        |
+| Default MIME type                                        | `application/vnd.livediagram+json`                       | the same                                                                            |
+| Default extension                                        | `livediagram`                                            | the same                                                                            |
+| Scopes                                                   | `drive.file`, `drive.install`                            | the same                                                                            |
+| Automatic consent                                        | off                                                      | off                                                                                 |
+| Creating files, importing, multiple files, shared drives | off                                                      | off                                                                                 |
+| Mobile browser support                                   | on                                                       | on                                                                                  |
+
+`livediagram.app` answers with a permanent redirect to `www.livediagram.app`,
+keeping path and query, before the app runs. So the app, and with it the
+consent flow, always runs on `www`: it sends
+`https://www.livediagram.app/drive/connected` as the redirect URI (registered,
+and accepted by the api's redirect check, which takes any `https` origin at
+`/drive/connected`), and Drive's Open URL on the apex arrives at
+`https://www.livediagram.app/drive/open` with its `state` intact.
+
 ## Costs
 
 Near zero on our side; the traffic is browser to Google. See the
