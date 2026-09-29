@@ -74,7 +74,7 @@ Scope, by file:
 | Item           | `drive_items` row, `DriveItem`                    | One mirrored diagram or folder and the Drive state livediagram last wrote |
 | Item kind      | `DriveItemKind`: `diagram` \| `folder`            |                                                                           |
 | Root           | `root_folder_id`                                  | The `livediagram` folder; Unsorted                                        |
-| Diagram file   | `.livediagram` file                               | A diagram's mirror                                                        |
+| Diagram file   | `.livedoc` file                                   | A diagram's mirror                                                        |
 | Envelope       | `DiagramEnvelope`, `livediagram.diagram`          | The file's contents                                                       |
 | Drive state    | `fileState(file)`                                 | `{ name, parentId, trashed, md5, headRevisionId }` of one Drive file      |
 | Echo           | `planInbound` answering `echo`                    | A change whose Drive state equals the item's: livediagram's own write     |
@@ -88,7 +88,7 @@ Scope, by file:
 | Tombstone      | `SeenRow` in a `SeenStore`                        | A row this browser saw that has since disappeared                         |
 | Notice         | `notice = 'unseen_folder'`                        | The item was moved in Drive to a folder livediagram cannot see            |
 | Adoption       | `adoptFolder`                                     | Showing an unseen folder to livediagram with the Picker                   |
-| Foreign file   | `resolveOpenWith` = `import` (`foreign`, `no-id`) | A `.livediagram` file from another deployment, or with no `ldDiagramId`   |
+| Foreign file   | `resolveOpenWith` = `import` (`foreign`, `no-id`) | A `.livedoc` file from another deployment, or with no `ldDiagramId`       |
 
 Banned synonyms: "sync target", "backup", "Drive location", "Drive save". The mirror is never where a diagram lives.
 
@@ -261,14 +261,15 @@ non-elected tab, handed to the elected one).
 `parseOpenState(search)` reads `state` as JSON; `ids[0]` is the file, `resourceKeys[id]` its key. Outcomes of
 `resolveOpenWith({ drive, port, host }, state)`:
 
-| File                                                             | Outcome                       | Telemetry       |
-| ---------------------------------------------------------------- | ----------------------------- | --------------- |
-| `ldDiagramId`, `ldOrigin === host`, `port.canOpenDiagram` true   | `open`                        | `Opened`        |
-| `ldDiagramId`, `ldOrigin === host`, cannot open (404, 403, 410)  | `import` (`no-access`)        | `ImportOffered` |
-| our MIME or `.livediagram`, other `ldOrigin` or no `ldDiagramId` | `import` (`foreign`, `no-id`) | `ImportOffered` |
-| anything else, 404, 403 or unreadable                            | `error`                       | `Error`         |
+| File                                                            | Outcome                       | Telemetry       |
+| --------------------------------------------------------------- | ----------------------------- | --------------- |
+| `ldDiagramId`, `ldOrigin === host`, `port.canOpenDiagram` true  | `open`                        | `Opened`        |
+| `ldDiagramId`, `ldOrigin === host`, cannot open (404, 403, 410) | `import` (`no-access`)        | `ImportOffered` |
+| our MIME or `.livedoc`, other `ldOrigin` or no `ldDiagramId`    | `import` (`foreign`, `no-id`) | `ImportOffered` |
+| anything else, 404, 403 or unreadable                           | `error`                       | `Error`         |
 
-`import` shows **Import a copy**: download (`alt=media`), `parseDiagramEnvelope`, then
+The name offered is `stripDriveName(file.name)` (`DRIVE_FILE_EXTENSION` dropped, case-insensitive; "Diagram"
+when nothing is left). `import` shows **Import a copy**: download (`alt=media`), `parseDiagramEnvelope`, then
 `port.importDiagramCopy` (fresh diagram and tab ids, tab links remapped with `remapTabLinks`, the deck carried).
 Signed out: redirect to `/sign-in?redirect_url=<this URL>`. No usable token: **Allow access** runs the consent flow
 with the pending return set to this URL.
@@ -587,32 +588,32 @@ with `E2E_DRIVE=1`. A real build never sets the flag, so the bridge is compiled 
 
 ## Constants and configuration
 
-| Constant                                   | Value                              | Where                    | Provenance / safe range                                |
-| ------------------------------------------ | ---------------------------------- | ------------------------ | ------------------------------------------------------ |
-| `DRIVE_POLL_INTERVAL_MS`                   | 20 min                             | `lib/drive/cadence.ts`   | Research cadence; 10..60 min                           |
-| `DRIVE_POLL_INTERVAL_MAX_MS`               | 60 min                             | cadence                  | Research back-off cap                                  |
-| `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 5 min                              | cadence                  | Research; 1..20 min                                    |
-| `DRIVE_CHANGES_PAGE_SIZE`                  | 1000                               | cadence                  | Google maximum                                         |
-| `DRIVE_WRITE_IDLE_MS`                      | 60 s                               | cadence                  | Research; 10 s..5 min                                  |
-| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 min                              | cadence                  | Research; 1..30 min                                    |
-| `DRIVE_WRITE_MIN_INTERVAL_MAX_MS`          | 30 min                             | cadence                  | Research back-off cap                                  |
-| `DRIVE_BACKOFF_CALM_MS`                    | 60 min                             | cadence                  | Research                                               |
-| `DRIVE_BACKOFF_MAX_LEVEL`                  | 3                                  | cadence                  | 2^3 x 20 min > 60 min cap                              |
-| `DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS` | 10 min                             | cadence                  | Research                                               |
-| `DRIVE_TOKEN_RENEW_BEFORE_MS`              | 5 min                              | cadence                  | D4; 1..10 min of a 60-minute token                     |
-| `DRIVE_TOKEN_RATE_LIMITER`                 | 10 per 60 s                        | `apps/api/wrangler.toml` | Lead review; about one token an hour is healthy; 5..30 |
-| `DRIVE_LEASE_MS`                           | 15 min                             | api-schema `drive.ts`    | Spec; 5..30 min                                        |
-| `DRIVE_LEASE_RENEW_BEFORE_MS`              | 5 min                              | api-schema               | Spec                                                   |
-| `DRIVE_STATE_TTL_MS`                       | 10 min                             | api-schema               | Spec                                                   |
-| `DRIVE_ITEMS_PUT_MAX`                      | 100                                | api-schema               | One D1 batch; D1 allows 1000 statements                |
-| `DRIVE_ITEMS_PUT_BATCH`                    | 25                                 | cadence                  | D5                                                     |
-| `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                              | cadence                  | Google multipart limit                                 |
-| `DRIVE_THUMBNAIL_WIDTH_PX`                 | 1600                               | cadence                  | Google's recommendation; min 220                       |
-| `DRIVE_THUMBNAIL_MAX_BYTES`                | 2 MB                               | cadence                  | Google limit                                           |
-| `DRIVE_FILE_MIME`                          | `application/vnd.livediagram+json` | api-schema               | Spec                                                   |
-| `DRIVE_FILE_EXTENSION`                     | `.livediagram`                     | api-schema               | Spec                                                   |
-| `DRIVE_ROOT_NAME`                          | `livediagram`                      | api-schema               | Spec                                                   |
-| `DRIVE_SCOPES`                             | `drive.file drive.install`         | api-schema               | Spec                                                   |
+| Constant                                   | Value                              | Where                    | Provenance / safe range                                         |
+| ------------------------------------------ | ---------------------------------- | ------------------------ | --------------------------------------------------------------- |
+| `DRIVE_POLL_INTERVAL_MS`                   | 20 min                             | `lib/drive/cadence.ts`   | Research cadence; 10..60 min                                    |
+| `DRIVE_POLL_INTERVAL_MAX_MS`               | 60 min                             | cadence                  | Research back-off cap                                           |
+| `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 5 min                              | cadence                  | Research; 1..20 min                                             |
+| `DRIVE_CHANGES_PAGE_SIZE`                  | 1000                               | cadence                  | Google maximum                                                  |
+| `DRIVE_WRITE_IDLE_MS`                      | 60 s                               | cadence                  | Research; 10 s..5 min                                           |
+| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 min                              | cadence                  | Research; 1..30 min                                             |
+| `DRIVE_WRITE_MIN_INTERVAL_MAX_MS`          | 30 min                             | cadence                  | Research back-off cap                                           |
+| `DRIVE_BACKOFF_CALM_MS`                    | 60 min                             | cadence                  | Research                                                        |
+| `DRIVE_BACKOFF_MAX_LEVEL`                  | 3                                  | cadence                  | 2^3 x 20 min > 60 min cap                                       |
+| `DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS` | 10 min                             | cadence                  | Research                                                        |
+| `DRIVE_TOKEN_RENEW_BEFORE_MS`              | 5 min                              | cadence                  | D4; 1..10 min of a 60-minute token                              |
+| `DRIVE_TOKEN_RATE_LIMITER`                 | 10 per 60 s                        | `apps/api/wrangler.toml` | Lead review; about one token an hour is healthy; 5..30          |
+| `DRIVE_LEASE_MS`                           | 15 min                             | api-schema `drive.ts`    | Spec; 5..30 min                                                 |
+| `DRIVE_LEASE_RENEW_BEFORE_MS`              | 5 min                              | api-schema               | Spec                                                            |
+| `DRIVE_STATE_TTL_MS`                       | 10 min                             | api-schema               | Spec                                                            |
+| `DRIVE_ITEMS_PUT_MAX`                      | 100                                | api-schema               | One D1 batch; D1 allows 1000 statements                         |
+| `DRIVE_ITEMS_PUT_BATCH`                    | 25                                 | cadence                  | D5                                                              |
+| `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                              | cadence                  | Google multipart limit                                          |
+| `DRIVE_THUMBNAIL_WIDTH_PX`                 | 1600                               | cadence                  | Google's recommendation; min 220                                |
+| `DRIVE_THUMBNAIL_MAX_BYTES`                | 2 MB                               | cadence                  | Google limit                                                    |
+| `DRIVE_FILE_MIME`                          | `application/vnd.livediagram+json` | api-schema               | Spec                                                            |
+| `DRIVE_FILE_EXTENSION`                     | `.livedoc`                         | api-schema               | Spec (`.livedoc`, not a TLD; the MIME type keeps `livediagram`) |
+| `DRIVE_ROOT_NAME`                          | `livediagram`                      | api-schema               | Spec                                                            |
+| `DRIVE_SCOPES`                             | `drive.file drive.install`         | api-schema               | Spec                                                            |
 
 Env: api `GOOGLE_CLIENT_ID` (var), `GOOGLE_CLIENT_SECRET` (secret), `DRIVE_TOKEN_KEY` (secret, base64 of 32 bytes,
 `openssl rand -base64 32`), `GOOGLE_OAUTH_BASE_URL` (tests only); live `NEXT_PUBLIC_GOOGLE_CLIENT_ID`,
