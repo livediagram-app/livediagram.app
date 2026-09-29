@@ -178,14 +178,7 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
                 <Variant shown={!!notice}>
                   {/* Short, like the rhythm it replaces, so little is reserved below
                       it; Show folder is in the footer. */}
-                  <p
-                    className="truncate text-amber-800 dark:text-amber-200"
-                    title={
-                      notice
-                        ? `${notice.name}${more > 0 ? ` and ${more} more` : ''}: ${DRIVE_NOTICE_TEXT}`
-                        : undefined
-                    }
-                  >
+                  <p className="text-amber-800 dark:text-amber-200">
                     <span className="font-semibold">{notice?.name ?? 'A document'}</span>
                     {more > 0 ? ` and ${more} more` : ''}: {DRIVE_NOTICE_TEXT}
                   </p>
