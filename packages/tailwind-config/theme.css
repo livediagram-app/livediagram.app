@@ -24,12 +24,13 @@
   --animate-fade-in: fade-in var(--transition-duration-micro) ease-out;
 }
 
+/* No `to`: the fade lands on the element's own resting opacity rather than
+   1, so a translucent panel (the panel-opacity preference) or a dimmed
+   control fades straight in at its value instead of finishing opaque and
+   snapping down a frame later. */
 @keyframes fade-in {
   from {
     opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
 
