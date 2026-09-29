@@ -146,7 +146,7 @@ export function DriveOpen() {
     const back = encodeURIComponent(here);
     return (
       <LandingCard>
-        <Heading>Sign in to open this diagram</Heading>
+        <Heading>Sign in to open this document</Heading>
         <Body>
           Files from Google Drive open in your livediagram account. We&apos;ll bring you right back.
         </Body>
@@ -185,7 +185,7 @@ export function DriveOpen() {
         <Body>
           {copy
             ? 'This is a copy made in Google Drive. Import it as a new document to open it here; the original stays as it is.'
-            : "This diagram isn't in your livediagram. Import a copy to open it here."}
+            : "This document isn't in your livediagram. Import a copy to open it here."}
         </Body>
         <div className="mt-5 flex justify-center">
           <Button size="md" onClick={() => void importCopy(reason)}>
@@ -199,7 +199,7 @@ export function DriveOpen() {
     return (
       <LandingCard>
         <Heading>The copy couldn&apos;t be made</Heading>
-        <Body>The file isn&apos;t a readable livediagram diagram.</Body>
+        <Body>The file isn&apos;t a readable livediagram document.</Body>
         <PrimaryLink href="/explorer">Go to Explorer</PrimaryLink>
       </LandingCard>
     );

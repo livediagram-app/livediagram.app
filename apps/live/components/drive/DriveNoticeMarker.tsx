@@ -4,17 +4,16 @@
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Folders livediagram cannot see").
 
 import { HoverCard, Glyph } from '@livediagram/ui';
+import { DRIVE_NOTICE_TEXT } from '@/lib/drive/cloud-sync-copy';
 import { useDriveNotice } from './drive-mirror-context';
-
-export const DRIVE_NOTICE_TEXT = "Moved in Drive to a folder livediagram can't see.";
 
 export function DriveNoticeMarker({ diagramId }: { diagramId: string }) {
   const notice = useDriveNotice(diagramId);
   if (!notice) return null;
   return (
     <HoverCard
-      title="In a Drive folder livediagram can't see"
-      description={`${DRIVE_NOTICE_TEXT} Open Settings, Account, Cloud Sync to show it the folder.`}
+      title="In a folder livediagram can't see"
+      description="Open Settings › Account › Cloud Sync to show livediagram that folder."
     >
       <span
         aria-label={DRIVE_NOTICE_TEXT}

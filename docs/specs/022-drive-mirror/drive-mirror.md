@@ -50,12 +50,13 @@ this spec does not restate it.
   account menu has no Drive entry. Search finds the row by drive, google,
   sync, backup, mirror and cloud; it links to the help article.
 - **What the row says,** in plain words:
-  - **Not connected:** what the mirror is, and **Connect Google Drive**.
+  - **Not connected:** "Keep a copy of your documents in your Google Drive."
+    ("Checking Google Drive…" while it finds out) and **Connect Google Drive**.
     Pressing it turns the row to **Connecting…** at once, and it stays so
     while the consent state is fetched and the browser leaves for Google, so
     there is never a moment where nothing seems to happen. If that fails (the
     request errors or is blocked), the row is **Not connected** again and says
-    "Couldn't start connecting. Check your connection and try again."
+    "Couldn't reach Google. Check your connection and try again."
   - **Leaving for Google and coming back** always returns the user to exactly
     where they started: the same page with Settings open on Account > Cloud
     Sync. Before leaving, the page's own history entry is given
@@ -67,33 +68,36 @@ this spec does not restate it.
     come back there too. Back from a finished connection the row says
     **Connecting** (never Not connected: the connection exists) until the
     mirror reports, and the mirror syncs at once, even when another tab of the
-    same browser is the one running it. A cancel is not an error: the row says, calmly, "You
-    cancelled at Google. Connect again whenever you like."
+    same browser is the one running it. A cancel is not an error: the row says, calmly, "Connection
+    cancelled. Connect whenever you're ready."
   - **Connected:** the pill says **Synced**, **Syncing**, **Copying** or
     **Needs attention**, with the time since the last sync beside it
-    ("✓ Synced · 1 min ago"). One short line says where things stand:
-    "Copied to your Google Drive, in the folder “<root folder name>”." (the
-    root's actual name, as the user may have renamed it), "Copying 3 of 12 to
-    your Google Drive." while the first copy runs (the line under the row
-    fills as a progress bar), "Couldn't reach Google Drive. It tries again by
-    itself.", "Google asked to slow down. Syncing carries on, less often.", or
-    "Another tab or device is copying to Drive. This one keeps checking."
-    Under it, the rhythm, **derived from the cadence** so it cannot drift:
-    "Checks for changes every 2 minutes while livediagram is open. Edits are
-    copied a minute after you stop, at most once every 5 minutes per
-    diagram." The buttons: **Sync now** and **Disconnect**, a quiet amber
-    **outline** (a warning, not a danger, and never louder than Sync now: it
-    is reversible and leaves the Drive files where they are). Its
-    confirmation is amber too.
-  - **Folder notices** take the rhythm's place as one line, "1 document is in
-    a Drive folder livediagram can't see" with **Show**; pressing it opens
-    the list below, each with **Show this folder to livediagram** (or move it
-    back in Drive).
-  - **Needs attention** (Google stopped accepting access, or browser-only
-    access lapsed): one short line, "Google Drive stopped accepting access.
-    Nothing was deleted." or "Drive access lapsed in this browser.", and
-    **Reconnect** or **Resume sync** beside **Disconnect**. The longer
-    guidance is in the help article.
+    ("Synced · 1 min ago", or "Not synced yet"). One short line says where
+    things stand: "Copied to your Google Drive, in “<root folder name>”." (the
+    root's actual name, as the user may have renamed it; "Copied to your
+    Google Drive." while unknown), "Copying 3 of 12 documents…" while the
+    first copy runs (the line under the row fills as a progress bar),
+    "Syncing a little slower for now, at Google's request.", "Can't reach
+    Google Drive. Trying again automatically.", or "Another tab is syncing.
+    This one stays up to date." Under it, the rhythm, **derived from the
+    cadence** so it cannot drift: "Checks for changes every 2 minutes while
+    livediagram is open. Your edits are copied a minute after you stop." The
+    buttons: **Sync now** and **Disconnect**, a quiet amber **outline** (a
+    warning, not a danger, and never louder than Sync now: it is reversible
+    and leaves the Drive files where they are). Its confirmation is amber too.
+  - **Folder notices** take the rhythm's place as one line, "<name>: Moved to
+    a Drive folder livediagram can't see." with **Show folder** (and "and n
+    more" for several; the next shows once one is resolved).
+  - **Needs attention**: "Google Drive needs reconnecting. Your files are
+    safe." with **Reconnect**, or "Syncing paused in this browser. Resume to
+    continue." with **Resume sync**, beside **Disconnect**. The why (rate
+    limits, reconnecting, the per-document limit, copies made in Drive) is in
+    the help article.
+  - **Terminology:** "documents", not diagrams; "Google Drive", then "Drive"
+    once named; "sync" for the ongoing work, "copy" only for the first copy.
+  - **Below the card:** "Your Personal Space, copied to your Google Drive in
+    matching folders. Renames, moves and deletions sync both ways. livediagram
+    only sees files it created."
 - **Nothing moves within a phase** (the product's layout stability rule,
   "Layout stability" in the interface design specs, **reserve per phase, not
   per message**). The row has three phases: **not connected** (checking, not

@@ -5,19 +5,20 @@ import {
   DRIVE_WRITE_MIN_INTERVAL_MS,
 } from './cadence';
 import {
-  DRIVE_CONNECT_CANCELLED,
-  DRIVE_CONNECT_FAILED,
-  DRIVE_SYNC_BADGES,
-  driveSyncTexts,
+  DRIVE_PHASE_BADGES,
+  DRIVE_SINCE_SAMPLES,
   driveRhythmText,
   driveSyncCopy,
+  driveSyncPhase,
+  driveSyncTexts,
   durationWords,
-  lastSyncedText,
+  sinceText,
+  type DriveConnectState,
 } from './cloud-sync-copy';
 import type { DriveMirrorStatus } from './engine';
 
-// The Cloud Sync row's words (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting";
-// blueprint "Cloud Sync in Settings").
+// The Cloud Sync row's words, as approved (docs/specs/022-drive-mirror/drive-mirror.md,
+// "Connecting"; blueprint "Cloud Sync in Settings").
 
 const status = (over: Partial<DriveMirrorStatus> = {}): DriveMirrorStatus => ({
   state: 'idle',
@@ -29,6 +30,9 @@ const status = (over: Partial<DriveMirrorStatus> = {}): DriveMirrorStatus => ({
   rootName: 'livediagram (staging)',
   ...over,
 });
+const IDLE: DriveConnectState = { connecting: false, connectError: null, connectNote: null };
+const text = (over: Partial<DriveMirrorStatus>, connect: Partial<DriveConnectState> = {}) =>
+  driveSyncCopy(status(over), { ...IDLE, ...connect }).text;
 
 describe('durationWords', () => {
   it('words a cadence the way a person says it', () => {
@@ -45,192 +49,167 @@ describe('driveRhythmText', () => {
   it('is built from the cadence constants, so it cannot drift', () => {
     expect(driveRhythmText()).toBe(
       `Checks for changes every ${durationWords(DRIVE_POLL_INTERVAL_MS)} while livediagram is open. ` +
-        `Edits are copied ${durationWords(DRIVE_WRITE_IDLE_MS)} after you stop, at most once every ` +
-        `${durationWords(DRIVE_WRITE_MIN_INTERVAL_MS)} per diagram.`,
+        `Your edits are copied ${durationWords(DRIVE_WRITE_IDLE_MS)} after you stop.`,
     );
   });
 
-  it('reads as the spec words it today', () => {
+  it('reads as approved', () => {
     expect(driveRhythmText()).toBe(
-      'Checks for changes every 2 minutes while livediagram is open. Edits are copied a minute after you stop, at most once every 5 minutes per diagram.',
+      'Checks for changes every 2 minutes while livediagram is open. Your edits are copied a minute after you stop.',
     );
   });
 });
 
-describe('lastSyncedText', () => {
-  it('says when, or that it has not yet', () => {
-    expect(lastSyncedText(null, 10)).toBe('Not synced yet');
-    expect(lastSyncedText(1_000, 2_000)).toBe('Last synced just now');
-    expect(lastSyncedText(0, 61_000)).toBe('Last synced 1 min ago');
+describe('sinceText', () => {
+  it('says how long ago, or that it has not synced yet', () => {
+    expect(sinceText(null, 10)).toBe('Not synced yet');
+    expect(sinceText(1_000, 2_000)).toBe('just now');
+    expect(sinceText(0, 61_000)).toBe('1 min ago');
+    expect(DRIVE_SINCE_SAMPLES).toContain('Not synced yet');
   });
 });
 
-const IDLE = { connecting: false, connectError: null, connectNote: null };
+describe('driveSyncCopy: the approved words', () => {
+  it('not connected', () => {
+    expect(text({ state: 'disconnected' })).toBe(
+      'Keep a copy of your documents in your Google Drive.',
+    );
+    expect(text({ state: 'starting' })).toBe('Checking Google Drive…');
+    expect(text({ state: 'disconnected' }, { connectError: 'x' })).toBe('x');
+    expect(text({ state: 'disconnected' }, { connectNote: 'cancelled' })).toBe(
+      "Connection cancelled. Connect whenever you're ready.",
+    );
+  });
 
-describe('driveSyncCopy', () => {
+  it('connected', () => {
+    expect(text({})).toBe('Copied to your Google Drive, in “livediagram (staging)”.');
+    expect(text({ rootName: null })).toBe('Copied to your Google Drive.');
+    expect(text({ state: 'syncing', progress: { done: 3, total: 12 } })).toBe(
+      'Copying 3 of 12 documents…',
+    );
+    expect(text({ error: 'rate_limited' })).toBe(
+      "Syncing a little slower for now, at Google's request.",
+    );
+    expect(text({ error: 'offline' })).toBe(
+      "Can't reach Google Drive. Trying again automatically.",
+    );
+    expect(text({ error: 'failed' })).toBe("Can't reach Google Drive. Trying again automatically.");
+    expect(text({ leaseHeldElsewhere: true })).toBe(
+      'Another tab is syncing. This one stays up to date.',
+    );
+  });
+
+  it('needs attention', () => {
+    expect(text({ state: 'needs_reconnect' })).toBe(
+      'Google Drive needs reconnecting. Your files are safe.',
+    );
+    expect(text({ state: 'needs_resume' })).toBe(
+      'Syncing paused in this browser. Resume to continue.',
+    );
+  });
+});
+
+describe('driveSyncCopy: pill and action', () => {
   it('says Connecting from the press, and why it could not start if it failed', () => {
     expect(
       driveSyncCopy(status({ state: 'disconnected' }), { ...IDLE, connecting: true }),
-    ).toMatchObject({ badge: 'Connecting', action: 'connect' });
-    expect(
-      driveSyncCopy(status({ state: 'disconnected' }), {
-        ...IDLE,
-        connectError: 'Could not start.',
-      }),
     ).toMatchObject({
-      badge: 'Not connected',
-      text: 'Could not start.',
+      badge: 'Connecting',
       action: 'connect',
-      failed: true,
     });
-    // The failure takes the description's place, so nothing is added below it.
     expect(
-      driveSyncCopy(status({ state: 'needs_reconnect' }), {
-        ...IDLE,
-        connectError: 'Could not start.',
-      }),
-    ).toMatchObject({ text: 'Could not start.', action: 'reconnect', failed: true });
+      driveSyncCopy(status({ state: 'disconnected' }), { ...IDLE, connectError: 'Could not.' }),
+    ).toMatchObject({ badge: 'Not connected', action: 'connect', failed: true });
+    expect(
+      driveSyncCopy(status({ state: 'needs_reconnect' }), { ...IDLE, connectError: 'Could not.' }),
+    ).toMatchObject({ text: 'Could not.', action: 'reconnect', failed: true });
   });
 
-  it('lists every text the row can show now, so its text slot never changes height', () => {
-    const s = status({ progress: { done: 3, total: 12 } });
-    const texts = driveSyncTexts(s);
+  it('is calm about a cancel until Connect is pressed again', () => {
+    const cancelled = { ...IDLE, connectNote: 'cancelled' as const };
+    expect(driveSyncCopy(status({ state: 'disconnected' }), cancelled).failed).toBeUndefined();
+    expect(
+      driveSyncCopy(status({ state: 'disconnected' }), { ...cancelled, connecting: true }).text,
+    ).toBe('Keep a copy of your documents in your Google Drive.');
+  });
+
+  it('counts the first copy, and flags errors and notices', () => {
+    expect(driveSyncCopy(status({ progress: { done: 3, total: 12 } }), IDLE)).toMatchObject({
+      badge: 'Copying',
+      tone: 'busy',
+    });
+    expect(driveSyncCopy(status({ state: 'syncing' }), IDLE)).toMatchObject({ badge: 'Syncing' });
     for (const over of [
-      { state: 'starting' as const },
-      { state: 'disconnected' as const },
-      { state: 'needs_reconnect' as const },
-      { state: 'needs_resume' as const },
-      { error: 'rate_limited' as const },
       { error: 'offline' as const },
-      { leaseHeldElsewhere: true },
-      { progress: null },
-      {},
+      { notices: [{ kind: 'diagram' as const, ldId: 'd', name: 'Plan', parentId: 'p' }] },
     ]) {
-      expect(texts).toContain(driveSyncCopy(status({ ...s, ...over }), IDLE).text);
+      expect(driveSyncCopy(status(over), IDLE)).toMatchObject({
+        tone: 'attention',
+        badge: 'Needs attention',
+        action: 'syncNow',
+      });
     }
-    expect(texts).toContain(DRIVE_CONNECT_FAILED);
-    expect(texts).toContain(DRIVE_CONNECT_CANCELLED);
-    expect(new Set(texts).size).toBe(texts.length);
+    expect(driveSyncCopy(status({ state: 'needs_resume' }), IDLE).action).toBe('resume');
   });
+});
 
-  it('says calmly that the user cancelled at Google, until Connect is pressed again', () => {
-    expect(
-      driveSyncCopy(status({ state: 'disconnected' }), { ...IDLE, connectNote: 'cancelled' }),
-    ).toMatchObject({ badge: 'Not connected', text: DRIVE_CONNECT_CANCELLED, action: 'connect' });
-    expect(
-      driveSyncCopy(status({ state: 'disconnected' }), { ...IDLE, connectNote: 'cancelled' })
-        .failed,
-    ).toBeFalsy();
-    expect(
-      driveSyncCopy(status({ state: 'disconnected' }), {
-        connecting: true,
-        connectError: null,
-        connectNote: 'cancelled',
-      }).badge,
-    ).toBe('Connecting');
-  });
+describe('phases (reserve per phase, not per message)', () => {
+  const states: Partial<DriveMirrorStatus>[] = [
+    { state: 'starting' },
+    { state: 'disconnected' },
+    { state: 'needs_reconnect' },
+    { state: 'needs_resume' },
+    { state: 'syncing' },
+    { state: 'syncing', progress: { done: 1, total: 2 } },
+    { error: 'failed' },
+    { error: 'rate_limited' },
+    { leaseHeldElsewhere: true },
+    {},
+  ];
+  const connects: DriveConnectState[] = [
+    IDLE,
+    { ...IDLE, connecting: true },
+    { ...IDLE, connectError: 'Could not.' },
+    { ...IDLE, connectNote: 'cancelled' },
+  ];
 
-  it('only ever shows a badge from the one list the pill sizes itself to', () => {
-    const states: Partial<DriveMirrorStatus>[] = [
-      { state: 'starting' },
-      { state: 'disconnected' },
-      { state: 'needs_reconnect' },
-      { state: 'syncing' },
-      { state: 'syncing', progress: { done: 1, total: 2 } },
-      { error: 'failed' },
-      {},
-    ];
+  it('shows only the pill wordings and texts its phase reserves', () => {
     for (const over of states) {
-      for (const connecting of [false, true]) {
-        expect(DRIVE_SYNC_BADGES).toContain(
-          driveSyncCopy(status(over), { ...IDLE, connecting }).badge,
-        );
+      for (const connect of connects) {
+        const s = status({ progress: { done: 2, total: 2 }, ...over });
+        const copy = driveSyncCopy(s, connect);
+        expect(copy.phase).toBe(driveSyncPhase(s));
+        expect(DRIVE_PHASE_BADGES[copy.phase] as readonly string[]).toContain(copy.badge);
+        // A connect error is always DRIVE_CONNECT_FAILED in the app; the first
+        // copy reserves its widest count (total of total).
+        const reserved = copy.badge === 'Copying' ? 'Copying 2 of 2 documents…' : copy.text;
+        if (!copy.failed) expect(driveSyncTexts(s, copy.phase)).toContain(reserved);
       }
     }
   });
 
-  it('invites a connection, and says so while it starts', () => {
-    expect(driveSyncCopy(status({ state: 'disconnected' }), IDLE)).toMatchObject({
-      badge: 'Not connected',
-      tone: 'off',
-      action: 'connect',
-    });
-    expect(driveSyncCopy(status({ state: 'starting' }), IDLE)).toMatchObject({
-      badge: 'Checking',
-      action: null,
-    });
-  });
-
-  it('names the actual root folder once connected', () => {
-    expect(driveSyncCopy(status(), IDLE)).toMatchObject({
-      badge: 'Synced',
-      tone: 'ok',
-      text: 'Your documents are copied to Google Drive, in the folder “livediagram (staging)”.',
-      action: 'syncNow',
-    });
-    expect(driveSyncCopy(status({ rootName: null }), IDLE).text).toBe(
-      'Your documents are copied to Google Drive.',
+  it('reserves nothing for another phase', () => {
+    const s = status();
+    expect(driveSyncTexts(s, 'not-connected')).not.toContain(driveSyncCopy(s, IDLE).text);
+    expect(driveSyncTexts(s, 'connected')).not.toContain(
+      'Keep a copy of your documents in your Google Drive.',
     );
-    expect(driveSyncCopy(status({ state: 'syncing' }), IDLE)).toMatchObject({
-      badge: 'Syncing',
-      tone: 'busy',
-    });
-  });
-
-  it('counts the first copy', () => {
-    expect(
-      driveSyncCopy(status({ state: 'syncing', progress: { done: 3, total: 12 } }), IDLE),
-    ).toMatchObject({
-      badge: 'Copying',
-      text: 'Copying 3 of 12 to Google Drive.',
-      action: null,
-    });
-  });
-
-  it('says what to do in every attention state', () => {
-    const cases: [Partial<DriveMirrorStatus>, string, string | null][] = [
-      [{ state: 'needs_reconnect' }, 'Reconnect to carry on', 'reconnect'],
-      [{ state: 'needs_resume' }, 'Resume to carry on', 'resume'],
-      [{ error: 'rate_limited' }, 'there is nothing to do', null],
-      [{ error: 'offline' }, 'check your connection, or press Sync now', 'syncNow'],
-      [{ error: 'failed' }, 'check your connection, or press Sync now', 'syncNow'],
-    ];
-    for (const [over, words, action] of cases) {
-      const copy = driveSyncCopy(status(over), IDLE);
-      expect(copy.tone).toBe('attention');
-      expect(copy.badge).toBe('Needs attention');
-      expect(copy.text).toContain(words);
-      expect(copy.action).toBe(action);
-    }
-  });
-
-  it('says another tab or device is writing, with nothing to do', () => {
-    expect(driveSyncCopy(status({ leaseHeldElsewhere: true }), IDLE).text).toBe(
-      'Another tab or device is copying to Google Drive right now; this one keeps checking for changes.',
-    );
-  });
-
-  it('flags notices', () => {
-    expect(
-      driveSyncCopy(
-        status({ notices: [{ kind: 'diagram', ldId: 'd', name: 'Plan', parentId: 'p' }] }),
-        IDLE,
-      ),
-    ).toMatchObject({ tone: 'attention', badge: 'Needs attention' });
   });
 });
 
-describe('the help article states the same rhythm', () => {
-  it('words the cadence as the constants say', async () => {
+describe('the help article', () => {
+  it('states the same rhythm and the per-document limit', async () => {
     const { readFileSync } = await import('node:fs');
     const article = readFileSync(
       new URL('../../../help/app/account-and-data/google-drive/page.mdx', import.meta.url),
       'utf8',
     );
     expect(article).toContain(
-      `checks Drive for changes every ${durationWords(DRIVE_POLL_INTERVAL_MS)}, and copies your edits ` +
-        `${durationWords(DRIVE_WRITE_IDLE_MS)} after you stop, at most once every ` +
-        `${durationWords(DRIVE_WRITE_MIN_INTERVAL_MS)} per diagram`,
+      `checks for changes every ${durationWords(DRIVE_POLL_INTERVAL_MS)} while livediagram is open`,
+    );
+    expect(article).toContain(
+      `${durationWords(DRIVE_WRITE_IDLE_MS)} after you stop, at most once every ` +
+        `${durationWords(DRIVE_WRITE_MIN_INTERVAL_MS)} per document`,
     );
   });
 });

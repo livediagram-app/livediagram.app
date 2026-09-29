@@ -15,7 +15,7 @@ import { SOLID_BRAND_DARK_CONTROL } from './brand-classes';
 // straight through, so this is a drop-in for a raw <button>. Extra `className` is appended last so a caller
 // can still add layout (w-full, mt-…) without re-stating the look.
 
-export type ButtonVariant = 'primary' | 'danger' | 'warning' | 'secondary';
+export type ButtonVariant = 'primary' | 'danger' | 'warning' | 'warning-outline' | 'secondary';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'cta-sm' | 'cta';
 
 const BASE =
@@ -28,6 +28,11 @@ const VARIANTS: Record<ButtonVariant, string> = {
   // slate-900 on amber-400 is 10:1, on the amber-500 hover 8:1, in both themes.
   warning:
     'bg-amber-400 text-slate-900 hover:bg-amber-500 focus-visible:outline-amber-500 dark:focus-visible:outline-amber-400',
+  // The same warning, quiet: beside a primary it must not outweigh it. An inset
+  // ring, not a border, so it is exactly a primary's height. Text amber-800 on
+  // white 7:1, amber-300 on slate-800 10:1; ring amber-600 3.2:1, amber-400 8:1.
+  'warning-outline':
+    'bg-transparent text-amber-800 ring-1 ring-inset ring-amber-600 hover:bg-amber-50 focus-visible:outline-amber-500 dark:text-amber-300 dark:ring-amber-400 dark:hover:bg-amber-950/40 dark:focus-visible:outline-amber-400',
   secondary:
     'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800',
 };

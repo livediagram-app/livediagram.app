@@ -2,27 +2,29 @@
 
 // Google Drive's row in Settings > Account > Cloud Sync
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"; blueprint "Cloud Sync in
-// Settings"): where the mirror stands in plain words, the rhythm it keeps,
-// when it last synced, what to do about anything that needs the user, and
-// Connect, Sync now and Disconnect.
+// Settings"). Three phases (not connected, connected, needs attention), each
+// keeping one size while it lasts and reserving nothing for another (Layout
+// stability, "reserve per phase, not per message").
 
 import { useState, type ReactNode } from 'react';
 import { Button, Glyph, StableLabel } from '@livediagram/ui';
 import { SettingsRowShell } from '@/components/dialogs/settings/SettingsRowShell';
 import type { SettingsCloudSyncRowSpec } from '@/components/dialogs/settings/settings-catalogue';
 import {
-  DRIVE_PRIMARY_LABELS,
-  DRIVE_SYNC_BADGES,
+  DRIVE_NOTICE_TEXT,
+  DRIVE_PHASE_BADGES,
+  DRIVE_PHASE_PRIMARY,
+  DRIVE_SINCE_SAMPLES,
   driveRhythmText,
   driveSyncCopy,
   driveSyncTexts,
-  lastSyncedText,
+  sinceText,
+  type DriveSyncBadge,
+  type DriveSyncPhase,
   type DriveSyncTone,
 } from '@/lib/drive/cloud-sync-copy';
-import type { DriveMirrorNotice } from '@/lib/drive/engine';
 import { useRelativeNow } from '@/lib/relative-time';
 import { useDriveMirror } from './drive-mirror-context';
-import { DRIVE_NOTICE_TEXT } from './DriveNoticeMarker';
 
 // The state pill: a glyph and a word, so the colour is never the only signal.
 const TONE: Record<DriveSyncTone, { className: string; glyph: ReactNode }> = {
@@ -75,15 +77,15 @@ function Variant({ shown, children }: { shown: boolean; children: ReactNode }) {
   );
 }
 
-// Reserves the notice's space while there is none.
-const NOTICE_PLACEHOLDER: DriveMirrorNotice = {
-  kind: 'diagram',
-  ldId: '',
-  name: 'A diagram',
-  parentId: '',
-};
-
-function StatePill({ tone, children }: { tone: DriveSyncTone; children: string }) {
+function StatePill({
+  tone,
+  phase,
+  children,
+}: {
+  tone: DriveSyncTone;
+  phase: DriveSyncPhase;
+  children: DriveSyncBadge;
+}) {
   const { className, glyph } = TONE[tone];
   return (
     <span
@@ -93,7 +95,7 @@ function StatePill({ tone, children }: { tone: DriveSyncTone; children: string }
       <Glyph size={12} units={16}>
         {glyph}
       </Glyph>
-      <StableLabel options={DRIVE_SYNC_BADGES} current={children} />
+      <StableLabel options={DRIVE_PHASE_BADGES[phase]} current={children} />
     </span>
   );
 }
@@ -116,13 +118,11 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
     connectError: drive.connectError,
     connectNote: drive.connectNote,
   });
-  const connected = status.state === 'idle' || status.state === 'syncing';
-  const paused = status.state === 'needs_reconnect' || status.state === 'needs_resume';
-  const syncing = status.state === 'syncing';
+  const { phase } = copy;
+  const syncing = status.state === 'syncing' || status.progress !== null;
   const notice = status.notices[0] ?? null;
-  const detail = status.progress ? 'progress' : notice ? 'notice' : 'rhythm';
+  const more = Math.max(0, status.notices.length - 1);
 
-  // The primary button: one per state, all its wordings laid out.
   const primary = (() => {
     switch (copy.action) {
       case 'connect':
@@ -152,16 +152,30 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
       wrapper={() => (
         <div
           data-cloud-sync={row.provider}
-          className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-3 tabular-nums dark:border-slate-700 dark:bg-slate-800"
+          data-drive-phase={phase}
+          className="flex flex-col gap-2.5 rounded-xl border border-slate-200 bg-white px-3.5 py-3 tabular-nums dark:border-slate-700 dark:bg-slate-800"
         >
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
             <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
               <Glyph size={16} units={16}>
                 <path d="M4.5 12.5h7.2a2.8 2.8 0 0 0 .4-5.6A4 4 0 0 0 4.4 7.3a2.6 2.6 0 0 0 .1 5.2z" />
               </Glyph>
               {row.label}
             </span>
-            <StatePill tone={copy.tone}>{copy.badge}</StatePill>
+            <span className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+              <StatePill tone={copy.tone} phase={phase}>
+                {copy.badge}
+              </StatePill>
+              {phase === 'not-connected' ? null : (
+                <span data-drive-since className="inline-flex items-center gap-1.5">
+                  <span aria-hidden="true">·</span>
+                  <StableLabel
+                    options={DRIVE_SINCE_SAMPLES}
+                    current={sinceText(status.lastSyncedAt, now)}
+                  />
+                </span>
+              )}
+            </span>
           </div>
 
           <div
@@ -169,64 +183,72 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
             data-drive-text
             className={`text-sm ${copy.failed ? 'text-rose-700 dark:text-rose-300' : 'text-slate-700 dark:text-slate-200'}`}
           >
-            <StableLabel options={driveSyncTexts(status)} current={copy.text} block />
+            <StableLabel options={driveSyncTexts(status, phase)} current={copy.text} block />
           </div>
 
-          <div data-drive-detail={detail} className="text-xs">
-            <Slot>
-              <Variant shown={detail === 'rhythm'}>
-                <p className="text-slate-600 dark:text-slate-300">{driveRhythmText()}</p>
-              </Variant>
-              <Variant shown={detail === 'progress'}>
-                <p className="mb-1.5 text-slate-600 dark:text-slate-300">
-                  {status.progress
-                    ? `${status.progress.done} of ${status.progress.total} documents copied`
-                    : '0 of 0 documents copied'}
-                </p>
-                <div
-                  role="progressbar"
-                  aria-label="Copying your documents to Google Drive"
-                  aria-valuemin={0}
-                  aria-valuemax={status.progress?.total ?? 0}
-                  aria-valuenow={status.progress?.done ?? 0}
-                  className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700"
-                >
-                  <div
-                    className="h-full rounded-full bg-brand-500 transition-[width] motion-reduce:transition-none"
-                    style={{
-                      width: `${status.progress ? (100 * status.progress.done) / Math.max(1, status.progress.total) : 0}%`,
-                    }}
-                  />
-                </div>
-              </Variant>
-              <Variant shown={detail === 'notice'}>
-                <NoticeBox
-                  notice={notice ?? NOTICE_PLACEHOLDER}
-                  more={Math.max(0, status.notices.length - 1)}
-                  canAdopt={drive.canAdopt}
-                  disabled={busy !== null || !notice}
-                  onAdopt={run('adopt', () => (notice ? drive.adopt(notice) : undefined))}
-                />
-              </Variant>
-            </Slot>
-          </div>
+          {phase === 'connected' ? (
+            <div data-drive-detail={notice ? 'notice' : 'rhythm'} className="text-xs">
+              <Slot>
+                <Variant shown={!notice}>
+                  <p className="text-slate-600 dark:text-slate-300">{driveRhythmText()}</p>
+                </Variant>
+                <Variant shown={!!notice}>
+                  <p className="text-amber-900 dark:text-amber-200">
+                    <span className="font-semibold">{notice?.name ?? 'A document'}</span>
+                    {more > 0 ? ` and ${more} more` : ''}: {DRIVE_NOTICE_TEXT}{' '}
+                    {drive.canAdopt ? (
+                      <>
+                        <span aria-hidden="true">· </span>
+                        <button
+                          type="button"
+                          disabled={busy !== null || !notice}
+                          onClick={run('adopt', () => (notice ? drive.adopt(notice) : undefined))}
+                          className="font-semibold text-amber-900 underline underline-offset-2 hover:text-amber-950 disabled:opacity-50 dark:text-amber-200 dark:hover:text-amber-100"
+                        >
+                          Show folder
+                        </button>
+                      </>
+                    ) : null}
+                  </p>
+                </Variant>
+              </Slot>
+            </div>
+          ) : null}
 
-          {/* The footer keeps its buttons in place: Disconnect unseen while there
-              is nothing to disconnect, the primary button as wide as its longest
-              wording and unseen when there is nothing to press. */}
-          <div className="flex items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-700">
-            <span className="min-w-0 whitespace-nowrap text-xs text-slate-600 dark:text-slate-300">
-              {connected || paused ? lastSyncedText(status.lastSyncedAt, now) : null}
-            </span>
-            <span data-drive-actions className="flex shrink-0 items-center gap-2">
-              <span
-                data-drive-disconnect
-                aria-hidden={connected || paused ? undefined : true}
-                className={connected || paused ? undefined : 'invisible'}
-              >
+          {/* The divider above the buttons is the first copy's progress track. */}
+          {phase === 'connected' ? (
+            <div
+              data-drive-progress-track
+              {...(status.progress
+                ? {
+                    role: 'progressbar',
+                    'aria-label': 'Copying your documents to Google Drive',
+                    'aria-valuemin': 0,
+                    'aria-valuemax': status.progress.total,
+                    'aria-valuenow': status.progress.done,
+                  }
+                : {})}
+              className="h-0.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700"
+            >
+              <div
+                className="h-full rounded-full bg-brand-500 transition-[width] motion-reduce:transition-none"
+                style={{
+                  width: `${status.progress ? (100 * status.progress.done) / Math.max(1, status.progress.total) : 0}%`,
+                }}
+              />
+            </div>
+          ) : (
+            <div className="h-px bg-slate-100 dark:bg-slate-700" />
+          )}
+
+          {/* Buttons only: nothing else sits beside them, so nothing is covered. */}
+          <div data-drive-actions className="flex flex-wrap items-center justify-end gap-2">
+            {phase === 'not-connected' ? null : (
+              <span data-drive-disconnect>
                 <Button
-                  // Reversible, and the Drive files stay: a warning, not a danger.
-                  variant="warning"
+                  // Reversible, and the Drive files stay: a quiet warning, never
+                  // louder than the primary.
+                  variant="warning-outline"
                   size="sm"
                   disabled={busy !== null}
                   onClick={run('disconnect', drive.disconnect)}
@@ -234,68 +256,33 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
                   Disconnect
                 </Button>
               </span>
-              <span
-                data-drive-primary
-                aria-hidden={primary ? undefined : true}
-                className={primary ? undefined : 'invisible'}
+            )}
+            <span
+              data-drive-primary
+              aria-hidden={primary ? undefined : true}
+              className={primary ? undefined : 'invisible'}
+            >
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={busy !== null && busy !== 'resume'}
+                // aria-disabled, not disabled: a pressed button keeps focus, so
+                // the pane never jumps to another control.
+                aria-disabled={primary?.held ?? false}
+                onClick={() => {
+                  if (primary && !primary.held) void primary.act();
+                }}
               >
-                <Button
-                  variant="primary"
-                  size="sm"
-                  disabled={busy !== null && busy !== 'resume'}
-                  // aria-disabled, not disabled: a pressed button keeps focus, so
-                  // the pane never jumps to another control.
-                  aria-disabled={primary?.held ?? false}
-                  onClick={() => {
-                    if (primary && !primary.held) void primary.act();
-                  }}
-                >
-                  <StableLabel
-                    options={DRIVE_PRIMARY_LABELS}
-                    current={primary?.label ?? 'Sync now'}
-                    itemClassName="text-optical-line"
-                  />
-                </Button>
-              </span>
+                <StableLabel
+                  options={DRIVE_PHASE_PRIMARY[phase]}
+                  current={primary?.label ?? DRIVE_PHASE_PRIMARY[phase][0]}
+                  itemClassName="text-optical-line"
+                />
+              </Button>
             </span>
           </div>
         </div>
       )}
     />
-  );
-}
-
-function NoticeBox({
-  notice,
-  more,
-  canAdopt,
-  disabled,
-  onAdopt,
-}: {
-  notice: DriveMirrorNotice;
-  more: number;
-  canAdopt: boolean;
-  disabled: boolean;
-  onAdopt: () => void;
-}) {
-  return (
-    <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-amber-950 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-100">
-      <p>
-        <span className="font-semibold">{notice.name}</span>
-        {more > 0 ? ` and ${more} more` : ''}: {DRIVE_NOTICE_TEXT} Show it this folder, or move the{' '}
-        {notice.kind === 'folder' ? 'folder' : 'file'} back in Drive.
-      </p>
-      {canAdopt ? (
-        <Button
-          variant="secondary"
-          size="xs"
-          className="mt-2"
-          disabled={disabled}
-          onClick={onAdopt}
-        >
-          Show this folder to livediagram
-        </Button>
-      ) : null}
-    </div>
   );
 }

@@ -117,7 +117,7 @@ A `DRIVE_TOKEN_KEY` that does not decode to 32 bytes counts as unset and logs `d
 
 | State             | Means                                          | Panel shows                                   |
 | ----------------- | ---------------------------------------------- | --------------------------------------------- |
-| `starting`        | Auth or the first pass not settled             | "Checking your Google Drive connection…"      |
+| `starting`        | Auth or the first pass not settled             | "Checking Google Drive…"                      |
 | `disconnected`    | No connection row                              | **Connect Google Drive**                      |
 | `idle`, `syncing` | Row with status `connected` and a usable token | **Sync now**, **Last synced**, **Disconnect** |
 | `needs_reconnect` | Row with status `needs_reconnect`              | **Reconnect**, **Disconnect**                 |
@@ -625,34 +625,34 @@ keywords: 'drive google sync backup mirror cloud', description, helpArticle: 'go
 `{ phase, badge, tone, text, action, failed? }`; each phase's parts are sized for that phase only
 (`DRIVE_PHASE_BADGES`, `DRIVE_PHASE_PRIMARY`, `driveSyncTexts(status, phase)`):
 
-| Phase           | State                     | Badge            | Text                                                                                                      | Primary                                    |
-| --------------- | ------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `not-connected` | `starting`                | Checking         | "Checking your Google Drive connection…"                                                                  | none (reserved)                            |
-| `not-connected` | `disconnected`            | Not connected    | "Keep a copy of your documents in your own Google Drive."                                                 | **Connect Google Drive** / **Connecting…** |
-| `not-connected` | connect failed            | Not connected    | `DRIVE_CONNECT_FAILED` "Couldn't start connecting. Check your connection and try again."                  | same                                       |
-| `not-connected` | cancelled at Google       | Not connected    | `DRIVE_CONNECT_CANCELLED` "You cancelled at Google. Connect again whenever you like."                     | same                                       |
-| `connected`     | `idle` / `syncing`        | Synced / Syncing | "Copied to your Google Drive, in the folder “{rootName}”." ("Copied to your Google Drive." while unknown) | **Sync now** / **Syncing…**                |
-| `connected`     | first mirror              | Copying          | "Copying {done} of {total} to your Google Drive."                                                         | **Syncing…** (held)                        |
-| `connected`     | `offline` / `failed`      | Needs attention  | "Couldn't reach Google Drive. It tries again by itself."                                                  | **Sync now**                               |
-| `connected`     | `rate_limited`            | Needs attention  | "Google asked to slow down. Syncing carries on, less often."                                              | **Sync now**                               |
-| `connected`     | lease elsewhere           | Synced           | "Another tab or device is copying to Drive. This one keeps checking."                                     | **Sync now**                               |
-| `connected`     | notices                   | Needs attention  | the usual line                                                                                            | **Sync now**                               |
-| `attention`     | `needs_reconnect`         | Needs attention  | "Google Drive stopped accepting access. Nothing was deleted."                                             | **Reconnect** / **Connecting…**            |
-| `attention`     | `needs_resume`            | Needs attention  | "Drive access lapsed in this browser."                                                                    | **Resume sync**                            |
-| `attention`     | reconnect failed to start | Needs attention  | `DRIVE_CONNECT_FAILED`                                                                                    | **Reconnect**                              |
+| Phase           | State                     | Badge            | Text                                                                                           | Primary                                    |
+| --------------- | ------------------------- | ---------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `not-connected` | `starting`                | Checking         | "Checking Google Drive…"                                                                       | none (reserved)                            |
+| `not-connected` | `disconnected`            | Not connected    | "Keep a copy of your documents in your Google Drive."                                          | **Connect Google Drive** / **Connecting…** |
+| `not-connected` | connect failed            | Not connected    | `DRIVE_CONNECT_FAILED` "Couldn't reach Google. Check your connection and try again."           | same                                       |
+| `not-connected` | cancelled at Google       | Not connected    | `DRIVE_CONNECT_CANCELLED` "Connection cancelled. Connect whenever you're ready."               | same                                       |
+| `connected`     | `idle` / `syncing`        | Synced / Syncing | "Copied to your Google Drive, in “{rootName}”." ("Copied to your Google Drive." while unknown) | **Sync now** / **Syncing…**                |
+| `connected`     | first mirror              | Copying          | "Copying {done} of {total} documents…"                                                         | **Syncing…** (held)                        |
+| `connected`     | `offline` / `failed`      | Needs attention  | "Can't reach Google Drive. Trying again automatically."                                        | **Sync now**                               |
+| `connected`     | `rate_limited`            | Needs attention  | "Syncing a little slower for now, at Google's request."                                        | **Sync now**                               |
+| `connected`     | lease elsewhere           | Synced           | "Another tab is syncing. This one stays up to date."                                           | **Sync now**                               |
+| `connected`     | notices                   | Needs attention  | the usual line                                                                                 | **Sync now**                               |
+| `attention`     | `needs_reconnect`         | Needs attention  | "Google Drive needs reconnecting. Your files are safe."                                        | **Reconnect** / **Connecting…**            |
+| `attention`     | `needs_resume`            | Needs attention  | "Syncing paused in this browser. Resume to continue."                                          | **Resume sync**                            |
+| `attention`     | reconnect failed to start | Needs attention  | `DRIVE_CONNECT_FAILED`                                                                         | **Reconnect**                              |
 
 Header: the label, then the pill and, in `connected` and `attention`, `· {relativeSince(lastSyncedAt)}` (or
-"· not yet"), a `StableLabel` over `DRIVE_SINCE_SAMPLES` ("just now", "59 secs ago", "59 mins ago", "23 hours
-ago", "yesterday", "30 days ago", "not yet") and the current value. Body: the text line; in `connected` a detail
-slot holding `driveRhythmText()` or, with notices, one line "{n} document(s) in a Drive folder livediagram can't see"
-with **Show** / **Hide** (`aria-expanded`), which opens the notice list below it (a user-initiated expansion). A
+"· Not synced yet"), a `StableLabel` over `DRIVE_SINCE_SAMPLES` ("just now", "59 secs ago", "59 mins ago", "23 hours
+ago", "yesterday", "30 days ago", "Not synced yet") and the current value. Body: the text line; in `connected` a detail
+slot holding `driveRhythmText()` or, with notices, one line "{name}: Moved to a Drive folder livediagram can't see." (with "and {n} more") and
+**Show folder** (adopts the first notice; the next then shows). A
 2 px divider above the footer, in `connected` only, is the first copy's `role="progressbar"` track while
 `progress` is set. Footer: buttons only, right-aligned, wrapping: **Disconnect** (`connected` and `attention`) and
 the primary, a `StableLabel` over its phase's labels.
 
 `driveRhythmText()` is built from `DRIVE_POLL_INTERVAL_MS`, `DRIVE_WRITE_IDLE_MS` and `DRIVE_WRITE_MIN_INTERVAL_MS`
 through `durationWords(ms)` ("30 seconds", "a minute", "2 minutes"): "Checks for changes every 2 minutes while
-livediagram is open. Edits are copied a minute after you stop, at most once every 5 minutes per diagram."
+livediagram is open. Your edits are copied a minute after you stop." (the 5-minute limit is in the help article)
 **Disconnect** is `Button` variant `warning-outline` (an inset 1 px amber-600 ring, amber-800 text; dark amber-400
 ring, amber-300 text; no border, so it is exactly the primary's height; text 7:1 and more, ring 3:1 and more, both
 themes); its confirmation uses `ConfirmDialog` variant `warning` (the solid amber confirm button).
@@ -661,7 +661,7 @@ themes); its confirmation uses `ConfirmDialog` variant `warning` (the solid ambe
 `connect()` sets `connecting` before any await; in broker mode it stays set once `window.location.assign` has run
 (the page is leaving), and a `pageshow` with `persisted` (Back from Google out of the bfcache) clears it. If
 `apiDriveState` or the browser token request throws, `connecting` clears and `connectError` is
-`DRIVE_CONNECT_FAILED`: "Couldn't start connecting to Google Drive. Check your connection and try again.", shown in
+`DRIVE_CONNECT_FAILED`: "Couldn't reach Google. Check your connection and try again.", shown in
 the row's text slot in place of the description, with the pill **Not connected**; it clears on the next Connect.
 Logged `connect-failed` (warn). The pill reads **Connecting** while `connecting`.
 
@@ -705,7 +705,7 @@ Disconnect confirms: "Disconnect Google Drive? Your files stay in Drive; livedia
 Banner (`needs_reconnect` / `needs_resume`), bottom-left, dismissible for the session: "Google Drive sync is paused."
 with **Reconnect** / **Resume sync**. `/drive/connected`: "Connecting Google Drive…", then back to the page the user
 started from; on `error=access_denied`: "Google Drive wasn't connected." with **Back**. `/drive/open`: "Opening from
-Google Drive…"; import: "This diagram isn't in your livediagram." **Import a copy**; a copy of a mirrored file:
+Google Drive…"; import: "This document isn't in your livediagram." **Import a copy**; a copy of a mirrored file:
 "This is a copy made in Google Drive. Import it as a new document to open it here; the original stays as it is."
 **Import as new document**; error: "This file can't be
 opened in livediagram." with **Go to Explorer**.

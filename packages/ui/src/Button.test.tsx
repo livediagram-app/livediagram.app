@@ -63,3 +63,14 @@ describe('Button aria-disabled', () => {
     expect(container.querySelector('button')!.className).toContain('aria-disabled:opacity-50');
   });
 });
+
+describe('Button warning-outline variant', () => {
+  it('is a quiet amber outline, as tall as a primary', () => {
+    const { container } = render(<Button variant="warning-outline">Disconnect</Button>);
+    const cls = container.querySelector('button')!.className;
+    expect(cls).toContain('ring-amber-600');
+    expect(cls).toContain('text-amber-800');
+    expect(cls).not.toMatch(/(^| )border( |$)/);
+    expect(cls).not.toContain('bg-amber-400');
+  });
+});

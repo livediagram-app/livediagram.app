@@ -9,8 +9,8 @@ import type { DriveMirrorStatus } from '@/lib/drive/engine';
 import {
   DRIVE_CONNECT_CANCELLED,
   DRIVE_CONNECT_FAILED,
-  DRIVE_PRIMARY_LABELS,
-  DRIVE_SYNC_BADGES,
+  DRIVE_PHASE_BADGES,
+  DRIVE_PHASE_PRIMARY,
   driveRhythmText,
 } from '@/lib/drive/cloud-sync-copy';
 import {
@@ -74,7 +74,9 @@ describe('GoogleDriveSyncRow', () => {
 
   it('says why Connect could not start, back at Not connected', () => {
     show({ state: 'disconnected' }, { connectError: DRIVE_CONNECT_FAILED });
-    expect(screen.getByText(DRIVE_CONNECT_FAILED)).toBeTruthy();
+    expect(
+      screen.getByText(DRIVE_CONNECT_FAILED, { selector: '[data-stable-option]:not(.invisible)' }),
+    ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Connect Google Drive' })).toHaveProperty(
       'disabled',
       false,
@@ -96,74 +98,92 @@ describe('GoogleDriveSyncRow', () => {
     ).toBeTruthy();
   });
 
-  it('keeps every wording of the pill and buttons in place, so nothing reflows', () => {
+  it('sizes the pill and the primary for the phase it is in, not every phase', () => {
     show({ state: 'idle', lastSyncedAt: Date.now() });
     const pill = document.querySelector('[data-drive-state]')!;
     expect([...pill.querySelectorAll('[data-stable-option]')].map((n) => n.textContent)).toEqual([
-      ...DRIVE_SYNC_BADGES,
+      ...DRIVE_PHASE_BADGES.connected,
     ]);
     const sync = screen.getByRole('button', { name: 'Sync now' });
     expect([...sync.querySelectorAll('[data-stable-option]')].map((n) => n.textContent)).toEqual([
-      ...DRIVE_PRIMARY_LABELS,
+      ...DRIVE_PHASE_PRIMARY.connected,
     ]);
+    // Nothing of the not-connected phase is kept.
+    expect(document.querySelector('[data-cloud-sync]')!.textContent).not.toContain(
+      'Connect Google Drive',
+    );
   });
 
-  it('paints Disconnect as a warning, not a danger', () => {
+  it('paints Disconnect as a quiet warning outline, not a danger', () => {
     show({ state: 'idle', lastSyncedAt: 1 });
     const cls = screen.getByRole('button', { name: 'Disconnect' }).className;
-    expect(cls).toContain('bg-amber-400');
+    expect(cls).toContain('ring-amber-600');
     expect(cls).not.toContain('rose');
   });
 
-  it('names the folder, the rhythm and the last sync, with Sync now and Disconnect', () => {
+  it('shows the time since the last sync beside the pill, and the folder and rhythm below', () => {
     const value = show({ state: 'idle', lastSyncedAt: Date.now() });
     expect(
-      screen.getByText(
-        'Your documents are copied to Google Drive, in the folder “livediagram (staging)”.',
-      ),
+      screen.getByText('just now', { selector: '[data-stable-option]:not(.invisible)' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('Copied to your Google Drive, in “livediagram (staging)”.', {
+        selector: '[data-stable-option]:not(.invisible)',
+      }),
     ).toBeTruthy();
     expect(screen.getByText(driveRhythmText())).toBeTruthy();
-    expect(screen.getByText('Last synced just now')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Sync now' }));
     expect(value.syncNow).toHaveBeenCalledOnce();
-    expect(screen.getByRole('button', { name: 'Disconnect' })).toBeTruthy();
   });
 
-  it('shows the first copy with a progress bar', () => {
+  it('says Not synced yet before the first sync', () => {
+    show({ state: 'syncing', lastSyncedAt: null, progress: { done: 3, total: 12 } });
+    expect(
+      screen.getByText('Not synced yet', { selector: '[data-stable-option]:not(.invisible)' }),
+    ).toBeTruthy();
+  });
+
+  it('shows the first copy as a line and a progress track, Syncing held', () => {
     show({ state: 'syncing', progress: { done: 3, total: 12 } });
-    expect(screen.getByText('Copying 3 of 12 to Google Drive.')).toBeTruthy();
+    expect(
+      screen.getByText('Copying 3 of 12 documents…', {
+        selector: '[data-stable-option]:not(.invisible)',
+      }),
+    ).toBeTruthy();
     expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('3');
-    expect(screen.getByText('3 of 12 documents copied')).toBeTruthy();
-    // Nothing to press while it copies: the button keeps its place, unseen.
-    expect(screen.queryByRole('button', { name: /Sync now|Syncing/ })).toBeNull();
+    const held = screen.getByRole('button', { name: 'Syncing…' });
+    expect(held.getAttribute('aria-disabled')).toBe('true');
+    expect(held).toHaveProperty('disabled', false);
   });
 
-  it('holds Sync now while syncing, keeping focus', () => {
-    show({ state: 'syncing', lastSyncedAt: Date.now() });
-    const syncing = screen.getByRole('button', { name: 'Syncing…' });
-    expect(syncing.getAttribute('aria-disabled')).toBe('true');
-    expect(syncing).toHaveProperty('disabled', false);
-  });
-
-  it('keeps Disconnect and the primary button in place, unseen when idle', () => {
+  it('has no Disconnect and no time while not connected', () => {
     show({ state: 'disconnected' });
-    const hidden = document.querySelector('[data-cloud-sync] .invisible button');
-    expect(hidden?.textContent).toBe('Disconnect');
+    expect(screen.queryByRole('button', { name: 'Disconnect' })).toBeNull();
+    expect(document.querySelector('[data-drive-since]')).toBeNull();
+    expect(document.querySelector('[data-drive-detail]')).toBeNull();
   });
 
-  it('reserves the notice, the progress and the rhythm in one detail slot', () => {
-    show({ state: 'idle', lastSyncedAt: 1 });
+  it('puts a folder notice in place of the rhythm, one line with Show folder', () => {
+    const notice = { kind: 'diagram' as const, ldId: 'd1', name: 'Plan', parentId: 'p' };
+    const value = show(
+      { state: 'idle', lastSyncedAt: 1, notices: [notice, { ...notice, ldId: 'd2' }] },
+      { canAdopt: true },
+    );
     const detail = document.querySelector('[data-drive-detail]')!;
-    expect(detail.getAttribute('data-drive-detail')).toBe('rhythm');
-    expect(detail.querySelectorAll('.invisible')).toHaveLength(2);
-    expect(detail.textContent).toContain('documents copied');
-    expect(detail.textContent).toContain("can't see");
+    expect(detail.getAttribute('data-drive-detail')).toBe('notice');
+    expect(detail.querySelector(':scope > div > :not(.invisible)')!.textContent).toContain(
+      "Plan and 1 more: Moved to a Drive folder livediagram can't see.",
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Show folder' }));
+    expect(value.adopt).toHaveBeenCalledWith(notice);
   });
 
   it('offers Reconnect and Resume sync when paused', () => {
     const value = show({ state: 'needs_reconnect' });
     expect(
-      screen.getByText('Needs attention', { selector: '[data-stable-option]:not(.invisible)' }),
+      screen.getByText('Google Drive needs reconnecting. Your files are safe.', {
+        selector: '[data-stable-option]:not(.invisible)',
+      }),
     ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Reconnect' }));
     expect(value.connect).toHaveBeenCalledOnce();
@@ -171,13 +191,6 @@ describe('GoogleDriveSyncRow', () => {
     const next = show({ state: 'needs_resume' });
     fireEvent.click(screen.getByRole('button', { name: 'Resume sync' }));
     expect(next.resume).toHaveBeenCalledOnce();
-  });
-
-  it('lists each folder notice with Show this folder', () => {
-    const notice = { kind: 'diagram' as const, ldId: 'd1', name: 'Plan', parentId: 'p' };
-    const value = show({ state: 'idle', lastSyncedAt: 1, notices: [notice] }, { canAdopt: true });
-    fireEvent.click(screen.getByRole('button', { name: 'Show this folder to livediagram' }));
-    expect(value.adopt).toHaveBeenCalledWith(notice);
   });
 
   it('links to the help article', () => {

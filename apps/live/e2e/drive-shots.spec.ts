@@ -16,8 +16,13 @@ import { routeGoogle, startFakeGoogle, TestIdentity } from './drive-support';
 test.describe.configure({ mode: 'serial' });
 // E2E_DRIVE_SHOTS_SCALE=2 captures the same states at 2x, named `…@2x.png`.
 const SCALE = Number(process.env.E2E_DRIVE_SHOTS_SCALE ?? 1);
-const AT = SCALE === 1 ? '' : `@${SCALE}x`;
-test.use({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: SCALE });
+// E2E_DRIVE_SHOTS_NARROW=1 uses a phone viewport, the narrowest Settings layout, named `…-narrow`.
+const NARROW = process.env.E2E_DRIVE_SHOTS_NARROW === '1';
+const AT = `${NARROW ? '-narrow' : ''}${SCALE === 1 ? '' : `@${SCALE}x`}`;
+test.use({
+  viewport: NARROW ? { width: 390, height: 844 } : { width: 1280, height: 800 },
+  deviceScaleFactor: SCALE,
+});
 
 const OUT = process.env.E2E_DRIVE_PR_SHOTS ?? '/tmp/ld-drive-pr-shots';
 const RUN = Math.random().toString(36).slice(2, 8);
