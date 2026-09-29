@@ -126,10 +126,10 @@ Two deliberate non-changes:
 its own build** — the two workflows never share an artifact. Staging's build differs
 from production's in exactly two values:
 
-| Variable                            | Production                                | Staging                               |
-| ----------------------------------- | ----------------------------------------- | ------------------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_live_*` (production tenant)           | `pk_test_*` (test tenant)             |
-| `NEXT_PUBLIC_MCP_ORIGIN`            | unset (defaults to `mcp.livediagram.app`) | `https://mcp-staging.livediagram.app` |
+| Variable                            | Production                                        | Staging                               |
+| ----------------------------------- | ------------------------------------------------- | ------------------------------------- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_live_*` (production tenant)                   | `pk_test_*` (test tenant)             |
+| `NEXT_PUBLIC_MCP_ORIGIN`            | empty (blank falls back to `mcp.livediagram.app`) | `https://mcp-staging.livediagram.app` |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and
