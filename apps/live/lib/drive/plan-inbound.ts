@@ -96,6 +96,9 @@ export function driveCopyDiagramId(fileId: string): string {
 
 function planCopy(file: DriveFile, diagramId: string, snapshot: MirrorSnapshot): InboundDecision {
   if (file.trashed) return { kind: 'ignore', reason: 'binned-copy' };
+  // Someone else's file the user opened with livediagram: Import a copy is
+  // the way in for that, never a silent import.
+  if (!file.ownedByMe) return { kind: 'ignore', reason: 'not-owned-copy' };
   const newId = driveCopyDiagramId(file.id);
   const live = snapshot.diagrams.get(diagramId);
   const original = live ?? snapshot.trash.get(diagramId);

@@ -140,6 +140,15 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await expect(panel).toContainText('Last synced: Just now');
   await page.screenshot({ path: `${SHOTS}/02-connected.png` });
 
+  // The sync mark on the avatar says so without opening anything, and it
+  // overlays the avatar: the button keeps its box.
+  await page.keyboard.press('Escape');
+  const avatar = page.getByRole('button', { name: 'Account menu, Google Drive synced' });
+  await expect(avatar).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Google Drive synced' })).toHaveCount(1);
+  await avatar.screenshot({ path: `${SHOTS}/02b-sync-mark.png` });
+  panel = await openDrivePanel(page);
+
   // A rename made in Drive reaches livediagram on Sync now.
   google.fake.userRename(fileNamed('Meeting notes.livediagram')!.id, 'Standup notes.livediagram');
   // Into a folder livediagram cannot see: Unsorted, and a notice.
@@ -236,15 +245,42 @@ test('Open with: your diagram opens; a file shared with you offers a copy', asyn
   expectNoPageErrors(pageErrors);
 });
 
+test('a change made in Drive reaches the open Explorer within two minutes, no reload', async ({
+  page,
+  pageErrors,
+}) => {
+  // Drive's 2-minute check (docs/specs/022-drive-mirror/drive-mirror.md, "Cadence") and the
+  // views that follow it ("Other views follow"), driven by the page's clock.
+  await page.clock.install();
+  await signIn(page);
+  await page.goto('/explorer/recent');
+  await expect(page.getByRole('button', { name: /Google Drive synced/ })).toBeVisible();
+  const plan = google.fake.appFiles(USER).find((f) => f.appProperties.ldDiagramId === PLAN)!;
+  google.fake.userRename(plan.id, 'Renamed in Drive.livediagram');
+  await expect(page.getByText('Renamed in Drive', { exact: true })).toHaveCount(0);
+  await page.clock.fastForward('02:05');
+  await expect(page.getByText('Renamed in Drive', { exact: true }).first()).toBeVisible({
+    timeout: 15_000,
+  });
+  await page.screenshot({ path: `${SHOTS}/06-followed.png` });
+  expectNoPageErrors(pageErrors);
+});
+
 test('disconnect revokes and leaves the Drive files in place', async ({ page, pageErrors }) => {
   await signIn(page);
   const before = google.fake.appFiles(USER).length;
   await page.goto('/explorer/recent');
+  const marked = await page.getByRole('button', { name: /^Account menu/ }).boundingBox();
   const panel = await openDrivePanel(page);
   await expect(panel).toContainText('Mirroring');
   await panel.getByRole('button', { name: 'Disconnect' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Disconnect' }).last().click();
   await expect(panel.getByRole('button', { name: 'Connect Google Drive' })).toBeVisible();
+  // The mark is gone and the avatar did not move: it only ever overlaid it.
+  await page.keyboard.press('Escape');
+  const plain = page.getByRole('button', { name: 'Account menu', exact: true });
+  await expect(plain).toBeVisible();
+  expect(await plain.boundingBox()).toEqual(marked);
   expect(await api(page, 'GET', '/drive/connection')).toEqual({ connection: null });
   expect(google.fake.appFiles(USER).length).toBe(before);
   expectNoPageErrors(pageErrors);

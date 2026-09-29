@@ -48,8 +48,7 @@ this spec does not restate it.
 - **At a glance:** a small mark on the avatar (the account menu's button) says
   how the mirror is doing without opening anything: **syncing** (with the
   first mirror's progress while it copies), **synced**, or **needs attention**
-  (reconnect or resume needed, an error, a notice, or a copy that could not be
-  read). The details stay in the panel. The mark overlays the avatar, so it
+  (reconnect or resume needed, an error, or a notice). The details stay in the panel. The mark overlays the avatar, so it
   never moves the button as it appears or changes; the button's accessible
   name carries the state, a polite status region announces changes (no
   toasts), and it does not animate under reduced motion. Nothing shows while
@@ -181,20 +180,20 @@ The browser reads `changes.list` from the stored page token and applies each
 change whose file it recognises (by `appProperties.ldDiagramId` or a recorded
 folder id):
 
-| In Drive                                             | In livediagram                                                                                                       |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| File copied (Drive's "Make a copy")                  | A new diagram, as if Duplicate was pressed, **pending verification** ([Copies made in Drive](#copies-made-in-drive)) |
-| File renamed                                         | Diagram renamed (the `.livediagram` extension is dropped; an empty name keeps the old one)                           |
-| File moved to another mirrored folder                | Diagram moved to that folder                                                                                         |
-| File moved to the root folder                        | Diagram moved to Unsorted                                                                                            |
-| File moved to a folder livediagram cannot see        | Diagram moved to Unsorted, with a notice (see below)                                                                 |
-| File moved outside the `livediagram` tree entirely   | Same as a folder livediagram cannot see                                                                              |
-| File moved to the bin                                | Diagram moved to Trash ([Trash](../013-workspace/trash.md))                                                          |
-| File restored from the bin                           | Diagram restored from Trash                                                                                          |
-| File permanently deleted (`removed`, or bin emptied) | Diagram purged from Trash                                                                                            |
-| Folder renamed / moved between mirrored folders      | Folder renamed / moved                                                                                               |
-| Folder moved to the bin                              | Its diagrams go to Trash and the folder is removed; restoring the folder in Drive restores both                      |
-| File contents edited                                 | Ignored; the next outbound write replaces them                                                                       |
+| In Drive                                             | In livediagram                                                                                         |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| File copied (Drive's "Make a copy")                  | Nothing: livediagram never sees the copy (**verified**, [Copies made in Drive](#copies-made-in-drive)) |
+| File renamed                                         | Diagram renamed (the `.livediagram` extension is dropped; an empty name keeps the old one)             |
+| File moved to another mirrored folder                | Diagram moved to that folder                                                                           |
+| File moved to the root folder                        | Diagram moved to Unsorted                                                                              |
+| File moved to a folder livediagram cannot see        | Diagram moved to Unsorted, with a notice (see below)                                                   |
+| File moved outside the `livediagram` tree entirely   | Same as a folder livediagram cannot see                                                                |
+| File moved to the bin                                | Diagram moved to Trash ([Trash](../013-workspace/trash.md))                                            |
+| File restored from the bin                           | Diagram restored from Trash                                                                            |
+| File permanently deleted (`removed`, or bin emptied) | Diagram purged from Trash                                                                              |
+| Folder renamed / moved between mirrored folders      | Folder renamed / moved                                                                                 |
+| Folder moved to the bin                              | Its diagrams go to Trash and the folder is removed; restoring the folder in Drive restores both        |
+| File contents edited                                 | Ignored; the next outbound write replaces them                                                         |
 
 - **Our own writes are not echoes.** For each mirrored item the api stores the
   last state livediagram wrote (`name`, `parents`, `trashed`, `md5Checksum`,
@@ -223,50 +222,30 @@ folder id):
 
 ## Copies made in Drive
 
-**Pending verification on real Drive.** Everything in this section works only
-if Drive puts a copy the user made into livediagram's change feed (it is not a
-file livediagram created, and `drive.file` may not cover it) and the copy
-keeps the original's `appProperties`. The first test against the staging
-Google client showed no trace of a copy at all, which is either of those
-failing. Until a rerun tells which, this is the intended behaviour, not a
-promise the help centre makes.
+**Verified** against real Google (the staging client, scopes `drive.file` and
+`drive.install`): a copy the user makes in Drive's own UI ("Make a copy") is
+**invisible to livediagram**. It is not a file livediagram created, so
+`files.list` does not show it and it never reaches `changes.list`. Drive-UI
+copies are therefore **not mirrored**: nothing happens in livediagram when one
+is made. What livediagram offers instead is an open decision for the operator;
+until then there is no copy feature.
 
-Copying a `.livediagram` file in Drive makes a **new diagram**, exactly as if
-the user had pressed **Duplicate** in livediagram, and the copy then mirrors
-that new diagram.
-
-- **Recognised by** a file new to livediagram that carries the `ldDiagramId` of
-  a diagram whose mirror is another file. A copy in the bin is left alone.
-- **Content.** When the original diagram is live, the new diagram is
-  duplicated from livediagram's database, which stays the source of truth: an
-  edit made to the copy's contents in Drive is not imported. When the original
-  is in the Trash (whose contents livediagram does not hand out) or gone
-  altogether, the copy's own contents are imported as a new diagram, as
-  **Import a copy** does.
-- **Name.** The copy's Drive name, the extension dropped (Drive names a copy
-  "Copy of …"). An empty name falls back to the original's name.
-- **Place.** The livediagram folder the copy's Drive folder mirrors; Unsorted
-  when the copy sits in the root, or in a folder livediagram cannot see (then
-  with [the notice](#folders-livediagram-cannot-see)).
-- **Then it mirrors.** The copy's `appProperties` are re-tagged with the new
-  diagram's id and it becomes that diagram's file; the next write replaces its
-  contents with the new diagram's.
-- **Once only.** The new diagram's id is derived from the copy's Drive file id,
-  so a pass interrupted between making the diagram and re-tagging the file
-  finds the diagram already there next time and only finishes the re-tag.
-- **What livediagram cannot see does nothing.** Whether Drive shows livediagram
-  a copy the user made, and whether the copy keeps `appProperties`, is not yet
-  verified on real Drive. A copy livediagram is never shown, or one without
-  `appProperties`, is not recognised as livediagram's and nothing happens.
+- **Open with on a copy.** Opening the copy with livediagram grants access to
+  that one file, and it carries the **original's** `ldDiagramId` and
+  `ldOrigin`. It is a different Drive file, so it is never taken for the
+  original: when the mirror records another file for that diagram, the copy is
+  treated like a foreign file and **Import a copy** is offered. It never opens
+  the original diagram, and nothing re-tags or adopts it.
+- **Afterwards.** Once opened, the copy can reach livediagram's change feed.
+  An inbound change for a file that carries a mirrored diagram's id under
+  another file id is ignored (logged as `inbound-foreign-copy`), never
+  applied, re-tagged or adopted. The same holds when the mirror is re-met after
+  a reconnect: two files claiming one diagram are both left alone, and the next
+  write makes a fresh file for it.
 - **Traceable.** A file livediagram is shown but does not take as its own
   (no `ldOrigin` of this deployment) is logged quietly
   (`[drive-mirror] inbound-not-ours`, with whether it carried any
-  `appProperties` at all), so a copy that lost its properties can be told
-  from one Drive never showed.
-- **Never silent.** A copy livediagram recognises but cannot turn into a
-  diagram (its contents unreadable while the original is gone) is listed in
-  the Drive panel: "A copy made in Drive ({name}) couldn't be read, so no
-  diagram was made from it."
+  `appProperties` at all).
 
 ## Folders livediagram cannot see
 
@@ -345,7 +324,10 @@ marked as coming from Drive so a view re-reads only for those.
 - The live app serves `/drive/open`, the Drive UI integration's Open URL.
   Google passes `state={"ids":[...],"action":"open",...}`.
 - The browser reads the file's `appProperties`:
-  - **The user can open the diagram** in livediagram: go to it.
+  - **The user can open the diagram** in livediagram, and the file is the one
+    the mirror records for it (or the mirror records none): go to it.
+  - **A copy of a mirrored diagram** (the mirror records a different file for
+    that `ldDiagramId`): offer **Import a copy**, never the original.
   - **They cannot** (someone shared the Drive file with them): offer
     **Import a copy**, which creates a new Personal Space diagram from the
     file's contents.
@@ -521,7 +503,7 @@ Preset-enum events only, category `Drive`: connected and disconnected
 (`Linked` / `Unlinked`, typed `Broker` or `Browser`), reconnect needed
 (`Changed` `NeedsReconnect`), first mirror finished (`Created` `FirstMirror`,
 once per connection per browser), an inbound change applied (`Applied`, by
-type: `Copy`, `Rename`, `Move`, `Trash`, `Restore`, `Purge`, `UnknownFolder`), an Open
+type: `Rename`, `Move`, `Trash`, `Restore`, `Purge`, `UnknownFolder`), an Open
 with (`Opened`, by outcome: `Opened`, `ImportOffered`, `Error`).
 
 ## Non-goals

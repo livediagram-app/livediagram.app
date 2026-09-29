@@ -254,7 +254,8 @@ copy's parent; `undefined` becomes Unsorted with the unseen-folder notice). Appl
    (`mirroredSavedAt` null, so the next outbound pass writes the new diagram's contents). A failed re-tag fails the
    pass, so the page token does not advance and the change is read again.
 
-A copy that arrives trashed, or without `ldOrigin === host`, is ignored (no recognisable copy, nothing to show).
+A copy that arrives trashed, owned by someone else (`ownedByMe` false: a shared file opened with livediagram), or
+without `ldOrigin === host`, is ignored (no recognisable copy, nothing to show).
 
 Every applied decision goes through the ordinary routes via `LivediagramPort` and fires
 `track('Drive', 'Applied', type)`.

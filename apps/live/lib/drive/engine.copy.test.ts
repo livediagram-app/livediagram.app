@@ -133,3 +133,21 @@ describe('copies livediagram cannot recognise', () => {
     expect(w.statuses.at(-1)!.skipped).toEqual([]);
   });
 });
+
+describe('files someone else owns', () => {
+  it('never takes a file shared with the user (opened with livediagram) as a copy', async () => {
+    const w = await mirrored();
+    const theirs = w.google.otherUserFile({
+      owner: 'someone-else',
+      name: 'Theirs.livediagram',
+      mimeType: 'application/vnd.livediagram+json',
+      content: w.original().content,
+      appProperties: { ldDiagramId: 'not-yours', ldOrigin: 'livediagram.test' },
+      shareWith: OWNER,
+    });
+    w.google.grantAccess(OWNER, theirs);
+    await w.engine.syncNow();
+    expect(madeFrom(w)).toEqual([]);
+    expect(w.statuses.at(-1)).toMatchObject({ error: null, skipped: [] });
+  });
+});
