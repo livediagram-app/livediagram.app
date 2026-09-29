@@ -271,16 +271,35 @@ non-elected tab, handed to the elected one).
 `parseOpenState(search)` reads `state` as JSON; `ids[0]` is the file, `resourceKeys[id]` its key. Outcomes of
 `resolveOpenWith({ drive, port, host }, state)`:
 
-| File                                                                       | Outcome                       | Telemetry       |
-| -------------------------------------------------------------------------- | ----------------------------- | --------------- |
-| `ldDiagramId`, `ldOrigin === host`, the mirror records another file for it | `import` (`copy`)             | `ImportOffered` |
-| `ldDiagramId`, `ldOrigin === host`, `port.canOpenDiagram` true             | `open`                        | `Opened`        |
-| `ldDiagramId`, `ldOrigin === host`, cannot open (404, 403, 410)            | `import` (`no-access`)        | `ImportOffered` |
-| our MIME or `.livediagram`, other `ldOrigin` or no `ldDiagramId`           | `import` (`foreign`, `no-id`) | `ImportOffered` |
-| anything else, 404, 403 or unreadable                                      | `error`                       | `Error`         |
+| File                                                                               | Outcome                       | Telemetry       |
+| ---------------------------------------------------------------------------------- | ----------------------------- | --------------- |
+| `ldDiagramId`, `ldOrigin === host`, `port.listItems()` records another file for it | `import` (`copy`)             | `ImportOffered` |
+| `ldDiagramId`, `ldOrigin === host`, `port.canOpenDiagram` true                     | `open`                        | `Opened`        |
+| `ldDiagramId`, `ldOrigin === host`, cannot open (404, 403, 410)                    | `import` (`no-access`)        | `ImportOffered` |
+| our MIME or `.livediagram`, other `ldOrigin` or no `ldDiagramId`                   | `import` (`foreign`, `no-id`) | `ImportOffered` |
+| anything else, 404, 403 or unreadable                                              | `error`                       | `Error`         |
 
-`import` shows **Import a copy**: download (`alt=media`), `parseDiagramEnvelope`, then
-`port.importDiagramCopy` (fresh diagram and tab ids, tab links remapped with `remapTabLinks`, the deck carried).
+`import` shows **Import a copy** (`no-access`, `foreign`, `no-id`) or **Import as new document** (`copy`): download
+(`alt=media`), `parseDiagramEnvelope`, then `port.importDiagramCopy` (fresh diagram and tab ids, tab links remapped
+with `remapTabLinks`, the deck carried). A `copy` import also runs `importAsNewDocument`
+(`apps/live/lib/drive/open-with-copy.ts`):
+
+1. `port.getConnection()` for the root, `port.listItems()` and `port.listPersonalFolders()` for the placement:
+   `placeCopy(parentId)` is `{ folderId: null, unseen: false }` for the root, the folder a live recorded folder item
+   names, else `{ folderId: null, unseen: true }` (a folder livediagram cannot see).
+2. `port.importDiagramCopy(envelope, { id: crypto.randomUUID(), name, folderId })`, `name` the copy's
+   `stripDriveName(file.name)` or the envelope's name.
+3. `claimCopy` (**pending the operator's confirmation**; one function, the only place the rule lives), only when the
+   file is `ownedByMe` and not trashed: `drive.updateFile(fileId, { appProperties: { ldDiagramId: newId, ldOrigin:
+host } })`, then `port.putItems([{ kind: 'diagram', ldId: newId, driveFileId: fileId, ...fileState(updated),
+ldName: name, mirroredSavedAt: null, notice, noticeParentId }])` with `notice = 'unseen_folder'` and
+   `noticeParentId = parentId` when unseen. `mirroredSavedAt: null` lets outbound write the new document's contents
+   into the copy. Logged `open-with-claimed`; a failure is logged `open-with-claim-failed` (warn) and the new
+   document still opens: the copy stays a foreign copy, ignored inbound, and outbound makes the new document its own
+   file.
+
+The diagram is created before the item is recorded: an item whose diagram is missing is binned by outbound, so the
+reverse order would bin the copy.
 Signed out: redirect to `/sign-in?redirect_url=<this URL>`. No usable token: **Allow access** runs the consent flow
 with the pending return set to this URL.
 
@@ -477,26 +496,28 @@ beyond D1's own; a connection is re-creatable by reconnecting. `DELETE /api/driv
 
 ## Errors and edge cases
 
-| Case                                               | Handling                                                                                        |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Offline, `fetch` rejects                           | Pass ends, `error = 'offline'`, next trigger retries                                            |
-| Google 401                                         | Token dropped, fetched again once; second 401 ends the pass (`error = 'failed'`)                |
-| `429 drive_token_rate_limited` from the api        | Same as a Google rate limit: `backoff.hit`, `error = 'rate_limited'`, next poll backed off      |
-| 403 rate / 429                                     | `backoff.hit`, pass ends, `error = 'rate_limited'` until a clean pass                           |
-| 404 on update                                      | Re-create in the expected place                                                                 |
-| 404 on the root                                    | Root treated as missing; step 3 of the pass runs                                                |
-| 5xx from Google or the api                         | Pass ends, `error = 'failed'`, logged                                                           |
-| `invalid_grant`                                    | Row `needs_reconnect`, `409`, banner                                                            |
-| Content over 5 MB                                  | Resumable upload                                                                                |
-| Thumbnail render fails                             | Upload without thumbnail, logged                                                                |
-| Two devices                                        | Lease; the other still runs inbound                                                             |
-| A change for an item whose value livediagram holds | Recorded only                                                                                   |
-| Folder move would cycle (`409 cycle`)              | Recorded; outbound restores Drive's parent                                                      |
-| Name over `MAX_NAME_LEN` from Drive                | Truncated to `MAX_NAME_LEN`                                                                     |
-| `PUT /drive/items` unique conflict on file id      | `409 drive_item_conflict`; the engine drops the stale row holding that file id and retries once |
-| `changes.list` page token rejected (400/404)       | New start page token; a full adoption listing runs (step 3 adopt), logged                       |
-| Diagram restored in Drive while in a team          | Recorded; outbound bins it again                                                                |
-| Open with: signed out                              | Sign-in redirect, back to the same URL                                                          |
+| Case                                                    | Handling                                                                                        |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Offline, `fetch` rejects                                | Pass ends, `error = 'offline'`, next trigger retries                                            |
+| Google 401                                              | Token dropped, fetched again once; second 401 ends the pass (`error = 'failed'`)                |
+| `429 drive_token_rate_limited` from the api             | Same as a Google rate limit: `backoff.hit`, `error = 'rate_limited'`, next poll backed off      |
+| 403 rate / 429                                          | `backoff.hit`, pass ends, `error = 'rate_limited'` until a clean pass                           |
+| 404 on update                                           | Re-create in the expected place                                                                 |
+| 404 on the root                                         | Root treated as missing; step 3 of the pass runs                                                |
+| 5xx from Google or the api                              | Pass ends, `error = 'failed'`, logged                                                           |
+| `invalid_grant`                                         | Row `needs_reconnect`, `409`, banner                                                            |
+| Content over 5 MB                                       | Resumable upload                                                                                |
+| Thumbnail render fails                                  | Upload without thumbnail, logged                                                                |
+| Two devices                                             | Lease; the other still runs inbound                                                             |
+| A change for an item whose value livediagram holds      | Recorded only                                                                                   |
+| Folder move would cycle (`409 cycle`)                   | Recorded; outbound restores Drive's parent                                                      |
+| Name over `MAX_NAME_LEN` from Drive                     | Truncated to `MAX_NAME_LEN`                                                                     |
+| `PUT /drive/items` unique conflict on file id           | `409 drive_item_conflict`; the engine drops the stale row holding that file id and retries once |
+| `changes.list` page token rejected (400/404)            | New start page token; a full adoption listing runs (step 3 adopt), logged                       |
+| Diagram restored in Drive while in a team               | Recorded; outbound bins it again                                                                |
+| Open with: signed out                                   | Sign-in redirect, back to the same URL                                                          |
+| Open with on a copy someone else owns, or a binned copy | Imported as a new document, not claimed                                                         |
+| Open with: the claim fails after the import             | `open-with-claim-failed`; the new document opens, the copy stays unclaimed                      |
 
 ## Security and trust
 

@@ -239,8 +239,9 @@ copy (below), or **Duplicate** inside livediagram.
   **Import as new document**, which makes a new Personal Space document from
   the **copy's contents**.
 - **What the copy becomes** (the current rule, **pending the operator's
-  confirmation**): after the import the copy is re-tagged with the new
-  document's id and recorded, so it mirrors the new document like any mirrored
+  confirmation**): after the import a copy the user owns is re-tagged with the
+  new document's id and recorded (one someone else owns is imported and left
+  as it is), so it mirrors the new document like any mirrored
   file and no second file is made for it. The new document lands in the
   livediagram folder the copy's Drive folder mirrors; in Unsorted when the copy
   sits in the root, and in Unsorted with [the notice](#folders-livediagram-cannot-see)
