@@ -66,6 +66,7 @@ const FIELD_GROUP: Record<string, FormatGroup> = {
   routeBehind: 'border',
   // Text.
   textColor: 'text',
+  textSwatch: 'text',
   textSize: 'text',
   textAlignX: 'text',
   textAlignY: 'text',

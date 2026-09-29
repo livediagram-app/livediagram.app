@@ -20,6 +20,7 @@ import {
   applyQuickStroke,
   applyQuickStrokeStyle,
   applyQuickTextAlign,
+  applyQuickTextColour,
   applyQuickWidth,
   clearQuickStyle,
   quickStyleView,
@@ -37,6 +38,7 @@ export type QuickStyleApi = {
   view: QuickStyleView | null;
   setStroke: (slot: QuickSwatchValue) => void;
   setBackground: (slot: QuickSwatchValue) => void;
+  setTextColour: (slot: QuickSwatchValue) => void;
   setWidth: (width: QuickWidth) => void;
   setStrokeStyle: (style: QuickStrokeStyle) => void;
   setTextAlign: (align: TextAlignX) => void;
@@ -87,6 +89,8 @@ export function useQuickStyle(deps: {
     setStroke: (slot) => run((el) => applyQuickStroke(el, theme, slot, overrides), 'QuickStroke'),
     setBackground: (slot) =>
       run((el) => applyQuickFill(el, theme, slot, overrides), 'QuickBackground'),
+    setTextColour: (slot) =>
+      run((el) => applyQuickTextColour(el, theme, slot, overrides), 'QuickTextColour'),
     setWidth: (width) => run((el) => applyQuickWidth(el, width), 'QuickStrokeWidth'),
     setStrokeStyle: (style) => run((el) => applyQuickStrokeStyle(el, style), 'QuickStrokeStyle'),
     setTextAlign: (align) => run((el) => applyQuickTextAlign(el, align), 'QuickTextAlign'),

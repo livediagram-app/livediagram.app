@@ -213,7 +213,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|QuickBackground':
     'Someone picked a background colour for the selected shapes from the quick style panel beside the selection.',
   'Element|Changed|QuickClearStyles':
-    'Someone pressed Clear styles in the quick style panel, returning the selected shapes and arrows to the theme default and forgetting that style for the next ones drawn.',
+    'Someone pressed Clear styles in the quick style panel, returning the selected shapes, arrows and text to the theme default and forgetting that style for the next ones drawn.',
   'Element|Changed|QuickIconAlign':
     'Someone moved the icon before, above, or after the label of the selected shapes from the quick style panel.',
   'Element|Changed|QuickStroke':
@@ -222,6 +222,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone made the lines of the selected shapes or arrows solid, dashed, dotted, or flowing from the quick style panel.',
   'Element|Changed|QuickStrokeWidth':
     'Someone made the lines of the selected shapes or arrows thin, medium, or thick from the quick style panel.',
+  'Element|Changed|QuickTextColour':
+    'Someone picked a colour for the selected text elements from the quick style panel beside the selection.',
   'Element|Changed|QuickTextAlign':
     'Someone aligned the text of the selected shapes left, centre, or right from the quick style panel.',
   'Element|Changed|Quiz':

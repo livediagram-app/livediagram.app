@@ -204,6 +204,7 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
     setStrokeStyle: vi.fn(),
     setTextAlign: vi.fn(),
     setIconAlign: vi.fn(),
+    setTextColour: vi.fn(),
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),

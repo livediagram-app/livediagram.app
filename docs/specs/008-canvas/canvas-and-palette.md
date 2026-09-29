@@ -967,6 +967,11 @@ A free-floating text element. The text **is** the element — there is no border
 - **Drag** to move; **resize** via the same four corner handles as shapes. Text auto-scales to fit the box (same SVG-based fit-to-bounds technique as shape labels).
 - **Double-click** to edit content; **Enter** commits, **Escape** cancels.
 - A faint dashed outline appears when selected so the bounds are visible.
+- **Colour.** The text takes the theme's label colour, and can be recoloured like any other element:
+  the context menu's **Colours** category (a single **Text** row and Reset to theme; no Background or
+  Border, since a text element has neither) and the [Quick style panel](quick-style-panel.md)'s
+  **Text colour** row. A multi-selection's Colours category recolours the text elements in it too.
+  `supportsColours` in `packages/diagram/src/colors.ts` is the one gate for both menus.
 - All other behaviour (selection, popover, lock, format painter, layer order, plus button) matches shapes.
 
 Data:
@@ -981,6 +986,10 @@ type TextElement = {
   height: number;
   label?: string;
   locked?: boolean;
+  textColor?: string;
+  // The Quick style swatch slot (1-6) the colour came from; it follows a theme change.
+  textSwatch?: QuickSwatchSlot;
+  // ...plus the text formatting fields (size, alignment, bold / italic / underline, font).
 };
 ```
 

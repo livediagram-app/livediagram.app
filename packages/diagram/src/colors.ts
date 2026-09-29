@@ -439,6 +439,9 @@ export function supportsColours(element: Element): boolean {
   if (element.type === 'shape' && element.shape === 'code-block') return false;
   return (
     element.type === 'shape' ||
+    // A text element is its words (docs/specs/008-canvas/canvas-and-palette.md "Text element"):
+    // the Colours category shows only its Text row (no fill, no border).
+    element.type === 'text' ||
     element.type === 'sticky' ||
     element.type === 'arrow' ||
     element.type === 'freehand' ||

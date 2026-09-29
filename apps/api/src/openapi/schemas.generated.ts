@@ -5430,6 +5430,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "textStrikethrough": {
         "type": "boolean"
       },
+      "textSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
       "textUnderline": {
         "type": "boolean"
       },

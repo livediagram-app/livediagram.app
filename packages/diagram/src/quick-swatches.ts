@@ -2,7 +2,7 @@
 // swatches per role, derived from the active theme so they change with it.
 // Slot 0 is the theme's own default; slots 1-6 are six colours from the
 // theme's palette. A slot is a stable id, which is what lets a colour picked
-// here follow a theme change (`strokeSwatch` / `fillSwatch` on the element).
+// here follow a theme change (`strokeSwatch` / `fillSwatch` / `textSwatch` on the element).
 import {
   canvasSurface,
   contrastRatio,
@@ -15,7 +15,7 @@ import type { ThemeDefinition } from './themes';
 
 export const QUICK_SWATCH_SLOTS = [1, 2, 3, 4, 5, 6] as const;
 export type QuickSwatchSlot = (typeof QUICK_SWATCH_SLOTS)[number];
-export type QuickSwatchRole = 'stroke' | 'fill';
+export type QuickSwatchRole = 'stroke' | 'fill' | 'text';
 export type QuickSwatch = {
   // 0 = the theme default (writes the theme's value, binds nothing).
   slot: 0 | QuickSwatchSlot;
@@ -46,6 +46,8 @@ const SATURATION_RANGE = [0.45, 0.85] as const;
 const LIGHTNESS_RANGE = { light: [0.36, 0.52], dark: [0.6, 0.74] } as const;
 // A derived stroke must read against its canvas (WCAG 1.4.11 non-text).
 export const QUICK_STROKE_MIN_CONTRAST = 3;
+// A derived text colour is read, not just seen, on its canvas (WCAG 1.4.3).
+export const QUICK_TEXT_MIN_CONTRAST = 4.5;
 // A derived background must keep the theme's label readable (WCAG 1.4.3).
 export const QUICK_FILL_MIN_TEXT_CONTRAST = 4.5;
 // How much of the hue a background carries: over white on light paper, so a
@@ -69,7 +71,7 @@ export function quickSwatches(theme: ThemeDefinition, role: QuickSwatchRole): Qu
   const ink = themeInk(theme);
   const first: QuickSwatch = {
     slot: 0,
-    color: role === 'stroke' ? ink.stroke : ink.fill,
+    color: ink[role],
     name: 'Theme default',
   };
   const six =
@@ -100,15 +102,22 @@ export function quickSwatchSlotOf(
 }
 
 // A multi-colour theme names its own six: the branch colours, strokes for
-// the stroke row and the matching fills for the background row. Padded from
+// the stroke row, the matching fills for the background row, and the strokes
+// made readable on the canvas for the text row. Padded from
 // the toned set when a palette is short, so a row is always seven.
 function paletteSix(
   theme: ThemeDefinition,
   role: QuickSwatchRole,
 ): { color: string; name: string }[] {
   const palette = theme.palette!.slice(0, QUICK_SWATCH_SLOTS.length);
+  const surface = canvasSurface(theme.backgroundColor);
   const own = palette.map((p) => ({
-    color: role === 'stroke' ? p.stroke : p.fill,
+    color:
+      role === 'fill'
+        ? p.fill
+        : role === 'text'
+          ? readableOn(p.stroke, theme.backgroundColor, surface)
+          : p.stroke,
     name: hueName(p.stroke),
   }));
   const padded = [...own, ...tonedSix(theme, role).slice(own.length)];
@@ -126,30 +135,45 @@ function tonedSix(
   const [lMin, lMax] = LIGHTNESS_RANGE[surface];
   const l = clamp(accent.l, lMin, lMax);
   return TONED_HUES.map(({ hue, name }) => {
+    if (role === 'text') {
+      const color = visibleOn(hue, s, l, theme.backgroundColor, surface, QUICK_TEXT_MIN_CONTRAST);
+      return { color, name };
+    }
     const stroke = visibleOn(hue, s, l, theme.backgroundColor, surface);
+    if (role === 'stroke') return { color: stroke, name };
     const base = surface === 'light' ? '#ffffff' : ink.fill;
     const wash = FILL_WASH[surface];
-    return { color: role === 'stroke' ? stroke : readableWash(stroke, base, ink.text, wash), name };
+    return { color: readableWash(stroke, base, ink.text, wash), name };
   });
 }
 
-// Step the lightness away from the canvas until the stroke reads against it.
+// Step the lightness away from the canvas until the colour reads against it.
 function visibleOn(
   hue: number,
   s: number,
   l: number,
   background: string,
   surface: 'light' | 'dark',
+  min: number = QUICK_STROKE_MIN_CONTRAST,
 ): string {
   let lightness = l;
   let colour = hslToHex(hue, s, lightness);
-  while (contrastRatio(colour, background) < QUICK_STROKE_MIN_CONTRAST) {
+  while (contrastRatio(colour, background) < min) {
     const next = surface === 'light' ? lightness - STEP : lightness + STEP;
     if (next < 0 || next > 1) break;
     lightness = next;
     colour = hslToHex(hue, s, lightness);
   }
   return colour;
+}
+
+// A palette colour kept to its hue and saturation, stepped until text in it
+// reads on the canvas (D50).
+function readableOn(hex: string, background: string, surface: 'light' | 'dark'): string {
+  const rgb = hexToRgb(hex);
+  if (!rgb || contrastRatio(hex, background) >= QUICK_TEXT_MIN_CONTRAST) return hex;
+  const { h, s, l } = rgbToHsl(rgb);
+  return visibleOn(h, s, l, background, surface, QUICK_TEXT_MIN_CONTRAST);
 }
 
 // A wash of the hue over the theme's fill, thinned until the label reads.

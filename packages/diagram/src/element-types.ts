@@ -457,6 +457,10 @@ export type TextElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // Quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md): the slot (1-6) the text
+  // colour was picked from in the quick style panel's Text colour row, so a
+  // theme change re-derives it. Cleared the moment the colour is set any other way.
+  textSwatch?: QuickSwatchSlot;
   // Fill for an element's HEADING area, where it has one distinct from its
   // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
   // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a

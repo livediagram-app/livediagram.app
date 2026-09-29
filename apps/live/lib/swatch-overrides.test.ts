@@ -145,3 +145,13 @@ describe('parseSwatchOverrideStore', () => {
       expect(parseSwatchOverrideStore(bad)).toEqual([]);
   });
 });
+
+describe('the Text colour row', () => {
+  it('stores, reads back, clears and parses its own row beside the others', () => {
+    const store = storeWithOverride([], 'forest', 'text', 2, '#aa0000');
+    expect(store).toEqual([{ t: 'forest', x: { 2: '#aa0000' } }]);
+    expect(overridesForTheme(store, 'forest')).toEqual({ text: { 2: '#aa0000' } });
+    expect(parseSwatchOverrideStore(JSON.parse(JSON.stringify(store)))).toEqual(store);
+    expect(storeWithoutOverride(store, 'forest', 'text', 2)).toEqual([]);
+  });
+});

@@ -8,7 +8,7 @@ import {
   switchThemeElements,
 } from './theme-graph';
 import { THEMES } from './themes-data';
-import type { ArrowElement, ShapeElement } from './index';
+import type { ArrowElement, ShapeElement, TextElement } from './index';
 import type { ThemeDefinition } from './themes';
 
 // docs/specs/008-canvas/quick-style-panel.md "Colours": a bound colour follows a theme change.
@@ -85,5 +85,36 @@ describe('the theme walks honour swatch bindings', () => {
     expect(reset!.strokeColor).toBe(quickSwatchColor(ocean, 'stroke', 4));
     const [recoloured] = recolourElementsForTheme([greenShape], ocean) as ShapeElement[];
     expect(recoloured!.fillColor).toBe(quickSwatchColor(ocean, 'fill', 4));
+  });
+});
+
+describe('rederiveQuickSwatches: text elements', () => {
+  const text = (extra: Partial<TextElement> = {}): TextElement => ({
+    id: 't',
+    type: 'text',
+    x: 0,
+    y: 0,
+    width: 220,
+    height: 64,
+    ...extra,
+  });
+
+  it("re-reads a bound text colour from the new theme's slot", () => {
+    const el = text({ textColor: quickSwatchColor(forest, 'text', 4), textSwatch: 4 });
+    expect(rederiveQuickSwatches(el, ocean)).toMatchObject({
+      textColor: quickSwatchColor(ocean, 'text', 4),
+      textSwatch: 4,
+    });
+  });
+
+  it('leaves an unbound text colour alone', () => {
+    const el = text({ textColor: '#aa0000' });
+    expect(rederiveQuickSwatches(el, ocean)).toBe(el);
+  });
+
+  it('keeps the binding through a theme switch', () => {
+    const el = text({ textColor: quickSwatchColor(forest, 'text', 2), textSwatch: 2 });
+    const [next] = switchThemeElements([el], forest, ocean) as TextElement[];
+    expect(next!.textColor).toBe(quickSwatchColor(ocean, 'text', 2));
   });
 });
