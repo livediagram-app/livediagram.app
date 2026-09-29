@@ -1,7 +1,7 @@
 # Google Drive mirror
 
 A signed-in user can **mirror their Personal Space to their own Google Drive**.
-Every diagram becomes a `.livedoc` file in a folder tree that matches their
+Every diagram becomes a `.livediagram` file in a folder tree that matches their
 livediagram folders, kept in step both ways while a livediagram tab is open.
 Double-clicking such a file in Drive opens it in livediagram.
 
@@ -105,17 +105,11 @@ this spec does not restate it.
 
 ## The file
 
-- **Name:** the diagram name plus `.livedoc`. Names that Drive would
+- **Name:** the diagram name plus `.livediagram`. Names that Drive would
   alter are stored as Drive holds them, and the next inbound rename is
   compared against that stored form, never against the livediagram name.
-- **Why `.livedoc`:** a diagram is becoming one kind of tab (beside the
-  whiteboard and the event-storming board), so the file is named for the
-  document that holds them, not for one kind of tab. And `.livedoc` is not a
-  top-level domain, so a chat app never turns a file name like `plan.livedoc`
-  into a link. The MIME type below keeps the product name. Nothing shipped
-  under another extension, so no other extension is read.
 - **MIME type:** `application/vnd.livediagram+json`, registered as the app's
-  default type for "Open with", with `livedoc` as its default extension.
+  default type for "Open with".
 - **Contents:** a whole-diagram envelope, the sibling of the per-tab export's
   `livediagram.tab` envelope (`apps/live/lib/export-tab-text.ts`):
   `{ kind: 'livediagram.diagram', schemaVersion, exportedAt, diagram }`, where
@@ -164,7 +158,7 @@ folder id):
 
 | In Drive                                             | In livediagram                                                                                  |
 | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| File renamed                                         | Diagram renamed (the `.livedoc` extension is dropped; an empty name keeps the old one)          |
+| File renamed                                         | Diagram renamed (the `.livediagram` extension is dropped; an empty name keeps the old one)      |
 | File moved to another mirrored folder                | Diagram moved to that folder                                                                    |
 | File moved to the root folder                        | Diagram moved to Unsorted                                                                       |
 | File moved to a folder livediagram cannot see        | Diagram moved to Unsorted, with a notice (see below)                                            |
