@@ -64,10 +64,23 @@ async function signIn(page: import('@playwright/test').Page) {
   await routeGoogle(page, google.fake, USER);
 }
 
-async function openDrivePanel(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: 'Account menu' }).click();
-  await page.getByRole('menuitem', { name: 'Google Drive' }).click();
-  return page.getByRole('dialog', { name: 'Google Drive' });
+// Settings > Account > Cloud Sync (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"):
+// through the account menu's Account item, or the cloud badge once connected.
+async function openCloudSync(page: import('@playwright/test').Page, via: 'menu' | 'badge') {
+  if (via === 'menu') {
+    await page.getByRole('button', { name: 'Account menu' }).click();
+    await page.getByRole('menuitem', { name: 'Account' }).click();
+  } else {
+    await page.getByRole('button', { name: /Google Drive/ }).click();
+  }
+  const row = page.locator('[data-cloud-sync="googleDrive"]');
+  await expect(row).toBeVisible();
+  return row;
+}
+
+async function closeSettings(page: import('@playwright/test').Page) {
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: 'Settings' })).toHaveCount(0);
 }
 
 const fileNamed = (name: string) => google.fake.appFiles(USER).find((f) => f.name === name);
@@ -116,8 +129,13 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   });
 
   await page.goto('/explorer/recent');
-  let panel = await openDrivePanel(page);
-  await expect(panel).toContainText('Keep a copy of your Personal Space');
+  // The account menu has no Drive entry; Settings does.
+  await page.getByRole('button', { name: 'Account menu' }).click();
+  await expect(page.getByRole('menuitem', { name: /Google Drive/ })).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  let panel = await openCloudSync(page, 'menu');
+  await expect(panel).toContainText('Not connected');
+  await expect(panel).toContainText('Keep a copy of your documents');
   await page.screenshot({ path: `${SHOTS}/01-connect.png` });
   await panel.getByRole('button', { name: 'Connect Google Drive' }).click();
 
@@ -135,19 +153,24 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
     mimeType: 'image/png',
   });
 
-  panel = await openDrivePanel(page);
-  await expect(panel).toContainText('Mirroring to the livediagram folder');
-  await expect(panel).toContainText('Last synced: Just now');
+  // The cloud badge says so without opening anything, with its words on
+  // focus, and opens Cloud Sync with the section's heading focused.
+  const badge = page.getByRole('button', { name: /^Synced to Google Drive/ });
+  await expect(badge).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Synced to Google Drive' })).toHaveCount(
+    1,
+  );
+  await badge.focus();
+  await expect(page.getByRole('tooltip')).toContainText('Synced to Google Drive');
+  await page.screenshot({ path: `${SHOTS}/02b-badge.png` });
+  panel = await openCloudSync(page, 'badge');
+  await expect(page.getByRole('heading', { name: 'Cloud Sync' })).toBeFocused();
+  await expect(panel).toContainText(
+    `Your documents are copied to Google Drive, in the folder “${ROOT_NAME}”.`,
+  );
+  await expect(panel).toContainText('Checks for changes every 2 minutes');
+  await expect(panel).toContainText('Last synced');
   await page.screenshot({ path: `${SHOTS}/02-connected.png` });
-
-  // The sync mark on the avatar says so without opening anything, and it
-  // overlays the avatar: the button keeps its box.
-  await page.keyboard.press('Escape');
-  const avatar = page.getByRole('button', { name: 'Account menu, Google Drive synced' });
-  await expect(avatar).toBeVisible();
-  await expect(page.getByRole('status').filter({ hasText: 'Google Drive synced' })).toHaveCount(1);
-  await avatar.screenshot({ path: `${SHOTS}/02b-sync-mark.png` });
-  panel = await openDrivePanel(page);
 
   // A rename made in Drive reaches livediagram on Sync now.
   google.fake.userRename(fileNamed('Meeting notes.livediagram')!.id, 'Standup notes.livediagram');
@@ -158,6 +181,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await expect(panel).toContainText(
     "Quarterly plan: Moved in Drive to a folder livediagram can't see.",
   );
+  await expect(panel).toContainText('Needs attention');
   await page.screenshot({ path: `${SHOTS}/03-notice.png` });
   await expect
     .poll(
@@ -245,6 +269,32 @@ test('Open with: your diagram opens; a file shared with you offers a copy', asyn
   expectNoPageErrors(pageErrors);
 });
 
+test('Open with on a copy made in Drive imports it as a new document', async ({
+  page,
+  pageErrors,
+}) => {
+  // docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive".
+  await signIn(page);
+  const original = fileNamed('Quarterly plan.livediagram')!;
+  const copyId = google.fake.userCopy(original.id);
+  await page.goto(
+    `/drive/open?state=${encodeURIComponent(google.fake.openWithState(USER, copyId))}`,
+  );
+  await expect(page.getByRole('heading', { name: 'Copy of Quarterly plan' })).toBeVisible();
+  await page.screenshot({ path: `${SHOTS}/05b-import-copy.png` });
+  await page.getByRole('button', { name: 'Import as new document' }).click();
+  await page.waitForURL('**/diagram/**');
+  const newId = decodeURIComponent(new URL(page.url()).pathname.split('/').filter(Boolean).pop()!);
+  expect(newId).not.toBe(PLAN);
+  // The original is untouched; the copy now mirrors the new document.
+  expect(google.fake.get(original.id)!.appProperties.ldDiagramId).toBe(PLAN);
+  expect(google.fake.get(copyId)!.appProperties.ldDiagramId).toBe(newId);
+  expect(
+    ((await api(page, 'GET', `/diagrams/${newId}`)) as { diagram: { name: string } }).diagram.name,
+  ).toBe('Copy of Quarterly plan');
+  expectNoPageErrors(pageErrors);
+});
+
 test('a change made in Drive reaches the open Explorer within two minutes, no reload', async ({
   page,
   pageErrors,
@@ -254,7 +304,7 @@ test('a change made in Drive reaches the open Explorer within two minutes, no re
   await page.clock.install();
   await signIn(page);
   await page.goto('/explorer/recent');
-  await expect(page.getByRole('button', { name: /Google Drive synced/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Synced to Google Drive/ })).toBeVisible();
   const plan = google.fake.appFiles(USER).find((f) => f.appProperties.ldDiagramId === PLAN)!;
   google.fake.userRename(plan.id, 'Renamed in Drive.livediagram');
   await expect(page.getByText('Renamed in Drive', { exact: true })).toHaveCount(0);
@@ -270,17 +320,17 @@ test('disconnect revokes and leaves the Drive files in place', async ({ page, pa
   await signIn(page);
   const before = google.fake.appFiles(USER).length;
   await page.goto('/explorer/recent');
-  const marked = await page.getByRole('button', { name: /^Account menu/ }).boundingBox();
-  const panel = await openDrivePanel(page);
-  await expect(panel).toContainText('Mirroring');
+  const account = page.getByRole('button', { name: 'Account menu' });
+  await expect(page.getByRole('button', { name: /Google Drive/ })).toBeVisible();
+  const marked = await account.boundingBox();
+  const panel = await openCloudSync(page, 'badge');
   await panel.getByRole('button', { name: 'Disconnect' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Disconnect' }).last().click();
   await expect(panel.getByRole('button', { name: 'Connect Google Drive' })).toBeVisible();
-  // The mark is gone and the avatar did not move: it only ever overlaid it.
-  await page.keyboard.press('Escape');
-  const plain = page.getByRole('button', { name: 'Account menu', exact: true });
-  await expect(plain).toBeVisible();
-  expect(await plain.boundingBox()).toEqual(marked);
+  await closeSettings(page);
+  // The badge is gone and the avatar did not move: it only ever overlaid it.
+  await expect(page.getByRole('button', { name: /Google Drive/ })).toHaveCount(0);
+  expect(await account.boundingBox()).toEqual(marked);
   expect(await api(page, 'GET', '/drive/connection')).toEqual({ connection: null });
   expect(google.fake.appFiles(USER).length).toBe(before);
   expectNoPageErrors(pageErrors);

@@ -25,14 +25,18 @@ export function useEditorDialogs() {
   // Keyboard category, where the shortcut list lives now that it has no
   // window of its own.
   const [settingsCategory, setSettingsCategory] = useState<string | null>(null);
-  const openSettingsOn = useCallback((categoryId: string) => {
+  // Section of it to scroll to and focus (the cloud badge opens Account > Cloud Sync).
+  const [settingsSection, setSettingsSection] = useState<string | null>(null);
+  const openSettingsOn = useCallback((categoryId: string, sectionId?: string) => {
     setSettingsCategory(categoryId);
+    setSettingsSection(sectionId ?? null);
     setSettingsOpen(true);
   }, []);
   const closeSettings = useCallback(() => {
     setSettingsOpen(false);
     setSettingsFocus(null);
     setSettingsCategory(null);
+    setSettingsSection(null);
   }, []);
   // `?share=1` deep-link (the Explorer's "Manage Sharing…" row opens the
   // diagram with this param): land with the Share dialog already open.
@@ -88,6 +92,7 @@ export function useEditorDialogs() {
     settingsFocus,
     openSettingsAt,
     settingsCategory,
+    settingsSection,
     openSettingsOn,
     closeSettings,
     shareDialogOpen,

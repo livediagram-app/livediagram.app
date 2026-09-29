@@ -168,7 +168,7 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-abc.apps.googleusercontent.com
 NEXT_PUBLIC_GOOGLE_API_KEY=... # optional: the Picker's browser key, for adopting a folder
 ```
 
-It is signed-in only, so Clerk must be enabled too (above). Without these the account menu has no Google Drive entry and every `/api/drive` route answers `503 drive_not_configured`.
+It is signed-in only, so Clerk must be enabled too (above). Without these Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`.
 
 ## Trying the photo import without an AI key
 

@@ -22,20 +22,17 @@
 
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { useRef, useState } from 'react';
 import { useClickOutside, SOLID_BRAND_DARK, Glyph, GlyphDisc } from '@livediagram/ui';
 import { sessionsEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { useDriveMirror } from '@/components/drive/drive-mirror-context';
-import { DriveSyncMark, useDriveIndicator } from '@/components/drive/DriveSyncMark';
-
-// The Drive panel only loads when opened.
-const DriveDialog = dynamic(
-  () => import('@/components/drive/DriveDialog').then((m) => m.DriveDialog),
-  { ssr: false },
-);
+import {
+  DriveProgressRing,
+  DriveSyncBadge,
+  useDriveIndicator,
+} from '@/components/drive/DriveSyncBadge';
+import { CLOUD_SYNC_SECTION_ID } from '@/lib/cloud-sync/providers';
 import {
   HEADER_ACTION_BTN,
   HEADER_ICON_SLOT_PX,
@@ -51,18 +48,16 @@ const HEADER_ACTION_TONE =
 // home rather than hanging off this dropdown too.
 
 type AuthControlsProps = {
-  // Opens this page's Settings dialog on its Account category. Both hosts
-  // (the editor and the Explorer) own a Settings dialog, so the Account item
-  // opens it in place rather than navigating away. Without one, the item
-  // falls back to the Explorer's `?settings=account` deep link.
-  onOpenAccount?: () => void;
+  // Opens this page's Settings dialog on its Account category, at `sectionId`
+  // when given (the cloud badge opens Cloud Sync). Both hosts (the editor and
+  // the Explorer) own a Settings dialog, so it opens in place rather than
+  // navigating away. Without one, the Explorer's `?settings=account` deep link.
+  onOpenAccount?: (sectionId?: string) => void;
 };
 
 function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
   const { authLoaded, isSignedIn, user, signOut } = useDeferredAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [driveOpen, setDriveOpen] = useState(false);
-  const drive = useDriveMirror();
   const driveMark = useDriveIndicator();
   const menuRef = useRef<HTMLDivElement>(null);
   // Return here after sign-in (must run before the early returns below).
@@ -103,14 +98,12 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
       <button
         type="button"
         onClick={() => setMenuOpen((open) => !open)}
-        // The Drive mirror's state rides in the name (docs/specs/022-drive-mirror/drive-mirror.md,
-        // "At a glance"), beside the mark on the avatar.
-        aria-label={driveMark.label ? `Account menu, ${driveMark.label}` : 'Account menu'}
+        aria-label="Account menu"
         aria-expanded={menuOpen}
         className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
         <HeaderGlyph>
-          {/* The mark overlays the disc, so the button never moves. */}
+          {/* The first mirror's progress rings the disc, so the button never moves. */}
           <span className="relative inline-flex">
             <GlyphDisc
               size={HEADER_ICON_SLOT_PX}
@@ -118,11 +111,22 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
             >
               {initial}
             </GlyphDisc>
-            <DriveSyncMark indicator={driveMark} />
+            <DriveProgressRing indicator={driveMark} />
           </span>
         </HeaderGlyph>
         <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>
       </button>
+      {/* The cloud badge (docs/specs/022-drive-mirror/drive-mirror.md, "At a glance"): a
+          button of its own over the avatar's corner, opening Cloud Sync. */}
+      <DriveSyncBadge
+        indicator={driveMark}
+        onOpen={() => {
+          setMenuOpen(false);
+          if (onOpenAccount) onOpenAccount(CLOUD_SYNC_SECTION_ID);
+          else
+            window.location.assign(`/explorer?settings=account&section=${CLOUD_SYNC_SECTION_ID}`);
+        }}
+      />
       {menuOpen ? (
         <div
           role="menu"
@@ -163,21 +167,6 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
               Account
             </Link>
           )}
-          {/* Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): only where the
-              deployment offers it. */}
-          {drive.mode !== 'off' ? (
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setMenuOpen(false);
-                setDriveOpen(true);
-              }}
-              className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
-            >
-              Google Drive
-            </button>
-          ) : null}
           <button
             type="button"
             role="menuitem"
@@ -195,7 +184,6 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
           </button>
         </div>
       ) : null}
-      {driveOpen ? <DriveDialog open onClose={() => setDriveOpen(false)} /> : null}
     </div>
   );
 }

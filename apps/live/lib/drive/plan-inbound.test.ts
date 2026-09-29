@@ -270,6 +270,14 @@ describe('planInbound: unrecorded files', () => {
     });
   });
 
+  it('leaves the root to the engine, never logging it as not ours', () => {
+    const root = file({ id: 'root', name: 'Renamed', appProperties: { ldRoot: HOST } });
+    expect(planInbound(change(root, { fileId: 'root' }), empty())).toEqual({
+      kind: 'ignore',
+      reason: 'root',
+    });
+  });
+
   it('never makes a diagram from a file no diagram owns', () => {
     expect(planInbound(change(file()), empty())).toEqual({
       kind: 'ignore',

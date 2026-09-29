@@ -50,6 +50,7 @@ export const HELP_ARTICLES = {
   exportingDiagrams: 'account-and-data/exporting-diagrams',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
+  googleDrive: 'account-and-data/google-drive',
   importTabs: 'tabs/import-tabs',
   markdownImport: 'tools/markdown-import',
   linkingTabs: 'tabs/linking-tabs',
@@ -193,6 +194,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   trash: {
     title: 'Learn about the Trash',
     description: 'How long deleted diagrams wait, and how to restore one.',
+  },
+  googleDrive: {
+    title: 'Learn about Google Drive sync',
+    description: 'What is copied to Drive, how often, and what travels back.',
   },
   importTabs: {
     title: 'Learn about importing tabs',

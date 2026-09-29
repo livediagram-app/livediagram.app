@@ -78,6 +78,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
     setSettingsFocus,
     settingsCategory,
     setSettingsCategory,
+    settingsSection,
+    setSettingsSection,
     moveTarget,
     setMoveTarget,
     movePersonalFolders,
@@ -123,8 +125,9 @@ function ShellChrome({ children }: { children: ReactNode }) {
           <ProductNav current="explorer" showOnMobile />
         </div>
         <AuthControls
-          onOpenAccount={() => {
+          onOpenAccount={(section) => {
             setSettingsCategory('account');
+            setSettingsSection(section ?? null);
             setSettingsOpen(true);
           }}
         />
@@ -326,9 +329,11 @@ function ShellChrome({ children }: { children: ReactNode }) {
             setSettingsOpen(false);
             setSettingsFocus(null);
             setSettingsCategory(null);
+            setSettingsSection(null);
           }}
           focus={settingsFocus}
           initialCategoryId={settingsCategory}
+          initialSectionId={settingsSection}
         />
       ) : null}
 

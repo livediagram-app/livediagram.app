@@ -135,3 +135,36 @@ describe('EditorHeader rename requests', () => {
     expect(editing()).toBeNull();
   });
 });
+
+// Google Drive lives in Settings > Account > Cloud Sync now
+// (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"); the avatar's cloud badge opens it.
+describe('EditorHeader and the Drive mirror', () => {
+  it('has no Google Drive item in the account menu, and the badge opens Cloud Sync', async () => {
+    const { DriveMirrorContext, DRIVE_MIRROR_OFF, DRIVE_STATUS_INITIAL } =
+      await import('@/components/drive/drive-mirror-context');
+    const onOpenAccount = vi.fn();
+    render(
+      <DriveMirrorContext.Provider
+        value={{
+          ...DRIVE_MIRROR_OFF,
+          mode: 'broker',
+          status: { ...DRIVE_STATUS_INITIAL, state: 'idle', lastSyncedAt: Date.now() },
+        }}
+      >
+        <EditorHeader
+          diagramName="d"
+          showShare={false}
+          shareable={false}
+          onMakeCopy={() => {}}
+          onOpenShare={() => {}}
+          onRename={() => {}}
+          onOpenAccount={onOpenAccount}
+        />
+      </DriveMirrorContext.Provider>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Account menu' }));
+    expect(screen.queryByRole('menuitem', { name: /Google Drive/ })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /^Synced to Google Drive/ }));
+    expect(onOpenAccount).toHaveBeenCalledWith('cloud-sync');
+  });
+});

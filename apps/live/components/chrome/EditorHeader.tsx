@@ -51,7 +51,7 @@ type EditorHeaderProps = {
   onOpenShare: () => void;
   // Opens the editor's Settings on its Account category (the account menu's
   // Account item), so it doesn't navigate away from the diagram.
-  onOpenAccount?: () => void;
+  onOpenAccount?: (sectionId?: string) => void;
   onRename: (name: string) => void;
   // Bumped by the command palette's "Rename diagram" action to enter inline
   // edit mode (the palette can't reach this component's local editing state).

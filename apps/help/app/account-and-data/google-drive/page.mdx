@@ -21,13 +21,17 @@ The copy in Drive is a mirror. Your diagrams still live in livediagram, so shari
 
 ## Connecting
 
-Open your account menu and choose **Google Drive**, then **Connect Google Drive**. Google asks you to let livediagram create files in your Drive and appear in its **Open with** menu. That is all it can do: it only ever sees the files it made, or a file you open with it. It cannot see the rest of your Drive.
+Open **Settings**, then **Account**, and find **Google Drive** under **Cloud Sync**. Choose **Connect Google Drive**. Google asks you to let livediagram create files in your Drive and appear in its **Open with** menu. That is all it can do: it only ever sees the files it made, or a file you open with it. It cannot see the rest of your Drive.
 
-The first time, livediagram copies every diagram into Drive, oldest first, with the progress in the Google Drive panel. If you close the tab part way, it carries on next time.
+The first time, livediagram copies every diagram into Drive, oldest first, into a folder called **livediagram**, with the progress in the Cloud Sync section. If you close the tab part way, it carries on next time. You may rename or move that folder in Drive; livediagram keeps using it.
+
+## Seeing how it is doing
+
+Once connected, a small **cloud** sits on your avatar in the top-right corner: a tick when everything is copied, turning arrows while it syncs, and an exclamation mark when something needs you. Point at it, or tab to it, to read when it last synced; press it to open **Cloud Sync**, which says in plain words what is happening and what, if anything, to do.
 
 ## What stays in step
 
-The mirror syncs while a livediagram tab is open, and catches up when you come back. Nothing happens while nobody is here.
+The mirror syncs while a livediagram tab is open, and catches up when you come back. Nothing happens while nobody is here. It checks Drive for changes every 2 minutes, and copies your edits a minute after you stop, at most once every 5 minutes per diagram.
 
 | Here in livediagram              | In Google Drive                         |
 | -------------------------------- | --------------------------------------- |
@@ -45,7 +49,7 @@ Edits to a file's contents made outside livediagram are not taken in: livediagra
 
 ## Folders livediagram cannot see
 
-A folder you make in Google Drive itself is invisible to livediagram until you show it one. If you move a diagram's file into such a folder, the diagram moves to **Unsorted** here and the Google Drive panel says so. Choose **Show this folder to livediagram**, pick the folder, and livediagram makes a matching folder and moves the diagram into it. From then on that folder syncs both ways.
+A folder you make in Google Drive itself is invisible to livediagram until you show it one. If you move a diagram's file into such a folder, the diagram moves to **Unsorted** here and the Cloud Sync section says so. Choose **Show this folder to livediagram**, pick the folder, and livediagram makes a matching folder and moves the diagram into it. From then on that folder syncs both ways.
 
 Folders you create in livediagram always appear in Drive, so building your tree here needs no extra step.
 
@@ -55,7 +59,7 @@ Right-click a `.livediagram` file in Google Drive and choose **Open with**, then
 
 ## Disconnecting
 
-Choose **Disconnect** in the Google Drive panel. livediagram stops updating Drive and forgets its access; **your files stay in Drive**. You can also remove livediagram from your Google account's settings: the panel then offers **Reconnect**, and nothing is deleted.
+Choose **Disconnect** under Settings, Account, Cloud Sync. livediagram stops updating Drive and forgets its access; **your files stay in Drive**. You can also remove livediagram from your Google account's settings: Cloud Sync then offers **Reconnect**, and nothing is deleted.
 
 <Tip>
   The mirror covers your Personal Space. Team libraries, diagrams shared with you and diagrams kept

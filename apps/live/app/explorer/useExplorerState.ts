@@ -143,17 +143,21 @@ export function useExplorerState() {
   // Category to open on, for the `?settings=` deep link. Distinct from
   // `settingsFocus`, which additionally rings one row.
   const [settingsCategory, setSettingsCategory] = useState<string | null>(null);
+  // Section of it, for `&section=<id>` (the cloud badge's Cloud Sync).
+  const [settingsSection, setSettingsSection] = useState<string | null>(null);
   // `?settings=<category>` deep link. The Settings dialog replaced the
   // /explorer/profile page (docs/specs/014-identity/profile-and-email-notifications.md), and mail already in people's inboxes
   // links at their notification preferences, so any surface can name the pane
   // it means. Opened during render, once per link; the param is then stripped,
   // so a refresh or a back does not keep reopening the dialog.
   const settingsLink = searchParams?.get('settings') ?? null;
+  const sectionLink = searchParams?.get('section') ?? null;
   const [settingsLinkSeen, setSettingsLinkSeen] = useState<string | null>(null);
   if (settingsLink !== settingsLinkSeen) {
     setSettingsLinkSeen(settingsLink);
     if (settingsLink) {
       setSettingsCategory(settingsLink);
+      setSettingsSection(sectionLink);
       setSettingsOpen(true);
     }
   }
@@ -161,6 +165,7 @@ export function useExplorerState() {
     if (!settingsLink) return;
     const url = new URL(window.location.href);
     url.searchParams.delete('settings');
+    url.searchParams.delete('section');
     window.history.replaceState({}, '', url.toString());
   }, [settingsLink]);
   // Which folder branches (and which teams) are open in the sidebar.
@@ -540,6 +545,8 @@ export function useExplorerState() {
     setSettingsFocus,
     settingsCategory,
     setSettingsCategory,
+    settingsSection,
+    setSettingsSection,
     // Folder + diagram actions
     folderActions,
     createFolder,

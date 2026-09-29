@@ -73,6 +73,8 @@ function blankItem(
 function planUnrecorded(change: DriveChange, snapshot: MirrorSnapshot): InboundDecision {
   const file = change.file;
   if (!file || change.removed) return { kind: 'ignore', reason: 'unknown-removed' };
+  // The root is tracked by id, never an item; the engine reads its name.
+  if (change.fileId === snapshot.rootFolderId) return { kind: 'ignore', reason: 'root' };
   if (file.appProperties[DRIVE_PROP_ORIGIN] !== snapshot.host) {
     return {
       kind: 'ignore',

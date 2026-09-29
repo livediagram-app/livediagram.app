@@ -50,6 +50,8 @@ export type DriveMirrorStatus = {
   error: 'offline' | 'rate_limited' | 'failed' | null;
   leaseHeldElsewhere: boolean;
   notices: DriveMirrorNotice[];
+  // The root folder's Drive name, as the user sees it; null until known.
+  rootName: string | null;
 };
 
 export type DriveEngineTelemetry = (
@@ -92,6 +94,7 @@ const INITIAL: DriveMirrorStatus = {
   error: null,
   leaseHeldElsewhere: false,
   notices: [],
+  rootName: null,
 };
 
 export class DriveMirrorEngine {
@@ -338,7 +341,8 @@ export class DriveMirrorEngine {
       // Once per arrival: a root deleted for good is made again. A binned
       // root stays the root; binning it binned everything, as the user did.
       try {
-        await deps.drive.getFile(connection.rootFolderId);
+        const root = await deps.drive.getFile(connection.rootFolderId);
+        this.publish({ rootName: root.name });
         return { connection, fresh: false };
       } catch (err) {
         if (!(err instanceof DriveApiError && err.isNotFound)) throw err;
@@ -357,16 +361,20 @@ export class DriveMirrorEngine {
       `appProperties has { key='${DRIVE_PROP_ROOT}' and value='${deps.host}' } and trashed = false`,
     );
     let rootId = existing[0]?.id;
-    if (rootId) driveLog('root-found', { root: rootId });
-    else {
+    if (rootId) {
+      driveLog('root-found', { root: rootId });
+      this.publish({ rootName: existing[0]!.name });
+    } else {
+      const name = driveRootName(deps.host);
       rootId = (
         await deps.drive.createFolder({
-          name: driveRootName(deps.host),
+          name,
           parentId: 'root',
           appProperties: { [DRIVE_PROP_ROOT]: deps.host },
         })
       ).id;
       driveLog('root-created', { root: rootId });
+      this.publish({ rootName: name });
     }
     return { connection: await deps.port.putConnection({ rootFolderId: rootId }), fresh: true };
   }
@@ -445,6 +453,10 @@ export class DriveMirrorEngine {
     }
     this.lastInboundAt = this.deps.now();
     this.diagnose(true, changes.length);
+    // The root is no item; a rename of it only changes the name shown.
+    const root = changes.findLast((c) => c.fileId === snapshot.rootFolderId && c.file);
+    if (root?.file && root.file.name !== this.status.rootName)
+      this.publish({ rootName: root.file.name });
     const changed =
       changes.length > 0 ? await applyInbound(this.context(snapshot), changes) : false;
     this.pageToken = token;

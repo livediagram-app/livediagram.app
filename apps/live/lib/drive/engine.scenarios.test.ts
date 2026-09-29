@@ -460,3 +460,26 @@ describe('the root folder (docs/specs/022-drive-mirror/drive-mirror.md, "Connect
     expect(w.google.appFiles(OWNER).filter((f) => f.appProperties.ldRoot)).toHaveLength(1);
   });
 });
+
+describe('the root folder name in the status (blueprint "Cloud Sync in Settings")', () => {
+  it('reports the name it created, and follows a rename made in Drive', async () => {
+    const w = world();
+    const { engine, statuses } = makeEngine(w);
+    await engine.start();
+    // The test host is a self-hosted one.
+    expect(statuses.at(-1)!.rootName).toBe('livediagram (self-hosted)');
+    w.google.userRename(w.ld.connection!.rootFolderId!, 'My diagrams');
+    await engine.syncNow();
+    expect(statuses.at(-1)!.rootName).toBe('My diagrams');
+  });
+
+  it('reads the name of a root it finds on arrival', async () => {
+    const w = world();
+    const first = makeEngine(w);
+    await first.engine.start();
+    w.google.userRename(w.ld.connection!.rootFolderId!, 'Renamed');
+    const next = makeEngine({ ...w, deviceId: 'device-b' });
+    await next.engine.start();
+    expect(next.statuses.at(-1)!.rootName).toBe('Renamed');
+  });
+});

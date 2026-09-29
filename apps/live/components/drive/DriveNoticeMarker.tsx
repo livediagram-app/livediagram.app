@@ -14,7 +14,7 @@ export function DriveNoticeMarker({ diagramId }: { diagramId: string }) {
   return (
     <HoverCard
       title="In a Drive folder livediagram can't see"
-      description={`${DRIVE_NOTICE_TEXT} Open Google Drive from your account menu to show it the folder.`}
+      description={`${DRIVE_NOTICE_TEXT} Open Settings, Account, Cloud Sync to show it the folder.`}
     >
       <span
         aria-label={DRIVE_NOTICE_TEXT}
