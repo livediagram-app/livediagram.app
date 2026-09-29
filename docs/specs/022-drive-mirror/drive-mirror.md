@@ -56,8 +56,18 @@ this spec does not restate it.
     there is never a moment where nothing seems to happen. If that fails (the
     request errors or is blocked), the row is **Not connected** again and says
     "Couldn't start connecting to Google Drive. Check your connection and try
-    again." Coming back from Google with the Back button also returns it to
-    Not connected.
+    again."
+  - **Leaving for Google and coming back** always returns the user to exactly
+    where they started: the same page with Settings open on Account > Cloud
+    Sync. Before leaving, the page's own history entry is given
+    `?settings=account&section=cloud-sync` (the entry is kept, not replaced by
+    a navigation), so the browser's Back button from Google's page reloads it
+    with Cloud Sync open. The same place is carried through the consent (kept
+    in this browser's session against the consent state, and accepted only as
+    a same-origin path), so a finished connection, and a **cancel at Google**,
+    come back there too. A cancel is not an error: the row says, calmly, "You
+    cancelled at Google, so Google Drive isn't connected. Connect again
+    whenever you like."
   - **Connected:** "Your documents are copied to Google Drive, in the folder
     <root folder name>" (the root's actual name, as the user may have renamed
     it); the rhythm, **derived from the cadence** so it cannot drift: "Checks
@@ -74,9 +84,18 @@ this spec does not restate it.
     connection or press **Sync now**), another tab or device writing (nothing
     to do), and each folder notice (**Show this folder to livediagram**, or
     move it back in Drive).
-- **Nothing reflows as the state changes:** the state pill and each button
-  keep one width whatever they say (the width of their longest wording), so
-  "Synced" becoming "Syncing" or "Sync now" becoming "Syncing…" moves nothing.
+- **Nothing moves as the state changes** (the product's layout stability rule,
+  "Layout stability" in the interface design specs): the row keeps one shape
+  in every state, from Not connected through Connecting, Copying, Synced,
+  Syncing, Needs attention and Needs reconnect. Each part holds every wording
+  it can show in one place, with only the current one visible (the rest hidden
+  from sight and from assistive technology), so it is always the size of its
+  longest wording: the state pill, the explanation, the detail line (the
+  rhythm, the first copy's progress, or a folder notice, one at a time, with
+  "and n more" when there are several notices), and the action buttons (the
+  primary button is as wide as "Connect Google Drive"; **Disconnect** keeps
+  its place, unseen, while there is nothing to disconnect). Counts and times
+  use tabular numerals. Connecting takes this shape at once.
 - **At a glance:** a **cloud badge** on the avatar (the account menu's
   button) says how the mirror is doing without opening anything. It is a
   **small corner badge**, a 12-pixel disc on the avatar's upper-right corner
