@@ -628,6 +628,25 @@ actually acts on.
 Pointing at a tool is fine too ("check list_templates first"): the flag is
 discouraging tool use, not encouraging it.
 
+### 4.16 Registry listing
+
+The hosted server is listed in the official **MCP Registry**
+(`registry.modelcontextprotocol.io`), which other directories (PulseMCP among
+them) ingest from, so one listing reaches several catalogues.
+
+- **Descriptor.** `server.json` at the repo root, under the registry's
+  `2025-12-11` schema. Name `io.github.livediagram-app/livediagram`: the
+  `io.github.<org>` namespace is proven by the repo's own GitHub OIDC token, so
+  publishing needs no DNS record and no secret. One `remotes` entry,
+  `streamable-http` at `https://mcp.livediagram.app/mcp`, with no `headers`:
+  OAuth (§3) is discovered from the server's metadata, not configured by the
+  client. The icon is the 512px mark in `marketing/media/icons`.
+- **Publishing.** `.github/workflows/mcp-registry.yml` runs `mcp-publisher
+login github-oidc` then `mcp-publisher publish` when `server.json` changes on
+  `main`, or on manual dispatch. The registry rejects a version it already
+  holds, so republishing means bumping `version` in `server.json`.
+- **Self-hosts** are not listed: the descriptor names the hosted origin only.
+
 ## 5. Visualise — inline image render
 
 `read_diagram`, `create_diagram`, and `update_diagram` all return an **inline
