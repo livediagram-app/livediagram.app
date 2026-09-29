@@ -56,6 +56,12 @@ test.afterAll(async () => {
   );
 });
 
+// The visible state wording (every wording is laid out, hidden but the current).
+const pillOf = (row: import('@playwright/test').Locator) =>
+  row.locator('[data-drive-state] [data-stable-option]:not(.invisible)');
+const detailOf = (row: import('@playwright/test').Locator) =>
+  row.locator('[data-drive-detail] > div > :not(.invisible)');
+
 const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // Holds matching requests back for `ms`, then lets the usual handler answer.
@@ -176,7 +182,7 @@ for (const theme of THEMES) {
 
       await page.goto('/explorer/recent');
       let row = await openCloudSync(page, 'menu');
-      await expect(row).toContainText('Not connected');
+      await expect(pillOf(row)).toHaveText('Not connected');
       await shot(
         page,
         'cloud-sync-1-not-connected',
@@ -195,8 +201,17 @@ for (const theme of THEMES) {
 
       // The first copy, uploads held back so it can be seen.
       const releaseUploads = await slow(page, 'https://www.googleapis.com/upload/**', 1500);
-      await page.waitForURL('**/explorer/recent');
+      // Back where the user started, Cloud Sync open.
+      await page.waitForURL(/\/explorer\/recent\?settings=account&section=cloud-sync/);
       await releaseState();
+      row = page.locator('[data-cloud-sync="googleDrive"]');
+      await expect(pillOf(row)).toHaveText('Copying', { timeout: 15_000 });
+      await shot(
+        page,
+        'cloud-sync-3-first-copy',
+        'Cloud Sync during the first copy, with its progress bar',
+      );
+      await closeSettings(page);
       await badgeShot(
         page,
         /^Copying \d+ of \d+ to Google Drive/,
@@ -204,14 +219,8 @@ for (const theme of THEMES) {
         'The cloud badge during the first copy, tooltip shown on focus, progress ring round the avatar',
       );
       row = await openCloudSync(page, 'badge');
-      await expect(row).toContainText('Copying');
-      await shot(
-        page,
-        'cloud-sync-3-first-copy',
-        'Cloud Sync during the first copy, with its progress bar',
-      );
       await releaseUploads();
-      await expect(row).toContainText('Synced', { timeout: 30_000 });
+      await expect(pillOf(row)).toHaveText('Synced', { timeout: 30_000 });
       await shot(
         page,
         'cloud-sync-4-synced',
@@ -233,7 +242,7 @@ for (const theme of THEMES) {
       );
       row = await openCloudSync(page, 'badge');
       await row.getByRole('button', { name: 'Sync now' }).click();
-      await expect(row).toContainText('Syncing');
+      await expect(pillOf(row)).toHaveText('Syncing');
       await shot(page, 'cloud-sync-5-syncing', 'Cloud Sync while a sync runs');
       await closeSettings(page);
       await badgeShot(
@@ -259,7 +268,7 @@ for (const theme of THEMES) {
       );
       row = await openCloudSync(page, 'badge');
       await row.getByRole('button', { name: 'Sync now' }).click();
-      await expect(row).toContainText('Synced');
+      await expect(pillOf(row)).toHaveText('Synced');
       await closeSettings(page);
       await expect(page.getByText('Standup notes', { exact: true }).first()).toBeVisible({
         timeout: 15_000,
@@ -279,7 +288,7 @@ for (const theme of THEMES) {
       google.fake.userMove(fileNamed('Quarterly plan.livediagram')!.id, hidden);
       row = await openCloudSync(page, 'badge');
       await row.getByRole('button', { name: 'Sync now' }).click();
-      await expect(row).toContainText("can't see");
+      await expect(detailOf(row)).toContainText("can't see");
       await shot(
         page,
         'cloud-sync-6-needs-attention',
