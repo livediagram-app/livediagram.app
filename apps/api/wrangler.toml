@@ -42,8 +42,11 @@ AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
 # of its own: it rides the D1 database above (drive_connections, drive_items).
 #   - GOOGLE_CLIENT_ID: plain var, livediagram.app's own OAuth client, so it
 #     lives in `hosted-vars.json` (a fork has its own Google project and must
-#     not inherit ours); the hosted build also bakes it into the live app as
-#     NEXT_PUBLIC_GOOGLE_CLIENT_ID (scripts/hosted-vars.mjs build-env).
+#     not inherit ours), per environment: production and staging are separate
+#     Google Cloud projects with separate client ids. The hosted build bakes
+#     the same environment's id into the live app as NEXT_PUBLIC_GOOGLE_CLIENT_ID
+#     (scripts/hosted-vars.mjs build-env --env ...), and verify / verify-build
+#     prove the two agree on every deploy.
 #   - GOOGLE_CLIENT_SECRET, DRIVE_TOKEN_KEY: secrets, set by hand exactly like
 #     RESEND_API_KEY: `wrangler secret put GOOGLE_CLIENT_SECRET` and
 #     `wrangler secret put DRIVE_TOKEN_KEY` (base64 of 32 random bytes).
@@ -420,8 +423,11 @@ crons = ["0 3 * * *"]
 # The Drive mirror's GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY likewise:
 #   cd apps/api && wrangler secret put DRIVE_TOKEN_KEY --env staging
 # with a DRIVE_TOKEN_KEY of its own, never production's, so a staging row can
-# never open a production refresh token. GOOGLE_CLIENT_ID reaches staging from
-# hosted-vars.json like the other hosted vars; the Google client lists
-# staging.livediagram.app/drive/connected as a second redirect URI.
+# never open a production refresh token. Staging has its OWN Google Cloud
+# project: its GOOGLE_CLIENT_ID is the `environments.staging` entry of
+# hosted-vars.json, its client secret belongs to that project, and its Picker
+# key is the NEXT_PUBLIC_GOOGLE_API_KEY_STAGING GitHub secret. Its client lists
+# https://staging.livediagram.app plus the two localhost dev origins, and its
+# Drive UI integration opens https://staging.livediagram.app/drive/open.
 # Worker secrets are per-environment, so staging's never collide with
 # production's.
