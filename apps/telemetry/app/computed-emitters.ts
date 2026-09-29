@@ -137,7 +137,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'a kind, the page it happened on, and the error name',
   },
   'packages/ui/src/PageViewTracker.tsx Page·View': {
-    values: ['/', '/diagram', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
+    values: ['/', '/document', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
   },
 

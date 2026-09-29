@@ -23,12 +23,12 @@ export type ToolResult = {
   isError?: boolean;
 };
 
-export const deepLink = (id: string) => `https://livediagram.app/diagram/${id}`;
+export const deepLink = (id: string) => `https://livediagram.app/document/${id}`;
 
 // A share link's public URL (docs/specs/013-workspace/share-password.md): visitors land on /diagram/shared?s=<code>
 // and the app resolves the code to the diagram + granted role.
 export const shareUrl = (code: string) =>
-  `https://livediagram.app/diagram/shared?s=${encodeURIComponent(code)}`;
+  `https://livediagram.app/document/shared?s=${encodeURIComponent(code)}`;
 
 export function requireToken(extra: Extra): string {
   const token = extra.authInfo?.token;
@@ -60,10 +60,10 @@ export async function loadTab(
   const { document: liveDoc } = await apiJson<DocumentResponse>(
     env,
     token,
-    `/diagrams/${documentId}`,
+    `/documents/${documentId}`,
   );
   const id = tabId ?? liveDoc.tabs[0]?.id;
   if (!id) return null;
-  const { tab } = await apiJson<TabResponse>(env, token, `/diagrams/${documentId}/tabs/${id}`);
+  const { tab } = await apiJson<TabResponse>(env, token, `/documents/${documentId}/tabs/${id}`);
   return { document: liveDoc, tab };
 }

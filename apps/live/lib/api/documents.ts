@@ -56,7 +56,7 @@ async function _apiLoadDocument(ownerId: string, id: string): Promise<LiveDoc | 
   // Offline Mode (docs/specs/006-document/offline-mode.md): a diagram registered offline loads from IndexedDB,
   // never the API. Same for the save / delete / list paths below.
   if (await isOfflineId(id)) return offlineLoadDocument(id);
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}`, {
     headers: await apiHeaders(ownerId),
   });
   const body = await expectOkOrNull<DocumentResponse>(res, 'load');
@@ -76,7 +76,7 @@ export async function apiSharedTabs(
   signal?: AbortSignal,
 ): Promise<SharedTabsSummary | null> {
   if (await isOfflineId(id)) return null;
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}/shared-tabs`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}/shared-tabs`, {
     headers: await apiHeaders(ownerId),
     ...(signal ? { signal } : {}),
   });
@@ -112,7 +112,7 @@ export async function apiSaveDocumentMeta(
     );
     return;
   }
-  const res = await apiFetch(`${API_BASE}/diagrams/${d.id}`, {
+  const res = await apiFetch(`${API_BASE}/documents/${d.id}`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
     body: JSON.stringify({
@@ -146,7 +146,7 @@ export async function apiCreateDocument(
   // without this the worker records it as a brand-new diagram being created.
   opts: { conversion?: DocumentConversion } = {},
 ): Promise<LiveDoc> {
-  const res = await apiFetch(`${API_BASE}/diagrams`, {
+  const res = await apiFetch(`${API_BASE}/documents`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, {
       body: true,
@@ -173,7 +173,7 @@ export async function apiDeleteDocument(ownerId: string, id: string): Promise<vo
   // identity headers the worker would 400 / 403. apiHeaders prefers
   // the Clerk Bearer when a token provider is registered, falls
   // through to X-Owner-Id otherwise (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md).
-  return apiDelete(`${API_BASE}/diagrams/${id}`, ownerId, {
+  return apiDelete(`${API_BASE}/documents/${id}`, ownerId, {
     action: 'delete diagram',
     purge: { sourceType: 'document', sourceId: id },
   });
@@ -188,7 +188,7 @@ async function _apiListDocuments(ownerId: string): Promise<DocumentSummary[]> {
   await offlinePurgeExpiredTrash(Date.now()).catch(() => 0);
   const offline = await offlineListDocuments().catch(() => [] as DocumentSummary[]);
   try {
-    const res = await apiFetch(`${API_BASE}/diagrams`, { headers: await apiHeaders(ownerId) });
+    const res = await apiFetch(`${API_BASE}/documents`, { headers: await apiHeaders(ownerId) });
     const { documents: liveDocs } = await expectOk<DocumentListResponse>(res, 'list');
     // Dedupe by id: legacy data (pre ghost-row fix) can hold BOTH an offline
     // record and a same-id server row. The offline copy wins — it is what the
@@ -231,7 +231,7 @@ export async function apiFetchDocumentThumbnailUrl(
   const params = new URLSearchParams();
   if (opts.version != null) params.set('v', String(opts.version));
   const qs = params.toString();
-  const url = `${API_BASE}/diagrams/${encodeURIComponent(documentId)}/thumbnail${qs ? `?${qs}` : ''}`;
+  const url = `${API_BASE}/documents/${encodeURIComponent(documentId)}/thumbnail${qs ? `?${qs}` : ''}`;
   const headers = new Headers(await apiHeaders(ownerId, { share: opts.shareCode ?? null }));
   const res = await apiFetch(url, { headers });
   if (!res.ok) return null;
@@ -297,7 +297,7 @@ export async function apiCreateRoomTicket(
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 500 * attempt));
     try {
-      const res = await apiFetch(`${API_BASE}/diagrams/${documentId}/room-ticket`, {
+      const res = await apiFetch(`${API_BASE}/documents/${documentId}/room-ticket`, {
         method: 'POST',
         headers: await apiHeaders(ownerId, { share: shareCode }),
       });
@@ -322,7 +322,7 @@ export async function apiCopyDocument(
   sourceId: string,
   opts: { name?: string; shareCode?: string | null } = {},
 ): Promise<LiveDoc> {
-  const res = await apiFetch(`${API_BASE}/diagrams/${sourceId}/copy`, {
+  const res = await apiFetch(`${API_BASE}/documents/${sourceId}/copy`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true, share: opts.shareCode ?? null }),
     body: JSON.stringify({ name: opts.name }),

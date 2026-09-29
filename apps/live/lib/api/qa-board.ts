@@ -21,7 +21,7 @@ export async function apiQaAction(
 ): Promise<QaBoardState | null> {
   if (await isOfflineId(documentId)) return null;
   const res = await apiFetch(
-    `${API_BASE}/diagrams/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/qa`,
+    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/qa`,
     {
       method: 'POST',
       headers: await apiHeaders(ownerId, { share: shareCode, body: true }),

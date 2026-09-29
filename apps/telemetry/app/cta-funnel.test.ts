@@ -11,7 +11,7 @@ const ROWS: TelemetryCount[] = [
   row('Page', 'View', '/features/customise', 20),
   row('Page', 'View', '/alternatives', 5),
   row('Page', 'View', '/alternatives/miro', 15),
-  row('Page', 'View', '/diagram', 900),
+  row('Page', 'View', '/document', 900),
   row('Page', 'View', '/new', 80),
   row('Cta', 'Opened', 'Home.Hero', 40),
   row('Cta', 'Created', 'Home.Hero', 30),

@@ -31,7 +31,7 @@ async function _apiListChangeLog(
 ): Promise<ChangeLogEntry[]> {
   // Offline Mode (docs/specs/006-document/offline-mode.md): the log lives in the diagram's IndexedDB record.
   if (await isOfflineId(id)) return offlineListChangeLog(id);
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}/log`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}/log`, {
     headers: await apiHeaders(ownerId, { share: shareCode ?? null }),
   });
   const { entries } = await expectOk<ChangeLogListResponse>(res, 'list change log');
@@ -50,7 +50,7 @@ export async function apiAppendChangeLogEntry(
 ): Promise<ChangeLogEntry> {
   if (await isOfflineId(documentId)) return offlineAppendChangeLogEntry(documentId, entry);
   const post = async () =>
-    apiFetch(`${API_BASE}/diagrams/${documentId}/log`, {
+    apiFetch(`${API_BASE}/documents/${documentId}/log`, {
       method: 'POST',
       headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
       body: JSON.stringify(entry),
@@ -83,7 +83,7 @@ export async function apiDeleteChangeLogForTab(
   shareCode: string | null = null,
 ): Promise<void> {
   if (await isOfflineId(documentId)) return offlineDeleteChangeLogForTab(documentId, tabId);
-  return apiDelete(`${API_BASE}/diagrams/${documentId}/log/tab/${tabId}`, ownerId, {
+  return apiDelete(`${API_BASE}/documents/${documentId}/log/tab/${tabId}`, ownerId, {
     action: 'delete change log',
     share: shareCode,
   });
@@ -96,7 +96,7 @@ export async function apiDeleteChangeLogEntry(
   shareCode: string | null = null,
 ): Promise<void> {
   if (await isOfflineId(documentId)) return offlineDeleteChangeLogEntry(documentId, entryId);
-  return apiDelete(`${API_BASE}/diagrams/${documentId}/log/${entryId}`, ownerId, {
+  return apiDelete(`${API_BASE}/documents/${documentId}/log/${entryId}`, ownerId, {
     action: 'delete change log entry',
     share: shareCode,
   });

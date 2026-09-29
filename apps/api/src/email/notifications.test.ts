@@ -50,7 +50,7 @@ describe('commentNotificationEmail', () => {
     const e = commentNotificationEmail(env, 'Roadmap', 'd1', 'Anna');
     expect(e.subject).toMatch(/Anna/);
     expect(e.html).toContain('Roadmap');
-    expect(e.html).toContain('https://app.test/diagram/d1');
+    expect(e.html).toContain('https://app.test/document/d1');
     // Footer links to the profile so the owner can turn it off (per request).
     expect(e.html).toContain('https://app.test/explorer?settings=notifications');
     expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
@@ -108,7 +108,7 @@ describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)
     expect(e.html).toContain('Roadmap');
     expect(e.html).toContain('Review the copy');
     expect(e.html).toContain('Hero only');
-    expect(e.html).toContain('https://app.test/diagram/d1');
+    expect(e.html).toContain('https://app.test/document/d1');
     expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
   });
 

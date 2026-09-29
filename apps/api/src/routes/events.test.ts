@@ -101,12 +101,12 @@ describe('handleEvents page views (docs/specs/017-telemetry/page-view-telemetry.
       body: {
         events: [
           { category: 'Page', action: 'View', type: '/help/canvas/the-canvas' },
-          { category: 'Page', action: 'View', type: '/diagram' },
+          { category: 'Page', action: 'View', type: '/document' },
           // A raw URL with a query, an un-normalised id, the old id placeholder
           // and a bare token.
           { category: 'Page', action: 'View', type: '/join?token=abc' },
           { category: 'Page', action: 'View', type: '/Diagram/ABC' },
-          { category: 'Page', action: 'View', type: '/diagram/[id]' },
+          { category: 'Page', action: 'View', type: '/document/[id]' },
           { category: 'Page', action: 'View', type: 'help' },
         ],
       },
@@ -117,7 +117,7 @@ describe('handleEvents page views (docs/specs/017-telemetry/page-view-telemetry.
       expect.anything(),
       [
         { category: 'Page', action: 'View', type: '/help/canvas/the-canvas' },
-        { category: 'Page', action: 'View', type: '/diagram' },
+        { category: 'Page', action: 'View', type: '/document' },
       ],
       expect.any(Number),
     );

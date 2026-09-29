@@ -178,7 +178,7 @@ describe('share-link scope calls', () => {
     stubFetch(201, { link: { code: 'C', tabId: 't2' } });
     await apiCreateShareLink('owner-1', 'd1', 'view', 'never', 't2');
     const [url, init] = vi.mocked(fetch).mock.calls[0]!;
-    expect(url).toBe('/api/diagrams/d1/share');
+    expect(url).toBe('/api/documents/d1/share');
     expect(JSON.parse(init!.body as string)).toEqual({
       role: 'view',
       expiry: 'never',
@@ -197,7 +197,7 @@ describe('share-link scope calls', () => {
     stubFetch(200, { link: { code: 'C', tabId: null } });
     const link = await apiRescopeShareLink('owner-1', 'd1', 'C', null);
     const [url, init] = vi.mocked(fetch).mock.calls[0]!;
-    expect(url).toBe('/api/diagrams/d1/share/C');
+    expect(url).toBe('/api/documents/d1/share/C');
     expect(init!.method).toBe('PUT');
     expect(JSON.parse(init!.body as string)).toEqual({ tabId: null });
     expect(link.tabId).toBeNull();
@@ -478,7 +478,7 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
     const out = await apiCreateDocument('owner', { id: 'd1', name: 'N', tabs: [tab] });
 
     const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    expect(String(url)).toMatch(/\/diagrams$/);
+    expect(String(url)).toMatch(/\/documents$/);
     expect(init.method).toBe('POST');
     const body = JSON.parse(init.body as string) as { tabs: Record<string, unknown>[] };
     expect(body.tabs[0]).not.toHaveProperty('templateChosen');
@@ -503,7 +503,7 @@ describe('apiSharedTabs (docs/specs/006-document/tab-document-many-to-many.md)',
     const out = await apiSharedTabs('owner', 'd1', signal);
 
     const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    expect(String(url)).toMatch(/\/diagrams\/d1\/shared-tabs$/);
+    expect(String(url)).toMatch(/\/documents\/d1\/shared-tabs$/);
     expect(init.signal).toBe(signal);
     expect(out).toEqual({ tabs: 2, documents: 3 });
   });
@@ -539,7 +539,7 @@ describe('apiSaveTab persisted body + allow-empty (docs/specs/006-document/tab-f
     const spy = stubOk();
     await apiSaveTab('owner', 'd1', tabWithUi);
     const [url, init] = spy.mock.calls[0] as [string, RequestInit];
-    expect(String(url)).toMatch(/\/diagrams\/d1\/tabs\/t1$/);
+    expect(String(url)).toMatch(/\/documents\/d1\/tabs\/t1$/);
     expect(init.method).toBe('PUT');
     const body = JSON.parse(init.body as string) as Record<string, unknown>;
     expect(body).not.toHaveProperty('templateChosen');

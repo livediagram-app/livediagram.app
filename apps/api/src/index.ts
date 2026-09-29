@@ -1,3 +1,8 @@
+import {
+  fromLegacyRequest,
+  isLegacyDocumentsPath,
+  toLegacyResponse,
+} from './legacy-documents-alias';
 import { getClerkIdentity } from './auth/clerk';
 import { noteAuthSighting } from './auth/session-telemetry';
 import { emailEnabled } from './email/client';
@@ -73,10 +78,17 @@ async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
 // the welcomeOnSighting call below.
 const sightedThisIsolate = new Set<string>();
 
-export default {
+const worker = {
   async fetch(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: CORS_HEADERS });
+    }
+    // The deprecated /api/diagrams… alias: served by the /api/documents… routes, in the old shape.
+    if (isLegacyDocumentsPath(new URL(request.url).pathname)) {
+      console.warn('[legacy-documents-alias]', request.method, new URL(request.url).pathname);
+      return toLegacyResponse(
+        await worker.fetch(await fromLegacyRequest(request), env, executionCtx),
+      );
     }
 
     const url = new URL(request.url);
@@ -410,6 +422,8 @@ export default {
     }
   },
 } satisfies ExportedHandler<Env>;
+
+export default worker;
 
 // Run one daily retention sweep in the background: delete rows older than
 // `cutoff`, then log the count (or the failure) to `wrangler tail`. The

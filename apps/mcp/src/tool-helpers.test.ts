@@ -97,21 +97,21 @@ describe('errorResult', () => {
 
 describe('deepLink', () => {
   it('points at the diagram route on the production host', () => {
-    expect(deepLink('abc-123')).toBe('https://livediagram.app/diagram/abc-123');
+    expect(deepLink('abc-123')).toBe('https://livediagram.app/document/abc-123');
   });
 });
 
 describe('shareUrl', () => {
   it('points at the shared route with the code as a query param', () => {
-    expect(shareUrl('AB12CD')).toBe('https://livediagram.app/diagram/shared?s=AB12CD');
+    expect(shareUrl('AB12CD')).toBe('https://livediagram.app/document/shared?s=AB12CD');
   });
 
   it('escapes the code rather than pasting it into the query raw', () => {
     // Share codes are minted server-side, so this is defence rather than a
     // live bug — but the value lands in a URL a model may hand to a user, and
     // an unescaped `&` would silently truncate the code.
-    expect(shareUrl('a&b=c')).toBe('https://livediagram.app/diagram/shared?s=a%26b%3Dc');
-    expect(shareUrl('a b')).toBe('https://livediagram.app/diagram/shared?s=a%20b');
+    expect(shareUrl('a&b=c')).toBe('https://livediagram.app/document/shared?s=a%26b%3Dc');
+    expect(shareUrl('a b')).toBe('https://livediagram.app/document/shared?s=a%20b');
   });
 });
 
@@ -139,7 +139,7 @@ describe('loadTab', () => {
     const { env, paths } = apiEnv([{ id: 't1' }, { id: 't2' }]);
     const loaded = await loadTab(env, 'tok', 'd1');
     expect(loaded?.tab.id).toBe('t1');
-    expect(paths).toEqual(['/api/diagrams/d1', '/api/diagrams/d1/tabs/t1']);
+    expect(paths).toEqual(['/api/documents/d1', '/api/documents/d1/tabs/t1']);
   });
 
   it('loads the named tab', async () => {
@@ -147,12 +147,12 @@ describe('loadTab', () => {
     const loaded = await loadTab(env, 'tok', 'd1', 't2');
     expect(loaded?.document.id).toBe('d1');
     expect(loaded?.tab.id).toBe('t2');
-    expect(paths.at(-1)).toBe('/api/diagrams/d1/tabs/t2');
+    expect(paths.at(-1)).toBe('/api/documents/d1/tabs/t2');
   });
 
   it('is null for a diagram with no tabs, without a tab read', async () => {
     const { env, paths } = apiEnv([]);
     expect(await loadTab(env, 'tok', 'd1')).toBeNull();
-    expect(paths).toEqual(['/api/diagrams/d1']);
+    expect(paths).toEqual(['/api/documents/d1']);
   });
 });

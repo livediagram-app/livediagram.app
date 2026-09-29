@@ -80,8 +80,8 @@ beforeEach(() => {
   db.getTab.mockResolvedValue({ id: 't1', name: 'Tab', orderIndex: 0, elements: [] });
 });
 
-describe('GET /diagrams/:id/tabs/:tabId — who counts as a visitor', () => {
-  const path = '/api/diagrams/d1/tabs/t1';
+describe('GET /documents/:id/tabs/:tabId — who counts as a visitor', () => {
+  const path = '/api/documents/d1/tabs/t1';
 
   it('records nothing for a joined teammate reading a team diagram', async () => {
     const { ctx, settle } = ctxWith('GET', path, { owner: 'bob', clerkUserId: 'bob' });
@@ -109,8 +109,8 @@ describe('GET /diagrams/:id/tabs/:tabId — who counts as a visitor', () => {
   });
 });
 
-describe('POST /diagrams/:id/copy — who counts as a visitor', () => {
-  const path = '/api/diagrams/d1/copy';
+describe('POST /documents/:id/copy — who counts as a visitor', () => {
+  const path = '/api/documents/d1/copy';
 
   beforeEach(() => {
     db.copyDocument.mockResolvedValue({ ...TEAM_DOCUMENT, id: 'd2', ownerId: 'bob' });

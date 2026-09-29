@@ -104,7 +104,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- Diagrams ----
   {
     method: 'GET',
-    path: '/diagrams',
+    path: '/documents',
     segment: 'documents',
     tag: 'Documents',
     summary: "List the caller's diagrams (metadata only, no tab contents).",
@@ -115,7 +115,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/diagrams',
+    path: '/documents',
     segment: 'documents',
     tag: 'Documents',
     summary: 'Create a diagram, optionally seeding it with tabs.',
@@ -137,7 +137,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/diagrams/{id}',
+    path: '/documents/{id}',
     segment: 'documents',
     tag: 'Documents',
     summary: 'Get a diagram (metadata + tab summaries; tab contents fetched separately).',
@@ -148,7 +148,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/diagrams/{id}',
+    path: '/documents/{id}',
     segment: 'documents',
     tag: 'Documents',
     summary: 'Update a diagram name and/or tab order.',
@@ -166,7 +166,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/diagrams/{id}',
+    path: '/documents/{id}',
     segment: 'documents',
     tag: 'Documents',
     summary:
@@ -185,7 +185,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/diagrams/{id}/shared-tabs',
+    path: '/documents/{id}/shared-tabs',
     segment: 'documents',
     tag: 'Documents',
     summary: 'Count the tabs a delete would leave in other diagrams.',
@@ -196,7 +196,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/diagrams/{id}/copy',
+    path: '/documents/{id}/copy',
     segment: 'documents',
     tag: 'Documents',
     summary: "Duplicate a diagram into the caller's files.",
@@ -208,7 +208,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/diagrams/{id}/folder',
+    path: '/documents/{id}/folder',
     segment: 'documents',
     tag: 'Documents',
     summary: 'Move a diagram into a personal or team folder.',
@@ -225,7 +225,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/diagrams/{id}/tabs/{tabId}',
+    path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',
     tag: 'Documents',
     summary: 'Get the full contents (elements) of one tab.',
@@ -236,7 +236,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/diagrams/{id}/tabs/{tabId}',
+    path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',
     tag: 'Documents',
     summary: `Create or replace one tab and its elements. A new or changed tab name is stored shortened to ${NAME_MAX_LENGTH} characters.`,
@@ -248,7 +248,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/diagrams/{id}/tabs/{tabId}',
+    path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',
     tag: 'Documents',
     summary: 'Delete one tab from a diagram.',
@@ -258,7 +258,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/diagrams/{id}/tabs/{tabId}/comments',
+    path: '/documents/{id}/tabs/{tabId}/comments',
     segment: 'documents',
     tag: 'Documents',
     summary: 'Add a comment to an element on a tab.',
@@ -272,7 +272,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/diagrams/{id}/tabs/{tabId}/comments/{commentId}',
+    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}',
     segment: 'documents',
     tag: 'Documents',
     summary: 'Delete a comment.',
@@ -281,7 +281,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/diagrams/{id}/tabs/{tabId}/qa',
+    path: '/documents/{id}/tabs/{tabId}/qa',
     segment: 'documents',
     tag: 'Documents',
     summary:
@@ -321,7 +321,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/diagrams/{id}/tabs/{tabId}/link',
+    path: '/documents/{id}/tabs/{tabId}/link',
     segment: 'documents',
     tag: 'Documents',
     summary: 'Add (link) an existing tab into this diagram.',
@@ -331,7 +331,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/diagrams/{id}/share',
+    path: '/documents/{id}/share',
     segment: 'documents',
     tag: 'Sharing',
     summary: "List a diagram's share links and password state.",
@@ -342,7 +342,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/diagrams/{id}/share',
+    path: '/documents/{id}/share',
     segment: 'documents',
     tag: 'Sharing',
     summary: 'Create a share link (edit or view role, optional expiry).',
@@ -362,7 +362,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/diagrams/{id}/share',
+    path: '/documents/{id}/share',
     segment: 'documents',
     tag: 'Sharing',
     summary: 'Revoke all share links for a diagram.',
@@ -372,7 +372,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/diagrams/{id}/share-password',
+    path: '/documents/{id}/share-password',
     segment: 'documents',
     tag: 'Sharing',
     summary: "Set or clear a diagram's share password.",
@@ -387,7 +387,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/diagrams/{id}/share/{code}',
+    path: '/documents/{id}/share/{code}',
     segment: 'documents',
     tag: 'Sharing',
     summary: 'Revoke one share link by its code.',
@@ -397,7 +397,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/diagrams/{id}/share/{code}',
+    path: '/documents/{id}/share/{code}',
     segment: 'documents',
     tag: 'Sharing',
     summary: 'Change which tabs a share link opens: one tab, or null for all.',
@@ -413,7 +413,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/diagrams/{id}/share/{code}/extend',
+    path: '/documents/{id}/share/{code}/extend',
     segment: 'documents',
     tag: 'Sharing',
     summary: 'Re-arm an expiring share link.',
@@ -424,11 +424,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/diagrams/{id}/thumbnail',
+    path: '/documents/{id}/thumbnail',
     segment: 'documents',
     tag: 'Documents',
     summary:
-      "The diagram's cached SVG snapshot (a tab-scoped share visitor gets their tab). Read-gated like GET /diagrams/{id}; 404 when there is no snapshot.",
+      "The diagram's cached SVG snapshot (a tab-scoped share visitor gets their tab). Read-gated like GET /documents/{id}; 404 when there is no snapshot.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [{ name: 'v', required: false, description: 'Cache-buster (the savedAt stamp).' }],
@@ -438,7 +438,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/diagrams/{id}/room-ticket',
+    path: '/documents/{id}/room-ticket',
     segment: 'documents',
     tag: 'Documents',
     summary:
@@ -453,7 +453,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/diagrams/{id}/ws',
+    path: '/documents/{id}/ws',
     segment: 'documents',
     tag: 'Documents',
     summary:
@@ -468,7 +468,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/diagrams/{id}/log',
+    path: '/documents/{id}/log',
     segment: 'documents',
     tag: 'Activity',
     summary: "List a diagram's change-log entries.",
@@ -479,7 +479,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/diagrams/{id}/log',
+    path: '/documents/{id}/log',
     segment: 'documents',
     tag: 'Activity',
     summary: 'Append a change-log entry.',
@@ -491,7 +491,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/diagrams/{id}/log/{entryId}',
+    path: '/documents/{id}/log/{entryId}',
     segment: 'documents',
     tag: 'Activity',
     summary: 'Delete one change-log entry.',
@@ -501,7 +501,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/diagrams/{id}/log/tab/{tabId}',
+    path: '/documents/{id}/log/tab/{tabId}',
     segment: 'documents',
     tag: 'Activity',
     summary: "Clear a tab's change-log entries.",

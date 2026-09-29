@@ -55,7 +55,7 @@ export async function seedDocument(page: Page, owner: string, origin: string): P
     arrow('x2', 'actor', 's', 'UI'),
     arrow('x3', 'a', 'r', 'Use personal assistant', true),
   ];
-  const res = await page.request.post(`${apiBase}/diagrams`, {
+  const res = await page.request.post(`${apiBase}/documents`, {
     headers: { 'X-Owner-Id': owner, Origin: origin },
     data: { id, name: 'Contrast', tabs: [{ id: crypto.randomUUID(), name: 'Runa', elements }] },
   });
@@ -69,7 +69,7 @@ export async function shareLink(
   origin: string,
   id: string,
 ): Promise<string> {
-  const res = await page.request.post(`${apiBase}/diagrams/${id}/share`, {
+  const res = await page.request.post(`${apiBase}/documents/${id}/share`, {
     headers: { 'X-Owner-Id': owner, Origin: origin, 'Content-Type': 'application/json' },
     data: {},
   });

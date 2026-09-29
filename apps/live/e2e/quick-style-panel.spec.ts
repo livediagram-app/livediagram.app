@@ -26,10 +26,10 @@ async function savedElements(page: Page): Promise<El[]> {
     const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
     const id = location.pathname.split('/').filter(Boolean).pop()!;
     const headers = { 'X-Owner-Id': owner };
-    const liveDoc = await (await fetch(`/api/diagrams/${id}`, { headers })).json();
+    const liveDoc = await (await fetch(`/api/documents/${id}`, { headers })).json();
     const tabId = liveDoc.document?.tabs?.[0]?.id;
     if (!tabId) return [];
-    const got = await (await fetch(`/api/diagrams/${id}/tabs/${tabId}`, { headers })).json();
+    const got = await (await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })).json();
     return (got.tab?.elements ?? []) as El[];
   });
 }

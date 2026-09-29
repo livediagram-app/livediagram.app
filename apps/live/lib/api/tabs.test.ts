@@ -81,7 +81,7 @@ describe('flushDocumentSavesBeacon', () => {
       tabs: [makeTab('t1')],
     });
     expect(calls).toHaveLength(1);
-    expect(calls[0]!.url).toBe('/api/diagrams/diag-1/tabs/t1');
+    expect(calls[0]!.url).toBe('/api/documents/diag-1/tabs/t1');
     expect(calls[0]!.init.method).toBe('PUT');
     expect(calls[0]!.init.keepalive).toBe(true);
     expect((calls[0]!.init.headers as Record<string, string>)['X-Owner-Id']).toBe('owner-1');
@@ -124,9 +124,9 @@ describe('flushDocumentSavesBeacon', () => {
       tabs: [makeTab('t1')],
     });
     const del = calls.find((c) => c.init.method === 'DELETE')!;
-    expect(del.url).toBe('/api/diagrams/diag-1/tabs/gone');
+    expect(del.url).toBe('/api/documents/diag-1/tabs/gone');
     expect(del.init.keepalive).toBe(true);
-    const meta = calls.find((c) => c.url === '/api/diagrams/diag-1')!;
+    const meta = calls.find((c) => c.url === '/api/documents/diag-1')!;
     expect(meta.init.method).toBe('PUT');
     expect(meta.init.keepalive).toBe(true);
   });

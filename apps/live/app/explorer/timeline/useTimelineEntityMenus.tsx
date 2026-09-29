@@ -234,7 +234,7 @@ export function useTimelineEntityMenus(): {
             {
               label: 'Open Diagram',
               icon: <DocumentIcon />,
-              onClick: () => window.location.assign(`/diagram/${encodeURIComponent(id)}`),
+              onClick: () => window.location.assign(`/document/${encodeURIComponent(id)}`),
             },
           ],
         };

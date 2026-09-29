@@ -51,7 +51,7 @@ describe('diagram and tab names through the MCP SDK', () => {
       name: 'create_document',
       arguments: { name: LONG, tabs: [{ name: LONG, elements: [] }] },
     });
-    const create = sent.find((s) => s.method === 'POST' && s.path === '/diagrams')!;
+    const create = sent.find((s) => s.method === 'POST' && s.path === '/documents')!;
     expect(create.body?.name).toBe(CAPPED);
     expect((create.body?.tabs as { name: string }[])[0]!.name).toBe(CAPPED);
   });
@@ -62,14 +62,14 @@ describe('diagram and tab names through the MCP SDK', () => {
       name: 'add_tab',
       arguments: { documentId: 'd1', name: LONG, elements: [], theme: 'brand' },
     });
-    const put = sent.find((s) => s.method === 'PUT' && s.path.startsWith('/diagrams/d1/tabs/'))!;
+    const put = sent.find((s) => s.method === 'PUT' && s.path.startsWith('/documents/d1/tabs/'))!;
     expect(put.body?.name).toBe(CAPPED);
 
     const result = await client.callTool({
       name: 'rename_document',
       arguments: { documentId: 'd1', tabId: 't1', name: LONG },
     });
-    const renamed = sent.filter((s) => s.method === 'PUT' && s.path === '/diagrams/d1/tabs/t1');
+    const renamed = sent.filter((s) => s.method === 'PUT' && s.path === '/documents/d1/tabs/t1');
     expect(renamed.at(-1)?.body?.name).toBe(CAPPED);
     const text = (result.content as { type: string; text: string }[])[0]!.text;
     expect(JSON.parse(text).name).toBe(CAPPED);
@@ -78,7 +78,7 @@ describe('diagram and tab names through the MCP SDK', () => {
   it('rename_document sends the shortened diagram name', async () => {
     const { client, sent } = await connect();
     await client.callTool({ name: 'rename_document', arguments: { documentId: 'd1', name: LONG } });
-    const put = sent.find((s) => s.method === 'PUT' && s.path === '/diagrams/d1')!;
+    const put = sent.find((s) => s.method === 'PUT' && s.path === '/documents/d1')!;
     expect(put.body).toEqual({ name: CAPPED });
   });
 });

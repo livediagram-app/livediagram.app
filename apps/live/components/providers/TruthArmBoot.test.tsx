@@ -25,7 +25,7 @@ describe('TruthArmBoot', () => {
 
   it('remembers being turned OFF, which is what the flag is for on localhost', () => {
     localStorage.setItem(TRUTH_ARMED_KEY, '1');
-    window.history.replaceState({}, '', '/diagram/abc/?truth=0');
+    window.history.replaceState({}, '', '/document/abc/?truth=0');
     render(<TruthArmBoot />);
     // Not "forget the flag": on a machine where the host alone would arm it,
     // forgetting means arming, and the author asked for the opposite.

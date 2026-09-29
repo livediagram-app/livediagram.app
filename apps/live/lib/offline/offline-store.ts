@@ -10,6 +10,7 @@
 // offline ids IS the set of record keys, mirrored in an in-memory cache so the
 // dispatch can answer "is this id offline?" cheaply.
 
+import { upgradeStores } from './legacy-offline-store';
 import type { ChangeLogEntry, LiveDoc, DocumentSummary, TabSummary } from '@livediagram/api-schema';
 import { migrateStoredTab, stampTabKind } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
@@ -20,7 +21,9 @@ import { DocumentTrashedError } from '../document-trashed';
 export const OFFLINE_OWNER_ID = 'offline';
 
 const DB_NAME = 'livediagram-offline';
-const DB_VERSION = 1;
+// Version 2 renamed the object store (docs/specs/006-document/offline-mode.md);
+// ./legacy-offline-store moves every record across.
+const DB_VERSION = 2;
 const STORE = 'documents';
 
 // The stored shape for one offline diagram.
@@ -190,10 +193,7 @@ function openDb(): Promise<IDBDatabase> {
       return;
     }
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'id' });
-    };
+    req.onupgradeneeded = () => upgradeStores(req.result, req.transaction!, STORE);
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error ?? new Error('IndexedDB open failed'));
   });

@@ -7,7 +7,7 @@ import { test, expect, dismissQuickTour, expectNoPageErrors, startBlankDocument 
 test('a save refused as unauthenticated says so, then recovers', async ({ page, pageErrors }) => {
   await startBlankDocument(page);
   const canvas = page.locator('[data-canvas-a11y-root]');
-  const tabWrites = '**/api/diagrams/*/tabs/*';
+  const tabWrites = '**/api/documents/*/tabs/*';
 
   await page.route(tabWrites, (route) =>
     route.request().method() === 'PUT'
@@ -29,7 +29,7 @@ test('a save refused as unauthenticated says so, then recovers', async ({ page, 
   await page.unroute(tabWrites);
   await dismissQuickTour(page);
   const saved = page.waitForResponse(
-    (r) => r.request().method() === 'PUT' && /\/api\/diagrams\/[^/]+\/tabs\//.test(r.url()),
+    (r) => r.request().method() === 'PUT' && /\/api\/documents\/[^/]+\/tabs\//.test(r.url()),
   );
   await page.getByRole('button', { name: 'Add square', exact: true }).click();
   await canvas.click({ position: { x: 560, y: 300 } });

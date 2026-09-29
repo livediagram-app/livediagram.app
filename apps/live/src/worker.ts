@@ -78,12 +78,12 @@ export default {
     // rewrite the request rather than redirect so the browser URL
     // stays `/diagram/<id>` (that's the whole point of the path
     // scheme).
-    if (url.pathname === '/diagram' || url.pathname.startsWith('/diagram/')) {
+    if (url.pathname === '/document' || url.pathname.startsWith('/document/')) {
       // Skip if the request already points at the placeholder asset
       // (otherwise we'd loop). Static Assets resolves the extension.
-      if (url.pathname !== '/diagram/placeholder') {
+      if (url.pathname !== '/document/placeholder') {
         const rewritten = new URL(request.url);
-        rewritten.pathname = '/diagram/placeholder';
+        rewritten.pathname = '/document/placeholder';
         return withSecurityHeaders(
           await env.ASSETS.fetch(new Request(rewritten.toString(), request)),
         );

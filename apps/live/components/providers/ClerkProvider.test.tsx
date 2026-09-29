@@ -11,7 +11,7 @@ import { useEffect } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DEFERRED_AUTH_DEFAULT, useDeferredAuth, type DeferredAuthState } from './deferred-auth';
 
-let pathname = '/diagram/abc';
+let pathname = '/document/abc';
 vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
 vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true, clerkPublishableKey: 'pk_test' }));
 
@@ -51,7 +51,7 @@ describe('ClerkProvider across an auth page', () => {
     // Back in the app. Every render before the bridge republishes must read
     // "not settled", so the editor waits for auth (and the migration).
     seen.length = 0;
-    pathname = '/diagram/abc';
+    pathname = '/document/abc';
     rerender(tree());
     expect(seen[0]).toBe(false);
   });

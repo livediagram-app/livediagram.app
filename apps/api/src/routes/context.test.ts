@@ -34,7 +34,7 @@ function makeCtx(
   opts: { owner?: string | null; headers?: Record<string, string> } = {},
 ): RouteContext {
   const owner = opts.owner === undefined ? 'owner-1' : opts.owner;
-  const url = new URL('https://api.test/api/diagrams/d1');
+  const url = new URL('https://api.test/api/documents/d1');
   const request = new Request(url, { headers: opts.headers ?? {} });
   return {
     request,

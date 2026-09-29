@@ -16,7 +16,7 @@ export default function LiveIndex() {
     const url = new URL(window.location.href);
     const shareCode = url.searchParams.get('s');
     if (shareCode) {
-      window.location.replace(`${window.location.origin}/diagram/shared?s=${shareCode}`);
+      window.location.replace(`${window.location.origin}/document/shared?s=${shareCode}`);
       return;
     }
     window.location.replace(`${window.location.origin}/new`);

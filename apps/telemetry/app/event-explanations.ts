@@ -383,7 +383,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Note|Deleted|': 'A note was cleared from an element.',
   'Note|Opened|': 'Someone opened the note popover on an element.',
   'Page|View|/': 'Someone visited the marketing homepage.',
-  'Page|View|/diagram':
+  'Page|View|/document':
     "Someone opened a diagram in the editor. Every diagram's page counts under this same path, with no diagram-specific detail recorded.",
   'Page|View|/explorer': 'Someone opened the Explorer, landing on its default section.',
   'Page|View|/explorer/activity': "Someone navigated to the Explorer's Activity section.",

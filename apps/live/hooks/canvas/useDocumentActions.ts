@@ -156,7 +156,7 @@ export function useDocumentActions(deps: DocumentActionsDeps) {
       // A visitor cloning someone else's shared diagram into their own
       // account; a distinct signal from duplicating your own (type 'Copy').
       track('Document', 'Duplicated', 'Copy');
-      window.location.assign(`${window.location.origin}/diagram/${copy.id}`);
+      window.location.assign(`${window.location.origin}/document/${copy.id}`);
     } catch {
       // Network / auth glitch; let the user try again. Leave the
       // header button enabled by clearing the loading flag.

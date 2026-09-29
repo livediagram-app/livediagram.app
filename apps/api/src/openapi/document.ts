@@ -88,7 +88,7 @@ function operationId(route: RouteSpec): string {
 //     whole realtime session (docs/specs/015-api/api.md).
 // A read that no token can reach cannot 429, and saying otherwise would send
 // an integrator writing retry logic for a status it will never see.
-const RATE_LIMIT_EXEMPT_WRITES = new Set(['post /events', 'post /diagrams/{id}/room-ticket']);
+const RATE_LIMIT_EXEMPT_WRITES = new Set(['post /events', 'post /documents/{id}/room-ticket']);
 
 function isRateLimited(route: RouteSpec): boolean {
   const id = `${route.method.toLowerCase()} ${route.path}`;

@@ -363,7 +363,7 @@ export default function NewDocumentPage() {
     // reading the id from the rewritten path exactly as a direct visit would.
     handedOff.current = true;
     document.documentElement.removeAttribute('data-just-draw');
-    window.history.replaceState(null, '', `/diagram/${documentId}`);
+    window.history.replaceState(null, '', `/document/${documentId}`);
     setOpenedId(documentId);
   };
 

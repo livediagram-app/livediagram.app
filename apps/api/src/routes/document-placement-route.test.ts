@@ -48,7 +48,7 @@ const inTeam = (over: Partial<DocumentDTO> = {}) =>
 function ctxWith(body: unknown, owner = 'bob') {
   const pending: Promise<unknown>[] = [];
   return {
-    ctx: makeTestRouteContext('PUT', '/api/diagrams/d1/folder', {
+    ctx: makeTestRouteContext('PUT', '/api/documents/d1/folder', {
       owner,
       clerkUserId: owner,
       body,
@@ -64,7 +64,7 @@ beforeEach(() => {
   db.getDocument.mockReset();
 });
 
-describe('PUT /diagrams/:id/folder — leaving a team library', () => {
+describe('PUT /documents/:id/folder — leaving a team library', () => {
   it('records the removal, not a folder move', async () => {
     const before = inTeam();
     db.getDocument

@@ -52,9 +52,9 @@ async function boardTab(page: Page): Promise<BoardTab> {
     const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
     const id = location.pathname.split('/').filter(Boolean).pop()!;
     const headers = { 'X-Owner-Id': owner };
-    const liveDoc = await (await fetch(`${apiBase}/diagrams/${id}`, { headers })).json();
+    const liveDoc = await (await fetch(`${apiBase}/documents/${id}`, { headers })).json();
     const tabId = liveDoc.document.tabs[0].id;
-    const tab = await (await fetch(`${apiBase}/diagrams/${id}/tabs/${tabId}`, { headers })).json();
+    const tab = await (await fetch(`${apiBase}/documents/${id}/tabs/${tabId}`, { headers })).json();
     return tab.tab;
   }, apiBase);
 }

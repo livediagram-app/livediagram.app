@@ -47,7 +47,7 @@ test.describe('Optical alignment audit', () => {
     const owner = crypto.randomUUID();
     const id = await seedDocument(page, owner, new URL(baseURL!).origin);
     await darkVisitor(page, owner);
-    await page.goto(`/diagram/${id}`);
+    await page.goto(`/document/${id}`);
     await page.locator(CANVAS).waitFor();
     await dismissQuickTour(page);
     const spinner = page.getByRole('img', { name: /Spinner/ }).first();
@@ -76,7 +76,7 @@ test.describe('Optical alignment audit', () => {
     const id = await seedDocument(page, owner, origin);
     const code = await shareLink(page, owner, origin, id);
     const visitor = await freshDarkPage(browser, 4);
-    await visitor.goto(`/diagram/shared?s=${code}`);
+    await visitor.goto(`/document/shared?s=${code}`);
     await visitor.getByRole('button', { name: /^join$/i }).waitFor();
     await expectCentred(visitor, 'Join dialog');
     await visitor.context().close();

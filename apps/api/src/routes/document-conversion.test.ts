@@ -109,10 +109,10 @@ beforeEach(() => {
   vi.mocked(markTimelineEventsDeletedBySource).mockClear();
 });
 
-describe('DELETE /diagrams/:id — take offline vs real delete', () => {
+describe('DELETE /documents/:id — take offline vs real delete', () => {
   it('records the diagram as taken offline when the conversion is declared', async () => {
     db.getDocument.mockResolvedValue(liveDoc);
-    const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', conversion('offline'));
+    const { ctx, settle } = ctxWith('DELETE', '/api/documents/d1', conversion('offline'));
     expect((await handleDocuments(ctx)).status).toBe(204);
     await settle();
     expect(timeline.recordDocumentOffline).toHaveBeenCalledTimes(1);
@@ -122,7 +122,7 @@ describe('DELETE /diagrams/:id — take offline vs real delete', () => {
     // docs/specs/013-workspace/trash.md: its history is hidden while it waits
     // (and comes back on restore), so nothing is swept and no card is added.
     db.getDocument.mockResolvedValue(liveDoc);
-    const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1');
+    const { ctx, settle } = ctxWith('DELETE', '/api/documents/d1');
     expect((await handleDocuments(ctx)).status).toBe(204);
     await settle();
     expect(db.trashDocument).toHaveBeenCalledWith(expect.anything(), 'd1', expect.any(Number));
@@ -134,7 +134,7 @@ describe('DELETE /diagrams/:id — take offline vs real delete', () => {
     // The header is client-supplied, so anything outside the two known values
     // has to fall back to the truthful default.
     db.getDocument.mockResolvedValue(liveDoc);
-    const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', conversion('nonsense'));
+    const { ctx, settle } = ctxWith('DELETE', '/api/documents/d1', conversion('nonsense'));
     await handleDocuments(ctx);
     await settle();
     expect(timeline.recordDocumentOffline).not.toHaveBeenCalled();
@@ -142,7 +142,7 @@ describe('DELETE /diagrams/:id — take offline vs real delete', () => {
 
   it('removes the server row on Take Offline, bypassing the Trash', async () => {
     db.getDocument.mockResolvedValue(liveDoc);
-    const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', conversion('offline'));
+    const { ctx, settle } = ctxWith('DELETE', '/api/documents/d1', conversion('offline'));
     await handleDocuments(ctx);
     await settle();
     // Taking a diagram offline really does remove the server copy — only the
@@ -164,7 +164,7 @@ describe("a non-owner cannot convert someone else's diagram", () => {
   });
 
   it('treats a joined teammates declared conversion as a plain delete, to the team Trash', async () => {
-    const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', {
+    const { ctx, settle } = ctxWith('DELETE', '/api/documents/d1', {
       owner: 'bob',
       clerkUserId: 'bob',
       ...conversion('offline'),
@@ -178,7 +178,7 @@ describe("a non-owner cannot convert someone else's diagram", () => {
 
   it('still honours the conversion when the owner does it on a team diagram', async () => {
     // Ownership is what gates it, not the absence of a team.
-    const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', {
+    const { ctx, settle } = ctxWith('DELETE', '/api/documents/d1', {
       owner: 'alice',
       clerkUserId: 'alice',
       ...conversion('offline'),
@@ -189,12 +189,12 @@ describe("a non-owner cannot convert someone else's diagram", () => {
   });
 });
 
-describe('POST /diagrams — sync vs genuine create', () => {
+describe('POST /documents — sync vs genuine create', () => {
   const body = { id: 'd1', name: 'Doc' };
 
   it('records a sync when the conversion is declared', async () => {
     db.getDocument.mockResolvedValueOnce(null).mockResolvedValueOnce(liveDoc);
-    const { ctx, settle } = ctxWith('POST', '/api/diagrams', { body, ...conversion('sync') });
+    const { ctx, settle } = ctxWith('POST', '/api/documents', { body, ...conversion('sync') });
     expect((await handleDocuments(ctx)).status).toBe(201);
     await settle();
     expect(timeline.recordDocumentSynced).toHaveBeenCalledTimes(1);
@@ -203,7 +203,7 @@ describe('POST /diagrams — sync vs genuine create', () => {
 
   it('still records a genuine create when nothing is declared', async () => {
     db.getDocument.mockResolvedValueOnce(null).mockResolvedValueOnce(liveDoc);
-    const { ctx, settle } = ctxWith('POST', '/api/diagrams', { body });
+    const { ctx, settle } = ctxWith('POST', '/api/documents', { body });
     await handleDocuments(ctx);
     await settle();
     expect(timeline.recordDocumentCreated).toHaveBeenCalledTimes(1);
@@ -214,7 +214,7 @@ describe('POST /diagrams — sync vs genuine create', () => {
     // docs/specs/013-workspace/timeline.md §4.2: a re-commit of an id the caller already owns is not an
     // event at all, and declaring a conversion must not smuggle one in.
     db.getDocument.mockResolvedValue(liveDoc);
-    const { ctx, settle } = ctxWith('POST', '/api/diagrams', { body, ...conversion('sync') });
+    const { ctx, settle } = ctxWith('POST', '/api/documents', { body, ...conversion('sync') });
     await handleDocuments(ctx);
     await settle();
     expect(timeline.recordDocumentSynced).not.toHaveBeenCalled();

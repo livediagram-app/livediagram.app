@@ -261,7 +261,7 @@ describe('installClientErrorTracking', () => {
 
   it('names the kind, the page, and the error constructor', () => {
     const track = vi.fn();
-    at('/diagram/0b7c5f9e-1111-4222-8333-944445555666');
+    at('/document/0b7c5f9e-1111-4222-8333-944445555666');
     mod.installClientErrorTracking(track);
     windowTarget.fire('error', { error: new TypeError('x is undefined') });
     windowTarget.fire('unhandledrejection', { reason: new RangeError('bad') });
@@ -294,7 +294,7 @@ describe('installClientErrorTracking', () => {
 
   it('caps each distinct type per page load so an error storm cannot flood', () => {
     const track = vi.fn();
-    at('/diagram');
+    at('/document');
     mod.installClientErrorTracking(track);
     for (let i = 0; i < 25; i++) windowTarget.fire('error', { error: new TypeError('x') });
     expect(track).toHaveBeenCalledTimes(10);

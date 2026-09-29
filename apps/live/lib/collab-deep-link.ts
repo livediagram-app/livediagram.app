@@ -24,7 +24,7 @@ export function collabDeepLinkHref(place: ActivityPlace, open: CollabPopover): s
   const query =
     place.via === 'shared' && place.shareCode ? `?s=${encodeURIComponent(place.shareCode)}` : '';
   const hash = `#t=${encodeURIComponent(place.tabId)}&el=${encodeURIComponent(place.elementId)}&open=${open}`;
-  return `/diagram/${encodeURIComponent(place.documentId)}${query}${hash}`;
+  return `/document/${encodeURIComponent(place.documentId)}${query}${hash}`;
 }
 
 // Null unless the fragment names BOTH a tab and an element: a plain

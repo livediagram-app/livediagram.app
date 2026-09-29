@@ -131,7 +131,7 @@ export async function takeCloudOffline(
     // Declare the conversion: this DELETE is indistinguishable from a real
     // delete at the boundary, and undeclared the feed told the owner their
     // diagram had been deleted (docs/specs/006-document/offline-mode.md + docs/specs/013-workspace/timeline.md).
-    await apiDelete(`${API_BASE}/diagrams/${documentId}`, ownerId, {
+    await apiDelete(`${API_BASE}/documents/${documentId}`, ownerId, {
       action: 'take offline',
       extra: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
     });

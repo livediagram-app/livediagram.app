@@ -86,8 +86,8 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     if (typeof window === 'undefined') return;
     if (id === currentDocument?.id) return;
     const url = shareCode
-      ? `${window.location.origin}/diagram/${id}?s=${encodeURIComponent(shareCode)}`
-      : `${window.location.origin}/diagram/${id}`;
+      ? `${window.location.origin}/document/${id}?s=${encodeURIComponent(shareCode)}`
+      : `${window.location.origin}/document/${id}`;
     window.location.assign(url);
   };
 

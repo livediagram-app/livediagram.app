@@ -127,7 +127,7 @@ test.describe('Appearance', () => {
 
     // A preference write is fine (it is the user's own setting); a write to the
     // diagram, its tabs or its change log is not.
-    expect(writes.filter((w) => /\/api\/diagrams/.test(w))).toEqual([]);
+    expect(writes.filter((w) => /\/api\/documents/.test(w))).toEqual([]);
     expectNoPageErrors(pageErrors);
   });
 

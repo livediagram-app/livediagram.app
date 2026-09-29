@@ -42,7 +42,7 @@ export function ApiArt() {
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
           </div>
           <div className="px-2 py-1.5 font-mono text-[7px] leading-relaxed">
-            <div className="text-slate-400">$ curl …/api/diagrams</div>
+            <div className="text-slate-400">$ curl …/api/documents</div>
             <div className="text-slate-600 dark:text-slate-300">
               -H &quot;Authorization:{' '}
               <span className="font-semibold text-brand-600 dark:text-brand-300">Bearer lvd_…</span>

@@ -40,8 +40,8 @@ import { VisibilityBadge } from './document-badges';
 // a non-owner); everything else opens on the owned path.
 export function hrefForDocument(liveDoc: PaneDocument): string {
   return liveDoc.shared
-    ? `/diagram/${liveDoc.id}?s=${encodeURIComponent(liveDoc.shared.shareCode)}`
-    : `/diagram/${liveDoc.id}`;
+    ? `/document/${liveDoc.id}?s=${encodeURIComponent(liveDoc.shared.shareCode)}`
+    : `/document/${liveDoc.id}`;
 }
 
 // Who a row's Owner cell names: the team for a team diagram, the sharer

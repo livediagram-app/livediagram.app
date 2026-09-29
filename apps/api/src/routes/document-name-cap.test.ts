@@ -42,10 +42,10 @@ beforeEach(() => {
 });
 afterEach(() => vi.restoreAllMocks());
 
-describe('POST /api/diagrams name cap', () => {
+describe('POST /api/documents name cap', () => {
   it('stores and returns an over-long diagram name shortened', async () => {
     const db = sqliteD1();
-    const res = await call(db, 'POST', '/api/diagrams', { id: 'D', name: LONG });
+    const res = await call(db, 'POST', '/api/documents', { id: 'D', name: LONG });
     expect(res.status).toBe(201);
     expect(documentName(db.sql, 'D')).toBe(LONG_CAPPED);
     expect(((await res.json()) as { document: { name: string } }).document.name).toBe(LONG_CAPPED);
@@ -53,7 +53,7 @@ describe('POST /api/diagrams name cap', () => {
 
   it('shortens every seeded tab name', async () => {
     const db = sqliteD1();
-    await call(db, 'POST', '/api/diagrams', {
+    await call(db, 'POST', '/api/documents', {
       id: 'D',
       name: 'Plan',
       tabs: [{ id: 't1', name: LONG, elements: [square] }],
@@ -63,25 +63,25 @@ describe('POST /api/diagrams name cap', () => {
 
   it('accepts a name far past the old 500-character bound, shortened', async () => {
     const db = sqliteD1();
-    const res = await call(db, 'POST', '/api/diagrams', { id: 'D', name: 'word '.repeat(200) });
+    const res = await call(db, 'POST', '/api/documents', { id: 'D', name: 'word '.repeat(200) });
     expect(res.status).toBe(201);
     expect([...documentName(db.sql, 'D')!].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
   });
 
   it('refuses a name that is only whitespace', async () => {
     const db = sqliteD1();
-    const res = await call(db, 'POST', '/api/diagrams', { id: 'D', name: ' \n\t ' });
+    const res = await call(db, 'POST', '/api/documents', { id: 'D', name: ' \n\t ' });
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: 'bad_request', message: 'missing id/name' });
     expect(documentName(db.sql, 'D')).toBeUndefined();
   });
 });
 
-describe('PUT /api/diagrams/:id name cap', () => {
+describe('PUT /api/documents/:id name cap', () => {
   it('shortens a rename', async () => {
     const db = sqliteD1();
-    await call(db, 'POST', '/api/diagrams', { id: 'D', name: 'Plan' });
-    const res = await call(db, 'PUT', '/api/diagrams/D', { name: LONG });
+    await call(db, 'POST', '/api/documents', { id: 'D', name: 'Plan' });
+    const res = await call(db, 'PUT', '/api/documents/D', { name: LONG });
     expect(res.status).toBe(200);
     expect(documentName(db.sql, 'D')).toBe(LONG_CAPPED);
   });
@@ -89,26 +89,26 @@ describe('PUT /api/diagrams/:id name cap', () => {
   it('leaves a pre-cap over-long name alone when it is sent back unchanged', async () => {
     const db = sqliteD1();
     legacyDocument(db.sql, 'D', LONG);
-    const res = await call(db, 'PUT', '/api/diagrams/D', { name: LONG, tabIds: [] });
+    const res = await call(db, 'PUT', '/api/documents/D', { name: LONG, tabIds: [] });
     expect(res.status).toBe(200);
     expect(documentName(db.sql, 'D')).toBe(LONG);
   });
 
   it('refuses a rename to only whitespace, keeping the name', async () => {
     const db = sqliteD1();
-    await call(db, 'POST', '/api/diagrams', { id: 'D', name: 'Plan' });
-    const res = await call(db, 'PUT', '/api/diagrams/D', { name: '   ' });
+    await call(db, 'POST', '/api/documents', { id: 'D', name: 'Plan' });
+    const res = await call(db, 'PUT', '/api/documents/D', { name: '   ' });
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: 'bad_request', message: 'missing name' });
     expect(documentName(db.sql, 'D')).toBe('Plan');
   });
 });
 
-describe('PUT /api/diagrams/:id/tabs/:tabId name cap', () => {
+describe('PUT /api/documents/:id/tabs/:tabId name cap', () => {
   it('shortens a new tab name', async () => {
     const db = sqliteD1();
-    await call(db, 'POST', '/api/diagrams', { id: 'D', name: 'Plan' });
-    const res = await call(db, 'PUT', '/api/diagrams/D/tabs/t1', {
+    await call(db, 'POST', '/api/documents', { id: 'D', name: 'Plan' });
+    const res = await call(db, 'PUT', '/api/documents/D/tabs/t1', {
       id: 't1',
       name: LONG,
       elements: [square],
@@ -120,17 +120,17 @@ describe('PUT /api/diagrams/:id/tabs/:tabId name cap', () => {
 
   it('leaves a pre-cap over-long tab name alone on an unchanged autosave', async () => {
     const db = sqliteD1();
-    await call(db, 'POST', '/api/diagrams', { id: 'D', name: 'Plan' });
-    await call(db, 'PUT', '/api/diagrams/D/tabs/t1', { id: 't1', name: 'Tab', elements: [] });
+    await call(db, 'POST', '/api/documents', { id: 'D', name: 'Plan' });
+    await call(db, 'PUT', '/api/documents/D/tabs/t1', { id: 't1', name: 'Tab', elements: [] });
     db.sql.prepare('UPDATE tabs SET name = ? WHERE id = ?').run(LONG, 't1');
-    await call(db, 'PUT', '/api/diagrams/D/tabs/t1', { id: 't1', name: LONG, elements: [square] });
+    await call(db, 'PUT', '/api/documents/D/tabs/t1', { id: 't1', name: LONG, elements: [square] });
     expect(tabName(db.sql, 't1')).toBe(LONG);
   });
 
   it('keeps an empty tab name empty', async () => {
     const db = sqliteD1();
-    await call(db, 'POST', '/api/diagrams', { id: 'D', name: 'Plan' });
-    const res = await call(db, 'PUT', '/api/diagrams/D/tabs/t1', {
+    await call(db, 'POST', '/api/documents', { id: 'D', name: 'Plan' });
+    const res = await call(db, 'PUT', '/api/documents/D/tabs/t1', {
       id: 't1',
       name: '',
       elements: [],
@@ -140,18 +140,18 @@ describe('PUT /api/diagrams/:id/tabs/:tabId name cap', () => {
   });
 });
 
-describe('POST /api/diagrams/:id/copy name cap', () => {
+describe('POST /api/documents/:id/copy name cap', () => {
   it('shortens a default "Copy of" name that runs past the cap', async () => {
     const db = sqliteD1();
-    await call(db, 'POST', '/api/diagrams', {
+    await call(db, 'POST', '/api/documents', {
       id: 'D',
       name: 'Quarterly platform migration plan for payments',
     });
-    const res = await call(db, 'POST', '/api/diagrams/D/copy', {});
+    const res = await call(db, 'POST', '/api/documents/D/copy', {});
     expect(res.status).toBe(201);
     const { document: liveDoc } = (await res.json()) as { document: { id: string; name: string } };
     expect(liveDoc.name).toBe('Copy of Quarterly platform migration plan for payments');
-    const res2 = await call(db, 'POST', '/api/diagrams/D/copy', { name: LONG });
+    const res2 = await call(db, 'POST', '/api/documents/D/copy', { name: LONG });
     const copy = (await res2.json()) as { document: { id: string; name: string } };
     expect(copy.document.name).toBe(LONG_CAPPED);
     expect(documentName(db.sql, copy.document.id)).toBe(LONG_CAPPED);
@@ -159,8 +159,8 @@ describe('POST /api/diagrams/:id/copy name cap', () => {
 
   it('shortens the default name built from a source already at the cap', async () => {
     const db = sqliteD1();
-    await call(db, 'POST', '/api/diagrams', { id: 'D', name: LONG_CAPPED });
-    const res = await call(db, 'POST', '/api/diagrams/D/copy', {});
+    await call(db, 'POST', '/api/documents', { id: 'D', name: LONG_CAPPED });
+    const res = await call(db, 'POST', '/api/documents/D/copy', {});
     const { document: liveDoc } = (await res.json()) as { document: { name: string } };
     expect([...liveDoc.name].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
     expect(liveDoc.name.startsWith('Copy of Quarterly')).toBe(true);

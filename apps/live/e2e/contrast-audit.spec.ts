@@ -45,7 +45,7 @@ test.describe('Contrast audit, dark mode', () => {
     const origin = new URL(baseURL!).origin;
     const id = await seedDocument(page, owner, origin);
     await darkVisitor(page, owner);
-    await page.goto(`/diagram/${id}`);
+    await page.goto(`/document/${id}`);
     await page.locator(CANVAS).waitFor();
     await dismissQuickTour(page);
     await expect(page.getByRole('img', { name: /Spinner/ }).first()).toBeVisible();
@@ -76,7 +76,7 @@ test.describe('Contrast audit, dark mode', () => {
     const id = await seedDocument(page, owner, origin);
     const code = await shareLink(page, owner, origin, id);
     const visitor = await freshDarkPage(browser);
-    await visitor.goto(`/diagram/shared?s=${code}`);
+    await visitor.goto(`/document/shared?s=${code}`);
     await visitor.getByRole('button', { name: /^join$/i }).waitFor();
     expectAA(await auditContrast(visitor), 'Join dialog');
     await visitor.context().close();

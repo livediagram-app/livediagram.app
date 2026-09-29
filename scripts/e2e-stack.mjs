@@ -131,7 +131,7 @@ function resolveStatic(pathname) {
   // files live at out/_next/*.
   let p = pathname.startsWith('/live/') ? pathname.slice('/live'.length) : pathname;
   // /diagram and everything under it share one placeholder HTML.
-  if (p === '/diagram' || p.startsWith('/diagram/')) p = '/diagram/placeholder';
+  if (p === '/document' || p.startsWith('/document/')) p = '/document/placeholder';
   if (p === '/') p = '/index';
   const candidates = [
     path.join(OUT_DIR, p), // exact file (assets)
@@ -255,7 +255,7 @@ function startLiveServer() {
     // this the stack answered 404, the page recovered client-side without its
     // query string, and `?truth=1` typed on `/new/` armed nothing.
     const bare = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : null;
-    if (bare && !bare.startsWith('/diagram') && existsSync(path.join(OUT_DIR, `${bare}.html`))) {
+    if (bare && !bare.startsWith('/document') && existsSync(path.join(OUT_DIR, `${bare}.html`))) {
       const search = new URL(req.url, 'http://localhost').search;
       res.writeHead(307, { Location: `${bare}${search}` });
       res.end();

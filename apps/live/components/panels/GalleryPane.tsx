@@ -211,7 +211,7 @@ function GalleryCard({
           {usage.map((d) => (
             <li key={d.id} className="truncate text-[11px]">
               <a
-                href={`/diagram/${encodeURIComponent(d.id)}`}
+                href={`/document/${encodeURIComponent(d.id)}`}
                 className="text-brand-700 transition hover:text-brand-800 hover:underline dark:text-brand-300 dark:hover:text-brand-200"
               >
                 {d.name || 'Untitled diagram'}

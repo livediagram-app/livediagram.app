@@ -22,7 +22,7 @@ vi.mock('./context', async (orig) => ({
 
 import { handleQaBoardRoute } from './qa-board-routes';
 
-const PATH = '/api/diagrams/d1/tabs/t1/qa';
+const PATH = '/api/documents/d1/tabs/t1/qa';
 
 function setup(reply: () => Response = () => Response.json({ notes: [], rev: 1 })) {
   const sent: { url: string; body: QaWriteRequest; room: string }[] = [];
@@ -56,7 +56,7 @@ beforeEach(() => {
 
 describe('handleQaBoardRoute', () => {
   it('ignores other paths', async () => {
-    const res = await handleQaBoardRoute(makeTestRouteContext('POST', '/api/diagrams/d1/tabs/t1'));
+    const res = await handleQaBoardRoute(makeTestRouteContext('POST', '/api/documents/d1/tabs/t1'));
     expect(res).toBeNull();
   });
 

@@ -99,15 +99,15 @@ async function trashed() {
 
 describe('a trashed diagram, to someone who could open it', () => {
   const doors: [string, string, Parameters<typeof makeTestRouteContext>[2]?][] = [
-    ['GET', '/api/diagrams/A'],
-    ['PUT', '/api/diagrams/A', { body: { name: 'renamed' } }],
-    ['GET', '/api/diagrams/A/tabs/t1'],
-    ['PUT', '/api/diagrams/A/tabs/t1', { body: { id: 't1', name: 't1', elements: [] } }],
-    ['DELETE', '/api/diagrams/A/tabs/t1'],
-    ['GET', '/api/diagrams/A/log'],
+    ['GET', '/api/documents/A'],
+    ['PUT', '/api/documents/A', { body: { name: 'renamed' } }],
+    ['GET', '/api/documents/A/tabs/t1'],
+    ['PUT', '/api/documents/A/tabs/t1', { body: { id: 't1', name: 't1', elements: [] } }],
+    ['DELETE', '/api/documents/A/tabs/t1'],
+    ['GET', '/api/documents/A/log'],
     [
       'POST',
-      '/api/diagrams/A/log',
+      '/api/documents/A/log',
       {
         body: {
           id: 'e1',
@@ -121,11 +121,11 @@ describe('a trashed diagram, to someone who could open it', () => {
         },
       },
     ],
-    ['POST', '/api/diagrams/A/copy', { body: {} }],
-    ['PUT', '/api/diagrams/A/folder', { body: { folderId: null } }],
-    ['GET', '/api/diagrams/A/shared-tabs'],
-    ['GET', '/api/diagrams/A/share'],
-    ['POST', '/api/diagrams/A/room-ticket'],
+    ['POST', '/api/documents/A/copy', { body: {} }],
+    ['PUT', '/api/documents/A/folder', { body: { folderId: null } }],
+    ['GET', '/api/documents/A/shared-tabs'],
+    ['GET', '/api/documents/A/share'],
+    ['POST', '/api/documents/A/room-ticket'],
   ];
 
   it.each(doors)('%s %s answers document_trashed to its owner', async (method, path, opts) => {
@@ -135,7 +135,7 @@ describe('a trashed diagram, to someone who could open it', () => {
 
   it('answers document_trashed to a share-link holder', async () => {
     const db = await trashed();
-    const res = call(db, 'GET', '/api/diagrams/A/tabs/t1', {
+    const res = call(db, 'GET', '/api/documents/A/tabs/t1', {
       owner: 'visitor',
       headers: { 'X-Share-Code': 'code-A' },
     });
@@ -152,7 +152,7 @@ describe('a trashed diagram, to someone who could open it', () => {
 
   it('refuses to be re-created over by its owner', async () => {
     const db = await trashed();
-    const res = call(db, 'POST', '/api/diagrams', {
+    const res = call(db, 'POST', '/api/documents', {
       owner: 'owner',
       body: { id: 'A', name: 'again', tabs: [] },
     });
@@ -164,15 +164,15 @@ describe('a trashed diagram, to someone who could open it', () => {
 describe('a trashed diagram, to anyone else', () => {
   it('reads as missing', async () => {
     const db = await trashed();
-    expect((await call(db, 'GET', '/api/diagrams/A', { owner: 'stranger' }))!.status).toBe(404);
-    expect((await call(db, 'GET', '/api/diagrams/A/tabs/t1', { owner: 'stranger' }))!.status).toBe(
+    expect((await call(db, 'GET', '/api/documents/A', { owner: 'stranger' }))!.status).toBe(404);
+    expect((await call(db, 'GET', '/api/documents/A/tabs/t1', { owner: 'stranger' }))!.status).toBe(
       404,
     );
   });
 
   it('cannot be claimed by re-creating its id', async () => {
     const db = await trashed();
-    const res = call(db, 'POST', '/api/diagrams', {
+    const res = call(db, 'POST', '/api/documents', {
       owner: 'attacker',
       body: { id: 'A', name: 'mine now', tabs: [] },
     });
@@ -184,7 +184,7 @@ describe('a trashed diagram, to anyone else', () => {
 
   it('refuses a realtime join, even with its share code', async () => {
     const db = await trashed();
-    const res = await call(db, 'GET', '/api/diagrams/A/ws?s=code-A&o=owner', {
+    const res = await call(db, 'GET', '/api/documents/A/ws?s=code-A&o=owner', {
       headers: { Upgrade: 'websocket' },
     });
     expect(res!.status).toBe(404);
@@ -193,7 +193,7 @@ describe('a trashed diagram, to anyone else', () => {
   it('serves no thumbnail', async () => {
     const db = await trashed();
     expect(
-      (await call(db, 'GET', '/api/diagrams/A/thumbnail', { owner: 'owner' }))!.status,
+      (await call(db, 'GET', '/api/documents/A/thumbnail', { owner: 'owner' }))!.status,
     ).not.toBe(200);
   });
 });
@@ -201,7 +201,7 @@ describe('a trashed diagram, to anyone else', () => {
 describe('the lists, while it is in the Trash', () => {
   it('leave it out of the diagram list, Shared with you and Favourites', async () => {
     const db = await trashed();
-    const list = await (await call(db, 'GET', '/api/diagrams', { owner: 'owner' }))!.json();
+    const list = await (await call(db, 'GET', '/api/documents', { owner: 'owner' }))!.json();
     const shared = await (await call(db, 'GET', '/api/shared', { owner: 'visitor' }))!.json();
     const stars = await (await call(db, 'GET', '/api/favourites', { owner: 'owner' }))!.json();
     expect(list).toEqual({ documents: [] });
@@ -210,12 +210,12 @@ describe('the lists, while it is in the Trash', () => {
   });
 });
 
-describe('DELETE /api/diagrams/:id', () => {
+describe('DELETE /api/documents/:id', () => {
   it('moves the diagram to the Trash, keeping everything', async () => {
     const db = world();
     await seedTab(db);
 
-    const res = await call(db, 'DELETE', '/api/diagrams/A', { owner: 'owner' });
+    const res = await call(db, 'DELETE', '/api/documents/A', { owner: 'owner' });
 
     expect(res!.status).toBe(204);
     expect(
@@ -227,7 +227,7 @@ describe('DELETE /api/diagrams/:id', () => {
 
   it('ends the realtime sessions with the deleted state', async () => {
     const db = world();
-    await call(db, 'DELETE', '/api/diagrams/A', { owner: 'owner', waitUntil: (p) => void p });
+    await call(db, 'DELETE', '/api/documents/A', { owner: 'owner', waitUntil: (p) => void p });
     await vi.waitFor(() => expect(db.broadcasts).toEqual([{ op: { kind: 'diagram-trashed' } }]));
   });
 
@@ -235,7 +235,7 @@ describe('DELETE /api/diagrams/:id', () => {
     const db = world();
     await seedTab(db);
 
-    const res = await call(db, 'DELETE', '/api/diagrams/A?permanent=true', { owner: 'owner' });
+    const res = await call(db, 'DELETE', '/api/documents/A?permanent=true', { owner: 'owner' });
 
     expect(res!.status).toBe(204);
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
@@ -244,21 +244,21 @@ describe('DELETE /api/diagrams/:id', () => {
 
   it('purges a diagram already in the Trash with ?permanent=true', async () => {
     const db = await trashed();
-    const res = await call(db, 'DELETE', '/api/diagrams/A?permanent=true', { owner: 'owner' });
+    const res = await call(db, 'DELETE', '/api/documents/A?permanent=true', { owner: 'owner' });
     expect(res!.status).toBe(204);
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
   });
 
   it('answers document_trashed for a diagram already in the Trash', async () => {
     const db = await trashed();
-    expect(await status(call(db, 'DELETE', '/api/diagrams/A', { owner: 'owner' }))).toEqual(
+    expect(await status(call(db, 'DELETE', '/api/documents/A', { owner: 'owner' }))).toEqual(
       TRASHED,
     );
   });
 
   it('bypasses the Trash when the owner takes it offline', async () => {
     const db = world();
-    const res = await call(db, 'DELETE', '/api/diagrams/A', {
+    const res = await call(db, 'DELETE', '/api/documents/A', {
       owner: 'owner',
       headers: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
     });
@@ -282,7 +282,7 @@ describe('DELETE /api/diagrams/:id', () => {
     });
     db.sql.prepare("UPDATE documents SET team_id = 'team', owner_id = 'user_alice'").run();
 
-    const res = await call(db, 'DELETE', '/api/diagrams/A', {
+    const res = await call(db, 'DELETE', '/api/documents/A', {
       owner: 'user_bob',
       clerkUserId: 'user_bob',
       headers: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
@@ -296,7 +296,7 @@ describe('DELETE /api/diagrams/:id', () => {
 
   it('still refuses a share-link visitor', async () => {
     const db = world();
-    const res = await call(db, 'DELETE', '/api/diagrams/A', {
+    const res = await call(db, 'DELETE', '/api/documents/A', {
       owner: 'visitor',
       headers: { 'X-Share-Code': 'code-A' },
     });

@@ -73,7 +73,7 @@ export function RecentDocumentsCard({
         {recent.map((d) => (
           <li key={d.id}>
             <a
-              href={`/diagram/${d.id}`}
+              href={`/document/${d.id}`}
               className="group flex items-center gap-2 rounded-lg px-2.5 py-2 transition hover:bg-brand-50 dark:hover:bg-brand-500/10"
             >
               <span className="flex min-w-0 flex-1 flex-col">

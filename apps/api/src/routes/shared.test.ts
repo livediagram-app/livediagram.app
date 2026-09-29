@@ -88,7 +88,7 @@ describe('DELETE /api/shared/:documentId', () => {
 
 describe('handleShared routing', () => {
   it('404s a path that is not /api/shared', async () => {
-    const res = await handleShared(makeCtx('GET', '/api/diagrams'));
+    const res = await handleShared(makeCtx('GET', '/api/documents'));
     expect(res.status).toBe(404);
   });
 

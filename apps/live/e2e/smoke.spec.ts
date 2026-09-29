@@ -37,7 +37,7 @@ test('create a blank diagram, add a shape, and it survives a reload', async ({
 }) => {
   await startBlankDocument(page);
   // The wizard created a real diagram and routed to it.
-  await expect(page).toHaveURL(/\/diagram\/[0-9a-f-]{36}/);
+  await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
 
   // The palette is open by default on desktop; its shape tiles are
   // aria-labelled ("Add square"). Arm the Square, then drop it on the
@@ -67,7 +67,7 @@ test('create a blank diagram, add a shape, and it survives a reload', async ({
 // still a board after a round trip through the api.
 test('an event-storming board stays a board across a reload', async ({ page, pageErrors }) => {
   await startTemplateDocument(page, /Browse Technical templates/, /^Event storming/i);
-  await expect(page).toHaveURL(/\/diagram\/[0-9a-f-]{36}/);
+  await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
 
   // The notation palette is the board presenting itself: on any other tab
   // these tiles are behind a category dropdown.

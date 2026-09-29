@@ -26,7 +26,7 @@ async function api(request: Request): Promise<Response> {
   const path = new URL(request.url).pathname.replace(/^\/api/, '');
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
-  if (path === '/diagrams' && request.method === 'GET') {
+  if (path === '/documents' && request.method === 'GET') {
     return json({ documents: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
   }
   if (path === '/teams') return json({ teams: [] });
@@ -95,7 +95,9 @@ describe('tool output schemas', () => {
     // A new tool must be added to CALLS, or its schema is never exercised.
     const client = await connectTestClient(api);
     const { tools } = await client.listTools();
-    expect(new Set(CALLS.map((c) => c.tool))).toEqual(new Set(tools.map((t) => t.name)));
+    // Deprecated aliases share their successor's output schema (tools.test.ts).
+    const current = tools.filter((t) => !(t.description ?? '').startsWith('Deprecated'));
+    expect(new Set(CALLS.map((c) => c.tool))).toEqual(new Set(current.map((t) => t.name)));
   });
 
   for (const { tool, output, args } of CALLS) {

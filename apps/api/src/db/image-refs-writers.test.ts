@@ -189,10 +189,10 @@ describe('documentRemovalStatements (diagram delete, Take Offline, account delet
 });
 
 describe('routes that write tabs', () => {
-  it('POST /api/diagrams with seeded tabs indexes them (import, Offline Mode sync)', async () => {
+  it('POST /api/documents with seeded tabs indexes them (import, Offline Mode sync)', async () => {
     const db = sqliteD1();
     const res = await handleDocuments(
-      makeTestRouteContext('POST', '/api/diagrams', {
+      makeTestRouteContext('POST', '/api/documents', {
         env: db.env,
         owner: 'owner',
         body: { id: 'A', name: 'A', tabs: [tabWith('t1', 'img-1')] },
@@ -202,10 +202,10 @@ describe('routes that write tabs', () => {
     expect(refs(db.sql, 't1')).toEqual(['img-1']);
   });
 
-  it('PUT /api/diagrams/:id/tabs/:tabId indexes the saved tab (autosave)', async () => {
+  it('PUT /api/documents/:id/tabs/:tabId indexes the saved tab (autosave)', async () => {
     const db = withDocument();
     const res = await handleDocumentSubresources(
-      makeTestRouteContext('PUT', '/api/diagrams/A/tabs/t1', {
+      makeTestRouteContext('PUT', '/api/documents/A/tabs/t1', {
         env: db.env,
         owner: 'owner',
         body: { ...tabWith('t1', 'img-1'), orderIndex: 0 },

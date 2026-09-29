@@ -3,6 +3,7 @@
 // don't exist and each app is a plain HTTP origin to proxy instead.
 // See docs/specs/016-platform/router-app.md.
 
+import { legacyEditorRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
 
 export interface Env {
@@ -177,7 +178,9 @@ async function route(request: Request, env: Env): Promise<Response> {
     // prefix-strip as telemetry.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
-  // Clean live-app page routes (/diagram, /explorer, /new, ...) and
+  const legacyEditor = legacyEditorRedirect(url);
+  if (legacyEditor) return legacyEditor;
+  // Clean live-app page routes (/document, /explorer, /new, ...) and
   // its root-served icon: forwarded AS-IS (no strip — the worker's
   // files are already `/live`-free).
   if (isLivePageRoute(url.pathname)) {

@@ -274,7 +274,7 @@ describe('buildSearchResults — shared diagrams + teams (docs/specs/008-canvas/
 });
 
 describe('buildSearchResults — team library (docs/specs/013-workspace/team-shared-documents.md)', () => {
-  it('keeps personal folders in "Personal Space" and team folders/diagrams in "Teams"', () => {
+  it('keeps personal folders in "Personal Space" and team folders/documents in "Teams"', () => {
     const out = buildSearchResults({
       query: 'q3',
       documents: [],

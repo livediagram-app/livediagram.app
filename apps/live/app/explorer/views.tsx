@@ -255,7 +255,7 @@ export function SharedList({
             className="group grid grid-cols-[1fr_60px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700 sm:grid-cols-[1fr_110px_60px_140px_40px]"
           >
             <Link
-              href={`/diagram/${s.id}?s=${encodeURIComponent(s.shareCode)}`}
+              href={`/document/${s.id}?s=${encodeURIComponent(s.shareCode)}`}
               className="flex min-w-0 items-center gap-2 truncate text-sm font-medium text-slate-900 hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
             >
               <DocumentThumbnail

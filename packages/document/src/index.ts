@@ -346,6 +346,7 @@ export type LiveDoc = {
 
 export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
+export { upgradeLegacyLinks } from './legacy-links';
 
 export function isBoxed(element: Element): element is BoxedElement {
   return (

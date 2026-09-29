@@ -85,7 +85,7 @@ export async function apiSetDocumentFolder(
     if (teamId) throw new Error('offline diagrams cannot join a team');
     return offlineSetDocumentFolder(documentId, folderId, Date.now());
   }
-  const res = await apiFetch(`${API_BASE}/diagrams/${documentId}/folder`, {
+  const res = await apiFetch(`${API_BASE}/documents/${documentId}/folder`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify(teamId === undefined ? { folderId } : { folderId, teamId }),

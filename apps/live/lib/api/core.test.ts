@@ -176,24 +176,24 @@ describe('apiFetch / apiDelete write signal', () => {
 
   it('announces a successful non-GET', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
-    await apiFetch(`${API_BASE}/diagrams/d1`, { method: 'PUT' });
+    await apiFetch(`${API_BASE}/documents/d1`, { method: 'PUT' });
     expect(heard).toHaveBeenCalledWith({});
     vi.unstubAllGlobals();
   });
 
   it('stays silent for a GET, a failed write, and the feeds own endpoints', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
-    await apiFetch(`${API_BASE}/diagrams`);
+    await apiFetch(`${API_BASE}/documents`);
     await apiFetch(`${API_BASE}/timeline/events/e1`, { method: 'DELETE' });
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 500 })));
-    await apiFetch(`${API_BASE}/diagrams/d1`, { method: 'PUT' });
+    await apiFetch(`${API_BASE}/documents/d1`, { method: 'PUT' });
     expect(heard).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
   });
 
   it('names the entity a DELETE ended, after the plain signal', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })));
-    await apiDelete(`${API_BASE}/diagrams/d1`, 'g', {
+    await apiDelete(`${API_BASE}/documents/d1`, 'g', {
       action: 'delete diagram',
       purge: { sourceType: 'document', sourceId: 'd1' },
     });
@@ -208,7 +208,7 @@ describe('apiFetch / apiDelete write signal', () => {
     // A tolerated 404: nothing was removed, so nothing should vanish
     // from the feed on the strength of it.
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 404 })));
-    await apiDelete(`${API_BASE}/diagrams/d1`, 'g', {
+    await apiDelete(`${API_BASE}/documents/d1`, 'g', {
       action: 'delete diagram',
       purge: { sourceType: 'document', sourceId: 'd1' },
     });

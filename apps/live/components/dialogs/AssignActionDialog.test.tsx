@@ -10,7 +10,7 @@ import type { ElementAction } from '@livediagram/document';
 import { AssignActionDialog } from './AssignActionDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('next/navigation', () => ({ usePathname: () => '/diagram/d1' }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/document/d1' }));
 
 type Props = Parameters<typeof AssignActionDialog>[0];
 

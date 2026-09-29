@@ -194,7 +194,7 @@ export function useIdentityBootstrap(opts: {
     const initialUrl = new URL(window.location.href);
     // Clean routing (docs/specs/016-platform/router-app.md): the editor lives at `/diagram/<id>`, no
     // `/live` prefix. Match the id straight off the path.
-    const pathMatch = initialUrl.pathname.match(/\/diagram\/([^/?#]+)/);
+    const pathMatch = initialUrl.pathname.match(/\/document\/([^/?#]+)/);
     const rawPathId = pathMatch ? pathMatch[1]! : null;
     // `placeholder` is the static-export build artefact, not a real
     // diagram id — ignore it so the IIFE doesn't try to fetch it.

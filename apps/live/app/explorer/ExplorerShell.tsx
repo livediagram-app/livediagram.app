@@ -284,11 +284,11 @@ function ShellChrome({ children }: { children: ReactNode }) {
             teamName: d.team.name,
           }))}
           onSelectDocument={(id) => {
-            window.location.assign(`/diagram/${id}`);
+            window.location.assign(`/document/${id}`);
           }}
           onSelectShared={(id, shareCode) => {
             // Non-owners can only open the diagram on the visitor URL.
-            window.location.assign(`/diagram/${id}?s=${encodeURIComponent(shareCode)}`);
+            window.location.assign(`/document/${id}?s=${encodeURIComponent(shareCode)}`);
           }}
           onSelectFolder={(id) => {
             go({ kind: 'folder', id });

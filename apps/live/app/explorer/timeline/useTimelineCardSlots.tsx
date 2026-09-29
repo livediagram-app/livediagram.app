@@ -213,7 +213,7 @@ export function useTimelineCardSlots({
               // nothing to share (docs/specs/006-document/offline-mode.md).
               onShare: isOfflineIdSync(id)
                 ? undefined
-                : () => window.location.assign(`/diagram/${encodeURIComponent(id)}?share=1`),
+                : () => window.location.assign(`/document/${encodeURIComponent(id)}?share=1`),
             }}
           />
         ),

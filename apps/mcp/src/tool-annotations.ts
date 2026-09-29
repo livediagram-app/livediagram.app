@@ -11,6 +11,7 @@
 // Nothing at runtime notices when a hint is missing (the tool still works, it
 // just prompts wrongly), which is why the wrapper types `behaviour` as
 // required rather than trusting each registration to remember.
+import { deprecatedDescription, legacyToolName } from './legacy-tool-names';
 import type { McpServer, ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
@@ -79,6 +80,25 @@ export function registerTool<InputArgs extends ZodRawShapeCompat>(
       return result;
     })) as unknown as ToolCallback<InputArgs>;
   server.registerTool(name, { ...config, annotations: TOOL_ANNOTATIONS[behaviour] }, scoped);
+  const legacy = legacyToolName(name);
+  if (legacy) {
+    // The tool's name before the container became a document (docs/specs/015-api/mcp-server.md,
+    // "Deprecated tool names"): the same tool, announced as deprecated, until the sunset.
+    const aliased = ((...args: unknown[]) => {
+      console.warn('[mcp] deprecated tool name', legacy, '->', name);
+      return (scoped as (...a: unknown[]) => unknown)(...args);
+    }) as unknown as ToolCallback<InputArgs>;
+    server.registerTool(
+      legacy,
+      {
+        ...config,
+        title: `${config.title} (deprecated)`,
+        description: deprecatedDescription(name, config.description),
+        annotations: TOOL_ANNOTATIONS[behaviour],
+      },
+      aliased,
+    );
+  }
 }
 
 function isErrorResult(result: unknown): boolean {

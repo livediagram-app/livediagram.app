@@ -129,12 +129,12 @@ beforeEach(() => {
   getDocumentTabImageSvg.mockReset();
 });
 
-describe('GET /diagrams/:id/thumbnail (docs/specs/006-document/document-snapshots.md access gate)', () => {
+describe('GET /documents/:id/thumbnail (docs/specs/006-document/document-snapshots.md access gate)', () => {
   it('404s an anonymous caller with no owner / share code / team — and never renders', async () => {
     db.getDocumentThumbMeta.mockResolvedValue(fakeDocument('someone-else'));
     canReadDocument.mockResolvedValue(false);
     const res = await handleDocuments(
-      makeCtx('GET', '/api/diagrams/d1/thumbnail', { owner: null }),
+      makeCtx('GET', '/api/documents/d1/thumbnail', { owner: null }),
     );
     expect(res.status).toBe(404);
     // The security property: a denied caller never reaches the renderer,
@@ -146,7 +146,7 @@ describe('GET /diagrams/:id/thumbnail (docs/specs/006-document/document-snapshot
     db.getDocumentThumbMeta.mockResolvedValue(fakeDocument('someone-else'));
     canReadDocument.mockResolvedValue(false);
     const res = await handleDocuments(
-      makeCtx('GET', '/api/diagrams/d1/thumbnail', { owner: 'intruder' }),
+      makeCtx('GET', '/api/documents/d1/thumbnail', { owner: 'intruder' }),
     );
     expect(res.status).toBe(404);
     expect(getDocumentThumbnailSvg).not.toHaveBeenCalled();
@@ -154,7 +154,7 @@ describe('GET /diagrams/:id/thumbnail (docs/specs/006-document/document-snapshot
 
   it('404s a missing diagram (no existence leak)', async () => {
     db.getDocumentThumbMeta.mockResolvedValue(null);
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1/thumbnail'));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/thumbnail'));
     expect(res.status).toBe(404);
     expect(canReadDocument).not.toHaveBeenCalled();
   });
@@ -163,7 +163,7 @@ describe('GET /diagrams/:id/thumbnail (docs/specs/006-document/document-snapshot
     db.getDocumentThumbMeta.mockResolvedValue(fakeDocument('owner-1'));
     canReadDocument.mockResolvedValue(true);
     getDocumentThumbnailSvg.mockResolvedValue('<svg>ok</svg>');
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1/thumbnail'));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/thumbnail'));
     expect(res.status).toBe(200);
     expect(res.headers.get('Content-Type')).toContain('image/svg+xml');
     expect(res.headers.get('Cache-Control')).toContain('private');
@@ -174,7 +174,7 @@ describe('GET /diagrams/:id/thumbnail (docs/specs/006-document/document-snapshot
     db.getDocumentThumbMeta.mockResolvedValue(fakeDocument('owner-1'));
     canReadDocument.mockResolvedValue(true);
     getDocumentThumbnailSvg.mockResolvedValue(null);
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1/thumbnail'));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/thumbnail'));
     expect(res.status).toBe(404);
     // Past the gate and versioned by `?v=<savedAt>`, so the browser keeps it
     // rather than re-asking on every Explorer visit.
@@ -185,48 +185,48 @@ describe('GET /diagrams/:id/thumbnail (docs/specs/006-document/document-snapshot
     db.getDocumentThumbMeta.mockResolvedValue(fakeDocument('someone-else'));
     canReadDocument.mockResolvedValue(false);
     const res = await handleDocuments(
-      makeCtx('GET', '/api/diagrams/d1/thumbnail', { owner: 'intruder' }),
+      makeCtx('GET', '/api/documents/d1/thumbnail', { owner: 'intruder' }),
     );
     expect(res.status).toBe(404);
     expect(res.headers.get('Cache-Control')).toBeNull();
   });
 });
 
-describe('handleDocuments owner-only paths (DELETE /diagrams/:id)', () => {
+describe('handleDocuments owner-only paths (DELETE /documents/:id)', () => {
   it('400 when no owner resolves', async () => {
-    const res = await handleDocuments(makeCtx('DELETE', '/api/diagrams/d1', { owner: null }));
+    const res = await handleDocuments(makeCtx('DELETE', '/api/documents/d1', { owner: null }));
     expect(res.status).toBe(400);
   });
 
   it('404 when the diagram does not exist (no existence leak)', async () => {
     db.getDocument.mockResolvedValue(null);
-    const res = await handleDocuments(makeCtx('DELETE', '/api/diagrams/d1'));
+    const res = await handleDocuments(makeCtx('DELETE', '/api/documents/d1'));
     expect(res.status).toBe(404);
   });
 
   it('403 when the caller is not the owner', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('someone-else'));
-    const res = await handleDocuments(makeCtx('DELETE', '/api/diagrams/d1'));
+    const res = await handleDocuments(makeCtx('DELETE', '/api/documents/d1'));
     expect(res.status).toBe(403);
     expect(db.deleteDocument).not.toHaveBeenCalled();
   });
 
   it('204 and moves it to the Trash when the caller owns the diagram', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
-    const res = await handleDocuments(makeCtx('DELETE', '/api/diagrams/d1'));
+    const res = await handleDocuments(makeCtx('DELETE', '/api/documents/d1'));
     expect(res.status).toBe(204);
     expect(db.trashDocument).toHaveBeenCalledWith({}, 'd1', expect.any(Number));
     expect(db.deleteDocument).not.toHaveBeenCalled();
   });
 });
 
-describe('handleDocuments metadata PUT (PUT /diagrams/:id)', () => {
+describe('handleDocuments metadata PUT (PUT /documents/:id)', () => {
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). The deck rides the metadata PUT but has its own
   // write, so an ordinary rename can never rewrite it.
   it('leaves the stored deck alone when the field is absent', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     canEditDocument.mockResolvedValue(true);
-    await handleDocuments(makeCtx('PUT', '/api/diagrams/d1', { body: { name: 'Renamed' } }));
+    await handleDocuments(makeCtx('PUT', '/api/documents/d1', { body: { name: 'Renamed' } }));
     expect(db.setDocumentPresentation).not.toHaveBeenCalled();
   });
 
@@ -234,7 +234,7 @@ describe('handleDocuments metadata PUT (PUT /diagrams/:id)', () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     canEditDocument.mockResolvedValue(true);
     const deck = JSON.stringify({ decks: [{ slides: [] }] });
-    await handleDocuments(makeCtx('PUT', '/api/diagrams/d1', { body: { presentation: deck } }));
+    await handleDocuments(makeCtx('PUT', '/api/documents/d1', { body: { presentation: deck } }));
     expect(db.setDocumentPresentation).toHaveBeenCalledWith({}, 'd1', deck);
   });
 
@@ -244,7 +244,7 @@ describe('handleDocuments metadata PUT (PUT /diagrams/:id)', () => {
     db.getDocument.mockResolvedValue(fakeDocument('0f5ca4af-9a8a-4a60-be5e-1179e5555880'));
     canEditDocument.mockResolvedValue(true);
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1', {
+      makeCtx('PUT', '/api/documents/d1', {
         owner: 'visitor-1',
         body: { name: 'Doc' },
         headers: { 'X-Share-Code': 'CODE1234' },
@@ -259,7 +259,7 @@ describe('handleDocuments metadata PUT (PUT /diagrams/:id)', () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     canEditDocument.mockResolvedValue(true);
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1', { body: { name: 'Doc' } }),
+      makeCtx('PUT', '/api/documents/d1', { body: { name: 'Doc' } }),
     );
     const { document: liveDoc } = (await res.json()) as { document: DocumentDTO };
     expect(liveDoc.ownerId).toBe('owner-1');
@@ -268,7 +268,7 @@ describe('handleDocuments metadata PUT (PUT /diagrams/:id)', () => {
   it('clears the deck on an explicit null', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     canEditDocument.mockResolvedValue(true);
-    await handleDocuments(makeCtx('PUT', '/api/diagrams/d1', { body: { presentation: null } }));
+    await handleDocuments(makeCtx('PUT', '/api/documents/d1', { body: { presentation: null } }));
     expect(db.setDocumentPresentation).toHaveBeenCalledWith({}, 'd1', null);
   });
 
@@ -277,7 +277,7 @@ describe('handleDocuments metadata PUT (PUT /diagrams/:id)', () => {
     canEditDocument.mockResolvedValue(true);
     const huge = 'x'.repeat(256 * 1024 + 1);
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1', { body: { presentation: huge } }),
+      makeCtx('PUT', '/api/documents/d1', { body: { presentation: huge } }),
     );
     expect(res.status).toBe(400);
     expect(db.setDocumentPresentation).not.toHaveBeenCalled();
@@ -289,28 +289,28 @@ describe('handleDocuments metadata PUT (PUT /diagrams/:id)', () => {
     // must NOT mint a zero-tab diagram row. Diagrams are created via POST.
     db.getDocument.mockResolvedValue(null);
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1', { body: { name: 'Ghost' } }),
+      makeCtx('PUT', '/api/documents/d1', { body: { name: 'Ghost' } }),
     );
     expect(res.status).toBe(404);
     expect(db.upsertDocumentMeta).not.toHaveBeenCalled();
   });
 });
 
-describe('handleDocuments list (GET /diagrams)', () => {
+describe('handleDocuments list (GET /documents)', () => {
   it('400 when no owner resolves', async () => {
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams', { owner: null }));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents', { owner: null }));
     expect(res.status).toBe(400);
   });
 
   it('200 with the owner-scoped list', async () => {
     db.listDocumentsByOwner.mockResolvedValue([{ id: 'd1' }]);
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams'));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents'));
     expect(res.status).toBe(200);
     expect(db.listDocumentsByOwner).toHaveBeenCalledWith({}, 'owner-1');
   });
 });
 
-describe('GET /diagrams/:id owner-id redaction (docs/specs/014-identity/auth-and-guest-access.md)', () => {
+describe('GET /documents/:id owner-id redaction (docs/specs/014-identity/auth-and-guest-access.md)', () => {
   // The DTO's ownerId is a credential: for a guest owner it is the
   // X-Owner-Id bearer value, and /api/migrate moves that owner's whole
   // workspace to whoever presents it. The share-code resolver has always
@@ -323,7 +323,7 @@ describe('GET /diagrams/:id owner-id redaction (docs/specs/014-identity/auth-and
     db.getDocument.mockResolvedValue(fakeDocument(GUEST));
     canReadDocument.mockResolvedValue(true);
     const res = await handleDocuments(
-      makeCtx('GET', '/api/diagrams/d1', {
+      makeCtx('GET', '/api/documents/d1', {
         owner: 'visitor-1',
         headers: { 'X-Share-Code': 'CODE1234' },
       }),
@@ -339,7 +339,7 @@ describe('GET /diagrams/:id owner-id redaction (docs/specs/014-identity/auth-and
   it('returns the real ownerId to the owner', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     canReadDocument.mockResolvedValue(true);
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1'));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1'));
     const { document: liveDoc } = (await res.json()) as { document: DocumentDTO };
     expect(liveDoc.ownerId).toBe('owner-1');
   });
@@ -348,7 +348,7 @@ describe('GET /diagrams/:id owner-id redaction (docs/specs/014-identity/auth-and
     db.getDocument.mockResolvedValue(fakeDocument('user_owner', 'team-1'));
     canReadDocument.mockResolvedValue(true);
     const res = await handleDocuments(
-      makeCtx('GET', '/api/diagrams/d1', { owner: 'user_member', clerkUserId: 'user_member' }),
+      makeCtx('GET', '/api/documents/d1', { owner: 'user_member', clerkUserId: 'user_member' }),
     );
     const { document: liveDoc } = (await res.json()) as { document: DocumentDTO };
     // No regression for them: a teammate already computed isOwner=false from
@@ -359,16 +359,16 @@ describe('GET /diagrams/:id owner-id redaction (docs/specs/014-identity/auth-and
   it('still 404s a denied reader (redaction is not the gate)', async () => {
     db.getDocument.mockResolvedValue(fakeDocument(GUEST));
     canReadDocument.mockResolvedValue(false);
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1', { owner: 'stranger' }));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1', { owner: 'stranger' }));
     expect(res.status).toBe(404);
   });
 });
 
-describe('handleDocuments folder assignment (PUT /diagrams/:id/folder)', () => {
+describe('handleDocuments folder assignment (PUT /documents/:id/folder)', () => {
   it('403 on owner mismatch', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('someone-else'));
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/folder', { body: { folderId: null } }),
+      makeCtx('PUT', '/api/documents/d1/folder', { body: { folderId: null } }),
     );
     expect(res.status).toBe(403);
   });
@@ -376,7 +376,7 @@ describe('handleDocuments folder assignment (PUT /diagrams/:id/folder)', () => {
   it('204 when the owner clears the folder', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/folder', { body: { folderId: null } }),
+      makeCtx('PUT', '/api/documents/d1/folder', { body: { folderId: null } }),
     );
     expect(res.status).toBe(204);
     // 5th arg (newOwnerId) is undefined: a personal move keeps the owner.
@@ -391,7 +391,7 @@ describe('handleDocuments folder assignment (PUT /diagrams/:id/folder)', () => {
     db.getMembership.mockResolvedValue({ status: 'joined', role: 'member' });
     db.getFolder.mockResolvedValue({ id: 'f1', teamId: null, ownerId: 'member-1' });
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/folder', {
+      makeCtx('PUT', '/api/documents/d1/folder', {
         owner: 'member-1',
         clerkUserId: 'member-1',
         body: { folderId: 'f1', teamId: null },
@@ -405,7 +405,7 @@ describe('handleDocuments folder assignment (PUT /diagrams/:id/folder)', () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-2', 'team-1'));
     db.getMembership.mockResolvedValue(undefined);
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/folder', {
+      makeCtx('PUT', '/api/documents/d1/folder', {
         owner: 'stranger',
         clerkUserId: 'stranger',
         body: { folderId: null, teamId: null },
@@ -416,17 +416,17 @@ describe('handleDocuments folder assignment (PUT /diagrams/:id/folder)', () => {
   });
 });
 
-describe('handleDocuments gated tab read (GET /diagrams/:id/tabs/:tabId)', () => {
+describe('handleDocuments gated tab read (GET /documents/:id/tabs/:tabId)', () => {
   it('404 when the diagram is missing', async () => {
     db.getDocument.mockResolvedValue(null);
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1/tabs/t1'));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t1'));
     expect(res.status).toBe(404);
   });
 
   it('403 when the read gate denies the visitor', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('someone-else'));
     canReadDocument.mockResolvedValue(false);
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1/tabs/t1'));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t1'));
     expect(res.status).toBe(403);
   });
 
@@ -434,7 +434,7 @@ describe('handleDocuments gated tab read (GET /diagrams/:id/tabs/:tabId)', () =>
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     canReadDocument.mockResolvedValue(true);
     db.getTab.mockResolvedValue({ id: 't1', name: 'Tab', elements: [] });
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1/tabs/t1'));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t1'));
     expect(res.status).toBe(200);
   });
 });
@@ -455,21 +455,21 @@ describe('handleDocuments share-link expiry (docs/specs/013-workspace/share-link
     db.generateShareCode.mockReturnValue('CODE2345');
   });
 
-  it('POST /diagrams/:id/share forwards a valid expiry choice', async () => {
+  it('POST /documents/:id/share forwards a valid expiry choice', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     db.createShareLink.mockResolvedValue(link);
     const res = await handleDocuments(
-      makeCtx('POST', '/api/diagrams/d1/share', { body: { role: 'edit', expiry: 'week' } }),
+      makeCtx('POST', '/api/documents/d1/share', { body: { role: 'edit', expiry: 'week' } }),
     );
     expect(res.status).toBe(201);
     expect(db.createShareLink).toHaveBeenCalledWith({}, 'd1', 'CODE2345', 'edit', 'week', null);
   });
 
-  it('POST /diagrams/:id/share defaults unknown / missing expiry to never', async () => {
+  it('POST /documents/:id/share defaults unknown / missing expiry to never', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     db.createShareLink.mockResolvedValue({ ...link, expiry: 'never', expiresAt: null });
     await handleDocuments(
-      makeCtx('POST', '/api/diagrams/d1/share', { body: { role: 'view', expiry: 'fortnight' } }),
+      makeCtx('POST', '/api/documents/d1/share', { body: { role: 'view', expiry: 'fortnight' } }),
     );
     expect(db.createShareLink).toHaveBeenCalledWith({}, 'd1', 'CODE2345', 'view', 'never', null);
   });
@@ -478,7 +478,7 @@ describe('handleDocuments share-link expiry (docs/specs/013-workspace/share-link
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     db.getShareLinkIncludingExpired.mockResolvedValue(link);
     db.extendShareLink.mockResolvedValue({ ...link, expiresAt: 99 });
-    const res = await handleDocuments(makeCtx('POST', '/api/diagrams/d1/share/CODE2345/extend'));
+    const res = await handleDocuments(makeCtx('POST', '/api/documents/d1/share/CODE2345/extend'));
     expect(res.status).toBe(200);
     expect(db.extendShareLink).toHaveBeenCalledWith({}, 'CODE2345');
   });
@@ -486,7 +486,7 @@ describe('handleDocuments share-link expiry (docs/specs/013-workspace/share-link
   it('extend 404s when the code belongs to a different diagram', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     db.getShareLinkIncludingExpired.mockResolvedValue({ ...link, documentId: 'other' });
-    const res = await handleDocuments(makeCtx('POST', '/api/diagrams/d1/share/CODE2345/extend'));
+    const res = await handleDocuments(makeCtx('POST', '/api/documents/d1/share/CODE2345/extend'));
     expect(res.status).toBe(404);
     expect(db.extendShareLink).not.toHaveBeenCalled();
   });
@@ -495,19 +495,19 @@ describe('handleDocuments share-link expiry (docs/specs/013-workspace/share-link
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     db.getShareLinkIncludingExpired.mockResolvedValue({ ...link, expiry: 'never' });
     db.extendShareLink.mockResolvedValue(null);
-    const res = await handleDocuments(makeCtx('POST', '/api/diagrams/d1/share/CODE2345/extend'));
+    const res = await handleDocuments(makeCtx('POST', '/api/documents/d1/share/CODE2345/extend'));
     expect(res.status).toBe(400);
   });
 
   it('extend 403s for a non-owner', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('someone-else'));
-    const res = await handleDocuments(makeCtx('POST', '/api/diagrams/d1/share/CODE2345/extend'));
+    const res = await handleDocuments(makeCtx('POST', '/api/documents/d1/share/CODE2345/extend'));
     expect(res.status).toBe(403);
     expect(db.extendShareLink).not.toHaveBeenCalled();
   });
 });
 
-describe('handleDocuments tab-content data-loss backstop (PUT /diagrams/:id/tabs/:tabId)', () => {
+describe('handleDocuments tab-content data-loss backstop (PUT /documents/:id/tabs/:tabId)', () => {
   // Build a valid tab body from id stubs — these tests exercise the
   // data-loss backstop (empty vs non-empty), so the element CONTENT only has
   // to pass the structural gate (isValidTab); a real square per id does.
@@ -549,7 +549,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /diagrams/:id/tabs
       ...base,
       elements: [{ ...base.elements[0], label: 'a'.repeat(5 * 1024 * 1024) }],
     };
-    const res = await handleDocuments(makeCtx('PUT', '/api/diagrams/d1/tabs/t1', { body: huge }));
+    const res = await handleDocuments(makeCtx('PUT', '/api/documents/d1/tabs/t1', { body: huge }));
     expect(res.status).toBe(413);
     expect(await res.json()).toEqual({ error: 'payload_too_large' });
     expect(db.upsertTab).not.toHaveBeenCalled();
@@ -561,7 +561,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /diagrams/:id/tabs
     // large declared length still trips it.
     db.getTab.mockResolvedValue(null);
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/tabs/t1', {
+      makeCtx('PUT', '/api/documents/d1/tabs/t1', {
         body: tabBody([{ id: 'e1' }]),
         headers: { 'Content-Length': String(5 * 1024 * 1024) },
       }),
@@ -575,7 +575,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /diagrams/:id/tabs
     // rejecting the normal case, which is every request the editor sends.
     db.getTab.mockResolvedValue(null);
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/tabs/t1', { body: tabBody([{ id: 'e1' }]) }),
+      makeCtx('PUT', '/api/documents/d1/tabs/t1', { body: tabBody([{ id: 'e1' }]) }),
     );
     expect(res.status).toBe(200);
     expect(db.upsertTab).toHaveBeenCalled();
@@ -586,7 +586,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /diagrams/:id/tabs
     // over a real row, with no X-Allow-Empty header.
     db.getTab.mockResolvedValue({ id: 't1', name: 'Tab', orderIndex: 0, elements: [{ id: 'e' }] });
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/tabs/t1', { body: tabBody([]) }),
+      makeCtx('PUT', '/api/documents/d1/tabs/t1', { body: tabBody([]) }),
     );
     expect(res.status).toBe(409);
     expect(db.upsertTab).not.toHaveBeenCalled();
@@ -596,7 +596,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /diagrams/:id/tabs
     // A real reset-canvas / delete-all on the loaded tab sends the header.
     db.getTab.mockResolvedValue({ id: 't1', name: 'Tab', orderIndex: 0, elements: [{ id: 'e' }] });
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/tabs/t1', {
+      makeCtx('PUT', '/api/documents/d1/tabs/t1', {
         body: tabBody([]),
         headers: { 'X-Allow-Empty': '1' },
       }),
@@ -608,7 +608,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /diagrams/:id/tabs
   it('allows an empty write over an already-empty (or new) row — nothing to lose', async () => {
     db.getTab.mockResolvedValue({ id: 't1', name: 'Tab', orderIndex: 0, elements: [] });
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/tabs/t1', { body: tabBody([]) }),
+      makeCtx('PUT', '/api/documents/d1/tabs/t1', { body: tabBody([]) }),
     );
     expect(res.status).toBe(200);
     expect(db.upsertTab).toHaveBeenCalled();
@@ -617,18 +617,18 @@ describe('handleDocuments tab-content data-loss backstop (PUT /diagrams/:id/tabs
   it('allows a non-empty write over a tab with content (the normal save path)', async () => {
     db.getTab.mockResolvedValue({ id: 't1', name: 'Tab', orderIndex: 0, elements: [{ id: 'e' }] });
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/tabs/t1', { body: tabBody([{ id: 'e2' }]) }),
+      makeCtx('PUT', '/api/documents/d1/tabs/t1', { body: tabBody([{ id: 'e2' }]) }),
     );
     expect(res.status).toBe(200);
     expect(db.upsertTab).toHaveBeenCalled();
   });
 });
 
-describe('handleDocuments gated change-log (GET/POST /diagrams/:id/log)', () => {
+describe('handleDocuments gated change-log (GET/POST /documents/:id/log)', () => {
   it('403 when the edit gate denies', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('someone-else'));
     canEditDocument.mockResolvedValue(false);
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1/log'));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/log'));
     expect(res.status).toBe(403);
   });
 
@@ -636,7 +636,7 @@ describe('handleDocuments gated change-log (GET/POST /diagrams/:id/log)', () => 
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     canEditDocument.mockResolvedValue(true);
     db.listChangeLog.mockResolvedValue([]);
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1/log'));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/log'));
     expect(res.status).toBe(200);
   });
 
@@ -668,7 +668,7 @@ describe('handleDocuments gated change-log (GET/POST /diagrams/:id/log)', () => 
       // this route — there was no body-measured fallback at all. A Request
       // built with a body carries no Content-Length, so this is the real shape.
       const res = await handleDocuments(
-        makeCtx('POST', '/api/diagrams/d1/log', {
+        makeCtx('POST', '/api/documents/d1/log', {
           body: logEntry('x'.repeat(300 * 1024)),
         }),
       );
@@ -681,7 +681,7 @@ describe('handleDocuments gated change-log (GET/POST /diagrams/:id/log)', () => 
       // The cheap pre-parse path, kept: a declared length over the cap is
       // rejected without stringifying anything.
       const res = await handleDocuments(
-        makeCtx('POST', '/api/diagrams/d1/log', {
+        makeCtx('POST', '/api/documents/d1/log', {
           body: logEntry('small'),
           headers: { 'Content-Length': String(300 * 1024) },
         }),
@@ -694,7 +694,7 @@ describe('handleDocuments gated change-log (GET/POST /diagrams/:id/log)', () => 
       // Making the fallback reachable must not start rejecting the normal
       // case, which is every entry the editor writes.
       const res = await handleDocuments(
-        makeCtx('POST', '/api/diagrams/d1/log', { body: logEntry('Moved 1 element') }),
+        makeCtx('POST', '/api/documents/d1/log', { body: logEntry('Moved 1 element') }),
       );
       expect(res.status).toBe(201);
       expect(db.insertChangeLogEntry).toHaveBeenCalled();
@@ -702,7 +702,7 @@ describe('handleDocuments gated change-log (GET/POST /diagrams/:id/log)', () => 
   });
 });
 
-describe("POST /diagrams/:id/log checks the entry's tab belongs to the diagram", () => {
+describe("POST /documents/:id/log checks the entry's tab belongs to the diagram", () => {
   const entryOn = (tabId: string | null) => ({
     id: 'l1',
     tabId,
@@ -731,7 +731,7 @@ describe("POST /diagrams/:id/log checks the entry's tab belongs to the diagram",
     // is not linked here either.
     db.getDocument.mockResolvedValue(withTabs(['t1']));
     const res = await handleDocuments(
-      makeCtx('POST', '/api/diagrams/d1/log', { body: entryOn('t-other') }),
+      makeCtx('POST', '/api/documents/d1/log', { body: entryOn('t-other') }),
     );
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({ error: 'tab_not_saved' });
@@ -741,7 +741,7 @@ describe("POST /diagrams/:id/log checks the entry's tab belongs to the diagram",
   it("writes an entry on one of the diagram's own tabs", async () => {
     db.getDocument.mockResolvedValue(withTabs(['t1']));
     const res = await handleDocuments(
-      makeCtx('POST', '/api/diagrams/d1/log', { body: entryOn('t1') }),
+      makeCtx('POST', '/api/documents/d1/log', { body: entryOn('t1') }),
     );
     expect(res.status).toBe(201);
     expect(db.insertChangeLogEntry).toHaveBeenCalled();
@@ -750,17 +750,19 @@ describe("POST /diagrams/:id/log checks the entry's tab belongs to the diagram",
   it('writes a tab-less entry', async () => {
     db.getDocument.mockResolvedValue(withTabs([]));
     const res = await handleDocuments(
-      makeCtx('POST', '/api/diagrams/d1/log', { body: entryOn(null) }),
+      makeCtx('POST', '/api/documents/d1/log', { body: entryOn(null) }),
     );
     expect(res.status).toBe(201);
   });
 });
 
-describe('POST /diagrams carrying an Offline Mode sync (docs/specs/006-document/offline-mode.md)', () => {
+describe('POST /documents carrying an Offline Mode sync (docs/specs/006-document/offline-mode.md)', () => {
   // The offline record is deleted once the create succeeds, so the deck and
   // folder have to arrive with it.
   const create = (body: Record<string, unknown>) =>
-    handleDocuments(makeCtx('POST', '/api/diagrams', { body: { id: 'd1', name: 'Doc', ...body } }));
+    handleDocuments(
+      makeCtx('POST', '/api/documents', { body: { id: 'd1', name: 'Doc', ...body } }),
+    );
   const stored = () => db.upsertDocumentMeta.mock.calls[0]![1] as Record<string, unknown>;
 
   it('stores the deck it was sent', async () => {
@@ -806,7 +808,7 @@ describe('a tab-scoped visitor', () => {
   });
 
   it('gets the diagram with every other tab locked and no deck', async () => {
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1', visitor));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1', visitor));
     const body = (await res.json()) as { document: DocumentDTO };
     expect(body.document.tabs.map((t) => t.name)).toEqual(['', 'Roadmap']);
     expect(body.document.presentation).toBeNull();
@@ -814,7 +816,7 @@ describe('a tab-scoped visitor', () => {
 
   it("gets its tab's image as the thumbnail, never the first tab's", async () => {
     getDocumentTabImageSvg.mockResolvedValue('<svg>t2</svg>');
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1/thumbnail', visitor));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/thumbnail', visitor));
     expect(await res.text()).toBe('<svg>t2</svg>');
     expect(getDocumentTabImageSvg).toHaveBeenCalledWith(expect.anything(), expect.anything(), 't2');
     expect(getDocumentThumbnailSvg).not.toHaveBeenCalled();
@@ -823,30 +825,30 @@ describe('a tab-scoped visitor', () => {
   it('names the tab it touches, so the gate can confine it', async () => {
     canReadDocument.mockResolvedValue(true);
     db.getTab.mockResolvedValue({ id: 't2', name: 'Roadmap', elements: [] });
-    await handleDocuments(makeCtx('GET', '/api/diagrams/d1/tabs/t2', visitor));
+    await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t2', visitor));
     expect(canReadDocument.mock.calls.at(-1)?.at(-1)).toBe('t2');
     canEditDocument.mockResolvedValue(true);
-    await handleDocuments(makeCtx('PUT', '/api/diagrams/d1/tabs/t2', { ...visitor, body: {} }));
+    await handleDocuments(makeCtx('PUT', '/api/documents/d1/tabs/t2', { ...visitor, body: {} }));
     expect(canEditDocument.mock.calls.at(-1)?.at(-1)).toBe('t2');
   });
 
   it('cannot delete the tab its link is scoped to', async () => {
     canEditDocument.mockResolvedValue(true);
-    const res = await handleDocuments(makeCtx('DELETE', '/api/diagrams/d1/tabs/t2', visitor));
+    const res = await handleDocuments(makeCtx('DELETE', '/api/documents/d1/tabs/t2', visitor));
     expect(res.status).toBe(403);
     expect(db.deleteTabRow).not.toHaveBeenCalled();
   });
 
   it('lists the log of its tab only', async () => {
     db.listChangeLog.mockResolvedValue([]);
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1/log', visitor));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/log', visitor));
     expect(res.status).toBe(200);
     expect(db.listChangeLog).toHaveBeenCalledWith(expect.anything(), 'd1', 't2');
   });
 
   it('cannot log on another tab', async () => {
     const res = await handleDocuments(
-      makeCtx('POST', '/api/diagrams/d1/log', {
+      makeCtx('POST', '/api/documents/d1/log', {
         ...visitor,
         body: {
           id: 'l1',
@@ -867,20 +869,20 @@ describe('a tab-scoped visitor', () => {
   });
 
   it('removes log entries on its tab only', async () => {
-    await handleDocuments(makeCtx('DELETE', '/api/diagrams/d1/log/e1', visitor));
+    await handleDocuments(makeCtx('DELETE', '/api/documents/d1/log/e1', visitor));
     expect(db.deleteChangeLogEntry).toHaveBeenCalledWith(expect.anything(), 'd1', 'e1', 't2');
   });
 
   it('a view-role scoped visitor still cannot read the log', async () => {
     resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: 't2' });
-    const res = await handleDocuments(makeCtx('GET', '/api/diagrams/d1/log', visitor));
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/log', visitor));
     expect(res.status).toBe(403);
   });
 
   it('copies its tab only', async () => {
     db.copyDocument.mockResolvedValue({ id: 'd2' });
     const res = await handleDocuments(
-      makeCtx('POST', '/api/diagrams/d1/copy', { ...visitor, body: {} }),
+      makeCtx('POST', '/api/documents/d1/copy', { ...visitor, body: {} }),
     );
     expect(res.status).toBe(201);
     expect(db.copyDocument.mock.calls[0]?.at(-1)).toBe('t2');
@@ -891,7 +893,7 @@ describe('a tab-scoped visitor', () => {
     db.listSharedWith.mockResolvedValue([{ id: 'd1', tabId: 't2' }]);
     db.copyDocument.mockResolvedValue({ id: 'd2' });
     const res = await handleDocuments(
-      makeCtx('POST', '/api/diagrams/d1/copy', { owner: 'visitor-1', body: {} }),
+      makeCtx('POST', '/api/documents/d1/copy', { owner: 'visitor-1', body: {} }),
     );
     expect(res.status).toBe(201);
     expect(db.copyDocument.mock.calls[0]?.at(-1)).toBe('t2');
@@ -903,7 +905,7 @@ describe('deleting a tab (docs/specs/013-workspace/tab-scoped-share-links.md)', 
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     canEditDocument.mockResolvedValue(true);
     db.deleteShareLinksForTab.mockResolvedValue(['AAAA2222']);
-    const res = await handleDocuments(makeCtx('DELETE', '/api/diagrams/d1/tabs/t2'));
+    const res = await handleDocuments(makeCtx('DELETE', '/api/documents/d1/tabs/t2'));
     expect(res.status).toBe(204);
     expect(db.deleteTabRow).toHaveBeenCalledWith(expect.anything(), 'd1', 't2');
     expect(db.deleteShareLinksForTab).toHaveBeenCalledWith(expect.anything(), 'd1', 't2');
@@ -938,7 +940,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
   it('mints a link scoped to one of the diagram tabs', async () => {
     db.createShareLink.mockResolvedValue(link({ tabId: 't2' }));
     const res = await handleDocuments(
-      makeCtx('POST', '/api/diagrams/d1/share', { body: { role: 'view', tabId: 't2' } }),
+      makeCtx('POST', '/api/documents/d1/share', { body: { role: 'view', tabId: 't2' } }),
     );
     expect(res.status).toBe(201);
     expect(db.createShareLink).toHaveBeenCalledWith({}, 'd1', 'CODE2345', 'view', 'never', 't2');
@@ -946,7 +948,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
 
   it('refuses to mint a link for a tab the diagram does not have', async () => {
     const res = await handleDocuments(
-      makeCtx('POST', '/api/diagrams/d1/share', { body: { role: 'view', tabId: 't9' } }),
+      makeCtx('POST', '/api/documents/d1/share', { body: { role: 'view', tabId: 't9' } }),
     );
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: 'bad_request', message: 'invalid tab' });
@@ -957,7 +959,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
     db.getShareLinkIncludingExpired.mockResolvedValue(link());
     db.rescopeShareLink.mockResolvedValue(link({ tabId: 't2' }));
     const sent: Promise<unknown>[] = [];
-    const ctx = makeTestRouteContext('PUT', '/api/diagrams/d1/share/CODE2345', {
+    const ctx = makeTestRouteContext('PUT', '/api/documents/d1/share/CODE2345', {
       owner: 'owner-1',
       body: { tabId: 't2' },
       waitUntil: (p) => sent.push(p),
@@ -973,7 +975,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
     db.getShareLinkIncludingExpired.mockResolvedValue(link({ tabId: 't2' }));
     db.rescopeShareLink.mockResolvedValue(link());
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', { body: { tabId: null } }),
+      makeCtx('PUT', '/api/documents/d1/share/CODE2345', { body: { tabId: null } }),
     );
     expect(res.status).toBe(200);
     expect(db.rescopeShareLink).toHaveBeenCalledWith({}, 'CODE2345', null);
@@ -982,7 +984,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
   it('refuses a rescope to a tab the diagram does not have', async () => {
     db.getShareLinkIncludingExpired.mockResolvedValue(link());
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', { body: { tabId: 't9' } }),
+      makeCtx('PUT', '/api/documents/d1/share/CODE2345', { body: { tabId: 't9' } }),
     );
     expect(res.status).toBe(400);
     expect(db.rescopeShareLink).not.toHaveBeenCalled();
@@ -991,7 +993,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
   it('refuses a rescope without a tabId field', async () => {
     db.getShareLinkIncludingExpired.mockResolvedValue(link());
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', { body: {} }),
+      makeCtx('PUT', '/api/documents/d1/share/CODE2345', { body: {} }),
     );
     expect(res.status).toBe(400);
   });
@@ -999,14 +1001,14 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
   it('refuses a tabId that is not a string', async () => {
     db.getShareLinkIncludingExpired.mockResolvedValue(link());
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', { body: { tabId: 7 } }),
+      makeCtx('PUT', '/api/documents/d1/share/CODE2345', { body: { tabId: 7 } }),
     );
     expect(res.status).toBe(400);
   });
 
   it('refuses a body that is not JSON', async () => {
     db.getShareLinkIncludingExpired.mockResolvedValue(link());
-    const ctx = makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', {
+    const ctx = makeCtx('PUT', '/api/documents/d1/share/CODE2345', {
       headers: { 'Content-Type': 'application/json' },
     });
     const res = await handleDocuments({
@@ -1020,7 +1022,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
     db.getShareLinkIncludingExpired.mockResolvedValue(link());
     db.rescopeShareLink.mockResolvedValue(null);
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', { body: { tabId: 't2' } }),
+      makeCtx('PUT', '/api/documents/d1/share/CODE2345', { body: { tabId: 't2' } }),
     );
     expect(res.status).toBe(404);
   });
@@ -1028,14 +1030,14 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
   it("404s a rescope of another diagram's link", async () => {
     db.getShareLinkIncludingExpired.mockResolvedValue(link({ documentId: 'd2' }));
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', { body: { tabId: 't2' } }),
+      makeCtx('PUT', '/api/documents/d1/share/CODE2345', { body: { tabId: 't2' } }),
     );
     expect(res.status).toBe(404);
   });
 
   it('403s a rescope by anyone but the owner', async () => {
     const res = await handleDocuments(
-      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', {
+      makeCtx('PUT', '/api/documents/d1/share/CODE2345', {
         owner: 'intruder',
         body: { tabId: 't2' },
       }),

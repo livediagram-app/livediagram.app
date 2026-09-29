@@ -552,7 +552,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
       ['POST', '/api/share/C'],
       ['GET', '/api/share'],
       ['GET', '/api/share/C/extra'],
-      ['GET', '/api/diagrams/d1'],
+      ['GET', '/api/documents/d1'],
     ] as const) {
       const url = new URL(`https://api.test${path}`);
       const res = await handleShare({

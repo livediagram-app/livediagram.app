@@ -79,7 +79,7 @@ describe('WebSocket upgrade — trust headers', () => {
     db.getShareLink.mockResolvedValue({ documentId: 'd1', role: 'edit' });
     const { env, seen } = roomEnv();
     const res = await handleDocumentRoomRoutes(
-      makeTestRouteContext('GET', '/api/diagrams/d1/ws?s=CODE1234', {
+      makeTestRouteContext('GET', '/api/documents/d1/ws?s=CODE1234', {
         owner: null,
         headers: SPOOFED,
         env,
@@ -96,7 +96,7 @@ describe('WebSocket upgrade — trust headers', () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
     const { env, seen } = roomEnv();
     const res = await handleDocumentRoomRoutes(
-      makeTestRouteContext('GET', '/api/diagrams/d1/ws?o=owner-uuid', {
+      makeTestRouteContext('GET', '/api/documents/d1/ws?o=owner-uuid', {
         owner: null,
         headers: { Upgrade: 'websocket' },
         env,
@@ -114,7 +114,7 @@ describe('WebSocket upgrade — trust headers', () => {
     db.getShareLink.mockResolvedValue({ documentId: 'd1', role: 'view' });
     const { env, seen } = roomEnv();
     await handleDocumentRoomRoutes(
-      makeTestRouteContext('GET', '/api/diagrams/d1/ws?s=CODE1234', {
+      makeTestRouteContext('GET', '/api/documents/d1/ws?s=CODE1234', {
         owner: null,
         headers: SPOOFED,
         env,
@@ -131,7 +131,7 @@ describe('WebSocket upgrade — trust headers', () => {
     db.getShareLink.mockResolvedValue(null);
     const { env, seen } = roomEnv();
     const res = await handleDocumentRoomRoutes(
-      makeTestRouteContext('GET', '/api/diagrams/d1/ws', {
+      makeTestRouteContext('GET', '/api/documents/d1/ws', {
         owner: null,
         headers: SPOOFED,
         env,
@@ -148,7 +148,7 @@ describe('WebSocket upgrade — trust headers', () => {
     db.getShareLink.mockResolvedValue(null);
     const { env, seen } = roomEnv();
     const res = await handleDocumentRoomRoutes(
-      makeTestRouteContext('GET', '/api/diagrams/d1/ws?o=user_owner', {
+      makeTestRouteContext('GET', '/api/documents/d1/ws?o=user_owner', {
         owner: null,
         headers: { Upgrade: 'websocket' },
         env,
@@ -163,7 +163,7 @@ describe('WebSocket upgrade — trust headers', () => {
     db.consumeWsTicket.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });
     const { env, seen } = roomEnv();
     const res = await handleDocumentRoomRoutes(
-      makeTestRouteContext('GET', '/api/diagrams/d1/ws?t=TICKET-1', {
+      makeTestRouteContext('GET', '/api/documents/d1/ws?t=TICKET-1', {
         owner: null,
         headers: SPOOFED,
         env,
@@ -181,7 +181,7 @@ describe('POST room-ticket', () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-1', teamId: null });
     gates.resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });
     const res = await handleDocumentRoomRoutes(
-      makeTestRouteContext('POST', '/api/diagrams/d1/room-ticket', { owner: 'owner-1' }),
+      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', { owner: 'owner-1' }),
     );
     expect(await res!.json()).toEqual({ ticket: 'TICKET-1' });
     expect(db.createWsTicket).toHaveBeenCalledWith(expect.anything(), 'd1', {
@@ -195,7 +195,7 @@ describe('POST room-ticket', () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
     gates.resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: null, shareCode: 'C' });
     const res = await handleDocumentRoomRoutes(
-      makeTestRouteContext('POST', '/api/diagrams/d1/room-ticket', { owner: 'visitor' }),
+      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', { owner: 'visitor' }),
     );
     expect(res!.status).toBe(200);
     expect(db.createWsTicket).toHaveBeenCalledWith(expect.anything(), 'd1', {
@@ -209,7 +209,7 @@ describe('POST room-ticket', () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
     gates.resolveDocumentGrant.mockResolvedValue(null);
     const res = await handleDocumentRoomRoutes(
-      makeTestRouteContext('POST', '/api/diagrams/d1/room-ticket', { owner: 'stranger' }),
+      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', { owner: 'stranger' }),
     );
     expect(res!.status).toBe(404);
     expect(db.createWsTicket).not.toHaveBeenCalled();
@@ -235,7 +235,7 @@ describe('WebSocket upgrade: tab scope', () => {
     });
     const { env, seen } = roomEnv();
     await handleDocumentRoomRoutes(
-      makeTestRouteContext('GET', '/api/diagrams/d1/ws?s=CODE1234', {
+      makeTestRouteContext('GET', '/api/documents/d1/ws?s=CODE1234', {
         owner: null,
         headers: SPOOFED_SCOPE,
         env,
@@ -250,7 +250,7 @@ describe('WebSocket upgrade: tab scope', () => {
     db.consumeWsTicket.mockResolvedValue({ role: 'edit', tabScope: 't2', shareCode: 'CODE1234' });
     const { env, seen } = roomEnv();
     await handleDocumentRoomRoutes(
-      makeTestRouteContext('GET', '/api/diagrams/d1/ws?t=TICKET-1', {
+      makeTestRouteContext('GET', '/api/documents/d1/ws?t=TICKET-1', {
         owner: null,
         headers: SPOOFED_SCOPE,
         env,
@@ -264,7 +264,7 @@ describe('WebSocket upgrade: tab scope', () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
     const { env, seen } = roomEnv();
     await handleDocumentRoomRoutes(
-      makeTestRouteContext('GET', '/api/diagrams/d1/ws?o=owner-uuid', {
+      makeTestRouteContext('GET', '/api/documents/d1/ws?o=owner-uuid', {
         owner: null,
         headers: { ...SPOOFED_SCOPE, 'X-Verified-Tab-Scope': 't9' },
         env,
@@ -282,7 +282,7 @@ describe('WebSocket upgrade: tab scope', () => {
       shareCode: 'CODE1234',
     });
     await handleDocumentRoomRoutes(
-      makeTestRouteContext('POST', '/api/diagrams/d1/room-ticket', { owner: 'visitor' }),
+      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', { owner: 'visitor' }),
     );
     expect(db.createWsTicket).toHaveBeenCalledWith(expect.anything(), 'd1', {
       role: 'edit',

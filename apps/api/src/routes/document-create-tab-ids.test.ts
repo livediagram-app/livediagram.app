@@ -36,7 +36,7 @@ const square = (id: string, linkTo?: string) => ({
 
 function post(db: SqliteD1, owner: string, body: unknown, headers: Record<string, string> = {}) {
   return handleDocuments(
-    makeTestRouteContext('POST', '/api/diagrams', { env: db.env, owner, body, headers }),
+    makeTestRouteContext('POST', '/api/documents', { env: db.env, owner, body, headers }),
   );
 }
 
@@ -69,7 +69,7 @@ async function seed(db: SqliteD1, documentId: string, id: string, name = id) {
   await upsertTab(db.env, documentId, { id, name, elements: [] } as unknown as Tab, 0);
 }
 
-describe('POST /api/diagrams with a tab id held elsewhere', () => {
+describe('POST /api/documents with a tab id held elsewhere', () => {
   it('syncs an offline fork back as its own tab, leaving the shared one alone', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A', 'owner');
@@ -79,7 +79,7 @@ describe('POST /api/diagrams with a tab id held elsewhere', () => {
     await linkTabToDocument(db.env, 'B', 'shared');
     // Take Offline removed A from the server; `shared` lives on in B.
     await handleDocuments(
-      makeTestRouteContext('DELETE', '/api/diagrams/A', {
+      makeTestRouteContext('DELETE', '/api/documents/A', {
         env: db.env,
         owner: 'owner',
         headers: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },

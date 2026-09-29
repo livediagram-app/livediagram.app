@@ -39,11 +39,11 @@ function tabIn(sql: DatabaseSync, tabId: string, ...documentIds: string[]) {
 
 function get(db: SqliteD1, opts: Parameters<typeof makeTestRouteContext>[2] = {}) {
   return handleDocuments(
-    makeTestRouteContext('GET', '/api/diagrams/A/shared-tabs', { env: db.env, ...opts }),
+    makeTestRouteContext('GET', '/api/documents/A/shared-tabs', { env: db.env, ...opts }),
   );
 }
 
-describe('GET /api/diagrams/:id/shared-tabs', () => {
+describe('GET /api/documents/:id/shared-tabs', () => {
   it('counts the tabs also in other diagrams, and those diagrams', async () => {
     const db = sqliteD1();
     for (const id of ['A', 'B', 'C']) liveDoc(db.sql, id);

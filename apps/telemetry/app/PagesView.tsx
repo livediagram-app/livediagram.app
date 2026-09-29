@@ -51,8 +51,8 @@ export function PagesView({
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
         Which pages people view, for <span className="font-medium">{windowLabel(active)}</span>, by
-        the app that serves them. Ids and query strings never leave the browser, so every diagram
-        counts as one page, <code>/diagram</code>. Views per app are the Page Views by App stack on
+        the app that serves them. Ids and query strings never leave the browser, so every document
+        counts as one page, <code>/document</code>. Views per app are the Page Views by App stack on
         Dashboard.
       </p>
 

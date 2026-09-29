@@ -26,7 +26,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
     height: 110,
     label,
   });
-  const seeded = await page.request.post(`${apiBase}/diagrams`, {
+  const seeded = await page.request.post(`${apiBase}/documents`, {
     headers: { 'X-Owner-Id': owner, Origin: new URL(baseURL!).origin },
     data: {
       id: liveDoc,
@@ -45,7 +45,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
     localStorage.setItem('livediagram:v2:self-id', id);
     localStorage.setItem('livediagram:v2:name-confirmed', '1');
   }, owner);
-  await page.goto(`/diagram/${liveDoc}`);
+  await page.goto(`/document/${liveDoc}`);
   await page.getByRole('button', { name: /^Share$/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Share this diagram' });
   await dialog

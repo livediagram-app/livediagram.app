@@ -125,7 +125,7 @@ export function connectRoom(
   // share password is read from the same session state apiHeaders uses, so
   // the editor doesn't have to thread it through; owners never have it set.
   const qs = roomQueryString(options, getSessionSharePassword());
-  const url = wsUrl(`/diagrams/${documentId}/ws${qs ? `?${qs}` : ''}`);
+  const url = wsUrl(`/documents/${documentId}/ws${qs ? `?${qs}` : ''}`);
 
   let ws: WebSocket;
   let closed = false; // the caller called close() — never reconnect after that

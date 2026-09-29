@@ -85,7 +85,7 @@ export function registerTools(server: McpServer, env: Env): void {
       // Personal + team shared libraries (docs/specs/013-workspace/team-shared-documents.md): a diagram filed into a
       // team leaves the personal list, so both must be swept.
       const [{ documents: liveDocs }, teamLibraries] = await Promise.all([
-        apiJson<DocumentListResponse>(env, token, '/diagrams'),
+        apiJson<DocumentListResponse>(env, token, '/documents'),
         fetchTeamLibraries(env, token),
       ]);
       const matched = matchDocuments(liveDocs, teamLibraries, args.query, args.limit ?? 20).map(
@@ -227,7 +227,7 @@ export function registerTools(server: McpServer, env: Env): void {
       // Tag the diagram as MCP-generated (docs/specs/013-workspace/folders.md). The Explorer surfaces a
       // synthetic "Generated" folder over source != null, so there's no
       // real folder to create / place it in.
-      await apiJson(env, token, '/diagrams', {
+      await apiJson(env, token, '/documents', {
         method: 'POST',
         body: JSON.stringify({ id, name: args.name, tabs, source: 'mcp' }),
       });
@@ -305,7 +305,7 @@ export function registerTools(server: McpServer, env: Env): void {
         : input.graph
           ? buildGraphTab(tabId, args.name, input.graph, themeId)
           : buildTab(tabId, args.name, (candidate as Tab).elements, args.layout, themeId);
-      await apiJson(env, token, `/diagrams/${args.documentId}/tabs/${tabId}`, {
+      await apiJson(env, token, `/documents/${args.documentId}/tabs/${tabId}`, {
         method: 'PUT',
         body: JSON.stringify(tab),
       });
@@ -403,7 +403,7 @@ export function registerTools(server: McpServer, env: Env): void {
         args.mode === 'replace' ? 'replace' : 'ops',
       );
       const nextTab: Tab = { ...(tab as Tab), id: tabId, elements };
-      await apiJson(env, token, `/diagrams/${args.documentId}/tabs/${tabId}`, {
+      await apiJson(env, token, `/documents/${args.documentId}/tabs/${tabId}`, {
         method: 'PUT',
         body: JSON.stringify(nextTab),
       });
@@ -437,7 +437,7 @@ export function registerTools(server: McpServer, env: Env): void {
       const { link } = await apiJson<ShareLinkResponse>(
         env,
         token,
-        `/diagrams/${args.documentId}/share`,
+        `/documents/${args.documentId}/share`,
         { method: 'POST', body: JSON.stringify({ role, expiry: args.expiry ?? 'never' }) },
       );
       return textResult({
@@ -470,9 +470,9 @@ export function registerTools(server: McpServer, env: Env): void {
         const { tab } = await apiJson<TabResponse>(
           env,
           token,
-          `/diagrams/${args.documentId}/tabs/${args.tabId}`,
+          `/documents/${args.documentId}/tabs/${args.tabId}`,
         );
-        await apiJson(env, token, `/diagrams/${args.documentId}/tabs/${args.tabId}`, {
+        await apiJson(env, token, `/documents/${args.documentId}/tabs/${args.tabId}`, {
           method: 'PUT',
           body: JSON.stringify({ ...tab, name: args.name }),
         });
@@ -481,7 +481,7 @@ export function registerTools(server: McpServer, env: Env): void {
       const { document: liveDoc } = await apiJson<DocumentResponse>(
         env,
         token,
-        `/diagrams/${args.documentId}`,
+        `/documents/${args.documentId}`,
         { method: 'PUT', body: JSON.stringify({ name: args.name }) },
       );
       return textResult({
@@ -513,8 +513,8 @@ export function registerTools(server: McpServer, env: Env): void {
       // A whole diagram only ever goes to the Trash (docs/specs/013-workspace/trash.md):
       // a permanent delete is the REST API's, never an AI tool's. A tab has no Trash.
       const path = args.tabId
-        ? `/diagrams/${args.documentId}/tabs/${args.tabId}`
-        : `/diagrams/${args.documentId}`;
+        ? `/documents/${args.documentId}/tabs/${args.tabId}`
+        : `/documents/${args.documentId}`;
       // DELETE returns 204 with no body, so use apiFetch (apiJson would choke
       // parsing an empty response) and surface a clear message on failure.
       const res = await apiFetch(env, token, path, { method: 'DELETE' });

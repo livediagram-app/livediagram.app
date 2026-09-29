@@ -20,14 +20,14 @@ function envWith(handler: (req: Request) => Response): { env: Env; calls: Reques
 describe('apiFetch', () => {
   it('forwards the bearer token and the /api path to the service binding', async () => {
     const { env, calls } = envWith(() => new Response('{}'));
-    await apiFetch(env, 'lvd_abc', '/diagrams');
+    await apiFetch(env, 'lvd_abc', '/documents');
     expect(calls[0]!.headers.get('Authorization')).toBe('Bearer lvd_abc');
-    expect(new URL(calls[0]!.url).pathname).toBe('/api/diagrams');
+    expect(new URL(calls[0]!.url).pathname).toBe('/api/documents');
   });
 
   it('sets a JSON content-type when a body is present', async () => {
     const { env, calls } = envWith(() => new Response('{}'));
-    await apiFetch(env, 't', '/diagrams', { method: 'POST', body: '{}' });
+    await apiFetch(env, 't', '/documents', { method: 'POST', body: '{}' });
     expect(calls[0]!.headers.get('Content-Type')).toBe('application/json');
   });
 });
@@ -60,13 +60,13 @@ describe('apiJson error telemetry (docs/specs/015-api/mcp-server.md §4.12)', ()
         ? new Response(null, { status: 204 })
         : new Response('boom', { status: 503 }),
     );
-    await expect(apiJson(env, 't', '/diagrams')).rejects.toBeInstanceOf(ApiError);
+    await expect(apiJson(env, 't', '/documents')).rejects.toBeInstanceOf(ApiError);
     expect(eventsPosted(calls)).toBe(true);
   });
 
   it('does NOT report a 4xx (expected, model-correctable)', async () => {
     const { env, calls } = envWith(() => new Response('nope', { status: 404 }));
-    await expect(apiJson(env, 't', '/diagrams/bad')).rejects.toBeInstanceOf(ApiError);
+    await expect(apiJson(env, 't', '/documents/bad')).rejects.toBeInstanceOf(ApiError);
     expect(eventsPosted(calls)).toBe(false);
   });
 
@@ -79,7 +79,7 @@ describe('apiJson error telemetry (docs/specs/015-api/mcp-server.md §4.12)', ()
         : new Response('boom', { status: 503 }),
     );
     await expect(
-      runInTool('update_document', () => apiJson(env, 't', '/diagrams/x/tabs/y')),
+      runInTool('update_document', () => apiJson(env, 't', '/documents/x/tabs/y')),
     ).rejects.toBeInstanceOf(ApiError);
     const event = calls.find((r) => new URL(r.url).pathname === '/api/events')!;
     const body = (await event.json()) as { events: Array<{ type: string }> };
@@ -99,7 +99,7 @@ describe('apiJson error telemetry (docs/specs/015-api/mcp-server.md §4.12)', ()
       } as unknown as Fetcher,
       OAUTH_KV: {} as KVNamespace,
     };
-    await expect(apiJson(env, 't', '/diagrams')).rejects.toThrow('network down');
+    await expect(apiJson(env, 't', '/documents')).rejects.toThrow('network down');
     expect(calls.some((r) => new URL(r.url).pathname === '/api/events')).toBe(true);
   });
 });

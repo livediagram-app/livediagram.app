@@ -81,7 +81,7 @@ const documentRenderer: TimelineRenderer = (event, ctx) => {
   // lost its id) must not point the reader at nothing. The card dims
   // itself when there's no handler.
   const open = documentId
-    ? () => window.location.assign(`/diagram/${encodeURIComponent(documentId)}`)
+    ? () => window.location.assign(`/document/${encodeURIComponent(documentId)}`)
     : undefined;
   // `description: null` clears the stored line: the reason line already
   // says what happened and the title already names the diagram, so

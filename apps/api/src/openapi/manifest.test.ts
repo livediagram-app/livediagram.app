@@ -152,7 +152,7 @@ describe('rate-limited operations declare 429', () => {
     const writes = ROUTE_MANIFEST.filter((r) => r.method !== 'GET');
     expect(writes.length).toBeGreaterThan(40);
     for (const route of writes) {
-      const expected = route.path !== '/events' && route.path !== '/diagrams/{id}/room-ticket';
+      const expected = route.path !== '/events' && route.path !== '/documents/{id}/room-ticket';
       expect(Boolean(responsesFor(route)['429']), `${route.method} ${route.path}`).toBe(expected);
     }
   });
@@ -254,14 +254,14 @@ describe('buildOpenApiDocument', () => {
     };
     const svg = ROUTE_MANIFEST.filter((r) => r.responseMediaType === 'image/svg+xml');
     expect(svg.map((r) => r.path).sort()).toEqual([
-      '/diagrams/{id}/thumbnail',
+      '/documents/{id}/thumbnail',
       '/share/{code}/image.svg',
     ]);
     for (const route of svg) {
       const ok = doc.paths[route.path]![route.method.toLowerCase()]!.responses['200']!;
       expect(Object.keys(ok.content ?? {})).toEqual(['image/svg+xml']);
     }
-    const json = doc.paths['/diagrams/{id}']!.get!.responses['200']!;
+    const json = doc.paths['/documents/{id}']!.get!.responses['200']!;
     expect(Object.keys(json.content ?? {})).toEqual(['application/json']);
   });
 });
@@ -276,9 +276,9 @@ describe('diagram name fields', () => {
   };
 
   it.each([
-    ['POST', '/diagrams'],
-    ['PUT', '/diagrams/{id}'],
-    ['POST', '/diagrams/{id}/copy'],
+    ['POST', '/documents'],
+    ['PUT', '/documents/{id}'],
+    ['POST', '/documents/{id}/copy'],
   ])('%s %s states the cap on its name', (method, path) => {
     expect(nameOf(method, path)?.description).toMatch(/At most 60 characters/);
   });

@@ -46,7 +46,7 @@ type EmbedChromeProps = {
 };
 
 export function EmbedChrome({ tabs, activeId, onSelectTab, shareCode }: EmbedChromeProps) {
-  const openUrl = shareCode ? `/diagram/shared?s=${encodeURIComponent(shareCode)}` : '/new';
+  const openUrl = shareCode ? `/document/shared?s=${encodeURIComponent(shareCode)}` : '/new';
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   useClickOutside(menuRef, () => setMenuOpen(false), menuOpen);

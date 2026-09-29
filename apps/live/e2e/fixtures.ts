@@ -105,10 +105,12 @@ export async function startEventStormingRow(page: Page): Promise<void> {
     let tab: { elements: { width: number; x: number }[] } | null = null;
     let tabId = '';
     for (let i = 0; i < 50 && !tab; i += 1) {
-      const liveDoc = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
+      const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
       tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
       if (tabId) {
-        const got = await (await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, { headers })).json();
+        const got = await (
+          await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
+        ).json();
         if (got.tab?.elements?.length === 1) tab = got.tab;
       }
       if (!tab) await new Promise((r) => setTimeout(r, 100));
@@ -124,7 +126,7 @@ export async function startEventStormingRow(page: Page): Promise<void> {
       x: seed.x + (i - 1) * step,
       rotation: i % 2 === 0 ? -1.1 : 1.1,
     }));
-    const res = await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, {
+    const res = await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
       method: 'PUT',
       headers,
       body: JSON.stringify({ ...tab, elements }),
@@ -202,18 +204,18 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
       let tab: Record<string, unknown> | null = null;
       let tabId = '';
       for (let i = 0; i < 50 && !tab; i += 1) {
-        const liveDoc = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
+        const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
         tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
         if (tabId) {
           const got = await (
-            await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, { headers })
+            await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
           ).json();
           tab = got.tab ?? null;
         }
         if (!tab) await new Promise((r) => setTimeout(r, 100));
       }
       if (!tab) throw new Error('the new diagram never saved its first tab');
-      const res = await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, {
+      const res = await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({ ...tab, elements }),

@@ -1,3 +1,4 @@
+import { isDeprecatedDescription, successorToolName } from './legacy-tool-names';
 import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from './env';
@@ -39,7 +40,13 @@ import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
 type Registered = {
   name: string;
-  config: { title?: string; description?: string; annotations?: ToolAnnotations };
+  config: {
+    title?: string;
+    description?: string;
+    annotations?: ToolAnnotations;
+    inputSchema?: unknown;
+    outputSchema?: unknown;
+  };
   handler: (args: unknown, extra: unknown) => Promise<unknown>;
 };
 
@@ -54,7 +61,7 @@ function okResponse(request: Request): Response {
   const path = new URL(request.url).pathname.replace(/^\/api/, '');
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
-  if (path === '/diagrams' && request.method === 'GET') return json({ documents: [] });
+  if (path === '/documents' && request.method === 'GET') return json({ documents: [] });
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') return json({ trash: [] });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
@@ -62,7 +69,7 @@ function okResponse(request: Request): Response {
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   }
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
-  if (/^\/diagrams\/[^/]+$/.test(path)) return json({ document: LIVE_DOC });
+  if (/^\/documents\/[^/]+$/.test(path)) return json({ document: LIVE_DOC });
   return json({});
 }
 
@@ -98,8 +105,13 @@ function harness(api: 'ok' | 'down' = 'down') {
 // convention) and the telemetry token is PascalCase (docs/specs/017-telemetry/telemetry.md bounds `type` to a
 // short token), so the two spellings have to be derived from each other rather
 // than typed twice.
+function isDeprecated(r: Registered): boolean {
+  return isDeprecatedDescription(r.config.description);
+}
+
+// A deprecated alias counts as its successor, so the feature's history stays one line.
 function expectedToken(toolName: string): string {
-  return toolName
+  return successorToolName(toolName)
     .split('_')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
@@ -132,7 +144,8 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 describe('registerTools', () => {
   it('registers the eleven documented tools, each with a description', () => {
     const { registered } = harness();
-    expect(registered.map((r) => r.name).sort()).toEqual([
+    const current = registered.filter((r) => !isDeprecated(r));
+    expect(current.map((r) => r.name).sort()).toEqual([
       'add_tab',
       'create_document',
       'delete_document',
@@ -262,7 +275,8 @@ describe('tool annotations', () => {
 
   it('annotates each tool with the behaviour docs/specs/015-api/mcp-server.md §4.14 assigns it', () => {
     const { registered } = harness();
-    for (const r of registered) {
+    // A deprecated alias carries its successor's annotations (checked above).
+    for (const r of registered.filter((r) => !isDeprecated(r))) {
       const behaviour = BEHAVIOURS[r.name];
       // A tool missing from the table is a new tool whose behaviour nobody has
       // decided yet. Decide it here and in the spec; don't delete this line.
@@ -278,6 +292,7 @@ describe('tool annotations', () => {
     // reverse) is a lie to the client either way.
     const { registered } = harness();
     const readOnly = registered
+      .filter((r) => !isDeprecated(r))
       .filter((r) => r.config.annotations?.readOnlyHint === true)
       .map((r) => r.name)
       .sort();
@@ -294,6 +309,7 @@ describe('tool annotations', () => {
     }
 
     const destructive = registered
+      .filter((r) => !isDeprecated(r))
       .filter((r) => r.config.annotations?.destructiveHint === true)
       .map((r) => r.name)
       .sort();
@@ -339,7 +355,7 @@ describe('the Trash tools', () => {
   it('delete_document moves the diagram to the Trash', async () => {
     const { calls, tool } = trashHarness();
     const result = await tool('delete_document').handler({ documentId: 'd_1' }, AUTHED);
-    expect(calls).toEqual(['DELETE /api/diagrams/d_1']);
+    expect(calls).toEqual(['DELETE /api/documents/d_1']);
     expect(text(result)).toEqual({
       deleted: 'document',
       documentId: 'd_1',
@@ -352,14 +368,14 @@ describe('the Trash tools', () => {
     const { calls, tool } = trashHarness();
     expect(Object.keys(deleteDocumentShape)).toEqual(['documentId', 'tabId']);
     await tool('delete_document').handler({ documentId: 'd_1', permanent: true }, AUTHED);
-    expect(calls).toEqual(['DELETE /api/diagrams/d_1']);
+    expect(calls).toEqual(['DELETE /api/documents/d_1']);
     expect(tool('delete_document').config.description).toContain('restore_document');
   });
 
   it('delete_document still deletes one tab outright', async () => {
     const { calls, tool } = trashHarness();
     await tool('delete_document').handler({ documentId: 'd_1', tabId: 't_1' }, AUTHED);
-    expect(calls).toEqual(['DELETE /api/diagrams/d_1/tabs/t_1']);
+    expect(calls).toEqual(['DELETE /api/documents/d_1/tabs/t_1']);
   });
 
   it('list_trash lists what the user may restore', async () => {
@@ -418,7 +434,7 @@ describe('the Trash tools', () => {
       restored: 'document',
       id: 'd_1',
       name: 'Plan',
-      url: 'https://livediagram.app/diagram/d_1',
+      url: 'https://livediagram.app/document/d_1',
     });
   });
 

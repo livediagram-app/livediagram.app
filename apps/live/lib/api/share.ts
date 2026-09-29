@@ -69,7 +69,7 @@ async function _apiListShareLinks(
   ownerId: string,
   id: string,
 ): Promise<{ links: ShareLink[]; password: string | null }> {
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}/share`, {
     headers: await apiHeaders(ownerId),
   });
   const { links, password } = await expectOk<ShareLinksResponse>(res, 'list share links');
@@ -87,7 +87,7 @@ export async function apiSetSharePassword(
   id: string,
   password: string | null,
 ): Promise<string | null> {
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share-password`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}/share-password`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ password }),
@@ -104,7 +104,7 @@ export async function apiCreateShareLink(
   // The one tab the link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
   tabId: string | null = null,
 ): Promise<ShareLink> {
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}/share`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ role, expiry, tabId }),
@@ -120,7 +120,7 @@ export async function apiExtendShareLink(
   id: string,
   code: string,
 ): Promise<ShareLink> {
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share/${code}/extend`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}/share/${code}/extend`, {
     method: 'POST',
     headers: await apiHeaders(ownerId),
   });
@@ -136,7 +136,7 @@ export async function apiRescopeShareLink(
   code: string,
   tabId: string | null,
 ): Promise<ShareLink> {
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share/${code}`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}/share/${code}`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ tabId }),
@@ -146,7 +146,7 @@ export async function apiRescopeShareLink(
 }
 
 export async function apiDeleteShareLink(ownerId: string, id: string, code: string): Promise<void> {
-  return apiDelete(`${API_BASE}/diagrams/${id}/share/${code}`, ownerId, {
+  return apiDelete(`${API_BASE}/documents/${id}/share/${code}`, ownerId, {
     action: 'delete share link',
   });
 }

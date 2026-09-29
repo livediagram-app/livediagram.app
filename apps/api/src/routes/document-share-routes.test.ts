@@ -105,12 +105,12 @@ describe('handleDocumentShareRoutes — the owner gate', () => {
   it('403s a caller who is not the diagram owner, on every verb', async () => {
     db.getDocument.mockResolvedValue({ id: 'd_1', ownerId: 'someone-else', tabs: [] });
     for (const [method, path] of [
-      ['GET', '/api/diagrams/d_1/share'],
-      ['POST', '/api/diagrams/d_1/share'],
-      ['DELETE', '/api/diagrams/d_1/share'],
-      ['PUT', '/api/diagrams/d_1/share-password'],
-      ['DELETE', '/api/diagrams/d_1/share/c1'],
-      ['POST', '/api/diagrams/d_1/share/c1/extend'],
+      ['GET', '/api/documents/d_1/share'],
+      ['POST', '/api/documents/d_1/share'],
+      ['DELETE', '/api/documents/d_1/share'],
+      ['PUT', '/api/documents/d_1/share-password'],
+      ['DELETE', '/api/documents/d_1/share/c1'],
+      ['POST', '/api/documents/d_1/share/c1/extend'],
     ] as const) {
       // GET carries no body; the rest send an empty one.
       const { ctx } = ctxFor(method, path, {
@@ -127,20 +127,20 @@ describe('handleDocumentShareRoutes — the owner gate', () => {
 
   it('404s when the diagram does not exist', async () => {
     db.getDocument.mockResolvedValue(null);
-    const { ctx } = ctxFor('GET', '/api/diagrams/d_1/share');
+    const { ctx } = ctxFor('GET', '/api/documents/d_1/share');
     expect((await handleDocumentShareRoutes(ctx))?.status).toBe(404);
   });
 
   it('400s when no owner resolves at all', async () => {
-    const { ctx } = ctxFor('GET', '/api/diagrams/d_1/share', { owner: null });
+    const { ctx } = ctxFor('GET', '/api/documents/d_1/share', { owner: null });
     expect((await handleDocumentShareRoutes(ctx))?.status).toBe(400);
   });
 
   it('returns null for a path that is not a share route, so routing continues', async () => {
     for (const path of [
-      '/api/diagrams/d_1',
-      '/api/diagrams/d_1/tabs',
-      '/api/diagrams/d_1/share/c1/unknown',
+      '/api/documents/d_1',
+      '/api/documents/d_1/tabs',
+      '/api/documents/d_1/share/c1/unknown',
     ]) {
       const { ctx } = ctxFor('GET', path);
       expect(await handleDocumentShareRoutes(ctx), path).toBeNull();
@@ -151,10 +151,10 @@ describe('handleDocumentShareRoutes — the owner gate', () => {
     // The owner check still runs, but an unanswered verb must fall through
     // rather than 404 — another handler may own it.
     for (const [method, path] of [
-      ['PATCH', '/api/diagrams/d_1/share'],
-      ['GET', '/api/diagrams/d_1/share-password'],
-      ['GET', '/api/diagrams/d_1/share/c1'],
-      ['GET', '/api/diagrams/d_1/share/c1/extend'],
+      ['PATCH', '/api/documents/d_1/share'],
+      ['GET', '/api/documents/d_1/share-password'],
+      ['GET', '/api/documents/d_1/share/c1'],
+      ['GET', '/api/documents/d_1/share/c1/extend'],
     ] as const) {
       const { ctx } = ctxFor(method, path, { env: roomEnv().env });
       expect(await handleDocumentShareRoutes(ctx), `${method} ${path}`).toBeNull();
@@ -162,11 +162,11 @@ describe('handleDocumentShareRoutes — the owner gate', () => {
   });
 });
 
-describe('GET /api/diagrams/:id/share', () => {
+describe('GET /api/documents/:id/share', () => {
   it('returns the links with the password in the clear — owner-only (docs/specs/013-workspace/share-password.md)', async () => {
     db.listShareLinks.mockResolvedValue([{ code: 'c1', role: 'view' }]);
     db.getDocumentSharePassword.mockResolvedValue('hunter2');
-    const { ctx } = ctxFor('GET', '/api/diagrams/d_1/share');
+    const { ctx } = ctxFor('GET', '/api/documents/d_1/share');
     const res = await handleDocumentShareRoutes(ctx);
     expect(await res!.json()).toEqual({
       links: [{ code: 'c1', role: 'view' }],
@@ -175,16 +175,16 @@ describe('GET /api/diagrams/:id/share', () => {
   });
 });
 
-describe('POST /api/diagrams/:id/share — minting a link', () => {
+describe('POST /api/documents/:id/share — minting a link', () => {
   it('mints an edit link by default and answers 201', async () => {
-    const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share', { body: {} });
+    const { ctx } = ctxFor('POST', '/api/documents/d_1/share', { body: {} });
     const res = await handleDocumentShareRoutes(ctx);
     expect(res!.status).toBe(201);
     expect(db.createShareLink).toHaveBeenCalledWith({}, 'd_1', 'CODE1234', 'edit', 'never', null);
   });
 
   it('honours an explicit view role', async () => {
-    const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share', { body: { role: 'view' } });
+    const { ctx } = ctxFor('POST', '/api/documents/d_1/share', { body: { role: 'view' } });
     await handleDocumentShareRoutes(ctx);
     expect(db.createShareLink).toHaveBeenCalledWith({}, 'd_1', 'CODE1234', 'view', 'never', null);
   });
@@ -193,7 +193,7 @@ describe('POST /api/diagrams/:id/share — minting a link', () => {
     // THE regression guard: a `=== 'view' ? 'view' : 'edit'` here once turned
     // every typo — including 'veiw' — into an edit link.
     for (const role of ['veiw', 'admin', '', 42]) {
-      const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share', { body: { role } });
+      const { ctx } = ctxFor('POST', '/api/documents/d_1/share', { body: { role } });
       const res = await handleDocumentShareRoutes(ctx);
       expect(res!.status, JSON.stringify(role)).toBe(400);
     }
@@ -202,7 +202,7 @@ describe('POST /api/diagrams/:id/share — minting a link', () => {
 
   it('accepts each known expiry and falls back to never for anything else', async () => {
     for (const expiry of ['week', 'month', 'sixMonths'] as const) {
-      const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share', { body: { expiry } });
+      const { ctx } = ctxFor('POST', '/api/documents/d_1/share', { body: { expiry } });
       await handleDocumentShareRoutes(ctx);
       expect(db.createShareLink).toHaveBeenLastCalledWith(
         {},
@@ -215,7 +215,7 @@ describe('POST /api/diagrams/:id/share — minting a link', () => {
     }
     // An unknown token is not an error: it degrades to the pre-expiry
     // behaviour, a link that works until revoked.
-    const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share', { body: { expiry: 'fortnight' } });
+    const { ctx } = ctxFor('POST', '/api/documents/d_1/share', { body: { expiry: 'fortnight' } });
     await handleDocumentShareRoutes(ctx);
     expect(db.createShareLink).toHaveBeenLastCalledWith(
       {},
@@ -228,12 +228,12 @@ describe('POST /api/diagrams/:id/share — minting a link', () => {
   });
 
   it('mints from a request with no readable body at all', async () => {
-    const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share');
+    const { ctx } = ctxFor('POST', '/api/documents/d_1/share');
     expect((await handleDocumentShareRoutes(ctx))!.status).toBe(201);
   });
 
   it('records the event for the owner only (docs/specs/013-workspace/timeline.md §4.3)', async () => {
-    const { ctx, settled } = ctxFor('POST', '/api/diagrams/d_1/share', {
+    const { ctx, settled } = ctxFor('POST', '/api/documents/d_1/share', {
       body: { role: 'view' },
       waitUntil: true,
     });
@@ -248,23 +248,23 @@ describe('POST /api/diagrams/:id/share — minting a link', () => {
   });
 
   it('only reaches for the first-share email when email is configured', async () => {
-    const off = ctxFor('POST', '/api/diagrams/d_1/share', { body: {}, waitUntil: true });
+    const off = ctxFor('POST', '/api/documents/d_1/share', { body: {}, waitUntil: true });
     await handleDocumentShareRoutes(off.ctx);
     await off.settled();
     expect(email.notifyFirstShare).not.toHaveBeenCalled();
 
     email.emailEnabled.mockReturnValue(true);
-    const on = ctxFor('POST', '/api/diagrams/d_1/share', { body: {}, waitUntil: true });
+    const on = ctxFor('POST', '/api/documents/d_1/share', { body: {}, waitUntil: true });
     await handleDocumentShareRoutes(on.ctx);
     await on.settled();
     expect(email.notifyFirstShare).toHaveBeenCalledWith({}, 'user_1');
   });
 });
 
-describe('DELETE /api/diagrams/:id/share — revoking every link', () => {
+describe('DELETE /api/documents/:id/share — revoking every link', () => {
   it('drops each link and closes sharing', async () => {
     db.listShareLinks.mockResolvedValue([{ code: 'c1' }, { code: 'c2' }]);
-    const { ctx } = ctxFor('DELETE', '/api/diagrams/d_1/share');
+    const { ctx } = ctxFor('DELETE', '/api/documents/d_1/share');
     const res = await handleDocumentShareRoutes(ctx);
     expect(db.deleteShareLink.mock.calls.map((c) => c[1])).toEqual(['c1', 'c2']);
     expect(db.setDocumentShare).toHaveBeenCalledWith({}, 'd_1', false);
@@ -272,18 +272,20 @@ describe('DELETE /api/diagrams/:id/share — revoking every link', () => {
   });
 
   it('still closes sharing when there was nothing to drop', async () => {
-    const { ctx } = ctxFor('DELETE', '/api/diagrams/d_1/share');
+    const { ctx } = ctxFor('DELETE', '/api/documents/d_1/share');
     expect((await handleDocumentShareRoutes(ctx))!.status).toBe(200);
     expect(db.setDocumentShare).toHaveBeenCalledWith({}, 'd_1', false);
   });
 });
 
-describe('PUT /api/diagrams/:id/share-password (docs/specs/013-workspace/share-password.md)', () => {
+describe('PUT /api/documents/:id/share-password (docs/specs/013-workspace/share-password.md)', () => {
   it('stores the password and echoes back what actually gates access', async () => {
     // The echo is the normalised stored value, not the request's — a
     // whitespace-only password clears the gate, and the dialog must show that.
     db.getDocumentSharePassword.mockResolvedValue(null);
-    const { ctx } = ctxFor('PUT', '/api/diagrams/d_1/share-password', { body: { password: '  ' } });
+    const { ctx } = ctxFor('PUT', '/api/documents/d_1/share-password', {
+      body: { password: '  ' },
+    });
     const res = await handleDocumentShareRoutes(ctx);
     expect(db.setDocumentSharePassword).toHaveBeenCalledWith({}, 'd_1', '  ');
     expect(await res!.json()).toEqual({ password: null });
@@ -291,20 +293,20 @@ describe('PUT /api/diagrams/:id/share-password (docs/specs/013-workspace/share-p
 
   it('clears the password for a null, and for a non-string', async () => {
     for (const password of [null, 42, undefined]) {
-      const { ctx } = ctxFor('PUT', '/api/diagrams/d_1/share-password', { body: { password } });
+      const { ctx } = ctxFor('PUT', '/api/documents/d_1/share-password', { body: { password } });
       await handleDocumentShareRoutes(ctx);
       expect(db.setDocumentSharePassword).toHaveBeenLastCalledWith({}, 'd_1', null);
     }
   });
 
   it('clears the password when the request carries no readable body', async () => {
-    const { ctx } = ctxFor('PUT', '/api/diagrams/d_1/share-password');
+    const { ctx } = ctxFor('PUT', '/api/documents/d_1/share-password');
     expect((await handleDocumentShareRoutes(ctx))!.status).toBe(200);
     expect(db.setDocumentSharePassword).toHaveBeenCalledWith({}, 'd_1', null);
   });
 
   it('400s a password past the limit, storing nothing', async () => {
-    const { ctx } = ctxFor('PUT', '/api/diagrams/d_1/share-password', {
+    const { ctx } = ctxFor('PUT', '/api/documents/d_1/share-password', {
       body: { password: 'x'.repeat(MAX_PASSWORD_LEN + 1) },
     });
     expect((await handleDocumentShareRoutes(ctx))!.status).toBe(400);
@@ -312,10 +314,10 @@ describe('PUT /api/diagrams/:id/share-password (docs/specs/013-workspace/share-p
   });
 });
 
-describe('DELETE /api/diagrams/:id/share/:code — revoking one link', () => {
+describe('DELETE /api/documents/:id/share/:code — revoking one link', () => {
   it('deletes the code and tells the room, so hydrated visitors redirect', async () => {
     const { env, broadcasts } = roomEnv();
-    const { ctx } = ctxFor('DELETE', '/api/diagrams/d_1/share/c1', { env });
+    const { ctx } = ctxFor('DELETE', '/api/documents/d_1/share/c1', { env });
     const res = await handleDocumentShareRoutes(ctx);
     expect(res!.status).toBe(204);
     expect(db.deleteShareLink).toHaveBeenCalledWith(env, 'c1');
@@ -329,7 +331,7 @@ describe('DELETE /api/diagrams/:id/share/:code — revoking one link', () => {
         get: () => ({ fetch: async () => Promise.reject(new Error('room down')) }),
       },
     } as unknown as Env;
-    const { ctx } = ctxFor('DELETE', '/api/diagrams/d_1/share/c1', { env });
+    const { ctx } = ctxFor('DELETE', '/api/documents/d_1/share/c1', { env });
     expect((await handleDocumentShareRoutes(ctx))!.status).toBe(204);
     expect(db.deleteShareLink).toHaveBeenCalled();
   });
@@ -338,16 +340,16 @@ describe('DELETE /api/diagrams/:id/share/:code — revoking one link', () => {
     // Owning d_1 must not let you revoke somebody else's link by its code.
     db.getShareLinkIncludingExpired.mockResolvedValueOnce({ code: 'c1', documentId: 'd_other' });
     const { env, broadcasts } = roomEnv();
-    const { ctx } = ctxFor('DELETE', '/api/diagrams/d_1/share/c1', { env });
+    const { ctx } = ctxFor('DELETE', '/api/documents/d_1/share/c1', { env });
     expect((await handleDocumentShareRoutes(ctx))!.status).toBe(404);
     expect(db.deleteShareLink).not.toHaveBeenCalled();
     expect(broadcasts).toEqual([]);
   });
 });
 
-describe('POST /api/diagrams/:id/share/:code/extend (docs/specs/013-workspace/share-link-expiry.md)', () => {
+describe('POST /api/documents/:id/share/:code/extend (docs/specs/013-workspace/share-link-expiry.md)', () => {
   it('re-arms the link and returns it', async () => {
-    const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share/c1/extend', { body: {} });
+    const { ctx } = ctxFor('POST', '/api/documents/d_1/share/c1/extend', { body: {} });
     const res = await handleDocumentShareRoutes(ctx);
     expect(await res!.json()).toEqual({ link: { code: 'c1', expiresAt: 9_999 } });
   });
@@ -356,20 +358,20 @@ describe('POST /api/diagrams/:id/share/:code/extend (docs/specs/013-workspace/sh
     // The code is a bearer value; without this check an owner could extend
     // somebody else's link by quoting it against their own diagram id.
     db.getShareLinkIncludingExpired.mockResolvedValue({ code: 'c1', documentId: 'other' });
-    const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share/c1/extend', { body: {} });
+    const { ctx } = ctxFor('POST', '/api/documents/d_1/share/c1/extend', { body: {} });
     expect((await handleDocumentShareRoutes(ctx))!.status).toBe(404);
     expect(db.extendShareLink).not.toHaveBeenCalled();
   });
 
   it('404s a code that does not exist', async () => {
     db.getShareLinkIncludingExpired.mockResolvedValue(null);
-    const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share/c1/extend', { body: {} });
+    const { ctx } = ctxFor('POST', '/api/documents/d_1/share/c1/extend', { body: {} });
     expect((await handleDocumentShareRoutes(ctx))!.status).toBe(404);
   });
 
   it('400s a link that never expires — there is nothing to extend', async () => {
     db.extendShareLink.mockResolvedValue(null);
-    const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share/c1/extend', { body: {} });
+    const { ctx } = ctxFor('POST', '/api/documents/d_1/share/c1/extend', { body: {} });
     expect((await handleDocumentShareRoutes(ctx))!.status).toBe(400);
   });
 });

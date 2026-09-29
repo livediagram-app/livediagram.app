@@ -328,7 +328,7 @@ export function actionAssignedEmail(
       intro: `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`,
       ...(detail ? { outro: detail } : {}),
       ctaText: 'Open the diagram',
-      ctaHref: `${base}/diagram/${encodeURIComponent(documentId)}`,
+      ctaHref: `${base}/document/${encodeURIComponent(documentId)}`,
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate assigned you an action.',
@@ -373,7 +373,7 @@ export function mentionedEmail(
       intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${liveDoc}</strong>:`,
       outro: `“${escapeHtml(mentionQuote(commentText))}”`,
       ctaText: 'Open the diagram',
-      ctaHref: `${base}/diagram/${encodeURIComponent(documentId)}`,
+      ctaHref: `${base}/document/${encodeURIComponent(documentId)}`,
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate mentioned you in a comment.',
@@ -485,7 +485,7 @@ export function commentNotificationEmail(
       heading: 'New comment on your diagram',
       intro: `<strong>${who}</strong> left a comment on <strong>${name}</strong>. Open the diagram to read it and reply.`,
       ctaText: 'Open the diagram',
-      ctaHref: `${base}/diagram/${encodeURIComponent(documentId)}`,
+      ctaHref: `${base}/document/${encodeURIComponent(documentId)}`,
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because someone commented on a diagram you own.',

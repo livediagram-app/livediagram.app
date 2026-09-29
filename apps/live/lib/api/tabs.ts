@@ -36,7 +36,7 @@ async function _apiLoadTab(
 ): Promise<Tab | null> {
   // Offline Mode (docs/specs/006-document/offline-mode.md): an offline diagram's tabs come from IndexedDB.
   if (await isOfflineId(documentId)) return offlineLoadTab(documentId, tabId);
-  const res = await apiFetch(`${API_BASE}/diagrams/${documentId}/tabs/${tabId}`, {
+  const res = await apiFetch(`${API_BASE}/documents/${documentId}/tabs/${tabId}`, {
     headers: await apiHeaders(ownerId, { share: shareCode }),
   });
   const body = await expectOkOrNull<TabResponse>(res, 'load tab');
@@ -88,7 +88,7 @@ export async function apiSaveTab(
   if (opts.roomCursor) {
     headers.set('X-Room-Cursor', `${opts.roomCursor.epoch}:${opts.roomCursor.seq}`);
   }
-  const res = await apiFetch(`${API_BASE}/diagrams/${documentId}/tabs/${tab.id}`, {
+  const res = await apiFetch(`${API_BASE}/documents/${documentId}/tabs/${tab.id}`, {
     method: 'PUT',
     headers,
     body: JSON.stringify(tabForWire(tab)),
@@ -173,7 +173,7 @@ export function flushDocumentSavesBeacon(args: {
     const headers = args.loadedTabIds.has(t.id)
       ? { ...jsonHeaders, 'X-Allow-Empty': '1' }
       : jsonHeaders;
-    void apiFetch(`${API_BASE}/diagrams/${args.documentId}/tabs/${t.id}`, {
+    void apiFetch(`${API_BASE}/documents/${args.documentId}/tabs/${t.id}`, {
       method: 'PUT',
       headers,
       body: JSON.stringify(tabForWire(t)),
@@ -181,14 +181,14 @@ export function flushDocumentSavesBeacon(args: {
     }).catch(() => {});
   }
   for (const tabId of args.deletedIds) {
-    void apiFetch(`${API_BASE}/diagrams/${args.documentId}/tabs/${tabId}`, {
+    void apiFetch(`${API_BASE}/documents/${args.documentId}/tabs/${tabId}`, {
       method: 'DELETE',
       headers: base,
       keepalive: true,
     }).catch(() => {});
   }
   if (args.orderChanged || args.nameChanged) {
-    void apiFetch(`${API_BASE}/diagrams/${args.documentId}`, {
+    void apiFetch(`${API_BASE}/documents/${args.documentId}`, {
       method: 'PUT',
       headers: jsonHeaders,
       body: JSON.stringify({
@@ -224,7 +224,7 @@ export async function apiAddComment(
   authorColor: string;
 }> {
   const res = await apiFetch(
-    `${API_BASE}/diagrams/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/comments`,
+    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/comments`,
     {
       method: 'POST',
       headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
@@ -257,7 +257,7 @@ export async function apiDeleteComment(
   shareCode: string | null = null,
 ): Promise<void> {
   const res = await apiFetch(
-    `${API_BASE}/diagrams/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/comments/${encodeURIComponent(commentId)}`,
+    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/comments/${encodeURIComponent(commentId)}`,
     {
       method: 'DELETE',
       headers: await apiHeaders(ownerId, { share: shareCode }),
@@ -278,7 +278,7 @@ export async function apiLinkTab(
   tabId: string,
 ): Promise<TabSummary> {
   const res = await apiFetch(
-    `${API_BASE}/diagrams/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/link`,
+    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/link`,
     {
       method: 'POST',
       headers: await apiHeaders(ownerId),
@@ -294,7 +294,7 @@ export async function apiDeleteTab(
   shareCode: string | null = null,
 ): Promise<void> {
   if (await isOfflineId(documentId)) return offlineDeleteTab(documentId, tabId, Date.now());
-  return apiDelete(`${API_BASE}/diagrams/${documentId}/tabs/${tabId}`, ownerId, {
+  return apiDelete(`${API_BASE}/documents/${documentId}/tabs/${tabId}`, ownerId, {
     action: 'delete tab',
     share: shareCode,
   });
