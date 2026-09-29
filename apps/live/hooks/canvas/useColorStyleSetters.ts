@@ -158,6 +158,7 @@ export function useColorStyleSetters(deps: {
               : { textColor: undefined }),
             fillColor: undefined,
             strokeColor: undefined,
+            textSwatch: undefined,
           };
         }
         if (el.type === 'sticky') {

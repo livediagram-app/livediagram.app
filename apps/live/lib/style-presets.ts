@@ -141,6 +141,8 @@ export function applyStrokeColorToEl(el: Element, color: string): Element {
 export function applyTextColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape') return { ...el, textColor: color, colorPreset: undefined };
   if (el.type === 'table') return { ...el, textColor: color, tablePreset: undefined };
+  // A hand-picked colour is no longer the quick-swatch slot it came from.
+  if (el.type === 'text') return { ...el, textColor: color, textSwatch: undefined };
   if (isBoxed(el) || el.type === 'arrow') return { ...el, textColor: color };
   return el;
 }

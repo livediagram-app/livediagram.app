@@ -6,6 +6,7 @@ import {
   type Element,
   type ShapeElement,
   type StickyElement,
+  type TextElement,
 } from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
 import {
@@ -14,6 +15,7 @@ import {
   applyQuickStroke,
   applyQuickStrokeStyle,
   applyQuickTextAlign,
+  applyQuickTextColour,
   applyQuickWidth,
   clearQuickStyle,
   quickStyleView,
@@ -298,5 +300,78 @@ describe('custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom sw
       custom,
     )!;
     expect(view.sections.stroke?.value).toBeNull();
+  });
+});
+
+describe('Text colour: text elements', () => {
+  const text = (id: string, extra: Partial<TextElement> = {}): TextElement => ({
+    id,
+    type: 'text',
+    x: 0,
+    y: 0,
+    width: 220,
+    height: 64,
+    label: 'Hello',
+    ...extra,
+  });
+
+  it('gives a text element only the Text colour row', () => {
+    expect(sections([text('t')])).toEqual(['textColour']);
+  });
+
+  it('adds the row beside a shape without giving the shape one', () => {
+    expect(sections([shape('a'), text('t')])).toEqual([
+      'stroke',
+      'background',
+      'textColour',
+      'width',
+      'style',
+      'textAlign',
+    ]);
+    expect(sections([shape('a')])).not.toContain('textColour');
+  });
+
+  it('leaves a locked text element alone', () => {
+    expect(quickStyleView([text('t', { locked: true })], forest)).toBeNull();
+  });
+
+  it('binds a slot, and reads it back as the row value', () => {
+    const next = applyQuickTextColour(text('t'), forest, 4) as TextElement;
+    expect(next.textSwatch).toBe(4);
+    expect(next.textColor).toBe(quickSwatchColor(forest, 'text', 4));
+    expect(quickStyleView([next], forest)?.sections.textColour?.value).toBe(4);
+  });
+
+  it('slot 0 writes the theme label colour and unbinds', () => {
+    const bound = text('t', { textColor: '#123456', textSwatch: 2 });
+    const next = applyQuickTextColour(bound, forest, 0) as TextElement;
+    expect(next.textSwatch).toBeUndefined();
+    expect(next.textColor).toBe(forest.elementText ?? undefined);
+    expect(quickStyleView([text('u')], forest)?.sections.textColour?.value).toBe(0);
+  });
+
+  it('an overridden slot writes the custom colour unbound', () => {
+    const next = applyQuickTextColour(text('t'), forest, 3, {
+      text: { 3: '#aa0000' },
+    }) as TextElement;
+    expect(next).toMatchObject({ textColor: '#aa0000', textSwatch: undefined });
+  });
+
+  it('is a no-op on other elements, and the other rows skip text', () => {
+    const s = shape('a');
+    expect(applyQuickTextColour(s, forest, 4)).toBe(s);
+    const t = text('t');
+    expect(applyQuickStroke(t, forest, 4)).toBe(t);
+    expect(applyQuickWidth(t, 'thick')).toBe(t);
+    expect(applyQuickStrokeStyle(t, 'dashed')).toBe(t);
+  });
+
+  it('Clear styles returns the text colour to the theme and drops the binding', () => {
+    const next = clearQuickStyle(
+      text('t', { textColor: '#aa0000', textSwatch: 1 }),
+      forest,
+    ) as TextElement;
+    expect(next.textSwatch).toBeUndefined();
+    expect(next.textColor).toBe(forest.elementText ?? undefined);
   });
 });

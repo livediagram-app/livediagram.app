@@ -19,13 +19,14 @@ import {
   type QuickSwatchSlot,
   type ShapeElement,
   type TextAlignX,
+  type TextElement,
   type ThemeDefinition,
 } from '@livediagram/diagram';
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
 
-export type QuickStyleTarget = ShapeElement | ArrowElement;
+export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement;
 export type QuickSectionId =
-  'stroke' | 'background' | 'width' | 'style' | 'textAlign' | 'iconAlign';
+  'stroke' | 'background' | 'textColour' | 'width' | 'style' | 'textAlign' | 'iconAlign';
 export type QuickSwatchValue = 0 | QuickSwatchSlot;
 export type QuickWidth = 'thin' | 'medium' | 'thick';
 export type QuickStrokeStyle = 'solid' | 'dashed' | 'dotted' | 'flowing';
@@ -43,6 +44,7 @@ export type QuickStyleView = {
   sections: {
     stroke?: { value: QuickSwatchValue | null; swatches: ShownSwatch[] };
     background?: { value: QuickSwatchValue | null; swatches: ShownSwatch[] };
+    textColour?: { value: QuickSwatchValue | null; swatches: ShownSwatch[] };
     width?: { value: QuickWidth | null };
     style?: { value: QuickStrokeStyle | null; options: readonly QuickStrokeStyle[] };
     textAlign?: { value: TextAlignX | null };
@@ -50,26 +52,51 @@ export type QuickStyleView = {
   };
 };
 
-// An unlocked shape or arrow: the only elements the panel styles.
+// An unlocked shape, arrow or text element: the only elements the panel styles.
 export function isQuickStyleTarget(el: Element): el is QuickStyleTarget {
-  return (el.type === 'shape' || el.type === 'arrow') && el.locked !== true;
+  return (el.type === 'shape' || el.type === 'arrow' || el.type === 'text') && el.locked !== true;
 }
 
 export function supportsQuickSection(el: QuickStyleTarget, section: QuickSectionId): boolean {
   switch (section) {
     case 'stroke':
-      return el.type === 'arrow' || supportsColours(el);
+      return el.type === 'arrow' || (el.type === 'shape' && supportsColours(el));
     case 'background':
       return el.type === 'shape' && supportsFillColor(el);
+    case 'textColour':
+      return el.type === 'text';
     case 'width':
     case 'style':
-      return el.type === 'arrow' || supportsBorderControls(el);
+      return el.type === 'arrow' || (el.type === 'shape' && supportsBorderControls(el));
     case 'textAlign':
       return el.type === 'shape' && supportsTextAlign(el.shape);
     case 'iconAlign':
       return el.type === 'shape' && acceptsInlineIcon(el) && !!el.iconId;
   }
 }
+
+// A target that draws a line (shape or arrow), in a section that styles it.
+// One narrowing guard, so the line rows' readers and writers never see text.
+function isLinedTarget(
+  el: Element,
+  section: 'stroke' | 'width' | 'style',
+): el is ShapeElement | ArrowElement {
+  return isQuickStyleTarget(el) && el.type !== 'text' && supportsQuickSection(el, section);
+}
+
+// Each colour row's fields: the colour it writes, the slot binding beside it,
+// and the theme value slot 0 stands for.
+const ROLE_FIELDS = {
+  stroke: { colour: 'strokeColor', swatch: 'strokeSwatch', theme: 'elementStroke' },
+  fill: { colour: 'fillColor', swatch: 'fillSwatch', theme: 'elementFill' },
+  text: { colour: 'textColor', swatch: 'textSwatch', theme: 'elementText' },
+} as const satisfies Record<
+  QuickSwatchRole,
+  { colour: string; swatch: string; theme: keyof ThemeDefinition }
+>;
+type RoleFields = (typeof ROLE_FIELDS)[QuickSwatchRole];
+type RoleValues = Partial<Record<RoleFields['colour'], string>> &
+  Partial<Record<RoleFields['swatch'], QuickSwatchSlot>>;
 
 // The one value every supporting element shares, else null.
 function shared<T>(values: (T | null)[]): T | null {
@@ -84,25 +111,26 @@ function swatchValue(
   role: QuickSwatchRole,
   swatches: ShownSwatch[],
 ): QuickSwatchValue | null {
-  const bound = role === 'stroke' ? el.strokeSwatch : el.type === 'shape' ? el.fillSwatch : null;
+  const fields = ROLE_FIELDS[role];
+  const values = el as RoleValues;
+  const bound = values[fields.swatch];
   // A bound slot counts only while the row still shows its theme colour.
   if (bound && !swatches[bound]?.override) return bound;
-  const colour =
-    role === 'stroke' ? el.strokeColor : el.type === 'shape' ? el.fillColor : undefined;
+  const colour = values[fields.colour];
   if (colour === undefined) return 0;
-  const own = role === 'stroke' ? theme.elementStroke : theme.elementFill;
+  const own = theme[fields.theme];
   const lower = colour.toLowerCase();
   if (lower === swatches[0]!.color.toLowerCase() || lower === own?.toLowerCase()) return 0;
   const shown = swatches.find((s) => s.slot !== 0 && s.color.toLowerCase() === lower);
   return shown && shown.slot !== 0 ? shown.slot : null;
 }
 
-function widthOf(el: QuickStyleTarget): QuickWidth | null {
+function widthOf(el: ShapeElement | ArrowElement): QuickWidth | null {
   const w = el.type === 'arrow' ? arrowThicknessOf(el) : (el.strokeWidth ?? 'medium');
   return (QUICK_WIDTHS as readonly string[]).includes(w) ? (w as QuickWidth) : null;
 }
 
-function styleOf(el: QuickStyleTarget): QuickStrokeStyle | null {
+function styleOf(el: ShapeElement | ArrowElement): QuickStrokeStyle | null {
   const style = el.strokeStyle ?? 'solid';
   if (el.type === 'arrow' && el.flow)
     return el.flow === 'dashes' && style === 'dashed' ? 'flowing' : null;
@@ -122,9 +150,10 @@ export function quickStyleView(
 ): QuickStyleView | null {
   const targets = elements.filter(isQuickStyleTarget);
   const supporting = (s: QuickSectionId) => targets.filter((el) => supportsQuickSection(el, s));
+  const lined = (s: 'stroke' | 'width' | 'style') => targets.filter((el) => isLinedTarget(el, s));
   const sections: QuickStyleView['sections'] = {};
 
-  const stroke = supporting('stroke');
+  const stroke = lined('stroke');
   if (stroke.length > 0) {
     const swatches = applySwatchOverrides(quickSwatches(theme, 'stroke'), overrides.stroke);
     // An arrow's unpainted line is its own ink, not a shape's: show that when
@@ -148,9 +177,17 @@ export function quickStyleView(
       value: shared(background.map((el) => swatchValue(el, theme, 'fill', swatches))),
     };
   }
-  const width = supporting('width');
+  const textColour = supporting('textColour');
+  if (textColour.length > 0) {
+    const swatches = applySwatchOverrides(quickSwatches(theme, 'text'), overrides.text);
+    sections.textColour = {
+      swatches,
+      value: shared(textColour.map((el) => swatchValue(el, theme, 'text', swatches))),
+    };
+  }
+  const width = lined('width');
   if (width.length > 0) sections.width = { value: shared(width.map(widthOf)) };
-  const style = supporting('style');
+  const style = lined('style');
   if (style.length > 0) {
     const options = style.every((el) => el.type === 'arrow') ? ARROW_STYLES : SHAPE_STYLES;
     const value = shared(style.map(styleOf));
@@ -183,10 +220,7 @@ function pickFor(
   slot: QuickSwatchValue,
   overrides: SwatchOverrides,
 ): { colour: string | undefined; bind: QuickSwatchSlot | undefined } {
-  if (slot === 0) {
-    const own = role === 'stroke' ? theme.elementStroke : theme.elementFill;
-    return { colour: own ?? undefined, bind: undefined };
-  }
+  if (slot === 0) return { colour: theme[ROLE_FIELDS[role].theme] ?? undefined, bind: undefined };
   const custom = overrides[role]?.[slot];
   if (custom) return { colour: custom, bind: undefined };
   return { colour: quickSwatches(theme, role)[slot]!.color, bind: slot };
@@ -198,7 +232,7 @@ export function applyQuickStroke(
   slot: QuickSwatchValue,
   overrides: SwatchOverrides = {},
 ): Element {
-  if (!isQuickStyleTarget(el) || !supportsQuickSection(el, 'stroke')) return el;
+  if (!isLinedTarget(el, 'stroke')) return el;
   const { colour, bind } = pickFor(theme, 'stroke', slot, overrides);
   return el.type === 'shape'
     ? { ...el, strokeColor: colour, strokeSwatch: bind, colorPreset: undefined }
@@ -217,15 +251,27 @@ export function applyQuickFill(
   return { ...el, fillColor: colour, fillSwatch: bind, colorPreset: undefined };
 }
 
+export function applyQuickTextColour(
+  el: Element,
+  theme: ThemeDefinition,
+  slot: QuickSwatchValue,
+  overrides: SwatchOverrides = {},
+): Element {
+  if (el.type !== 'text' || !isQuickStyleTarget(el) || !supportsQuickSection(el, 'textColour'))
+    return el;
+  const { colour, bind } = pickFor(theme, 'text', slot, overrides);
+  return { ...el, textColor: colour, textSwatch: bind };
+}
+
 export function applyQuickWidth(el: Element, width: QuickWidth): Element {
-  if (!isQuickStyleTarget(el) || !supportsQuickSection(el, 'width')) return el;
+  if (!isLinedTarget(el, 'width')) return el;
   return el.type === 'arrow'
     ? { ...el, strokeWidth: ARROW_THICKNESS_PX[width] }
     : { ...el, strokeWidth: width };
 }
 
 export function applyQuickStrokeStyle(el: Element, style: QuickStrokeStyle): Element {
-  if (!isQuickStyleTarget(el) || !supportsQuickSection(el, 'style')) return el;
+  if (!isLinedTarget(el, 'style')) return el;
   if (el.type === 'shape') return { ...el, strokeStyle: style === 'flowing' ? 'dashed' : style };
   if (style === 'flowing') {
     return {
@@ -254,6 +300,10 @@ export function applyQuickIconAlign(el: Element, align: QuickIconAlign): Element
 // Clear styles: the quick-style fields back to the theme's default.
 export function clearQuickStyle(el: Element, theme: ThemeDefinition): Element {
   if (!isQuickStyleTarget(el)) return el;
+  if (el.type === 'text') {
+    const { textSwatch: _ts, textColor: _tc, ...rest } = el;
+    return theme.elementText ? { ...rest, textColor: theme.elementText } : rest;
+  }
   if (el.type === 'arrow') {
     const {
       strokeSwatch: _sw,

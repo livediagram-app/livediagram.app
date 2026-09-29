@@ -6,7 +6,7 @@ import {
   quickSwatches,
   quickSwatchSlotOf,
 } from './quick-swatches';
-import { contrastRatio, unpaintedShapeInk } from './colors';
+import { MIN_TEXT_CONTRAST, contrastRatio, unpaintedShapeInk } from './colors';
 import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, THEMES } from './themes-data';
 import type { ThemeDefinition } from './themes';
 
@@ -19,7 +19,7 @@ const MULTI_COLOUR = THEMES.filter((t) => t.palette);
 describe('quickSwatches', () => {
   it('offers seven swatches per role: the theme default, then slots 1 to 6', () => {
     for (const t of [...THEMES, DEFAULT_SCHEME_DARK]) {
-      for (const role of ['stroke', 'fill'] as const) {
+      for (const role of ['stroke', 'fill', 'text'] as const) {
         const swatches = quickSwatches(t, role);
         expect(swatches.map((s) => s.slot)).toEqual([0, ...QUICK_SWATCH_SLOTS]);
       }
@@ -126,5 +126,39 @@ describe('isQuickSwatchSlot', () => {
   it('accepts 1 to 6 and nothing else', () => {
     expect(QUICK_SWATCH_SLOTS.every(isQuickSwatchSlot)).toBe(true);
     for (const bad of [0, 7, 1.5, '1', null, undefined]) expect(isQuickSwatchSlot(bad)).toBe(false);
+  });
+});
+
+describe('quickSwatches: the Text colour row', () => {
+  it("leads with the theme's label colour", () => {
+    const forest = theme('forest');
+    expect(quickSwatches(forest, 'text')[0]!.color).toBe(forest.elementText);
+    expect(quickSwatches(DEFAULT_SCHEME_DARK, 'text')[0]!.color).toBe(
+      unpaintedShapeInk('dark').text,
+    );
+  });
+
+  it('reads at 4.5:1 on the canvas in every theme', () => {
+    for (const t of [...THEMES, DEFAULT_SCHEME_DARK]) {
+      for (const s of quickSwatches(t, 'text').slice(1)) {
+        expect(
+          contrastRatio(s.color, t.backgroundColor),
+          `${t.id} ${s.name}`,
+        ).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST - 0.01);
+      }
+    }
+  });
+
+  it('names its six the way the Stroke row does, so a slot means one hue', () => {
+    for (const t of [...SINGLE_ACCENT, ...MULTI_COLOUR]) {
+      const text = quickSwatches(t, 'text')
+        .slice(1)
+        .map((s) => s.name);
+      const stroke = quickSwatches(t, 'stroke')
+        .slice(1)
+        .map((s) => s.name);
+      if (!t.palette) expect(text, t.id).toEqual(stroke);
+      else expect(text.length, t.id).toBe(6);
+    }
   });
 });

@@ -6,6 +6,10 @@ import { isQuickSwatchSlot, quickSwatchColor } from './quick-swatches';
 import type { ThemeDefinition } from './themes';
 
 export function rederiveQuickSwatches(el: Element, theme: ThemeDefinition): Element {
+  if (el.type === 'text') {
+    if (!isQuickSwatchSlot(el.textSwatch)) return el;
+    return { ...el, textColor: quickSwatchColor(theme, 'text', el.textSwatch) };
+  }
   if (el.type !== 'shape' && el.type !== 'arrow') return el;
   const stroke = isQuickSwatchSlot(el.strokeSwatch) ? el.strokeSwatch : null;
   const fill = el.type === 'shape' && isQuickSwatchSlot(el.fillSwatch) ? el.fillSwatch : null;

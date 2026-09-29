@@ -232,6 +232,7 @@ export function isValidElement(el: unknown): el is Element {
   // but it has no business being written into a diagram.
   if (el.strokeSwatch !== undefined && !isQuickSwatchSlot(el.strokeSwatch)) return false;
   if (el.fillSwatch !== undefined && !isQuickSwatchSlot(el.fillSwatch)) return false;
+  if (el.textSwatch !== undefined && !isQuickSwatchSlot(el.textSwatch)) return false;
 
   if (t === 'arrow') {
     return isValidEndpoint(el.from) && isValidEndpoint(el.to);

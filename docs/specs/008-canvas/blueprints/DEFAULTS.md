@@ -53,3 +53,7 @@ One row per default applied where a spec is silent or qualitative.
 | D47 | quick-style-panel | When a picked colour is saved                             | On the picker's `change` (close) or a valid hex on Enter / blur; never per drag tick                                |
 | D48 | quick-style-panel | How narrow the Toolbar panel is                           | 184 px: seven touching 24 px targets plus 8 px padding a side                                                       |
 | D49 | quick-style-panel | Default scheme light and dark halves                      | One theme id, so one set of overrides for both appearances                                                          |
+| D50 | quick-style-panel | A palette theme's text swatch                             | The branch stroke's hue and saturation, lightness stepped by 0.02 away from the canvas until 4.5:1                  |
+| D51 | quick-style-panel | The override store's key for the Text colour row          | `x`, beside `s` (Stroke) and `f` (Background); `t` is already the theme id                                          |
+| D52 | quick-style-panel | Where the Text colour row sits                            | After Background, before Stroke width: the colour rows stay together                                                |
+| D53 | quick-style-panel | Style-memory kind key for a text element                  | `text`, one bucket for every text element, like `arrow`                                                             |

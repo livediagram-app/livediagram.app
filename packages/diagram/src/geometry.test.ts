@@ -11,6 +11,7 @@ import {
   snapToAnchor,
   supportsBorder,
   supportsColours,
+  supportsFillColor,
   type ArrowElement,
   type Element,
   type ShapeElement,
@@ -278,7 +279,7 @@ describe('type predicates', () => {
     expect(isBoxed(arrow)).toBe(false);
   });
 
-  it('supportsColours covers shape, sticky, arrow, freehand; not text or image', () => {
+  it('supportsColours covers shape, text, sticky, arrow, freehand; not image', () => {
     expect(supportsColours(shape('a'))).toBe(true);
     expect(supportsColours({ ...shape('b'), type: 'sticky' } as Element)).toBe(true);
     expect(supportsColours(arrow)).toBe(true);
@@ -290,11 +291,14 @@ describe('type predicates', () => {
         closed: false,
       } as Element),
     ).toBe(true);
-    // Text + image elements don't show the Colours accordion's
-    // fill / stroke swatches; the negative cases stop a future
-    // refactor that "simplifies" the predicate to `isBoxed || arrow`
-    // and silently changes the surfaced fields.
-    expect(supportsColours({ ...shape('d'), type: 'text' } as Element)).toBe(false);
+    // A text element shows the Colours category for its Text row only
+    // (docs/specs/008-canvas/canvas-and-palette.md "Text element"): no background.
+    const text = { ...shape('d'), type: 'text' } as Element;
+    expect(supportsColours(text)).toBe(true);
+    expect(supportsFillColor(text)).toBe(false);
+    // Image elements don't show the Colours accordion; the negative case
+    // stops a future refactor that "simplifies" the predicate to
+    // `isBoxed || arrow` and silently changes the surfaced fields.
     expect(supportsColours({ ...shape('e'), type: 'image', imageId: null } as Element)).toBe(false);
   });
 
