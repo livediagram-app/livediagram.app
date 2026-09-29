@@ -16,7 +16,7 @@ import type { CSSProperties } from 'react';
 // so a grid of loading cards ripples instead of pulsing in lockstep.
 // Reduced motion shows the finished sketch, still.
 
-const CYCLE_MS = 3600;
+const CYCLE_MS = 5400;
 
 export function ThumbnailLoader({ seed }: { seed: string }) {
   const style = { '--lvd-thumb-phase': `-${phaseMs(seed)}ms` } as CSSProperties;

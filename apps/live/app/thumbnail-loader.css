@@ -2,7 +2,7 @@
  * The diagram thumbnail loader (docs/specs/006-diagram/diagram-snapshots.md, ThumbnailLoader.tsx): the
  * placeholder sketch drawing itself while the snapshot is on its way. An
  * ambient indicator, so it loops (docs/specs/004-interface-design/motion.md); every part runs on the
- * same 3.6s cycle and the same per-card phase, and the percentages below
+ * same 5.4s cycle and the same per-card phase, and the percentages below
  * are the storyboard:
  *
  *    0-16%  the first node traces
@@ -30,27 +30,27 @@
 /* One shorthand per part, all on the same cycle and the same per-card
    phase, so the parts stay in step with each other. */
 .lvd-thumb-cycle {
-  animation: lvd-thumb-cycle 3.6s cubic-bezier(0.65, 0, 0.35, 1) var(--lvd-thumb-phase, 0s) infinite;
+  animation: lvd-thumb-cycle 5.4s cubic-bezier(0.65, 0, 0.35, 1) var(--lvd-thumb-phase, 0s) infinite;
 }
 .lvd-thumb-a {
-  animation: lvd-thumb-draw-a 3.6s cubic-bezier(0.65, 0, 0.35, 1) var(--lvd-thumb-phase, 0s)
+  animation: lvd-thumb-draw-a 5.4s cubic-bezier(0.65, 0, 0.35, 1) var(--lvd-thumb-phase, 0s)
     infinite;
 }
 .lvd-thumb-link {
-  animation: lvd-thumb-draw-link 3.6s cubic-bezier(0.65, 0, 0.35, 1) var(--lvd-thumb-phase, 0s)
+  animation: lvd-thumb-draw-link 5.4s cubic-bezier(0.65, 0, 0.35, 1) var(--lvd-thumb-phase, 0s)
     infinite;
 }
 .lvd-thumb-head {
   transform-box: fill-box;
   transform-origin: left center;
-  animation: lvd-thumb-head 3.6s cubic-bezier(0.65, 0, 0.35, 1) var(--lvd-thumb-phase, 0s) infinite;
+  animation: lvd-thumb-head 5.4s cubic-bezier(0.65, 0, 0.35, 1) var(--lvd-thumb-phase, 0s) infinite;
 }
 .lvd-thumb-b {
-  animation: lvd-thumb-draw-b 3.6s cubic-bezier(0.65, 0, 0.35, 1) var(--lvd-thumb-phase, 0s)
+  animation: lvd-thumb-draw-b 5.4s cubic-bezier(0.65, 0, 0.35, 1) var(--lvd-thumb-phase, 0s)
     infinite;
 }
 .lvd-thumb-c {
-  animation: lvd-thumb-draw-c 3.6s cubic-bezier(0.65, 0, 0.35, 1) var(--lvd-thumb-phase, 0s)
+  animation: lvd-thumb-draw-c 5.4s cubic-bezier(0.65, 0, 0.35, 1) var(--lvd-thumb-phase, 0s)
     infinite;
 }
 
@@ -63,7 +63,7 @@
 @supports (offset-path: path('M0 0')) {
   .lvd-thumb-dot {
     offset-rotate: 0deg;
-    animation: lvd-thumb-flow 3.6s ease-in-out var(--lvd-thumb-phase, 0s) infinite;
+    animation: lvd-thumb-flow 5.4s ease-in-out var(--lvd-thumb-phase, 0s) infinite;
   }
   .lvd-thumb-dot-top {
     offset-path: path('M22 20c8 0 10-11 18-11');
