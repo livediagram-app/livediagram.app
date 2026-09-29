@@ -55,6 +55,8 @@ export const MIND_CONNECTOR_LOOK = { arrowEnds: 'none', arrowStyle: 'curved' } a
 export const MIND_CHILD_GAP_X = 64;
 /** Gap between stacked siblings. */
 export const MIND_SIBLING_GAP_Y = 18;
+/** Gap between a parent and its children in the downward flow, where the levels stack vertically. */
+export const MIND_CHILD_GAP_Y = MIND_SIBLING_GAP_Y + MIND_CHILD_GAP_X / 2;
 
 export function isMindFlow(value: string | undefined): value is MindFlow {
   return value !== undefined && (MIND_FLOWS as readonly string[]).includes(value);
@@ -129,7 +131,7 @@ function downwardPlacement(
   size: Size,
   subtree: readonly ShapeElement[],
 ): MindPlacement {
-  const y = parent.y + parent.height + MIND_SIBLING_GAP_Y + MIND_CHILD_GAP_X / 2;
+  const y = parent.y + parent.height + MIND_CHILD_GAP_Y;
   const x =
     subtree.length === 0
       ? parent.x + parent.width / 2 - size.width / 2

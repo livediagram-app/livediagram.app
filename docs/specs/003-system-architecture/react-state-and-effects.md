@@ -48,6 +48,23 @@ editor carried 247 findings and 73 suppressions; at zero they are errors, so no 
 - **Effect dependencies are complete.** A dependency that must not retrigger the effect is read through
   an effect event, not omitted.
 
+## The React Compiler
+
+`apps/live` builds with the React Compiler, which memoises components and hooks at build time, so a
+re-render re-runs only what its inputs changed. The rules above are its precondition: it compiles code
+that keeps them and leaves the rest as plain React.
+
+- **The native Rust port runs it**, inside Turbopack (`reactCompiler: true` with
+  `experimental.turbopackRustReactCompiler`). There is no Babel plugin and no
+  `babel-plugin-react-compiler` dependency. The port is experimental in Next.js; it is chosen
+  deliberately, because its output matches the Babel plugin's (the same render counts in every
+  measured interaction) while the Babel plugin doubles the cold compile of a dev page.
+- **Turbopack only.** The Rust port throws under webpack, so the webpack escape hatch (`dev:webpack`)
+  runs without the compiler.
+- **Functions it cannot compile** (unsupported syntax, such as `try`/`finally`) are skipped, not
+  broken: they run as uncompiled React.
+- Hand-written `memo`, `useMemo` and `useCallback` stay valid; the compiler works alongside them.
+
 ## Out of scope
 
-- Enabling the React Compiler itself. These rules are the precondition; turning it on is its own change.
+- The React Compiler in the other Next.js apps (marketing, help, telemetry).
