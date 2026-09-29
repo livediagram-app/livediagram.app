@@ -140,9 +140,13 @@ by the **Resume sync** click; any state to `disconnected` by **Disconnect**.
    using the file's current Drive state (the `adopt` decisions of `planInbound`), then re-read the snapshot. On an
    `arrival` pass a recorded root is checked once (`files.get`): a 404 makes it null again; a binned root stays the
    root.
-4. **Inbound** (`changes.list` from the page token, `pageSize` `DRIVE_CHANGES_PAGE_SIZE`, every page, fields
-   `DRIVE_CHANGE_FIELDS`), see [Inbound](#inbound). Skipped when the pass kind is `write` (an idle write or a flush).
-   After inbound applied anything, the snapshot is re-read.
+4. **Inbound.** First the gate: `drive.getStartPageToken()`; when it equals the stored page token nothing changed
+   since, and `changes.list` is skipped. Otherwise `changes.list` from the page token, `pageSize`
+   `DRIVE_CHANGES_PAGE_SIZE`, every page, fields `DRIVE_CHANGE_FIELDS`), see [Inbound](#inbound). With
+   `localStorage['livediagram:v2:drive-diagnostics'] === '1'` every gated read logs
+   `console.info('drive: start-token moved=<bool> listed=<n>')`. Skipped when the pass kind is `write` (an idle
+   write or a flush). After inbound applied anything, the snapshot is re-read and `onInboundApplied()` fires (see
+   [Views follow](#views-follow)).
 5. **Lease.** `POST /api/drive/lease { holder }` when the outbound plan is non-empty and the lease this device holds
    expires within `DRIVE_LEASE_RENEW_BEFORE_MS` (or is not held). Not acquired: publish `leaseHeldElsewhere`, skip
    step 6.
@@ -153,14 +157,14 @@ by the **Resume sync** click; any state to `disconnected` by **Disconnect**.
 
 Pass kinds and triggers:
 
-| Kind      | Trigger                                                                                                          |
-| --------- | ---------------------------------------------------------------------------------------------------------------- |
-| `arrival` | The tab is elected and the connection is `connected`                                                             |
-| `poll`    | Every `DRIVE_POLL_INTERVAL_MS` x back-off while `document.visibilityState === 'visible'`                         |
-| `focus`   | `focus` or `visibilitychange` to visible, when the last inbound read is older than `DRIVE_FOCUS_POLL_MIN_GAP_MS` |
-| `write`   | `DRIVE_WRITE_IDLE_MS` after the last api write signal (`subscribeApiWrites`, relayed across tabs)                |
-| `flush`   | `visibilitychange` to hidden, `pagehide`, and `requestDriveFlush()` when the editor leaves a diagram             |
-| `manual`  | **Sync now**                                                                                                     |
+| Kind      | Trigger                                                                                                                 |
+| --------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `arrival` | The tab is elected and the connection is `connected`                                                                    |
+| `poll`    | Every `DRIVE_POLL_INTERVAL_MS` x back-off while `document.visibilityState === 'visible'`                                |
+| `focus`   | `focus` or `visibilitychange` to visible, when the last inbound read is older than `DRIVE_FOCUS_POLL_MIN_GAP_MS` (30 s) |
+| `write`   | `DRIVE_WRITE_IDLE_MS` after the last api write signal (`subscribeApiWrites`, relayed across tabs)                       |
+| `flush`   | `visibilitychange` to hidden, `pagehide`, and `requestDriveFlush()` when the editor leaves a diagram                    |
+| `manual`  | **Sync now**                                                                                                            |
 
 Polls are scheduled only while the state is `idle`: a disconnected or needs-reconnecting engine waits for a trigger.
 A trigger during a pass queues one more pass (a `flush` outranks the rest) and resolves when that later pass ends.
@@ -535,7 +539,44 @@ beyond D1's own; a connection is re-creatable by reconnecting. `DELETE /api/driv
 - `PUT /drive/items` carries at most `DRIVE_ITEMS_PUT_MAX` (100) rows, one D1 batch.
 - `localStorage` tombstones: about 80 bytes a row.
 
+### Views follow
+
+`ApiWriteSignal` (`lib/api/write-signal.ts`) gains `drive?: true`. The elected tab's engine calls
+`onInboundApplied` after a pass whose inbound changed livediagram; `DriveMirrorProvider` raises
+`notifyApiWrite({ drive: true })` there and posts `{ type: 'drive-applied' }` on the tab channel, and every other tab
+raises the same signal on receipt. The provider's own write relay ignores `drive` signals (they are not edits).
+`useAfterDriveChange(onChange)` (`hooks/persistence/useAfterDriveChange.ts`) is `useAfterApiWrite` with a
+`filter` for `drive` signals; its callers re-read quietly (no loading skeleton):
+
+| View                                    | Re-read                                                                                                                     |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Explorer page (`useExplorerState`)      | `load(ownerId)`: diagrams, shared, folders                                                                                  |
+| Any `useFolders` with an owner          | its folder list (the Explorer, the editor, the wizard)                                                                      |
+| Trash view (`useTrash`)                 | the Trash listing                                                                                                           |
+| Editor (`useDriveFollow`)               | `refreshDiagramList`; the open diagram's meta: a new name sets `diagramName`, a 410 `diagram_trashed` sets the deleted card |
+| New Diagram page (`RecentDiagramsCard`) | its recent list                                                                                                             |
+
+### Not-ours logging
+
+`planUnrecorded`'s `not-ours` decision now carries `hadAppProperties`, and `applyDecision` logs every ignore, this
+one as `driveLog('inbound-not-ours', { fileId, hadAppProperties })`, so a copy that lost its properties
+(`hadAppProperties: false`) is told apart from a copy Drive never showed (no line at all).
+
 ## Presentation and UX
+
+The sync mark: `driveIndicator(status, mode)` (`components/drive/drive-indicator.ts`) → `{ kind, label }`:
+
+| Kind        | When                                                                                 | Mark                                     | Label ("Google Drive …")                |
+| ----------- | ------------------------------------------------------------------------------------ | ---------------------------------------- | --------------------------------------- |
+| `none`      | mode `off`, `starting`, `disconnected`                                               | nothing                                  | (none)                                  |
+| `attention` | `needs_reconnect`, `needs_resume`, an `error`, a notice or a skipped copy            | amber dot                                | "needs attention"                       |
+| `syncing`   | `syncing` for at least `DRIVE_SYNCING_MARK_DELAY_MS` (600 ms), or `progress` present | brand dot, a progress ring while copying | "syncing" / "copying {done} of {total}" |
+| `synced`    | `idle`, no error, `lastSyncedAt` set                                                 | green dot                                | "synced"                                |
+
+`DriveSyncMark` sits absolutely inside the avatar's glyph box (`pointer-events-none`), so it never moves the button.
+The button's `aria-label` becomes "Account menu, Google Drive {label}"; a visually hidden `role="status"`
+(`aria-live="polite"`) holds the same words. The syncing dot pulses only without reduced motion
+(`motion-safe:animate-pulse`).
 
 Account menu item **Google Drive** (signed in, `driveUiMode !== 'off'`), opening `DriveDialog`:
 
@@ -608,32 +649,32 @@ with `E2E_DRIVE=1`. A real build never sets the flag, so the bridge is compiled 
 
 ## Constants and configuration
 
-| Constant                                   | Value                              | Where                    | Provenance / safe range                                |
-| ------------------------------------------ | ---------------------------------- | ------------------------ | ------------------------------------------------------ |
-| `DRIVE_POLL_INTERVAL_MS`                   | 20 min                             | `lib/drive/cadence.ts`   | Research cadence; 10..60 min                           |
-| `DRIVE_POLL_INTERVAL_MAX_MS`               | 60 min                             | cadence                  | Research back-off cap                                  |
-| `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 5 min                              | cadence                  | Research; 1..20 min                                    |
-| `DRIVE_CHANGES_PAGE_SIZE`                  | 1000                               | cadence                  | Google maximum                                         |
-| `DRIVE_WRITE_IDLE_MS`                      | 60 s                               | cadence                  | Research; 10 s..5 min                                  |
-| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 min                              | cadence                  | Research; 1..30 min                                    |
-| `DRIVE_WRITE_MIN_INTERVAL_MAX_MS`          | 30 min                             | cadence                  | Research back-off cap                                  |
-| `DRIVE_BACKOFF_CALM_MS`                    | 60 min                             | cadence                  | Research                                               |
-| `DRIVE_BACKOFF_MAX_LEVEL`                  | 3                                  | cadence                  | 2^3 x 20 min > 60 min cap                              |
-| `DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS` | 10 min                             | cadence                  | Research                                               |
-| `DRIVE_TOKEN_RENEW_BEFORE_MS`              | 5 min                              | cadence                  | D4; 1..10 min of a 60-minute token                     |
-| `DRIVE_TOKEN_RATE_LIMITER`                 | 10 per 60 s                        | `apps/api/wrangler.toml` | Lead review; about one token an hour is healthy; 5..30 |
-| `DRIVE_LEASE_MS`                           | 15 min                             | api-schema `drive.ts`    | Spec; 5..30 min                                        |
-| `DRIVE_LEASE_RENEW_BEFORE_MS`              | 5 min                              | api-schema               | Spec                                                   |
-| `DRIVE_STATE_TTL_MS`                       | 10 min                             | api-schema               | Spec                                                   |
-| `DRIVE_ITEMS_PUT_MAX`                      | 100                                | api-schema               | One D1 batch; D1 allows 1000 statements                |
-| `DRIVE_ITEMS_PUT_BATCH`                    | 25                                 | cadence                  | D5                                                     |
-| `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                              | cadence                  | Google multipart limit                                 |
-| `DRIVE_THUMBNAIL_WIDTH_PX`                 | 1600                               | cadence                  | Google's recommendation; min 220                       |
-| `DRIVE_THUMBNAIL_MAX_BYTES`                | 2 MB                               | cadence                  | Google limit                                           |
-| `DRIVE_FILE_MIME`                          | `application/vnd.livediagram+json` | api-schema               | Spec                                                   |
-| `DRIVE_FILE_EXTENSION`                     | `.livediagram`                     | api-schema               | Spec                                                   |
-| `DRIVE_ROOT_NAME`                          | `livediagram`                      | api-schema               | Spec                                                   |
-| `DRIVE_SCOPES`                             | `drive.file drive.install`         | api-schema               | Spec                                                   |
+| Constant                                   | Value                              | Where                    | Provenance / safe range                                     |
+| ------------------------------------------ | ---------------------------------- | ------------------------ | ----------------------------------------------------------- |
+| `DRIVE_POLL_INTERVAL_MS`                   | 2 min                              | `lib/drive/cadence.ts`   | Operator decision (was the research's 20); 1..20 min, gated |
+| `DRIVE_POLL_INTERVAL_MAX_MS`               | 60 min                             | cadence                  | Research back-off cap                                       |
+| `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 30 s                               | cadence                  | D21; 10 s..5 min                                            |
+| `DRIVE_CHANGES_PAGE_SIZE`                  | 1000                               | cadence                  | Google maximum                                              |
+| `DRIVE_WRITE_IDLE_MS`                      | 60 s                               | cadence                  | Research; 10 s..5 min                                       |
+| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 min                              | cadence                  | Research; 1..30 min                                         |
+| `DRIVE_WRITE_MIN_INTERVAL_MAX_MS`          | 30 min                             | cadence                  | Research back-off cap                                       |
+| `DRIVE_BACKOFF_CALM_MS`                    | 60 min                             | cadence                  | Research                                                    |
+| `DRIVE_BACKOFF_MAX_LEVEL`                  | 5                                  | cadence                  | 2^5 x 2 min > the 60-minute cap                             |
+| `DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS` | 10 min                             | cadence                  | Research                                                    |
+| `DRIVE_TOKEN_RENEW_BEFORE_MS`              | 5 min                              | cadence                  | D4; 1..10 min of a 60-minute token                          |
+| `DRIVE_TOKEN_RATE_LIMITER`                 | 10 per 60 s                        | `apps/api/wrangler.toml` | Lead review; about one token an hour is healthy; 5..30      |
+| `DRIVE_LEASE_MS`                           | 15 min                             | api-schema `drive.ts`    | Spec; 5..30 min                                             |
+| `DRIVE_LEASE_RENEW_BEFORE_MS`              | 5 min                              | api-schema               | Spec                                                        |
+| `DRIVE_STATE_TTL_MS`                       | 10 min                             | api-schema               | Spec                                                        |
+| `DRIVE_ITEMS_PUT_MAX`                      | 100                                | api-schema               | One D1 batch; D1 allows 1000 statements                     |
+| `DRIVE_ITEMS_PUT_BATCH`                    | 25                                 | cadence                  | D5                                                          |
+| `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                              | cadence                  | Google multipart limit                                      |
+| `DRIVE_THUMBNAIL_WIDTH_PX`                 | 1600                               | cadence                  | Google's recommendation; min 220                            |
+| `DRIVE_THUMBNAIL_MAX_BYTES`                | 2 MB                               | cadence                  | Google limit                                                |
+| `DRIVE_FILE_MIME`                          | `application/vnd.livediagram+json` | api-schema               | Spec                                                        |
+| `DRIVE_FILE_EXTENSION`                     | `.livediagram`                     | api-schema               | Spec                                                        |
+| `DRIVE_ROOT_NAME`                          | `livediagram`                      | api-schema               | Spec                                                        |
+| `DRIVE_SCOPES`                             | `drive.file drive.install`         | api-schema               | Spec                                                        |
 
 Env: api `GOOGLE_CLIENT_ID` (var), `GOOGLE_CLIENT_SECRET` (secret), `DRIVE_TOKEN_KEY` (secret, base64 of 32 bytes,
 `openssl rand -base64 32`), `GOOGLE_OAUTH_BASE_URL` (tests only); live `NEXT_PUBLIC_GOOGLE_CLIENT_ID`,
