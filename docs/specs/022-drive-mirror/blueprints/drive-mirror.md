@@ -620,27 +620,42 @@ keywords: 'drive google sync backup mirror cloud', description, helpArticle: 'go
   `components/drive/GoogleDriveSyncRow.tsx`). A new provider adds a catalogue entry and a component, nothing else.
 - `DriveDialog` and the account menu's **Google Drive** item are removed.
 
-`driveSyncCopy(status, rootName, busy)` (`apps/live/lib/drive/cloud-sync-copy.ts`) → `{ badge, text, action }`:
+`driveSyncPhase(status)` (`apps/live/lib/drive/cloud-sync-copy.ts`): `not-connected` (`starting`, `disconnected`),
+`attention` (`needs_reconnect`, `needs_resume`), else `connected`. `driveSyncCopy(status, connect)` →
+`{ phase, badge, tone, text, action, failed? }`; each phase's parts are sized for that phase only
+(`DRIVE_PHASE_BADGES`, `DRIVE_PHASE_PRIMARY`, `driveSyncTexts(status, phase)`):
 
-| State                | Badge            | Text                                                                                                                      | Action                                                                         |
-| -------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `starting`           | Checking         | "Checking your Google Drive connection…"                                                                                  | none                                                                           |
-| `disconnected`       | Not connected    | "Keep a copy of your documents in your own Google Drive, in folders that match yours, updated while livediagram is open." | **Connect Google Drive**; **Connecting…** from the press until the page leaves |
-| `idle` / `syncing`   | Synced / Syncing | "Your documents are copied to Google Drive, in the folder **{rootName}**." (no folder name while unknown)                 | **Sync now** (**Syncing…**)                                                    |
-| first mirror         | Copying          | "Copying {done} of {total} to Google Drive" and a progress bar                                                            | none                                                                           |
-| `needs_reconnect`    | Needs attention  | "Google Drive stopped accepting livediagram's access, so syncing is paused. Nothing was deleted. Reconnect to carry on."  | **Reconnect**                                                                  |
-| `needs_resume`       | Needs attention  | "Drive access has lapsed in this browser. Resume to carry on syncing."                                                    | **Resume sync**                                                                |
-| `rate_limited`       | Needs attention  | "Google asked livediagram to slow down. Syncing carries on less often for a while; there is nothing to do."               | none                                                                           |
-| `offline` / `failed` | Needs attention  | "Couldn't reach Google Drive. livediagram tries again by itself; check your connection, or press Sync now."               | **Sync now**                                                                   |
-| lease elsewhere      | Synced           | "Another tab or device is copying to Google Drive right now; this one keeps checking for changes."                        | **Sync now**                                                                   |
-| notice               | Needs attention  | "{name}: Moved in Drive to a folder livediagram can't see. Show it this folder, or move the file back in Drive."          | **Show this folder to livediagram** (with a Picker key)                        |
+| Phase           | State                     | Badge            | Text                                                                                                      | Primary                                    |
+| --------------- | ------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `not-connected` | `starting`                | Checking         | "Checking your Google Drive connection…"                                                                  | none (reserved)                            |
+| `not-connected` | `disconnected`            | Not connected    | "Keep a copy of your documents in your own Google Drive."                                                 | **Connect Google Drive** / **Connecting…** |
+| `not-connected` | connect failed            | Not connected    | `DRIVE_CONNECT_FAILED` "Couldn't start connecting. Check your connection and try again."                  | same                                       |
+| `not-connected` | cancelled at Google       | Not connected    | `DRIVE_CONNECT_CANCELLED` "You cancelled at Google. Connect again whenever you like."                     | same                                       |
+| `connected`     | `idle` / `syncing`        | Synced / Syncing | "Copied to your Google Drive, in the folder “{rootName}”." ("Copied to your Google Drive." while unknown) | **Sync now** / **Syncing…**                |
+| `connected`     | first mirror              | Copying          | "Copying {done} of {total} to your Google Drive."                                                         | **Syncing…** (held)                        |
+| `connected`     | `offline` / `failed`      | Needs attention  | "Couldn't reach Google Drive. It tries again by itself."                                                  | **Sync now**                               |
+| `connected`     | `rate_limited`            | Needs attention  | "Google asked to slow down. Syncing carries on, less often."                                              | **Sync now**                               |
+| `connected`     | lease elsewhere           | Synced           | "Another tab or device is copying to Drive. This one keeps checking."                                     | **Sync now**                               |
+| `connected`     | notices                   | Needs attention  | the usual line                                                                                            | **Sync now**                               |
+| `attention`     | `needs_reconnect`         | Needs attention  | "Google Drive stopped accepting access. Nothing was deleted."                                             | **Reconnect** / **Connecting…**            |
+| `attention`     | `needs_resume`            | Needs attention  | "Drive access lapsed in this browser."                                                                    | **Resume sync**                            |
+| `attention`     | reconnect failed to start | Needs attention  | `DRIVE_CONNECT_FAILED`                                                                                    | **Reconnect**                              |
+
+Header: the label, then the pill and, in `connected` and `attention`, `· {relativeSince(lastSyncedAt)}` (or
+"· not yet"), a `StableLabel` over `DRIVE_SINCE_SAMPLES` ("just now", "59 secs ago", "59 mins ago", "23 hours
+ago", "yesterday", "30 days ago", "not yet") and the current value. Body: the text line; in `connected` a detail
+slot holding `driveRhythmText()` or, with notices, one line "{n} document(s) in a Drive folder livediagram can't see"
+with **Show** / **Hide** (`aria-expanded`), which opens the notice list below it (a user-initiated expansion). A
+2 px divider above the footer, in `connected` only, is the first copy's `role="progressbar"` track while
+`progress` is set. Footer: buttons only, right-aligned, wrapping: **Disconnect** (`connected` and `attention`) and
+the primary, a `StableLabel` over its phase's labels.
 
 `driveRhythmText()` is built from `DRIVE_POLL_INTERVAL_MS`, `DRIVE_WRITE_IDLE_MS` and `DRIVE_WRITE_MIN_INTERVAL_MS`
 through `durationWords(ms)` ("30 seconds", "a minute", "2 minutes"): "Checks for changes every 2 minutes while
-livediagram is open. Edits are copied a minute after you stop, at most once every 5 minutes per diagram." Shown while
-connected. `lastSyncedText(at, now)`: "Last synced just now" / "Last synced 1 min ago" / "Not synced yet". Connected
-rows also carry **Disconnect** (`Button` variant `warning`: amber-400 with slate-900 text, 9:1 and more in both
-themes); its confirmation uses `ConfirmDialog` variant `warning` (the same amber confirm button).
+livediagram is open. Edits are copied a minute after you stop, at most once every 5 minutes per diagram."
+**Disconnect** is `Button` variant `warning-outline` (an inset 1 px amber-600 ring, amber-800 text; dark amber-400
+ring, amber-300 text; no border, so it is exactly the primary's height; text 7:1 and more, ring 3:1 and more, both
+themes); its confirmation uses `ConfirmDialog` variant `warning` (the solid amber confirm button).
 
 **Connecting.** `DriveMirrorContextValue` carries `connecting: boolean` and `connectError: string | null`.
 `connect()` sets `connecting` before any await; in broker mode it stays set once `window.location.assign` has run
@@ -667,18 +682,12 @@ and are removed when it closes, in the Explorer (`useExplorerState`) and the edi
 reports `connecting: true` while the status is `starting` or `disconnected`, until the first other status or
 `SETTING_UP_MAX_MS` (30 s). Connect and Disconnect end it.
 
-**One shape.** The row is five fixed parts: the header (label and state pill), the text slot, the detail slot, and
-the footer (last-synced text on the left, **Disconnect** and the primary button on the right). The text slot holds
-every text the row can show for the current root name and progress (`driveSyncTexts`); the detail slot holds the
-rhythm, the progress line and bar, and the first folder notice (with "and n more"), one visible; the primary button
-holds every primary wording (`DRIVE_PRIMARY_LABELS`); **Disconnect** is `invisible` while there is nothing to
-disconnect. Counts and times are `tabular-nums`.
-
-**Stable widths.** `StableLabel` (`@livediagram/ui`) renders every wording a control can show in one grid cell,
-all but the current one `invisible` and `aria-hidden`, so the control is always as wide as its longest wording. The
-state pill takes every `DriveSyncCopy.badge`; **Sync now** / **Syncing…**, **Connect Google Drive** /
-**Connecting…** and **Reconnect** / **Connecting…** take theirs. The e2e measures the pill, the Sync now button and
-the card across Synced and Syncing and expects the same boxes.
+**Per phase.** `StableLabel` (`@livediagram/ui`) lays every wording of one control in one grid cell, all but the
+current one `invisible` and `aria-hidden`. The pill, the time, the text line and the primary take only their
+phase's wordings, so nothing moves within a phase and no space is kept for another phase. The e2e compares the row's
+size and every part's box within each phase (not connected: idle, connect failed, connecting; connected: copying,
+synced, syncing, notice; attention: needs reconnect), and checks that no footer button overlaps anything above it,
+at 1280, 900 and 390 px wide.
 
 `status.rootName`: the root's Drive name, set when the root is created (`driveRootName(host)`), found, checked on
 arrival, or renamed (an inbound change for the root's file id), `null` until known.

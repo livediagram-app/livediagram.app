@@ -26,4 +26,4 @@ One row per default applied where the spec is silent or qualitative.
 | D22 | drive-mirror | Colours of the sync badge                               | Brand-600 disc syncing, emerald-600 synced, amber-600 needs attention                                    |
 | D23 | drive-mirror | How long "syncing" must last before the mark shows it   | 600 ms, so the cheap start-token check never flashes the mark                                            |
 | D24 | drive-mirror | Size and place of the avatar's cloud badge              | A 12 px disc (24 px target) on the avatar's upper-right corner, ringed in the header's background        |
-| D25 | drive-mirror | Look of Disconnect                                      | The shared `warning` button (amber-400, slate-900 text), and an amber confirm                            |
+| D25 | drive-mirror | Look of Disconnect                                      | The shared `warning-outline` button (amber ring and text), and an amber confirm                          |
