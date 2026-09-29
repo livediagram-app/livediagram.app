@@ -301,8 +301,10 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
 
   // Sync status lives in Cloud Sync only.
   panel = await openCloudSync(page);
-  await expect(textOf(panel)).toHaveText(`Copied to your Google Drive, in “${ROOT_NAME}”.`);
-  await expect(detailOf(panel)).toContainText('Checks for changes every 2 minutes');
+  await expect(textOf(panel)).toHaveText(
+    `Your documents are synced to “${ROOT_NAME}” in Google Drive.`,
+  );
+  await expect(detailOf(panel)).toHaveText('Syncs happen continuously while livediagram is open.');
   await expect(pillOf(panel)).toHaveText(/^Synced (just now|\d+ \w+ ago)$/);
   await settled(page);
   await expectStable(panel);
