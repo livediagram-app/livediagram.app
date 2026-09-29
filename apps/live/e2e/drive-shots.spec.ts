@@ -62,7 +62,17 @@ test.afterAll(async () => {
 
 // The visible state wording (every wording is laid out, hidden but the current).
 const pillOf = (row: import('@playwright/test').Locator) =>
-  row.locator('[data-drive-state] [data-stable-option]:not(.invisible)');
+  row.locator('[data-drive-status] [data-stable-option]:not(.invisible)');
+
+// A sync pass now, the way another tab asks for one: syncing is automatic and
+// the row has no Sync now, so the test uses the app's tab channel.
+async function syncNow(page: import('@playwright/test').Page) {
+  await page.evaluate(() => {
+    const channel = new BroadcastChannel('livediagram:drive-mirror');
+    channel.postMessage({ type: 'sync-now' });
+    channel.close();
+  });
+}
 const detailOf = (row: import('@playwright/test').Locator) =>
   row.locator('[data-drive-detail] > div > :not(.invisible)');
 
@@ -196,7 +206,7 @@ for (const theme of THEMES) {
       await page.waitForURL(/\/explorer\/recent\?settings=account&section=cloud-sync/);
       await releaseState();
       row = page.locator('[data-cloud-sync="googleDrive"]');
-      await expect(pillOf(row)).toHaveText('Copying', { timeout: 15_000 });
+      await expect(pillOf(row)).toHaveText(/^Copying \d+ of \d+…$/, { timeout: 15_000 });
       await shot(
         page,
         'cloud-sync-3-first-copy',
@@ -205,11 +215,11 @@ for (const theme of THEMES) {
       await closeSettings(page);
       row = await openCloudSync(page);
       await releaseUploads();
-      await expect(pillOf(row)).toHaveText('Synced', { timeout: 30_000 });
+      await expect(pillOf(row)).toHaveText(/^Synced /, { timeout: 30_000 });
       await shot(
         page,
         'cloud-sync-4-synced',
-        'Cloud Sync once synced: the time beside the pill, the folder name, the rhythm, Sync now',
+        'Cloud Sync once synced: the status at the top right, the folder, the rhythm, Disconnect',
       );
       await closeSettings(page);
 
@@ -220,11 +230,11 @@ for (const theme of THEMES) {
         4000,
       );
       row = await openCloudSync(page);
-      await row.getByRole('button', { name: 'Sync now' }).click();
-      await expect(pillOf(row)).toHaveText('Syncing');
+      await syncNow(page);
+      await expect(pillOf(row)).toHaveText('Syncing…');
       await shot(page, 'cloud-sync-5-syncing', 'Cloud Sync while a sync runs');
       await releaseCheck();
-      await expect(pillOf(row)).toHaveText('Synced', { timeout: 15_000 });
+      await expect(pillOf(row)).toHaveText(/^Synced /, { timeout: 15_000 });
       await closeSettings(page);
 
       // The Explorer following a rename made in Drive.
@@ -238,8 +248,8 @@ for (const theme of THEMES) {
         'Standup notes.livediagram',
       );
       row = await openCloudSync(page);
-      await row.getByRole('button', { name: 'Sync now' }).click();
-      await expect(pillOf(row)).toHaveText('Synced');
+      await syncNow(page);
+      await expect(pillOf(row)).toHaveText(/^Synced /);
       await closeSettings(page);
       await expect(page.getByText('Standup notes', { exact: true }).first()).toBeVisible({
         timeout: 15_000,
@@ -258,7 +268,7 @@ for (const theme of THEMES) {
       );
       google.fake.userMove(fileNamed('Quarterly plan.livediagram')!.id, hidden);
       row = await openCloudSync(page);
-      await row.getByRole('button', { name: 'Sync now' }).click();
+      await syncNow(page);
       await expect(detailOf(row)).toContainText("can't see");
       await shot(
         page,
@@ -326,12 +336,7 @@ for (const theme of THEMES) {
       google.fake.revokeGrant(USER);
       google.fake.expireAccessTokens();
       row = await openCloudSync(page);
-      await row
-        .getByRole('button', { name: /Sync now|Show folder/ })
-        .first()
-        .isVisible();
-      const sync = row.getByRole('button', { name: 'Sync now' });
-      if (await sync.isEnabled()) await sync.click();
+      await syncNow(page);
       await expect(row.getByRole('button', { name: 'Reconnect' })).toBeVisible({ timeout: 15_000 });
       await shot(
         page,
