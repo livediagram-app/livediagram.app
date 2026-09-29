@@ -90,18 +90,18 @@ and a demo-free submission.
 
 ### A2. Drive UI integration ("Open with")
 
-| Claim                                                                                                                                                                                                  | Status                                                         | Source              |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ------------------- |
-| Configure it in Cloud Console, Drive API, **Drive UI integration** tab: app name, icons (PNG, transparent, up to 24 h to appear), **Open URL** (fully qualified domain, no localhost).                 | Verified                                                       | [G13]               |
-| The app is installed for a user by requesting the **`drive.install`** scope; a Marketplace listing is **optional** ("If you publish ... users can install directly from the Marketplace").             | Verified                                                       | [G13]               |
-| The Open URL receives a URL-encoded JSON `state` query parameter: `{"ids":["ID"],"resourceKeys":{...},"action":"open","userId":"USER_ID"}`; the New URL gets `{"action":"create","folderId",...}`.     | Verified                                                       | [G13], [G14]        |
-| The app must call `files.get` to check permissions before editing and set `X-Goog-Drive-Resource-Keys` when `resourceKeys` is present.                                                                 | Verified                                                       | [G14]               |
-| Opening a file via "Open with" grants the app `drive.file` access to that file.                                                                                                                        | Verified (scope wording "files ... that you open with an app") | [G1]                |
-| "Default MIME types / extensions" declare files the app is uniquely built to open; docs ask for "standard media types only".                                                                           | Verified                                                       | [G13]               |
-| A made-up type such as `application/vnd.livediagram+json` is accepted as a default MIME type.                                                                                                          | Unverified                                                     | needs E-A5          |
-| **Double-click** on a `.livedoc` file opens livediagram. The docs only describe the right-click "Open with" menu and say the most recently installed app is used "until the user chooses another app". | Unverified                                                     | needs E-A5          |
-| Marketplace listing: no listing fee; a **public** listing is reviewed by Google ("several days") and requires completed OAuth verification and brand-clean name, icon and screenshots.                 | Verified                                                       | [G15], [G16], [G17] |
-| Marketplace review rule for Drive apps: store files in a user-picked or app-specific folder, never dump them in My Drive root.                                                                         | Verified                                                       | [G16]               |
+| Claim                                                                                                                                                                                                      | Status                                                         | Source              |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------- |
+| Configure it in Cloud Console, Drive API, **Drive UI integration** tab: app name, icons (PNG, transparent, up to 24 h to appear), **Open URL** (fully qualified domain, no localhost).                     | Verified                                                       | [G13]               |
+| The app is installed for a user by requesting the **`drive.install`** scope; a Marketplace listing is **optional** ("If you publish ... users can install directly from the Marketplace").                 | Verified                                                       | [G13]               |
+| The Open URL receives a URL-encoded JSON `state` query parameter: `{"ids":["ID"],"resourceKeys":{...},"action":"open","userId":"USER_ID"}`; the New URL gets `{"action":"create","folderId",...}`.         | Verified                                                       | [G13], [G14]        |
+| The app must call `files.get` to check permissions before editing and set `X-Goog-Drive-Resource-Keys` when `resourceKeys` is present.                                                                     | Verified                                                       | [G14]               |
+| Opening a file via "Open with" grants the app `drive.file` access to that file.                                                                                                                            | Verified (scope wording "files ... that you open with an app") | [G1]                |
+| "Default MIME types / extensions" declare files the app is uniquely built to open; docs ask for "standard media types only".                                                                               | Verified                                                       | [G13]               |
+| A made-up type such as `application/vnd.livediagram+json` is accepted as a default MIME type.                                                                                                              | Unverified                                                     | needs E-A5          |
+| **Double-click** on a `.livediagram` file opens livediagram. The docs only describe the right-click "Open with" menu and say the most recently installed app is used "until the user chooses another app". | Unverified                                                     | needs E-A5          |
+| Marketplace listing: no listing fee; a **public** listing is reviewed by Google ("several days") and requires completed OAuth verification and brand-clean name, icon and screenshots.                     | Verified                                                       | [G15], [G16], [G17] |
+| Marketplace review rule for Drive apps: store files in a user-picked or app-specific folder, never dump them in My Drive root.                                                                             | Verified                                                       | [G16]               |
 
 **Implication:** "Open with" works with `drive.file` + `drive.install`, without a
 Marketplace listing. Marketplace is a discovery channel we can add later.
@@ -185,7 +185,7 @@ subset omits these).
 | `thumbnailLink` is not intended for direct web use because of CORS.                                                                                                                                                        | Verified                                                                                                         | [G29]        |
 
 **Implication:** each mirror write is one multipart `files.update` for the
-`.livedoc` JSON (with a PNG thumbnail in `contentHints`) and one for the
+`.livediagram` JSON (with a PNG thumbnail in `contentHints`) and one for the
 `.svg` preview, both from the browser. Diagrams whose JSON exceeds 5 MB need
 resumable upload (verify E-A4 first).
 
@@ -495,18 +495,18 @@ Transfer-Encoding, X-GUploader-UploadID, ...` (no `Location` on a 401).
 
 ## Experiments still needed
 
-| Id   | Experiment                                                                                                                                          | Needs                                 |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| E-A1 | `changes.list` with `drive.file`: create, rename, move, trash a folder with children, restore, empty bin, edit in another app; record entries       | Google Cloud test project, test user  |
-| E-A2 | Refresh-token broker round trip on a Worker (code flow, AES-GCM at rest, refresh, revoke)                                                           | same                                  |
-| E-A3 | Does `getStartPageToken` advance on changes to files the app cannot see? (cheap 5-unit poll gate)                                                   | same                                  |
-| E-A4 | Resumable upload from the browser: is `Location` exposed on the `200` session response?                                                             | same                                  |
-| E-A5 | Custom MIME type and `.livedoc` extension (the name the spec settled on) in Drive UI integration; single-click, double-click, "Open with" behaviour | same, public HTTPS Open URL (staging) |
-| E-A6 | A second Cloud project (self-host) cannot see files created by the first                                                                            | two projects                          |
-| E-B1 | Miro image URL (`redirect=false`, `format=original`): host and CORS headers of the 60-second URL                                                    | Miro developer team app               |
-| E-B2 | Token scope across teams; REST shape of pen strokes and link previews on a real board                                                               | same                                  |
-| E-C1 | Full export Zip on a read-only personal board: offered, complete (off-screen items, images), and the HTML's structure for the mapping               | the operator's exports                |
-| E-C2 | Graph HTML conversion output structure (work or school only; parked)                                                                                | work or school account                |
+| Id   | Experiment                                                                                                                                    | Needs                                 |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| E-A1 | `changes.list` with `drive.file`: create, rename, move, trash a folder with children, restore, empty bin, edit in another app; record entries | Google Cloud test project, test user  |
+| E-A2 | Refresh-token broker round trip on a Worker (code flow, AES-GCM at rest, refresh, revoke)                                                     | same                                  |
+| E-A3 | Does `getStartPageToken` advance on changes to files the app cannot see? (cheap 5-unit poll gate)                                             | same                                  |
+| E-A4 | Resumable upload from the browser: is `Location` exposed on the `200` session response?                                                       | same                                  |
+| E-A5 | Custom MIME type and `.livediagram` extension in Drive UI integration; single-click, double-click, "Open with" behaviour                      | same, public HTTPS Open URL (staging) |
+| E-A6 | A second Cloud project (self-host) cannot see files created by the first                                                                      | two projects                          |
+| E-B1 | Miro image URL (`redirect=false`, `format=original`): host and CORS headers of the 60-second URL                                              | Miro developer team app               |
+| E-B2 | Token scope across teams; REST shape of pen strokes and link previews on a real board                                                         | same                                  |
+| E-C1 | Full export Zip on a read-only personal board: offered, complete (off-screen items, images), and the HTML's structure for the mapping         | the operator's exports                |
+| E-C2 | Graph HTML conversion output structure (work or school only; parked)                                                                          | work or school account                |
 
 ## Open questions
 

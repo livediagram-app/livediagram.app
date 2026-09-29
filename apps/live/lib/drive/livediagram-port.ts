@@ -61,7 +61,7 @@ export interface LivediagramPort {
   listPersonalDiagrams(): Promise<MirrorDiagram[]>;
   listPersonalFolders(): Promise<MirrorFolder[]>;
   listPersonalTrash(): Promise<MirrorTrashed[]>;
-  // The `.livedoc` contents, `exportedAt` pinned to the diagram's
+  // The `.livediagram` contents, `exportedAt` pinned to the diagram's
   // savedAt so unchanged content is byte-identical. Null when it is gone.
   loadEnvelope(id: string): Promise<{ text: string; savedAt: number } | null>;
   // The diagram's cached SVG snapshot, or null (empty diagram, no R2).

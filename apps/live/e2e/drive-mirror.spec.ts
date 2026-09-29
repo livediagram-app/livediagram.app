@@ -122,13 +122,13 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await page.waitForURL('**/explorer/recent');
   await expect.poll(() => fileNamed('livediagram')?.appProperties.ldRoot).toBeTruthy();
   await expect
-    .poll(() => fileNamed('Quarterly plan.livedoc')?.parents[0])
+    .poll(() => fileNamed('Quarterly plan.livediagram')?.parents[0])
     .toBe(fileNamed('Work')?.id);
-  expect(fileNamed('Meeting notes.livedoc')).toMatchObject({
+  expect(fileNamed('Meeting notes.livediagram')).toMatchObject({
     mimeType: DRIVE_FILE_MIME,
     trashed: false,
   });
-  expect(fileNamed('Quarterly plan.livedoc')?.thumbnail).toMatchObject({
+  expect(fileNamed('Quarterly plan.livediagram')?.thumbnail).toMatchObject({
     mimeType: 'image/png',
   });
 
@@ -138,10 +138,10 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await page.screenshot({ path: `${SHOTS}/02-connected.png` });
 
   // A rename made in Drive reaches livediagram on Sync now.
-  google.fake.userRename(fileNamed('Meeting notes.livedoc')!.id, 'Standup notes.livedoc');
+  google.fake.userRename(fileNamed('Meeting notes.livediagram')!.id, 'Standup notes.livediagram');
   // Into a folder livediagram cannot see: Unsorted, and a notice.
   const hidden = google.fake.userCreateFolder(USER, 'Clients', fileNamed('livediagram')!.id);
-  google.fake.userMove(fileNamed('Quarterly plan.livedoc')!.id, hidden);
+  google.fake.userMove(fileNamed('Quarterly plan.livediagram')!.id, hidden);
   await panel.getByRole('button', { name: 'Sync now' }).click();
   await expect(panel).toContainText(
     "Quarterly plan: Moved in Drive to a folder livediagram can't see.",
@@ -182,7 +182,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   ).toBe(clients.id);
 
   // Binned in Drive: the diagram goes to the Trash.
-  google.fake.userTrash(fileNamed('Standup notes.livedoc')!.id);
+  google.fake.userTrash(fileNamed('Standup notes.livediagram')!.id);
   await panel.getByRole('button', { name: 'Sync now' }).click();
   await expect
     .poll(async () =>
@@ -198,7 +198,7 @@ test('Open with: your diagram opens; a file shared with you offers a copy', asyn
   pageErrors,
 }) => {
   await signIn(page);
-  const mine = fileNamed('Quarterly plan.livedoc')!;
+  const mine = fileNamed('Quarterly plan.livediagram')!;
   await page.goto(
     `/drive/open?state=${encodeURIComponent(google.fake.openWithState(USER, mine.id))}`,
   );
@@ -206,7 +206,7 @@ test('Open with: your diagram opens; a file shared with you offers a copy', asyn
 
   const theirs = google.fake.otherUserFile({
     owner: 'someone-else',
-    name: 'Their roadmap.livedoc',
+    name: 'Their roadmap.livediagram',
     mimeType: DRIVE_FILE_MIME,
     content: JSON.stringify({
       kind: 'livediagram.diagram',

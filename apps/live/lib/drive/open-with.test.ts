@@ -38,7 +38,7 @@ function setup() {
   ) => {
     const id = google.otherUserFile({
       owner: over.owner ?? 'someone',
-      name: over.name ?? 'Shared plan.livedoc',
+      name: over.name ?? 'Shared plan.livediagram',
       mimeType: over.mimeType ?? DRIVE_FILE_MIME,
       content: over.content ?? envelope,
       appProperties: props,
@@ -135,34 +135,5 @@ describe('importOpenWithCopy', () => {
     await expect(
       importOpenWithCopy(s.deps, s.file({}, { content: 'not json' })),
     ).rejects.toBeInstanceOf(OpenWithImportError);
-  });
-});
-
-describe('the extension (docs/specs/022-drive-mirror/drive-mirror.md, "The file")', () => {
-  it('offers the name without .livedoc', async () => {
-    const s = setup();
-    expect(
-      await resolveOpenWith(
-        s.deps,
-        s.file({}, { name: 'Road map.LIVEDOC', mimeType: 'application/octet-stream' }),
-      ),
-    ).toEqual({
-      kind: 'import',
-      reason: 'no-id',
-      name: 'Road map',
-    });
-  });
-
-  it('reads no other extension: a .livediagram file of another type is not ours', async () => {
-    const s = setup();
-    expect(
-      await resolveOpenWith(
-        s.deps,
-        s.file({}, { name: 'Old.livediagram', mimeType: 'application/octet-stream' }),
-      ),
-    ).toEqual({
-      kind: 'error',
-      reason: 'not-livediagram',
-    });
   });
 });

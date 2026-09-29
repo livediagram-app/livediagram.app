@@ -49,10 +49,7 @@ export type DriveLease = { acquired: boolean; holder: string | null; expiresAt: 
 export type DriveAccessToken = { accessToken: string; expiresAt: number };
 
 export const DRIVE_FILE_MIME = 'application/vnd.livediagram+json';
-// `.livedoc`, not the product name: the file holds a document of tabs (a
-// diagram is one kind), and `.livedoc` is not a TLD, so chat apps never link a
-// file name. The MIME type above keeps the product name.
-export const DRIVE_FILE_EXTENSION = '.livedoc';
+export const DRIVE_FILE_EXTENSION = '.livediagram';
 export const DRIVE_ROOT_NAME = 'livediagram';
 export const DRIVE_FOLDER_MIME = 'application/vnd.google-apps.folder';
 export const DRIVE_SCOPES = [
@@ -81,7 +78,7 @@ export function driveFileName(name: string): string {
   return `${name}${DRIVE_FILE_EXTENSION}`;
 }
 
-const EXTENSION_RE = /\.livedoc$/i;
+const EXTENSION_RE = /\.livediagram$/i;
 
 // The livediagram name a Drive file name stands for: the extension dropped,
 // trimmed, and cut to `max`. Null when nothing is left, so an empty rename in

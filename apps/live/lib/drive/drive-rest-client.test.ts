@@ -34,7 +34,7 @@ describe('createDriveRestClient', () => {
       appProperties: { ldRoot: 'h' },
     });
     const file = await client.createFile({
-      name: 'A.livedoc',
+      name: 'A.livediagram',
       parentId: root.id,
       mimeType: DRIVE_FILE_MIME,
       content: '{"a":1}',
@@ -42,7 +42,7 @@ describe('createDriveRestClient', () => {
       appProperties: { ldDiagramId: 'd1' },
     });
     expect(file).toMatchObject({
-      name: 'A.livedoc',
+      name: 'A.livediagram',
       parents: [root.id],
       trashed: false,
       ownedByMe: true,
