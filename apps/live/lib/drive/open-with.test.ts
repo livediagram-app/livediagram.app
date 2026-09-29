@@ -121,7 +121,11 @@ describe('resolveOpenWith', () => {
 describe('importOpenWithCopy', () => {
   it('creates a new diagram with fresh tab ids, folders and the deck following', async () => {
     const s = setup();
-    const id = await importOpenWithCopy(s.deps, s.file({ ldDiagramId: 'd1', ldOrigin: HOST }));
+    const id = await importOpenWithCopy(
+      s.deps,
+      s.file({ ldDiagramId: 'd1', ldOrigin: HOST }),
+      'foreign',
+    );
     const copy = s.ld.diagram(id)!;
     expect(copy.name).toBe('Shared plan');
     expect(copy.tabs).toHaveLength(1);
@@ -133,7 +137,7 @@ describe('importOpenWithCopy', () => {
   it('names an unreadable envelope', async () => {
     const s = setup();
     await expect(
-      importOpenWithCopy(s.deps, s.file({}, { content: 'not json' })),
+      importOpenWithCopy(s.deps, s.file({}, { content: 'not json' }), 'foreign'),
     ).rejects.toBeInstanceOf(OpenWithImportError);
   });
 });

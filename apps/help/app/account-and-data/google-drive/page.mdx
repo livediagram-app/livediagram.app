@@ -41,6 +41,8 @@ It works the other way too: **rename** a file in Drive, **move** it to another f
 
 Edits to a file's contents made outside livediagram are not taken in: livediagram writes its copy again the next time it syncs.
 
+**Copies made in Drive are not picked up automatically.** Google only lets livediagram see the files it made and the files you open with it, so a **Make a copy** in Drive stays invisible to livediagram. To bring a copy in, right-click it and choose **Open with**, then **livediagram**, and you are offered **Import as new document**; your original diagram stays as it is. Or use **Duplicate** inside livediagram.
+
 ## Folders livediagram cannot see
 
 A folder you make in Google Drive itself is invisible to livediagram until you show it one. If you move a diagram's file into such a folder, the diagram moves to **Unsorted** here and the Google Drive panel says so. Choose **Show this folder to livediagram**, pick the folder, and livediagram makes a matching folder and moves the diagram into it. From then on that folder syncs both ways.
@@ -49,7 +51,7 @@ Folders you create in livediagram always appear in Drive, so building your tree 
 
 ## Opening a diagram from Drive
 
-Right-click a `.livediagram` file in Google Drive and choose **Open with**, then **livediagram**. Your own diagram opens straight away. If someone shared the file with you in Drive, or it came from another livediagram, you are offered **Import a copy**, which makes a new diagram of your own from it.
+Right-click a `.livediagram` file in Google Drive and choose **Open with**, then **livediagram**. Your own diagram opens straight away. If someone shared the file with you in Drive, or it came from another livediagram, you are offered **Import a copy**, which makes a new diagram of your own from it. A copy you made in Drive of one of your own diagrams offers **Import as new document** instead: a new diagram from the copy's contents, which that copy then keeps mirrored.
 
 ## Disconnecting
 

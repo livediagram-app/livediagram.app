@@ -1,7 +1,8 @@
 // Drive's "Open with" (docs/specs/022-drive-mirror/drive-mirror.md, "Open with";
 // blueprint "Open with"). Google opens `/drive/open?state=...`; the browser
 // reads the file's appProperties and decides: open the diagram, offer
-// **Import a copy**, or say the file cannot be opened.
+// **Import a copy** or, for a copy of a mirrored file, **Import as new
+// document**, or say the file cannot be opened.
 
 import {
   DRIVE_FILE_EXTENSION,
@@ -14,6 +15,7 @@ import { parseDiagramEnvelope } from '../export-diagram-text';
 import { DriveApiError, type DriveClient } from './drive-client';
 import type { LivediagramPort } from './livediagram-port';
 import { driveLog, driveWarn } from './log';
+import { importAsNewDocument, type CopyPort } from './open-with-copy';
 
 export type OpenWithState = { fileId: string; resourceKey?: string };
 
@@ -40,9 +42,11 @@ export function parseOpenState(search: string): OpenWithState | null {
   return typeof key === 'string' && key ? { fileId, resourceKey: key } : { fileId };
 }
 
+export type OpenWithImportReason = 'no-access' | 'foreign' | 'no-id' | 'copy';
+
 export type OpenWithOutcome =
   | { kind: 'open'; diagramId: string }
-  | { kind: 'import'; reason: 'no-access' | 'foreign' | 'no-id'; name: string }
+  | { kind: 'import'; reason: OpenWithImportReason; name: string }
   | { kind: 'error'; reason: 'unreadable' | 'not-livediagram' };
 
 // The telemetry type of an outcome (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry").
@@ -53,7 +57,11 @@ export function openWithTelemetryType(
 }
 
 export async function resolveOpenWith(
-  deps: { drive: DriveClient; port: Pick<LivediagramPort, 'canOpenDiagram'>; host: string },
+  deps: {
+    drive: DriveClient;
+    port: Pick<LivediagramPort, 'canOpenDiagram' | 'listItems'>;
+    host: string;
+  },
   state: OpenWithState,
 ): Promise<OpenWithOutcome> {
   let file;
@@ -74,6 +82,15 @@ export async function resolveOpenWith(
   if (!diagramId) return { kind: 'import', reason: 'no-id', name };
   if (file.appProperties[DRIVE_PROP_ORIGIN] !== deps.host)
     return { kind: 'import', reason: 'foreign', name };
+  // A copy of a mirrored file: it carries the diagram's id, but the mirror
+  // records another file for it (docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive").
+  const recorded = (await deps.port.listItems()).find(
+    (i) => i.kind === 'diagram' && i.ldId === diagramId,
+  );
+  if (recorded && recorded.driveFileId !== state.fileId) {
+    driveLog('open-with', { outcome: 'copy' });
+    return { kind: 'import', reason: 'copy', name };
+  }
   if (await deps.port.canOpenDiagram(diagramId)) {
     driveLog('open-with', { outcome: 'open' });
     return { kind: 'open', diagramId };
@@ -90,14 +107,20 @@ export class OpenWithImportError extends Error {
   }
 }
 
-// **Import a copy**: a new Personal Space diagram from the file's contents.
+// **Import a copy** (or, for a copy of a mirrored file, **Import as new
+// document**): a new Personal Space diagram from the file's contents.
 export async function importOpenWithCopy(
-  deps: { drive: DriveClient; port: Pick<LivediagramPort, 'importDiagramCopy'> },
+  deps: { drive: DriveClient; port: CopyPort; host: string },
   state: OpenWithState,
+  reason: OpenWithImportReason,
 ): Promise<string> {
   const text = await deps.drive.download(state.fileId, state.resourceKey);
   const parsed = parseDiagramEnvelope(text);
   if (!parsed.ok) throw new OpenWithImportError(parsed.failure);
+  if (reason === 'copy') {
+    const file = await deps.drive.getFile(state.fileId, state.resourceKey);
+    return importAsNewDocument(deps, file, parsed.envelope);
+  }
   const id = await deps.port.importDiagramCopy(parsed.envelope);
   driveLog('open-with-imported', { tabs: parsed.envelope.diagram.tabs.length });
   return id;

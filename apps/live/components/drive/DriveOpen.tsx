@@ -2,8 +2,9 @@
 
 // /drive/open: the Drive UI integration's Open URL
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Open with"). Google passes
-// `state`; this reads the file and opens the diagram, offers **Import a copy**,
-// or says the file cannot be opened.
+// `state`; this reads the file and opens the diagram, offers **Import a copy**
+// (or **Import as new document** for a copy of a mirrored file), or says the
+// file cannot be opened.
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { Button } from '@livediagram/ui';
@@ -19,6 +20,7 @@ import {
   openWithTelemetryType,
   parseOpenState,
   resolveOpenWith,
+  type OpenWithImportReason,
   type OpenWithOutcome,
   type OpenWithState,
 } from '@/lib/drive/open-with';
@@ -118,13 +120,18 @@ export function DriveOpen() {
     await drive.connect();
   };
 
-  const importCopy = async () => {
+  const importCopy = async (reason: OpenWithImportReason) => {
     if (!token || !state || !clerkUserId) return;
     setPhase({ kind: 'importing' });
     try {
       const id = await importOpenWithCopy(
-        { drive: client(token), port: createApiLivediagramPort(clerkUserId) },
+        {
+          drive: client(token),
+          port: createApiLivediagramPort(clerkUserId),
+          host: window.location.host,
+        },
         state,
+        reason,
       );
       window.location.assign(`/diagram/${encodeURIComponent(id)}`);
     } catch (err) {
@@ -168,13 +175,21 @@ export function DriveOpen() {
   }
   if (phase.kind === 'outcome' && phase.outcome.kind === 'error') return <CannotOpen />;
   if (phase.kind === 'outcome' && phase.outcome.kind === 'import') {
+    const { reason, name } = phase.outcome;
+    // A copy of one of your mirrored files (docs/specs/022-drive-mirror/drive-mirror.md,
+    // "Copies made in Drive"): a new document, never the original.
+    const copy = reason === 'copy';
     return (
       <LandingCard>
-        <Heading>{phase.outcome.name}</Heading>
-        <Body>This diagram isn&apos;t in your livediagram. Import a copy to open it here.</Body>
+        <Heading>{name}</Heading>
+        <Body>
+          {copy
+            ? 'This is a copy made in Google Drive. Import it as a new document to open it here; the original stays as it is.'
+            : "This diagram isn't in your livediagram. Import a copy to open it here."}
+        </Body>
         <div className="mt-5 flex justify-center">
-          <Button size="md" onClick={() => void importCopy()}>
-            Import a copy
+          <Button size="md" onClick={() => void importCopy(reason)}>
+            {copy ? 'Import as new document' : 'Import a copy'}
           </Button>
         </div>
       </LandingCard>
@@ -191,7 +206,7 @@ export function DriveOpen() {
   }
   return (
     <LandingCard>
-      <Body>{phase.kind === 'importing' ? 'Importing a copy…' : 'Opening from Google Drive…'}</Body>
+      <Body>{phase.kind === 'importing' ? 'Importing…' : 'Opening from Google Drive…'}</Body>
     </LandingCard>
   );
 }
