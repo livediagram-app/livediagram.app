@@ -54,6 +54,13 @@ All layer mutations are ordinary tab-body commits: they flow through the normal 
 - **Blocked-creation notice** — the creation gates stay silent by design, so the moment the ACTIVE layer becomes un-addable (hidden or locked, locally or by activating such a layer) a toast says adding is paused and why.
 - **Every layout but desktop Floating** (minimal, Toolbar, and a phone): the **Layers button stays in the bottom-right cluster**, where it is in every layout, and opens the panel as a **popover hanging above it** (the dock's popover path pointed up, `computeDockAnchor(..., 'above')`) rather than docking a panel in the corner. Activity does the same ([Activity and audit log](../012-collaboration/activity-and-audit.md)). A second press closes it. It is not in the `CanvasMobileDock` row. The feature stays fully usable in both modes. (Relatedly, the Minimap now doesn't render at all in minimal layout — see [Minimap](../008-canvas/minimap.md).)
 
+### Turning the panel off
+
+**Settings › Panels › Layers › Enable Layers Panel** (`layersPanelEnabled`, [User preferences](../007-editor/user-preferences.md))
+removes the Layers panel, its cluster button, the element menus' "Move to layer" tiles and the image
+export's "Hidden layers" row. Layers themselves keep working: stacking, visibility, lock, opacity and
+the active layer behave exactly as with the panel on.
+
 ## Layered templates
 
 Templates whose scaffold stays put while their content moves ship with **pre-assigned layers** ([Canvas and palette](../008-canvas/canvas-and-palette.md)'s catalogue), so a fresh board lands with the split a careful user would build by hand: a scaffold band you can lock or hide in one click, and a content band that marquee / select-all sweeps without grabbing the frame behind it.

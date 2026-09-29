@@ -261,6 +261,10 @@ export function ToolbarPalette(props: Props) {
     <div
       ref={rootRef}
       data-toolbar-palette=""
+      // The strip is the Palette in this layout, so the panel-opacity
+      // preference (docs/specs/007-editor/user-preferences.md) fades it and its More popover
+      // like every other panel; hovering either restores it.
+      data-panel-translucent=""
       // `hidden` (zen, the welcome flow) hides rather than unmounts, so the
       // chosen category survives the chrome going away and back.
       //

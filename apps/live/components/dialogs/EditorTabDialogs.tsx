@@ -6,6 +6,7 @@ import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { resolveTabBackdrop } from '@/lib/themes';
+import { panelEnabled } from '@/lib/user-preferences';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -27,6 +28,7 @@ const ShareDialog = dynamic(
 // header, distinct from the global editor modals in EditorModals.
 export function EditorTabDialogs() {
   const {
+    userPreferences,
     exportOpen,
     exportScope,
     activeTab,
@@ -84,6 +86,7 @@ export function EditorTabDialogs() {
           scope={exportScope}
           diagramName={diagramName}
           imageContext={imageContext}
+          offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}
         />
       ) : null}

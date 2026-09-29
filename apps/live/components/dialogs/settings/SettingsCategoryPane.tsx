@@ -50,7 +50,7 @@ export function SettingsCategoryPane({
 }) {
   const isMobile = useIsMobileViewport();
   // Group CONSECUTIVE rows by section, so a category holding several
-  // clusters (Panels covers Layers, Activity and the minimap) gets a heading
+  // clusters (Editor's Power User rows) gets a heading
   // per cluster instead of one undifferentiated list. Consecutive rather than
   // by-value on purpose: a section that reappeared further down would head
   // itself twice, and the catalogue's order is the intended reading order.

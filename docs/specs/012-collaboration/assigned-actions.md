@@ -289,6 +289,10 @@ which crowded the same corner:
   longer a button in the mobile / minimal dock row ([Live app](../007-editor/live-app.md) "Mobile chrome"):
   the cluster button replaces it.
 
+**Settings › Panels › Collaborate › Enable Collaborate Panel** (`collaboratePanelEnabled`,
+[User preferences](../007-editor/user-preferences.md)) turns the panel and its cluster button off, even while
+the tab has threads or actions. Comments and actions keep working from the elements.
+
 ### The look
 
 The panel follows the refreshed Collaborate cards ([Participant responses](participant-responses.md), [Q&A board](qa-board.md) "The look"): soft tinted rows rather than a ruled list, a friendly empty state with its glyph in a soft brand disc, round brand controls, count chips, and short motion that collapses under Reduce motion. It is editor chrome, not a card on a themed tab, so its accent is the **brand** colour rather than a tab theme's.

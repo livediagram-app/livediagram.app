@@ -61,13 +61,15 @@ export function MultiPlacementSections({
           <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onSendToBack} />
         </MenuTileGrid>
         {/* Move the whole selection to a named layer (docs/specs/006-diagram/layers.md). */}
-        <MoveToLayerRow
-          layers={props.layers}
-          elements={props.elements}
-          tabFont={props.tabFont}
-          currentLayerId={props.selectionLayerId}
-          onMove={props.onMoveSelectionToLayer}
-        />
+        {props.onMoveSelectionToLayer ? (
+          <MoveToLayerRow
+            layers={props.layers}
+            elements={props.elements}
+            tabFont={props.tabFont}
+            currentLayerId={props.selectionLayerId}
+            onMove={props.onMoveSelectionToLayer}
+          />
+        ) : null}
         <ContextMenuDivider />
         <OpacityRow
           value={(sel[0] as { opacity?: number } | undefined)?.opacity ?? 1}

@@ -49,6 +49,10 @@ type ExportTabDialogProps = {
   // authenticated endpoint). Absent (e.g. no diagram id) → images export as
   // their placeholder, same as before.
   imageContext?: { ownerId: string; diagramId: string; shareCode: string | null };
+  // False while the Layers panel is off in Settings (docs/specs/007-editor/user-preferences.md): the
+  // image options then leave out "Hidden layers", and hidden layers stay out
+  // of the export as they stay off the canvas.
+  offerHiddenLayers?: boolean;
 };
 
 export type Format = 'markdown' | 'mermaid' | 'excalidraw' | 'pdf' | 'png' | 'svg' | 'file';
@@ -152,6 +156,7 @@ export function ExportTabDialog({
   onClose,
   scope = 'tab',
   imageContext,
+  offerHiddenLayers = true,
 }: ExportTabDialogProps) {
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);
@@ -282,7 +287,9 @@ export function ExportTabDialog({
             label={activeCard!.title}
             busy={busy}
             error={error}
-            hasHiddenLayers={tabLayers(tab.layers).some((l) => !isLayerVisible(l))}
+            hasHiddenLayers={
+              offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
+            }
             renderPreview={renderPreview}
             previewReady={previewReady}
             onExport={(opts) => void runImageExport(active as ImageFormat, opts)}

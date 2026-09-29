@@ -58,6 +58,19 @@ export type UserPreferences = {
   layersShowPreview?: boolean;
   // The per-layer element count, beside the name.
   layersShowCount?: boolean;
+  // Panel switches (docs/specs/007-editor/user-preferences.md), each ON
+  // unless stored `false`. Off removes the panel and the chrome that reaches
+  // it, never the feature underneath. Read them through `panelEnabled`.
+  //
+  // Layers: the panel, its cluster button, "Move to layer" in the element
+  // menus and the export's "Hidden layers" row. Layers still apply.
+  layersPanelEnabled?: boolean;
+  // Activity: the panel and its button. Undo / Redo stay.
+  activityPanelEnabled?: boolean;
+  // Collaborate: the panel and its button. Comments and actions stay.
+  collaboratePanelEnabled?: boolean;
+  // Quick style: the selection's style panel. Style memory stays.
+  quickStylePanelEnabled?: boolean;
   // AI Assistance panel (docs/specs/007-editor/ai-assistance.md). When `true`, the AI panel is
   // rendered in the editor. Defaults to false (opt-in). Only
   // surfaced in Settings when the api worker reports aiEnabled:true
@@ -82,13 +95,13 @@ export type UserPreferences = {
   // dock, docs/specs/008-canvas/canvas-and-palette.md) or 'toolbar' (the Palette as a top strip, no Explorer
   // panel). Missing → derived from `minimalPanels`.
   panelLayout?: PanelLayout;
-  // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of the FULL floating
-  // panels (Explorer, Palette, Editor, AI) at rest, so the canvas shows
-  // through; they snap back to fully opaque while hovered / focused.
-  // Applied via the `--lvd-panel-opacity` custom property (see
-  // usePanelOpacity). Deliberately scoped to floating panels: the minimal
-  // dock bar never reads the var, so this leaves the minimal layout
-  // untouched. Missing / undefined / 1 === fully opaque, the default.
+  // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of EVERY panel at
+  // rest (floating, popover, the Map, Quick style, the Toolbar strip), so the
+  // canvas shows through; they snap back to fully opaque while hovered /
+  // focused. Applied via the `--lvd-panel-opacity` custom property (see
+  // usePanelOpacity) on every `data-panel-translucent` surface. Buttons are
+  // not panels: the minimal dock bar and the cluster buttons stay opaque.
+  // Missing / undefined / 1 === fully opaque, the default.
   panelOpacity?: number;
   // Quick-add on hover (docs/specs/008-canvas/canvas-and-palette.md). When `true`, an element's quick-add "+"
   // buttons open their menu on hover instead of requiring a click; moving
@@ -340,4 +353,16 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }
   return merged;
+}
+
+// Whether a panel switch is on (docs/specs/007-editor/user-preferences.md):
+// on unless stored `false`, so the Settings row and every surface it gates
+// read one rule.
+export type PanelSwitch =
+  | 'layersPanelEnabled'
+  | 'activityPanelEnabled'
+  | 'collaboratePanelEnabled'
+  | 'quickStylePanelEnabled';
+export function panelEnabled(prefs: UserPreferences | undefined, key: PanelSwitch): boolean {
+  return prefs?.[key] !== false;
 }

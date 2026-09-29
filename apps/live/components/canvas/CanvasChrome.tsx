@@ -43,6 +43,7 @@ import { HoverCard } from '@livediagram/ui';
 import { useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
+import { panelEnabled } from '@/lib/user-preferences';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -233,6 +234,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     highlighterWidth,
     readOnly,
     selfParticipant,
+    settings,
     snapGuides,
     distGuides,
     snapTargets,
@@ -250,6 +252,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // folds it in next to the welcome-flow gate that already suppresses
   // the same panels, so each panel stays hidden in either state.
   const chromeHidden = welcomeOpen || zenMode === true;
+  // Panels turned off in Settings (docs/specs/007-editor/user-preferences.md) take their cluster
+  // buttons with them (Undo / Redo stay). Read once here and handed to
+  // useCanvasChromePanels, so a button and its panel share one value.
+  const panelsOn = {
+    activity: panelEnabled(settings, 'activityPanelEnabled'),
+    layers: panelEnabled(settings, 'layersPanelEnabled'),
+    collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
+  };
 
   // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
@@ -326,6 +336,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     dockingActive,
     toolbarActive,
     panelWiringFor,
+    panelsOn,
   });
 
   // Measured against the real top-corner stacks (useStripCrowdsCorners). A
@@ -551,8 +562,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
             {/* Activity + Undo / Redo (docs/specs/012-collaboration/activity-and-audit.md): see ActivityClusterStrip. */}
-            {!zenMode && !readOnly && (clusterPopovers ? true : activityMinimized) ? (
+            {/* With the Activity panel off there is no panel to carry Undo /
+                Redo in Floating, so the strip shows in every layout, as just
+                those two. */}
+            {!zenMode &&
+            !readOnly &&
+            (!panelsOn.activity || clusterPopovers || activityMinimized) ? (
               <ActivityClusterStrip
+                showActivity={panelsOn.activity}
                 popoverOpen={clusterPopovers && activeMobilePanel === 'activity'}
                 onExpand={onToggleActivityMinimized}
                 onTogglePopover={
@@ -567,7 +584,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               />
             ) : null}
             {/* Layers (docs/specs/006-diagram/layers.md): see LayersClusterButton. */}
-            {!zenMode && !readOnly && (clusterPopovers ? true : layersMinimized) ? (
+            {!zenMode && !readOnly && panelsOn.layers && (clusterPopovers || layersMinimized) ? (
               <LayersClusterButton
                 popoverOpen={clusterPopovers && activeMobilePanel === 'layers'}
                 onExpand={onToggleLayersMinimized}
@@ -581,7 +598,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): right after Layers, only while
                 the tab has a comment thread or an action. A view-role visitor
                 gets it too: they read threads and answer them. */}
-            {!zenMode && (commentRows.length > 0 || actionRows.length > 0) ? (
+            {!zenMode &&
+            panelsOn.collaborate &&
+            (commentRows.length > 0 || actionRows.length > 0) ? (
               <CollaborateClusterButton
                 openCount={kindCounts('open', commentRows, actionRows).all}
                 popoverOpen={activeMobilePanel === 'collaborate'}

@@ -58,6 +58,7 @@ export function useCanvasChromePanels({
   dockingActive,
   toolbarActive,
   panelWiringFor,
+  panelsOn,
 }: {
   props: CanvasChromeProps;
   chromeHidden: boolean;
@@ -68,6 +69,9 @@ export function useCanvasChromePanels({
   // instead of floating in its corner.
   toolbarActive: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
+  // Which panels are on in Settings (docs/specs/007-editor/user-preferences.md), read by CanvasChrome
+  // so each panel and its cluster button agree.
+  panelsOn: { activity: boolean; layers: boolean; collaborate: boolean };
 }): {
   panelEls: Partial<Record<PanelId, ReactNode>>;
   // The Explorer, when it belongs to the Toolbar layout's menu button rather
@@ -378,9 +382,10 @@ export function useCanvasChromePanels({
   // Collaborate panel (docs/specs/012-collaboration/assigned-actions.md §5): a popover hanging above its
   // cluster button after Layers, in every layout (the button opens it through
   // the dock's one-open-at-a-time slot; mobileOpenOverride gates the render).
-  // Mounted only while the tab has a thread or an action, the button's gate.
+  // Mounted only while the tab has a thread or an action, the button's gate,
+  // and never while its Settings switch is off (docs/specs/007-editor/user-preferences.md).
   const collaborateEl =
-    !chromeHidden && (commentRows.length > 0 || actionRows.length > 0) ? (
+    !chromeHidden && panelsOn.collaborate && (commentRows.length > 0 || actionRows.length > 0) ? (
       <CollaboratePanel
         position={collaborateWiring.position}
         commentRows={commentRows}
@@ -421,48 +426,52 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
-  const activityEl = chromeHidden ? null : (
-    <ActivityPanel
-      position={activityWiring.position}
-      // As a popover there is no minimised panel to expand: the cluster
-      // button opens it (mobileOpenOverride) instead.
-      minimized={clusterPopovers ? false : activityMinimized}
-      tabLocked={tabLocked}
-      entries={changeLog}
-      loading={changeLogLoading}
-      readOnly={readOnly}
-      canUndo={canUndo}
-      canRedo={canRedo}
-      onUndo={activityHandlers.onUndo}
-      onRedo={activityHandlers.onRedo}
-      onRevert={activityHandlers.onRevertChange}
-      onPreviewRevert={activityHandlers.onPreviewRevert}
-      onClearRevertPreview={activityHandlers.onClearRevertPreview}
-      revertHoverPreview={settings?.activityRevertHoverPreview !== false}
-      onRowClick={activityHandlers.onActivityRowClick}
-      onClearActivity={activityHandlers.onClearActivity}
-      saveStatus={saveStatus}
-      savedAt={savedAt}
-      onMoveTo={activityHandlers.onMoveActivity}
-      onReset={activityWiring.onReset}
-      dock={clusterPopovers ? undefined : activityWiring.dock}
-      onToggleMinimized={activityHandlers.onToggleActivityMinimized}
-      mobileOpenOverride={clusterPopovers ? activeMobilePanel === 'activity' : undefined}
-      mobileDockAnchor={activeDockAnchor ?? undefined}
-      forceDockMode={clusterPopovers}
-      // A press on the canvas (anywhere outside) puts the popover away.
-      dismissOnOutside={clusterPopovers}
-      onMobileClose={closeMobilePanel}
-    />
-  );
+  // Off in Settings (docs/specs/007-editor/user-preferences.md): no panel; Undo / Redo stay in the
+  // cluster strip, which CanvasChrome then shows in every layout.
+  const activityEl =
+    chromeHidden || !panelsOn.activity ? null : (
+      <ActivityPanel
+        position={activityWiring.position}
+        // As a popover there is no minimised panel to expand: the cluster
+        // button opens it (mobileOpenOverride) instead.
+        minimized={clusterPopovers ? false : activityMinimized}
+        tabLocked={tabLocked}
+        entries={changeLog}
+        loading={changeLogLoading}
+        readOnly={readOnly}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={activityHandlers.onUndo}
+        onRedo={activityHandlers.onRedo}
+        onRevert={activityHandlers.onRevertChange}
+        onPreviewRevert={activityHandlers.onPreviewRevert}
+        onClearRevertPreview={activityHandlers.onClearRevertPreview}
+        revertHoverPreview={settings?.activityRevertHoverPreview !== false}
+        onRowClick={activityHandlers.onActivityRowClick}
+        onClearActivity={activityHandlers.onClearActivity}
+        saveStatus={saveStatus}
+        savedAt={savedAt}
+        onMoveTo={activityHandlers.onMoveActivity}
+        onReset={activityWiring.onReset}
+        dock={clusterPopovers ? undefined : activityWiring.dock}
+        onToggleMinimized={activityHandlers.onToggleActivityMinimized}
+        mobileOpenOverride={clusterPopovers ? activeMobilePanel === 'activity' : undefined}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={clusterPopovers}
+        // A press on the canvas (anywhere outside) puts the popover away.
+        dismissOnOutside={clusterPopovers}
+        onMobileClose={closeMobilePanel}
+      />
+    );
 
   // Layers panel (docs/specs/006-diagram/layers.md). Edit sessions only (a viewer can't manage
   // layers; visibility / lock still shape what they see via the render
   // path). Floating: hidden while minimised into its bottom-right cluster
   // button. As a popover (clusterPopovers): always mounted so that button can
   // pop it open (mobileOpenOverride gates the actual render).
+  // Its Settings switch removes it outright; layers themselves keep applying.
   const layersEl =
-    !chromeHidden && !readOnly && (clusterPopovers ? true : !layersMinimized) ? (
+    !chromeHidden && !readOnly && panelsOn.layers && (clusterPopovers ? true : !layersMinimized) ? (
       <LayersPanel
         layers={layers}
         tabFont={props.tabFont}

@@ -212,19 +212,54 @@ describe('settings catalogue', () => {
 
 // Panels holds sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests Layers, Activity and Map under Panels, directly after it and in that order', () => {
+  it('nests one sub-category per panel under Panels, directly after it and in order', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);
-    expect(children).toEqual(['layers', 'activity', 'map']);
+    expect(children).toEqual(['layers', 'activity', 'map', 'collaborate', 'quickStyle']);
     const at = ids.indexOf('panels');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });
 
-  it('keeps Panel Layout and Panel Opacity on Panels itself, and Show Map under Map', () => {
+  it('keeps Panel Layout and Panel Opacity on Panels itself, and Enable Map under Map', () => {
     const keys = (id: string) =>
       SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows.map((r) => r.key);
     expect(keys('panels')).toEqual(['panelLayout', 'panelOpacity']);
     expect(keys('map')[0]).toBe('showMinimap');
+  });
+
+  it('opens every panel sub-category with its Enable switch, on by default', () => {
+    const first = (id: string) => SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows[0]!;
+    const switches: Record<string, [string, string]> = {
+      layers: ['layersPanelEnabled', 'Enable Layers Panel'],
+      activity: ['activityPanelEnabled', 'Enable Activity Panel'],
+      map: ['showMinimap', 'Enable Map'],
+      collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
+      quickStyle: ['quickStylePanelEnabled', 'Enable Quick Style Panel'],
+    };
+    for (const [id, [key, label]] of Object.entries(switches)) {
+      const row = first(id);
+      expect([row.key, row.label]).toEqual([key, label]);
+      if (row.kind !== 'toggle') throw new Error(`${key} is not a toggle`);
+      expect(row.read({})).toBe(true);
+      expect(row.write({}, false)).toEqual({ [key]: false });
+    }
+  });
+
+  it("offers a panel's other rows only while its Enable switch is on", () => {
+    const rows = (id: string, preferences: UserPreferences) =>
+      visibleCategories(false, { emailEnabled: false, signedIn: false, preferences })
+        .find((c) => c.id === id)!
+        .rows.map((r) => r.key);
+    expect(rows('layers', {})).toEqual([
+      'layersPanelEnabled',
+      'layersShowPreview',
+      'layersShowCount',
+      'layerHoverPreview',
+    ]);
+    expect(rows('layers', { layersPanelEnabled: false })).toEqual(['layersPanelEnabled']);
+    expect(rows('activity', { activityPanelEnabled: false })).toEqual(['activityPanelEnabled']);
+    expect(rows('map', { showMinimap: false })).toEqual(['showMinimap']);
+    expect(rows('map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
   });
 
   it('names a sub-category by its path', () => {

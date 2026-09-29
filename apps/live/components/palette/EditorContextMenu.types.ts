@@ -102,10 +102,11 @@ export type EditorContextMenuProps = {
   onStackBack: () => void;
   // Layers (docs/specs/006-diagram/layers.md): the tab's normalised stack (bottom -> top) for the
   // Layer section's move-to dropdown, the selection's resolved layer
-  // (null when members span layers), and the selection-wide move.
+  // (null when members span layers), and the selection-wide move. The move
+  // is absent while the Layers panel is off in Settings, and its tiles with it.
   layers: Layer[];
   selectionLayerId: string | null;
-  onMoveSelectionToLayer: (layerId: string) => void;
+  onMoveSelectionToLayer?: (layerId: string) => void;
   // Toggle aspect-ratio lock + set opacity on the clicked element (boxed
   // only). Read the current values off the target below.
   onToggleAspectLock: () => void;

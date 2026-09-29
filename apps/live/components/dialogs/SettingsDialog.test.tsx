@@ -137,6 +137,31 @@ describe('SettingsDialog', () => {
     expect(screen.queryByRole('switch', { name: 'Quick-Add on Hover' })).toBeNull();
   });
 
+  it('reaches the Panels sub-categories on a phone through the Panels pane', () => {
+    // The root list has no accordion on a phone, so the parent's pane is the
+    // way down, and back from a sub-category returns to that pane.
+    setViewport(true);
+    renderDialog();
+    fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
+    const links = screen.getByRole('navigation', { name: 'Panels sub-categories' });
+    expect(Array.from(links.querySelectorAll('button')).map((b) => b.textContent)).toEqual([
+      'Layers',
+      'Activity',
+      'Map',
+      'Collaborate',
+      'Quick Style',
+    ]);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Layers' }));
+    expect(screen.getByRole('heading', { name: 'Layers' })).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Panels sub-categories' })).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
+    expect(screen.getByRole('heading', { name: 'Panels' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    expect(screen.getByRole('button', { name: 'Privacy' })).toBeTruthy();
+  });
+
   it('writes the flipped preference through the catalogue', () => {
     setViewport(false);
     const { onChange } = renderDialog();
