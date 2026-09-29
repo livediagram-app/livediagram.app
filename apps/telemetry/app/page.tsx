@@ -106,7 +106,7 @@ export default function TelemetryDashboard() {
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
           This is everything we measure. We record anonymous, first-party product events to learn
           which features actually help. There are no third-party analytics or tracking vendors, no
-          user content (never a diagram name, your name, or anything you type), and the data is
+          user content (never a document name, your name, or anything you type), and the data is
           never sold or shared beyond this page.
         </p>
 

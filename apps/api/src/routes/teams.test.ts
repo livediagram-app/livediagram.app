@@ -487,7 +487,7 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
   });
 
   it("hands a removed member's team work to the team before the row goes", async () => {
-    // Every access gate honours owner_id before membership, so diagrams left
+    // Every access gate honours owner_id before membership, so documents left
     // owned by the removed member would stay open to them (docs/specs/013-workspace/team-shared-documents.md).
     db.getMembership.mockResolvedValue(member());
     db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
@@ -545,7 +545,7 @@ describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned
     db.hasSharedAccess.mockResolvedValue(false);
   });
 
-  it('false for a personal diagram the assignee has never opened', async () => {
+  it('false for a personal document the assignee has never opened', async () => {
     const res = await get(QS);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ canAccess: false });
@@ -558,7 +558,7 @@ describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned
     expect(await (await get(QS)).json()).toEqual({ canAccess: true });
   });
 
-  it('true when the assignee is a joined member of the diagram-library team', async () => {
+  it('true when the assignee is a joined member of the document-library team', async () => {
     db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'x', teamId: 't9', name: 'Q3' });
     membershipByUser({
       't9:user-1': member({ role: 'member' }),
@@ -567,7 +567,7 @@ describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned
     expect(await (await get(QS)).json()).toEqual({ canAccess: true });
   });
 
-  it('true when the assignee owns the diagram', async () => {
+  it('true when the assignee owns the document', async () => {
     db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-2', teamId: null, name: 'Q3' });
     db.hasSharedAccess.mockImplementation(
       async (_env: Env, ownerId: string) => ownerId === 'user-1',
@@ -575,7 +575,7 @@ describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned
     expect(await (await get(QS)).json()).toEqual({ canAccess: true });
   });
 
-  it('400 on missing params, 404 on a non-member assignee or unreachable diagram', async () => {
+  it('400 on missing params, 404 on a non-member assignee or unreachable document', async () => {
     expect((await get('assigneeUserId=user-2')).status).toBe(400);
     membershipByUser({ 't1:user-2': null });
     expect((await get(QS)).status).toBe(404);
@@ -612,7 +612,7 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     db.getParticipant.mockResolvedValue({ id: 'user-1', name: 'Sam', color: '#f00' });
   });
 
-  it('202 + dispatches the email with server-derived names for the diagram owner', async () => {
+  it('202 + dispatches the email with server-derived names for the document owner', async () => {
     const res = await post();
     expect(res.status).toBe(202);
     expect(notifyActionAssigned).toHaveBeenCalledWith(
@@ -627,7 +627,7 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     );
   });
 
-  it('ignores a body-supplied diagram name (name comes from D1)', async () => {
+  it('ignores a body-supplied document name (name comes from D1)', async () => {
     await post({ ...body, documentName: 'Spoofed' });
     const input = vi.mocked(notifyActionAssigned).mock.calls[0]![1];
     expect(input.document.name).toBe('Q3');
@@ -689,13 +689,13 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     );
   });
 
-  it('404 when the diagram does not exist', async () => {
+  it('404 when the document does not exist', async () => {
     db.getDocumentMeta.mockResolvedValue(null);
     const res = await post();
     expect(res.status).toBe(404);
   });
 
-  it('404 when the caller cannot access the diagram', async () => {
+  it('404 when the caller cannot access the document', async () => {
     db.getDocumentMeta.mockResolvedValue({
       id: 'd1',
       ownerId: 'someone-else',
@@ -708,7 +708,7 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     expect(notifyActionAssigned).not.toHaveBeenCalled();
   });
 
-  it('allows a joined member of the diagram’s team-library team', async () => {
+  it('allows a joined member of the document’s team-library team', async () => {
     db.getDocumentMeta.mockResolvedValue({
       id: 'd1',
       ownerId: 'someone-else',
@@ -720,7 +720,7 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     expect(notifyActionAssigned).toHaveBeenCalled();
   });
 
-  it('allows a caller who reached the diagram through a share link (shared_with)', async () => {
+  it('allows a caller who reached the document through a share link (shared_with)', async () => {
     db.getDocumentMeta.mockResolvedValue({
       id: 'd1',
       ownerId: 'someone-else',
@@ -799,7 +799,7 @@ describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comme
     expect(notifyMentioned).toHaveBeenCalledOnce();
   });
 
-  it('404 when the diagram is not in this team’s library', async () => {
+  it('404 when the document is not in this team’s library', async () => {
     db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
     const res = await post();
     expect(res.status).toBe(404);

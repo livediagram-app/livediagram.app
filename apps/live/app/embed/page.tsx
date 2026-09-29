@@ -8,7 +8,7 @@ import EditorPage from '../document/[id]/editor-page';
 // this page directly. The live worker omits X-Frame-Options for
 // `/embed` so host pages can iframe it.
 export const metadata: Metadata = {
-  title: 'Embedded diagram | livediagram',
+  title: 'Embedded document | livediagram',
   robots: { index: false },
 };
 

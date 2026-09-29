@@ -118,7 +118,7 @@ on screen sideways as well as vertically, whatever the trigger's position.
 Settings → Panels as a three-way **Panel Layout** choice. It
 replaces the Minimal Panel Layout toggle. The editor tour's welcome card ([Interactive editor tour ("Show me around")](editor-tour.md))
 offers the same choice, drawn with the same pictures, so a new user picks a
-layout on their first diagram.
+layout on their first document.
 
 - Missing → derived from the legacy `minimalPanels` flag, so nobody's layout
   changes when this ships.
@@ -221,7 +221,7 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 ## Decided in review
 
 - **The strip opens on Favourites every time**, like the floating Palette
-  ([Palette Favourites](../010-palette/palette-favourites.md)). It does not remember the last category across diagrams.
+  ([Palette Favourites](../010-palette/palette-favourites.md)). It does not remember the last category across documents.
 - **Twelve tiles is enough** on desktop (raised from ten, which cut Shapes and
   Favourites short). Below that, the strip shows as many as fit, **measured**
   rather than estimated (`useStripTileLimit`): its own chrome (the pickers,

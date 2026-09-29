@@ -1,7 +1,7 @@
 // Search-result computation for the global SearchPanel (docs/specs/008-canvas/canvas-and-palette.md
 // "Search panel"). Pure function so the matcher (case-insensitive
 // substring), the cap rules (8 per section, 12 elements total), the
-// section ordering (diagrams, shared, folders, teams, tabs,
+// section ordering (documents, shared, folders, teams, tabs,
 // elements), and the label-extraction fallbacks (blank labels,
 // table cells) can be reasoned about without rendering React or
 // mocking a DOM.
@@ -30,13 +30,13 @@ type SearchInputDocument = { id: string; name: string };
 type SearchInputFolder = { id: string; name: string };
 // "Shared with You" rows carry their still-live share code so picking
 // one can navigate to the visitor URL (the only path a non-owner can
-// open the diagram on).
+// open the document on).
 type SearchInputShared = { id: string; name: string; shareCode: string };
 type SearchInputTeam = { id: string; name: string };
 
-// `team` set = a diagram in a team's library (docs/specs/013-workspace/team-shared-documents.md): the panel
-// renders an "in <team>" suffix, like team folders. Personal diagrams
-// leave it unset. Either way picking it opens the diagram by id.
+// `team` set = a document in a team's library (docs/specs/013-workspace/team-shared-documents.md): the panel
+// renders an "in <team>" suffix, like team folders. Personal documents
+// leave it unset. Either way picking it opens the document by id.
 type DocumentItem = {
   kind: 'document';
   id: string;
@@ -106,12 +106,12 @@ export type PaletteAdd =
   // handler (tileHandler), so a search add behaves exactly like the tile.
   | { type: 'tile'; tileId: string };
 type PaletteItem = { kind: 'palette'; id: string; name: string; add: PaletteAdd };
-// A synthetic command result — performing it changes the diagram / a
+// A synthetic command result — performing it changes the document / a
 // selection rather than navigating somewhere. Modelled like a palette item
 // (an intent the panel hands back to the editor): the panel returns the
 // `id` and the editor's `useEditorCommands` dispatcher runs the matching
 // handler. The catalogue (which commands apply to the current selection /
-// diagram) is the editor's concern — this lib only matches + caps + groups
+// document) is the editor's concern — this lib only matches + caps + groups
 // what it's handed. Replaces the old single-purpose create-tab "action",
 // which is now just one command among many.
 type CommandItem = { kind: 'command'; id: string; name: string };
@@ -206,22 +206,22 @@ type SearchInput = {
   query: string;
   documents: SearchInputDocument[];
   folders: SearchInputFolder[];
-  // Diagrams shared with the current owner ("Shared with You").
+  // Documents shared with the current owner ("Shared with You").
   // Optional: surfaces without the list omit it.
   shared?: SearchInputShared[];
   // Team-library folders (docs/specs/013-workspace/team-shared-documents.md), breadcrumb-pathed + tagged with
   // their team. Surfaced in the Teams group (not "Personal Space", which is
   // personal-only), with their own cap. Optional: guests have none.
   teamFolders?: { id: string; path: string; teamId: string; teamName: string }[];
-  // Team-library diagrams (docs/specs/013-workspace/team-shared-documents.md), tagged with their team. Also
+  // Team-library documents (docs/specs/013-workspace/team-shared-documents.md), tagged with their team. Also
   // surfaced in the Teams group. Optional: guests have none.
   teamDocuments?: { id: string; name: string; teamId: string; teamName: string }[];
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md). Optional: guests
   // have none and surfaces fetch the list lazily.
   teams?: SearchInputTeam[];
   // Tabs scope is optional: the standalone Explorer page passes
-  // nothing (no active diagram), the editor passes the current
-  // diagram's tabs.
+  // nothing (no active document), the editor passes the current
+  // document's tabs.
   tabs?: Tab[];
   currentTabId?: string;
   // Palette catalogue (shapes / icons / tech icons) the editor offers as
@@ -276,7 +276,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   const groups: SearchGroup[] = [];
 
   const documentMatches = liveDocs
-    .filter((d) => matches(q, d.name || 'Untitled diagram'))
+    .filter((d) => matches(q, d.name || 'Untitled document'))
     .slice(0, DOCUMENT_LIMIT);
   if (documentMatches.length > 0) {
     groups.push({
@@ -285,13 +285,13 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
       items: documentMatches.map((d) => ({
         kind: 'document',
         id: d.id,
-        name: d.name || 'Untitled diagram',
+        name: d.name || 'Untitled document',
       })),
     });
   }
 
   const sharedMatches = (shared ?? [])
-    .filter((s) => matches(q, s.name || 'Untitled diagram'))
+    .filter((s) => matches(q, s.name || 'Untitled document'))
     .slice(0, SHARED_LIMIT);
   if (sharedMatches.length > 0) {
     groups.push({
@@ -300,7 +300,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
       items: sharedMatches.map((s) => ({
         kind: 'shared',
         id: s.id,
-        name: s.name || 'Untitled diagram',
+        name: s.name || 'Untitled document',
         shareCode: s.shareCode,
       })),
     });
@@ -321,7 +321,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     });
   }
 
-  // "Teams": the teams themselves, then their folders + diagrams
+  // "Teams": the teams themselves, then their folders + documents
   // (docs/specs/013-workspace/team-shared-documents.md) — everything team-scoped in one place, each list capped
   // separately so one kind can't crowd out the others.
   const teamMatches = (teams ?? []).filter((t) => matches(q, t.name)).slice(0, TEAM_LIMIT);
@@ -329,7 +329,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     .filter((f) => matches(q, f.path) || matches(q, f.teamName))
     .slice(0, FOLDER_LIMIT);
   const teamDocumentMatches = (teamDocuments ?? [])
-    .filter((d) => matches(q, d.name || 'Untitled diagram') || matches(q, d.teamName))
+    .filter((d) => matches(q, d.name || 'Untitled document') || matches(q, d.teamName))
     .slice(0, DOCUMENT_LIMIT);
   if (teamMatches.length + teamFolderMatches.length + teamDocumentMatches.length > 0) {
     groups.push({
@@ -346,7 +346,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
         ...teamDocumentMatches.map((d): DocumentItem => ({
           kind: 'document',
           id: d.id,
-          name: d.name || 'Untitled diagram',
+          name: d.name || 'Untitled document',
           team: { id: d.teamId, name: d.teamName },
         })),
       ],

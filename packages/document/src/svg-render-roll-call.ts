@@ -62,7 +62,7 @@ export function svgRollCall(
       GLYPH.roll,
     );
     if (entries.length === 0) {
-      const hint = wrapLines('Take the roll to freeze who is here into the diagram.', 170, 11, 3);
+      const hint = wrapLines('Take the roll to freeze who is here into the document.', 170, 11, 3);
       const cy = (BODY_TOP + barY - BODY_GAP) / 2 - hint.length * 9;
       return (
         `<circle cx="${r2(w / 2)}" cy="${r2(cy - 14)}" r="14" fill="${xmlEscape(a.accent)}" fill-opacity="0.14"/>` +

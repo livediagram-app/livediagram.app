@@ -103,7 +103,7 @@ function liveDoc(sql: DatabaseSync, id: string, ownerId: string, teamId: string 
 }
 
 // One row in every guest-holdable owner-keyed column, keyed on `id`, starring
-// and visiting a diagram `peer` owns as well as its own.
+// and visiting a document `peer` owns as well as its own.
 function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) {
   insert(sql, 'participants', { id, name: 'Otter', color: '#ff8800', created_at: T0 });
   liveDoc(sql, `d-${id}`, id);
@@ -261,7 +261,7 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
     }
   });
 
-  it("erases the stars the owner placed on other people's diagrams", async () => {
+  it("erases the stars the owner placed on other people's documents", async () => {
     const { env, sql } = arrange();
 
     await deleteAccount(env, ACCOUNT);
@@ -309,7 +309,7 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
     }
   });
 
-  it('keeps the account star when both identities starred the same diagram', async () => {
+  it('keeps the account star when both identities starred the same document', async () => {
     const { env, sql } = arrange();
     // The account starred d-other first, from another device.
     insert(sql, 'favourites', { owner_id: ACCOUNT, document_id: 'd-other', created_at: T0 - 5 });

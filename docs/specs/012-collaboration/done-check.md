@@ -107,7 +107,7 @@ with two plain avatar lists and a grey pill button.
 - **The button** fills the foot: **I'm done** in the accent with a check, which
   pops when pressed; once you are done it turns quiet and reads **I'm not
   done**, the same press to take it back.
-- **An empty room** says so plainly ("Nobody here yet" over "Share the diagram
+- **An empty room** says so plainly ("Nobody here yet" over "Share the document
   and the card fills itself in") rather than drawing an empty ring.
 - Avatar gaps clear the presence ring (the ring is a box-shadow outside each
   avatar's layout box and eats 4px of any gap beside it).

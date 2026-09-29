@@ -61,7 +61,7 @@ export function EllipsisMenuButton({
   canDelete: boolean;
   canClearContent: boolean;
   locked: boolean;
-  // Viewer identity, forwarded to the menu's Add to Diagram thumbnails.
+  // Viewer identity, forwarded to the menu's Add to Document thumbnails.
   selfId: string;
   otherDocuments: { id: string; name: string; savedAt?: number }[];
   folderNames: string[];

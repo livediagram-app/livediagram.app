@@ -6,7 +6,7 @@ import { ICON_CATEGORIES } from './icons';
 // to move (docs/specs/008-canvas/canvas-and-palette.md). Adding a fifth glyph there without a default animation
 // would give the user a static "animated" icon, which is the state this change
 // existed to fix; the check is here because the category list is what defines
-// the set, while the defaults live in the diagram package.
+// the set, while the defaults live in the document package.
 
 const animated = ICON_CATEGORIES.find((c) => c.id === 'animated')!;
 

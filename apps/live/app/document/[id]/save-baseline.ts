@@ -48,7 +48,7 @@ export type SaveBaselineRefs = {
 // journal it if a save is in flight.
 export function foldRemoteOpIntoBaseline(refs: SaveBaselineRefs, op: RoomOp): void {
   refs.tabs.current = applyRoomOpToTabs(refs.tabs.current, op);
-  if (op.kind === 'diagram-meta') refs.name.current = op.name;
+  if (op.kind === 'document-meta') refs.name.current = op.name;
   const journal = refs.journal.current;
   journal.next++;
   if (journal.open > 0) journal.entries.push({ n: journal.next, op });
@@ -67,7 +67,7 @@ export function baselineAfterSave(
   for (const { n, op } of journal.entries) {
     if (n <= mark) continue;
     tabs = applyRoomOpToTabs(tabs, op);
-    if (op.kind === 'diagram-meta') name = op.name;
+    if (op.kind === 'document-meta') name = op.name;
   }
   return { tabs, name };
 }

@@ -250,7 +250,7 @@ function BoxedElementViewImpl({
   // panel (docs/specs/012-collaboration/action-panel.md) shows its action on its face, so it is the badge.
   const isActionPanel = element.type === 'shape' && element.shape === 'action-card';
   const hasOpenAction = !isActionPanel && isOpenAction(element.action);
-  // Both 'tab' and 'diagram' kinds get the "linked" badge; the
+  // Both 'tab' and 'document' kinds get the "linked" badge; the
   // follow-handler dispatches off the kind via the parent's
   // onFollowLink callback. 'element' kind is the spec'd
   // jump-and-focus that isn't surfaced in the UI yet. A link-card is

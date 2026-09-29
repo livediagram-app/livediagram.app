@@ -35,7 +35,7 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 // The point of a panel over the anchored popover is that it STAYS. A popover
 // is one reader's transient view; a panel connected to what it is about sits
 // on the board, in the export, and in everyone's session, which is what makes
-// a remark part of the diagram rather than a note somebody left.
+// a remark part of the document rather than a note somebody left.
 //
 // Built from the modern collab parts ("The look"): the accent scope, the
 // CollabPanel frame (reflowing, like the Q&A board: resizing makes room for

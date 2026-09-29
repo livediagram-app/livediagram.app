@@ -39,7 +39,7 @@ describe('useFacilitator', () => {
     expect(onNotice).toHaveBeenCalledWith('renamed-p2 is now facilitating');
   });
 
-  it('starts a different diagram as a fresh session', () => {
+  it('starts a different document as a fresh session', () => {
     const { hook, deps } = setup();
     act(() =>
       hook.result.current.receiveFacilitator({ holder: 'p1', reason: 'state', token: 'tk' }),

@@ -203,9 +203,9 @@ function ShellChrome({ children }: { children: ReactNode }) {
       </div>
 
       {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): the shared
-          placement browser (docs/specs/006-document/offline-mode.md's Save In UI) for every diagram
+          placement browser (docs/specs/006-document/offline-mode.md's Save In UI) for every document
           (personal or team) and for folder re-parenting. It offers
-          "Personal Space" plus each team as a space (for diagram moves);
+          "Personal Space" plus each team as a space (for document moves);
           `moveDiagramTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}
@@ -238,7 +238,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
                 currentTeamId={currentTeamId}
                 currentFolderId={currentFolderId}
                 onCreateFolder={createMoveFolder}
-                // A diagram can be moved into a team made on the spot;
+                // A document can be moved into a team made on the spot;
                 // folder moves stay personal, and guests have no teams.
                 onCreateTeam={
                   teamsEnabled && moveTarget.kind === 'document'
@@ -287,7 +287,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
             window.location.assign(`/document/${id}`);
           }}
           onSelectShared={(id, shareCode) => {
-            // Non-owners can only open the diagram on the visitor URL.
+            // Non-owners can only open the document on the visitor URL.
             window.location.assign(`/document/${id}?s=${encodeURIComponent(shareCode)}`);
           }}
           onSelectFolder={(id) => {

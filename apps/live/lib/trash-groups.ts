@@ -24,7 +24,7 @@ export function trashGroups(listing: TrashListing): TrashGroup[] {
   if (personal.length > 0) {
     groups.push({
       key: 'personal',
-      title: 'Your diagrams',
+      title: 'Your documents',
       scope: { kind: 'personal' },
       telemetryType: 'Personal',
       rows: personal,

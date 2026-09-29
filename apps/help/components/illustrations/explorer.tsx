@@ -1,4 +1,4 @@
-// Explorer-category illustrations (docs/specs/018-help/help-app.md): the full-page diagram library, the
+// Explorer-category illustrations (docs/specs/018-help/help-app.md): the full-page document library, the
 // compact in-editor panel, the sidebar sections (Recent, Shared with you, My
 // Work, Team Spaces) and the Library views (image gallery, saved themes).
 // Composed only from the shared primitives so the house style holds.
@@ -15,7 +15,7 @@ import {
 // --- Scenes ------------------------------------------------------------------
 
 /** The whole full-page Explorer: sidebar of sections on the left, a breadcrumb
- *  and a grid of diagram cards on the right. */
+ *  and a grid of document cards on the right. */
 export function ExplorerOverview() {
   return (
     <Scene w={420} h={250} bg="plain">
@@ -91,7 +91,7 @@ export function ExplorerPanel() {
   );
 }
 
-/** A list of recently opened diagrams, newest first. */
+/** A list of recently opened documents, newest first. */
 export function RecentList() {
   return (
     <Scene w={420} h={224} bg="plain">
@@ -108,7 +108,7 @@ export function RecentList() {
         <SidebarGlyph kind="recent" active />
       </g>
       <Label x={56} y={33} size={10.5} weight={700} tone="strong">
-        Recent diagrams
+        Recent documents
       </Label>
       <g>
         <rect x={178} y={26} width={20} height={14} rx={7} className="fill-brand-500" />
@@ -461,7 +461,7 @@ export function ThemesLibrary() {
   );
 }
 
-/** The Unsorted folder: the synthetic home for diagrams not filed anywhere,
+/** The Unsorted folder: the synthetic home for documents not filed anywhere,
  *  shown highlighted at the top of Personal Space with a couple of loose docs in it. */
 export function UnsortedFolder() {
   return (
@@ -480,7 +480,7 @@ export function UnsortedFolder() {
       </Label>
       <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
       <SidebarRow x={40} y={54} w={336} label="Unsorted" glyph="folder" active count={2} />
-      <SidebarRow x={64} y={92} w={312} label="Untitled diagram" glyph="doc" />
+      <SidebarRow x={64} y={92} w={312} label="Untitled document" glyph="doc" />
       <SidebarRow x={64} y={122} w={312} label="Quick sketch" glyph="doc" />
       <SidebarRow x={40} y={158} w={336} label="Projects" glyph="folder" />
     </Scene>
@@ -519,7 +519,7 @@ export function TimelineFeed() {
       </Label>
 
       <TimelineEventBubble y={74} tint="sky" title="Comment Added" meta="Priya · Payments" />
-      <TimelineEventBubble y={112} tint="sky" title="Diagram Updated" meta="You worked on Auth" />
+      <TimelineEventBubble y={112} tint="sky" title="Document Updated" meta="You worked on Auth" />
 
       <circle cx={46} cy={158} r={4} className="fill-slate-300" />
       <Label x={58} y={158} size={10} weight={700} tone="muted">

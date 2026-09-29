@@ -77,10 +77,10 @@ export function registerPrompts(server: McpServer): void {
   server.registerPrompt(
     'show_my_document',
     {
-      title: 'Show my diagram',
-      description: 'Find one of your diagrams by name and display it inline.',
+      title: 'Show my document',
+      description: 'Find one of your documents by name and display it inline.',
       argsSchema: {
-        name: z.string().describe('Part of the diagram’s name.'),
+        name: z.string().describe('Part of the document’s name.'),
       },
     },
     ({ name }) => ({
@@ -90,7 +90,7 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text',
             text:
-              `Find my livediagram diagram matching "${name}" with find_documents, then ` +
+              `Find my livediagram document matching "${name}" with find_documents, then ` +
               `read_document it to show me the image and a link. If several match, list them ` +
               `and ask which one.`,
           },

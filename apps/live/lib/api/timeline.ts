@@ -11,9 +11,9 @@
 // callers who want to force a seed; the app just doesn't need it.)
 //
 // Offline Mode (docs/specs/006-document/offline-mode.md) is a deliberate no-op here rather than a
-// dispatch. `isOfflineId` keys on a DIAGRAM id, and this endpoint is
+// dispatch. `isOfflineId` keys on a DOCUMENT id, and this endpoint is
 // scoped to an owner — there is no id to dispatch on, and a
-// browser-only diagram never reaches the worker, so it has no server
+// browser-only document never reaches the worker, so it has no server
 // events to show. An offline-only user sees an empty feed, which is
 // the truth.
 

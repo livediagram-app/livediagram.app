@@ -1,4 +1,4 @@
-// Thin D1 wrapper, split by resource. Diagrams + tabs each have their
+// Thin D1 wrapper, split by resource. Documents + tabs each have their
 // own table — `diagrams.data` (the legacy single-row JSON blob) was
 // dropped in migration 0006. See docs/specs/006-document/per-tab-storage.md for the rollout that got us
 // here.

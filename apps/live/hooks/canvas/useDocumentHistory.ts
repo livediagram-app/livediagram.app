@@ -92,7 +92,7 @@ export function historyReset(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[]))
 }
 
 // Merge a remote peer's change into the present WITHOUT touching the
-// undo / redo stacks. Used by inbound `tab` / `diagram-meta` ops: peers
+// undo / redo stacks. Used by inbound `tab` / `document-meta` ops: peers
 // autosave ~every 600ms, so clearing history on each (what `reset` did)
 // made the local user's undo stack vanish several times a second during
 // any shared session. The retained past states predate the remote
@@ -153,7 +153,7 @@ export function useDocumentHistory(initialTabs: Tab[]): DocumentHistory {
 
   // Replace the present tab list with `tabs` and CLEAR history. For
   // genuine context switches (hydrating on mount, opening a different
-  // diagram, loading a tab) where prior undo states no longer apply.
+  // document, loading a tab) where prior undo states no longer apply.
   // Remote peer merges use `applyRemote` instead, to keep history.
   // Stable identity (setHistory never changes): the per-tab load effect
   // (usePerTabLoad) reaches this through resetTabs, and a fresh function

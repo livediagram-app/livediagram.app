@@ -85,7 +85,7 @@ describe('ShareDialog scope', () => {
     expect(options.map((o) => o.textContent)).toEqual(['All tabs', 'Pricing', 'Roadmap']);
   });
 
-  it('hides the scope control on a single-tab diagram', () => {
+  it('hides the scope control on a single-tab document', () => {
     renderDialog({ tabs: [TABS[0]!], links: [link()] });
     expect(screen.queryByRole('combobox', { name: 'Tabs this link opens' })).toBeNull();
     expect(screen.queryByRole('combobox', { name: /Tabs link .* opens/ })).toBeNull();
@@ -171,7 +171,7 @@ describe('ShareDialog passes', () => {
     await vi.waitFor(() => expect(row.className).toContain('animate-row-open'));
   });
 
-  it('says the diagram is private until a pass is live', () => {
+  it('says the document is private until a pass is live', () => {
     renderDialog();
     expect(screen.getByRole('status').textContent).toMatch(/Private: only you can open it/);
     cleanup();

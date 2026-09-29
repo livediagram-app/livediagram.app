@@ -1,5 +1,5 @@
 // The editor's element deep link (docs/specs/013-workspace/activity-page.md §1): the URL fragment an
-// Activity row opens a diagram with, and the parser the editor reads it
+// Activity row opens a document with, and the parser the editor reads it
 // back with.
 //
 //   /document/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments

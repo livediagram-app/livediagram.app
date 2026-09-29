@@ -1,6 +1,6 @@
-// The share-link family on a diagram: list, mint, revoke (one or all), the
+// The share-link family on a document: list, mint, revoke (one or all), the
 // share password, and extend. Every route here is owner-only and every one of
-// them changes who can reach the diagram, so the cases below are mostly about
+// them changes who can reach the document, so the cases below are mostly about
 // two questions — does the owner gate hold, and does the request get exactly
 // the link it asked for rather than a more permissive one.
 //
@@ -42,7 +42,7 @@ import { makeTestRouteContext } from './test-route-context';
 import { handleDocumentShareRoutes } from './document-share-routes';
 import { MAX_PASSWORD_LEN } from '../limits';
 
-// Records what the single-code revoke broadcasts into the diagram's room, so
+// Records what the single-code revoke broadcasts into the document's room, so
 // the test can read the op rather than trust a no-op stub.
 function roomEnv() {
   const broadcasts: unknown[] = [];
@@ -102,7 +102,7 @@ beforeEach(() => {
 });
 
 describe('handleDocumentShareRoutes — the owner gate', () => {
-  it('403s a caller who is not the diagram owner, on every verb', async () => {
+  it('403s a caller who is not the document owner, on every verb', async () => {
     db.getDocument.mockResolvedValue({ id: 'd_1', ownerId: 'someone-else', tabs: [] });
     for (const [method, path] of [
       ['GET', '/api/documents/d_1/share'],
@@ -125,7 +125,7 @@ describe('handleDocumentShareRoutes — the owner gate', () => {
     expect(db.setDocumentSharePassword).not.toHaveBeenCalled();
   });
 
-  it('404s when the diagram does not exist', async () => {
+  it('404s when the document does not exist', async () => {
     db.getDocument.mockResolvedValue(null);
     const { ctx } = ctxFor('GET', '/api/documents/d_1/share');
     expect((await handleDocumentShareRoutes(ctx))?.status).toBe(404);
@@ -336,7 +336,7 @@ describe('DELETE /api/documents/:id/share/:code — revoking one link', () => {
     expect(db.deleteShareLink).toHaveBeenCalled();
   });
 
-  it('404s a code that belongs to a different diagram, leaving that link alive', async () => {
+  it('404s a code that belongs to a different document, leaving that link alive', async () => {
     // Owning d_1 must not let you revoke somebody else's link by its code.
     db.getShareLinkIncludingExpired.mockResolvedValueOnce({ code: 'c1', documentId: 'd_other' });
     const { env, broadcasts } = roomEnv();
@@ -354,9 +354,9 @@ describe('POST /api/documents/:id/share/:code/extend (docs/specs/013-workspace/s
     expect(await res!.json()).toEqual({ link: { code: 'c1', expiresAt: 9_999 } });
   });
 
-  it('404s a code that belongs to a different diagram', async () => {
+  it('404s a code that belongs to a different document', async () => {
     // The code is a bearer value; without this check an owner could extend
-    // somebody else's link by quoting it against their own diagram id.
+    // somebody else's link by quoting it against their own document id.
     db.getShareLinkIncludingExpired.mockResolvedValue({ code: 'c1', documentId: 'other' });
     const { ctx } = ctxFor('POST', '/api/documents/d_1/share/c1/extend', { body: {} });
     expect((await handleDocumentShareRoutes(ctx))!.status).toBe(404);

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { UNTITLED_DOCUMENT_NAME } from '@livediagram/templates';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import type { useToast } from '@/hooks/ui/useToast';
 import {
@@ -12,8 +13,8 @@ import {
 } from '@/lib/api-client';
 
 // Persistence-facing state for the editor: the autosave status pill, the
-// diagram name (mirrored into the browser tab title), the Explorer's
-// owned + shared diagram lists, the activity/audit change log, and the
+// document name (mirrored into the browser tab title), the Explorer's
+// owned + shared document lists, the activity/audit change log, and the
 // transient import-error toast. Plus the two list-refresh helpers the
 // hydration + autosave paths call. A cohesive slice lifted out of
 // useEditorState — same pattern as usePanelLayout / useEditorDialogs.
@@ -29,36 +30,36 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   // write — drives the "Saved 2 minutes ago" relative-time string.
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [savedAt, setSavedAt] = useState<number | null>(null);
-  const [documentName, setDocumentName] = useState('Untitled diagram');
+  const [documentName, setDocumentName] = useState(UNTITLED_DOCUMENT_NAME);
   // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md) exactly as the api returned it, seeded on
   // load and never read again after useSlideDeck parses it. Kept as raw text
   // rather than a parsed Deck so hydration has one obvious moment, and a deck
-  // the parser cannot read costs the deck rather than the diagram.
+  // the parser cannot read costs the deck rather than the document.
   const [documentPresentation, setDocumentPresentation] = useState<string | null>(null);
-  // Reflect the diagram name in the browser tab so users with many
+  // Reflect the document name in the browser tab so users with many
   // tabs open can spot the right one. Falls back to the bare brand
   // until hydration lands the real name.
   useEffect(() => {
     document.title = documentName ? `${documentName} | livediagram` : 'livediagram';
   }, [documentName]);
 
-  // Every diagram in the local store. Used by the Explorer to render its
-  // list. Refreshed on hydration and after we save the current diagram
-  // (so the Explorer's "Your diagrams" section reflects renames + first
+  // Every document in the local store. Used by the Explorer to render its
+  // list. Refreshed on hydration and after we save the current document
+  // (so the Explorer's "Your documents" section reflects renames + first
   // saves in real time).
   const [documentList, setDocumentList] = useState<DocumentListItem[]>([]);
-  // True while the very first diagram-list fetch is in flight, so the
-  // Explorer can render a skeleton instead of an empty "no diagrams"
+  // True while the very first document-list fetch is in flight, so the
+  // Explorer can render a skeleton instead of an empty "no documents"
   // state. We only flip this off — subsequent refreshes don't reset it
   // because they're triggered by saves and shouldn't blank the list.
   const [documentListLoading, setDocumentListLoading] = useState(true);
-  // Diagrams shared with the current owner. Surfaced in the
+  // Documents shared with the current owner. Surfaced in the
   // Explorer's "Shared with you" accordion. Fetched alongside the
-  // owned-diagram list and refreshed when the owner opens a new
+  // owned-document list and refreshed when the owner opens a new
   // share link in this tab.
   const [sharedDocuments, setSharedDocuments] = useState<SharedWithItem[]>([]);
-  // Per-diagram audit log surfaced in the Activity Panel. Newest first.
-  // Hydrated from the API for existing diagrams; appended to on every
+  // Per-document audit log surfaced in the Activity Panel. Newest first.
+  // Hydrated from the API for existing documents; appended to on every
   // commit. See docs/specs/012-collaboration/activity-and-audit.md.
   const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
   const [changeLogLoading, setChangeLogLoading] = useState(true);
@@ -97,12 +98,12 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     // user who keeps working on changes that will never leave the browser.
     if (saveStatus === 'forbidden') {
       toast.error(
-        'You no longer have permission to edit this diagram, so your recent changes aren’t being saved. Export a copy to keep them.',
+        'You no longer have permission to edit this document, so your recent changes aren’t being saved. Export a copy to keep them.',
       );
     }
   }, [saveStatus, toast]);
 
-  // Diagram-list refresh, fired after every autosave so the
+  // Document-list refresh, fired after every autosave so the
   // Explorer's "Updated X ago" timestamps stay fresh. Folders are
   // explicitly NOT refetched here — they only change via folder
   // mutations (create / rename / delete / move) which manage state

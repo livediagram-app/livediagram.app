@@ -133,7 +133,7 @@ describe('mentions in the composer', () => {
     expect(field.value).toBe('@pri');
   });
 
-  it('explains why nobody can be mentioned on a personal diagram', () => {
+  it('explains why nobody can be mentioned on a personal document', () => {
     const { type } = setup(false);
     type('@');
     expect(screen.getByText(MENTION_UNAVAILABLE_HINT)).toBeTruthy();

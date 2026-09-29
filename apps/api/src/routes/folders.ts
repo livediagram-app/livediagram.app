@@ -125,7 +125,7 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
       const doomed = await getFolder(env, id);
       await deleteFolder(env, id);
       if (doomed) {
-        // Cascade first, then the tombstone, exactly as a diagram delete
+        // Cascade first, then the tombstone, exactly as a document delete
         // does (docs/specs/013-workspace/timeline.md §3.5): the folder's own earlier cards go, and
         // the one row that answers "what happened to it?" stays.
         ctx.waitUntil?.(

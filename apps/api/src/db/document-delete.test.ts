@@ -9,7 +9,7 @@ import { deleteAccount } from './account';
 import { deleteDocument } from './documents';
 import { deleteTabRow, linkTabToDocument, upsertTab } from './tabs';
 
-// Deleting a diagram removes its links, never a tab another diagram still
+// Deleting a document removes its links, never a tab another document still
 // holds (docs/specs/006-document/tab-document-many-to-many.md, "Delete a
 // diagram"). Proven on a real SQLite with foreign keys on: the loss this
 // guards against was a five-table cascade that no recorded-SQL test could see.
@@ -95,7 +95,7 @@ describe('deleteDocument', () => {
     expect(tabFootprint(db.sql, 't1')).toEqual(GONE);
   });
 
-  it('keeps a tab it shares with another diagram, whole', async () => {
+  it('keeps a tab it shares with another document, whole', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
     liveDoc(db.sql, 'B');
@@ -112,7 +112,7 @@ describe('deleteDocument', () => {
     });
   });
 
-  it('keeps a tab that was unlinked from the diagram it was created in', async () => {
+  it('keeps a tab that was unlinked from the document it was created in', async () => {
     // The tab no longer shows in A at all, so deleting A must not touch it.
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
@@ -133,7 +133,7 @@ describe('deleteDocument', () => {
     });
   });
 
-  it('leaves the survivor where it sits in the other diagram', async () => {
+  it('leaves the survivor where it sits in the other document', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
     liveDoc(db.sql, 'B');
@@ -152,7 +152,7 @@ describe('deleteDocument', () => {
     expect({ ...row }).toEqual({ order_index: 1, folder: 'Ref' });
   });
 
-  it('removes a shared tab once the last diagram holding it goes', async () => {
+  it('removes a shared tab once the last document holding it goes', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
     liveDoc(db.sql, 'B');
@@ -166,7 +166,7 @@ describe('deleteDocument', () => {
   });
 });
 
-// Removal proper is the permanent delete (a plain delete moves the diagram to
+// Removal proper is the permanent delete (a plain delete moves the document to
 // the Trash, docs/specs/013-workspace/trash.md) and Take Offline.
 describe('DELETE /api/documents/:id?permanent=true with a shared tab', () => {
   function del(db: SqliteD1, opts: Parameters<typeof makeTestRouteContext>[2]) {
@@ -193,7 +193,7 @@ describe('DELETE /api/documents/:id?permanent=true with a shared tab', () => {
     expect(tabFootprint(db.sql, 'shared').body).toBe(1);
   });
 
-  it('keeps the tab when a teammate deletes a team diagram', async () => {
+  it('keeps the tab when a teammate deletes a team document', async () => {
     const db = sqliteD1();
     insert(db.sql, 'teams', { id: 'team', name: 'Team', created_at: T0, updated_at: T0 });
     insert(db.sql, 'team_members', {
@@ -218,7 +218,7 @@ describe('DELETE /api/documents/:id?permanent=true with a shared tab', () => {
     });
   });
 
-  it('keeps the tab when the diagram is taken offline', async () => {
+  it('keeps the tab when the document is taken offline', async () => {
     const db = sqliteD1();
     await sharedFromA(db, 'owner');
 
@@ -234,10 +234,10 @@ describe('DELETE /api/documents/:id?permanent=true with a shared tab', () => {
   });
 });
 
-describe('deleteAccount with a tab shared into someone else’s diagram', () => {
+describe('deleteAccount with a tab shared into someone else’s document', () => {
   it('keeps the shared tab and removes the rest', async () => {
-    // A diagram moved out of a team, or transferred on a teammate's account
-    // deletion, can hold a tab whose other diagrams belong to the leaver.
+    // A document moved out of a team, or transferred on a teammate's account
+    // deletion, can hold a tab whose other documents belong to the leaver.
     const db = sqliteD1();
     liveDoc(db.sql, 'mine', 'user_leaver');
     liveDoc(db.sql, 'theirs', 'user_stays');

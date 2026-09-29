@@ -101,7 +101,7 @@ export function useTemplateFlow(opts: {
   };
 
   const chooseTemplate = async (kind: TemplateKind, name?: string, themeId?: string) => {
-    // Identity-only mode: the visitor is joining an existing diagram.
+    // Identity-only mode: the visitor is joining an existing document.
     // No template scaffold, no theme application — just commit the name
     // and dismiss the modal.
     if (templatePickerMode === 'identity') {
@@ -130,7 +130,7 @@ export function useTemplateFlow(opts: {
       track('Theme', 'Changed', themeTelemetryLabel(themeId));
     }
     // Templates flow: applying a template / theme to an existing tab.
-    // The diagram already exists in D1; no mint required.
+    // The document already exists in D1; no mint required.
     if (name && name !== selfParticipant.name) {
       setSelfParticipant((p) => ({ ...p, name }));
     }
@@ -140,7 +140,7 @@ export function useTemplateFlow(opts: {
     // Dynamic-import the heavy builders module only when the user
     // actually picks a template. The ~1700 lines of build* code stays
     // out of the editor's initial chunk; returning users opening an
-    // existing diagram never download it.
+    // existing document never download it.
     const { buildTemplate } = await import('@/lib/template-builders');
     const rawElements = buildTemplate(kind, centre.x, centre.y);
     const theme = themeId ? getTheme(themeId) : null;

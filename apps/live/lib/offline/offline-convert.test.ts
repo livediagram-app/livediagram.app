@@ -3,7 +3,7 @@ import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 
 // Offline Mode conversions (docs/specs/006-document/offline-mode.md). "Take offline" DELETES the server copy,
 // so the ordering here is the difference between a failed conversion and a lost
-// diagram. The module's header states the rules; nothing checked them.
+// document. The module's header states the rules; nothing checked them.
 //
 // These mock the collaborators on purpose. The assertions are about SEQUENCE
 // and ROLLBACK — did the destination get written before the source was removed,
@@ -76,7 +76,7 @@ beforeEach(() => {
 
 describe('saveOfflineToCloud (offline -> cloud)', () => {
   it('creates the cloud copy before removing the local one', () => {
-    // A network failure part-way must leave the offline diagram intact, so the
+    // A network failure part-way must leave the offline document intact, so the
     // destination has to exist before the source goes.
     return saveOfflineToCloud('d1', 'owner').then(() => {
       expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument']);
@@ -121,12 +121,12 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     });
   });
 
-  it('stars nothing for an unstarred diagram', async () => {
+  it('stars nothing for an unstarred document', async () => {
     await saveOfflineToCloud('d1', 'owner');
     expect(apiClient.apiSetFavourite).not.toHaveBeenCalled();
   });
 
-  it('refuses a diagram that is not in the local store', async () => {
+  it('refuses a document that is not in the local store', async () => {
     vi.mocked(store.offlineGetRecord).mockResolvedValueOnce(undefined as never);
     await expect(saveOfflineToCloud('missing', 'owner')).rejects.toThrow(/not found/i);
     expect(apiClient.apiCreateDocument).not.toHaveBeenCalled();
@@ -150,7 +150,7 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     });
   });
 
-  it('keeps a starred diagram starred on the offline record', async () => {
+  it('keeps a starred document starred on the offline record', async () => {
     vi.mocked(apiClient.apiListFavourites).mockResolvedValueOnce(['d1']);
     await takeCloudOffline('d1', 'owner');
     expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({ favourite: true });
@@ -162,7 +162,7 @@ describe('takeCloudOffline (cloud -> offline)', () => {
   });
 
   it('embeds images before the server delete, never after', async () => {
-    // Once the diagram row is gone its images count as unused, and the api's
+    // Once the document row is gone its images count as unused, and the api's
     // 30-day reaper deletes the bytes the offline copy still points at.
     await takeCloudOffline('d1', 'owner');
     const embedOrder = vi.mocked(images.embedTabImages).mock.invocationCallOrder[0]!;
@@ -182,7 +182,7 @@ describe('takeCloudOffline (cloud -> offline)', () => {
   });
 
   it('rolls the local copy back when the server delete fails', async () => {
-    // Both copies registered under one id would shadow the live cloud diagram
+    // Both copies registered under one id would shadow the live cloud document
     // behind a stale offline fork. Data-safe: the server still holds it all.
     vi.mocked(core.apiDelete).mockRejectedValueOnce(new Error('500'));
     await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow();
@@ -197,7 +197,7 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow('500');
   });
 
-  it('refuses a diagram the server does not have', async () => {
+  it('refuses a document the server does not have', async () => {
     vi.mocked(apiClient.apiLoadDocument).mockResolvedValueOnce(null as never);
     await expect(takeCloudOffline('nope', 'owner')).rejects.toThrow(/not found/i);
     expect(store.offlinePutRecord).not.toHaveBeenCalled();
@@ -205,7 +205,7 @@ describe('takeCloudOffline (cloud -> offline)', () => {
 
   it('aborts when a tab fails to load, leaving the server copy intact', async () => {
     // This used to assert the opposite — that the conversion carried on and
-    // deleted the server diagram — under the name "keeps going … rather than
+    // deleted the server document — under the name "keeps going … rather than
     // losing the rest". Carrying on is what loses: the offline record is
     // written from the tabs that survived, the server copy is deleted, and the
     // failed tab's elements exist nowhere. Nothing is recoverable and the user
@@ -230,7 +230,7 @@ describe('conversions declare themselves to the worker', () => {
   // Both conversions reuse ordinary endpoints, so the worker cannot tell them
   // from a real delete / a real create unless the request says so — and
   // undeclared it recorded exactly that, telling the owner in danger red that a
-  // diagram they had just moved into this browser was deleted (docs/specs/006-document/offline-mode.md +
+  // document they had just moved into this browser was deleted (docs/specs/006-document/offline-mode.md +
   // docs/specs/013-workspace/timeline.md §4.2).
   it('marks the take-offline DELETE as an offline conversion', async () => {
     await takeCloudOffline('d1', 'owner');

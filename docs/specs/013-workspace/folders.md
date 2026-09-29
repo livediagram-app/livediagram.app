@@ -1,15 +1,15 @@
 # Folders
 
-Diagrams in the Explorer are organised into a tree of folders. Every
-diagram belongs to exactly one folder (or none); folders themselves
-can nest under other folders. Diagrams without an explicit folder
+Documents in the Explorer are organised into a tree of folders. Every
+document belongs to exactly one folder (or none); folders themselves
+can nest under other folders. Documents without an explicit folder
 land in a conceptual default called **Unsorted**.
 
 ## Motivation
 
-The Explorer's Recent Diagrams accordion is fine for the last few
-diagrams the user touched, but as the library grows it stops being a
-useful surface for "find that diagram I made three weeks ago". A
+The Explorer's Recent Documents accordion is fine for the last few
+documents the user touched, but as the library grows it stops being a
+useful surface for "find that document I made three weeks ago". A
 single flat list also has no story for users who want to group work
 by project / customer / topic.
 
@@ -24,20 +24,20 @@ In scope:
 
 - A new `folders` table in D1 with a self-referential `parent_id`
   for nesting.
-- A nullable `folder_id` column on `diagrams`.
+- A nullable `folder_id` column on `documents`.
 - REST endpoints to create / rename / delete / move folders, plus a
-  move-diagram-to-folder endpoint.
+  move-document-to-folder endpoint.
 - Explorer UI: recursive accordion tree under a "Folders" section.
-  Diagrams without a folder render under a synthetic "Unsorted"
-  section that's always present (so freshly-created diagrams have
+  Documents without a folder render under a synthetic "Unsorted"
+  section that's always present (so freshly-created documents have
   somewhere obvious to be).
-- A per-diagram-row "Move to folder…" menu item. The picker is a
+- A per-document-row "Move to folder…" menu item. The picker is a
   centred modal (`MoveToFolderDialog`) around the **shared placement
   browser** — the same two-level space -> folder tile-grid browse as
-  the New Diagram wizard's Save In step ([Offline Mode](../006-document/offline-mode.md),
+  the New Document wizard's Save In step ([Offline Mode](../006-document/offline-mode.md),
   `components/placement/PlacementBrowser`), so the product has exactly
-  one way to choose where a diagram lives. Spaces first (Personal Space +
-  each team, [Team shared diagrams](team-shared-documents.md), on an overview that is shown even when Personal
+  one way to choose where a document lives. Spaces first (Personal Space +
+  each team, [Team shared documents](team-shared-documents.md), on an overview that is shown even when Personal
   Space is the only space, so the choice is deliberate and the screen has
   room for a create-team option; only team-scoped surfaces skip it and
   open straight inside their team), then the folder drill-down with a
@@ -56,8 +56,8 @@ In scope:
   stays disabled until the choice changes, and double-clicking a
   destination card commits the move in one gesture. Shared by the
   /explorer page, the floating Explorer panel, and the team library —
-  and every diagram-move surface offers every space (Personal Space + each
-  team, [Team shared diagrams](team-shared-documents.md)), so a diagram is never trapped in a scope; only folder
+  and every document-move surface offers every space (Personal Space + each
+  team, [Team shared documents](team-shared-documents.md)), so a document is never trapped in a scope; only folder
   moves stay scoped to their own tree. It replaced the earlier
   filterable indented-tree modal, which itself outgrew an anchored
   popover.
@@ -68,9 +68,9 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 
 | Section                     | Route                                                       |
 | --------------------------- | ----------------------------------------------------------- |
-| Recent diagrams             | `/explorer/recent` (default)                                |
+| Recent documents            | `/explorer/recent` (default)                                |
 | Shared with you             | `/explorer/shared`                                          |
-| All diagrams                | `/explorer/all` (route kept for deep links; no sidebar row) |
+| All documents               | `/explorer/all` (route kept for deep links; no sidebar row) |
 | Unsorted                    | `/explorer/unsorted`                                        |
 | Generated                   | `/explorer/generated`                                       |
 | A folder                    | `/explorer/folder?id=<id>`                                  |
@@ -78,16 +78,16 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Invites ([Teams](teams.md)) | `/explorer/invites`                                         |
 | Image gallery               | `/explorer/images`                                          |
 
-`/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent diagrams", "Image gallery"). Section headers, top to bottom: **"Quick find"** (Timeline, [Timeline](timeline.md); Activity, [Activity page](activity-page.md); Recent diagrams; Favourites; Shared with you), **"Personal Space"** (the personal tree — Unsorted + the root folders directly, no "All diagrams" parent row; contrasts with team libraries, [Team shared diagrams](team-shared-documents.md)), **"Teams"** ([Teams](teams.md)), and **"Library"**.
+`/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent documents", "Image gallery"). Section headers, top to bottom: **"Quick find"** (Timeline, [Timeline](timeline.md); Activity, [Activity page](activity-page.md); Recent documents; Favourites; Shared with you), **"Personal Space"** (the personal tree — Unsorted + the root folders directly, no "All documents" parent row; contrasts with team libraries, [Team shared documents](team-shared-documents.md)), **"Teams"** ([Teams](teams.md)), and **"Library"**.
 
 Out of scope (V1):
 
 - Drag-and-drop reordering between folders.
 - Shared / collaborative folder ownership — folders are scoped to
-  the owner just like diagrams.
+  the owner just like documents.
 - Per-folder permissions or sharing.
 - Folder colour / icon customisation.
-- Bulk move (multi-select diagrams + assign).
+- Bulk move (multi-select documents + assign).
 
 ## Data model
 
@@ -106,10 +106,10 @@ diagrams
   source      TEXT NULL   -- provenance: NULL = user-made; 'ai' / 'mcp' = generated
 ```
 
-- `folder_id IS NULL` means the diagram is in Unsorted. Unsorted has
+- `folder_id IS NULL` means the document is in Unsorted. Unsorted has
   no row in the folders table — it's a virtual bucket so users can't
   accidentally delete it.
-- `source` records how the diagram came to exist (migration 0028): NULL
+- `source` records how the document came to exist (migration 0028): NULL
   for one a person made in the editor; `'mcp'` for one an external AI tool
   created through the MCP server ([MCP server](../015-api/mcp-server.md)); `'ai'` reserved for the
   in-editor AI assistant (no producer today). Set once on create and never
@@ -122,20 +122,20 @@ Two folders in **Personal Space** aren't rows in the `folders` table — they're
 live views the Explorer always shows (badge hidden at zero), each with an
 info block under its breadcrumb explaining why it exists:
 
-- **Unsorted** — `folder_id IS NULL AND source IS NULL`. Diagrams not filed
+- **Unsorted** — `folder_id IS NULL AND source IS NULL`. Documents not filed
   into a folder and not generated.
 - **Generated** — `source IS NOT NULL AND folder_id IS NULL`. AI-made
-  diagrams (the AI assistant / MCP server) the user hasn't filed yet.
+  documents (the AI assistant / MCP server) the user hasn't filed yet.
   Mirrors Unsorted (folder-null), so the two synthetic buckets are mutually
-  exclusive: a generated diagram shows in Generated, not Unsorted, until the
+  exclusive: a generated document shows in Generated, not Unsorted, until the
   user files it into a real folder of their own, at which point it leaves
-  Generated just as a filed diagram leaves Unsorted. Route:
+  Generated just as a filed document leaves Unsorted. Route:
   `/explorer/generated`. Neither dynamic folder offers New folder / New
-  diagram affordances (you don't author into them).
+  document affordances (you don't author into them).
 - `parent_id IS NULL` means the folder is at the tree root.
 - `ON DELETE SET NULL` on both `parent_id` and `folder_id`: deleting
   a folder doesn't delete its contents. Direct subfolders become
-  root-level; direct diagrams fall to Unsorted. Grandchildren keep
+  root-level; direct documents fall to Unsorted. Grandchildren keep
   their existing parents (they were never pointing at the deleted
   folder).
 - Folder name uniqueness is **not** enforced — sibling folders can
@@ -152,17 +152,17 @@ the `folder_id` column.
 
 All endpoints continue the existing `X-Owner-Id` convention.
 
-| Method | Path                       | Body                                 | Returns                 |
-| ------ | -------------------------- | ------------------------------------ | ----------------------- |
-| GET    | `/api/folders`             |                                      | `{ folders: Folder[] }` |
-| POST   | `/api/folders`             | `{ id, name, parentId? }`            | `{ folder: Folder }`    |
-| PUT    | `/api/folders/:id`         | `{ name?, parentId? }` (cycle check) | `{ folder: Folder }`    |
-| DELETE | `/api/folders/:id`         |                                      | 204                     |
+| Method | Path                        | Body                                 | Returns                 |
+| ------ | --------------------------- | ------------------------------------ | ----------------------- |
+| GET    | `/api/folders`              |                                      | `{ folders: Folder[] }` |
+| POST   | `/api/folders`              | `{ id, name, parentId? }`            | `{ folder: Folder }`    |
+| PUT    | `/api/folders/:id`          | `{ name?, parentId? }` (cycle check) | `{ folder: Folder }`    |
+| DELETE | `/api/folders/:id`          |                                      | 204                     |
 | PUT    | `/api/documents/:id/folder` | `{ folderId \| null }`               | 204                     |
 
 `Folder` = `{ id, name, parentId, createdAt, updatedAt }`.
 
-`GET /api/documents` is extended to include `folderId` on each row (camelCase DTO; null for Unsorted). No new endpoint needed for "diagrams in folder X": the Explorer already has the full list client-side.
+`GET /api/documents` is extended to include `folderId` on each row (camelCase DTO; null for Unsorted). No new endpoint needed for "documents in folder X": the Explorer already has the full list client-side.
 
 ## Explorer UI — two surfaces
 
@@ -171,14 +171,14 @@ layouts because they're solving different problems.
 
 ### Floating Explorer panel (editor + `/new`)
 
-This is the docked side-panel on the editor and the new-diagram
+This is the docked side-panel on the editor and the new-document
 flow. Space is tight; the user is mid-task; "find this thing fast"
 beats "browse my whole library." The panel header carries a single
 **⋯** button, left of the help `?`, whose click-open menu of full-width
-icon-left rows holds the diagram's and the app's verbs in three bands
+icon-left rows holds the document's and the app's verbs in three bands
 split by separators:
 
-1. **New Diagram**, **Open Explorer** (the full-page Explorer's Recent
+1. **New Document**, **Open Explorer** (the full-page Explorer's Recent
    list, `/explorer/recent`).
 2. **Share** (owners only, the header Share button's gate) and
    **Export** (the active tab, as the tab menu's Export).
@@ -188,56 +188,56 @@ split by separators:
 
 A row whose handler the host doesn't pass is absent, and a band left
 empty takes its separator with it (the Explorer behind an error screen
-has no diagram, so no Share / Export). This replaced a **+ New** chip
+has no document, so no Share / Export). This replaced a **+ New** chip
 whose hover-open popover held only band 1, and took GitHub off the
 editor's bottom bar, which keeps Search, Settings and the appearance
 toggle ([Live app](../007-editor/live-app.md)). The full-page Explorer's bottom bar keeps its GitHub
 link.
 
-- The existing "Current Diagram" and "Recent Diagrams" sections stay
+- The existing "Current Document" and "Recent Documents" sections stay
   unchanged at the top.
 - A new "Folders" accordion sits below Recents. Its badge shows the
   total number of user folders (does not include Unsorted).
 - Inside the Folders section: a recursive tree. The root level
   contains every folder where `parent_id IS NULL`, plus the
   synthetic Unsorted bucket. Each folder is itself an accordion;
-  expanding it reveals child folders and any diagrams directly in
+  expanding it reveals child folders and any documents directly in
   that folder. Expansion state lives in the Explorer's local state
   (not persisted) so reloads start collapsed and the panel stays
   compact.
 - Each folder row shows the folder name + a count badge for the
-  combined number of direct children (folders + diagrams). A folder
+  combined number of direct children (folders + documents). A folder
   with nothing inside shows no expand chevron (its slot stays, so
   names line up).
 - The Teams tab's folders are the **same folder node** as the personal
   tree, handed a team's rows: same count badge, same chevron rule,
-  same right-click menu, and team diagram rows play the same slide-out
+  same right-click menu, and team document rows play the same slide-out
   when deleted. What differs is data, not markup: team folders take
   no drag-and-drop, and Show in Explorer opens the team page.
-- **Right-clicking anywhere on a folder or diagram row** opens that row's ellipsis menu (suppressing the browser's default context menu), anchored to the row's ellipsis button: the same menu the `⋯` click opens. Applies in both the floating Explorer panel and the full-page `/explorer`, including the page's sidebar folder tree (a no-op while a row is being renamed). Every row and card shares one `useRowMenu` hook and one `EllipsisTriggerButton`, so the trigger always reports `aria-expanded` and, on the panel's hover-revealed rows, stays visible while its menu is open.
+- **Right-clicking anywhere on a folder or document row** opens that row's ellipsis menu (suppressing the browser's default context menu), anchored to the row's ellipsis button: the same menu the `⋯` click opens. Applies in both the floating Explorer panel and the full-page `/explorer`, including the page's sidebar folder tree (a no-op while a row is being renamed). Every row and card shares one `useRowMenu` hook and one `EllipsisTriggerButton`, so the trigger always reports `aria-expanded` and, on the panel's hover-revealed rows, stays visible while its menu is open.
 - Folder-row ellipsis menu: Rename, Delete, "Move to folder…".
-- Deleting a diagram moves it to the [Trash](trash.md) for 30 days. A diagram restored after its folder was deleted lands in Unsorted (its `folder_id` was already cleared by the folder delete's `SET NULL`).
-  Rename is inline (same pattern as the diagram-row rename). Delete
+- Deleting a document moves it to the [Trash](trash.md) for 30 days. A document restored after its folder was deleted lands in Unsorted (its `folder_id` was already cleared by the folder delete's `SET NULL`).
+  Rename is inline (same pattern as the document-row rename). Delete
   pops a confirmation dialog ("Delete this folder?" with the
-  cascade rules in the body: diagrams inside move to Unsorted,
+  cascade rules in the body: documents inside move to Unsorted,
   subfolders promote to root, the folder row itself goes) via the
   shared `useConfirm` hook. The cascade is genuinely non-destructive
   for the contents, but a folder vanishing without a tap-back is
   startling enough that the confirmation is worth the extra click;
   both the editor and the standalone `/explorer` page wire delete
   through the same prompt.
-- Diagram-row ellipsis menu gains a "Change Folder" sub-action that
+- Document-row ellipsis menu gains a "Change Folder" sub-action that
   opens the shared placement browser (personal folders + Unsorted,
   and teams with their folders — see the move-picker note above).
   Picking one calls `PUT /api/documents/:id/folder`.
-- **Drag-and-drop**: diagram rows are HTML5-draggable. Drop targets
+- **Drag-and-drop**: document rows are HTML5-draggable. Drop targets
   are folder headers (any nested depth) and the synthetic Unsorted
   header. Drag-over highlights the target with a brand-blue ring so
-  the user sees where the diagram will land. Drop fires the same
+  the user sees where the document will land. Drop fires the same
   `onMoveDocumentToFolder(documentId, targetFolderId)` callback the
   picker uses, so the move travels through the same API path and
   optimistic update. Drag transfer uses a custom MIME type
-  (`application/x-livediagram-id`) so dragging a diagram never
+  (`application/x-livediagram-id`) so dragging a document never
   triggers a browser navigation when dropped outside any target.
 - A "New folder" button sits at the top of the Folders section
   and creates root-level folders. Each folder's own ellipsis offers
@@ -248,7 +248,7 @@ link.
 This is the full-page library view. Open to both guests and signed-in
 users: the owner id resolves the same way every other surface in the
 live app does (Clerk userId when signed in, the `livediagram:v2:self-id`
-localStorage UUID otherwise), so a guest sees the diagrams + folders +
+localStorage UUID otherwise), so a guest sees the documents + folders +
 Image Gallery their per-browser id owns. AuthControls in the page header
 surfaces a "Sign in" CTA for guests who want to upgrade. The page is
 modelled on Windows Explorer: a sidebar tree drives navigation, a
@@ -260,10 +260,10 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 `UserPreferences` dialog the editor uses ([User preferences](../007-editor/user-preferences.md)).
 
 - **Sidebar (left, fixed width):**
-  - "Recent" — virtual entry, last N most-recently-saved diagrams
+  - "Recent" — virtual entry, last N most-recently-saved documents
     (personal + team + shared-with-you, interleaved by recency), with
     a count badge.
-  - **"Personal Space"** — there is no "All diagrams" parent row; Unsorted and
+  - **"Personal Space"** — there is no "All documents" parent row; Unsorted and
     the root folders render directly under the heading as a recursive
     tree with chevron expand/collapse and indented nesting. Each folder
     row carries an ellipsis menu with Rename, New subfolder, Change
@@ -277,36 +277,36 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   - "Shared with you" — virtual entry, only present when the user
     has at least one accepted share.
 - **Right pane:**
-  - Breadcrumb showing the path from "All diagrams" through every
+  - Breadcrumb showing the path from "All documents" through every
     ancestor of the focused folder. Each segment is a button that
     jumps the focus.
   - List view with four columns: Name, Updated, Visibility, action.
-    The Visibility column shows a "Shared" badge on diagrams that
+    The Visibility column shows a "Shared" badge on documents that
     have an active share link (blank otherwise), and is hidden below
     the mobile breakpoint to keep rows readable. Direct subfolders and
-    direct diagrams render in the same list (Windows Explorer pattern).
-    Folder rows open the folder; diagram rows open the diagram.
+    direct documents render in the same list (Windows Explorer pattern).
+    Folder rows open the folder; document rows open the document.
   - "Shared with me" replaces the list with a Role + Updated table
-    of accepted shares; each row is a link into the shared diagram.
+    of accepted shares; each row is a link into the shared document.
   - "Image Gallery" replaces the list with a drop-zone (upload via
     drag, paste, or click) above a grid of thumbnails. Each tile
     shows the file name, dimensions, byte size, a delete action,
-    and a "Used in N diagrams" badge backed by `GET /api/images/usage`
+    and a "Used in N documents" badge backed by `GET /api/images/usage`
     (see [11-api.md](../015-api/api.md)). The badge expands inline to a
-    list of links into those diagrams so the user can spot
+    list of links into those documents so the user can spot
     orphaned bytes that are safe to delete. Upload validation +
     hashing share the editor's path via `apps/live/lib/upload-image.ts`.
 - **Create:** a single floating action button at the bottom-right
-  opens a popover with "New diagram" and "New folder" (or "New
-  subfolder" when a folder is focused). The diagrams-page FAB on the
-  editor / new-diagram routes is unrelated.
-- **Move:** diagrams and folders share the move-to-folder picker.
+  opens a popover with "New document" and "New folder" (or "New
+  subfolder" when a folder is focused). The documents-page FAB on the
+  editor / new-document routes is unrelated.
+- **Move:** documents and folders share the move-to-folder picker.
   For a folder move, the target folder's own subtree is filtered
   out client-side so cycle-creating choices don't appear (the server
   still rejects them via the cycle check on `PUT /api/folders/:id`).
 - **Selection state** (which sidebar node is focused, which
   branches are expanded) is local React state — it doesn't survive
-  reload. Default selection: "All diagrams".
+  reload. Default selection: "All documents".
 
 Empty states:
 
@@ -317,8 +317,8 @@ Empty states:
 ## Non-goals for V1
 
 - Folder-scoped sharing. The folder is an organisational shell for
-  the owner; share state remains per-diagram.
-- Bulk move (multi-select diagrams + assign). One-at-a-time menu
+  the owner; share state remains per-document.
+- Bulk move (multi-select documents + assign). One-at-a-time menu
   action for now.
 - Persisted expansion state across reloads. V1 always starts
   collapsed for a clean entry point.

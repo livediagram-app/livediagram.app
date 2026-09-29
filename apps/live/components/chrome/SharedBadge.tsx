@@ -3,11 +3,11 @@
 import { useState, type HTMLAttributes } from 'react';
 import { Chip, PrivateDotIcon, SharedDotIcon } from '@livediagram/ui';
 
-// The visibility pill rendered beside the diagram title, split out of
-// EditorHeader. Share links win: a shared team diagram reads "Shared" as
+// The visibility pill rendered beside the document title, split out of
+// EditorHeader. Share links win: a shared team document reads "Shared" as
 // normal; "Team" covers the team-but-unshared case where "Private" would be a
 // lie (every joined member can open it); "Offline" (docs/specs/006-document/offline-mode.md) supersedes
-// "Private" for browser-only diagrams. Hovering (or focusing) the pill opens a
+// "Private" for browser-only documents. Hovering (or focusing) the pill opens a
 // legend popover explaining every badge, with the current one highlighted, so
 // the four states can be compared in place instead of hunting each hover card.
 
@@ -124,7 +124,7 @@ export function SharedBadge({
           className="absolute left-1/2 top-full z-10 mt-2 w-80 -translate-x-1/2 rounded-lg border border-slate-200 bg-white p-2 text-left shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40"
         >
           <p className="px-2 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
-            Diagram visibility
+            Document visibility
           </p>
           <ul className="flex flex-col gap-0.5">
             {LEGEND_ORDER.map((s) => {

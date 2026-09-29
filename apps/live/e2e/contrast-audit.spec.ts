@@ -23,10 +23,10 @@ function expectAA(report: ContrastReport, screen: string): void {
 }
 
 test.describe('Contrast audit, dark mode', () => {
-  test('the New Diagram wizard', async ({ page, pageErrors }) => {
+  test('the New Document wizard', async ({ page, pageErrors }) => {
     await darkVisitor(page);
     await page.goto('/new');
-    await page.getByText('New Diagram', { exact: false }).first().waitFor();
+    await page.getByText('New Document', { exact: false }).first().waitFor();
     await expect(page.locator('html')).toHaveClass(/dark/);
     expectAA(await auditContrast(page), 'wizard, template step');
 
@@ -64,7 +64,7 @@ test.describe('Contrast audit, dark mode', () => {
     await page.keyboard.press('Escape');
 
     await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share this diagram' }).waitFor();
+    await page.getByRole('dialog', { name: 'Share this document' }).waitFor();
     expectAA(await auditContrast(page), 'Share dialog');
     await page.keyboard.press('Escape');
     expectNoPageErrors(pageErrors);

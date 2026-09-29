@@ -5,8 +5,8 @@
 //   DELETE /api/trash[?team=<id>]   empty the personal Trash, or one team's
 //
 // The authority is exactly the delete authority (mayDeleteDocument): the owner
-// of a personal diagram, any joined member of a team diagram's team. Anything
-// else, like a diagram that isn't in the Trash, answers the 404 of a missing id.
+// of a personal document, any joined member of a team document's team. Anything
+// else, like a document that isn't in the Trash, answers the 404 of a missing id.
 
 import {
   getDocument,

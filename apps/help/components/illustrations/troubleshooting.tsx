@@ -7,7 +7,7 @@ import { useId } from 'react';
 import { Scene, Shape, Panel, Button, Label, TextBar, Avatar } from './primitives';
 
 /** A blank canvas stuck mid-load: a brand spinner ring over the dot grid with a
- *  reload button, the surface you see when a diagram will not open. */
+ *  reload button, the surface you see when a document will not open. */
 export function StuckCanvas() {
   return (
     <Scene w={420} h={220}>
@@ -20,7 +20,7 @@ export function StuckCanvas() {
         strokeLinecap="round"
       />
       <Label x={210} y={126} anchor="middle" size={12} weight={600} tone="muted">
-        Loading diagram…
+        Loading document…
       </Label>
       <Button x={172} y={148} w={76} label="Reload" variant="primary" />
     </Scene>

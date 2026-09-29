@@ -60,7 +60,7 @@ answers while this menu silently stopped at six, with no hint which number was
 real. Two constants for one idea will always produce that, so there is one now,
 declared beside `PollStyle` in `@livediagram/document` for the same reason that
 union lives there — a `SessionButtonConfig` is a `Tab` field, and api-schema
-depends on diagram rather than the reverse.
+depends on document rather than the reverse.
 
 ### A poll button carries its ANSWER STYLE, not just its answers
 
@@ -93,7 +93,7 @@ its author configured it.
 
 The union itself lives in `@livediagram/document` (`poll-style.ts`) rather than
 beside `LivePoll` in `@livediagram/api-schema`: the style is now a `Tab` field,
-api-schema depends on diagram and not the reverse, and re-exporting `PollStyle`
+api-schema depends on document and not the reverse, and re-exporting `PollStyle`
 from api-schema keeps every existing import resolving against one list.
 
 For **Vote and Poll**, the face's derived label follows that setting ("Vote — 3 dots each", "Ask"), and an author's own label wins over it, like any shape. A **Timer** has no label to win: `SessionTimerFace` draws the clock, showing the configured minutes until a timer is actually running and the live countdown after. The setting still drives what you see, just as the digits rather than as a sentence about them.

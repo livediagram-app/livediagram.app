@@ -721,7 +721,7 @@ function EditorWindow({
                     {/* Presence lives IN the tab, as the editor's TabPresenceStack
                         draws it: a stack of small initials between the tab name
                         and its ellipsis, one per person on that tab (you, and on
-                        a shared diagram whoever else is there). */}
+                        a shared document whoever else is there). */}
                     {t.active ? (
                       <span className="ml-0.5 flex items-center">
                         <TabAvatar initials="TM" color="#0ea5e9" last={!shared} />

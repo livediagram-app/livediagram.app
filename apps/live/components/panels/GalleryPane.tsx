@@ -62,7 +62,7 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
   const handleDelete = async (image: ImageSummary) => {
     const refs = usage[image.id] ?? [];
     const detail = refs.length
-      ? `It's still attached to ${refs.length} diagram${
+      ? `It's still attached to ${refs.length} document${
           refs.length === 1 ? '' : 's'
         }: those tiles will render as broken images.`
       : 'This image will be permanently removed from your gallery. This can’t be undone.';
@@ -129,7 +129,7 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
           <EmptyState
             icon={<ImageIcon />}
             title="No images yet"
-            description="Drop an image onto the canvas (or the area above) and every image you add collects here, ready to reuse in any diagram."
+            description="Drop an image onto the canvas (or the area above) and every image you add collects here, ready to reuse in any document."
           />
         ) : (
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -214,7 +214,7 @@ function GalleryCard({
                 href={`/document/${encodeURIComponent(d.id)}`}
                 className="text-brand-700 transition hover:text-brand-800 hover:underline dark:text-brand-300 dark:hover:text-brand-200"
               >
-                {d.name || 'Untitled diagram'}
+                {d.name || 'Untitled document'}
               </a>
             </li>
           ))}

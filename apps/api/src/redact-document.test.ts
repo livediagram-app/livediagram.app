@@ -1,4 +1,4 @@
-// A diagram's ownerId is a credential, not a label — for a guest owner it IS
+// A document's ownerId is a credential, not a label — for a guest owner it IS
 // the X-Owner-Id bearer value, and /api/migrate will move that owner's entire
 // workspace to whoever presents it. So "who gets to see it" is a security
 // rule, and it gets a suite of its own rather than living inside one route's.
@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { redactDocumentForReader, redactDocumentForScope } from './redact-document';
 import type { DocumentDTO } from './types';
 
-// A guest-owned diagram: the owner id is the UUID that identifies that
+// A guest-owned document: the owner id is the UUID that identifies that
 // browser, which is exactly the value that must not travel.
 const GUEST_OWNER = '0f5ca4af-9a8a-4a60-be5e-1179e5555880';
 const liveDoc = {
@@ -26,12 +26,12 @@ describe('redactDocumentForReader', () => {
   it('blanks it for a share-link visitor', () => {
     const out = redactDocumentForReader(liveDoc, 'some-other-guest');
     expect(out.ownerId).toBe('');
-    // Everything else survives — the visitor still needs the diagram.
+    // Everything else survives — the visitor still needs the document.
     expect(out.id).toBe('d1');
     expect(out.name).toBe('Plan');
   });
 
-  // The primary share code is the diagram's OLDEST link, of any role. Handing
+  // The primary share code is the document's OLDEST link, of any role. Handing
   // it to a view-link visitor handed them an edit link.
   it('withholds the primary share code from a share-link visitor', () => {
     expect(redactDocumentForReader(liveDoc, 'some-other-guest').shareCode).toBeNull();
@@ -66,7 +66,7 @@ describe('redactDocumentForReader', () => {
   });
 });
 
-// docs/specs/013-workspace/tab-scoped-share-links.md. A scoped visitor's copy of the diagram keeps every
+// docs/specs/013-workspace/tab-scoped-share-links.md. A scoped visitor's copy of the document keeps every
 // tab in place, so the bar can draw a "Not shared" pill for it, but nothing about a
 // tab outside their scope beyond its id and position.
 describe('redactDocumentForScope', () => {
@@ -96,7 +96,7 @@ describe('redactDocumentForScope', () => {
     expect(redactDocumentForScope(full, 't2').presentation).toBeNull();
   });
 
-  it('hands an unscoped reader the diagram untouched', () => {
+  it('hands an unscoped reader the document untouched', () => {
     expect(redactDocumentForScope(full, null)).toBe(full);
   });
 });

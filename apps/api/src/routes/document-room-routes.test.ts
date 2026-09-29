@@ -71,7 +71,7 @@ beforeEach(() => {
 
 describe('WebSocket upgrade — trust headers', () => {
   it('overwrites a client-supplied X-Verified-Owner on a NON-owner upgrade', async () => {
-    // A view-only share visitor of someone else's PERSONAL diagram, claiming
+    // A view-only share visitor of someone else's PERSONAL document, claiming
     // to be its owner. Owner-ness gates the facilitator baton (docs/specs/012-collaboration/facilitator.md): it
     // is what lets a session seize the baton off its current holder and end
     // someone else's turn, so a believed claim here is a real privilege.
@@ -141,7 +141,7 @@ describe('WebSocket upgrade — trust headers', () => {
     expect(seen).toHaveLength(0);
   });
 
-  it('does not treat a TEAM diagram owner id in ?o= as the owner', async () => {
+  it('does not treat a TEAM document owner id in ?o= as the owner', async () => {
     // A team owner id is a Clerk id every teammate can read, so the bare-`o`
     // leg is personal-only; team owners come in through the ticket.
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'user_owner', teamId: 'team-1' });

@@ -31,7 +31,7 @@ export type ExplorerViewProps = {
   ownerId: string | null;
   // Adds the desktop Owner column (Recent: "You" vs the team name).
   showOwner?: boolean;
-  // True on the "All diagrams" (Personal Space) view: the synthetic Unsorted
+  // True on the "All documents" (Personal Space) view: the synthetic Unsorted
   // row renders at the very top so the root has the same "folder row per
   // child" feel as any non-root folder. Always shown there now (even
   // empty, badge hidden at zero) so Personal Space isn't bare before anything
@@ -44,7 +44,7 @@ export type ExplorerViewProps = {
   showGeneratedRow?: boolean;
   generatedCount?: number;
   onOpenGenerated?: () => void;
-  // The Offline synthetic folder row (docs/specs/006-document/offline-mode.md): diagrams saved only in this
+  // The Offline synthetic folder row (docs/specs/006-document/offline-mode.md): documents saved only in this
   // browser. Shown on the Personal Space (/all) list beside Generated.
   showOfflineRow?: boolean;
   offlineCount?: number;
@@ -77,7 +77,7 @@ export type ExplorerViewProps = {
   // which is every pane except Recent.
   folderChipFor?: (d: PaneDocument) => { label: string; onOpen: () => void } | null;
   onToggleRecentExclusion?: (id: string) => void;
-  // Opens the diagram's own Timeline (docs/specs/013-workspace/timeline.md §3.4).
+  // Opens the document's own Timeline (docs/specs/013-workspace/timeline.md §3.4).
   onShowHistory?: (id: string) => void;
   childrenCount: (id: string) => number;
   documentsCount: (id: string) => number;
@@ -93,20 +93,20 @@ export type ExplorerViewProps = {
 // CardView's two extras. Both are genuinely card-shaped, so they stay off the
 // shared type rather than being declared-and-ignored by the list.
 export type CardViewProps = ExplorerViewProps & {
-  // Team library cards (docs/specs/013-workspace/team-shared-documents.md) hide the visibility badge: every diagram
-  // in that grid is a team diagram, so a per-card "Team"/"Private" badge is
+  // Team library cards (docs/specs/013-workspace/team-shared-documents.md) hide the visibility badge: every document
+  // in that grid is a team document, so a per-card "Team"/"Private" badge is
   // noise — its list view omits it too. Defaults on for the Explorer.
   showVisibilityBadge?: boolean;
-  // Where the diagram lives (docs/specs/013-workspace/recent-folder-chip.md). Recent only.
+  // Where the document lives (docs/specs/013-workspace/recent-folder-chip.md). Recent only.
   folderChip?: { label: string; onOpen: () => void } | null;
 };
 
 /**
- * The per-diagram props both entry components take: `DocumentRow` in the list
+ * The per-document props both entry components take: `DocumentRow` in the list
  * view and `DocumentCard` in the card view.
  *
  * The two render very differently and share nothing else, but they answer the
- * same question — what can you do with this diagram — so their call sites in
+ * same question — what can you do with this document — so their call sites in
  * views.tsx and CardView.tsx were sixteen identical bindings each. Adding an
  * action meant remembering both, and forgetting one loses it from a whole view
  * with nothing to notice: the component simply never receives the handler.
@@ -138,11 +138,11 @@ export type DocumentEntryProps = {
   onShowHistory?: () => void;
   // Adds the desktop Owner cell ("You", the team name, or the sharer).
   showOwner?: boolean;
-  // Where the diagram lives (docs/specs/013-workspace/recent-folder-chip.md). Recent only — every other pane IS a
+  // Where the document lives (docs/specs/013-workspace/recent-folder-chip.md). Recent only — every other pane IS a
   // folder, so the chip would just repeat its own title.
   folderChip?: { label: string; onOpen: () => void } | null;
   // Hides the visibility badge but keeps its column, so the row still lines
   // up with the FolderRows above it. The team library passes false: every
-  // row there is a team diagram (CardView's showVisibilityBadge, as a row).
+  // row there is a team document (CardView's showVisibilityBadge, as a row).
   showVisibility?: boolean;
 };

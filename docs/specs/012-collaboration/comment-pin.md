@@ -6,7 +6,7 @@ rather than opened.
 
 (Filed as 136-comment-pin.md, and the shape kind is still `comment-pin`, from
 the marker this started as. "Why not the pin" below has the reason it changed;
-the id stays so saved diagrams keep loading.)
+the id stays so saved documents keep loading.)
 
 ## Why an element at all
 
@@ -94,7 +94,7 @@ The first version was a standalone marker: a dot with a leader line that opened
 the ordinary anchored popover. It was replaced because a popover is **one
 reader's transient view**. A panel connected to what it is about sits on the
 board, in the export, and in everyone's session, which is what makes a remark
-part of the diagram rather than a note somebody left.
+part of the document rather than a note somebody left.
 
 It also means the shape is no longer self-painting: as a 40px bubble it drew
 itself, and as a card it wants the fill, border and rounded corners every other
@@ -108,7 +108,7 @@ card gets.
 - **Excluded from `isSvgRenderedShape`**, which is allow-by-default: a new
   CSS-drawn kind left off that list renders as a transparent nothing.
 - **Keeps its own colours** (the Behaviour set in `themes.ts`): a pin is board
-  chrome, not a node in the diagram's theme.
+  chrome, not a node in the tab's theme.
 - **Aspect-locked and square by default**, 40×40. A stretched pin reads as a
   shape rather than a marker.
 - **Not votable** ([Session tools (timer + voting)](session-tools.md)): a comment pin IS a remark, so a dot on one means

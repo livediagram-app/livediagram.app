@@ -89,7 +89,7 @@ describe('authHrefWithReturn', () => {
     expect(authHrefWithReturn('/sign-in/', '/explorer/recent')).toBe(
       '/sign-in/?redirect_url=%2Fexplorer%2Frecent',
     );
-    // Query + hash survive so you land on the exact diagram tab.
+    // Query + hash survive so you land on the exact document tab.
     expect(authHrefWithReturn('/get-started/', '/document/abc?x=1#t=t2')).toBe(
       '/get-started/?redirect_url=%2Fdocument%2Fabc%3Fx%3D1%23t%3Dt2',
     );

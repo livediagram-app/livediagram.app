@@ -32,53 +32,53 @@ const CONTENT: Record<
 > = {
   recent: {
     icon: <ClockIcon />,
-    title: 'No recent diagrams',
-    description: 'Diagrams you open show up here for quick access. Make your first one.',
-    cta: 'New diagram',
+    title: 'No recent documents',
+    description: 'Documents you open show up here for quick access. Make your first one.',
+    cta: 'New document',
   },
   shared: {
     icon: <ShareIcon />,
     title: 'Nothing shared with you yet',
-    description: 'Open a share link someone sends you and the diagram lands here.',
+    description: 'Open a share link someone sends you and the document lands here.',
   },
   unsorted: {
     icon: <UnsortedIcon />,
     title: 'Nothing unsorted',
-    description: 'Diagrams not filed into a folder collect here, ready to organise.',
+    description: 'Documents not filed into a folder collect here, ready to organise.',
   },
   favourites: {
     icon: <StarIcon />,
     title: 'No favourites yet',
-    // No CTA: a new diagram doesn't land here, starring an existing one
-    // does — so the generic "New diagram" button would be a dead end
+    // No CTA: a new document doesn't land here, starring an existing one
+    // does — so the generic "New document" button would be a dead end
     // (docs/specs/013-workspace/favourites.md). Same reason Shared and Unsorted carry none.
-    description: 'Mark a diagram as a favourite to show it here.',
+    description: 'Mark a document as a favourite to show it here.',
   },
   generated: {
     icon: <SparkleIcon />,
-    title: 'No generated diagrams yet',
+    title: 'No generated documents yet',
     description:
-      'Connect an AI tool and the diagrams it creates for you will appear here automatically.',
+      'Connect an AI tool and the documents it creates for you will appear here automatically.',
     cta: 'Set up an AI agent',
   },
   offline: {
     icon: <OfflineFolderIcon />,
-    title: 'No offline diagrams',
+    title: 'No offline documents',
     description:
-      'Choose "Local Browser" as the Save location in the New Diagram wizard and browser-only diagrams collect here.',
-    cta: 'New diagram',
+      'Choose "Local Browser" as the Save location in the New Document wizard and browser-only documents collect here.',
+    cta: 'New document',
   },
   folder: {
     icon: <FolderSolidIcon open />,
     title: 'This folder is empty',
-    description: 'Add a diagram or a subfolder to organise your work.',
-    cta: 'New diagram',
+    description: 'Add a document or a subfolder to organise your work.',
+    cta: 'New document',
   },
   default: {
     icon: <DocumentIcon />,
-    title: 'No diagrams yet',
-    description: 'Create your first diagram and it will appear here.',
-    cta: 'New diagram',
+    title: 'No documents yet',
+    description: 'Create your first document and it will appear here.',
+    cta: 'New document',
   },
 };
 
@@ -98,7 +98,7 @@ export function EmptyPane({ selected }: { selected: SelectedNode }) {
 
   // Generated is a read-through view of AI output, not somewhere you
   // author into: its CTA points at the "connect an AI tool" help guide
-  // (external /help, new tab) rather than the new-diagram flow.
+  // (external /help, new tab) rather than the new-document flow.
   if (selected.kind === 'generated') {
     return (
       <EmptyState icon={c.icon} title={c.title} description={c.description}>

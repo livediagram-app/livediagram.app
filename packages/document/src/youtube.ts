@@ -1,6 +1,6 @@
 // YouTube URL parsing for the video element (docs/specs/009-elements/youtube-video.md).
 //
-// Lives in the diagram package rather than the editor because both the canvas
+// Lives in the document package rather than the editor because both the canvas
 // renderer and the export paths need to answer "is this link a video, and
 // which one" from the same rules.
 //
@@ -93,7 +93,7 @@ export function youtubePosterUrl(videoId: string): string {
  * The player URL, mounted only once the user presses play (docs/specs/009-elements/youtube-video.md).
  *
  * `youtube-nocookie.com` sets nothing until playback actually starts, so
- * opening a diagram that contains a video is not a tracked visit.
+ * opening a document that contains a video is not a tracked visit.
  */
 export function youtubeEmbedUrl(videoId: string): string {
   return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;

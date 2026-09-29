@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
+import { isUntitledDocumentName } from '@livediagram/templates';
 import {
   hasRichFormatting,
   isBoxed,
@@ -17,7 +18,7 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 
 // Selection-editing handlers, lifted out of editor-page.tsx: enter
 // format painter, begin / commit / cancel inline label
-// edits (incl. the first-label -> diagram/tab auto-rename), type-to-edit,
+// edits (incl. the first-label -> document/tab auto-rename), type-to-edit,
 // single-select (with format-paint interception), and
 // shift-click multi-select toggling. applyFormatFromSource comes from
 // useElementHelpers and is passed in.
@@ -172,16 +173,16 @@ export function useSelectionEditing(opts: {
       }),
     );
     setEditingId(null);
-    // While the diagram is still on its default name, mirror the label of
-    // the very first element of the very first tab into the diagram title:
+    // While the document is still on its default name, mirror the label of
+    // the very first element of the very first tab into the document title:
     // typing on the welcome rectangle is a strong signal of intent. Once
-    // the user has explicitly named the diagram (or named it via another
+    // the user has explicitly named the document (or named it via another
     // path), we stop tracking.
     // Capped + whitespace-collapsed (docs/specs/006-document/name-length.md). This is the path the cap
     // exists for: paste a paragraph into the welcome rectangle and the whole
-    // paragraph used to become the diagram's name, newlines and all.
+    // paragraph used to become the document's name, newlines and all.
     const trimmed = truncateName(label);
-    if (documentName === 'Untitled diagram') {
+    if (isUntitledDocumentName(documentName)) {
       const firstTab = tabs[0];
       const firstEl = firstTab?.elements[0];
       if (firstEl && firstEl.id === elementId) {

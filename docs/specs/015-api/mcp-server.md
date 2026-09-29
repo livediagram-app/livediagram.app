@@ -12,11 +12,11 @@ mints. No new authorization model; an OAuth front door onto the existing token.
 Let a person connect livediagram to whatever AI tool they already drive (Claude
 desktop/web, Claude Code, any MCP client) and, from inside that tool:
 
-1. **Find and view** the diagrams they already have — search by name, get back a
-   link to open in the editor **and an inline image** of the diagram.
-2. **Create** a new diagram from a request — e.g. point the AI at a codebase and
+1. **Find and view** the documents they already have — search by name, get back a
+   link to open in the editor **and an inline image** of the document.
+2. **Create** a new document from a request — e.g. point the AI at a codebase and
    have it produce a diagram of the control flow.
-3. **Edit** an existing diagram — full rework of a tab, or a small adjustment.
+3. **Edit** an existing document — full rework of a tab, or a small adjustment.
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
 load-bearing decision. We are **not** proxying to the first-party `/api/ai`
@@ -153,26 +153,26 @@ Eleven tools. The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates));
 share, rename, and delete complete the CRUD verbs, with list_trash and
-restore_diagram as the way back from a delete
-([§4.8](#48-share_diagram), [§4.9](#49-rename_diagram-and-delete_diagram), [§4.9a](#49a-list_trash-and-restore_diagram)).
+restore_document as the way back from a delete
+([§4.8](#48-share_document), [§4.9](#49-rename_document-and-delete_document), [§4.9a](#49a-list_trash-and-restore_document)).
 Every one of them declares its behaviour as **annotations**
 ([§4.14](#414-tool-annotations-behaviour-hints)), describes itself in facts
 rather than instructions ([§4.15](#415-descriptions-state-facts-not-instructions)),
 and declares the shape of its result as an **output schema**
 ([§4.17](#417-structured-output-and-described-parameters)).
 
-Every diagram and tab **name** argument (`create_document`'s `name` and each
+Every document and tab **name** argument (`create_document`'s `name` and each
 tab's `name`, `add_tab`'s `name`, `rename_document`'s `name`) states the
 60-character cap in its description and is shortened by the schema itself
 with the shared `truncateName`, so the name a tool sends and reports back is
-the one the api stores ([Tab and diagram name length](../006-document/name-length.md)).
+the one the api stores ([Tab and document name length](../006-document/name-length.md)).
 
 ### 4.1 `find_documents`
 
-Search/list the caller's diagrams — the **personal library AND every joined
-team's shared library** ([Team shared diagrams](../013-workspace/team-shared-documents.md)). A diagram
+Search/list the caller's documents — the **personal library AND every joined
+team's shared library** ([Team shared documents](../013-workspace/team-shared-documents.md)). A document
 filed into a team leaves its owner's personal list entirely, so the personal
-`GET /api/documents` alone is not "the user's diagrams": the tool sweeps
+`GET /api/documents` alone is not "the user's documents": the tool sweeps
 `GET /api/teams` + `GET /api/teams/:id/library` alongside it (the api accepts
 the token identity on those reads — [Public API and API tokens §3.4](public-api-and-tokens.md)),
 merges, and ranks newest-saved first. The team sweep is best-effort: a teams
@@ -185,7 +185,7 @@ here** — kept lightweight so the model can scan many results cheaply, then
 
 ### 4.2 `read_document`
 
-Fetch one diagram's full content **and render it** — this is the "visualise"
+Fetch one document's full content **and render it** — this is the "visualise"
 capability. Input: `documentId`, optional `tabId` (defaults to the first tab).
 Wraps `GET /api/documents/:id` + `GET /api/documents/:id/tabs/:tabId`. Returns the
 tab's `elements` as structured JSON (so the model can understand and, if asked,
@@ -195,9 +195,9 @@ plus the deep-link `url`. So "show me my auth-flow diagram" → `find_documents`
 
 ### 4.3 `create_document`
 
-Create a new diagram from elements the model produced. Input: `name`, `tabs:
+Create a new document from elements the model produced. Input: `name`, `tabs:
 [{ name, elements: Element[] }]` (one tab, or several to build a **multi-tab**
-diagram in one call — an overview plus a detail tab per subsystem), and the
+document in one call — an overview plus a detail tab per subsystem), and the
 optional `layout`. Each tab may instead pass `template: TemplateKind` in place
 of `elements` — the server materialises the hand-tuned scaffold from
 `@livediagram/templates` ([§4.5](#45-list_templates)), keeping its curated
@@ -221,7 +221,7 @@ canvas overrides; the model then personalises labels via `update_document`'s
    than being raked into a disconnected-component column.
 3. **Tags it as generated.** The create sends `source: 'mcp'`, which the
    Explorer surfaces in a synthetic **Generated** folder (`source != null`,
-   [Folders](../013-workspace/folders.md)) so a user's own work and AI-generated diagrams stay separate
+   [Folders](../013-workspace/folders.md)) so a user's own work and AI-generated documents stay separate
    without a real, deletable folder. The user can file one into a folder of
    their own afterwards (which moves it out of Generated). (Earlier this
    find-or-created a real "Generated" folder; the provenance tag replaces
@@ -233,14 +233,14 @@ canvas overrides; the model then personalises labels via `update_document`'s
 
 ### 4.3a `add_tab`
 
-Add a **new tab** (its own canvas) to an existing diagram — the motivating case:
+Add a **new tab** (its own canvas) to an existing document — the motivating case:
 "make a tab going into more detail on one part of this architecture." Input:
 `documentId`, `name`, `elements`, optional `layout` — or `template: TemplateKind`
 instead of `elements`, exactly like a `create_document` tab. Validates + lays out
 exactly like a `create_document` tab, then `PUT /api/documents/:id/tabs/:newTabId` — which
-is an upsert that also links the tab into the diagram and appends it, so a fresh
+is an upsert that also links the tab into the document and appends it, so a fresh
 tab id creates and orders the tab in one call. Returns the new `tabId`, `url`,
-and the rendered PNG. (Pair with `read_document`, which lists the diagram's
+and the rendered PNG. (Pair with `read_document`, which lists the document's
 existing tabs, to decide where a new one fits.)
 
 ### 4.4 `update_document`
@@ -448,7 +448,7 @@ wrongly:
 
 ### 4.8 `share_document`
 
-Create a shareable link so anyone with the URL can open a diagram without
+Create a shareable link so anyone with the URL can open a document without
 signing in — the verb that turns "the AI made a diagram" into "the AI made a
 diagram and here's a link to send the team." Wraps `POST /api/documents/<id>/share`
 ([Share password](../013-workspace/share-password.md)): `{ documentId, role?, expiry? }` → the public URL
@@ -456,7 +456,7 @@ diagram and here's a link to send the team." Wraps `POST /api/documents/<id>/sha
 to **`view`** (least privilege for an automated share — showing your work
 shouldn't silently grant edit; the model passes `edit` to allow changes), and
 the api applies the same owner-only authorization every share route enforces, so
-a token can only share diagrams its account owns. `expiry` ([Share-link expiry](../013-workspace/share-link-expiry.md)) defaults to
+a token can only share documents its account owns. `expiry` ([Share-link expiry](../013-workspace/share-link-expiry.md)) defaults to
 `never`.
 
 ### 4.9 `rename_document` and `delete_document`
@@ -464,20 +464,20 @@ a token can only share diagrams its account owns. `expiry` ([Share-link expiry](
 CRUD completeness — the verbs a user will reach for the moment they ask their
 assistant to "rename that" or "delete the old one":
 
-- **`rename_document`** — `{ documentId, name, tabId? }`. Renames the diagram
+- **`rename_document`** — `{ documentId, name, tabId? }`. Renames the document
   (`PUT /api/documents/<id>` `{ name }`), or one tab when `tabId` is given (no
   tab-name-only route, so it reads the tab and writes it back with the new
   name). Non-destructive.
-- **`delete_document`** — `{ documentId, tabId? }`. Moves the diagram to the
+- **`delete_document`** — `{ documentId, tabId? }`. Moves the document to the
   [Trash](../013-workspace/trash.md) (`DELETE /api/documents/<id>`), restorable
   for 30 days, and says so in its result (`trashed: true`, `restorableForDays`).
-  There is no permanent option: an AI tool can only ever bin a diagram, never
+  There is no permanent option: an AI tool can only ever bin a document, never
   destroy it. A permanent delete stays with the person (Settings › Trash) or
   the REST API's `?permanent=true` ([Public API and API tokens](public-api-and-tokens.md)).
   With `tabId` it deletes one tab (`DELETE …/tabs/<tabId>`) outright: tabs have
   no Trash. Still destructive, so the description tells the model to confirm
-  with the user first; the api refuses deleting a diagram's last remaining tab,
-  and a diagram already in the Trash answers 410, which the tool reports as
+  with the user first; the api refuses deleting a document's last remaining tab,
+  and a document already in the Trash answers 410, which the tool reports as
   already in the Trash, pointing at `list_trash`.
 
 Both inherit the ordinary owner/team authorization the routes already enforce
@@ -489,7 +489,7 @@ The way back from `delete_document`, with exactly the REST Trash's authority
 (`GET /api/trash`, `POST /api/trash/<id>/restore`): the user's personal Trash
 and every team Trash they have joined.
 
-- **`list_trash`** — `{}`. Read-only. Each diagram the user may restore:
+- **`list_trash`** — `{}`. Read-only. Each document the user may restore:
   `{ id, name, library, deletedAt, purgeAt }`, `library` being `personal` or
   the team's name, the two times ISO 8601.
 - **`restore_document`** — `{ documentId }`. Restores it to its folder, or
@@ -505,10 +505,10 @@ the tool names. Pure text (no api calls, no auth to list); each steers the model
 to the right tools and the graph-first path:
 
 - **`document_this`** `{ description }` — create a diagram from a description via
-  create_diagram + the graph input, and return a link.
+  create_document + the graph input, and return a link.
 - **`flowchart_from_steps`** `{ steps }` — turn an ordered step list (with
   branches) into a flowchart (diamond decisions, labelled branch edges).
-- **`show_my_document`** `{ name }` — find a diagram by name and read_diagram it
+- **`show_my_document`** `{ name }` — find a document by name and read_document it
   inline.
 
 Registered in `apps/mcp/src/prompts.ts`, wired in `buildServer` beside the tools
@@ -522,7 +522,7 @@ access"** checkbox. When ticked, the minted `lvd_` token carries `read_only = 1`
 presents — `POST`/`PUT`/`DELETE` → `403 read_only_token` — at a **single
 dispatch choke point** in `apps/api/src/index.ts`, so no write route can be
 reached, present or future, with no per-route changes. The read tools
-(find_diagrams, read_diagram, both GETs) still work; every write tool
+(find_documents, read_document, both GETs) still work; every write tool
 (create/update/delete/share/add_tab/rename) is blocked server-side, which is the
 security boundary (the tool list is static, but the api is the enforcer). Clerk
 sessions and full tokens are unaffected. The token list in the Explorer shows a
@@ -582,11 +582,11 @@ which is how the gap was found.
 Three behaviours cover the eleven tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                             |
-| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`                   |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                 |
+| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`                     |
 | **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`                                                |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`                                                  |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -624,7 +624,7 @@ The rule bites where it's tempting to be helpful. Because the element format
 is carried inline on every element argument (§4.5), the honest thing to say is
 that the format is complete right there; earlier wording went one step
 further and instructed the model not to web-search, open the repo, or read
-another diagram to find it. Same information, but phrased as a rule for the
+another document to find it. Same information, but phrased as a rule for the
 caller, so it was rewritten as a plain statement:
 
 > The full element format is documented inline on each tool's element
@@ -668,18 +668,18 @@ render a preview (`read_document`, `create_document`, `add_tab`,
 An error result (`isError: true`, a model-correctable message) carries text only
 and no `structuredContent`; MCP exempts errors from the output schema.
 
-| Tool              | Result object                                                                                             |
-| ----------------- | --------------------------------------------------------------------------------------------------------- |
-| `find_documents`   | `count`, `diagrams[]` of `{ id, name, updatedAt, library, url }`                                          |
+| Tool               | Result object                                                                                             |
+| ------------------ | --------------------------------------------------------------------------------------------------------- |
+| `find_documents`   | `count`, `documents[]` of `{ id, name, updatedAt, library, url }`                                         |
 | `read_document`    | `id`, `name`, `tab { id, name, elements[] }`, `url`                                                       |
-| `list_templates`  | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
+| `list_templates`   | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
 | `create_document`  | `id`, `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                     |
-| `add_tab`         | `documentId`, `tabId`, `name`, `url`                                                                       |
+| `add_tab`          | `documentId`, `tabId`, `name`, `url`                                                                      |
 | `update_document`  | `id`, `tabId`, `url`                                                                                      |
-| `share_document`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                    |
-| `rename_document`  | `renamed` (`diagram` or `tab`), `name`, then `id` + `url` for a diagram or `tabId` for a tab              |
-| `delete_document`  | `deleted` (`diagram` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`              |
-| `list_trash`      | `trash[]` of `{ id, name, library, deletedAt, purgeAt }` (ISO timestamps)                                 |
+| `share_document`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                   |
+| `rename_document`  | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab            |
+| `delete_document`  | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`            |
+| `list_trash`       | `trash[]` of `{ id, name, library, deletedAt, purgeAt }` (ISO timestamps)                                 |
 | `restore_document` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
 
 **The schema and the result can't drift.** The schemas live in
@@ -699,7 +699,7 @@ advertised `tools/list` schemas and fails on any property without a
 description.
 
 **Tool names stay `snake_case` verbs** (`create_document`, `list_trash`). Some
-directories prefer dot-notation trees (`diagram.create`); it is not adopted,
+directories prefer dot-notation trees (`document.create`); it is not adopted,
 because several clients restrict a tool name to `[a-zA-Z0-9_-]`, and a rename
 would break every existing connection and the cross-references between tool
 descriptions.
@@ -747,7 +747,7 @@ Worker (no DOM, no React).
   back to the placeholder rectangle (the structured elements still carry the id).
   A tab with no images does no extra work. The fetch-and-inline core is
   `embedTabImages` in `@livediagram/api-schema`, shared with the api worker's
-  snapshot render ([Diagram SVG snapshots](../006-document/document-snapshots.md)), which passes its own byte source (R2) and a total
+  snapshot render ([Document SVG snapshots](../006-document/document-snapshots.md)), which passes its own byte source (R2) and a total
   budget instead of this per-image cap. The data URL takes the image's stored
   type; one stored without an image type (`application/octet-stream`) is
   labelled by sniffing its bytes, and bytes that match no accepted format keep
@@ -802,13 +802,13 @@ Worker (no DOM, no React).
 
 - **Streaming progress** from tools (the SDK supports it; v1 returns once).
 - **Folder / team management** via MCP — there are no tools to list, rename, or
-  move folders (create_diagram only auto-files new diagrams under "Generated");
+  move folders (create_document only auto-files new documents under "Generated");
   more `/api` surface can be wrapped later if demand appears. (Share-link
-  creation IS in scope now — `share_document`, [§4.8](#48-share_diagram); managing
+  creation IS in scope now — `share_document`, [§4.8](#48-share_document); managing
   folders/teams themselves stays out.)
   (Team **content** is in scope: `find_documents` sweeps team shared libraries
-  and the other tools read/edit team diagrams through the ordinary access
-  gates — [§4.1](#41-find_diagrams), [Public API and API tokens §3.4](public-api-and-tokens.md).
+  and the other tools read/edit team documents through the ordinary access
+  gates — [§4.1](#41-find_documents), [Public API and API tokens §3.4](public-api-and-tokens.md).
   Managing teams themselves stays out, and the api refuses it to tokens.)
 - **Token-paste connector** as a supported path — OAuth is the chosen front door
   ([§3](#3-authentication-oauth-21)); a raw Bearer still works for local dev but

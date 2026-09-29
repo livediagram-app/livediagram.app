@@ -93,7 +93,7 @@ describe('save baseline (docs/specs/012-collaboration/collab-race-hardening.md)'
   it('a peer rename is folded into the saved name', () => {
     const c = client([tab([el('a')])]);
     c.receive({
-      kind: 'diagram-meta',
+      kind: 'document-meta',
       name: 'Renamed',
       tabs: [{ id: 't1', name: 'Tab 1', orderIndex: 0 }],
     });

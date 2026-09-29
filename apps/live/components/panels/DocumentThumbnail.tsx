@@ -10,21 +10,21 @@ import {
 } from '@/lib/thumbnail-cache';
 import { ThumbnailLoader } from './ThumbnailLoader';
 
-// A cached SVG snapshot of a diagram (docs/specs/006-document/document-snapshots.md) so you can recognise it
+// A cached SVG snapshot of a document (docs/specs/006-document/document-snapshots.md) so you can recognise it
 // without opening it. Shared by every Explorer surface that lists
-// diagrams: the full-page rows, the "Shared with me" list, the team
+// documents: the full-page rows, the "Shared with me" list, the team
 // library, and the floating in-editor panel.
 //
 // The bytes come from the api worker's render-cache fetched through the
 // authenticated client (an <img src> can't carry auth headers), then
-// hung on an <img> via a blob URL. The diagram list endpoints stay
+// hung on an <img> via a blob URL. The document list endpoints stay
 // lightweight (no element data); a thumbnail is fetched only once its
 // row/card scrolls into view, so a long list never fires dozens of
 // requests / server renders for things the user never reaches. While
 // idle / loading it shows that sketch drawing itself (ThumbnailLoader);
 // broken, the still sketch of an undrawn diagram (and, where there's
 // room, says so). Same box throughout, so the layout never shifts, and an
-// empty or access-denied diagram degrades gracefully. Settled snapshots
+// empty or access-denied document degrades gracefully. Settled snapshots
 // live in a page-wide cache (lib/thumbnail-cache.ts), so a remount (a
 // view switch, a folder, back to the Explorer) paints straight away.
 //
@@ -52,13 +52,13 @@ export function DocumentThumbnail({
   // is still resolving — we just hold the placeholder until it lands.
   ownerId: string | null;
   documentId: string;
-  // The diagram's savedAt, forwarded as the cache-bust version so an
-  // edited diagram re-fetches a fresh snapshot.
+  // The document's savedAt, forwarded as the cache-bust version so an
+  // edited document re-fetches a fresh snapshot.
   version: number;
   // Present on a "shared with me" row (docs/specs/013-workspace/team-shared-documents.md): authorises the read via
   // the share code instead of ownership / team membership.
   shareCode?: string | null;
-  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline diagram has no server snapshot, so
+  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document has no server snapshot, so
   // show a fixed offline illustration instead of fetching a thumbnail.
   offline?: boolean;
   // Container sizing/appearance. Defaults to the compact row box; a card
@@ -154,7 +154,7 @@ export function DocumentThumbnail({
     <span
       ref={ref}
       aria-hidden
-      // Paint the box in the diagram's own background colour once the
+      // Paint the box in the document's own background colour once the
       // snapshot shows, so the object-contain letterbox blends into the
       // preview instead of clashing with a generic slate fill (docs/specs/006-document/document-snapshots.md).
       // Eased in with the picture rather than switched under the loader.
@@ -184,7 +184,7 @@ export function DocumentThumbnail({
         />
       ) : null}
       {state.status === 'broken' ? (
-        // The api saying there is no snapshot, which for a diagram you can
+        // The api saying there is no snapshot, which for a document you can
         // open means it has nothing drawn on it yet; the caption says so,
         // because a bare sketch in a big preview box reads as a broken image.
         <BlankCanvasIllustration />
@@ -205,7 +205,7 @@ export function DocumentThumbnail({
   );
 }
 
-// Fixed illustration for an offline diagram (docs/specs/006-document/offline-mode.md): a "cloud off" mark,
+// Fixed illustration for an offline document (docs/specs/006-document/offline-mode.md): a "cloud off" mark,
 // amber to match the Offline badge. h-full fits it to small row thumbs, but
 // the height cap keeps it a modest centred glyph inside the big explorer
 // cards — uncapped it scaled to fill the whole card, a giant heavy-stroked

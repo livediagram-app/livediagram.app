@@ -51,7 +51,7 @@ describe('mergeEvents', () => {
 // authoritative for the stretch it covers, hands off below it.
 describe('reconcileEvents', () => {
   it('drops a loaded event the page no longer holds inside its window', () => {
-    // The reader deleted diagram b; the worker's cascade took its card.
+    // The reader deleted document b; the worker's cascade took its card.
     const loaded = [event('a', 30), event('b', 20), event('c', 10)];
     const next = reconcileEvents(loaded, { events: [event('a', 30), event('c', 10)] });
     expect(next.map((e) => e.id)).toEqual(['a', 'c']);
@@ -111,7 +111,7 @@ describe('purgeEventsForSource', () => {
   it('drops events keyed on the id and events whose snapshot references it', () => {
     const loaded = [
       event('created', 30, { sourceId: 'd-9' }),
-      // A comment: its own id as the source, the diagram in the snapshot.
+      // A comment: its own id as the source, the document in the snapshot.
       event('comment', 20, { sourceId: 'c-1', snapshot: { documentId: 'd-9' } }),
       event('other', 10, { sourceId: 'd-2', snapshot: { documentId: 'd-2' } }),
     ];

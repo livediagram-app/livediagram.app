@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Real-Time Collaboration Problems" description="What to try when cursors, presence, or live edits are not coming through during collaboration." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
-Real-time collaboration in livediagram works through a per-diagram room: everyone editing the same diagram connects to it over a live connection, and that room relays cursors, who is selecting what, which tab people are on, and edits as they happen. When something is not coming through, it is almost always the connection to that room rather than your data. Work through the checks below.
+Real-time collaboration in livediagram works through a per-document room: everyone editing the same document connects to it over a live connection, and that room relays cursors, who is selecting what, which tab people are on, and edits as they happen. When something is not coming through, it is almost always the connection to that room rather than your data. Work through the checks below.
 
 <Figure caption="A dropped live connection: collaborators fade out while the room reconnects. A reload re-arms it.">
   <ConnectionState />
@@ -19,7 +19,7 @@ Real-time collaboration in livediagram works through a per-diagram room: everyon
 
 ## When you see no one else
 
-1. **Confirm everyone is in the same diagram.** Live presence is per diagram. Two people on different diagrams, or on different copies, will not see each other.
+1. **Confirm everyone is in the same document.** Live presence is per document. Two people on different documents, or on different copies, will not see each other.
 2. **Make sure others actually have access.** Collaborators need a valid [share link](/help/collaboration/sharing/) (or to be the owner). If their link expired, was revoked, or needs a password, they may not be connected at all. See [share link security](/help/privacy-and-security/share-link-security/).
 3. **Reload the page.** A refresh re-establishes the live connection and re-sends presence. This clears most transient glitches.
 4. **Check your network.** Real-time relies on a live connection that some corporate networks, VPNs, or firewalls block. Try a different network or a mobile hotspot to confirm.
@@ -29,14 +29,14 @@ Real-time collaboration in livediagram works through a per-diagram room: everyon
 1. **Have each person reload.** The connection is re-armed on load, so a stuck session is usually fixed by the affected person refreshing.
 2. **Remember view-only visitors do not edit.** Someone on a view-role link can show their cursor and selection but cannot change the canvas. If their edits are not landing, check whether they hold an edit-role link.
 3. **Avoid editing the exact same thing at once.** Two people changing the same tab simultaneously can have the slower save overwrite the faster one. Spread out across tabs or elements where you can.
-4. **Watch for a dropped link mid-session.** If a share link is revoked or a diagram stops being shared, visitors are disconnected and sent out of the editor. Ask the owner to re-share.
+4. **Watch for a dropped link mid-session.** If a share link is revoked or a document stops being shared, visitors are disconnected and sent out of the editor. Ask the owner to re-share.
 
 ## If it still will not connect
 
-1. **Try a different browser or device** to separate a local issue from a diagram one. See [browser compatibility](/help/troubleshooting/browser-compatibility/).
+1. **Try a different browser or device** to separate a local issue from a document one. See [browser compatibility](/help/troubleshooting/browser-compatibility/).
 2. **Disable extensions** that might interfere with live connections, then retry in an incognito window.
-3. **Confirm the diagram loads at all.** If it will not even open, start with [a diagram will not load](/help/troubleshooting/document-not-loading/).
+3. **Confirm the document loads at all.** If it will not even open, start with [a document will not load](/help/troubleshooting/document-not-loading/).
 
-Your changes are saved independently of the live room, so a presence hiccup does not lose work. If collaboration still will not come through, [contact us](/help/contact/) with the diagram URL and what each person sees.
+Your changes are saved independently of the live room, so a presence hiccup does not lose work. If collaboration still will not come through, [contact us](/help/contact/) with the document URL and what each person sees.
 
 </ArticleLayout>

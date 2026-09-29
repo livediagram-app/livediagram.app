@@ -1,7 +1,7 @@
 import { isTemplateKind, type TemplateKind } from '@livediagram/templates';
 
 // The /new query params that skip the wizard (docs/specs/007-editor/new-document-route.md): `?blank=1` commits
-// a blank diagram, `?template=<kind>` (built by the templates package's
+// a blank document, `?template=<kind>` (built by the templates package's
 // templateCreateHref) commits that template, both with the
 // Default theme and the template's default name, and land on the editor.
 // One reader for both so the page, its bfcache-restore cleanup and the

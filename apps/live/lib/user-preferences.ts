@@ -55,7 +55,7 @@ export type UserPreferences = {
   //
   // The row thumbnail is the quickest way to tell two similarly-named layers
   // apart, but it is also the tallest thing in a row — turning it off gives a
-  // compact list on a diagram with many layers.
+  // compact list on a document with many layers.
   layersShowPreview?: boolean;
   // The per-layer element count, beside the name.
   layersShowCount?: boolean;
@@ -127,7 +127,7 @@ export type UserPreferences = {
   reduceMotion?: boolean;
   // Toast notifications (docs/specs/007-editor/user-preferences.md). When `false`, the editor suppresses
   // the confirmation / status toasts (success + info tones) it shows
-  // for consequential, otherwise-silent actions (a diagram moved to a
+  // for consequential, otherwise-silent actions (a document moved to a
   // folder, a tab linked, etc.). ERROR toasts are NOT gated by this:
   // a failure the user would otherwise never see still surfaces, so
   // turning notifications off quiets the chatter without hiding
@@ -164,14 +164,14 @@ export type UserPreferences = {
   // Missing / undefined / true === notify (opt-out); an explicit false
   // suppresses that email.
   //
-  // "Someone first opened one of my shared diagrams."
+  // "Someone first opened one of my shared documents."
   notifyDocumentJoin?: boolean;
   // "Someone accepted / declined a team invite I sent" (to the team's admins).
   notifyInviteResponse?: boolean;
   notifyComments?: boolean;
   notifyTips?: boolean;
   notifyMilestones?: boolean;
-  // "A teammate assigned me an action on a diagram element" (docs/specs/012-collaboration/assigned-actions.md).
+  // "A teammate assigned me an action on an element in a document" (docs/specs/012-collaboration/assigned-actions.md).
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
@@ -182,9 +182,9 @@ export type UserPreferences = {
   // Settings as "I've seen the editor tour"; unchecking it there and
   // closing Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
-  // Diagrams this user has hidden from the Explorer's Recent list
-  // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the diagram: your Recent
-  // is your view of your own work, and on a shared diagram one
+  // Documents this user has hidden from the Explorer's Recent list
+  // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the document: your Recent
+  // is your view of your own work, and on a shared document one
   // collaborator hiding it must not hide it from everyone else.
   //
   // Ids only, so the list stays small; the whole preferences blob has a
@@ -218,19 +218,19 @@ export type UserPreferences = {
   powerUserOfferShown?: boolean;
 };
 
-// How many excluded ids we keep. A diagram id is a 36-char UUID, so 200
+// How many excluded ids we keep. A document id is a 36-char UUID, so 200
 // of them is ~7.4 KB of JSON on its own — well past the api's 4 KB cap on
 // the serialised preferences blob, which would start rejecting EVERY
 // preference write, not just this one. 60 is far more than anyone will
 // hide by hand and leaves plenty of room for the other flags.
 export const RECENT_EXCLUDED_LIMIT = 60;
 
-// Is this diagram hidden from Recent?
+// Is this document hidden from Recent?
 export function isRecentExcluded(prefs: UserPreferences, documentId: string): boolean {
   return prefs.recentExcludedIds?.includes(documentId) === true;
 }
 
-// Flip a diagram's Recent exclusion, returning the NEXT id list. Newest
+// Flip a document's Recent exclusion, returning the NEXT id list. Newest
 // exclusions are kept at the front so the cap drops the oldest choice
 // rather than the one just made.
 export function toggleRecentExcluded(prefs: UserPreferences, documentId: string): string[] {

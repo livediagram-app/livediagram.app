@@ -8,7 +8,7 @@
 // TOKEN: the secret the room hands the holder, kept in `sessionStorage` so a
 // refresh presents it on the next hello and the baton comes straight back.
 // `sessionStorage` rather than `localStorage` on purpose: a baton is a thing
-// about right now, and a second tab opened on the same diagram is a different
+// about right now, and a second tab opened on the same document is a different
 // seat at the table, not the same one.
 
 import { useCallback, useState } from 'react';
@@ -16,7 +16,7 @@ import type { FacilitatorReason } from '@livediagram/api-schema';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 
-/** Where a diagram's baton token lives while the tab is open. */
+/** Where a document's baton token lives while the tab is open. */
 const tokenKey = (documentId: string) => `livediagram:facilitator:${documentId}`;
 
 function readToken(documentId: string | null): string | null {
@@ -106,7 +106,7 @@ export function useFacilitator(deps: {
   // once, and the names it announces change every time somebody renames.
   const ref = useLatest(deps);
 
-  // A different diagram is a different session, reset during render.
+  // A different document is a different session, reset during render.
   const [sessionDocumentId, setSessionDocumentId] = useState(documentId);
   if (documentId !== sessionDocumentId) {
     setSessionDocumentId(documentId);

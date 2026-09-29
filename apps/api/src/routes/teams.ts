@@ -214,7 +214,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   const isAdmin = me.role === 'admin' && me.status === 'joined';
 
   // /api/teams/<id>/library — the team's shared folder tree +
-  // diagrams (docs/specs/013-workspace/team-shared-documents.md). Any membership row passes the gate above,
+  // documents (docs/specs/013-workspace/team-shared-documents.md). Any membership row passes the gate above,
   // but the library is for JOINED members only — an invitee deciding
   // on an invite sees the team's shape, not its content.
   if (segments.length === 4 && segments[3] === 'library') {

@@ -38,7 +38,7 @@ export function AuthCard({
 }) {
   return (
     <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-slate-50 px-4 py-10 dark:bg-slate-950">
-      {/* Same animated lines backdrop as the new-diagram + consent screens;
+      {/* Same animated lines backdrop as the new-document + consent screens;
           decorative, reduced-motion aware, hidden below sm. */}
       <AnimatedLinesBackdrop />
       <div className="relative z-10 w-full max-w-md">
@@ -415,7 +415,7 @@ export function messageOf(err: unknown, fallback: string): string {
 export const POST_AUTH_DEFAULT = '/new';
 
 // Sign-in default: a returning user with no `?redirect_url` lands on
-// their Explorer ("here's all your stuff") rather than the new-diagram
+// their Explorer ("here's all your stuff") rather than the new-document
 // welcome flow that suits a fresh sign-up. See docs/specs/014-identity/auth-and-guest-access.md.
 export const POST_AUTH_SIGNIN_DEFAULT = '/explorer';
 
@@ -477,7 +477,7 @@ export function authHrefWithReturn(
 // The visitor's current same-origin location (path + query + hash), for
 // use as the auth return path. Recomputes on client navigation
 // (usePathname) and on hash changes, so a Sign in click always carries
-// the live location — including a diagram's `?query` and `#t=<tab>` hash
+// the live location — including a document's `?query` and `#t=<tab>` hash
 // so you land back on the exact tab. SSR / first paint has no `window`,
 // so it starts at the bare pathname and upgrades on mount, well before
 // any click.

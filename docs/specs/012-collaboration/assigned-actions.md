@@ -1,7 +1,7 @@
 # Assigned actions
 
-**Status: implemented.** Assign a piece of work to a teammate directly from a
-diagram element: a new **Assign Action** tile attaches a named, described,
+**Status: implemented.** Assign a piece of work to a teammate directly from an
+element on the canvas: a new **Assign Action** tile attaches a named, described,
 assigned action to the element, optionally emailing the assignee. To make
 room for it the context menu's collaboration band splits in two:
 **Collaborate** (Assign Action + Comments, the people tiles) and
@@ -63,7 +63,7 @@ interface ElementAction {
 action?: ElementAction;
 ```
 
-**No email address is ever stored in the element blob.** Diagrams travel
+**No email address is ever stored in the element blob.** Documents travel
 (share links, embeds, exports); the blob carries only the Clerk `userId` /
 membership `memberId` and a display name, all already visible to anyone the
 assignee collaborates with. The assignee's address is resolved server-side
@@ -102,7 +102,7 @@ unchanged. The **Assign Action** tile:
 - **Always shows, for everyone.** The feature is not sign-in gated:
   a signed-out user (or a Clerk-less self-host, [Open source + distribution](../002-project-scope/open-source-and-business-model.md)) can assign an
   action to **themselves** — the picker offers a pinned **Myself** row in
-  every session, so actions double as personal to-dos on the diagram.
+  every session, so actions double as personal to-dos on the document.
   Only assigning to OTHER people needs an account: teammates come from
   teams ([Teams](../013-workspace/teams.md)), so a signed-out picker shows Myself alone plus a
   gentle "sign in and join a team to assign teammates" nudge with the
@@ -117,12 +117,12 @@ Clicking it opens the **Assign Action dialog** (its own component under
 
 - **Assignee**: a pinned **Myself** row (every session — the signed-in
   account, or the guest participant identity), then the **joined members
-  of the team whose shared library holds this diagram** (`GET
+  of the team whose shared library holds this document** (`GET
 /api/teams/<diagramTeamId>` members, via the existing api-client
   helper), each row showing the member's avatar bubble and display name
   (email local-part fallback, as TeamPane does). Members of the user's
   OTHER teams are deliberately not offered: they aren't members of this
-  diagram's team, so they almost certainly can't open the diagram to
+  document's team, so they almost certainly can't open the document to
   complete the action — offering them just manufactures the §4 access
   warning. **Invited-but-not-joined members ARE offered** (with the same
   amber "Invited" badge the team pane uses): work often gets divided up
@@ -134,14 +134,14 @@ Clicking it opens the **Assign Action dialog** (its own component under
   which needs an account to ask about. **Myself is preselected** when
   creating, so the common self-assignment is zero-click and handing off
   is one.
-  Myself-only states, each with its own nudge: a **personal diagram**
-  (no team library) offers the fix INLINE — "Move this diagram into a
+  Myself-only states, each with its own nudge: a **personal document**
+  (no team library) offers the fix INLINE — "Move this document into a
   team library to assign teammates", with a button per joined team that
-  performs the [Team shared diagrams](../013-workspace/team-shared-documents.md) placement move (`PUT /api/documents/<id>/folder`
+  performs the [Team shared documents](../013-workspace/team-shared-documents.md) placement move (`PUT /api/documents/<id>/folder`
   with the team id, landing at the team root) right from the dialog and
   reloads the picker with that team's members, no Explorer round-trip; a
   signed-in user with no teams gets the create-a-team link instead; a
-  signed-in user **not a member of the diagram's team** (a share-link
+  signed-in user **not a member of the document's team** (a share-link
   editor) gets a plain Myself-only picker; a signed-out user sees Myself
   plus the sign-in nudge (§2).
   The §4 access check stays as belt-and-braces on the picked assignee.
@@ -164,7 +164,7 @@ like comment mutations in `useEditorComments`), and, when the checkbox was
 ticked, fires the notify request (§4) fire-and-forget: email failure must
 never block or roll back the assignment.
 
-Assigning requires **edit access** to the diagram: the action rides the tab
+Assigning requires **edit access** to the document: the action rides the tab
 blob. View-role visitors see actions read-only (§7).
 
 ## 3. On-canvas surface: badge + popover
@@ -212,7 +212,7 @@ The server, not the client, establishes every fact that matters:
   an invited member) is a joined OR invited member of `<teamId>` (404
   otherwise, so there is no probing which users exist);
 - verifies the caller can access `documentId` (owner, team library, or
-  shared-with), and reads the **diagram name from D1**, not the body;
+  shared-with), and reads the **document name from D1**, not the body;
 - resolves the assignee's address from trusted server state
   (`team_members.email` / `email_lifecycle`), never a client header
   ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
@@ -226,12 +226,12 @@ The server, not the client, establishes every fact that matters:
 Then it sends the **action-assigned** email (new template in
 `email/templates.ts`, dispatcher in `email/notifications.ts` following the
 `notifyDocumentJoin` shape, best-effort in `ctx.waitUntil`): "{assigner}
-assigned you an action on _{diagram name}_", the action name, the first
-~200 characters of the description, and a CTA linking to the diagram. All
-user-influenced strings (action name, description, diagram name, assigner
+assigned you an action on _{document name}_", the action name, the first
+~200 characters of the description, and a CTA linking to the document. All
+user-influenced strings (action name, description, document name, assigner
 name) are HTML-escaped. The content stays within [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7: everything in
 the mail is either the assigner's own words being delivered on their behalf
-or a diagram/team fact the two already share.
+or a document/team fact the two already share.
 
 **Invited-assignee caveat:** the panel's / popover's "mine" match is by
 `userId`, so an action assigned to a not-yet-identified invitee (null
@@ -240,19 +240,19 @@ accept — acceptable v1: the action is still on the board, and reassigning
 (or completing) it works for anyone with edit access. Invitees the lazy
 claim already identified carry their real `userId` and match normally.
 
-**Access caveat:** assigning is allowed on any diagram the assigner can
+**Access caveat:** assigning is allowed on any document the assigner can
 edit, including ones the assignee cannot open. The dialog does a REAL
 check rather than guessing: picking an assignee fires
 `GET /api/teams/<teamId>/access-check?assigneeUserId=&documentId=`, which
 applies the same gates as notify-action (caller + assignee joined members
-of the team, caller can access the diagram, 404s that never probe) and
+of the team, caller can access the document, 404s that never probe) and
 answers `{ canAccess }` from the three legs the server can actually see —
-the assignee owns the diagram, is a joined member of the diagram's
+the assignee owns the document, is a joined member of the document's
 team-library team, or has previously opened it through a share link
 (`shared_with`). Only a definite "no" shows the hint ("{name} can't open
-this diagram yet: share it or move it to the team library"); while the
+this document yet: share it or move it to the team library"); while the
 check is in flight nothing shows, and if it errors the dialog falls back
-to the old heuristic (picked team ≠ the diagram's team → hedged "may not
+to the old heuristic (picked team ≠ the document's team → hedged "may not
 be able to open" wording). Auto-sharing on assign is explicitly not done
 (v1): quietly widening access as a side effect of an assignment is worse
 than a dead CTA.
@@ -260,7 +260,7 @@ than a dead CTA.
 ## 5. The Collaborate Panel
 
 ONE docked panel ([Panel corner docking](../007-editor/panel-docking.md)) for both ways work gets discussed / divided
-on a diagram — it replaced the separate Comments and Actions panels,
+on a document — it replaced the separate Comments and Actions panels,
 which crowded the same corner:
 
 - `PanelId` `'collaborate'` in `lib/panel-layout.ts` (replacing the old
@@ -360,7 +360,7 @@ consent.
 
 ## 7. Permissions, guests, view role
 
-- **Assign / edit / complete / delete** require edit access to the diagram
+- **Assign / edit / complete / delete** require edit access to the document
   (the mutation is a tab write). Signed-out users can assign only to
   themselves (their guest participant id); assigning to teammates needs
   the signed-in team picker. Every edit-role collaborator can complete or
@@ -398,13 +398,13 @@ enum-ish tokens, not user content.
 
 ## 9. Out of scope (v1)
 
-- ~~A cross-diagram "my actions" inbox~~ — shipped as the Explorer's
+- ~~A cross-document "my actions" inbox~~ — shipped as the Explorer's
   **Activity** page ([Activity page](../013-workspace/activity-page.md)), exactly the way this bullet predicted:
   a D1 projection (`collab_actions`) written beside every tab save,
   with the per-element blob still the source of truth.
 - Due dates, priorities, more than one action on an ordinary element (an
   Action panel is the place for a list), and multiple assignees.
-- Auto-sharing the diagram with the assignee on assign (§4 caveat).
+- Auto-sharing the document with the assignee on assign (§4 caveat).
 - View-role mutation endpoints (complete-without-edit-access).
 - Reminder / nag emails; exactly one send per assignment or reassignment
   with the box ticked, nothing recurring.

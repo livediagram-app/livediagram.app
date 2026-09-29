@@ -1,4 +1,4 @@
-// Diagram lifecycle + collaboration events (docs/specs/013-workspace/timeline.md §4.2, §4.3).
+// Document lifecycle + collaboration events (docs/specs/013-workspace/timeline.md §4.2, §4.3).
 //
 // One exported function per event, so a route's emit is a single line
 // and the copy for a given event lives in exactly one place. The
@@ -15,9 +15,9 @@ import { record, truncate } from './record';
 
 type DocumentRef = Pick<DocumentDTO, 'id' | 'name' | 'ownerId' | 'teamId'>;
 
-// Shared snapshot so every diagram bubble can render its name and link
-// without the reader fanning out into the diagrams table — and so a
-// deleted diagram's tombstone still knows what it was called.
+// Shared snapshot so every document bubble can render its name and link
+// without the reader fanning out into the documents table — and so a
+// deleted document's tombstone still knows what it was called.
 function documentSnapshot(liveDoc: DocumentRef): Record<string, unknown> {
   return { documentId: liveDoc.id, documentName: liveDoc.name };
 }
@@ -63,7 +63,7 @@ export async function recordDocumentDuplicated(
   );
 }
 
-// There is deliberately no recordDocumentDeleted. A deleted diagram is
+// There is deliberately no recordDocumentDeleted. A deleted document is
 // swept from the feed (docs/specs/013-workspace/timeline.md §3.5) and nothing is written in its
 // place: from the Timeline's point of view it never existed.
 
@@ -89,7 +89,7 @@ export async function recordDocumentMoved(
   );
 }
 
-// A diagram was published INTO a team library. The out direction is
+// A document was published INTO a team library. The out direction is
 // recordTeamDocumentRemoved below — it needs a different title, a different
 // audience and an owner change, so it could not share this one.
 export async function recordTeamDocumentAdded(
@@ -114,14 +114,14 @@ export async function recordTeamDocumentAdded(
   );
 }
 
-// A diagram was pulled back OUT of a team library into personal files
+// A document was pulled back OUT of a team library into personal files
 // (docs/specs/013-workspace/team-shared-documents.md + docs/specs/013-workspace/timeline.md). Not the same event as `document_moved`, which is
-// personal tidying: the team loses the diagram outright, and when the mover
+// personal tidying: the team loses the document outright, and when the mover
 // isn't the owner they take ownership of it too — so the previous owner loses
 // it as well.
 //
 // The audience is passed IN rather than resolved here, because by the time this
-// fires the diagram is already personal and `audienceForDocument` would return
+// fires the document is already personal and `audienceForDocument` would return
 // only its new owner. The caller resolves the OLD team's audience before the
 // move, exactly as the delete path does for the same reason.
 export async function recordTeamDocumentRemoved(
@@ -157,7 +157,7 @@ export async function recordTeamDocumentRemoved(
 // Emitted from the tab-save path rather than from `change_log`: the log
 // is tab-scoped and 90-day, and reading it back to derive a daily
 // rollup would be a join on every save. The dedupe key collapses a
-// whole day of saves by one person on one diagram into a single row
+// whole day of saves by one person on one document into a single row
 // whose occurred_at walks forward — otherwise the highest-volume write
 // in the product would bury every other event kind, stacking or not.
 export async function recordDocumentEdited(
@@ -197,8 +197,8 @@ export async function recordCommentAdded(
     {
       actorId,
       sourceType: 'document',
-      // The comment id, not the diagram id: two comments on one
-      // diagram are two events, and the UNIQUE key is what stops a
+      // The comment id, not the document id: two comments on one
+      // document are two events, and the UNIQUE key is what stops a
       // retried save re-emitting the same one.
       sourceId: comment.id,
       eventType: 'comment_added',
@@ -238,10 +238,10 @@ export async function recordCommentResolved(
 }
 
 // An action was assigned on an element (docs/specs/012-collaboration/assigned-actions.md). Reaches the assignee
-// as well as everyone who can see the diagram — usually overlapping
+// as well as everyone who can see the document — usually overlapping
 // sets, which is what mergeScopes is for. When the assignee is an
 // invited-but-not-joined member they have no owner id yet, so they get
-// the event once they join and the diagram audience covers them.
+// the event once they join and the document audience covers them.
 export async function recordActionAssigned(
   env: Env,
   liveDoc: DocumentRef,
@@ -291,7 +291,7 @@ export async function recordActionCompleted(
   );
 }
 
-// Share-link events are owner-only: who a diagram is shared with is the
+// Share-link events are owner-only: who a document is shared with is the
 // owner's business, and a team member seeing "a link was created" adds
 // nothing they can act on.
 export async function recordShareLinkCreated(
@@ -340,7 +340,7 @@ export async function recordShareLinkExpiring(
   );
 }
 
-// Offline Mode conversions (docs/specs/006-document/offline-mode.md). Owner-only: an offline diagram
+// Offline Mode conversions (docs/specs/006-document/offline-mode.md). Owner-only: an offline document
 // exists in exactly one browser, so nobody else has a stake in it.
 export async function recordDocumentOffline(
   env: Env,
@@ -386,7 +386,7 @@ export async function recordDocumentSynced(
   );
 }
 
-// Somebody followed a share link and opened the diagram.
+// Somebody followed a share link and opened the document.
 //
 // Owner-only, and coalesced per visitor per day: this is the one event a
 // stranger can trigger at will, so an uncoalesced emit would let anyone
@@ -404,7 +404,7 @@ export async function recordVisitorOpened(
     {
       // The visitor is the actor, but the row is scoped to the owner —
       // so it survives the "Other people" filter, which is exactly the
-      // audience for "somebody opened your diagram".
+      // audience for "somebody opened your document".
       actorId: visitorId,
       sourceType: 'document',
       sourceId: liveDoc.id,

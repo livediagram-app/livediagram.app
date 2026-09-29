@@ -32,7 +32,7 @@ import { requireOwnedDocument, type RouteContext } from './context';
 export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
   // /api/documents/<id>/share — owner-only.
-  //   GET     — list every share link for this diagram.
+  //   GET     — list every share link for this document.
   //   POST    — mint a new link. Body: { role: 'edit' | 'view' }
   //   DELETE  — revoke every link (back-compat with the
   //             single-code era).
@@ -67,12 +67,12 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
         body.expiry === 'week' || body.expiry === 'month' || body.expiry === 'sixMonths'
           ? body.expiry
           : 'never';
-      // Scope (docs/specs/013-workspace/tab-scoped-share-links.md): one of this diagram's tabs, or All tabs.
+      // Scope (docs/specs/013-workspace/tab-scoped-share-links.md): one of this document's tabs, or All tabs.
       const tabId = parseScope(body.tabId, access.tabs);
       if (tabId === INVALID_SCOPE) return badRequest('invalid tab');
       const code = generateShareCode();
       const link = await createShareLink(env, id, code, role, expiry, tabId);
-      // docs/specs/013-workspace/timeline.md §4.3: owner-only. Who a diagram is shared with is the
+      // docs/specs/013-workspace/timeline.md §4.3: owner-only. Who a document is shared with is the
       // owner's business — a team member seeing "a link was created"
       // learns nothing they can act on.
       ctx.waitUntil?.(recordShareLinkCreated(env, access, role, access.ownerId));
@@ -90,8 +90,8 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       for (const link of links) await deleteShareLink(env, link.code);
       await setDocumentShare(env, id, false);
       // Every link is gone, so the pending "expires soon" warning has
-      // nothing left to warn about. It's keyed on the DIAGRAM (one warning
-      // per diagram, not per link), so retracting it here is exact.
+      // nothing left to warn about. It's keyed on the DOCUMENT (one warning
+      // per document, not per link), so retracting it here is exact.
       await retractTimelineWarning(env, 'document', id, 'share_link_expiring');
 
       return json({ shareable: false, shareCode: null });
@@ -99,7 +99,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
   }
 
   // /api/documents/<id>/share-password — owner-only get/set of the
-  // diagram's optional share password (docs/specs/013-workspace/share-password.md). PUT body
+  // document's optional share password (docs/specs/013-workspace/share-password.md). PUT body
   // { password: string | null }; null / empty clears it.
   if (segments.length === 4 && segments[3] === 'share-password') {
     const id = segments[2]!;
@@ -127,19 +127,19 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
     if (access instanceof Response) return access;
 
     if (request.method === 'DELETE') {
-      // The ownership check above is on the URL's diagram; the delete is by
-      // code alone. Without this, owning ANY diagram let you revoke any link
+      // The ownership check above is on the URL's document; the delete is by
+      // code alone. Without this, owning ANY document let you revoke any link
       // whose code you had seen. Same guard as /extend below.
       const existing = await getShareLinkIncludingExpired(env, code);
       if (!existing || existing.documentId !== id) return notFound();
       await deleteShareLink(env, code);
       // Same retraction as the bulk revoke above. Deliberately not conditional
-      // on this being the diagram's LAST expiring link: the warning is per
-      // diagram, and the daily expiry sweep re-emits whatever is still inside
+      // on this being the document's LAST expiring link: the warning is per
+      // document, and the daily expiry sweep re-emits whatever is still inside
       // its window, so the worst case is a day of silence rather than a
       // deadline the owner has already dealt with.
       await retractTimelineWarning(env, 'document', id, 'share_link_expiring');
-      // Tell every connected peer in this diagram's room that the code just
+      // Tell every connected peer in this document's room that the code just
       // got revoked: its holders hard-redirect out, and the room closes their
       // sockets. The persistence above is the authoritative revoke.
       await broadcastShareOp(env, id, { kind: 'share-revoked', code });
@@ -190,7 +190,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
 }
 
 // A link's scope from a request body (docs/specs/013-workspace/tab-scoped-share-links.md): null or absent
-// is All tabs; a string must name one of the diagram's own tabs. Anything
+// is All tabs; a string must name one of the document's own tabs. Anything
 // else is INVALID_SCOPE, which the routes answer with 400 invalid tab.
 const INVALID_SCOPE = Symbol('invalid scope');
 

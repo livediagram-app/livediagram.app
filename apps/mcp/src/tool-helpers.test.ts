@@ -96,7 +96,7 @@ describe('errorResult', () => {
 });
 
 describe('deepLink', () => {
-  it('points at the diagram route on the production host', () => {
+  it('points at the document route on the production host', () => {
     expect(deepLink('abc-123')).toBe('https://livediagram.app/document/abc-123');
   });
 });
@@ -116,7 +116,7 @@ describe('shareUrl', () => {
 });
 
 describe('loadTab', () => {
-  // An api double that answers the diagram and tab reads, recording the paths
+  // An api double that answers the document and tab reads, recording the paths
   // it was asked for so each case can see which tab was fetched.
   function apiEnv(tabs: Array<{ id: string }>) {
     const paths: string[] = [];
@@ -150,7 +150,7 @@ describe('loadTab', () => {
     expect(paths.at(-1)).toBe('/api/documents/d1/tabs/t2');
   });
 
-  it('is null for a diagram with no tabs, without a tab read', async () => {
+  it('is null for a document with no tabs, without a tab read', async () => {
     const { env, paths } = apiEnv([]);
     expect(await loadTab(env, 'tok', 'd1')).toBeNull();
     expect(paths).toEqual(['/api/documents/d1']);

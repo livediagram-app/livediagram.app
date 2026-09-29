@@ -38,7 +38,7 @@ export function teamRemovalTelemetryType(kind: TeamRemovalKind): 'Self' | 'Invit
 export function teamDeleteCopy(teamName: string | undefined) {
   return {
     title: 'Delete team?',
-    message: `"${teamName}" and its member list will be permanently deleted. Diagrams are not affected.`,
+    message: `"${teamName}" and its member list will be permanently deleted. Documents are not affected.`,
     confirmLabel: 'Delete team',
   };
 }

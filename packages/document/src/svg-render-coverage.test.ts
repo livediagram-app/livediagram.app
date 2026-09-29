@@ -10,7 +10,7 @@ import type { ShapeKind } from './shape-kind';
 // DRAWN without a browser.
 //
 // That path is not cosmetic. renderElementsToSvg backs the SVG / PNG / PDF
-// exports, the Explorer's diagram thumbnails, the live image share link, and
+// exports, the Explorer's document thumbnails, the live image share link, and
 // the inline images the MCP server returns. Those run in a Worker, so a kind
 // that throws here is a 500 rather than a wonky rectangle, and a kind that
 // silently renders nothing is a blank thumbnail nobody gets an error about.

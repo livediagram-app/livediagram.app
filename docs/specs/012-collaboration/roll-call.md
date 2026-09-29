@@ -54,7 +54,7 @@ bottom edge.
   a roll is taken while the card is on screen they cascade in.
 - **Take roll** at the foot as the accent bar; once taken, **Take again**.
 - Before the first roll, the shared invitation ("Nobody recorded yet", "Take
-  the roll to freeze who is here into the diagram").
+  the roll to freeze who is here into the document").
 
 ## Guests count
 

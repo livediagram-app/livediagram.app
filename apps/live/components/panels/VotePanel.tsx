@@ -57,7 +57,7 @@ export function VotePanel({
   // The active tab's elements, only to resolve a voted id to a label.
   elements: Element[];
   // Everyone in the room right now (remote presence + you). The
-  // denominator for turnout; 1 on a solo diagram.
+  // denominator for turnout; 1 on a solo document.
   participantCount: number;
   // The ranked results from useVoteReview — the SAME array the
   // walkthrough steps through, so the list and Previous / Next can never

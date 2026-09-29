@@ -39,7 +39,7 @@ export const WEEK2_EMAILS = email(
 export const ACTIVATION_EMAILS = email(
   'Activation',
   'Activation Nudges',
-  'A new account with no diagrams yet, about three days after sign-up.',
+  'A new account with no documents yet, about three days after sign-up.',
   'neutral',
 );
 
@@ -53,7 +53,7 @@ export const WIN_BACK_EMAILS = email(
 export const MILESTONE_EMAILS = email(
   'Milestone',
   'Milestone Emails',
-  'An owner reached their tenth diagram. Sent once per account.',
+  'An owner reached their tenth document. Sent once per account.',
 );
 
 export const FIRST_SHARE_EMAILS = email(
@@ -76,14 +76,14 @@ export const INVITE_RESPONSE_EMAILS = email(
 
 export const DOCUMENT_JOINED_EMAILS = email(
   'DocumentJoined',
-  'Diagram Joined Emails',
-  'An owner told that someone opened one of their shared diagrams for the first time.',
+  'Document Joined Emails',
+  'An owner told that someone opened one of their shared documents for the first time.',
 );
 
 export const COMMENT_EMAILS = email(
   'CommentNotification',
   'Comment Notifications',
-  'An owner told someone commented on their diagram. At most one per diagram in a burst.',
+  'An owner told someone commented on their document. At most one per document in a burst.',
 );
 
 export const ACTION_EMAILS = email(

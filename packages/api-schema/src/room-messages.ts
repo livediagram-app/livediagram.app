@@ -40,18 +40,18 @@ export type AvatarPresence = {
   // on, or null / absent when standing.
   //
   // Occupancy rides HERE, on ephemeral presence, and is deliberately never
-  // written to the diagram: a chair therefore cannot be left permanently
+  // written to the document: a chair therefore cannot be left permanently
   // occupied by somebody who closed their laptop, cannot conflict between two
   // clients, and reaches D1, the change log and undo not at all. Optional so a
   // packet from an older client still parses as "standing".
   seatedOn?: string | null;
 };
 
-// Room op kinds that are ephemeral signals: they mutate no diagram state,
+// Room op kinds that are ephemeral signals: they mutate no document state,
 // so they relay unordered (no seq) and from any role.
 //
 // `poll-answer` (docs/specs/012-collaboration/live-poll.md) is here for the ROLE half rather than the
-// presence half: answering a poll changes nothing on the diagram, and a
+// presence half: answering a poll changes nothing on the document, and a
 // presenter pulse-checking an audience on a view link is the main thing
 // polls are for, so a view-role participant must be able to send one.
 // `poll-start` / `poll-end` are deliberately NOT here — they stay behind
@@ -59,7 +59,7 @@ export type AvatarPresence = {
 // can't start one or end someone else's.
 // `avatar` (docs/specs/008-canvas/avatar-mode.md) is presence in the plainest sense: someone's walking
 // character, at cursor rates, mutating nothing. View-role senders included —
-// an audience member walking around a diagram they were shown a link to is
+// an audience member walking around a document they were shown a link to is
 // the same kind of harmless as their cursor.
 // This classification used to live inside the room worker while the editor kept
 // its own list of the kinds it sends and handles, in another app, with nothing
@@ -110,7 +110,7 @@ export const PRESENCE_OP_KINDS = [
   'focus-here',
 ] as const;
 
-// Room op kinds that DO change the diagram: they get a monotonic `seq` within
+// Room op kinds that DO change the document: they get a monotonic `seq` within
 // the room's epoch, land in the bounded catch-up log so a reconnecting peer can
 // replay them (docs/specs/012-collaboration/realtime-conflict-resolution.md), and are refused from a view-role sender.
 //
@@ -128,7 +128,7 @@ export const MUTATION_OP_KINDS = [
   // One answer, idea, checklist tick or comment change on one element
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
-  'diagram-meta',
+  'document-meta',
   'log',
   'log-remove',
   'poll-start',
@@ -150,7 +150,7 @@ export const MUTATION_OP_KINDS = [
 // `share-rescoped` (docs/specs/013-workspace/tab-scoped-share-links.md) for the same reason as
 // `share-revoked`: a forged one would reload every holder of a code.
 //
-// `diagram-trashed` (docs/specs/013-workspace/trash.md): the diagram went to the
+// `document-trashed` (docs/specs/013-workspace/trash.md): the document went to the
 // Trash, so every session ends with the deleted state. A forged one would end
 // everyone's session.
 export const SYSTEM_OP_KINDS = [
@@ -227,7 +227,7 @@ export type FacilitatorAction =
 
 // Outgoing WebSocket frames the room sends to clients.
 // `presence` is the full participant list refreshed on join / leave;
-// `op` is an arbitrary diagram change rebroadcast from another client.
+// `op` is an arbitrary document change rebroadcast from another client.
 // `op` is intentionally `unknown` so the room itself stays agnostic
 // of the client's op union — clients narrow it via their own
 // `RoomOp` type and ignore frames they don't recognise.
@@ -318,7 +318,7 @@ export type ClientMessage =
 export type RoomOp =
   // A new audit-log entry just landed. Used to mirror activity into
   // every connected client's panel without a round-trip through D1.
-  // The owner of the diagram is the persistent writer; everyone else
+  // The owner of the document is the persistent writer; everyone else
   // updates their local list when this op arrives.
   | { kind: 'log'; entry: ChangeLogEntry }
   // The named log entry was removed (e.g. via Undo or Revert). Other
@@ -387,21 +387,21 @@ export type RoomOp =
       delta: 1 | -1;
       round?: string;
     }
-  // Diagram-level metadata changed: rename, tab reorder, tab add /
+  // Document-level metadata changed: rename, tab reorder, tab add /
   // delete. Carries the new ordered list of tab summaries (id + name
   // + order) so receivers can update the TabBar without fetching the
   // full tab payloads.
   | {
-      kind: 'diagram-meta';
+      kind: 'document-meta';
       name: string;
-      // `folder` (docs/specs/006-document/tab-folders.md) is the per-diagram folder name, optional so
+      // `folder` (docs/specs/006-document/tab-folders.md) is the per-document folder name, optional so
       // an older peer that omits it is treated as loose — no parse break.
       // `outOfScope` marks a tab outside a tab-scoped session's scope
       // (docs/specs/013-workspace/tab-scoped-share-links.md): its name is blanked by the room.
       tabs: { id: string; name: string; orderIndex: number; folder?: string; outOfScope?: true }[];
     }
   // `tabId` scopes the selection to the tab it lives on: element ids
-  // are only unique per tab in older diagrams (tab duplication used to
+  // are only unique per tab in older documents (tab duplication used to
   // copy ids verbatim), so an unscoped selection rendered — and, via
   // the docs/specs/007-editor/live-app.md concurrent-selection lock, LOCKED — the same-id element
   // on every other tab too. Optional for wire compatibility: a frame
@@ -496,7 +496,7 @@ export type RoomOp =
   // unordered, like presence.
   //
   // The host opened a poll. Replaces any poll already on screen (one at a
-  // time per diagram).
+  // time per document).
   | { kind: 'poll-start'; poll: LivePoll }
   // One participant's answer; `null` means they skipped. Keyed by sender
   // on receipt, so re-sending REPLACES that person's earlier answer
@@ -510,7 +510,7 @@ export type RoomOp =
   // The host ended the poll: drop the question, the answers, and the
   // panel everywhere. Edit-role only, like poll-start.
   | { kind: 'poll-end'; pollId: string }
-  // A share link was revoked by the diagram owner. Every connected
+  // A share link was revoked by the document owner. Every connected
   // peer using that share code (the `X-Share-Code` they handed in to
   // hydrate) should hard-redirect to a "share revoked" surface so
   // they don't continue to read or hold open a stale connection.
@@ -524,7 +524,7 @@ export type RoomOp =
   // A Q&A board's whole state after a server write (docs/specs/012-collaboration/qa-board.md). Replaces the
   // element's notes when `rev` is newer than the local `qaRev`.
   | { kind: 'qa'; tabId: string; elementId: string; notes: QaNote[]; rev: number }
-  // The diagram went to the Trash (docs/specs/013-workspace/trash.md). Every
+  // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.
   | { kind: 'document-trashed' };

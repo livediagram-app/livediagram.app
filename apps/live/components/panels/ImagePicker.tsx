@@ -80,7 +80,7 @@ export function ImagePicker({
     setUploadError(null);
     setUploading(true);
     try {
-      // Cloud diagrams upload to the gallery; offline diagrams embed the
+      // Cloud documents upload to the gallery; offline documents embed the
       // file locally as a data URI (docs/specs/006-document/offline-mode.md) so no server copy is created.
       const { image } = await addImageFileForDocument(ownerId, documentId, file);
       onSelect(image);
@@ -102,7 +102,7 @@ export function ImagePicker({
   // the paste one does too (a focused button inside the dialog
   // doesn't bubble the paste event to the dialog otherwise).
   // The pasted file goes through handleFile as an effect event, so the listener attaches once and
-  // still uploads with the newest owner / diagram / onSelect.
+  // still uploads with the newest owner / document / onSelect.
   const pasteFile = useEffectEvent((file: File) => void handleFile(file));
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
@@ -123,8 +123,8 @@ export function ImagePicker({
     return () => document.removeEventListener('paste', onPaste);
   }, []);
 
-  // Gallery picks re-home for offline diagrams (docs/specs/006-document/offline-mode.md): a bare gallery id
-  // inside an offline diagram would break once the server's 30-day unused-
+  // Gallery picks re-home for offline documents (docs/specs/006-document/offline-mode.md): a bare gallery id
+  // inside an offline document would break once the server's 30-day unused-
   // image cleanup reaps it (nothing server-side references it), so the bytes
   // are fetched and embedded as a data URI instead, exactly like Take
   // Offline does for existing references.

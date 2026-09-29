@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 // The "preview on its way" state of a DocumentThumbnail (docs/specs/006-document/document-snapshots.md):
-// the same three-node sketch as the empty-diagram placeholder, drawing
+// the same three-node sketch as the empty-document placeholder, drawing
 // itself. The first node traces, two connectors grow out of it, their
 // arrowheads land, the other two nodes trace, then a dot runs down each
 // connector and the sketch fades out to start over (`thumbnail-loader.css`).
@@ -11,9 +11,9 @@ import type { CSSProperties } from 'react';
 // changes size or tone when the picture arrives and a half-drawn sketch
 // can't be mistaken for a real snapshot. Solid strokes rather than the
 // placeholder's dashes: dashed means "nothing drawn yet", which is what a
-// thumbnail says once it KNOWS the diagram is empty.
+// thumbnail says once it KNOWS the document is empty.
 //
-// Each loader starts at a point in the cycle derived from its diagram id,
+// Each loader starts at a point in the cycle derived from its document id,
 // so a grid of loading cards ripples instead of pulsing in lockstep.
 // Reduced motion shows the finished sketch, still.
 
@@ -74,7 +74,7 @@ export function ThumbnailLoader({ seed }: { seed: string }) {
   );
 }
 
-// A stable offset into the cycle for this diagram: FNV-1a over the id.
+// A stable offset into the cycle for this document: FNV-1a over the id.
 // Stable across renders and mounts, so a remount doesn't jump the phase.
 export function phaseMs(seed: string): number {
   let hash = 0x811c9dc5;

@@ -243,7 +243,7 @@
  *
  * Staggered by `nth-child` on the container rather than by threading an
  * index prop through four row/card components. That also means the
- * folders and diagrams in one view cascade in document order for free,
+ * folders and documents in one view cascade in document order for free,
  * instead of each list restarting its own count.
  *
  * Like the Timeline's, this relies on CSS animations firing on mount:

@@ -232,13 +232,13 @@ export function EncryptedArt() {
   );
 }
 
-/* Private by default: a diagram tile gated by a small lock; an
+/* Private by default: a document tile gated by a small lock; an
    "Open" button to the side toggles on/off with the fa-pulse beat. */
 export function PrivateByDefaultArt() {
   return (
     <PrivacyFrame>
       <svg viewBox="0 0 220 90" className="absolute inset-0 h-full w-full">
-        {/* Private diagram */}
+        {/* Private document */}
         <rect
           x="20"
           y="20"

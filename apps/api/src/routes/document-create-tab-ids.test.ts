@@ -7,9 +7,9 @@ import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 import type { Tab } from '@livediagram/document';
 
-// A created diagram never writes into a tab another diagram holds
+// A created document never writes into a tab another document holds
 // (docs/specs/006-document/offline-mode.md, "Shared tabs fork"): a seeded tab
-// whose id is already taken outside this diagram is created under a fresh id.
+// whose id is already taken outside this document is created under a fresh id.
 // That is what makes a synced-back offline copy a fork rather than an
 // overwrite, and what stops a create from rewriting someone else's tab.
 
@@ -116,7 +116,7 @@ describe('POST /api/documents with a tab id held elsewhere', () => {
     expect(JSON.parse(deck!.presentation as string).decks[0].slides[0].tabId).toBe(fork!.id);
   });
 
-  it('never rewrites a tab in someone else’s diagram', async () => {
+  it('never rewrites a tab in someone else’s document', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'V', 'victim');
     await seed(db, 'V', 'vt', 'Plans');

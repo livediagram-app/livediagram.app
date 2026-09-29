@@ -1,6 +1,6 @@
 // URL safety for user-entered link addresses (docs/specs/014-identity/auth-and-guest-access.md — security). A `url`
 // link is stored on an element / table cell / link-card and FOLLOWED by other
-// viewers of a shared diagram, so an unsafe scheme is a stored-XSS vector:
+// viewers of a shared document, so an unsafe scheme is a stored-XSS vector:
 // `window.open('javascript:...')` executes in our origin (noopener doesn't stop
 // it). We allow only http / https / mailto, refusing javascript:, data:,
 // vbscript:, file:, etc. — enforced both at store time (normaliseUrl) and at

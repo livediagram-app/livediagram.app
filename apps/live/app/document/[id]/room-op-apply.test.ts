@@ -118,11 +118,11 @@ describe('applyRoomOpToTabs', () => {
     expect(next[0]!.folder).toBe('mine');
   });
 
-  it('diagram-meta reorders, keeps identity, and adds placeholders', () => {
+  it('document-meta reorders, keeps identity, and adds placeholders', () => {
     const one = tab();
     const two = tab({ id: 't2', name: 'Tab 2' });
     const next = applyRoomOpToTabs([one, two], {
-      kind: 'diagram-meta',
+      kind: 'document-meta',
       name: 'D',
       tabs: [
         { id: 't2', name: 'Tab 2', orderIndex: 0 },

@@ -64,7 +64,7 @@ type EditorImagesDeps = {
   // Selects an element by id (or clears with null). Newly placed
   // images select themselves so the user can immediately resize.
   setSelectedId: (id: string | null) => void;
-  // The current diagram id (null before hydration). The picker +
+  // The current document id (null before hydration). The picker +
   // recent-images list only operate once it's known.
   documentId: string | null;
   // The local participant id — the owner the images belong to.
@@ -91,7 +91,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
 
   // Loads once on documentId mount; refreshed manually by
   // refreshRecentImages after a successful picker upload so a
-  // newly-uploaded image surfaces without a diagram reload. View-
+  // newly-uploaded image surfaces without a document reload. View-
   // role visitors skip the fetch (the accordion is hidden for them
   // anyway via the !isReadOnly gate at the call site).
   // The owner is read when the load runs, not a trigger of its own (it is
@@ -199,7 +199,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
     // embedMode also blocks the clipboard's paste-image upload, which
     // funnels through this handler after uploading.
     if (editsBlocked || embedMode) return;
-    // Offline diagrams must stay self-contained (docs/specs/006-document/offline-mode.md): a bare gallery
+    // Offline documents must stay self-contained (docs/specs/006-document/offline-mode.md): a bare gallery
     // id would break once the server's unused-image cleanup reaps it, so
     // fetch the bytes and place a data-URI embed instead. Re-entry with
     // the data URI as the id lands in the placement branch below.

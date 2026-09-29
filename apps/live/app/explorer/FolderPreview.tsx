@@ -1,8 +1,8 @@
 'use client';
 
 // The folder card's content preview (docs/specs/013-workspace/folder-content-previews.md): a centred 2x2 mosaic of
-// up to four small sheets — the diagrams the folder holds (the same
-// cached SVG snapshot the diagram cards use, so nothing new is fetched
+// up to four small sheets — the documents the folder holds (the same
+// cached SVG snapshot the document cards use, so nothing new is fetched
 // or rendered server-side), its subfolders, and a "+N" tile when there
 // is more inside than fits.
 //
@@ -15,8 +15,8 @@ import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { FolderCardGlyph } from './explorer-folder-cards';
 import { folderPreviewTiles, type FolderPreviewContents } from './folder-preview-tiles';
 
-// Half the box each way whatever the count, so a one-diagram folder and
-// a four-diagram folder use the same tile scale across the grid. The
+// Half the box each way whatever the count, so a one-document folder and
+// a four-document folder use the same tile scale across the grid. The
 // flex-wrap centring is what puts one tile in the middle and two side by
 // side without a per-count layout.
 const tileBox =

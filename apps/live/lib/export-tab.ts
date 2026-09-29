@@ -21,7 +21,7 @@ import {
   type BoxedElement,
   type Tab,
 } from '@livediagram/document';
-// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the diagram package so the
+// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {

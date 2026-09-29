@@ -6,7 +6,7 @@ import { HoverCard, Glyph } from '@livediagram/ui';
 
 // The List / Card segmented toggle in the Explorer header (docs/specs/006-document/document-snapshots.md).
 // Lets you switch how the browse views render the same folders +
-// diagrams: dense rows, or cards with a large SVG snapshot.
+// documents: dense rows, or cards with a large SVG snapshot.
 export function ViewToggle({
   mode,
   onChange,
@@ -40,7 +40,7 @@ export function ViewToggle({
         active={mode === 'card'}
         onClick={() => choose('card')}
         label="Card view"
-        description="Cards with a large preview of each diagram."
+        description="Cards with a large preview of each document."
       >
         <GridIcon />
       </ToggleButton>

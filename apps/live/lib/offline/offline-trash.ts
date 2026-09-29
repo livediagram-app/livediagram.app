@@ -1,8 +1,8 @@
 // The local Trash (docs/specs/013-workspace/trash.md, "The local Trash"): an
-// Offline Mode diagram lives only in this browser, so its Trash does too.
+// Offline Mode document lives only in this browser, so its Trash does too.
 // Deleting one stamps `trashedAt` on its IndexedDB record; the record keeps
 // everything else. The 30-day rule is the api's, applied whenever the app
-// lists diagrams instead of by a cron.
+// lists documents instead of by a cron.
 
 import { isTrashExpired, trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
 import {

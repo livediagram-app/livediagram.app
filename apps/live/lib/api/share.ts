@@ -1,5 +1,5 @@
 // Share-link + share-password calls (docs/specs/013-workspace/share-password.md): resolve a share code to
-// a diagram, list/create/delete links, and set the diagram password.
+// a document, list/create/delete links, and set the document password.
 import type {
   DocumentResponse,
   ShareLink,
@@ -20,7 +20,7 @@ import {
   apiFetch,
 } from './core';
 
-// Resolve a share code to a full diagram + the role granted by that
+// Resolve a share code to a full document + the role granted by that
 // code. Visitors landing on `/document/shared?s=<code>` use
 // this; revoked codes return 404 from the API. Deduped by `${code}|
 // ${ownerId}` so Strict Mode's double-invoke doesn't fire two share
@@ -36,7 +36,7 @@ async function _apiLoadShared(
   const res = await apiFetch(`${API_BASE}/share/${code}`, {
     headers: await apiHeaders(ownerId, { share: null }),
   });
-  // Password gate (docs/specs/013-workspace/share-password.md): 401 = the diagram is protected and we sent
+  // Password gate (docs/specs/013-workspace/share-password.md): 401 = the document is protected and we sent
   // no (or no longer-valid) password; 403 = we sent a wrong one. Both
   // surface as `passwordRequired` so the editor shows the gate; only
   // 403 flags `invalid` so it can show an error line. The password the
@@ -63,7 +63,7 @@ export const apiLoadShared = dedupeInFlight(
 // Deduped on `${ownerId}|${id}`: editor mount fires this for the
 // share-dialog state alongside the other read endpoints. Strict
 // Mode doubling collapses to one fetch.
-// Returns the diagram's share links AND its current share password
+// Returns the document's share links AND its current share password
 // (docs/specs/013-workspace/share-password.md) in one owner-only round-trip — the Share dialog needs both.
 async function _apiListShareLinks(
   ownerId: string,
@@ -80,7 +80,7 @@ export const apiListShareLinks = dedupeInFlight(
   (ownerId, id) => `${ownerId}|${id}`,
 );
 
-// Set (or clear, with null / empty) the diagram's share password.
+// Set (or clear, with null / empty) the document's share password.
 // Owner-only on the api side. Returns the stored value (normalised).
 export async function apiSetSharePassword(
   ownerId: string,

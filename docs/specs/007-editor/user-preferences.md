@@ -1,15 +1,15 @@
 # User preferences
 
 Per-user editor preference flags that toggle behaviour without
-changing diagram content. Most are exposed through a small
+changing document content. Most are exposed through a small
 Settings dialog launched from the footer (the **Application settings**
 gear button to the left
 of the dark-mode toggle); a small number are per-tool toggles
 that live next to the tool they affect (see the UI placement
 section below) rather than in Settings. Either way the
 persistence model is the same. Replaces the earlier
-per-diagram-settings shape: preferences are about the user's
-editor experience, not about any particular diagram, so they live
+per-document-settings shape: preferences are about the user's
+editor experience, not about any particular document, so they live
 once per account / device and apply everywhere.
 
 ## Where preferences live
@@ -75,7 +75,7 @@ blob. Don't fold panel placement into `UserPreferences`.
 ### Sign-up migration
 
 `POST /api/migrate` ([Auth + guest access](../014-identity/auth-and-guest-access.md)) moves `user_preferences.owner_id`
-along with the diagrams + folders + shared-with rows, so a guest
+along with the documents + folders + shared-with rows, so a guest
 who signs up keeps the settings they'd already chosen. Idempotent
 in the same shape as the existing migrations: a second call with
 the same `guestOwnerId` moves zero rows.
@@ -214,7 +214,7 @@ type UserPreferences = {
   // toasts, not email.
   //
   // When false, suppress the "someone first opened one of my shared
-  // diagrams" email. Defaults to true (notify).
+  // documents" email. Defaults to true (notify).
   notifyDocumentJoin?: boolean;
   // When false, suppress the "someone accepted/declined a team invite I
   // sent" email (sent to the team's admins). Defaults to true (notify).
@@ -339,8 +339,8 @@ Missing key === undefined === default behaviour. Concretely:
 - `notificationsEnabled` undefined / true → notifications on (the
   default). Setting it to `false` suppresses the success + info toasts
   the editor shows for consequential, otherwise-silent actions (a
-  diagram moved to a folder, duplicated, or deleted from a long list; a
-  tab linked into another diagram). **Error toasts are never gated by
+  document moved to a folder, duplicated, or deleted from a long list; a
+  tab linked into another document). **Error toasts are never gated by
   this** — a failure the user would otherwise never see still surfaces,
   so turning notifications off quiets the chatter without hiding
   breakage. The gate is read fresh on each toast push (a synchronous

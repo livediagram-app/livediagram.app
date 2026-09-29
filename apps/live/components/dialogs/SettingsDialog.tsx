@@ -281,7 +281,7 @@ export function SettingsDialog({
 
       <footer className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
         <p className="text-[10px] text-slate-500 dark:text-slate-400">
-          Settings sync to your account and apply to every diagram you open, on every device you
+          Settings sync to your account and apply to every document you open, on every device you
           sign in from.
         </p>
       </footer>

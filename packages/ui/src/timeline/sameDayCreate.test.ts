@@ -35,7 +35,7 @@ describe('collapseSameDayCreate', () => {
     expect(collapseSameDayCreate([edit, create]).map((e) => e.id)).toEqual(['e', 'c']);
   });
 
-  it('keys on the diagram, not the day alone', () => {
+  it('keys on the document, not the day alone', () => {
     const create = event({ id: 'c', eventType: 'document_created', title: 'Document Created' });
     const other = event({ id: 'e', snapshot: { documentId: 'd2', documentName: 'Other' } });
     expect(collapseSameDayCreate([other, create]).map((e) => e.id)).toEqual(['e', 'c']);
@@ -43,7 +43,7 @@ describe('collapseSameDayCreate', () => {
 
   it('leaves every other same-day kind alone', () => {
     const create = event({ id: 'c', eventType: 'document_created', title: 'Document Created' });
-    const rename = event({ id: 'r', eventType: 'document_renamed', title: 'Diagram Renamed' });
+    const rename = event({ id: 'r', eventType: 'document_renamed', title: 'Document Renamed' });
     const comment = event({ id: 'm', eventType: 'comment_added', title: 'Comment Added' });
     expect(collapseSameDayCreate([comment, rename, create]).map((e) => e.id)).toEqual([
       'm',
@@ -52,7 +52,7 @@ describe('collapseSameDayCreate', () => {
     ]);
   });
 
-  it('keeps an edit whose snapshot names no diagram', () => {
+  it('keeps an edit whose snapshot names no document', () => {
     const create = event({ id: 'c', eventType: 'document_created', title: 'Document Created' });
     const edit = event({ id: 'e', snapshot: {} });
     expect(collapseSameDayCreate([edit, create]).map((e) => e.id)).toEqual(['e', 'c']);

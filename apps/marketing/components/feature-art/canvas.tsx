@@ -459,8 +459,8 @@ export function FoldersArt() {
   );
 }
 
-// Tab folders (docs/specs/006-document/tab-folders.md): grouping a diagram's TABS along the tab bar,
-// distinct from FoldersArt above (filing whole diagrams in the explorer).
+// Tab folders (docs/specs/006-document/tab-folders.md): grouping a document's TABS along the tab bar,
+// distinct from FoldersArt above (filing whole documents in the explorer).
 export function TabFoldersArt() {
   const members = [
     { name: 'Auth', c: '#8b5cf6' },
@@ -1027,7 +1027,7 @@ export function AvatarModeArt() {
 }
 
 // Custom themes (docs/specs/011-theme/custom-themes.md): build your own palette, save it to your account,
-// and reuse it across diagrams like any built-in theme. A swatch row with one
+// and reuse it across documents like any built-in theme. A swatch row with one
 // selected, then a preview adopting the custom (brand-purple) colours.
 export function CustomThemesArt() {
   const swatches = ['#7c3aed', '#0ea5e9', '#ec4899', '#16a34a', '#f59e0b', '#0f172a'];

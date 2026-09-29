@@ -5,7 +5,7 @@
 
 // The assignee/assigner identity is denormalised for rendering only (who to
 // show), never for permissions: anyone with edit access can complete, edit,
-// or delete an action. No email address is ever stored here — diagrams
+// or delete an action. No email address is ever stored here — documents
 // travel (share links, embeds, exports); the notify endpoint resolves the
 // address server-side from team membership at send time.
 export type ElementActionAssignee = {

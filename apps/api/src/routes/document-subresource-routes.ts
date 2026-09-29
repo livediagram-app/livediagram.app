@@ -1,7 +1,7 @@
-// /api/documents — diagram metadata, per-tab content, copy, folder
+// /api/documents — document metadata, per-tab content, copy, folder
 // assignment, tab linking, comments, share links, the realtime WS
 // upgrade, and the change-log. The largest resource: every sub-path
-// under a diagram id lives here.
+// under a document id lives here.
 
 import type { Tab } from '@livediagram/document';
 import {
@@ -66,7 +66,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   if (qa) return qa;
   // /api/documents/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
-  //            share code (view OR edit) for this diagram, so
+  //            share code (view OR edit) for this document, so
   //            view-only visitors can load tab content (docs/specs/014-identity/auth-and-guest-access.md +
   //            docs/specs/006-document/per-tab-storage.md). This is a viewer's only path to content:
   //            the share resolve returns summaries, and the
@@ -94,25 +94,25 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // Blank other people's comment author ids before handing the tab
       // to a non-owner: a visitor should only ever see their OWN author
       // id (so they can delete-own), never another participant's owner
-      // id. The diagram owner sees everything (viewerId === ownerId is a
-      // no-op). Same anti-claim posture as redactOwner on the diagram.
+      // id. The document owner sees everything (viewerId === ownerId is a
+      // no-op). Same anti-claim posture as redactOwner on the document.
       const safe =
         owner === existing.ownerId
           ? tab
           : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
       // docs/specs/013-workspace/timeline.md §4.3: somebody arrived through a SHARE LINK and opened this.
-      // The tab read is the honest signal for "opened" — the diagram GET is hit
+      // The tab read is the honest signal for "opened" — the document GET is hit
       // by link previews and polls, whereas fetching tab content means a person
       // is looking at the canvas. Coalesced per visitor per day inside the
       // emit, so a stranger with a link can't flood the owner's feed by
       // refreshing.
       //
       // Gated on a share code being PRESENT, not merely on the caller not being
-      // the owner. The read gate also admits any joined member of the diagram's
+      // the owner. The read gate also admits any joined member of the document's
       // team (docs/specs/013-workspace/team-shared-documents.md), who presents no code — so the looser test reported
       // teammates browsing their own library as visitors. The bubble reads
       // "opened by a visitor · Someone with the share link" and files under the
-      // sharing filter, so an owner saw that for a diagram they had never
+      // sharing filter, so an owner saw that for a document they had never
       // shared a link for, once per teammate per day.
       if (owner !== existing.ownerId && shareCodeOf(request) !== null) {
         ctx.waitUntil?.(
@@ -146,7 +146,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       }
       // Fold in whatever answers, ideas, ticks and dots the room holds that
       // this client hadn't seen when it snapshotted, so a stale save can't
-      // erase them from D1 (docs/specs/012-collaboration/collab-race-hardening.md phase 3). A no-op for a diagram with no
+      // erase them from D1 (docs/specs/012-collaboration/collab-race-hardening.md phase 3). A no-op for a document with no
       // room, or a save with no room cursor.
       // In parallel with the stored tab it doesn't depend on.
       const [{ tab: body, commentAuthors }, existingTab] = await Promise.all([
@@ -265,7 +265,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     }
     if (request.method === 'DELETE') {
       // A tab-scoped link can't delete the tab it is scoped to: that would
-      // end its own link, and the diagram's structure isn't the visitor's.
+      // end its own link, and the document's structure isn't the visitor's.
       const grant = await gateGrant(ctx, id, existing.ownerId, existing.teamId);
       if (grant?.tabScope !== null) return forbidden();
       await deleteTabRow(env, id, tabId);
@@ -396,7 +396,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     const host = findCommentHost(tab.elements, commentId);
     if (!host) return notFound();
     const found = host.comment;
-    // Delete-own only. The diagram owner may also delete their own
+    // Delete-own only. The document owner may also delete their own
     // comments here; removing other people's requires the edit-gated
     // tab PUT. Mismatched author is forbidden (not 404) — the caller
     // can see the comment exists, they just can't delete it.
@@ -414,12 +414,12 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   }
 
   // /api/documents/<id>/tabs/<tabId>/link — owner only.
-  //   POST — add an existing tab to this diagram (docs/specs/006-document/tab-document-many-to-many.md).
-  // Auth: the caller must own this diagram AND own at least
-  // one diagram that already contains the tab. The second
+  //   POST — add an existing tab to this document (docs/specs/006-document/tab-document-many-to-many.md).
+  // Auth: the caller must own this document AND own at least
+  // one document that already contains the tab. The second
   // half stops a stranger from grafting a tab they have no
   // read access to. The `existing.ownerId !== owner` guard
-  // above the dispatch (canEditDocument on this diagram) only
+  // above the dispatch (canEditDocument on this document) only
   // covers the destination side.
   if (
     segments.length === 6 &&
@@ -433,17 +433,17 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     if (owner instanceof Response) return owner;
     const existing = await getDocument(env, id);
     if (!existing) return missingDocument(ctx, id);
-    // `ownsDocument`, not a bare id compare: on a TEAM diagram the owner id is
+    // `ownsDocument`, not a bare id compare: on a TEAM document the owner id is
     // a Clerk id every teammate can read, so it must be proven with a verified
     // account id rather than the X-Owner-Id header (see routes/context.ts).
     // The second half of this route's auth doesn't help here — it re-uses the
     // SAME resolved owner, so a forged identity satisfies it with the victim's
-    // own diagrams.
+    // own documents.
     if (!(await ownsDocument(ctx, existing))) return forbidden();
     // The tab must already live in at least one of the caller's
     // owned documents. One JOIN answers that (LIMIT 1 on the first
     // owned match). On the failure path we fall back to listing the
-    // containing diagrams once, purely to tell "tab doesn't exist
+    // containing documents once, purely to tell "tab doesn't exist
     // anywhere" (404) apart from "exists but you don't own it" (403).
     if (!(await tabLinkedToOwnedDocument(env, tabId, owner))) {
       const sourceIds = await documentsContainingTab(env, tabId);
@@ -452,7 +452,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     await linkTabToDocument(env, id, tabId);
     // Return the tab summary the client uses to render the
     // new pill in its TabBar without re-fetching the whole
-    // diagram. Pulled fresh so the order_index reflects the
+    // document. Pulled fresh so the order_index reflects the
     // append we just performed.
     const tab = await getTab(env, id, tabId);
     return tab ? json({ tab }) : notFound();
@@ -468,7 +468,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   return null;
 }
 
-// A refused per-tab request. A caller holding SOME grant on the diagram was
+// A refused per-tab request. A caller holding SOME grant on the document was
 // refused this tab because their link is scoped to another one
 // (docs/specs/013-workspace/tab-scoped-share-links.md): the tab reads as missing, 404, so its existence
 // doesn't leak. Anyone else gets the usual 403.

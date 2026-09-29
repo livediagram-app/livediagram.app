@@ -9,7 +9,7 @@
 // owner id (a Clerk `sub`, or a guest participant id per docs/specs/014-identity/auth-and-guest-access.md).
 //
 // Widened with `(string & {})` rather than closed, because the whole
-// point of the scope model is that a later per-diagram or per-team feed
+// point of the scope model is that a later per-document or per-team feed
 // is a new value plus a renderer — no schema change, no migration
 // (docs/specs/013-workspace/timeline.md §3.4). The union members still autocomplete.
 export type TimelineScopeType = 'user' | 'document' | 'team' | (string & {});
@@ -38,7 +38,7 @@ export function parseScope(raw: string): TimelineScopeRef | null {
 // colour, and which filter chip hides it.
 export type TimelineSourceType = 'document' | 'team' | 'account' | (string & {});
 
-// What HAPPENED. Distinct from the source type: one diagram produces
+// What HAPPENED. Distinct from the source type: one document produces
 // many of these over its life.
 //
 // A runtime array, not a bare union, so the renderers' classification maps can
@@ -52,11 +52,11 @@ export type TimelineSourceType = 'document' | 'team' | 'account' | (string & {})
 // the whole point: an unclassified event renders in a colour that says the
 // wrong thing about what happened.
 export const TIMELINE_EVENT_TYPES = [
-  // Diagram lifecycle + the coalesced editing event (docs/specs/013-workspace/timeline.md §4.2)
+  // Document lifecycle + the coalesced editing event (docs/specs/013-workspace/timeline.md §4.2)
   'document_created',
   'document_renamed',
   'document_duplicated',
-  // No `document_deleted`: a deleted diagram is swept from the feed and
+  // No `document_deleted`: a deleted document is swept from the feed and
   // leaves nothing behind (docs/specs/013-workspace/timeline.md §3.5).
   'document_moved',
   'document_edited',
@@ -85,7 +85,7 @@ export const TIMELINE_EVENT_TYPES = [
   'team_document_added',
   // Pulled back OUT of a team library into somebody's personal files, which
   // also transfers ownership to the mover (docs/specs/013-workspace/team-shared-documents.md). Distinct from
-  // `document_moved`: the team loses the diagram, and if the mover was not the
+  // `document_moved`: the team loses the document, and if the mover was not the
   // owner the owner loses it too.
   'team_document_removed',
   'team_renamed',
@@ -166,10 +166,10 @@ export const TIMELINE_PAGE_MAX = 200;
 export const TIMELINE_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
 
 // Comment text rides along in the description so the feed is readable
-// without opening the diagram, truncated so one essay can't dominate a
+// without opening the document, truncated so one essay can't dominate a
 // day. Deliberately wider than docs/specs/014-identity/transactional-email.md's email policy (which never
 // includes comment text): an email leaves the product's auth boundary,
-// the Timeline sits behind the same gate as the diagram itself.
+// the Timeline sits behind the same gate as the document itself.
 export const TIMELINE_COMMENT_MAX = 240;
 
 // An Offline Mode conversion (docs/specs/006-document/offline-mode.md), declared by the editor on the request
@@ -177,9 +177,9 @@ export const TIMELINE_COMMENT_MAX = 240;
 //
 // It has to be declared because the two conversions reuse ordinary endpoints
 // and are indistinguishable from them at the boundary: "Take offline" is a
-// plain DELETE /documents/:id, and "Sync diagram" is a plain POST /diagrams. So
+// plain DELETE /documents/:id, and "Sync document" is a plain POST /documents. So
 // the worker recorded them as a deletion and `document_created` — a Timeline
-// that told the owner a diagram they had just moved into this browser was
+// that told the owner a document they had just moved into this browser was
 // gone, and that one they had just uploaded was newly *created*. Both `document_offline` and `document_synced` already
 // existed above, with tones, icons, renderers and a docs/specs/013-workspace/timeline.md table entry;
 // nothing had ever emitted them.
@@ -187,7 +187,7 @@ export const TIMELINE_COMMENT_MAX = 240;
 // Header name + values live here, next to the event types they select, because
 // this is a two-sided contract and the alternative is the client and the worker
 // each holding a copy of the string.
-export const DOCUMENT_CONVERSION_HEADER = 'X-Diagram-Conversion';
+export const DOCUMENT_CONVERSION_HEADER = 'X-Document-Conversion';
 
 export type DocumentConversion = 'offline' | 'sync';
 

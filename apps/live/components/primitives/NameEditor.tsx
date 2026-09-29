@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
 
-// Inline rename input shared by the diagram title (EditorHeader), tabs
+// Inline rename input shared by the document title (EditorHeader), tabs
 // (TabBar), and tab folders (TabFolderChip). Mounts focused with the
 // text selected, commits on blur or Enter, cancels on Escape. The raw
 // value is handed to onCommit; callers decide how to trim / validate

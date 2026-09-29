@@ -113,7 +113,7 @@ describe('computeTabSaveDiff (autosave decision kernel)', () => {
     expect(diff.hasChanges).toBe(false);
   });
 
-  it('flags a diagram rename via nameChanged', () => {
+  it('flags a document rename via nameChanged', () => {
     const tabs = [tab('a')];
     const diff = computeTabSaveDiff(tabs, tabs, 'Old', 'New');
     expect(diff.nameChanged).toBe(true);
@@ -319,7 +319,7 @@ describe('deriveTabLoadState', () => {
     templateChosen: false,
   };
 
-  it('is ready before hydration / with no diagram (diagram-level loader owns the screen)', () => {
+  it('is ready before hydration / with no document (document-level loader owns the screen)', () => {
     expect(deriveTabLoadState({ ...base, hydrated: false })).toBe('ready');
     expect(deriveTabLoadState({ ...base, hasDocument: false })).toBe('ready');
   });

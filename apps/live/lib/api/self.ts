@@ -29,7 +29,7 @@ async function _apiLoadSelf(id: string): Promise<Participant | null> {
 }
 export const apiLoadSelf = dedupeInFlight(_apiLoadSelf, (id) => id);
 
-// Account self-deletion (Clerk-only). Wipes the caller's diagrams,
+// Account self-deletion (Clerk-only). Wipes the caller's documents,
 // folders, and participant row server-side; the caller is expected
 // to follow up with Clerk's `user.delete()` to drop the Clerk
 // account itself. Order matters — backend first, then Clerk — so a
@@ -65,7 +65,7 @@ export async function apiDeleteAccount(): Promise<{
 // requires a verified Bearer token: there is no `X-Owner-Id`
 // fallback, because the whole point is to bind orphan guest data
 // to a Clerk account. Returns
-// `{ migrated: { diagrams, folders, shared, images } }`.
+// `{ migrated: { documents, folders, shared, images } }`.
 export async function apiMigrateGuestData(
   guestOwnerId: string,
   guestSignature: string | null,
@@ -73,7 +73,7 @@ export async function apiMigrateGuestData(
   const res = await apiFetch(`${API_BASE}/migrate`, {
     method: 'POST',
     // `apiHeaders` reads the registered token provider; the Clerk
-    // Bearer will be on every call from the editor / new-diagram
+    // Bearer will be on every call from the editor / new-document
     // pages after they've set the provider. ownerId is unused
     // server-side for this endpoint but the helper still expects
     // it; pass the guest id to keep signatures uniform.

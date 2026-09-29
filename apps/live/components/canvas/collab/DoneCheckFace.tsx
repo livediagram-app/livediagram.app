@@ -122,7 +122,7 @@ export function DoneCheckFace({
       >
         {keys.length === 0 ? (
           <EmptyRows textColor={textColor} title="Nobody here yet" rows={0}>
-            Share the diagram and the card fills itself in.
+            Share the document and the card fills itself in.
           </EmptyRows>
         ) : (
           <div className="flex min-h-0 flex-1 items-center gap-4">

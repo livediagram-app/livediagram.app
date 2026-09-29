@@ -1,6 +1,6 @@
 # Activity and audit log
 
-A persistent, per-diagram record of every editorial change, with author
+A persistent, per-document record of every editorial change, with author
 attribution and per-entry surgical revert. Surfaced in the editor as
 the **Activity Panel**.
 
@@ -11,7 +11,7 @@ the **Activity Panel**.
 - Collaboration safety: reverting one person's edit must not blow
   away other people's unrelated edits.
 - Persistence: the log survives reload, sign-out, and re-share. It is
-  the audit of who did what to a diagram across its whole life.
+  the audit of who did what to a document across its whole life.
 
 ## Non-goals (V1)
 
@@ -36,10 +36,10 @@ the **Activity Panel**.
 
 New D1 table, migration `0004_change_log.sql`. Two follow-up migrations narrowed the shape:
 
-- **`0012`** — dropped `document_id` (item #14 / [Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md)). Every entry is tab-scoped; per-diagram reads join through `document_tabs`.
+- **`0012`** — dropped `document_id` (item #14 / [Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)). Every entry is tab-scoped; per-document reads join through `document_tabs`.
 - **`0013`** — dropped the denormalised `participant_name` + `participant_color` (item #15). Reads `LEFT JOIN participants` on `participant_id`; rows whose author has been deleted fall back to "Unknown" / slate-400 client-side.
 
-A diagram in the [Trash](../013-workspace/trash.md) keeps its change log (its tabs are untouched), unreadable while it waits and back on restore; the purge removes it with the tabs no other diagram holds.
+A document in the [Trash](../013-workspace/trash.md) keeps its change log (its tabs are untouched), unreadable while it waits and back on restore; the purge removes it with the tabs no other document holds.
 
 A daily cron (item #16) runs at 03:00 UTC and deletes `change_log` rows older than 90 days. The Activity Panel only ever surfaces the most recent N entries (`CHANGE_LOG_LIST_LIMIT = 30` server-side, paged by `created_at DESC`), so anything past the retention window has been invisible since the day it landed — the sweep just stops the table growing unboundedly under busy collab.
 
@@ -78,14 +78,14 @@ Tabs got their own table in migration 0005 (see [13-per-tab-storage.md](../006-d
 
 - `DELETE /api/documents/:id/log/tab/:tabId` still exists: the editor's Activity Panel surfaces it as the per-tab "Clear" button so a user can wipe one tab's audit trail intentionally without deleting the tab itself.
 
-Diagram delete reaches `change_log` only through tabs: there is no `document_id` column to hang a cascade off, only `tab_id`. Deleting a diagram drops every tab no other diagram links, and each dropped tab takes its log entries with it; a tab still linked into another diagram keeps its whole history there, because the log lives on the tab ([Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md), "Delete a diagram").
+Document delete reaches `change_log` only through tabs: there is no `document_id` column to hang a cascade off, only `tab_id`. Deleting a document drops every tab no other document links, and each dropped tab takes its log entries with it; a tab still linked into another document keeps its whole history there, because the log lives on the tab ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md), "Delete a document").
 
 ## API surface
 
 All endpoints require `X-Owner-Id`. They additionally accept an
 optional `X-Share-Code` header so an edit-role visitor (someone who
 followed a `?s=<code>` share URL) can write to the log — when the
-code resolves to an active edit-role share link for this diagram,
+code resolves to an active edit-role share link for this document,
 the request is authorised. Owners pass the header empty.
 View-role visitors fail the auth check.
 
@@ -93,7 +93,7 @@ The bulk tab-cascade DELETE stays owner-only — destructive bulk
 ops shouldn't ride a visitor's share code.
 
 - `GET    /api/documents/:id/log` → `{ entries: ChangeLogEntry[] }` newest-first, capped at 30 (`CHANGE_LOG_LIST_LIMIT`, defined in `@livediagram/api-schema` and applied server-side in `apps/api/src/db/change-log.ts`). (owner or edit visitor)
-- `POST   /api/documents/:id/log` → append. Body: the new entry. (owner or edit visitor) The entry's `tabId`, when set, must be a tab linked to **this** diagram, otherwise `409 { error: 'tab_not_saved' }` (`CHANGE_LOG_TAB_NOT_SAVED` in `@livediagram/api-schema`). That closes two things: an editor of one diagram writing rows into another diagram's log (the list joins through `document_tabs`, so a foreign tab id would surface there), and the foreign-key 500 a brand-new tab's first edit used to hit, because the editor logs the edit immediately while the tab row only lands on the 600ms debounced autosave. The client retries that 409 quietly (3 tries, 1.5s apart) and reports only if the tab never arrives. Re-posting an id that already exists is an **upsert** limited to the same author on the same tab (redo re-appends the entry its undo deleted, and a coalesce is a delete + re-append, so either delete losing the race used to be a UNIQUE-violation 500); an id collision with anyone else's row is a no-op.
+- `POST   /api/documents/:id/log` → append. Body: the new entry. (owner or edit visitor) The entry's `tabId`, when set, must be a tab linked to **this** document, otherwise `409 { error: 'tab_not_saved' }` (`CHANGE_LOG_TAB_NOT_SAVED` in `@livediagram/api-schema`). That closes two things: an editor of one document writing rows into another document's log (the list joins through `document_tabs`, so a foreign tab id would surface there), and the foreign-key 500 a brand-new tab's first edit used to hit, because the editor logs the edit immediately while the tab row only lands on the 600ms debounced autosave. The client retries that 409 quietly (3 tries, 1.5s apart) and reports only if the tab never arrives. Re-posting an id that already exists is an **upsert** limited to the same author on the same tab (redo re-appends the entry its undo deleted, and a coalesce is a delete + re-append, so either delete losing the race used to be a UNIQUE-violation 500); an id collision with anyone else's row is a no-op.
 - `DELETE /api/documents/:id/log/:entryId` → drop one entry (revert / undo). (owner or edit visitor)
 - `DELETE /api/documents/:id/log/tab/:tabId` → drop entries for one tab. (owner only)
 
@@ -193,7 +193,7 @@ ops shouldn't ride a visitor's share code.
 
 4. On `deleteTab(tabId)`:
    - Call `DELETE /log/tab/:tabId` _before_ the PUT that drops the tab
-     from the diagram. (Ordering doesn't matter for correctness but
+     from the document. (Ordering doesn't matter for correctness but
      reads more clearly in network logs.)
 
 ## Summary vocabulary
@@ -247,7 +247,7 @@ canvas pattern to Dots`, `Changed background opacity to 80%`. A
   popover hanging above it, like Layers ([Layers](../006-document/layers.md), [Live app](../007-editor/live-app.md)).
 - **Scoped to the active tab.** The panel only renders entries whose
   `tab_id` matches the currently visible tab; switching tabs swaps
-  the log. The server still stores every entry under the diagram
+  the log. The server still stores every entry under the document
   (so cross-tab history isn't lost), but the user only ever sees the
   current tab's slice. Filtering is client-side.
 - Header row inside the panel hosts Undo / Redo buttons (moved out of
@@ -293,10 +293,10 @@ cluster in every layout, and the change log is still recorded.
 
 ## Realtime mirroring
 
-New entries (and their removals on Undo / Revert) propagate through the per-diagram Durable Object room as `log` / `log-remove` ops — see [11-api.md → Realtime model](../015-api/api.md). Peers append / drop from their local Activity Panel without re-fetching, so collaborators see each other's edits land in real time.
+New entries (and their removals on Undo / Revert) propagate through the per-document Durable Object room as `log` / `log-remove` ops — see [11-api.md → Realtime model](../015-api/api.md). Peers append / drop from their local Activity Panel without re-fetching, so collaborators see each other's edits land in real time.
 
 ## Out of scope for V1
 
 - Pagination / search / filter UI.
-- Diagram-level entries (rename, share toggle, theme change). All V1 entries are tab-scoped.
+- Document-level entries (rename, share toggle, theme change). All V1 entries are tab-scoped.
 - Selective revert UI ("revert just the fill, not the stroke").

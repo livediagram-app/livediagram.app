@@ -115,7 +115,7 @@ describe('flushDocumentSavesBeacon', () => {
     expect(headersFor('placeholder')['X-Allow-Empty']).toBeUndefined();
   });
 
-  it('DELETEs removed tabs and only PUTs diagram meta when order/name changed', () => {
+  it('DELETEs removed tabs and only PUTs document meta when order/name changed', () => {
     flushDocumentSavesBeacon({
       ...base,
       orderChanged: true,

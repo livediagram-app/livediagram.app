@@ -30,7 +30,7 @@ type RemoteSelector = { id: string; name: string; color: string };
 // their active tab; remote peers without a tab-focus op yet default to the
 // first tab. Status is per-viewer (on my tab -> online, elsewhere -> away)
 // unless idle has dragged them to away/offline. Returns an empty map for
-// private (unshared) diagrams.
+// private (unshared) documents.
 //
 // One person, one avatar (docs/specs/012-collaboration/collaborator-enhancements.md): the room mints an id per socket, so the
 // same browser open in two tabs arrives as two peers. Every tab in a browser
@@ -40,7 +40,7 @@ type RemoteSelector = { id: string; name: string; color: string };
 // which is the tab they are actually looking at.
 export function buildParticipantsByTab(input: {
   documentShareable: boolean;
-  // A team diagram (docs/specs/013-workspace/team-shared-documents.md) is collaborative for its members even
+  // A team document (docs/specs/013-workspace/team-shared-documents.md) is collaborative for its members even
   // with no share link, so tab presence shows there too.
   documentTeamId: string | null;
   activeId: string;
@@ -198,7 +198,7 @@ export function buildLaserTrailRows(input: {
 //      the avatar (and its online dot) matches what visitors see in
 //      the TabBar.
 //   3. Owner is offline -> fall back to the joined name + colour we
-//      got from the diagram fetch (api worker LEFT JOINs participants
+//      got from the document fetch (api worker LEFT JOINs participants
 //      on owner_id).
 // Returns null only when the owner truly has no participant record on
 // the server.
@@ -254,7 +254,7 @@ export type RemoteSelection = { elementId: string | null; tabId?: string };
 // Per-element map of which remote participants have it selected (for the
 // on-element badges). Drops self + null (deselected) entries, and — like
 // cursors and lasers — entries scoped to a DIFFERENT tab: element ids
-// aren't unique across tabs in older diagrams (tab duplication used to
+// aren't unique across tabs in older documents (tab duplication used to
 // copy them verbatim), so an unscoped badge also LOCKED the same-id
 // element on other tabs via the docs/specs/007-editor/live-app.md selection lock.
 export function buildRemoteSelectionsByElement(

@@ -6,11 +6,11 @@
 //   closed). Drives the <LinkPickerDialog> gate in the page. The dialog
 //   is a centred modal (styled like import/export), so no DOM anchoring
 //   is needed any more.
-// - `applyElementLink`: write a chosen link (tab / diagram / element /
+// - `applyElementLink`: write a chosen link (tab / document / element /
 //   url) onto the current selection, or remove it when passed null.
 //   History-committed.
 // - `followLink`: navigate — switch tab for tab/element links, full
-//   page-load to another diagram, or open an external URL in a new tab.
+//   page-load to another document, or open an external URL in a new tab.
 
 import { useState } from 'react';
 import { type Element, type ElementLink, type Tab } from '@livediagram/document';
@@ -30,7 +30,7 @@ type ElementLinksDeps = {
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
   setFormatSourceId: (id: string | null) => void;
-  // Full page-load navigation to another diagram (for diagram links).
+  // Full page-load navigation to another document (for document links).
   openDocument: (id: string) => void;
 };
 
@@ -51,7 +51,7 @@ export function useElementLinks(deps: ElementLinksDeps) {
   // right-click context menu can open it without reaching across
   // components. Holds the element id whose link is being edited.
   const [linkPickerOpenForId, setLinkPickerOpenForId] = useState<string | null>(null);
-  // Which tab the link modal should open on (webpage / tab / diagram), set by
+  // Which tab the link modal should open on (webpage / tab / document), set by
   // the context menu's split Link entries. null = let the dialog pick its own
   // default (the existing link's kind, else webpage).
   const [linkPickerInitialMode, setLinkPickerInitialMode] = useState<
@@ -64,7 +64,7 @@ export function useElementLinks(deps: ElementLinksDeps) {
   };
 
   // Apply a chosen link to the current selection, or remove it when
-  // null. One entry point for every kind (tab / diagram / element /
+  // null. One entry point for every kind (tab / document / element /
   // url), history-committed. Multi-selection links them all the same.
   const applyElementLink = (link: ElementLink | null) => {
     const ids = currentSelectionIds();
@@ -99,7 +99,7 @@ export function useElementLinks(deps: ElementLinksDeps) {
                 // discards the preview, so the card looks like it lost its link.
                 // Cache ONLY the rendered fields — the unfurl response
                 // also carries siteName/description the card never draws,
-                // and spreading them here persisted them into every diagram.
+                // and spreading them here persisted them into every document.
                 {
                   ...el,
                   meta: { url, title: meta.title, image: meta.image, favicon: meta.favicon },
@@ -122,7 +122,7 @@ export function useElementLinks(deps: ElementLinksDeps) {
       return;
     }
     if (link.kind === 'document') {
-      // Navigate to a different diagram entirely. Same shape as
+      // Navigate to a different document entirely. Same shape as
       // openDocument (which does a full-page load), so saves +
       // realtime room handoff land through the normal hydration
       // path on the destination route.

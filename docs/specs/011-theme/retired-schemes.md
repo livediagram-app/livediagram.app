@@ -1,7 +1,7 @@
 # Retired colour schemes
 
 A colour scheme leaves the catalogue by being **migrated away on load**, not by lingering as a scheme nobody can pick.
-A diagram saved against a retired scheme is rewritten, the moment it is read, into the scheme that replaced it; the
+A document saved against a retired scheme is rewritten, the moment it is read, into the scheme that replaced it; the
 next save persists the rewrite. There is no list of retired schemes that still resolve.
 
 ## Charcoal
@@ -39,11 +39,11 @@ element migrations: retired groups and docks). Every place a stored tab enters a
 
 - the api worker's tab read (`rowToTab`), which every editor, share-link and MCP read goes through;
 - the api worker's thumbnail and live-image render, which parses `tabs.data` directly;
-- the offline store's tab load, for diagrams kept only in this browser;
+- the offline store's tab load, for documents kept only in this browser;
 - a file import, since an exported file is a stored tab like any other.
 
 It runs at read time rather than as a D1 migration because the rewrite needs the element model (per-kind colour
-fields), which SQL over a JSON blob cannot express safely, and because offline diagrams and files never reach D1.
+fields), which SQL over a JSON blob cannot express safely, and because offline documents and files never reach D1.
 
 ## Properties
 

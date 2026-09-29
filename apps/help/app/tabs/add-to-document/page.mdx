@@ -3,47 +3,47 @@ import { helpMetadata } from '@/lib/seo';
 import { AddToDiagramMenu } from '@/components/illustrations/tabs';
 
 export const metadata = helpMetadata({
-  title: 'Add a Tab to Another Diagram',
+  title: 'Add a Tab to Another Document',
   description:
-    'Add the active tab to another diagram you own, straight from the tab menu. Both diagrams share the same live tab, so an edit in one shows up in the other.',
+    'Add the active tab to another document you own, straight from the tab menu. Both documents share the same live tab, so an edit in one shows up in the other.',
   path: '/help/tabs/add-to-document/',
 });
 
 <ArticleLayout
-  title="Add a Tab to Another Diagram"
-  description="Reuse a tab elsewhere: add the active tab to another of your diagrams, and edits made in either place appear in both."
+  title="Add a Tab to Another Document"
+  description="Reuse a tab elsewhere: add the active tab to another of your documents, and edits made in either place appear in both."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
-Sometimes a tab you built in one diagram belongs in another too: a glossary, a shared timeline, an architecture board two projects both rely on. **Add to Diagram** adds the active tab to another diagram you own, without leaving the editor.
+Sometimes a tab you built in one document belongs in another too: a glossary, a shared timeline, an architecture board two projects both rely on. **Add to Document** adds the active tab to another document you own, without leaving the editor.
 
-## Adding a tab to another diagram
+## Adding a tab to another document
 
 <Step n={1}>Open the active tab's ellipsis menu and expand the **Organise** section.</Step>
-<Step n={2}>Choose **Add to Diagram**.</Step>
+<Step n={2}>Choose **Add to Document**.</Step>
 <Step n={3}>
-  Pick the destination diagram in the dialog that opens; a filter box narrows long lists. The tab is
-  added to it.
+  Pick the destination document in the dialog that opens; a filter box narrows long lists. The tab
+  is added to it.
 </Step>
 
-The option is only available when you actually have somewhere to add it to: if this is your only diagram, **Add to Diagram** is greyed out until you create another.
+The option is only available when you actually have somewhere to add it to: if this is your only document, **Add to Document** is greyed out until you create another.
 
-<Figure caption="Add to Diagram opens a filterable picker dialog listing your other diagrams to add the tab to.">
+<Figure caption="Add to Document opens a filterable picker dialog listing your other documents to add the tab to.">
   <AddToDiagramMenu />
 </Figure>
 
-## One tab, shared between diagrams
+## One tab, shared between documents
 
-Add to Diagram doesn't make a copy: it is the same tab in both places. Edit its elements, restyle it, or rename it from either diagram and the change lands in the other as well. If the other diagram is already open in another window, reload it to see the latest edits.
+Add to Document doesn't make a copy: it is the same tab in both places. Edit its elements, restyle it, or rename it from either document and the change lands in the other as well. If the other document is already open in another window, reload it to see the latest edits.
 
-Two things stay per-diagram, so each diagram can organise the shared tab its own way: the tab's position in the tab bar, and which [tab folder](/help/tabs/tab-folders/) (if any) it sits in.
+Two things stay per-document, so each document can organise the shared tab its own way: the tab's position in the tab bar, and which [tab folder](/help/tabs/tab-folders/) (if any) it sits in.
 
-Removing the tab from one diagram doesn't touch the others; the tab and its contents are only deleted for good when you remove it from the last diagram containing it. Deleting a whole diagram works the same way: a tab it shares stays, with its history, in every other diagram it is in, and the delete confirmation tells you how many tabs that is before you go ahead.
+Removing the tab from one document doesn't touch the others; the tab and its contents are only deleted for good when you remove it from the last document containing it. Deleting a whole document works the same way: a tab it shares stays, with its history, in every other document it is in, and the delete confirmation tells you how many tabs that is before you go ahead.
 
 <Tip>
   Prefer an independent copy you can tailor per project? Use **Duplicate** in the same menu first,
-  then add the duplicate to the other diagram.
+  then add the duplicate to the other document.
 </Tip>
 
 </ArticleLayout>

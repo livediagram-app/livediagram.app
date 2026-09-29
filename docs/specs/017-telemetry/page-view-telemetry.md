@@ -8,7 +8,7 @@ Count **every page viewed** across the site, by page: the landing and other
 marketing pages, each help article, the Explorer's pages, the editor, and the
 `/telemetry` dashboard itself. A view is recorded whether the page arrived as a
 full load (typed URL, shared link, refresh) or as a client-side navigation
-inside a Next app (Explorer → a diagram, one help article → another).
+inside a Next app (Explorer → a document, one help article → another).
 
 The dashboard gets a **Pages** tab of page views for the selected
 window, broken down by app (Marketing, Live, Help, Dashboard).
@@ -56,12 +56,12 @@ it is reduced to _which page_, never _which thing on it_:
 - **Query string and hash dropped.** Never sent. This is where invites
   (`/join?token=`), share codes and folder ids live.
 - **Ids dropped, not replaced.** `/document/<anything>` becomes `/document`: the
-  dashboard shows hits to the diagram route, not to any one diagram. Any other
+  dashboard shows hits to the document route, not to any one document. Any other
   segment that looks like an id (a UUID, or a long token containing a digit)
   is cut off along with everything after it, since what follows an id is about
   that one thing. There is no `[id]` placeholder either: it read as though an
   id were being stored, so the stored path carries nothing id-shaped at all,
-  and the ingest rejects one. A diagram id never leaves the browser.
+  and the ingest rejects one. A document id never leaves the browser.
 - **Canonical form.** Lower-cased, trailing slash and `.html` / `index.html`
   removed, so `/help/tabs/` and `/help/tabs` are one page.
 - **Anything else is dropped, not sent.** A segment with characters outside
@@ -88,8 +88,8 @@ A page that doesn't exist is still a page view, and is counted under whatever
 path was asked for, within the grammar above. That is useful (it shows broken
 links arriving), bounded by the same deny-by-default normaliser, and cannot
 carry anything the grammar rejects. The editor's not-found slot renders the
-editor ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md)), so every `/document/...` URL is counted as `/document`
-whether or not the diagram exists.
+editor ([Dedicated route for new-document creation](../007-editor/new-document-route.md)), so every `/document/...` URL is counted as `/document`
+whether or not the document exists.
 
 ### Counting
 

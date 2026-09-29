@@ -70,7 +70,7 @@ describe('deleteOldUnusedImages', () => {
     expect(db.bucket.delete).toHaveBeenCalledWith(['old-unused']);
   });
 
-  it('counts a tab no diagram links (kept conservatively) but not a dangling reference', async () => {
+  it('counts a tab no document links (kept conservatively) but not a dangling reference', async () => {
     const db = setup();
     liveDoc(db.sql, 'A');
     images(db.sql, OLD, 'on-orphan-tab', 'on-deleted-tab');
@@ -84,7 +84,7 @@ describe('deleteOldUnusedImages', () => {
     expect(refsFor(db.sql, 'on-deleted-tab')).toBe(0);
   });
 
-  it('reaps the images of a deleted diagram', async () => {
+  it('reaps the images of a deleted document', async () => {
     const db = setup();
     liveDoc(db.sql, 'A');
     images(db.sql, OLD, 'img');

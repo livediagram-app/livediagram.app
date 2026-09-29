@@ -184,7 +184,7 @@ describe('buildTemplate translation invariance', () => {
   it.each(ALL_KINDS)('%s: returns a fresh array per call (no shared mutable state)', (kind) => {
     // Builders are documented as pure, returning "a fresh array of
     // Element". A future revision that memoised or returned a
-    // module-level constant would silently let one diagram's edits
+    // module-level constant would silently let one document's edits
     // leak into another template instantiation. Asserting distinct
     // references rules that out.
     const a = buildTemplate(kind, 0, 0);

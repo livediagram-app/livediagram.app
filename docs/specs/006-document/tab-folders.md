@@ -2,29 +2,29 @@
 
 ## Why
 
-A diagram's tabs are a flat, ordered list along the tab bar. Once a diagram grows past a handful of tabs that list gets unwieldy. Users want to group related tabs into a named, collapsible **folder**, e.g. put three tabs under "Organisation" and two under "Plans", and collapse a folder down to its name when they're not using it.
+A document's tabs are a flat, ordered list along the tab bar. Once a document grows past a handful of tabs that list gets unwieldy. Users want to group related tabs into a named, collapsible **folder**, e.g. put three tabs under "Organisation" and two under "Plans", and collapse a folder down to its name when they're not using it.
 
-This is the editor's tab bar only. It is unrelated to [Folders](../013-workspace/folders.md), which nests **diagrams** in the Explorer.
+This is the editor's tab bar only. It is unrelated to [Folders](../013-workspace/folders.md), which nests **documents** in the Explorer.
 
 ## Scope
 
 - **One level.** A folder contains tabs; folders never contain folders.
-- **Per-diagram.** Tab order already lives on the `document_tabs` link, not on the shared `tabs` row, because a tab can be shared into several diagrams ([Tab ↔ diagram many-to-many](tab-document-many-to-many.md)). Folder membership lives in the same place, for the same reason: a tab shared into two diagrams can sit in a folder in one and be loose in the other. Folder membership is **never** part of the tab body (`tabs.data`).
-- **Identified by name.** There is no folder entity or table. A folder _is_ a name string. It exists as long as at least one tab in the diagram carries that name; it disappears when the last member leaves. Renaming a folder = rewriting the name on every member.
+- **Per-document.** Tab order already lives on the `document_tabs` link, not on the shared `tabs` row, because a tab can be shared into several documents ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Folder membership lives in the same place, for the same reason: a tab shared into two documents can sit in a folder in one and be loose in the other. Folder membership is **never** part of the tab body (`tabs.data`).
+- **Identified by name.** There is no folder entity or table. A folder _is_ a name string. It exists as long as at least one tab in the document carries that name; it disappears when the last member leaves. Renaming a folder = rewriting the name on every member.
 
 ## Data model
 
-Migration `0018` adds one nullable column to the link table from [Tab ↔ diagram many-to-many](tab-document-many-to-many.md):
+Migration `0018` adds one nullable column to the link table from [Tab ↔ document many-to-many](tab-document-many-to-many.md):
 
 ```sql
 ALTER TABLE document_tabs ADD COLUMN folder TEXT;  -- NULL = loose (no folder)
 ```
 
-No backfill (every existing tab is loose), no index (folders are derived by a client-side scan over the already-ordered read). The column is intentionally **not** mirrored onto the legacy `tabs` table the way `order_index` is (migration 0011) — folder membership is a diagram-link concept with no legacy equivalent.
+No backfill (every existing tab is loose), no index (folders are derived by a client-side scan over the already-ordered read). The column is intentionally **not** mirrored onto the legacy `tabs` table the way `order_index` is (migration 0011) — folder membership is a document-link concept with no legacy equivalent.
 
 ## Ordering: one flat list, folders are contiguous runs
 
-There is **one** per-diagram order (the existing `document_tabs.order_index`). A folder is a **maximal run of adjacent tabs that share a folder name**, drawn under one chip. There is no second ordering dimension and no per-folder order.
+There is **one** per-document order (the existing `document_tabs.order_index`). A folder is a **maximal run of adjacent tabs that share a folder name**, drawn under one chip. There is no second ordering dimension and no per-folder order.
 
 To keep that invariant true after any reorder or membership change, the client **normalizes** the order before persisting:
 
@@ -44,7 +44,7 @@ Folder membership changes two ways:
 
 **2. The tab's right-click / ellipsis menu** — an "Add to Folder" action (Organise category) that opens a centred **modal** (`AddTabToFolderDialog`, the same tile-grid language as the shared placement browser, [Folders](../013-workspace/folders.md)), replacing the old cramped in-menu sub-view. Picking commits immediately and closes:
 
-- **A tile per existing folder** in this diagram → move the active tab into it (the current folder's tile reads "Current" and is a no-op).
+- **A tile per existing folder** in this document → move the active tab into it (the current folder's tile reads "Current" and is a no-op).
 - **A "No Folder" tile** → makes the tab loose on the bar; selected when the tab already is.
 - **A "New Folder" tile** → create-in-place naming (the placement browser's dashed tile); typing an existing name just moves the tab into it (same name = same folder).
 
@@ -62,7 +62,7 @@ Folder membership changes two ways:
 Folder rides the **same wire path as `orderIndex`**, never the per-tab content `PUT`:
 
 - `PUT /api/documents/:id` body widens from `{ name?, tabIds? }` to also accept `{ tabs?: { id, folder? }[] }`. New clients send `tabs` (order = array position, plus folder); the server falls back to `tabIds` (folder null) for older clients. Empty/whitespace folder names are trimmed to NULL server-side.
-- The `diagram-meta` room op's `tabs` entries widen to `{ id, name, orderIndex, folder? }` so a peer's folder change applies live. `folder` is optional throughout, so an older peer/client omitting it is treated as loose — no parse break.
+- The `document-meta` room op's `tabs` entries widen to `{ id, name, orderIndex, folder? }` so a peer's folder change applies live. `folder` is optional throughout, so an older peer/client omitting it is treated as loose — no parse break.
 - `reorderTabs` writes `document_tabs.folder` alongside `order_index`. The per-tab content upsert (`upsertTab`) leaves `document_tabs.folder` untouched, so a content save can never clobber membership.
 - The persisted tab body strips `folder` (centralised with `templateChosen` in `stripUiTabFields`), so folder never leaks into the shared `tabs.data`.
 
@@ -77,13 +77,13 @@ Reuses the closed vocabulary ([Telemetry + public transparency dashboard](../017
 | A folder came into existence    | `Folder·Created·Tab` |
 | A folder was renamed            | `Folder·Renamed·Tab` |
 
-The folder **name is user content** and is never sent as the `type` argument — the `Tab` type on the `Folder` events distinguishes a tab folder from an explorer folder of diagrams, nothing more.
+The folder **name is user content** and is never sent as the `type` argument — the `Tab` type on the `Folder` events distinguishes a tab folder from an explorer folder of documents, nothing more.
 
 The `type` is not decoration. A dashboard metric card selects rows by an exact `type` match and `null` is a value, so the original untyped spelling of this table (`Tab·Created` for a new folder, `Tab·Renamed` for a folder rename) landed folder operations in the headline "Tabs Created" and "Tabs Renamed" cards, inflating a count of tabs with a count of folders.
 
 Two further rules, both learned from the untyped version:
 
-- **A new folder emits two events**, `Folder·Created·Tab` then `Tab·Moved·Folder`, because typing a name the diagram hasn't used is genuinely two facts (the folder exists; this tab is in it). Emitting only the creation made "tabs filed into folders" undercount by exactly the number of folders anyone created. Listed with the other deliberate double-emits in [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
+- **A new folder emits two events**, `Folder·Created·Tab` then `Tab·Moved·Folder`, because typing a name the document hasn't used is genuinely two facts (the folder exists; this tab is in it). Emitting only the creation made "tabs filed into folders" undercount by exactly the number of folders anyone created. Listed with the other deliberate double-emits in [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
 - **The menu and the drag report identically.** Membership can change either from the ellipsis menu or from a drag that adopts the drop target's folder, and the two had drifted: leaving a folder by menu counted as `Tab·Removed`, leaving it by drag counted as `Tab·Reordered`. Which control someone reached for is not the fact being measured, so both paths go through one module (`hooks/persistence/tab-folder-reporting.ts`), which owns the activity-log line too. A drag that crosses a folder boundary reports the membership change and **not** the reorder it came with; `Tab·Reordered` now means a reorder that changed nothing else.
 
 ## Edge cases
@@ -91,11 +91,11 @@ Two further rules, both learned from the untyped version:
 - **Active tab in a collapsed folder** → chip force-expands.
 - **One-tab folder** → valid; renders as a chip.
 - **Empty/whitespace name** → treated as loose everywhere (client normalize, create handler rejects, server trims to NULL).
-- **Name uniqueness within a diagram** → same name is the same folder (members merge into one run on normalize).
+- **Name uniqueness within a document** → same name is the same folder (members merge into one run on normalize).
 - **Shared tab, foldered in A, loose in B** → naturally correct: folder is on the link, never in the body.
 
 ## Cross-references
 
 - [Per-tab storage](per-tab-storage.md) — per-tab storage; folder is link metadata, not body content.
-- [Tab ↔ diagram many-to-many](tab-document-many-to-many.md) — the `document_tabs` link table folder now extends.
+- [Tab ↔ document many-to-many](tab-document-many-to-many.md) — the `document_tabs` link table folder now extends.
 - [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) — telemetry enums reused here.

@@ -5,19 +5,19 @@ mention shows as a chip in the thread, puts the thread on the teammate's
 [Activity page](../013-workspace/activity-page.md), and, if their settings allow, emails them.
 
 It is the comment-thread sibling of [Assigned actions](assigned-actions.md): the same
-people can be named (the diagram's team), the same Activity page collects it,
+people can be named (the document's team), the same Activity page collects it,
 and the same kind of best-effort, server-verified email carries it.
 
 ## Who can be mentioned
 
-The **members of the team whose library holds the diagram**, joined and
+The **members of the team whose library holds the document**, joined and
 invited, except yourself. That is exactly the Assign Action picker's rule
 ([Assigned actions](assigned-actions.md) §2), for the same reason: a mention should reach someone
-who can open the diagram and read the thread, and a teammate on another team
+who can open the document and read the thread, and a teammate on another team
 almost certainly cannot.
 
-- On a **personal diagram** or for a **guest** there is nobody to mention.
-  Typing `@` then shows one quiet row, "Mention teammates on a team diagram",
+- On a **personal document** or for a **guest** there is nobody to mention.
+  Typing `@` then shows one quiet row, "Mention teammates on a team document",
   and nothing is inserted.
 - An **invited** member (no account yet) can be mentioned. They are keyed by
   their membership row, like an invited assignee, and get the email at their
@@ -63,7 +63,7 @@ list is sanitised (shape, caps, string fields only; anything malformed is
 dropped); on an **existing** comment it is locked to what was stored, so
 nobody can retarget someone else's mention. A forged mention can at worst put
 a thread on the named person's Activity page, and that page only ever lists
-diagrams they can already open (the library scoping, [Activity page](../013-workspace/activity-page.md) §4).
+documents they can already open (the library scoping, [Activity page](../013-workspace/activity-page.md) §4).
 
 ## Reading a mention
 
@@ -78,9 +78,9 @@ written.
 The thread index (`collab_threads`) gains `mentioned_ids`: the distinct user
 ids and member ids mentioned anywhere in the thread. The Activity page's
 thread query includes a thread when the reader is **mentioned** in it, as
-well as when they commented or own the diagram, still scoped to diagrams they
+well as when they commented or own the document, still scoped to documents they
 can open. The thread row carries `mentionsYou`, and its hint reads
-**Mentioned You** (it wins over "Your diagram"). A resolved thread leaves the
+**Mentioned You** (it wins over "Your document"). A resolved thread leaves the
 page as every thread does.
 
 ## The email
@@ -94,12 +94,12 @@ failure is swallowed, the response is `202`.
 The server decides everything that matters:
 
 - The caller is a **joined** member of the team, and the team is the
-  diagram's team (`diagrams.team_id`), and the caller can access the diagram.
+  document's team (`documents.team_id`), and the caller can access the document.
   Otherwise `404`, never probing.
 - Each mention resolves to a member of that team (joined or invited) other
   than the caller; anything else is skipped silently. At most 20.
 - The author name comes from the caller's verified identity (participant
-  profile, else email), and the diagram name from the diagram row, never the
+  profile, else email), and the document name from the document row, never the
   body.
 - Each recipient's **"Someone Mentions Me in a Comment"** preference
   (`notifyMentions`, default on) is honoured; an invited member with no
@@ -107,8 +107,8 @@ The server decides everything that matters:
 - `commentText` is required, at most 5000 characters; the email quotes the
   first 280, cut at a word with an ellipsis.
 
-The email reads **"{author} mentioned you in {diagram}"**, quotes the
-comment, and has one button, **Open Diagram**. It is sent only when email is
+The email reads **"{author} mentioned you in {document}"**, quotes the
+comment, and has one button, **Open Document**. It is sent only when email is
 configured (`RESEND_API_KEY`, [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)).
 
 ## Setting
@@ -123,6 +123,6 @@ not sent), alongside the existing `Comment · Added`.
 
 ## Not in scope
 
-- Mentioning people outside the diagram's team, or everyone (`@here`).
+- Mentioning people outside the document's team, or everyone (`@here`).
 - In-app notifications beyond the Activity page.
 - Editing a comment's mentions after sending (comments are not editable).

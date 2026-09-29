@@ -6,7 +6,7 @@ import type { QaWriteRequest } from '../qa-board-write';
 // The Q&A board endpoint (docs/specs/012-collaboration/qa-board.md). What the ROUTE has to get right: the role
 // split (audience verbs on read access, board-running verbs on edit access),
 // an actor derived from the authenticated caller rather than the request, and
-// handing the write to the diagram's room. The write and its serialisation are
+// handing the write to the document's room. The write and its serialisation are
 // the room's, covered in document-room-qa.test.ts and qa-board-write.test.ts.
 
 const { db, gates } = vi.hoisted(() => ({
@@ -70,7 +70,7 @@ describe('handleQaBoardRoute', () => {
     expect(gates.gateEdit).not.toHaveBeenCalled();
     expect(sent).toHaveLength(1);
     expect(sent[0]!.url).toBe('https://room/qa');
-    // The diagram's own room, so every write for it queues in one place.
+    // The document's own room, so every write for it queues in one place.
     expect(sent[0]!.room).toBe('d1');
     expect(sent[0]!.body).toMatchObject({
       documentId: 'd1',
@@ -110,7 +110,7 @@ describe('handleQaBoardRoute', () => {
     expect(sent).toEqual([]);
   });
 
-  it('refuses a caller who cannot read the diagram', async () => {
+  it('refuses a caller who cannot read the document', async () => {
     gates.gateRead.mockResolvedValue(false);
     const { call } = setup();
     const res = await call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: true } });

@@ -185,7 +185,7 @@ describe('SessionStudio', () => {
     });
   });
 
-  it('lets a poll start on an unshared diagram, with a note', () => {
+  it('lets a poll start on an unshared document, with a note', () => {
     const p = props({ pollHasAudience: false });
     render(<SessionStudio {...p} />);
     fireEvent.click(screen.getByRole('tab', { name: /Poll/ }));

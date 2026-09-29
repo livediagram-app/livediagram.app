@@ -20,7 +20,7 @@ async function openBoard(page: Page, layout?: 'floating' | 'toolbar'): Promise<v
   await openJustDraw(page);
 }
 
-// The saved elements of the diagram's first tab, read through the api.
+// The saved elements of the document's first tab, read through the api.
 async function savedElements(page: Page): Promise<El[]> {
   return page.evaluate(async () => {
     const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';

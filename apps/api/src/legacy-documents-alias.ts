@@ -4,9 +4,12 @@
 // `/api/documents…` with its body's old keys renamed, and the response's keys are renamed
 // back, marked `Deprecation` / `Sunset` with a `Link` to the successor.
 
+import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
+
 export const LEGACY_DOCUMENTS_SUNSET = 'Fri, 30 Apr 2027 00:00:00 GMT';
 
 const LEGACY_PREFIX = '/api/diagrams';
+const LEGACY_CONVERSION_HEADER = 'X-Diagram-Conversion';
 const CURRENT_PREFIX = '/api/documents';
 
 // Wire keys that name the container (packages/api-schema), current → legacy.
@@ -52,6 +55,11 @@ export async function fromLegacyRequest(request: Request): Promise<Request> {
   }
   const headers = new Headers(request.headers);
   headers.delete('content-length');
+  const conversion = headers.get(LEGACY_CONVERSION_HEADER);
+  if (conversion !== null) {
+    headers.delete(LEGACY_CONVERSION_HEADER);
+    headers.set(DOCUMENT_CONVERSION_HEADER, conversion);
+  }
   return new Request(url.toString(), { method: request.method, headers, body });
 }
 

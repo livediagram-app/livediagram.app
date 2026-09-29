@@ -6,7 +6,7 @@
 // two faux-card layers stepping out behind it so the pile reads as
 // depth rather than as a card with odd copy. Its preview box shows the
 // kind's glyph and the count rather than one member's thumbnail: one
-// diagram's snapshot can't speak for a run spanning five.
+// document's snapshot can't speak for a run spanning five.
 //
 // The same card is the run's toggle in both states: collapsed it reads
 // "click to expand", open it stays put at the head of its members,
@@ -77,7 +77,7 @@ export function StackedCard({
             ...rendered,
             // The generic headline, not the anchor's own: "Payments
             // architecture" on a stack that also holds two other
-            // diagrams is a title the reader can't trust.
+            // documents is a title the reader can't trust.
             subject: stackLabel(stack),
             label: `${count} events · click to ${expanded ? 'collapse' : 'expand'}`,
             description: null,

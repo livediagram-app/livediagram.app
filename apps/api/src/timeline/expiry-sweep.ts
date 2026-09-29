@@ -48,9 +48,9 @@ export async function runTimelineExpirySweep(env: Env, now = Date.now()): Promis
     emitted += 1;
   }
 
-  // Share links carry their expiry on the link, not the diagram, so the
+  // Share links carry their expiry on the link, not the document, so the
   // join is what turns "this code lapses Friday" into "your Payments
-  // diagram stops being shareable Friday" — which is the sentence the
+  // document stops being shareable Friday" — which is the sentence the
   // owner can actually act on.
   const links = await env.DB.prepare(
     `SELECT d.id, d.name, d.owner_id, d.team_id, s.expires_at

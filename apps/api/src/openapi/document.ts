@@ -175,16 +175,16 @@ function operationFor(route: RouteSpec): Record<string, unknown> {
 }
 
 const TAGS = [
-  { name: 'Documents', description: 'Create, read, update, and delete diagrams and their tabs.' },
-  { name: 'Sharing', description: 'Share links, passwords, and the diagrams shared with you.' },
-  { name: 'Folders', description: 'Organise diagrams into a personal or team folder tree.' },
+  { name: 'Documents', description: 'Create, read, update, and delete documents and their tabs.' },
+  { name: 'Sharing', description: 'Share links, passwords, and the documents shared with you.' },
+  { name: 'Folders', description: 'Organise documents into a personal or team folder tree.' },
   {
     name: 'Trash',
-    description: 'Deleted diagrams, restorable for 30 days before they are purged.',
+    description: 'Deleted documents, restorable for 30 days before they are purged.',
   },
   { name: 'Images', description: 'Upload, list, and reference image assets.' },
   { name: 'Themes', description: 'Saved custom themes.' },
-  { name: 'Activity', description: 'Per-diagram change log.' },
+  { name: 'Activity', description: 'Per-document change log.' },
   { name: 'API tokens', description: 'Mint and revoke the credentials external callers use.' },
   { name: 'Teams', description: 'Teams, members, invites, and shared libraries.' },
   { name: 'Participants', description: 'Display name and colour for a collaborator.' },

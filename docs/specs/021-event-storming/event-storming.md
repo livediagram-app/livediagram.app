@@ -519,7 +519,7 @@ is arriving (the Alt insertion stays the one verb that makes room).
 | **Paste, the pointer anywhere else**              | STAGGERED on the original: the same lane, 24px to the right. Overlapping the original is fine; it is a copy you are about to move. Over a panel, or with the pointer outside the window, is "anywhere else".                                                                                                               |
 | **Duplicate** (⌘D, the menu, the command palette) | Staggered on the original: the same lane, 24px to the right.                                                                                                                                                                                                                                                               |
 | **Photo import**                                  | Rows of the photograph to lanes, with a cascade; notes above one another share a column. See below.                                                                                                                                                                                                                        |
-| **MCP** (`update_document`)                        | Every workshop note the call adds or moves is an arriving note: rows to lanes, and a lone arrival landing on an occupied spot takes the nearest free slot.                                                                                                                                                                 |
+| **MCP** (`update_document`)                       | Every workshop note the call adds or moves is an arriving note: rows to lanes, and a lone arrival landing on an occupied spot takes the nearest free slot.                                                                                                                                                                 |
 | **File import** (JSON into the tab)               | Every workshop note to its nearest lane, x untouched.                                                                                                                                                                                                                                                                      |
 | **Next-note button**                              | The lane of the note it was added from (that note's nearest lane, when it was free-placed off one).                                                                                                                                                                                                                        |
 | **Alt insertion**                                 | The lane of the row it is inserted into.                                                                                                                                                                                                                                                                                   |
@@ -1535,8 +1535,8 @@ hundred small notes.
 
 ## Domain learnings (session log)
 
-One-liners captured as they were learned — product truths for this diagram
-type, kept current every session. Each should stay true on its own.
+One-liners captured as they were learned — product truths for this tab
+kind, kept current every session. Each should stay true on its own.
 
 - The board is a super-low-threshold capture surface: add, type, drag —
   anything between a thought and a sticky is friction to remove.

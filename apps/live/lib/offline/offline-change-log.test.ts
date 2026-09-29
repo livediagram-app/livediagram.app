@@ -79,7 +79,7 @@ describe('offline change-log ops (in-memory backend)', () => {
     expect((await offlineListChangeLog('d1')).map((e) => e.id)).toEqual(['e3']);
   });
 
-  it('lists empty for an unknown diagram and appends without creating one', async () => {
+  it('lists empty for an unknown document and appends without creating one', async () => {
     __setOfflineBackend(memBackend());
     expect(await offlineListChangeLog('nope')).toEqual([]);
     await offlineAppendChangeLogEntry('nope', entry('e1'));

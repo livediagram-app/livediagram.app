@@ -34,7 +34,7 @@ async function connect() {
   return { client, sent };
 }
 
-describe('diagram and tab names through the MCP SDK', () => {
+describe('document and tab names through the MCP SDK', () => {
   it('advertises the cap on every name argument', async () => {
     const { client } = await connect();
     const { tools } = await client.listTools();
@@ -45,7 +45,7 @@ describe('diagram and tab names through the MCP SDK', () => {
     }
   });
 
-  it('create_document sends the api the shortened diagram and tab names', async () => {
+  it('create_document sends the api the shortened document and tab names', async () => {
     const { client, sent } = await connect();
     await client.callTool({
       name: 'create_document',
@@ -75,7 +75,7 @@ describe('diagram and tab names through the MCP SDK', () => {
     expect(JSON.parse(text).name).toBe(CAPPED);
   });
 
-  it('rename_document sends the shortened diagram name', async () => {
+  it('rename_document sends the shortened document name', async () => {
     const { client, sent } = await connect();
     await client.callTool({ name: 'rename_document', arguments: { documentId: 'd1', name: LONG } });
     const put = sent.find((s) => s.method === 'PUT' && s.path === '/documents/d1')!;

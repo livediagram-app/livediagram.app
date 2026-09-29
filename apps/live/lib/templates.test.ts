@@ -17,7 +17,7 @@ import { getTheme } from './themes';
 // `buildTemplatedTab` is the seam between /live/new (the welcome
 // flow) and the editor: a freshly chosen template + theme has to
 // land in the editor as a fully styled tab, or the user opens an
-// "Untitled" diagram that doesn't match the option they picked.
+// "Untitled" document that doesn't match the option they picked.
 // The theming is the bit most likely to silently drift, so the
 // tests below pin each element type's recolouring contract.
 
@@ -927,12 +927,12 @@ describe('design + table templates (later batch)', () => {
 });
 
 describe('untitledNameForTemplate', () => {
-  it('names a templated diagram in title case after its template title', () => {
+  it('names a templated document in title case after its template title', () => {
     expect(untitledNameForTemplate('mindmap')).toBe('Untitled Mind Map');
     expect(untitledNameForTemplate('mindmap-tree')).toBe('Untitled Tree Mind Map');
   });
-  it('keeps "Untitled diagram" for blank or no template', () => {
-    expect(untitledNameForTemplate('blank')).toBe('Untitled diagram');
-    expect(untitledNameForTemplate(null)).toBe('Untitled diagram');
+  it('keeps "Untitled document" for blank or no template', () => {
+    expect(untitledNameForTemplate('blank')).toBe('Untitled document');
+    expect(untitledNameForTemplate(null)).toBe('Untitled document');
   });
 });

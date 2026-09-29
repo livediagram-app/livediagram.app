@@ -1,6 +1,6 @@
 # Teams
 
-Groups of signed-in users, managed from the Explorer page. v1 is membership only: a team is a named group with roles. Sharing diagrams with a team (the payoff) is a follow-up spec built on top of this one.
+Groups of signed-in users, managed from the Explorer page. v1 is membership only: a team is a named group with roles. Sharing documents with a team (the payoff) is a follow-up spec built on top of this one.
 
 ## Why
 
@@ -55,7 +55,7 @@ A second way in, alongside per-address invites: a **shareable link** an admin ac
 - **Turn on / off (admin only)**: `POST /api/teams/:id/invite-link` mints a fresh token and sets the expiry to now + 7 days (regenerating while on rotates the token and resets the week); `DELETE /api/teams/:id/invite-link` turns it off. The team detail (`GET /api/teams/:id`) carries the current `inviteLink: { token, expiresAt } | null` **for admins only** (null for members, and null once expired).
 - **Resolve (open)**: `GET /api/teams/invite-link/:token` returns `{ team, memberCount, alreadyMember }` when the token is on and unexpired, else `404`. This one endpoint sits **above** the sign-in gate — a token holder must see _what_ they're joining before they sign in, and the token is the credential, so naming the team to whoever holds it is fine. `alreadyMember` is computed against the caller's verified id when present, else false.
 - **Join (signed-in)**: `POST /api/teams/invite-link/:token/join` adds the caller as a **joined** member and returns `{ teamId, alreadyMember }`. Idempotent: an existing membership is a no-op, and a pending email invite for the caller is accepted in place rather than duplicated. Guests get `401` (teams are Clerk-only); an invalid/expired token `404`s.
-- **The landing page** is the top-level `/join?token=<token>` route (outside the Explorer chrome, see [Router app](../016-platform/router-app.md)), so the signed-out flow renders its own card instead of being bounced by the explorer's auth gate. It resolves the token, then shows: **Join / Decline** to a signed-in non-member (Join → the team page; Decline → back to their diagrams); "already a member" with an Open-team link; or, to a signed-out visitor, why an account is needed plus **Sign in** / **Create an account** links whose `redirect_url` carries the same `/join?token=…` URL, so auth returns them here to finish joining. An off / expired / unknown token shows an "invite link isn't valid" card.
+- **The landing page** is the top-level `/join?token=<token>` route (outside the Explorer chrome, see [Router app](../016-platform/router-app.md)), so the signed-out flow renders its own card instead of being bounced by the explorer's auth gate. It resolves the token, then shows: **Join / Decline** to a signed-in non-member (Join → the team page; Decline → back to their documents); "already a member" with an Open-team link; or, to a signed-out visitor, why an account is needed plus **Sign in** / **Create an account** links whose `redirect_url` carries the same `/join?token=…` URL, so auth returns them here to finish joining. An off / expired / unknown token shows an "invite link isn't valid" card.
 - **Explorer UI**: the team detail page header gains an **"Invite by link"** button (admins only, to the left of the overflow menu) opening a modal (`TeamInviteLinkDialog`) that turns the link on, copies the URL, shows the expiry, and turns it off.
 
 ## Roles and permissions
@@ -112,13 +112,13 @@ The right-pane team view is **one calm card**, not a stack of panels:
 - **The last-admin rule shapes the affordances, not just the server**: the only Admin sees no Leave item, no remove control on their row, and a pinned "Admin" pill (with an explanatory hover card) instead of a role select. The server's `409 last_admin` remains as the backstop for stale UIs.
 - Admins also get a slim invite-by-email footer row. Placeholder copy: "Add your team by email address, they will receive an invite." (The invite lands in their in-app Invites section; no transactional email until Resend ships.)
 
-The pane title row reads "Recent Diagrams" for the recent section (renamed from "Recent" in the same change as this spec).
+The pane title row reads "Recent Documents" for the recent section (renamed from "Recent" in the same change as this spec).
 
-**Creating a team from a placement picker.** The New Diagram wizard's
+**Creating a team from a placement picker.** The New Document wizard's
 Location step and the Explorer's Move dialog both open on the space
 overview ([Save Locations](../006-document/save-locations.md)), and that overview carries a **New Team** tile after
 the team cards for signed-in users: an inline name field that creates the
-team and enters it, so "put this diagram in a new team" is one flow rather
+team and enters it, so "put this document in a new team" is one flow rather
 than a detour through the sidebar's New team form. The sidebar form stays
 for the organisation field and invites.
 
@@ -130,7 +130,7 @@ Declining and withdrawing are separate events because they are separate acts by 
 
 ## Out of scope (v1)
 
-- Sharing diagrams with a team / team workspaces.
+- Sharing documents with a team / team workspaces.
 - Invite emails (Resend) and invite accept/decline; invites are immediate memberships.
 - Team avatars, descriptions beyond the organisation line.
 - Looking up whether an invited email already has an account (needs the Clerk Management API).

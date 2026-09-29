@@ -138,7 +138,7 @@ export type CommandPaletteProps = {
   // palette as it changes height.
   onSize?: (size: { width: number; height: number; bottomY: number }) => void;
   // Mobile-only top override (the palette banner sits below the
-  // Explorer banner so signed-out users can switch diagrams without
+  // Explorer banner so signed-out users can switch documents without
   // leaving the canvas). See MovablePanel for semantics.
   mobileTopOverridePx?: number;
   // Mobile dock control — forwarded to the inner MovablePanel.

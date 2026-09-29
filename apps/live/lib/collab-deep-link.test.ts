@@ -19,19 +19,19 @@ const place: ActivityPlace = {
 };
 
 describe('collabDeepLinkHref', () => {
-  it('builds the owned-diagram form with an encoded fragment', () => {
+  it('builds the owned-document form with an encoded fragment', () => {
     expect(collabDeepLinkHref(place, 'action')).toBe(
       '/document/d%201#t=tab%2F1&el=el%261&open=action',
     );
   });
 
-  it('uses the visitor URL for a diagram shared with the reader', () => {
+  it('uses the visitor URL for a document shared with the reader', () => {
     expect(collabDeepLinkHref({ ...place, via: 'shared', shareCode: 'c/1' }, 'comments')).toBe(
       '/document/d%201?s=c%2F1#t=tab%2F1&el=el%261&open=comments',
     );
   });
 
-  it('never appends a share code to an owned or team diagram', () => {
+  it('never appends a share code to an owned or team document', () => {
     expect(
       collabDeepLinkHref({ ...place, via: 'team', shareCode: 'leak' }, 'action'),
     ).not.toContain('?s=');

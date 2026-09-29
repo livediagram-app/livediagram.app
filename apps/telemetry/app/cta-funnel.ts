@@ -1,7 +1,7 @@
 // The Pages tab's landing funnel (docs/specs/019-marketing/landing-funnel.md), kept pure so it is tested apart
 // from the view. Three independent counts per public surface, read from rows
 // the summary already carries: page views of its pages (`Page·View`, docs/specs/017-telemetry/page-view-telemetry.md),
-// arrivals at /new from its CTAs (`Cta·Opened`), and diagrams those visits
+// arrivals at /new from its CTAs (`Cta·Opened`), and documents those visits
 // created (`Cta·Created`). Nothing links one count to another; the rates are
 // just one divided by the next.
 
@@ -141,7 +141,7 @@ export function formatRate(value: number | null): string {
 }
 
 /**
- * The slot to tag as the surface's best: most diagrams created, ties to the
+ * The slot to tag as the surface's best: most documents created, ties to the
  * higher conversion. Null when fewer than two slots have created anything,
  * since a lone winner isn't a comparison.
  */

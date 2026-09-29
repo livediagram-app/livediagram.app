@@ -11,7 +11,7 @@ function show(saveLocation: 'livediagram' | 'browser', onSaveLocation = vi.fn())
     <NewDocumentSettingsStep
       documentName=""
       onDocumentName={() => {}}
-      placeholder="Untitled diagram"
+      placeholder="Untitled document"
       placement="unsorted"
       onPlacement={() => {}}
       folders={[]}
@@ -68,7 +68,7 @@ describe('the folder step', () => {
     const base = {
       documentName: '',
       onDocumentName: () => {},
-      placeholder: 'Untitled diagram',
+      placeholder: 'Untitled document',
       placement: 'unsorted',
       onPlacement: () => {},
       folders: [],

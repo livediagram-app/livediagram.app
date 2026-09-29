@@ -428,7 +428,7 @@ export function MultiplayerArt() {
 }
 
 export function AnyDeviceArt() {
-  // The same diagram on a laptop, tablet, and phone. A highlight ring
+  // The same document on a laptop, tablet, and phone. A highlight ring
   // cycles across the three (like the template tiles).
   return (
     <Frame>

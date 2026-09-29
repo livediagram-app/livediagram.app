@@ -80,7 +80,7 @@ describe('worker refusal of a Clerk account id in X-Owner-Id', () => {
     expect(await res.json()).toEqual({ error: 'account_id_not_a_guest_credential' });
   });
 
-  it('covers every owner-scoped resource, not just diagrams', async () => {
+  it('covers every owner-scoped resource, not just documents', async () => {
     for (const seg of ['folders', 'images', 'custom-themes', 'preferences', 'shared', 'timeline']) {
       const res = await worker.fetch(
         get(`/api/${seg}`, { 'X-Owner-Id': 'user_2abcDEF' }),

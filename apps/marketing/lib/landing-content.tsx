@@ -127,7 +127,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/supported-devices/',
         title: 'Works on any device',
         description:
-          'It runs in the browser, so there is nothing to install. Open the same diagram on your laptop, desktop, or tablet and pick up where you left off.',
+          'It runs in the browser, so there is nothing to install. Open the same document on your laptop, desktop, or tablet and pick up where you left off.',
       },
       {
         art: <DepthArt />,
@@ -163,7 +163,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Invite your team to collaborate',
     description:
-      'Diagrams stay private until you share. Everyone you invite shows up on the canvas in real time, with live cursors, comments, and presence.',
+      'Documents stay private until you share. Everyone you invite shows up on the canvas in real time, with live cursors, comments, and presence.',
     items: [
       {
         art: <ShareLinksArt />,
@@ -179,7 +179,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Teams with a shared library',
         description:
-          'Create a team, invite people by email, and everyone gets a shared folder of diagrams they can all open and edit. Admins manage membership and roles; members just get to work. Sign in to set one up, the canvas itself never needs an account.',
+          'Create a team, invite people by email, and everyone gets a shared folder of documents they can all open and edit. Admins manage membership and roles; members just get to work. Sign in to set one up, the canvas itself never needs an account.',
       },
       {
         art: <PresenceArt />,
@@ -187,7 +187,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Live presence',
         description:
-          'See who is in the diagram from the participant avatars on each tab. Status rings show online, away, or stale.',
+          'See who is in the document from the participant avatars on each tab. Status rings show online, away, or stale.',
       },
       {
         art: <RealtimeArt />,
@@ -211,7 +211,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'See what happened while you were away',
         description:
-          'The Explorer opens on a Timeline: a day-by-day feed of comments left on your diagrams, actions assigned to you, teammates joining, invites, and what is about to expire. Anything new since your last visit is marked, and the sidebar carries a count so you can tell without looking.',
+          'The Explorer opens on a Timeline: a day-by-day feed of comments left on your documents, actions assigned to you, teammates joining, invites, and what is about to expire. Anything new since your last visit is marked, and the sidebar carries a count so you can tell without looking.',
       },
       {
         art: <CommentsArt />,
@@ -291,7 +291,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Stop sharing on demand',
         description:
-          'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The diagram is yours again.',
+          'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The document is yours again.',
       },
     ],
   },
@@ -316,7 +316,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Slide deck',
         title: 'One deck across every tab',
         description:
-          'Slide one can come from your architecture tab and slide two from the roadmap. Order them however you like in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the diagram, so a teammate opens it and sees the same talk.',
+          'Slide one can come from your architecture tab and slide two from the roadmap. Order them however you like in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the document, so a teammate opens it and sees the same talk.',
       },
       {
         art: <PresenterNotesArt />,
@@ -332,7 +332,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Slide deck',
         title: 'Your screen, not everyone else’s',
         description:
-          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the diagram open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe.',
+          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the document open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe.',
       },
       {
         art: <SpotlightArt />,
@@ -356,7 +356,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Presenting modes',
         title: 'Walk a character through your diagram',
         description:
-          'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. Dress it how you like — gender, clothing, hair and size, remembered in your browser — and the box it stands on gets a ring. The canvas is read-only while you walk, and on a shared diagram everyone sees everyone else walking about in their own colour.',
+          'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. Dress it how you like — gender, clothing, hair and size, remembered in your browser — and the box it stands on gets a ring. The canvas is read-only while you walk, and on a shared document everyone sees everyone else walking about in their own colour.',
       },
       {
         art: <IsometricArt />,
@@ -405,7 +405,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Templates & themes',
         title: 'Build your own theme',
         description:
-          'Need your brand palette, a house style, or a notation that is not in the list? Build a custom theme, save it to your account, and reuse it across diagrams just like a built-in one. Edit it any time, and guests get them too.',
+          'Need your brand palette, a house style, or a notation that is not in the list? Build a custom theme, save it to your account, and reuse it across documents just like a built-in one. Edit it any time, and guests get them too.',
       },
       {
         art: <CanvasBackdropArt />,
@@ -453,7 +453,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Canvas & type',
         title: 'Organise in folders',
         description:
-          'File diagrams into nested folders in the explorer. Recent diagrams stay one click away; everything else lives where you put it.',
+          'File documents into nested folders in the explorer. Recent documents stay one click away; everything else lives where you put it.',
       },
     ],
   },
@@ -564,14 +564,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore tabs',
     title: 'Work across tabs',
     description:
-      'Every diagram is a stack of tabs, each its own canvas. Split a big system across them, link between them, copy them between diagrams, and lock the ones that are done.',
+      'Every document is a stack of tabs, each its own canvas. Split a big system across them, link between them, copy them between documents, and lock the ones that are done.',
     items: [
       {
         art: <UnlimitedTabsArt />,
         href: '/help/tabs/using-tabs/',
-        title: 'Unlimited tabs per diagram',
+        title: 'Unlimited tabs per document',
         description:
-          'Add as many tabs as a diagram needs. Each is its own canvas with its own theme, and nothing slows down as the stack grows.',
+          'Add as many tabs as a document needs. Each is its own canvas with its own theme, and nothing slows down as the stack grows.',
       },
       {
         art: <TabsArt />,
@@ -592,14 +592,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/tabs/tab-folders/',
         title: 'Group tabs into folders',
         description:
-          'Big diagram, lots of tabs? Group related tabs into named folders along the tab bar and collapse the ones you are not using. Drag a tab in or out, and a folder opens on its own when you work in it.',
+          'Big document, lots of tabs? Group related tabs into named folders along the tab bar and collapse the ones you are not using. Drag a tab in or out, and a folder opens on its own when you work in it.',
       },
       {
         art: <TabCopyArt />,
         href: '/help/tabs/add-to-document/',
-        title: 'Reuse a tab in another diagram',
+        title: 'Reuse a tab in another document',
         description:
-          "Copy a tab's full contents into another diagram you own, as a ready-made starting point you can take further.",
+          "Copy a tab's full contents into another document you own, as a ready-made starting point you can take further.",
       },
       {
         art: <TabLockArt />,
@@ -613,7 +613,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
   {
     id: 'reliability',
     cta: 'Explore what keeps work safe',
-    title: 'Diagrams you can rely on',
+    title: 'Documents you can rely on',
     description:
       'Your work saves itself, steps back when you slip, and comes back exactly as you left it. Nothing to remember, nothing to lose.',
     items: [
@@ -627,7 +627,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <RefreshArt />,
         title: 'Survives a refresh',
         description:
-          'Every save is durable through the API. Close the tab, reload, and your diagram comes back exactly as you left it.',
+          'Every save is durable through the API. Close the tab, reload, and your document comes back exactly as you left it.',
       },
       {
         art: <UndoRedoArt />,
@@ -646,16 +646,16 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <AccountSyncArt />,
         href: '/help/account-and-data/signing-in/',
-        title: 'Your diagrams, on every device',
+        title: 'Your documents, on every device',
         description:
-          'Sign in for free and your diagrams follow you. Open the same ones on your laptop, tablet, or phone, always up to date.',
+          'Sign in for free and your documents follow you. Open the same ones on your laptop, tablet, or phone, always up to date.',
       },
       {
         art: <SearchArt />,
         href: '/help/search-panel/the-search-panel/',
         title: 'Find anything, fast',
         description:
-          'Open search and jump straight to any diagram, folder, tab, or element by name. Matches group as you type, and Enter lands you on the first hit.',
+          'Open search and jump straight to any document, folder, tab, or element by name. Matches group as you type, and Enter lands you on the first hit.',
       },
     ],
   },
@@ -671,7 +671,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/palette/tools/images/',
         title: 'Images on the canvas',
         description:
-          'Drag, drop, or paste a PNG, JPEG, WebP, or GIF straight onto the canvas. Resize and arrange it like any other element. Everything you add lands in your own gallery, ready to reuse in any diagram without uploading twice.',
+          'Drag, drop, or paste a PNG, JPEG, WebP, or GIF straight onto the canvas. Resize and arrange it like any other element. Everything you add lands in your own gallery, ready to reuse in any document without uploading twice.',
       },
       {
         art: <LinkCardArt />,
@@ -810,7 +810,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/account-and-data/connect-ai-mcp/',
         title: 'Build diagrams with AI',
         description:
-          'Hook livediagram up to Claude or any MCP client at mcp.livediagram.app and let it find, read, create, edit, and share your diagrams for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token (read-only if you prefer), so you can disconnect any time.',
+          'Hook livediagram up to Claude or any MCP client at mcp.livediagram.app and let it find, read, create, edit, and share your documents for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token (read-only if you prefer), so you can disconnect any time.',
       },
       {
         art: <MermaidArt />,
@@ -875,7 +875,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/privacy-and-security/offline-mode/',
         title: 'Work fully offline',
         description:
-          'Flip on Offline Mode when you create a diagram and it is saved only in your browser: no account, no server, no sync. Yours alone. Move it to the cloud (or pull one back down) whenever you like.',
+          'Flip on Offline Mode when you create a document and it is saved only in your browser: no account, no server, no sync. Yours alone. Move it to the cloud (or pull one back down) whenever you like.',
       },
     ],
   },

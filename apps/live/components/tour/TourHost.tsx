@@ -23,7 +23,7 @@ import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 
 // Orchestrates the interactive editor tour (docs/specs/007-editor/editor-tour.md). Mounted once in
 // EditorView; renders nothing until either the /new handoff flag is
-// consumed (a brand-new user's first diagram → the welcome offer card) or
+// consumed (a brand-new user's first document → the welcome offer card) or
 // the Settings dialog requests a relaunch. Each step runs prepare (opening
 // the real panel / dropdown / menu it explains), waits for its target
 // node, then renders a dimming highlight ring plus the step popover

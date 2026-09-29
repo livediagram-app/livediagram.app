@@ -76,7 +76,7 @@ function ExplorerImpl({
   // tick before correcting.
   // Previously Explorer was hidden entirely on mobile (the canvas is
   // small enough that the panel ate the whole screen), but signed-out
-  // users had no other way to switch diagrams, so the panel now also
+  // users had no other way to switch documents, so the panel now also
   // shows on mobile, banner-collapsed at the very top of the viewport
   // above the Palette.
   const isMobile = useIsMobileViewport();
@@ -85,8 +85,8 @@ function ExplorerImpl({
   // Team rows + team folders share this map too (ids are globally
   // unique). Defaults to all collapsed so the panel stays compact.
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
-  // When set, the diagram row whose Move dialog is open (`teamId` set =
-  // it's a team-library diagram, so the picker opens on that team and a
+  // When set, the document row whose Move dialog is open (`teamId` set =
+  // it's a team-library document, so the picker opens on that team and a
   // pick routes through the scope-aware onMoveDocumentTo). Stored here
   // (vs. in DocumentRow) so the modal doesn't nest inside row portals.
   const [moveTarget, setMoveTarget] = useState<{ id: string; teamId: string | null } | null>(null);
@@ -109,7 +109,7 @@ function ExplorerImpl({
   // sits at the top of the canvas above the Palette.)
 
   // All derived collections below are useMemo'd against their real
-  // inputs (diagrams, folders, currentDocumentId): Explorer holds a
+  // inputs (documents, folders, currentDocumentId): Explorer holds a
   // pile of internal state (accordion open flags, expandedFolders,
   // moveTargetDocumentId, exitingDocumentIds) that re-renders the component
   // frequently without changing the underlying lists. Without these
@@ -172,7 +172,7 @@ function ExplorerImpl({
       dataTourId="explorer"
       position={position}
       // On mobile the panel becomes a full-width top banner (matches
-      // the Palette's banner pattern) so users can switch diagrams
+      // the Palette's banner pattern) so users can switch documents
       // without leaving the canvas. On desktop it stays in the
       // top-left corner.
       defaultCorner={isMobile ? 'top-banner' : 'top-left'}
@@ -211,7 +211,7 @@ function ExplorerImpl({
         {(current ?? currentTeam ?? currentShared) ? (
           <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
             <p className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-white">
-              Current Diagram
+              Current Document
             </p>
             <ul className="flex flex-col gap-0.5 overflow-hidden">
               {current ? (
@@ -244,14 +244,14 @@ function ExplorerImpl({
                     active
                     onOpen={() => onOpenDocument(currentTeam.id)}
                     onRename={onRenameCurrent}
-                    // Any joined member may delete a team diagram
+                    // Any joined member may delete a team document
                     // (docs/specs/013-workspace/team-shared-documents.md); the api enforces team membership.
                     onDelete={
                       openDeleteConfirm
                         ? (anchor) => openDeleteConfirm(currentTeam.id, anchor)
                         : undefined
                     }
-                    // Change Folder for a team diagram (docs/specs/013-workspace/team-shared-documents.md): opens the
+                    // Change Folder for a team document (docs/specs/013-workspace/team-shared-documents.md): opens the
                     // move picker on this team's tree, with Personal Space + the
                     // other teams one Back away. Routed through the
                     // scope-aware onMoveDocumentTo.
@@ -282,7 +282,7 @@ function ExplorerImpl({
 
         {/* Recent / Personal Space / Teams as a single tab bar (was three
             stacked accordions) so only one list takes vertical space.
-            Shared-with-you diagrams interleave into Recent (matching the
+            Shared-with-you documents interleave into Recent (matching the
             /explorer page); Personal Space holds the folder tree + Unsorted
             (docs/specs/013-workspace/folders.md); Teams mirrors it per team (docs/specs/013-workspace/team-shared-documents.md). The card owns
             its own tab state and hides itself when no section has
@@ -335,7 +335,7 @@ function ExplorerImpl({
       {/* Move-destination modal (docs/specs/013-workspace/folders.md), the same shared placement
           browser as the /explorer page. With the scope-aware
           onMoveDiagramTo wired (signed-in sessions with teams), the picker
-          offers every space — Personal Space plus each team — so a team diagram
+          offers every space — Personal Space plus each team — so a team document
           can be re-homed to the personal tree (and vice versa) right from
           the editor. Purely personal picks keep the optimistic
           onMoveDiagramToFolder path. */}
@@ -412,7 +412,7 @@ function ExplorerImpl({
           message={`Delete "${
             liveDocs.find((d) => d.id === deleteConfirm.id)?.name ||
             teamDocuments.find((d) => d.id === deleteConfirm.id)?.name ||
-            'this diagram'
+            'this document'
           }"? Its share links stop working.${
             deleteConfirm.notice ? ` ${deleteConfirm.notice}` : ''
           } ${

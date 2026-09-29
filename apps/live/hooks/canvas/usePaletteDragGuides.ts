@@ -204,6 +204,6 @@ export function usePaletteDragGuides({
   return { guides, distGuides };
 }
 
-// The DOM Element type, aliased so the diagram package's `Element` (the
+// The DOM Element type, aliased so the document package's `Element` (the
 // domain model) can keep the unqualified name in this file.
 type Element2 = globalThis.Element;

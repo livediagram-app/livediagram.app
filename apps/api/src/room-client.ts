@@ -7,10 +7,10 @@ import {
 } from '@livediagram/document';
 import type { Env } from './types';
 
-// The worker's calls into a diagram's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
+// The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
 // collaboration ledger to merge a save, and handing it a change the api made.
 
-// A diagram has a room when it is shared or in a team; anything else has one
+// A document has a room when it is shared or in a team; anything else has one
 // writer, and asking would wake a Durable Object for nothing. Null then.
 function roomStubFor(
   env: Env,
@@ -35,7 +35,7 @@ function roomStubFor(
 // merged at all. That is what keeps a change the saver made while its socket
 // was down from being overruled by the room's older copy of it.
 //
-// Only for a diagram with a room (see roomStubFor). Best-effort by design: if the room can't answer, the
+// Only for a document with a room (see roomStubFor). Best-effort by design: if the room can't answer, the
 // save goes through as the client sent it, which is what happened before.
 //
 // Also returns who posted each comment the room has seen, so the save can
@@ -81,7 +81,7 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
   return { epoch, seq };
 }
 
-// Hand the diagram's realtime room a change the api itself just wrote, so
+// Hand the document's realtime room a change the api itself just wrote, so
 // everyone connected sees it (docs/specs/012-collaboration/collab-race-hardening.md).
 //
 // The one case today is a view-role visitor's comment. The room refuses
@@ -91,7 +91,7 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
 // erased it. Relayed as the same `el-delta` an editor's own comment sends, so
 // receivers need nothing new.
 //
-// Only for a diagram with a room. Best-effort, like the share-revoked
+// Only for a document with a room. Best-effort, like the share-revoked
 // broadcast: the D1 write is the record, this is the live copy.
 export async function relayElementDelta(
   env: Env,
@@ -113,7 +113,7 @@ export async function relayElementDelta(
   }
 }
 
-// Tell every socket in a diagram's room that a share link changed: revoked
+// Tell every socket in a document's room that a share link changed: revoked
 // (its holders leave the editor) or rescoped (they reload into the new scope,
 // docs/specs/013-workspace/tab-scoped-share-links.md). The room also closes those sockets. Best-effort: the
 // D1 write before it is the authoritative change, so a room that can't be
@@ -137,9 +137,9 @@ export async function broadcastShareOp(
   }
 }
 
-// Tell a diagram's realtime room that the diagram was moved to the Trash
+// Tell a document's realtime room that the document was moved to the Trash
 // (docs/specs/013-workspace/trash.md): every open session hears the deleted
-// state, and the room closes every socket. Only for a diagram with a room.
+// state, and the room closes every socket. Only for a document with a room.
 // Best-effort like the share-op broadcast: the D1 write is the change, and a
 // session the room misses still has every save refused with document_trashed.
 export async function broadcastDocumentTrashed(
@@ -155,6 +155,6 @@ export async function broadcastDocumentTrashed(
       body: JSON.stringify({ op: { kind: 'document-trashed' } }),
     });
   } catch (err) {
-    console.warn('[room-broadcast] diagram-trashed did not reach the room', liveDoc.id, err);
+    console.warn('[room-broadcast] document-trashed did not reach the room', liveDoc.id, err);
   }
 }

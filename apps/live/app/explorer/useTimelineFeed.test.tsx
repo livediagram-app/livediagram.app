@@ -228,8 +228,8 @@ describe('useTimelineFeed on return to the tab', () => {
 });
 
 // The reader's own actions (docs/specs/013-workspace/timeline.md §2.4b). The bug this was reported
-// for: delete a diagram from a card's menu and the feed sat unchanged —
-// no tombstone, the deleted diagram's cards still up — until a browser
+// for: delete a document from a card's menu and the feed sat unchanged —
+// no tombstone, the deleted document's cards still up — until a browser
 // refresh.
 describe('useTimelineFeed after the readers own write', () => {
   afterEach(() => {

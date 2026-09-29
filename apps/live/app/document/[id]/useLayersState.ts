@@ -228,7 +228,7 @@ export function useLayersState(opts: {
   };
 
   // Smart naming (docs/specs/006-document/layers.md), called from commitLabel alongside the
-  // diagram / tab auto-renames: when a label commit lands on an element
+  // document / tab auto-renames: when a label commit lands on an element
   // whose layer still carries its default "Layer N" name, and no OTHER
   // element on that layer is labelled, the layer adopts the committed
   // text. Deliberately NO check of the edited element's own pre-commit

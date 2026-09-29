@@ -49,7 +49,7 @@ export async function recordTabSave(
   for (const { elementId, text } of newlyResolvedThreads(next, prev)) {
     // The element id doubles as the thread's identity — a thread has no
     // id of its own, it hangs off its element. Namespaced with the
-    // diagram id so the same element id in two diagrams (a duplicate)
+    // document id so the same element id in two documents (a duplicate)
     // can't collide on the timeline UNIQUE key.
     await recordCommentResolved(env, liveDoc, `${liveDoc.id}:${elementId}`, text, actorId);
   }

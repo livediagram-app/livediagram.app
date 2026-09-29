@@ -11,7 +11,7 @@ REST API to external, programmatic callers.
 
 Let **signed-in** people call the livediagram API from their own scripts /
 integrations with a long-lived **API token**, not just from the first-party web
-app. Read their diagrams, create/update them, manage folders — the same surface
+app. Read their documents, create/update them, manage folders — the same surface
 the app uses, under an explicit, revocable credential.
 
 **Signed-in only (gated like teams, [Teams](../013-workspace/teams.md)).** API tokens are an
@@ -44,7 +44,7 @@ The worker resolved the caller two ways ([Auth + guest access](../014-identity/a
 
 The guest header was the blocker, and the owner id it carried was **not a
 secret in practice.** The obvious REST surfaces were already redacted for
-non-owners (the shared diagram DTO, `redactOwner`; comment author ids on tab
+non-owners (the shared document DTO, `redactOwner`; comment author ids on tab
 read, `redactCommentAuthorIds`), but two surfaces still exposed a
 collaborator to the owner's id:
 
@@ -58,8 +58,8 @@ collaborator to the owner's id:
 
 Because REST trusted `X-Owner-Id` with no signature, a collaborator who
 harvested an owner's id could call the API **as** that owner across ALL their
-content: `GET /api/documents` listed every diagram the id owned, each then
-readable / editable / deletable. **Sharing one diagram (or being in a team)
+content: `GET /api/documents` listed every document the id owned, each then
+readable / editable / deletable. **Sharing one document (or being in a team)
 could escalate to impersonating the owner account-wide.** It applied to
 signed-in owners too: their id is the Clerk `sub`, and the `X-Owner-Id`
 fallback accepted it whenever a request carried no Bearer token.
@@ -71,14 +71,14 @@ closed the escalation. The fix is [§4](#4-x-owner-id-trust-change).
 ### Where it stands now
 
 - **The WS upgrade no longer takes `?g=`.** It admits a caller by a one-time
-  room ticket minted over authenticated REST, a personal diagram's owner id, or
+  room ticket minted over authenticated REST, a personal document's owner id, or
   a share code, with the share password where one is set (`t` / `o` / `s` /
   `p`, `routes/document-room-routes.ts`; [API app](api.md)).
 - **Presence carries no owner id.** The room mints a random presence id per
   socket and builds each presence entry itself (`helloPresence`,
   `document-room-rules.ts`); a client never supplies or learns one.
 - **The change log is redacted.** `GET /documents/<id>/log` blanks
-  `participantId` for every caller but the diagram owner (`routes/documents.ts`).
+  `participantId` for every caller but the document owner (`routes/documents.ts`).
 - **An account id is never a guest credential.** A Clerk-shaped `X-Owner-Id`
   is refused on every owner-scoped route with `401
 account_id_not_a_guest_credential`, unconditionally ([§4.1](#41-a-clerk-account-id-in-x-owner-id-is-refused-unconditionally)).
@@ -162,7 +162,7 @@ token to `GET`/`HEAD`; the api worker rejects every write it presents at a
 single dispatch choke point with `403 read_only_token`
 ([MCP server §4.11](mcp-server.md)). Read-only tokens are minted through the MCP
 consent screen (a "read-only access" checkbox), giving a cautious user a way to
-let an AI tool VIEW their diagrams without granting edit. There is still no
+let an AI tool VIEW their documents without granting edit. There is still no
 finer-grained scope vocabulary (per-resource, per-verb); that remains deferred
 ([§7](#7-out-of-scope-for-now)) — `read_only` is a single boolean, not a general
 scopes system.
@@ -171,12 +171,12 @@ scopes system.
 Clerk account ([§3.3](#33-resolution)), and both credentials — session JWT and
 token — are server-verified, so the token identity feeds the same
 team-membership checks the session does (`RouteContext.verifiedUserId`, used by
-`gateRead`/`gateEdit` and the team-scoped diagram/folder verbs). Concretely: a
-token can read and edit the diagrams in the shared libraries of the teams its
-owner has joined ([Team shared diagrams](../013-workspace/team-shared-documents.md)), and can `GET` the
+`gateRead`/`gateEdit` and the team-scoped document/folder verbs). Concretely: a
+token can read and edit the documents in the shared libraries of the teams its
+owner has joined ([Team shared documents](../013-workspace/team-shared-documents.md)), and can `GET` the
 teams surface (list its teams, team detail, a team's library). Without this, a
-diagram filed into a team was invisible to every external integration — the
-personal `GET /documents` excludes team diagrams by design.
+document filed into a team was invisible to every external integration — the
+personal `GET /documents` excludes team documents by design.
 
 **Administration stays interactive-session-only.** Every teams MUTATION
 (create, invite, role change, join/accept/leave, invite links, team deletion)
@@ -187,7 +187,7 @@ deal, revocable + 6-month-capped), but it must not be able to escalate — mint
 further credentials, grant other people membership, or destroy the account.
 
 **Deleting goes to the Trash, with an explicit way past it.** A token's
-`DELETE /api/documents/<id>` moves the diagram to the [Trash](../013-workspace/trash.md)
+`DELETE /api/documents/<id>` moves the document to the [Trash](../013-workspace/trash.md)
 like every other delete; `DELETE /api/documents/<id>?permanent=true` deletes it
 for good at once (and purges one already in the Trash). The Trash routes
 (`GET /api/trash`, `POST /api/trash/<id>/restore`, `DELETE /api/trash[/<id>]`)
@@ -230,7 +230,7 @@ one expire frees a slot.
 
 **Account deletion removes them.** Deleting an account erases ALL of that
 user's data, tokens included: `DELETE /api/account` ([`routes/account.ts`](../../../apps/api/src/routes/account.ts))
-must delete the owner's `api_tokens` rows in the same cascade as their diagrams
+must delete the owner's `api_tokens` rows in the same cascade as their documents
 / folders / themes, so no credential outlives the account.
 
 ### 3.7 Self-hosting
@@ -284,10 +284,10 @@ escalation. Two options were weighed:
 the credential _type_ to the owner id, so a caller with no Bearer and
 `X-Owner-Id: <a Clerk sub>` was accepted AS that account (verified at the time:
 the sub leaked via presence / the change-log, and nothing rejected it). After (b), a Clerk
-account's diagrams are reachable **only via a verified Bearer token**: an
+account's documents are reachable **only via a verified Bearer token**: an
 `X-Owner-Id` carrying a Clerk `sub` has no guest signature (one is never minted
 for a Clerk id), so it is rejected. The post-fix invariant is therefore "once
-signed up, your diagrams require your Bearer token; the header can't reach
+signed up, your documents require your Bearer token; the header can't reach
 them" — which is the property to assert in tests.
 
 (b) is the heavier change — every guest write now signs — but it's the one that
@@ -306,7 +306,7 @@ adding signatures). So don't try; bound the window instead and lean on the
 self-heal that already exists:
 
 1. The app already, on load, mints a _signed_ id and migrates a legacy unsigned
-   id's diagrams onto it (`apps/live/lib/guest-identity.ts` → `apiUpgradeGuestId`).
+   id's documents onto it (`apps/live/lib/guest-identity.ts` → `apiUpgradeGuestId`).
    Active guests largely hold a signed id already (they migrated when signing
    first shipped, [Auth + guest access](../014-identity/auth-and-guest-access.md)).
 2. Ship the `X-Owner-Sig` requirement **behind a grace flag / cutoff date.**
@@ -314,7 +314,7 @@ self-heal that already exists:
    behaviour) so every returning guest self-heals to a signed id; at the
    cutoff, unsigned ids are rejected for writes.
 3. **Never delete the orphaned data.** A long-dormant guest who only returns
-   after the cutoff finds their old unsigned id rejected, but the diagrams
+   after the cutoff finds their old unsigned id rejected, but the documents
    still exist server-side under that id — recoverable via the migrate tooling
    / a "sign in to recover" path, so it's a re-auth, never data loss.
 
@@ -352,11 +352,11 @@ segment, before the signature gate and independent of
 because nothing legitimate ever had this shape, so there is no window to bound
 and nothing for an operator to arm.
 
-This matters most for **personal** diagrams, whose ownership legitimately
+This matters most for **personal** documents, whose ownership legitimately
 resolves through the hybrid header path — that path is safe precisely because a
 personal owner id is an unguessable UUID, which an account id is not. The
-**team**-diagram half of the same escalation is closed structurally instead, by
-`ownsDocument` ([Team shared diagrams §Access](../013-workspace/team-shared-documents.md)), so it holds
+**team**-document half of the same escalation is closed structurally instead, by
+`ownsDocument` ([Team shared documents §Access](../013-workspace/team-shared-documents.md)), so it holds
 whatever a deployment has configured.
 
 The signature gate keeps its grace flag and its job: proving possession of a
@@ -369,14 +369,14 @@ hardening landed first:
 
 - **Structural schema validation** — `isValidElement` / `isValidTab`
   (`packages/document/src/validate.ts`) vet the element/tab discriminant,
-  required fields, endpoints, array bounds + unique ids. The diagram routes run
+  required fields, endpoints, array bounds + unique ids. The document routes run
   incoming tabs (create-seed + tab PUT) through `isValidTab` and reject
   malformed trees with `400`.
 - **Size caps** — a global Content-Length body cap, per-tab byte cap, and
   name / theme-definition / participant / share-password caps
-  (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Diagram
+  (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Document
   and tab names are shortened to the 60-character name cap rather than
-  rejected (`apps/api/src/names.ts`, [Tab and diagram name length](../006-document/name-length.md)).
+  rejected (`apps/api/src/names.ts`, [Tab and document name length](../006-document/name-length.md)).
 - **Already solid** (pre-existing): D1 is fully parameterized; Clerk JWT
   verification; share-link expiry + constant-time password compare + per-IP
   brute-force limiter; WS-upgrade auth; realtime role re-stamping + op-rate cap.
@@ -395,7 +395,7 @@ hardening landed first:
    even though §4 already neutralises a leaked id, because people WILL probe
    for it):
    - Redact `participantId` in the change-log read for non-owners (the static
-     harvest), the same way comment authors and the diagram `ownerId` already
+     harvest), the same way comment authors and the document `ownerId` already
      are.
    - Give each realtime session a **room-scoped ephemeral presence id**
      (random per connection) for the broadcast presence / cursor frames,
@@ -441,7 +441,7 @@ hardening landed first:
 
 ## 7. Out of scope (for now)
 
-Finer-grained scopes — per-diagram / per-folder grants, per-verb permissions —
+Finer-grained scopes — per-document / per-folder grants, per-verb permissions —
 plus webhooks and any billing or quota tiers (the product has no paid tier —
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). (The one scope that DID land is
 the **read-only** flag, [§3.4](#34-access--full-read--write-with-an-optional-read-only-flag);

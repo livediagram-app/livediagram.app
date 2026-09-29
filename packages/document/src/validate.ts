@@ -1,6 +1,6 @@
 // Runtime structural validation for Element + Tab. The TypeScript types are
 // compile-time only; this is the runtime guard for data crossing a trust
-// boundary — chiefly the API worker accepting tabs / diagrams from
+// boundary — chiefly the API worker accepting tabs / documents from
 // (eventually untrusted, token-authenticated) callers, but reusable by AI
 // ingest and import paths too. One source so the API and the app agree on
 // "what a valid tab is".
@@ -56,7 +56,7 @@ import { isChartPaletteId } from './chart-palettes';
 import { isMindFlow } from './mind-flow';
 import { isQuickSwatchSlot } from './quick-swatches';
 
-// Bounds. Generous vs any real diagram, tight vs an abuse payload.
+// Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
 export const MAX_FREEHAND_POINTS = 20_000;
 const MAX_TABLE_ROWS = 1_000;
@@ -229,7 +229,7 @@ export function isValidElement(el: unknown): el is Element {
 
   // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md): a slot 1-6 or absent. A junk slot is
   // rejected like any other closed-set field; the re-derive would ignore it,
-  // but it has no business being written into a diagram.
+  // but it has no business being written into a document.
   if (el.strokeSwatch !== undefined && !isQuickSwatchSlot(el.strokeSwatch)) return false;
   if (el.fillSwatch !== undefined && !isQuickSwatchSlot(el.fillSwatch)) return false;
   if (el.textSwatch !== undefined && !isQuickSwatchSlot(el.textSwatch)) return false;
@@ -292,7 +292,7 @@ export function isValidElement(el: unknown): el is Element {
       return false;
     // Colour scheme: a closed set of ids. An unknown one still RENDERS (the
     // resolver falls back to the default card), but it has no business being
-    // written into a diagram.
+    // written into a document.
     if (el.codeTheme !== undefined && !isCodeThemeId(el.codeTheme as string)) return false;
     // Mind flow (docs/specs/009-elements/mind-node.md): a closed set, and only meaningful on a root.
     if (el.mindFlow !== undefined && !isMindFlow(el.mindFlow as string)) return false;

@@ -74,7 +74,7 @@ there).
 
 Who is in a chair rides the existing `avatar` RoomOp, as a new
 `seatedOn: elementId | null` on `AvatarPresence`. **Nothing is written to the
-diagram.**
+document.**
 
 This is the rule that makes the feature safe, and it is [Avatar mode](../008-canvas/avatar-mode.md)'s rule
 unchanged: everyone's character is authoritative on its owner's machine. So a

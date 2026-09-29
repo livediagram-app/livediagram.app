@@ -10,7 +10,7 @@
 //
 // The tabs render shared components (CanvasStyleControls,
 // ThemeCategoryBrowser) so they're identical to the palette accordion and the
-// New-diagram picker respectively. Follows the standard modal contract
+// New-document picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
 import { lucideGrid3x3 } from '@livediagram/icons/lucide';

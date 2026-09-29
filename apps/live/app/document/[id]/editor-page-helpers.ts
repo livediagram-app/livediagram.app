@@ -1,6 +1,6 @@
 // Pure Tab helpers lifted out of editor-page.tsx to slim the page
 // component. No React, no editor state — just shape transforms on
-// Tab[] used by the diagram-hydration + autosave paths.
+// Tab[] used by the document-hydration + autosave paths.
 import {
   autoLayoutElements,
   isBoxed,
@@ -13,21 +13,21 @@ import {
 import { autoAlignElements } from '@/lib/auto-align';
 
 export function createTab(name: string): Tab {
-  // New tabs (and a new diagram's first tab) default the per-tab text size
+  // New tabs (and a new document's first tab) default the per-tab text size
   // to small (docs/specs/004-interface-design/fonts.md); elements added from the palette inherit it via
-  // `defaultTextSize`. A new tab added to an existing diagram still inherits
+  // `defaultTextSize`. A new tab added to an existing document still inherits
   // the active tab's explicit size where it has one (see useTabActions).
   return { id: crypto.randomUUID(), name, elements: [], defaultTextSize: 'sm' };
 }
 
-// Build the lazy-load placeholder tabs from a diagram's tab summaries.
-// A diagram should always carry at least one tab; if the API ever
+// Build the lazy-load placeholder tabs from a document's tab summaries.
+// A document should always carry at least one tab; if the API ever
 // returns zero summaries (a partial delete, a seeding bug, or a race
 // that stripped the last tab) we materialise a fresh Tab 1 rather than
 // leaving `tabs` empty. An empty tabs array makes `activeTab` (which
 // falls back to `tabs[0]`) undefined, and the editor crashes on the
 // first `activeTab.elements` read. The seeded tab autosaves back to the
-// API on the next save cycle, healing the diagram.
+// API on the next save cycle, healing the document.
 export function placeholdersFromSummaries(
   summaries: { id: string; name: string; folder?: string }[],
 ): Tab[] {
@@ -66,7 +66,7 @@ export function deriveTabLoadState(input: {
   elementsLength: number;
   templateChosen: boolean;
 }): TabLoadState {
-  // Pre-hydration / no diagram: the diagram-level loader owns the screen.
+  // Pre-hydration / no document: the document-level loader owns the screen.
   if (!input.hydrated || !input.hasDocument) return 'ready';
   if (input.errored) return 'error';
   if (input.loaded) return 'ready';
@@ -103,7 +103,7 @@ export function patchTab(ts: Tab[], id: string, patch: Partial<Tab>): Tab[] {
 // `changedTabs` is identity-based: callers patch tabs immutably
 // (see `patchTab`), so an unchanged tab keeps its reference and is
 // skipped. `orderChanged` covers tab add/remove count, a pure
-// reorder, AND a per-diagram folder change (docs/specs/006-document/tab-folders.md) — folder rides
+// reorder, AND a per-document folder change (docs/specs/006-document/tab-folders.md) — folder rides
 // the same meta-save path as order, so a folder-only edit must flip
 // this even when positions are unchanged. `deletedIds` are tabs
 // present at last save but gone now.
@@ -178,7 +178,7 @@ export function computeTabSaveDiff(
   return { changedTabs, deletedIds, orderChanged, nameChanged, hasChanges };
 }
 
-// Resolve the viewer's session against a fetched diagram (docs/specs/014-identity/auth-and-guest-access.md +
+// Resolve the viewer's session against a fetched document (docs/specs/014-identity/auth-and-guest-access.md +
 // docs/specs/015-api/api.md). Security-critical: it decides whether the caller is the
 // owner (always 'edit', never carries a share code) or a visitor (role
 // + share code come from the link they followed). The same
@@ -187,7 +187,7 @@ export function computeTabSaveDiff(
 // keeping a visitor's code on an owner request) corrupts authorisation,
 // so it lives here once, under test.
 //
-//   - isOwner:          the diagram belongs to this session's id.
+//   - isOwner:          the document belongs to this session's id.
 //   - sessionRole:      owners edit; visitors inherit the link's role.
 //   - sessionShareCode: owners send none; visitors carry the code that
 //                       admitted them so write paths can authorise.

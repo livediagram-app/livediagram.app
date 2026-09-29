@@ -3,15 +3,15 @@
 import type { SharedWithItem } from '@livediagram/api-schema';
 import type { Env, ShareRole } from '../types';
 
-// Record a visitor's access to a shared diagram. Idempotent on
+// Record a visitor's access to a shared document. Idempotent on
 // (owner_id, document_id): repeat visits just bump last_seen + role.
 // Caller is expected to only invoke this when the visitor's resolved
-// owner differs from the diagram's owner (an owner opening their own
-// diagram via a share link shouldn't show up in their own
+// owner differs from the document's owner (an owner opening their own
+// document via a share link shouldn't show up in their own
 // "Shared with you" list).
 //
 // Returns whether this was a FIRST visit (no prior row). The share route
-// uses it to fire the "someone joined your diagram" notification (docs/specs/014-identity/profile-and-email-notifications.md)
+// uses it to fire the "someone joined your document" notification (docs/specs/014-identity/profile-and-email-notifications.md)
 // and the Document·Joined telemetry count (docs/specs/017-telemetry/telemetry.md) once per (visitor,
 // document) rather than per reload. Decided by an INSERT OR IGNORE's row
 // count, so two concurrent first opens can't both read as first; a repeat
@@ -40,9 +40,9 @@ export async function recordSharedAccess(
   return false;
 }
 
-// Whether this owner has ever opened the diagram through a share link
+// Whether this owner has ever opened the document through a share link
 // (a shared_with row exists). Used by the notify-action route (docs/specs/012-collaboration/assigned-actions.md)
-// as the "shared-with" leg of its caller-can-access-the-diagram check.
+// as the "shared-with" leg of its caller-can-access-the-document check.
 export async function hasSharedAccess(
   env: Env,
   ownerId: string,
@@ -56,7 +56,7 @@ export async function hasSharedAccess(
   return row !== null;
 }
 
-// List diagrams shared with this owner, newest interaction first.
+// List documents shared with this owner, newest interaction first.
 // Joins through `diagrams` for the name + owner-side savedAt; also
 // surfaces a still-live `shareCode` for each row so the client can
 // build a `/live/document/<id>?s=<code>` URL the visitor can actually
@@ -125,7 +125,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
 
 // Drop a single "shared with you" reference — used when the visitor
 // dismisses a row from their Shared list (they don't want it
-// showing up any more) or when the diagram's been duplicated into
+// showing up any more) or when the document's been duplicated into
 // the visitor's own files (#9) so the shared reference is no longer
 // useful.
 export async function dropSharedAccess(

@@ -2,7 +2,7 @@
 
 A **whiteboard** is a kind of tab built for plain, freehand whiteboarding:
 pick up a pen and draw, with the simplicity of Microsoft Whiteboard. It sits
-beside diagram tabs in the same diagram, and it is where imported Microsoft
+beside diagram tabs in the same document, and it is where imported Microsoft
 Whiteboard boards open ([Microsoft Whiteboard import](../020-import-export/whiteboard-import.md)).
 
 A whiteboard is an ordinary tab carrying `kind: 'whiteboard'` (`TabKind`,
@@ -21,7 +21,7 @@ pen widths, dock spacing) are named constants, tuned in place.
 ## Why a tab kind
 
 - **Mixable.** A workshop often needs a free sketch next to a tidy diagram.
-  Making the whiteboard a tab, not a whole-diagram type, lets one diagram hold
+  Making the whiteboard a tab, not a whole-document type, lets one document hold
   both, and a tab can be added, reordered, grouped into tab folders and shared
   like any other.
 - **No second editor.** Every editor feature reads the same elements, so a
@@ -32,11 +32,11 @@ pen widths, dock spacing) are named constants, tuned in place.
 
 ## Creating one
 
-- **New Diagram wizard:** a **Whiteboard** template (a `TemplateKind` with a
-  blank builder and a preview tile, `packages/templates`), producing a diagram
+- **New Document wizard:** a **Whiteboard** template (a `TemplateKind` with a
+  blank builder and a preview tile, `packages/templates`), producing a document
   with one whiteboard tab.
 - **New tab:** the tab bar's new-tab action offers **Whiteboard** beside the
-  ordinary tab, so a whiteboard can be added to any diagram.
+  ordinary tab, so a whiteboard can be added to any document.
 - **Import:** a Microsoft Whiteboard import lands on a whiteboard tab.
 - A tab's kind is fixed at creation. Converting a diagram tab into a
   whiteboard (or back) is not offered: the two present the same elements very
@@ -50,7 +50,7 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **Hidden on a whiteboard tab:** the palette, the context / inspector panel
   and the format and theme controls. The header, tab bar, Explorer,
   collaboration, comments and zoom controls stay, because they are about the
-  diagram, not about drawing.
+  document, not about drawing.
 - **The dock holds, left to right:**
   1. **Select** (marquee and move; the ordinary select tool).
   2. **Pens**: the preset pens, one button each (see [Pens](#pens)).
@@ -83,7 +83,7 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   Colours come from the Default theme's palette so they read on both halves.
 - Pens are the user's, not the board's: they persist **device-locally** in
   `localStorage` (`livediagram:v2:whiteboard-pens`), like the other tool
-  panels, and never travel with the diagram.
+  panels, and never travel with the document.
 - A stroke records the pen's colour and width on its `freehand` element when
   drawn. The **Ink** pen records no explicit colour, so its strokes follow the
   appearance; every other pen records its colour, which stays as drawn.
@@ -149,8 +149,8 @@ which already follows the reader's light or dark appearance
   whiteboard variant (`WHITEBOARD_BOARD`, `WHITEBOARD_INK`, one value per
   appearance), tuned with the operator; the light and dark pairs must meet
   WCAG 2.2 AA contrast for ink on board (at least 4.5:1).
-- A diagram's theme applies to its diagram tabs only; a whiteboard tab in a
-  themed diagram still shows the whiteboard look.
+- A document's theme applies to its diagram tabs only; a whiteboard tab in a
+  themed document still shows the whiteboard look.
 
 ## Accessibility
 

@@ -22,7 +22,7 @@ import { track } from '@/lib/telemetry';
 // re-parents children on delete; the original /explorer version
 // just dropped them, etc.). The hook is the single source of
 // truth — callers that need a separate effect (e.g. re-bucketing
-// diagrams whose folder vanished) chain their own state update
+// documents whose folder vanished) chain their own state update
 // before delegating to `deleteFolder`.
 //
 // `ownerId` may be `null` while auth bootstraps. The hook treats a

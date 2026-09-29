@@ -4,10 +4,10 @@ import type { DocumentDTO } from '../types';
 
 // Characterisation tests for handleDocuments' authorisation surface.
 // documents.ts is the security-critical resource: every owner-only and
-// share-gated path resolves the caller, loads the diagram, and maps the
+// share-gated path resolves the caller, loads the document, and maps the
 // outcome onto one specific status code:
 //   - no resolvable owner            -> 400 (missingAuth)
-//   - diagram missing                -> 404 (no existence leak)
+//   - document missing                -> 404 (no existence leak)
 //   - owner mismatch (owner-only)    -> 403 (forbidden)
 //   - share gate denies (gated read/ -> 403
 //     edit paths)
@@ -49,7 +49,7 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     generateShareCode: vi.fn(() => 'CODE2345'),
     getShareLinkIncludingExpired: vi.fn(),
     extendShareLink: vi.fn(),
-    // Every share-link change withdraws the diagram's standing
+    // Every share-link change withdraws the document's standing
     // `share_link_expiring` warning (docs/specs/013-workspace/timeline.md §4.5); the retraction itself is
     // covered in expiry-retraction.test.ts.
     retractTimelineWarning: vi.fn(),
@@ -152,7 +152,7 @@ describe('GET /documents/:id/thumbnail (docs/specs/006-document/document-snapsho
     expect(getDocumentThumbnailSvg).not.toHaveBeenCalled();
   });
 
-  it('404s a missing diagram (no existence leak)', async () => {
+  it('404s a missing document (no existence leak)', async () => {
     db.getDocumentThumbMeta.mockResolvedValue(null);
     const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/thumbnail'));
     expect(res.status).toBe(404);
@@ -170,7 +170,7 @@ describe('GET /documents/:id/thumbnail (docs/specs/006-document/document-snapsho
     expect(await res.text()).toBe('<svg>ok</svg>');
   });
 
-  it('404s when access is allowed but there is no snapshot (empty diagram / no R2)', async () => {
+  it('404s when access is allowed but there is no snapshot (empty document / no R2)', async () => {
     db.getDocumentThumbMeta.mockResolvedValue(fakeDocument('owner-1'));
     canReadDocument.mockResolvedValue(true);
     getDocumentThumbnailSvg.mockResolvedValue(null);
@@ -198,7 +198,7 @@ describe('handleDocuments owner-only paths (DELETE /documents/:id)', () => {
     expect(res.status).toBe(400);
   });
 
-  it('404 when the diagram does not exist (no existence leak)', async () => {
+  it('404 when the document does not exist (no existence leak)', async () => {
     db.getDocument.mockResolvedValue(null);
     const res = await handleDocuments(makeCtx('DELETE', '/api/documents/d1'));
     expect(res.status).toBe(404);
@@ -211,7 +211,7 @@ describe('handleDocuments owner-only paths (DELETE /documents/:id)', () => {
     expect(db.deleteDocument).not.toHaveBeenCalled();
   });
 
-  it('204 and moves it to the Trash when the caller owns the diagram', async () => {
+  it('204 and moves it to the Trash when the caller owns the document', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     const res = await handleDocuments(makeCtx('DELETE', '/api/documents/d1'));
     expect(res.status).toBe(204);
@@ -285,8 +285,8 @@ describe('handleDocuments metadata PUT (PUT /documents/:id)', () => {
 
   it('404s an unknown id instead of create-on-first-write (ghost-row guard)', async () => {
     // A stray meta write for an id the server has never seen (e.g. an
-    // Offline Mode diagram id leaking past the client dispatch, docs/specs/006-document/offline-mode.md)
-    // must NOT mint a zero-tab diagram row. Diagrams are created via POST.
+    // Offline Mode document id leaking past the client dispatch, docs/specs/006-document/offline-mode.md)
+    // must NOT mint a zero-tab document row. Documents are created via POST.
     db.getDocument.mockResolvedValue(null);
     const res = await handleDocuments(
       makeCtx('PUT', '/api/documents/d1', { body: { name: 'Ghost' } }),
@@ -331,7 +331,7 @@ describe('GET /documents/:id owner-id redaction (docs/specs/014-identity/auth-an
     expect(res.status).toBe(200);
     const { document: liveDoc } = (await res.json()) as { document: DocumentDTO };
     expect(liveDoc.ownerId).toBe('');
-    // The visitor still gets the diagram itself — redaction, not refusal.
+    // The visitor still gets the document itself — redaction, not refusal.
     expect(liveDoc.id).toBe('d1');
     expect(liveDoc.name).toBe('Doc');
   });
@@ -383,10 +383,10 @@ describe('handleDocuments folder assignment (PUT /documents/:id/folder)', () => 
     expect(db.setDocumentFolder).toHaveBeenCalledWith({}, 'd1', null, null, undefined);
   });
 
-  // docs/specs/013-workspace/team-shared-documents.md: a team diagram belongs to every joined member, so any of
+  // docs/specs/013-workspace/team-shared-documents.md: a team document belongs to every joined member, so any of
   // them may move it out into their OWN personal library — and doing so
   // transfers ownership to the mover (folders are owner-scoped).
-  it('transfers ownership when a joined member moves a team diagram out to their folder', async () => {
+  it('transfers ownership when a joined member moves a team document out to their folder', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-2', 'team-1'));
     db.getMembership.mockResolvedValue({ status: 'joined', role: 'member' });
     db.getFolder.mockResolvedValue({ id: 'f1', teamId: null, ownerId: 'member-1' });
@@ -401,7 +401,7 @@ describe('handleDocuments folder assignment (PUT /documents/:id/folder)', () => 
     expect(db.setDocumentFolder).toHaveBeenCalledWith({}, 'd1', 'f1', null, 'member-1');
   });
 
-  it('403 when a non-member tries to move a team diagram out', async () => {
+  it('403 when a non-member tries to move a team document out', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-2', 'team-1'));
     db.getMembership.mockResolvedValue(undefined);
     const res = await handleDocuments(
@@ -417,7 +417,7 @@ describe('handleDocuments folder assignment (PUT /documents/:id/folder)', () => 
 });
 
 describe('handleDocuments gated tab read (GET /documents/:id/tabs/:tabId)', () => {
-  it('404 when the diagram is missing', async () => {
+  it('404 when the document is missing', async () => {
     db.getDocument.mockResolvedValue(null);
     const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t1'));
     expect(res.status).toBe(404);
@@ -483,7 +483,7 @@ describe('handleDocuments share-link expiry (docs/specs/013-workspace/share-link
     expect(db.extendShareLink).toHaveBeenCalledWith({}, 'CODE2345');
   });
 
-  it('extend 404s when the code belongs to a different diagram', async () => {
+  it('extend 404s when the code belongs to a different document', async () => {
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     db.getShareLinkIncludingExpired.mockResolvedValue({ ...link, documentId: 'other' });
     const res = await handleDocuments(makeCtx('POST', '/api/documents/d1/share/CODE2345/extend'));
@@ -702,7 +702,7 @@ describe('handleDocuments gated change-log (GET/POST /documents/:id/log)', () =>
   });
 });
 
-describe("POST /documents/:id/log checks the entry's tab belongs to the diagram", () => {
+describe("POST /documents/:id/log checks the entry's tab belongs to the document", () => {
   const entryOn = (tabId: string | null) => ({
     id: 'l1',
     tabId,
@@ -724,10 +724,10 @@ describe("POST /documents/:id/log checks the entry's tab belongs to the diagram"
     db.insertChangeLogEntry.mockResolvedValue(undefined);
   });
 
-  it('409s tab_not_saved for a tab the diagram does not have yet, without writing', async () => {
+  it('409s tab_not_saved for a tab the document does not have yet, without writing', async () => {
     // The production 500: the editor logs a new tab's first edit before the
     // debounced autosave has created the tab row, and the insert failed its
-    // foreign key. Also the cross-diagram write: a tab from another diagram
+    // foreign key. Also the cross-document write: a tab from another document
     // is not linked here either.
     db.getDocument.mockResolvedValue(withTabs(['t1']));
     const res = await handleDocuments(
@@ -738,7 +738,7 @@ describe("POST /documents/:id/log checks the entry's tab belongs to the diagram"
     expect(db.insertChangeLogEntry).not.toHaveBeenCalled();
   });
 
-  it("writes an entry on one of the diagram's own tabs", async () => {
+  it("writes an entry on one of the document's own tabs", async () => {
     db.getDocument.mockResolvedValue(withTabs(['t1']));
     const res = await handleDocuments(
       makeCtx('POST', '/api/documents/d1/log', { body: entryOn('t1') }),
@@ -807,7 +807,7 @@ describe('a tab-scoped visitor', () => {
     resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: 't2' });
   });
 
-  it('gets the diagram with every other tab locked and no deck', async () => {
+  it('gets the document with every other tab locked and no deck', async () => {
     const res = await handleDocuments(makeCtx('GET', '/api/documents/d1', visitor));
     const body = (await res.json()) as { document: DocumentDTO };
     expect(body.document.tabs.map((t) => t.name)).toEqual(['', 'Roadmap']);
@@ -937,7 +937,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
     db.generateShareCode.mockReturnValue('CODE2345');
   });
 
-  it('mints a link scoped to one of the diagram tabs', async () => {
+  it('mints a link scoped to one of the document tabs', async () => {
     db.createShareLink.mockResolvedValue(link({ tabId: 't2' }));
     const res = await handleDocuments(
       makeCtx('POST', '/api/documents/d1/share', { body: { role: 'view', tabId: 't2' } }),
@@ -946,7 +946,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
     expect(db.createShareLink).toHaveBeenCalledWith({}, 'd1', 'CODE2345', 'view', 'never', 't2');
   });
 
-  it('refuses to mint a link for a tab the diagram does not have', async () => {
+  it('refuses to mint a link for a tab the document does not have', async () => {
     const res = await handleDocuments(
       makeCtx('POST', '/api/documents/d1/share', { body: { role: 'view', tabId: 't9' } }),
     );
@@ -981,7 +981,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
     expect(db.rescopeShareLink).toHaveBeenCalledWith({}, 'CODE2345', null);
   });
 
-  it('refuses a rescope to a tab the diagram does not have', async () => {
+  it('refuses a rescope to a tab the document does not have', async () => {
     db.getShareLinkIncludingExpired.mockResolvedValue(link());
     const res = await handleDocuments(
       makeCtx('PUT', '/api/documents/d1/share/CODE2345', { body: { tabId: 't9' } }),
@@ -1027,7 +1027,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
     expect(res.status).toBe(404);
   });
 
-  it("404s a rescope of another diagram's link", async () => {
+  it("404s a rescope of another document's link", async () => {
     db.getShareLinkIncludingExpired.mockResolvedValue(link({ documentId: 'd2' }));
     const res = await handleDocuments(
       makeCtx('PUT', '/api/documents/d1/share/CODE2345', { body: { tabId: 't2' } }),

@@ -96,7 +96,7 @@ const FOLDER_16 =
   'M2 4.5A1.5 1.5 0 0 1 3.5 3h2.9a1 1 0 0 1 .77.37l.86 1.06a1 1 0 0 0 .78.37h3.69A1.5 1.5 0 0 1 14 6.3v5.2a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 11.5v-7z';
 
 // Folder with a lightning mark for the "Dynamic" parent of the synthetic
-// folders (Unsorted / Generated / Offline): live views over your diagrams,
+// folders (Unsorted / Generated / Offline): live views over your documents,
 // not folders-table rows.
 export function DynamicFolderIcon({ size = 13 }: IconProps) {
   return (
@@ -108,7 +108,7 @@ export function DynamicFolderIcon({ size = 13 }: IconProps) {
 }
 
 // Dashed folder outline for the synthetic Unsorted folder: folder-shaped so
-// it still reads as a place diagrams live, dashed so it reads as a dynamic
+// it still reads as a place documents live, dashed so it reads as a dynamic
 // view rather than a real folders-table row.
 export function UnsortedIcon({ size = 13 }: IconProps) {
   return (
@@ -118,11 +118,11 @@ export function UnsortedIcon({ size = 13 }: IconProps) {
   );
 }
 
-// Cloud-with-slash for the synthetic Offline folder (docs/specs/006-document/offline-mode.md): diagrams
+// Cloud-with-slash for the synthetic Offline folder (docs/specs/006-document/offline-mode.md): documents
 // saved only in this browser, never on the server.
 export const OfflineFolderIcon = lucideGlyph(lucideCloudOff, 13);
 
-// Sparkle for the synthetic "Generated" folder (AI / MCP-created diagrams): the one shared sparkle.
+// Sparkle for the synthetic "Generated" folder (AI / MCP-created documents): the one shared sparkle.
 export function SparkleIcon({ size = 13 }: IconProps) {
   return <SharedSparkleIcon size={size} />;
 }
@@ -169,7 +169,7 @@ export function ActivityIcon({ size = 13 }: IconProps) {
 // (docs/specs/013-workspace/hide-from-recent.md); the label carries the direction, the glyph the topic.
 export const ClockIcon = lucideGlyph(lucideClock, 13);
 
-// The clock with a strike-through: a diagram hidden from Recent
+// The clock with a strike-through: a document hidden from Recent
 // (docs/specs/013-workspace/hide-from-recent.md). Paired with ClockIcon so the menu row's glyph flips with
 // its label rather than relying on the wording alone.
 export function ClockOffIcon({ size = 13 }: IconProps) {
@@ -181,7 +181,7 @@ export function ClockOffIcon({ size = 13 }: IconProps) {
   );
 }
 
-// Star: per-user favourites (docs/specs/013-workspace/favourites.md). Filled when the diagram is
+// Star: per-user favourites (docs/specs/013-workspace/favourites.md). Filled when the document is
 // starred, hollow when it isn't, so a menu row's glyph carries the state
 // alongside its label.
 export function StarIcon({ filled = false, size = 13 }: IconProps & { filled?: boolean }) {
@@ -225,11 +225,11 @@ export function TrashIcon({ size = 13 }: IconProps) {
 
 export const OpenIcon = lucideGlyph(lucideExternalLink, 13);
 
-// Offline Mode conversions (docs/specs/006-document/offline-mode.md), from the diagram menu: a cloud with
+// Offline Mode conversions (docs/specs/006-document/offline-mode.md), from the document menu: a cloud with
 // an arrow going up into it, and a tray with an arrow coming down.
 export const SyncIcon = lucideGlyph(lucideCloudUpload, 14);
 export const TakeOfflineIcon = lucideGlyph(lucideDownload, 14);
 
-// A clock with an arrow curling back: a diagram's History. Distinct from
+// A clock with an arrow curling back: a document's History. Distinct from
 // ClockIcon, which the same menu uses for Hide-from-Recent.
 export const HistoryIcon = lucideGlyph(lucideHistory, 16);

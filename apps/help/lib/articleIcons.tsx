@@ -118,7 +118,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // ---- Privacy ----
-  // A cloud with a line through it: the diagram never leaves the browser.
+  // A cloud with a line through it: the document never leaves the browser.
   'offline-mode': (
     <Glyph>
       <path d="M6.5 17.5a4 4 0 01.3-8 5.5 5.5 0 0110.4 1.4A3.5 3.5 0 0117 17.5z" />

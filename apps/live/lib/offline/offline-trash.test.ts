@@ -22,8 +22,8 @@ import { DocumentTrashedError } from '../document-trashed';
 import { memBackend, testRecord as rec, testTab as tab } from './offline-test-utils';
 
 // The local Trash (docs/specs/013-workspace/trash.md, "The local Trash"): an
-// offline diagram's delete marks its IndexedDB record trashed; the same 30-day
-// rule applies, run whenever the app lists diagrams.
+// offline document's delete marks its IndexedDB record trashed; the same 30-day
+// rule applies, run whenever the app lists documents.
 
 const T0 = 1_700_000_000_000;
 
@@ -44,7 +44,7 @@ describe('offlineTrashDocument', () => {
     expect(await offlineListFavouriteIds()).toEqual([]);
     await expect(offlineLoadDocument('d1')).rejects.toBeInstanceOf(DocumentTrashedError);
     expect((await offlineGetRecord('d1'))?.trashedAt).toBe(T0);
-    // Still this browser's diagram: the dispatch keeps routing it locally.
+    // Still this browser's document: the dispatch keeps routing it locally.
     expect(await isOfflineId('d1')).toBe(true);
   });
 

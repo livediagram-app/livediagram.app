@@ -1,8 +1,8 @@
 'use client';
 
 // The editor's deleted state (docs/specs/013-workspace/trash.md, "While a
-// diagram is in the Trash"). Set when the load answers document_trashed, when
-// the room says the diagram was trashed, or when a save is refused because
+// document is in the Trash"). Set when the load answers document_trashed, when
+// the room says the document was trashed, or when a save is refused because
 // of it. Whether the reader may restore it is read from their own Trash: the
 // row is there exactly when they may (owner, or a joined team member), and
 // never for a share-link visitor.
@@ -14,7 +14,7 @@ import { track } from '@/lib/telemetry';
 export type DocumentTrashedState = {
   trashed: boolean;
   setDocumentTrashed: (trashed: boolean) => void;
-  // The reader's Trash row for this diagram, or null when they may not
+  // The reader's Trash row for this document, or null when they may not
   // restore it (or it hasn't been looked up yet).
   restorable: TrashedDocument | null;
   restore: () => Promise<void>;
@@ -33,7 +33,7 @@ export function useDocumentTrashed(opts: {
   const [from, setFrom] = useState<'Personal' | 'Team' | 'Local'>('Personal');
 
   const setDocumentTrashed = useCallback((next: boolean) => {
-    if (next) console.info('[trash] open diagram is in the Trash');
+    if (next) console.info('[trash] open document is in the Trash');
     setTrashed(next);
   }, []);
 
@@ -57,7 +57,7 @@ export function useDocumentTrashed(opts: {
     await apiRestoreDocument(ownerId, documentId);
     track('Trash', 'Restored', from);
     // Reopen it from scratch: a fresh load is the one path that hydrates
-    // everything a live diagram has.
+    // everything a live document has.
     window.location.reload();
   }, [ownerId, documentId, restorable, from]);
 

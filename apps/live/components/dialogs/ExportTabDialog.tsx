@@ -44,9 +44,9 @@ type ExportTabDialogProps = {
   // flag only drives the copy, filename suffix, and telemetry so the dialog
   // stays a dumb renderer over whatever Tab it's given.
   scope?: 'tab' | 'selection';
-  // Owner / diagram / share context for fetching image bytes so PNG / SVG /
+  // Owner / document / share context for fetching image bytes so PNG / SVG /
   // PDF embed image + avatar elements (the bitmaps live behind an
-  // authenticated endpoint). Absent (e.g. no diagram id) → images export as
+  // authenticated endpoint). Absent (e.g. no document id) → images export as
   // their placeholder, same as before.
   imageContext?: { ownerId: string; documentId: string; shareCode: string | null };
   // False while the Layers panel is off in Settings (docs/specs/007-editor/user-preferences.md): the

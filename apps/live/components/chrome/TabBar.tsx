@@ -93,11 +93,11 @@ type TabBarProps = {
   // all live in one place).
   onImportTab: () => void;
   onExportTab: () => void;
-  // The user's other diagrams (excluding the current one). Drives the
-  // "Add to Diagram" submenu in the tab ellipsis; savedAt versions the
+  // The user's other documents (excluding the current one). Drives the
+  // "Add to Document" submenu in the tab ellipsis; savedAt versions the
   // destination-picker thumbnails (docs/specs/006-document/document-snapshots.md).
   otherDocuments: { id: string; name: string; savedAt?: number }[];
-  // Copy the active tab into another diagram. Callee handles the
+  // Copy the active tab into another document. Callee handles the
   // round-trip to the API. Returns a promise so the menu can dismiss
   // after the operation completes.
   onCopyTabTo: (targetDocumentId: string) => Promise<void> | void;
@@ -220,7 +220,7 @@ export function TabBar({
   const { appearance } = useAppearance();
   const isDark = appearance === 'dark';
 
-  // Distinct folder names in this diagram, for the "Add to Folder"
+  // Distinct folder names in this document, for the "Add to Folder"
   // menu's pick list (docs/specs/006-document/tab-folders.md).
   const folderNames = folderNamesInDocument(tabs);
 
@@ -391,7 +391,7 @@ export function TabBar({
           onOpenSearch={onOpenSearch}
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"
-          settingsDescription="Your editor preferences — they follow your account, not this diagram."
+          settingsDescription="Your editor preferences — they follow your account, not this document."
           // Icons only under Minimal chrome; each keeps its hover card, titled with its name.
           labelled={!minimalChrome}
           github={false}
@@ -413,6 +413,6 @@ export function TabBar({
 }
 
 // UI light / dark mode toggle, pinned to the right edge of the
-// TabBar. Distinct from the per-tab diagram theme grid (Palette →
+// TabBar. Distinct from the per-tab theme grid (Palette →
 // Theme accordion): this only flips editor chrome, not the canvas.
 // docs/specs/007-editor/live-app.md "UI light / dark mode" documents the full surface.

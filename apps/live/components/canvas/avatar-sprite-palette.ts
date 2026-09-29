@@ -29,7 +29,7 @@ export const COAT_DARK = '#cfd8e3';
 export const APRON = '#8b5e34';
 
 // A darker companion to an arbitrary shirt colour, for the shaded side. Mixes
-// the hex 22% toward black (the diagram package's `shade`); falls back to the
+// the hex 22% toward black (the document package's `shade`); falls back to the
 // default pair when the colour isn't a plain `#`-prefixed 6-digit hex (a CSS
 // name or rgb() string from an older presence packet).
 export function shade(hex: string | undefined): { base: string; dark: string } {

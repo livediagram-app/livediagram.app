@@ -1,8 +1,8 @@
 // Per-event-type glyphs for the Timeline (docs/specs/013-workspace/timeline.md §2).
 //
 // The shared package draws one icon per SOURCE type, which is enough
-// to tell a diagram bubble from a team one. That's the right default
-// for a product-agnostic component, but a feed where twelve diagram
+// to tell a document bubble from a team one. That's the right default
+// for a product-agnostic component, but a feed where twelve document
 // events all wear the same square is harder to skim than one where a
 // comment looks like a comment. These override per event type; the
 // source-type glyph remains the fallback for anything unmapped, so a

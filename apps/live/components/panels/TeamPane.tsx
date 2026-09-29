@@ -49,9 +49,9 @@ export function TeamPane({
   // Whether the team loaded (true) or 404'd (false). The pane header
   // uses this to drop the team title on a 404 — there's no team to name.
   onLoadResult?: (found: boolean) => void;
-  // Full move destinations + cross-scope router for the shared-diagrams
+  // Full move destinations + cross-scope router for the shared-documents
   // move picker (docs/specs/013-workspace/team-shared-documents.md): passed straight through to TeamSharedDocuments
-  // so a team diagram can be re-homed to Personal Space / another team.
+  // so a team document can be re-homed to Personal Space / another team.
   moveDests?: ComponentProps<typeof TeamSharedDocuments>['moveDests'];
   onMoveDocumentTo?: ComponentProps<typeof TeamSharedDocuments>['onMoveDocumentTo'];
 }) {
@@ -158,10 +158,10 @@ export function TeamPane({
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             This team doesn&apos;t exist, or you&apos;re not a member of it. Ask an admin for an
-            invite, or head back to your own diagrams.
+            invite, or head back to your own documents.
           </p>
           <Button size="md" onClick={onLeftTeam} className="mt-6 shadow-sm">
-            Back to your diagrams
+            Back to your documents
           </Button>
         </div>
       </div>
@@ -325,8 +325,8 @@ export function TeamPane({
         ) : null}
       </div>
 
-      {/* ---------- Shared diagrams (docs/specs/013-workspace/team-shared-documents.md): the team's folder
-          tree + diagrams, managed by every joined member. ---------- */}
+      {/* ---------- Shared documents (docs/specs/013-workspace/team-shared-documents.md): the team's folder
+          tree + documents, managed by every joined member. ---------- */}
       {/* key on teamId so switching teams remounts the library and
           resets its open-folder `spot` — otherwise a subfolder open in
           team A leaks into team B as a stale, empty folder view. */}

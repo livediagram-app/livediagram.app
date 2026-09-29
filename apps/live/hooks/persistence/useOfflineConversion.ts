@@ -13,7 +13,7 @@ import {
 
 // Shared Offline Mode conversion handlers (docs/specs/006-document/offline-mode.md) for the Explorer's row and
 // card menus, which otherwise duplicated this logic. `syncToCloud` uploads an
-// offline diagram to the account; `takeOffline` pulls a cloud diagram down and
+// offline document to the account; `takeOffline` pulls a cloud document down and
 // deletes the server copy (gated by a confirm). Both reload afterwards so the
 // list reflects the move, and `converting` guards against a double-trigger.
 // `close` runs first to dismiss the caller's menu.
@@ -45,7 +45,7 @@ export function useOfflineConversion(
   const takeOffline = async () => {
     if (!ownerId || converting) return;
     close();
-    // A shared tab stays in its other diagrams and forks here (docs/specs/006-document/offline-mode.md).
+    // A shared tab stays in its other documents and forks here (docs/specs/006-document/offline-mode.md).
     const notice = await fetchSharedTabsNotice(ownerId, liveDoc.id, 'offline');
     const ok = await confirm({
       title: `Take “${liveDoc.name}” offline?`,
@@ -66,7 +66,7 @@ export function useOfflineConversion(
       window.location.reload();
     } catch {
       setConverting(false); // stays on server (aborts roll the local copy back)
-      toast.error('Could not take this diagram offline. It stays safely on the server.');
+      toast.error('Could not take this document offline. It stays safely on the server.');
     }
   };
 

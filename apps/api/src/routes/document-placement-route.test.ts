@@ -4,14 +4,14 @@ import type { DocumentDTO } from '../types';
 
 // Leaving a team library is its own event (docs/specs/013-workspace/team-shared-documents.md + docs/specs/013-workspace/timeline.md §4).
 //
-// It used to fall through to the `document_moved` arm, so pulling a diagram out
+// It used to fall through to the `document_moved` arm, so pulling a document out
 // of a shared library read "Moved to a Folder — Payments architecture →
 // Unsorted", delivered to the MOVER only: `recordDocumentMoved` resolves its
-// audience from the diagram, which by then is personal. And when the mover is
+// audience from the document, which by then is personal. And when the mover is
 // not the owner, docs/specs/013-workspace/team-shared-documents.md hands them ownership — so the previous owner and the
-// whole team could lose a diagram with nothing in either feed.
+// whole team could lose a document with nothing in either feed.
 //
-// The empty-folder case was worse. A diagram sitting at the team-library root
+// The empty-folder case was worse. A document sitting at the team-library root
 // already has `folderId === null`, so moving it to personal Unsorted left
 // `folderId !== existing.folderId` false and NO event was written at all.
 const timeline = vi.hoisted(() => ({
@@ -77,7 +77,7 @@ describe('PUT /documents/:id/folder — leaving a team library', () => {
     expect(timeline.recordDocumentMoved).not.toHaveBeenCalled();
   });
 
-  it('records it even when the diagram sat at the team-library root', async () => {
+  it('records it even when the document sat at the team-library root', async () => {
     // folderId null -> null, so the old `folderId !== existing.folderId` test
     // was false and nothing was recorded anywhere.
     db.getDocument

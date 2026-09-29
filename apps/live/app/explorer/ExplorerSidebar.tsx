@@ -76,8 +76,8 @@ export function ExplorerSidebar() {
   // The Dynamic group's expand state. Session-local and open by default so
   // Unsorted stays one click away; collapsing it is a per-visit tidy-up.
   const [dynamicOpen, setDynamicOpen] = useState(true);
-  // Only count stars pointing at diagrams still in view: the FK cascade
-  // drops rows for deleted diagrams, but a star on a team diagram you've
+  // Only count stars pointing at documents still in view: the FK cascade
+  // drops rows for deleted documents, but a star on a team document you've
   // since left would linger server-side until touched.
   const favouriteCount = [...liveDocs, ...teamDocuments].filter((d) =>
     favouriteIds.has(d.id),
@@ -168,7 +168,7 @@ export function ExplorerSidebar() {
       />
       {/* Favourites lives in Quick find rather than under Personal Space >
           Dynamic (docs/specs/013-workspace/timeline.md §8.2): it's the user's own curated shortlist,
-          not a synthetic view of where a diagram happens to sit, so it
+          not a synthetic view of where a document happens to sit, so it
           belongs beside Recent rather than a level down among Unsorted /
           Generated / Offline. */}
       <SidebarRow
@@ -189,7 +189,7 @@ export function ExplorerSidebar() {
       />
 
       {/* Personal Space lists the personal tree directly — Unsorted and the
-          root folders, no separate "All diagrams" parent row (docs/specs/013-workspace/team-shared-documents.md).
+          root folders, no separate "All documents" parent row (docs/specs/013-workspace/team-shared-documents.md).
           The /explorer/all route still backs the breadcrumb. The plus
           mirrors the Teams section: add a root-level folder. */}
       <SidebarSectionLabel
@@ -367,7 +367,7 @@ export function ExplorerSidebar() {
         depth={0}
       />
       {/* Trash (docs/specs/013-workspace/trash.md): last in the Library, where
-          people look for a diagram they deleted. Also in Settings › Account. */}
+          people look for a document they deleted. Also in Settings › Account. */}
       <SidebarRow
         icon={<TrashIcon />}
         label="Trash"
@@ -406,7 +406,7 @@ export function ExplorerSidebar() {
               Sign in to access Teams and External connections
             </span>
             <span className="mt-0.5 block text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-              Free, and your guest diagrams come with you.
+              Free, and your guest documents come with you.
             </span>
           </span>
         </Link>

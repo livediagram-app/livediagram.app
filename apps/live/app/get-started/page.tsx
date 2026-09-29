@@ -9,7 +9,7 @@
 //
 // Post-verification we hand off to /live/ (which resolves to /live/new
 // via the welcome flow, docs/specs/007-editor/new-document-route.md). The guest → authed migration of any
-// pre-existing diagrams lives in Stage 4 — out of scope for this page
+// pre-existing documents lives in Stage 4 — out of scope for this page
 // for now.
 
 // See sign-in/page.tsx for why useSignUp comes from @clerk/react/legacy
@@ -218,7 +218,7 @@ function GetStartedContent() {
     <AuthCard
       subtitle={
         phase === 1
-          ? 'Create a free account to keep your diagrams and work across multiple devices.'
+          ? 'Create a free account to keep your documents and work across multiple devices.'
           : 'Check your email'
       }
       error={error}

@@ -7,7 +7,7 @@ import { handleTrash } from './trash';
 
 // /api/trash (docs/specs/013-workspace/trash.md, "The API"): list, restore,
 // purge one, empty. The authority is the delete authority: the owner of a
-// personal diagram, any joined member for a team one.
+// personal document, any joined member for a team one.
 
 const T0 = 1_700_000_000_000;
 
@@ -30,7 +30,7 @@ function liveDoc(sql: DatabaseSync, id: string, owner: string, team: string | nu
   });
 }
 
-// user_me has a personal diagram `mine`; the team `crew` (user_me and
+// user_me has a personal document `mine`; the team `crew` (user_me and
 // user_bob joined) holds `ours`; user_bob has a personal `bobs`. All trashed.
 async function world(): Promise<SqliteD1> {
   const db = sqliteD1();
@@ -94,7 +94,7 @@ describe('GET /api/trash', () => {
 });
 
 describe('POST /api/trash/:id/restore', () => {
-  it('restores the owner’s diagram and returns it', async () => {
+  it('restores the owner’s document and returns it', async () => {
     const db = await world();
     const res = await call(db, 'POST', '/api/trash/mine/restore', me);
     expect(res.status).toBe(200);
@@ -102,20 +102,20 @@ describe('POST /api/trash/:id/restore', () => {
     expect(trashedAt(db, 'mine')).toBeNull();
   });
 
-  it('restores a team diagram for any joined member', async () => {
+  it('restores a team document for any joined member', async () => {
     const db = await world();
     expect((await call(db, 'POST', '/api/trash/ours/restore', me)).status).toBe(200);
     expect(trashedAt(db, 'ours')).toBeNull();
   });
 
-  it('refuses someone else’s personal diagram as missing', async () => {
+  it('refuses someone else’s personal document as missing', async () => {
     const db = await world();
     expect((await call(db, 'POST', '/api/trash/bobs/restore', me)).status).toBe(404);
     expect(trashedAt(db, 'bobs')).toBe(T0);
   });
 
   it('refuses a guest holding the team owner’s id', async () => {
-    // A team diagram's owner id is visible to teammates; the header alone
+    // A team document's owner id is visible to teammates; the header alone
     // never proves membership or ownership.
     const db = await world();
     const res = await call(db, 'POST', '/api/trash/ours/restore', { owner: 'user_bob' });
@@ -131,7 +131,7 @@ describe('POST /api/trash/:id/restore', () => {
 });
 
 describe('DELETE /api/trash/:id', () => {
-  it('purges one diagram for good', async () => {
+  it('purges one document for good', async () => {
     const db = await world();
     expect((await call(db, 'DELETE', '/api/trash/mine', me)).status).toBe(204);
     expect(ids(db)).toEqual(['bobs', 'ours']);
@@ -170,7 +170,7 @@ describe('DELETE /api/trash', () => {
     expect(ids(db)).toEqual(['bobs', 'mine', 'ours']);
   });
 
-  it('leaves live diagrams alone', async () => {
+  it('leaves live documents alone', async () => {
     const db = await world();
     liveDoc(db.sql, 'live', 'user_me');
     await call(db, 'DELETE', '/api/trash', me);

@@ -210,10 +210,10 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
   });
 });
 
-// The room ends every session when the diagram goes to the Trash
+// The room ends every session when the document goes to the Trash
 // (docs/specs/013-workspace/trash.md): close code 4004. The client hears it
 // and stops, rather than reconnecting into an upgrade that will be refused.
-describe('connectRoom when the diagram is trashed', () => {
+describe('connectRoom when the document is trashed', () => {
   class ClosingSocket {
     static all: ClosingSocket[] = [];
     readyState = 1;
@@ -256,7 +256,7 @@ describe('connectRoom when the diagram is trashed', () => {
     expect(ClosingSocket.all).toHaveLength(1);
   });
 
-  // A diagram trashed between the editor's load and its join: the upgrade is refused (the browser
+  // A document trashed between the editor's load and its join: the upgrade is refused (the browser
   // reports only an abnormal close, never opened), so the room says so and the editor asks the api.
   it('reports a join refused before the socket opened, and still retries', () => {
     const onRefused = vi.fn();

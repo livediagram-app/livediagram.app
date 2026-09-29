@@ -26,7 +26,7 @@ export type ToolResult = {
 export const deepLink = (id: string) => `https://livediagram.app/document/${id}`;
 
 // A share link's public URL (docs/specs/013-workspace/share-password.md): visitors land on /document/shared?s=<code>
-// and the app resolves the code to the diagram + granted role.
+// and the app resolves the code to the document + granted role.
 export const shareUrl = (code: string) =>
   `https://livediagram.app/document/shared?s=${encodeURIComponent(code)}`;
 
@@ -47,9 +47,9 @@ export function errorResult(message: string): ToolResult {
   return { content: [{ type: 'text', text: message }], isError: true };
 }
 
-// Load a diagram and one of its tabs: the named tab, or the first one when the
+// Load a document and one of its tabs: the named tab, or the first one when the
 // caller didn't name one (the default every tab-scoped tool applies). Null when
-// the diagram has no tabs to default to; an unknown id surfaces as the api's
+// the document has no tabs to default to; an unknown id surfaces as the api's
 // own ApiError, like every other call.
 export async function loadTab(
   env: Env,

@@ -96,7 +96,7 @@ describe('name fields', () => {
   const long = 'Quarterly platform migration plan for the payments team and friends';
   const capped = 'Quarterly platform migration plan for the payments team…';
 
-  it('create shortens the diagram name and every tab name', () => {
+  it('create shortens the document name and every tab name', () => {
     const parsed = z.object(createDocumentShape).parse({
       name: long,
       tabs: [{ name: long, elements: [] }],

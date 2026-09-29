@@ -46,12 +46,12 @@ self-host that opts out). The editor never depends on the fonts loading.
     changing it later never resizes existing elements). Unset = the
     per-type factory default ('md').
 
-A **new diagram's first tab** (and any blank tab minted by `createTab`)
+A **new document's first tab** (and any blank tab minted by `createTab`)
 defaults `defaultTextSize` to **small** (`sm`), so a fresh canvas starts
-compact. A **new tab added to an existing diagram** inherits the active
+compact. A **new tab added to an existing document** inherits the active
 tab's `font` and `defaultTextSize` (the same way it inherits the theme),
 falling back to small when the active tab has no explicit size — so tabs in
-one diagram stay consistent and a brand-new tab still defaults to small
+one document stay consistent and a brand-new tab still defaults to small
 rather than the `md` factory baseline.
 
 Resolution order for any text: `element.font → notation font → tab.font →
@@ -77,7 +77,7 @@ font, so they take the tab default).
 ## Storage & behaviour
 
 - The model stores the stable **id** (`Element.font` / `Tab.font` in
-  `packages/document`), not a CSS stack, so saved diagrams round-trip even
+  `packages/document`), not a CSS stack, so saved documents round-trip even
   if the catalogue's exact stacks change. Both fields are optional;
   unset = inherit (element → tab → default).
 - Font changes go through the normal history/commit path, so undo/redo
@@ -133,5 +133,5 @@ rich-text toolbar's own font grid in `RichTextToolbar.tsx`),
 the label renderers (`element-labels.tsx`), `TableView`, and `ArrowView`
 apply the resolved stack; `useElementStyle.setFontSelected` and
 `useTabCanvas.setTabFont` are the mutators. See also
-[Diagram structure](../006-document/document-structure.md) and
+[Document structure](../006-document/document-structure.md) and
 [Canvas and palette](../008-canvas/canvas-and-palette.md).

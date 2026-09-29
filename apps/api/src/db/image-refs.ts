@@ -83,7 +83,7 @@ export function imageRefIndexPageStatement(
   return env.DB.prepare(indexTabsSql('t.rowid > ?1 AND t.rowid <= ?2')).bind(fromRowId, toRowId);
 }
 
-// Every tab of the owner's diagrams: the usage map's lazy index while the
+// Every tab of the owner's documents: the usage map's lazy index while the
 // backfill is incomplete.
 export function imageRefIndexOwnerStatement(env: Env, ownerId: string): D1PreparedStatement {
   return env.DB.prepare(
@@ -95,7 +95,7 @@ export function imageRefIndexOwnerStatement(env: Env, ownerId: string): D1Prepar
   ).bind(ownerId);
 }
 
-// Every tab of one diagram: the share read's lazy index while the backfill is
+// Every tab of one document: the share read's lazy index while the backfill is
 // incomplete.
 export function imageRefIndexDocumentStatement(env: Env, documentId: string): D1PreparedStatement {
   return env.DB.prepare(

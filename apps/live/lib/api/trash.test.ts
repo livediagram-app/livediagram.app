@@ -80,7 +80,7 @@ describe('apiListTrash', () => {
 });
 
 describe('apiRestoreDocument', () => {
-  it('restores a cloud diagram and lets this page save it again', async () => {
+  it('restores a cloud document and lets this page save it again', async () => {
     __setOfflineBackend(memBackend());
     markDocumentDeleted('c1');
     const seen = stubFetch(() => Response.json({ document: { id: 'c1' } }));
@@ -92,7 +92,7 @@ describe('apiRestoreDocument', () => {
     expect(isDocumentDeleted('c1')).toBe(false);
   });
 
-  it('restores an offline diagram locally, never over the network', async () => {
+  it('restores an offline document locally, never over the network', async () => {
     __setOfflineBackend(memBackend());
     await offlinePutRecord(testRecord({ id: 'l1' }));
     await offlineTrashDocument('l1', T0);
@@ -106,7 +106,7 @@ describe('apiRestoreDocument', () => {
 });
 
 describe('apiPurgeDocument and apiEmptyTrash', () => {
-  it('purge a cloud diagram through /api/trash', async () => {
+  it('purge a cloud document through /api/trash', async () => {
     __setOfflineBackend(memBackend());
     const seen = stubFetch((url) =>
       url.endsWith('/trash') || url.includes('?team=')
@@ -141,7 +141,7 @@ describe('apiPurgeDocument and apiEmptyTrash', () => {
 });
 
 describe('deleting and loading, with a Trash', () => {
-  it('moves an offline diagram to the local Trash on delete', async () => {
+  it('moves an offline document to the local Trash on delete', async () => {
     __setOfflineBackend(memBackend());
     await offlinePutRecord(testRecord({ id: 'l1' }));
     stubFetch(() => Response.json({ documents: [] }));

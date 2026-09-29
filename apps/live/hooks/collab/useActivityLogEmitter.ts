@@ -26,7 +26,7 @@ import { entryHistoryFill, type EntryHistory } from '@/lib/entry-history';
 type RoomHandle = { send: (msg: RoomOutgoing) => void };
 
 type Deps = {
-  // Diagram-scoped fields the entry envelope needs. When
+  // Document-scoped fields the entry envelope needs. When
   // `documentId` is null the emitters silently no-op (the page is
   // still bootstrapping; nothing to write against yet).
   documentId: string | null;
@@ -43,7 +43,7 @@ type Deps = {
   entryHistoryRef: RefObject<EntryHistory>;
   // Share-code visitor scope (null for the owner). Threaded onto
   // the API call so edit-role visitors land their entries against
-  // the correct diagram.
+  // the correct document.
   sessionShareCode: string | null;
   // Live realtime room handle. The hook fires a `log` op on each
   // emit so peers see new audit rows in their own activity panel.

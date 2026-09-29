@@ -1,4 +1,4 @@
-// Change log (per-diagram audit) — see docs/specs/012-collaboration/activity-and-audit.md
+// Change log (per-document audit) — see docs/specs/012-collaboration/activity-and-audit.md
 import { CHANGE_LOG_TAB_NOT_SAVED, type ChangeLogEntry } from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import {
@@ -29,7 +29,7 @@ async function _apiListChangeLog(
   id: string,
   shareCode?: string | null,
 ): Promise<ChangeLogEntry[]> {
-  // Offline Mode (docs/specs/006-document/offline-mode.md): the log lives in the diagram's IndexedDB record.
+  // Offline Mode (docs/specs/006-document/offline-mode.md): the log lives in the document's IndexedDB record.
   if (await isOfflineId(id)) return offlineListChangeLog(id);
   const res = await apiFetch(`${API_BASE}/documents/${id}/log`, {
     headers: await apiHeaders(ownerId, { share: shareCode ?? null }),

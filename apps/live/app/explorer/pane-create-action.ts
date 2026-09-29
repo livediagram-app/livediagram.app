@@ -1,6 +1,6 @@
 // Which shape the Explorer header's create affordance takes (docs/specs/013-workspace/folders.md).
 //
-// Two actions (New diagram + New subfolder, inside a folder) share one
+// Two actions (New document + New subfolder, inside a folder) share one
 // compact "+ Create" dropdown: two shrink-0 buttons squeezed the folder-name
 // title to nothing on a narrow phone. But a dropdown holding a single tile is
 // two clicks and a hidden label for one action — it reads as "Create… what?".

@@ -5,7 +5,7 @@ import { OUT_OF_SCOPE_MESSAGE, isTabOutOfScope } from '@/lib/tab-scope';
 // Ephemeral, in-the-moment editing UI for the canvas: which tab is
 // active, what's selected / being edited, the format painter's "source"
 // element, the marquee multi-selection bag, and the two transient
-// picker flags. A self-contained slice (no diagram-data or persistence
+// picker flags. A self-contained slice (no document-data or persistence
 // coupling) lifted out of useEditorState so the view-model is composed
 // from domain slices rather than one flat bag of useState calls — same
 // pattern as usePanelLayout / useEditorDialogs / usePresenceState.
@@ -46,7 +46,7 @@ export function useEditorUiState(
   // selection / its popover / its accordion controls are suppressed. Both
   // are cleared together by `onDeselect` and by clicking any single element.
   const [multiSelectedIds, setMultiSelectedIds] = useState<Set<string>>(new Set());
-  // Template picker mode. Welcome / "New Diagram" lives on /live/new
+  // Template picker mode. Welcome / "New Document" lives on /live/new
   // (docs/specs/007-editor/new-document-route.md); the 'welcome' value here is only a benign reset target.
   // 'templates' opens the per-tab Quick Start grid; 'identity' is the
   // visitor join flow.

@@ -5,7 +5,7 @@ import type { Env } from '../types';
 // Characterisation tests for handleImages' authorisation surface
 // (docs/specs/009-elements/images.md). Covers: the 503 fallback when R2 is absent (self-host), the
 // owner gate on the gallery list / usage / delete, and the byte-read
-// access policy (image owner OR a share-readable diagram that references
+// access policy (image owner OR a share-readable document that references
 // the image). Pins behaviour ahead of the requireOwner extraction.
 
 const { db, canReadDocument, resolveDocumentGrant } = vi.hoisted(() => ({
@@ -124,13 +124,13 @@ describe('handleImages', () => {
     expect(res.status).toBe(200);
   });
 
-  it('byte-read 404 for a non-owner with no diagram hint', async () => {
+  it('byte-read 404 for a non-owner with no document hint', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
     const res = await handleImages(makeCtx('GET', '/api/images/i1'));
     expect(res.status).toBe(404);
   });
 
-  it('byte-read 200 for a non-owner via a share-readable diagram that references the image', async () => {
+  it('byte-read 200 for a non-owner via a share-readable document that references the image', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
     db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
     canReadDocument.mockResolvedValue(true);
@@ -145,7 +145,7 @@ describe('handleImages', () => {
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor reads images their tab uses.
-  it('asks whether the scoped tab, not the whole diagram, uses the image', async () => {
+  it('asks whether the scoped tab, not the whole document, uses the image', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
     db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
     resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: 't2' });

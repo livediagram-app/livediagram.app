@@ -249,7 +249,7 @@ export function eventStormingTilt(): number {
 
 // An event-storming board is recognised by its KIND — tab data, so
 // the switcher appears wherever the board travels (share links, imports,
-// re-opened diagrams) and never for anything else.
+// re-opened documents) and never for anything else.
 //
 // ANY of them is enough — the board's own layer, or one of the legacy stage
 // layers a pre-collapse board still carries. Layers are ordinary docs/specs/006-document/layers.md

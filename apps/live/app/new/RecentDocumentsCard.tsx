@@ -7,20 +7,20 @@ import { Glyph } from '@livediagram/ui';
 
 type RecentItem = { id: string; name: string; savedAt: number | null };
 
-// A small "jump back in" card that pops out to the RIGHT of the new-diagram
-// wizard (docs/specs/007-editor/new-document-route.md), listing the 5 most recently-saved diagrams the user
+// A small "jump back in" card that pops out to the RIGHT of the new-document
+// wizard (docs/specs/007-editor/new-document-route.md), listing the 5 most recently-saved documents the user
 // owns. Deliberately separate from the create flow: it's a side affordance
-// for returning users, hidden entirely for someone with no diagrams yet
+// for returning users, hidden entirely for someone with no documents yet
 // (and on narrow viewports where the wizard already fills the width). Each
-// row opens that diagram directly.
+// row opens that document directly.
 export function RecentDocumentsCard({
   ownerId,
   onCount,
 }: {
   ownerId: string | null;
-  // Reports how many diagrams the owner has, once known. The page uses it
-  // to gate the interactive tour's welcome offer (docs/specs/007-editor/editor-tour.md, zero-diagram
-  // users only); this card already holds the only diagram-list fetch on
+  // Reports how many documents the owner has, once known. The page uses it
+  // to gate the interactive tour's welcome offer (docs/specs/007-editor/editor-tour.md, zero-document
+  // users only); this card already holds the only document-list fetch on
   // /new, so it shares the answer rather than the page fetching twice.
   onCount?: (n: number) => void;
 }) {
@@ -66,7 +66,7 @@ export function RecentDocumentsCard({
           <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
             Jump back in
           </span>
-          <span className="text-[10px] text-slate-400">Your recent diagrams</span>
+          <span className="text-[10px] text-slate-400">Your recent documents</span>
         </div>
       </div>
       <ul className="flex flex-col p-1.5">
@@ -78,7 +78,7 @@ export function RecentDocumentsCard({
             >
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-xs font-medium text-slate-700 group-hover:text-brand-700 dark:text-slate-200 dark:group-hover:text-brand-200">
-                  {d.name || 'Untitled diagram'}
+                  {d.name || 'Untitled document'}
                 </span>
                 {d.savedAt != null ? (
                   <span className="text-[10px] text-slate-400">

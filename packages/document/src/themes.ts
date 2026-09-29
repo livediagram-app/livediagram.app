@@ -1,7 +1,7 @@
 // The shared theme ENGINE (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme data, types, and the
 // pure element/backdrop transforms that take a resolved ThemeDefinition. Lives
 // in the package so both the editor (apps/live) and the MCP worker (apps/mcp,
-// docs/specs/015-api/mcp-server.md) theme diagrams identically. Custom-theme (per-owner) resolution +
+// docs/specs/015-api/mcp-server.md) theme tabs identically. Custom-theme (per-owner) resolution +
 // deriveNewBoxedColours stay in apps/live/lib/themes.ts, which re-exports this.
 import {
   deriveTextColorForBg,
@@ -20,13 +20,13 @@ export { THEMES, DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK };
 // Appearance modal) updates both halves at once; existing elements are
 // unaffected. Themes
 // are referenced by string id (stored on Tab.theme) so they survive
-// renames + can be extended without breaking saved diagrams.
+// renames + can be extended without breaking saved documents.
 
 export type ThemeId =
   | 'brand'
   // 'slate' is a legacy id: the theme it points at is now Pink (the old
   // grey Slate was too close to Steel / Charcoal / Mono). Kept as the id
-  // so diagrams saved against it keep resolving.
+  // so documents saved against it keep resolving.
   | 'slate'
   | 'forest'
   | 'sunset'
@@ -112,7 +112,7 @@ export type ThemeDefinition = {
   shapeColors?: Partial<Record<ShapeKind, ShapeColourOverride>>;
   // Catalogue metadata only: it marks the twelve that shipped first, and
   // nothing gates on it. All three theme surfaces (the palette accordion, the
-  // Tab Appearance modal, the New-diagram picker) render the same
+  // Tab Appearance modal, the New-document picker) render the same
   // ThemeCategoryBrowser now (docs/specs/008-canvas/canvas-and-palette.md), so every theme is reachable by
   // category and there is no "Show more" left to sit behind.
   extra?: boolean;
@@ -128,11 +128,11 @@ export type ThemeCategory = 'cool' | 'warm' | 'dark' | 'multicolour' | 'formal';
 
 // Which chrome a viewer is looking at (docs/specs/007-editor/live-app.md). The Default colour scheme is
 // the only one that reads it: every other scheme paints the same colours for
-// everybody, because those colours are stored in the diagram.
+// everybody, because those colours are stored in the document.
 export type Appearance = 'light' | 'dark';
 
 // The id of the Default colour scheme. Stays 'brand' — it is the value saved
-// diagrams carry, not a label.
+// documents carry, not a label.
 export const DEFAULT_SCHEME_ID = 'brand';
 
 /** The Default scheme as the given appearance paints it. */
@@ -283,7 +283,7 @@ export function recolourElementForTheme(el: Element, theme: ThemeDefinition): El
   return { ...el, ...patch } as Element;
 }
 
-// Soft theme switch: change the diagram's theme but preserve every
+// Soft theme switch: change the tab's theme but preserve every
 // per-element colour the user has CUSTOMISED. A field counts as
 // "still on the old theme" (and is therefore safe to replace) when
 // either:

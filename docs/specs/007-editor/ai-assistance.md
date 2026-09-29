@@ -75,7 +75,7 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   creation/editing and to return a structured error rather than comply.
 - For the mutating mode (Clean) `response_format: { type: "json_object" }` is set on the
   OpenAI request so the model can only return parseable JSON, preventing injection of
-  arbitrary text through the diagram data layer.
+  arbitrary text through the document data layer.
 - Max-token caps: the mutating mode (Clean) 8 000, the text mode (Ask) 400.
 
 ## API
@@ -286,7 +286,7 @@ Missing / `false` = panel hidden. Only shown in Settings when `capabilities.aiEn
 Fetches `GET /api/capabilities` once at editor mount. Returns `{ aiEnabled: boolean }`.
 On network failure defaults to `{ aiEnabled: false }` (fail-closed). The hook takes an
 `enabled` flag so the call is deferred while a visitor is behind a share-link password
-gate ([Share password](../013-workspace/share-password.md)): on a password-protected diagram, capabilities (and the server-side
+gate ([Share password](../013-workspace/share-password.md)): on a password-protected document, capabilities (and the server-side
 preferences sync) don't fire until the correct password is entered, so wrong attempts
 cost no extra requests.
 
@@ -296,7 +296,7 @@ A floating, draggable panel rendered over the canvas via `MovablePanel` (drag to
 reposition; reset returns it to its default spot). It's surfaced from the **Assistant**
 accordion in the Editor side panel, and on mobile through the bottom dock popover. Visible
 when `capabilities.aiEnabled && userPreferences.aiAssistanceEnabled`. Hidden in read-only /
-view-role sessions (AI mutates the diagram; guests can't persist changes they don't own).
+view-role sessions (AI mutates the document; guests can't persist changes they don't own).
 
 Contains:
 

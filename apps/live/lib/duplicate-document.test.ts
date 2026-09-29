@@ -16,7 +16,7 @@ const mLoadDocument = vi.mocked(apiLoadDocument);
 const mLoadTab = vi.mocked(apiLoadTab);
 const mCreate = vi.mocked(apiCreateDocument);
 
-// Minimal Diagram-ish stub: duplicateDocument only reads id, name, tabs.
+// Minimal LiveDoc-ish stub: duplicateDocument only reads id, name, tabs.
 const sourceDocument = (tabs: { id: string }[]) =>
   ({ id: 'src', name: 'Flow', tabs }) as Awaited<ReturnType<typeof apiLoadDocument>>;
 
@@ -43,7 +43,7 @@ beforeEach(() => {
 });
 
 describe('duplicateDocument', () => {
-  it('returns undefined when the source diagram cannot be loaded', async () => {
+  it('returns undefined when the source document cannot be loaded', async () => {
     mLoadDocument.mockResolvedValue(null);
     expect(await duplicateDocument('owner', 'missing')).toBeUndefined();
     expect(mCreate).not.toHaveBeenCalled();

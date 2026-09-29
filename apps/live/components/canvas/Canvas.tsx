@@ -25,8 +25,8 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
 // is gated on `showTemplatePicker`, which is false for the common
-// path (a returning user opening an existing diagram with tabs that
-// already have content). For first-time guests on a fresh diagram
+// path (a returning user opening an existing document with tabs that
+// already have content). For first-time guests on a fresh document
 // the gate is true on first paint, but the empty canvas underneath
 // has already rendered by then, so the user sees the welcome modal
 // fade in a frame later rather than blocking the route on the
@@ -143,7 +143,7 @@ export function Canvas(props: CanvasProps) {
   // top-2 (mobile) or top-4 (desktop).
   const [paletteBottomY, setPaletteBottomY] = useState<number>(0);
   // Explorer's measured bottom edge on mobile. The Palette sits BELOW
-  // this via its `mobileTopOverridePx` so the diagram switcher fits
+  // this via its `mobileTopOverridePx` so the document switcher fits
   // above the Palette without overlapping. Desktop ignores it (the
   // Explorer pins to top-left there, not as a banner).
   const [explorerBottomY, setExplorerBottomY] = useState<number>(0);
@@ -351,7 +351,7 @@ export function Canvas(props: CanvasProps) {
   // Same shape as `enterPortalRef` below, for the same reason.
   const avatarRef = useLatest<ReturnType<typeof useAvatarWalk> | null>(avatar);
 
-  // Who is sitting in each chair, from PRESENCE — never from the diagram. Our
+  // Who is sitting in each chair, from PRESENCE — never from the document. Our
   // own character plus every peer's, keyed by chair id, so a chair empties by
   // itself the moment its occupant leaves the mode, changes tab or drops off.
   const chairSitters = useMemo(() => {

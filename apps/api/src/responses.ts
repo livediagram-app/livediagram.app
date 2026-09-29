@@ -39,7 +39,7 @@ export function notFound(): Response {
   return json({ error: 'not_found' }, { status: 404 });
 }
 
-// An SVG image body (docs/specs/006-document/document-snapshots.md diagram snapshots). Same CORS treatment as
+// An SVG image body (docs/specs/006-document/document-snapshots.md document snapshots). Same CORS treatment as
 // `json` so the live app's blob-URL fetch works cross-origin in dev; the
 // caller picks the `Cache-Control` (private + long for the owner
 // thumbnail, public + short for the live share image).
@@ -80,7 +80,7 @@ export function methodNotAllowed(): Response {
 
 // 413 for a body over a route's size cap. Canonical home for the
 // `{ error: 'payload_too_large' }` literal the body gate in index.ts and the
-// per-field / per-tab caps in the diagram, tab, and custom-theme routes share.
+// per-field / per-tab caps in the document, tab, and custom-theme routes share.
 // Image uploads answer with their own `file_too_large` + `limitBytes` instead.
 export function payloadTooLarge(): Response {
   return json({ error: 'payload_too_large' }, { status: 413 });
@@ -111,7 +111,7 @@ export function signInRequired(): Response {
   return json({ error: 'sign_in_required' }, { status: 401 });
 }
 
-// A diagram in the Trash (docs/specs/013-workspace/trash.md), answered only to a
+// A document in the Trash (docs/specs/013-workspace/trash.md), answered only to a
 // caller who could have opened it: the deleted state, not a not-found.
 export function documentTrashed(): Response {
   return json({ error: DOCUMENT_TRASHED_ERROR }, { status: 410 });

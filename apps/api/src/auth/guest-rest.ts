@@ -40,13 +40,13 @@ export const OWNER_SCOPED_SEGMENTS = new Set([
   'participants',
   'preferences',
   'shared',
-  // The feed is keyed on the resolved owner id and returns diagram
+  // The feed is keyed on the resolved owner id and returns document
   // names + comment text, so a harvested guest id must not read it.
   'timeline',
   // Same shape as the timeline: actions + comment threads (names, text)
-  // keyed on the resolved owner, and the owner's starred diagrams.
+  // keyed on the resolved owner, and the owner's starred documents.
   'activity',
   'favourites',
-  // The Trash lists deleted diagrams' names and restores / purges them.
+  // The Trash lists deleted documents' names and restores / purges them.
   'trash',
 ]);

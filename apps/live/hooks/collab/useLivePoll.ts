@@ -29,7 +29,7 @@ export type PollAnswers = Map<string, string | null>;
 
 export function useLivePoll(deps: {
   roomRef: React.RefObject<RoomHandle | null>;
-  // The people currently in the diagram, for a `collaborators` poll (docs/specs/012-collaboration/live-poll.md).
+  // The people currently in the document, for a `collaborators` poll (docs/specs/012-collaboration/live-poll.md).
   // A ref for the same reason as `sessionBlockedRef` below — the roster changes
   // constantly and is only ever read at the instant a poll starts — and because
   // reading it here is what lets BOTH poll surfaces (the Studio composer and a
@@ -88,7 +88,7 @@ export function useLivePoll(deps: {
   }, [setActivePoll]);
 
   // A poll arrived from a peer (or we opened our own). Replaces whatever
-  // was on screen — one poll at a time per diagram, like one timer per tab.
+  // was on screen — one poll at a time per document, like one timer per tab.
   const openPoll = useCallback(
     (next: LivePoll) => {
       setActivePoll(next);

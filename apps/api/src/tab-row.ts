@@ -3,7 +3,7 @@ import type { TabDTO, TabSummaryDTO } from './types';
 
 // tabs row shape as read from D1. The `data` column is the
 // JSON-serialised Tab body, MINUS the `id` and `name` fields, which
-// live as real columns alongside the diagram link's `order_index` and
+// live as real columns alongside the document link's `order_index` and
 // the tab's `updated_at`. The split is historical (data was a single
 // column on diagrams before migration 0006 and grew its own columns
 // from there); the parser below reassembles the canonical Tab shape.
@@ -15,7 +15,7 @@ export type TabRow = {
   order_index: number;
   data: string;
   updated_at: number;
-  // Per-diagram folder name from the document_tabs link (docs/specs/006-document/tab-folders.md).
+  // Per-document folder name from the document_tabs link (docs/specs/006-document/tab-folders.md).
   // NULL when the tab is loose. Read sites that don't join the link
   // for folder (none today) leave it undefined, which maps the same
   // as NULL.
@@ -29,7 +29,7 @@ export type TabRow = {
 //
 // Critical because every tab read in the editor passes through this:
 // a regression that dropped a field from the spread, swapped id with
-// documentId, or mis-cased a column would corrupt diagrams silently on
+// documentId, or mis-cased a column would corrupt documents silently on
 // next load (no other surface signal, the data just looks wrong).
 //
 // The data column carries the entire Tab body except id + name (those

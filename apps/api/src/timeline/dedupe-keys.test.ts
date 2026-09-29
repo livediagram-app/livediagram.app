@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 //
 // The regression: a rename carried the default '' dedupe key, so the
 // UNIQUE index on (source_type, source_id, event_type, dedupe_key) took
-// the second rename of a diagram for a retry of the first and upserted
+// the second rename of a document for a retry of the first and upserted
 // it. Three renames in a day showed one card instead of a stack of
 // three, and a rename this month moved last month's card to today.
 

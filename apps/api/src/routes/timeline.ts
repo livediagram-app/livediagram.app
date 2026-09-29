@@ -198,7 +198,7 @@ function resolveScope(url: URL, ownerId: string): TimelineScopeRef | null {
 // Who may read which feed.
 //
 // This is the security boundary of the whole surface: a feed carries
-// diagram names and comment text, so getting it wrong hands one owner
+// document names and comment text, so getting it wrong hands one owner
 // another's work. Each scope type is allowed explicitly and anything
 // unrecognised is refused, so a scope type added later is inert until
 // somebody writes its rule here.
@@ -209,8 +209,8 @@ async function canReadScope(
 ): Promise<boolean> {
   if (scope.scopeType === 'user') return scope.scopeId === ownerId;
   if (scope.scopeType === 'document') {
-    // Exactly the diagram's own read gate: its owner, a joined member of
-    // its team, or a valid share-code visitor. A missing diagram is a
+    // Exactly the document's own read gate: its owner, a joined member of
+    // its team, or a valid share-code visitor. A missing document is a
     // refusal rather than a 404, so a guessed id can't be probed for
     // existence through this endpoint either.
     const liveDoc = await getDocument(ctx.env, scope.scopeId);

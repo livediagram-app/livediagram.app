@@ -4,7 +4,7 @@ import { sqliteD1 } from '../test-sqlite-d1';
 import { countUnseen, readTimeline } from './timeline';
 
 // Renames are not timeline moments (docs/specs/013-workspace/timeline.md §4.2): every entry names its
-// diagram as it is called NOW, and the rename events written before that
+// document as it is called NOW, and the rename events written before that
 // change stay out of the feed and the unread count.
 
 const T0 = 1_700_000_000_000;
@@ -57,7 +57,7 @@ function event(
 }
 
 describe('Timeline names', () => {
-  it('shows a diagram by its current name on entries from before a rename', async () => {
+  it('shows a document by its current name on entries from before a rename', async () => {
     const { env, sql } = sqliteD1();
     liveDoc(sql, 'd1', 'Payments v2');
     event(
@@ -67,7 +67,7 @@ describe('Timeline names', () => {
       { documentId: 'd1', documentName: 'Payments' },
       T0 + 1,
     );
-    // A comment's source is its thread; the diagram is found through the snapshot.
+    // A comment's source is its thread; the document is found through the snapshot.
     event(
       sql,
       'comment',
@@ -81,7 +81,7 @@ describe('Timeline names', () => {
     expect(page.items.map((e) => e.snapshot.documentName)).toEqual(['Payments v2', 'Payments v2']);
   });
 
-  it('keeps the saved name for a diagram that no longer exists', async () => {
+  it('keeps the saved name for a document that no longer exists', async () => {
     const { env, sql } = sqliteD1();
     event(sql, 'gone', 'document_deleted', { documentName: 'Old board' }, T0 + 1, 'deleted-id');
     const page = await readTimeline(env, { scope, limit: 10 });

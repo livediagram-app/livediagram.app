@@ -1,5 +1,5 @@
 // images — gallery rows (docs/specs/009-elements/images.md). Bytes live in R2; D1 carries the
-// metadata + owner. Which diagrams place each image comes from the image
+// metadata + owner. Which documents place each image comes from the image
 // reference index (db/image-refs.ts), never from a tab body.
 
 import {
@@ -120,11 +120,11 @@ export async function imageTotalsByOwner(
   };
 }
 
-// Map of imageId → the owner's diagrams that place it, each diagram once,
-// ordered by name. Drives the Explorer Image Gallery's "Used in N diagrams"
+// Map of imageId → the owner's documents that place it, each document once,
+// ordered by name. Drives the Explorer Image Gallery's "Used in N documents"
 // badge, so an image with no entry reads as unused. One query over the
 // reference index; a shared tab (docs/specs/006-document/tab-document-many-to-many.md)
-// is attributed to every one of the owner's diagrams that links it.
+// is attributed to every one of the owner's documents that links it.
 //
 // While the index backfill is incomplete the owner's tabs are indexed first,
 // so an older image never reads as unused (and gets deleted by hand).
@@ -153,9 +153,9 @@ export async function imageUsageByOwner(
 }
 
 // The byte-read endpoint's share check: a visitor with read access to
-// diagram `d` may read image `id` only when one of `d`'s tabs places it. Read
+// document `d` may read image `id` only when one of `d`'s tabs places it. Read
 // from the reference index, never a tab body; while the backfill is
-// incomplete, the diagram's own tabs are indexed first.
+// incomplete, the document's own tabs are indexed first.
 export async function documentReferencesImage(
   env: Env,
   documentId: string,

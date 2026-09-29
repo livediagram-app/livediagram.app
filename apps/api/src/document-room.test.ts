@@ -14,7 +14,7 @@ import type { Env } from './types';
 const isPresenceKind = (kind: string): boolean =>
   (PRESENCE_OP_KINDS as readonly string[]).includes(kind);
 
-// The DocumentRoom Durable Object is the realtime hub for one diagram.
+// The DocumentRoom Durable Object is the realtime hub for one document.
 // Most of its surface is straightforward fan-out, but two pieces carry
 // real security weight:
 //
@@ -29,7 +29,7 @@ const isPresenceKind = (kind: string): boolean =>
 //      share-revoke handler to push a `share-revoked` op into the
 //      room so visitors with the revoked code disconnect. A regression
 //      that silently drops the broadcast leaves revoked viewers
-//      reading the diagram until their next refresh.
+//      reading the document until their next refresh.
 //
 // Both go without alternative coverage today (no integration test
 // exercises the DO and the route-level tests stub the room entirely).
@@ -574,7 +574,7 @@ describe('DocumentRoom op-role enforcement', () => {
   });
 
   // A shove relays from a view-role session too: an audience member walking a
-  // diagram someone linked them to can push back.
+  // document someone linked them to can push back.
   // Keeps the exclusion above honest: if an addressed kind is ever removed from
   // the gate, or renamed, this fails rather than silently excluding nothing.
   it('excludes only kinds that really are in the presence set', () => {
@@ -1746,7 +1746,7 @@ describe('DocumentRoom tab-scoped sessions', () => {
     expect(ops(scoped)).toEqual([{ kind: 'el', tabId: 't2', op: { type: 'y' } }]);
   });
 
-  it('hands a scoped session a redacted diagram-meta', () => {
+  it('hands a scoped session a redacted document-meta', () => {
     const { room, state } = newRoom();
     const owner = makeSocket();
     const scoped = makeSocket();
@@ -1755,7 +1755,7 @@ describe('DocumentRoom tab-scoped sessions', () => {
     sendFrame(room, owner, {
       kind: 'op',
       op: {
-        kind: 'diagram-meta',
+        kind: 'document-meta',
         name: 'Plan',
         tabs: [
           { id: 't1', name: 'Pricing', orderIndex: 0 },
@@ -1766,14 +1766,14 @@ describe('DocumentRoom tab-scoped sessions', () => {
     expect(ops(scoped)[0].tabs[0]).toEqual({ id: 't1', name: '', orderIndex: 0, outOfScope: true });
   });
 
-  it('refuses a scoped session changing another tab, or the diagram', () => {
+  it('refuses a scoped session changing another tab, or the document', () => {
     const { room, state } = newRoom();
     const owner = makeSocket();
     const scoped = makeSocket();
     scopedSession(state, owner, presence('p-o', 'edit'), null);
     scopedSession(state, scoped, presence('p-s', 'edit'), 't2');
     sendFrame(room, scoped, { kind: 'op', op: { kind: 'el', tabId: 't1', op: {} } });
-    sendFrame(room, scoped, { kind: 'op', op: { kind: 'diagram-meta', name: 'x', tabs: [] } });
+    sendFrame(room, scoped, { kind: 'op', op: { kind: 'document-meta', name: 'x', tabs: [] } });
     expect(ops(owner)).toEqual([]);
     sendFrame(room, scoped, { kind: 'op', op: { kind: 'el', tabId: 't2', op: {} } });
     expect(ops(owner)).toEqual([{ kind: 'el', tabId: 't2', op: {} }]);
@@ -1812,9 +1812,9 @@ describe('DocumentRoom tab-scoped sessions', () => {
     });
   }
 
-  it('closes every socket with 4004 when the diagram is trashed, after telling them', async () => {
+  it('closes every socket with 4004 when the document is trashed, after telling them', async () => {
     // docs/specs/013-workspace/trash.md: open sessions end the moment the
-    // diagram goes to the Trash, each told why.
+    // document goes to the Trash, each told why.
     const { room, state } = newRoom();
     const owner = makeSocket() as FakeSocket & { closed?: [number, string] };
     const visitor = makeSocket() as FakeSocket & { closed?: [number, string] };

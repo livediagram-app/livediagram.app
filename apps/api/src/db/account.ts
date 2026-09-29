@@ -10,7 +10,7 @@ import { detachUserFromTeams } from './teams';
 import type { Env } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard
-// cap on diagram count, so chunk the snapshot-key deletes to stay under
+// cap on document count, so chunk the snapshot-key deletes to stay under
 // it (the image delete above relies on the per-owner gallery cap instead).
 const R2_DELETE_CHUNK = 1000;
 
@@ -19,9 +19,9 @@ const R2_DELETE_CHUNK = 1000;
 // (docs/specs/009-elements/images.md). account-owner-columns.test.ts holds
 // both functions here to that list against the real schema. Called from
 // DELETE /api/account when the user opts in via the "Delete account"
-// dialog. The diagrams go through documentRemovalStatements, which drops
-// the tabs (and their history) no other owner's diagram still holds;
-// share links and the other per-diagram rows cascade from `diagrams.id`.
+// dialog. The documents go through documentRemovalStatements, which drops
+// the tabs (and their history) no other owner's document still holds;
+// share links and the other per-document rows cascade from `diagrams.id`.
 // Folders carry their own owner_id and need their
 // own DELETE. Participants are owner-less in the schema but their id
 // IS the owner id, so a single id-match delete clears the display-
@@ -36,10 +36,10 @@ export async function deleteAccount(
   env: Env,
   ownerId: string,
 ): Promise<{ documents: number; folders: number; images: number }> {
-  // Teams first (docs/specs/013-workspace/teams.md/35): transfer the user's team-library diagrams
+  // Teams first (docs/specs/013-workspace/teams.md/35): transfer the user's team-library documents
   // to a remaining member, drop their memberships (promoting a new
   // admin when they were the last one), and delete teams they were the
-  // last joined member of. MUST run before the diagrams DELETE below —
+  // last joined member of. MUST run before the documents DELETE below —
   // that wipe would otherwise destroy shared team work, and the dead
   // Clerk id would linger as a ghost (or sole-admin-blocking) member.
   await detachUserFromTeams(env, ownerId);
@@ -59,11 +59,11 @@ export async function deleteAccount(
   const imagesRes = await env.DB.prepare('DELETE FROM images WHERE owner_id = ?')
     .bind(ownerId)
     .run();
-  // Diagram SVG snapshots (docs/specs/006-document/document-snapshots.md) live in R2 under thumb/<documentId>,
-  // keyed off the diagram id rather than carried on a D1 row, so — like
+  // Document SVG snapshots (docs/specs/006-document/document-snapshots.md) live in R2 under thumb/<documentId>,
+  // keyed off the document id rather than carried on a D1 row, so — like
   // the images above — the cascade can't reach them. Enumerate the
-  // owner's diagram ids while the rows still exist, then bulk-delete
-  // their snapshot objects before the diagrams DELETE drops the ids.
+  // owner's document ids while the rows still exist, then bulk-delete
+  // their snapshot objects before the documents DELETE drops the ids.
   if (env.IMAGES) {
     const documentRows = await env.DB.prepare('SELECT id FROM documents WHERE owner_id = ?')
       .bind(ownerId)
@@ -74,13 +74,13 @@ export async function deleteAccount(
     }
   }
   // Link-aware (docs/specs/006-document/tab-document-many-to-many.md): a tab
-  // shared into a diagram someone else owns stays there.
+  // shared into a document someone else owns stays there.
   const removal = await env.DB.batch(
     documentRemovalStatements(env, { column: 'owner_id', value: ownerId }),
   );
   const documentsRes = removal[removal.length - 1]!;
   // Personal folders only. A team folder carries its creator's owner_id but
-  // belongs to the team (access is by membership), and teammates' diagrams
+  // belongs to the team (access is by membership), and teammates' documents
   // sit in it: deleting it dropped them out of the team library behind a
   // dangling folder_id. That includes teams this user LEFT earlier, which
   // detachUserFromTeams no longer sees.
@@ -105,14 +105,14 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
   // auth_accounts (docs/specs/017-telemetry/telemetry.md): the first-seen row the sign-up count keys on.
   await env.DB.prepare('DELETE FROM auth_accounts WHERE owner_id = ?').bind(ownerId).run();
-  // shared_with rows POINTING AT this owner's diagrams die with the
-  // diagrams (FK cascade), but the rows this owner accumulated by
-  // visiting OTHER people's diagrams are keyed on their owner_id and
+  // shared_with rows POINTING AT this owner's documents die with the
+  // documents (FK cascade), but the rows this owner accumulated by
+  // visiting OTHER people's documents are keyed on their owner_id and
   // need their own DELETE — same table migrateOwnerId already handles.
   await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(ownerId).run();
   // favourites (docs/specs/013-workspace/favourites.md): the same split as
-  // shared_with. Stars on this owner's diagrams cascade; the stars they put on
-  // teammates' and other people's diagrams are theirs and go here.
+  // shared_with. Stars on this owner's documents cascade; the stars they put on
+  // teammates' and other people's documents are theirs and go here.
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
@@ -133,7 +133,7 @@ export async function deleteAccount(
 // `toOwnerId`. Called
 // from POST /api/migrate when a guest signs up: their localStorage
 // participant id moves to their Clerk userId so the new account sees
-// the diagrams, folders, shared-with-them list, editor preferences,
+// the documents, folders, shared-with-them list, editor preferences,
 // AND uploaded images they built as a guest.
 //
 // shared_with's primary key is (owner_id, document_id), so a naive
@@ -150,8 +150,8 @@ export async function deleteAccount(
 // dedupe. UPDATE OR IGNORE skips rows whose sha256 already exists
 // on the Clerk side (the user uploaded the same bytes under both
 // identities). The skipped guest row stays at fromOwnerId; the
-// formerly-guest diagrams (now Clerk-owned) still resolve those
-// image ids via the diagram-reference fallback in GET
+// formerly-guest documents (now Clerk-owned) still resolve those
+// image ids via the document-reference fallback in GET
 // /api/images/:id (docs/specs/009-elements/images.md), so the canvas keeps rendering them.
 // Only the gallery list filters by owner_id, so the dedupe loser
 // stops showing up there, which is the right outcome (the Clerk
@@ -159,7 +159,7 @@ export async function deleteAccount(
 //
 // Other tables (`change_log`, `share_links`, `tabs`) don't carry
 // their own owner_id, they link via `document_id` which is
-// owner-bound, so updating the diagrams cascade-fixes them
+// owner-bound, so updating the documents cascade-fixes them
 // implicitly.
 //
 // Returns `{ diagrams, folders, shared, images }`. Idempotent:
@@ -240,14 +240,14 @@ export async function migrateOwnerId(
   // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
   // sha256) collision case (same bytes on both identities) and
   // leaves those guest rows in place so the image id stays
-  // resolvable by every formerly-guest diagram that references it.
+  // resolvable by every formerly-guest document that references it.
   const imagesRes = await env.DB.prepare(
     'UPDATE OR IGNORE images SET owner_id = ? WHERE owner_id = ?',
   )
     .bind(toOwnerId, fromOwnerId)
     .run();
   // custom_themes (docs/specs/011-theme/custom-themes.md): move the guest's saved themes onto the
-  // authed identity so the diagrams that reference them keep their look
+  // authed identity so the documents that reference them keep their look
   // after sign-up. Plain UPDATE — the id is the PK (no per-owner unique
   // constraint to collide on), so no OR IGNORE needed.
   await env.DB.prepare('UPDATE custom_themes SET owner_id = ? WHERE owner_id = ?')

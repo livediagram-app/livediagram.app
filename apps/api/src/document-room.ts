@@ -30,7 +30,7 @@ import {
 
 import { writeQaAction, type QaWriteRequest } from './qa-board-write';
 
-// One Durable Object instance per diagram id. Holds the set of currently
+// One Durable Object instance per document id. Holds the set of currently
 // connected WebSockets plus their participant identity, and broadcasts
 // presence + op messages so every client sees what every other client is
 // doing in real time.
@@ -126,7 +126,7 @@ type SessionAttachment = {
   presenceId: string;
   verifiedRole?: 'edit' | 'view';
   presence: ParticipantPresence | null;
-  //   - `isOwner`: whether the api resolved this upgrade as the diagram's
+  //   - `isOwner`: whether the api resolved this upgrade as the document's
   //     OWNER (docs/specs/012-collaboration/facilitator.md). A boolean, never an id: it is the one thing the
   //     facilitator baton needs that role alone cannot answer ("the owner can
   //     always take it back"), and carrying it as a bit keeps docs/specs/015-api/public-api-and-tokens.md §6's
@@ -203,7 +203,7 @@ export class DocumentRoom implements DurableObject {
   // from a fake state alone; without it the emit is skipped.
   env: Env | undefined;
 
-  // The Q&A board write queue (docs/specs/012-collaboration/qa-board.md). Every board write for this diagram
+  // The Q&A board write queue (docs/specs/012-collaboration/qa-board.md). Every board write for this document
   // runs through here ONE AT A TIME. A Durable Object only serialises the
   // synchronous parts of its handlers: while one write is awaiting D1, the
   // runtime happily starts the next request, and two read-modify-writes of the
@@ -226,7 +226,7 @@ export class DocumentRoom implements DurableObject {
         this.epoch = saved.epoch;
         this.seq = saved.seq;
       } else {
-        // First instantiation for this diagram: adopt the random epoch above.
+        // First instantiation for this document: adopt the random epoch above.
         await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
       }
       this.facilitator = (await state.storage.get<FacilitatorState>(FACILITATOR_KEY)) ?? FREE_BATON;
@@ -445,8 +445,8 @@ export class DocumentRoom implements DurableObject {
     }
   }
 
-  // After a diagram-trashed op has gone out, close every socket
-  // (docs/specs/013-workspace/trash.md): the diagram is in the Trash, and its
+  // After a document-trashed op has gone out, close every socket
+  // (docs/specs/013-workspace/trash.md): the document is in the Trash, and its
   // admission refuses every new join until it is restored.
   private closeAllIfTrashed(op: unknown): void {
     if ((op as { kind?: unknown } | null)?.kind !== 'document-trashed') return;
@@ -479,7 +479,7 @@ export class DocumentRoom implements DurableObject {
     this.broadcast({ kind: 'op', from: 'system', op });
   }
 
-  // One Q&A board write, queued behind every other one for this diagram
+  // One Q&A board write, queued behind every other one for this document
   // (docs/specs/012-collaboration/qa-board.md). Reached only from the api worker's qa route, which has already
   // checked access and derived the actor, so the body is trusted the same way
   // /broadcast's is. The broadcast happens INSIDE the queued step, so peers
@@ -617,7 +617,7 @@ export class DocumentRoom implements DurableObject {
       // and mutate nothing, so they relay from ANY connected session —
       // that's how a view-only visitor still shows their cursor, current
       // selection, and which tab they're on to everyone else. Mutation
-      // ops (tab content, diagram-meta, change-log) stay edit-role-only:
+      // ops (tab content, document-meta, change-log) stay edit-role-only:
       // a viewer must not be able to inject edits into peers' canvases.
       // The role is the server-verified one (X-Verified-Role, re-stamped
       // in hello), not anything the client claims.
@@ -629,7 +629,7 @@ export class DocumentRoom implements DurableObject {
       // and force-redirect every collaborator out of the session.
       if (isSystemOpKind(opKind)) return;
       // A tab-scoped session acts on its own tab only, and never on the
-      // diagram's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
+      // document's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
       if (!scopedSenderMayRelay(msg.op, session.tabScope ?? null)) return;
       const isPresenceOp = isPresenceOpKind(opKind);
       if (sender.role !== 'edit' && !isPresenceOp) return;

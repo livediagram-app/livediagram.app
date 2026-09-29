@@ -30,7 +30,7 @@ describe('trashGroups', () => {
       local: [row('l1')],
     });
     expect(groups.map((g) => [g.title, g.scope, g.rows.map((r) => r.id)])).toEqual([
-      ['Your diagrams', { kind: 'personal' }, ['p1']],
+      ['Your documents', { kind: 'personal' }, ['p1']],
       ['Alpha', { kind: 'team', teamId: 'a' }, ['t1']],
       ['Beta', { kind: 'team', teamId: 'b' }, ['t2', 't3']],
       ['This browser only', { kind: 'local' }, ['l1']],

@@ -5,13 +5,13 @@
 // its items starts.
 //
 // Every card gets a menu, because every card can be removed from the
-// reader's own feed. A card about a diagram or a folder the Explorer has
+// reader's own feed. A card about a document or a folder the Explorer has
 // loaded gets that thing's full Explorer menu on top: an event only
 // NAMES its subject, and the menu's items depend on its folder, team,
 // share and owner, so the id is resolved against the Explorer's
-// already-loaded lists (personal, team, shared-with-you diagrams; the
+// already-loaded lists (personal, team, shared-with-you documents; the
 // personal folder tree), the same set Recent and the folder cards draw
-// from. Nothing found (a tombstone, or a team diagram the sidebar hasn't
+// from. Nothing found (a tombstone, or a team document the sidebar hasn't
 // loaded) means the one-verb menu: a menu of guesses is worse than none,
 // and the card still opens its subject on click.
 
@@ -53,7 +53,7 @@ export function useTimelineCardSlots({
   onShowHistory: (id: string, name: string) => void;
   /** Take one card off the reader's feed (docs/specs/013-workspace/timeline.md §2.9). */
   onDismiss: (eventId: string) => void;
-  /** The verbs for a card that isn't a resolved diagram or folder (useTimelineEntityMenus). */
+  /** The verbs for a card that isn't a resolved document or folder (useTimelineEntityMenus). */
   entityMenu: TimelineEntityMenuFor;
 }): TimelineCardSlotsFor {
   const {
@@ -91,7 +91,7 @@ export function useTimelineCardSlots({
   // below a new function every render.
   const recentExcluded = useMemo(() => prefs.recentExcludedIds ?? [], [prefs.recentExcludedIds]);
 
-  // Which card's menu is open, by event id (one diagram can have several
+  // Which card's menu is open, by event id (one document can have several
   // cards on a day, and a menu belongs to the card it was opened from).
   // Held here rather than inside the trigger so the card's right-click
   // can open the same menu.
@@ -179,7 +179,7 @@ export function useTimelineCardSlots({
 
       return {
         // The name as the Explorer knows it now. A card for the create of
-        // a diagram renamed since still shows its current name, the same
+        // a document renamed since still shows its current name, the same
         // way its preview shows the current picture.
         subject: liveDoc.name,
         title,
@@ -202,14 +202,14 @@ export function useTimelineCardSlots({
               onToggleFavourite: () => toggleFavourite(id),
               recentExcluded: recentExcluded.includes(id),
               onToggleRecentExclusion: () => toggleRecentExclusion(id),
-              // Offline diagrams never reach the worker, so they have no
+              // Offline documents never reach the worker, so they have no
               // server history to show (docs/specs/006-document/offline-mode.md).
               onShowHistory: isOfflineIdSync(id)
                 ? undefined
                 : () => onShowHistory(id, liveDoc.name),
               // Straight to the Share dialog (the editor honours
               // `?share=1`): the natural next step from a share-link
-              // card, and no worse from any other. Offline diagrams have
+              // card, and no worse from any other. Offline documents have
               // nothing to share (docs/specs/006-document/offline-mode.md).
               onShare: isOfflineIdSync(id)
                 ? undefined

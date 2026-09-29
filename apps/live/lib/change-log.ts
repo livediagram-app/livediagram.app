@@ -1,4 +1,4 @@
-// Helpers for the per-diagram audit log. See
+// Helpers for the per-document audit log. See
 // docs/specs/012-collaboration/activity-and-audit.md.
 //
 // The live app captures a snapshot of the active tab's elements
@@ -11,7 +11,7 @@ import { summarizeChange, type EditedPair } from './change-summaries';
 import type { ChangeLogKind } from './api-client';
 
 // What the diff function returns. The caller wraps this with the
-// participant + diagram identifiers before POSTing.
+// participant + document identifiers before POSTing.
 type ChangeDiff = {
   kind: ChangeLogKind;
   summary: string;

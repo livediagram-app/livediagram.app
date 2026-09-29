@@ -49,7 +49,7 @@ export const TECH_PROVIDERS: { id: TechProvider; label: string }[] = [
 ];
 
 // The tech-icon id set + `isTechIconId` live in @livediagram/icons
-// (tech-icon-ids.ts) so the diagram package's connector geometry can use
+// (tech-icon-ids.ts) so the document package's connector geometry can use
 // them too (a tech icon's arrows attach to its fixed-size mark, docs/specs/010-palette/technology-icons.md);
 // re-exported so existing import sites keep resolving. Still a lightweight
 // first-load module — only the colour/glyph data waits on the async chunk.

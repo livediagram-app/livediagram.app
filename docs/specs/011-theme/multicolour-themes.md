@@ -27,7 +27,7 @@ The catalogue ships five multi-colour themes, all extra (grouped under the picke
 
 ## How a branch is decided
 
-The diagram model has no explicit parent/child field; hierarchy is **implicit in pinned arrows** ([Diagram structure](../006-document/document-structure.md), `Endpoint.kind === 'pinned'`). `packages/document/src/hierarchy.ts` derives branches from them:
+The document model has no explicit parent/child field; hierarchy is **implicit in pinned arrows** ([Document structure](../006-document/document-structure.md), `Endpoint.kind === 'pinned'`). `packages/document/src/hierarchy.ts` derives branches from them:
 
 1. Each arrow whose **both** endpoints pin to **boxed** elements defines a directed edge `from → to` (parent → child). Free-floating arrows, arrows pinned to another arrow or to an element no longer on the tab, and self-loops contribute nothing.
 2. **Roots** are boxed elements with no incoming pinned edge but at least one outgoing one (the centre of a mind map, the CEO of an org chart). Roots get the sentinel `ROOT_BRANCH`.
@@ -64,4 +64,4 @@ Applying any theme already emits `track('Theme', 'Changed', <label>)` ([Telemetr
 
 ## Counts
 
-The catalogue ships **26 themes** (12 default + 14 extra), the extras including a Dark category (led by Default’s dark half, then Pine, Plum, Abyss, Espresso) and five multicolour themes (Rainbow, Pastel, Tropical, Autumn, Jewel). It was 27 until Basic and Charcoal merged into the single, appearance-following **Default** scheme ([Live app](../007-editor/live-app.md)); diagrams saved against Charcoal are migrated to Default on load ([Retired colour schemes](retired-schemes.md)). The counts are pinned by `apps/live/lib/themes.test.ts` and cited in [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), and [Marketing assets](../019-marketing/marketing-assets.md); all four move together.
+The catalogue ships **26 themes** (12 default + 14 extra), the extras including a Dark category (led by Default’s dark half, then Pine, Plum, Abyss, Espresso) and five multicolour themes (Rainbow, Pastel, Tropical, Autumn, Jewel). It was 27 until Basic and Charcoal merged into the single, appearance-following **Default** scheme ([Live app](../007-editor/live-app.md)); documents saved against Charcoal are migrated to Default on load ([Retired colour schemes](retired-schemes.md)). The counts are pinned by `apps/live/lib/themes.test.ts` and cited in [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), and [Marketing assets](../019-marketing/marketing-assets.md); all four move together.

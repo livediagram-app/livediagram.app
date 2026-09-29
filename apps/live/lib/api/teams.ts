@@ -67,7 +67,7 @@ export async function apiAcceptTeamInvite(
   return member;
 }
 
-// The team's shared library (docs/specs/013-workspace/team-shared-documents.md): folder tree + diagrams in one
+// The team's shared library (docs/specs/013-workspace/team-shared-documents.md): folder tree + documents in one
 // call, joined members only.
 export async function apiGetTeamLibrary(
   ownerId: string,
@@ -173,7 +173,7 @@ export async function apiRemoveTeamMember(
   return { ok: true };
 }
 
-// Whether a joined teammate can open a diagram (docs/specs/012-collaboration/assigned-actions.md): drives the
+// Whether a joined teammate can open a document (docs/specs/012-collaboration/assigned-actions.md): drives the
 // Assign Action dialog's access hint. Null on any failure so the caller
 // can fall back to its heuristic instead of showing a confident wrong
 // answer.
@@ -201,7 +201,7 @@ export async function apiCheckAssigneeAccess(
 // Email a teammate about an action just assigned to them (docs/specs/012-collaboration/assigned-actions.md).
 // Best-effort by contract: the assignment has already persisted via the
 // tab write, so callers fire-and-forget this and swallow failures. The
-// server re-verifies team membership + diagram access and resolves every
+// server re-verifies team membership + document access and resolves every
 // name/address itself; the body only says who and what.
 export async function apiNotifyActionAssigned(
   ownerId: string,
@@ -226,7 +226,7 @@ export async function apiNotifyActionAssigned(
 
 // Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md "The email").
 // Best-effort like notify-action: the comment has already persisted, so
-// callers fire-and-forget. The server re-verifies the team, the diagram and
+// callers fire-and-forget. The server re-verifies the team, the document and
 // every recipient, and resolves every name and address itself.
 export async function apiNotifyMention(
   ownerId: string,

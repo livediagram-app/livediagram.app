@@ -28,7 +28,7 @@ afterEach(cleanup);
 function renderHeader() {
   return render(
     <EditorHeader
-      documentName="Untitled diagram"
+      documentName="Untitled document"
       showShare
       shareable={false}
       onMakeCopy={() => {}}
@@ -102,7 +102,7 @@ describe('EditorHeader account menu', () => {
 describe('EditorHeader rename requests', () => {
   const header = (renameNonce: number, hideTitle = false) => (
     <EditorHeader
-      documentName="Untitled diagram"
+      documentName="Untitled document"
       showShare={false}
       shareable={false}
       onOpenShare={() => {}}
@@ -111,7 +111,7 @@ describe('EditorHeader rename requests', () => {
       hideTitle={hideTitle}
     />
   );
-  const editing = () => screen.queryByDisplayValue('Untitled diagram');
+  const editing = () => screen.queryByDisplayValue('Untitled document');
 
   it('opens the name editor for a request, never on mount', () => {
     const { rerender } = render(header(0));
@@ -126,7 +126,7 @@ describe('EditorHeader rename requests', () => {
     expect(editing()).toBeNull();
     rerender(header(1, false));
     expect(editing()).not.toBeNull();
-    fireEvent.blur(screen.getByDisplayValue('Untitled diagram'));
+    fireEvent.blur(screen.getByDisplayValue('Untitled document'));
     expect(editing()).toBeNull();
     rerender(header(1, true));
     rerender(header(1, false));

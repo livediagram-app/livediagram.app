@@ -1,8 +1,8 @@
 'use client';
 
 // Style memory's state and storage (docs/specs/008-canvas/quick-style-panel.md "Style memory"): read once
-// per diagram from this browser, written back at most every 250 ms. Never
-// synced and never in the diagram. The logic is pure, in lib/style-memory.
+// per document from this browser, written back at most every 250 ms. Never
+// synced and never in the document. The logic is pure, in lib/style-memory.
 
 import { useEffect, useRef } from 'react';
 import type { Element, ThemeDefinition } from '@livediagram/document';
@@ -40,7 +40,7 @@ export function useStyleMemory({
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warnedWrite = useRef(false);
 
-  // Read synchronously on the first call for a diagram, so an element drawn in
+  // Read synchronously on the first call for a document, so an element drawn in
   // the same tick as the load already sees it.
   const ensureLoaded = (): boolean => {
     if (!documentId) return false;
@@ -75,7 +75,7 @@ export function useStyleMemory({
     pending.current = setTimeout(flush, STYLE_MEMORY_WRITE_DEBOUNCE_MS);
   };
 
-  // A diagram switch or unmount writes what is pending for the old one.
+  // A document switch or unmount writes what is pending for the old one.
   useEffect(() => () => flush(), [documentId]);
 
   const commit = (next: StyleMemory, log: string, detail: unknown) => {

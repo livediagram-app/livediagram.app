@@ -31,7 +31,7 @@ describe('themeTelemetryLabel', () => {
   });
 
   it('title-cases an id the catalogue no longer knows', () => {
-    // A built-in retired from THEMES while a diagram still names it. Still
+    // A built-in retired from THEMES while a document still names it. Still
     // ours, so still a preset token — not user content.
     expect(themeTelemetryLabel('retired-hue')).toBe('Retired-hue');
   });

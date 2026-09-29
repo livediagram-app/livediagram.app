@@ -33,7 +33,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
     }
     case 'el':
       // ONE element, applied by id (docs/specs/012-collaboration/realtime-conflict-resolution.md). An op for a tab we don't have is
-      // dropped: a follow-up `tab` or `diagram-meta` op brings it in whole.
+      // dropped: a follow-up `tab` or `document-meta` op brings it in whole.
       return updateTab(tabs, op.tabId, (tab) => {
         // An add / update is merged, not swapped in: answers, ideas, ticks and
         // comments reached us as deltas and ours is the merged copy, where the
@@ -54,7 +54,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
         return vote === tab.vote ? tab : { ...tab, vote };
       });
     case 'tab-meta':
-      // Non-element fields (docs/specs/012-collaboration/realtime-conflict-resolution.md). `folder` stays owned by diagram-meta
+      // Non-element fields (docs/specs/012-collaboration/realtime-conflict-resolution.md). `folder` stays owned by document-meta
       // (docs/specs/006-document/tab-folders.md); a `vote` in the patch follows the round rule, so an End or
       // a Reveal can't erase dots still in flight.
       return updateTab(tabs, op.tabId, (tab) => {
@@ -71,10 +71,10 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
         }
         return merged;
       });
-    case 'diagram-meta': {
+    case 'document-meta': {
       // Rename / reorder / add / delete. Reorder to match; a new id lands as a
       // placeholder a follow-up `tab` op fills. Unchanged tabs keep identity
-      // (the autosave keys off it); diagram-meta owns folder membership.
+      // (the autosave keys off it); document-meta owns folder membership.
       const localById = new Map(tabs.map((t) => [t.id, t] as const));
       return op.tabs.map((summary) => {
         const local = localById.get(summary.id);

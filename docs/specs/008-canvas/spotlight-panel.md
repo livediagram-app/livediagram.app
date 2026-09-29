@@ -25,7 +25,7 @@ Four accordion rows over a **live preview** — a miniature of the shroud with t
 
 ## Persistence
 
-Device-local, in `localStorage` (`livediagram:v2:spotlight-config`), like the laser pen and the avatar costume: it depends on your screen and the room, not on the diagram. Never sent to the api, never folded into the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
+Device-local, in `localStorage` (`livediagram:v2:spotlight-config`), like the laser pen and the avatar costume: it depends on your screen and the room, not on the document. Never sent to the api, never folded into the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
 
 The RADIUS deliberately stays where it always was — session state on `useSpotlight`, not persisted — because it is the one value the canvas itself changes on every click, and restoring a radius somebody clicked their way to three weeks ago is not a kindness.
 

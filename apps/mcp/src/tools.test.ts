@@ -236,7 +236,7 @@ describe('registerTools', () => {
 // Same shape of promise as the telemetry suite above, and the same absence of a
 // runtime signal: a tool with no annotations still works, it just asks the user
 // for permission it shouldn't need (or, worse, doesn't ask before overwriting
-// their diagram), and connector directories reject the whole server over it.
+// their document), and connector directories reject the whole server over it.
 // That is invisible from inside the worker, which is exactly how all nine then
 // shipped unannotated until a listing review caught it.
 //
@@ -317,7 +317,7 @@ describe('tool annotations', () => {
   });
 });
 
-// delete_document only ever moves a diagram to the Trash; restore_document and
+// delete_document only ever moves a document to the Trash; restore_document and
 // list_trash are the way back (docs/specs/015-api/mcp-server.md §4.9,
 // docs/specs/013-workspace/trash.md). A permanent delete is the REST API's.
 describe('the Trash tools', () => {
@@ -352,7 +352,7 @@ describe('the Trash tools', () => {
   const text = (result: unknown) =>
     JSON.parse((result as { content: { text: string }[] }).content[0]!.text) as unknown;
 
-  it('delete_document moves the diagram to the Trash', async () => {
+  it('delete_document moves the document to the Trash', async () => {
     const { calls, tool } = trashHarness();
     const result = await tool('delete_document').handler({ documentId: 'd_1' }, AUTHED);
     expect(calls).toEqual(['DELETE /api/documents/d_1']);
@@ -438,7 +438,7 @@ describe('the Trash tools', () => {
     });
   });
 
-  it('restore_document explains a diagram that is not in the Trash', async () => {
+  it('restore_document explains a document that is not in the Trash', async () => {
     const { tool } = trashHarness(() => Response.json({ error: 'not_found' }, { status: 404 }));
     const result = (await tool('restore_document').handler({ documentId: 'x' }, AUTHED)) as {
       isError: boolean;
@@ -449,7 +449,7 @@ describe('the Trash tools', () => {
   });
 });
 
-describe('delete_document on a diagram already in the Trash', () => {
+describe('delete_document on a document already in the Trash', () => {
   it('says so, and how to delete it for good', async () => {
     const registered: Registered[] = [];
     const server = {

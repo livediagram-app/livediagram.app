@@ -117,7 +117,7 @@ export function useEditorCommands(): {
     setCanvasTool,
   } = ctx;
 
-  // Offline diagrams (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
+  // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
   // Share command is withheld the same way the header hides its button.
   const isOffline = useIsOfflineDocument(documentId);
   // Spotlight is desktop-only, so the tool commands need the same viewport
@@ -205,8 +205,8 @@ export function useEditorCommands(): {
     },
     createTab: addTab,
     renameDocument: requestRenameDocument,
-    // deleteDocument confirms internally and (for the current diagram)
-    // redirects to /explorer; it needs the diagram's own id.
+    // deleteDocument confirms internally and (for the current document)
+    // redirects to /explorer; it needs the document's own id.
     deleteDocument: () => {
       if (documentId) void deleteDocument(documentId);
     },

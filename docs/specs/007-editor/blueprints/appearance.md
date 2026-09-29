@@ -44,7 +44,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Dark Reader lock   | `<meta name="darkreader-lock">`                       | The extension's opt-out, declared through `metadata.other`       |
 
 Banned synonyms: "UI mode" and "dark mode toggle" in code and copy (the stored key `livediagram:v2:ui-mode` keeps its
-name as data on the wire); "theme" for the appearance, since a theme is the diagram's.
+name as data on the wire); "theme" for the appearance, since a theme is the document's.
 
 ## Behaviour and state
 
@@ -72,7 +72,7 @@ The setting is a three-state cycle driven by `nextAppearanceSetting`: `light →
 - **I1:** the boot script and `resolveAppearance` agree on every stored value: `'dark'` is dark, `'light'` is light, and
   anything else (including `'system'`, missing and unknown) follows the device.
 - **I2:** an explicit `light` / `dark` never reads the media query.
-- **I3:** changing the appearance never writes to the diagram; the Default scheme resolves per viewer at render time.
+- **I3:** changing the appearance never writes to the document; the Default scheme resolves per viewer at render time.
 - **I4:** the dark class is the only DOM state; nothing else in the chrome decides light or dark on its own.
 - **I5:** Dark Reader never recolours the editor while the lock meta is in the served `<head>`.
 
@@ -107,7 +107,7 @@ editor.
 | `livediagram:v2:ui-mode` | `localStorage`, this browser only | Device preference | Values `'light'` / `'dark'` / `'system'`    |
 | Dismissed nudge key      | `ThemeModeBanner` component state | Ephemeral         | `${themeId}:${target}`; resets per mismatch |
 
-Nothing is synced to the api or written into a diagram. Migration: none; older builds wrote `'light'` / `'dark'`, which
+Nothing is synced to the api or written into a document. Migration: none; older builds wrote `'light'` / `'dark'`, which
 read back unchanged, and anything older reads as the default.
 
 ## Errors and edge cases
@@ -180,7 +180,7 @@ layout inlines the real string rather than a client-reference stub.
 | No light full-screen surface without a dark variant | `dark-mode-coverage.test.ts`                                           |
 | Preview tiles re-lit by one rule                    | `dark-mode-coverage.test.ts`, "tiles of light-canvas illustration art" |
 | Cycle, canvas and element ink follow (I3)           | `e2e/appearance.spec.ts`, "opens on the device setting, then cycles"   |
-| Appearance never writes to the diagram (I3)         | `e2e/appearance.spec.ts`, "changing the appearance never writes"       |
+| Appearance never writes to the document (I3)        | `e2e/appearance.spec.ts`, "changing the appearance never writes"       |
 | Setting survives reload before first paint          | `e2e/appearance.spec.ts`, "remembers the setting across a reload"      |
 | Lock meta declared (I5)                             | `dark-reader-lock.test.ts`                                             |
 | Lock meta reaches the served head (I5)              | `e2e/appearance.spec.ts`, "tells Dark Reader to stand down"            |

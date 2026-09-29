@@ -1,7 +1,7 @@
 import type { Browser, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 
-// Two people on one shared diagram (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
+// Two people on one shared document (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
 // the other online, an edit reaches the other side live, the autosave keeps everyone's edits (a peer's is
 // never saved back over or reverted), and a walking avatar shows on the other screen
 // (docs/specs/008-canvas/avatar-mode.md).

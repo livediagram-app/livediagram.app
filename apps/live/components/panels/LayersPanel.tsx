@@ -97,7 +97,7 @@ export function LayersPanel({
   // the header gear alongside Reset position.
   hoverPreviewEnabled: boolean;
   // Row density (docs/specs/006-document/layers.md): the thumbnail and the element count are each
-  // optional, so a diagram with many layers reads as a compact list.
+  // optional, so a document with many layers reads as a compact list.
   showPreview: boolean;
   showCount: boolean;
 } & MovablePanelPlacementProps) {

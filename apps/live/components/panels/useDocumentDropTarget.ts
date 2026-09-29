@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { DOCUMENT_DRAG_MIME } from './explorer-drag-mime';
 
-// A folder row that accepts a diagram dragged onto it (docs/specs/013-workspace/folders.md): the
+// A folder row that accepts a document dragged onto it (docs/specs/013-workspace/folders.md): the
 // hover-highlight flag plus the three drag handlers the row spreads onto its
 // element.
 //
@@ -11,7 +11,7 @@ import { DOCUMENT_DRAG_MIME } from './explorer-drag-mime';
 // synthetic Unsorted bucket — and they carried the same twenty lines twice.
 // The copy even said so ("Same drop wiring as FolderNode but the move callback
 // gets a null folderId"), which is the whole difference: `targetFolderId` is
-// the folder's id, or null for Unsorted, where a diagram lands when it has no
+// the folder's id, or null for Unsorted, where a document lands when it has no
 // folder.
 //
 // Two details worth keeping in one place rather than remembering twice:

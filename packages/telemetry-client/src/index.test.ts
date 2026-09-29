@@ -275,7 +275,7 @@ describe('installClientErrorTracking', () => {
     const track = vi.fn();
     at('/explorer/team/abc123def456ghi789');
     mod.installClientErrorTracking(track);
-    const odd = new Error('secret diagram name');
+    const odd = new Error('secret document name');
     odd.name = 'MyCustomError';
     windowTarget.fire('error', { error: odd });
     windowTarget.fire('unhandledrejection', { reason: 'a string' });

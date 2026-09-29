@@ -31,7 +31,7 @@ const SharePasswordGate = dynamic(
 );
 
 const LOAD_ERROR_MESSAGE =
-  'We couldn’t load this diagram: the server didn’t respond. Check your connection and try again.';
+  'We couldn’t load this document: the server didn’t respond. Check your connection and try again.';
 
 // `embed` mounts the read-only embed view (docs/specs/013-workspace/embeds.md): same state, same
 // EditorView, with the chrome / identity / edit gates flipped by the
@@ -45,8 +45,8 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   }, [embed]);
   // Prefetch the async icon-catalogue chunk (~60 kB of glyph data kept out of
   // the first-load JS, see lib/icon-registry.ts) as soon as the editor
-  // mounts, so it downloads in parallel with the diagram fetch / hydration.
-  // By the time a diagram's icons render — or the user opens the Icons /
+  // mounts, so it downloads in parallel with the document fetch / hydration.
+  // By the time a document's icons render — or the user opens the Icons /
   // Technology palette tab — the data is almost always already in, keeping
   // the placeholder window to a first-paint blink at worst. Fire-and-forget:
   // ensureIconCatalogs never rejects (a failure logs and retries on the next
@@ -55,11 +55,11 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   useEffect(() => {
     void ensureIconCatalogs();
   }, []);
-  // Tab title reflects the diagram: "<name> | livediagram" (falls back to
-  // Untitled when the diagram has no name yet). Updates as the user renames.
+  // Tab title reflects the document: "<name> | livediagram" (falls back to
+  // Untitled when the document has no name yet). Updates as the user renames.
   useEffect(() => {
     const name = state.documentName?.trim();
-    document.title = `${name || 'Untitled diagram'} | livediagram`;
+    document.title = `${name || 'Untitled document'} | livediagram`;
   }, [state.documentName]);
   const {
     documentNotFound,
@@ -118,7 +118,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
     />
   );
 
-  // The diagram is in the Trash (docs/specs/013-workspace/trash.md): from the
+  // The document is in the Trash (docs/specs/013-workspace/trash.md): from the
   // load, the room, or a refused save. Ahead of every other status because it
   // can arrive mid-session, over an editor that loaded fine.
   if (state.documentTrashed.trashed) {
@@ -131,7 +131,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
     return embed ? (
       <EmbedShell>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Diagram deleted" explorer={fullExplorer}>
+      <StatusShell title="Document deleted" explorer={fullExplorer}>
         {card}
       </StatusShell>
     );
@@ -149,7 +149,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
     return embed ? (
       <EmbedShell>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Couldn’t load diagram" explorer={fullExplorer}>
+      <StatusShell title="Couldn’t load document" explorer={fullExplorer}>
         {card}
       </StatusShell>
     );
@@ -165,13 +165,13 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
         />
       </EmbedShell>
     ) : (
-      <StatusShell title="Diagram not found" explorer={fullExplorer}>
+      <StatusShell title="Document not found" explorer={fullExplorer}>
         <NotFound onCreateNew={() => window.location.assign(`${window.location.origin}/new`)} />
       </StatusShell>
     );
   }
 
-  // Password gate (docs/specs/013-workspace/share-password.md): a visitor opened a protected diagram's
+  // Password gate (docs/specs/013-workspace/share-password.md): a visitor opened a protected document's
   // share link and hasn't supplied a valid password yet. Submitting
   // sets the session password and bumps passwordRetry to re-run the
   // bootstrap, which now carries the password on every request. In an
@@ -202,7 +202,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
       {/* Owner-scoped custom themes (docs/specs/011-theme/custom-themes.md): keyed by the current
           user's id (Clerk or guest self id) so the theme picker /
           builder share one source of truth and getTheme resolves saved
-          themes referenced by this diagram's tabs. */}
+          themes referenced by this document's tabs. */}
       <CustomThemeProvider
         ownerId={state.selfParticipant?.id ?? null}
         onThemeDeleted={state.resetTabsUsingTheme}

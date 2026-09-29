@@ -35,7 +35,7 @@ All layer mutations are ordinary tab-body commits: they flow through the normal 
 - **Opacity** — a 0–100% slider (in the row context menu) dims the whole layer. Slider drags write via tick with ONE history checkpoint per gesture (the colour-setter policy), so a drag is a single undo step.
 - **Clear** — empties a layer (same arrow cascade + group-pin freezing as delete) but keeps the layer itself. Confirm popover first.
 - **Hide Others** — makes the clicked layer the only visible one, in one step.
-- **Smart naming** — a layer still carrying its default "Layer N" name adopts a committed label from its elements. Fires when a label edit COMMITS (blur / Enter), alongside the diagram + tab auto-renames in commitLabel — never on mid-typing keystrokes (the type-to-edit path commits the first character immediately, which must not name the layer "C"; for the same reason there is deliberately NO "element was previously unlabelled" guard, since that first-keystroke commit would always trip it). Adoption needs the edited element to be the layer's ONLY labelled element, creation-seeded labels (tech icons, templates, paste, AI) never reach commitLabel, and once named (default pattern broken) adoption stops for good.
+- **Smart naming** — a layer still carrying its default "Layer N" name adopts a committed label from its elements. Fires when a label edit COMMITS (blur / Enter), alongside the document + tab auto-renames in commitLabel — never on mid-typing keystrokes (the type-to-edit path commits the first character immediately, which must not name the layer "C"; for the same reason there is deliberately NO "element was previously unlabelled" guard, since that first-keystroke commit would always trip it). Adoption needs the edited element to be the layer's ONLY labelled element, creation-seeded labels (tech icons, templates, paste, AI) never reach commitLabel, and once named (default pattern broken) adoption stops for good.
 
 ## Active layer + element membership
 
@@ -76,7 +76,7 @@ Templates whose scaffold stays put while their content moves ship with **pre-ass
 - **Image / PDF / SVG export** ([Canvas and palette](../008-canvas/canvas-and-palette.md)'s export dialog) skips hidden layers — render loops _and_ content bounds. The dialog's options panel gains a **"Hidden layers"** include-toggle alongside Isometric and Background pattern, rendered **only when at least one layer is hidden**, default off (what you see is what you export).
 - **Exports stack like the canvas.** Every export (SVG, PNG / PDF, snapshots, thumbnails, the MCP preview) paints each band in the same order the canvas does: frames first, then everything else in array order, **arrows interleaved with boxes**. They used to paint every box and then every arrow on top (the PNG path above every layer at once), so an arrow sent behind a box on the canvas came out over it.
 - **Mermaid export** ([Mermaid import & export](../020-import-export/mermaid.md)) skips hidden layers. Mermaid **import** lands on the active layer via the commit-boundary rule.
-- Server-rendered SVG snapshots ([Diagram SVG snapshots](document-snapshots.md) thumbnails / [Live image share link](../013-workspace/live-image-share.md) live image) skip hidden layers too, via the shared renderer.
+- Server-rendered SVG snapshots ([Document SVG snapshots](document-snapshots.md) thumbnails / [Live image share link](../013-workspace/live-image-share.md) live image) skip hidden layers too, via the shared renderer.
 
 ## Telemetry
 

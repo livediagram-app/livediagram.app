@@ -1,5 +1,5 @@
 // The MCP tools (docs/specs/015-api/mcp-server.md §4). Each is a thin wrapper over the api worker
-// plus the shared diagram helpers (validate / auto-layout / renderElementsToSvg)
+// plus the shared document helpers (validate / auto-layout / renderElementsToSvg)
 // — no business logic the editor doesn't already own. The calling LLM produces
 // the elements; these tools validate, lay out, persist, and render. The
 // shared result / auth / tab-building plumbing lives in tool-helpers.ts.
@@ -71,9 +71,9 @@ export function registerTools(server: McpServer, env: Env): void {
     'find_documents',
     {
       behaviour: 'read',
-      title: 'Find diagrams',
+      title: 'Find documents',
       description:
-        'Search the user’s diagrams by name — their personal library AND the shared ' +
+        'Search the user’s documents by name — their personal library AND the shared ' +
         'libraries of every team they belong to. Returns a compact list (id, name, ' +
         'updated time, which library it lives in, and a link to open it). Lightweight ' +
         'and image-free so you can scan many results, then read_document the one you want.',
@@ -82,7 +82,7 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      // Personal + team shared libraries (docs/specs/013-workspace/team-shared-documents.md): a diagram filed into a
+      // Personal + team shared libraries (docs/specs/013-workspace/team-shared-documents.md): a document filed into a
       // team leaves the personal list, so both must be swept.
       const [{ documents: liveDocs }, teamLibraries] = await Promise.all([
         apiJson<DocumentListResponse>(env, token, '/documents'),
@@ -101,9 +101,9 @@ export function registerTools(server: McpServer, env: Env): void {
     'read_document',
     {
       behaviour: 'read',
-      title: 'Read + visualise a diagram',
+      title: 'Read + visualise a document',
       description:
-        'Fetch one diagram tab’s elements as structured JSON AND an inline PNG of the ' +
+        'Fetch one tab’s elements as structured JSON AND an inline PNG of the ' +
         'tab, plus a link to open it. Use after find_documents to view or before editing.',
       inputSchema: readDocumentShape,
       outputSchema: readDocumentOutput,
@@ -111,7 +111,7 @@ export function registerTools(server: McpServer, env: Env): void {
     async (args, extra) => {
       const token = requireToken(extra as Extra);
       const loaded = await loadTab(env, token, args.documentId, args.tabId);
-      if (!loaded) return errorResult('That diagram has no tabs.');
+      if (!loaded) return errorResult('That document has no tabs.');
       const { document: liveDoc, tab } = loaded;
       return imageResult(
         {
@@ -165,11 +165,11 @@ export function registerTools(server: McpServer, env: Env): void {
     'create_document',
     {
       behaviour: 'write',
-      title: 'Create a diagram',
+      title: 'Create a document',
       description:
-        'Create a new diagram from elements you produce. The full element format is ' +
+        'Create a new document from diagram elements you produce. The full element format is ' +
         'documented inline on the "tabs" argument below. ' +
-        'Pass one tab, or several to build a multi-tab diagram in one call (an ' +
+        'Pass one tab, or several to build a multi-tab document in one call (an ' +
         'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
         'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
         'out each tab per the layout arg, tags it as AI-generated so it shows in your ' +
@@ -224,7 +224,7 @@ export function registerTools(server: McpServer, env: Env): void {
         tabs.push(buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, args.theme));
       }
       const id = crypto.randomUUID();
-      // Tag the diagram as MCP-generated (docs/specs/013-workspace/folders.md). The Explorer surfaces a
+      // Tag the document as MCP-generated (docs/specs/013-workspace/folders.md). The Explorer surfaces a
       // synthetic "Generated" folder over source != null, so there's no
       // real folder to create / place it in.
       await apiJson(env, token, '/documents', {
@@ -252,13 +252,13 @@ export function registerTools(server: McpServer, env: Env): void {
     'add_tab',
     {
       behaviour: 'write',
-      title: 'Add a tab to a diagram',
+      title: 'Add a tab to a document',
       description:
-        'Add a NEW tab (its own canvas) to an existing diagram — e.g. a detail view zooming ' +
+        'Add a NEW tab (its own canvas) to an existing document — e.g. a detail view zooming ' +
         'into one part of an architecture. Produce the elements like create_document (or pass ' +
         '"template" instead of elements to start from a hand-tuned scaffold); the ' +
         'server validates, lays out per the layout arg, appends the tab, and returns an ' +
-        'inline PNG. Run read_document first to see the diagram and its existing tabs.',
+        'inline PNG. Run read_document first to see the document and its existing tabs.',
       inputSchema: addTabShape,
       outputSchema: addTabOutput,
     },
@@ -287,7 +287,7 @@ export function registerTools(server: McpServer, env: Env): void {
             'needs id/type/x/y/width/height (arrows need from/to), and arrays must be well-formed.',
         );
       }
-      // Default the new tab's theme to the diagram's existing one so it matches
+      // Default the new tab's theme to the document's existing one so it matches
       // the other tabs rather than landing as a clashing brand-white tab. The
       // model can still override via args.theme. Best-effort: fall back to the
       // buildTab default if the lookup fails.
@@ -323,7 +323,7 @@ export function registerTools(server: McpServer, env: Env): void {
     'update_document',
     {
       behaviour: 'destructive',
-      title: 'Update a diagram',
+      title: 'Update a document',
       description:
         'Edit an existing tab. mode "replace" swaps the whole tab’s elements (validated + ' +
         'auto-laid-out); mode "ops" applies an ordered list of add/update/remove against ' +
@@ -336,7 +336,7 @@ export function registerTools(server: McpServer, env: Env): void {
     async (args, extra) => {
       const token = requireToken(extra as Extra);
       const loaded = await loadTab(env, token, args.documentId, args.tabId);
-      if (!loaded) return errorResult('That diagram has no tabs.');
+      if (!loaded) return errorResult('That document has no tabs.');
       const { tab } = loaded;
       const tabId = tab.id;
 
@@ -359,7 +359,7 @@ export function registerTools(server: McpServer, env: Env): void {
         if (!args.ops) return errorResult('ops mode requires "ops".');
         const byId = new Map<string, unknown>(tab.elements.map((e) => [e.id, e as unknown]));
         // Only the elements an edit touches are made safe (§4.7a); the rest of
-        // the diagram is left exactly as it is.
+        // the document is left exactly as it is.
         const touched = new Set<string>();
         for (const op of args.ops) {
           const el = op.element as { id?: string } | undefined;
@@ -420,11 +420,11 @@ export function registerTools(server: McpServer, env: Env): void {
     'share_document',
     {
       behaviour: 'write',
-      title: 'Share a diagram',
+      title: 'Share a document',
       description:
-        'Create a shareable link to a diagram so anyone with the URL can open it — no ' +
+        'Create a shareable link to a document so anyone with the URL can open it — no ' +
         'sign-in required. Choose "view" (read-only, the default) or "edit". Returns the ' +
-        'link URL. Use after creating or finding a diagram to hand it to teammates.',
+        'link URL. Use after creating or finding a document to hand it to teammates.',
       inputSchema: shareDocumentShape,
       outputSchema: shareDocumentOutput,
     },
@@ -455,9 +455,9 @@ export function registerTools(server: McpServer, env: Env): void {
     'rename_document',
     {
       behaviour: 'write',
-      title: 'Rename a diagram or tab',
+      title: 'Rename a document or tab',
       description:
-        'Rename a diagram, or (with tabId) one of its tabs. Non-destructive; returns the ' +
+        'Rename a document, or (with tabId) one of its tabs. Non-destructive; returns the ' +
         'updated name.',
       inputSchema: renameDocumentShape,
       outputSchema: renameDocumentOutput,
@@ -499,18 +499,18 @@ export function registerTools(server: McpServer, env: Env): void {
     'delete_document',
     {
       behaviour: 'destructive',
-      title: 'Delete a diagram or tab',
+      title: 'Delete a document or tab',
       description:
-        'Delete a diagram by moving it to the Trash, where it can be restored for ' +
+        'Delete a document by moving it to the Trash, where it can be restored for ' +
         `${TRASH_RETENTION_DAYS} days (with restore_document, or from Settings › Trash) before ` +
         'it is purged. With tabId, delete just one of its tabs, outright: tabs have no ' +
-        'Trash. Confirm with the user first. A diagram must keep at least one tab.',
+        'Trash. Confirm with the user first. A document must keep at least one tab.',
       inputSchema: deleteDocumentShape,
       outputSchema: deleteDocumentOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      // A whole diagram only ever goes to the Trash (docs/specs/013-workspace/trash.md):
+      // A whole document only ever goes to the Trash (docs/specs/013-workspace/trash.md):
       // a permanent delete is the REST API's, never an AI tool's. A tab has no Trash.
       const path = args.tabId
         ? `/documents/${args.documentId}/tabs/${args.tabId}`
@@ -525,10 +525,10 @@ export function registerTools(server: McpServer, env: Env): void {
         return errorResult(
           `Could not delete (${res.status}). ` +
             (args.tabId
-              ? 'A diagram must keep at least one tab — you cannot delete the last one.'
+              ? 'A document must keep at least one tab — you cannot delete the last one.'
               : res.status === 410
                 ? 'It is already in the Trash (see list_trash).'
-                : 'Check the diagram id and that you own it.'),
+                : 'Check the document id and that you own it.'),
         );
       }
       return textResult(
@@ -556,7 +556,7 @@ export function registerTools(server: McpServer, env: Env): void {
       behaviour: 'read',
       title: 'List the Trash',
       description:
-        'List the diagrams in the user’s Trash (their own and every team they belong to), ' +
+        'List the documents in the user’s Trash (their own and every team they belong to), ' +
         `each restorable with restore_document until it is purged ${TRASH_RETENTION_DAYS} days ` +
         'after deletion. Returns id, name, library, when it was deleted, and when it goes.',
       inputSchema: listTrashShape,
@@ -583,9 +583,9 @@ export function registerTools(server: McpServer, env: Env): void {
     'restore_document',
     {
       behaviour: 'write',
-      title: 'Restore a diagram from the Trash',
+      title: 'Restore a document from the Trash',
       description:
-        'Bring a deleted diagram back from the Trash, to the folder it was in (or Unsorted ' +
+        'Bring a deleted document back from the Trash, to the folder it was in (or Unsorted ' +
         'if that folder is gone), with its tabs and share links. Find it with list_trash.',
       inputSchema: restoreDocumentShape,
       outputSchema: restoreDocumentOutput,
@@ -606,7 +606,7 @@ export function registerTools(server: McpServer, env: Env): void {
         // Not in the Trash, or not the user's to restore: model-correctable.
         if (err instanceof ApiError && err.status === 404) {
           return errorResult(
-            'That diagram is not in the Trash, or is not yours to restore. Check the id with list_trash.',
+            'That document is not in the Trash, or is not yours to restore. Check the id with list_trash.',
           );
         }
         throw err;

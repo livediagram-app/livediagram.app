@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// A diagram's snapshot thumbnail (docs/specs/006-document/document-snapshots.md): fetched once in view,
+// A document's snapshot thumbnail (docs/specs/006-document/document-snapshots.md): fetched once in view,
 // shown when it lands, and a new version never shows the previous one's (revoked) image.
 
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
@@ -61,7 +61,7 @@ describe('DocumentThumbnail', () => {
     expect(img()?.getAttribute('src')).toBe('blob:two');
   });
 
-  it('captions a diagram with no snapshot', async () => {
+  it('captions a document with no snapshot', async () => {
     const { container } = render(thumb(1));
     await act(async () => pending[0]!(null));
     expect(img()).toBeNull();
@@ -88,7 +88,7 @@ describe('DocumentThumbnail', () => {
     }
   });
 
-  it('shows the still placeholder, not the loader, for a diagram with no snapshot', async () => {
+  it('shows the still placeholder, not the loader, for a document with no snapshot', async () => {
     render(thumb(1));
     await act(async () => pending[0]!(null));
     expect(loader()).toBeNull();
@@ -107,7 +107,7 @@ describe('DocumentThumbnail', () => {
     expect(pending).toHaveLength(1);
   });
 
-  it('fetches once for two thumbnails of the same diagram', async () => {
+  it('fetches once for two thumbnails of the same document', async () => {
     render(
       <>
         {thumb(1)}

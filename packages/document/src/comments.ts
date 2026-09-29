@@ -24,9 +24,9 @@ export type Comment = {
   // Stable id of the participant who wrote it (their Clerk sub or guest
   // owner id). Server-stamped and server-trusted, never read from the
   // client. Lets a view-role visitor delete their OWN comments without
-  // being able to touch anyone else's. When serving a diagram to a
+  // being able to touch anyone else's. When serving a document to a
   // non-owner the API blanks this on comments they didn't write (same
-  // anti-claim redaction `redactOwner` applies to the diagram owner id),
+  // anti-claim redaction `redactOwner` applies to the document owner id),
   // so a visitor only ever sees their own author id. Optional so
   // comments written before this field existed still parse.
   authorId?: string;

@@ -12,7 +12,7 @@ import type { PollCandidate } from '@/lib/poll-collaborators';
 // three lists could only ever be identical, and were.
 //
 // The one asymmetry worth keeping in view: the timer and the vote are Tab
-// FIELDS, so they persist with the diagram, while the poll is ephemeral room
+// FIELDS, so they persist with the document, while the poll is ephemeral room
 // state and never becomes one. That is why the poll arrives as three separate
 // props rather than a `poll` slot on the tab beside the other two.
 export type SessionToolsProps = {
@@ -41,7 +41,7 @@ export type SessionToolsProps = {
   // a poll (it runs for just you); the composer only notes it.
   pollHasAudience: boolean;
   onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
-  // Everyone currently in the diagram, for the `collaborators` poll style
+  // Everyone currently in the document, for the `collaborators` poll style
   // (docs/specs/012-collaboration/live-poll.md). The composer needs it to PREVIEW the ballot it is about to
   // freeze; the freeze itself happens in `startPoll`, reading the roster again
   // at the instant the poll starts, so what is sent is never staler than the

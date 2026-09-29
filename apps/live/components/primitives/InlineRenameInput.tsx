@@ -6,8 +6,8 @@ import { useLatest } from '@/hooks/ui/useLatest';
 
 // Shared inline-rename input used by every "click rename, type a
 // new name, press Enter or click away" interaction in the app
-// (sidebar folder tree, list-view folder row, list-view diagram
-// row, floating Explorer's folder + diagram renames). Three near-
+// (sidebar folder tree, list-view folder row, list-view document
+// row, floating Explorer's folder + document renames). Three near-
 // identical copies of this used to exist; they drifted on focus
 // management and the most fragile copy (the standalone /explorer
 // page) was the one that exposed the focus-bounce bug. Living

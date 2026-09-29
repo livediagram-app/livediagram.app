@@ -2,8 +2,8 @@
 
 // The Explorer's additions to a Timeline card (docs/specs/013-workspace/timeline.md §2.8, §2.9): a
 // menu on every card (each can be removed from the feed), the full
-// diagram menu for a diagram the Explorer has loaded, a rename input in
-// the title slot while that diagram is being renamed, and the diagram's
+// document menu for a document the Explorer has loaded, a rename input in
+// the title slot while that document is being renamed, and the document's
 // CURRENT name as the subject.
 
 import { renderHook } from '@testing-library/react';
@@ -91,7 +91,7 @@ function slotsFor(value: ExplorerStateValue, onDismiss = vi.fn()) {
 }
 
 describe('useTimelineCardSlots', () => {
-  it('adds a menu and the current name for a diagram the Explorer knows', () => {
+  it('adds a menu and the current name for a document the Explorer knows', () => {
     const slots = slotsFor(explorer())(event({}));
     expect(slots?.menu).toBeTruthy();
     expect(slots?.subject).toBe('Payments v2');
@@ -100,9 +100,9 @@ describe('useTimelineCardSlots', () => {
   });
 
   // Every card can be removed from the feed (docs/specs/013-workspace/timeline.md §2.9), so every
-  // card has a menu — but only a loaded diagram's card borrows the
+  // card has a menu — but only a loaded document's card borrows the
   // Explorer's name for the subject; the rest keep the renderer's.
-  it('gives a tombstone and an unloaded diagram the entity menu, with no rename slot', () => {
+  it('gives a tombstone and an unloaded document the entity menu, with no rename slot', () => {
     const slots = slotsFor(explorer());
     for (const e of [
       event({ snapshot: { documentName: 'Gone' } }),
@@ -168,7 +168,7 @@ describe('useTimelineCardSlots', () => {
     expect(menu.props.document).toBeUndefined();
   });
 
-  it('resolves a shared-with-you diagram too', () => {
+  it('resolves a shared-with-you document too', () => {
     const slots = slotsFor(explorer())(
       event({ snapshot: { documentId: 's1', documentName: 'Theirs' } }),
     );
@@ -176,7 +176,7 @@ describe('useTimelineCardSlots', () => {
     expect(slots?.subject).toBe('Theirs');
   });
 
-  it('puts a rename input in the title slot while that diagram is being renamed', () => {
+  it('puts a rename input in the title slot while that document is being renamed', () => {
     const slots = slotsFor(explorer({ renamingDocumentId: 'd1' }))(event({}));
     expect(slots?.title).toBeTruthy();
     // Right-click is off while renaming: the card's own gesture would

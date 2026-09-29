@@ -34,7 +34,7 @@ export type ToolBehaviour = 'read' | 'write' | 'destructive';
 // `readOnlyHint` is true, and stating it would imply the tool writes at all.
 export const TOOL_ANNOTATIONS: Record<ToolBehaviour, ToolAnnotations> = {
   read: { readOnlyHint: true, openWorldHint: false },
-  // Additive: creates a diagram, a tab, a link. Nothing that existed is lost.
+  // Additive: creates a document, a tab, a link. Nothing that existed is lost.
   write: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   // May overwrite or remove what the user already had, so a client should ask
   // before each call.

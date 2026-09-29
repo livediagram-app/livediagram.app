@@ -5,7 +5,7 @@ import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
 
-// Sync state surfaced as a small pill next to the diagram title. The
+// Sync state surfaced as a small pill next to the document title. The
 // editor is autosave-driven, so silent failures (offline, API down,
 // wrong env var pointing at unreachable host) used to look identical
 // to a successful save. Now they don't.
@@ -20,29 +20,29 @@ export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'unauthenticate
 
 type EditorHeaderProps = {
   documentName: string;
-  // Hides the centred diagram title while the first-run welcome modal
-  // is up (no diagram exists yet, naming it makes no sense). Brand and
+  // Hides the centred document title while the first-run welcome modal
+  // is up (no document exists yet, naming it makes no sense). Brand and
   // Share button stay.
   hideTitle?: boolean;
-  // Only the diagram's owner sees the Share button — visitors arriving
-  // via a share URL can't toggle sharing on their host's diagram.
+  // Only the document's owner sees the Share button — visitors arriving
+  // via a share URL can't toggle sharing on their host's document.
   showShare: boolean;
   shareable: boolean;
-  // The diagram lives in a team's shared library (docs/specs/013-workspace/team-shared-documents.md). Flips the
-  // title badge to "Team" when the diagram has no share links.
+  // The document lives in a team's shared library (docs/specs/013-workspace/team-shared-documents.md). Flips the
+  // title badge to "Team" when the document has no share links.
   teamDocument?: boolean;
   // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser. Flips the title badge
   // to "Offline" (superseding "Private"); the caller also hides Share.
   offline?: boolean;
   // Counterpart to showShare for visitors: when present we render a
-  // "Make a copy" button that duplicates the diagram into the
+  // "Make a copy" button that duplicates the document into the
   // visitor's own files (item #9 / docs/specs/015-api/api.md). Optional so the owner
   // view stays unchanged.
   onMakeCopy?: () => void;
   copying?: boolean;
   // True for a view-only ('view' share role) session. Disables the
-  // click-to-rename affordance on the diagram title — the viewer
-  // isn't allowed to rename someone else's diagram. Make-a-copy +
+  // click-to-rename affordance on the document title — the viewer
+  // isn't allowed to rename someone else's document. Make-a-copy +
   // Share gates already handle their own visibility.
   readOnly?: boolean;
   // Accent colour for the brand logo's "diagram" half. Comes from the
@@ -50,10 +50,10 @@ type EditorHeaderProps = {
   brandAccent?: string;
   onOpenShare: () => void;
   // Opens the editor's Settings on its Account category (the account menu's
-  // Account item), so it doesn't navigate away from the diagram.
+  // Account item), so it doesn't navigate away from the document.
   onOpenAccount?: () => void;
   onRename: (name: string) => void;
-  // Bumped by the command palette's "Rename diagram" action to enter inline
+  // Bumped by the command palette's "Rename document" action to enter inline
   // edit mode (the palette can't reach this component's local editing state).
   // A monotonic counter; each increment opens the editor (unless read-only).
   renameNonce?: number;
@@ -119,7 +119,7 @@ export function EditorHeader({
                 {documentName}
               </span>
             ) : (
-              <HoverCard title="Rename diagram" description="Click to edit the name.">
+              <HoverCard title="Rename document" description="Click to edit the name.">
                 <button
                   type="button"
                   onClick={() => setEditing(true)}
@@ -140,7 +140,7 @@ export function EditorHeader({
           the bar (the -mr-4 cancels the header's right padding). */}
       <div className="-mr-4 flex items-stretch self-stretch">
         {onMakeCopy ? (
-          <HoverCard title="Make a copy" description="Duplicate this diagram into your own files.">
+          <HoverCard title="Make a copy" description="Duplicate this document into your own files.">
             <button
               type="button"
               onClick={onMakeCopy}

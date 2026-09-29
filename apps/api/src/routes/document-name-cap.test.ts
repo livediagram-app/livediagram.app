@@ -6,7 +6,7 @@ import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
 // The name cap is enforced by the worker (docs/specs/006-document/name-length.md,
-// "The server is the enforcement point"): every diagram and tab name it stores
+// "The server is the enforcement point"): every document and tab name it stores
 // is shortened to NAME_MAX_LENGTH, whoever sent it, and a name echoed back
 // unchanged is never rewritten.
 
@@ -28,7 +28,7 @@ function tabName(sql: DatabaseSync, id: string): string | undefined {
   return sql.prepare('SELECT name FROM tabs WHERE id = ?').get(id)?.name as string | undefined;
 }
 
-// A diagram row stored before the cap existed, holding an over-long name.
+// A document row stored before the cap existed, holding an over-long name.
 function legacyDocument(sql: DatabaseSync, id: string, name: string) {
   sql
     .prepare(
@@ -43,7 +43,7 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('POST /api/documents name cap', () => {
-  it('stores and returns an over-long diagram name shortened', async () => {
+  it('stores and returns an over-long document name shortened', async () => {
     const db = sqliteD1();
     const res = await call(db, 'POST', '/api/documents', { id: 'D', name: LONG });
     expect(res.status).toBe(201);

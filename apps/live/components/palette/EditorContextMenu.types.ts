@@ -78,7 +78,7 @@ export type EditorContextMenuProps = {
   // fresh shape's menu hides exactly the options the user is typing for.
   editingId: string | null;
   // Open the link picker for the element, optionally pre-selecting a mode
-  // (webpage / tab / diagram) so the modal lands on the right tab.
+  // (webpage / tab / document) so the modal lands on the right tab.
   onLinkElement: (elementId: string, mode?: 'url' | 'tab' | 'document') => void;
   // Remove an inline icon from the element. Only surfaced when the
   // clicked element actually carries one (a non-'icon' shape with iconId).

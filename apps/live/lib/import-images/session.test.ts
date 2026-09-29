@@ -123,7 +123,7 @@ describe('createImportImageSession', () => {
     });
   });
 
-  describe('offline diagrams', () => {
+  describe('offline documents', () => {
     it('embeds the image as a data URL instead of uploading', async () => {
       const d = deps({ offline: true });
       const out = await createImportImageSession(d).store(pngSource());

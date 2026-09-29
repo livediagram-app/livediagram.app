@@ -1,5 +1,5 @@
-// List-level diagram + folder operations shared by every surface that
-// renders a diagram library: the floating Explorer panel (composed
+// List-level document + folder operations shared by every surface that
+// renders a document library: the floating Explorer panel (composed
 // into the editor via useDocumentActions), the /explorer page, and
 // /new. Each surface owns its own list STATE (the editor refreshes it
 // after autosave, the pages fetch on mount); this hook owns the
@@ -41,17 +41,17 @@ type DocumentListActionsDeps = {
   // toasts respect the user's "Show notifications" preference;
   // errors always surface (see useToast).
   toast: ReturnType<typeof useToast>;
-  // useFolders' delete. deleteFolder below chains the diagram-side
+  // useFolders' delete. deleteFolder below chains the document-side
   // re-bucket cascade in front of it so rows visibly fall to
   // Unsorted instead of waiting for the next list refresh. Only
   // DIRECT children re-bucket, mirroring the server (subfolders are
-  // promoted to root, so diagrams inside them stay put).
+  // promoted to root, so documents inside them stay put).
   deleteFolderFromHook: (id: string) => void;
-  // The diagram currently open in the editor, if the surface has
+  // The document currently open in the editor, if the surface has
   // one. deleteDocument redirects to /live/explorer when deleting it
   // (the editor would otherwise stare at a row that no longer
   // exists) and openDocument no-ops on it. The standalone pages have
-  // no current diagram and omit it.
+  // no current document and omit it.
   currentDocument?: { id: string; name: string } | null;
   // What to do once a duplicate exists: the editor opens the copy,
   // the standalone pages stay put and refresh their list.
@@ -76,7 +76,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     setSharedDocuments,
   } = deps;
 
-  // Open a diagram from a list row. The current diagram (editor only)
+  // Open a document from a list row. The current document (editor only)
   // is already autosaved, so a hard navigation loses nothing; path
   // scheme per docs/specs/007-editor/new-document-route.md. Shared-list rows pass a share code so the
   // non-owner can actually load the target; without it the editor's
@@ -91,7 +91,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     window.location.assign(url);
   };
 
-  // Rename a diagram from its list row. Optimistic; empty input is a
+  // Rename a document from its list row. Optimistic; empty input is a
   // cancel, and the telemetry only fires when the name actually
   // changed.
   const renameDocument = (id: string, name: string) => {
@@ -114,13 +114,13 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
         // — a silent swallow left the row showing a name the server rejected.
         if (prev)
           setDocumentList((p) => p.map((d) => (d.id === id ? { ...d, name: prev.name } : d)));
-        toast.error('Could not rename the diagram. Please try again.');
+        toast.error('Could not rename the document. Please try again.');
       });
   };
 
-  // Delete a diagram by id. When the target is the currently-open one
+  // Delete a document by id. When the target is the currently-open one
   // (editor only), redirect to /live/explorer so the user lands on
-  // their library rather than a dead row. Deleting any other diagram
+  // their library rather than a dead row. Deleting any other document
   // removes the row optimistically: a fire-and-forget DELETE followed
   // by an immediate list refetch used to race, repainting the row the
   // API hadn't yet committed. It goes to the Trash (docs/specs/013-workspace/trash.md),
@@ -142,10 +142,10 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
         id === currentDocument?.id
           ? { name: currentDocument.name }
           : documentList.find((d) => d.id === id);
-      // Tabs also in other diagrams stay there; say so before it happens.
+      // Tabs also in other documents stay there; say so before it happens.
       const notice = await fetchSharedTabsNotice(ownerId, id, 'delete');
       const ok = await confirm({
-        title: `Delete "${target?.name || 'this diagram'}"?`,
+        title: `Delete "${target?.name || 'this document'}"?`,
         message: [
           'Its share links stop working, and visitors see that it was deleted.',
           notice,
@@ -153,19 +153,19 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
         ]
           .filter(Boolean)
           .join(' '),
-        confirmLabel: 'Delete diagram',
+        confirmLabel: 'Delete document',
       });
       if (!ok) return;
     }
     // Tombstone first, ALWAYS: the open editor's autosave (debounce + the
-    // beforeunload keepalive beacon) must not write this diagram back. For
-    // the open diagram that's the bug fix; for others it's harmless (their
-    // editor isn't mounted) but keeps the rule simple. See diagram-tombstones.
+    // beforeunload keepalive beacon) must not write this document back. For
+    // the open document that's the bug fix; for others it's harmless (their
+    // editor isn't mounted) but keeps the rule simple. See document-tombstones.
     markDocumentDeleted(id);
     if (id === currentDocument?.id) {
       // AWAIT the delete before navigating: a fire-and-forget DELETE has no
       // keepalive, so the immediate navigation below would cancel the
-      // in-flight request and the diagram would survive (the "didn't delete
+      // in-flight request and the document would survive (the "didn't delete
       // first time" report). Awaiting sends it to completion first; the
       // tombstone then stops the beforeunload flush from re-creating it.
       // Telemetry rides the resolved delete, not the click: this used to fire
@@ -185,11 +185,11 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
       .catch(() => {});
     // The row is gone but on a long / scrolled list its disappearance
     // can be easy to miss, and the action is destructive — confirm it.
-    toast.success('Diagram deleted');
+    toast.success('Document deleted');
   };
 
   // Delete a folder (docs/specs/013-workspace/folders.md): confirm, re-bucket its direct
-  // diagrams to Unsorted locally, then let useFolders handle the
+  // documents to Unsorted locally, then let useFolders handle the
   // folder rows + the API call. `name` personalises the confirm
   // title when the caller has it. Returns whether the delete went
   // through, so callers with selection state (the /explorer sidebar)
@@ -198,7 +198,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     const ok = await confirm({
       title: name ? `Delete "${name}"?` : 'Delete this folder?',
       message:
-        'Diagrams inside the folder move to Unsorted. Subfolders are promoted to the root. The folder row itself is removed.',
+        'Documents inside the folder move to Unsorted. Subfolders are promoted to the root. The folder row itself is removed.',
       confirmLabel: 'Delete folder',
     });
     if (!ok) return false;
@@ -225,13 +225,13 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
         setDocumentList((prev) =>
           prev.map((d) => (d.id === id ? { ...d, folderId: prevFolderId } : d)),
         );
-        toast.error('Could not move the diagram. Please try again.');
+        toast.error('Could not move the document. Please try again.');
       });
   };
 
-  // Duplicate a diagram into a brand-new one (new tab ids, preserved
+  // Duplicate a document into a brand-new one (new tab ids, preserved
   // element ids, tab-link references remapped; see
-  // lib/duplicate-diagram). The surface decides what happens next via
+  // lib/duplicate-document). The surface decides what happens next via
   // afterDuplicate: open the copy (editor) or refresh the list
   // (standalone pages).
   const duplicateDocument = async (id: string) => {
@@ -242,10 +242,10 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
       // Surfaces that stay put (the pages) get a confirmation; the
       // editor's afterDuplicate navigates to the copy, so its own
       // open is the feedback and this toast is simply preempted.
-      toast.success('Diagram duplicated');
+      toast.success('Document duplicated');
       await afterDuplicate(newId);
     } else {
-      toast.error("Couldn't duplicate that diagram. Try again.");
+      toast.error("Couldn't duplicate that document. Try again.");
     }
   };
 
@@ -255,7 +255,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     if (!ownerId || !setSharedDocuments) return;
     const target = sharedDocuments.find((d) => d.id === documentId);
     const ok = await confirm({
-      title: `Remove "${target?.name || 'this diagram'}" from your Shared list?`,
+      title: `Remove "${target?.name || 'this document'}" from your Shared list?`,
       message:
         "It'll vanish from your Shared with you list. You can still open it again from the share link the owner gave you, and that re-adds it here.",
       confirmLabel: 'Remove',

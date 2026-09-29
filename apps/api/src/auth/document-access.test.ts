@@ -3,8 +3,8 @@ import type { ShareLink } from '@livediagram/api-schema';
 import type { Env } from '../types';
 
 // `canEditDocument` and `canReadDocument` gate every request through
-// the api worker's diagram routes. A regression in either silently
-// translates to "the wrong visitor sees / edits this diagram" with
+// the api worker's document routes. A regression in either silently
+// translates to "the wrong visitor sees / edits this document" with
 // no other surface signal: the route still 200s, the body just
 // goes to the wrong audience. The cases below cover every branch
 // in both helpers, with `getShareLink` stubbed so we can drive the
@@ -40,7 +40,7 @@ beforeEach(() => {
   getSharePasswordMock.mockReset();
   getMembershipMock.mockReset();
   getMembershipMock.mockResolvedValue(null);
-  // Default: the diagram has no share password, so the password gate
+  // Default: the document has no share password, so the password gate
   // is a no-op and the link/role checks behave exactly as before.
   getSharePasswordMock.mockResolvedValue(null);
 });
@@ -53,7 +53,7 @@ afterEach(() => {
 });
 
 describe('canEditDocument', () => {
-  it('returns true when owner matches the diagram ownerId (no share code consulted)', async () => {
+  it('returns true when owner matches the document ownerId (no share code consulted)', async () => {
     // The owner short-circuit doesn't call getShareLink at all.
     // Asserting the mock wasn't invoked pins that the owner path
     // stays cheap (no D1 round-trip per editor write).
@@ -64,7 +64,7 @@ describe('canEditDocument', () => {
 
   it('returns false when there is no owner and no share code', async () => {
     // A guest who hasn't sent X-Owner-Id and didn't follow a
-    // share link has no claim on the diagram at all. Catches a
+    // share link has no claim on the document at all. Catches a
     // regression that defaulted to "true" if both inputs were
     // null/empty.
     const allowed = await canEditDocument(FAKE_ENV, 'diag-1', null, null, 'owner-a');
@@ -81,10 +81,10 @@ describe('canEditDocument', () => {
     expect(allowed).toBe(false);
   });
 
-  it('returns false when the share code maps to a DIFFERENT diagram (link mismatch)', async () => {
+  it('returns false when the share code maps to a DIFFERENT document (link mismatch)', async () => {
     // The link.documentId guard is the second crucial check: a
     // legit edit-role code for diag-2 must NOT grant access to
-    // diag-1. Catches a regression that dropped the diagram-id
+    // diag-1. Catches a regression that dropped the document-id
     // verification.
     getShareLinkMock.mockResolvedValue({
       code: 'ABC23456',
@@ -117,7 +117,7 @@ describe('canEditDocument', () => {
     expect(allowed).toBe(false);
   });
 
-  it('returns true for an EDIT-role code matching the diagram', async () => {
+  it('returns true for an EDIT-role code matching the document', async () => {
     getShareLinkMock.mockResolvedValue({
       code: 'EDIT2345',
       role: 'edit',
@@ -161,8 +161,8 @@ describe('canReadDocument', () => {
     expect(allowed).toBe(false);
   });
 
-  it('returns false when the share code maps to a DIFFERENT diagram', async () => {
-    // Same diagram-id guard as canEditDocument. A read on diag-1
+  it('returns false when the share code maps to a DIFFERENT document', async () => {
+    // Same document-id guard as canEditDocument. A read on diag-1
     // with a code for diag-2 must still 403.
     getShareLinkMock.mockResolvedValue({
       code: 'ABC23456',
@@ -177,7 +177,7 @@ describe('canReadDocument', () => {
     expect(allowed).toBe(false);
   });
 
-  it('returns true for a VIEW-role code matching the diagram (the load-bearing case)', async () => {
+  it('returns true for a VIEW-role code matching the document (the load-bearing case)', async () => {
     // The whole reason this helper exists. The fix in commit
     // 069b785 found that GET /api/documents/:id/tabs/:tabId was
     // gated on canEditDocument, so view-only visitors got a 403
@@ -196,7 +196,7 @@ describe('canReadDocument', () => {
     expect(allowed).toBe(true);
   });
 
-  it('returns true for an EDIT-role code matching the diagram (edit is read-and-write)', async () => {
+  it('returns true for an EDIT-role code matching the document (edit is read-and-write)', async () => {
     // Edit role is a superset of view: anyone with an edit code
     // also has read access. The role check in canEditDocument is
     // the only place where role: 'view' is treated differently.
@@ -255,14 +255,14 @@ describe('share password gate (docs/specs/013-workspace/share-password.md)', () 
     expect(allowed).toBe(true);
   });
 
-  it('denies a view read on a protected diagram without the password', async () => {
+  it('denies a view read on a protected document without the password', async () => {
     getShareLinkMock.mockResolvedValue({ ...editLink, code: 'VIEW2345', role: 'view' });
     getSharePasswordMock.mockResolvedValue('hunter2');
     const allowed = await canReadDocument(FAKE_ENV, 'diag-1', null, 'VIEW2345', 'owner-a', null);
     expect(allowed).toBe(false);
   });
 
-  it('allows a view read on a protected diagram with the matching password', async () => {
+  it('allows a view read on a protected document with the matching password', async () => {
     getShareLinkMock.mockResolvedValue({ ...editLink, code: 'VIEW2345', role: 'view' });
     getSharePasswordMock.mockResolvedValue('hunter2');
     const allowed = await canReadDocument(
@@ -278,7 +278,7 @@ describe('share password gate (docs/specs/013-workspace/share-password.md)', () 
 
   it('never consults the password for the owner (bypass stays cheap)', async () => {
     // Owner short-circuit must fire before any password lookup, so an
-    // owner is never locked out of their own diagram.
+    // owner is never locked out of their own document.
     getSharePasswordMock.mockResolvedValue('hunter2');
     const allowed = await canEditDocument(FAKE_ENV, 'diag-1', 'owner-a', null, 'owner-a', null);
     expect(allowed).toBe(true);
@@ -291,7 +291,7 @@ describe('team-library access (docs/specs/013-workspace/team-shared-documents.md
   // Clerk user id — NOT the hybrid `owner` (3rd arg, which may be the
   // unsigned X-Owner-Id header). The member here is a guest-shaped
   // `owner` (null) with a verified callerId to prove that's what counts.
-  it('grants edit to a JOINED member of the diagram team', async () => {
+  it('grants edit to a JOINED member of the document team', async () => {
     getMembershipMock.mockResolvedValue({ status: 'joined' });
     const allowed = await canEditDocument(
       FAKE_ENV,
@@ -307,7 +307,7 @@ describe('team-library access (docs/specs/013-workspace/team-shared-documents.md
     expect(getMembershipMock).toHaveBeenCalledWith(FAKE_ENV, 'team-1', 'user-1');
   });
 
-  it('grants read to a JOINED member of the diagram team', async () => {
+  it('grants read to a JOINED member of the document team', async () => {
     getMembershipMock.mockResolvedValue({ status: 'joined' });
     const allowed = await canReadDocument(
       FAKE_ENV,
@@ -326,7 +326,7 @@ describe('team-library access (docs/specs/013-workspace/team-shared-documents.md
   // verified Clerk session (callerId null) must NOT pass — otherwise a
   // removed member could forge a current member's id. Membership is
   // never even consulted (callerId is null).
-  it('denies a forged owner-id header with no verified caller on a team diagram', async () => {
+  it('denies a forged owner-id header with no verified caller on a team document', async () => {
     getMembershipMock.mockClear();
     getMembershipMock.mockResolvedValue({ status: 'joined' });
     expect(
@@ -353,7 +353,7 @@ describe('team-library access (docs/specs/013-workspace/team-shared-documents.md
     expect(allowed).toBe(false);
   });
 
-  it('grants the team diagram’s owner access only while they are a joined member', async () => {
+  it('grants the team document’s owner access only while they are a joined member', async () => {
     // Owning the row used to be enough on its own, so a member the team
     // removed kept full access to everything they had created in it (docs/specs/013-workspace/team-shared-documents.md).
     getMembershipMock.mockResolvedValue({ status: 'joined' });
@@ -369,7 +369,7 @@ describe('team-library access (docs/specs/013-workspace/team-shared-documents.md
     ).toBe(false);
   });
 
-  it('denies a non-member, and never consults membership when the diagram has no team', async () => {
+  it('denies a non-member, and never consults membership when the document has no team', async () => {
     getMembershipMock.mockResolvedValue(null);
     expect(
       await canEditDocument(FAKE_ENV, 'diag-1', null, null, 'owner-a', null, 'team-1', 'user-2'),
@@ -383,7 +383,7 @@ describe('team-library access (docs/specs/013-workspace/team-shared-documents.md
 });
 
 // docs/specs/013-workspace/tab-scoped-share-links.md. A scoped link grants its role on ONE tab. The gates
-// fail closed: a request that names no tab (a diagram-level door) is refused a
+// fail closed: a request that names no tab (a document-level door) is refused a
 // scoped link, and only the doors that know how to narrow what they return ask
 // for the grant itself.
 describe('tab-scoped links', () => {
@@ -413,7 +413,7 @@ describe('tab-scoped links', () => {
     expect(await edit('tab-1')).toBe(false);
   });
 
-  it('refuses a diagram-level door, which names no tab', async () => {
+  it('refuses a document-level door, which names no tab', async () => {
     getShareLinkMock.mockResolvedValue(scoped('edit'));
     expect(await read()).toBe(false);
     expect(await edit()).toBe(false);
@@ -425,7 +425,7 @@ describe('tab-scoped links', () => {
     expect(await edit('tab-2')).toBe(false);
   });
 
-  it('leaves an All-tabs link opening any tab and the diagram itself', async () => {
+  it('leaves an All-tabs link opening any tab and the document itself', async () => {
     getShareLinkMock.mockResolvedValue(scoped('edit', null));
     expect(await read('tab-1')).toBe(true);
     expect(await edit()).toBe(true);

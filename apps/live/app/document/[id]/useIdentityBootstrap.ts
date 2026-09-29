@@ -33,8 +33,8 @@ import { isDocumentTrashedError } from '@/lib/document-trashed';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
-// One-shot identity + diagram hydration (Clerk gate -> guest id ->
-// participant -> diagram/share/password resolution -> tab seeding),
+// One-shot identity + document hydration (Clerk gate -> guest id ->
+// participant -> document/share/password resolution -> tab seeding),
 // lifted out of editor-page.tsx verbatim. The most entangled effect in
 // the page: it reads/writes ~25 state slices, so the setters + the
 // last-saved/loaded refs are passed as grouped bundles. Auth resolution
@@ -66,7 +66,7 @@ export function useIdentityBootstrap(opts: {
     setDocumentPresentation: SetState<string | null>;
     setDocumentNotFound: SetState<boolean>;
     setLoadError: SetState<boolean>;
-    // The diagram is in the Trash (docs/specs/013-workspace/trash.md).
+    // The document is in the Trash (docs/specs/013-workspace/trash.md).
     setDocumentTrashed: (trashed: boolean) => void;
     setDocumentOwnerColor: SetState<string | null>;
     setDocumentOwnerId: SetState<string | null>;
@@ -168,7 +168,7 @@ export function useIdentityBootstrap(opts: {
     // Wait for Clerk to determine the auth state before bootstrapping.
     // Otherwise a signed-in user lands here with `clerkUserId === null`
     // briefly, we mint a guest id, and the participant record + every
-    // subsequent diagram load uses the wrong owner. With this gate
+    // subsequent document load uses the wrong owner. With this gate
     // the effect re-runs once `authLoaded` flips true.
     if (!authLoaded) return;
     // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): once auth has settled we
@@ -197,7 +197,7 @@ export function useIdentityBootstrap(opts: {
     const pathMatch = initialUrl.pathname.match(/\/document\/([^/?#]+)/);
     const rawPathId = pathMatch ? pathMatch[1]! : null;
     // `placeholder` is the static-export build artefact, not a real
-    // diagram id — ignore it so the IIFE doesn't try to fetch it.
+    // document id — ignore it so the IIFE doesn't try to fetch it.
     const initialId = rawPathId && rawPathId !== 'placeholder' ? rawPathId : null;
     const initialShareCode = initialUrl.searchParams.get('s');
     // No path id and no share code → the user landed on the placeholder
@@ -210,7 +210,7 @@ export function useIdentityBootstrap(opts: {
       const id = initialId;
       const shareCodeParam = initialShareCode;
 
-      // Identity comes first because every diagram fetch needs an
+      // Identity comes first because every document fetch needs an
       // owner id. On password retries (passwordRetry > 0) we already
       // resolved the participant on the first attempt — reuse it rather
       // than hitting /api/participants again on every wrong guess.
@@ -266,7 +266,7 @@ export function useIdentityBootstrap(opts: {
 
       // The NotFound / load-error pages render the Explorer panel behind
       // the status card so the user can still navigate to their other
-      // diagrams — which only works if those early-return paths fetch the
+      // documents — which only works if those early-return paths fetch the
       // Explorer's lists too. Called on each of them below; the success
       // path keeps its own calls at the end of this effect (AFTER the
       // share-visit registration, so refreshSharedList sees the new row).
@@ -277,7 +277,7 @@ export function useIdentityBootstrap(opts: {
 
       // Two URL flavours: `?d=<id>` is the owner's private URL,
       // `?s=<code>` is a share URL another participant follows. Visitor
-      // arrivals get full diagram data via the share-code endpoint and
+      // arrivals get full document data via the share-code endpoint and
       // are flagged `!isOwner` so the Share button hides.
       if (shareCodeParam) {
         // Warm-cache the share password (docs/specs/013-workspace/share-password.md) before the first
@@ -298,8 +298,8 @@ export function useIdentityBootstrap(opts: {
         } catch (err) {
           // Couldn't reach the server to resolve the share link (network
           // / 5xx). Retryable, so show the error page instead of the
-          // "link revoked / diagram gone" NotFound below. Unless the link's
-          // diagram is in the Trash (docs/specs/013-workspace/trash.md): the
+          // "link revoked / document gone" NotFound below. Unless the link's
+          // document is in the Trash (docs/specs/013-workspace/trash.md): the
           // visitor sees that it was deleted.
           if (isDocumentTrashedError(err)) setDocumentTrashed(true);
           else setLoadError(true);
@@ -311,11 +311,11 @@ export function useIdentityBootstrap(opts: {
         }
         if (!resolution) {
           // The share code didn't resolve. Either it never existed,
-          // the owner revoked it, or the diagram was deleted while
+          // the owner revoked it, or the document was deleted while
           // the visitor still had the link. Surface a NotFound page
           // so the visitor sees an explicit error instead of a
           // silent blank canvas (which used to read as "the
-          // diagram loaded but is empty").
+          // document loaded but is empty").
           setDocumentNotFound(true);
           seedExplorerLists();
           setHydrated(true);
@@ -324,7 +324,7 @@ export function useIdentityBootstrap(opts: {
           return;
         }
         if ('passwordRequired' in resolution) {
-          // The diagram is password-protected (docs/specs/013-workspace/share-password.md). Show the gate
+          // The document is password-protected (docs/specs/013-workspace/share-password.md). Show the gate
           // instead of hydrating. Deliberately leave `hydrated` false
           // so bumping `passwordRetry` (on submit) re-runs this effect
           // with the password now set on the session. `invalid` marks
@@ -390,17 +390,17 @@ export function useIdentityBootstrap(opts: {
           } else {
             setChangeLogLoading(false);
           }
-          // Signed-in user opening their own diagram via a share URL
+          // Signed-in user opening their own document via a share URL
           // already has a confirmed identity — never prompt. Visitors
           // (signed in or not) still see the welcome card so they get
-          // the "you're joining X's diagram" context; the name input
+          // the "you're joining X's document" context; the name input
           // is locked downstream when they have a Clerk identity so
           // they can't pretend to be someone else.
           const isOwnerVisit = fetched.ownerId === self.id;
           if (!isOwnerVisit && !hasConfirmedName()) {
             setTemplatePickerMode('identity');
           }
-          // Optimistically add the current diagram to the shared-with
+          // Optimistically add the current document to the shared-with
           // list so it appears in the Explorer immediately, before the
           // refreshSharedList network round-trip completes. The server
           // fetch will replace this with the full list; deduplicate so
@@ -424,8 +424,8 @@ export function useIdentityBootstrap(opts: {
                   ],
             );
           }
-          // Diagram·Joined is counted by the api worker when it resolves
-          // the share code, once per (visitor, diagram) (docs/specs/017-telemetry/telemetry.md). Emitting
+          // Document·Joined is counted by the api worker when it resolves
+          // the share code, once per (visitor, document) (docs/specs/017-telemetry/telemetry.md). Emitting
           // here counted every refresh and return visit.
         }
       } else if (id) {
@@ -435,7 +435,7 @@ export function useIdentityBootstrap(opts: {
         } catch (err) {
           // The load FAILED (network down / 5xx) — not a clean 404.
           // Surface a retryable error page rather than NotFound, which
-          // would wrongly tell the user the diagram doesn't exist. A diagram
+          // would wrongly tell the user the document doesn't exist. A document
           // in the Trash (docs/specs/013-workspace/trash.md) is neither: it
           // gets the deleted card.
           setDocumentId(id);
@@ -449,9 +449,9 @@ export function useIdentityBootstrap(opts: {
         }
         if (!fetched) {
           // URL had a ?d=<id> but the API didn't return anything for
-          // us — either the diagram doesn't exist or we don't own it.
+          // us — either the document doesn't exist or we don't own it.
           // Surface a NotFound page instead of dropping the user into
-          // the new-diagram welcome flow.
+          // the new-document welcome flow.
           setDocumentId(id);
           setDocumentNotFound(true);
           seedExplorerLists();
@@ -460,12 +460,12 @@ export function useIdentityBootstrap(opts: {
           setNameConfirmed(hasConfirmedName());
           return;
         }
-        // Past the `!fetched` return above, so the diagram is loaded.
+        // Past the `!fetched` return above, so the document is loaded.
         // Tab seeding + name + owner fields (shared with the visitor
         // branch above) — see seed-fetched-document.ts. The owner's
         // eager first-tab fetch presents no share code.
         await seedFetchedDocument(self.id, fetched, null, null);
-        // An offline diagram (docs/specs/006-document/offline-mode.md) is yours by construction — its
+        // An offline document (docs/specs/006-document/offline-mode.md) is yours by construction — its
         // ownerId is the local sentinel, never a participant id, so
         // without this it would wrongly get visitor chrome (Make a
         // copy, the owner badge row).
@@ -474,7 +474,7 @@ export function useIdentityBootstrap(opts: {
         setSessionRole('edit');
         if (offline || fetched.ownerId === self.id) {
           // Prefetch the share-link list so the dialog opens
-          // populated — cloud only; an offline diagram has nothing
+          // populated — cloud only; an offline document has nothing
           // on the server to share.
           if (!offline) {
             apiListShareLinks(self.id, fetched.id)
@@ -484,7 +484,7 @@ export function useIdentityBootstrap(opts: {
               })
               .catch(() => {});
           }
-          // For an offline diagram this dispatches to the log kept in
+          // For an offline document this dispatches to the log kept in
           // its IndexedDB record rather than the server.
           apiListChangeLog(self.id, fetched.id, null)
             .then((entries) => {
@@ -505,7 +505,7 @@ export function useIdentityBootstrap(opts: {
         }
         setDocumentId(id);
       }
-      // No URL params → no diagram yet → no log to fetch. Clear the
+      // No URL params → no document yet → no log to fetch. Clear the
       // skeleton so the panel renders the empty-state copy.
       if (!shareCodeParam && !id) {
         setChangeLogLoading(false);

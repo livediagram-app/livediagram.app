@@ -1,24 +1,24 @@
 # Per-tab storage
 
 Move from the single-row `diagrams.data` JSON blob (which serialises every
-tab on every save) to a normalised `diagrams` + `tabs` split where each
+tab on every save) to a normalised `documents` + `tabs` split where each
 tab is its own row. The autosave path then only ships the tab that
 actually changed.
 
 Driven by the observation that today, every keystroke broadcasts a
-`tabs` op AND PUTs the whole diagram — including unchanged tabs — to
-D1. Cost grows linearly with the diagram's tab count.
+`tabs` op AND PUTs the whole document — including unchanged tabs — to
+D1. Cost grows linearly with the document's tab count.
 
 ## Goals
 
 - One DB write per editorial commit, scoped to the changed tab.
 - Per-tab snapshot fetch (open one tab, hydrate one row) so the
-  initial view of a many-tab diagram is fast.
-- Foundation for "this tab is shared across diagrams" reuse — landed in [Tab ↔ diagram many-to-many](tab-document-many-to-many.md) (migration 0011 / item #13). The link table sits over the same tab body rows described here.
+  initial view of a many-tab document is fast.
+- Foundation for "this tab is shared across documents" reuse — landed in [Tab ↔ document many-to-many](tab-document-many-to-many.md) (migration 0011 / item #13). The link table sits over the same tab body rows described here.
 
 ## Non-goals (V1)
 
-- ~~Sharing a tab across diagrams~~ — landed in [Tab ↔ diagram many-to-many](tab-document-many-to-many.md) (migration 0011). The link table lives next to `tabs` and holds the per-diagram placement.
+- ~~Sharing a tab across documents~~ — landed in [Tab ↔ document many-to-many](tab-document-many-to-many.md) (migration 0011). The link table lives next to `tabs` and holds the per-document placement.
 - Per-element rows / CRDT. Each tab still serialises its `elements`
   array as JSON within its row; the granularity stops at the tab.
 - Online migration. The cutover is one D1 migration; the live app
@@ -41,22 +41,22 @@ CREATE TABLE tabs (
 );
 ```
 
-A `tabs` row is the tab's body and nothing else. Which diagrams contain it, and its order and folder in each, live on the `document_tabs` link ([Tab ↔ diagram many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a diagram, so nothing cascades from `diagrams` into `tabs`: removing a tab from a diagram, deleting a diagram and deleting an account each drop a tab explicitly once no diagram links it. `change_log`, `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its history and index rows with it. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
+A `tabs` row is the tab's body and nothing else. Which documents contain it, and its order and folder in each, live on the `document_tabs` link ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a document, so nothing cascades from `documents` into `tabs`: removing a tab from a document, deleting a document and deleting an account each drop a tab explicitly once no document links it. `change_log`, `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its history and index rows with it. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
 
 The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `document_id` + `order_index` columns and the `document_id` foreign key.
 
-`diagrams` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`. The `data` column was dropped in migration 0006 once the live app had been on the new schema for a release window.
+`documents` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`. The `data` column was dropped in migration 0006 once the live app had been on the new schema for a release window.
 
 ## API surface
 
 Owner / edit-role.
 
-- `GET    /api/documents/:id` — returns diagram metadata + tab list
+- `GET    /api/documents/:id` — returns document metadata + tab list
   (id, name, order; no `data`).
 - `GET    /api/documents/:id/tabs/:tabId` — full tab payload (data + everything).
 - `PUT    /api/documents/:id/tabs/:tabId` — upsert a single tab (active edit path).
 - `DELETE /api/documents/:id/tabs/:tabId` — remove a tab.
-- `PUT    /api/documents/:id` — diagram-level fields only (rename,
+- `PUT    /api/documents/:id` — document-level fields only (rename,
   tab order, shareable). Body
   carries `tabIds: string[]` in
   the new order; the API
@@ -64,7 +64,7 @@ Owner / edit-role.
   without touching tab content.
 
 The existing `GET /api/documents/:id` body grows a `tabs:
-TabSummary[]` field instead of `tabs: Tab[]`. The whole-diagram
+TabSummary[]` field instead of `tabs: Tab[]`. The whole-document
 PUT goes away.
 
 Realtime room op stays element-level for the cursor / select / log
@@ -73,13 +73,13 @@ so peers only get the one that changed.
 
 ## Live app
 
-1. On hydration: fetch the diagram + tab summaries. The active tab is
+1. On hydration: fetch the document + tab summaries. The active tab is
    lazily fetched (single `GET /tabs/:id`); other tabs hydrate
    on-demand when the user clicks them or when a peer's `tab` op
    targets them.
 2. Autosave: debounced per tab, calls
    `PUT /api/documents/:id/tabs/:activeTabId` with the changed tab.
-3. Tab rename / reorder go through the diagram-level PUT; element
+3. Tab rename / reorder go through the document-level PUT; element
    edits go through the tab-level PUT.
 4. The room op shrinks accordingly.
 
@@ -133,7 +133,7 @@ It's wrong for a **403**. The server isn't failing, it's refusing: the share
 link was revoked, we were removed from the team, or the role changed under us.
 No retry can succeed. Yet every subsequent keystroke fired another doomed PUT,
 and the only feedback blamed a connection that was fine — so someone could
-edit for an hour against a diagram that would never take a single write. Live
+edit for an hour against a document that would never take a single write. Live
 telemetry showed the shape of it: **297 `Http403` in one day** against a
 baseline in single digits, which is one long session failing over and over.
 
@@ -144,7 +144,7 @@ So a 403 sets `writesForbiddenRef` and a distinct `forbidden` save status:
 - The toast fires **once** and says what actually happened, naming the likely
   cause and the way out (export a copy) rather than a connection to check.
 - The Activity panel badge reads **No access** instead of **Not saved**.
-- Opening a different diagram clears it — the block is about this one.
+- Opening a different document clears it — the block is about this one.
 
 The user still loses the unsaved work, and no client-side design can prevent
 that once the server has withdrawn write access. What it can do is say so
@@ -177,7 +177,7 @@ anything else thrown on the save path reports as `SaveFailed.<Kind>`.
 The loading overlay above protects the **active** tab. A separate, subtler
 wipe path hits **background** tabs and the overlay does nothing for it:
 
-A many-tab diagram hydrates every non-active tab as an empty placeholder
+A many-tab document hydrates every non-active tab as an empty placeholder
 (no `elements` until opened). The autosave diff (`computeTabSaveDiff`) is
 identity-based — it persists any tab whose object reference changed since
 the last save. So a **non-content** operation that re-maps the tab array —
@@ -192,7 +192,7 @@ is authoritative in memory** — it is in the loaded set (`markTabLoaded`:
 hydration's active tab, a fetched tab, or a locally-created one) OR it
 already carries elements (peer-delivered). An unloaded, still-empty
 placeholder is never persisted, no matter what bumped its reference.
-Reorders and renames still flow through the diagram-level meta `PUT`
+Reorders and renames still flow through the document-level meta `PUT`
 (which never touches tab bodies), so organising background tabs stays
 safe. The guard lives in `computeTabSaveDiff`, the one autosave decision
 kernel both the debounced save and the `beforeunload` flush share.
@@ -225,12 +225,12 @@ How this rolled out, recorded here so future schema changes can repeat the patte
 
 ## Audit log
 
-The `change_log` table is tab-scoped — its row carries a `tab_id` (every entry in practice; the column is nullable for historical reasons) and cascades on `tab_id` via the FK to `tabs(id)`. The legacy `document_id` column on `change_log` was dropped in migration 0012 (item #14 — see [Tab ↔ diagram many-to-many](tab-document-many-to-many.md)); per-diagram log reads derive the set of contributing tabs via `document_tabs`. The client's `deleteTab` flow still calls `DELETE /log/tab/:tabId` to drop the entries up front — see [12-activity-and-audit.md](../012-collaboration/activity-and-audit.md).
+The `change_log` table is tab-scoped — its row carries a `tab_id` (every entry in practice; the column is nullable for historical reasons) and cascades on `tab_id` via the FK to `tabs(id)`. The legacy `document_id` column on `change_log` was dropped in migration 0012 (item #14 — see [Tab ↔ document many-to-many](tab-document-many-to-many.md)); per-document log reads derive the set of contributing tabs via `document_tabs`. The client's `deleteTab` flow still calls `DELETE /log/tab/:tabId` to drop the entries up front — see [12-activity-and-audit.md](../012-collaboration/activity-and-audit.md).
 
 ## Risk
 
 - D1 doesn't currently support cross-row transactions cleanly, so the
-  backfill is per-diagram in its own statement set. If the backfill
+  backfill is per-document in its own statement set. If the backfill
   step partially fails, the migration tracker re-runs it.
 - Tab reorder is a `UPDATE tabs SET order_index = ? WHERE id = ?` per
   tab. Acceptable for the small tab counts (< 20) we see in practice.
@@ -239,7 +239,7 @@ The `change_log` table is tab-scoped — its row carries a `tab_id` (every entry
 
 - The owner-only audit log gate (still applies).
 - Realtime presence (still room-level).
-- Sharing (per-diagram share codes; no per-tab sharing yet). Tab-level reuse across diagrams is a server-side relationship under [Tab ↔ diagram many-to-many](tab-document-many-to-many.md), not user-visible sharing.
+- Sharing (per-document share codes; no per-tab sharing yet). Tab-level reuse across documents is a server-side relationship under [Tab ↔ document many-to-many](tab-document-many-to-many.md), not user-visible sharing.
 - The frontend `Tab` type shape (just where it's persisted).
 
 ## Import carries identity, not just content

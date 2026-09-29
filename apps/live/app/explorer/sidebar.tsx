@@ -60,7 +60,7 @@ export function SidebarSectionLabel({
   );
 }
 
-// One sidebar row. Re-used for the "Recent", "All diagrams", and
+// One sidebar row. Re-used for the "Recent", "All documents", and
 // "Shared with me" special entries. Folder rows wrap this via
 // SidebarFolderSubtree so they get chevron + recursive rendering.
 export function SidebarRow({

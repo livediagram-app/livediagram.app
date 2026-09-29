@@ -24,7 +24,7 @@ import {
 } from './trash';
 
 // The Trash (docs/specs/013-workspace/trash.md), proven on a real SQLite with
-// every migration applied: trashing stamps a time and hides the diagram,
+// every migration applied: trashing stamps a time and hides the document,
 // restoring puts it back where it was, and the purge removes it the way a
 // delete always has, shared tabs spared.
 
@@ -115,7 +115,7 @@ describe('migration 0051 (diagrams.trashed_at)', () => {
 });
 
 describe('trashDocument', () => {
-  it('stamps the time and hides the diagram from every diagram read', async () => {
+  it('stamps the time and hides the document from every document read', async () => {
     const { env, sql } = sqliteD1();
     liveDoc(sql, 'A');
     liveDoc(sql, 'T', { team: 'team' });
@@ -139,7 +139,7 @@ describe('trashDocument', () => {
     expect(column(sql, 'A', 'trashed_at')).toBe(T0);
   });
 
-  it('reports a missing diagram', async () => {
+  it('reports a missing document', async () => {
     const { env } = sqliteD1();
     expect(await trashDocument(env, 'nope', T0)).toBe(false);
   });
@@ -166,7 +166,7 @@ describe('trashDocument', () => {
 });
 
 describe('getTrashedDocumentMeta', () => {
-  it('reads a trashed diagram and nothing else', async () => {
+  it('reads a trashed document and nothing else', async () => {
     const { env, sql } = sqliteD1();
     liveDoc(sql, 'A', { team: 'team' });
     liveDoc(sql, 'live');
@@ -197,7 +197,7 @@ describe('trashedIdsIn', () => {
 });
 
 describe('restoreDocument', () => {
-  it('returns the diagram to its folder', async () => {
+  it('returns the document to its folder', async () => {
     const { env, sql } = sqliteD1();
     folder(sql, 'F');
     liveDoc(sql, 'A', { folder: 'F' });
@@ -223,7 +223,7 @@ describe('restoreDocument', () => {
 
   it('lands in Unsorted when its folder is no longer in its scope', async () => {
     // Belt and braces: a folder_id that names a folder of another owner or
-    // another team must not come back as the diagram's place.
+    // another team must not come back as the document's place.
     const { env, sql } = sqliteD1();
     folder(sql, 'theirs', 'someone-else');
     folder(sql, 'teamF', 'owner', 'other-team');
@@ -240,7 +240,7 @@ describe('restoreDocument', () => {
     expect((await getDocument(env, 'T'))?.teamId).toBe('team');
   });
 
-  it('returns a team diagram to its team folder', async () => {
+  it('returns a team document to its team folder', async () => {
     const { env, sql } = sqliteD1();
     folder(sql, 'TF', 'owner', 'team');
     liveDoc(sql, 'T', { team: 'team', folder: 'TF' });
@@ -253,7 +253,7 @@ describe('restoreDocument', () => {
     ]);
   });
 
-  it('does nothing to a live or missing diagram', async () => {
+  it('does nothing to a live or missing document', async () => {
     const { env, sql } = sqliteD1();
     liveDoc(sql, 'A');
     expect(await restoreDocument(env, 'A')).toBe(false);
@@ -309,7 +309,7 @@ describe('listTrash', () => {
     expect(items.map((i) => i.id)).toEqual(['mine']);
   });
 
-  it('does not list a team diagram under its owner’s personal Trash', async () => {
+  it('does not list a team document under its owner’s personal Trash', async () => {
     const { env, sql } = sqliteD1();
     team(sql, 'left', []);
     liveDoc(sql, 'T', { owner: 'user_me', team: 'left' });
@@ -320,7 +320,7 @@ describe('listTrash', () => {
 });
 
 describe('purgeDocuments', () => {
-  it('removes the diagram, its own tabs and its snapshot', async () => {
+  it('removes the document, its own tabs and its snapshot', async () => {
     const { db, del } = withImages();
     liveDoc(db.sql, 'A');
     await tab(db, 'A', 't1');
@@ -333,7 +333,7 @@ describe('purgeDocuments', () => {
     expect(del).toHaveBeenCalledWith(['thumb/A']);
   });
 
-  it('keeps a tab another diagram still holds', async () => {
+  it('keeps a tab another document still holds', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
     liveDoc(db.sql, 'B');
@@ -347,7 +347,7 @@ describe('purgeDocuments', () => {
     expect(count(db.sql, 'document_tabs', 'tab_id = ?', 'shared')).toBe(1);
   });
 
-  it('never purges a live diagram', async () => {
+  it('never purges a live document', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'live');
 
@@ -355,7 +355,7 @@ describe('purgeDocuments', () => {
     expect(count(db.sql, 'documents', 'id = ?', 'live')).toBe(1);
   });
 
-  it('sweeps the diagram’s Timeline events', async () => {
+  it('sweeps the document’s Timeline events', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
     liveDoc(db.sql, 'B');
@@ -461,7 +461,7 @@ describe('purgeExpiredTrash', () => {
 });
 
 describe('deleteAccount with a Trash', () => {
-  it('hard-deletes trashed diagrams with the rest', async () => {
+  it('hard-deletes trashed documents with the rest', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'live', { owner: 'user_leaver' });
     liveDoc(db.sql, 'binned', { owner: 'user_leaver' });

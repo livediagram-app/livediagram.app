@@ -258,7 +258,7 @@ export type CanvasProps = {
     avatar: import('@livediagram/api-schema').AvatarPresence;
   }[];
   // Publishes the local character to the room (null when leaving the mode).
-  // Optional: a private, un-shared diagram has no room to publish to.
+  // Optional: a private, un-shared document has no room to publish to.
   onAvatarPresence?: (avatar: import('@livediagram/api-schema').AvatarPresence | null) => void;
   // Shove a peer's character (docs/specs/008-canvas/avatar-mode.md): sent when our character finishes
   // walking up to the one we clicked. Optional — no room, no push.
@@ -408,7 +408,7 @@ export type CanvasProps = {
   onMoveExplorer: (x: number, y: number) => void;
   onResetExplorer: () => void;
   documentList: DocumentListItem[];
-  // Lightweight id + name of this diagram's tabs, so a link badge's
+  // Lightweight id + name of this document's tabs, so a link badge's
   // hover card can name the tab/element a link points at (docs/specs/008-canvas/canvas-and-palette.md). Kept
   // minimal + memoised by the caller so element edits don't churn it.
   tabSummaries: { id: string; name: string }[];
@@ -424,7 +424,7 @@ export type CanvasProps = {
   onDismissShared?: (documentId: string) => void;
   // Teams the signed-in user belongs to + their swept libraries
   // (docs/specs/013-workspace/team-shared-documents.md), forwarded to the floating Explorer panel for its Teams
-  // accordion, team rows in Recent, and the current team diagram.
+  // accordion, team rows in Recent, and the current team document.
   // Empty by default so guest / legacy callers can omit them.
   teams?: { id: string; name: string }[];
   teamFolders?: TeamFolderRow[];
@@ -509,7 +509,7 @@ export type CanvasProps = {
   onPreviewLayer: (layerId: string | null) => void;
   // Floating Comments panel. Only mounted when commentRows is
   // non-empty: the panel exists to list discussion that already
-  // exists, so on diagrams without it the panel stays out of the
+  // exists, so on documents without it the panel stays out of the
   // chrome entirely.
   commentRows: import('@/components/panels/CollaboratePanel').CommentRow[];
   commentsPanelPosition: { x: number; y: number } | null;
@@ -556,7 +556,7 @@ export type CanvasProps = {
   onMoveDocumentTo?: (
     documentId: string,
     dest: { teamId: string | null; folderId: string | null },
-    // Where the diagram is coming from (null = the personal tree), so a
+    // Where the document is coming from (null = the personal tree), so a
     // personal -> team move counts as Team·Added·Document (docs/specs/017-telemetry/telemetry.md).
     fromTeamId?: string | null,
   ) => void;
@@ -676,7 +676,7 @@ export type CanvasProps = {
   onEditCode?: (id: string) => void;
   // Per-render context for image elements: identity + auth bits the
   // ImageElementView needs to fetch bitmap bytes. Optional so the
-  // welcome / new-diagram surface (where Canvas mounts before
+  // welcome / new-document surface (where Canvas mounts before
   // identity / share-code are settled) can omit it.
   imageContext?: {
     ownerId: string;
@@ -688,10 +688,10 @@ export type CanvasProps = {
   // ellipsis button opens the same context menu under the cursor.
   onOpenElementContextMenu?: (elementId: string, screenX: number, screenY: number) => void;
   showTemplatePicker: boolean;
-  // True after the page has resolved its initial identity + diagram
+  // True after the page has resolved its initial identity + document
   // fetch. Used to suppress the empty-state card during the brief
   // window between "loader dropped" and "welcome modal mounted" so
-  // a fresh New Diagram doesn't flash the Empty Canvas message.
+  // a fresh New Document doesn't flash the Empty Canvas message.
   hydrated: boolean;
   templatePickerMode: 'welcome' | 'templates' | 'identity';
   // When non-null, the visitor is signed in via Clerk and their

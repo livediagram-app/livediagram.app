@@ -1,10 +1,10 @@
 'use client';
 
-// Card view for the Explorer page (docs/specs/006-document/document-snapshots.md): the same folders + diagrams
+// Card view for the Explorer page (docs/specs/006-document/document-snapshots.md): the same folders + documents
 // the ListView shows, as a responsive grid of cards with a large SVG
 // snapshot. Takes the SAME props as ListView so ExplorerPane can swap the
 // two on the view toggle without re-wiring callbacks. Badge + actions
-// menu come from diagram-row-shared, so list and card can't drift.
+// menu come from document-row-shared, so list and card can't drift.
 
 import Link from 'next/link';
 import type { CardViewProps, DocumentEntryProps } from '@/app/explorer/explorer-view-props';
@@ -144,7 +144,7 @@ function DocumentCard(
 
   return (
     <div className={cardShell} onContextMenu={menu.onContextMenu}>
-      {/* Larger snapshot. The whole preview links to the diagram unless
+      {/* Larger snapshot. The whole preview links to the document unless
           we're renaming (then it's inert so the input keeps focus). */}
       {renaming ? (
         <span className={previewArea}>{thumbnail}</span>

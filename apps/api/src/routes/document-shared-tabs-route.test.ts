@@ -7,7 +7,7 @@ import { handleDocuments } from './documents';
 // GET /api/documents/:id/shared-tabs: what the delete and Take Offline
 // confirmations say about tabs that stay behind
 // (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab notice").
-// Answered for exactly the callers who may delete the diagram.
+// Answered for exactly the callers who may delete the document.
 
 const T0 = 1_700_000_000_000;
 
@@ -44,7 +44,7 @@ function get(db: SqliteD1, opts: Parameters<typeof makeTestRouteContext>[2] = {}
 }
 
 describe('GET /api/documents/:id/shared-tabs', () => {
-  it('counts the tabs also in other diagrams, and those diagrams', async () => {
+  it('counts the tabs also in other documents, and those documents', async () => {
     const db = sqliteD1();
     for (const id of ['A', 'B', 'C']) liveDoc(db.sql, id);
     tabIn(db.sql, 'glossary', 'A', 'B');
@@ -58,7 +58,7 @@ describe('GET /api/documents/:id/shared-tabs', () => {
     expect(await res!.json()).toEqual({ sharedTabs: { tabs: 2, documents: 2 } });
   });
 
-  it('answers zero for a diagram that shares nothing', async () => {
+  it('answers zero for a document that shares nothing', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
     tabIn(db.sql, 'solo', 'A');
@@ -68,7 +68,7 @@ describe('GET /api/documents/:id/shared-tabs', () => {
     expect(await res!.json()).toEqual({ sharedTabs: { tabs: 0, documents: 0 } });
   });
 
-  it('answers a joined teammate, who may delete a team diagram', async () => {
+  it('answers a joined teammate, who may delete a team document', async () => {
     const db = sqliteD1();
     row(db.sql, 'teams', { id: 'team', name: 'Team', created_at: T0, updated_at: T0 });
     row(db.sql, 'team_members', {
@@ -95,7 +95,7 @@ describe('GET /api/documents/:id/shared-tabs', () => {
     expect((await get(db))?.status).toBe(400);
   });
 
-  it('is a 404 for a missing diagram', async () => {
+  it('is a 404 for a missing document', async () => {
     const db = sqliteD1();
 
     expect((await get(db, { owner: 'owner' }))?.status).toBe(404);

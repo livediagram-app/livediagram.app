@@ -52,7 +52,7 @@ Owner-side paths that must still see expired rows (the Share dialog's list, dele
 
 ## Telemetry
 
-Reuses [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) vocabulary: creation keeps `Diagram/Shared/<Edit|View>` and, when a lifetime is chosen, also emits `Diagram/Shared/<ExpiryWeek|ExpiryMonth|ExpirySixMonths>`. Extend emits `Diagram/Shared/Extended`. Delete keeps the existing `Diagram/Removed/ShareLink`.
+Reuses [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) vocabulary: creation keeps `Document/Shared/<Edit|View>` and, when a lifetime is chosen, also emits `Document/Shared/<ExpiryWeek|ExpiryMonth|ExpirySixMonths>`. Extend emits `Document/Shared/Extended`. Delete keeps the existing `Document/Removed/ShareLink`.
 
 ## Marketing
 

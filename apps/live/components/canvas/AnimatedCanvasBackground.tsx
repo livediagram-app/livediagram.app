@@ -11,7 +11,7 @@
 //   - Theme-matched: every glyph paints in the tab's `patternColor` (read
 //     from the `--lvd-pat` custom property the container sets).
 //   - Ambient, not pan-locked: the motion is decorative and independent of
-//     the canvas pan (matching the new-diagram page's AnimatedLinesBackdrop).
+//     the canvas pan (matching the new-document page's AnimatedLinesBackdrop).
 //   - Size-aware: the pattern-size slider (`scale`, docs/specs/008-canvas/canvas-and-palette.md) scales each
 //     motif so "bigger pattern" reads consistently with the static ones.
 //   - Opacity-aware: the whole layer fades with the backdrop-opacity slider.
@@ -68,7 +68,7 @@ export function AnimatedCanvasBackground({
 
 // ── Flow ────────────────────────────────────────────────────────────────
 // Parallel diagonal lines whose dashes stream along their length, the
-// canvas-wide cousin of the new-diagram page's AnimatedLinesBackdrop.
+// canvas-wide cousin of the new-document page's AnimatedLinesBackdrop.
 // Resting frame: evenly spaced dashed diagonals.
 function Flow({ scale }: { scale: number }) {
   const gap = 150 * scale;
@@ -228,7 +228,7 @@ function Ripple({ scale }: { scale: number }) {
 
 // ── Ribbons ──────────────────────────────────────────────────────────────
 // Thick curved lines that slowly draw + flow along their paths: the canvas
-// port of the new-diagram page's AnimatedLinesBackdrop, but coloured from
+// port of the new-document page's AnimatedLinesBackdrop, but coloured from
 // the theme. The new-page version uses a fixed rainbow palette; here every
 // ribbon is a tint / shade of the tab's pattern colour, so the effect stays
 // "theme related" while keeping the layered, multi-tone depth. Resting

@@ -46,7 +46,7 @@ import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
 
-// In-place handoff (docs/specs/007-editor/new-document-route.md): once a diagram is created, this page
+// In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
 // load. `loadEditor` is also called on mount to fetch the chunk ahead; if it still isn't in at
 // handoff, the opening screen holds at its "opening" stage.
@@ -65,10 +65,10 @@ const noBypass = () => null;
 // Folder shape the Settings step's placement browser consumes.
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-document-route.md.
 // Owns identity bootstrap, template + theme choice (a two-step wizard),
-// and the actual "commit a new diagram" handoff. Once the user picks (or
-// skips), we POST the seeded diagram and navigate to /document/<id> where
+// and the actual "commit a new document" handoff. Once the user picks (or
+// skips), we POST the seeded document and navigate to /document/<id> where
 // the editor route picks it up cleanly. The Explorer is NOT rendered here:
-// the wizard's "Open Existing Diagram" button sends users to /explorer
+// the wizard's "Open Existing Document" button sends users to /explorer
 // instead, keeping this screen focused on creating.
 const PENDING_SELF: Participant = {
   id: 'pending',
@@ -100,16 +100,16 @@ export default function NewDocumentPage() {
         ? { id: baseId, name: seed.name, color: seed.color, status: 'online' }
         : PENDING_SELF;
   const [submitting, setSubmitting] = useState(false);
-  // Set once the created diagram has been handed to the in-place editor. The ref mirrors it for the
+  // Set once the created document has been handed to the in-place editor. The ref mirrors it for the
   // bfcache listener, which must stand down once this document IS the editor.
   const [openedId, setOpenedId] = useState<string | null>(null);
   const handedOff = useRef(false);
-  // How many diagrams the user owns (null until known). Reported by
+  // How many documents the user owns (null until known). Reported by
   // RecentDocumentsCard's fetch; gates the interactive tour's welcome offer
-  // (docs/specs/007-editor/editor-tour.md), which is for brand-new (zero-diagram) users only.
+  // (docs/specs/007-editor/editor-tour.md), which is for brand-new (zero-document) users only.
   const [documentCount, setDocumentCount] = useState<number | null>(null);
   // Set when the create POST fails (network / 5xx). Shows a retryable
-  // error instead of navigating to the editor for a diagram that was
+  // error instead of navigating to the editor for a document that was
   // never persisted (which would 404). The ref keeps the last attempt's
   // args so Retry can re-run the exact same create.
   const [createError, setCreateError] = useState(false);
@@ -119,15 +119,15 @@ export default function NewDocumentPage() {
     // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
     // theme id (docs/specs/011-theme/custom-themes.md) as well as a built-in one.
     themeId: string;
-    // The Settings step's choices (docs/specs/006-document/offline-mode.md): diagram name, placement, offline.
+    // The Settings step's choices (docs/specs/006-document/offline-mode.md): document name, placement, offline.
     settings: NewDocumentSettings;
   } | null>(null);
 
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): the public-page CTA that brought this visit
-  // here, if any. Counts the arrival now and the diagram once it's committed.
+  // here, if any. Counts the arrival now and the document once it's committed.
   const cta = useCtaAttribution();
 
-  // Where this diagram can be filed, and the inline New Folder the Settings
+  // Where this document can be filed, and the inline New Folder the Settings
   // step offers — see usePlacementOptions.
   const { folders, teams, teamFolders, createPickerFolder, createPickerTeam } = usePlacementOptions(
     {
@@ -136,7 +136,7 @@ export default function NewDocumentPage() {
     },
   );
 
-  // Placement context from the URL: /new?folder=<id> (Explorer's "new diagram
+  // Placement context from the URL: /new?folder=<id> (Explorer's "new document
   // in this folder") and /new?team=<id>(&folder=<id>) (team library, docs/specs/013-workspace/team-shared-documents.md)
   // pre-select the Save In picker, so what the Settings step highlights IS
   // what Create files into. The picker is the single source of truth from
@@ -172,7 +172,7 @@ export default function NewDocumentPage() {
   }, []);
 
   useEffect(() => {
-    document.title = 'New diagram | livediagram';
+    document.title = 'New document | livediagram';
     // Fetch the editor's chunk while identity + the create run. Fire-and-forget: a failure here
     // just leaves `dynamic` to retry the import at handoff.
     loadEditor().catch(() => {});
@@ -233,7 +233,7 @@ export default function NewDocumentPage() {
   // Identity for the commit path. Clerk's chunk loads deferred, so a fast
   // click-through (or an e2e robot) can reach Create while `self` is still
   // the 'pending' placeholder — the identity bootstrap above hasn't run.
-  // Creating then would file the diagram under the literal owner "pending":
+  // Creating then would file the document under the literal owner "pending":
   // a shared id every raced visitor collides on, and one the editor route
   // (fetching with the real id) 404s. So the commit resolves identity
   // itself: wait out the bootstrap (bounded — authLoaded flips by the
@@ -250,9 +250,9 @@ export default function NewDocumentPage() {
     return fallback;
   };
 
-  // Single commit point, shared by the Create Diagram and Skip paths.
+  // Single commit point, shared by the Create Document and Skip paths.
   // Submit passes a template + theme; Skip passes 'blank' + 'brand'. Either
-  // way we persist the diagram so the editor route lands on a real row.
+  // way we persist the document so the editor route lands on a real row.
   const commitNewDocument = async (
     templateKind: TemplateKind | null,
     name: string,
@@ -303,7 +303,7 @@ export default function NewDocumentPage() {
         };
     try {
       if (offline) {
-        // Offline Mode (docs/specs/006-document/offline-mode.md): create the diagram in IndexedDB only. This
+        // Offline Mode (docs/specs/006-document/offline-mode.md): create the document in IndexedDB only. This
         // also registers its id so every later load / save routes local.
         await offlineCreateDocument(
           { id: documentId, name: documentName, tabs: [tab] },
@@ -318,15 +318,15 @@ export default function NewDocumentPage() {
       }
     } catch {
       // Create FAILED (network / 5xx for cloud, or no IndexedDB for offline).
-      // Don't navigate to an editor for a diagram that was never persisted
+      // Don't navigate to an editor for a document that was never persisted
       // (that lands on a 404). Surface a retryable error card instead (Retry
       // re-runs this exact create from lastCreateArgs).
       setSubmitting(false);
       setCreateError(true);
       return;
     }
-    // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): a diagram was created. No id or name is
-    // sent — the `type` records only whether it's an Offline or Cloud diagram
+    // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): a document was created. No id or name is
+    // sent — the `type` records only whether it's an Offline or Cloud document
     // (docs/specs/006-document/offline-mode.md). The chosen theme is recorded separately below.
     track('Document', 'Created', offline ? 'Offline' : 'Cloud');
     track('Theme', 'Changed', themeTelemetryLabel(themeId));
@@ -337,7 +337,7 @@ export default function NewDocumentPage() {
     // on mount, so what the picker highlighted is exactly what gets filed.
     // Done as a follow-up PUT so the create endpoint signature stays stable
     // and placement can fail independently (a glitch just leaves it in the
-    // personal Unsorted, movable later). Offline diagrams have no server
+    // personal Unsorted, movable later). Offline documents have no server
     // folder / team placement — skip it.
     if (!offline) {
       if (settings.teamId) {
@@ -352,8 +352,8 @@ export default function NewDocumentPage() {
         await apiSetDocumentFolder(who.id, documentId, settings.folderId).catch(() => {});
       }
     }
-    // "Show me around" (docs/specs/007-editor/editor-tour.md): a brand-new user's (zero owned diagrams)
-    // first diagram gets the tour's welcome offer once the editor opens —
+    // "Show me around" (docs/specs/007-editor/editor-tour.md): a brand-new user's (zero owned documents)
+    // first document gets the tour's welcome offer once the editor opens —
     // handed across the hard navigation via a sessionStorage flag. The
     // editor gates the offer on the synced `tourSeen` preference.
     if (documentCount === 0) {
@@ -377,7 +377,7 @@ export default function NewDocumentPage() {
   const fireBypass = useEffectEvent((kind: TemplateKind) => {
     // Wizard-bypass adoption signal (docs/specs/017-telemetry/telemetry.md): a fixed preset per entry
     // point, never user content. (The template itself is reported by the
-    // usual Diagram / Created event the commit fires.)
+    // usual Document / Created event the commit fires.)
     track('UI', 'Used', kind === 'blank' ? 'JustDraw' : 'TemplateLink');
     const params = new URLSearchParams(window.location.search);
     void commitNewDocument(kind, '', 'brand', {
@@ -399,7 +399,7 @@ export default function NewDocumentPage() {
     return (
       <div className="flex h-dvh flex-col">
         <EditorHeader
-          documentName="New diagram"
+          documentName="New document"
           hideTitle
           showShare={false}
           shareable={false}
@@ -408,8 +408,8 @@ export default function NewDocumentPage() {
         />
         <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">
           <ApiErrorPage
-            title="Couldn’t create the diagram"
-            message="We couldn’t reach the server to create your diagram. Check your connection and try again."
+            title="Couldn’t create the document"
+            message="We couldn’t reach the server to create your document. Check your connection and try again."
             onRetry={() => {
               setCreateError(false);
               const a = lastCreateArgs.current;
@@ -444,7 +444,7 @@ export default function NewDocumentPage() {
       />
       <style>{`html[data-just-draw] [data-wizard-only]{visibility:hidden}`}</style>
       <EditorHeader
-        documentName="New diagram"
+        documentName="New document"
         hideTitle
         showShare={false}
         shareable={false}
@@ -495,7 +495,7 @@ export default function NewDocumentPage() {
         </div>
         {/* The right rail beside the centred wizard (desktop-only, xl+):
             returning users get "Jump back in" (docs/specs/007-editor/new-document-route.md, hidden with no
-            diagrams yet). Its fetch also reports the diagram count that
+            documents yet). Its fetch also reports the document count that
             gates the interactive tour's welcome offer (docs/specs/007-editor/editor-tour.md). The
             guided-tour sample card that used to sit under it was removed
             when the interactive tour superseded it. */}

@@ -6,14 +6,14 @@ const EDIT = { role: 'edit', tabScope: null, shareCode: null } as const;
 const VIEW = { role: 'view', tabScope: null, shareCode: null } as const;
 
 // A ws ticket is the only thing standing between "passed the REST access
-// gates for this diagram" and an open realtime socket: the upgrade can't
+// gates for this document" and an open realtime socket: the upgrade can't
 // carry a Bearer token or a guest signature, so possession of a ticket IS the
-// authorisation. Three properties carry that weight — single use, diagram
+// authorisation. Three properties carry that weight — single use, document
 // scope, and a short life — and each is one SQL predicate away from being
 // silently lost.
 
 describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
-  it('writes the diagram, the resolved admission and an expiry a minute out', async () => {
+  it('writes the document, the resolved admission and an expiry a minute out', async () => {
     const db = fakeD1();
     const ticket = await createWsTicket(db.env, 'diag-1', EDIT, 1_000_000);
     const insert = db.one('INSERT INTO ws_tickets');
@@ -74,7 +74,7 @@ describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => 
     expect(stmt.sql).toContain('RETURNING role, tab_scope, share_code');
   });
 
-  it('scopes the consume to the diagram and to unexpired rows', async () => {
+  it('scopes the consume to the document and to unexpired rows', async () => {
     const db = fakeD1(() => ({ first: { role: 'edit' } }));
     await consumeWsTicket(db.env, 'tkt', 'diag-1', 5);
     const stmt = db.one('ws_tickets');

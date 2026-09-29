@@ -6,8 +6,8 @@ import { DiagramBuildAnimation } from '@/components/canvas/DiagramBuildAnimation
 
 // The opening screen (docs/specs/007-editor/new-document-route.md): the one
 // full-height screen between a click and the editor. /new renders it at the
-// "creating" stage while the diagram is persisted, the editor renders it at
-// the "opening" stage while the diagram loads, and because /new hands off to
+// "creating" stage while the document is persisted, the editor renders it at
+// the "opening" stage while the document loads, and because /new hands off to
 // the editor in place the two read as one continuous screen: only the label
 // changes, and DiagramBuildAnimation keeps its phase across the remount.
 //
@@ -18,8 +18,8 @@ import { DiagramBuildAnimation } from '@/components/canvas/DiagramBuildAnimation
 export type DocumentLoadingStage = 'creating' | 'opening';
 
 const COPY: Record<DocumentLoadingStage, { title: string; detail: string }> = {
-  creating: { title: 'Creating your diagram', detail: 'Setting up a fresh canvas' },
-  opening: { title: 'Opening your diagram', detail: 'Getting everything in place' },
+  creating: { title: 'Creating your document', detail: 'Setting up a fresh canvas' },
+  opening: { title: 'Opening your document', detail: 'Getting everything in place' },
 };
 
 const SLOW_AFTER_MS = 10_000;

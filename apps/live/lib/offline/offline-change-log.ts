@@ -1,8 +1,8 @@
-// Offline Mode (docs/specs/006-document/offline-mode.md): an offline diagram's activity / change log is
+// Offline Mode (docs/specs/006-document/offline-mode.md): an offline document's activity / change log is
 // local-only, kept inside its IndexedDB record — there is no server history,
 // so the /log endpoints must never be hit for one. This is the local
 // counterpart of `lib/api/change-log.ts`, which dispatches here when the
-// diagram id is registered offline (see `isOfflineId`).
+// document id is registered offline (see `isOfflineId`).
 
 import { CHANGE_LOG_LIST_LIMIT, type ChangeLogEntry } from '@livediagram/api-schema';
 import {

@@ -5,7 +5,7 @@
 // They live together because they share a shape — a press resolves what to do
 // from the element, then calls something that already exists (the session-tool
 // entry points, the presence list, the element commit) — and because none of
-// them belongs to the style hooks: two of the three don't write to the diagram
+// them belongs to the style hooks: two of the three don't write to the document
 // at all.
 
 import { useState } from 'react';
@@ -109,7 +109,7 @@ export function useBehaviourElements({
 
   // --- Reveal zone (docs/specs/009-elements/reveal-zone.md) -----------------------------------------------
   // Which covers THIS viewer has lifted. Session state, deliberately: it is
-  // not a property of the diagram, it is a property of having looked. Lost on
+  // not a property of the document, it is a property of having looked. Lost on
   // reload, which is right for something whose job is to start closed.
   const [revealedIds, setRevealedIds] = useState<ReadonlySet<string>>(new Set());
   const toggleRevealForMe = (elementId: string) => {

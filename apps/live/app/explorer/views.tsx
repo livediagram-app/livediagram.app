@@ -30,13 +30,13 @@ export { PaneHeader } from './PaneHeader';
 export { menuHandlers as folderMenuHandlers } from './folder-row';
 export { FolderRow };
 
-// Diagram rows render the api client's DocumentListItem directly
+// Document rows render the api client's DocumentListItem directly
 // (same rows the floating Explorer panel uses), so the two explorer
 // surfaces can't drift apart on what a list item carries. Recent rows
 // (docs/specs/013-workspace/team-shared-documents.md) may additionally carry:
-//   - `team`: the team library the diagram lives in — a "Team"
+//   - `team`: the team library the document lives in — a "Team"
 //     visibility badge + the team as owner, and a team-scoped menu.
-//   - `shared`: a diagram shared WITH the viewer (not theirs) — a
+//   - `shared`: a document shared WITH the viewer (not theirs) — a
 //     "Shared" badge, the sharer as owner, a share-link title, and a
 //     "Dismiss" action. Mutually exclusive with `team`.
 export type PaneDocument = DocumentListItem & {
@@ -44,7 +44,7 @@ export type PaneDocument = DocumentListItem & {
   shared?: { ownerName: string | null; role: 'edit' | 'view'; shareCode: string };
 };
 
-// A diagram shared WITH the viewer, as a pane row. It lives in the
+// A document shared WITH the viewer, as a pane row. It lives in the
 // sharer's library, not yours, so it carries no folder and an empty
 // owner; the share code is what makes it openable. One helper so Recent
 // and the Timeline's card menus build the same row.
@@ -68,13 +68,13 @@ export type SelectedNode =
   // The landing view (docs/specs/013-workspace/timeline.md): a day-grouped feed of everything that
   // happened, rather than a list of files.
   | { kind: 'timeline' }
-  // What is outstanding for the reader across every diagram (docs/specs/013-workspace/activity-page.md):
+  // What is outstanding for the reader across every document (docs/specs/013-workspace/activity-page.md):
   // open actions assigned to / by them, unresolved threads they're in.
   | { kind: 'activity' }
   | { kind: 'recent' }
   | { kind: 'all' }
   | { kind: 'unsorted' }
-  // Diagrams this user starred, personal or team (docs/specs/013-workspace/favourites.md).
+  // Documents this user starred, personal or team (docs/specs/013-workspace/favourites.md).
   | { kind: 'favourites' }
   | { kind: 'generated' }
   | { kind: 'offline' }

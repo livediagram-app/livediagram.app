@@ -8,10 +8,10 @@ import { placeholdersFromSummaries } from './editor-page-helpers';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
-// The common "seed the editor from a fetched diagram" body shared by
+// The common "seed the editor from a fetched document" body shared by
 // useIdentityBootstrap's two arrival branches (share-code visitor and
 // owner URL), which used to carry it twice: placeholder tabs + the
-// eager first-tab fetch, the autosave "last saved" mirror, the diagram
+// eager first-tab fetch, the autosave "last saved" mirror, the document
 // name, the #t=<id> hash tab pick, and the shareable / team / owner
 // fields. The branches keep what genuinely differs — isOwner / session
 // role / share-code bookkeeping, the change-log fetch, and the
@@ -121,8 +121,8 @@ export function makeSeedFetchedDocument(deps: {
     setDocumentOwnerId(fetched.ownerId);
     setDocumentOwnerName(fetched.ownerName ?? null);
     setDocumentOwnerColor(fetched.ownerColor ?? null);
-    // Telemetry (docs/specs/017-telemetry/telemetry.md): an existing diagram was opened — every open,
-    // owner URL or share URL, the counterpart to Diagram/Created.
+    // Telemetry (docs/specs/017-telemetry/telemetry.md): an existing document was opened — every open,
+    // owner URL or share URL, the counterpart to Document/Created.
     track('Document', 'Loaded');
   };
 }

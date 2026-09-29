@@ -1,7 +1,7 @@
 // Live app worker. Wraps the static-export assets binding with a
 // single path rewrite: any `/document/<anything>` request serves the
 // single placeholder HTML built by Next.js, and the client extracts
-// the real diagram id from `window.location.pathname`. See docs/specs/007-editor/new-document-route.md
+// the real document id from `window.location.pathname`. See docs/specs/007-editor/new-document-route.md
 // for why we can't enumerate user-minted ids at build time.
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
@@ -15,7 +15,7 @@ type Env = { ASSETS: AssetsBinding };
 //   - X-Content-Type-Options nosniff: stop the browser sniffing a
 //     mistyped response into an executable type.
 //   - Referrer-Policy strict-origin-when-cross-origin: URLs carry
-//     diagram ids in the path; don't leak full paths to third-party
+//     document ids in the path; don't leak full paths to third-party
 //     sites the user might click out to.
 //   - Permissions-Policy: deny every powerful feature the editor
 //     doesn't use (camera / mic / geolocation / payment / USB) so a

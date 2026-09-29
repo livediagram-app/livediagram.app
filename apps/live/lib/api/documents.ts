@@ -1,4 +1,4 @@
-// Diagram-level calls: load / create / save-meta / delete / list, the
+// Document-level calls: load / create / save-meta / delete / list, the
 // copy-into-my-files flow, and the "Shared with you" list.
 import {
   DOCUMENT_CONVERSION_HEADER,
@@ -32,8 +32,8 @@ import {
   apiFetch,
 } from './core';
 
-// The diagram-list row every list surface renders: the Explorer
-// panel, the /explorer page, /new, and the editor's diagram-list
+// The document-list row every list surface renders: the Explorer
+// panel, the /explorer page, /new, and the editor's document-list
 // state. A Pick of the wire type so the UI rows can't drift from
 // what apiListDocuments actually returns; surfaces needing more
 // fields widen the Pick rather than re-declaring the shape.
@@ -51,9 +51,9 @@ export type DocumentListItem = Pick<
 // Mode in dev double-invokes its hydration effect, so this fires
 // twice on first paint. With dedup, the second call receives the
 // in-flight promise instead of opening a second request to the
-// same diagram.
+// same document.
 async function _apiLoadDocument(ownerId: string, id: string): Promise<LiveDoc | null> {
-  // Offline Mode (docs/specs/006-document/offline-mode.md): a diagram registered offline loads from IndexedDB,
+  // Offline Mode (docs/specs/006-document/offline-mode.md): a document registered offline loads from IndexedDB,
   // never the API. Same for the save / delete / list paths below.
   if (await isOfflineId(id)) return offlineLoadDocument(id);
   const res = await apiFetch(`${API_BASE}/documents/${id}`, {
@@ -67,9 +67,9 @@ export const apiLoadDocument = dedupeInFlight(
   (ownerId, id) => `${ownerId}|${id}`,
 );
 
-// How many of the diagram's tabs are also in other diagrams, and how many
-// diagrams (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab
-// notice"). Null for an offline diagram: its tabs live only in this browser.
+// How many of the document's tabs are also in other documents, and how many
+// documents (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab
+// notice"). Null for an offline document: its tabs live only in this browser.
 export async function apiSharedTabs(
   ownerId: string,
   id: string,
@@ -84,8 +84,8 @@ export async function apiSharedTabs(
   return sharedTabs;
 }
 
-// Persist diagram-level metadata: name (rename), tab order, and each
-// tab's per-diagram folder (docs/specs/006-document/tab-folders.md). Used for tab reorders + rename
+// Persist document-level metadata: name (rename), tab order, and each
+// tab's per-document folder (docs/specs/006-document/tab-folders.md). Used for tab reorders + rename
 // + folder ops — anything that doesn't touch element content. Element
 // changes go through apiSaveTab. Callers pass `tabs` (id + order +
 // folder); `tabIds` stays accepted as the legacy folder-less shape.
@@ -125,7 +125,7 @@ export async function apiSaveDocumentMeta(
   await expectOkVoid(res, 'save document meta');
 }
 
-// Create a brand-new diagram with an optional initial set of tabs.
+// Create a brand-new document with an optional initial set of tabs.
 // Returns the meta + tab summaries the API stored. The live app uses
 // this when the welcome flow commits a fresh id so the very first
 // per-tab fetch lands on a populated row.
@@ -143,7 +143,7 @@ export async function apiCreateDocument(
     presentation?: string | null;
   },
   // Set by the Offline Mode sync path (docs/specs/006-document/offline-mode.md). A sync is a plain POST, so
-  // without this the worker records it as a brand-new diagram being created.
+  // without this the worker records it as a brand-new document being created.
   opts: { conversion?: DocumentConversion } = {},
 ): Promise<LiveDoc> {
   const res = await apiFetch(`${API_BASE}/documents`, {
@@ -165,8 +165,8 @@ export async function apiCreateDocument(
   return liveDoc;
 }
 
-// Moves the diagram to the Trash (docs/specs/013-workspace/trash.md): the
-// api's for a cloud diagram, this browser's for an Offline Mode one.
+// Moves the document to the Trash (docs/specs/013-workspace/trash.md): the
+// api's for a cloud document, this browser's for an Offline Mode one.
 export async function apiDeleteDocument(ownerId: string, id: string): Promise<void> {
   if (await isOfflineId(id)) return offlineTrashDocument(id, Date.now());
   // Owner-gated server-side as of the security fix — without the
@@ -180,11 +180,11 @@ export async function apiDeleteDocument(ownerId: string, id: string): Promise<vo
 }
 
 async function _apiListDocuments(ownerId: string): Promise<DocumentSummary[]> {
-  // Offline diagrams (docs/specs/006-document/offline-mode.md) are browser-local; list them alongside the
-  // cloud ones. If the cloud fetch fails but offline diagrams exist (e.g. no
+  // Offline documents (docs/specs/006-document/offline-mode.md) are browser-local; list them alongside the
+  // cloud ones. If the cloud fetch fails but offline documents exist (e.g. no
   // network), still return those rather than failing the whole Explorer.
   // The local Trash keeps its 30 days by being swept whenever the app lists
-  // diagrams (docs/specs/013-workspace/trash.md, "The local Trash").
+  // documents (docs/specs/013-workspace/trash.md, "The local Trash").
   await offlinePurgeExpiredTrash(Date.now()).catch(() => 0);
   const offline = await offlineListDocuments().catch(() => [] as DocumentSummary[]);
   try {
@@ -207,21 +207,21 @@ export const apiListDocuments = dedupeInFlight(_apiListDocuments, (ownerId) => o
 // the first `<rect>`'s fill, since renderElementsToSvg (docs/specs/006-document/document-snapshots.md) draws a
 // full-viewBox background rect before any element, and the snapshot has no
 // backdrop pattern, so the fill is always a plain colour string. Lets a
-// card paint its letterbox to match the diagram instead of a generic
+// card paint its letterbox to match the document instead of a generic
 // slate. Null when absent (an unexpected SVG shape) — the caller falls
 // back to its default box colour.
 function svgBackgroundColor(svg: string): string | null {
   return /<rect[^>]*\bfill="([^"]+)"/.exec(svg)?.[1] ?? null;
 }
 
-// Fetch a diagram's cached SVG snapshot (docs/specs/006-document/document-snapshots.md) and return a blob URL
-// for an `<img src>` plus the diagram's background colour. Native `<img>`
+// Fetch a document's cached SVG snapshot (docs/specs/006-document/document-snapshots.md) and return a blob URL
+// for an `<img src>` plus the document's background colour. Native `<img>`
 // can't send auth headers, so — like apiFetchImageBlobUrl — the bytes
 // come through the authenticated client (Authorization / X-Owner-Id, plus
 // X-Share-Code for a shared row) and get wrapped in a blob URL the caller
-// revokes on unmount. `version` (the diagram's savedAt) rides as `?v=`
-// purely to bust the browser/edge cache when the diagram changes; the
-// worker ignores it. Returns null on 404 / 403 / 503 (empty diagram, no
+// revokes on unmount. `version` (the document's savedAt) rides as `?v=`
+// purely to bust the browser/edge cache when the document changes; the
+// worker ignores it. Returns null on 404 / 403 / 503 (empty document, no
 // access, no R2) so the Explorer row falls back to its generic icon.
 export async function apiFetchDocumentThumbnailUrl(
   ownerId: string,
@@ -258,7 +258,7 @@ export async function apiFetchDocumentThumbnailUrl(
 // per-field rationale.
 export type { SharedWithItem };
 
-// List diagrams that have been shared with this owner (i.e. the
+// List documents that have been shared with this owner (i.e. the
 // owner previously opened a share link for them and was identified
 // to the api at the time). Returns newest-interaction-first.
 // Same dedupe rationale as apiListDocuments: editor + /new +
@@ -312,8 +312,8 @@ export async function apiCreateRoomTicket(
   return null;
 }
 
-// Copy a diagram (typically one shared with the caller) into the
-// caller's own files. Returns the new diagram. Optional shareCode
+// Copy a document (typically one shared with the caller) into the
+// caller's own files. Returns the new document. Optional shareCode
 // covers the "visitor just arrived via share URL, no shared_with
 // row yet" path — when present the api worker uses it as the
 // authorisation proof instead of looking up shared_with.

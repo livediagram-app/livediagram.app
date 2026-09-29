@@ -6,7 +6,7 @@
 // a lingering image so the next paste didn't re-drop it. That works inside one
 // editor instance, and only there — the buffer is component state, so elements
 // could not cross a browser tab, a second window, or a reload, which is exactly
-// where "copy this and put it in that diagram" happens.
+// where "copy this and put it in that document" happens.
 //
 // So the real elements go on the clipboard now, as text. Text rather than a
 // custom MIME type because `navigator.clipboard.writeText` is the one write
@@ -42,11 +42,11 @@ export type ClipboardEnvelope = {
 
 // Fields that carry WHO did something rather than WHAT the element is. They are
 // stripped on the way out, so a copy handed to another person (or pasted into a
-// diagram with a different participant set) never arrives carrying somebody
+// document with a different participant set) never arrives carrying somebody
 // else's name against a comment or their answer against a poll.
 //
 // Comments go entirely rather than being anonymised: a thread is a conversation
-// about the original element, and re-attaching it to a copy in another diagram
+// about the original element, and re-attaching it to a copy in another document
 // misrepresents it whether or not the names survive. `responses` (docs/specs/012-collaboration/participant-responses.md) go
 // for the same reason — a vote is cast in a session, not a property of a shape.
 // An assigned `action` (docs/specs/012-collaboration/assigned-actions.md) is work handed to a person, and carries its own

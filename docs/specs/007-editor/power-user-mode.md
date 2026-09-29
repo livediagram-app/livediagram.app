@@ -125,8 +125,8 @@ Other consumers:
 The mode is offered **once**, ever, to people whose use suggests they would want it.
 
 - **When.** After **20 editing sessions on separate days**, or after **50 keyboard shortcuts** used, whichever comes
-  first. An editing session is opening a diagram you can edit; a day is a local calendar day, and a day counts once
-  however many diagrams are opened on it. A keyboard shortcut is a key press the editor's shortcut handler acts on
+  first. An editing session is opening a document you can edit; a day is a local calendar day, and a day counts once
+  however many documents are opened on it. A keyboard shortcut is a key press the editor's shortcut handler acts on
   (Delete, V, Cmd-Z, ...).
 - **Where the counting lives.** The counts are device-local and never synced: they describe how this device is used,
   and syncing a keystroke counter would cost a write per shortcut. Whether the offer has been made is synced, so it is

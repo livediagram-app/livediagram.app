@@ -1,18 +1,18 @@
-# Tab and diagram name length
+# Tab and document name length
 
 Status: shipped
 
 ## What
 
-Tab and diagram names are capped at **`NAME_MAX_LENGTH` = 60 characters**, and
+Tab and document names are capped at **`NAME_MAX_LENGTH` = 60 characters**, and
 whitespace inside a name is collapsed to single spaces.
 
 ## Why 60, and why a cap at all
 
 Names had no limit. That is mostly invisible when you type one by hand — but
-the editor also **auto-names** a tab and the diagram from the first element's
-label ([Diagram structure](document-structure.md)). Paste a paragraph into the welcome rectangle and the entire
-paragraph became the diagram's name, newlines included, and then had to be
+the editor also **auto-names** a tab and the document from the first element's
+label ([Document structure](document-structure.md)). Paste a paragraph into the welcome rectangle and the entire
+paragraph became the document's name, newlines included, and then had to be
 rendered in the header, the browser tab title, the Explorer list, the tab pill
 and every share surface.
 
@@ -46,7 +46,7 @@ import, or an API-driven change.
 
 ### The server is the enforcement point
 
-The api worker applies `truncateName` to every diagram and tab name it is asked
+The api worker applies `truncateName` to every document and tab name it is asked
 to store, so the cap holds for every caller: the editor, an API-token script
 ([Public API and API tokens](../015-api/public-api-and-tokens.md)), an AI tool
 through the [MCP server](../015-api/mcp-server.md), or an Offline Mode sync.
@@ -54,23 +54,23 @@ The worker **shortens, it does not reject**: a name over the cap is stored in
 its truncated form and the response carries the stored name, exactly as the
 editor would have shortened it. The write points are:
 
-- `POST /api/documents` — the diagram name and the name of every seeded tab.
-- `PUT /api/documents/<id>` — a diagram rename.
+- `POST /api/documents` — the document name and the name of every seeded tab.
+- `PUT /api/documents/<id>` — a document rename.
 - `PUT /api/documents/<id>/tabs/<tabId>` — a tab's name (a tab rename rides the
   ordinary tab save).
 - `POST /api/documents/<id>/copy` — the copy's name, whether the caller sent one
   or it defaulted to `Copy of <name>`, which can itself run past the cap.
 
-A name that collapses to nothing (only whitespace) is refused on a diagram
+A name that collapses to nothing (only whitespace) is refused on a document
 create or rename with `400 bad_request` (message `missing id/name` on create,
-`missing name` on rename): a diagram always has a name. A tab
+`missing name` on rename): a document always has a name. A tab
 name may be empty, as it may in the editor.
 
 A name the caller sends **unchanged** (identical to the one stored) is kept as
 it is, so an autosave or a tab reorder that echoes a pre-cap over-long name
 never rewrites it (see Out of scope). Only a new or changed name is shortened.
 
-The server logs `[names] capped <diagram|tab> name` with the original and
+The server logs `[names] capped <document|tab> name` with the original and
 stored lengths whenever it shortens one, so an over-long writer is visible.
 
 The MCP tool schemas (`create_document`, `add_tab`, `rename_document`) state the
@@ -88,9 +88,9 @@ already the stored name without waiting on a round trip:
 - `useTabActions.renameTab`.
 - `useDocumentListActions.renameDocument` and `useTeamLibrary.renameDocument`.
 - `EditorView`'s header rename.
-- The `/new` wizard's diagram-name field.
+- The `/new` wizard's document-name field.
 
-An Offline Mode diagram never reaches the server until it syncs, so for it
+An Offline Mode document never reaches the server until it syncs, so for it
 these editor points are the enforcement until it does; the sync is a create,
 so the server cap applies to it like any other.
 

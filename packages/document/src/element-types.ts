@@ -71,13 +71,13 @@ export type ShapeElement = {
   // beside the shape's text label (drag an icon onto a shape, or add one
   // while a shape is selected). The valid keys + their SVG live in the
   // live app's icon catalogue; an unknown key falls back to a placeholder
-  // glyph so a diagram authored against a newer catalogue still renders.
+  // glyph so a document authored against a newer catalogue still renders.
   iconId?: string;
   // Registry key for a `sticker` shape's art (docs/specs/010-palette/stickers.md) — e.g.
   // 'emoji-thumbs-up', 'badge-blocked'. Only meaningful when
   // `shape === 'sticker'`; the entry resolves in the sticker catalogue
   // (@livediagram/icons), and an unknown key renders nothing rather than
-  // guessing, so a diagram authored against a newer catalogue still opens.
+  // guessing, so a document authored against a newer catalogue still opens.
   //
   // Kept separate from `iconId` on purpose: an element that predates
   // docs/specs/010-palette/stickers.md carries an emoji as an `iconId` on an `icon` shape and must
@@ -137,7 +137,7 @@ export type ShapeElement = {
   // Inline label styling. Each is independent so you can combine
   // bold + italic + underline + strikethrough however you like.
   // Stored on the element (not derived from a className) so saved
-  // diagrams round-trip the formatting.
+  // documents round-trip the formatting.
   textBold?: boolean;
   textItalic?: boolean;
   textUnderline?: boolean;
@@ -145,7 +145,7 @@ export type ShapeElement = {
   // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
-  // at render time so saved diagrams round-trip independent of the
+  // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
   fillColor?: string;
@@ -184,7 +184,7 @@ export type ShapeElement = {
   // instead. See isFixedSizeElement.
   fixedSize?: boolean;
   // Border styling (shapes + stickies). Each is a preset bucket so
-  // saved diagrams round-trip without carrying arbitrary numeric
+  // saved documents round-trip without carrying arbitrary numeric
   // values; the renderer maps to pixel widths / SVG dasharrays /
   // border-radius pixels (BORDER_STROKE_PX, BORDER_DASH_ARRAY,
   // BORDER_RADIUS_PX further down).
@@ -328,7 +328,7 @@ export type ShapeElement = {
   code?: string;
   codeLanguage?: CodeLanguage;
   // Which colour scheme the card paints in (see code-themes.ts). Absent =
-  // 'midnight', the single look the block shipped with, so older diagrams are
+  // 'midnight', the single look the block shipped with, so older documents are
   // untouched.
   codeTheme?: CodeThemeId;
   // Whether a line longer than the card wraps instead of running off it.
@@ -443,7 +443,7 @@ export type TextElement = {
   // Inline label styling. Each is independent so you can combine
   // bold + italic + underline + strikethrough however you like.
   // Stored on the element (not derived from a className) so saved
-  // diagrams round-trip the formatting.
+  // documents round-trip the formatting.
   textBold?: boolean;
   textItalic?: boolean;
   textUnderline?: boolean;
@@ -451,7 +451,7 @@ export type TextElement = {
   // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
-  // at render time so saved diagrams round-trip independent of the
+  // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
   fillColor?: string;
@@ -525,7 +525,7 @@ export type TableCellStyle = {
   underline?: boolean;
   textSize?: TextSize;
   alignX?: TextAlignX;
-  // Optional per-cell link (tab / diagram / element / external URL).
+  // Optional per-cell link (tab / document / element / external URL).
   // Lives on the cell style so it rides the same parallel `cellStyles`
   // grid the table helpers already splice on row / column edits, staying
   // aligned with no extra bookkeeping (docs/specs/008-canvas/canvas-and-palette.md).
@@ -592,7 +592,7 @@ export type TableElement = {
   // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
-  // at render time so saved diagrams round-trip independent of the
+  // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
   // fillColor tints the cell background; strokeColor draws the grid
@@ -674,7 +674,7 @@ export type StickyElement = {
   // Inline label styling. Each is independent so you can combine
   // bold + italic + underline + strikethrough however you like.
   // Stored on the element (not derived from a className) so saved
-  // diagrams round-trip the formatting.
+  // documents round-trip the formatting.
   textBold?: boolean;
   textItalic?: boolean;
   textUnderline?: boolean;
@@ -682,7 +682,7 @@ export type StickyElement = {
   // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
-  // at render time so saved diagrams round-trip independent of the
+  // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
   fillColor?: string;
@@ -740,9 +740,9 @@ export type StickyElement = {
 // See docs/specs/009-elements/images.md. A boxed element that renders user-uploaded
 // image bytes inside its bounding box. The bytes themselves live in
 // R2 (server-side); the element carries only the opaque id the API
-// resolves to a `GET /api/images/<id>` URL, so the diagram payload
+// resolves to a `GET /api/images/<id>` URL, so the document payload
 // stays small + a future "delete from gallery" can break the
-// reference without rewriting every diagram.
+// reference without rewriting every document.
 export type ImageElement = {
   id: ElementId;
   type: 'image';
@@ -797,7 +797,7 @@ export type ImageElement = {
   // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
-  // at render time so saved diagrams round-trip independent of the
+  // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
   textColor?: string;
@@ -893,7 +893,7 @@ export type FreehandElement = {
   // Font-family id (see packages/document/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
-  // at render time so saved diagrams round-trip independent of the
+  // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
   textColor?: string;

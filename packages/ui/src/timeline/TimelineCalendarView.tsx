@@ -57,7 +57,7 @@ export function TimelineCalendarView({
   //
   // Grouped by TONE rather than by source type, matching the bubbles:
   // three dots that mean created / changed / removed answer "what kind
-  // of day was that" at a glance, where "diagram vs team" does not.
+  // of day was that" at a glance, where "document vs team" does not.
   const byDayAndTone = useMemo(() => {
     const map = new Map<string, TimelineEvent[]>();
     for (const event of events) {

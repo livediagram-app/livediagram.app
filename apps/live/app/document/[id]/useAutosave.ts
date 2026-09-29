@@ -63,7 +63,7 @@ export function useAutosave(opts: {
   setSaveStatus: Dispatch<SetStateAction<SaveStatus>>;
   setSavedAt: Dispatch<SetStateAction<number | null>>;
   setDocumentList: Dispatch<SetStateAction<DocumentListItem[]>>;
-  // A save refused because the diagram is in the Trash
+  // A save refused because the document is in the Trash
   // (docs/specs/013-workspace/trash.md): writes stop, the editor shows why.
   onDocumentTrashed: () => void;
 }) {
@@ -92,11 +92,11 @@ export function useAutosave(opts: {
   // it never re-arms the debounced save.
   const reportTrashed = useEffectEvent(() => onDocumentTrashed());
 
-  // Set once the server has told us we may not write to this diagram at all
+  // Set once the server has told us we may not write to this document at all
   // (403). Unlike a network failure that's worth another go on the next edit,
   // this can never succeed: the share link was revoked, we were removed from
   // the team, or the role changed under us. Retrying anyway meant a user could
-  // edit for an hour against a diagram that would never take the writes,
+  // edit for an hour against a document that would never take the writes,
   // seeing only a toast blaming their connection — and each edit fired another
   // doomed PUT, which is what produced hundreds of 403s in a single day.
   const writesForbiddenRef = useRef(false);
@@ -115,7 +115,7 @@ export function useAutosave(opts: {
   // in the batch that applies each op), so render reads no ref.
   const opsInRender = opsApplied;
 
-  // A different diagram gets a clean slate: the block is about THIS one.
+  // A different document gets a clean slate: the block is about THIS one.
   useEffect(() => {
     writesForbiddenRef.current = false;
   }, [documentId]);
@@ -125,7 +125,7 @@ export function useAutosave(opts: {
     const handler = () => {
       // Nothing we send can be accepted; don't beacon on the way out either.
       if (writesForbiddenRef.current) return;
-      // The user just deleted this diagram (navigating to /explorer fires
+      // The user just deleted this document (navigating to /explorer fires
       // beforeunload): don't beacon its tabs/meta back and re-create it.
       if (isDocumentDeleted(documentId)) return;
       const { changedTabs, deletedIds, orderChanged, nameChanged, hasChanges } = computeTabSaveDiff(
@@ -169,7 +169,7 @@ export function useAutosave(opts: {
   useEffect(() => {
     if (!hydrated || !documentId) return;
     if (isReadOnly) return;
-    // The server has already refused a write to this diagram. Every further
+    // The server has already refused a write to this document. Every further
     // attempt would fail the same way, so stop: the point is that the user is
     // told once, clearly, instead of being told to check their connection
     // every few seconds while their work goes nowhere.
@@ -185,7 +185,7 @@ export function useAutosave(opts: {
     // waiting out its debounce when a peer's op arrived.
     const handle = window.setTimeout(() => {
       if (remoteOpJournalRef.current.next !== opsInRender) return;
-      // Bail if the diagram was just deleted (the debounce can still be
+      // Bail if the document was just deleted (the debounce can still be
       // pending when the delete fires) so we don't re-create it.
       if (isDocumentDeleted(documentId)) return;
       const { changedTabs, deletedIds, orderChanged, nameChanged, hasChanges } = computeTabSaveDiff(
@@ -253,7 +253,7 @@ export function useAutosave(opts: {
             roomRef.current?.send({
               kind: 'op',
               op: {
-                kind: 'diagram-meta',
+                kind: 'document-meta',
                 name: documentName,
                 tabs: tabs.map((t, i) => ({
                   id: t.id,
@@ -280,7 +280,7 @@ export function useAutosave(opts: {
           setSaveStatus('saved');
           const now = Date.now();
           setSavedAt(now);
-          // Bump the current diagram's row locally so the Explorer's
+          // Bump the current document's row locally so the Explorer's
           // "Updated X ago" stays fresh — used to refetch the whole
           // list here, which hit /api/documents on every autosave.
           setDocumentList((prev) =>

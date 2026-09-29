@@ -11,7 +11,7 @@ not prevent them.
 ## The problem it fixed
 
 The realtime room (`apps/api/src/document-room.ts`) was a **stateless relay**: it
-broadcast ops between peers and tracked presence, but held no diagram state and
+broadcast ops between peers and tracked presence, but held no document state and
 merged nothing. The conflict unit was a **whole tab** — editing anything on a tab
 broadcast the tab's entire element array and receivers **replaced** their copy.
 So if A moved element X and B moved element Y on the same tab within the sync
@@ -158,11 +158,11 @@ It was dropped because the cost outweighed the benefit:
 - **The cost is paid by everyone, always.** It pulled in a third-party CRDT
   library (~60 KB gzipped) that shipped in the editor bundle regardless of use,
   added a permanent second sync path to maintain alongside the element-op path,
-  and made the room hold a live copy of the whole diagram in memory: a second
-  copy of the document beside D1, which the room otherwise never holds.
+  and made the room hold a live copy of the whole document in memory: a second
+  copy beside D1, which the room otherwise never holds.
 - **It was unverified.** It was never exercised with two live clients, so
   keeping it meant carrying risk that a future change flips it on and corrupts
-  diagrams.
+  documents.
 
 If same-element field-level merge ever becomes a real need, revisit it then —
 verified end-to-end and turned on properly, not carried as dormant code.

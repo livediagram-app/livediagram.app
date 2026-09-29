@@ -23,19 +23,19 @@ import { useToast } from '@/hooks/ui/useToast';
 import type { Participant } from '@/lib/identity';
 
 type ShareLinksDeps = {
-  // The current diagram id. All link actions no-op until it exists
+  // The current document id. All link actions no-op until it exists
   // (the editor route always has a real id by the time the dialog is
   // open — the mint-id flow lives on /live/new, docs/specs/007-editor/new-document-route.md).
   documentId: string | null;
   selfParticipant: Participant;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   setShareLinks: Dispatch<SetStateAction<ShareLink[]>>;
-  // The diagram's share password (docs/specs/013-workspace/share-password.md). setSharePassword reconciles
+  // The document's share password (docs/specs/013-workspace/share-password.md). setSharePassword reconciles
   // page state after a save / clear.
   setSharePassword: Dispatch<SetStateAction<string | null>>;
   setDocumentShareable: Dispatch<SetStateAction<boolean>>;
   setDocumentShareCode: Dispatch<SetStateAction<string | null>>;
-  // The diagram's primary share code; revoke promotes the next link to
+  // The document's primary share code; revoke promotes the next link to
   // primary when the current primary is the one being revoked.
   documentShareCode: string | null;
   // Marks the participant's name confirmed (share is an implicit
@@ -58,7 +58,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
   const toast = useToast();
 
   // Save the participant's name (used from the share dialog's identity
-  // card). Mints the diagram id if this is the first share gesture so
+  // card). Mints the document id if this is the first share gesture so
   // the share URL is shareable from the moment it's created.
   const updateParticipantName = async (name: string) => {
     if (!name) return;
@@ -68,7 +68,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
     await apiSaveSelf(updated).catch(() => {});
   };
 
-  // Create a new share link for the current diagram with the given
+  // Create a new share link for the current document with the given
   // role and lifetime (docs/specs/013-workspace/share-link-expiry.md; 'never' = works until revoked). The
   // editor route always has a real documentId by the time the Share
   // dialog is open — the welcome / mint-id flow now lives on
@@ -146,7 +146,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
       toast.error('Could not revoke the link. Try again.');
       return;
     }
-    // Counterpart to the Diagram/Shared emit when a link is created.
+    // Counterpart to the Document/Shared emit when a link is created.
     track('Document', 'Removed', 'ShareLink');
     setShareLinks((prev) => {
       const next = prev.filter((l) => l.code !== code);
@@ -160,7 +160,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
     });
   };
 
-  // Set or clear the diagram's share password (docs/specs/013-workspace/share-password.md). A null / empty
+  // Set or clear the document's share password (docs/specs/013-workspace/share-password.md). A null / empty
   // value removes it. Persists through the api, reconciles page state
   // with the server-normalised value, and emits telemetry. Returns the
   // stored value so the dialog can reflect exactly what now gates

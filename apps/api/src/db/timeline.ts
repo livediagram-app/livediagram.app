@@ -8,7 +8,7 @@
 // already compute the future-dated expiry warnings.
 //
 // Emit is fire-and-forget from every call site (wrapped in waitUntil):
-// a missing timeline row is cosmetic, a failed diagram save is not.
+// a missing timeline row is cosmetic, a failed document save is not.
 
 import type { TimelineEvent, TimelineScopeRef } from '@livediagram/api-schema';
 import type { Env } from '../types';
@@ -27,7 +27,7 @@ export type TimelineEventDraft = {
 };
 
 // The dedupe key for an event that should collapse to one row per
-// actor per UTC day — the coalesced diagram-editing event, and image
+// actor per UTC day — the coalesced document-editing event, and image
 // uploads. UTC rather than local because the row is shared by an
 // audience in many timezones; the day boundary has to be the same for
 // all of them or the same save writes two rows.
@@ -38,8 +38,8 @@ export function dedupeKeyForDay(actorId: string | null, at: number): string {
 // The dedupe key for an event that can happen to the same source MORE
 // THAN ONCE and should be a fresh row each time: a rename, a move, a
 // role change. With the default '' key the UNIQUE index treats the
-// second rename of a diagram as a retry of the first and UPSERTS it —
-// so a diagram renamed three times in a day showed one card, not a
+// second rename of a document as a retry of the first and UPSERTS it —
+// so a document renamed three times in a day showed one card, not a
 // stack of three, and a rename this month silently moved last month's
 // card to today. '' stays right for events that genuinely happen once
 // per source (created, a tombstone, an invite), where a retry or a
@@ -141,7 +141,7 @@ type TimelineRow = {
   description: string | null;
   occurred_at: number;
   snapshot: string;
-  // The diagram's name NOW, when the event is about one that still exists.
+  // The document's name NOW, when the event is about one that still exists.
   current_document_name?: string | null;
 };
 
@@ -157,9 +157,9 @@ function rowToEvent(row: TimelineRow): TimelineEvent {
     // still worth showing — title and description carry the meaning,
     // the snapshot only enriches it. Fall through with {}.
   }
-  // An entry names its diagram as it is called NOW, not as it was called
+  // An entry names its document as it is called NOW, not as it was called
   // when the event happened: a rename is not a timeline moment, so older
-  // entries follow it instead (docs/specs/013-workspace/timeline.md §4.2). A diagram that is
+  // entries follow it instead (docs/specs/013-workspace/timeline.md §4.2). A document that is
   // gone keeps the name it had.
   if (row.current_document_name)
     snapshot = { ...snapshot, documentName: row.current_document_name };
@@ -199,12 +199,12 @@ export type ReadTimelineResult = {
 // share a millisecond (a team invite fans out to twelve people in one
 // request), and ordering by occurred_at alone would make the page
 // boundary non-deterministic.
-// An event about a diagram in the Trash is hidden, not swept
+// An event about a document in the Trash is hidden, not swept
 // (docs/specs/013-workspace/trash.md): a restore brings the history back, and
 // the purge sweeps it (documentsTimelineSweepStatement). Matches the same two
 // references the sweep does, each a primary-key probe.
 // Renames are not timeline moments (docs/specs/013-workspace/timeline.md §4.2): entries show each
-// diagram's current name instead. Nothing records them any more; this keeps
+// document's current name instead. Nothing records them any more; this keeps
 // the ones written before that out of every feed and count.
 const NOT_A_RENAME = `e.event_type <> 'document_renamed'`;
 
@@ -386,16 +386,16 @@ export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Pr
 // timeline_event_scopes.event_id takes the memberships with them.
 //
 // Call this BEFORE emitting the entity's own `*_deleted` tombstone, so
-// the tombstone survives: a deleted diagram collapses from a run of
+// the tombstone survives: a deleted document collapses from a run of
 // bubbles to exactly one row saying it was deleted, which is the row
 // that answers "what happened to it?" (docs/specs/013-workspace/timeline.md §3.5). Every future
 // entity's delete path should call this rather than writing the DELETE
 // inline.
 //
-// Two predicates, because "about a diagram" is wider than "keyed on the
-// diagram id". A comment event's source_id is the COMMENT's id, an
+// Two predicates, because "about a document" is wider than "keyed on the
+// document id". A comment event's source_id is the COMMENT's id, an
 // action's is the ACTION's, a share link's is `<documentId>:<role>` —
-// they all describe a diagram without being keyed on one. Matching only
+// they all describe a document without being keyed on one. Matching only
 // source_id left those behind, each rendering a bubble that linked to a
 // 404. The second clause reads the `<sourceType>Id` the emitters put in
 // every snapshot for exactly this purpose.
@@ -421,7 +421,7 @@ export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Pr
 //
 // Self-healing by design rather than exhaustive: the daily sweep re-emits
 // whatever is still inside its window, so retracting slightly too much (one of
-// two expiring links on a diagram — the warning is per diagram, not per link)
+// two expiring links on a document — the warning is per document, not per link)
 // costs at most a day of silence and never leaves a false deadline standing.
 export async function retractTimelineWarning(
   env: Env,
@@ -451,9 +451,9 @@ export async function markTimelineEventsDeletedBySource(
     .run();
 }
 
-// markTimelineEventsDeletedBySource for a set of diagrams at once, as one
+// markTimelineEventsDeletedBySource for a set of documents at once, as one
 // statement for the Trash purge's batch (docs/specs/013-workspace/trash.md):
-// the events of a purged diagram go with it, the way a hard delete sweeps them.
+// the events of a purged document go with it, the way a hard delete sweeps them.
 export function documentsTimelineSweepStatement(env: Env, ids: string[]): D1PreparedStatement {
   return env.DB.prepare(
     `DELETE FROM timeline_events

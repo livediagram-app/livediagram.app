@@ -5,9 +5,9 @@ import type { Env } from '../types';
 // The source cascade (docs/specs/013-workspace/timeline.md §3.5).
 //
 // Regression coverage for a bug found driving the real API: only
-// matching `source_id` left a deleted diagram's comment, action, and
+// matching `source_id` left a deleted document's comment, action, and
 // share-link events behind, each still rendering a bubble that linked
-// to a 404. "About a diagram" is wider than "keyed on the diagram id",
+// to a 404. "About a document" is wider than "keyed on the document id",
 // and the snapshot's `<sourceType>Id` is what closes the gap.
 
 function fakeDb() {
@@ -24,8 +24,8 @@ describe('markTimelineEventsDeletedBySource', () => {
 
     const sql = prepare.mock.calls[0]![0] as string;
     expect(sql).toContain('source_id = ?2');
-    // Without this clause a comment on the deleted diagram survives:
-    // its source_id is the COMMENT's id, not the diagram's.
+    // Without this clause a comment on the deleted document survives:
+    // its source_id is the COMMENT's id, not the document's.
     expect(sql).toContain('json_extract');
     expect(bind).toHaveBeenCalledWith('document', 'd-1', 'documentId');
   });

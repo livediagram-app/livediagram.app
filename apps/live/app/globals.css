@@ -233,9 +233,9 @@
 }
 
 /*
- * Explorer diagram-row enter / exit. Used by the Explorer to make
+ * Explorer document-row enter / exit. Used by the Explorer to make
  * add + delete feel responsive when the list has many similarly-
- * named diagrams. Max-height collapse + horizontal translate +
+ * named documents. Max-height collapse + horizontal translate +
  * fade gives a real sense of motion; the row above slides up into
  * the gap as the deleted row collapses out.
  *

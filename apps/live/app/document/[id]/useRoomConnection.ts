@@ -34,10 +34,10 @@ import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline
 import { shareLinkOpEffect } from './share-link-ops';
 import { joinRefusedBecauseTrashed } from './room-refusal';
 
-// Realtime room: one WebSocket per diagram, opened only while the
-// diagram is shared. Lifted out of editor-page.tsx verbatim — the
+// Realtime room: one WebSocket per document, opened only while the
+// document is shared. Lifted out of editor-page.tsx verbatim — the
 // presence reconciliation (unique-colour, idle seeding, leaver cleanup)
-// and the onOp application (tab / diagram-meta / select / cursor /
+// and the onOp application (tab / document-meta / select / cursor /
 // laser / tab-focus / log / share-revoked) are unchanged. All the state
 // it drives lives in the page and is passed in; the deps array stays
 // [hydrated, documentId, documentShareable] (a name/colour change must not
@@ -46,9 +46,9 @@ export function useRoomConnection(opts: {
   hydrated: boolean;
   documentId: string | null;
   documentShareable: boolean;
-  // The diagram's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal diagram. A team
-  // diagram is a live room for its members even without a share link,
-  // so presence opens for it the same way a shared diagram does.
+  // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
+  // document is a live room for its members even without a share link,
+  // so presence opens for it the same way a shared document does.
   documentTeamId: string | null;
   selfParticipant: Participant;
   sessionShareCode: string | null;
@@ -64,7 +64,7 @@ export function useRoomConnection(opts: {
   countAppliedOp: () => void;
   sessionShareCodeRef: MutableRefObject<string | null>;
   roomRef: MutableRefObject<ReturnType<typeof connectRoom> | null>;
-  // Merge a peer's tab / diagram-meta change into the present, PRESERVING
+  // Merge a peer's tab / document-meta change into the present, PRESERVING
   // the local undo / redo stacks (peers autosave ~600ms, so clearing
   // history on each would wipe undo continuously during a shared session).
   applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
@@ -120,8 +120,8 @@ export function useRoomConnection(opts: {
   // A Q&A board's authoritative state after a server write (docs/specs/012-collaboration/qa-board.md).
   // Stable, like the poll handlers, so it can't reopen the socket.
   receiveQa: (tabId: string, elementId: string, notes: QaNote[], rev: number) => void;
-  // The diagram went to the Trash (docs/specs/013-workspace/trash.md): the
-  // worker's diagram-trashed op, or the room closing the socket with 4004.
+  // The document went to the Trash (docs/specs/013-workspace/trash.md): the
+  // worker's document-trashed op, or the room closing the socket with 4004.
   // Stable, like the others, so it can't reopen the socket.
   receiveDocumentTrashed: () => void;
   // Re-hydrate tab content from D1 when the room can't replay our gap
@@ -182,7 +182,7 @@ export function useRoomConnection(opts: {
   // The facilitator token is read on demand by the room, always as it is now.
   const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
 
-  // The room's handlers, as effect events: the socket opens once per diagram (the effect below), and each
+  // The room's handlers, as effect events: the socket opens once per document (the effect below), and each
   // message still runs against the current props, which is what a handler must see.
   const roomPresence = useEffectEvent(
     (participants: Parameters<NonNullable<RoomHandlers['onPresence']>>[0]) => {
@@ -292,16 +292,16 @@ export function useRoomConnection(opts: {
         op.kind === 'vote' ||
         op.kind === 'el-delta' ||
         op.kind === 'tab-meta' ||
-        op.kind === 'diagram-meta'
+        op.kind === 'document-meta'
       ) {
         // A document change from a peer: a whole tab, one element (docs/specs/012-collaboration/realtime-conflict-resolution.md),
         // one dot (docs/specs/012-collaboration/session-tools.md), one answer / idea / tick / comment (docs/specs/012-collaboration/collab-race-hardening.md),
-        // non-element tab fields, or the diagram's name
+        // non-element tab fields, or the document's name
         // and tab list. One pure function applies each (room-op-apply.ts),
         // to the tabs on screen AND to the autosave's baseline, so the
         // change is known to be the peer's and is never saved or broadcast
         // back as if it were ours (docs/specs/012-collaboration/collab-race-hardening.md).
-        if (op.kind === 'diagram-meta') setDocumentName(op.name);
+        if (op.kind === 'document-meta') setDocumentName(op.name);
         applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
         foldRemoteOpIntoBaseline(saveBaseline, op);
         // In the same batch as the tabs update, so the render that shows the op also counts it.
@@ -410,7 +410,7 @@ export function useRoomConnection(opts: {
         if (effect === 'leave') window.location.assign('/explorer');
         else if (effect === 'reload') window.location.reload();
       } else if (op.kind === 'document-trashed') {
-        // The diagram went to the Trash. System-only, like the share ops:
+        // The document went to the Trash. System-only, like the share ops:
         // the room refuses it from a client socket.
         if (from === 'system') receiveDocumentTrashed();
       }
@@ -457,8 +457,8 @@ export function useRoomConnection(opts: {
   });
 
   useEffect(() => {
-    // Open the realtime room for a shared diagram OR a team diagram
-    // (docs/specs/013-workspace/team-shared-documents.md): team members collaborate live on a team diagram with
+    // Open the realtime room for a shared document OR a team document
+    // (docs/specs/013-workspace/team-shared-documents.md): team members collaborate live on a team document with
     // no share link, so presence must work there too.
     if (!hydrated || !documentId || (!documentShareable && !documentTeamId)) {
       // Make sure any state from a previous shared session is cleared
@@ -485,7 +485,7 @@ export function useRoomConnection(opts: {
       onRefused: () => roomRefused(),
       onResync: () => roomResync(),
     };
-    // Team diagrams need a one-time room ticket (docs/specs/015-api/api.md): membership is
+    // Team documents need a one-time room ticket (docs/specs/015-api/api.md): membership is
     // keyed on the VERIFIED Clerk id, which a WS upgrade can't carry, so
     // the ticket is minted over authenticated REST first. Personal /
     // share-code sessions skip the extra round trip — their legacy query
@@ -511,7 +511,7 @@ export function useRoomConnection(opts: {
           ticket,
           shareCode,
           // Always send our own id as `o`: the worker checks it against
-          // the diagram's owner to resolve the edit role (team membership
+          // the document's owner to resolve the edit role (team membership
           // rides the ticket above instead — a bare id isn't trusted for
           // it). A share-link visitor's id just won't match, and their
           // role comes from the code.

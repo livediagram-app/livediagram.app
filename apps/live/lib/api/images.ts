@@ -69,7 +69,7 @@ export async function apiDeleteImage(ownerId: string, imageId: string): Promise<
   });
 }
 
-// Inverse-index of which diagrams reference each owned image.
+// Inverse-index of which documents reference each owned image.
 // Backs the Explorer Image Gallery's "Used in" badge. Images that
 // aren't placed on any canvas yet are absent from the map (treat a
 // missing key as "0 uses, safe to delete"). 503 collapses to an

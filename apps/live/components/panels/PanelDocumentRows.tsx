@@ -4,8 +4,8 @@ import type { DocumentListItem } from '@/lib/api-client';
 import { DocumentRow } from './DocumentRow';
 import { DocumentRowShell } from './DocumentRowShell';
 
-// What a diagram row in the panel's tree can do, bundled because every
-// node that lists diagrams (folders, the synthetic buckets, teams) passes
+// What a document row in the panel's tree can do, bundled because every
+// node that lists documents (folders, the synthetic buckets, teams) passes
 // the same set down, and each level of the recursion passes it on.
 export type PanelRowActions = {
   // The VIEWER's owner id, for each row's authenticated thumbnail fetch.
@@ -24,7 +24,7 @@ export type PanelRowActions = {
   onMoveDocumentToFolder?: (documentId: string, folderId: string | null) => void;
 };
 
-// One bucket's diagrams as tree rows, indented to sit under their node.
+// One bucket's documents as tree rows, indented to sit under their node.
 export function PanelDocumentRows({
   documents: liveDocs,
   indent,

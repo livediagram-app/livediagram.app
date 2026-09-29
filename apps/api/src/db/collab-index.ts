@@ -83,7 +83,7 @@ export function collabIndexStatements(
   return stmts;
 }
 
-// A duplicated diagram copies its tab rows in SQL without parsing them
+// A duplicated document copies its tab rows in SQL without parsing them
 // (copyDocument), so the index rows are copied the same way, under the
 // fresh tab id.
 export function collabIndexCopyStatements(
@@ -122,7 +122,7 @@ export function collabIndexCopyStatements(
 // sets the Explorer's Recent merges — own, joined-team, shared-with-you
 // (live share only) — with how each is reached and, for a share, the
 // code the client needs to open it. Scoping by library FIRST is the
-// security boundary: an id inside a blob can never surface a diagram
+// security boundary: an id inside a blob can never surface a document
 // the reader can no longer open. A share also carries the tab it is
 // scoped to (docs/specs/013-workspace/tab-scoped-share-links.md): the code picked has exactly that scope,
 // and the reads keep only that tab's rows.
@@ -247,8 +247,8 @@ const THREADS_SQL = `${SCOPE_CTES}
    ORDER BY ct.latest_at DESC
    LIMIT ?3`;
 
-// A tab linked into two visible diagrams (docs/specs/006-document/tab-document-many-to-many.md) lists once per
-// diagram; keep the one the reader reaches most directly. A 'shared'
+// A tab linked into two visible documents (docs/specs/006-document/tab-document-many-to-many.md) lists once per
+// document; keep the one the reader reaches most directly. A 'shared'
 // row whose link has lapsed has nowhere to go and is dropped, the way
 // Shared with You drops it.
 const VIA_RANK = { own: 0, team: 1, shared: 2 } as const;
@@ -346,7 +346,7 @@ export async function markCollabIndexBackfilled(env: Env, ownerId: string): Prom
     .run();
 }
 
-// The tabs the backfill has to parse: every tab of every diagram the
+// The tabs the backfill has to parse: every tab of every document the
 // reader can see whose JSON even mentions a thread or an action. The
 // LIKE pre-filter runs in SQLite so the (usually large) majority of tabs
 // with neither never leave the database. Newest first, capped.
@@ -399,7 +399,7 @@ export async function recordOwnerAlias(env: Env, ownerId: string, aliasId: strin
 }
 
 // Account deletion: no identity row outlives the account. The index rows
-// themselves cascade with the diagrams' tabs.
+// themselves cascade with the documents' tabs.
 export async function deleteCollabIndexForOwner(env: Env, ownerId: string): Promise<void> {
   // Sequential like the rest of deleteAccount's sweep (each statement
   // is independently idempotent, so there is nothing a batch would

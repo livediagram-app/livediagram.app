@@ -87,7 +87,7 @@ describe('bestSlot', () => {
   const slot = (source: string, arrived: number, created: number) =>
     ({ source, label: source, arrived, created }) as Parameters<typeof bestSlot>[0][number];
 
-  it('picks the most diagrams, breaking a tie on conversion', () => {
+  it('picks the most documents, breaking a tie on conversion', () => {
     expect(bestSlot([slot('Home.Hero', 40, 10), slot('Home.Gallery', 12, 10)])).toBe(
       'Home.Gallery',
     );

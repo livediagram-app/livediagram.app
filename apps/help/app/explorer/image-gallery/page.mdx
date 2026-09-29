@@ -28,19 +28,19 @@ Each uploaded image appears as a thumbnail with a **Used in** badge derived from
 
 ## Deleting images
 
-Delete an image you no longer need to reclaim the space. If an image is still used in one or more diagrams, the delete confirmation warns you first: those tiles will show as broken images afterwards, and the removal cannot be undone. Images nothing references can be cleared without that risk.
+Delete an image you no longer need to reclaim the space. If an image is still used in one or more documents, the delete confirmation warns you first: those tiles will show as broken images afterwards, and the removal cannot be undone. Images nothing references can be cleared without that risk.
 
 ## Automatic cleanup of unused images
 
-You do not have to keep on top of this by hand. Once a day, livediagram removes uploads that are **both** more than **30 days old** and **used in no diagram**, freeing the storage automatically. The 30-day window is deliberately generous: an image you uploaded recently, or one any diagram still references, is always left alone, so a picture you have not placed on the canvas yet is never swept out from under you. An image in use stays put no matter how old it is.
+You do not have to keep on top of this by hand. Once a day, livediagram removes uploads that are **both** more than **30 days old** and **used in no document**, freeing the storage automatically. The 30-day window is deliberately generous: an image you uploaded recently, or one any document still references, is always left alone, so a picture you have not placed on the canvas yet is never swept out from under you. An image in use stays put no matter how old it is.
 
 ## Signed-in feature
 
 The gallery is tied to your account, so it is available when you are signed in and on deployments where image uploads are enabled. If uploads are turned off for a deployment, the gallery says so rather than failing silently.
 
 <Tip>
-  Anything with no **Used in** badge is an upload none of your own diagrams points at, so it is
-  usually safe to delete; the badge only scans your diagrams. The daily cleanup will eventually
+  Anything with no **Used in** badge is an upload none of your own documents points at, so it is
+  usually safe to delete; the badge only scans your documents. The daily cleanup will eventually
   clear unused uploads for you, but removing one yourself reclaims the space straight away rather
   than waiting out the 30-day window.
 </Tip>

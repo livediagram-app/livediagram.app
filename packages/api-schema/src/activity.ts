@@ -1,4 +1,4 @@
-// Activity page wire format (docs/specs/013-workspace/activity-page.md): the cross-diagram list of what
+// Activity page wire format (docs/specs/013-workspace/activity-page.md): the cross-document list of what
 // is outstanding for one reader — open actions assigned to them, open
 // actions they assigned to others, and unresolved comment threads they
 // are in.
@@ -11,7 +11,7 @@
 // is still open.
 
 // Where a row lives, and how the reader reaches it. `via` is how the
-// diagram is visible to them (their own, a joined team's library, or
+// document is visible to them (their own, a joined team's library, or
 // shared with them); `shareCode` is set only for 'shared', so the client
 // can build the visitor URL (docs/specs/013-workspace/embeds.md) the way Shared with You does.
 export type ActivityPlace = {
@@ -45,7 +45,7 @@ export type ActivityAction = ActivityPlace & {
 };
 
 // An unresolved comment thread the reader is in: they wrote a comment
-// in it, or it is on a diagram they own (owners already hear about every
+// in it, or it is on a document they own (owners already hear about every
 // new comment by email, docs/specs/014-identity/transactional-email.md).
 export type ActivityThread = ActivityPlace & {
   commentCount: number;

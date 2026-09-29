@@ -21,7 +21,7 @@ person pressed End. Every one of those is a collision between people who all
 have edit rights and all mean well.
 
 The missing idea is not a permission, it is a **role**: who is driving. The
-diagram already knows who owns it and who may edit it, and neither answers the
+document already knows who owns it and who may edit it, and neither answers the
 question. The owner is frequently the wrong answer on purpose: somebody builds
 the board on Monday and asks a colleague to run the session on Tuesday.
 
@@ -87,7 +87,7 @@ than the route's intent, with a hostile pre-set pair as the input.
 
 That table is the whole permission model. Delegation needs no dialog: the owner
 hands it over from the Collaborators modal, or simply lets the person who is
-running the session take it. "The diagram can always take back control" falls
+running the session take it. "The document can always take back control" falls
 out of one row.
 
 **View-role visitors cannot hold it.** The tools it governs write to the
@@ -169,7 +169,7 @@ unchanged. [Bring Focus](bring-focus.md) gets the amendment.
 ## How it is enforced, honestly
 
 This is **who is driving, not who is allowed**. Everybody in the room already
-has edit rights or does not, and the baton is not defending the diagram from
+has edit rights or does not, and the baton is not defending the document from
 them — it is stopping two well-meaning people from starting timers at once.
 
 Enforcement is therefore uneven, and deliberately so:
@@ -295,7 +295,7 @@ On this tab — Board
 | Somebody else, a viewer      | **Make Facilitator**, disabled    | Always. The hover card says why, rather than hiding the button and leaving the rule unlearnable             |
 | Somebody else, holding it    | no button, **Facilitating** badge | Taking it back is done from my own row, so the baton has one home per person                                |
 | Mine, baton free             | **Take Facilitation**             | I have edit rights. This is also how a solo facilitator starts                                              |
-| Mine, somebody else holds it | **Take Over**                     | Owner only — the one row that makes "the diagram can always take back control" true                         |
+| Mine, somebody else holds it | **Take Over**                     | Owner only — the one row that makes "the document can always take back control" true                        |
 | Mine, I hold it              | **Step Down**                     | Always                                                                                                      |
 
 Self rows carry no button today; this is the first thing that gives them one,
@@ -347,7 +347,7 @@ board, and it names the person to ask.
 
 ## Edges
 
-- **Offline diagrams** ([Offline Mode](../006-document/offline-mode.md)) have no room, so no baton and no badge.
+- **Offline documents** ([Offline Mode](../006-document/offline-mode.md)) have no room, so no baton and no badge.
 - **Two browser tabs, one person**: each is a separate socket, but the token is
   in `sessionStorage`, so the tab that was granted it keeps it. Their other tab
   is an ordinary participant.
@@ -368,6 +368,6 @@ token. No user content, no names — [Telemetry + public transparency dashboard]
 
 - **Request facilitation** (raise a hand and let the holder accept). Worth
   having; not worth blocking this on.
-- **Per-tab facilitators.** One per diagram: a session has one pace.
+- **Per-tab facilitators.** One per document: a session has one pace.
 - **Facilitator in the activity log.** It changes nothing in the document.
 - **Making it a real permission.** See "How it is enforced, honestly".

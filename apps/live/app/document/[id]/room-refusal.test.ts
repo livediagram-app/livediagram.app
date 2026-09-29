@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DocumentTrashedError } from '@/lib/document-trashed';
 
 // A join the room turned away is explained over REST (docs/specs/013-workspace/trash.md): the editor repeats
-// its own load (the share link for a visitor, the diagram for everyone else) and only a trashed answer
+// its own load (the share link for a visitor, the document for everyone else) and only a trashed answer
 // counts. Anything else (a network blip, a password gate) leaves the editor as it is.
 const apiLoadShared = vi.fn();
 const apiLoadDocument = vi.fn();
@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 
 describe('joinRefusedBecauseTrashed', () => {
-  it('asks for the diagram as its owner, and names a trashed one', async () => {
+  it('asks for the document as its owner, and names a trashed one', async () => {
     apiLoadDocument.mockRejectedValue(new DocumentTrashedError('d1'));
     await expect(
       joinRefusedBecauseTrashed({ documentId: 'd1', selfId: 'me', shareCode: null }),
@@ -35,7 +35,7 @@ describe('joinRefusedBecauseTrashed', () => {
     expect(apiLoadShared).toHaveBeenCalledWith('abc', 'me');
   });
 
-  it('is not trashed when the diagram still loads, or the load fails for another reason', async () => {
+  it('is not trashed when the document still loads, or the load fails for another reason', async () => {
     apiLoadDocument.mockResolvedValue({ id: 'd1' });
     await expect(
       joinRefusedBecauseTrashed({ documentId: 'd1', selfId: 'me', shareCode: null }),

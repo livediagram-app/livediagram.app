@@ -1,7 +1,7 @@
 // The Trash (docs/specs/013-workspace/trash.md): the cloud Trash over
 // /api/trash (personal + every joined team's) and the Offline Mode local
 // Trash in IndexedDB, behind one set of calls. Restore and purge dispatch on
-// the offline index like every other diagram call (lib/api-client.ts).
+// the offline index like every other document call (lib/api-client.ts).
 
 import type { LiveDoc, DocumentResponse, TrashedDocument } from '@livediagram/api-schema';
 import { isOfflineId } from '../offline/offline-store';
@@ -36,7 +36,7 @@ export async function apiListTrash(ownerId: string, now = Date.now()): Promise<T
   }
 }
 
-// Restore one diagram to where it was. Returns the diagram (null for an
+// Restore one document to where it was. Returns the document (null for an
 // offline one, which the caller re-lists), and lets this page write it again.
 export async function apiRestoreDocument(ownerId: string, id: string): Promise<LiveDoc | null> {
   if (await isOfflineId(id)) {
@@ -53,7 +53,7 @@ export async function apiRestoreDocument(ownerId: string, id: string): Promise<L
   return liveDoc;
 }
 
-// Delete one trashed diagram for good.
+// Delete one trashed document for good.
 export async function apiPurgeDocument(ownerId: string, id: string): Promise<void> {
   if (await isOfflineId(id)) {
     await offlinePurgeDocument(id);
@@ -66,7 +66,7 @@ export async function apiPurgeDocument(ownerId: string, id: string): Promise<voi
 }
 
 // Empty one Trash: the personal one, a team's, or this browser's. Returns how
-// many diagrams went.
+// many documents went.
 export async function apiEmptyTrash(
   ownerId: string,
   scope: { kind: 'personal' } | { kind: 'team'; teamId: string } | { kind: 'local' },

@@ -66,7 +66,7 @@ describe('hasSharedAccess (docs/specs/012-collaboration/assigned-actions.md acce
     expect(await hasSharedAccess(absent.env, 'visitor-1', 'diag-1')).toBe(false);
   });
 
-  it('asks about this visitor and this diagram only', async () => {
+  it('asks about this visitor and this document only', async () => {
     const db = fakeD1(() => ({ first: null }));
     await hasSharedAccess(db.env, 'visitor-1', 'diag-1');
     expect(db.one('FROM shared_with').bindings).toEqual(['visitor-1', 'diag-1']);
@@ -92,7 +92,7 @@ describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared wit
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: the code handed back must carry exactly the scope the
   // visitor was given. An All-tabs code for a visitor who was shown one tab
-  // would open the rest of the diagram to them.
+  // would open the rest of the document to them.
   it('hands back a code of the granted scope, never a broader one', async () => {
     const db = fakeD1(() => ({ all: [sharedRow({ tab_id: 'tab-2' })] }));
     const [item] = await listSharedWith(db.env, 'visitor-1');
@@ -117,7 +117,7 @@ describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared wit
     expect(await listSharedWith(db.env, 'visitor-1')).toEqual([]);
   });
 
-  it('excludes unshareable diagrams and orders by the visitor’s last look', async () => {
+  it('excludes unshareable documents and orders by the visitor’s last look', async () => {
     const db = fakeD1(() => ({ all: [] }));
     await listSharedWith(db.env, 'visitor-1');
     const query = db.one('FROM shared_with s');

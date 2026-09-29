@@ -514,7 +514,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M15.5 11.5v3l2.2 1.4" />
     </Glyph>
   ),
-  // A diagram inside somebody else's page — the outer frame is the point.
+  // A document inside somebody else's page — the outer frame is the point.
   embeds: (
     <Glyph>
       <rect x="2" y="3.5" width="20" height="17" rx="2" />
@@ -803,8 +803,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="16" cy="15.5" r="2" />
     </Glyph>
   ),
-  // A globe in the window, not a diagram: `embeds` is a diagram inside somebody
-  // else's page, and this is somebody else's page inside a diagram.
+  // A globe in the window, not a document: `embeds` is a document inside somebody
+  // else's page, and this is somebody else's page inside a document.
   website: (
     <Glyph>
       <rect x="2.5" y="4" width="19" height="16" rx="2" />
@@ -1367,7 +1367,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 12.5A1.5 1.5 0 0110.5 11h2l1.5 1.5h4a1.5 1.5 0 011.5 1.5v4a1.5 1.5 0 01-1.5 1.5h-8A1.5 1.5 0 019 19z" />
     </Glyph>
   ),
-  // Loose diagrams sitting OUTSIDE the folder, which is what Unsorted holds.
+  // Loose documents sitting OUTSIDE the folder, which is what Unsorted holds.
   unsorted: (
     <Glyph>
       <path d="M3 13.5A1.5 1.5 0 014.5 12h3L9 13.5h9a1.5 1.5 0 011.5 1.5v4A1.5 1.5 0 0118 20.5H4.5A1.5 1.5 0 013 19z" />
@@ -1459,7 +1459,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // Search Panel guides. Six articles about one control, so by the rule the
   // Behaviour batch settled on, none of these draws a magnifier — `the-search-
-  // panel` below already does. Each draws WHAT you find: diagrams, a team, a tab
+  // panel` below already does. Each draws WHAT you find: documents, a team, a tab
   // and an element, a shape landing on the canvas, a new tab.
   'command-palette': (
     <Glyph>

@@ -10,7 +10,7 @@
 // the current settings, because "Comet at Bold over a long trail" means nothing
 // as three words and everything as a stroke.
 //
-// Nothing here is a diagram edit: the pen is device-local (see
+// Nothing here is a document edit: the pen is device-local (see
 // lib/laser-config) and rides your laser samples so peers see the same beam.
 
 import { useEffect, useState } from 'react';

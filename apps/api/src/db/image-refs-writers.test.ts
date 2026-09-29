@@ -156,7 +156,7 @@ describe('deleteTabRow', () => {
     expect(allRefs(db.sql)).toEqual([]);
   });
 
-  it('keeps them while another diagram still links the tab', async () => {
+  it('keeps them while another document still links the tab', async () => {
     const db = withDocument();
     liveDoc(db.sql, 'B');
     await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
@@ -166,7 +166,7 @@ describe('deleteTabRow', () => {
   });
 });
 
-describe('documentRemovalStatements (diagram delete, Take Offline, account deletion)', () => {
+describe('documentRemovalStatements (document delete, Take Offline, account deletion)', () => {
   it("prunes the dropped tabs' references and keeps a shared tab's", async () => {
     const db = withDocument();
     liveDoc(db.sql, 'B');

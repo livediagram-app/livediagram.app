@@ -50,7 +50,7 @@ import { panelEnabled, resolvePanelLayout } from '@/lib/user-preferences';
 
 // How long a guest edits before the sign-in nudge appears (docs/specs/014-identity/sign-in-encouragement.md).
 // Long enough that it never greets someone the instant they open a
-// diagram; short enough to catch an invested session.
+// document; short enough to catch an invested session.
 const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
@@ -60,7 +60,7 @@ const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 // scope changed from the page's locals to the destructured context.
 export function EditorView() {
   const ctx = useEditorContext();
-  // Offline Mode (docs/specs/006-document/offline-mode.md): a diagram saved only in this browser. Drives the
+  // Offline Mode (docs/specs/006-document/offline-mode.md): a document saved only in this browser. Drives the
   // "Offline" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineDocument(ctx.documentId);
   const {
@@ -172,7 +172,7 @@ export function EditorView() {
   // selection-aware command list + dispatcher, built off the same editor
   // actions the menus use. Empty (undefined items) for view-only sessions.
   // Retarget the brand-* accent (buttons, rings, focus) to the active tab's
-  // theme so the editor chrome matches the diagram (docs/specs/011-theme/canvas-and-theme-dialog.md).
+  // theme so the editor chrome matches the document (docs/specs/011-theme/canvas-and-theme-dialog.md).
   useEditorAccent(activeTab.theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
@@ -180,7 +180,7 @@ export function EditorView() {
   // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): the same banner the Explorer shows,
   // but on the editor it waits ~5 minutes into the session before
   // appearing so it never interrupts someone the moment they open a
-  // diagram. Hidden in embed (read-only iframe) and zen mode. zenMode
+  // document. Hidden in embed (read-only iframe) and zen mode. zenMode
   // is deliberately kept OUT of the timer's `enabled` so toggling zen
   // doesn't restart the countdown; it only hides the card at render.
   const { dismissed: signInDismissed, dismiss: dismissSignIn } =
@@ -279,7 +279,7 @@ export function EditorView() {
                   // limit the auto-namer and the Explorer renames both respect.
                   const nextTrim = truncateName(next);
                   setDocumentName(nextTrim);
-                  // Keep the Explorer panel's row for THIS diagram in sync —
+                  // Keep the Explorer panel's row for THIS document in sync —
                   // autosave persists the name, but the in-memory list would
                   // otherwise show the old name until a reload re-fetched it.
                   if (nextTrim && documentId)
@@ -373,7 +373,7 @@ export function EditorView() {
                 activeLayerId={activeLayerId}
                 otherDocuments={
                   // Tab linking is a server-side row insert (docs/specs/006-document/tab-document-many-to-many.md), so neither an
-                  // offline diagram's tabs nor an offline destination can take part
+                  // offline document's tabs nor an offline destination can take part
                   // (docs/specs/006-document/offline-mode.md) — empty list disables the menu entry.
                   isOffline
                     ? []
@@ -394,7 +394,7 @@ export function EditorView() {
                 voteSelfId={voteSelfId}
                 selfRole={sessionRole}
                 onOpenSettings={() => {
-                  // Preferences are user-scoped, not diagram-scoped, so
+                  // Preferences are user-scoped, not document-scoped, so
                   // view-role visitors can still flip them for their own
                   // browser (e.g. opt out of telemetry).
                   setSettingsOpen(true);
@@ -404,7 +404,7 @@ export function EditorView() {
                   setSearchOpen(true);
                   // Element search walks local tab state; pull every
                   // not-yet-visited tab's content so matches cover the
-                  // whole diagram (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). Best-effort
+                  // whole document (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). Best-effort
                   // and fire-and-forget: results refresh as tabs land.
                   void loadAllTabs();
                 }}
@@ -501,7 +501,7 @@ export function EditorView() {
             />
           ) : null}
           {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md) — replaces the old centre-of-canvas card
-          with a subdued, dismissible bottom banner so a blank diagram reads as
+          with a subdued, dismissible bottom banner so a blank document reads as
           intentionally blank. */}
           {showEmptyCanvasBanner ? (
             <EmptyCanvasBanner

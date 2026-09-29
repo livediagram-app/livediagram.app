@@ -160,7 +160,7 @@ export function PresentationHud({
           </>
         ) : null}
         {/* Pacing (docs/specs/012-collaboration/presentation-mode.md). Both off by default and both the presenter's, not
-            the diagram's. The budget is a TARGET: going over is marked, never
+            the document's. The budget is a TARGET: going over is marked, never
             enforced, because a deck that advanced itself mid-answer would be
             worse than no budget at all. */}
         {/* Each figure carries its meaning twice: a Tooltip for the eye and

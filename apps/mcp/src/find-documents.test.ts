@@ -55,7 +55,7 @@ describe('fetchTeamLibraries', () => {
     ]);
   });
 
-  it('collapses a failed teams listing to no team diagrams (personal search must survive)', async () => {
+  it('collapses a failed teams listing to no team documents (personal search must survive)', async () => {
     const env = envRouting({});
     expect(await fetchTeamLibraries(env, 'lvd_x')).toEqual([]);
   });
@@ -87,7 +87,7 @@ describe('matchDocuments', () => {
     { teamName: 'Crew', documents: [summary({ id: 'c1', name: 'Auth service map', savedAt: 20 })] },
   ];
 
-  it('merges personal + team diagrams, newest saved first, labelled by library', async () => {
+  it('merges personal + team documents, newest saved first, labelled by library', async () => {
     expect(matchDocuments(personal, teamLibs, undefined, 20)).toEqual([
       { id: 'p1', name: 'Auth flow', updatedAt: 30, library: 'personal' },
       { id: 'c1', name: 'Auth service map', updatedAt: 20, library: 'Crew' },

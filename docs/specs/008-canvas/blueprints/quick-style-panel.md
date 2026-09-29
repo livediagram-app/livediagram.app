@@ -20,7 +20,7 @@ Scope, by file:
 | `apps/live/lib/quick-style.ts`                                              | Pure: eligibility, sections, shared values, the apply transforms, clear                                          |
 | `apps/live/lib/style-memory.ts`                                             | Pure: memory shape, record from an edit, apply to a new element, forget, parse                                   |
 | `apps/live/lib/quick-style-placement.ts`                                    | Pure: the candidate walk that keeps the panel clear of chrome                                                    |
-| `apps/live/hooks/canvas/useStyleMemory.ts`                                  | Per-diagram memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                             |
+| `apps/live/hooks/canvas/useStyleMemory.ts`                                  | Per-document memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                            |
 | `apps/live/hooks/canvas/useQuickStyle.ts`                                   | Panel actions: one commit per choice, memory, telemetry                                                          |
 | `apps/live/hooks/ui/useQuickStylePlacement.ts`                              | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
 | `apps/live/components/canvas/QuickStylePanel.tsx`                           | The panel: docked (Palette dress) or compact by layout                                                           |
@@ -233,7 +233,7 @@ calls `forget` with the kind keys of every target it changed.
   primitive type (string / number); anything else is dropped (D36).
 - Storage: `localStorage` key `livediagram:v2:style-memory:<documentId>`, written through
   `writeLocalStorageSafe`, at most once per `STYLE_MEMORY_WRITE_DEBOUNCE_MS = 250` (D37), and flushed
-  on unmount. Read once per diagram id.
+  on unmount. Read once per document id.
 
 `useStyleMemory({ documentId, theme })` returns `recordEdit(before, after)`, `styleNewElement(el)`,
 `forget(kindKeys)`. With `documentId === null` (still loading) nothing is read or written and
@@ -377,7 +377,7 @@ label", "Icon after label"; "Clear styles". The panel's region label: "Quick sty
 | Selection changes while a tooltip is open | Tooltip unmounts with its option                                           |
 | Element deleted by a peer mid-choice      | The commit maps the live elements; a missing id is simply not there        |
 | Locked element in the selection           | Not a target; never written                                                |
-| `documentId` null                          | Memory inert                                                               |
+| `documentId` null                         | Memory inert                                                               |
 
 ## Security and trust
 
@@ -394,7 +394,7 @@ new network surface.
   of the panel and per bound element in a theme walk. Worst case a 2 000-element theme switch with
   every element bound: 4 000 calls, well under a frame each.
 - Memory size: kind keys are bounded by `ShapeKind` count + 1, each with at most 10 fields: well
-  under 10 KB per diagram.
+  under 10 KB per document.
 - `recordEdit` diffs the active tab's elements by id with a `Map`: `O(n)` per style commit.
 
 ## Observability

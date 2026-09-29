@@ -75,8 +75,8 @@ export async function getOwnerEmail(env: Env, ownerId: string): Promise<string |
 }
 
 // docs/specs/014-identity/transactional-email.md (#4): owners who signed up at or before `cutoff`, still have ZERO
-// diagrams, and haven't yet been nudged or reached week 1. The NOT EXISTS
-// subquery is the "never drew anything" test (guest diagrams migrate in on
+// documents, and haven't yet been nudged or reached week 1. The NOT EXISTS
+// subquery is the "never drew anything" test (guest documents migrate in on
 // sign-up, so a real account that drew anything is excluded). Soonest-first.
 export async function dueForActivation(
   env: Env,
@@ -101,9 +101,9 @@ export async function markActivationSent(env: Env, ownerId: string): Promise<voi
     .run();
 }
 
-// docs/specs/014-identity/transactional-email.md (#5): owners whose most recent diagram activity was at or before
+// docs/specs/014-identity/transactional-email.md (#5): owners whose most recent document activity was at or before
 // `cutoff` (active once, now quiet), not yet win-backed. MAX(updated_at) is NULL
-// for a zero-diagram owner and NULL <= ? is false, so they're excluded (the
+// for a zero-document owner and NULL <= ? is false, so they're excluded (the
 // activation nudge handles those). Quietest-longest first.
 export async function dueForWinback(
   env: Env,

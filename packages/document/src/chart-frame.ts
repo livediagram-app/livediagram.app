@@ -1,7 +1,7 @@
 // A chart's layout (docs/specs/009-elements/pie-chart.md): the box, the data, the colour accessor, and
 // where the plot and the legend sit inside it.
 //
-// In the diagram package because BOTH renderers need it. The canvas laid its
+// In the document package because BOTH renderers need it. The canvas laid its
 // charts out from here while the exporter drew nothing at all, so a pie chart
 // came out of an export as an empty box with its kind name in it. Sharing the
 // layout is what lets the two draw the same chart rather than two charts that

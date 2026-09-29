@@ -66,7 +66,7 @@ export function EditorElementDialogs() {
 
   // A video's link IS its content (docs/specs/009-elements/youtube-video.md), so its picker is the URL mode
   // only, validated as a YouTube link. Every other element keeps the full
-  // tab / diagram / URL choice.
+  // tab / document / URL choice.
   const linkTarget = activeTab.elements.find((e) => e.id === linkPickerOpenForId);
   // The provider the embed was created for, when it came from one of the
   // provider tiles (docs/specs/009-elements/embed-providers.md). Names the dialog; the validator still accepts
@@ -217,7 +217,7 @@ export function EditorElementDialogs() {
               closeImagePicker();
             }
             // Refresh the Current Tab → Images accordion so the
-            // just-uploaded image surfaces without a diagram reload.
+            // just-uploaded image surfaces without a document reload.
             refreshRecentImages(selfParticipant.id);
           }}
           onClose={closeImagePicker}

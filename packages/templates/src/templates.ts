@@ -605,14 +605,16 @@ export function templateCreateHref(kind: TemplateKind): string {
   return `/new?template=${encodeURIComponent(kind)}`;
 }
 
-// Default name for a freshly-created diagram: "Untitled <Template Title>" in
-// title case so a templated diagram is recognisable in the Explorer (e.g.
+// Default name for a freshly-created document: "Untitled <Template Title>" in
+// title case so a templated document is recognisable in the Explorer (e.g.
 // "Untitled Tree Mind Map"), while a blank one (or no template) keeps the plain
-// "Untitled diagram".
+// "Untitled document".
+export const UNTITLED_DOCUMENT_NAME = 'Untitled document';
+
 export function untitledNameForTemplate(kind: TemplateKind | null): string {
-  if (!kind || kind === 'blank') return 'Untitled diagram';
+  if (!kind || kind === 'blank') return UNTITLED_DOCUMENT_NAME;
   const title = TEMPLATES.find((t) => t.kind === kind)?.title;
-  return title ? `Untitled ${titleCase(title)}` : 'Untitled diagram';
+  return title ? `Untitled ${titleCase(title)}` : UNTITLED_DOCUMENT_NAME;
 }
 
 // The canvas backdrop pattern that best suits each template's layout.

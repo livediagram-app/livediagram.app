@@ -28,22 +28,22 @@ function pattern(category: string, action: string, type: string): string | null 
     // The landing funnel (docs/specs/019-marketing/landing-funnel.md): which public-page button it was.
     case 'Cta|Opened':
       return isCtaSource(type)
-        ? `Someone followed the ${ctaSourceLabel(type)} button on the ${SURFACE_LABELS[ctaSurfaceOf(type)]} and reached the New Diagram page.`
+        ? `Someone followed the ${ctaSourceLabel(type)} button on the ${SURFACE_LABELS[ctaSurfaceOf(type)]} and reached the New Document page.`
         : null;
     case 'Cta|Created':
       return isCtaSource(type)
-        ? `Someone who arrived from the ${ctaSourceLabel(type)} button on the ${SURFACE_LABELS[ctaSurfaceOf(type)]} went on to create a diagram.`
+        ? `Someone who arrived from the ${ctaSourceLabel(type)} button on the ${SURFACE_LABELS[ctaSurfaceOf(type)]} went on to create a document.`
         : null;
     case 'Element|Added':
       return `Someone added ${withArticle(words(type))} to the canvas.`;
     case 'Document|Exported':
       return `Someone exported a tab as ${type}.`;
     case 'Document|Joined':
-      return `Someone came into a diagram through ${withArticle(`${words(type)}-role`)} share link. Counted once per person per diagram, not on every revisit.`;
+      return `Someone came into a document through ${withArticle(`${words(type)}-role`)} share link. Counted once per person per document, not on every revisit.`;
     case 'Tab|Imported':
       return `Someone imported a tab from ${withArticle(type)} file.`;
     case 'Theme|Changed':
-      return `A tab was given the ${typeLabel(type)} theme: switched to it, or picked when a diagram or template was created with it.`;
+      return `A tab was given the ${typeLabel(type)} theme: switched to it, or picked when a document or template was created with it.`;
     case 'Canvas|Changed': {
       const control = CANVAS_CONTROLS[type];
       return control

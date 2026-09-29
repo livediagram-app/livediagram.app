@@ -3,11 +3,11 @@ import { __setOfflineBackend, offlineCreateDocument } from '../offline/offline-s
 import { memBackend } from '../offline/offline-test-utils';
 import { apiListFavourites, apiSetFavourite } from './favourites';
 
-// Starring an OFFLINE diagram (docs/specs/006-document/offline-mode.md) must stay in the browser.
+// Starring an OFFLINE document (docs/specs/006-document/offline-mode.md) must stay in the browser.
 //
 // The favourites table carries `FOREIGN KEY (document_id) REFERENCES
-// diagrams(id)` (migration 0040), and an offline diagram has no row in
-// `diagrams` by definition — it lives only in this browser's IndexedDB. So a
+// documents(id)` (migration 0040), and an offline document has no row in
+// `documents` by definition — it lives only in this browser's IndexedDB. So a
 // star sent to the server does not merely go unused, it is REJECTED:
 // "FOREIGN KEY constraint failed". apiSetFavourite swallows the failure, and
 // the toggle is optimistic, so the star appears on click and is gone on the
@@ -16,7 +16,7 @@ import { apiListFavourites, apiSetFavourite } from './favourites';
 // docs/specs/006-document/offline-mode.md states the rule these lock directly: offline rows never trigger a
 // server fetch, "list, thumbnail, or otherwise". A star is an "otherwise".
 
-describe('favourites on an offline diagram', () => {
+describe('favourites on an offline document', () => {
   let fetchCalls: string[];
 
   beforeEach(() => {
@@ -35,7 +35,7 @@ describe('favourites on an offline diagram', () => {
     vi.unstubAllGlobals();
   });
 
-  it('stars an offline diagram without reaching the server', async () => {
+  it('stars an offline document without reaching the server', async () => {
     await offlineCreateDocument({ id: 'off-1', name: 'Local only' }, 1000);
     await apiSetFavourite('owner-1', 'off-1', true);
     expect(fetchCalls).toEqual([]);
@@ -54,7 +54,7 @@ describe('favourites on an offline diagram', () => {
     expect(await apiListFavourites('owner-1')).not.toContain('off-1');
   });
 
-  it('still sends a cloud diagram to the server', async () => {
+  it('still sends a cloud document to the server', async () => {
     await apiSetFavourite('owner-1', 'cloud-1', true);
     expect(fetchCalls.some((u) => u.includes('/favourites/cloud-1'))).toBe(true);
   });

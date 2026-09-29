@@ -195,7 +195,7 @@ Naming: the JSON export/import card is titled **"JSON"** (was "File" /
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
-`Tab`/`Imported`/`Mermaid` and `Diagram`/`Exported`/`Mermaid`, added to the
+`Tab`/`Imported`/`Mermaid` and `Document`/`Exported`/`Mermaid`, added to the
 existing import/export type lists, replacing the removed `Text` type.
 
 ## Removed: the `.lvd` text DSL (the removed text-DSL spec)

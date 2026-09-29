@@ -98,7 +98,7 @@ export function useEditorHistory(opts: {
     setMultiSelectedIds(new Set());
   };
 
-  // Drop every audit entry for the currently active tab. The diagram
+  // Drop every audit entry for the currently active tab. The document
   // itself is untouched — only the log dies. The Activity Panel
   // exposes this via its bottom "Clear Activity" button. Mirrors the
   // server-side cascade that runs on tab delete, just user-triggered.

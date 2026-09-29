@@ -1,6 +1,6 @@
 // A lane's title gutter (docs/specs/009-elements/lane.md): which edge it hugs and how thick it is.
 //
-// In the diagram package because BOTH renderers need it: the canvas draws the
+// In the document package because BOTH renderers need it: the canvas draws the
 // strip, and the headless SVG render (exports, thumbnails, the MCP render) has
 // to draw the same strip on the same edge, or an exported swimlane is a plain
 // box with its title floating in the middle of the work. The editor's

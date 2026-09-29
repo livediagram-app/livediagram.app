@@ -320,7 +320,7 @@ export function CrossTabLink() {
   );
 }
 
-/** The tab ellipsis menu with the Add to Diagram option and a target-diagram
+/** The tab ellipsis menu with the Add to Document option and a target-document
  *  picker submenu. */
 export function AddToDocumentMenu() {
   const barY = 158;
@@ -334,10 +334,10 @@ export function AddToDocumentMenu() {
         x={14}
         y={28}
         w={142}
-        items={['Add to Folder', 'Add to Diagram', 'Link Element']}
+        items={['Add to Folder', 'Add to Document', 'Link Element']}
         active={1}
       />
-      {/* The destination-diagram picker */}
+      {/* The destination-document picker */}
       <Menu
         x={170}
         y={48}

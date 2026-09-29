@@ -59,10 +59,10 @@ export function expectNoPageErrors(pageErrors: string[]): void {
   expect(pageErrors, `unexpected page errors:\n${pageErrors.join('\n')}`).toEqual([]);
 }
 
-// Complete the /new template wizard into a blank diagram and land on
+// Complete the /new template wizard into a blank document and land on
 // the editor canvas. Shared by the create-flow tests; resilient to the
 // wizard's step count by clicking whatever advances it.
-// Start a diagram from a named TEMPLATE in a named category. The blank
+// Start a document from a named TEMPLATE in a named category. The blank
 // helper below skips the category step entirely (Blank is on the first
 // screen), so template creation — builders, layers, per-template canvas
 // overrides, the board kind — is a genuinely different path through the
@@ -73,7 +73,7 @@ export async function startTemplateDocument(
   template: RegExp,
 ): Promise<void> {
   await page.goto('/new');
-  await page.getByText('New Diagram', { exact: false }).waitFor();
+  await page.getByText('New Document', { exact: false }).waitFor();
   // Category tiles are aria-labelled "Browse <name> templates"; the
   // template tiles carry their title + description as the accessible name.
   await page.getByRole('button', { name: category }).first().click();
@@ -171,7 +171,7 @@ export async function openJustDraw(page: Page): Promise<void> {
 
 export async function startBlankDocument(page: Page): Promise<void> {
   await page.goto('/new');
-  await page.getByText('New Diagram', { exact: false }).waitFor();
+  await page.getByText('New Document', { exact: false }).waitFor();
   // Step 1: pick the Blank template. Single-click advances to the theme
   // step (docs/specs/006-document/offline-mode.md), so no explicit Next is needed here.
   await page.getByText('Blank diagram', { exact: false }).click();
@@ -193,7 +193,7 @@ export async function startBlankDocument(page: Page): Promise<void> {
 
 export type Seed = Record<string, unknown>[];
 
-// Write the seed into the new diagram's first tab through the api, reload.
+// Write the seed into the new document's first tab through the api, reload.
 export async function seedTab(page: Page, elements: Seed): Promise<void> {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
   await page.evaluate(
@@ -214,7 +214,7 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
         }
         if (!tab) await new Promise((r) => setTimeout(r, 100));
       }
-      if (!tab) throw new Error('the new diagram never saved its first tab');
+      if (!tab) throw new Error('the new document never saved its first tab');
       const res = await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
         method: 'PUT',
         headers,

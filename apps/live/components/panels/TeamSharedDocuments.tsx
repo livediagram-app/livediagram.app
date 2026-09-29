@@ -22,12 +22,12 @@ import { track } from '@/lib/telemetry';
 import { folderDescendants } from '@/lib/folder-tree';
 import { TEAM_TRASH_RESTORE_HINT } from '@/lib/trash-copy';
 
-// "Shared diagrams" on the team page (docs/specs/013-workspace/team-shared-documents.md): the team's folder
-// tree + diagrams, navigated with a small breadcrumb instead of a
+// "Shared documents" on the team page (docs/specs/013-workspace/team-shared-documents.md): the team's folder
+// tree + documents, navigated with a small breadcrumb instead of a
 // sidebar. The concept (and most of the row components) is the
 // personal explorer's, just team-scoped: every joined member can
-// create / rename / move / delete folders, re-folder diagrams, and
-// remove a diagram from the team (back to its owner's personal
+// create / rename / move / delete folders, re-folder documents, and
+// remove a document from the team (back to its owner's personal
 // Unsorted). The Unsorted bucket is synthetic and undeletable, same
 // as the personal tree.
 
@@ -45,9 +45,9 @@ export function TeamSharedDocuments({
   // Shown by the move picker's Team Library card; falls back to "Team".
   teamName?: string;
   // Full move destinations (docs/specs/013-workspace/team-shared-documents.md): the caller's personal folder tree plus
-  // EVERY team's library, so a diagram can be re-homed anywhere (back to My
+  // EVERY team's library, so a document can be re-homed anywhere (back to My
   // Work, or on to another team) from this page — the space overview + back
-  // bar appear once more than one space exists. Absent = diagram moves stay
+  // bar appear once more than one space exists. Absent = document moves stay
   // scoped to this team. Folder moves are always team-scoped (a folder
   // can't change scope).
   moveDests?: {
@@ -55,7 +55,7 @@ export function TeamSharedDocuments({
     teams: { id: string; name: string; folders: MoveFolderNode[] }[];
   };
   // Routes a cross-scope pick (personal / another team) — the explorer's
-  // `moveDocumentTo`, which picks the right API call from the diagram's
+  // `moveDocumentTo`, which picks the right API call from the document's
   // current placement. Same-team picks keep using lib.moveDocument.
   onMoveDocumentTo?: (id: string, dest: MoveDestination) => void;
 }) {
@@ -97,8 +97,8 @@ export function TeamSharedDocuments({
         : [];
 
   const crumbs: { label: string; onClick?: () => void }[] = (() => {
-    const root = { label: 'Team diagrams', onClick: () => setSpot({ kind: 'root' }) };
-    if (spot.kind === 'root') return [{ label: 'Team diagrams' }];
+    const root = { label: 'Team documents', onClick: () => setSpot({ kind: 'root' }) };
+    if (spot.kind === 'root') return [{ label: 'Team documents' }];
     if (spot.kind === 'unsorted') return [root, { label: 'Unsorted' }];
     const chain = lib.breadcrumb(spot.id);
     return [
@@ -129,7 +129,7 @@ export function TeamSharedDocuments({
     delete: async () => {
       const ok = await confirm({
         title: 'Delete team folder?',
-        message: `"${f.name || 'This folder'}" will be deleted. Its subfolders move to the top level and its diagrams move to the team's Unsorted.`,
+        message: `"${f.name || 'This folder'}" will be deleted. Its subfolders move to the top level and its documents move to the team's Unsorted.`,
         confirmLabel: 'Delete folder',
       });
       if (!ok) return;
@@ -154,7 +154,7 @@ export function TeamSharedDocuments({
 
   // Row callbacks, shared by the list rows and the card grid so the two
   // layouts can't drift on what an action does (mirrors the Explorer's
-  // diagram-row-shared split).
+  // document-row-shared split).
   const commitRenameFolder = (id: string, name: string) => {
     setRenamingFolderId(null);
     void lib.renameFolder(id, name);
@@ -169,9 +169,9 @@ export function TeamSharedDocuments({
     const d = lib.documents.find((x) => x.id === id);
     const notice = await fetchSharedTabsNotice(ownerId, id, 'delete');
     const ok = await confirm({
-      title: 'Delete team diagram?',
+      title: 'Delete team document?',
       message: [
-        `"${d?.name || 'This diagram'}" will be deleted for the whole team.`,
+        `"${d?.name || 'This document'}" will be deleted for the whole team.`,
         notice,
         TEAM_TRASH_RESTORE_HINT,
       ]
@@ -209,21 +209,21 @@ export function TeamSharedDocuments({
             <EmptyState
               icon={<TeamIcon />}
               title="Nothing Shared Yet"
-              description="Move a diagram here from your personal explorer, or create a folder to organise ahead."
+              description="Move a document here from your personal explorer, or create a folder to organise ahead."
             />
           ) : (
             <EmptyState
               icon={<FolderSolidIcon open />}
               title="This Folder Is Empty"
-              description="Move a diagram here, or add a subfolder to organise your team's work."
+              description="Move a document here, or add a subfolder to organise your team's work."
             />
           )}
         </div>
       ) : viewMode === 'card' ? (
-        // Same folders + diagrams as the list, rendered as the Explorer's
-        // card grid (docs/specs/006-document/document-snapshots.md). Team diagrams (DocumentSummary) satisfy the
+        // Same folders + documents as the list, rendered as the Explorer's
+        // card grid (docs/specs/006-document/document-snapshots.md). Team documents (DocumentSummary) satisfy the
         // grid's PaneDocument contract; the visibility badge is hidden
-        // since every card here is a team diagram.
+        // since every card here is a team document.
         <div className="p-3">
           <CardView
             folders={visibleFolders}
@@ -297,8 +297,8 @@ export function TeamSharedDocuments({
 
       {/* ---------- Move picker ---------- */}
       {/* Same shared move modal as the personal surfaces (docs/specs/013-workspace/folders.md). With
-          `moveDests` (the explorer page supplies it) a DIAGRAM move offers
-          every space — Personal Space plus each team — so a team diagram can be
+          `moveDests` (the explorer page supplies it) a DOCUMENT move offers
+          every space — Personal Space plus each team — so a team document can be
           re-homed back to the personal tree or on to another team from
           right here; the space overview + back bar come with it. This
           team's own folders come from the live lib (fresher than the

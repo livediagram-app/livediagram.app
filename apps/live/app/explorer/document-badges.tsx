@@ -1,8 +1,8 @@
 'use client';
 
-// The marks a diagram carries in the Explorer's list rows and cards, and
+// The marks a document carries in the Explorer's list rows and cards, and
 // in its actions menu's header: the visibility badge, the favourite star
-// and the folder chip. Split from diagram-row-shared (the menu) so each
+// and the folder chip. Split from document-row-shared (the menu) so each
 // file holds one concern.
 
 import { SharedDotIcon } from '@/components/chrome/share-state-icons';
@@ -15,8 +15,8 @@ const badgeBase =
   // Labels sit in text-optical-line + text-optical-caps (optical-alignment.md), so the base carries no case.
   'optical-edges inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1';
 
-// The star a favourited diagram carries wherever it's listed (docs/specs/013-workspace/favourites.md),
-// so you can tell a starred diagram from an unstarred one without opening
+// The star a favourited document carries wherever it's listed (docs/specs/013-workspace/favourites.md),
+// so you can tell a starred document from an unstarred one without opening
 // its menu. Amber rather than the brand colour: it's a personal mark on
 // someone else's palette of status badges, and reads as "mine" next to
 // them.
@@ -37,12 +37,12 @@ export function FavouriteMarker() {
   );
 }
 
-// Where a diagram lives, shown on Recent rows (docs/specs/013-workspace/recent-folder-chip.md). Recent spans every
+// Where a document lives, shown on Recent rows (docs/specs/013-workspace/recent-folder-chip.md). Recent spans every
 // folder, so without this you can't tell a "Q3 plan" in Design from one in
 // Archive without opening it.
 //
 // Deliberately NOT the badgeBase treatment: those badges are uppercase,
-// ring-outlined statements about the diagram (Offline / Shared / Team /
+// ring-outlined statements about the document (Offline / Shared / Team /
 // Private). This is a quiet, lower-case location that happens to be
 // clickable, so it reads as a link rather than competing with them.
 //
@@ -55,7 +55,7 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
       <button
         type="button"
         onClick={(e) => {
-          // The whole row is a link to the diagram; this jumps to the
+          // The whole row is a link to the document; this jumps to the
           // folder instead, so it must not bubble into that.
           e.preventDefault();
           e.stopPropagation();
@@ -75,7 +75,7 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
 // The visibility badge: Offline (saved only in this browser, docs/specs/006-document/offline-mode.md), Shared
 // (a shared-with-me row / a share-link owned row), Team, or Private. Each
 // carries a concise hover card explaining what the state means. Offline
-// wins first: an offline diagram is never shared or in a team.
+// wins first: an offline document is never shared or in a team.
 export function VisibilityBadge({ document: liveDoc }: { document: PaneDocument }) {
   if (liveDoc.ownerId === OFFLINE_OWNER_ID) {
     return (

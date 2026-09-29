@@ -12,7 +12,7 @@ import { svgCodeBlockShape } from './svg-render-shapes';
 // here is about a stored id surviving: an unknown one (older file, hand edit,
 // a scheme dropped later) must still render a card rather than an undefined
 // colour, and the default must keep pointing at the look the block shipped
-// with so untouched diagrams don't change appearance.
+// with so untouched documents don't change appearance.
 
 const CHANNELS: (keyof CodeTheme)[] = [
   'surface',

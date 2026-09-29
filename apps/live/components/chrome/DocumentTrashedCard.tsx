@@ -1,7 +1,7 @@
 'use client';
 
-// The deleted state (docs/specs/013-workspace/trash.md, "While a diagram is
-// in the Trash"): shown when the open diagram, or the one a link points at,
+// The deleted state (docs/specs/013-workspace/trash.md, "While a document is
+// in the Trash"): shown when the open document, or the one a link points at,
 // is in the Trash. Someone who may restore it gets Restore right here; a
 // share-link visitor only learns that it was deleted. Same card shape as
 // ApiErrorPage, so it drops into the same status chrome.
@@ -35,7 +35,7 @@ export function DocumentTrashedCard({
           Deleted
         </p>
         <h1 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">
-          This diagram was deleted
+          This document was deleted
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {restorable

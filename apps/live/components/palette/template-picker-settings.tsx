@@ -7,7 +7,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { isOfflineLocation, saveLocationLabel, type SaveLocationId } from '@/lib/save-locations';
 import { SaveLocationPicker } from './SaveLocationPicker';
 
-// The New Diagram wizard's third step (docs/specs/006-document/offline-mode.md, docs/specs/006-document/save-locations.md): name the diagram,
+// The New Document wizard's third step (docs/specs/006-document/offline-mode.md, docs/specs/006-document/save-locations.md): name the document,
 // choose its save location (livediagram or Local Browser), and where in that
 // location it lives. Placement is the shared
 // PlacementBrowser (components/placement) — the same two-level space -> folder
@@ -55,7 +55,7 @@ export function NewDocumentSettingsStep({
   onSaveLocation: (v: SaveLocationId) => void;
 }) {
   // Local Browser is Offline Mode (docs/specs/006-document/offline-mode.md): it drives the warning below and
-  // removes the folder step (an offline diagram has no server folder / team).
+  // removes the folder step (an offline document has no server folder / team).
   const offline = isOfflineLocation(saveLocation);
   const folderHeading = `Choose ${saveLocationLabel(saveLocation)} Folder`;
   const fieldLabel =
@@ -64,7 +64,7 @@ export function NewDocumentSettingsStep({
     <div className="flex flex-col gap-5">
       {/* Name */}
       <label className="flex flex-col gap-1.5">
-        <span className={fieldLabel}>Diagram name</span>
+        <span className={fieldLabel}>Document name</span>
         <TextInput
           value={documentName}
           placeholder={placeholder}
@@ -85,8 +85,8 @@ export function NewDocumentSettingsStep({
         <SaveLocationPicker value={saveLocation} onChange={onSaveLocation} />
       </div>
 
-      {/* Data-loss warning (docs/specs/006-document/offline-mode.md). Offline diagrams live only in this
-          browser's storage, so anything that wipes it takes the diagram with
+      {/* Data-loss warning (docs/specs/006-document/offline-mode.md). Offline documents live only in this
+          browser's storage, so anything that wipes it takes the document with
           it. Only shown while Local Browser is chosen, so the risk is surfaced
           exactly when it applies. */}
       {offline ? (
@@ -96,7 +96,7 @@ export function NewDocumentSettingsStep({
             <path d="M8 6.5v3.2M8 11.6v.1" />
           </Glyph>
           <span>
-            This diagram is not backed up or synced. Clearing your browser data, using private
+            This document is not backed up or synced. Clearing your browser data, using private
             browsing, or switching device or browser will lose it for good. You can Sync it to your
             account later.{' '}
             <HelpArticleLink
@@ -112,7 +112,7 @@ export function NewDocumentSettingsStep({
       {/* Placement: the shared space -> folder browser, as list rows so it
           doesn't read as a twin of the tile row above, headed by the chosen
           location ("Choose livediagram Folder"). Absent entirely for Local
-          Browser: an offline diagram has no server placement, so there is
+          Browser: an offline document has no server placement, so there is
           nothing to choose. */}
       {offline ? null : (
         <div className="flex flex-col gap-1.5" role="radiogroup" aria-label={folderHeading}>

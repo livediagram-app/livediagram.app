@@ -1,4 +1,4 @@
-// share_links — per-diagram, per-role short codes (migration 0003,
+// share_links — per-document, per-role short codes (migration 0003,
 // expiry columns from 0020 / docs/specs/013-workspace/share-link-expiry.md). Row shape + role normalisation
 // live in share-link-row.ts so the defensive mapper has its own test
 // surface.
@@ -10,7 +10,7 @@ import type { Env, ShareLinkDTO, ShareRole } from '../types';
 const SHARE_LINK_COLS = 'code, document_id, role, created_at, expiry, expires_at, tab_id';
 
 // A tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md) is only a link while its tab is
-// still in the diagram. Part of the access lookup itself, so a race between a
+// still in the document. Part of the access lookup itself, so a race between a
 // tab delete and a request can't open anything.
 const SCOPE_STILL_VALID =
   '(tab_id IS NULL OR EXISTS (SELECT 1 FROM document_tabs dt WHERE dt.document_id = share_links.document_id AND dt.tab_id = share_links.tab_id))';
@@ -46,7 +46,7 @@ export async function listShareLinks(env: Env, documentId: string): Promise<Shar
 }
 
 // The access-side lookup: ACTIVE links only (docs/specs/013-workspace/share-link-expiry.md), and a scoped
-// link only while its tab is in the diagram (tab-scoped-share-links.md). This is the
+// link only while its tab is in the document (tab-scoped-share-links.md). This is the
 // single enforcement choke point — the read/edit gates in
 // auth/document-access.ts, the WebSocket-upgrade role resolution, and
 // GET /api/share/:code all come through here, so an expired link
@@ -89,7 +89,7 @@ export async function createShareLink(
     .bind(code, documentId, role, createdAt, expiry === 'never' ? null : expiry, expiresAt, tabId)
     .run();
   // Flip the shareable flag on so the realtime room opens + the
-  // share-code resolver picks the diagram up. The "primary" code is
+  // share-code resolver picks the document up. The "primary" code is
   // derived from share_links on read, so no column to update.
   await env.DB.prepare('UPDATE documents SET shareable = 1 WHERE id = ?').bind(documentId).run();
   return { code, documentId, role, createdAt, expiry, expiresAt, tabId };
@@ -110,7 +110,7 @@ export async function extendShareLink(env: Env, code: string): Promise<ShareLink
 }
 
 // Change a link's scope (docs/specs/013-workspace/tab-scoped-share-links.md): null widens it to All tabs.
-// The route has already checked the tab belongs to the diagram. Null when the
+// The route has already checked the tab belongs to the document. Null when the
 // code doesn't exist.
 export async function rescopeShareLink(
   env: Env,
@@ -151,7 +151,7 @@ export async function deleteShareLink(env: Env, code: string): Promise<void> {
   await closeSharingIfNoLinksLeft(env, existing.documentId);
 }
 
-// If the last link for the diagram just went, flip shareable off so the live
+// If the last link for the document just went, flip shareable off so the live
 // app stops opening the realtime room. The primary code is derived on read;
 // no column to repoint.
 async function closeSharingIfNoLinksLeft(env: Env, documentId: string): Promise<void> {

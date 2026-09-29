@@ -43,7 +43,7 @@ function actions() {
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
-// docs/specs/017-telemetry/telemetry.md: Team·Added·Document counts a diagram ENTERING a team library,
+// docs/specs/017-telemetry/telemetry.md: Team·Added·Document counts a document ENTERING a team library,
 // whichever surface filed it; Team·Moved·Document is every other scope move.
 describe('moveDocumentTo telemetry', () => {
   beforeEach(() => {
@@ -51,7 +51,7 @@ describe('moveDocumentTo telemetry', () => {
     setFolderMock.mockReset().mockResolvedValue(undefined);
   });
 
-  it('counts a personal diagram filed into a team as Added', async () => {
+  it('counts a personal document filed into a team as Added', async () => {
     actions().moveDocumentTo('d1', { teamId: 't1', folderId: null }, null);
     await flush();
     expect(trackMock).toHaveBeenCalledExactlyOnceWith('Team', 'Added', 'Document');
@@ -60,7 +60,7 @@ describe('moveDocumentTo telemetry', () => {
   it('counts a move within or out of a team as Moved', async () => {
     actions().moveDocumentTo('d1', { teamId: 't1', folderId: 'f1' }, 't1');
     actions().moveDocumentTo('d1', { teamId: null, folderId: null }, 't1');
-    // A caller that does not say where the diagram came from (team library rows).
+    // A caller that does not say where the document came from (team library rows).
     actions().moveDocumentTo('d1', { teamId: 't2', folderId: null });
     await flush();
     expect(trackMock.mock.calls).toEqual([

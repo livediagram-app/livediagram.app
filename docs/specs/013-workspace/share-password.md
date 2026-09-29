@@ -1,7 +1,7 @@
 # Share password
 
-An optional **password on a diagram** that gates share-link access. When set,
-anyone opening any share link for that diagram must enter the password before
+An optional **password on a document** that gates share-link access. When set,
+anyone opening any share link for that document must enter the password before
 they can view it, and the password rides on every subsequent API call so writes
 stay gated too. The point is to stop people guessing share URLs, not to provide
 cryptographic protection.
@@ -11,16 +11,16 @@ identity, share-code path) and [11-api](../015-api/api.md) (share links).
 
 ## Model
 
-- The password is a property of the **diagram**, not of individual links. One
-  password covers every share link the owner mints (`docs/specs/015-api/api.md` lets a diagram
-  have many). Column: `diagrams.share_password TEXT` (nullable; null / empty =
+- The password is a property of the **document**, not of individual links. One
+  password covers every share link the owner mints (`docs/specs/015-api/api.md` lets a document
+  have many). Column: `documents.share_password TEXT` (nullable; null / empty =
   no password). Migration `0017_share_password.sql`.
 - **Stored in plain text**, deliberately. The owner must be able to read it back
   and change it on the Share screen (the explicit product requirement), so a
   one-way hash won't do. This is acceptable here: the threat model is "stop
   drive-by URL guessing", the value lives in D1 behind the owner-authenticated
   API, and the repo's [secrets policy](../002-project-scope/secrets-policy.md) governs _source_
-  secrets, not user data. It is **never** returned in the standard diagram DTO
+  secrets, not user data. It is **never** returned in the standard document DTO
   (no leak to viewers) — only via the owner-only endpoints below.
 - **Verified in constant time and rate-limited.** Even though the password is a
   low-value, anti-guessing secret, the compare uses a timing-safe digest compare
@@ -39,20 +39,20 @@ identity, share-code path) and [11-api](../015-api/api.md) (share links).
 - `PUT /api/documents/:id/share-password` (owner-only, new). Body
   `{ password: string | null }`. A null / empty / whitespace-only value clears
   the password. Returns `{ password: string | null }` (the stored value).
-- `GET /api/share/:code` (viewer resolve): if the diagram has a password, return
+- `GET /api/share/:code` (viewer resolve): if the document has a password, return
   **401 `{ error: 'password_required' }`** when the request carries no
   `X-Share-Password`, **403 `{ error: 'password_invalid' }`** when it carries
-  the wrong one, and only record the visit + return the diagram on a match.
+  the wrong one, and only record the visit + return the document on a match.
 - Every other share-code-authorised route is gated through
   `canReadDocument` / `canEditDocument` (`src/auth/document-access.ts`). Both gain a
-  `sharePassword` argument: after the link + role check, if the diagram has a
+  `sharePassword` argument: after the link + role check, if the document has a
   password and the provided one doesn't match, access is denied. The header is
   `X-Share-Password`, read via `sharePasswordOf(request)` (`routes/context.ts`),
-  threaded at every call site (the diagram read/write/log routes + the image
+  threaded at every call site (the document read/write/log routes + the image
   route). Owner-id and Clerk paths short-circuit before the password check.
 - `GET /api/documents/:id/ws` (realtime upgrade): browsers can't set headers on a
   WS upgrade, so the password rides as the `p` query param next to `s` / `o`. A
-  password-protected diagram refuses the upgrade (403) unless `p` matches; the
+  password-protected document refuses the upgrade (403) unless `p` matches; the
   owner (`o` matches) bypasses.
 
 Helpers in `src/db/documents.ts` (the db.ts split moved them out of the
@@ -67,7 +67,7 @@ old monolithic module): `getDocumentSharePassword(env, id)`,
   `connectRoom` appends `&p=`. This keeps the password plumbing in one place
   instead of threading it through every call site.
 - `apiLoadShared(code, ownerId)` returns a discriminated result:
-  `{ diagram, role }` on success, `{ passwordRequired: true, invalid: boolean }`
+  `{ document, role }` on success, `{ passwordRequired: true, invalid: boolean }`
   on 401/403, or `null` on 404 (not found / revoked). `invalid` is true only
   when a wrong password was submitted (403), so the gate can show an error.
 - `apiSetSharePassword(ownerId, id, password | null)` → the PUT above.
@@ -81,7 +81,7 @@ accepted password is kept in `localStorage` under
 text (`readCachedSharePassword` / `writeCachedSharePassword` in
 `lib/api/core.ts`).
 
-- **Keyed by share code**, not diagram id: the diagram id only resolves after
+- **Keyed by share code**, not document id: the document id only resolves after
   the gate is passed, and the code is what the URL carries on arrival.
 - **Read** at the start of a share-link bootstrap and set as the session share
   password, so the first `GET /api/share/:code` already carries it.
@@ -97,7 +97,7 @@ text (`readCachedSharePassword` / `writeCachedSharePassword` in
 - **Plain text** matches the threat model above: the password is an
   anti-URL-guessing secret the api already stores in clear, not protected user
   data, and anyone able to read this browser's storage can already open the
-  diagram in it.
+  document in it.
 - In an **embed**, browsers partition third-party iframe storage, so the cache
   is per embedding site ([Read-only embeds (`/embed`)](embeds.md)).
 
@@ -130,7 +130,7 @@ moving piece while it is up.
 
 ## Share dialog (owner)
 
-The "Share this diagram" dialog carries a **Password Protection** switch
+The "Share this document" dialog carries a **Password Protection** switch
 beneath the passes (see [Live app → Share dialog](../007-editor/live-app.md#share-dialog);
 it applies to all links), hinting that everyone opening a pass must enter it,
 embeds included ([Read-only embeds (`/embed`)](embeds.md)). Switched on, it
@@ -142,16 +142,16 @@ pass shows a Password tag while one is set. Setting / clearing calls `apiSetShar
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
-Owner sets a password: `track('Diagram', 'Shared', 'PasswordSet')`. Owner clears
-it: `track('Diagram', 'Shared', 'PasswordCleared')`. Both reuse the existing
-`Diagram` / `Shared` pair; the `type` is a preset string, never the password.
-The visitor-join event is unchanged (`Diagram` / `Joined` / `Edit|View`).
+Owner sets a password: `track('Document', 'Shared', 'PasswordSet')`. Owner clears
+it: `track('Document', 'Shared', 'PasswordCleared')`. Both reuse the existing
+`Document` / `Shared` pair; the `type` is a preset string, never the password.
+The visitor-join event is unchanged (`Document` / `Joined` / `Edit|View`).
 
 ## Out of scope (for now)
 
-- Per-link passwords (one diagram-level password is the requirement).
+- Per-link passwords (one document-level password is the requirement).
 - Hashing / encryption at rest (plain text is intentional, see Model).
 - Active mid-session eviction when the password changes.
 - A per-IP throttle on the password check at the share-code doors other than
   the resolve read: `GET /api/share/:code` is limited by `SHARE_RATE_LIMITER`
-  (see Model), which is where a visitor without the diagram id has to guess.
+  (see Model), which is where a visitor without the document id has to guess.

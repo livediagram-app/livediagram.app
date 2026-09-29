@@ -9,7 +9,7 @@
 // segmented control or a switch, and nothing needs typing or dragging.
 //
 // Device-local (lib/presentation-config): how YOU drive a deck on THIS
-// machine, not a property of the diagram.
+// machine, not a property of the document.
 
 import { HoverCard } from '@livediagram/ui';
 import {

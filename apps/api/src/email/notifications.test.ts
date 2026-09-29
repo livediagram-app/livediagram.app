@@ -46,7 +46,7 @@ const allowAll = {
 afterEach(() => vi.clearAllMocks());
 
 describe('commentNotificationEmail', () => {
-  it('names the commenter + diagram, links to the diagram, omits comment text', () => {
+  it('names the commenter + document, links to the document, omits comment text', () => {
     const e = commentNotificationEmail(env, 'Roadmap', 'd1', 'Anna');
     expect(e.subject).toMatch(/Anna/);
     expect(e.html).toContain('Roadmap');
@@ -56,10 +56,10 @@ describe('commentNotificationEmail', () => {
     expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
   });
 
-  it('falls back to "Someone" / "your diagram" when unknown', () => {
+  it('falls back to "Someone" / "your document" when unknown', () => {
     const e = commentNotificationEmail(env, '', 'd1', null);
     expect(e.subject).toMatch(/Someone/);
-    expect(e.html).toContain('your diagram');
+    expect(e.html).toContain('your document');
   });
 });
 
@@ -102,7 +102,7 @@ describe('notifyNewComment', () => {
 });
 
 describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)', () => {
-  it('names the assigner, diagram, and action, links to the diagram', () => {
+  it('names the assigner, document, and action, links to the document', () => {
     const e = actionAssignedEmail(env, 'Sam', 'Roadmap', 'd1', 'Review the copy', 'Hero only');
     expect(e.subject).toMatch(/Sam/);
     expect(e.html).toContain('Roadmap');
@@ -121,10 +121,10 @@ describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)
     expect(e.html).toContain(`${'y'.repeat(200)}…`);
   });
 
-  it('falls back when the assigner or diagram name is unknown', () => {
+  it('falls back when the assigner or document name is unknown', () => {
     const e = actionAssignedEmail(env, null, '', 'd1', 'Do it', null);
     expect(e.subject).toMatch(/A teammate/);
-    expect(e.html).toContain('a shared diagram');
+    expect(e.html).toContain('a shared document');
   });
 });
 

@@ -99,7 +99,7 @@ const worker = {
     // the top of the handler — null when `CLERK_JWKS_URL` is unset,
     // no Bearer was sent, or the token failed verification. Every
     // dispatch site below uses `resolveOwner()` instead of the legacy
-    // `ownerOf(request)`, so a signed-in user's diagrams come back
+    // `ownerOf(request)`, so a signed-in user's documents come back
     // under their Clerk userId and guests keep working via the
     // legacy `X-Owner-Id` header.
     const clerkIdentity = await getClerkIdentity(env, request);
@@ -190,13 +190,13 @@ const worker = {
     // Per-owner write rate limit. Gates POST / PUT / DELETE at a
     // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
     // pacing under Cloudflare's DDoS threshold still can't spam
-    // diagram / image creation through to D1 / R2 quota
+    // document / image creation through to D1 / R2 quota
     // exhaustion. Reads pass through untouched. When neither a
     // Clerk token nor X-Owner-Id resolves the caller, fall back to
     // a literal 'anonymous' key so one unauthenticated client still
     // can't burn the global quota. Telemetry ingest (/api/events)
     // is deliberately exempt: it's anonymous, high-frequency, and
-    // must never compete with a user's real diagram writes for the
+    // must never compete with a user's real document writes for the
     // per-owner write budget (docs/specs/017-telemetry/telemetry.md). Client-side batching keeps
     // its volume low instead.
     const isWrite =
@@ -413,7 +413,7 @@ const worker = {
       // 30 days, oldest first, capped per run (TRASH_PURGE_MAX_BATCHES).
       ctx.waitUntil(
         purgeExpiredTrash(env, now)
-          .then((count) => console.log(`trash sweep: purged ${count} diagrams`))
+          .then((count) => console.log(`trash sweep: purged ${count} documents`))
           .catch((err) => console.error('trash sweep failed', err)),
       );
       // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,

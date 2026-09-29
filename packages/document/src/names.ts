@@ -1,9 +1,9 @@
-// Tab + diagram name length (docs/specs/006-document/name-length.md).
+// Tab + document name length (docs/specs/006-document/name-length.md).
 //
 // Names had no cap. Mostly invisible when you type one by hand, but the
-// editor also AUTO-NAMES a tab and diagram from the first element's label
+// editor also AUTO-NAMES a tab and document from the first element's label
 // (docs/specs/006-document/document-structure.md) — so pasting a paragraph into the welcome rectangle made the
-// whole paragraph the diagram's name, which then had to be rendered in the
+// whole paragraph the document's name, which then had to be rendered in the
 // header, the browser tab title, the Explorer list and every share surface.
 //
 // One helper, applied at every entry point, so a name can't arrive over-long

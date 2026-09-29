@@ -22,7 +22,7 @@ export const BORDER_STROKE_PX: Record<BorderStroke, number> = {
 
 // Default for shapes that don't carry a strokeWidth field. Picked to
 // match what the renderer was hardcoding before this field existed
-// so old diagrams render exactly the same.
+// so old documents render exactly the same.
 export const DEFAULT_BORDER_STROKE: BorderStroke = 'medium';
 
 // SVG `stroke-dasharray` values in absolute user units, applied

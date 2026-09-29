@@ -102,7 +102,7 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
   it('bearer + share: signed-in visitor on a share URL still carries the share code', async () => {
     // A signed-in user clicking a share link sends Bearer (their
     // Clerk identity) AND X-Share-Code (the link's role gates write
-    // access on the diagram they don't own). docs/specs/014-identity/auth-and-guest-access.md: "Share-code
+    // access on the document they don't own). docs/specs/014-identity/auth-and-guest-access.md: "Share-code
     // visitors who happen to also be signed in send Bearer +
     // X-Share-Code; the per-link role still gates write access."
     setTokenProvider(async () => 'jwt-token-xyz');
@@ -157,7 +157,7 @@ describe('apiLoadShared password gate (docs/specs/013-workspace/share-password.m
     expect(await apiLoadShared('CODE2345', 'guest-3')).toBeNull();
   });
 
-  it('resolves the diagram + role on 200', async () => {
+  it('resolves the document + role on 200', async () => {
     stubFetch(200, { document: { id: 'd1' }, role: 'view' });
     const res = await apiLoadShared('CODE2345', 'guest-4');
     expect(res).toMatchObject({ role: 'view', document: { id: 'd1' }, tabId: null });
@@ -260,7 +260,7 @@ describe('response helpers (observed through api callers)', () => {
   });
 
   describe('expectOkOrNull (via apiLoadDocument)', () => {
-    it('returns the parsed diagram on 200', async () => {
+    it('returns the parsed document on 200', async () => {
       // apiLoadDocument is wrapped in dedupeInFlight keyed by
       // `${ownerId}|${id}`, so each test below uses a unique key
       // pair to avoid collecting a cached promise from a prior
@@ -466,7 +466,7 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
     );
     vi.stubGlobal('fetch', fetchSpy);
     // A tab carrying the editor-only fields that must NOT reach tabs.data:
-    // templateChosen (UI state) + folder (per-diagram link, docs/specs/006-document/tab-folders.md).
+    // templateChosen (UI state) + folder (per-document link, docs/specs/006-document/tab-folders.md).
     const tab = {
       id: 't1',
       name: 'Tab',
@@ -674,7 +674,7 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
     return spy;
   };
 
-  it('adds the diagram query param + share code, returns null on a non-ok read', async () => {
+  it('adds the document query param + share code, returns null on a non-ok read', async () => {
     const spy = stub404();
     const out = await apiFetchImageBlobUrl('owner', 'img 1', {
       documentId: 'd1',
@@ -686,7 +686,7 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
     expect((init.headers as Headers).get('X-Share-Code')).toBe('CODE2345');
   });
 
-  it('omits the query string when no diagram id is given', async () => {
+  it('omits the query string when no document id is given', async () => {
     const spy = stub404();
     await apiFetchImageBlobUrl('owner', 'img1');
     expect(String(spy.mock.calls[0]![0])).toMatch(/\/images\/img1$/);

@@ -3,10 +3,10 @@
 // The WS upgrade can't carry the Bearer token or the guest signature
 // (browser limitation), so role resolution for identified callers runs
 // over authenticated REST instead: mint here, consume once on upgrade.
-// Tickets are deliberately dumb rows — a random 128-bit id, the diagram
+// Tickets are deliberately dumb rows — a random 128-bit id, the document
 // it was minted for, the server-resolved role, and a short expiry — so
 // possession of a ticket proves exactly one thing: this browser passed
-// the REST access gates for this diagram moments ago.
+// the REST access gates for this document moments ago.
 
 import type { Env, ShareRole } from '../types';
 
@@ -46,8 +46,8 @@ export async function createWsTicket(
 
 // Atomic single-use consume: DELETE ... RETURNING makes replay
 // impossible (a second presentation of the same ticket matches no row).
-// Diagram-scoped so a ticket minted for one diagram can't open another
-// diagram's room.
+// Document-scoped so a ticket minted for one document can't open another
+// document's room.
 export async function consumeWsTicket(
   env: Env,
   ticket: string,

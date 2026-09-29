@@ -4,7 +4,7 @@
 // (autoLayoutElements, run by the caller after this) do all positioning.
 // This is the lowest-burden authoring path: no x/y/width/height, no anchor
 // vocabulary, no arrow-endpoint shapes. Pure + reusable (the MCP server
-// today; the public API can adopt it), so it lives in the diagram package
+// today; the public API can adopt it), so it lives in the document package
 // beside the layout it feeds.
 //
 // Nodes become `shape` boxes at the origin (autoLayout repositions every

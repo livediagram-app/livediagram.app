@@ -1,5 +1,5 @@
 // Barrel for the livediagram HTTP/WS client. The implementation is split
-// by domain under lib/api/* (core plumbing + diagrams / tabs / share /
+// by domain under lib/api/* (core plumbing + documents / tabs / share /
 // change-log / folders / self / room / images / preferences / ai); this
 // file re-exports the public surface so existing `@/lib/api-client`
 // imports keep working unchanged.

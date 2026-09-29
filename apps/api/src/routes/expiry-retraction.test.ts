@@ -108,8 +108,8 @@ describe('token revoke retracts its expiry warning', () => {
   });
 });
 
-describe('share-link changes retract the diagram expiry warning', () => {
-  // The single-code revoke also broadcasts 'share-revoked' into the diagram's
+describe('share-link changes retract the document expiry warning', () => {
+  // The single-code revoke also broadcasts 'share-revoked' into the document's
   // Durable Object room so hydrated visitors hard-redirect; that is UX, not the
   // subject here, so the binding is a no-op stub.
   const roomEnv = {

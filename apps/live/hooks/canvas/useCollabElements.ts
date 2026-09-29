@@ -99,7 +99,7 @@ export function useCollabElements({
   // is no second control to find.
   //
   // Keyed on `participantKey`, NOT on `selfParticipant.id`. The id is our
-  // OWNER id: writing it into a shared diagram publishes an `X-Owner-Id`
+  // OWNER id: writing it into a shared document publishes an `X-Owner-Id`
   // credential to every co-viewer, and it is also unjoinable — peers see us
   // under the room's per-socket presence id (docs/specs/015-api/public-api-and-tokens.md §6), never under this.
   // That mismatch is what made a done check invisible to everyone but the

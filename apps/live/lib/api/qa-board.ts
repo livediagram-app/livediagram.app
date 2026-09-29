@@ -9,7 +9,7 @@ import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
 export type QaBoardState = { notes: QaNote[]; rev: number; voterId: string };
 
 // Resolves to the board's authoritative state after the action, or null for an
-// offline diagram (docs/specs/006-document/offline-mode.md), which has no server: the caller applies the
+// offline document (docs/specs/006-document/offline-mode.md), which has no server: the caller applies the
 // action locally and the ordinary tab save persists it.
 export async function apiQaAction(
   ownerId: string,

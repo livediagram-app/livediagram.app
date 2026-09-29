@@ -7,7 +7,7 @@ import worker from './index';
 // purge"): what has waited 30 days goes, and the run says how many.
 
 describe('the 03:00 cron', () => {
-  it('purges diagrams 30 days in the Trash and logs the count', async () => {
+  it('purges documents 30 days in the Trash and logs the count', async () => {
     const { env, sql } = sqliteD1();
     const now = Date.now();
     for (const [id, trashedAt] of [
@@ -39,7 +39,7 @@ describe('the 03:00 cron', () => {
         .all()
         .map((r) => r.id),
     ).toEqual(['live', 'waiting']);
-    expect(log).toHaveBeenCalledWith('trash sweep: purged 1 diagrams');
+    expect(log).toHaveBeenCalledWith('trash sweep: purged 1 documents');
     expect(error).not.toHaveBeenCalledWith('trash sweep failed', expect.anything());
     log.mockRestore();
     error.mockRestore();

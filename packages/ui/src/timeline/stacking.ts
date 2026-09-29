@@ -1,6 +1,6 @@
 // Same-day stacking (docs/specs/013-workspace/timeline.md §2.1).
 //
-// A day where you renamed six diagrams should read as one line, not
+// A day where you renamed six documents should read as one line, not
 // six. Within a day, events sharing a bucket collapse into a single
 // card the reader can expand.
 //
@@ -87,7 +87,7 @@ export function buildStacks(events: readonly TimelineEvent[]): TimelineStack[] {
 //
 // It must be true of EVERY event in the run, which is why it can't
 // just reuse the first event's label: "Renamed Payments architecture"
-// on a stack that also contains two other diagrams reads as a lie. The
+// on a stack that also contains two other documents reads as a lie. The
 // per-bucket map below is the honest generic; anything unmapped falls
 // back to the shared title, which is already a generic category by the
 // copy rules (docs/specs/013-workspace/timeline.md §2).
@@ -112,7 +112,7 @@ const STACK_LABELS: Record<string, string> = {
   'account::token_revoked': 'API Tokens Revoked',
   team_membership: 'Members Changed',
   sharing: 'Sharing Changed',
-  filing: 'Diagrams Filed',
+  filing: 'Documents Filed',
 };
 
 export function stackLabel(stack: TimelineStack): string {

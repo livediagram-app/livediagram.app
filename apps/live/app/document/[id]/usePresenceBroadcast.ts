@@ -15,7 +15,7 @@ interface PresenceBroadcastDeps {
 // Outbound realtime presence: broadcast our local selection + active-tab
 // focus so peers can render "Tom is working on this element" indicators and
 // our avatar on the TabBar entry we're focused on. Both effects share the
-// same gate (room open + hydrated + the diagram is actually shared, whether
+// same gate (room open + hydrated + the document is actually shared, whether
 // by link or by team). Extracted from useEditorState as a cohesive slice.
 export function usePresenceBroadcast({
   hydrated,
@@ -31,7 +31,7 @@ export function usePresenceBroadcast({
   // state via their own `select` ops when they happen, not from a snapshot.
   // Carries the active tab so peers scope the badge (and the docs/specs/007-editor/live-app.md
   // selection lock) to the right tab — element ids alone aren't unique
-  // across tabs in older diagrams.
+  // across tabs in older documents.
   useEffect(() => {
     if (!hydrated || !documentId || (!documentShareable && !documentTeamId)) return;
     roomRef.current?.send({

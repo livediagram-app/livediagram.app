@@ -47,8 +47,8 @@ describe('email templates', () => {
   it('falls back gracefully on a null team name', () =>
     expect(teamInviteEmail(env, null).html).toContain('a team'));
 
-  // docs/specs/014-identity/profile-and-email-notifications.md — someone joined my diagram
-  it('diagram-joined names the diagram + joiner and CTAs to the explorer', () => {
+  // docs/specs/014-identity/profile-and-email-notifications.md — someone joined my document
+  it('diagram-joined names the document + joiner and CTAs to the explorer', () => {
     const e = documentJoinedEmail(env, 'Roadmap', 'Anna');
     expect(e.subject).toMatch(/Anna/);
     expect(e.html).toContain('Roadmap');
@@ -56,13 +56,13 @@ describe('email templates', () => {
     expect(e.html).toContain('https://app.test/explorer');
   });
 
-  it('diagram-joined falls back to "Someone" / "your diagram" when unknown', () => {
+  it('diagram-joined falls back to "Someone" / "your document" when unknown', () => {
     const e = documentJoinedEmail(env, '', null);
     expect(e.subject).toMatch(/Someone/);
-    expect(e.html).toContain('your diagram');
+    expect(e.html).toContain('your document');
   });
 
-  it('diagram-joined escapes a malicious diagram name', () => {
+  it('diagram-joined escapes a malicious document name', () => {
     const e = documentJoinedEmail(env, '<img src=x onerror=1>', null);
     expect(e.html).not.toContain('<img src=x');
     expect(e.html).toContain('&lt;img');

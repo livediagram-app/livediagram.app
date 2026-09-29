@@ -25,7 +25,7 @@ type DocumentRow = {
   saved_at: number;
   created_at: number;
   // Derived via subquery in the SELECT; first (oldest) share_links
-  // row for this diagram, or NULL when no share links exist. Replaces
+  // row for this document, or NULL when no share links exist. Replaces
   // the legacy diagrams.share_code column dropped in migration 0008.
   share_code: string | null;
 };
@@ -35,7 +35,7 @@ type SummaryRow = DocumentRow;
 async function listTabSummariesFor(env: Env, documentId: string): Promise<TabSummaryDTO[]> {
   // Read through the document_tabs link table (migration 0011 /
   // docs/specs/006-document/tab-document-many-to-many.md) — order_index now lives on the link, not on the tab,
-  // so two diagrams that share a tab can order it independently.
+  // so two documents that share a tab can order it independently.
   const result = await env.DB.prepare(
     `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder
        FROM document_tabs dt
@@ -53,11 +53,11 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
   // render "Owner: <name>" without waiting for the owner to come
   // online in the realtime room. Null when the owner has no
   // participant row yet (e.g. a Clerk-authed owner who's never set a
-  // name on a diagram); the UI hides the badge in that case.
+  // name on a document); the UI hides the badge in that case.
   // The participant lookup and the tab-summary read are independent,
   // so issue them concurrently rather than paying two serial round
-  // trips on every diagram fetch (this path is hit by nearly every
-  // owned-diagram / share / WS-upgrade request).
+  // trips on every document fetch (this path is hit by nearly every
+  // owned-document / share / WS-upgrade request).
   const [ownerParticipant, tabs] = await Promise.all([
     getParticipant(env, row.owner_id),
     listTabSummariesFor(env, row.id),
@@ -83,13 +83,13 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
 // Derives the primary share code via a correlated subquery on
 // share_links. ORDER BY created_at ASC + LIMIT 1 keeps the result
 // stable across calls; "primary" is the oldest link the owner has
-// minted for the diagram.
+// minted for the document.
 const SHARE_CODE_EXPR =
   '(SELECT code FROM share_links WHERE share_links.document_id = documents.id ORDER BY created_at ASC LIMIT 1) AS share_code';
 const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, presentation, saved_at, created_at, ${SHARE_CODE_EXPR}`;
-// The list projection deliberately omits `presentation`: listing 100 diagrams
+// The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
-// grows with the diagram.
+// grows with the document.
 const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, saved_at, created_at, ${SHARE_CODE_EXPR}`;
 
 // Gate-only projection: the columns access checks need (owner + team +
@@ -98,7 +98,7 @@ const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id
 // room-ticket mint and WS upgrade run on every room join and use none
 // of the extra data.
 //
-// Both diagram reads see LIVE diagrams only: a trashed one reads as missing
+// Both document reads see LIVE documents only: a trashed one reads as missing
 // (docs/specs/013-workspace/trash.md, "fail closed"). A door that owes an
 // authorised caller the deleted state asks getTrashedDocumentMeta on a miss.
 export async function getDocumentMeta(
@@ -181,7 +181,7 @@ function rowToSummary(row: SummaryRow): DocumentSummary {
   };
 }
 
-// Personal library only (docs/specs/013-workspace/team-shared-documents.md): a diagram moved into a team's
+// Personal library only (docs/specs/013-workspace/team-shared-documents.md): a document moved into a team's
 // shared library leaves the owner's personal lists and renders on
 // the team page instead.
 export async function listDocumentsByOwner(env: Env, ownerId: string): Promise<DocumentSummary[]> {
@@ -203,13 +203,13 @@ export async function listDocumentsByTeam(env: Env, teamId: string): Promise<Doc
   return (result.results ?? []).map(rowToSummary);
 }
 
-// Metadata upsert only — diagram name, sharing state, owner id, and
+// Metadata upsert only — document name, sharing state, owner id, and
 // timestamps. Tabs live in their own table now (see upsertTab /
 // reorderTabs / deleteTab). Used both by the new metadata-only PUT
 // /documents/:id and by the create endpoint.
 // Write-side meta upsert. Read-derived fields (`tabs`, `ownerName`,
 // `ownerColor`) are pruned from the input shape since none of them
-// are stored on the diagrams row directly — tabs live in their own
+// are stored on the documents row directly — tabs live in their own
 // table, owner info comes via a participants join on read.
 export async function upsertDocumentMeta(
   env: Env,
@@ -264,7 +264,7 @@ export async function setDocumentPresentation(
 // Placement write (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): folder and team scope move
 // together in one UPDATE so a document can never point at a folder in
 // a scope it isn't in. `newOwnerId` transfers ownership in the same
-// write: a joined member moving a team diagram out into their own
+// write: a joined member moving a team document out into their own
 // personal library becomes its owner (docs/specs/013-workspace/team-shared-documents.md), and folders are
 // owner-scoped so the row must follow them. Omit to keep the owner.
 export async function setDocumentFolder(
@@ -287,7 +287,7 @@ export async function setDocumentFolder(
     .run();
 }
 
-// Toggle the shareable flag on a diagram. The actual codes live in
+// Toggle the shareable flag on a document. The actual codes live in
 // share_links (managed by createShareLink / deleteShareLink); this
 // helper only flips the boolean that gates the realtime room + the
 // share-code resolver.
@@ -300,7 +300,7 @@ export async function setDocumentShare(env: Env, id: string, shareable: boolean)
 // Share password (docs/specs/013-workspace/share-password.md). Stored in plain text — deliberately
 // readable by the owner (the Share dialog shows it) and the threat
 // model is anti-URL-guessing, not cryptographic. NULL / empty means
-// the diagram has no password. Kept OUT of the diagram DTO columns
+// the document has no password. Kept OUT of the document DTO columns
 // (DOCUMENT_COLS) so it never leaks to a viewer; only these owner-only
 // paths touch it.
 export async function getDocumentSharePassword(env: Env, id: string): Promise<string | null> {
@@ -309,7 +309,7 @@ export async function getDocumentSharePassword(env: Env, id: string): Promise<st
     .first<{ share_password: string | null }>();
   const value = row?.share_password ?? null;
   // An all-whitespace value counts as "no password" so a stray space
-  // can't lock a diagram in a way the owner can't see in the dialog.
+  // can't lock a document in a way the owner can't see in the dialog.
   return value && value.trim() ? value : null;
 }
 
@@ -324,20 +324,20 @@ export async function setDocumentSharePassword(
     .run();
 }
 
-// The immediate hard delete of one diagram, which only Take Offline uses now:
-// every other delete moves the diagram to the Trash, and its purge runs
-// purgeDocuments (docs/specs/013-workspace/trash.md). A tab another diagram
+// The immediate hard delete of one document, which only Take Offline uses now:
+// every other delete moves the document to the Trash, and its purge runs
+// purgeDocuments (docs/specs/013-workspace/trash.md). A tab another document
 // still holds survives either.
 export async function deleteDocument(env: Env, id: string): Promise<void> {
   await env.DB.batch(documentRemovalStatements(env, { column: 'id', value: id }));
   // Drop the cached SVG snapshot (docs/specs/006-document/document-snapshots.md) alongside the row so a
-  // deleted diagram doesn't leave an orphaned R2 object behind. Best
+  // deleted document doesn't leave an orphaned R2 object behind. Best
   // effort: a missing binding or a missing object is a no-op, and a
   // failure here must never fail the delete itself.
   if (env.IMAGES) await env.IMAGES.delete(thumbnailKey(id)).catch(() => {});
 }
 
-// R2 object key for a diagram's cached SVG snapshot (docs/specs/006-document/document-snapshots.md). Shared by
+// R2 object key for a document's cached SVG snapshot (docs/specs/006-document/document-snapshots.md). Shared by
 // the render-cache (which writes it) and deleteDocument (which clears it)
 // so the key shape lives in exactly one place.
 export function thumbnailKey(documentId: string): string {
@@ -346,7 +346,7 @@ export function thumbnailKey(documentId: string): string {
 
 // When the cached snapshot was last rendered (docs/specs/006-document/document-snapshots.md), or null when it
 // never has been. The render-on-read path compares this against the
-// diagram's saved_at to decide whether the R2 object is still fresh.
+// document's saved_at to decide whether the R2 object is still fresh.
 export async function getThumbRenderedAt(env: Env, id: string): Promise<number | null> {
   const row = await env.DB.prepare('SELECT thumb_rendered_at FROM documents WHERE id = ?')
     .bind(id)
@@ -363,11 +363,11 @@ export async function markThumbRendered(env: Env, id: string, now: number): Prom
     .run();
 }
 
-// "Copy this diagram to my own files" — duplicates the source diagram
-// under a brand-new id owned by `newOwnerId`. Carries the diagram
+// "Copy this document to my own files" — duplicates the source document
+// under a brand-new id owned by `newOwnerId`. Carries the document
 // meta (name with "Copy of " prefix unless the caller overrides) and
 // every tab's content; deliberately does NOT copy share_links,
-// change_log, or the shareable flag. The new diagram starts private
+// change_log, or the shareable flag. The new document starts private
 // + audit-free so the visitor's copy reads as their own clean
 // workspace, not a clone of the host's collab history.
 //
@@ -393,8 +393,8 @@ export async function copyDocument(
     .bind(newId, newOwnerId, newName, now, now)
     .run();
   // Walk the source's tab rows via the link table and re-insert
-  // each under the new diagram id with a freshly minted tab id.
-  // Preserves order_index verbatim so the cloned diagram opens to
+  // each under the new document id with a freshly minted tab id.
+  // Preserves order_index verbatim so the cloned document opens to
   // the same tab layout the visitor was looking at. Skipping
   // share_links + change_log is by design — those don't survive
   // ownership transfer. Copy semantics (vs link semantics, docs/specs/006-document/tab-document-many-to-many.md)
@@ -411,7 +411,7 @@ export async function copyDocument(
   // Mint every fresh tab id up front so a tab / element link on one tab
   // can be re-pointed at its sibling's copy (the Explorer duplicate does
   // the same walk through the shared remapTabLinks). Without it the copy's
-  // links still named the SOURCE diagram's tabs, which the copy doesn't
+  // links still named the SOURCE document's tabs, which the copy doesn't
   // have. Only a tab whose data carries a tab id at all pays for a parse.
   const rows = tabRows.results ?? [];
   const tabIdMap = new Map(rows.map((row) => [row.id, crypto.randomUUID()]));
@@ -458,8 +458,8 @@ export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): 
   }
 }
 
-// docs/specs/014-identity/transactional-email.md (#6): total diagrams owned by `ownerId`, for the milestone check on
-// create. Counts all of an owner's diagrams (a cheap indexed COUNT).
+// docs/specs/014-identity/transactional-email.md (#6): total documents owned by `ownerId`, for the milestone check on
+// create. Counts all of an owner's documents (a cheap indexed COUNT).
 export async function countDocumentsByOwner(env: Env, ownerId: string): Promise<number> {
   const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM documents WHERE owner_id = ?')
     .bind(ownerId)

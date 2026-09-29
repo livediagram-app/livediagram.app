@@ -1,10 +1,10 @@
-// /api/shared — diagrams a non-owner has accessed via a share link.
+// /api/shared — documents a non-owner has accessed via a share link.
 
 import { dropSharedAccess, listSharedWith } from '../db';
 import { json, missingAuth, notFound } from '../responses';
 import type { RouteContext } from './context';
 
-// List diagrams a non-owner has previously accessed via a
+// List documents a non-owner has previously accessed via a
 // share link. Used by the Explorer's "Shared with you"
 // accordion. Per-owner; pure-guest path works because
 // shared_with rows are keyed off the resolved owner string.

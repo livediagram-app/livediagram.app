@@ -78,7 +78,7 @@ export const ACTIONS_MOVED_TO_TEAM = chart(
   'Action',
   'Moved',
   'Actions Moved to a Team',
-  'An action’s diagram moved into a team so the assignee can reach it.',
+  'An action’s document moved into a team so the assignee can reach it.',
 );
 
 export const ACTIONS_REOPENED = chart(
@@ -205,7 +205,7 @@ export const PHOTO_IMPORT: MetricStack = {
   stack: true,
   title: 'Photo Import',
   blurb:
-    'Sticky-note walls photographed into a diagram, and whether the in-browser model or the classical fallback read each photo.',
+    'Sticky-note walls photographed onto an event-storming board, and whether the in-browser model or the classical fallback read each photo.',
   members: [PHOTOS_IMPORTED, MODEL_DETECTED, FELL_BACK_TO_CLASSICAL],
   headline: PHOTOS_IMPORTED,
 };
@@ -322,7 +322,7 @@ export const FOLDERS_CREATED: Metric = {
   action: 'Created',
   typeIn: (type) => type !== 'Tab',
   title: 'Folders Created',
-  blurb: 'Folders of diagrams, in your own Explorer or a team library.',
+  blurb: 'Folders of documents, in your own Explorer or a team library.',
 };
 
 export const FOLDERS_RE_PARENTED: Metric = {
@@ -338,7 +338,7 @@ export const TAB_FOLDERS_CREATED: Metric = {
   action: 'Created',
   type: 'Tab',
   title: 'Tab Folders Created',
-  blurb: 'A collapsible folder of tab pills created inside one diagram.',
+  blurb: 'A collapsible folder of tab pills created inside one document.',
 };
 
 export const TABS_FILED: Metric = {
@@ -356,8 +356,8 @@ export const DOCUMENTS_FILED: Metric = {
   // The Offline Mode conversions are Document·Moved too, charted in their own
   // stack (Taken Offline, Saved to Cloud).
   typeIn: (type) => type !== 'TakenOffline' && type !== 'SavedToCloud',
-  title: 'Diagrams Filed',
-  blurb: 'A diagram moved into a folder, or back to Unsorted.',
+  title: 'Documents Filed',
+  blurb: 'A document moved into a folder, or back to Unsorted.',
 };
 
 export const NOTES: MetricStack = {
@@ -388,7 +388,7 @@ export const ASSIGNED_ACTIONS: MetricStack = {
 export const ORGANISATION: MetricStack = {
   stack: true,
   title: 'Organisation',
-  blurb: 'Folders made and nested, tab folders, and tabs and diagrams filed.',
+  blurb: 'Folders made and nested, tab folders, and tabs and documents filed.',
   members: [
     FOLDERS_CREATED,
     FOLDERS_RE_PARENTED,
@@ -675,7 +675,7 @@ export const TEMPLATES_USED = chart(
   'Template',
   'Used',
   'Templates Used',
-  'A template picked to start a diagram or seed a tab.',
+  'A template picked to start a document or seed a tab.',
 );
 
 export const THEMES_CHOSEN = chart(

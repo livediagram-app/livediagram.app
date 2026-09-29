@@ -1,6 +1,6 @@
-// The list item a diagram row sits in, across every list in the Explorer
+// The list item a document row sits in, across every list in the Explorer
 // panel: the sidebar tree's folders, the synthetic Unsorted and Offline
-// buckets, the current-diagram row, and the Recent sections.
+// buckets, the current-document row, and the Recent sections.
 //
 // It exists for one behaviour that all five had written out longhand — a row
 // being deleted plays out rather than vanishing. `useExplorerRowDelete` keeps
@@ -12,7 +12,7 @@
 // the collapsing box for the duration.
 //
 // The rows themselves are not shared, only their shell. Three of the five pass
-// DocumentRow the same props and two do not (the current-diagram row and the
+// DocumentRow the same props and two do not (the current-document row and the
 // Recent sections each have their own verbs), so hoisting the row as well
 // would mean a component with two shapes pretending to be one.
 export function DocumentRowShell({

@@ -55,7 +55,7 @@ describe('generateShareCode', () => {
   });
 
   it('draws from the CSPRNG, not Math.random', () => {
-    // A guessable share code is an unauthenticated read of someone's diagram.
+    // A guessable share code is an unauthenticated read of someone's document.
     const spy = vi.spyOn(crypto, 'getRandomValues');
     generateShareCode();
     expect(spy).toHaveBeenCalled();
@@ -73,7 +73,7 @@ describe('listShareLinks (owner-facing, docs/specs/013-workspace/share-link-expi
     expect(db.one('FROM share_links').sql).not.toContain('expires_at >');
   });
 
-  it('is scoped to the diagram and ordered oldest first', async () => {
+  it('is scoped to the document and ordered oldest first', async () => {
     const db = fakeD1(() => ({ all: [] }));
     await listShareLinks(db.env, 'diag-1');
     const query = db.one('FROM share_links');
@@ -102,8 +102,8 @@ describe('getShareLink (the access gate, docs/specs/013-workspace/share-link-exp
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: a scoped link is only a link while its tab is still in
-  // the diagram, in the same query, so no caller can skip the check.
-  it('only resolves a scoped link while its tab is still in the diagram', async () => {
+  // the document, in the same query, so no caller can skip the check.
+  it('only resolves a scoped link while its tab is still in the document', async () => {
     const db = fakeD1(() => ({ first: null }));
     await getShareLink(db.env, 'ABCD2345');
     expect(db.one('FROM share_links').sql).toMatch(
@@ -182,7 +182,7 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
     expect(db.one('INSERT INTO share_links').bindings[4]).toBe('week');
   });
 
-  it('flips the diagram shareable, which is what opens the realtime room', async () => {
+  it('flips the document shareable, which is what opens the realtime room', async () => {
     const db = fakeD1();
     await createShareLink(db.env, 'diag-1', 'ABCD2345', 'edit');
     expect(db.one('UPDATE documents SET shareable = 1').bindings).toEqual(['diag-1']);

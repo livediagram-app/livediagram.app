@@ -13,7 +13,7 @@ const RECENT_LIMIT = 12;
 
 // The right-pane derivations (docs/specs/013-workspace/folders.md), lifted out of useExplorerState:
 // everything the pane shows for the current selection — the per-folder
-// diagram buckets, the synthetic Unsorted / Generated folders, the pane
+// document buckets, the synthetic Unsorted / Generated folders, the pane
 // content / title / breadcrumb, and the sidebar's Recent badge count.
 // Pure memos over the state the orchestration hook owns and passes in.
 export function useExplorerPane({
@@ -38,10 +38,10 @@ export function useExplorerPane({
   teams: { id: string; name: string }[];
   breadcrumb: (folderId: string | null) => Folder[];
   go: (sel: SelectedNode) => void;
-  // Diagrams this user hid from Recent (docs/specs/013-workspace/hide-from-recent.md). Only Recent honours it;
+  // Documents this user hid from Recent (docs/specs/013-workspace/hide-from-recent.md). Only Recent honours it;
   // every other pane still lists them normally.
   recentExcludedIds: string[];
-  // Diagrams this user starred (docs/specs/013-workspace/favourites.md). Spans personal AND team rows,
+  // Documents this user starred (docs/specs/013-workspace/favourites.md). Spans personal AND team rows,
   // which is why the Favourites branch below reads both lists.
   favouriteIds: Set<string>;
 }) {
@@ -49,23 +49,23 @@ export function useExplorerPane({
 
   // Unsorted is a virtual folder backed by `folder_id IS NULL` —
   // not a row in the folders table, just a synthetic bucket so loose
-  // diagrams have somewhere obvious to live (docs/specs/013-workspace/folders.md). Cached so the
-  // sidebar + the "All diagrams" list row both reference the same
+  // documents have somewhere obvious to live (docs/specs/013-workspace/folders.md). Cached so the
+  // sidebar + the "All documents" list row both reference the same
   // count without re-filtering.
   const unsortedDocuments = useMemo(
     () =>
       liveDocs
-        // Generated diagrams (source != null) live in their own synthetic
-        // "Generated" folder, not Unsorted, and offline diagrams (docs/specs/006-document/offline-mode.md)
+        // Generated documents (source != null) live in their own synthetic
+        // "Generated" folder, not Unsorted, and offline documents (docs/specs/006-document/offline-mode.md)
         // in the synthetic "Offline" folder, so the buckets don't overlap.
         .filter((d) => d.folderId === null && !d.source && d.ownerId !== OFFLINE_OWNER_ID)
         .sort((a, b) => b.savedAt - a.savedAt),
     [liveDocs],
   );
 
-  // Generated diagrams (docs/specs/013-workspace/folders.md): the synthetic folder for AI-made diagrams
+  // Generated documents (docs/specs/013-workspace/folders.md): the synthetic folder for AI-made documents
   // (source != null) that the user hasn't filed yet. Mirrors Unsorted
-  // (folder_id null), so filing a generated diagram into a folder of your
+  // (folder_id null), so filing a generated document into a folder of your
   // own moves it out of Generated, just like Unsorted; the two synthetic
   // buckets stay mutually exclusive (Unsorted excludes source != null).
   const generatedDocuments = useMemo(
@@ -76,10 +76,10 @@ export function useExplorerPane({
     [liveDocs],
   );
 
-  // Offline diagrams (docs/specs/006-document/offline-mode.md): the synthetic folder for browser-only
-  // diagrams. A dynamic view over EVERYTHING offline (regardless of any
+  // Offline documents (docs/specs/006-document/offline-mode.md): the synthetic folder for browser-only
+  // documents. A dynamic view over EVERYTHING offline (regardless of any
   // folder placement stored in the local record), so the one place to find
-  // every diagram that exists only in this browser.
+  // every document that exists only in this browser.
   const offlineDocuments = useMemo(
     () =>
       liveDocs.filter((d) => d.ownerId === OFFLINE_OWNER_ID).sort((a, b) => b.savedAt - a.savedAt),
@@ -87,12 +87,12 @@ export function useExplorerPane({
   );
 
   // What to show in the right pane for the current selection.
-  // - `recent`: last N owned diagrams (no folders).
+  // - `recent`: last N owned documents (no folders).
   // - `shared` / `gallery` / `team` / `invites`: dedicated panes.
   // - `all`: root user folders + the synthetic Unsorted bucket as a
-  //   leading row when there are unsorted diagrams.
-  // - `unsorted`: just diagrams with folderId === null.
-  // - `folder`: direct subfolders + direct diagrams in that folder.
+  //   leading row when there are unsorted documents.
+  // - `unsorted`: just documents with folderId === null.
+  // - `folder`: direct subfolders + direct documents in that folder.
   // Set for O(1) lookups in the two memos below.
   const excluded = useMemo(() => new Set(recentExcludedIds), [recentExcludedIds]);
 
@@ -103,14 +103,14 @@ export function useExplorerPane({
   }>(() => {
     if (selected.kind === 'recent') {
       // Recent spans the personal library, every joined team's shared
-      // diagrams (docs/specs/013-workspace/team-shared-documents.md), AND diagrams shared with you — interleaved
+      // documents (docs/specs/013-workspace/team-shared-documents.md), AND documents shared with you — interleaved
       // by recency. Team rows carry their team (badge + owner column);
       // shared rows carry the sharer + share code so the row links via
       // the share link and shows the "Shared" badge.
       const sharedRows: PaneDocument[] = shared.map(sharedToPaneDocument);
       const sorted = [...liveDocs, ...teamDocuments, ...sharedRows]
         // Hidden-from-Recent (docs/specs/013-workspace/hide-from-recent.md). Filtered BEFORE the cap so hiding
-        // one diagram promotes the next one in rather than leaving a gap.
+        // one document promotes the next one in rather than leaving a gap.
         .filter((d) => !excluded.has(d.id))
         .sort((a, b) => b.savedAt - a.savedAt);
       return { showUnsortedRow: false, folders: [], documents: sorted.slice(0, RECENT_LIMIT) };
@@ -133,7 +133,7 @@ export function useExplorerPane({
     }
     if (selected.kind === 'favourites') {
       // Aggregates across personal AND team libraries: a star is about the
-      // diagram, not where it happens to live (docs/specs/013-workspace/favourites.md). Shared-with-you
+      // document, not where it happens to live (docs/specs/013-workspace/favourites.md). Shared-with-you
       // rows are excluded — you can't star what isn't in your library.
       //
       // Ordering matches every other pane (most recently updated first)
@@ -184,7 +184,7 @@ export function useExplorerPane({
     favouriteIds,
   ]);
 
-  // Count for the sidebar "Recent diagrams" badge (docs/specs/013-workspace/team-shared-documents.md), mirroring
+  // Count for the sidebar "Recent documents" badge (docs/specs/013-workspace/team-shared-documents.md), mirroring
   // "Shared with me": how many items the Recent list holds, capped.
   const recentCount = useMemo(() => {
     // Counts what Recent will actually SHOW, so the badge can't promise

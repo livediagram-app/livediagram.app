@@ -23,7 +23,7 @@ import type { RoomOp } from '@livediagram/api-schema';
 export const EL_OP_BROADCAST_LIMIT = 20;
 
 // Tab keys that never ride a `tab-meta` patch: `id` is immutable, `elements`
-// travels as `el` ops, and `folder` is owned by the diagram-meta op (docs/specs/006-document/tab-folders.md)
+// travels as `el` ops, and `folder` is owned by the document-meta op (docs/specs/006-document/tab-folders.md)
 // so a content/meta edit can't clobber a concurrent folder move.
 export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'folder']);
 
@@ -129,7 +129,7 @@ export function mergeRemoteVote(local: Tab['vote'], incoming: Tab['vote']): Tab[
 
 // Apply a peer's whole-`tab` op over our copy of that tab.
 //
-// `folder` is per-diagram link metadata owned by the diagram-meta op (docs/specs/006-document/tab-folders.md),
+// `folder` is per-document link metadata owned by the document-meta op (docs/specs/006-document/tab-folders.md),
 // so the local membership stays and a content edit can't clobber a concurrent
 // folder change.
 //

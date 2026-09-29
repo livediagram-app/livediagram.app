@@ -7,7 +7,7 @@ const WIZARD_STEPS: { key: WizardStep; label: string }[] = [
   // One word, like the chips either side of it: a step chip is read at a
   // glance, and the step's own heading carries the longer copy.
   { key: 'theme', label: 'Theme' },
-  // The step is still "settings" in code; what it asks is where the diagram
+  // The step is still "settings" in code; what it asks is where the document
   // lives (name, save location, folder), so the chip says that.
   { key: 'settings', label: 'Location' },
 ];
@@ -19,8 +19,8 @@ const WIZARD_STEPS: { key: WizardStep; label: string }[] = [
 // chips have ~340px between them: the connectors shrink and the chip
 // padding tightens (sm: restores the roomy desktop rail) so the third chip
 // isn't clipped at the edge. The Settings step exists
-// only on the welcome (new-diagram) flow: the in-editor Browse-templates
-// dialog re-themes an EXISTING diagram, where name / placement / offline
+// only on the welcome (new-document) flow: the in-editor Browse-templates
+// dialog re-themes an EXISTING document, where name / placement / offline
 // don't apply, so it renders a two-chip rail.
 export function WizardSteps({
   step,

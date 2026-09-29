@@ -12,8 +12,8 @@ import { handleShare } from './share';
 import { handleShared } from './shared';
 import { handleFavourites } from './favourites';
 
-// Every door onto a diagram, once it is in the Trash
-// (docs/specs/013-workspace/trash.md, "While a diagram is in the Trash").
+// Every door onto a document, once it is in the Trash
+// (docs/specs/013-workspace/trash.md, "While a document is in the Trash").
 // A caller who could have opened it hears 410 `document_trashed`; anyone else
 // the 404 a never-existing id gets; the lists simply don't have it.
 
@@ -97,7 +97,7 @@ async function trashed() {
   return db;
 }
 
-describe('a trashed diagram, to someone who could open it', () => {
+describe('a trashed document, to someone who could open it', () => {
   const doors: [string, string, Parameters<typeof makeTestRouteContext>[2]?][] = [
     ['GET', '/api/documents/A'],
     ['PUT', '/api/documents/A', { body: { name: 'renamed' } }],
@@ -161,7 +161,7 @@ describe('a trashed diagram, to someone who could open it', () => {
   });
 });
 
-describe('a trashed diagram, to anyone else', () => {
+describe('a trashed document, to anyone else', () => {
   it('reads as missing', async () => {
     const db = await trashed();
     expect((await call(db, 'GET', '/api/documents/A', { owner: 'stranger' }))!.status).toBe(404);
@@ -199,7 +199,7 @@ describe('a trashed diagram, to anyone else', () => {
 });
 
 describe('the lists, while it is in the Trash', () => {
-  it('leave it out of the diagram list, Shared with you and Favourites', async () => {
+  it('leave it out of the document list, Shared with you and Favourites', async () => {
     const db = await trashed();
     const list = await (await call(db, 'GET', '/api/documents', { owner: 'owner' }))!.json();
     const shared = await (await call(db, 'GET', '/api/shared', { owner: 'visitor' }))!.json();
@@ -211,7 +211,7 @@ describe('the lists, while it is in the Trash', () => {
 });
 
 describe('DELETE /api/documents/:id', () => {
-  it('moves the diagram to the Trash, keeping everything', async () => {
+  it('moves the document to the Trash, keeping everything', async () => {
     const db = world();
     await seedTab(db);
 
@@ -242,14 +242,14 @@ describe('DELETE /api/documents/:id', () => {
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM tabs').get()?.n).toBe(0);
   });
 
-  it('purges a diagram already in the Trash with ?permanent=true', async () => {
+  it('purges a document already in the Trash with ?permanent=true', async () => {
     const db = await trashed();
     const res = await call(db, 'DELETE', '/api/documents/A?permanent=true', { owner: 'owner' });
     expect(res!.status).toBe(204);
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
   });
 
-  it('answers document_trashed for a diagram already in the Trash', async () => {
+  it('answers document_trashed for a document already in the Trash', async () => {
     const db = await trashed();
     expect(await status(call(db, 'DELETE', '/api/documents/A', { owner: 'owner' }))).toEqual(
       TRASHED,
@@ -266,8 +266,8 @@ describe('DELETE /api/documents/:id', () => {
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
   });
 
-  it('sends a teammate’s Take Offline of a team diagram to the team Trash', async () => {
-    // From the team's side a teammate taking the diagram into their own
+  it('sends a teammate’s Take Offline of a team document to the team Trash', async () => {
+    // From the team's side a teammate taking the document into their own
     // browser is a deletion, the same reading the Timeline gives it.
     const db = world();
     insert(db.sql, 'teams', { id: 'team', name: 'Team', created_at: T0, updated_at: T0 });

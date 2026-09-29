@@ -150,7 +150,7 @@ export function ExplorerSections({
   // storing "open" would make the first collapse click a no-op.
   const dynamicOpen = !expandedFolders['dynamic-collapsed'];
 
-  // What every diagram row in the Personal tab can do, handed to each node
+  // What every document row in the Personal tab can do, handed to each node
   // (the Teams tab adjusts it per team, below).
   const rows: PanelRowActions = {
     ownerId,
@@ -202,7 +202,7 @@ export function ExplorerSections({
           <ul className="scrollbar-slim flex max-h-60 flex-col gap-0.5 overflow-y-auto">
             {recents.map((entry) =>
               entry.kind === 'shared' ? (
-                // A diagram shared with you: opens on the share
+                // A document shared with you: opens on the share
                 // link, dismissable — never the viewer's to
                 // rename / move / delete.
                 <SharedRow
@@ -219,9 +219,9 @@ export function ExplorerSections({
                     item={entry.d}
                     ownerId={ownerId}
                     active={false}
-                    // Team diagrams (docs/specs/013-workspace/team-shared-documents.md) open for any joined member
+                    // Team documents (docs/specs/013-workspace/team-shared-documents.md) open for any joined member
                     // and can be duplicated and re-filed from here; only
-                    // rename (the open diagram's) and the owner-gated delete
+                    // rename (the open document's) and the owner-gated delete
                     // are narrower than the /explorer page's.
                     draggable={entry.kind === 'own' && !!onMoveDocumentToFolder}
                     onOpen={() => onOpenDocument(entry.d.id)}
@@ -269,7 +269,7 @@ export function ExplorerSections({
             <FolderNode key={f.id} folder={f} depth={0} tree={personalTree} />
           ))}
           {/* The synthetic nodes group under one "Dynamic" parent (matching
-              the /explorer sidebar): live views over your diagrams, not real
+              the /explorer sidebar): live views over your documents, not real
               folder rows. Open by default so Unsorted stays one click away. */}
           <li>
             <TreeNodeHeader

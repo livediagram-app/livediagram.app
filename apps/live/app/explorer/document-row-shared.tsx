@@ -1,10 +1,10 @@
 'use client';
 
-// Pieces shared by the Explorer's list row (explorer-route-diagram-row)
+// Pieces shared by the Explorer's list row (explorer-route-document-row)
 // and card (CardView): the actions menu (and the entry-props binding of
 // it), the owner label, and the open-href helper. The badges they show
-// live beside this, in diagram-badges.
-// Extracted so the two view modes can't drift on what a diagram's badge
+// live beside this, in document-badges.
+// Extracted so the two view modes can't drift on what a document's badge
 // says or which actions its menu offers.
 
 import { CloseIcon } from '@livediagram/ui';
@@ -36,7 +36,7 @@ import type { PaneDocument } from './views';
 import type { DocumentEntryProps } from './explorer-view-props';
 import { VisibilityBadge } from './document-badges';
 
-// Shared diagrams open on the visitor URL (the owner-only path 404s for
+// Shared documents open on the visitor URL (the owner-only path 404s for
 // a non-owner); everything else opens on the owned path.
 export function hrefForDocument(liveDoc: PaneDocument): string {
   return liveDoc.shared
@@ -44,7 +44,7 @@ export function hrefForDocument(liveDoc: PaneDocument): string {
     : `/document/${liveDoc.id}`;
 }
 
-// Who a row's Owner cell names: the team for a team diagram, the sharer
+// Who a row's Owner cell names: the team for a team document, the sharer
 // for one shared with you, otherwise you.
 export function ownerLabelFor(liveDoc: PaneDocument): string {
   return (
@@ -57,7 +57,7 @@ export function ownerLabelFor(liveDoc: PaneDocument): string {
 // rows get the full rename / duplicate / change-folder / (open team) /
 // delete set (docs/specs/013-workspace/team-shared-documents.md).
 //
-// Shape: a header naming the diagram, then one full-width row per verb
+// Shape: a header naming the document, then one full-width row per verb
 // with its icon on the left, and Delete last under a separator. It was
 // a tile grid (icon over label, two then three columns); eight verbs in
 // a grid meant reading in two directions with labels wrapping under
@@ -90,7 +90,7 @@ export function DocumentActionsMenu({
   onClose: () => void;
   // Every verb is optional: a row renders only when its handler is passed,
   // so a surface that can't offer one (the floating panel can't rename a
-  // row that isn't the open diagram) leaves it out rather than showing a
+  // row that isn't the open document) leaves it out rather than showing a
   // row that does nothing.
   onStartRename?: () => void;
   onDuplicate?: () => void;
@@ -102,22 +102,22 @@ export function DocumentActionsMenu({
   recentExcluded?: boolean;
   onToggleRecentExclusion?: () => void;
   onShowHistory?: () => void;
-  // Per-user star (docs/specs/013-workspace/favourites.md). Personal + team diagrams only; a
+  // Per-user star (docs/specs/013-workspace/favourites.md). Personal + team documents only; a
   // shared-with-you row isn't in your library to star.
   favourite?: boolean;
   onToggleFavourite?: () => void;
-  // True on the row for the diagram already open in this editor session,
+  // True on the row for the document already open in this editor session,
   // where an Open verb would do nothing. Everywhere else the menu leads
   // with Open.
   isOpen?: boolean;
-  // How to open it. Absent = navigate to the diagram's page; the floating
-  // panel passes its own opener so switching diagrams stays in-editor.
+  // How to open it. Absent = navigate to the document's page; the floating
+  // panel passes its own opener so switching documents stays in-editor.
   onOpen?: () => void;
   // Timeline only (docs/specs/013-workspace/timeline.md §2.9): take THIS card off the reader's feed.
-  // Says nothing about the diagram, so it sits with the other "how you
+  // Says nothing about the document, so it sits with the other "how you
   // see it" verbs, not with Delete.
   onRemoveFromTimeline?: () => void;
-  // Open the diagram with its Share dialog already up (the editor
+  // Open the document with its Share dialog already up (the editor
   // honours `?share=1`). Offered where a reader is likely to be looking
   // at sharing — the Timeline's share-link cards — rather than everywhere.
   onShare?: () => void;
@@ -165,9 +165,9 @@ export function DocumentActionsMenu({
   return (
     <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
       {header}
-      {/* Open leads, on its own, unless this IS the open diagram: the
+      {/* Open leads, on its own, unless this IS the open document: the
           verb people reach for first sits first, and a menu on the
-          current diagram's row doesn't offer a no-op. */}
+          current document's row doesn't offer a no-op. */}
       {isOpen ? null : (
         <>
           <MenuActionRow
@@ -206,7 +206,7 @@ export function DocumentActionsMenu({
           onClick={then(() => onMove(anchor))}
         />
       ) : null}
-      {/* Two groups: what changes the diagram itself (rename, copy, file),
+      {/* Two groups: what changes the document itself (rename, copy, file),
           then what changes how YOU see it (star, history, Recent,
           where it's stored). */}
       {onStartRename || onDuplicate || onMove ? <MenuGroupSeparator /> : null}
@@ -226,7 +226,7 @@ export function DocumentActionsMenu({
           plain
           icon={recentExcluded ? <ClockOffIcon /> : <ClockIcon />}
           // The label states what the click DOES, and by doing so tells
-          // you the current state — which is why the diagram needs no
+          // you the current state — which is why the document needs no
           // badge anywhere else (docs/specs/013-workspace/hide-from-recent.md).
           label={recentExcluded ? 'Show in Recent' : 'Hide from Recent'}
           onClick={then(onToggleRecentExclusion)}
@@ -251,7 +251,7 @@ export function DocumentActionsMenu({
           <MenuActionRow
             plain
             icon={<SyncIcon />}
-            label="Sync Diagram"
+            label="Sync Document"
             onClick={() => void syncToCloud()}
           />
         ) : (

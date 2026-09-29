@@ -1,17 +1,17 @@
 // Image re-homing for the Offline Mode conversions (docs/specs/006-document/offline-mode.md + docs/specs/009-elements/images.md).
 //
-// A cloud diagram's images live in R2 and elements carry an opaque
-// `imageId`; an offline diagram must be self-contained, so its images are
+// A cloud document's images live in R2 and elements carry an opaque
+// `imageId`; an offline document must be self-contained, so its images are
 // embedded straight into the element as a base64 `data:` URI (the renderer
 // and exporters treat a data-URI imageId as the bytes themselves). The two
 // conversions therefore re-home images in opposite directions:
 //
 //   Take Offline: download each referenced R2 image and embed it, BEFORE the
-//   server copy is deleted. Without this the diagram row's deletion makes the
+//   server copy is deleted. Without this the document row's deletion makes the
 //   images "unused", and the api's 30-day retention reaper would delete the
-//   bytes out from under the offline diagram.
+//   bytes out from under the offline document.
 //
-//   Sync Diagram: upload each embedded image to the gallery (dedup by
+//   Sync Document: upload each embedded image to the gallery (dedup by
 //   SHA-256 server-side) and swap the data URI back to the returned R2 id,
 //   so the cloud copy gets real gallery images instead of bloated tab JSON.
 //
@@ -89,7 +89,7 @@ export async function embedTabImages(
   return rewriteImageIds(tabs, mapping);
 }
 
-// Sync Diagram: upload each embedded image to the gallery and swap the data
+// Sync Document: upload each embedded image to the gallery and swap the data
 // URI for the stored image's id. The server dedupes by SHA-256, so syncing
 // the same picture twice lands on one gallery entry.
 export async function uploadEmbeddedImages(ownerId: string, tabs: Tab[]): Promise<Tab[]> {

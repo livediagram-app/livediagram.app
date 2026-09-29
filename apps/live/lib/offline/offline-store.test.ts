@@ -25,7 +25,7 @@ import { memBackend, testRecord as rec, testTab as tab } from './offline-test-ut
 afterEach(() => __setOfflineBackend(null));
 
 describe('offline transforms', () => {
-  it('projects a record into a valid, unshared Diagram', () => {
+  it('projects a record into a valid, unshared document', () => {
     const d = recordToDocument(rec({ tabs: [tab('t1', { folder: 'A' })] }));
     expect(d).toMatchObject({
       id: 'd1',
@@ -137,7 +137,7 @@ describe('offline store ops (in-memory backend)', () => {
 });
 
 // Both stores must agree on what a tab IS. An offline board that lost its
-// kind would come back from a Sync Diagram as an ordinary diagram — the
+// kind would come back from a Sync Document as an ordinary diagram — the
 // cloud copy would then be wrong too, and nothing could tell.
 describe('upsertTab — board kind', () => {
   const rec = (): OfflineDocumentRecord =>

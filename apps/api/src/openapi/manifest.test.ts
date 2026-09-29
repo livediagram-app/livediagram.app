@@ -50,7 +50,7 @@ function handledMethodsBySegment(): Map<string, Set<string>> {
     const file = handlerFile.get(m[2]!);
     const source = file ? read(file) : null;
     if (!source) continue;
-    // A handler may delegate to sibling route modules (the diagram routes are
+    // A handler may delegate to sibling route modules (the document routes are
     // split across several); follow those too or their verbs go unseen.
     const sources = [source];
     for (const rel of source.matchAll(/from '\.\/([\w-]+)'/g)) {
@@ -93,7 +93,7 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
     // Route handlers spell the check two ways: `method === 'PUT'` to select a
     // branch, and `method !== 'POST'` as a single-verb guard clause. Both are
     // read, and the walk follows each handler's sibling route modules so the
-    // split diagram routes are not missed.
+    // split document routes are not missed.
     const handled = handledMethodsBySegment();
     const documented = new Map<string, Set<string>>();
     for (const route of ROUTE_MANIFEST) {
@@ -266,9 +266,9 @@ describe('buildOpenApiDocument', () => {
   });
 });
 
-// The diagram name cap (docs/specs/006-document/name-length.md) is part of the
+// The document name cap (docs/specs/006-document/name-length.md) is part of the
 // public contract: a token caller reads it from the reference, not by trial.
-describe('diagram name fields', () => {
+describe('document name fields', () => {
   const nameOf = (method: string, path: string) => {
     const route = ROUTE_MANIFEST.find((r) => r.method === method && r.path === path);
     const schema = route?.requestSchema as JsonSchema | undefined;

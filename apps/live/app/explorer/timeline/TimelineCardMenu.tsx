@@ -2,7 +2,7 @@
 
 // The ⋯ menu on a Timeline card (docs/specs/013-workspace/timeline.md §2.8, §2.9).
 //
-// Three shapes behind one trigger. A card about a diagram the Explorer
+// Three shapes behind one trigger. A card about a document the Explorer
 // has loaded gets the same `DocumentActionsMenu` a Recent card uses, and
 // a card about a folder the Explorer has loaded gets the same
 // `FolderActionsMenu` a folder card uses — so whatever the Explorer
@@ -12,7 +12,7 @@
 // tokens page and revoke this token; open the team, edit it, leave it;
 // accept or decline this invite; edit or delete this theme), with
 // "Remove from Timeline" among them and the destructive verbs last
-// under their own separator, the way the diagram menu keeps Delete.
+// under their own separator, the way the document menu keeps Delete.
 // An entry with no verbs of its own still gets the one it always has.
 //
 // Controlled, not self-owned: the card's right-click has to open the

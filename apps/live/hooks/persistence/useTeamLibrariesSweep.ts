@@ -5,7 +5,7 @@
 //     folders to decide whether to show the expand chevron),
 //   - the search panel's Folders group (team folders, docs/specs/008-canvas/canvas-and-palette.md),
 //   - the move modal's team destinations,
-//   - the explorer's Recent list (team diagrams ride alongside the
+//   - the explorer's Recent list (team documents ride alongside the
 //     personal ones, badged "Team").
 // The caller passes `enabled` (today: any signed-in member with at
 // least one team, because the sidebar always needs the data); guests

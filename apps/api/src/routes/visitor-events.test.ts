@@ -5,12 +5,12 @@ import type { DocumentDTO } from '../types';
 // A "visitor" is somebody who arrived through a SHARE LINK (docs/specs/013-workspace/timeline.md §4.3).
 //
 // Both visitor-facing events keyed on `owner !== diagram.ownerId`, which is not
-// that. The read gate also admits any joined member of the diagram's team
+// that. The read gate also admits any joined member of the document's team
 // (docs/specs/013-workspace/team-shared-documents.md), and a teammate presents no share code — so browsing your own
-// team's library told the diagram's owner "opened by a visitor · Someone with
-// the share link", filed under the sharing filter, for a diagram they had never
+// team's library told the document's owner "opened by a visitor · Someone with
+// the share link", filed under the sharing filter, for a document they had never
 // shared a link for. Once per teammate per day, so up to eleven false bubbles a
-// day per diagram in a twelve-person library. Duplicating one reported
+// day per document in a twelve-person library. Duplicating one reported
 // "copied by a visitor", which is flatly untrue.
 //
 // The honest test is whether a share code was presented at all.
@@ -83,7 +83,7 @@ beforeEach(() => {
 describe('GET /documents/:id/tabs/:tabId — who counts as a visitor', () => {
   const path = '/api/documents/d1/tabs/t1';
 
-  it('records nothing for a joined teammate reading a team diagram', async () => {
+  it('records nothing for a joined teammate reading a team document', async () => {
     const { ctx, settle } = ctxWith('GET', path, { owner: 'bob', clerkUserId: 'bob' });
     expect((await handleDocumentSubresources(ctx))?.status).toBe(200);
     await settle();
@@ -97,7 +97,7 @@ describe('GET /documents/:id/tabs/:tabId — who counts as a visitor', () => {
     expect(timeline.recordVisitorOpened).toHaveBeenCalledTimes(1);
   });
 
-  it('records nothing when the owner opens their own diagram, code or not', async () => {
+  it('records nothing when the owner opens their own document, code or not', async () => {
     // The owner following their own share URL is not a visit.
     for (const extra of [{}, SHARE]) {
       timeline.recordVisitorOpened.mockClear();
@@ -116,7 +116,7 @@ describe('POST /documents/:id/copy — who counts as a visitor', () => {
     db.copyDocument.mockResolvedValue({ ...TEAM_DOCUMENT, id: 'd2', ownerId: 'bob' });
   });
 
-  it('records no visitor copy when a joined teammate duplicates a team diagram', async () => {
+  it('records no visitor copy when a joined teammate duplicates a team document', async () => {
     const { ctx, settle } = ctxWith('POST', path, { owner: 'bob', clerkUserId: 'bob', body: {} });
     await handleDocuments(ctx);
     await settle();

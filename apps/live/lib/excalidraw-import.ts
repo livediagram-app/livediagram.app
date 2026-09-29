@@ -7,7 +7,7 @@
 // Ids are re-minted to fresh UUIDs here (with a map so arrow bindings
 // follow), so the caller doesn't need the JSON path's
 // remintElementIds step and imported elements can't collide with anything
-// already on the diagram.
+// already on the document.
 
 import {
   anchorPosition,

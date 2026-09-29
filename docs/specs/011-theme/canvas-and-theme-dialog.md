@@ -4,7 +4,7 @@ A focused modal for changing the active tab's **canvas style** and **theme**, re
 
 ## Why
 
-The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid sit inside narrow side-panel accordions. They work, but they're cramped (a 3-wide theme grid, a flat list) and easy to miss. Right-clicking the canvas already offered **Change Canvas** / **Change Theme**, but those merely popped the matching accordion open in the side panel. This spec turns those two menu items into a proper modal so the controls get the room they deserve, and the theme picker can use the same category browse as the [New-diagram](../007-editor/new-document-route.md) "Pick a template" screen.
+The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid sit inside narrow side-panel accordions. They work, but they're cramped (a 3-wide theme grid, a flat list) and easy to miss. Right-clicking the canvas already offered **Change Canvas** / **Change Theme**, but those merely popped the matching accordion open in the side panel. This spec turns those two menu items into a proper modal so the controls get the room they deserve, and the theme picker can use the same category browse as the [New-document](../007-editor/new-document-route.md) "Pick a template" screen.
 
 ## Behaviour
 
@@ -36,7 +36,7 @@ The canvas-style controls, identical to the palette's **Canvas** accordion (and 
 
 ### Theme tab
 
-The two-level **category browse** lifted from the New-diagram theme picker (`ThemeCategoryBrowser`, shared with [Dedicated route for new-diagram creation](../007-editor/new-document-route.md) so the two stay identical):
+The two-level **category browse** lifted from the New-document theme picker (`ThemeCategoryBrowser`, shared with [Dedicated route for new-document creation](../007-editor/new-document-route.md) so the two stay identical):
 
 - Overview shows a **Default** quick-pick plus a card per [`THEME_CATEGORIES`](../007-editor/new-document-route.md) bucket (Cool / Warm / Dark / Multi-colour / Formal), plus a **Custom** category for the owner's saved themes ([Custom themes](custom-themes.md)). Clicking a category drills into its themes with an "All themes" back affordance.
 - Clicking a theme applies it live; double-clicking applies and closes the dialog.
@@ -76,5 +76,5 @@ Opening the dialog fires `track('UI', 'Opened', 'CanvasStyle')` (Change Canvas) 
 ## Reuse notes
 
 - `CanvasStyleControls` — pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas tab.
-- `ThemeCategoryBrowser` — the theme overview/drill-in. Rendered by both the New-diagram picker and the dialog's Theme tab.
+- `ThemeCategoryBrowser` — the theme overview/drill-in. Rendered by both the New-document picker and the dialog's Theme tab.
 - The dialog follows the existing modal contract (`Portal` + `useEscape` + a full-screen click-catcher, see `SettingsDialog`) — but with **no dimming / blur backdrop**: because every control applies live, the catcher is left transparent so the user can watch the canvas background + theme update behind the dialog as they click. The catcher still closes on an outside click and swallows pointer / right-click events so an edit doesn't leak to the canvas while it's open.

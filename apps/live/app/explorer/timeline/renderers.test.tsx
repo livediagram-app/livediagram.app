@@ -36,8 +36,8 @@ function render(e: TimelineEvent) {
   return TIMELINE_RENDERERS[e.sourceType]!(e, ctx);
 }
 
-describe('diagram cards', () => {
-  it('titles the card with the diagram and leaves the reason to the stored title', () => {
+describe('document cards', () => {
+  it('titles the card with the document and leaves the reason to the stored title', () => {
     const r = render(event({}));
     expect(r.subject).toBe('Payments');
     expect(r.label).toBeUndefined();
@@ -47,7 +47,7 @@ describe('diagram cards', () => {
     expect(r.preview).toBeTruthy();
   });
 
-  it('opens the diagram on click, except when the row carries no id to open', () => {
+  it('opens the document on click, except when the row carries no id to open', () => {
     expect(render(event({})).onClick).toBeTypeOf('function');
     // A row from an older worker, or one whose snapshot lost its id: the
     // card must not link at nothing.

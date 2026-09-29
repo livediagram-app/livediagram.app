@@ -30,12 +30,12 @@ export function DocumentRow({
 }: {
   item: DocumentListItem;
   // The VIEWER's owner id (self/participant id) for the authenticated
-  // thumbnail fetch — NOT item.ownerId (that's the diagram's owner, and
+  // thumbnail fetch — NOT item.ownerId (that's the document's owner, and
   // it's blanked for shared rows).
   ownerId: string | null;
   // Share code used ONLY to authorise the thumbnail fetch (docs/specs/006-document/document-snapshots.md) when
   // it isn't carried on item.shareCode — e.g. the "currently open shared
-  // diagram" row, where item.shareCode is intentionally nulled. Falls
+  // document" row, where item.shareCode is intentionally nulled. Falls
   // back to item.shareCode.
   thumbnailShareCode?: string | null;
   active: boolean;
@@ -53,7 +53,7 @@ export function DocumentRow({
   // viewer's state; absent where the surface can't offer it.
   recentExcluded?: boolean;
   onToggleRecentExclusion?: () => void;
-  // Opens this diagram's own Timeline (docs/specs/013-workspace/timeline.md §3.4) — who changed
+  // Opens this document's own Timeline (docs/specs/013-workspace/timeline.md §3.4) — who changed
   // what, and when. Absent on surfaces that can't host the dialog.
   onShowHistory?: () => void;
   // Per-user star (docs/specs/013-workspace/favourites.md).
@@ -78,7 +78,7 @@ export function DocumentRow({
 
   const now = useRelativeNow();
   const relative = relativeSince(item.savedAt, now);
-  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline diagram's row carries ownerId
+  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document's row carries ownerId
   // 'offline', which drives the fixed offline thumbnail.
   const offline = item.ownerId === OFFLINE_OWNER_ID;
 
@@ -87,7 +87,7 @@ export function DocumentRow({
     : 'group flex items-stretch rounded-md text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800';
 
   // The row's main area is a clickable <button> when not editing
-  // (clicking the row opens the diagram). When editing it has to
+  // (clicking the row opens the document). When editing it has to
   // become a plain <div>: nesting an <input> inside a <button> is
   // invalid HTML and browsers redirect focus to the parent button,
   // which is the original cause of the "rename input won't take
@@ -158,11 +158,11 @@ export function DocumentRow({
           size="md"
           reveal
           className="mr-1 self-center"
-          label="Diagram menu"
+          label="Document menu"
         />
       ) : null}
       {/* The same actions menu as the Explorer page's rows and cards
-          (docs/specs/006-document/document-snapshots.md), so a diagram has one menu wherever it's listed. The
+          (docs/specs/006-document/document-snapshots.md), so a document has one menu wherever it's listed. The
           panel used to carry its own toolbar-and-accordion menu with a
           Share section; sharing is the editor header's job, and a menu
           that looked like no other was one people had to learn twice.
@@ -176,7 +176,7 @@ export function DocumentRow({
           onClose={menu.close}
           isOpen={active}
           onOpen={onOpen}
-          // Only the open diagram's row renames inline (its title is the
+          // Only the open document's row renames inline (its title is the
           // editor's), so only it offers Rename; the menu leaves out any
           // verb this row has no handler for.
           onStartRename={onRename ? () => setEditing(true) : undefined}

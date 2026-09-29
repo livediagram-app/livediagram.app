@@ -52,7 +52,7 @@ export function TemplatePickerFooter({
       ) : (
         <div className="flex items-center gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
           {/* Far-left escape hatch: the welcome flow jumps to the Explorer
-            to open an existing diagram; the in-editor templates flow
+            to open an existing document; the in-editor templates flow
             cancels back to the canvas. */}
           {isWelcome ? (
             onOpenExisting ? (
@@ -62,7 +62,7 @@ export function TemplatePickerFooter({
                 className="mr-auto inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
               >
                 <FolderOpenIcon />
-                Open Existing Diagram
+                Open Existing Document
               </button>
             ) : null
           ) : (

@@ -24,15 +24,15 @@ export const VOTE_REVIEWS_ENDED = chart(
 export const TEAM_DOCUMENTS_MOVED = chart(
   'Team',
   'Moved',
-  'Team Diagrams Moved',
-  'A diagram moved within a team library.',
+  'Team Documents Moved',
+  'A document moved within a team library.',
 );
 
 export const SHARE_LINKS_COPIED = chart(
   'UI',
   'Copied',
   'Share Links Copied',
-  'A diagram share link, embed code or live image copied. (Team invite links are in Team Activity.)',
+  'A document share link, embed code or live image copied. (Team invite links are in Team Activity.)',
   { typeIn: (t) => t !== 'TeamInviteLink' },
 );
 
@@ -130,7 +130,7 @@ export const EMBEDS_VIEWED = chart(
   'Session',
   'Opened',
   'Embeds Viewed',
-  'A diagram opened inside another site through its embed.',
+  'A document opened inside another site through its embed.',
   { types: ['Embed'] },
 );
 
@@ -157,7 +157,7 @@ export const TEAM_REMOVALS = chart(
   'Team',
   'Removed',
   'Team Removals',
-  'A member removed, an invite withdrawn, a diagram or an invite link taken out of a team, or someone leaving.',
+  'A member removed, an invite withdrawn, a document or an invite link taken out of a team, or someone leaving.',
   { rising: 'neutral' },
 );
 
@@ -197,7 +197,7 @@ export const MULTIPLAYER_SESSIONS: Metric = {
   type: 'Multiplayer',
   title: 'Multiplayer Sessions',
   blurb:
-    'A diagram was open with at least one other person live in the room. Counted once per diagram per visit, however many people turn up.',
+    'A document was open with at least one other person live in the room. Counted once per document per visit, however many people turn up.',
 };
 
 export const VIEWPORTS_FOLLOWED: Metric = {
@@ -229,7 +229,7 @@ export const COLLABORATORS_JOINED: Metric = {
   type: 'Edit',
   title: 'Collaborators Joined',
   blurb:
-    'People who came into a diagram through an edit link. Counted once per person per diagram, not on every revisit.',
+    'People who came into a document through an edit link. Counted once per person per document, not on every revisit.',
 };
 
 export const VIEWERS_JOINED: Metric = {
@@ -238,7 +238,7 @@ export const VIEWERS_JOINED: Metric = {
   type: 'View',
   title: 'Viewers Joined',
   blurb:
-    'People who came into a diagram through a view-only link. Counted once per person per diagram, not on every revisit.',
+    'People who came into a document through a view-only link. Counted once per person per document, not on every revisit.',
 };
 
 export const COMMENTS_ADDED: Metric = {
@@ -310,8 +310,8 @@ export const DOCUMENTS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
   action: 'Added',
   type: 'Document',
-  title: 'Diagrams Shared to a Team',
-  blurb: "A diagram was moved into a team's shared library for everyone on the team.",
+  title: 'Documents Shared to a Team',
+  blurb: "A document was moved into a team's shared library for everyone on the team.",
 };
 
 export const VOTES_STARTED: Metric = {
@@ -511,7 +511,8 @@ export const INVITE_LINKS_COPIED = chart(
 export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
-  blurb: 'Teams made, the invite funnel (sent, accepted, declined), and diagrams shared to a team.',
+  blurb:
+    'Teams made, the invite funnel (sent, accepted, declined), and documents shared to a team.',
   members: [
     TEAMS_CREATED,
     INVITES_SENT,

@@ -94,7 +94,7 @@ export function newActions(next: Element[], prev: Element[]): ElementAction[] {
 
 // Actions whose status flipped to 'done' in this save. An action that
 // arrived already done (assigned and completed in one save, or a
-// duplicated diagram carrying a finished action across) is not a
+// duplicated document carrying a finished action across) is not a
 // completion moment and is excluded.
 export function completedActions(next: Element[], prev: Element[]): ElementAction[] {
   const previousStatus = new Map<string, string>();

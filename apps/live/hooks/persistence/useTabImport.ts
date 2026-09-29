@@ -12,8 +12,8 @@ import type { ImportImageProgress } from '@/lib/import-images';
 import { track } from '@/lib/telemetry';
 
 // Re-mint element ids (and remap pinned-arrow endpoints) so imported
-// elements can't collide with anything already on the diagram. Shared
-// with useTabActions' cross-diagram tab link, which copies elements the
+// elements can't collide with anything already on the document. Shared
+// with useTabActions' cross-document tab link, which copies elements the
 // same way.
 export const remintElementIds = (elements: Element[]): Element[] => {
   const idMap = new Map<string, string>();
@@ -41,7 +41,7 @@ const EXCALIDRAW_TELEMETRY_TYPE = {
 
 type TabImportDeps = {
   tabs: Tab[];
-  // Who stores the imported images, and whether this diagram is an Offline
+  // Who stores the imported images, and whether this document is an Offline
   // Mode one that embeds them instead (docs/specs/020-import-export/import-image-pipeline.md).
   ownerId: string;
   documentId: string | null;

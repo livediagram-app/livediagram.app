@@ -3,10 +3,10 @@ import { rowToTab, rowToTabSummary, type TabRow } from './tab-row';
 
 // rowToTab + rowToTabSummary translate every D1 tab row into the
 // wire-format DTOs the editor consumes. Every tab read in the
-// product (open a diagram, switch tabs, copy a tab, share-link
+// product (open a document, switch tabs, copy a tab, share-link
 // resolve) flows through one or the other; a regression that
 // dropped a field, swapped id with documentId, or let the JSON blob
-// override a real column would corrupt diagrams silently with no
+// override a real column would corrupt documents silently with no
 // other surface signal. Pinning the contract here so the next
 // reader can see what each invariant is.
 
@@ -169,7 +169,7 @@ describe('rowToTab', () => {
   });
 
   it('takes folder from the row column and lets it override a forged data-blob folder (docs/specs/006-document/tab-folders.md)', () => {
-    // folder is per-diagram link metadata read from the document_tabs
+    // folder is per-document link metadata read from the document_tabs
     // JOIN, never from tabs.data (the client strips it before saving).
     // A folder stuffed into the blob must not win.
     const dto = rowToTab(baseRow({ folder: 'Org', data: bodyJson({ folder: 'Forged' }) }));
@@ -214,7 +214,7 @@ describe('rowToTabSummary', () => {
     expect(rowToTabSummary(baseRow({ order_index: 0 })).orderIndex).toBe(0);
   });
 
-  it('carries the per-diagram folder name, mapping NULL to undefined (docs/specs/006-document/tab-folders.md)', () => {
+  it('carries the per-document folder name, mapping NULL to undefined (docs/specs/006-document/tab-folders.md)', () => {
     expect(rowToTabSummary(baseRow({ folder: 'Org' })).folder).toBe('Org');
     expect(rowToTabSummary(baseRow({ folder: null })).folder).toBeUndefined();
   });

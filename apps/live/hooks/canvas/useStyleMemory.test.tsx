@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { styleMemoryKey } from '@/lib/style-memory';
 import { STYLE_MEMORY_WRITE_DEBOUNCE_MS, useStyleMemory } from './useStyleMemory';
 
-// docs/specs/008-canvas/quick-style-panel.md "Style memory": per diagram, on this device.
+// docs/specs/008-canvas/quick-style-panel.md "Style memory": per document, on this device.
 
 const theme = THEMES.find((t) => t.id === 'forest')!;
 const circle = (id: string, extra: Partial<ShapeElement> = {}): ShapeElement => ({
@@ -32,7 +32,7 @@ describe('useStyleMemory', () => {
     expect(result.current.styleNewElement(circle('b'))).toMatchObject({ strokeWidth: 'thick' });
   });
 
-  it('persists per diagram, debounced, and reads it back', () => {
+  it('persists per document, debounced, and reads it back', () => {
     const first = renderHook(() => useStyleMemory({ documentId: 'd1', theme }));
     act(() =>
       first.result.current.recordEdit([circle('a')], [circle('a', { strokeWidth: 'thin' })]),
@@ -67,7 +67,7 @@ describe('useStyleMemory', () => {
     expect(result.current.styleNewElement(plain)).toBe(plain);
   });
 
-  it('is inert until the diagram id is known', () => {
+  it('is inert until the document id is known', () => {
     const { result } = renderHook(() => useStyleMemory({ documentId: null, theme }));
     act(() => result.current.recordEdit([circle('a')], [circle('a', { strokeWidth: 'thin' })]));
     const plain = circle('b');

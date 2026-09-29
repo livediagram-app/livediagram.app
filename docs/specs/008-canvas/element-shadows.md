@@ -64,7 +64,7 @@ Headless SVG export (`renderElementsToSvg` + the in-app export): one
 block (deterministic id via `shadowFilterId`, so elements sharing a shadow
 share a def), referenced from the element's `<g filter="url(#…)">`.
 `feDropShadow.stdDeviation` is `blur / 2` (the CSS blur radius ≈ 2σ
-equivalence), so exports match the canvas. Snapshots ([Diagram SVG snapshots](../006-document/document-snapshots.md)), embeds
+equivalence), so exports match the canvas. Snapshots ([Document SVG snapshots](../006-document/document-snapshots.md)), embeds
 ([Read-only embeds (`/embed`)](../013-workspace/embeds.md)), and MCP renders inherit parity for free.
 
 ## Interactions with existing style machinery

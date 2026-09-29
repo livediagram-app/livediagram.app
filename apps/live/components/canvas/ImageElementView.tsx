@@ -22,12 +22,12 @@ import { Glyph } from '@livediagram/ui';
 // or selection flag changed on the surrounding tab.
 type ImageElementViewProps = {
   element: ImageElement;
-  // Owner identifying the requester. Either the diagram owner (when
-  // viewing one of their own diagrams) or a share-link visitor; the
+  // Owner identifying the requester. Either the document owner (when
+  // viewing one of their own documents) or a share-link visitor; the
   // api-client picks Authorization vs X-Owner-Id internally.
   ownerId: string;
-  // Diagram the element lives on; required for share-code reads so
-  // the API can verify the diagram references this image.
+  // Document the element lives on; required for share-code reads so
+  // the API can verify the document references this image.
   documentId: string;
   // Share code carried by the visitor, when any. Null for the owner
   // session. Drives the X-Share-Code header on the fetch.

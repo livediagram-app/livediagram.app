@@ -20,7 +20,7 @@ import { useCanvasToolPanels } from './useCanvasToolPanels';
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
-// top-right panel). Most diagrams never accumulate comments, so deferring
+// top-right panel). Most documents never accumulate comments, so deferring
 // the 164-line panel + its relative-time formatting
 // dependencies keeps the editor's initial chunk lean.
 const CollaboratePanel = dynamic(

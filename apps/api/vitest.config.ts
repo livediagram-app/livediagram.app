@@ -2,7 +2,7 @@ import { defineProject } from '@livediagram/vitest-config';
 
 // The identity, token and share-link modules are held at 100% — not as a
 // coverage vanity number, but because they are the only code in the repo that
-// answers "who is this caller" and "may they open this diagram" (and, with
+// answers "who is this caller" and "may they open this document" (and, with
 // the image reference index, "may this picture be deleted"). Everything
 // else in the worker fails visibly; these fail by serving the right response
 // to the wrong person, which no amount of production monitoring notices.

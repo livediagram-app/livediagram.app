@@ -37,14 +37,14 @@ describe('buildSearchResults', () => {
   const liveDocs = [
     { id: 'd1', name: 'Flowchart' },
     { id: 'd2', name: 'Mind map' },
-    { id: 'd3', name: '' }, // untitled, falls back to "Untitled diagram"
+    { id: 'd3', name: '' }, // untitled, falls back to "Untitled document"
   ];
   const folders = [
     { id: 'f1', name: 'Projects' },
     { id: 'f2', name: 'Personal' },
   ];
 
-  it('orders groups: diagrams, folders, tabs, elements', () => {
+  it('orders groups: documents, folders, tabs, elements', () => {
     const out = buildSearchResults({
       query: '',
       documents: liveDocs,
@@ -64,7 +64,7 @@ describe('buildSearchResults', () => {
     expect(out).toEqual([]);
   });
 
-  it('falls back to "Untitled diagram" for diagrams with empty names', () => {
+  it('falls back to "Untitled document" for documents with empty names', () => {
     const out = buildSearchResults({
       query: 'untitled',
       documents: liveDocs,
@@ -75,7 +75,7 @@ describe('buildSearchResults', () => {
     expect(documentGroup.items[0]).toMatchObject({
       kind: 'document',
       id: 'd3',
-      name: 'Untitled diagram',
+      name: 'Untitled document',
     });
   });
 
@@ -94,7 +94,7 @@ describe('buildSearchResults', () => {
     ]);
   });
 
-  it("caps diagram + folder + tab matches at 8 each so a giant library doesn't blow up the modal", () => {
+  it("caps document + folder + tab matches at 8 each so a giant library doesn't blow up the modal", () => {
     const many = Array.from({ length: 25 }, (_, i) => ({ id: `d${i}`, name: `Diagram ${i}` }));
     const manyFolders = Array.from({ length: 25 }, (_, i) => ({
       id: `f${i}`,
@@ -208,7 +208,7 @@ describe('buildSearchResults — table cells (docs/specs/008-canvas/canvas-and-p
   });
 });
 
-describe('buildSearchResults — shared diagrams + teams (docs/specs/008-canvas/canvas-and-palette.md Search panel)', () => {
+describe('buildSearchResults — shared documents + teams (docs/specs/008-canvas/canvas-and-palette.md Search panel)', () => {
   it('matches "Shared with you" rows by name and carries the share code for navigation', () => {
     const out = buildSearchResults({
       query: 'road',
@@ -244,7 +244,7 @@ describe('buildSearchResults — shared diagrams + teams (docs/specs/008-canvas/
     expect(out[0]!.items[0]).toMatchObject({ kind: 'team', id: 'team1', name: 'Platform' });
   });
 
-  it('keeps the section order: diagrams, shared, folders, teams, tabs, elements', () => {
+  it('keeps the section order: documents, shared, folders, teams, tabs, elements', () => {
     const out = buildSearchResults({
       query: '',
       documents: [{ id: 'd1', name: 'A' }],
@@ -285,7 +285,7 @@ describe('buildSearchResults — team library (docs/specs/013-workspace/team-sha
       ],
       teamDocuments: [{ id: 'td', name: 'Q3 roadmap', teamId: 'team1', teamName: 'Platform' }],
     });
-    // Personal Space (personal folder) + Teams (team folder + team diagram).
+    // Personal Space (personal folder) + Teams (team folder + team document).
     expect(out.map((g) => g.key)).toEqual(['folders', 'teams']);
     const personalSpace = out.find((g) => g.key === 'folders')!;
     expect(personalSpace.label).toBe('Personal Space');
@@ -297,7 +297,7 @@ describe('buildSearchResults — team library (docs/specs/013-workspace/team-sha
     ]);
   });
 
-  it('matches team folders + diagrams by team name too, so "platform" finds the library', () => {
+  it('matches team folders + documents by team name too, so "platform" finds the library', () => {
     const out = buildSearchResults({
       query: 'platform',
       documents: [],

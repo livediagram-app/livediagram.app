@@ -56,7 +56,7 @@ here:
 | **Collab key**                                                                        | yes                       | yes              |
 
 The owner id is a credential: for a guest it is exactly what authenticates
-their API calls, so writing it into a shared diagram hands it to every
+their API calls, so writing it into a shared document hands it to every
 co-viewer. The presence id is deliberately a fresh server-minted random per
 socket, so peers never read an owner id off a roster — which also means it
 matches nothing that was ever saved, and changes on every reconnect.

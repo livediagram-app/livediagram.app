@@ -1,14 +1,14 @@
-// Diagram-level lifecycle + navigation for the EDITOR surface. The
+// Document-level lifecycle + navigation for the EDITOR surface. The
 // list-level operations (open / rename / delete / move / duplicate /
 // folder delete / dismiss shared) live in useDocumentListActions,
 // shared with /explorer and /new; this hook wires them to the
-// editor's state (current diagram, Explorer list, shared list) and
+// editor's state (current document, Explorer list, shared list) and
 // adds the two editor-only actions: newDocument (hand off to /live/new)
-// and makeCopy (visitor copies the open shared diagram).
+// and makeCopy (visitor copies the open shared document).
 //
 // Navigation is deliberately a hard `window.location.assign` rather
 // than client routing: the editor's hydration path owns identity +
-// load, and the current diagram is already autosaved, so a reload is
+// load, and the current document is already autosaved, so a reload is
 // the simplest correct handoff (docs/specs/007-editor/new-document-route.md).
 
 import type { Dispatch, SetStateAction } from 'react';
@@ -31,7 +31,7 @@ type DocumentActionsDeps = {
   confirm: ReturnType<typeof useConfirm>;
   ownerId: string;
   // useFolders' delete, wrapped by the shared hook with a
-  // diagram-side re-bucket.
+  // document-side re-bucket.
   hookDeleteFolder: (id: string) => void;
   // Shared-with-you list, for the dismiss action surfaced in the
   // Explorer panel's Shared accordion.
@@ -44,12 +44,12 @@ type DocumentActionsDeps = {
   sessionShareCode: string | null;
   // Post-move refreshes for the scope-aware mover below: the team
   // libraries sweep (a row moved within / left a team) and the personal
-  // list (a diagram landed in — or left — Personal Space).
+  // list (a document landed in — or left — Personal Space).
   refreshTeamLibraries: () => void;
   refreshDocumentList: () => Promise<void> | void;
   // Fired after a successful scope-aware move so the editor can sync any
-  // state derived from the moved diagram's placement — the header's
-  // Private / Team badge reads the CURRENT diagram's teamId, which
+  // state derived from the moved document's placement — the header's
+  // Private / Team badge reads the CURRENT document's teamId, which
   // otherwise goes stale until a reload.
   onDocumentScopeChanged?: (documentId: string, teamId: string | null) => void;
 };
@@ -99,19 +99,19 @@ export function useDocumentActions(deps: DocumentActionsDeps) {
 
   // Scope-crossing move (docs/specs/013-workspace/team-shared-documents.md), for the Explorer panel's move picker
   // when a TEAM is involved on either side: re-folder within a team, file
-  // a personal diagram into a team, or bring a team diagram back to the
+  // a personal document into a team, or bring a team document back to the
   // personal tree (ownership transfers to the mover server-side). One API
   // call covers every case; afterwards both the team sweep and the
   // personal list refresh so the row surfaces wherever it landed.
   // (Purely personal moves stay on moveDocumentToFolder above — it updates
   // the list optimistically.)
   //
-  // Telemetry (docs/specs/017-telemetry/telemetry.md), on the success path only: a personal diagram
+  // Telemetry (docs/specs/017-telemetry/telemetry.md), on the success path only: a personal document
   // filed into a team is Team·Added·Document, the same event the Explorer
-  // page's own move and the New Diagram wizard send; anything else (within
+  // page's own move and the New Document wizard send; anything else (within
   // a team, team -> team, team -> personal) is Team·Moved·Document. An
   // unknown source (a caller that doesn't pass `fromTeamId`, e.g. the team
-  // library, whose rows are always team diagrams) reads as a team move.
+  // library, whose rows are always team documents) reads as a team move.
   const moveDocumentTo = (
     id: string,
     dest: { teamId: string | null; folderId: string | null },
@@ -127,23 +127,23 @@ export function useDocumentActions(deps: DocumentActionsDeps) {
         else track('Team', 'Moved', 'Document');
       })
       .catch(() => {
-        toast.error('Could not move the diagram. Please try again.');
+        toast.error('Could not move the document. Please try again.');
       });
   };
 
-  // "New Diagram" from the Explorer. Welcome / create-new lives at
+  // "New Document" from the Explorer. Welcome / create-new lives at
   // /live/new (docs/specs/007-editor/new-document-route.md), so hand off there; that route owns the
-  // identity + template + theme picker and the actual diagram POST.
-  // The current diagram is already autosaved so nothing is lost.
+  // identity + template + theme picker and the actual document POST.
+  // The current document is already autosaved so nothing is lost.
   const newDocument = () => {
     if (typeof window === 'undefined') return;
     window.location.assign(`${window.location.origin}/new`);
   };
 
-  // Visitor action: duplicate the currently-open shared diagram
+  // Visitor action: duplicate the currently-open shared document
   // into the caller's own files. Goes to the api worker's copy
   // endpoint which authorises via owner / shared_with row / share
-  // code (docs/specs/015-api/api.md), then navigates to the new diagram so the
+  // code (docs/specs/015-api/api.md), then navigates to the new document so the
   // visitor immediately lands on their own copy. Owner case never
   // hits this; the button is gated on `!isOwner`.
   const makeCopy = async () => {
@@ -153,7 +153,7 @@ export function useDocumentActions(deps: DocumentActionsDeps) {
       const copy = await apiCopyDocument(ownerId, documentId, {
         shareCode: sessionShareCode,
       });
-      // A visitor cloning someone else's shared diagram into their own
+      // A visitor cloning someone else's shared document into their own
       // account; a distinct signal from duplicating your own (type 'Copy').
       track('Document', 'Duplicated', 'Copy');
       window.location.assign(`${window.location.origin}/document/${copy.id}`);

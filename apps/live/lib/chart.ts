@@ -1,4 +1,4 @@
-// Chart-view helpers: the shared LAYOUT is re-exported from the diagram
+// Chart-view helpers: the shared LAYOUT is re-exported from the document
 // package (see below); what stays here is the animation wiring, which is CSS
 // classes and therefore the canvas's alone.
 //

@@ -147,13 +147,13 @@ export function findCommentHost(
 }
 
 // Blank the author id on every comment a given visitor did NOT write,
-// before serving a tab to a non-owner. The author id is the diagram /
+// before serving a tab to a non-owner. The author id is the document /
 // guest owner id of whoever posted the comment; exposing other people's
 // ids to a visitor would re-open the observe-then-claim vector that
-// `redactOwner` closes for the diagram owner id. A visitor still sees
+// `redactOwner` closes for the document owner id. A visitor still sees
 // their OWN author id (which they already know — it's their own id), so
 // the client can light up a delete button on their own comments. Pass
-// the diagram owner's id as `viewerId` to no-op (the owner sees all).
+// the document owner's id as `viewerId` to no-op (the owner sees all).
 export function redactCommentAuthorIds(elements: Element[], viewerId: string | null): Element[] {
   return elements.map((el) => {
     const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
@@ -167,7 +167,7 @@ export function redactCommentAuthorIds(elements: Element[], viewerId: string | n
 
 // docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one comment id not in
 // `prevElements`. Used by the tab-autosave handler to fire the "someone
-// commented on your diagram" notification only when a genuinely new comment
+// commented on your document" notification only when a genuinely new comment
 // landed (not on every autosave).
 export function hasNewComments(nextElements: Element[], prevElements: Element[]): boolean {
   const seen = new Set<string>();

@@ -9,7 +9,7 @@
 // clipboard got a sentinel string, written purely to displace a lingering
 // image. That works within one editor instance and nowhere else — component
 // state cannot cross a browser tab, a second window, or a reload, which is
-// where "copy this and put it in that diagram" actually happens. The real
+// where "copy this and put it in that document" actually happens. The real
 // elements go on the clipboard now.
 //
 // The in-app buffer is KEPT as a fallback rather than deleted. Clipboard
@@ -65,11 +65,11 @@ type ClipboardDeps = {
   setMultiSelectedIds: (ids: Set<string>) => void;
   // Drops a new image element pre-filled with an uploaded image. From
   // useEditorImages; undefined when image support is unavailable (no
-  // diagram id / read-only), in which case image paste is a no-op.
+  // document id / read-only), in which case image paste is a no-op.
   addImageFromGallery?: (image: ImageDescriptor) => void;
   // The local participant id — owner of uploaded paste images.
   ownerId: string;
-  // The current diagram id (null before hydration). Offline diagrams embed
+  // The current document id (null before hydration). Offline documents embed
   // pasted images locally instead of uploading (docs/specs/006-document/offline-mode.md).
   documentId: string | null;
   toast: ReturnType<typeof useToast>;
@@ -210,7 +210,7 @@ export function useClipboard(deps: ClipboardDeps) {
             type: file.type,
           });
     try {
-      // Cloud diagrams upload; offline diagrams embed the paste locally
+      // Cloud documents upload; offline documents embed the paste locally
       // as a data URI (docs/specs/006-document/offline-mode.md) so no server copy is created.
       const { image } = await addImageFileForDocument(ownerId, documentId, named);
       addImageFromGallery({

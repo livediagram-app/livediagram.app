@@ -10,7 +10,7 @@ import {
 import type { ThemeDefinition } from './themes';
 
 // The Default colour scheme, light half: the plain, un-themed canvas. `id`
-// stays 'brand' because saved diagrams reference it; the label is "Default"
+// stays 'brand' because saved documents reference it; the label is "Default"
 // (it was "Basic" until Charcoal merged into it).
 //
 // Element colours are null in BOTH halves, which is the whole trick: Default

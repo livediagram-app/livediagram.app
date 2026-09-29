@@ -1,9 +1,9 @@
 // Created and updated on the same day (docs/specs/013-workspace/timeline.md §2.1a).
 //
-// A diagram made this morning and worked on this afternoon produces two
+// A document made this morning and worked on this afternoon produces two
 // events: `document_created` and the coalesced `document_edited`. Shown
 // side by side under Today they are the same card twice, and the second
-// one tells the reader nothing the first didn't: of course a new diagram
+// one tells the reader nothing the first didn't: of course a new document
 // was edited on the day it was made.
 //
 // So the edit goes whenever its create shares the reader's local day.

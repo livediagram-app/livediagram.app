@@ -1,4 +1,4 @@
-// change_log — per-diagram audit log (migration 0004). Row shape and
+// change_log — per-document audit log (migration 0004). Row shape and
 // the denormalisation fallback live in change-log-row.ts (so the
 // pure mapper has its own test surface); D1 queries here use them.
 
@@ -6,13 +6,13 @@ import { CHANGE_LOG_LIST_LIMIT } from '@livediagram/api-schema';
 import { rowToChangeLog, type ChangeLogRow } from '../change-log-row';
 import type { ChangeLogEntryDTO, Env } from '../types';
 
-// Per-diagram log read: change_log.document_id was dropped in
+// Per-document log read: change_log.document_id was dropped in
 // migration 0012 (item #14), so the filter joins through
-// document_tabs to find every tab currently linked to the diagram
+// document_tabs to find every tab currently linked to the document
 // and pulls log entries for those tabs. A tab shared between
-// diagrams surfaces in both diagrams' logs — which is the right
+// documents surfaces in both documents' logs — which is the right
 // answer once docs/specs/006-document/tab-document-many-to-many.md's many-to-many tabs land: the change exists
-// in every diagram it shows up in.
+// in every document it shows up in.
 // `onlyTabId` narrows the list to one tab for a tab-scoped visitor
 // (docs/specs/013-workspace/tab-scoped-share-links.md), in SQL so the cap applies to that tab.
 export async function listChangeLog(
@@ -90,9 +90,9 @@ export async function insertChangeLogEntry(env: Env, entry: ChangeLogEntryDTO): 
 // Bulk-drop every log entry for a tab. Used by the live app when it
 // deletes a tab — the tab no longer exists, its history is dead with
 // it. See docs/specs/012-collaboration/activity-and-audit.md. The delete is SCOPED to the
-// caller's diagram (via document_tabs): migration 0012 dropped
+// caller's document (via document_tabs): migration 0012 dropped
 // change_log.document_id, so a bare `WHERE tab_id = ?` would let an
-// owner of one diagram wipe a foreign diagram's tab log by id (IDOR).
+// owner of one document wipe a foreign document's tab log by id (IDOR).
 // Requiring the tab to be linked to `documentId` (which the route has
 // already authorised) closes that.
 export async function deleteChangeLogForTab(
@@ -112,9 +112,9 @@ export async function deleteChangeLogForTab(
 // Drop a single log entry. Used by the live app when the user clicks
 // Revert — the original entry vanishes rather than gaining a
 // 'reverted' counterpart, so the log stays compact. SCOPED to the
-// caller's diagram for the same reason as deleteChangeLogForTab: the
-// entry id alone is not diagram-bound post-0012, so the delete must
-// confirm the entry's tab belongs to the authorised diagram.
+// caller's document for the same reason as deleteChangeLogForTab: the
+// entry id alone is not document-bound post-0012, so the delete must
+// confirm the entry's tab belongs to the authorised document.
 export async function deleteChangeLogEntry(
   env: Env,
   documentId: string,

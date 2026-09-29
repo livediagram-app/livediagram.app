@@ -11,7 +11,7 @@ export function EllipsisGlyph({ size = 14 }: { size?: number }) {
 const SIZE_CLASS = {
   // The panel's dense rows (Explorer tree, slide deck, panel header).
   sm: 'h-5 w-5',
-  // The Explorer page's sidebar tree and the panel's diagram rows.
+  // The Explorer page's sidebar tree and the panel's document rows.
   md: 'h-6 w-6',
   // The Explorer page's list rows and cards.
   lg: 'h-7 w-7',

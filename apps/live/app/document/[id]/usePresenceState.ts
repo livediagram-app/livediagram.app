@@ -8,13 +8,13 @@ import { RELATIVE_TICK_MS } from '@/lib/relative-time';
 export type PresenceClock = { now: number; lastSeen: ReadonlyMap<string, number> };
 import type { LaserPoint } from '@/lib/laser-buffer';
 
-// Realtime presence state for the diagram room: who's connected, each
+// Realtime presence state for the document room: who's connected, each
 // peer's last-seen timestamp, and their tab focus / selection / cursor /
 // laser trail / walking character (docs/specs/008-canvas/avatar-mode.md). useRoomConnection writes these through the returned
 // setters; useEditorState reads them (via lib/presence-rows) to build the
 // avatar / cursor / laser / selection rows the editor renders.
 export function usePresenceState() {
-  // Live presence: the participants connected to this diagram's
+  // Live presence: the participants connected to this document's
   // Durable Object room right now. Includes ourselves once our `hello`
   // round-trips. Rendered in the editor header avatar stack.
   const [livePresence, setLivePresence] = useState<Participant[]>([]);

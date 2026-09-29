@@ -42,7 +42,7 @@ export type PanelFolderTree = {
 
 // Recursive folder node in the panel's tree, personal (Personal tab) and
 // team (Teams tab) alike: the header with its menu, and when expanded the
-// child folders then the folder's diagrams. It was two near-identical
+// child folders then the folder's documents. It was two near-identical
 // components (FolderNode and TeamFolderNode) until they were merged; a
 // team folder simply arrives without the drag-and-drop handler.
 export function FolderNode({
@@ -63,7 +63,7 @@ export function FolderNode({
 
   const [editing, setEditing] = useState(false);
   const menu = useRowMenu({ disabled: editing });
-  // Drop a dragged diagram on the header to file it here (docs/specs/013-workspace/folders.md).
+  // Drop a dragged document on the header to file it here (docs/specs/013-workspace/folders.md).
   const drop = useDocumentDropTarget(folder.id, tree.rows.onMoveDocumentToFolder);
 
   // Auto-enter rename mode for freshly-created folders: entered during render when this folder

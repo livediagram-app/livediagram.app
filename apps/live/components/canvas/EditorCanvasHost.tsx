@@ -1073,7 +1073,7 @@ export function EditorCanvasHost() {
         }
         hydrated={hydrated}
         templatePickerMode={effectiveTemplatePickerMode}
-        // Visitor on someone else's diagram + signed in → lock the
+        // Visitor on someone else's document + signed in → lock the
         // identity input to their Clerk name. Owner branch never
         // shows the identity prompt so `lockedName` is moot there;
         // pure guests pass null and keep the editable name field.

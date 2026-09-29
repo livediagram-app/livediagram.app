@@ -49,11 +49,11 @@ export function useExplorerMoves({
   toast: { error: (message: string) => void };
 }) {
   // Move picker target. The picker uses moveAnchorRef for placement.
-  // `kind` discriminates whether we're moving a diagram or a folder
+  // `kind` discriminates whether we're moving a document or a folder
   // so the picker can filter (a folder can't be moved into itself
   // or its descendants — the server cycle-checks but the picker
   // hides those rows up-front to make the rejection less surprising).
-  // One modal serves every diagram, personal or team (docs/specs/013-workspace/team-shared-documents.md): it
+  // One modal serves every document, personal or team (docs/specs/013-workspace/team-shared-documents.md): it
   // shows the full destination tree and `moveDocumentTo` routes the
   // pick from the subject's current placement.
   const [moveTarget, setMoveTarget] = useState<
@@ -82,18 +82,18 @@ export function useExplorerMoves({
       .catch(() => {});
   };
 
-  // Send one of the caller's own diagrams into a team's shared
+  // Send one of the caller's own documents into a team's shared
   // library (docs/specs/013-workspace/team-shared-documents.md) — straight into a team folder when the move
   // picker chose one, else the team's Unsorted. Leaves the personal
   // lists either way, so the local row is dropped optimistically.
   const moveDocumentToTeam = (id: string, teamId: string, folderId: string | null = null) => {
     if (!ownerId) return;
     const row = liveDocs.find((d) => d.id === id) ?? null;
-    // Re-sweep on success so the diagram appears under the team in
+    // Re-sweep on success so the document appears under the team in
     // Recent / the sidebar / the move picker (the sibling team moves do
     // the same; omitting it left the row invisible until a later bump).
     // On failure, roll the optimistic removal back and say so — the
-    // silent path left the diagram in neither list, looking deleted
+    // silent path left the document in neither list, looking deleted
     // (mirrors moveDocumentToFolder's rollback).
     void apiSetDocumentFolder(ownerId, id, folderId, teamId)
       .then(() => {
@@ -102,12 +102,12 @@ export function useExplorerMoves({
       })
       .catch(() => {
         if (row) setDocuments((prev) => (prev.some((d) => d.id === id) ? prev : [row, ...prev]));
-        toast.error('Could not move the diagram to the team. Please try again.');
+        toast.error('Could not move the document to the team. Please try again.');
       });
     setDocuments((prev) => prev.filter((d) => d.id !== id));
   };
 
-  // Re-folder a team-library diagram WITHIN its team (folderId null =
+  // Re-folder a team-library document WITHIN its team (folderId null =
   // the team's Unsorted), then re-sweep so Recent's rows repaint.
   // Same call the team page's own move uses (docs/specs/013-workspace/team-shared-documents.md).
   const moveTeamDocumentToFolder = (id: string, teamId: string, folderId: string | null) => {
@@ -123,7 +123,7 @@ export function useExplorerMoves({
       .catch(() => {});
   };
 
-  // Move a team-library diagram OUT of its team — either to the
+  // Move a team-library document OUT of its team — either to the
   // caller's personal library (toTeamId null; the server transfers
   // ownership to the mover, docs/specs/013-workspace/team-shared-documents.md) or on to another team
   // (toTeamId set). Refreshes both the team sweep (the row leaves /
@@ -177,10 +177,10 @@ export function useExplorerMoves({
       .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId }));
   }, [folders, moveTarget, descendantSet]);
 
-  // Team destinations for the move picker (diagram moves only): each
-  // team with its folder tree, so a diagram can land in a team folder
+  // Team destinations for the move picker (document moves only): each
+  // team with its folder tree, so a document can land in a team folder
   // in one move. Folders carry parentId for the indented tree. An
-  // offline diagram (docs/specs/006-document/offline-mode.md) gets none — a team's shared library is
+  // offline document (docs/specs/006-document/offline-mode.md) gets none — a team's shared library is
   // server-side, so a team move could never land.
   const moveTeamDests = useMemo(() => {
     if (

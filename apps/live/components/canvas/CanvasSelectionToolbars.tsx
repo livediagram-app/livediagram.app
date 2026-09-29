@@ -96,7 +96,7 @@ export function CanvasSelectionToolbars({
             title={selected ? `Selected ${elementKindLabel(selected)}` : 'Selected Element'}
             // In view-only mode we mount the popover with just
             // `onOpenComments`: visitors should be able to read +
-            // post comments on a diagram they don't own, but no
+            // post comments on a document they don't own, but no
             // other edit affordances apply. Every other handler
             // becomes undefined and the matching button drops out.
             locked={readOnly ? undefined : selectedLocked}

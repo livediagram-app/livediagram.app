@@ -1,7 +1,7 @@
 // /api/documents/<id>/shared-tabs — the delete and Take Offline confirmations'
 // read (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab
-// notice"): how many of the diagram's tabs are also in other diagrams, and how
-// many diagrams, so the user hears that those tabs stay before they act.
+// notice"): how many of the document's tabs are also in other documents, and how
+// many documents, so the user hears that those tabs stay before they act.
 
 import { getDocument, sharedTabsSummary } from '../db';
 import { forbidden, json } from '../responses';
@@ -13,7 +13,7 @@ export async function handleDocumentSharedTabs(ctx: RouteContext): Promise<Respo
   if (segments.length !== 4 || segments[3] !== 'shared-tabs' || request.method !== 'GET') {
     return null;
   }
-  // Answered for exactly who may delete the diagram, in the DELETE's order:
+  // Answered for exactly who may delete the document, in the DELETE's order:
   // 400 with no caller, 404 when missing, 403 without a claim.
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;

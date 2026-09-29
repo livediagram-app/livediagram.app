@@ -52,7 +52,7 @@ export type Deck = { slides: Slide[] };
 
 // The stored envelope. An array from day one even though v1 ships exactly one
 // deck: "the deck for the exec review" and "the deck for the team walkthrough"
-// are an obvious want over one diagram, and shipping `{ slides }` would make
+// are an obvious want over one document, and shipping `{ slides }` would make
 // the second one a data migration.
 export type StoredPresentation = { decks: Deck[] };
 
@@ -185,7 +185,7 @@ export const EMPTY_DECK: Deck = { slides: [] };
 // The stored blob comes back from the api as text the client did not write in
 // this session, so it is parsed defensively for the same reason the clipboard
 // payload is: never throw, and drop what cannot be understood rather than
-// failing the whole diagram load. A diagram whose deck is unreadable must
+// failing the whole document load. A document whose deck is unreadable must
 // still open.
 
 function isSlide(value: unknown): value is Slide {

@@ -15,7 +15,7 @@ afterEach(() => {
 });
 
 describe('imageUsageByOwner', () => {
-  it("maps each image to the owner's diagrams that place it, once each, by name", async () => {
+  it("maps each image to the owner's documents that place it, once each, by name", async () => {
     const db = setup();
     liveDoc(db.sql, 'A', 'owner', 'Zebra');
     liveDoc(db.sql, 'B', 'owner', 'Apple');
@@ -67,7 +67,7 @@ describe('documentReferencesImage', () => {
     return db;
   }
 
-  it('looks across every tab of the diagram by default', async () => {
+  it('looks across every tab of the document by default', async () => {
     const db = await twoTabs();
     expect(await documentReferencesImage(db.env, 'A', 'i2')).toBe(true);
     expect(await documentReferencesImage(db.env, 'A', 'i3')).toBe(false);
@@ -85,7 +85,7 @@ describe('documentReferencesImage', () => {
     expect(await documentReferencesImage(db.env, 'A', 'i1')).toBe(false);
   });
 
-  it("indexes the diagram's tabs first while the backfill is incomplete", async () => {
+  it("indexes the document's tabs first while the backfill is incomplete", async () => {
     const db = setup({ before0050: true });
     liveDoc(db.sql, 'A');
     db.sql.exec(

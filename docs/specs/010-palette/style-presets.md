@@ -63,7 +63,7 @@ staying pinned to the previous theme's colours. The binding is dropped the
 moment the user hand-edits any of the shape's colours or resets it to theme
 (at which point the preset no longer describes the shape). Starter **templates**
 use this too: a template's key element ships with a `colorPreset`, so it stands
-out in whatever theme the diagram is created with.
+out in whatever theme the tab is created with.
 
 ### Hover to preview (desktop)
 

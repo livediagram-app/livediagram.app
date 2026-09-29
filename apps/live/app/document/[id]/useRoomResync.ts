@@ -3,7 +3,7 @@ import type { Tab } from '@livediagram/document';
 import { apiLoadTab } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
-// Re-hydrating a diagram in place after the room can't bridge our
+// Re-hydrating a document in place after the room can't bridge our
 // reconnect gap (docs/specs/012-collaboration/resync-without-reload.md). This used to be `window.location.reload()`:
 // correct, but it also threw away the viewport, the selection, the whole
 // undo stack, and any tab the user hadn't saved yet — for what is really
@@ -71,7 +71,7 @@ export function useRoomResync(opts: {
     const overwrite = (prev: Tab[]): Tab[] =>
       prev.map((t) => {
         const next = byId.get(t.id);
-        // Keep the local folder: per-diagram link metadata (docs/specs/006-document/tab-folders.md) owned
+        // Keep the local folder: per-document link metadata (docs/specs/006-document/tab-folders.md) owned
         // by the meta path, not the content fetch.
         return next ? { ...next, folder: t.folder } : t;
       });

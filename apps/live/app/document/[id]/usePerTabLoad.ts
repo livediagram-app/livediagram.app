@@ -72,7 +72,7 @@ export function usePerTabLoad(opts: {
   } = opts;
 
   // resetTabs is read through a ref, not listed as an effect dep. The load
-  // effect must re-run only for a genuine reason (the tab, the diagram, the
+  // effect must re-run only for a genuine reason (the tab, the document, the
   // identity, or the Retry nonce). When it listed resetTabs and the caller
   // passed a fresh function each render, every re-render (the 30s presence
   // tick among them) tore the effect down and refetched; on a tab whose load
@@ -86,7 +86,7 @@ export function usePerTabLoad(opts: {
   // touched (a tab they already drew on keeps its local content), and in the
   // autosave's baseline under the same rule, since content fetched from D1 is
   // by definition saved (docs/specs/012-collaboration/collab-race-hardening.md). Either way the local folder stays: it's
-  // per-diagram link metadata (docs/specs/006-document/tab-folders.md) owned by the meta path, not the
+  // per-document link metadata (docs/specs/006-document/tab-folders.md) owned by the meta path, not the
   // content fetch. The baseline decision reads the last render (tabsRef), not
   // the state updater, which React may run late or twice.
   // Reads only refs, so it is stable and both loaders below can list it.
@@ -108,7 +108,7 @@ export function usePerTabLoad(opts: {
   // The attempt that last failed, keyed on everything that makes a fetch
   // worth repeating. A failed load stays failed (the error overlay stays up)
   // until that key changes: Retry bumps the nonce, or the user moves to
-  // another tab / diagram / identity. Belt and braces over the dep list, so
+  // another tab / document / identity. Belt and braces over the dep list, so
   // an unstable dep can never again turn a failure into a refetch loop.
   const failedAttemptRef = useRef<string | null>(null);
 
@@ -155,7 +155,7 @@ export function usePerTabLoad(opts: {
           // the loader. That was a data-loss trap: a *legitimately* empty
           // tab returns 200 with `{ elements: [] }` (the row still
           // exists), and the tab we're loading is the active tab, which is
-          // ALWAYS in the diagram summary we hydrated from. So a 404 here
+          // ALWAYS in the document summary we hydrated from. So a 404 here
           // is anomalous — a mis-routed / transient 404, a share-code /
           // auth edge, or a row deleted out from under a stale summary —
           // NOT proof the tab is empty. Marking it loaded-and-empty would
@@ -170,7 +170,7 @@ export function usePerTabLoad(opts: {
         }
         clearError();
         // Telemetry (docs/specs/017-telemetry/telemetry.md): a tab's content was fetched because the
-        // user switched to it. The first tab of each diagram is counted
+        // user switched to it. The first tab of each document is counted
         // at hydration (useIdentityBootstrap), and it's already in the
         // loaded-set here so this effect bails for it — no double count.
         // The search prefetch (loadAllTabs below) deliberately doesn't
@@ -226,7 +226,7 @@ export function usePerTabLoad(opts: {
   ]);
 
   // One-shot parallel fetch of every not-yet-loaded tab, so element
-  // search covers the whole diagram instead of just the tabs the user
+  // search covers the whole document instead of just the tabs the user
   // happened to visit. Same merge semantics as the single-tab effect
   // above (skip user-edited tabs, keep the local folder, flag the
   // remote-update guard). Best-effort: a failed fetch just drops the
@@ -257,7 +257,7 @@ export function usePerTabLoad(opts: {
           const tab = await apiLoadTab(selfId, documentId, targetId, sessionShareCode);
           if (!tab) {
             // A 404 is anomalous here for the same reason as the visit-time
-            // path above: the tab id came from the diagram summary, so a
+            // path above: the tab id came from the document summary, so a
             // missing row is a transient / auth edge, NOT proof the tab is
             // empty. Marking it loaded would arm the autosave to overwrite
             // the real row with an empty body (X-Allow-Empty). Drop the

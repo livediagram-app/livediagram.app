@@ -1,7 +1,7 @@
 // /api/teams/<id>/notify-mention: email the teammates a comment just
 // @-mentioned (docs/specs/012-collaboration/comment-mentions.md "The email"). The sibling of notify-action
 // (team-action-routes.ts), with a tighter team rule: a mention is only ever
-// of the diagram's OWN team, so the team in the path must be the diagram's.
+// of the document's OWN team, so the team in the path must be the document's.
 //
 // A POST, so the shared mutation gate in teams.ts has already required the
 // interactive Clerk session. Best-effort in the background: the comment has
@@ -44,10 +44,10 @@ export async function handleTeamMentionRoutes(
   if (commentText.length > MENTION_COMMENT_MAX) return badRequest('commentText too long');
   if (targets.length > MENTIONS_MAX) return badRequest('too many mentions');
 
-  // The diagram must live in THIS team's library: a mention is of the
-  // diagram's own team, and its members are exactly who can open it. The
+  // The document must live in THIS team's library: a mention is of the
+  // document's own team, and its members are exactly who can open it. The
   // caller is a joined member (checked above), so they can open it too. 404,
-  // never 403, so the route can't probe which diagrams exist.
+  // never 403, so the route can't probe which documents exist.
   const liveDoc = await getDocumentMeta(env, documentId);
   if (!liveDoc || liveDoc.teamId !== teamId) return notFound();
 

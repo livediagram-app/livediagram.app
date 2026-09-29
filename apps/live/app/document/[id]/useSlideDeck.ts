@@ -3,13 +3,13 @@
 // The slide deck's state (docs/specs/012-collaboration/presentation-mode.md): the deck itself, the editing verbs the
 // Slide Deck panel drives, and the presentation the Start button runs.
 //
-// The deck is diagram-level, not per-tab, because a slide belongs to one tab
+// The deck is document-level, not per-tab, because a slide belongs to one tab
 // but the DECK does not: its order interleaves tabs freely (A, C, A), so no
-// single tab can own the list. It rides the diagram-metadata save, not the
+// single tab can own the list. It rides the document-metadata save, not the
 // per-tab element save.
 //
 // Slides hold element REFERENCES. Nothing here copies an element, which is
-// what keeps a deck in step with the diagram it presents: edit a shape and
+// what keeps a deck in step with the document it presents: edit a shape and
 // every slide it is on shows the new version, because no slide ever held the
 // old one. Deleting an element is handled the same way — by NOT handling it,
 // so the slide simply resolves past the missing id and undo puts it back.
@@ -38,7 +38,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 
 // How long after the last deck edit the save fires. Deck edits arrive in
 // bursts (drag a row through four positions, type a sentence of notes), and
-// each one is a whole-diagram metadata PUT.
+// each one is a whole-document metadata PUT.
 const DECK_SAVE_DEBOUNCE_MS = 900;
 
 export type SlideDeckState = ReturnType<typeof useSlideDeck>;
@@ -94,12 +94,12 @@ export function useSlideDeck({
   }, []);
 
   // Hydration guard. Seeding the deck from the server must not look like an
-  // edit, or opening a diagram would immediately PUT the deck straight back.
+  // edit, or opening a document would immediately PUT the deck straight back.
   const hydratedRef = useRef(false);
   const saveTimer = useRef<number | null>(null);
   const saveRef = useLatest(saveDeck);
 
-  /** Seed from the loaded diagram. Never counts as an edit. */
+  /** Seed from the loaded document. Never counts as an edit. */
   const hydrateDeck = useCallback((serialised: string | null | undefined) => {
     hydratedRef.current = true;
     setDeck(firstDeck(parseStoredPresentation(serialised)));

@@ -4,7 +4,7 @@ import { track } from '@/lib/telemetry';
 
 // Top-level modal/dialog visibility for the editor: Search, Settings, the Share dialog, the per-tab Export / Import dialogs, and the
 // Collaborators modal.
-// Pure open/closed UI flags with no diagram-data coupling — a self-
+// Pure open/closed UI flags with no document-data coupling — a self-
 // contained slice composed into useEditorState and spread into its
 // view-model.
 export function useEditorDialogs() {
@@ -35,14 +35,14 @@ export function useEditorDialogs() {
     setSettingsCategory(null);
   }, []);
   // `?share=1` deep-link (the Explorer's "Manage Sharing…" row opens the
-  // diagram with this param): land with the Share dialog already open.
+  // document with this param): land with the Share dialog already open.
   const [shareDialogOpen, setShareDialogOpen] = useState(
     () =>
       typeof window !== 'undefined' &&
       new URL(window.location.href).searchParams.get('share') === '1',
   );
   // Strip the param after consuming it so a refresh / back doesn't keep
-  // reopening the dialog, leaving the diagram URL clean.
+  // reopening the dialog, leaving the document URL clean.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const url = new URL(window.location.href);
@@ -57,7 +57,7 @@ export function useEditorDialogs() {
   const [exportOpen, setExportOpen] = useState(false);
   // Whether the open Export dialog targets the whole active tab or just
   // the current multi-selection. A plain enum flag (no element data) so
-  // this slice stays diagram-data-free; EditorView derives the scoped
+  // this slice stays document-data-free; EditorView derives the scoped
   // tab live from `multiSelectedIds` when scope is 'selection'.
   const [exportScope, setExportScope] = useState<'tab' | 'selection'>('tab');
   const [importOpen, setImportOpen] = useState(false);

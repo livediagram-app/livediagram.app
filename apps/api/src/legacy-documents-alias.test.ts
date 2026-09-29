@@ -84,3 +84,15 @@ describe('toLegacyResponse', () => {
     expect(legacy.headers.get('Deprecation')).toBe('true');
   });
 });
+
+describe('fromLegacyRequest, the conversion header', () => {
+  it('carries an old client’s X-Diagram-Conversion across as X-Document-Conversion', async () => {
+    const req = new Request('https://x.test/api/diagrams/d1', {
+      method: 'DELETE',
+      headers: { 'X-Diagram-Conversion': 'offline' },
+    });
+    const next = await fromLegacyRequest(req);
+    expect(next.headers.get('X-Document-Conversion')).toBe('offline');
+    expect(next.headers.get('X-Diagram-Conversion')).toBeNull();
+  });
+});

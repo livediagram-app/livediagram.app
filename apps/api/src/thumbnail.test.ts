@@ -133,7 +133,7 @@ describe('getDocumentThumbnailSvg', () => {
     expect(images.put).toHaveBeenCalledOnce();
   });
 
-  it('returns null for an empty diagram and never caches it', async () => {
+  it('returns null for an empty document and never caches it', async () => {
     const images = r2();
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getFirstTabData.mockResolvedValue(JSON.stringify({ elements: [] }));
@@ -146,7 +146,7 @@ describe('getDocumentThumbnailSvg', () => {
     expect(db.markThumbRendered).not.toHaveBeenCalled();
   });
 
-  it('returns null when the diagram has no tabs', async () => {
+  it('returns null when the document has no tabs', async () => {
     const images = r2();
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getFirstTabData.mockResolvedValue(null);

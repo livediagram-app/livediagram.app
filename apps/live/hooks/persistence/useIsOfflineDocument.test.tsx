@@ -24,13 +24,13 @@ describe('useIsOfflineDocument', () => {
     await waitFor(() => expect(result.current).toBe(false));
   });
 
-  it('confirms an offline diagram the sync cache had not seen', async () => {
+  it('confirms an offline document the sync cache had not seen', async () => {
     offline.add('b');
     const { result } = renderHook(() => useIsOfflineDocument('b'));
     await waitFor(() => expect(result.current).toBe(true));
   });
 
-  it('is false the moment there is no diagram', async () => {
+  it('is false the moment there is no document', async () => {
     offline.add('c');
     const { result, rerender } = renderHook(({ id }) => useIsOfflineDocument(id), {
       initialProps: { id: 'c' as string | null },

@@ -99,7 +99,7 @@ export function isLineShape(kind: ShapeKind): boolean {
 
 // Code block (docs/specs/009-elements/code-block.md): a monospace snippet card. The closed language set the
 // lazy tokenizer understands; 'plain' renders unhighlighted. Wire-validated so
-// a saved diagram can't smuggle an arbitrary string into the renderer.
+// a saved document can't smuggle an arbitrary string into the renderer.
 export const CODE_LANGUAGES = [
   'plain',
   'ts',
@@ -177,7 +177,7 @@ export function isLegendShape(kind: ShapeKind): boolean {
 // (`pieAnim`), the legend toggle (`chartLegend`), and the Data / Chart /
 // Animation context-menu categories. Pie + bar share the 1-D `pieSlices`; the
 // line chart carries its own 2-D `lineCategories` + `lineSeries` instead. The
-// `pie*` field names are kept (not renamed to `chart*`) so saved diagrams
+// `pie*` field names are kept (not renamed to `chart*`) so saved documents
 // round-trip without a migration.
 export function isChartShape(kind: ShapeKind): boolean {
   return isPieShape(kind) || isBarShape(kind) || isLineShape(kind);

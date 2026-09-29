@@ -1,10 +1,10 @@
 # Activity page
 
 **Status: implemented.** A new Explorer section, **Activity** at
-`/explorer/activity`, that lists across every diagram the reader can
+`/explorer/activity`, that lists across every document the reader can
 open: the **open actions assigned to them**, the **open actions they
 assigned** to other people, and the **unresolved comment threads they
-are in**. Each row opens the diagram on the right tab with the element
+are in**. Each row opens the document on the right tab with the element
 selected and its action / comment popover already open.
 
 Builds on assigned actions ([Assigned actions](../012-collaboration/assigned-actions.md)), comment threads ([Canvas and palette](../008-canvas/canvas-and-palette.md)), the
@@ -17,10 +17,10 @@ Actions and comment threads are element-level collaboration metadata:
 they live inside the element, inside the tab JSON, and the only place
 that lists them today is the in-editor **Collaborate Panel**
 ([Assigned actions](../012-collaboration/assigned-actions.md) §5), which is scoped to the tab that is open. Somebody who
-has been assigned work on four diagrams has to remember which four.
-[Assigned actions](../012-collaboration/assigned-actions.md) §9 called the cross-diagram inbox out of scope and named the
+has been assigned work on four documents has to remember which four.
+[Assigned actions](../012-collaboration/assigned-actions.md) §9 called the cross-document inbox out of scope and named the
 reason: the per-element blob model is right for the editor, and a
-listing across diagrams needs a table. This spec adds that table
+listing across documents needs a table. This spec adds that table
 without moving the source of truth.
 
 The Timeline ([Timeline](timeline.md)) is not this. It records that an action _was
@@ -40,7 +40,7 @@ outstanding for me right now.**
 - Done actions and resolved threads are not listed. The page is an
   inbox of what is outstanding, not a history; the Timeline and the
   Collaborate Panel's Resolved side already cover the past.
-- Offline Mode diagrams ([Offline Mode](../006-document/offline-mode.md)) never reach the worker, so their
+- Offline Mode documents ([Offline Mode](../006-document/offline-mode.md)) never reach the worker, so their
   actions and threads never appear here, the same as on the Timeline.
 
 ## 1. What the user sees
@@ -63,16 +63,16 @@ count, and each hidden entirely when empty:
 3. **Open Comment Threads** — unresolved threads the reader is in.
    "In" means one of two things, and the row says which:
    - the reader wrote at least one comment in the thread, or
-   - the thread is on a diagram the reader **owns** (owners are
+   - the thread is on a document the reader **owns** (owners are
      already treated as included: [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) emails them every new
-     comment). The row carries a quiet **Your diagram** hint.
+     comment). The row carries a quiet **Your document** hint.
 
 Rows share one anatomy with the Collaborate Panel's ([Assigned actions](../012-collaboration/assigned-actions.md) §5) so a
 user recognises them: kind glyph far left (the action clipboard, the
 comment bubble); name + one-line detail in the middle; person avatar
 over a relative time far right. The detail line is where the row is
-_from_: **element label · tab name**, with a **diagram chip** naming the
-diagram (a team diagram's chip also names the team). An action row's
+_from_: **element label · tab name**, with a **document chip** naming the
+document (a team document's chip also names the team). An action row's
 title is the action name, its avatar the assignee (brand-tinted when
 that is the reader, labelled "You"); a **You Assigned** row shows the
 assignee's avatar with "Assigned to <name>" on hover. A thread row's
@@ -84,8 +84,8 @@ Ordering within a section is **newest activity first**: an action's
 comment. The page is capped at 100 rows per kind; the cap is a
 ceiling on a page nobody scrolls that far down, not a paging design.
 
-**Row click opens the element.** The link is the diagram's normal URL
-(the share-code form for a diagram shared with the reader, [Read-only embeds (`/embed`)](embeds.md))
+**Row click opens the element.** The link is the document's normal URL
+(the share-code form for a document shared with the reader, [Read-only embeds (`/embed`)](embeds.md))
 with a fragment the editor reads on load:
 
 ```
@@ -109,7 +109,7 @@ States:
 - **Loading**: the Explorer's skeleton rows.
 - **Empty** (nothing open in any section): one `EmptyState` — "Nothing
   waiting on you", with a line explaining what lands here and a link to
-  the assigned-actions help article. No New Diagram CTA: a new diagram
+  the assigned-actions help article. No New Document CTA: a new document
   does not put anything on this page.
 - **Failed**: "Couldn't load your activity" with **Try again**. Distinct
   from empty for the same reason the Timeline keeps them apart
@@ -155,10 +155,10 @@ CREATE TABLE collab_threads (
 );
 ```
 
-- **Keyed by tab, not diagram.** A tab can belong to several diagrams
-  ([Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md)); the diagram is resolved at read time through
+- **Keyed by tab, not document.** A tab can belong to several documents
+  ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)); the document is resolved at read time through
   `document_tabs`, which is also what makes deletion free: a tab's rows
-  die with it (FK cascade), and a diagram's tabs die with the diagram.
+  die with it (FK cascade), and a document's tabs die with the document.
 - **One row per action, one per thread.** An ordinary element carries at most
   one action and an Action panel a list ([The Action Panel](../012-collaboration/action-panel.md)), so `collab_actions` is keyed
   `(tab_id, element_id, action_id)` (migration 0053); an element has one
@@ -184,16 +184,16 @@ its own batch, all via one helper (`collabIndexStatements` in
 `apps/api/src/db/collab-index.ts`), so a fifth write path cannot forget
 by accident without also forgetting to write the tab:
 
-| Path                                                                                                       | Where                      | How                                          |
-| ---------------------------------------------------------------------------------------------------------- | -------------------------- | -------------------------------------------- |
-| tab autosave `PUT …/tabs/:tabId`                                                                           | `upsertTab`                | statements appended to the tab's batch       |
-| view-role comment `POST …/comments`                                                                        | `upsertTab`                | same                                         |
-| delete-own comment `DELETE …/comments/:id`                                                                 | `upsertTab`                | same                                         |
-| create (`POST /documents`, templates, import)                                                               | `seedTabs`                 | same, per tab                                |
-| duplicate / copy from a share link                                                                         | `copyDocument`              | `INSERT … SELECT` from the source tab's rows |
-| MCP `update_document` / `add_tab` ([MCP server](../015-api/mcp-server.md))                                  | goes through the tab `PUT` | covered                                      |
-| tab / diagram delete, account delete                                                                       | FK cascade from `tabs`     | nothing to do                                |
-| tab link into another diagram ([Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md)) | rows are per tab           | nothing to do                                |
+| Path                                                                                                         | Where                      | How                                          |
+| ------------------------------------------------------------------------------------------------------------ | -------------------------- | -------------------------------------------- |
+| tab autosave `PUT …/tabs/:tabId`                                                                             | `upsertTab`                | statements appended to the tab's batch       |
+| view-role comment `POST …/comments`                                                                          | `upsertTab`                | same                                         |
+| delete-own comment `DELETE …/comments/:id`                                                                   | `upsertTab`                | same                                         |
+| create (`POST /documents`, templates, import)                                                                | `seedTabs`                 | same, per tab                                |
+| duplicate / copy from a share link                                                                           | `copyDocument`             | `INSERT … SELECT` from the source tab's rows |
+| MCP `update_document` / `add_tab` ([MCP server](../015-api/mcp-server.md))                                   | goes through the tab `PUT` | covered                                      |
+| tab / document delete, account delete                                                                        | FK cascade from `tabs`     | nothing to do                                |
+| tab link into another document ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)) | rows are per tab           | nothing to do                                |
 
 The rows are derived by a pure function over the tab's elements
 (`collabIndexRowsFromElements`), which reuses the element-label rule
@@ -206,10 +206,10 @@ what a row is called).
 Comment `authorId`s and self-assigned `assignee.userId`s are written
 with whatever identity the writer had at the time, a guest participant
 id for anyone signed out ([Auth + guest access](../014-identity/auth-and-guest-access.md)). When that guest signs up, their
-diagrams migrate to the Clerk id (`POST /api/migrate`) but the ids
+documents migrate to the Clerk id (`POST /api/migrate`) but the ids
 inside the blobs do not, and a later re-index of an untouched tab
 would faithfully re-write the guest id. Rewriting blobs on migration
-is the wrong fix (every tab of every diagram, on the sign-up path).
+is the wrong fix (every tab of every document, on the sign-up path).
 
 So the migration records the relationship instead:
 
@@ -239,7 +239,7 @@ current id; extending them is a separate change.
 Existing tabs have no index rows until they are saved again. On the
 first `GET /api/activity` for an owner (no `collab_index_state` row),
 the worker seeds the index off the response path (`waitUntil`) from
-the tabs of every diagram the reader can see (owned, joined-team,
+the tabs of every document the reader can see (owned, joined-team,
 shared-with), cheaply pre-filtered in SQL to tabs whose JSON contains
 a `commentThread` or `action` key, capped at 300 tabs (logged when
 hit), and stamps `backfilled_at`. The write is the same full-replace
@@ -265,7 +265,7 @@ type ActivityPlace = {
   documentId: string;
   documentName: string;
   teamId: string | null;
-  // 'own' | 'team' | 'shared' — how the reader reaches the diagram;
+  // 'own' | 'team' | 'shared' — how the reader reaches the document;
   // shareCode is set only for 'shared', so the client can build the
   // visitor URL (docs/specs/013-workspace/embeds.md).
   via: 'own' | 'team' | 'shared';
@@ -298,29 +298,29 @@ type ActivityThread = ActivityPlace & {
 
 ## 4. The read, and who sees what
 
-Every row is scoped **first** by the diagrams the reader can open, the
-same three sets the Explorer's Recent already merges: diagrams they
-own, diagrams in a team they have _joined_ (an `invited` row grants
-nothing, [Teams](teams.md)), and diagrams shared with them whose share is still
+Every row is scoped **first** by the documents the reader can open, the
+same three sets the Explorer's Recent already merges: documents they
+own, documents in a team they have _joined_ (an `invited` row grants
+nothing, [Teams](teams.md)), and documents shared with them whose share is still
 live. Only then is the involvement test applied:
 
 - an action is theirs to see when its `assignee_user_id` ∈ me, its
   `assigner_id` ∈ me, or its `assignee_member_id` is one of their
   `team_members` rows (this is how an action assigned to an
   _invited_ address finds its owner once they join, [Assigned actions](../012-collaboration/assigned-actions.md) §1);
-- a thread is theirs when they own the diagram, an author id ∈ me, or
+- a thread is theirs when they own the document, an author id ∈ me, or
   they are @-mentioned in it: a `mentioned_ids` entry ∈ me or is one of
   their `team_members` rows ([Comment mentions](../012-collaboration/comment-mentions.md)). The row carries
   `mentionsYou`, and its hint reads **Mentioned You** (it wins over "Your
-  diagram").
+  document").
 
 That order is the security boundary: a name can never leak a row from
-a diagram the reader has lost access to, and it is what keeps the
+a document the reader has lost access to, and it is what keeps the
 `json_each` participant scan bounded to one person's library.
 
-A tab linked into two visible diagrams would list twice; the read
+A tab linked into two visible documents would list twice; the read
 dedupes on (tab, element) for a thread and (tab, element, action) for an
-action, preferring the diagram the reader owns,
+action, preferring the document the reader owns,
 then a team's, then a shared one.
 
 ## 5. Explorer integration
@@ -331,7 +331,7 @@ The section checklist from [Timeline](timeline.md) §8.3: `views.tsx` gains
 gets the Quick find row (with `ActivityIcon` in
 `components/primitives/explorer-icons.tsx`),
 `useExplorerPane` names it, `ExplorerPane` dispatches to the
-lazy-loaded `ActivityPane` (not a `BROWSE_KIND`; no New Diagram / New
+lazy-loaded `ActivityPane` (not a `BROWSE_KIND`; no New Document / New
 Folder header actions; Help links the new article), and
 `routes.test.ts`'s `STATIC_NODES` lists it. The sidebar badge and the
 pane read the same fetch (`useActivityFeed`, held in Explorer state
@@ -346,7 +346,7 @@ A new `Activity` category in `TELEMETRY_CATEGORIES` ([Telemetry + public transpa
 - `Activity` / `Selected` with type `Action` | `Thread` on a row click;
 - `Activity` / `Loaded` / `Retry` when a failed read is retried.
 
-Never an action name, comment text, diagram name, or any identity.
+Never an action name, comment text, document name, or any identity.
 
 ## 7. Testing
 

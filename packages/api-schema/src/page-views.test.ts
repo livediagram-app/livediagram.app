@@ -17,7 +17,7 @@ describe('pageViewPath', () => {
     expect(pageViewPath('/index.html')).toBe('/');
   });
 
-  it('counts every diagram as the one /document page, whatever follows', () => {
+  it('counts every document as the one /document page, whatever follows', () => {
     expect(pageViewPath('/document/3f2b8c1e-9a4d-4e7b-8c21-0d5e6f7a8b9c')).toBe('/document');
     expect(pageViewPath('/document/offline-abc')).toBe('/document');
     expect(pageViewPath('/document/abc/extra/Weird Stuff!')).toBe('/document');

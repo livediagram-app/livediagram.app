@@ -1,7 +1,7 @@
 // Border preset resolvers + lookup tables. Every shape renders
 // through these (border thickness / dash pattern / corner radius are
 // resolved from optional element fields with default fallbacks), so
-// silent breakage of the resolvers would warp every saved diagram on
+// silent breakage of the resolvers would warp every saved document on
 // next paint. The tests pin both the fallback behaviour and the
 // completeness of the lookup tables (every preset has a pixel
 // mapping, every style has a dasharray, every radius has a pixel

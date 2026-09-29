@@ -24,7 +24,7 @@ type ParticipantAvatarProps = {
   // multiple allowed. Callers pass strings like "You" (own avatar) or
   // "Viewer" / "Editor" (when the role is known). Renders as a pill so
   // it's visually distinct from the bare name — matches the in-canvas
-  // role badge style at the top of the diagram.
+  // role badge style at the top of the document.
   badges?: string[];
 };
 

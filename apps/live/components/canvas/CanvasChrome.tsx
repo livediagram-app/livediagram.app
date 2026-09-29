@@ -7,8 +7,8 @@ import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
 // is gated on `showTemplatePicker`, which is false for the common
-// path (a returning user opening an existing diagram with tabs that
-// already have content). For first-time guests on a fresh diagram
+// path (a returning user opening an existing document with tabs that
+// already have content). For first-time guests on a fresh document
 // the gate is true on first paint, but the empty canvas underneath
 // has already rendered by then, so the user sees the welcome modal
 // fade in a frame later rather than blocking the route on the
@@ -89,7 +89,7 @@ type ChromeExtras = {
   onIsoReset: () => void;
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the character's customisation, owned by
   // useAvatarConfig in Canvas (it persists per browser, so it lives with the
-  // sprite rather than in the editor's diagram state) and edited by the
+  // sprite rather than in the editor's document state) and edited by the
   // Avatar Panel down in the chrome.
   avatarConfig: import('@/lib/avatar-config').AvatarConfig;
   onChangeAvatarField: <K extends keyof import('@/lib/avatar-config').AvatarConfig>(

@@ -142,7 +142,7 @@ carry over, since rows have no round). One storage key per element, and
 a ledger that would outgrow the storage value limit stops recording rather
 than failing.
 
-**A save is merged with it.** When a tab PUT arrives for a diagram with a
+**A save is merged with it.** When a tab PUT arrives for a document with a
 room (shared, or in a team) carrying the room cursor its snapshot was taken at
 (`X-Room-Cursor: <epoch>:<seq>`), the api reads the room's ledger for that tab
 (`GET /ledger` on the DO stub, internal only) and merges into the incoming tab
@@ -158,7 +158,7 @@ than the incoming element's is ignored: the save carries a clear the
 ledger hasn't seen a delta for yet.
 
 If the room can't be reached, the save goes through unmerged, as before.
-A diagram with no room (never shared, not in a team) has one writer and
+A document with no room (never shared, not in a team) has one writer and
 isn't merged.
 
 **Comments joined the ledger in phase 5**, once the room stamped their

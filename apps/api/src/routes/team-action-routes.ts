@@ -1,5 +1,5 @@
 // /api/teams/<id>/access-check + /notify-action — the assigned-actions
-// endpoints (docs/specs/012-collaboration/assigned-actions.md), split out of teams.ts the same way the diagram
+// endpoints (docs/specs/012-collaboration/assigned-actions.md), split out of teams.ts the same way the document
 // route families own their own modules. Both are team-scoped: the
 // caller resolves the team + their own membership row once and passes
 // the scope in.
@@ -23,12 +23,12 @@ export async function handleTeamActionRoutes(
   const { request, env, url, segments, clerkEmail } = ctx;
   const { teamId, me, userId } = scope;
 
-  // /api/teams/<id>/access-check — can this teammate open that diagram?
+  // /api/teams/<id>/access-check — can this teammate open that document?
   // (docs/specs/012-collaboration/assigned-actions.md). Drives the Assign Action dialog's access hint: a REAL
   // answer instead of a client-side guess. Same gates as notify-action
   // below (caller + assignee joined members, caller can access the
-  // diagram, 404s that never probe); the answer covers the three legs
-  // the server can see — the assignee owns the diagram, is a joined
+  // document, 404s that never probe); the answer covers the three legs
+  // the server can see — the assignee owns the document, is a joined
   // member of its team-library team, or has opened it via a share link.
   // A GET, so token callers pass too (read-only, team-scoped).
   if (segments.length === 4 && segments[3] === 'access-check') {
@@ -58,11 +58,11 @@ export async function handleTeamActionRoutes(
   }
 
   // /api/teams/<id>/notify-action — email a teammate about an action just
-  // assigned to them on a diagram element (docs/specs/012-collaboration/assigned-actions.md). A POST, so the shared
+  // assigned to them on a document element (docs/specs/012-collaboration/assigned-actions.md). A POST, so the shared
   // mutation gate in teams.ts already required the interactive Clerk
   // session. The server establishes every fact that matters itself: both
   // parties must be JOINED members of this team, the caller must be able
-  // to access the diagram, and the diagram name + assigner name + assignee
+  // to access the document, and the document name + assigner name + assignee
   // address all come from server state, never the body. Best-effort in the
   // background; the assignment itself already persisted via the tab write.
   if (segments.length === 4 && segments[3] === 'notify-action') {
@@ -98,9 +98,9 @@ export async function handleTeamActionRoutes(
       ? await getMembership(env, teamId, assigneeUserId)
       : ((await listTeamMembers(env, teamId)).find((m) => m.id === assigneeMemberId) ?? null);
     if (!assignee) return notFound();
-    // The caller must be able to access the diagram: their own, in a team
+    // The caller must be able to access the document: their own, in a team
     // library they've joined, or one they've opened through a share link.
-    // The diagram NAME comes from this row, never the request body.
+    // The document NAME comes from this row, never the request body.
     const liveDoc = await getDocumentMeta(env, documentId);
     if (!liveDoc) return notFound();
     const isOwner = liveDoc.ownerId === userId;

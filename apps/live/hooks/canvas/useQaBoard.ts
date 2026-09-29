@@ -49,7 +49,7 @@ export function useQaBoard({
   selfParticipant: Participant;
   sessionShareCode: string | null;
   applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
-  // The persisting write, used only for an offline diagram (docs/specs/006-document/offline-mode.md), where
+  // The persisting write, used only for an offline document (docs/specs/006-document/offline-mode.md), where
   // there is no server and the ordinary tab save is the store.
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => unknown;
   // The autosave's baseline (docs/specs/012-collaboration/collab-race-hardening.md). The board is the server's, so its
@@ -146,7 +146,7 @@ export function useQaBoard({
       else pendingRef.current.delete(key);
     };
 
-    // No diagram yet, or an offline one: there is no server, so the action is
+    // No document yet, or an offline one: there is no server, so the action is
     // applied for real here and the tab save carries it.
     const applyLocally = () => {
       const base = baseRef.current.get(key)!;

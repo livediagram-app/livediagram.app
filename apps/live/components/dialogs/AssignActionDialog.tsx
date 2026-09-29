@@ -30,7 +30,7 @@ import { DialogFooter } from '@/components/dialogs/DialogFooter';
 // The email offer is the shared iOS-style ToggleSwitch, default on, and
 // is hidden entirely for a self-assignment — you don't email yourself
 // about your own action. Picking a teammate also fires a REAL access
-// check (docs/specs/012-collaboration/assigned-actions.md §4) so the "can't open this diagram" hint only shows
+// check (docs/specs/012-collaboration/assigned-actions.md §4) so the "can't open this document" hint only shows
 // when the server says so.
 
 // What the per-open seed last filled the fields from; a new object per seed.
@@ -54,15 +54,15 @@ type AssignActionDialogProps = {
   // identity (docs/specs/014-identity/auth-and-guest-access.md). Drives the Myself row.
   selfUserId: string | null;
   selfName: string | null;
-  // The diagram's id + team-library team (null team for a personal
-  // diagram). Drive the access check: picking a teammate asks the server
-  // whether they can actually open this diagram (docs/specs/012-collaboration/assigned-actions.md §4).
+  // The document's id + team-library team (null team for a personal
+  // document). Drive the access check: picking a teammate asks the server
+  // whether they can actually open this document (docs/specs/012-collaboration/assigned-actions.md §4).
   documentId: string | null;
   documentTeamId: string | null;
   // capabilities.emailEnabled — hides the email offer on a self-host
   // without Resend (never advertise a send we can't perform).
   emailEnabled: boolean;
-  // Inline personal-diagram fix (docs/specs/012-collaboration/assigned-actions.md §2): file the diagram into the
+  // Inline personal-document fix (docs/specs/012-collaboration/assigned-actions.md §2): file the document into the
   // picked team's library root so teammates become assignable without an
   // Explorer round-trip. Resolves false on failure (the picker shows a
   // retry-able error line).
@@ -95,7 +95,7 @@ export function AssignActionDialog({
   const [assignee, setAssignee] = useState<PickableMember | null>(null);
   const [notifyEmail, setNotifyEmail] = useState(true);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  // The team id mid inline move (docs/specs/012-collaboration/assigned-actions.md §2 personal-diagram fix), and
+  // The team id mid inline move (docs/specs/012-collaboration/assigned-actions.md §2 personal-document fix), and
   // whether the last attempt failed.
   const [movingToTeamId, setMovingToTeamId] = useState<string | null>(null);
   const [moveFailed, setMoveFailed] = useState(false);
@@ -298,14 +298,14 @@ export function AssignActionDialog({
                 // invite acceptance, no owner action needed.
                 <>
                   {assignee?.name} hasn&apos;t accepted the team invite yet — they&apos;ll get
-                  access to this diagram when they join.
+                  access to this document when they join.
                 </>
               ) : (
                 <>
                   {assignee?.name}{' '}
                   {assigneeAccess === 'no'
-                    ? "can't open this diagram yet"
-                    : 'may not be able to open this diagram'}
+                    ? "can't open this document yet"
+                    : 'may not be able to open this document'}
                   : share it or move it to the team library.
                 </>
               )}

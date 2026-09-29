@@ -6,8 +6,8 @@ import { readActivity } from './collab-index';
 import { upsertTab } from './tabs';
 
 // A thread @-mentioning somebody lands on THEIR Activity page even when they
-// never commented and don't own the diagram (docs/specs/012-collaboration/comment-mentions.md "The
-// Activity page"), still scoped to diagrams they can open (docs/specs/013-workspace/activity-page.md §4).
+// never commented and don't own the document (docs/specs/012-collaboration/comment-mentions.md "The
+// Activity page"), still scoped to documents they can open (docs/specs/013-workspace/activity-page.md §4).
 
 const T0 = 1_700_000_000_000;
 
@@ -107,7 +107,7 @@ describe('Activity: comment mentions', () => {
     expect((await readActivity(db.env, 'other', { limit: 10 })).threads).toEqual([]);
   });
 
-  it('never surfaces a diagram the mentioned person cannot open', async () => {
+  it('never surfaces a document the mentioned person cannot open', async () => {
     const db = await seed(
       [{ userId: 'reader', memberId: 'm-reader', name: 'R', handle: 'reader' }],
       {

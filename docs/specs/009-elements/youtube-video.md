@@ -22,7 +22,7 @@ existing `LinkPickerDialog` and `applyElementLink` commits it — no second URL
 editor, no new dialog.
 
 The picker opens **restricted**, though. A link card can legitimately point at
-a tab or another diagram; a video cannot, because its link is not a
+a tab or another document; a video cannot, because its link is not a
 destination, it is the content — a video pointed at a tab has nothing to play.
 So `LinkPickerDialog` gained a `urlOnly` config (caller-supplied copy plus a
 validator) which hides the mode switcher entirely and validates as you type:
@@ -88,7 +88,7 @@ Why not just embed the iframe:
   its rectangle, so a video you could not drag, select, or marquee over would
   be a hole in the canvas.
 - **Privacy.** `youtube-nocookie.com` sets no cookie until playback starts, so
-  simply opening a diagram that contains a video is not a tracked visit. This
+  simply opening a document that contains a video is not a tracked visit. This
   matters more here than usual: the repo is public and self-hostable
   ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)), and a self-hoster should not be silently shipping their users to
   Google on page load.

@@ -52,21 +52,21 @@ const mcpTool = (type: string, title: string, blurb: string): Metric => ({
 });
 
 export const MCP_TOOL_METRICS: readonly Metric[] = [
-  mcpTool('FindDocuments', 'Find Diagrams', 'Searching the user’s diagrams by name.'),
-  mcpTool('ReadDocument', 'Read Diagram', 'Reading one diagram’s tabs and elements.'),
-  mcpTool('ListTemplates', 'List Templates', 'Listing the templates a diagram can start from.'),
-  mcpTool('CreateDocument', 'Create Diagram', 'Making a new diagram.'),
-  mcpTool('AddTab', 'Add Tab', 'Adding a tab to an existing diagram.'),
-  mcpTool('UpdateDocument', 'Update Diagram', 'Editing a diagram’s elements.'),
-  mcpTool('ShareDocument', 'Share Diagram', 'Creating a share link for a diagram.'),
-  mcpTool('RenameDocument', 'Rename Diagram', 'Renaming a diagram.'),
+  mcpTool('FindDocuments', 'Find Documents', 'Searching the user’s documents by name.'),
+  mcpTool('ReadDocument', 'Read Document', 'Reading one document’s tabs and elements.'),
+  mcpTool('ListTemplates', 'List Templates', 'Listing the templates a document can start from.'),
+  mcpTool('CreateDocument', 'Create Document', 'Making a new document.'),
+  mcpTool('AddTab', 'Add Tab', 'Adding a tab to an existing document.'),
+  mcpTool('UpdateDocument', 'Update Document', 'Editing a document’s elements.'),
+  mcpTool('ShareDocument', 'Share Document', 'Creating a share link for a document.'),
+  mcpTool('RenameDocument', 'Rename Document', 'Renaming a document.'),
   mcpTool(
     'DeleteDocument',
-    'Delete Diagram',
-    'Moving a diagram to the Trash, or deleting one tab.',
+    'Delete Document',
+    'Moving a document to the Trash, or deleting one tab.',
   ),
-  mcpTool('ListTrash', 'List Trash', 'Listing the diagrams in the Trash.'),
-  mcpTool('RestoreDocument', 'Restore Diagram', 'Bringing a diagram back from the Trash.'),
+  mcpTool('ListTrash', 'List Trash', 'Listing the documents in the Trash.'),
+  mcpTool('RestoreDocument', 'Restore Document', 'Bringing a document back from the Trash.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

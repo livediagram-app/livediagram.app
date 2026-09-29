@@ -62,7 +62,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | The one flag     | `useMinimalChrome()`, `MinimalChromeProvider`            | How a surface reads it                                               |
 | Offer            | `PowerUserOffer` (telemetry type), `powerUserOfferShown` | The once-ever toast                                                  |
 | Offer counters   | `OfferCounters` `{ days, lastDay, shortcuts }`           | Device-local usage counts                                            |
-| Editing session  | `recordEditingSession(counters, day)`                    | An editable diagram opened; counts once per `day`                    |
+| Editing session  | `recordEditingSession(counters, day)`                    | An editable document opened; counts once per `day`                   |
 | Day              | `localDayKey(date)`                                      | `YYYY-MM-DD` in local time (D3)                                      |
 | Shortcut used    | `recordShortcut(counters)`, `onShortcutUsed`             | A key the editor shortcut handler claimed (D4)                       |
 | Role pill        | `RolePill`                                               | Title-bar pill: Editing / Viewing, owner in its Tooltip              |
@@ -119,13 +119,13 @@ provider, so the Explorer page and `/new` are unaffected.
 
 `OfferCounters` in `localStorage` under `livediagram:power-user-offer:v1`.
 
-| #   | Event                                 | Guard                                                                 | Effect                                                                     |
-| --- | ------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| O1  | preferences settled, diagram editable | once per page load                                                    | `recordEditingSession(c, localDayKey(now))`; persist; evaluate             |
-| O2  | `onShortcutUsed`                      |                                                                       | `recordShortcut(c)`; persist; evaluate                                     |
-| O3  | evaluate                              | `offerDue(c)` and `offerEligible(prefs, ctx)` and not shown this page | show the toast; write `powerUserOfferShown: true` (synced); `Opened`       |
-| O4  | "Try power user mode"                 |                                                                       | `setPowerUserMode(prefs, true)`; write; `Used` + `Toggled PowerUserModeOn` |
-| O5  | "No thanks" or close                  |                                                                       | `Declined`; nothing else                                                   |
+| #   | Event                                  | Guard                                                                 | Effect                                                                     |
+| --- | -------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| O1  | preferences settled, document editable | once per page load                                                    | `recordEditingSession(c, localDayKey(now))`; persist; evaluate             |
+| O2  | `onShortcutUsed`                       |                                                                       | `recordShortcut(c)`; persist; evaluate                                     |
+| O3  | evaluate                               | `offerDue(c)` and `offerEligible(prefs, ctx)` and not shown this page | show the toast; write `powerUserOfferShown: true` (synced); `Opened`       |
+| O4  | "Try power user mode"                  |                                                                       | `setPowerUserMode(prefs, true)`; write; `Used` + `Toggled PowerUserModeOn` |
+| O5  | "No thanks" or close                   |                                                                       | `Declined`; nothing else                                                   |
 
 - `recordEditingSession`: if `day === lastDay`, unchanged; else `days + 1`, `lastDay = day`.
 - `offerDue(c) = c.days >= POWER_USER_OFFER_DAYS || c.shortcuts >= POWER_USER_OFFER_SHORTCUTS`.

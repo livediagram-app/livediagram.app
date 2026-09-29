@@ -1,4 +1,4 @@
-// Privacy and Security category illustrations (docs/specs/018-help/help-app.md): where diagrams live on
+// Privacy and Security category illustrations (docs/specs/018-help/help-app.md): where documents live on
 // Cloudflare, who can read them, the anonymous-telemetry opt-out, share-link
 // controls (password + expiry), and the open-source / public-code motif.
 // Composed only from the shared primitives so the house style holds.
@@ -26,7 +26,7 @@ function Shield({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
   );
 }
 
-/** Where diagrams live: the browser sends edits through one API to Cloudflare
+/** Where documents live: the browser sends edits through one API to Cloudflare
  *  storage (D1, a Durable Object room, object storage), all behind a shield. */
 export function DocumentStorage() {
   return (
@@ -66,13 +66,13 @@ export function DocumentStorage() {
   );
 }
 
-/** Access control: a diagram is owned by an identity, so a non-owner request
+/** Access control: a document is owned by an identity, so a non-owner request
  *  comes back as a plain "not found" rather than confirming it exists. */
 export function AccessControl() {
   return (
     <Scene w={420} h={210}>
-      {/* The private diagram, with a lock */}
-      <Panel x={150} y={48} w={120} h={108} title="DIAGRAM">
+      {/* The private document, with a lock */}
+      <Panel x={150} y={48} w={120} h={108} title="DOCUMENT">
         <Shape x={166} y={88} w={40} h={26} kind="rect" />
         <Shape x={216} y={88} w={40} h={26} kind="circle" accent />
         <g transform="translate(210 124)">
@@ -165,7 +165,7 @@ export function TelemetryToggle() {
 }
 
 /** The Share dialog hardened with both controls at once: a password on the
- *  diagram and an expiry on the link. */
+ *  document and an expiry on the link. */
 export function ShareLinkControls() {
   const dx = 56;
   const dy = 18;

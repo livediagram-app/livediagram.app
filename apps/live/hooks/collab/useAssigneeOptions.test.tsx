@@ -46,7 +46,7 @@ const teamDetail = {
 
 // The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4).
 describe('useAssigneeOptions members', () => {
-  it('loads the diagram team, without the assigner', async () => {
+  it('loads the document team, without the assigner', async () => {
     apiGetTeam.mockResolvedValue(teamDetail);
     const { result } = renderHook((a: Args) => useAssigneeOptions(a), { initialProps: base });
     expect(result.current.members).toBeNull();

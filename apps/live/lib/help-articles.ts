@@ -152,7 +152,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   laser: {
     title: 'Learn about the Laser',
-    description: 'Tips for pointing things out to the room without touching the diagram.',
+    description: 'Tips for pointing things out to the room without touching the document.',
   },
   spotlight: {
     title: 'Learn about the Spotlight',
@@ -172,7 +172,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   slideDeck: {
     title: 'Learn about the Slide Deck',
-    description: 'Tips for building and presenting slides from your diagram.',
+    description: 'Tips for building and presenting slides from your document.',
   },
   aiTools: {
     title: 'Learn about the AI tools',
@@ -180,7 +180,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
-    description: 'Drive your diagrams from Claude, Cursor, and other AI tools over MCP.',
+    description: 'Drive your documents from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingDiagrams: {
     title: 'Learn about exporting',
@@ -192,7 +192,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   trash: {
     title: 'Learn about the Trash',
-    description: 'How long deleted diagrams wait, and how to restore one.',
+    description: 'How long deleted documents wait, and how to restore one.',
   },
   importTabs: {
     title: 'Learn about importing tabs',
@@ -214,14 +214,14 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the canvas',
     description: 'Tips for the background, patterns and the canvas behind your diagram.',
   },
-  themes: { title: 'Learn about themes', description: 'How themes restyle your whole diagram.' },
+  themes: { title: 'Learn about themes', description: 'How themes restyle a whole tab.' },
   changingTheme: {
     title: 'Learn about changing the theme',
     description: "Tips for restyling a tab's colours in one go.",
   },
   customThemes: {
     title: 'Learn about custom themes',
-    description: 'Build your own palette and reuse it across diagrams.',
+    description: 'Build your own palette and reuse it across documents.',
   },
   choosingFonts: {
     title: 'Learn about fonts',
@@ -229,11 +229,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   links: {
     title: 'Learn about links',
-    description: 'Linking elements to tabs, diagrams, and web addresses.',
+    description: 'Linking elements to tabs, documents, and web addresses.',
   },
   comments: {
     title: 'Learn about comments',
-    description: 'Tips and tricks for discussing a diagram right on the board.',
+    description: 'Tips and tricks for discussing a document right on the board.',
   },
   assignedActions: {
     title: 'Learn about assigned actions',
@@ -265,11 +265,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',
-    description: 'How uploaded images are stored and reused across diagrams.',
+    description: 'How uploaded images are stored and reused across documents.',
   },
   timeline: {
     title: 'Learn about the Timeline',
-    description: 'Everything that has happened across your diagrams, teams and account.',
+    description: 'Everything that has happened across your documents, teams and account.',
   },
   activity: {
     title: 'Learn about Activity',
@@ -277,19 +277,19 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   recentDocuments: {
     title: 'Learn about Recent',
-    description: 'Your most recently opened diagrams, personal and team, in one list.',
+    description: 'Your most recently opened documents, personal and team, in one list.',
   },
   sharedWithYou: {
     title: 'Learn about Shared with You',
-    description: 'Diagrams other people have shared with you, collected here.',
+    description: 'Documents other people have shared with you, collected here.',
   },
   folders: {
     title: 'Learn about folders',
-    description: 'Tips for organising diagrams into a nestable tree of folders.',
+    description: 'Tips for organising documents into a nestable tree of folders.',
   },
   unsorted: {
     title: 'Learn about the Unsorted folder',
-    description: 'Where diagrams live until you file them into a folder.',
+    description: 'Where documents live until you file them into a folder.',
   },
   dataElements: {
     title: 'Learn about data elements',
@@ -321,7 +321,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   offlineMode: {
     title: 'Learn about Offline Mode',
-    description: 'Diagrams saved only in this browser, and how to sync them.',
+    description: 'Documents saved only in this browser, and how to sync them.',
   },
   yourFirstDiagram: {
     title: 'Learn about your first diagram',
@@ -333,7 +333,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   livePresence: {
     title: 'Learn about live presence',
-    description: 'Who is in the diagram, where they are, and following them.',
+    description: 'Who is in the document, where they are, and following them.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',

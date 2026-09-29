@@ -1,7 +1,7 @@
 // An arrow caption's font size (docs/specs/008-canvas/canvas-and-palette.md); its layout is
 // arrow-label-layout.ts.
 //
-// In the diagram package because BOTH renderers need it: the canvas draws the
+// In the document package because BOTH renderers need it: the canvas draws the
 // text and its plate from these numbers, and the headless SVG render (exports,
 // thumbnails, the MCP render) has to land on the same ones or an exported
 // caption is a different size to the one on the board. They used to live only

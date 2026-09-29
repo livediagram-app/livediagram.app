@@ -4,7 +4,7 @@ type Pos = { x: number; y: number };
 
 // Floating-panel layout: where each draggable panel sits and whether the
 // collapsible ones are open. A self-contained slice of the editor's UI
-// state (no diagram-data coupling), lifted out of useEditorState so the
+// state (no document-data coupling), lifted out of useEditorState so the
 // view-model is composed from domain slices rather than one flat bag of
 // useState calls.
 //

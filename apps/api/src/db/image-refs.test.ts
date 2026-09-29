@@ -104,7 +104,7 @@ describe('the SQL extractor', () => {
     expect(refsByTab(sql)).toEqual({ t2: ['i2'] });
   });
 
-  it("scopes to an owner's or a diagram's tabs", async () => {
+  it("scopes to an owner's or a document's tabs", async () => {
     const { env, sql } = sqliteD1();
     for (const [d, owner] of [
       ['A', 'me'],

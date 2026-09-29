@@ -16,11 +16,11 @@ export function useExplorerRowDelete({
 }: Pick<ExplorerProps, 'documents' | 'ownerId' | 'onDeleteDocument'> & {
   teamDocuments: NonNullable<ExplorerProps['teamDocuments']>;
 }) {
-  // Diagrams currently mid slide-out animation. Adding the id to this
+  // Documents currently mid slide-out animation. Adding the id to this
   // set flips the row's DocumentRowShell from its enter class to its exit
   // one for ~220ms, then we forward the real delete
   // to the parent so the row is removed from the underlying
-  // `diagrams` prop. Without the delay the row disappears instantly
+  // `documents` prop. Without the delay the row disappears instantly
   // and a fresh "5 with the same name" Explorer feels unresponsive.
   const [exitingDocumentIds, setExitingDocumentIds] = useState<Set<string>>(new Set());
   // Inline delete confirmation: the row's menu hands up the id + its menu
@@ -36,7 +36,7 @@ export function useExplorerRowDelete({
   } | null>(null);
   // The latest row asked about: a slower answer for an earlier row is dropped.
   const pendingDeleteRef = useRef<string | null>(null);
-  // Team diagrams aren't in the personal `diagrams` prop, so the parent's
+  // Team documents aren't in the personal `documents` prop, so the parent's
   // delete (which prunes the personal list + fires a fire-and-forget API
   // DELETE) can't drop a team row from view, and the team-library sweep
   // won't re-fetch in time. Track confirmed team deletes locally and hide
@@ -53,7 +53,7 @@ export function useExplorerRowDelete({
     : undefined;
   const runDelete = (id: string) => {
     if (!onDeleteDocument) return;
-    // A team diagram lives in the swept library, not the personal list,
+    // A team document lives in the swept library, not the personal list,
     // so hide it locally on confirm (the parent's delete can't).
     if (teamDocuments.some((d) => d.id === id)) {
       setDeletedTeamIds((prev) => {
@@ -78,7 +78,7 @@ export function useExplorerRowDelete({
     );
   };
 
-  // Once a deleted diagram actually leaves the list, drop its id from the
+  // Once a deleted document actually leaves the list, drop its id from the
   // exiting set. Pruning here (rather than clearing on the timeout) avoids a
   // one-frame flicker where the row would slide back in just before unmount,
   // and keeps the set from growing across repeated deletes. Adjusted during

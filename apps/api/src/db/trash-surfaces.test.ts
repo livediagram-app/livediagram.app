@@ -8,8 +8,8 @@ import { tabLinkedToOwnedDocument, upsertTab } from './tabs';
 import { countUnseen, readTimeline } from './timeline';
 import { restoreDocument, trashDocument } from './trash';
 
-// The surfaces a trashed diagram leaves while it waits
-// (docs/specs/013-workspace/trash.md, "While a diagram is in the Trash"):
+// The surfaces a trashed document leaves while it waits
+// (docs/specs/013-workspace/trash.md, "While a document is in the Trash"):
 // hidden, never swept, so a restore brings every one of them back.
 
 const T0 = 1_700_000_000_000;
@@ -53,7 +53,7 @@ function event(sql: DatabaseSync, id: string, sourceId: string, documentId: stri
   });
 }
 
-describe('Timeline, while a diagram is in the Trash', () => {
+describe('Timeline, while a document is in the Trash', () => {
   it('hides its events, by source and by snapshot, and counts none unseen', async () => {
     const { env, sql } = sqliteD1();
     liveDoc(sql, 'A');
@@ -83,7 +83,7 @@ describe('Timeline, while a diagram is in the Trash', () => {
   });
 });
 
-describe('Activity, while a diagram is in the Trash', () => {
+describe('Activity, while a document is in the Trash', () => {
   it('leaves out its open actions', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
@@ -108,7 +108,7 @@ describe('Activity, while a diagram is in the Trash', () => {
   });
 });
 
-describe('linking a tab, while its only owned diagram is in the Trash', () => {
+describe('linking a tab, while its only owned document is in the Trash', () => {
   it('is refused', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
@@ -121,7 +121,7 @@ describe('linking a tab, while its only owned diagram is in the Trash', () => {
   });
 });
 
-describe('the share-link expiry sweep, while a diagram is in the Trash', () => {
+describe('the share-link expiry sweep, while a document is in the Trash', () => {
   it('does not warn about its links', async () => {
     const { env, sql } = sqliteD1();
     liveDoc(sql, 'A');

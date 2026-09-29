@@ -21,10 +21,10 @@ const ShareDialog = dynamic(
   { ssr: false },
 );
 
-// Tab-scoped export / import dialogs + the diagram share dialog. Each is
+// Tab-scoped export / import dialogs + the document share dialog. Each is
 // gated on its own open flag and reads everything from EditorContext, so
 // EditorView just renders <EditorTabDialogs />. Grouped because all three
-// are "act on this tab / diagram as a whole" modals launched from the
+// are "act on this tab / document as a whole" modals launched from the
 // header, distinct from the global editor modals in EditorModals.
 export function EditorTabDialogs() {
   const {
@@ -58,9 +58,9 @@ export function EditorTabDialogs() {
     setShareDialogOpen,
   } = useEditorContext();
 
-  // Offline diagrams (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
+  // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
   // owner's account; the Share dialog shows a gate that runs this conversion,
-  // then reloads so the editor re-hydrates as a normal cloud diagram.
+  // then reloads so the editor re-hydrates as a normal cloud document.
   const isOffline = useIsOfflineDocument(documentId);
   const syncToCloud = async () => {
     if (!documentId) return;

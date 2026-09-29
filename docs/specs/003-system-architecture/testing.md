@@ -50,7 +50,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
 - **No magic globals.** `describe` / `it` / `expect` are imported from
   `vitest`. This keeps test files lint-clean and explicit (`globals: false`).
 - **Prefer pure-function tests.** The highest-value, lowest-cost units are the
-  pure helpers: the diagram data model, the wire-format serializers, and the
+  pure helpers: the document data model, the wire-format serializers, and the
   canvas geometry. Those are tested first.
 - **Speed budgets are CPU time, not wall-clock.** A test asserting that work
   is fast (a linear scan, a converter, the sticky detector) measures it with
@@ -109,7 +109,7 @@ functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 | `src/auth/**`                                                                                          | Decides WHO a request is — Clerk verification, guest-id signatures, api tokens, the read/edit gates                                                           |
 | `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                 | Mint, resolve and revoke the credentials that act as an account                                                                                               |
 | `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                                          | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
-| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts`                   | The only unauthenticated read path into a diagram, and the owner-only routes that grant it                                                                    |
+| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts`                   | The only unauthenticated read path into a document, and the owner-only routes that grant it                                                                   |
 | `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-retention.ts`, `src/db/document-removal.ts` | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
 
 The rest of the worker fails visibly. These fail by serving the right response
@@ -165,10 +165,10 @@ v5 test runner with every check green: nothing invoked the broken path.
     `optical-guard.test.ts` (no untrimmed text in a centring circle or pill;
     [Optical alignment](../004-interface-design/optical-alignment.md)), and every
     UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
-  - `apps/api`: auth guards (Clerk, guest signatures, diagram access, tokens),
+  - `apps/api`: auth guards (Clerk, guest signatures, document access, tokens),
     every defensive D1 row mapper, the D1 modules against real SQLite
     (cascades, migrations), the `DocumentRoom` Durable Object's rules, ledger
-    and multiplayer paths, every route family (diagrams, tabs, share, images,
+    and multiplayer paths, every route family (documents, tabs, share, images,
     thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
     events, AI incl. the photo reader), the Timeline's writers and its catalogue
     against its spec, the image reference index, email lifecycle, the OpenAPI

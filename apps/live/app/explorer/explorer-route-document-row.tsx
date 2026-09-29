@@ -11,10 +11,10 @@ import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-ro
 import { FavouriteMarker, FolderChip, VisibilityBadge } from './document-badges';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
-// One diagram row in the full-page /explorer list (open / rename / move /
+// One document row in the full-page /explorer list (open / rename / move /
 // duplicate / delete + the drag source). Split out of views.tsx; rendered
 // by FolderRow + the unsorted list there. The badge + actions menu come
-// from diagram-row-shared so the card view (CardView) can't drift. The
+// from document-row-shared so the card view (CardView) can't drift. The
 // team library (TeamSharedDocuments) renders this same row.
 export function DocumentRow(props: DocumentEntryProps) {
   const {

@@ -1,20 +1,20 @@
 # Save Locations
 
-The New Diagram wizard's third step ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md), [Offline Mode](offline-mode.md); `settings` in code,
-its chip reads **Location**) asks **where a new diagram is stored**. Until now that question was a single iOS-style toggle,
+The New Document wizard's third step ([Dedicated route for new-document creation](../007-editor/new-document-route.md), [Offline Mode](offline-mode.md); `settings` in code,
+its chip reads **Location**) asks **where a new document is stored**. Until now that question was a single iOS-style toggle,
 "Save Offline, This Browser Only", which could only ever answer yes or no: on
 the server, or in this browser. More stores may come (GitHub is plausible), and a toggle cannot grow a third
-state. Google Drive is not one of them: it is a mirror of cloud diagrams, not a
-place a diagram is stored ([Google Drive is a mirror, not a location](#google-drive-is-a-mirror-not-a-location)).
+state. Google Drive is not one of them: it is a mirror of cloud documents, not a
+place a document is stored ([Google Drive is a mirror, not a location](#google-drive-is-a-mirror-not-a-location)).
 
 So the toggle becomes a **Save location** chooser: a row of selectable tiles,
-exactly one active, where each tile is one place a diagram can live. The
+exactly one active, where each tile is one place a document can live. The
 underlying stores are unchanged; this spec is about the choice and the contract
 for adding to it.
 
 ## The chooser
 
-The Settings step reads, top to bottom: **Diagram name**, **Save location**,
+The Settings step reads, top to bottom: **Document name**, **Save location**,
 then the folder step, **Choose {location} Folder** (folder / team placement,
 the shared `PlacementBrowser`).
 
@@ -23,14 +23,14 @@ the `PlacementCard` tile). The locations today:
 
 | Tile              | Caption          | What it means                                                                                                |
 | ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| **livediagram**   | Your account     | The default. A normal cloud diagram, saved to the api (D1), reachable from any device.                       |
+| **livediagram**   | Your account     | The default. A normal cloud document, saved to the api (D1), reachable from any device.                      |
 | **Local Browser** | This device only | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 - **livediagram is the default** and pre-selected on every open of the wizard.
-  Nothing about the default behaviour of creating a diagram changes.
+  Nothing about the default behaviour of creating a document changes.
 - Choosing **Local Browser** does what turning the old toggle on did: the
   data-loss warning (with its help link) appears beneath the row, and the
-  folder step **disappears**, because an offline diagram has no server folder
+  folder step **disappears**, because an offline document has no server folder
   or team, so there is nothing to choose. (The old toggle left a greyed "My
   Work (Offline)" placeholder card; a step with one unchoosable option is
   noise.)
@@ -60,7 +60,7 @@ Folder row last. Same browse, same placement strings, same double-click
 commit; only the shape differs. The move-to-folder dialog ([Folders](../013-workspace/folders.md)) keeps the
 `tiles` layout: there is no tile row above it to clash with, and the tiles
 were drawn for that dialog. The layout is a prop on the browser, not a second
-browser, so the product still has exactly one way to choose where a diagram
+browser, so the product still has exactly one way to choose where a document
 lives.
 
 **Subfolder count.** A destination that holds more folders says so with a
@@ -78,7 +78,7 @@ in the same shape: **"Choose a Space"** on the space overview, **"Choose a
 Folder"** (with the space's name as the chip) at the root of a team-scoped
 surface's one team. **The overview is always the first screen wherever
 Personal Space is offered**, even when it is the only space: choosing where
-a diagram lives starts with choosing the space, deliberately, and that
+a document lives starts with choosing the space, deliberately, and that
 screen is where a "create a team" option belongs for someone who has no
 team yet. An earlier version dropped a lone Personal Space straight into
 its folders, which left nowhere to put that option.
@@ -88,7 +88,7 @@ team cards: the same dashed inline-name tile as New Folder (one
 `InlineCreateTile`, two skins), reading "New Team · Create a New Team". Type a
 name and the team is created (`POST /api/teams`, [Teams](../013-workspace/teams.md)), joins the
 overview, and the browser enters it with its root selected, because the
-point of making a team here is to file this diagram in it. **Signed-in
+point of making a team here is to file this document in it. **Signed-in
 only**: teams are Clerk-only, so the hosts (the wizard, the Explorer's
 move dialog) pass the create handler only when there is a Clerk user, and
 a guest never sees a tile that would lead to a 401. Folder moves pass no
@@ -121,7 +121,7 @@ A save location is one entry in a small catalogue, `apps/live/lib/save-locations
 Adding a location (say, GitHub) means: a new id in the union, a new
 catalogue entry, a glyph in the picker's icon map (the map is typed on the id,
 so a missing glyph is a compile error, not a blank tile), and a create branch in
-`/new` that hands the diagram to that store. Nothing in the wizard's step,
+`/new` that hands the document to that store. Nothing in the wizard's step,
 footer, or state needs to change.
 
 The wire between the wizard and `/new` is `NewDiagramSettings.saveLocation:
@@ -131,19 +131,19 @@ location could not fit through.
 
 ## Google Drive is a mirror, not a location
 
-A signed-in user can mirror their Personal Space diagrams to their own Google
-Drive. The diagram still lives in livediagram (the default location): Drive
+A signed-in user can mirror their Personal Space documents to their own Google
+Drive. The document still lives in livediagram (the default location): Drive
 holds a copy that is kept in sync both ways while a tab is open, and a Drive
-file is never the diagram's home. So Drive never becomes a tile here, the
-wizard does not change when the mirror ships, and a diagram created with
-**livediagram** is mirrored like any other. Local Browser diagrams have no
+file is never the document's home. So Drive never becomes a tile here, the
+wizard does not change when the mirror ships, and a document created with
+**livediagram** is mirrored like any other. Local Browser documents have no
 server copy and are not mirrored. The mirror itself (connection, folder tree,
 rename, move, delete to Trash, "Open with") is specified in [Google Drive mirror](../022-drive-mirror/drive-mirror.md), not
 here.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
-Unchanged in shape: `Diagram` / `Created` carries a `type` naming the store,
+Unchanged in shape: `Document` / `Created` carries a `type` naming the store,
 `Cloud` for livediagram and `Offline` for Local Browser. A future location adds
 its own preset `type`; the location id itself never leaves as content.
 
@@ -156,8 +156,8 @@ wizard, and each location's article (offline today) is where the substance is.
 
 ## Non-goals
 
-- Changing where a diagram is stored **after** creation. Conversion between
-  livediagram and Local Browser stays with [Offline Mode](offline-mode.md)'s Sync Diagram / Take
+- Changing where a document is stored **after** creation. Conversion between
+  livediagram and Local Browser stays with [Offline Mode](offline-mode.md)'s Sync Document / Take
   Offline; other locations will define their own when they ship.
 - Any implementation of GitHub storage. This spec only makes room for it.
 
@@ -180,7 +180,7 @@ wizard, and each location's article (offline today) is where the substance is.
 
 ## References
 
-See [Dedicated route for new-diagram creation](../007-editor/new-document-route.md) (the wizard),
+See [Dedicated route for new-document creation](../007-editor/new-document-route.md) (the wizard),
 [Offline Mode](offline-mode.md) (the browser-only store),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
 [Help app](../018-help/help-app.md) (help).

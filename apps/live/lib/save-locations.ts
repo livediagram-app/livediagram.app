@@ -1,4 +1,4 @@
-// Where a new diagram is stored (docs/specs/006-document/save-locations.md). The New Diagram wizard's Settings
+// Where a new document is stored (docs/specs/006-document/save-locations.md). The New Document wizard's Settings
 // step renders one tile per entry; `/new` branches its create on the id.
 //
 // This used to be a boolean ("Save Offline, This Browser Only"), which could

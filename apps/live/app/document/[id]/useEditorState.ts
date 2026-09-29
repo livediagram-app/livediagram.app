@@ -375,16 +375,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // `identityOnlyScreenOpen` chrome flag; transitions live in
   // `openTemplatePicker` / `skipTemplatePicker` / `chooseTemplate`.
   // Whether the participant has explicitly confirmed their identity in a
-  // modal at least once (either Create Diagram on the welcome flow, Skip,
-  // or Join Diagram on the join flow). Persisted via localStorage so a
+  // modal at least once (either Create Document on the welcome flow, Skip,
+  // or Join Document on the join flow). Persisted via localStorage so a
   // returning visitor isn't re-prompted. Brand new visitors landing on a
-  // pre-existing diagram see the join flow until they confirm.
+  // pre-existing document see the join flow until they confirm.
   const [nameConfirmed, setNameConfirmed] = useState(false);
-  // True after hydration if we successfully loaded a saved diagram from
-  // the API (i.e. the user is joining someone else's diagram, not
+  // True after hydration if we successfully loaded a saved document from
+  // the API (i.e. the user is joining someone else's document, not
   // starting a fresh one). Drives the join-screen trigger.
   const [loadedExistingDocument, setLoadedExistingDocument] = useState(false);
-  // True when the URL points at a diagram that the API didn't return
+  // True when the URL points at a document that the API didn't return
   // (deleted, never existed, or owned by someone else). Renders the
   // NotFound surface instead of the editor + welcome modal.
   const [documentNotFound, setDocumentNotFound] = useState(false);
@@ -396,7 +396,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // URL never glimpse the empty canvas and assume their data is gone.
   // The hydration useLayoutEffect flips it to false either immediately
   // (no URL params → straight to welcome modal) or once the API call
-  // resolves (params → load the diagram first).
+  // resolves (params → load the document first).
   const [loadingDocument, setLoadingDocument] = useState(true);
   // User-facing tool picker. Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter
   // mode, so entering it clears any selection: an element selected beforehand
@@ -546,11 +546,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setAiPanelVisible: panelLayout.setAiPanelVisible,
   });
 
-  // Hide / show a diagram in the Explorer panel's Recent list (docs/specs/013-workspace/hide-from-recent.md).
+  // Hide / show a document in the Explorer panel's Recent list (docs/specs/013-workspace/hide-from-recent.md).
   // Read-modify-writes from the CACHE, not the React snapshot: the PUT
   // sends the whole preferences blob, so a stale snapshot would clobber
   // flags another tab wrote.
-  // Per-user diagram stars (docs/specs/013-workspace/favourites.md), for the Explorer panel's rows.
+  // Per-user document stars (docs/specs/013-workspace/favourites.md), for the Explorer panel's rows.
   const { favouriteIds, toggleFavourite } = useFavourites(selfParticipant.id);
 
   const toggleRecentExclusion = (documentId: string) => {
@@ -587,9 +587,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useFolders(selfParticipant.id === 'self' ? null : selfParticipant.id);
   const confirm = useConfirm();
   const toast = useToast();
-  // Persistence-facing state: autosave status pill + savedAt, diagram
+  // Persistence-facing state: autosave status pill + savedAt, document
   // name (mirrored to the tab title), the Explorer's owned + shared
-  // diagram lists, the activity/audit change log, and the transient
+  // document lists, the activity/audit change log, and the transient
   // import-error toast — plus the two list-refresh helpers the hydration
   // + autosave paths call. See editor-persistence; the slice is spread
   // into the returned view-model below, so the explicit return doesn't
@@ -690,14 +690,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     });
     setTabLoadRetryNonce((n) => n + 1);
   };
-  // Persistent diagram id. `null` until the post-mount hydration step
+  // Persistent document id. `null` until the post-mount hydration step
   // runs; that step reads ?d=<id> from the URL (or mints a fresh id +
   // updates the URL) and pulls any saved tabs + name from localStorage.
   // Saves are gated on `hydrated` so we never overwrite stored data
   // with the empty initial render.
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
-  // The deleted state (docs/specs/013-workspace/trash.md): the diagram is in
+  // The deleted state (docs/specs/013-workspace/trash.md): the document is in
   // the Trash. Set by the load, the room and the autosave.
   const documentTrashed = useDocumentTrashed({
     ownerId: selfParticipant.id,
@@ -716,7 +716,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setEditingId(null);
   });
   const isReadOnly = sessionRole === 'view' || viewPreview;
-  // The diagram's structure (tabs, their order and folders, the name, the
+  // The document's structure (tabs, their order and folders, the name, the
   // deck) is read-only for a view link and for any tab-scoped link: a scoped
   // edit link edits its one tab's content, nothing around it
   // (docs/specs/013-workspace/tab-scoped-share-links.md).
@@ -738,7 +738,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Per-tab autosave. The previous snapshot lives in a ref so we can
   // diff: any tab whose object reference changed since last save is
-  // ours to PUT; tab order / diagram rename hit the metadata PUT.
+  // ours to PUT; tab order / document rename hit the metadata PUT.
   // Debounced 600ms — feels responsive without hammering the API.
   // docs/specs/006-document/per-tab-storage.md has the design.
   const lastSavedTabsRef = useRef<Tab[]>([]);
@@ -795,7 +795,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // it doesn't count as a change.
   const lastPersistedSelfRef = useRef<{ name: string; color: string } | null>(null);
 
-  // One-shot identity + diagram hydration. See useIdentityBootstrap.
+  // One-shot identity + document hydration. See useIdentityBootstrap.
   // Placed after the last-saved/loaded refs so they're declared before
   // being passed in.
   useIdentityBootstrap({
@@ -889,7 +889,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     lastSavedTabsRef,
     setTabLoadErrors,
   });
-  // Realtime room: WebSocket per shared diagram (presence + ops). See
+  // Realtime room: WebSocket per shared document (presence + ops). See
   // useRoomConnection.
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a shove somebody sent us, bumped by a sequence
   // number so two identical pushes both land. Canvas replays it onto our own
@@ -1035,13 +1035,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // guests can't have teams, so the gate also requires a Clerk id.
   // Signed-in only (guests can't have teams). Loaded for the whole
   // session, not just while search is open, because the floating
-  // Explorer panel now surfaces teams + their diagrams (a Teams
-  // accordion, team rows in Recent, the current team diagram —
+  // Explorer panel now surfaces teams + their documents (a Teams
+  // accordion, team rows in Recent, the current team document —
   // docs/specs/013-workspace/team-shared-documents.md), so the data has to be present whenever the panel is.
   const { teams } = useTeams(clerkUserId ?? null, {
     enabled: !!clerkUserId,
   });
-  // Comment @-mentions (docs/specs/012-collaboration/comment-mentions.md): the diagram team's members as
+  // Comment @-mentions (docs/specs/012-collaboration/comment-mentions.md): the document team's members as
   // candidates, and the notify a mentioning comment fires.
   const commentMentions = useCommentMentions({
     ownerId: clerkUserId ?? null,
@@ -1052,7 +1052,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
   // Their libraries (docs/specs/013-workspace/team-shared-documents.md): one sweep per team. Feeds the search
   // panel's folder group AND the floating Explorer panel (team folder
-  // tree + team diagrams in Recent + the current team diagram).
+  // tree + team documents in Recent + the current team document).
   const {
     teamFolders,
     teamDocuments,
@@ -1209,8 +1209,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     },
     loadAllTabs,
   });
-  // Seed the deck once the diagram's stored blob arrives. Triggered only when a stored deck appears or
-  // the diagram changes: hydrating on every deck edit would fight the editing verbs, so the blob itself
+  // Seed the deck once the document's stored blob arrives. Triggered only when a stored deck appears or
+  // the document changes: hydrating on every deck edit would fight the editing verbs, so the blob itself
   // is read at that moment (an effect event), not depended on.
   const hydrateStoredDeck = useEffectEvent(() => slideDeck.hydrateDeck(documentPresentation));
   const hasStoredDeck = documentPresentation !== null;
@@ -1416,7 +1416,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selfLaserConfig: laserPen.config,
     cursorsHidden: voteCursorsHidden,
   });
-  // Everyone in the diagram, as poll candidates (docs/specs/012-collaboration/live-poll.md). Self first, then
+  // Everyone in the document, as poll candidates (docs/specs/012-collaboration/live-poll.md). Self first, then
   // whoever is present on any tab — the order the Collaborators modal uses, so
   // a roster poll's ballot reads the way the panel beside it does. Someone on
   // two tabs appears twice here; de-duplicating is `pollCollaboratorOptions`'s
@@ -1452,7 +1452,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // the save / complete / reopen / delete mutations. Mutations bypass
   // history like comments (Cmd+Z must never silently unassign work).
   // The email notify is fire-and-forget through the api worker, which
-  // re-verifies team membership + diagram access server-side.
+  // re-verifies team membership + document access server-side.
   const {
     actionPopoverOpenId,
     openActionPopover,
@@ -1518,7 +1518,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // placeholder participant with the loaded / freshly minted one. Without
   // this, TemplatePicker's `useState(participant.name)` lazy init captures
   // the SSG placeholder "Guest" and never updates.
-  // Welcome ("New Diagram") lives on /live/new since docs/specs/007-editor/new-document-route.md, so any
+  // Welcome ("New Document") lives on /live/new since docs/specs/007-editor/new-document-route.md, so any
   // time the picker fires on the editor route it's the per-tab
   // "Pick a template" variant. Identity (visitor join) keeps its
   // own mode.
@@ -1527,9 +1527,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // The Quick Start (template grid) only opens on an EXPLICIT request — adding
   // a tab (useTabActions.addTab) or the empty-canvas button, both of which set
   // templatePickerMode='templates'. It no longer auto-opens just because a tab
-  // is empty, so a freshly-created (truly blank) diagram lands on the canvas.
+  // is empty, so a freshly-created (truly blank) document lands on the canvas.
   const templateGridOpen = templatePickerMode === 'templates';
-  // Join screen for visitors landing on an existing diagram who haven't
+  // Join screen for visitors landing on an existing document who haven't
   // confirmed their identity yet. Same chrome-hide rule as the old
   // welcome modal — focus the user on the name input before they
   // start editing.
@@ -1538,7 +1538,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // participants (cursor label, presence stack, comments), so they need
   // a chance to set it before joining rather than appearing under a
   // default. The identity card only writes the participant's OWN row
-  // (PUT /api/participants/:id, gated on owner === id, not diagram
+  // (PUT /api/participants/:id, gated on owner === id, not document
   // edit), so a viewer can confirm a name without any 403. EditorView
   // lets the IDENTITY mode of the picker through for read-only while
   // still blocking the template-choosing mode.
@@ -1554,7 +1554,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     templatePickerMode === 'identity';
   const identityOnlyScreenOpen = joinScreenOpen;
   // Combined gate for chrome-hide. Only the join-existing flow lives
-  // on this route now; the historical new-diagram welcome lives on
+  // on this route now; the historical new-document welcome lives on
   // /live/new.
   const anyWelcomeOpen = identityOnlyScreenOpen;
   // --- Element-scoped history helpers (active-tab aware) -------------------
@@ -1619,7 +1619,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // checks so a viewer can still select and inspect.
   const editsBlocked = activeTabLocked || isReadOnly || activeTabLoadState !== 'ready';
 
-  // An Activity-page row opened this diagram at one element (docs/specs/013-workspace/activity-page.md
+  // An Activity-page row opened this document at one element (docs/specs/013-workspace/activity-page.md
   // §1): once the pinned tab is ready, select it, bring it into view and
   // open its popover. See useCollabDeepLink.
   useCollabDeepLink({
@@ -1922,10 +1922,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // --- Tab actions ---------------------------------------------------------
 
   // Tab-lifecycle actions (add / import / rename / duplicate / delete /
-  // reorder, active-tab lock, link-into-diagram, clear content). They
+  // reorder, active-tab lock, link-into-document, clear content). They
   // touch history, the activity log, selection, telemetry, confirm /
-  // toast, the change-log panel and the diagram list — see
-  // useTabActions. Diagram-level lifecycle + the template flow stay in
+  // toast, the change-log panel and the document list — see
+  // useTabActions. Document-level lifecycle + the template flow stay in
   // the page below.
   const {
     addTab,
@@ -1976,9 +1976,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     emitTabMeta,
   });
 
-  // Diagram-level lifecycle + navigation (delete / duplicate /
+  // Document-level lifecycle + navigation (delete / duplicate /
   // move-to-folder / delete-folder, and the new / open / make-a-copy
-  // full-page-load helpers). Operates on whole diagrams + the Explorer
+  // full-page-load helpers). Operates on whole documents + the Explorer
   // list, distinct from per-tab lifecycle in useTabActions. See
   // useDocumentActions.
   const {
@@ -2006,7 +2006,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     sessionShareCode,
     refreshTeamLibraries,
     refreshDocumentList: () => refreshDocumentList(selfParticipant.id),
-    // Keep the header's Private / Team badge honest when the OPEN diagram
+    // Keep the header's Private / Team badge honest when the OPEN document
     // changes scope via the move picker (docs/specs/013-workspace/team-shared-documents.md).
     onDocumentScopeChanged: (id, teamId) => {
       if (id === documentId) setDocumentTeamId(teamId);
@@ -2960,7 +2960,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     hasClipboard,
     ...panelLayout,
     // Presenting wears the zen chrome treatment (docs/specs/012-collaboration/presentation-mode.md → docs/specs/007-editor/zen-mode.md): header,
-    // tab bar, panels and palette all gone, so a projector shows the diagram
+    // tab bar, panels and palette all gone, so a projector shows the document
     // rather than the workbench. An OVERRIDE of the spread above rather than a
     // write to zen state, so exiting a presentation restores whatever zen the
     // user actually had.

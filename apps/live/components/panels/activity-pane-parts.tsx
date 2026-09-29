@@ -102,7 +102,7 @@ export function ActivityThreadRow({
         thread.mentionsYou
           ? 'Mentioned You'
           : thread.onYourDocument && !thread.youCommented
-            ? 'Your diagram'
+            ? 'Your document'
             : null
       }
       avatar={{
@@ -195,7 +195,7 @@ function ActivityRowShell({
   );
 }
 
-// Which diagram the row is from; a team diagram's chip leads with the
+// Which document the row is from; a team document's chip leads with the
 // team glyph so the source of the work reads at a glance.
 function PlaceChip({ place }: { place: ActivityPlace }) {
   return (
@@ -210,14 +210,14 @@ function PlaceChip({ place }: { place: ActivityPlace }) {
   );
 }
 
-// Nothing outstanding anywhere. No New Diagram CTA: a new diagram puts
+// Nothing outstanding anywhere. No New Document CTA: a new document puts
 // nothing on this page; assigning an action or commenting does.
 export function ActivityEmptyState() {
   return (
     <EmptyState
       icon={<ActivityIcon />}
       title="Nothing waiting on you"
-      description="Open actions assigned to you or by you, and comment threads you're in, collect here across every diagram."
+      description="Open actions assigned to you or by you, and comment threads you're in, collect here across every document."
     >
       <a
         href={helpArticleHref('assignedActions')}

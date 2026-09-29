@@ -170,7 +170,7 @@ function SearchOverlay({
 
 // --- Reusable result icons ---------------------------------------------------
 
-/** A diagram / board glyph: a small framed canvas with two nodes. */
+/** A document glyph: a small framed canvas with two nodes. */
 function DocumentIcon() {
   return (
     <g>
@@ -244,7 +244,7 @@ function TableIcon() {
 
 // --- Scenes ------------------------------------------------------------------
 
-/** Mixed results across diagrams, tabs, and elements: search at a glance. */
+/** Mixed results across documents, tabs, and elements: search at a glance. */
 export function SearchOverview() {
   return (
     <SearchOverlay
@@ -256,7 +256,7 @@ export function SearchOverview() {
         },
         {
           title: 'Tabs',
-          rows: [{ icon: <TabIcon />, label: 'Checkout', meta: 'this diagram' }],
+          rows: [{ icon: <TabIcon />, label: 'Checkout', meta: 'this document' }],
         },
         {
           title: 'Elements',
@@ -270,7 +270,7 @@ export function SearchOverview() {
   );
 }
 
-/** Results limited to diagrams, folders, and shared diagrams. */
+/** Results limited to documents, folders, and shared documents. */
 export function SearchDocuments() {
   return (
     <SearchOverlay
@@ -293,7 +293,7 @@ export function SearchDocuments() {
   );
 }
 
-/** Results showing teams plus their shared folders and diagrams. */
+/** Results showing teams plus their shared folders and documents. */
 export function SearchTeams() {
   return (
     <SearchOverlay
@@ -385,7 +385,7 @@ export function SearchCreateTab() {
         {
           title: 'Tabs',
           rows: [
-            { icon: <TabIcon active />, label: 'New ideas', active: true, meta: 'this diagram' },
+            { icon: <TabIcon active />, label: 'New ideas', active: true, meta: 'this document' },
           ],
         },
         {

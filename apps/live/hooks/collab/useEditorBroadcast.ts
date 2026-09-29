@@ -6,7 +6,7 @@
 // many setters scattered across the page (next slice on deck).
 //
 // Throttle: both broadcasters cap at ~30 Hz (33 ms between sends).
-// That matches the cursor / laser packet rates the diagram-room
+// That matches the cursor / laser packet rates the document-room
 // Durable Object expects per docs/specs/015-api/api.md; faster sends would just be
 // dropped on the wire.
 
@@ -38,8 +38,8 @@ type EditorBroadcastDeps = {
   hydrated: boolean;
   documentId: string | null;
   documentShareable: boolean;
-  // The diagram's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal diagram. A team
-  // diagram is a live room for its members even without a share link,
+  // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
+  // document is a live room for its members even without a share link,
   // so cursor / laser ops broadcast for it too.
   documentTeamId: string | null;
   // Which tab is currently active. Stamped on every cursor / laser

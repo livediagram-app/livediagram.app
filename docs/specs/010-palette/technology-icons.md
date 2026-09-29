@@ -204,7 +204,7 @@ the mark and the element edge on its side, so the anchors on that side push
 out to the element edge — a connector leaving toward a bottom caption starts
 at the element's bottom line, under the text, instead of crossing it (and
 mirrored for top / left / right captions). Line-art icons keep box anchors
-(their glyph scales with the box). The diagram package reads `isTechIconId` from `@livediagram/icons`
+(their glyph scales with the box). The document package reads `isTechIconId` from `@livediagram/icons`
 (tech-icon-ids.ts, re-exported by `apps/live/lib/tech-icons.ts`).
 
 **The format painter carries the icon fields.** Painting from one icon to

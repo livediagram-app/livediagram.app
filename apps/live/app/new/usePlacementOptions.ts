@@ -11,7 +11,7 @@ import {
 } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
-// Where a new diagram can be filed: the personal folders, the teams, and each
+// Where a new document can be filed: the personal folders, the teams, and each
 // team's folders, plus the inline "New Folder" the Settings step offers
 // (docs/specs/006-document/offline-mode.md, extended by docs/specs/013-workspace/team-shared-documents.md).
 //
@@ -22,7 +22,7 @@ import { track } from '@/lib/telemetry';
 //
 // Everything degrades rather than throws. A folder or team fetch that fails
 // leaves an empty list, because being unable to offer a team is not a reason to
-// block someone making a diagram — they land in Unsorted and can move it later.
+// block someone making a document — they land in Unsorted and can move it later.
 export function usePlacementOptions({
   selfId,
   clerkUserId,

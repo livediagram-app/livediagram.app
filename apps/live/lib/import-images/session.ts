@@ -21,7 +21,7 @@ import type {
 export type ImportImageLog = (fingerprint: string, outcome: string, detail?: unknown) => void;
 
 export type ImportImageSessionDeps = {
-  // An Offline Mode diagram embeds instead of uploading.
+  // An Offline Mode document embeds instead of uploading.
   offline: boolean;
   codec: ImageCodec;
   // Stores the bytes in the gallery; throws an ApiError on refusal.

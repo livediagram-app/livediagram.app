@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element, ShapeElement } from '@livediagram/document';
 import { remintElementIds } from './useTabImport';
 
-// Duplicate Tab, the cross-diagram tab link and JSON import all re-mint ids.
+// Duplicate Tab, the cross-document tab link and JSON import all re-mint ids.
 // References between elements must follow the new ids, or the copy points
 // back at the source tab.
 

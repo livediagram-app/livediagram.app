@@ -13,7 +13,7 @@ The alternatives all fail in the same way. Hiding a layer hides it from everyone
 ## Under a facilitator ([Facilitator](../012-collaboration/facilitator.md))
 
 A cover is lifted **per viewer**: uncovering it is a property of having looked,
-not a property of the diagram, which is why it is local state and why it comes
+not a property of the document, which is why it is local state and why it comes
 back on a reload.
 
 That holds while nobody is facilitating. When somebody holds the baton
@@ -43,7 +43,7 @@ Built in the behaviour elements' current direction ([Participant responses](../0
 
 Deliberately two, because the two cases are different:
 
-1. **Double-click (or double-tap) it — for yourself.** Local, ephemeral, never written to the diagram: the cover goes and a small **Hide** pill appears in its corner so you can put it back. Nobody else's board changes. This is the quiz case: everyone reveals when they are ready.
+1. **Double-click (or double-tap) it — for yourself.** Local, ephemeral, never written to the document: the cover goes and a small **Hide** pill appears in its corner so you can put it back. Nobody else's board changes. This is the quiz case: everyone reveals when they are ready.
 
    **Two presses, not one**, and the face says which ("Double-click to reveal", "Double-tap" on a touch device). A cover exists to stay closed, and on a board where people are dragging things around a stray single click would undo its whole purpose. The Hide pill is a single click: putting the cover back by accident costs nothing. The double press is detected from two clicks in a 450ms window rather than the DOM's `dblclick`, so a tap and a click behave identically — `dblclick` competes with double-tap-to-zoom on touch.
 

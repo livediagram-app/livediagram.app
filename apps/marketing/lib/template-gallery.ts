@@ -7,7 +7,7 @@ import {
 } from '@livediagram/templates';
 
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): one card per template the
-// editor ships, each a link that creates that diagram straight away
+// editor ships, each a link that creates that document straight away
 // (/new?template=<kind>, docs/specs/007-editor/new-document-route.md). The data half lives here so the list and
 // the filter can be tested without rendering the section.
 

@@ -101,7 +101,7 @@ export function animSpeedVars(
   } as CSSProperties;
 }
 
-// Fallback when an iconId isn't in the catalogue (e.g. a diagram saved
+// Fallback when an iconId isn't in the catalogue (e.g. a document saved
 // against a newer build) — and, since the catalogue went async, ALSO the
 // interim glyph every icon shows for the moment before the catalogue chunk
 // loads: a simple framed question mark so the element is still visibly an

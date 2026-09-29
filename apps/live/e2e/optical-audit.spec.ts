@@ -28,10 +28,10 @@ async function expectCentred(page: Page, screen: string): Promise<void> {
 }
 
 test.describe('Optical alignment audit', () => {
-  test('the New Diagram wizard', async ({ page, pageErrors }) => {
+  test('the New Document wizard', async ({ page, pageErrors }) => {
     await darkVisitor(page);
     await page.goto('/new');
-    await page.getByText('New Diagram', { exact: false }).first().waitFor();
+    await page.getByText('New Document', { exact: false }).first().waitFor();
     await expectCentred(page, 'wizard, template step');
     await page.getByRole('button', { name: /^next$/i }).click();
     await page
@@ -64,7 +64,7 @@ test.describe('Optical alignment audit', () => {
     await page.keyboard.press('Escape');
 
     await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share this diagram' }).waitFor();
+    await page.getByRole('dialog', { name: 'Share this document' }).waitFor();
     await expectCentred(page, 'Share dialog');
     await page.keyboard.press('Escape');
     expectNoPageErrors(pageErrors);
@@ -98,7 +98,7 @@ test.describe('Optical alignment audit', () => {
 // rather than left to the day a "Q" comes up.
 test('initials with a tailed capital centre on their cap band', async ({ page }) => {
   await page.goto('/new');
-  await page.getByText('New Diagram', { exact: false }).first().waitFor();
+  await page.getByText('New Document', { exact: false }).first().waitFor();
   await page.evaluate(() => {
     const disc = document.createElement('span');
     disc.setAttribute('aria-label', 'Tailed initials');

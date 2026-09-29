@@ -57,14 +57,14 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     let tabScope: string | null = null;
     let shareCode: string | null = null;
     const claimedOwnerId = url.searchParams.get('o');
-    // Gate-only projection — the upgrade uses only ownerId/teamId. A diagram
+    // Gate-only projection — the upgrade uses only ownerId/teamId. A document
     // in the Trash (docs/specs/013-workspace/trash.md) reads as missing, so no
     // leg below can admit anyone: not a ticket minted before the delete, not
     // a share code, not the owner.
     const liveDoc = await getDocumentMeta(env, id);
     if (!liveDoc) return notFound();
     // One-time ticket (docs/specs/015-api/api.md): minted seconds ago over authenticated
-    // REST, single-use and diagram-scoped, carrying the server-resolved
+    // REST, single-use and document-scoped, carrying the server-resolved
     // role. This is the ONLY leg that can admit a team member — the old
     // fallback that granted edit to any `?o=` matching a JOINED member id
     // trusted an unverified, teammate-visible value, so a removed member
@@ -72,8 +72,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const ticket = url.searchParams.get('t');
     const admission = ticket ? await consumeWsTicket(env, ticket, id) : null;
     const ticketRole = admission?.role ?? null;
-    // The bare-`o` owner match is PERSONAL diagrams only, mirroring the
-    // REST access rule (auth/document-access.ts): a TEAM diagram's owner
+    // The bare-`o` owner match is PERSONAL documents only, mirroring the
+    // REST access rule (auth/document-access.ts): a TEAM document's owner
     // id is a Clerk id deliberately visible to every teammate, so a
     // removed member could present it here — the exact hole the ticket
     // closed for the membership leg. Team owners come in via the ticket
@@ -93,13 +93,13 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       }
     }
     // Refuse the upgrade unless the caller is the owner or holds a valid
-    // share code for THIS diagram. Without this, a diagram with no share
+    // share code for THIS document. Without this, a document with no share
     // password forwarded every upgrade (role === null) to the room, so
-    // anyone who learned the diagram id could read live ops; and the DO
+    // anyone who learned the document id could read live ops; and the DO
     // additionally drops op frames from non-edit sessions.
     if (!role) return forbidden();
     // Password gate (docs/specs/013-workspace/share-password.md): a non-owner joining the realtime room of
-    // a password-protected diagram must carry the matching password on
+    // a password-protected document must carry the matching password on
     // the `p` query param (WS upgrades can't set headers). Owners
     // bypass, and so do ticket holders — the mint already ran the full
     // REST access policy, including this same password gate for
@@ -125,7 +125,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // `X-Verified-Owner: 1` itself and have the room seat it as the owner.
     forwarded.headers.set('X-Verified-Role', role);
     // One more server-resolved bit, and only a bit (docs/specs/012-collaboration/facilitator.md): whether this
-    // upgrade is the diagram's OWNER. The facilitator baton needs it so the
+    // upgrade is the document's OWNER. The facilitator baton needs it so the
     // owner can always take the session back, and a boolean answers that
     // without handing the room an identity it deliberately does not hold.
     forwarded.headers.set('X-Verified-Owner', isOwnerUpgrade ? '1' : '0');

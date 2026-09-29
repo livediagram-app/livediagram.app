@@ -5,17 +5,17 @@
 // wrong contract. Error results are exempt and carry text only.
 import { z } from 'zod';
 
-const url = z.string().describe('Link that opens the diagram in the livediagram editor.');
-const documentId = z.string().describe('The diagram id.');
+const url = z.string().describe('Link that opens the document in the livediagram editor.');
+const documentId = z.string().describe('The document id.');
 const tabId = z.string().describe('The tab id.');
 
 export const findDocumentsOutput = {
-  count: z.number().int().describe('How many diagrams matched.'),
+  count: z.number().int().describe('How many documents matched.'),
   documents: z
     .array(
       z.object({
         id: documentId,
-        name: z.string().describe('The diagram name.'),
+        name: z.string().describe('The document name.'),
         updatedAt: z.number().describe('When it was last saved, as a ms epoch.'),
         library: z
           .string()
@@ -28,7 +28,7 @@ export const findDocumentsOutput = {
 
 export const readDocumentOutput = {
   id: documentId,
-  name: z.string().describe('The diagram name.'),
+  name: z.string().describe('The document name.'),
   tab: z
     .object({
       id: tabId,
@@ -98,25 +98,25 @@ export const shareDocumentOutput = {
 export const renameDocumentOutput = {
   renamed: z
     .enum(['document', 'tab'])
-    .describe('Whether the diagram or one of its tabs was renamed.'),
+    .describe('Whether the document or one of its tabs was renamed.'),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
-  id: documentId.optional().describe('The renamed diagram id (diagram renames).'),
+  id: documentId.optional().describe('The renamed document id (document renames).'),
   tabId: tabId.optional().describe('The renamed tab id (tab renames).'),
-  url: url.optional().describe('Link that opens the diagram (diagram renames).'),
+  url: url.optional().describe('Link that opens the document (document renames).'),
 };
 
 export const deleteDocumentOutput = {
   deleted: z
     .enum(['document', 'tab'])
-    .describe('Whether the diagram or one of its tabs was deleted.'),
+    .describe('Whether the document or one of its tabs was deleted.'),
   documentId,
   tabId: tabId.optional().describe('The deleted tab id (tab deletes).'),
-  trashed: z.boolean().optional().describe('True when the diagram went to the Trash.'),
+  trashed: z.boolean().optional().describe('True when the document went to the Trash.'),
   restorableForDays: z
     .number()
     .int()
     .optional()
-    .describe('Days the diagram can be restored with restore_document before it is purged.'),
+    .describe('Days the document can be restored with restore_document before it is purged.'),
 };
 
 export const listTrashOutput = {
@@ -124,7 +124,7 @@ export const listTrashOutput = {
     .array(
       z.object({
         id: documentId,
-        name: z.string().describe('The diagram name.'),
+        name: z.string().describe('The document name.'),
         library: z
           .string()
           .describe('Whose Trash: "personal", or the name of the team (or "team").'),
@@ -132,12 +132,12 @@ export const listTrashOutput = {
         purgeAt: z.string().describe('When it is purged for good, as an ISO timestamp.'),
       }),
     )
-    .describe('The diagrams that can still be restored.'),
+    .describe('The documents that can still be restored.'),
 };
 
 export const restoreDocumentOutput = {
   restored: z.literal('document').describe('Always "diagram": tabs have no Trash.'),
   id: documentId,
-  name: z.string().nullable().describe('The restored diagram name, or null if unknown.'),
+  name: z.string().nullable().describe('The restored document name, or null if unknown.'),
   url,
 };

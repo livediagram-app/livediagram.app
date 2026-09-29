@@ -4,11 +4,11 @@ import type { Participant } from '@/lib/identity';
 export type ShareDialogProps = {
   participant: Participant;
   links: ShareLink[];
-  // The diagram's current share password (docs/specs/013-workspace/share-password.md), or null when unset.
+  // The document's current share password (docs/specs/013-workspace/share-password.md), or null when unset.
   // Shown in the clear so the owner can always see + change it.
   sharePassword: string | null;
   shareUrlFor: (code: string) => string;
-  // The diagram's tabs, in bar order, for the Live image control's
+  // The document's tabs, in bar order, for the Live image control's
   // per-tab picker (docs/specs/013-workspace/live-image-share.md) and the link scope pickers
   // (docs/specs/013-workspace/tab-scoped-share-links.md). The first entry is the default the cached
   // snapshot renders; picking another appends `?tab=<id>` to the image
@@ -34,11 +34,11 @@ export type ShareDialogProps = {
   // Re-arm an expiring link for another round of its creation-time
   // duration (docs/specs/013-workspace/share-link-expiry.md). Only rendered on inactive (expired) rows.
   onExtendLink: (code: string) => Promise<void> | void;
-  // Set (or clear, with null) the diagram's share password. Resolves to
+  // Set (or clear, with null) the document's share password. Resolves to
   // the stored value on success (`null` = cleared) and `undefined` on
   // FAILURE, so the field never reflects a write that didn't land.
   onSetPassword: (password: string | null) => Promise<string | null | undefined> | void;
-  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline diagram lives only in this browser, so
+  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document lives only in this browser, so
   // it has nothing to share yet. When true the dialog shows a gate asking the
   // owner to sync it to their account first; `onSyncToCloud` performs that
   // conversion (offline -> cloud), after which the real share options apply.

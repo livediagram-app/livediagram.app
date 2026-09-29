@@ -69,7 +69,7 @@ export function routeSourceFiles(): string[] {
 
 /** The `case '<segment>':` blocks of index.ts's dispatch switch, with the source
  *  of every route module each block reaches (transitively through sibling
- *  `./<module>` imports, since the diagram routes are split across files). */
+ *  `./<module>` imports, since the document routes are split across files). */
 export function dispatchSources(): Map<string, string[]> {
   const index = readSource('index.ts')!;
   const handlerFile = new Map<string, string>();

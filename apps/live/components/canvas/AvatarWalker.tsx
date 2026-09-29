@@ -45,7 +45,7 @@ export function AvatarWalker({
   // Chair (docs/specs/009-elements/chair.md): this character is sitting on one, so it draws seated.
   seated?: boolean;
   // Shirt colour — the participant's presence colour, so your character on a
-  // shared diagram matches your cursor / name chip. Falls back to the brand
+  // shared document matches your cursor / name chip. Falls back to the brand
   // cyan inside the sprite when undefined.
   shirt?: string;
   // Bounds of the element the character is standing on, for the "you are

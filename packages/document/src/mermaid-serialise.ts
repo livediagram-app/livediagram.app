@@ -128,7 +128,7 @@ export function mermaidFromTab(tab: { elements: Element[]; layers?: Layer[] }): 
   }
 
   // URL element links round-trip as `click` lines (docs/specs/020-import-export/mermaid.md). Other link
-  // kinds (tab / element / diagram) are livediagram-internal and have no
+  // kinds (tab / element / document) are livediagram-internal and have no
   // Mermaid meaning.
   for (const n of nodes) {
     if (n.link?.kind === 'url') {

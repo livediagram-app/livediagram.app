@@ -13,7 +13,7 @@ import type { MentionCandidate } from '@/hooks/collab/useCommentMentions';
 
 // How many suggestions show at once.
 const MENTION_SUGGESTIONS_MAX = 6;
-export const MENTION_UNAVAILABLE_HINT = 'Mention teammates on a team diagram';
+export const MENTION_UNAVAILABLE_HINT = 'Mention teammates on a team document';
 
 type Field = HTMLInputElement | HTMLTextAreaElement;
 

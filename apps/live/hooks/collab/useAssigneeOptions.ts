@@ -7,13 +7,13 @@ import { teamMemberRows } from './team-member-rows';
 import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';
 
 // The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4), lifted
-// out of AssignActionDialog: the pinned Myself row, the diagram team's
+// out of AssignActionDialog: the pinned Myself row, the document team's
 // member list (joined AND invited), the preselect-on-edit resolution,
 // the per-pick server access check, and the by-team grouping the picker
 // renders. The dialog keeps the `assignee` selection state itself (and
 // seeds it on open, alongside the name / description fields)
 // and passes it through.
-// Whether the picked teammate can actually open this diagram
+// Whether the picked teammate can actually open this document
 // (docs/specs/012-collaboration/assigned-actions.md §4), asked of the server per selection. 'error'
 // falls back to the picked-team heuristic with hedged wording.
 type Access = 'unknown' | 'yes' | 'no' | 'error' | 'invited';
@@ -97,10 +97,10 @@ export function useAssigneeOptions({
     [selfUserId, selfName],
   );
 
-  // Only the team whose shared library holds this diagram is pickable
+  // Only the team whose shared library holds this document is pickable
   // (docs/specs/012-collaboration/assigned-actions.md §2): members of the user's other teams almost certainly
-  // can't open the diagram to complete the action, so offering them
-  // just manufactures the access warning. Empty for a personal diagram
+  // can't open the document to complete the action, so offering them
+  // just manufactures the access warning. Empty for a personal document
   // and for a share-link editor who isn't a member of the team.
   const pickableTeams = useMemo(
     () => teams.filter((t) => t.id === documentTeamId),
@@ -114,7 +114,7 @@ export function useAssigneeOptions({
       ? loaded.members
       : null;
 
-  // Load the diagram team's joined members once per open (signed-in
+  // Load the document team's joined members once per open (signed-in
   // only; a guest picker is Myself alone). One GET per pickable team
   // (zero or one); a failure just leaves its members out.
   useEffect(() => {
@@ -167,7 +167,7 @@ export function useAssigneeOptions({
     );
   }, [open, existing, members, selfRow, setAssignee]);
 
-  // Ask the server whether the picked teammate can open this diagram,
+  // Ask the server whether the picked teammate can open this document,
   // unless the answer is knowable without it (localAccess). Stale responses
   // are ignored via the cancelled flag.
   const local =

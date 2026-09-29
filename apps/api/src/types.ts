@@ -70,7 +70,7 @@ export type Env = {
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for the anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
-  // real diagram writes. Keyed on CF-Connecting-IP. Optional: absent
+  // real document writes. Keyed on CF-Connecting-IP. Optional: absent
   // (self-host) falls through to "allow", same as the write limiter.
   EVENTS_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for share-code resolution (GET /api/share/<code>),

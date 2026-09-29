@@ -13,7 +13,7 @@ A big diagram is a place, and places have shortcuts. Two portals turn "scroll ac
 - A **shape kind**, `portal`, like the Selection Mode button ([Selection Mode button](mode-button.md)) and the Page ([The Page element](page-element.md)) — so it inherits colours, shadow, layers, groups, comments, export.
 - Portal-shaped: 72x112, taller than wide, drawn as a tall oval — an outer bloom, a bright rim lit from the crown, a dark mouth you see "through", and a few motes caught in the swirl. **Aspect-locked on creation**, because stretched wide it stops reading as a portal; unlockable from the menu like any element.
 - It **paints its own ring**, so the element box behind it is transparent and borderless (the same family as charts, rails, and code blocks). `strokeColor` is the colour of the energy, not of a border: electric blue by default, recolourable from the menu (an orange partner is the obvious second half).
-- The link lives in **`ShapeElement.portalTarget`** — the id of the portal this one leads to. Element ids are unique across the diagram, so no tab component is stored; the tab is looked up.
+- The link lives in **`ShapeElement.portalTarget`** — the id of the portal this one leads to. Element ids are unique across the document, so no tab component is stored; the tab is looked up.
 
 ## The name is menu-only
 
@@ -26,8 +26,8 @@ New portals arrive **unlabelled** and are named **positionally** — "Portal 1",
 Right-click a portal → **Portal**:
 
 - **Name** — a text field, committed on blur / Enter.
-- **Leads to** — a grid of every OTHER portal in the diagram, this tab's first; a portal on another tab is labelled `Name · Tab`. The current target is marked active, and picking it again unlinks.
-- **Create portal** — always offered, and the only option for the first portal in a diagram: it drops a second portal beside this one, already linked both ways, and selects it so you can drag it where you want.
+- **Leads to** — a grid of every OTHER portal in the document, this tab's first; a portal on another tab is labelled `Name · Tab`. The current target is marked active, and picking it again unlinks.
+- **Create portal** — always offered, and the only option for the first portal in a document: it drops a second portal beside this one, already linked both ways, and selects it so you can drag it where you want.
 
 **A link is two-way.** Whatever you can step into, you can step back out of. Writing one side writes the other, and any third portal still claiming either end is released — a portal leads to exactly one place. Resolution also honours an **incoming** link, so a one-sided pairing written by an import, an older diagram, or the API still returns you.
 
@@ -71,5 +71,5 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 
 - Portals that lead to a saved viewport / zoom level rather than another portal.
 - Animating the trip (a fade or a step-through) instead of cutting to the far side.
-- Portals to another diagram entirely — that is what an element link already does.
+- Portals to another document entirely — that is what an element link already does.
 - Locked portals, one-time portals, portals that need a key: fun, and firmly out of scope for a diagram tool.

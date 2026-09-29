@@ -84,7 +84,7 @@ describe('useClerkApiBootstrap token provider', () => {
   });
 });
 
-// Issue #67: signing in with a guest diagram open showed "diagram does not
+// Issue #67: signing in with a guest document open showed "diagram does not
 // exist", because the editor loaded it as the Clerk user before
 // POST /api/migrate had moved it. Owner data waits for the migration.
 describe('useClerkApiBootstrap guest migration', () => {

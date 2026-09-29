@@ -90,7 +90,7 @@ export function errorNameToken(thrown: unknown): string {
 /**
  * The page part of a client error: the first segment of a normalised page
  * path (docs/specs/017-telemetry/page-view-telemetry.md pageViewPath output, so ids are already gone), e.g.
- * '/document' -> 'Diagram', '/explorer/team' -> 'Explorer', '/' -> 'Home',
+ * '/document' -> 'Document', '/explorer/team' -> 'Explorer', '/' -> 'Home',
  * '/help/canvas' -> 'Help'. Null when the path couldn't be normalised.
  */
 export function errorPageToken(pagePath: string | null): string | null {

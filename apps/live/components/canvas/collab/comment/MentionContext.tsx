@@ -10,8 +10,8 @@ import type { MentionCandidate } from '@/hooks/collab/useCommentMentions';
 
 export type MentionScope = {
   candidates: MentionCandidate[];
-  // Whether this diagram has a team to mention from at all. False on a
-  // personal diagram and for a guest, where typing `@` shows a hint instead.
+  // Whether this document has a team to mention from at all. False on a
+  // personal document and for a guest, where typing `@` shows a hint instead.
   available: boolean;
 };
 

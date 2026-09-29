@@ -1,5 +1,5 @@
 // Per-tab calls: lazy load, upsert (the autosave path), comment append,
-// cross-diagram link, and delete.
+// cross-document link, and delete.
 import type { TabResponse, TabSummary } from '@livediagram/api-schema';
 import { normalizeTable, type CommentMention, type Tab } from '@livediagram/document';
 import { dedupeInFlight } from '../dedupe';
@@ -26,7 +26,7 @@ import {
 } from './core';
 
 // Full tab payload, including elements + per-tab metadata. Pulled
-// lazily when the user opens a tab; the diagram-summary fetch only
+// lazily when the user opens a tab; the document-summary fetch only
 // carries TabSummary rows.
 async function _apiLoadTab(
   ownerId: string,
@@ -34,7 +34,7 @@ async function _apiLoadTab(
   tabId: string,
   shareCode: string | null,
 ): Promise<Tab | null> {
-  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline diagram's tabs come from IndexedDB.
+  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document's tabs come from IndexedDB.
   if (await isOfflineId(documentId)) return offlineLoadTab(documentId, tabId);
   const res = await apiFetch(`${API_BASE}/documents/${documentId}/tabs/${tabId}`, {
     headers: await apiHeaders(ownerId, { share: shareCode }),
@@ -165,7 +165,7 @@ export function flushDocumentSavesBeacon(args: {
   if (args.shareCode) base['X-Share-Code'] = args.shareCode;
   // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —
   // without it an edit-role visitor's flush 403s on a protected
-  // diagram, losing the final debounce window's edits.
+  // document, losing the final debounce window's edits.
   const sharePassword = getSessionSharePassword();
   if (sharePassword) base['X-Share-Password'] = sharePassword;
   const jsonHeaders = { ...base, 'Content-Type': 'application/json' };
@@ -266,11 +266,11 @@ export async function apiDeleteComment(
   await expectOkVoid(res, 'delete comment');
 }
 
-// Link an existing tab into another of the caller's diagrams
+// Link an existing tab into another of the caller's documents
 // (docs/specs/006-document/tab-document-many-to-many.md). After this returns, the tab body is shared: edits
-// from either diagram write to the same `tabs.data` row. Returns
-// the target diagram's summary view of the now-attached tab so
-// the caller can update its TabBar without a full diagram
+// from either document write to the same `tabs.data` row. Returns
+// the target document's summary view of the now-attached tab so
+// the caller can update its TabBar without a full document
 // refetch.
 export async function apiLinkTab(
   ownerId: string,

@@ -64,7 +64,7 @@ const listOf = (key: string, name: string): BodySchema => ({
   properties: { [key]: { type: 'array', items: ref(name) } },
   required: [key],
 });
-// A diagram name field: the worker shortens it to the name cap rather than
+// A document name field: the worker shortens it to the name cap rather than
 // rejecting it (docs/specs/006-document/name-length.md).
 const nameField = {
   type: 'string',
@@ -101,13 +101,13 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200],
   },
 
-  // ---- Diagrams ----
+  // ---- Documents ----
   {
     method: 'GET',
     path: '/documents',
     segment: 'documents',
     tag: 'Documents',
-    summary: "List the caller's diagrams (metadata only, no tab contents).",
+    summary: "List the caller's documents (metadata only, no tab contents).",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: listOf('documents', 'DocumentSummary'),
@@ -118,7 +118,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Create a diagram, optionally seeding it with tabs.',
+    summary: 'Create a document, optionally seeding it with tabs.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -140,7 +140,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Get a diagram (metadata + tab summaries; tab contents fetched separately).',
+    summary: 'Get a document (metadata + tab summaries; tab contents fetched separately).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('document', 'Document'),
@@ -151,7 +151,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Update a diagram name and/or tab order.',
+    summary: 'Update a document name and/or tab order.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -170,7 +170,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Move a diagram to the Trash, restorable for 30 days. With permanent=true, delete it for good. 410 when it is already in the Trash (without permanent).',
+      'Move a document to the Trash, restorable for 30 days. With permanent=true, delete it for good. 410 when it is already in the Trash (without permanent).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
@@ -178,7 +178,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         name: 'permanent',
         required: false,
         description:
-          '"true" deletes the diagram for good instead of moving it to the Trash; also purges one already in the Trash.',
+          '"true" deletes the document for good instead of moving it to the Trash; also purges one already in the Trash.',
       },
     ],
     statuses: [204, 401, 403, 404, 410],
@@ -188,7 +188,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/shared-tabs',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Count the tabs a delete would leave in other diagrams.',
+    summary: 'Count the tabs a delete would leave in other documents.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('sharedTabs', 'SharedTabsSummary'),
@@ -199,7 +199,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/copy',
     segment: 'documents',
     tag: 'Documents',
-    summary: "Duplicate a diagram into the caller's files.",
+    summary: "Duplicate a document into the caller's files.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: { type: 'object', properties: { name: nameField } },
@@ -211,7 +211,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/folder',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Move a diagram into a personal or team folder.',
+    summary: 'Move a document into a personal or team folder.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -251,7 +251,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Delete one tab from a diagram.',
+    summary: 'Delete one tab from a document.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404, 410],
@@ -324,7 +324,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/tabs/{tabId}/link',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Add (link) an existing tab into this diagram.',
+    summary: 'Add (link) an existing tab into this document.',
     auth: 'guest-or-clerk',
     responseSchema: wrap('tab', 'TabSummary'),
     statuses: [200, 401, 403, 404, 410],
@@ -334,7 +334,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/share',
     segment: 'documents',
     tag: 'Sharing',
-    summary: "List a diagram's share links and password state.",
+    summary: "List a document's share links and password state.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: listOf('links', 'ShareLink'),
@@ -365,7 +365,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/share',
     segment: 'documents',
     tag: 'Sharing',
-    summary: 'Revoke all share links for a diagram.',
+    summary: 'Revoke all share links for a document.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [200, 401, 403, 404, 410],
@@ -375,7 +375,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/share-password',
     segment: 'documents',
     tag: 'Sharing',
-    summary: "Set or clear a diagram's share password.",
+    summary: "Set or clear a document's share password.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -428,7 +428,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      "The diagram's cached SVG snapshot (a tab-scoped share visitor gets their tab). Read-gated like GET /documents/{id}; 404 when there is no snapshot.",
+      "The document's cached SVG snapshot (a tab-scoped share visitor gets their tab). Read-gated like GET /documents/{id}; 404 when there is no snapshot.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [{ name: 'v', required: false, description: 'Cache-buster (the savedAt stamp).' }],
@@ -462,7 +462,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     query: [
       { name: 's', required: false, description: 'Share code, for non-owner collaborators.' },
       { name: 'o', required: false, description: 'Owner id (guest path).' },
-      { name: 'p', required: false, description: 'Share password, when the diagram is gated.' },
+      { name: 'p', required: false, description: 'Share password, when the document is gated.' },
     ],
     statuses: [101, 403, 404],
   },
@@ -471,7 +471,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/log',
     segment: 'documents',
     tag: 'Activity',
-    summary: "List a diagram's change-log entries.",
+    summary: "List a document's change-log entries.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: listOf('entries', 'ChangeLogEntry'),
@@ -602,7 +602,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/images/usage',
     segment: 'images',
     tag: 'Images',
-    summary: 'Map each image to the diagrams that reference it.',
+    summary: 'Map each image to the documents that reference it.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: { type: 'object' },
@@ -616,7 +616,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Download an image (owner, or a share-code reader).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    query: [{ name: 'd', required: false, description: 'Diagram id, for share-code readers.' }],
+    query: [{ name: 'd', required: false, description: 'Document id, for share-code readers.' }],
     responseSchema: { type: 'string', format: 'binary' },
     statuses: [200, 404, 503],
   },
@@ -736,7 +736,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/shared',
     segment: 'shared',
     tag: 'Sharing',
-    summary: 'List diagrams shared with the caller.',
+    summary: 'List documents shared with the caller.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: listOf('shared', 'SharedWithItem'),
@@ -747,7 +747,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/shared/{documentId}',
     segment: 'shared',
     tag: 'Sharing',
-    summary: 'Remove a diagram from the caller\'s "shared with you" list.',
+    summary: 'Remove a document from the caller\'s "shared with you" list.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [200, 401],
@@ -757,7 +757,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/share/{code}',
     segment: 'share',
     tag: 'Sharing',
-    summary: 'Resolve a share code to a diagram and the granted role.',
+    summary: 'Resolve a share code to a document and the granted role.',
     auth: 'public',
     query: [{ name: 'password', required: false, description: 'Required when the link is gated.' }],
     responseSchema: {
@@ -777,7 +777,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'share',
     tag: 'Sharing',
     summary:
-      'Live image: the shared diagram as SVG, embeddable by a bare <img>. Public by share code; a password-protected share has no image.',
+      'Live image: the shared document as SVG, embeddable by a bare <img>. Public by share code; a password-protected share has no image.',
     auth: 'public',
     query: [
       {
@@ -850,7 +850,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/favourites',
     segment: 'favourites',
     tag: 'Account',
-    summary: 'The diagram ids the caller has starred, newest first.',
+    summary: 'The document ids the caller has starred, newest first.',
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
@@ -863,7 +863,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/favourites/{documentId}',
     segment: 'favourites',
     tag: 'Account',
-    summary: 'Star a diagram for the caller. Idempotent.',
+    summary: 'Star a document for the caller. Idempotent.',
     auth: 'guest-or-clerk',
     statuses: [204, 401],
   },
@@ -872,7 +872,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/favourites/{documentId}',
     segment: 'favourites',
     tag: 'Account',
-    summary: 'Un-star a diagram for the caller.',
+    summary: 'Un-star a document for the caller.',
     auth: 'guest-or-clerk',
     statuses: [204, 401],
   },
@@ -884,7 +884,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'trash',
     tag: 'Trash',
     summary:
-      'The diagrams the caller may restore: their personal Trash and every joined team Trash, newest first.',
+      'The documents the caller may restore: their personal Trash and every joined team Trash, newest first.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: listOf('trash', 'TrashedDocument'),
@@ -912,7 +912,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'trash',
     tag: 'Trash',
     summary:
-      'Restore a diagram from the Trash to its folder, or Unsorted when that folder is gone.',
+      'Restore a document from the Trash to its folder, or Unsorted when that folder is gone.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('document', 'Document'),
@@ -923,7 +923,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/trash/{id}',
     segment: 'trash',
     tag: 'Trash',
-    summary: 'Delete a diagram in the Trash for good.',
+    summary: 'Delete a document in the Trash for good.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 400, 401, 404],
@@ -1001,7 +1001,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'activity',
     tag: 'Account',
     summary:
-      'What is outstanding for the caller across every diagram they can open: open actions assigned to them or by them, and unresolved comment threads they are in. Capped at 100 per kind, newest first.',
+      'What is outstanding for the caller across every document they can open: open actions assigned to them or by them, and unresolved comment threads they are in. Capped at 100 per kind, newest first.',
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
@@ -1020,7 +1020,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/account',
     segment: 'account',
     tag: 'Account',
-    summary: 'Delete the signed-in account and all of its data (diagrams, tokens, ...).',
+    summary: 'Delete the signed-in account and all of its data (documents, tokens, ...).',
     auth: 'clerk',
     responseSchema: { type: 'object', properties: { deleted: { type: 'number' } } },
     statuses: [204, 401],
@@ -1181,7 +1181,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Whether a joined teammate can open a diagram the caller can access (docs/specs/012-collaboration/assigned-actions.md): owner, team-library member, or prior share-link visitor.',
+      'Whether a joined teammate can open a document the caller can access (docs/specs/012-collaboration/assigned-actions.md): owner, team-library member, or prior share-link visitor.',
     auth: 'clerk',
     responseSchema: {
       type: 'object',
@@ -1196,7 +1196,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Email a joined teammate that an action on a diagram element was assigned to them (docs/specs/012-collaboration/assigned-actions.md). Best-effort; the assignee may have opted out.',
+      'Email a joined teammate that an action on a document element was assigned to them (docs/specs/012-collaboration/assigned-actions.md). Best-effort; the assignee may have opted out.',
     auth: 'clerk',
     requestSchema: {
       type: 'object',
@@ -1216,7 +1216,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      "Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md). The diagram must be in this team's library; each mention must be a member of the team. Best-effort; a recipient may have opted out.",
+      "Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md). The document must be in this team's library; each mention must be a member of the team. Best-effort; a recipient may have opted out.",
     auth: 'clerk',
     requestSchema: {
       type: 'object',
@@ -1270,7 +1270,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/teams/{id}/library',
     segment: 'teams',
     tag: 'Teams',
-    summary: "Get a team's shared folder tree and diagrams (joined member).",
+    summary: "Get a team's shared folder tree and documents (joined member).",
     auth: 'clerk',
     responseSchema: {
       type: 'object',

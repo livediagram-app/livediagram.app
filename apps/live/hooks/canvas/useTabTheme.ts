@@ -64,7 +64,7 @@ export function useTabTheme(deps: {
         // reads as "stuck on the deleted theme". Hard-reset to the new
         // theme instead so picking a theme always visibly applies.
         //
-        // A tab whose theme was simply NEVER SET (a fresh diagram, an
+        // A tab whose theme was simply NEVER SET (a fresh document, an
         // added tab, the Blank template) is NOT that case: its baseline
         // is the default theme, and the preserve-customs walk against it
         // works — hard-resetting here wiped a user's hand-picked colours
@@ -111,7 +111,7 @@ export function useTabTheme(deps: {
   };
 
   // Called when a custom theme (docs/specs/011-theme/custom-themes.md) is deleted: every tab in THIS
-  // diagram still pointing at the now-dead `custom:<uuid>` id falls back
+  // document still pointing at the now-dead `custom:<uuid>` id falls back
   // to the default theme — backdrop AND element colours — so the deletion
   // is visible immediately instead of stranding the old colours on a dead
   // id. A hard reset (not preserve-customs): the deleted theme is gone, so

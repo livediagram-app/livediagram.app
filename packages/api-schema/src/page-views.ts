@@ -46,7 +46,7 @@ function looksLikeId(segment: string): boolean {
 /**
  * Reduce a browser pathname to the page it is, for a `Page·View` event.
  * An id, and everything after it, is dropped: what follows an id is about
- * that one thing, not a different page. So every diagram is `/document`.
+ * that one thing, not a different page. So every document is `/document`.
  * Returns null when the path can't be expressed safely: deny-by-default, so
  * an odd path is lost rather than leaked. The query string and hash are never
  * part of a pathname, so they cannot reach here.
@@ -62,8 +62,8 @@ export function pageViewPath(pathname: string): string | null {
     .toLowerCase()
     .split('/')
     .filter((s) => s !== '');
-  // Every `/document/...` URL is the editor on one diagram (docs/specs/007-editor/new-document-route.md), and
-  // whatever follows the segment is the diagram's id.
+  // Every `/document/...` URL is the editor on one document (docs/specs/007-editor/new-document-route.md), and
+  // whatever follows the segment is the document's id.
   if (segments[0] === 'document') segments = ['document'];
   const last = segments[segments.length - 1];
   if (last === 'index.html') segments.pop();

@@ -143,7 +143,7 @@ The wordmark's "diagram" half is the one vivid note: **sky-400 `#38bdf8`** in da
 - `brand-500` on white meets AA for large text only — for small text, use `brand-700` or darker.
 - Never rely on color alone to convey status; pair semantic colors with an icon or label.
 - **Contrast guard (dark mode).** A Playwright audit (`apps/live/e2e/contrast-audit.spec.ts`) walks every visible
-  text node on the New Diagram wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
+  text node on the New Document wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
   the real background under it, and fails below 4.5:1 (3:1 for large text: 24px, or 18.66px bold). It has no
   allow-list. It covers **dark mode only**: light mode's colours are owned by Thomas
   ([@tommcclean](https://github.com/tommcclean)) under [#74](https://github.com/livediagram-app/livediagram.app/issues/74),

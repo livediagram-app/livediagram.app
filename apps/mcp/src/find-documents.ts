@@ -1,8 +1,8 @@
 // The find_documents search space (docs/specs/015-api/mcp-server.md §4.1): the caller's personal
-// library PLUS every shared library of the teams they've joined. A diagram
+// library PLUS every shared library of the teams they've joined. A document
 // filed into a team leaves its owner's personal list entirely (docs/specs/013-workspace/team-shared-documents.md), so
 // without the team sweep it would be invisible to the MCP — the personal
-// GET /documents alone is not "the user's diagrams".
+// GET /documents alone is not "the user's documents".
 import type {
   DocumentSummary,
   TeamLibraryResponse,
@@ -15,8 +15,8 @@ import type { Env } from './env';
 type TeamLibrary = { teamName: string; documents: DocumentSummary[] };
 
 // One search hit. `library` is 'personal' or the team's name, so the
-// calling model can tell the user where a diagram lives (and disambiguate
-// same-named diagrams across libraries).
+// calling model can tell the user where a document lives (and disambiguate
+// same-named documents across libraries).
 type FoundDocument = {
   id: string;
   name: string;
@@ -27,7 +27,7 @@ type FoundDocument = {
 // Fetch every joined team's shared library. Best-effort by design: the
 // personal results must still come back when the teams surface is
 // unavailable (an older self-hosted api, a race with a membership
-// removal), so failures collapse to "no team diagrams", never an error.
+// removal), so failures collapse to "no team documents", never an error.
 export async function fetchTeamLibraries(env: Env, token: string): Promise<TeamLibrary[]> {
   let teams: TeamListItem[];
   try {
@@ -52,7 +52,7 @@ export async function fetchTeamLibraries(env: Env, token: string): Promise<TeamL
   return libraries;
 }
 
-// Pure merge + filter + rank: personal and team diagrams together,
+// Pure merge + filter + rank: personal and team documents together,
 // name-matched against the query, newest saved first, capped at `limit`.
 export function matchDocuments(
   personal: DocumentSummary[],

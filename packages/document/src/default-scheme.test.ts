@@ -5,7 +5,7 @@ import { DEFAULT_SCHEME_ID, getBuiltInTheme, THEMES } from './themes';
 // be two separate entries — "Basic" leading the catalogue and "Charcoal"
 // leading the Dark category — which forced anyone working in dark chrome to
 // pick a second, differently-named scheme to get a canvas that matched, and
-// then left that pick baked into the diagram for every other viewer.
+// then left that pick baked into the document for every other viewer.
 //
 // Now the same scheme answers both: the viewer's Appearance decides which half
 // they see (docs/specs/007-editor/live-app.md). Neither half paints an element — the Default scheme is
@@ -51,7 +51,7 @@ describe('the Default colour scheme', () => {
   });
 });
 
-// Charcoal was merged into Default. Diagrams saved against it are migrated to
+// Charcoal was merged into Default. Documents saved against it are migrated to
 // Default on read (docs/specs/011-theme/retired-schemes.md), so the catalogue no longer carries it at all.
 describe('the Charcoal scheme it replaced', () => {
   it('is no longer offered in the catalogue', () => {

@@ -199,7 +199,7 @@ export type BoxedElementViewProps = {
   onOpenAction: (id: string) => void;
   // Image element context: the editor passes these so the inner
   // ImageElementView can fetch the bitmap with the right
-  // owner / share / diagram identity (the bytes are auth-gated by
+  // owner / share / document identity (the bytes are auth-gated by
   // the API, see docs/specs/009-elements/images.md). View-role visitors are still allowed to
   // see images; they just can't upload new ones via the picker.
   imageContext?: {
@@ -278,7 +278,7 @@ export type BoxedElementViewProps = {
   // True when the tab as a whole is locked. Shows the LockBadge on
   // every element regardless of its own per-element lock state.
   tabLocked: boolean;
-  // This diagram's tabs (id + name), so a link badge's hover card can
+  // This document's tabs (id + name), so a link badge's hover card can
   // name the tab/element it points at (docs/specs/008-canvas/canvas-and-palette.md). Stable reference.
   tabSummaries: { id: string; name: string }[];
   // True for view-role share visitors (session read-only). Shape / text

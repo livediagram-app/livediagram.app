@@ -1,6 +1,6 @@
 // Mind-map growth (docs/specs/009-elements/mind-node.md): where a new node goes, and what connects it.
 //
-// Pure geometry + tree walking, in the diagram package so the editor's
+// Pure geometry + tree walking, in the document package so the editor's
 // keyboard handler and any future auto-arrange share one definition of
 // "where does the next node go".
 

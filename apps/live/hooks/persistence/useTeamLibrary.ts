@@ -17,8 +17,8 @@ import { accepted } from '@/lib/accepted';
 import { track } from '@/lib/telemetry';
 import { indexFolders, folderBreadcrumb, groupDocumentsByFolder } from '@/lib/folder-tree';
 
-// One team's shared library (docs/specs/013-workspace/team-shared-documents.md): the folder tree + diagrams the
-// "Shared diagrams" section on the team page renders, plus the
+// One team's shared library (docs/specs/013-workspace/team-shared-documents.md): the folder tree + documents the
+// "Shared documents" section on the team page renders, plus the
 // mutations every joined member may perform. Mirrors useFolders +
 // useExplorerState's derived shapes, scoped to a single team. All
 // mutations refetch — the library is shared, so optimistic local
@@ -128,7 +128,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
     [ownerId, refresh],
   );
 
-  // Re-folder a diagram WITHIN the team (folderId null = the team's
+  // Re-folder a document WITHIN the team (folderId null = the team's
   // Unsorted).
   const moveDocument = useCallback(
     async (documentId: string, folderId: string | null) => {
@@ -140,7 +140,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
     [ownerId, teamId, refresh],
   );
 
-  // Hard-delete a team diagram. Any joined member may delete it
+  // Hard-delete a team document. Any joined member may delete it
   // (docs/specs/013-workspace/team-shared-documents.md), gated server-side by the team-member delete check.
   const deleteDocument = useCallback(
     async (documentId: string) => {
@@ -151,7 +151,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
     [ownerId, refresh],
   );
 
-  // Rename a team diagram in place. Any joined member may edit it
+  // Rename a team document in place. Any joined member may edit it
   // (docs/specs/013-workspace/team-shared-documents.md), gated server-side by canEditDocument.
   const renameDocument = useCallback(
     async (documentId: string, name: string) => {
@@ -166,7 +166,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
     [ownerId, refresh],
   );
 
-  // Duplicate a team diagram, keeping the copy IN the team alongside
+  // Duplicate a team document, keeping the copy IN the team alongside
   // the original (same folder). duplicateDocumentApi mints a personal
   // copy first; we then file it into this team + folder (docs/specs/013-workspace/team-shared-documents.md).
   const duplicateDocument = useCallback(

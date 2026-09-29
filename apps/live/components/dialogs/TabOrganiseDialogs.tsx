@@ -2,11 +2,11 @@
 
 // The tab bar's two organise pickers as proper centred modals: "Add to
 // Folder" (docs/specs/006-document/tab-folders.md — file the tab into a one-level tab-bar folder) and
-// "Add to Diagram" (docs/specs/006-document/tab-document-many-to-many.md — link the tab into another diagram; the tab is
+// "Add to Document" (docs/specs/006-document/tab-document-many-to-many.md — link the tab into another document; the tab is
 // shared, not copied). They used to be cramped sub-views squeezed inside the
 // tab portal menu; the modal gives them the same tile-grid language as the
 // shared placement browser (docs/specs/013-workspace/folders.md), with room to breathe and a filter for
-// long diagram lists. Single-click commits — both are one-shot pickers.
+// long document lists. Single-click commits — both are one-shot pickers.
 
 import { lucideFolderX } from '@livediagram/icons/lucide';
 import { useState } from 'react';
@@ -124,9 +124,9 @@ export function AddTabToFolderDialog({
   );
 }
 
-// A destination-diagram tile: the diagram's snapshot preview (docs/specs/006-document/document-snapshots.md) over
+// A destination-document tile: the document's snapshot preview (docs/specs/006-document/document-snapshots.md) over
 // its name, so the user picks by recognising the canvas rather than parsing
-// a list of near-identical "Untitled diagram" names. Styled to match the
+// a list of near-identical "Untitled document" names. Styled to match the
 // PlacementCard tile grid, but its own component: the preview area is a
 // full-width box, not the icon-glyph slot the shared card centres.
 function DocumentPickCard({
@@ -151,13 +151,13 @@ function DocumentPickCard({
         className="h-16 w-full rounded border border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40"
       />
       <span className="w-full truncate text-xs font-medium text-slate-700 dark:text-slate-200">
-        {liveDoc.name || 'Untitled diagram'}
+        {liveDoc.name || 'Untitled document'}
       </span>
     </button>
   );
 }
 
-// Add to Diagram (docs/specs/006-document/tab-document-many-to-many.md): pick the destination diagram the tab is LINKED
+// Add to Document (docs/specs/006-document/tab-document-many-to-many.md): pick the destination document the tab is LINKED
 // into (shared, not copied — one tab, live in both). A filter keeps long
 // libraries manageable; picking commits immediately and closes.
 export function AddTabToDocumentDialog({
@@ -174,25 +174,25 @@ export function AddTabToDocumentDialog({
 }) {
   const [query, setQuery] = useState('');
   const visible = otherDocuments.filter(
-    (d) => !query.trim() || matches(query, d.name || 'Untitled diagram'),
+    (d) => !query.trim() || matches(query, d.name || 'Untitled document'),
   );
   return (
     <OrganiseDialogFrame
-      title="Add to Diagram"
-      sub="Link this tab into another diagram. It stays one live tab: edits show in both places."
+      title="Add to Document"
+      sub="Link this tab into another document. It stays one live tab: edits show in both places."
       onClose={onClose}
     >
       <input
         autoFocus
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Filter diagrams…"
-        aria-label="Filter diagrams"
+        placeholder="Filter documents…"
+        aria-label="Filter documents"
         className="mb-3 w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
       />
       {visible.length === 0 ? (
         <p className="px-1 py-8 text-center text-xs text-slate-400 dark:text-slate-400">
-          No diagram matches.
+          No document matches.
         </p>
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">

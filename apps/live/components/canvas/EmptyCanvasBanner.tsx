@@ -5,7 +5,7 @@ import { Glyph } from '@livediagram/ui';
 
 // Empty-canvas hint (docs/specs/007-editor/new-document-route.md). A subdued bottom banner shown while the active
 // tab has no elements — replacing the old centre-of-canvas card so the hint
-// stays unobtrusive (a truly blank diagram reads as blank, not as a
+// stays unobtrusive (a truly blank document reads as blank, not as a
 // half-finished modal). Not dismissible: it simply goes away once the canvas
 // has content (or a draw tool / Quick Start is engaged). Sits in the same
 // bottom slot as the sign-in / theme banners; the host (EditorView) decides

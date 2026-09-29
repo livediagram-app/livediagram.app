@@ -206,7 +206,7 @@ export function EditorAnchoredPopovers() {
                 documentId={documentId}
                 documentTeamId={documentTeamId}
                 emailEnabled={emailEnabled}
-                // Inline personal-diagram fix (docs/specs/012-collaboration/assigned-actions.md §2): file the diagram
+                // Inline personal-document fix (docs/specs/012-collaboration/assigned-actions.md §2): file the document
                 // into the picked team's library root so the picker can offer
                 // that team's members without an Explorer round-trip. The
                 // server enforces the docs/specs/013-workspace/team-shared-documents.md placement rules; on success the

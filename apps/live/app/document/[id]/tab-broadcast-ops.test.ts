@@ -52,7 +52,7 @@ describe('tabBroadcastOps', () => {
     ]);
   });
 
-  it('never puts folder in a tab-meta patch (diagram-meta owns it)', () => {
+  it('never puts folder in a tab-meta patch (document-meta owns it)', () => {
     const before = tab({ folder: 'A' });
     const after = tab({ folder: 'B', backgroundColor: '#222' });
     expect(tabBroadcastOps(before, after)).toEqual([

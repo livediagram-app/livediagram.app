@@ -6,15 +6,15 @@ import { PersonalSpaceTree } from '@/components/illustrations/explorer';
 export const metadata = helpMetadata({
   title: 'Folders',
   description:
-    'Organise your diagrams into a tree of folders in the Explorer: create them, nest them, move diagrams between them, and rename or delete them.',
+    'Organise your documents into a tree of folders in the Explorer: create them, nest them, move documents between them, and rename or delete them.',
   path: '/help/explorer/folders/',
 });
 
-<ArticleLayout title="Folders" description="Group your diagrams into a tree of folders so a growing library stays easy to navigate." categoryTitle="Explorer" categorySlug="explorer" subArticles={getSubArticles("folders")}>
+<ArticleLayout title="Folders" description="Group your documents into a tree of folders so a growing library stays easy to navigate." categoryTitle="Explorer" categorySlug="explorer" subArticles={getSubArticles("folders")}>
 
-Folders are how you organise a growing library in the Explorer. Every diagram lives in exactly one folder, or in none, and folders can nest inside other folders, so you can shape your work into whatever tree fits how you think.
+Folders are how you organise a growing library in the Explorer. Every document lives in exactly one folder, or in none, and folders can nest inside other folders, so you can shape your work into whatever tree fits how you think.
 
-<Figure caption="A Personal Space tree: the Unsorted folder, then nested folders holding diagrams.">
+<Figure caption="A Personal Space tree: the Unsorted folder, then nested folders holding documents.">
   <PersonalSpaceTree />
 </Figure>
 
@@ -27,20 +27,20 @@ Use the **Create** button at the top right of any Explorer section:
 
 A new folder starts named "New folder" and ready to rename. Your folder tree shows under **Personal Space** in the sidebar, so every section is one click away.
 
-## Putting diagrams in folders
+## Putting documents in folders
 
-- **Move an existing diagram.** Open a diagram row's menu and choose **Move to folder…**. The picker is the same browser as the new-diagram **Save in** step: pick **Personal Space** or a team first, then click into the folder you want. A **New Folder** tile at the bottom creates one on the spot, and it follows your selection: with a folder selected it reads New Subfolder and creates inside that folder, with the space itself selected it creates at the top level. Press **Move here**, or double-click the destination to move in one go.
-- **Create straight into a folder.** Open the folder first, then **Create → New diagram**, and the new diagram lands inside it.
+- **Move an existing document.** Open a document row's menu and choose **Move to folder…**. The picker is the same browser as the new-document **Save in** step: pick **Personal Space** or a team first, then click into the folder you want. A **New Folder** tile at the bottom creates one on the spot, and it follows your selection: with a folder selected it reads New Subfolder and creates inside that folder, with the space itself selected it creates at the top level. Press **Move here**, or double-click the destination to move in one go.
+- **Create straight into a folder.** Open the folder first, then **Create → New document**, and the new document lands inside it.
 
 ## Renaming and deleting
 
-In the [card view](/help/explorer/list-and-card-views/) a folder shows a small mosaic of what's inside it — the diagram snapshots it holds, then its subfolders — so you can tell two similarly-named folders apart by sight rather than by reading. An empty folder keeps the plain folder glyph.
+In the [card view](/help/explorer/list-and-card-views/) a folder shows a small mosaic of what's inside it — the document snapshots it holds, then its subfolders — so you can tell two similarly-named folders apart by sight rather than by reading. An empty folder keeps the plain folder glyph.
 
-Each folder row has a menu to **rename**, add a **subfolder**, **move**, or **delete** it. Deleting a folder doesn't delete your diagrams: any diagrams directly inside it return to [Unsorted](/help/explorer/unsorted/), and any subfolders move up to the level the deleted folder was at.
+Each folder row has a menu to **rename**, add a **subfolder**, **move**, or **delete** it. Deleting a folder doesn't delete your documents: any documents directly inside it return to [Unsorted](/help/explorer/unsorted/), and any subfolders move up to the level the deleted folder was at.
 
 <Note>
-  A diagram that isn't filed in any folder lives in <a href="/help/explorer/unsorted/">Unsorted</a>,
-  the Explorer's catch-all. Moving it into a folder is what takes it out of Unsorted.
+  A document that isn't filed in any folder lives in <a href="/help/explorer/unsorted/">Unsorted</a>
+  , the Explorer's catch-all. Moving it into a folder is what takes it out of Unsorted.
 </Note>
 
 <Tip>

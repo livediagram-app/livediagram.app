@@ -46,7 +46,7 @@ Above them sits a **live preview**: a real stroke at the chosen colour and width
 
 The vocabulary is data in `apps/live/lib/highlighter-config.ts` (`HIGHLIGHTER_COLORS`, `HIGHLIGHTER_WIDTHS`, plus id↔px helpers), read by both the panel and the commit path — the same shape the other tool panels' configs take, rather than living inside the one component that happened to draw them first.
 
-Both settings are **session-local editor state** (`useShapeDrawing`), deliberately not a persisted preference: the marker resets to yellow / medium on a fresh load, like a real pen cup. Nothing here is stored on the diagram or sent to the api. The live draw preview (`CanvasDrawPreview`) paints the in-flight polyline with the same colour and width, so what you see while dragging is what commits.
+Both settings are **session-local editor state** (`useShapeDrawing`), deliberately not a persisted preference: the marker resets to yellow / medium on a fresh load, like a real pen cup. Nothing here is stored on the document or sent to the api. The live draw preview (`CanvasDrawPreview`) paints the in-flight polyline with the same colour and width, so what you see while dragging is what commits.
 
 This replaced a pair of popovers hanging off the mode banner. That was the right home while the highlighter was an arm — the banner was the only thing on screen that knew the arm existed — and the wrong one the moment it became a mode, because a mode's settings belong wherever every other mode keeps theirs.
 

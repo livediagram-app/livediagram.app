@@ -67,9 +67,9 @@ function SyntheticNodeHeader({
   );
 }
 
-// Synthetic root-level "Unsorted" folder. Holds every diagram with
+// Synthetic root-level "Unsorted" folder. Holds every document with
 // folder_id IS NULL. Can't be renamed or deleted, but is a drop target:
-// a diagram dropped here goes back to the root (a null folder id).
+// a document dropped here goes back to the root (a null folder id).
 export function UnsortedNode({
   expanded,
   onToggleExpanded,
@@ -100,10 +100,10 @@ export function UnsortedNode({
   );
 }
 
-// Synthetic "Offline" folder (docs/specs/006-document/offline-mode.md): every diagram saved only in this
+// Synthetic "Offline" folder (docs/specs/006-document/offline-mode.md): every document saved only in this
 // browser, mirroring the /explorer route's dynamic Offline folder. Always
 // rendered (even empty) so the local-only bucket stays discoverable. Not a
-// drop target, and its rows are not drag sources: moving a cloud diagram
+// drop target, and its rows are not drag sources: moving a cloud document
 // offline is the explicit, confirmed Take Offline action, never a drag.
 export function OfflineNode({
   expanded,
@@ -128,7 +128,7 @@ export function OfflineNode({
       {expanded.offline ? (
         liveDocs.length === 0 ? (
           <p className="px-8 py-1.5 text-[10px] text-slate-400 dark:text-slate-400">
-            Diagrams saved only in this browser collect here.
+            Documents saved only in this browser collect here.
           </p>
         ) : (
           <ul className="flex flex-col gap-0.5">
@@ -146,7 +146,7 @@ export function OfflineNode({
 
 // One row in the "Shared with you" accordion. Visually similar to
 // the recents list but stripped of folder / move / duplicate menu
-// affordances: the visitor doesn't own these diagrams, so the
+// affordances: the visitor doesn't own these documents, so the
 // only meaningful actions are "open" and "dismiss this row from my
 // list." A small role pill ("View" / "Edit") communicates what they
 // can do once they're in.

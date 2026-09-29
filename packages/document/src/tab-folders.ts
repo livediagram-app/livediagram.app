@@ -1,4 +1,4 @@
-// Tab folders (docs/specs/006-document/tab-folders.md). A diagram's tabs are a single flat,
+// Tab folders (docs/specs/006-document/tab-folders.md). A document's tabs are a single flat,
 // ordered list; a folder is a maximal *run of adjacent tabs* that
 // share a folder name, drawn under one collapsible chip. There is
 // no second ordering dimension and no folder entity — a folder is
@@ -94,7 +94,7 @@ export function groupTabsIntoRuns<T extends Pick<Tab, 'folder'>>(tabs: T[]): Tab
   return runs;
 }
 
-// Distinct folder names present in the diagram, in order of first
+// Distinct folder names present in the document, in order of first
 // appearance. Drives the "Organise in folder" menu list and the
 // uniqueness check when creating / renaming a folder.
 export function folderNamesInDocument(tabs: Pick<Tab, 'folder'>[]): string[] {

@@ -2,12 +2,12 @@
 
 > **Status: implemented.** The deck model and its pure helpers live in
 > `packages/document/src/slide-deck.ts`, persistence in migration 0041
-> (`diagrams.presentation`), and the editor surface in `useSlideDeck.ts`,
+> (`documents.presentation`), and the editor surface in `useSlideDeck.ts`,
 > `SlideDeckPanel.tsx`, `PresentationHost.tsx`, `PresentationOverlay.tsx`,
 > `PresentationHud.tsx` and `PresentationElementPopover.tsx`. The two open
 > questions at the end are follow-ups, not blockers.
 
-Present a diagram as a **slide deck**: full-screen, one slide at a time, each slide showing a set of elements you picked. Built for the "walk someone through this on a call or a projector" moment.
+Present a document as a **slide deck**: full-screen, one slide at a time, each slide showing a set of elements you picked. Built for the "walk someone through this on a call or a projector" moment.
 
 ## Why
 
@@ -17,7 +17,7 @@ A finished diagram shows everything at once, which is great for reference and ba
 
 **A slide is an explicit, ordered set of elements you chose, from one tab.** Not a region of canvas, not a camera position, not a layer.
 
-- **A slide belongs to a single tab**, and names elements on it. **The DECK is what spans tabs**: slide 1 can come from Tab A, slide 2 from Tab C, slide 3 from Tab A again. The presentation is a view over the whole diagram; each slide within it is not.
+- **A slide belongs to a single tab**, and names elements on it. **The DECK is what spans tabs**: slide 1 can come from Tab A, slide 2 from Tab C, slide 3 from Tab A again. The presentation is a view over the whole document; each slide within it is not.
 - Keeping a slide inside one tab is what makes it well-defined. A slide mixing tabs has no answer to which backdrop it wears, and elements from two tabs share no coordinate space, so "fit this slide" would have no meaning.
 - **An element can be on any number of slides.** Membership is a list, not a partition, so a title that belongs on every slide simply appears in every slide's list.
 - **Slide order is the deck's own order**, independent of tab order, element array order, and z-order. Reordering slides never restacks anything on the canvas.
@@ -32,11 +32,11 @@ They were rejected because a layer means something else, and the collisions were
 - **Bring to Front / Send to Back create and prune layers** ([Layers](../006-document/layers.md)). Casually clicking "bring to front" would mint a slide, and emptying a layer would silently delete one.
 - **An element belongs to exactly one layer.** A title on every slide would have been unexpressible, and so would any element appearing on more than one.
 
-Slides are their own concept for the same reason layers were: overloading one structure with two meanings costs more in surprise than it saves in code. **Layers stay purely diagram structure.** Nothing in [Layers](../006-document/layers.md) changes.
+Slides are their own concept for the same reason layers were: overloading one structure with two meanings costs more in surprise than it saves in code. **Layers stay purely document structure.** Nothing in [Layers](../006-document/layers.md) changes.
 
 ## Data model
 
-Diagram-level. A slide belongs to one tab, but the DECK does not: its order interleaves tabs freely (A, C, A), so no single tab can own the list.
+Document-level. A slide belongs to one tab, but the DECK does not: its order interleaves tabs freely (A, C, A), so no single tab can own the list.
 
 ```ts
 type Slide = {
@@ -63,7 +63,7 @@ type Deck = { slides: Slide[] };
 
 // The stored envelope. An array from day one even though v1 ships exactly
 // one deck: "the deck for the exec review" and "the deck for the team
-// walkthrough" are an obvious want over the same diagram, and shipping
+// walkthrough" are an obvious want over the same document, and shipping
 // `{ slides }` now would mean a data migration to add the second. An array
 // with one member costs nothing today and keeps that door open.
 type StoredPresentation = { decks: Deck[] };
@@ -75,11 +75,11 @@ type StoredPresentation = { decks: Deck[] };
 
 ### Persistence
 
-This is the one part of the feature that is not free. `diagrams.data` was dropped in migration 0006 and tab bodies live in their own table, so there is **no diagram-level JSON blob to extend** — unlike layers, which ride the opaque tab body and needed no api change at all.
+This is the one part of the feature that is not free. `diagrams.data` was dropped in migration 0006 and tab bodies live in their own table, so there is **no document-level JSON blob to extend** — unlike layers, which ride the opaque tab body and needed no api change at all.
 
-- A new `presentation TEXT NULL` column on `diagrams` (the ninth such column; `source`, `share_password` and `team_id` are the pattern), holding the serialised `Deck`.
-- The api's diagram DTO in `@livediagram/api-schema` carries it through, and the read / save routes round-trip it.
-- Null / absent = no deck, which is every existing diagram.
+- A new `presentation TEXT NULL` column on `documents` (the ninth such column; `source`, `share_password` and `team_id` are the pattern), holding the serialised `Deck`.
+- The api's document DTO in `@livediagram/api-schema` carries it through, and the read / save routes round-trip it.
+- Null / absent = no deck, which is every existing document.
 
 ## Entry and the Slide Deck panel
 
@@ -116,16 +116,16 @@ Reorder tabs. It was asked for while a slide belonged to a tab and the deck was 
 - **One slide at a time.** Only that slide's elements render. This is a deck, not a progressive reveal of a diagram: advancing does not accumulate.
 - **The backdrop is the slide's tab's** — its background colour, pattern and theme. Well-defined precisely because a slide belongs to one tab.
 - **Framing:** fit to the content bounds of the slide's elements (`contentBounds` + `computeFitToScreen`), with padding. **If a slide contains exactly one frame element, its bounds are used instead** — that gives precise, authored framing using an element the product already has, with nothing new to learn.
-- **Nothing on a slide can be CHANGED.** No editing, moving, resizing or deleting; and none of the session verbs either: no voting, no starting or pausing a timer, no ticking a Done check, no firing a reaction pad. You are on a projector in front of a room, and a stray click that alters the diagram is not a feature.
-  - Live DATA still displays. A timer somebody started before the presentation goes on counting down on the slide, and a poll shows the results it has. That is the slide reporting the diagram, not the audience changing it, and freezing a running clock mid-sentence would read as a bug.
-- **Everything on a slide can be READ.** Clicking an element opens a **read-only popover** carrying what that element has to say: its **note** ([Diagram structure](../006-document/document-structure.md), rendered rich per [Rich-text notes](../009-elements/rich-text-notes.md)), its **comment thread** ([Canvas and palette](../008-canvas/canvas-and-palette.md)), and its **assigned actions** ([Assigned actions](assigned-actions.md)) with assignee and status. Nothing in the popover is editable, and there is no composer: you can show the room the objection somebody left on this box, and you cannot answer it from here.
+- **Nothing on a slide can be CHANGED.** No editing, moving, resizing or deleting; and none of the session verbs either: no voting, no starting or pausing a timer, no ticking a Done check, no firing a reaction pad. You are on a projector in front of a room, and a stray click that alters the document is not a feature.
+  - Live DATA still displays. A timer somebody started before the presentation goes on counting down on the slide, and a poll shows the results it has. That is the slide reporting the document, not the audience changing it, and freezing a running clock mid-sentence would read as a bug.
+- **Everything on a slide can be READ.** Clicking an element opens a **read-only popover** carrying what that element has to say: its **note** ([Document structure](../006-document/document-structure.md), rendered rich per [Rich-text notes](../009-elements/rich-text-notes.md)), its **comment thread** ([Canvas and palette](../008-canvas/canvas-and-palette.md)), and its **assigned actions** ([Assigned actions](assigned-actions.md)) with assignee and status. Nothing in the popover is editable, and there is no composer: you can show the room the objection somebody left on this box, and you cannot answer it from here.
   - This is the line the whole mode runs on, and it is worth stating as one sentence: **read anything, change nothing.** Inspecting is not editing, and a presenter being unable to show the note attached to the thing they are pointing at would be a strange kind of presentation.
-  - The element popover is a different thing from the HUD's notes popover, and they do not overlap. The HUD's carries the SLIDE's presenter note, what you mean to say. This one carries the ELEMENT's, what the diagram records about that box.
+  - The element popover is a different thing from the HUD's notes popover, and they do not overlap. The HUD's carries the SLIDE's presenter note, what you mean to say. This one carries the ELEMENT's, what the document records about that box.
 - **A click on empty space advances the slide; a click on an element opens its popover.** The disambiguation matters, because click-to-advance and click-to-inspect are the same gesture on different targets. Clicking outside an open popover closes it rather than advancing, so dismissing never skips a slide.
 - **Rendered by the real canvas**, not by the static SVG renderer. Two reasons, and the first one is now load-bearing rather than tidy: a slide has to RESPOND to clicks and carry live element state, which a rasterised or SVG snapshot cannot do at all. The second is that there is then exactly one thing that knows how an element looks, so presenting cannot drift from the canvas the first time an element gains a feature.
-- **The pointing tools stay available**: Laser ([Laser Panel](../008-canvas/laser-panel.md)) and Spotlight ([Spotlight Panel](../008-canvas/spotlight-panel.md)) both work while presenting, and neither breaks the rule above because neither touches the diagram. This is the room the laser was built for — [Laser Panel](../008-canvas/laser-panel.md) opens by calling it "the presenting tool" — and a spotlight is how you read one lane of a dense slide to a room. Both keep their device-local recipes, so the pen and the shroud you tuned for this projector are the ones you get. `L` arms the laser and `S` the spotlight; the same key again puts the pointer back, so arming one is never a trap.
+- **The pointing tools stay available**: Laser ([Laser Panel](../008-canvas/laser-panel.md)) and Spotlight ([Spotlight Panel](../008-canvas/spotlight-panel.md)) both work while presenting, and neither breaks the rule above because neither touches the document. This is the room the laser was built for — [Laser Panel](../008-canvas/laser-panel.md) opens by calling it "the presenting tool" — and a spotlight is how you read one lane of a dense slide to a room. Both keep their device-local recipes, so the pen and the shroud you tuned for this projector are the ones you get. `L` arms the laser and `S` the spotlight; the same key again puts the pointer back, so arming one is never a trap.
   - While one is armed the click-catcher stands down, because both tools need the pointer on the canvas to work at all. Click-to-advance goes with it: mid-stroke a click means "point", not "next slide". The keys and the HUD's own buttons still advance, and the tool is handed back on exit so a presenter does not land in the editor still holding the laser.
-  - The laser still **broadcasts**, as it does everywhere else ([Laser Panel](../008-canvas/laser-panel.md), "Everyone sees your pen"). Presenting is local, but the laser is the diagram's tool and your camera is on a real tab: a collaborator reading that tab should see the dot you are pointing with, which is the whole point of a shared pointer. Suppressing it would mean a second laser path existing only here, to hide something somebody may be watching on purpose. Spotlight raises no such question — it is a local view treatment and always was ([Spotlight Panel](../008-canvas/spotlight-panel.md), "Still local, still not broadcast").
+  - The laser still **broadcasts**, as it does everywhere else ([Laser Panel](../008-canvas/laser-panel.md), "Everyone sees your pen"). Presenting is local, but the laser is the document's tool and your camera is on a real tab: a collaborator reading that tab should see the dot you are pointing with, which is the whole point of a shared pointer. Suppressing it would mean a second laser path existing only here, to hide something somebody may be watching on purpose. Spotlight raises no such question — it is a local view treatment and always was ([Spotlight Panel](../008-canvas/spotlight-panel.md), "Still local, still not broadcast").
   - The presenter still does not see anyone ELSE's cursor or laser, as above. It is your screen on a projector.
 - **The screen is kept awake** for the duration (`navigator.wakeLock`, released on exit). A slide you talk over for five minutes is a slide the laptop dims, and a presenter waking their own screen mid-sentence is a small indignity a deck should not cause. Where the API is absent or the request is refused, the deck runs exactly as before.
 - **Advance** with `→`, `Space`, `Page Down`, or click. **Back** with `←`, `Page Up`. `Home` / `End` jump to the ends.
@@ -168,7 +168,7 @@ On demand is the whole point: nothing about your script is on screen until you a
 
 ### Pacing
 
-Both parts are off by default and both are the presenter's, not the diagram's.
+Both parts are off by default and both are the presenter's, not the document's.
 
 **Elapsed time** — a clock in the HUD counting from Start. You cannot pace a talk you cannot time, and the alternative is a phone face-up beside the laptop.
 
@@ -205,7 +205,7 @@ They are grouped Transition / Playback / Display, because the list grew past the
 
 Device-local (`lib/presentation-config.ts`), like the eraser's brush and the
 laser's pen: how YOU drive a deck on THIS machine, not a property of the
-diagram. Never sent to the api.
+document. Never sent to the api.
 
 ### Leaving
 
@@ -216,7 +216,7 @@ Two ways out, because a presenter mid-sentence should not have to remember one:
 
 Exiting restores the previous tab, viewport and chrome. The viewport matters more than it sounds: a deck leaves the camera wherever the last slide needed it, often 250% on one box, so without the restore you came back to a diagram you had to go and find.
 
-- Available to **every role including share-link viewers**: presenting is read-only by nature, and a viewer narrating a shared diagram is a core case.
+- Available to **every role including share-link viewers**: presenting is read-only by nature, and a viewer narrating a shared document is a core case.
 
 ### Cross-tab loading
 
@@ -226,24 +226,24 @@ Tabs load lazily ([Per-tab storage](../006-document/per-tab-storage.md)), so a d
 
 **Each slide carries its own notes**, written and edited in the Slide Deck panel: pick a slide, type what you mean to say over it. They are the slide's, stored on the slide.
 
-They are deliberately NOT the elements' existing `note?` field ([Diagram structure](../006-document/document-structure.md), rich text per [Rich-text notes](../009-elements/rich-text-notes.md)), which the previous draft reused. That field is a note about a _thing_ — "this queue is the one that backs up" — and it belongs to the element wherever it appears. What a presenter needs is a note about a _moment_ in a talk, and the same element on two slides usually wants two different things said about it. Deriving slide notes by gathering up element notes gives you neither: a caption assembled from three elements' annotations, in element order, saying nothing you chose to say.
+They are deliberately NOT the elements' existing `note?` field ([Document structure](../006-document/document-structure.md), rich text per [Rich-text notes](../009-elements/rich-text-notes.md)), which the previous draft reused. That field is a note about a _thing_ — "this queue is the one that backs up" — and it belongs to the element wherever it appears. What a presenter needs is a note about a _moment_ in a talk, and the same element on two slides usually wants two different things said about it. Deriving slide notes by gathering up element notes gives you neither: a caption assembled from three elements' annotations, in element order, saying nothing you chose to say.
 
 - Plain text in v1, not rich text. It is a script you read off, and the rich-text editor is a surface to maintain for something nobody will bold.
 - During a presentation they live behind the HUD's notes button, opened on demand. See The HUD above.
 
 ## Realtime: presenting is local, and that is the design
 
-**Presenting broadcasts nothing.** The delivery mechanism is you sharing your screen in the meeting you are already in. Collaborators with the diagram open see the diagram, not your deck; nobody is pulled into your slide, nobody's viewport moves, nobody has to be told a presentation started.
+**Presenting broadcasts nothing.** The delivery mechanism is you sharing your screen in the meeting you are already in. Collaborators with the document open see the document, not your deck; nobody is pulled into your slide, nobody's viewport moves, nobody has to be told a presentation started.
 
-This is a stance, not a v1 shortcut. "Follow the presenter" was the obvious v2 and is **not planned**: it makes presenting something that happens TO other people, which is the opposite of the point. You are showing a room what you want them to see, on your screen. Somebody else reading the same diagram in another window is doing their own work and should be left alone.
+This is a stance, not a v1 shortcut. "Follow the presenter" was the obvious v2 and is **not planned**: it makes presenting something that happens TO other people, which is the opposite of the point. You are showing a room what you want them to see, on your screen. Somebody else reading the same document in another window is doing their own work and should be left alone.
 
 What it saves is real. Presenting needs **no room op, no api-schema change, and nothing in the Durable Object**. Remote cursors and lasers are hidden from the presenter's own view (they would puncture the illusion on a projector), and edits arriving mid-presentation apply underneath as normal, so a slide re-renders if one of its members changed.
 
-### Deck edits are ordinary diagram data
+### Deck edits are ordinary document data
 
-The deck itself IS shared: a teammate opening the diagram sees your slides and can edit them. Deck changes ride the normal diagram save and arrive for other people on their next load, like the diagram's name does.
+The deck itself IS shared: a teammate opening the document sees your slides and can edit them. Deck changes ride the normal document save and arrive for other people on their next load, like the document's name does.
 
-**No live `deck` room op in v1.** It was specced and dropped once presenting went local: a deck is small, rarely touched, and in practice authored by one person for one meeting, so the realtime path would be carrying a message almost nobody sends. The cost is last-write-wins at whole-deck granularity if two people edit slides in the same session without reloading, which is the same exposure the diagram name already has and is proportionate to how often it will happen. If it turns out to bite, a `deck` op carrying the whole (small) deck is a small addition, deliberately unlike the granular per-element merge in [Realtime conflict resolution](realtime-conflict-resolution.md).
+**No live `deck` room op in v1.** It was specced and dropped once presenting went local: a deck is small, rarely touched, and in practice authored by one person for one meeting, so the realtime path would be carrying a message almost nobody sends. The cost is last-write-wins at whole-deck granularity if two people edit slides in the same session without reloading, which is the same exposure the document name already has and is proportionate to how often it will happen. If it turns out to bite, a `deck` op carrying the whole (small) deck is a small addition, deliberately unlike the granular per-element merge in [Realtime conflict resolution](realtime-conflict-resolution.md).
 
 ## Implementation shape
 
@@ -282,7 +282,7 @@ events per run to tell us something the start / close pair already implies.
 - Dual-screen presenter console (notes on your laptop, slide on the projector). Per-slide notes ship; a second-window console does not.
 - Export the deck to PDF or PPT. (The framing rule above makes it tractable later: every slide already has bounds, and the export renderer already draws a bounded element set.)
 - Per-element build animation WITHIN a slide (clicking to reveal one box at a time). Slide-to-slide transitions ship, see Motion; building up a single slide does not.
-- Auto-generating a deck from a diagram (see the empty-deck rule above: deliberate, not deferred).
+- Auto-generating a deck from a document (see the empty-deck rule above: deliberate, not deferred).
 - A slide that mixes tabs. Ruled out by the model, not postponed.
 - CHANGING anything from a presentation. Ruled out, not postponed. Reading is in (see Presenting): clicking an element shows its note, comments and actions.
 

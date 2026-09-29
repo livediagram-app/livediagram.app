@@ -3,7 +3,7 @@
 //
 // Device-local, like the laser pen (docs/specs/008-canvas/laser-panel.md) and the avatar costume
 // (docs/specs/008-canvas/avatar-mode.md): it depends on your screen and the room you are presenting in,
-// not on the diagram. Unlike the pen it is NOT published — Spotlight is a view
+// not on the document. Unlike the pen it is NOT published — Spotlight is a view
 // aid for the person using it, so there is nothing on the wire (docs/specs/008-canvas/canvas-and-palette.md).
 
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';

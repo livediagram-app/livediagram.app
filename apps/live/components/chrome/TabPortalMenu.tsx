@@ -32,7 +32,7 @@ import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
 import { DuplicateIcon, useEscape } from '@livediagram/ui';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 
-// The unified tab / canvas portal menu (actions, copy-to-diagram, and
+// The unified tab / canvas portal menu (actions, copy-to-document, and
 // folder sub-views). Extracted from TabBar.tsx, where it had grown into a
 // ~520-line component buried in the file. Pure prop-based component.
 export function PortalMenu({
@@ -77,7 +77,7 @@ export function PortalMenu({
   onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   locked: boolean;
-  // Viewer identity for the Add to Diagram dialog's thumbnail fetches.
+  // Viewer identity for the Add to Document dialog's thumbnail fetches.
   selfId: string;
   // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): the collab key, never the owner
   // id. Falls back to `selfId` for a caller that doesn't run a vote.
@@ -93,7 +93,7 @@ export function PortalMenu({
 } & SessionToolsProps) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
   // organise pickers — "copyTo" (docs/specs/006-document/tab-document-many-to-many.md, link the tab into another
-  // diagram) and "folder" (docs/specs/006-document/tab-folders.md, file the tab into a tab-bar folder) —
+  // document) and "folder" (docs/specs/006-document/tab-folders.md, file the tab into a tab-bar folder) —
   // open as proper centred MODALS in place of the anchored box, so they
   // get room instead of squeezing into the menu. While a modal is up the
   // anchored box unmounts (`ref` goes null), which conveniently disarms
@@ -146,7 +146,7 @@ export function PortalMenu({
   // After the menu mounts, nudge it back on-screen if it overflows any
   // edge (e.g. Tab 1 is near the left and the menu opens left of its
   // anchor). Also re-runs when `view` flips: the "Add to another
-  // diagram" submenu is wider (w-56 vs w-44) and taller (destination
+  // document" submenu is wider (w-56 vs w-44) and taller (destination
   // list + Back row), so without a fresh measurement the box could
   // overflow the bottom or left edges of the viewport with stale
   // adjust state carried over from the actions view.
@@ -302,7 +302,7 @@ export function PortalMenu({
               <MenuToolButton
                 icon={<DuplicateIcon />}
                 label="Duplicate"
-                description="Create a copy of this tab in this diagram."
+                description="Create a copy of this tab in this document."
                 onClick={onDuplicate}
               />
               {/* Paste in the tab ⋯ menu: one tab verb among several, so an
@@ -391,7 +391,7 @@ export function PortalMenu({
                 />
                 <MenuTile
                   icon={<MoveIcon />}
-                  label="Add to Diagram"
+                  label="Add to Document"
                   onClick={() => setView('copyTo')}
                   disabled={otherDocuments.length === 0}
                 />
@@ -435,7 +435,7 @@ export function PortalMenu({
                 ONE side-flyout panel, the Session Studio: a switcher for
                 Timer / Vote / Poll over a purpose-built pane per tool.
                 Timer and vote are per-tab state; the poll lives only in the
-                realtime room and leaves no trace on the diagram. ── */}
+                realtime room and leaves no trace on the document. ── */}
             <MenuGroupSeparator />
             <MenuFlyoutSection
               title="Collaborate"

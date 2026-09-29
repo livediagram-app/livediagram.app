@@ -42,7 +42,7 @@ describe('mergeRoomLedger (docs/specs/012-collaboration/collab-race-hardening.md
     expect(stubFetch.mock.calls[0]![0]).toBe('https://room/ledger?tab=t1&epoch=ep');
   });
 
-  it('leaves the save alone for a diagram with no room, or a save with no cursor', async () => {
+  it('leaves the save alone for a document with no room, or a save with no cursor', async () => {
     const { env, stubFetch } = envWith(async () => Response.json(ledger));
     expect(
       (await mergeRoomLedger(env, { id: 'd1', shareable: false, teamId: null }, tab, 'ep:4')).tab,
@@ -51,7 +51,7 @@ describe('mergeRoomLedger (docs/specs/012-collaboration/collab-race-hardening.md
     expect(stubFetch).not.toHaveBeenCalled();
   });
 
-  it('asks the room for a team diagram too', async () => {
+  it('asks the room for a team document too', async () => {
     const { env, stubFetch } = envWith(async () => Response.json(ledger));
     await mergeRoomLedger(env, { id: 'd1', shareable: false, teamId: 'team' }, tab, 'ep:4');
     expect(stubFetch).toHaveBeenCalledOnce();
@@ -82,7 +82,7 @@ describe('parseRoomCursor', () => {
 // op reaches the room's broadcast endpoint, and a room that can't be reached
 // is logged, never thrown, because the D1 write it follows is the real change.
 describe('broadcastShareOp', () => {
-  it("posts the op to the diagram's room", async () => {
+  it("posts the op to the document's room", async () => {
     const { env, stubFetch } = envWith(async () => new Response(null, { status: 204 }));
     await broadcastShareOp(env, 'd1', { kind: 'share-rescoped', code: 'ABCD2345' });
     const [url, init] = stubFetch.mock.calls[0] as unknown as [string, RequestInit];

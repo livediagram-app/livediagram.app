@@ -8,7 +8,7 @@ import type { DocumentDTO } from '../types';
 // Both conversions reuse ordinary endpoints — "take offline" is a plain
 // DELETE /documents/:id, "sync" a plain POST /documents — so the worker cannot
 // tell them apart from a real delete or a real create unless the editor says
-// so. It didn't, so the feed reported that a diagram the owner had just moved
+// so. It didn't, so the feed reported that a document the owner had just moved
 // into this browser was DELETED (in danger red), and that one they had just
 // uploaded was newly CREATED. `document_offline` / `document_synced` existed the
 // whole time, with tones, icons, renderers and a docs/specs/013-workspace/timeline.md table row; nothing
@@ -110,7 +110,7 @@ beforeEach(() => {
 });
 
 describe('DELETE /documents/:id — take offline vs real delete', () => {
-  it('records the diagram as taken offline when the conversion is declared', async () => {
+  it('records the document as taken offline when the conversion is declared', async () => {
     db.getDocument.mockResolvedValue(liveDoc);
     const { ctx, settle } = ctxWith('DELETE', '/api/documents/d1', conversion('offline'));
     expect((await handleDocuments(ctx)).status).toBe(204);
@@ -118,7 +118,7 @@ describe('DELETE /documents/:id — take offline vs real delete', () => {
     expect(timeline.recordDocumentOffline).toHaveBeenCalledTimes(1);
   });
 
-  it('records nothing for a real delete: the diagram goes to the Trash', async () => {
+  it('records nothing for a real delete: the document goes to the Trash', async () => {
     // docs/specs/013-workspace/trash.md: its history is hidden while it waits
     // (and comes back on restore), so nothing is swept and no card is added.
     db.getDocument.mockResolvedValue(liveDoc);
@@ -145,16 +145,16 @@ describe('DELETE /documents/:id — take offline vs real delete', () => {
     const { ctx, settle } = ctxWith('DELETE', '/api/documents/d1', conversion('offline'));
     await handleDocuments(ctx);
     await settle();
-    // Taking a diagram offline really does remove the server copy — only the
+    // Taking a document offline really does remove the server copy — only the
     // event that describes it changes.
     expect(db.deleteDocument).toHaveBeenCalled();
     expect(db.trashDocument).not.toHaveBeenCalled();
   });
 });
 
-describe("a non-owner cannot convert someone else's diagram", () => {
+describe("a non-owner cannot convert someone else's document", () => {
   // Narrowing the audience to the actor is right when the OWNER takes their
-  // own diagram offline. When a teammate does it the diagram lands in THEIR
+  // own document offline. When a teammate does it the document lands in THEIR
   // browser and leaves the owner's account for good — that is a deletion from
   // everyone else's side, and a deletion records nothing (docs/specs/013-workspace/timeline.md §3.5), so
   // the teammate must not get an owner-scoped "Taken Offline" card either.
@@ -176,7 +176,7 @@ describe("a non-owner cannot convert someone else's diagram", () => {
     expect(db.deleteDocument).not.toHaveBeenCalled();
   });
 
-  it('still honours the conversion when the owner does it on a team diagram', async () => {
+  it('still honours the conversion when the owner does it on a team document', async () => {
     // Ownership is what gates it, not the absence of a team.
     const { ctx, settle } = ctxWith('DELETE', '/api/documents/d1', {
       owner: 'alice',

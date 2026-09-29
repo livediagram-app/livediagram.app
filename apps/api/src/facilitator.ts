@@ -50,7 +50,7 @@ const canHold = (asker: Pick<Asker, 'role'>) => asker.role === 'edit';
 /**
  * Take a free baton — or, as the owner, take one somebody else is holding.
  *
- * That second row is the whole of "the diagram can always take back control",
+ * That second row is the whole of "the document can always take back control",
  * and it is why the upgrade forwards an owner bit at all.
  */
 export function claimBaton(state: FacilitatorState, asker: Asker, token: string): BatonMove | null {

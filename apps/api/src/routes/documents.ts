@@ -1,7 +1,7 @@
-// /api/documents — diagram metadata, per-tab content, copy, folder
+// /api/documents — document metadata, per-tab content, copy, folder
 // assignment, tab linking, comments, share links, the realtime WS
 // upgrade, and the change-log. The largest resource: every sub-path
-// under a diagram id lives here.
+// under a document id lives here.
 
 import type { Tab } from '@livediagram/document';
 import { isValidTab } from '@livediagram/document';
@@ -112,7 +112,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // Ownership guard (security): upsertDocumentMeta is INSERT ... ON
       // CONFLICT(id) DO UPDATE owner_id = excluded.owner_id, so a POST with an
       // id that already exists under a DIFFERENT owner would silently transfer
-      // ownership to the caller. Diagram ids are unguessable UUIDs but they
+      // ownership to the caller. Document ids are unguessable UUIDs but they
       // leak to every share-link visitor / team member, so refuse the create
       // when the id is already owned by someone else (legitimate updates go
       // through PUT, which gates on edit access).
@@ -142,15 +142,15 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       }
       // A seeded folder must be one of the caller's own personal folders, the
       // same scope rule PUT /folder applies. Anything else (a folder deleted
-      // since an offline diagram was filed in it, someone else's) lands the
-      // diagram in Unsorted rather than failing the create: this is how an
+      // since an offline document was filed in it, someone else's) lands the
+      // document in Unsorted rather than failing the create: this is how an
       // Offline Mode sync carries its placement (docs/specs/006-document/offline-mode.md).
       let folderId = typeof body.folderId === 'string' ? body.folderId : null;
       if (folderId !== null) {
         const folder = await getFolder(env, folderId);
         if (!folder || folder.teamId !== null || folder.ownerId !== owner) folderId = null;
       }
-      // A seeded tab whose id another diagram holds is created under a fresh
+      // A seeded tab whose id another document holds is created under a fresh
       // id, never upserted over it: that is how a synced-back offline copy of a
       // shared tab forks (docs/specs/006-document/offline-mode.md), and why a
       // create can't rewrite someone else's tab by naming its id.
@@ -166,7 +166,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           )
         : null;
       const now = Date.now();
-      // Diagram meta first so the FK in tabs can resolve.
+      // Document meta first so the FK in tabs can resolve.
       await upsertDocumentMeta(env, {
         id: body.id,
         ownerId: owner,
@@ -174,7 +174,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         shareable: body.shareable ?? false,
         shareCode: body.shareCode ?? null,
         folderId,
-        // Diagrams are always created personal; they move into a
+        // Documents are always created personal; they move into a
         // team library via PUT /folder afterwards (docs/specs/013-workspace/team-shared-documents.md).
         teamId: null,
         // Usually none. An Offline Mode sync carries the deck it built
@@ -183,13 +183,13 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           seeded?.presentation ??
           (typeof body.presentation === 'string' ? body.presentation : null),
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
-        // is accepted; anything else (or absent) is a user-made diagram.
+        // is accepted; anything else (or absent) is a user-made document.
         source: body.source === 'ai' || body.source === 'mcp' ? body.source : null,
         savedAt: now,
         createdAt: body.createdAt ?? now,
       });
       // Seed tabs if the caller provided them. The live app's
-      // welcome flow uses this when it commits a fresh diagram
+      // welcome flow uses this when it commits a fresh document
       // id — it ships the templated tab inline so the very
       // first per-tab fetch already has data.
       if (seeded) {
@@ -199,11 +199,11 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // docs/specs/013-workspace/timeline.md §4.2: only a GENUINE create earns a timeline event. A
       // POST that resolved to an existing row is the editor re-committing
       // an id it already owns, and "Diagram Created" twice for one
-      // diagram is a lie the feed can't walk back.
+      // document is a lie the feed can't walk back.
       if (liveDoc && !clash) {
         // A sync (docs/specs/006-document/offline-mode.md) is a POST like any other, so the editor declares it:
-        // undeclared, moving a diagram from this browser INTO the account was
-        // reported as a diagram being created for the first time.
+        // undeclared, moving a document from this browser INTO the account was
+        // reported as a document being created for the first time.
         const conversion = readDocumentConversion(request.headers.get(DOCUMENT_CONVERSION_HEADER));
         ctx.waitUntil?.(
           conversion === 'sync'
@@ -211,7 +211,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
             : recordDocumentCreated(env, liveDoc, owner),
         );
       }
-      // docs/specs/014-identity/transactional-email.md (#6): on a genuine create (no prior row), check for a diagram
+      // docs/specs/014-identity/transactional-email.md (#6): on a genuine create (no prior row), check for a document
       // milestone. Count + send run in the background, off the response path.
       if (emailEnabled(env) && !clash) {
         ctx.waitUntil?.(
@@ -227,9 +227,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     const id = segments[2]!;
     if (request.method === 'GET') {
       // Read access (docs/specs/013-workspace/team-shared-documents.md): the owner, a valid share-code visitor,
-      // OR a joined member of the diagram's team — the same gate the
+      // OR a joined member of the document's team — the same gate the
       // tab-content read below uses, so a team member can open a team
-      // diagram by raw id (not just via a share link). A miss returns
+      // document by raw id (not just via a share link). A miss returns
       // 404 (not 403) so a guessed UUID can't probe existence.
       const d = await getDocument(env, id);
       if (!d) return missingDocument(ctx, id);
@@ -249,9 +249,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     }
     if (request.method === 'PUT') {
       // Metadata-only PUT now that tabs live in their own table.
-      // Body: { name?, tabIds?, tabs? } — name renames the diagram;
+      // Body: { name?, tabIds?, tabs? } — name renames the document;
       // `tabs` (preferred, docs/specs/006-document/tab-folders.md) reorders AND sets each tab's
-      // per-diagram folder; `tabIds` is the legacy folder-less shape,
+      // per-document folder; `tabIds` is the legacy folder-less shape,
       // still accepted for older clients. All optional, at least one
       // must be present.
       const body = (await request.json()) as {
@@ -269,12 +269,12 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // Unknown id: 404. This PUT used to create-on-first-write (the legacy
       // localStorage-sync model), which let any stray meta write mint a
       // permanent zero-tab ghost row, e.g. a client path that missed the
-      // Offline Mode dispatch (docs/specs/006-document/offline-mode.md) writing an offline diagram's id to
-      // the server. Diagrams are only ever created via POST /documents now.
+      // Offline Mode dispatch (docs/specs/006-document/offline-mode.md) writing an offline document's id to
+      // the server. Documents are only ever created via POST /documents now.
       if (!existing) return missingDocument(ctx, id);
       const now = Date.now();
       const ownerId = existing.ownerId;
-      // Anyone with the diagram id could previously rewrite it.
+      // Anyone with the document id could previously rewrite it.
       // We now gate on canEditDocument so only the owner or an
       // edit-role share visitor can touch metadata.
       const allowed = await gateEdit(ctx, id, ownerId, existing.teamId);
@@ -319,7 +319,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       }
       const liveDoc = await getDocument(env, id);
       // A rename is not a timeline moment (docs/specs/013-workspace/timeline.md §4.2): the feed reads
-      // every diagram's CURRENT name instead, so older entries follow it.
+      // every document's CURRENT name instead, so older entries follow it.
       // Redacted like the GET: an edit-role share visitor passes gateEdit, and
       // a guest owner's id is a credential (see redact-document.ts).
       return json({ document: liveDoc ? redactDocumentForReader(liveDoc, owner) : liveDoc });
@@ -331,13 +331,13 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     }
   }
 
-  // /api/documents/<id>/copy — duplicate this diagram into the
+  // /api/documents/<id>/copy — duplicate this document into the
   // caller's own files. Accepted from (a) the owner — same as
   // any other "duplicate" path; (b) a visitor with an active
   // `shared_with` row for the source; (c) a visitor providing
   // a valid X-Share-Code for the source. Skips share_links /
   // change_log on the copy by design (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/012-collaboration/activity-and-audit.md) so
-  // the new diagram reads as the visitor's own clean workspace.
+  // the new document reads as the visitor's own clean workspace.
   if (segments.length === 4 && segments[3] === 'copy') {
     const id = segments[2]!;
     if (request.method === 'POST') {
@@ -346,7 +346,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       const source = await getDocument(env, id);
       if (!source) return missingDocument(ctx, id);
       // Authorisation: any of (a) owner, (b) holder of any
-      // share code (view or edit) for this diagram, (c)
+      // share code (view or edit) for this document, (c)
       // visitor with an active shared_with row for the source.
       // The owner + share-code legs are exactly canReadDocument
       // (view-role visitors can fork their own copy, so this
@@ -380,12 +380,12 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (!copy) return notFound();
       ctx.waitUntil?.(recordDocumentDuplicated(env, copy, source.name, owner));
       // A copy taken by someone who came in through a share link is news the
-      // owner wants: their shared diagram was worth forking.
+      // owner wants: their shared document was worth forking.
       //
       // Same gate as the visitor-open event, for the same reason: the copy
       // route's read check admits joined team members, who present no share
       // code, and telling an owner that a teammate duplicating a team-library
-      // diagram was "copied by a visitor" is simply untrue.
+      // document was "copied by a visitor" is simply untrue.
       if (owner !== source.ownerId && shareCodeOf(request) !== null) {
         ctx.waitUntil?.(
           getParticipant(env, owner).then((p) =>
@@ -405,7 +405,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   }
 
   // /api/documents/<id>/shared-tabs — what a delete leaves behind in other
-  // diagrams (docs/specs/006-document/tab-document-many-to-many.md).
+  // documents (docs/specs/006-document/tab-document-many-to-many.md).
   {
     const sharedTabsResp = await handleDocumentSharedTabs(ctx);
     if (sharedTabsResp) return sharedTabsResp;
@@ -415,8 +415,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   // gated exactly like GET /api/documents/<id>: the owner, a joined team
   // member, or a valid share-code visitor. A native <img> can't send
   // auth headers, so the live app fetches this with headers and wraps
-  // the bytes in a blob URL; a miss (no diagram, no read access, no R2
-  // binding, empty diagram) is a 404 the row turns into its icon.
+  // the bytes in a blob URL; a miss (no document, no read access, no R2
+  // binding, empty document) is a 404 the row turns into its icon.
   if (segments.length === 4 && segments[3] === 'thumbnail') {
     const id = segments[2]!;
     if (request.method === 'GET') {
@@ -434,7 +434,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         : await getDocumentThumbnailSvg(env, d, { defer: ctx.waitUntil });
       // Nothing drawn (or no snapshot store). Past the gate, so this says
       // nothing about access, and the URL carries `?v=<savedAt>`: the answer
-      // cannot change until the diagram does, so let the browser keep it
+      // cannot change until the document does, so let the browser keep it
       // instead of re-asking on every Explorer visit.
       if (svg == null) {
         return json(
@@ -443,7 +443,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         );
       }
       // The client cache-busts via a `?v=<savedAt>` query param, so a
-      // long private max-age is safe: a changed diagram changes the URL.
+      // long private max-age is safe: a changed document changes the URL.
       return svgImage(svg, 'private, max-age=86400');
     }
   }
@@ -474,7 +474,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // the same value a token / X-Owner-Id authenticates with, so a non-owner
       // edit collaborator must not be able to harvest it from the audit trail.
       // The owner still sees the real ids; display name / colour are untouched
-      // (mirrors redactCommentAuthorIds + the diagram-DTO ownerId redaction).
+      // (mirrors redactCommentAuthorIds + the document-DTO ownerId redaction).
       const isOwner = ctx.resolveOwner() === access.ownerId;
       const safe = isOwner ? entries : entries.map((e) => ({ ...e, participantId: '' }));
       return json({ entries: safe });
@@ -502,9 +502,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       const entry = parseChangeLogEntryBody(body);
       if (!entry) return badRequest('missing change_log fields');
       if (grant.tabScope !== null && entry.tabId !== grant.tabScope) return notFound();
-      // The entry's tab must belong to THIS diagram. The log is listed by
+      // The entry's tab must belong to THIS document. The log is listed by
       // joining through document_tabs, so an unchecked tab id let an editor of
-      // one diagram write rows into another diagram's activity panel. It is
+      // one document write rows into another document's activity panel. It is
       // also what turned a brand-new tab's first edit (logged before the
       // debounced autosave created the tab row) into a foreign-key 500: that
       // case now answers a 409 the editor retries.

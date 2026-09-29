@@ -30,7 +30,7 @@ describe('buildParticipantsByTab', () => {
     now: 1000,
   };
 
-  it('returns an empty map for a private (unshared) diagram', () => {
+  it('returns an empty map for a private (unshared) document', () => {
     const m = buildParticipantsByTab({
       ...common,
       documentShareable: false,
@@ -42,7 +42,7 @@ describe('buildParticipantsByTab', () => {
     expect(m.size).toBe(0);
   });
 
-  it('shows presence for a team diagram even when not shared (docs/specs/013-workspace/team-shared-documents.md)', () => {
+  it('shows presence for a team document even when not shared (docs/specs/013-workspace/team-shared-documents.md)', () => {
     const m = buildParticipantsByTab({
       ...common,
       documentShareable: false,

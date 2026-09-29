@@ -225,7 +225,7 @@ describe('parseStoredPresentation', () => {
     expect(parseStoredPresentation('{"nope":1}')).toBeNull();
   });
 
-  // A diagram whose deck is unreadable must still open, so bad slides are
+  // A document whose deck is unreadable must still open, so bad slides are
   // dropped one at a time rather than failing the whole payload.
   it('drops malformed slides and keeps the good ones', () => {
     const raw = JSON.stringify({

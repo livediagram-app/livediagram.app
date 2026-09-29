@@ -2,9 +2,9 @@
 
 // Who a comment can @-mention, and the notify that follows a mention
 // (docs/specs/012-collaboration/comment-mentions.md). The candidates are the members of the team whose library
-// holds this diagram, joined and invited, except yourself: the Assign Action
+// holds this document, joined and invited, except yourself: the Assign Action
 // picker's rule, for the same reason (a mention should reach someone who can
-// open the diagram). A personal diagram or a guest has none.
+// open the document). A personal document or a guest has none.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { assignHandles, type CommentMention } from '@livediagram/document';

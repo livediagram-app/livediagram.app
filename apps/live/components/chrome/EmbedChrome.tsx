@@ -2,7 +2,7 @@
 
 // The only chrome the read-only embed view renders (docs/specs/013-workspace/embeds.md): the
 // bottom-left "Open in livediagram" badge that links out to the full
-// share view, plus a tab switcher next to it (only when the diagram
+// share view, plus a tab switcher next to it (only when the document
 // has more than one tab). Bottom-left specifically because the
 // ZoomControls dock keeps bottom-right in embeds. Pointer events stop
 // here so clicks don't fall through to the canvas underneath.
@@ -11,7 +11,7 @@
 // tab; tapping it opens a dropdown ABOVE listing the tabs. A fixed-width
 // button (rather than a horizontal row of pills) keeps the chrome from
 // stretching across the canvas and colliding with the zoom dock when a
-// diagram has many tabs.
+// document has many tabs.
 
 import { useRef, useState } from 'react';
 import { MenuIcon, useClickOutside, useEscape, Glyph } from '@livediagram/ui';

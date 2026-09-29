@@ -2,14 +2,14 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
-  title: 'Working with Diagrams',
+  title: 'Working with Documents',
   description:
-    'Worked livediagram API examples: list, read, create, and update diagrams, tabs, and folders, and create a share link, all with curl.',
+    'Worked livediagram API examples: list, read, create, and update documents, tabs, and folders, and create a share link, all with curl.',
   path: '/help/developers/working-with-documents/',
 });
 
 <ArticleLayout
-  title="Working with Diagrams"
+  title="Working with Documents"
   description="Copy-pasteable examples for the calls you will reach for most."
   categoryTitle="Developers"
   categorySlug="developers"
@@ -23,9 +23,9 @@ export TOKEN=lvd_your_token_here
 
 Paths are relative to `https://livediagram.app/api`. For the exact request and response shapes of every field, see the [OpenAPI reference](/help/developers/api-overview/) at `/api/openapi.json`.
 
-## List your diagrams
+## List your documents
 
-A diagram **list** returns metadata only, not the tab contents:
+A document **list** returns metadata only, not the tab contents:
 
 ```bash
 curl https://livediagram.app/api/documents \
@@ -34,20 +34,20 @@ curl https://livediagram.app/api/documents \
 
 ```json
 {
-  "diagrams": [{ "id": "abc123", "name": "Service map", "folderId": null, "shareable": false }]
+  "documents": [{ "id": "abc123", "name": "Service map", "folderId": null, "shareable": false }]
 }
 ```
 
-## Read a diagram and a tab
+## Read a document and a tab
 
-Fetching one diagram returns its metadata and a list of **tab summaries**, but still not the elements on each tab:
+Fetching one document returns its metadata and a list of **tab summaries**, but still not the elements on each tab:
 
 ```bash
 curl https://livediagram.app/api/documents/abc123 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-To get the actual contents of a tab, request it by id. This keeps listing a big diagram cheap:
+To get the actual contents of a tab, request it by id. This keeps listing a big document cheap:
 
 ```bash
 curl https://livediagram.app/api/documents/abc123/tabs/tab-1 \
@@ -64,9 +64,9 @@ curl https://livediagram.app/api/documents/abc123/tabs/tab-1 \
 }
 ```
 
-## Create a diagram
+## Create a document
 
-`POST /documents` creates a diagram. You supply the `id` (any unique string), a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes:
+`POST /documents` creates a document. You supply the `id` (any unique string), a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes:
 
 ```bash
 curl -X POST https://livediagram.app/api/documents \
@@ -108,7 +108,7 @@ curl -X PUT https://livediagram.app/api/documents/svc-map/tabs/tab-1 \
 
 ## Organise into folders
 
-Create a folder, then move a diagram into it:
+Create a folder, then move a document into it:
 
 ```bash
 curl -X POST https://livediagram.app/api/folders \
@@ -120,7 +120,7 @@ curl -X PUT https://livediagram.app/api/documents/svc-map/folder \
   -d '{ "folderId": "infra" }'
 ```
 
-## Share a diagram
+## Share a document
 
 Create a share link with a role of `view` or `edit`:
 

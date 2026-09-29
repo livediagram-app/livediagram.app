@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { rowToShareLink, type ShareLinkRow } from './share-link-row';
 
 // rowToShareLink is read-side: every list / lookup of share links
-// for a diagram passes through it. The role column on D1 is typed
+// for a document passes through it. The role column on D1 is typed
 // as a free-form string, but the wire DTO + the client + the api
 // worker's own permission checks all branch on the narrow
 // 'edit' | 'view' union. A regression in the mapper's `=== 'view'`

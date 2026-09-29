@@ -8,10 +8,10 @@
 // because the voter id is derived from the authenticated caller rather than
 // claimed by them.
 //
-// The write itself happens in the diagram's ROOM, not here: a room voting in
+// The write itself happens in the document's ROOM, not here: a room voting in
 // the same second is forty read-modify-writes of one row, and worker requests
 // run in parallel isolates, so the only place they can be put in single file
-// is the one object every request for this diagram reaches. The room applies
+// is the one object every request for this document reaches. The room applies
 // them one at a time (with a compare-and-swap as a second line against the
 // editors' tab autosave) and broadcasts each result as a sequenced system op,
 // so every peer, and the sender, converges on exactly what D1 holds.
@@ -55,7 +55,7 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
   const action = parseQaAction(body.action);
   if (!action) return badRequest('invalid action');
 
-  // The audience's two verbs are open to anyone who can read the diagram;
+  // The audience's two verbs are open to anyone who can read the document;
   // running the board needs edit rights. The facilitator baton is a
   // client-side rule on top (docs/specs/012-collaboration/facilitator.md): this route can't see which socket
   // holds it.
@@ -74,7 +74,7 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
         )
       : null;
 
-  // Hand the write to the diagram's room, which runs board writes one at a
+  // Hand the write to the document's room, which runs board writes one at a
   // time and broadcasts each result in order (DocumentRoom.handleQaWrite).
   const stub = env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(id));
   const res = await stub.fetch('https://room/qa', {

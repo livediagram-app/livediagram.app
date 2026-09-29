@@ -1,6 +1,6 @@
-// Shared domain types for diagrams. Consumed by the live app's canvas today,
+// Shared domain types for documents. Consumed by the live app's canvas today,
 // and (later) by the persistence store, API workers, and any other code that
-// handles diagram data. See docs/specs/006-document/document-structure.md and
+// handles document data. See docs/specs/006-document/document-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
 
 // Live session-tool types used by the `Tab.timer` / `Tab.vote` fields
@@ -215,8 +215,8 @@ export {
 } from './canvas-colors';
 
 // Cross-tab link on any element. `tab` jumps to another tab on the same
-// diagram; `diagram` navigates to a different diagram entirely (with
-// the diagram's name cached on the element so the picker / badge can
+// document; `document` navigates to a different document entirely (with
+// the document's name cached on the element so the picker / badge can
 // show it without a round-trip). Element-specific linking
 // (jump-and-focus a specific element) is in the spec but not in the
 // UI yet.
@@ -312,11 +312,11 @@ export type Tab = {
   // buttons for as long as this tab is active. Toggled from the
   // tab ellipsis menu.
   locked?: boolean;
-  // Per-diagram folder name (docs/specs/006-document/tab-folders.md). Tabs sharing a name render
+  // Per-document folder name (docs/specs/006-document/tab-folders.md). Tabs sharing a name render
   // as a contiguous run under one collapsible chip in the tab bar.
   // This is link metadata, not body content: it's stripped from the
   // persisted tab body and carried on the document_tabs row alongside
-  // order_index, so a shared tab can be foldered in one diagram and
+  // order_index, so a shared tab can be foldered in one document and
   // loose in another. Unset / empty = loose. See tab-folders.ts for
   // the normalize + grouping helpers.
   folder?: string;
@@ -469,7 +469,7 @@ export * from './component-factories';
 export * from './table';
 
 // Runtime structural validation for Element + Tab (the trust-boundary guard
-// the API uses to vet incoming tabs / diagrams). See validate.ts.
+// the API uses to vet incoming tabs / documents). See validate.ts.
 export * from './validate';
 
 // Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md).
@@ -515,13 +515,13 @@ export * from './arrow-orthogonal';
 export * from './arrow-reciprocal';
 // Arrows breaking around intervening boxes at render time (docs/specs/008-canvas/arrow-route-behind.md).
 export * from './arrow-behind';
-// Tab + diagram name length cap (docs/specs/006-document/name-length.md).
+// Tab + document name length cap (docs/specs/006-document/name-length.md).
 export * from './names';
 export * from './geometry-snapping';
 export * from './arrow-snapping';
 export * from './geometry-guides';
 
-// Layer order + union bounds, and the load-time migration of diagrams saved
+// Layer order + union bounds, and the load-time migration of documents saved
 // while groups existed (docs/specs/009-elements/web-components-and-no-groups.md).
 export * from './layer-order';
 export * from './legacy-groups';

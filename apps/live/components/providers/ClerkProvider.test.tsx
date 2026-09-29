@@ -4,7 +4,7 @@
 // "settled" auth state (docs/specs/014-identity/auth-and-guest-access.md). The email-code sign-in
 // returns with a soft navigation, keeping this provider mounted; if the
 // bridge's last published guest state survived, the editor booted without
-// waiting for the guest-data migration and 404'd the diagram until a refresh.
+// waiting for the guest-data migration and 404'd the document until a refresh.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { useEffect } from 'react';

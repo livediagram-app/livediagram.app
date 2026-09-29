@@ -46,7 +46,7 @@ describe('remapElementRefs', () => {
 });
 
 describe('remapTabLinks', () => {
-  it('re-points tab and element links, keeps diagram and url links', () => {
+  it('re-points tab and element links, keeps document and url links', () => {
     const els: Element[] = [
       shape('a', { link: { kind: 'tab', tabId: 't1' } }),
       shape('b', { link: { kind: 'element', tabId: 't1', elementId: 'a' } }),

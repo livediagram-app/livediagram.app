@@ -474,7 +474,7 @@ test('?truth=1 arms the export from /new/, trailing slash and all', async ({
 }) => {
   const res = await page.goto('/new/?truth=1');
   expect(res?.status()).toBe(200);
-  await page.getByText('New Diagram', { exact: false }).first().waitFor();
+  await page.getByText('New Document', { exact: false }).first().waitFor();
   await expect.poll(() => page.evaluate(() => localStorage.getItem('livediagram:truth'))).toBe('1');
   expect(new URL(page.url()).search).toBe('?truth=1');
 

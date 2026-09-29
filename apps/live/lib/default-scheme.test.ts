@@ -3,10 +3,10 @@ import { createShape, type Tab } from '@livediagram/document';
 import { resetAppearanceForTests, setAppearance } from '@livediagram/ui';
 import { deriveNewBoxedColours, getTheme, resolveTabBackdrop, switchThemeBackdrop } from './themes';
 
-// The Default theme follows the VIEWER (docs/specs/007-editor/live-app.md): the diagram stores
+// The Default theme follows the VIEWER (docs/specs/007-editor/live-app.md): the document stores
 // one scheme, and light and dark chrome each render it their own way. Two
 // people on the same tab therefore see different canvases, on purpose — and
-// neither of them writes anything to the diagram by switching.
+// neither of them writes anything to the document by switching.
 //
 // Everything here is the live half of that: which definition `getTheme`
 // resolves, which backdrop the canvas paints, and the rule that keeps Default

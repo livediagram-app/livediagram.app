@@ -1,4 +1,4 @@
-// The Trash (docs/specs/013-workspace/trash.md): a deleted diagram keeps its
+// The Trash (docs/specs/013-workspace/trash.md): a deleted document keeps its
 // row with `trashed_at` stamped (migration 0051), stays restorable for 30
 // days, then the daily cron purges it through documentRemovalStatements.
 //
@@ -12,7 +12,7 @@ import { thumbnailKey } from './documents';
 import { documentsTimelineSweepStatement } from './timeline';
 
 // Ids per purge batch: one json_each list bound into three statements, so the
-// statement count is flat however many diagrams go. 100 ids is ~4 KB bound.
+// statement count is flat however many documents go. 100 ids is ~4 KB bound.
 export const TRASH_PURGE_BATCH = 100;
 // Batches per cron run: 20 x 100 = 2,000 purges a day, at ~4 D1 queries and
 // one R2 call per batch, far inside the 1,000-query invocation limit. A larger
@@ -27,7 +27,7 @@ export type TrashedDocumentMeta = {
   trashedAt: number;
 };
 
-// Move a live diagram to the Trash. False when there is no live diagram with
+// Move a live document to the Trash. False when there is no live document with
 // this id (missing, or already trashed: the first deletion time stands).
 export async function trashDocument(env: Env, id: string, now: number): Promise<boolean> {
   const res = await env.DB.prepare(
@@ -38,8 +38,8 @@ export async function trashDocument(env: Env, id: string, now: number): Promise<
   return res.meta.changes === 1;
 }
 
-// Bring a trashed diagram back. It returns to its folder when that folder
-// still exists in the diagram's scope (its owner's personal tree, or its
+// Bring a trashed document back. It returns to its folder when that folder
+// still exists in the document's scope (its owner's personal tree, or its
 // team's), else to Unsorted. False when it isn't in the Trash.
 export async function restoreDocument(env: Env, id: string): Promise<boolean> {
   const res = await env.DB.prepare(
@@ -59,7 +59,7 @@ export async function restoreDocument(env: Env, id: string): Promise<boolean> {
   return res.meta.changes === 1;
 }
 
-// The gate-only projection of a TRASHED diagram, for the doors that owe an
+// The gate-only projection of a TRASHED document, for the doors that owe an
 // authorised caller the deleted state rather than a not-found. Null for a
 // live or missing id.
 export async function getTrashedDocumentMeta(
@@ -154,8 +154,8 @@ export async function trashIdsFor(
   return (res.results ?? []).map((r) => r.id);
 }
 
-// Delete trashed diagrams for good: the diagram rows, the tabs no other
-// diagram holds (documentRemovalStatements), their Timeline events and their
+// Delete trashed documents for good: the document rows, the tabs no other
+// document holds (documentRemovalStatements), their Timeline events and their
 // cached snapshots. Only ever trashed ids: a live id in `ids` is skipped, so
 // no caller can purge past the Trash. Returns how many were purged.
 export async function purgeDocuments(env: Env, ids: string[]): Promise<number> {
@@ -179,7 +179,7 @@ export async function purgeDocuments(env: Env, ids: string[]): Promise<number> {
   return purged;
 }
 
-// The cron's sweep: purge every diagram trashed at least TRASH_RETENTION_MS
+// The cron's sweep: purge every document trashed at least TRASH_RETENTION_MS
 // ago, oldest first, at most maxBatches x batch per run.
 export async function purgeExpiredTrash(
   env: Env,

@@ -1,4 +1,4 @@
-// tabs — one row per tab, linked to diagrams through the
+// tabs — one row per tab, linked to documents through the
 // document_tabs many-to-many table (migration 0011 / docs/specs/006-document/tab-document-many-to-many.md).
 
 import { capElementActions, type Tab } from '@livediagram/document';
@@ -15,9 +15,9 @@ import {
 
 export async function getTab(env: Env, documentId: string, tabId: string): Promise<TabDTO | null> {
   // Resolve via the document_tabs link table (docs/specs/006-document/tab-document-many-to-many.md) so a
-  // linked tab surfaces from every diagram that contains it. The link
-  // also carries the per-diagram order_index, so the returned summary's
-  // position is correct for whichever diagram the caller asked about.
+  // linked tab surfaces from every document that contains it. The link
+  // also carries the per-document order_index, so the returned summary's
+  // position is correct for whichever document the caller asked about.
   const row = await env.DB.prepare(
     `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, dt.folder
        FROM tabs t
@@ -29,8 +29,8 @@ export async function getTab(env: Env, documentId: string, tabId: string): Promi
   return row ? rowToTab(row) : null;
 }
 
-// The raw `tabs.data` JSON for a diagram's first tab (lowest
-// order_index in the document_tabs link), or null when the diagram has
+// The raw `tabs.data` JSON for a document's first tab (lowest
+// order_index in the document_tabs link), or null when the document has
 // no tabs. Used by the SVG snapshot render-cache (docs/specs/006-document/document-snapshots.md), which needs
 // only the element body — never the full TabDTO hydration — so this
 // reads the single `data` column rather than going through getTab.
@@ -48,11 +48,11 @@ export async function getFirstTabData(env: Env, documentId: string): Promise<str
   return row?.data ?? null;
 }
 
-// The raw `tabs.data` JSON for a SPECIFIC tab in a diagram, or null when
-// that tab isn't part of the diagram. Resolved through the document_tabs
-// link (like getTab) so a tab id only renders for a diagram that
-// actually contains it — a share code for diagram A can never coax out
-// a tab that lives only in diagram B. Backs the per-tab live image
+// The raw `tabs.data` JSON for a SPECIFIC tab in a document, or null when
+// that tab isn't part of the document. Resolved through the document_tabs
+// link (like getTab) so a tab id only renders for a document that
+// actually contains it — a share code for document A can never coax out
+// a tab that lives only in document B. Backs the per-tab live image
 // (docs/specs/013-workspace/live-image-share.md); mirrors getFirstTabData but keyed by tab id instead of the
 // lowest order_index.
 export async function getTabData(
@@ -87,7 +87,7 @@ export async function upsertTab(
   const { id, name, ...rest } = tab;
   const data = JSON.stringify(rest);
   const now = Date.now();
-  // The body goes to `tabs`, this diagram's position to its `document_tabs`
+  // The body goes to `tabs`, this document's position to its `document_tabs`
   // link (docs/specs/006-document/tab-document-many-to-many.md). The two writes
   // are independent — even if the link upsert no-ops (existing entry)
   // the tab body still gets updated.
@@ -108,7 +108,7 @@ export async function upsertTab(
        VALUES (?, ?, ?, ?)
        ON CONFLICT (document_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
     ).bind(documentId, id, orderIndex, now),
-    // Bump the diagram's saved_at so the Explorer's "Updated X ago"
+    // Bump the document's saved_at so the Explorer's "Updated X ago"
     // line stays accurate. Pure metadata write — no element JSON.
     env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(now, documentId),
     // The collaboration index (docs/specs/013-workspace/activity-page.md §2.1): the tab's action + thread
@@ -121,7 +121,7 @@ export async function upsertTab(
   ]);
 }
 
-// Bulk-seed a fresh diagram's tabs in one batch (create path). The
+// Bulk-seed a fresh document's tabs in one batch (create path). The
 // per-tab upsertTab does three sequential writes each (tab body,
 // link row, and a redundant saved_at bump), so seeding K tabs that
 // way costs ~3K serial round trips. Here we collect every insert and
@@ -163,9 +163,9 @@ export async function seedTabs(env: Env, documentId: string, tabs: Tab[]): Promi
 }
 
 // Which of `tabIds` already name a tab that is NOT in `documentId`: a create
-// seeding one of those would write into a tab another diagram holds, so the
+// seeding one of those would write into a tab another document holds, so the
 // create re-mints it (docs/specs/006-document/offline-mode.md, "Shared tabs fork").
-// A tab already in this diagram is a retried create and keeps its id.
+// A tab already in this document is a retried create and keeps its id.
 export async function tabIdsHeldElsewhere(
   env: Env,
   documentId: string,
@@ -182,17 +182,17 @@ export async function tabIdsHeldElsewhere(
   return new Set((rows.results ?? []).map((r) => r.id));
 }
 
-// Remove the tab from this diagram (drops the `document_tabs` link
+// Remove the tab from this document (drops the `document_tabs` link
 // row). The underlying `tabs` row only goes away when no other
-// diagram still references it: linked tabs (per docs/specs/006-document/tab-document-many-to-many.md) survive
-// an unlink from one of their containing diagrams so the body
+// document still references it: linked tabs (per docs/specs/006-document/tab-document-many-to-many.md) survive
+// an unlink from one of their containing documents so the body
 // stays readable from the rest. Legacy single-link tabs end up
 // fully deleted, matching the prior contract.
 //
 // change_log entries follow the tabs row: they live on the tab id
 // (per #14 in docs/specs/006-document/tab-document-many-to-many.md), so they get dropped only when the tab
 // itself goes away. Cascading the log on every unlink would wipe
-// the audit panel for every other diagram that still surfaces the
+// the audit panel for every other document that still surfaces the
 // shared tab.
 export async function deleteTabRow(env: Env, documentId: string, tabId: string): Promise<void> {
   await env.DB.prepare('DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?')
@@ -211,11 +211,11 @@ export async function deleteTabRow(env: Env, documentId: string, tabId: string):
   }
 }
 
-// Link an existing tab into another diagram (docs/specs/006-document/tab-document-many-to-many.md). Inserts a
-// `document_tabs` row at the end of the target diagram's order,
+// Link an existing tab into another document (docs/specs/006-document/tab-document-many-to-many.md). Inserts a
+// `document_tabs` row at the end of the target document's order,
 // idempotent on conflict so re-linking the same pair returns 200
 // without double-counting. The `tabs` row itself is untouched: the
-// tab body lives in one place and edits propagate to every diagram
+// tab body lives in one place and edits propagate to every document
 // that references it. Returns true when a fresh link was created,
 // false when the link already existed (idempotent path).
 export async function linkTabToDocument(
@@ -250,9 +250,9 @@ export async function linkTabToDocument(
 }
 
 // The link endpoint's authorisation check in one query: is this tab
-// linked into at least one diagram owned by `ownerId`? Replaces the
-// old "list every containing diagram id, then getDocument() each in a
-// loop" pattern (N full diagram hydrations to read one column). The
+// linked into at least one document owned by `ownerId`? Replaces the
+// old "list every containing document id, then getDocument() each in a
+// loop" pattern (N full document hydrations to read one column). The
 // JOIN + LIMIT 1 stops at the first owned match.
 export async function tabLinkedToOwnedDocument(
   env: Env,
@@ -271,9 +271,9 @@ export async function tabLinkedToOwnedDocument(
   return row !== null;
 }
 
-// How many of this diagram's tabs are shared (also linked into another
-// diagram), and across how many other diagrams: what deleting or taking the
-// diagram offline leaves behind (docs/specs/006-document/tab-document-many-to-many.md,
+// How many of this document's tabs are shared (also linked into another
+// document), and across how many other documents: what deleting or taking the
+// document offline leaves behind (docs/specs/006-document/tab-document-many-to-many.md,
 // "Shared-tab notice").
 export async function sharedTabsSummary(env: Env, documentId: string): Promise<SharedTabsSummary> {
   const row = await env.DB.prepare(
@@ -287,10 +287,10 @@ export async function sharedTabsSummary(env: Env, documentId: string): Promise<S
   return { tabs: row?.tabs ?? 0, documents: row?.documents ?? 0 };
 }
 
-// Look up every diagram id that links the given tab. Used by the
+// Look up every document id that links the given tab. Used by the
 // link endpoint's auth check (caller must own at least one of
 // them) and would also drive a future "this tab is shared with N
-// diagrams" indicator.
+// documents" indicator.
 export async function documentsContainingTab(env: Env, tabId: string): Promise<string[]> {
   const rows = await env.DB.prepare('SELECT document_id FROM document_tabs WHERE tab_id = ?')
     .bind(tabId)
@@ -298,7 +298,7 @@ export async function documentsContainingTab(env: Env, tabId: string): Promise<s
   return (rows.results ?? []).map((r) => r.document_id);
 }
 
-// One position in a reorder request: the tab id plus its per-diagram
+// One position in a reorder request: the tab id plus its per-document
 // folder (docs/specs/006-document/tab-folders.md). Folder rides this path — never the per-tab content
 // PUT — so a content save can't clobber membership. `null`/omitted =
 // loose. A plain `string` is accepted for the legacy (pre-folder)
@@ -325,9 +325,9 @@ export async function reorderTabs(
   entries: ReorderEntry[],
 ): Promise<void> {
   const now = Date.now();
-  // Order and folder live on the link, per diagram
+  // Order and folder live on the link, per document
   // (docs/specs/006-document/tab-document-many-to-many.md): moving a tab here
-  // leaves its place in every other diagram, and its body, untouched.
+  // leaves its place in every other document, and its body, untouched.
   const batch = entries.map((entry, idx) => {
     const { id: tabId, folder } = normalizeReorderEntry(entry);
     return env.DB.prepare(

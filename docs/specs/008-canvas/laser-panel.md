@@ -31,7 +31,7 @@ It rides the existing op rather than a second one: the alternative (a separate l
 
 ## Persistence
 
-Device-local, in `localStorage` (`livediagram:v2:laser-config`), like the avatar costume and the panel layout: which pen suits you depends on your screen and the room you present in, not on the diagram. It is never sent to the api and never folded into the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
+Device-local, in `localStorage` (`livediagram:v2:laser-config`), like the avatar costume and the panel layout: which pen suits you depends on your screen and the room you present in, not on the document. It is never sent to the api and never folded into the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
 
 ## Telemetry
 
@@ -40,6 +40,6 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 ## Out of scope
 
 - A custom colour picker. The eight presets plus "your colour" cover the need; the panel is meant to be usable while someone is talking.
-- Persisting a pen per diagram or per team. It is a personal, per-device ergonomic choice.
+- Persisting a pen per document or per team. It is a personal, per-device ergonomic choice.
 - A laser that leaves permanent marks. That is the Pencil ([Canvas and palette](canvas-and-palette.md)) — the laser's whole nature is that it fades.
 - Pointer sounds, click-to-ping, or a "laser cursor" for peers who aren't presenting.

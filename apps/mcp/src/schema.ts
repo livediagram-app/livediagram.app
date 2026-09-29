@@ -6,7 +6,7 @@
 // make. It states that completeness as a fact about the tools rather than as a
 // rule for the caller: a description that tells a model how to behave, or steers
 // it away from other tools, is a connector-listing flag (docs/specs/015-api/mcp-server.md §4.15).
-// isValidTab in the diagram package stays the runtime guard, so
+// isValidTab in the document package stays the runtime guard, so
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
 import { GRAPH_LABEL_MAX } from './graph-input';
@@ -79,9 +79,9 @@ export function elementSchemaDoc(): string {
   return `# livediagram element schema
 
 A tab is { name, elements: Element[] }. Every element needs a unique string "id".
-A diagram has one or more tabs, each its own canvas. create_document makes a
-diagram with one or more tabs at once; add_tab appends another tab to an existing
-diagram (e.g. an overview tab, then a detail tab zooming into one subsystem).
+A document has one or more tabs, each its own canvas. create_document makes a
+document with one or more tabs at once; add_tab appends another tab to an existing
+document (e.g. an overview tab, then a detail tab zooming into one subsystem).
 
 ## Element types
 ${types}
@@ -161,7 +161,7 @@ tabs in a create_document call.
 // resources (docs/specs/015-api/mcp-server.md §4.5). Phrased as facts about the server (what it does
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
-export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livediagram diagrams.
+export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livediagram documents.
 The calling model produces the diagram elements AND decides their layout; this
 server validates, persists, and renders them, and only auto-arranges the graph
 when you ask it to (or leave nodes unplaced). The full element format is
@@ -330,16 +330,16 @@ const mermaidField = z
   );
 
 export const findDocumentsShape = {
-  query: z.string().optional().describe('Only diagrams whose name contains this text.'),
+  query: z.string().optional().describe('Only documents whose name contains this text.'),
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),
 };
 
 export const readDocumentShape = {
-  documentId: z.string().describe('The diagram id (from find_documents).'),
+  documentId: z.string().describe('The document id (from find_documents).'),
   tabId: z.string().optional().describe('Which tab to read; defaults to the first.'),
 };
 
-// A diagram or tab name (docs/specs/006-document/name-length.md). Shortened with
+// A document or tab name (docs/specs/006-document/name-length.md). Shortened with
 // the same truncateName the api worker applies, so the name a tool reports back
 // is the one stored; the cap is stated for the model in the description.
 const nameField = (what: string, schema: z.ZodString = z.string()) =>
@@ -359,7 +359,7 @@ const tabShape = z.object({
 });
 
 export const createDocumentShape = {
-  name: nameField('Name for the new diagram.'),
+  name: nameField('Name for the new document.'),
   // `tabs` is preferred; `tab` is accepted as an alias for a single tab so a
   // client with a stale cached schema (or one that just sends `tab`) still works
   // — provide one or the other.
@@ -370,7 +370,7 @@ export const createDocumentShape = {
     .optional()
     .describe(
       'One or more tabs, each its own canvas. Preferred — pass several to create a multi-tab ' +
-        'diagram in one call (e.g. an overview tab plus a detail tab per subsystem).',
+        'document in one call (e.g. an overview tab plus a detail tab per subsystem).',
     ),
   tab: tabShape.optional().describe('A single tab — accepted as an alias for tabs: [tab].'),
   layout: layoutField,
@@ -380,7 +380,7 @@ export const createDocumentShape = {
 export const addTabShape = {
   documentId: z
     .string()
-    .describe('The diagram to add a tab to (from find_documents / read_document).'),
+    .describe('The document to add a tab to (from find_documents / read_document).'),
   name: nameField('Name of the new tab.'),
   graph: graphField,
   mermaid: mermaidField,
@@ -391,7 +391,7 @@ export const addTabShape = {
 };
 
 export const updateDocumentShape = {
-  documentId: z.string().describe('The diagram to edit (from find_documents / read_document).'),
+  documentId: z.string().describe('The document to edit (from find_documents / read_document).'),
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
   mode: z.enum(['replace', 'ops']).describe('"replace" the whole tab, or apply granular "ops".'),
   graph: graphField,
@@ -424,7 +424,7 @@ export const updateDocumentShape = {
 };
 
 export const shareDocumentShape = {
-  documentId: z.string().describe('The diagram to share (from find_documents / read_document).'),
+  documentId: z.string().describe('The document to share (from find_documents / read_document).'),
   role: z
     .enum(['view', 'edit'])
     .optional()
@@ -440,30 +440,30 @@ export const shareDocumentShape = {
 };
 
 export const deleteDocumentShape = {
-  documentId: z.string().describe('The diagram to delete (from find_documents / read_document).'),
+  documentId: z.string().describe('The document to delete (from find_documents / read_document).'),
   tabId: z
     .string()
     .optional()
     .describe(
-      'Delete only this ONE tab instead of the whole diagram. A diagram must keep at ' +
+      'Delete only this ONE tab instead of the whole document. A document must keep at ' +
         'least one tab, so deleting the last remaining tab is refused. A tab is deleted ' +
         'outright; it does not go to the Trash.',
     ),
 };
 
-// The Trash (docs/specs/013-workspace/trash.md): restore one diagram by id.
+// The Trash (docs/specs/013-workspace/trash.md): restore one document by id.
 export const restoreDocumentShape = {
-  documentId: z.string().describe('The diagram to restore (from list_trash).'),
+  documentId: z.string().describe('The document to restore (from list_trash).'),
 };
 
 // Listing the Trash takes no arguments: it is everything the user may restore.
 export const listTrashShape = {};
 
 export const renameDocumentShape = {
-  documentId: z.string().describe('The diagram to rename (from find_documents / read_document).'),
+  documentId: z.string().describe('The document to rename (from find_documents / read_document).'),
   name: nameField('The new name.', z.string().min(1)),
   tabId: z
     .string()
     .optional()
-    .describe('Rename this tab within the diagram instead of the diagram itself.'),
+    .describe('Rename this tab within the document instead of the document itself.'),
 };

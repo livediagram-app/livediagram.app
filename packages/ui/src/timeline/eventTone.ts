@@ -2,7 +2,7 @@
 //
 // Colour keys on what happened, not on which part of the product it
 // happened in. A reader scanning a busy day is asking "is any of this
-// alarming?" long before they ask "was that a diagram or a team", and
+// alarming?" long before they ask "was that a document or a team", and
 // only the first question has a useful colour answer. Source type is
 // still how the filter chips slice the feed — that's a different axis,
 // and it's the one you'd use to hide a whole area.
@@ -45,7 +45,7 @@ const TONE_BY_EVENT: Record<KnownTimelineEventType, TimelineTone> = {
   // ---- structural ----
   // The shape of things changed. Nothing was lost, but something a
   // reader might rely on is no longer where or what it was: a name, who
-  // is in a team, who can reach a diagram.
+  // is in a team, who can reach a document.
   document_renamed: 'structural',
   document_moved: 'structural',
   document_offline: 'structural',

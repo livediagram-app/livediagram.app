@@ -19,11 +19,11 @@ import { SearchResultIcon } from './search-panel-icons';
 // Global search panel: triggered from a footer button, blurs the
 // canvas behind it, pops up near the top-centre. The scope is
 // contextual (docs/specs/008-canvas/canvas-and-palette.md "Search panel"):
-//   - Always: diagrams (user's list) + folders.
-//   - When supplied: "Shared with you" diagrams + teams (docs/specs/013-workspace/teams.md).
-//   - When inside a diagram: also tabs + elements on the current
-//     diagram (table text matches by cell).
-// Selection navigates to the right surface (open the diagram /
+//   - Always: documents (user's list) + folders.
+//   - When supplied: "Shared with you" documents + teams (docs/specs/013-workspace/teams.md).
+//   - When inside a document: also tabs + elements on the current
+//     document (table text matches by cell).
+// Selection navigates to the right surface (open the document /
 // switch tabs / select the element / jump to the team). Esc +
 // outside-click close; Enter on the first match picks it.
 
@@ -37,7 +37,7 @@ type SearchPanelTeamDocument = { id: string; name: string; teamId: string; teamN
 type SearchPanelProps = {
   documents: SearchPanelDocument[];
   folders: SearchPanelFolder[];
-  // Diagrams shared with the current owner. Optional so surfaces
+  // Documents shared with the current owner. Optional so surfaces
   // without the list (or guests with an empty one) can omit it.
   shared?: SearchPanelShared[];
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md). Optional: guests
@@ -46,20 +46,20 @@ type SearchPanelProps = {
   // Team-library folders (docs/specs/013-workspace/team-shared-documents.md), rendered in the Teams group with
   // an "in <team>" suffix. Optional: guests have none.
   teamFolders?: SearchPanelTeamFolder[];
-  // Team-library diagrams (docs/specs/013-workspace/team-shared-documents.md), also in the Teams group with an
+  // Team-library documents (docs/specs/013-workspace/team-shared-documents.md), also in the Teams group with an
   // "in <team>" suffix. Optional: guests have none.
   teamDocuments?: SearchPanelTeamDocument[];
-  // When the user is inside a diagram editor these provide the
+  // When the user is inside a document editor these provide the
   // tab + element scope. Omitted on routes (e.g. the dashboard)
-  // where only diagrams + folders should match.
+  // where only documents + folders should match.
   tabs?: Tab[];
   // Tab id where the element matches' active state should apply
   // (the current tab — so the user knows whether a hit is on
   // their current view).
   currentTabId?: string;
   onSelectDocument: (id: string) => void;
-  // Receives the diagram id AND its share code: a non-owner can only
-  // open the diagram on the visitor URL the code builds.
+  // Receives the document id AND its share code: a non-owner can only
+  // open the document on the visitor URL the code builds.
   onSelectShared?: (id: string, shareCode: string) => void;
   onSelectFolder?: (id: string) => void;
   onSelectTeam?: (id: string) => void;
@@ -272,8 +272,8 @@ export function SearchPanel({
             onKeyDown={handleInputKey}
             placeholder={
               tabs
-                ? 'Search diagrams, folders, teams, tabs, elements, help...'
-                : 'Search diagrams, folders, teams, help...'
+                ? 'Search documents, folders, teams, tabs, elements, help...'
+                : 'Search documents, folders, teams, help...'
             }
             className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400"
           />

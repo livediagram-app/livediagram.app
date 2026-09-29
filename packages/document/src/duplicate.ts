@@ -231,10 +231,10 @@ export function remapElementRefs<E extends Element>(
   });
 }
 
-// Re-point tab and element links after a whole diagram is copied with fresh
+// Re-point tab and element links after a whole document is copied with fresh
 // tab ids (old → new in `tabIdMap`), so the copy's internal navigation lands
-// on its own tabs instead of the source diagram's. Diagram and url links
-// leave the diagram, so they survive unchanged. Shared by the editor's
+// on its own tabs instead of the source document's. Document and url links
+// leave the document, so they survive unchanged. Shared by the editor's
 // Explorer duplicate and the api's copy route, which drifted apart when each
 // owned a copy of this walk: the api's copies kept pointing at the source.
 export function remapTabLinks<E extends Element>(

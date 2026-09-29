@@ -55,7 +55,7 @@ votable.
   `pointer-events-none` so it can't intercept the cast). Dimming alone tells
   you what _isn't_ a target; the ring answers "where do I click".
 - **Both only while casting is open.** After **End vote** the board returns to
-  normal, so the results walkthrough reads against the full diagram.
+  normal, so the results walkthrough reads against the full document.
 
 `votableInVote` is resolved **once** in `CanvasElementsLayer`, where the vote
 and the tab's layers are both in scope, and passed down — rather than threading

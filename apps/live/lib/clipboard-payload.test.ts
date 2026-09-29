@@ -40,7 +40,7 @@ describe('serialiseElements', () => {
     expect(env.schemaVersion).toBe(CLIPBOARD_SCHEMA_VERSION);
   });
 
-  // A copy can travel to another diagram, another account, another person.
+  // A copy can travel to another document, another account, another person.
   // Nothing that says WHO does anything should ride along.
   it('strips comment threads and per-participant responses', () => {
     const withIdentity = shape('a', {

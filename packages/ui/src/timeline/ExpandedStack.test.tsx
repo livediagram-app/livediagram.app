@@ -13,7 +13,7 @@ function event(id: string): TimelineEvent {
     sourceType: 'document',
     sourceId: id,
     eventType: 'document_renamed',
-    title: 'Diagram Renamed',
+    title: 'Document Renamed',
     description: null,
     occurredAt: 1_700_000_000_000,
     actorId: 'me',
