@@ -258,6 +258,18 @@ from a guest-only self-host, because the whole canvas / guest model stays fully
 available without an account ([Auth + guest access](../014-identity/auth-and-guest-access.md)). No new
 SaaS dependency beyond the optional Clerk that teams already need.
 
+### 3.8 Deprecated diagram routes
+
+The container was called a diagram before it became a document ([Document](../006-document/document.md)). The public routes moved from `/api/diagrams…` to `/api/documents…`; the old paths stay served until **30 April 2027** so scripts written against them keep working (`apps/api/src/legacy-documents-alias.ts`):
+
+- A request to `/api/diagrams…` is moved to the same path under `/api/documents…` before anything else runs, so authentication, the guest signature gate and rate limits apply to it exactly as to the current route.
+- The request body's keys `diagram`, `diagrams`, `diagramId`, `diagramName`, `diagramTeamId` and `diagramOwnerId` are renamed to their `document` forms; the response's keys are renamed back, at any depth. Values are never touched.
+- An old client's `X-Diagram-Conversion` header travels on as `X-Document-Conversion`.
+- Every aliased response carries `Deprecation: true`, `Sunset: Fri, 30 Apr 2027 00:00:00 GMT` and `Link: </api/documents>; rel="successor-version"`, and each call logs `[legacy-documents-alias] <method> <path>`, so the alias's remaining traffic is visible before it is removed.
+- A WebSocket upgrade on the old path passes through unchanged.
+
+After the sunset the alias module and this section go; `/api/diagrams…` then answers 404 like any unknown route.
+
 ## 4. `X-Owner-Id` trust change
 
 The bare header must stop being a usable credential — both for external callers

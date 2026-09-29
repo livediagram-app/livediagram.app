@@ -237,6 +237,21 @@ a before/after, a spatial relationship), not to every section; reference-only or
 purely conceptual sections stay text. Scenes are reused across articles wherever
 the same surface recurs rather than redrawn.
 
+## Renamed articles
+
+Six articles about the container moved when it became a document ([Document](../006-document/document.md)); each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
+
+| Old address                                        | New address                                         |
+| -------------------------------------------------- | --------------------------------------------------- |
+| `/help/tabs/add-to-diagram/`                       | `/help/tabs/add-to-document/`                       |
+| `/help/troubleshooting/diagram-not-loading/`       | `/help/troubleshooting/document-not-loading/`       |
+| `/help/collaboration/teams/team-shared-diagrams/`  | `/help/collaboration/teams/team-shared-documents/`  |
+| `/help/search-panel/the-search-panel/search-diagrams/` | `/help/search-panel/the-search-panel/search-documents/` |
+| `/help/getting-started/sharing-your-diagram/`      | `/help/getting-started/sharing-your-document/`      |
+| `/help/developers/working-with-diagrams/`          | `/help/developers/working-with-documents/`          |
+
+"Your First Diagram" and "Exporting Diagrams" keep their addresses: they are about drawing a diagram and getting the drawing out, not about the container.
+
 ## Header
 
 The help centre's header is the shared `SiteHeader` from `@livediagram/ui`, the same bar marketing and the telemetry dashboard render, so the three read as one product: Brand + the apps menu (keyed to Help) on the left, the article search (`SearchInput`) in the header's centre slot from `sm` up, and one primary **Start drawing** CTA (`/new`) on the right in place of marketing's Just Draw / Choose Template pair. It leaves the page-edge ShareRail off: the rail sits in the gutter beside a `max-w-6xl` page, and help's pages run `max-w-7xl`, so on an `xl` screen it would cover the article sidebar. It passes `wide`, which gives the bar help's own `max-w-7xl` / `md:px-8` column, so the logo lines up with the breadcrumb and article content below. The bar is a fixed 72px (`h-18`) at every breakpoint, which the sticky breadcrumb bar (`top-18`) and the article sidebar's sticky offset rely on.

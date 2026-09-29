@@ -5,6 +5,7 @@ import {
   type SetStateAction,
   useEffectEvent,
 } from 'react';
+import { documentIdFromPath } from '@/lib/legacy-editor-path';
 import type { Tab } from '@livediagram/document';
 import {
   apiListChangeLog,
@@ -194,11 +195,16 @@ export function useIdentityBootstrap(opts: {
     const initialUrl = new URL(window.location.href);
     // Clean routing (docs/specs/016-platform/router-app.md): the editor lives at `/document/<id>`, no
     // `/live` prefix. Match the id straight off the path.
-    const pathMatch = initialUrl.pathname.match(/\/document\/([^/?#]+)/);
-    const rawPathId = pathMatch ? pathMatch[1]! : null;
-    // `placeholder` is the static-export build artefact, not a real
-    // document id — ignore it so the IIFE doesn't try to fetch it.
-    const initialId = rawPathId && rawPathId !== 'placeholder' ? rawPathId : null;
+    // `placeholder` (the static-export build artefact) reads as no id. An old /diagram/<id>
+    // address can still arrive while a deploy rolls out; the bar is corrected to /document/<id>.
+    const { id: initialId, legacy } = documentIdFromPath(initialUrl.pathname);
+    if (initialId && legacy) {
+      window.history.replaceState(
+        null,
+        '',
+        `/document/${initialId}${initialUrl.search}${initialUrl.hash}`,
+      );
+    }
     const initialShareCode = initialUrl.searchParams.get('s');
     // No path id and no share code → the user landed on the placeholder
     // route directly. Hand off to /live/new for the welcome flow.

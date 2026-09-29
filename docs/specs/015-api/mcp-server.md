@@ -704,6 +704,16 @@ because several clients restrict a tool name to `[a-zA-Z0-9_-]`, and a rename
 would break every existing connection and the cross-references between tool
 descriptions.
 
+### 4.18 Deprecated tool names
+
+The tools named for the container were `*_diagram` / `find_diagrams` before it became a document ([Document](../006-document/document.md)). Each `*_document` tool is also registered under its old name until **30 April 2027** (`apps/mcp/src/legacy-tool-names.ts`, wired in `registerTool`):
+
+- The alias is the same tool: the same handler, input and output schemas and behaviour annotations.
+- Its title ends in "(deprecated)" and its description opens with "Deprecated: use `<new name>` instead; this name is removed on 2027-04-30.", so a model reading the tool list prefers the new name.
+- A call logs `[mcp] deprecated tool name <old> -> <new>` and counts as `Mcp·Used·<NewName>`, so the feature's history stays one line.
+
+The output literals that named the container changed with it: `renamed`, `deleted` and `restored` report `document` where they reported `diagram`.
+
 ## 5. Visualise — inline image render
 
 `read_document`, `create_document`, and `update_document` all return an **inline

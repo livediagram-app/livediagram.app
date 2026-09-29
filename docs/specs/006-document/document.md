@@ -47,3 +47,34 @@ Prose follows the context:
 - A document mirrored to Google Drive is a `.livediagram` file of MIME type
   `application/vnd.livediagram+json` ([Google Drive mirror](../022-drive-mirror/drive-mirror.md)):
   both name the app that opens the file, not what is inside it.
+
+## Renaming from diagram
+
+The container was called a diagram until the domain language settled on document. Everything
+that named it moved in one change:
+
+- **Code:** identifiers, files and packages (`@livediagram/document`, `apps/live/app/document/[id]`).
+- **Database:** migration `0055_documents.sql` renames `diagrams` → `documents`, `diagram_tabs` →
+  `document_tabs` and every `diagram_id` → `document_id`, keeps every foreign key and index, and
+  rewrites the stored values that named the container: timeline source, scope and event types,
+  titles and snapshot keys; element links to another document; the `notifyDiagramJoin`
+  preference; and the telemetry history, so the dashboard's lines continue. The tab kind
+  `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.
+- **Realtime:** the Durable Object class `DiagramRoom` is renamed to `DocumentRoom` by a
+  `renamed_classes` migration (tag `v2`), which keeps every room's storage; the room ops are
+  `document-meta` and `document-trashed`.
+- **Copies from elsewhere** are upgraded where they arrive: element links in exported files and
+  offline documents (`upgradeLegacyLinks`, run by `migrateStoredTab`), the browser's cached
+  preferences (`upgradeLegacyPreferences`), the offline store (moved to the `documents` object
+  store on the next visit), and stored names: a document still called "Untitled diagram" counts as
+  untitled, exactly as "Untitled document" does.
+- **Addresses people already have** keep working: `/diagram/<id>` and six help articles redirect
+  for good ([Router app](../016-platform/router-app.md#legacy-editor-route)); the public API's
+  `/api/diagrams…` routes and the MCP `*_diagram` tools stay as deprecated aliases until 30 April
+  2027 ([Public API and API tokens §3.8](../015-api/public-api-and-tokens.md#38-deprecated-diagram-routes),
+  [MCP server §4.18](../015-api/mcp-server.md#418-deprecated-tool-names)).
+- **An editor left open across the deploy** runs the old code, which has no hook to reload it: it
+  keeps saving and connecting through the aliases, but stops seeing live name and tab-list
+  changes from others until it reloads.
+
+Files that hold the old names on purpose are named `legacy-*`.

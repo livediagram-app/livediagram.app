@@ -80,6 +80,14 @@ who signs up keeps the settings they'd already chosen. Idempotent
 in the same shape as the existing migrations: a second call with
 the same `guestOwnerId` moves zero rows.
 
+### Renamed keys
+
+- **Renamed key.** `notifyDiagramJoin` became `notifyDocumentJoin` when the container became a
+  document. Migration 0055 renames it in D1; `upgradeLegacyPreferences`
+  (`packages/api-schema/src/legacy-preferences.ts`) renames it wherever an older copy can still
+  arrive: the browser's cache on read, the server's copy before the merge, and the api's
+  notification check. An opt-out is never lost; when both keys exist, the new one wins.
+
 ### Self-host degradation
 
 When the api worker is unset (pure-guest self-host without a D1

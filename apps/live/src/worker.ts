@@ -74,11 +74,11 @@ export default {
     if (url.pathname === '/explorer' || url.pathname === '/explorer/') {
       return Response.redirect(`${url.origin}/explorer/timeline`, 302);
     }
-    // `/document` and everything under it shares one HTML file. We
+    // `/document` (and its old name `/diagram`, see ../lib/legacy-editor-path) shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL
     // stays `/document/<id>` (that's the whole point of the path
     // scheme).
-    if (url.pathname === '/document' || url.pathname.startsWith('/document/')) {
+    if (isEditorPath(url.pathname)) {
       // Skip if the request already points at the placeholder asset
       // (otherwise we'd loop). Static Assets resolves the extension.
       if (url.pathname !== '/document/placeholder') {
@@ -92,3 +92,4 @@ export default {
     return withSecurityHeaders(await env.ASSETS.fetch(request), { frameable });
   },
 };
+import { isEditorPath } from '../lib/legacy-editor-path';

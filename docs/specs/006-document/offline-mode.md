@@ -40,6 +40,11 @@ have cloud documents and offline documents side by side.
 - The app keeps a small **local index** of offline document ids (also in
   IndexedDB) so the Explorer can list them and the persistence layer knows which
   ids resolve locally vs to the API.
+- **Store rename (version 2).** Offline documents were kept in the `diagrams` object store until
+  the container became a document ([Document](document.md#renaming-from-diagram)). Opening
+  version 2 of `livediagram-offline` moves every record into `documents` inside the upgrade
+  transaction, then drops the old store, logging how many moved
+  (`apps/live/lib/offline/legacy-offline-store.ts`).
 - **Durability honesty (important).** An offline document has **no backup**:
   clearing site data, some private-browsing sessions, and browser
   storage-pressure eviction can delete it. We request

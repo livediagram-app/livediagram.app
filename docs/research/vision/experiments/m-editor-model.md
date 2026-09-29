@@ -111,10 +111,10 @@ same notes with grain (the hybrid, every note). The review-flow tests in
 Built with `next build` (Turbopack), the pages' initial chunks before (commit
 `7eeb87fc`) and after:
 
-| page            | before (raw / gzip) | after (raw / gzip) | TensorFlow.js in them |
-| --------------- | ------------------- | ------------------ | --------------------- |
+| page             | before (raw / gzip) | after (raw / gzip) | TensorFlow.js in them |
+| ---------------- | ------------------- | ------------------ | --------------------- |
 | `/document/[id]` | 2161.1 / 637.2 KB   | 2164.3 / 638.3 KB  | none                  |
-| `/new`          | 2375.2 / 698.9 KB   | 2378.3 / 700.0 KB  | none                  |
+| `/new`           | 2375.2 / 698.9 KB   | 2378.3 / 700.0 KB  | none                  |
 
 (The TensorFlow.js markers searched for: `WEBGPU_DEFERRED_SUBMIT_BATCH_SIZE`,
 `WASM_HAS_MULTITHREAD_SUPPORT`, `CHECK_COMPUTATION_FOR_ERRORS`, `LayersModel`.)
