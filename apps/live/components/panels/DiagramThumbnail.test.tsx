@@ -3,7 +3,7 @@
 // A diagram's snapshot thumbnail (docs/specs/006-diagram/diagram-snapshots.md): fetched once in view,
 // shown when it lands, and a new version never shows the previous one's (revoked) image.
 
-import { act, cleanup, render } from '@testing-library/react';
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DiagramThumbnail } from './DiagramThumbnail';
 import { resetThumbnailCache } from '@/lib/thumbnail-cache';
@@ -68,11 +68,24 @@ describe('DiagramThumbnail', () => {
     expect(container.textContent).not.toBe('');
   });
 
-  it('draws the loader until the snapshot lands, then drops it', async () => {
-    render(thumb(1));
-    expect(loader()).not.toBeNull();
-    await act(async () => pending[0]!({ url: 'blob:one', backgroundColor: null }));
-    expect(loader()).toBeNull();
+  it('crossfades from the loader once the snapshot has decoded, then drops the loader', async () => {
+    vi.useFakeTimers();
+    try {
+      render(thumb(1));
+      expect(loader()).not.toBeNull();
+      await act(async () => pending[0]!({ url: 'blob:one', backgroundColor: null }));
+      // Fetched but not yet decoded: the picture waits, invisible, behind
+      // the loader, so there is never a blank frame between the two.
+      expect(img()?.className).toContain('opacity-0');
+      expect(loader()).not.toBeNull();
+      fireEvent.load(img()!);
+      expect(img()?.className).toContain('opacity-100');
+      expect(loader()).not.toBeNull();
+      act(() => vi.advanceTimersByTime(250));
+      expect(loader()).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('shows the still placeholder, not the loader, for a diagram with no snapshot', async () => {
@@ -88,6 +101,8 @@ describe('DiagramThumbnail', () => {
     first.unmount();
     render(thumb(1));
     expect(img()?.getAttribute('src')).toBe('blob:one');
+    // No crossfade from a loader that was never needed.
+    expect(img()?.className).toContain('opacity-100');
     expect(loader()).toBeNull();
     expect(pending).toHaveLength(1);
   });

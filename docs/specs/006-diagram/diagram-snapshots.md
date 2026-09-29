@@ -91,10 +91,18 @@ diagram renders lazily.
   on eviction.
 - While the snapshot is on its way the box shows the **loader**: the
   placeholder's three-node sketch drawing itself in the placeholder's own
-  slate, so it never reads as a real preview. Each card starts at a point
-  in the cycle derived from its diagram id, so a loading grid ripples
-  rather than pulsing in step. Under reduced motion it is the finished
-  sketch, still. The snapshot fades in over it; the box never changes
+  slate, so it never reads as a real preview. On a 5.4s loop the first
+  node traces, then a small spinner appears and turns inside it, the
+  connectors grow and their arrowheads land, the other two nodes trace, a
+  dot runs down each connector, and the sketch fades to start over. Each
+  card starts at a point in the loop derived from its diagram id, so a
+  loading grid ripples rather than pulsing in step. Under reduced motion
+  it is the finished sketch, still.
+- Loader to snapshot is a **crossfade**, never a cut: the image stays
+  hidden until the browser has decoded it, then fades and settles in
+  (`duration-long`) while the loader fades out, and the box eases into the
+  diagram's background colour. A snapshot already cached when the
+  thumbnail mounts paints at once, with no loader. The box never changes
   size.
 - Degrades gracefully: no R2 binding, no access, or an empty diagram →
   404 → the row shows the still, dashed sketch, captioned "Nothing drawn

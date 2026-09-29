@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import {
   loadThumbnail,
   peekThumbnail,
@@ -80,6 +81,28 @@ export function DiagramThumbnail({
   const state: State =
     loaded?.key === fetchKey ? loaded : (ownerId && peekThumbnail(fetchKey)) || IDLE;
 
+  // Loader to picture is a crossfade, not a cut. The <img> stays invisible
+  // until the browser has DECODED it (onLoad), so there is never a blank
+  // frame between the two; then the picture fades and settles in while the
+  // loader fades out, and the loader unmounts once the fade is over. A
+  // snapshot already in the cache when this thumbnail mounted (a view
+  // switch, a folder) skips all of that and paints at once.
+  const [instantKey] = useState(() =>
+    ownerId && peekThumbnail(fetchKey)?.status === 'ready' ? fetchKey : null,
+  );
+  const [decodedKey, setDecodedKey] = useState<string | null>(null);
+  const [settledKey, setSettledKey] = useState<string | null>(null);
+  const instant = instantKey === fetchKey;
+  const shown = state.status === 'ready' && (instant || decodedKey === fetchKey);
+  const settled = shown && (instant || settledKey === fetchKey);
+  useEffect(() => {
+    if (!shown || settled) return;
+    // A timer rather than transitionend: under reduced motion transitions
+    // collapse to 0s and never fire it.
+    const timer = setTimeout(() => setSettledKey(fetchKey), MOTION_MS.long);
+    return () => clearTimeout(timer);
+  }, [shown, settled, fetchKey]);
+
   // Defer the fetch until the row/card is near the viewport.
   useEffect(() => {
     const el = ref.current;
@@ -132,34 +155,51 @@ export function DiagramThumbnail({
       ref={ref}
       aria-hidden
       // Paint the box in the diagram's own background colour once the
-      // snapshot loads, so the object-contain letterbox blends into the
+      // snapshot shows, so the object-contain letterbox blends into the
       // preview instead of clashing with a generic slate fill (docs/specs/006-diagram/diagram-snapshots.md).
+      // Eased in with the picture rather than switched under the loader.
       style={
-        state.status === 'ready' && state.backgroundColor
+        shown && state.status === 'ready' && state.backgroundColor
           ? { backgroundColor: state.backgroundColor }
           : undefined
       }
       // `@container`, so the placeholder can decide by its OWN width
       // whether there is room for a caption: a card preview gets the
       // words, a row thumb gets the sketch alone.
-      className={`@container flex shrink-0 items-center justify-center overflow-hidden text-slate-400 ${className}`}
+      className={`@container relative flex shrink-0 items-center justify-center overflow-hidden text-slate-400 ${
+        instant ? '' : 'transition-colors duration-long ease-out'
+      } ${className}`}
     >
       {state.status === 'ready' ? (
         // A blob URL, not a remote asset, so a plain <img> is correct
         // here (next/image can't load object URLs) — same as the canvas
         // ImageElementView.
-        //
-        // Fades in over the loader's box rather than cutting to it.
-        <img src={state.src} alt="" className="h-full w-full animate-fade-in object-contain" />
-      ) : state.status === 'broken' ? (
+        <img
+          src={state.src}
+          alt=""
+          onLoad={() => setDecodedKey(fetchKey)}
+          className={`absolute inset-0 h-full w-full object-contain ${
+            instant ? '' : 'transition duration-long ease-out'
+          } ${shown ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
+        />
+      ) : null}
+      {state.status === 'broken' ? (
         // The api saying there is no snapshot, which for a diagram you can
         // open means it has nothing drawn on it yet; the caption says so,
         // because a bare sketch in a big preview box reads as a broken image.
         <BlankCanvasIllustration />
-      ) : (
+      ) : settled ? null : (
         // Idle / loading: the picture is still coming, so the sketch draws
         // itself rather than sitting there looking like an empty diagram.
-        <ThumbnailLoader seed={diagramId} />
+        // Stays mounted through the crossfade, fading out as the picture
+        // fades in.
+        <span
+          className={`flex h-full items-center justify-center transition-opacity duration-long ease-out ${
+            shown ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <ThumbnailLoader seed={diagramId} />
+        </span>
       )}
     </span>
   );

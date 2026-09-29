@@ -12,6 +12,9 @@
  *   58-80%  a dot runs down each connector
  *   84-94%  the sketch fades, and the cycle starts over
  *
+ *   16-20%  a spinner fades in inside the first node, then turns on its
+ *           own 0.9s loop until the cycle fades
+ *
  * Each line is hidden until its trace starts: an undrawn line's round caps
  * would otherwise leave a dot where it begins.
  *
@@ -54,6 +57,18 @@
     infinite;
 }
 
+/* The spinner in the first node. The group follows the cycle, so it only
+   appears once that node has traced; the arc inside turns on its own quick
+   loop, so it keeps spinning while the sketch draws, holds and fades. */
+.lvd-thumb-spinner {
+  animation: lvd-thumb-spinner 5.4s linear var(--lvd-thumb-phase, 0s) infinite;
+}
+.lvd-thumb-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lvd-thumb-spin 0.9s linear infinite;
+}
+
 /* The flow dots ride the connectors' own curves. Hidden unless the browser
    can move them along a path, so an older engine never strands one at the
    sketch's origin. */
@@ -73,6 +88,21 @@
   }
 }
 
+@keyframes lvd-thumb-spinner {
+  0%,
+  16% {
+    opacity: 0;
+  }
+  20%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes lvd-thumb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 @keyframes lvd-thumb-cycle {
   0%,
   84% {

@@ -5,6 +5,7 @@ import type { CSSProperties } from 'react';
 // itself. The first node traces, two connectors grow out of it, their
 // arrowheads land, the other two nodes trace, then a dot runs down each
 // connector and the sketch fades out to start over (`thumbnail-loader.css`).
+// Once the first node has traced, a small spinner turns inside it.
 //
 // Same geometry and colour as BlankCanvasIllustration, so a card never
 // changes size or tone when the picture arrives and a half-drawn sketch
@@ -36,6 +37,21 @@ export function ThumbnailLoader({ seed }: { seed: string }) {
       >
         <g className="lvd-thumb-cycle">
           <rect className="lvd-thumb-a" x="4" y="14" width="18" height="12" rx="3" pathLength="1" />
+          {/* A spinner inside the first node, appearing once that node has
+              traced: a faint track and an arc, turning on its own quick
+              loop independent of the drawing cycle. */}
+          <g className="lvd-thumb-spinner">
+            <circle cx="13" cy="20" r="3" strokeWidth="1.2" opacity="0.35" />
+            <circle
+              className="lvd-thumb-spin"
+              cx="13"
+              cy="20"
+              r="3"
+              strokeWidth="1.2"
+              pathLength="1"
+              strokeDasharray="0.3 0.7"
+            />
+          </g>
           <path className="lvd-thumb-link" d="M22 20c8 0 10-11 18-11" pathLength="1" />
           <path className="lvd-thumb-link" d="M22 20c8 0 10 11 18 11" pathLength="1" />
           <path className="lvd-thumb-head" d="M37 6.5l3 2.5-3 2.5" />
