@@ -20,7 +20,8 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "clean": "turbo run clean && rm -rf node_modules",
     "icons:vendor": "pnpm --filter @livediagram/icons vendor:lucide",
-    "icons:sheet": "pnpm --filter @livediagram/live icons:sheet"
+    "icons:sheet": "pnpm --filter @livediagram/live icons:sheet",
+    "icons:brand": "pnpm --filter @livediagram/live icons:brand"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",

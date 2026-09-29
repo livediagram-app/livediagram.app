@@ -13,7 +13,8 @@
     "test:e2e": "playwright test --project=chromium",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next .next-dev .next-analyze out node_modules .turbo coverage",
-    "icons:sheet": "vitest run --config scripts/icon-sheet/vitest.config.ts && node scripts/icon-sheet/shoot.mjs"
+    "icons:sheet": "vitest run --config scripts/icon-sheet/vitest.config.ts && node scripts/icon-sheet/shoot.mjs",
+    "icons:brand": "node scripts/brand-icons/render.mjs"
   },
   "dependencies": {
     "@clerk/react": "^6.17.0",
