@@ -1,14 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import type { Env } from './env';
-// The resvg WASM renderer cannot load in plain node (see tools.test.ts).
+// The resvg WASM renderer cannot load in plain node (see tools.test.ts). The
+// stub keeps the structured result the SDK validates
+// (docs/specs/015-api/mcp-server.md §4.17).
 vi.mock('./image-result', () => ({
-  imageResult: (value: unknown) => ({ content: [{ type: 'text', text: JSON.stringify(value) }] }),
+  imageResult: (value: Record<string, unknown>) => ({
+    content: [{ type: 'text', text: JSON.stringify(value) }],
+    structuredContent: value,
+  }),
 }));
 
-import { registerTools } from './tools';
+import { connectTestClient } from './mcp-test-client';
 
 // The name cap end to end through the real MCP SDK (docs/specs/006-diagram/name-length.md):
 // a client lists the tools and calls them over a transport, so the SDK's own
@@ -20,34 +21,16 @@ const CAPPED = 'Quarterly platform migration plan for the payments team…';
 
 async function connect() {
   const sent: { method: string; path: string; body: Record<string, unknown> | null }[] = [];
-  const env = {
-    API: {
-      fetch: async (request: Request) => {
-        const path = new URL(request.url).pathname.replace(/^\/api/, '');
-        const text = await request.text();
-        sent.push({ method: request.method, path, body: text ? JSON.parse(text) : null });
-        if (/\/tabs\/[^/]+$/.test(path) && request.method === 'GET') {
-          return Response.json({ tab: { id: 't1', name: 'Tab', elements: [] } });
-        }
-        if (/\/tabs\/[^/]+$/.test(path)) return Response.json({ tab: { id: 't1' } });
-        return Response.json({ diagram: { id: 'd1', name: CAPPED, tabs: [{ id: 't1' }] } });
-      },
-    },
-  } as unknown as Env;
-  const server = new McpServer({ name: 'test', version: '0.0.0' });
-  registerTools(server, env);
-  const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-  // Every client message carries a bearer token, the shape the worker's auth
-  // layer hands the SDK, so requireToken passes.
-  const send = clientSide.send.bind(clientSide);
-  clientSide.send = (message, options) =>
-    send(message, {
-      ...options,
-      authInfo: { token: 'lvd_test', clientId: 'test-client', scopes: [] },
-    });
-  await server.connect(serverSide);
-  const client = new Client({ name: 'test-client', version: '0.0.0' });
-  await client.connect(clientSide);
+  const client = await connectTestClient(async (request) => {
+    const path = new URL(request.url).pathname.replace(/^\/api/, '');
+    const text = await request.text();
+    sent.push({ method: request.method, path, body: text ? JSON.parse(text) : null });
+    if (/\/tabs\/[^/]+$/.test(path) && request.method === 'GET') {
+      return Response.json({ tab: { id: 't1', name: 'Tab', elements: [] } });
+    }
+    if (/\/tabs\/[^/]+$/.test(path)) return Response.json({ tab: { id: 't1' } });
+    return Response.json({ diagram: { id: 'd1', name: CAPPED, tabs: [{ id: 't1' }] } });
+  });
   return { client, sent };
 }
 

@@ -391,7 +391,7 @@ export const addTabShape = {
 };
 
 export const updateDiagramShape = {
-  diagramId: z.string(),
+  diagramId: z.string().describe('The diagram to edit (from find_diagrams / read_diagram).'),
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
   mode: z.enum(['replace', 'ops']).describe('"replace" the whole tab, or apply granular "ops".'),
   graph: graphField,
@@ -403,9 +403,20 @@ export const updateDiagramShape = {
   ops: z
     .array(
       z.object({
-        op: z.enum(['add', 'update', 'remove']),
-        element: z.record(z.string(), z.unknown()).optional(),
-        elementId: z.string().optional(),
+        op: z
+          .enum(['add', 'update', 'remove'])
+          .describe('"add" a new element, "update" fields of an existing one, or "remove" one.'),
+        element: z
+          .record(z.string(), z.unknown())
+          .optional()
+          .describe(
+            'add: the full new element, with a unique id. update: only the fields to change, ' +
+              'merged over the existing element. Not used by remove. Same format as "elements".',
+          ),
+        elementId: z
+          .string()
+          .optional()
+          .describe('update / remove: the id of the existing element to change.'),
       }),
     )
     .optional()
