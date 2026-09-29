@@ -4,12 +4,12 @@ import { getNotificationPrefs } from './notification-prefs';
 
 // Minimal D1 stub: getNotificationPrefs does a single prepare().bind().first(),
 // so we only need that chain to hand back the row we want to test parsing for.
-function envWithPrefsRow(prefs: string | null): Env {
+function envWithPrefsRow(prefs: string): Env {
   return {
     DB: {
       prepare: () => ({
         bind: () => ({
-          first: async () => (prefs === null ? null : { prefs }),
+          first: async () => ({ prefs }),
         }),
       }),
     },
