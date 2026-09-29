@@ -300,13 +300,13 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     run: h.renameTab,
   });
   out.push({
-    id: 'rename-diagram',
+    id: 'rename-document',
     name: 'Rename document',
     keywords: 'rename document diagram title name relabel',
     run: h.renameDocument,
   });
   out.push({
-    id: 'delete-diagram',
+    id: 'delete-document',
     name: 'Delete document',
     keywords: 'delete document diagram remove trash destroy',
     run: h.deleteDocument,

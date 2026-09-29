@@ -93,7 +93,7 @@ simple = { limit = 120, period = 60 }
 
 # Durable Object for per-document realtime (presence + broadcast). One
 # instance per document id; clients connect via WebSocket through the
-# `/api/diagrams/<id>/ws` endpoint.
+# `/api/documents/<id>/ws` endpoint.
 [[durable_objects.bindings]]
 name = "DOCUMENT_ROOM"
 class_name = "DocumentRoom"

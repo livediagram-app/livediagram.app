@@ -5,6 +5,7 @@
 // back, marked `Deprecation` / `Sunset` with a `Link` to the successor.
 
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
+import { downgradeLinks, upgradeLegacyLinks } from '@livediagram/document';
 
 export const LEGACY_DOCUMENTS_SUNSET = 'Fri, 30 Apr 2027 00:00:00 GMT';
 
@@ -42,7 +43,14 @@ function isJson(headers: Headers): boolean {
   return (headers.get('content-type') ?? '').includes('application/json');
 }
 
-export async function fromLegacyRequest(request: Request): Promise<Request> {
+// Null when the declared body is over `maxBytes`: the caller answers 413 before anything is read,
+// as the gate behind it would have.
+export async function fromLegacyRequest(
+  request: Request,
+  maxBytes = Infinity,
+): Promise<Request | null> {
+  const declared = Number(request.headers.get('content-length'));
+  if (Number.isFinite(declared) && declared > maxBytes) return null;
   const url = new URL(request.url);
   url.pathname = CURRENT_PREFIX + url.pathname.slice(LEGACY_PREFIX.length);
   let body: BodyInit | null = null;
@@ -50,11 +58,13 @@ export async function fromLegacyRequest(request: Request): Promise<Request> {
     const text = await request.text();
     body =
       isJson(request.headers) && text
-        ? JSON.stringify(renameWireKeys(JSON.parse(text), 'toCurrent'))
+        ? JSON.stringify(renameWireKeys(upgradeLegacyLinks(JSON.parse(text)), 'toCurrent'))
         : text;
   }
   const headers = new Headers(request.headers);
   headers.delete('content-length');
+  if (typeof body === 'string')
+    headers.set('content-length', String(new TextEncoder().encode(body).length));
   const conversion = headers.get(LEGACY_CONVERSION_HEADER);
   if (conversion !== null) {
     headers.delete(LEGACY_CONVERSION_HEADER);
@@ -78,7 +88,20 @@ export async function toLegacyResponse(response: Response): Promise<Response> {
     });
   }
   const text = await response.text();
-  const body = text ? JSON.stringify(renameWireKeys(JSON.parse(text), 'toLegacy')) : text;
+  const body = text
+    ? JSON.stringify(legacyErrorCode(renameWireKeys(downgradeLinks(JSON.parse(text)), 'toLegacy')))
+    : text;
   headers.delete('content-length');
   return new Response(body, { status: response.status, statusText: response.statusText, headers });
+}
+
+// Error codes that named the container, current → legacy.
+const LEGACY_ERROR_CODES: Record<string, string> = { document_trashed: 'diagram_trashed' };
+
+function legacyErrorCode(body: unknown): unknown {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return body;
+  const error = (body as { error?: unknown }).error;
+  return typeof error === 'string' && LEGACY_ERROR_CODES[error]
+    ? { ...body, error: LEGACY_ERROR_CODES[error] }
+    : body;
 }

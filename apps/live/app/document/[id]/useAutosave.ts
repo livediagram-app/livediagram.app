@@ -2,6 +2,7 @@ import {
   useEffect,
   useEffectEvent,
   useRef,
+  useState,
   type Dispatch,
   type MutableRefObject,
   type RefObject,
@@ -105,6 +106,20 @@ export function useAutosave(opts: {
   // land may move the baseline, or a slow older save would roll it back.
   const saveGenRef = useRef(0);
   const baselineGenRef = useRef(0);
+
+  // A transient failure (network, 5xx) is retried on its own, not only on the next edit: during an
+  // outage or a deploy the last edit would otherwise wait for another one that may never come
+  // (docs/specs/006-document/per-tab-storage.md, "Retrying a failed save"). The tick re-runs the save
+  // effect, which re-sends whatever still differs from the last saved state.
+  const [retryTick, setRetryTick] = useState(0);
+  const retryAttemptsRef = useRef(0);
+  const retryTimerRef = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (retryTimerRef.current !== null) window.clearTimeout(retryTimerRef.current);
+    },
+    [],
+  );
 
   // How many peer ops the `tabs` of THIS render already include. A peer's op
   // reaches the baseline at once but the screen only at the next render, so a
@@ -278,6 +293,7 @@ export function useAutosave(opts: {
             lastSavedNameRef.current = next.name;
           }
           setSaveStatus('saved');
+          retryAttemptsRef.current = 0;
           const now = Date.now();
           setSavedAt(now);
           // Bump the current document's row locally so the Explorer's
@@ -297,6 +313,13 @@ export function useAutosave(opts: {
           const status = saveFailureStatus(err);
           if (status === 'forbidden') writesForbiddenRef.current = true;
           setSaveStatus(status);
+          if (status === 'error' && retryTimerRef.current === null) {
+            const delay = saveRetryDelayMs(retryAttemptsRef.current++);
+            retryTimerRef.current = window.setTimeout(() => {
+              retryTimerRef.current = null;
+              setRetryTick((t) => t + 1);
+            }, delay);
+          }
         })
         .finally(() => closeSaveWindow(journal));
     }, 600);
@@ -310,6 +333,7 @@ export function useAutosave(opts: {
     isReadOnly,
     sessionShareCode,
     opsInRender,
+    retryTick,
     lastSavedTabsRef,
     lastSavedNameRef,
     loadedTabIdsRef,
@@ -320,4 +344,9 @@ export function useAutosave(opts: {
     setSaveStatus,
     setSavedAt,
   ]);
+}
+
+// 5s, 10s, 20s, 40s, then a minute between attempts.
+export function saveRetryDelayMs(attempt: number): number {
+  return Math.min(60_000, 5_000 * 2 ** attempt);
 }

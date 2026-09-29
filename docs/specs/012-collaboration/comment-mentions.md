@@ -86,7 +86,7 @@ page as every thread does.
 ## The email
 
 After a comment with mentions is added, the author's editor asks the api to
-notify: `POST /api/teams/<teamId>/notify-mention` with `{ diagramId,
+notify: `POST /api/teams/<teamId>/notify-mention` with `{ documentId,
 commentText, mentions: [{ userId?, memberId? }] }`. It is signed-in only (the
 teams mutation gate) and best-effort: the comment has already persisted, a
 failure is swallowed, the response is `202`.

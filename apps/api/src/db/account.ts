@@ -21,7 +21,7 @@ const R2_DELETE_CHUNK = 1000;
 // DELETE /api/account when the user opts in via the "Delete account"
 // dialog. The documents go through documentRemovalStatements, which drops
 // the tabs (and their history) no other owner's document still holds;
-// share links and the other per-document rows cascade from `diagrams.id`.
+// share links and the other per-document rows cascade from `documents.id`.
 // Folders carry their own owner_id and need their
 // own DELETE. Participants are owner-less in the schema but their id
 // IS the owner id, so a single id-match delete clears the display-
@@ -29,7 +29,7 @@ const R2_DELETE_CHUNK = 1000;
 // the R2 object key matches the row id, so we enumerate before the
 // D1 wipe + bulk-delete from R2 + then drop the rows.
 //
-// Returns `{ diagrams, folders, images }` change counts for the
+// Returns `{ documents, folders, images }` change counts for the
 // audit log. Idempotent: re-running with the same owner id is a
 // no-op once the rows are gone.
 export async function deleteAccount(
@@ -162,7 +162,7 @@ export async function deleteAccount(
 // owner-bound, so updating the documents cascade-fixes them
 // implicitly.
 //
-// Returns `{ diagrams, folders, shared, images }`. Idempotent:
+// Returns `{ documents, folders, shared, images }`. Idempotent:
 // re-running with the same `fromOwnerId` is a no-op once the rows
 // have moved.
 export async function migrateOwnerId(

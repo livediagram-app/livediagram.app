@@ -4,6 +4,7 @@
 // caller resolves the team + their own membership row once and passes
 // the scope in.
 
+import { legacyDocumentIdOf } from '../legacy-request-forms';
 import type { TeamMember } from '@livediagram/api-schema';
 import { getDocumentMeta, getMembership, getParticipant, hasSharedAccess } from '../db';
 import { listTeamMembers } from '../db';
@@ -80,7 +81,8 @@ export async function handleTeamActionRoutes(
     const assigneeUserId = typeof body?.assigneeUserId === 'string' ? body.assigneeUserId : '';
     const assigneeMemberId =
       typeof body?.assigneeMemberId === 'string' ? body.assigneeMemberId : '';
-    const documentId = typeof body?.documentId === 'string' ? body.documentId : '';
+    const documentId =
+      typeof body?.documentId === 'string' ? body.documentId : legacyDocumentIdOf(body);
     const actionName = typeof body?.actionName === 'string' ? body.actionName.trim() : '';
     const description = typeof body?.description === 'string' ? body.description : null;
     if ((!assigneeUserId && !assigneeMemberId) || !documentId || !actionName) {

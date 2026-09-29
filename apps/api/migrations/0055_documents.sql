@@ -78,3 +78,27 @@ UPDATE events SET type = replace(replace(type, 'Diagrams', 'Documents'), 'Diagra
 UPDATE events
   SET type = replace(replace(replace(replace(type, '.Diagrams.', '.Documents.'), '.Diagram.', '.Document.'), 'DiagramMeta', 'DocumentMeta'), 'Diagram', 'Document')
   WHERE category = 'Error' AND type LIKE '%Diagram%';
+
+-- Help articles about the container moved with it (docs/specs/018-help/help-app.md, "Renamed
+-- articles"): their views, votes and page views continue under the new slug.
+UPDATE events SET type = CASE type
+    WHEN 'add-to-diagram' THEN 'add-to-document'
+    WHEN 'diagram-not-loading' THEN 'document-not-loading'
+    WHEN 'team-shared-diagrams' THEN 'team-shared-documents'
+    WHEN 'search-diagrams' THEN 'search-documents'
+    WHEN 'sharing-your-diagram' THEN 'sharing-your-document'
+    WHEN 'working-with-diagrams' THEN 'working-with-documents'
+  END
+  WHERE category = 'Help' AND type IN ('add-to-diagram', 'diagram-not-loading', 'team-shared-diagrams',
+    'search-diagrams', 'sharing-your-diagram', 'working-with-diagrams');
+UPDATE events
+  SET type = replace(replace(replace(replace(replace(replace(type,
+    '/add-to-diagram', '/add-to-document'),
+    '/diagram-not-loading', '/document-not-loading'),
+    '/team-shared-diagrams', '/team-shared-documents'),
+    '/search-diagrams', '/search-documents'),
+    '/sharing-your-diagram', '/sharing-your-document'),
+    '/working-with-diagrams', '/working-with-documents')
+  WHERE category = 'Page' AND action = 'View' AND (type LIKE '%/add-to-diagram%' OR type LIKE '%/diagram-not-loading%'
+    OR type LIKE '%/team-shared-diagrams%' OR type LIKE '%/search-diagrams%' OR type LIKE '%/sharing-your-diagram%'
+    OR type LIKE '%/working-with-diagrams%');

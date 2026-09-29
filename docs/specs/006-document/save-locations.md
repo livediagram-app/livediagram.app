@@ -124,7 +124,7 @@ so a missing glyph is a compile error, not a blank tile), and a create branch in
 `/new` that hands the document to that store. Nothing in the wizard's step,
 footer, or state needs to change.
 
-The wire between the wizard and `/new` is `NewDiagramSettings.saveLocation:
+The wire between the wizard and `/new` is `NewDocumentSettings.saveLocation:
 SaveLocationId`. It replaces the old `offline: boolean`; the boolean was the
 toggle's shape leaking into the contract, and it is exactly what a third
 location could not fit through.

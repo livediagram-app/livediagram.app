@@ -504,7 +504,7 @@ commands / quick actions, so a user finds what the server does without knowing
 the tool names. Pure text (no api calls, no auth to list); each steers the model
 to the right tools and the graph-first path:
 
-- **`document_this`** `{ description }` — create a diagram from a description via
+- **`diagram_this`** `{ description }` — create a diagram from a description via
   create_document + the graph input, and return a link.
 - **`flowchart_from_steps`** `{ steps }` — turn an ordered step list (with
   branches) into a flowchart (diamond decisions, labelled branch edges).

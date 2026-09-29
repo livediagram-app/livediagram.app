@@ -7,6 +7,7 @@
 // interactive Clerk session. Best-effort in the background: the comment has
 // already persisted through the tab write.
 
+import { legacyDocumentIdOf } from '../legacy-request-forms';
 import type { TeamMember } from '@livediagram/api-schema';
 import { MENTIONS_MAX } from '@livediagram/document';
 import { getDocumentMeta, getParticipant, listTeamMembers } from '../db';
@@ -35,7 +36,8 @@ export async function handleTeamMentionRoutes(
     commentText?: unknown;
     mentions?: unknown;
   } | null;
-  const documentId = typeof body?.documentId === 'string' ? body.documentId : '';
+  const documentId =
+    typeof body?.documentId === 'string' ? body.documentId : legacyDocumentIdOf(body);
   const commentText = typeof body?.commentText === 'string' ? body.commentText.trim() : '';
   const targets = Array.isArray(body?.mentions) ? (body.mentions as MentionTarget[]) : null;
   if (!documentId || !commentText || !targets) {

@@ -917,7 +917,7 @@ two of the three have since shipped:
 - **A per-document timeline** (`scope_type = 'document'`) — every document
   keeps its own history, surfaced from the row menu as **History**. The
   Activity Panel's element diffs stay where they are; this carries the
-  _diagram-level_ events [Activity and audit log](../012-collaboration/activity-and-audit.md) explicitly lists as out of scope for
+  _document-level_ events [Activity and audit log](../012-collaboration/activity-and-audit.md) explicitly lists as out of scope for
   its V1 (rename, share toggle, theme change). Its read gate defers to
   the document's OWN gate rather than re-deriving one, which is what lets
   a share-link visitor read the history of a document they can open but

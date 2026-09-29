@@ -9,10 +9,8 @@
 // hazard; defining the shapes once means the typechecker catches it.
 //
 // Naming convention: bare nouns (`LiveDoc`, `Folder`, `ShareLink`).
-// Each app re-exports under its own historical aliases — the api
-// worker continues to use `DocumentDTO` etc. internally, the live app
-// continues to use `StoredDocument` — so this extraction is a
-// drop-in. New code should prefer the canonical names here.
+// The api worker re-exports some under its own aliases (`DocumentDTO` etc.);
+// new code should prefer the canonical names here.
 
 import type { BackgroundPattern, ShapeKind, Tab } from '@livediagram/document';
 

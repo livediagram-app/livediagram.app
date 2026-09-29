@@ -121,7 +121,7 @@ Room: `POST /broadcast { op: { kind: 'document-trashed' } }`, sent only for a do
 or in a team, D2). The room relays it (it is a `SYSTEM_OP_KINDS` member, refused from client sockets and
 delivered to tab-scoped sessions) and then closes every socket with `4004, 'document-trashed'`.
 
-MCP: `delete_document { documentId, tabId? }` → `{ deleted: 'document', diagramId, trashed: true,
+MCP: `delete_document { documentId, tabId? }` → `{ deleted: 'document', documentId, trashed: true,
 restorableForDays: 30 }`; `list_trash {}` → `{ trash: { id, name, library, deletedAt, purgeAt }[] }`;
 `restore_document { documentId }` → `{ restored: 'document', id, name, url }`, a 404 as an `isError` result
 pointing at `list_trash`. No permanent option.

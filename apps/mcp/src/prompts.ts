@@ -19,7 +19,7 @@ const CONCISE =
 
 export function registerPrompts(server: McpServer): void {
   server.registerPrompt(
-    'document_this',
+    'diagram_this',
     {
       title: 'Diagram this',
       description: 'Turn a description into a new livediagram diagram.',

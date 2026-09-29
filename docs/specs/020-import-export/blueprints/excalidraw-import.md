@@ -77,7 +77,7 @@ onProgress?)`. The file path for `excalidraw` reads `new Uint8Array(await file.a
   2. `extractExcalidrawScene(input)`; error → `{ status: 'error', error }`.
   3. `buildElementsFromExcalidraw(text)`; error → as today.
   4. `images.length > 0`: lazy-import the pipeline, `createBrowserImportImageSession({ ownerId,
-diagramId })`, `attachImportImages(elements, images, session, onProgress)`.
+documentId })`, `attachImportImages(elements, images, session, onProgress)`.
   5. Replace the tab once with the patched elements (existing `replaceActiveTabContent`).
   6. `track('Tab', 'Imported', container === 'png' ? 'ExcalidrawPng' : container === 'svg' ?
 'ExcalidrawSvg' : 'Excalidraw')`.

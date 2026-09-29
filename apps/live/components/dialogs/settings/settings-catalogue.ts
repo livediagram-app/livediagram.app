@@ -635,7 +635,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'email action assigned task todo',
         section: 'Email',
         label: 'Someone Assigns Me an Action',
-        description: 'When a teammate assigns you an action on a diagram element.',
+        description: 'When a teammate assigns you an action on an element.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
         read: (p) => p.notifyActionAssigned !== false,
         write: (p, v) => ({ ...p, notifyActionAssigned: v }),

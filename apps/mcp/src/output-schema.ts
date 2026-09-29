@@ -136,7 +136,7 @@ export const listTrashOutput = {
 };
 
 export const restoreDocumentOutput = {
-  restored: z.literal('document').describe('Always "diagram": tabs have no Trash.'),
+  restored: z.literal('document').describe('Always "document": tabs have no Trash.'),
   id: documentId,
   name: z.string().nullable().describe('The restored document name, or null if unknown.'),
   url,

@@ -6,7 +6,7 @@ import { CHANGE_LOG_LIST_LIMIT } from '@livediagram/api-schema';
 import { rowToChangeLog, type ChangeLogRow } from '../change-log-row';
 import type { ChangeLogEntryDTO, Env } from '../types';
 
-// Per-document log read: change_log.document_id was dropped in
+// Per-document log read: the change log's own document column was dropped in
 // migration 0012 (item #14), so the filter joins through
 // document_tabs to find every tab currently linked to the document
 // and pulls log entries for those tabs. A tab shared between

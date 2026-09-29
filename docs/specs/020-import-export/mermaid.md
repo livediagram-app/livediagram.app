@@ -122,7 +122,7 @@ LR` line sets the layout direction (TB default).
   each). This replaced square boxes whose label held the name and every
   attribute on its own line, which read as a paragraph and did not survive a
   label cap (the MCP's, [MCP server](../015-api/mcp-server.md) §4.7, flattened
-  it to "SHARE_LINK text code text diagram_id…").
+  it to "SHARE_LINK text code text document_id…").
 - **Relationships**: `A ||--o{ B : label` becomes an edge labelled `label`.
   Cardinality maps onto arrow ends: a "many" side (crow's foot, `{` / `}`)
   gets an open-V arrowhead on that end (`ends`: the many side(s), `head:

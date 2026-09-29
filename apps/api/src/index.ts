@@ -86,9 +86,9 @@ const worker = {
     // The deprecated /api/diagrams… alias: served by the /api/documents… routes, in the old shape.
     if (isLegacyDocumentsPath(new URL(request.url).pathname)) {
       console.warn('[legacy-documents-alias]', request.method, new URL(request.url).pathname);
-      return toLegacyResponse(
-        await worker.fetch(await fromLegacyRequest(request), env, executionCtx),
-      );
+      const current = await fromLegacyRequest(request, MAX_BODY_BYTES);
+      if (!current) return payloadTooLarge();
+      return toLegacyResponse(await worker.fetch(current, env, executionCtx));
     }
 
     const url = new URL(request.url);

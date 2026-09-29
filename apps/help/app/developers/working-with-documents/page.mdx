@@ -23,6 +23,12 @@ export TOKEN=lvd_your_token_here
 
 Paths are relative to `https://livediagram.app/api`. For the exact request and response shapes of every field, see the [OpenAPI reference](/help/developers/api-overview/) at `/api/openapi.json`.
 
+{/* legacy-names */}
+
+**Old paths.** These routes were called `/api/diagrams…` until documents got their name. Scripts that still call the old paths keep working until **30 April 2027**, with a `Deprecation` header on every answer; move them to `/api/documents…` before then.
+
+{/* /legacy-names */}
+
 ## List your documents
 
 A document **list** returns metadata only, not the tab contents:

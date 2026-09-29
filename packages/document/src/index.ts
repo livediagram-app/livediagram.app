@@ -334,19 +334,11 @@ export type Tab = {
   layers?: Layer[];
 };
 
-export type LiveDoc = {
-  id: DocumentId;
-  name: string;
-  tabs: Tab[];
-  createdAt: string;
-  updatedAt: string;
-};
-
 // --- Type guards -----------------------------------------------------------
 
 export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
-export { upgradeLegacyLinks } from './legacy-links';
+export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 
 export function isBoxed(element: Element): element is BoxedElement {
   return (

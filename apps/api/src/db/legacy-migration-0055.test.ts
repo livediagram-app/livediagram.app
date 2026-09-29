@@ -88,6 +88,10 @@ function seed(sql: DatabaseSync) {
     ['Error', 'Api', 'Http500.SaveDiagramMeta'],
     ['Template', 'Used', 'ErDiagram'],
     ['Tab', 'Created', 'Diagram'],
+    ['Help', 'View', 'add-to-diagram'],
+    ['Help', 'Helpful', 'sharing-your-diagram'],
+    ['Help', 'View', 'your-first-diagram'],
+    ['Page', 'View', '/help/troubleshooting/diagram-not-loading'],
   ];
   for (const [category, action, type] of events)
     run(
@@ -193,6 +197,10 @@ describe('migration 0055 (the container is a document)', () => {
       'Error|Api|Http500.SaveDocumentMeta',
       'Template|Used|ErDiagram',
       'Tab|Created|Diagram',
+      'Help|View|add-to-document',
+      'Help|Helpful|sharing-your-document',
+      'Help|View|your-first-diagram',
+      'Page|View|/help/troubleshooting/document-not-loading',
     ]);
   });
 });

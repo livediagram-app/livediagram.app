@@ -68,8 +68,8 @@ describe('buildEditorCommands — document/tab commands', () => {
       expect.arrayContaining([
         'create-tab',
         'rename-tab',
-        'rename-diagram',
-        'delete-diagram',
+        'rename-document',
+        'delete-document',
         'open-theme',
         'open-canvas',
         'share',

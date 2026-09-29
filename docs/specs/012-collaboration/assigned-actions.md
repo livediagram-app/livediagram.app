@@ -118,7 +118,7 @@ Clicking it opens the **Assign Action dialog** (its own component under
 - **Assignee**: a pinned **Myself** row (every session — the signed-in
   account, or the guest participant identity), then the **joined members
   of the team whose shared library holds this document** (`GET
-/api/teams/<diagramTeamId>` members, via the existing api-client
+/api/teams/<documentTeamId>` members, via the existing api-client
   helper), each row showing the member's avatar bubble and display name
   (email local-part fallback, as TeamPane does). Members of the user's
   OTHER teams are deliberately not offered: they aren't members of this

@@ -48,3 +48,15 @@ describe('upgradeLegacyLinks', () => {
     expect(upgradeLegacyLinks('diagram')).toBe('diagram');
   });
 });
+
+describe('upgradeLegacyLinks, the half-renamed form', () => {
+  it('heals a link whose key was renamed but whose kind was not', () => {
+    expect(upgradeLegacyLinks({ link: { kind: 'diagram', documentId: 'd', name: 'N' } })).toEqual({
+      link: { kind: 'document', documentId: 'd', name: 'N' },
+    });
+  });
+  it('still leaves a tab kind alone', () => {
+    const tab = { kind: 'diagram', name: 'Tab 1' };
+    expect(upgradeLegacyLinks(tab)).toBe(tab);
+  });
+});

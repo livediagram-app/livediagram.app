@@ -47,7 +47,9 @@ have cloud documents and offline documents side by side.
   the container became a document ([Document](document.md#renaming-from-diagram)). Opening
   version 2 of `livediagram-offline` moves every record into `documents` inside the upgrade
   transaction, then drops the old store, logging how many moved
-  (`apps/live/lib/offline/legacy-offline-store.ts`).
+  (`apps/live/lib/offline/legacy-offline-store.ts`). A tab still running the code from before the upgrade
+  asks for version 1, which the browser refuses once another tab has opened version 2; its offline
+  documents are out of reach in that tab until it reloads.
 - **Durability honesty (important).** An offline document has **no backup**:
   clearing site data, some private-browsing sessions, and browser
   storage-pressure eviction can delete it. We request
@@ -237,10 +239,11 @@ Offline Mode is **folded into the existing privacy / security area** of the
 landing page — no standalone section. It appears as a short point plus a small
 inline illustration/icon, framed as local-first:
 
-> **Work fully offline.** Create diagrams that never leave your browser — no
-> account, no server, no sync. Yours alone.
+> **Work fully offline.** Flip on Offline Mode when you create a document and it is saved only in
+> your browser: no account, no server, no sync. Yours alone. Move it to the cloud (or pull one
+> back down) whenever you like.
 
-The illustration is a small local-first glyph (a browser/device with a diagram
+The illustration is a small local-first glyph (a browser/device with a document
 inside, "no cloud"), consistent with the existing privacy iconography
 ([Marketing assets](../019-marketing/marketing-assets.md)). It links to the help article below.
 

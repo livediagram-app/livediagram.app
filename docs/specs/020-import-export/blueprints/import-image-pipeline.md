@@ -206,8 +206,8 @@ browser); SVG decodes through an `<img>` on an object URL (revoked after load or
 resolves `null`. For `image/webp` it hands `createWebpEncoder` the canvas encode and
 `ctx.getImageData(0, 0, w, h)` as `readPixels`. Drawing uses `imageSmoothingQuality = 'high'`.
 
-`createBrowserImportImageSession({ ownerId, documentId })`: `offline = !!diagramId &&
-isOfflineIdSync(diagramId)`; `upload` computes `sha256Hex` and calls `apiUploadImage` with the
+`createBrowserImportImageSession({ ownerId, documentId })`: `offline = !!documentId &&
+isOfflineIdSync(documentId)`; `upload` computes `sha256Hex` and calls `apiUploadImage` with the
 prepared type, dimensions and the source `name` as `originalName`; `toDataUrl` is `FileReader`.
 
 Importers depend on `index.ts` (the types, `attachImportImages`, `describeImportImageReport`,
