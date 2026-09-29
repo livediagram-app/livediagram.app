@@ -179,9 +179,10 @@ async function slow(page: import('@playwright/test').Page, url: string, ms: numb
 
 // Waits out the Settings dialog's entrance, so boxes are measured at rest.
 async function settled(page: import('@playwright/test').Page) {
-  await page
-    .getByRole('dialog', { name: 'Settings' })
-    .evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
+  await page.getByRole('dialog', { name: 'Settings' }).evaluate((el) =>
+    // A cancelled animation rejects its promise; it has settled all the same.
+    Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => null))),
+  );
   // And the section's smooth scroll into view.
   await expect
     .poll(
@@ -315,6 +316,8 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
     ]);
   await expect(pillOf(panel)).toHaveText('Synced');
   await settled(page);
+  // In view first: the click would otherwise scroll the pane to reach it.
+  await panel.getByRole('button', { name: 'Sync now' }).scrollIntoViewIfNeeded();
   const synced = await boxes();
   const release = await slow(
     page,
