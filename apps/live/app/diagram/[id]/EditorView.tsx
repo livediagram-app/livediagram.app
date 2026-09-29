@@ -351,6 +351,7 @@ export function EditorView() {
                 // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md), so the Studio
                 // says whose it is and disables its controls.
                 facilitatedBy={facilitatorName}
+                facilitating={facilitator.isFacilitator}
                 onStartTimer={startTimer}
                 onPauseTimer={pauseTimer}
                 onResumeTimer={resumeTimer}

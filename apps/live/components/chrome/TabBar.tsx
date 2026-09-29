@@ -160,6 +160,7 @@ export function TabBar({
   onImportTab,
   onExportTab,
   facilitatedBy,
+  facilitating,
   timer,
   vote,
   onStartTimer,
@@ -278,6 +279,7 @@ export function TabBar({
       close();
     },
     facilitatedBy,
+    facilitating,
     timer,
     vote,
     onStartTimer,

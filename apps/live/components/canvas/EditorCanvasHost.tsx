@@ -801,7 +801,11 @@ export function EditorCanvasHost() {
         onResetAvatarPanel={() => setAvatarPanelPosition(null)}
         voteResults={voteResults}
         onJumpToVoteResult={jumpToVoteResult}
-        isVoteHost={isVoteHost(activeTab.vote, participantKey(selfParticipant))}
+        isVoteHost={isVoteHost(
+          activeTab.vote,
+          participantKey(selfParticipant),
+          facilitator.isFacilitator,
+        )}
         // +1 for the local participant: livePresence is the REMOTE roster.
         participantCount={livePresence.length + 1}
         onToggleLayersMinimized={() => {

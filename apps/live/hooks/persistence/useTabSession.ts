@@ -29,6 +29,9 @@ type TabSessionDeps = {
   // theirs for now. Casting and retracting a dot stay open: answering is what
   // the room is for, and a vote only the facilitator can vote in is not a vote.
   sessionToolsBlocked: boolean;
+  // We hold the facilitator baton, so we may drive a vote somebody else
+  // started (docs/specs/012-collaboration/session-tools.md, "Who runs a vote").
+  isFacilitator: boolean;
   activeId: string;
   activeTab: Tab;
   // Tab mutator that does NOT push undo history (same one the appearance
@@ -255,7 +258,7 @@ export function useTabSession(deps: TabSessionDeps) {
     // vote but every dot is lost — so a participant can't do it by
     // accident. Re-checked here as well as hidden in the UI, since the
     // handler is reachable from more than one surface.
-    if (!isVoteHost(deps.activeTab.vote, selfId)) return;
+    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return;
     patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, active: false } } : t));
     emitTabMeta(activeId, 'Ended the vote', { undoable: false });
     track('Tab', 'Ended', 'Vote');
@@ -263,7 +266,7 @@ export function useTabSession(deps: TabSessionDeps) {
 
   const revealVote = () => {
     if (runBlocked) return;
-    if (!isVoteHost(deps.activeTab.vote, selfId)) return;
+    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return;
     // Revealing also seats the shared walkthrough on the top pick, so
     // every participant lands on the same element as the host.
     patchActive((t) =>
@@ -275,7 +278,7 @@ export function useTabSession(deps: TabSessionDeps) {
 
   const clearVote = () => {
     if (runBlocked) return;
-    if (!isVoteHost(deps.activeTab.vote, selfId)) return;
+    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return;
     if (!deps.activeTab.vote) return;
     patchActive((t) => {
       if (!t.vote) return t;
@@ -317,7 +320,7 @@ export function useTabSession(deps: TabSessionDeps) {
   // wandering the list on their own screen (docs/specs/012-collaboration/session-tools.md).
   const setVoteReviewIndex = (index: number) => {
     if (runBlocked) return;
-    if (!isVoteHost(deps.activeTab.vote, selfId)) return;
+    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return;
     patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, reviewIndex: index } } : t));
   };
 

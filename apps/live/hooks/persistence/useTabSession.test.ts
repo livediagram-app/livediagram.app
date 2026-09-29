@@ -13,7 +13,7 @@ import { useTabSession } from './useTabSession';
 // they stand, then hands back its handlers.
 function harness(
   initial: Partial<Tab> = {},
-  opts: { editsBlocked?: boolean; sessionToolsBlocked?: boolean } = {},
+  opts: { editsBlocked?: boolean; sessionToolsBlocked?: boolean; isFacilitator?: boolean } = {},
 ) {
   let tabs: Tab[] = [{ id: 't1', name: 'Tab 1', elements: [], ...initial } as Tab];
   const hook = renderHook(() =>
@@ -28,6 +28,7 @@ function harness(
       emitTabMeta: vi.fn(),
       emitVote: vi.fn(),
       selfId: 'me',
+      isFacilitator: opts.isFacilitator ?? false,
     }),
   );
   const session = () => {
@@ -144,6 +145,22 @@ describe('while somebody else is facilitating (docs/specs/012-collaboration/faci
     expect(voting.tab().vote?.votes).toEqual({ 'el-1': ['me'] });
     voting.session().retractVote('el-1');
     expect(voting.tab().vote?.votes['el-1'] ?? []).toEqual([]);
+  });
+
+  it('lets the facilitator reveal and end a vote somebody else started', () => {
+    const started = harness();
+    started.session().startVote(3);
+    const theirs = { vote: { ...started.tab().vote!, startedBy: 'someone-else' } };
+
+    const participant = harness(theirs);
+    participant.session().revealVote();
+    expect(participant.tab().vote?.revealed).toBeFalsy();
+
+    const facilitator = harness(theirs, { isFacilitator: true });
+    facilitator.session().revealVote();
+    expect(facilitator.tab().vote?.revealed).toBe(true);
+    facilitator.session().endVote();
+    expect(facilitator.tab().vote?.active).toBe(false);
   });
 
   it('changes nothing when nobody is facilitating', () => {
