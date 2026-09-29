@@ -129,7 +129,8 @@ for (const theme of THEMES) {
       await page.getByRole('menuitem', { name: 'Account' }).click();
       const row = page.locator('[data-cloud-sync="googleDrive"]');
       await expect(row).toBeVisible();
-      await row.scrollIntoViewIfNeeded();
+      // Centred, so every shot frames the row the same way.
+      await row.evaluate((el) => el.scrollIntoView({ block: 'center' }));
       return row;
     }
 
