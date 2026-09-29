@@ -70,12 +70,27 @@ this spec does not restate it.
   `state` value the app set; the app posts both to the api, which checks
   `state`, exchanges the code with the client secret, encrypts the refresh
   token and stores it. The browser never sees the refresh token.
-- **First mirror:** the browser creates the **`livediagram`** folder in My
-  Drive (or reuses the one recorded for this user), creates the folder tree,
+- **First mirror:** the browser creates the root folder in My Drive (or
+  reuses the one recorded for this user), creates the folder tree,
   then uploads every Personal Space diagram, oldest first, with progress in
   the panel. It is resumable: a closed tab continues where it stopped on the
   next visit.
-- The `livediagram` root folder may be **moved anywhere** in Drive and
+- **The root folder's name** comes from the deployment's address, with no
+  setting, so the roots of different environments never share a name in one
+  tester's Drive (each environment makes its own root: its own Google project,
+  database and `ldRoot`):
+
+  | Host                                                                                                           | Root folder name            |
+  | -------------------------------------------------------------------------------------------------------------- | --------------------------- |
+  | `livediagram.app`, `www.livediagram.app`                                                                       | `livediagram`               |
+  | `staging.livediagram.app`; loopback (`localhost`, `127.0.0.1`, `::1`, any port), which uses the staging client | `livediagram (staging)`     |
+  | any other host (a self-hosted deployment)                                                                      | `livediagram (self-hosted)` |
+
+  Hosts compare case-insensitively. The name is given only when the root is
+  **created**; a root the user renamed keeps its name, and livediagram never
+  renames an existing root back.
+
+- The root folder may be **moved anywhere** in Drive and
   renamed; it is tracked by id, not by name or place. It carries the
   `appProperties` `ldRoot` (the deployment's host), so a reconnect finds it
   again rather than making a second one.
@@ -137,7 +152,7 @@ this spec does not restate it.
 
 ## Folders
 
-- The `livediagram` root folder is **Unsorted**: diagrams without a folder sit
+- The root folder is **Unsorted**: diagrams without a folder sit
   directly in it.
 - Every Personal Space folder is a Drive folder at the same place in the tree.
 - **Folders created in Drive** by the user are invisible to livediagram under
