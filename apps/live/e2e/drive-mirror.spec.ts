@@ -610,6 +610,45 @@ test('a connection made in one tab starts syncing at once while another tab runs
   expectNoPageErrors(pageErrors);
 });
 
+test('a visible tab is never left unsynced while a hidden tab runs the mirror', async ({
+  context,
+  page,
+  pageErrors,
+}) => {
+  // docs/specs/022-drive-mirror/drive-mirror.md, "A visible tab is never left unsynced".
+  // The user the test above connected. The first tab runs the mirror, then hides.
+  const user = `${USER}_tabs`;
+  const elected = await context.newPage();
+  await elected.clock.install();
+  await signIn(elected, user);
+  const arrived = elected.waitForEvent('console', (m) =>
+    m.text().includes('[drive-mirror] pass-end'),
+  );
+  await elected.goto('/explorer/recent');
+  await arrived;
+  await signIn(page, user);
+  await page.goto('/explorer/recent');
+  await expect(page.getByRole('button', { name: 'Account menu' })).toBeVisible();
+  await elected.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  // Past the focus guard, then the user returns to the visible tab.
+  await elected.clock.fastForward('00:40');
+  const checked = elected.waitForRequest(/drive\/v3\/changes\/startPageToken/, { timeout: 5000 });
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await checked;
+
+  // Opening Cloud Sync checks too, saying so, then Synced just now.
+  await elected.clock.fastForward('00:40');
+  const viewed = elected.waitForRequest(/drive\/v3\/changes\/startPageToken/, { timeout: 5000 });
+  const row = await openCloudSync(page);
+  await viewed;
+  await expect(pillOf(row)).toHaveText('Synced just now', { timeout: 5000 });
+  await elected.close();
+  expectNoPageErrors(pageErrors);
+});
+
 test('the Cloud Sync buttons never cover anything, at three widths', async ({
   browser,
   page,

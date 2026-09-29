@@ -7,7 +7,7 @@
 // stability, "reserve per phase, not per message"). Syncing is automatic, so
 // there is no Sync now.
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button, Glyph, StableLabel } from '@livediagram/ui';
 import { SettingsRowShell } from '@/components/dialogs/settings/SettingsRowShell';
 import type { SettingsCloudSyncRowSpec } from '@/components/dialogs/settings/settings-catalogue';
@@ -114,9 +114,23 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
   const copy = driveSyncCopy(
     status,
     { connecting, connectError: drive.connectError, connectNote: drive.connectNote },
-    { now, syncingLong },
+    { now, syncingLong, checking: drive.checking },
   );
   const { phase } = copy;
+
+  // Opening Cloud Sync checks (docs/specs/022-drive-mirror/drive-mirror.md, "Opening Cloud Sync
+  // checks"): when the card scrolls into view, each time it does.
+  const card = useRef<HTMLDivElement>(null);
+  const { requestCheck } = drive;
+  useEffect(() => {
+    const node = card.current;
+    if (!node || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) requestCheck();
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [requestCheck]);
   const notice = status.notices[0] ?? null;
   const more = Math.max(0, status.notices.length - 1);
 
@@ -147,6 +161,7 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
       row={row}
       wrapper={() => (
         <div
+          ref={card}
           data-cloud-sync={row.provider}
           data-drive-phase={phase}
           className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-800"

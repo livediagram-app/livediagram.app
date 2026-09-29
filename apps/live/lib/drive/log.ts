@@ -11,3 +11,10 @@ export function driveLog(event: string, fields: DriveLogFields = {}): void {
 export function driveWarn(event: string, fields: DriveLogFields = {}): void {
   console.warn(`[drive-mirror] ${event}`, fields);
 }
+
+// A visible tab whose last check is too old: a bug to find, never a state to
+// show quietly (docs/specs/022-drive-mirror/drive-mirror.md, "Synced means the last successful
+// check").
+export function driveStale(fields: DriveLogFields): void {
+  console.warn('drive: stale', fields);
+}

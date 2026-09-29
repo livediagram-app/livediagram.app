@@ -17,36 +17,61 @@ export type DriveTabMessage =
   | { type: 'drive-applied' }
   | { type: 'flush' }
   | { type: 'sync-now' }
+  // A visible tab that does not sync asks the one that does for a check; the
+  // answer is that tab's status.
+  | { type: 'check'; kind: 'focus' | 'view' | 'poll' }
   | { type: 'adopt'; kind: DriveItemKind; ldId: string; folderFileId: string }
   // Browser-only mode: a token granted in this tab, for the elected one.
   | { type: 'token'; token: DriveAccessToken };
 
 // Hold the lock for as long as this tab runs the engine. `onElected` runs
-// once the lock is granted (at once, or when the tab holding it closes); the
-// returned function gives the lock up. Without the Web Locks API every tab is
-// elected; the D1 lease still keeps writes to one device (D2).
-export function electDriveTab(onElected: () => void): () => void {
+// once the lock is granted (at once, or when the tab holding it closes).
+// `resign` gives the lock up or stops waiting for it; `takeOver` takes it from
+// a holder that no longer answers (`steal`), whose `onLost` then runs. Without
+// the Web Locks API every tab is elected; the D1 lease still keeps writes to
+// one device (D2).
+export type DriveElection = { resign(): void; takeOver(): void };
+
+export function electDriveTab(onElected: () => void, onLost: () => void = () => {}): DriveElection {
   const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined;
   if (!locks) {
     onElected();
-    return () => {};
+    return { resign: () => {}, takeOver: () => {} };
   }
   let release: () => void = () => {};
-  const held = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-  const abort = new AbortController();
-  locks
-    .request(LOCK_NAME, { signal: abort.signal }, () => {
-      onElected();
-      return held;
-    })
-    .catch(() => {
-      // Aborted while waiting: this tab was never elected.
+  let abort = new AbortController();
+  let elected = false;
+  const request = (steal: boolean) => {
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
     });
-  return () => {
-    abort.abort();
-    release();
+    locks
+      .request(LOCK_NAME, steal ? { steal: true } : { signal: abort.signal }, () => {
+        elected = true;
+        onElected();
+        return held;
+      })
+      .catch(() => {
+        // Aborted while waiting: never elected. Taken over while holding it:
+        // another tab syncs now.
+        if (elected) {
+          elected = false;
+          onLost();
+        }
+      });
+  };
+  request(false);
+  return {
+    resign: () => {
+      abort.abort();
+      release();
+    },
+    takeOver: () => {
+      if (elected) return;
+      abort.abort();
+      abort = new AbortController();
+      request(true);
+    },
   };
 }
 

@@ -483,3 +483,39 @@ describe('the root folder name in the status (blueprint "Cloud Sync in Settings"
     expect(next.statuses.at(-1)!.rootName).toBe('Renamed');
   });
 });
+
+describe('checks asked for by another tab (docs/specs/022-drive-mirror/drive-mirror.md, "A visible tab is never left unsynced")', () => {
+  it('runs a gated check for focus or view past the focus guard, and says Synced for it', async () => {
+    const w = world();
+    w.ld.createDiagram('d1', 'Plan');
+    const { engine, statuses } = makeEngine(w);
+    await engine.start();
+    const calls = () =>
+      w.google.requests.filter((r) => r.path === '/drive/v3/changes/startPageToken').length;
+    const before = calls();
+    // Inside the guard: nothing.
+    w.clock.tick(DRIVE_FOCUS_POLL_MIN_GAP_MS - 1);
+    await engine.requestCheck('focus');
+    expect(calls()).toBe(before);
+    // Past it: one gated check, which found nothing new and still counts.
+    w.clock.tick(1);
+    await engine.requestCheck('view');
+    expect(calls()).toBe(before + 1);
+    expect(statuses.at(-1)).toMatchObject({ state: 'idle', lastSyncedAt: w.clock.now });
+  });
+
+  it('runs a poll check only once the poll interval has passed', async () => {
+    const w = world();
+    const { engine } = makeEngine(w);
+    await engine.start();
+    const calls = () =>
+      w.google.requests.filter((r) => r.path === '/drive/v3/changes/startPageToken').length;
+    const before = calls();
+    w.clock.tick(DRIVE_POLL_INTERVAL_MS - 5_000);
+    await engine.requestCheck('poll');
+    expect(calls()).toBe(before);
+    w.clock.tick(5_000);
+    await engine.requestCheck('poll');
+    expect(calls()).toBe(before + 1);
+  });
+});

@@ -14,12 +14,19 @@ const auth = vi.hoisted(() => ({
   value: { isSignedIn: false, authLoaded: false, clerkUserId: null as string | null },
 }));
 const engines = vi.hoisted(
-  () => [] as { start: ReturnType<typeof vi.fn>; publish: (s: unknown) => void }[],
+  () =>
+    [] as {
+      start: ReturnType<typeof vi.fn>;
+      requestCheck: ReturnType<typeof vi.fn>;
+      onVisible: ReturnType<typeof vi.fn>;
+      publish: (s: unknown) => void;
+    }[],
 );
 const posted = vi.hoisted(() => [] as unknown[]);
 const election = vi.hoisted(() => ({
   elect: true,
   deliver: null as ((m: unknown) => void) | null,
+  takenOver: 0,
 }));
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/explorer/recent' }));
@@ -49,6 +56,8 @@ vi.mock('@/lib/drive/browser-engine', () => ({
       start: vi.fn(async () => {}),
       stop: vi.fn(),
       syncNow: vi.fn(async () => {}),
+      requestCheck: vi.fn(async () => {}),
+      onVisible: vi.fn(async () => {}),
       current: null,
       publish: input.onStatus,
     };
@@ -59,7 +68,13 @@ vi.mock('@/lib/drive/browser-engine', () => ({
 vi.mock('@/lib/drive/tab-election', () => ({
   electDriveTab: (onElected: () => void) => {
     if (election.elect) onElected();
-    return () => {};
+    return {
+      resign: () => {},
+      takeOver: () => {
+        election.takenOver += 1;
+        onElected();
+      },
+    };
   },
   openDriveTabChannel: (onMessage: (m: unknown) => void) => {
     election.deliver = onMessage;
@@ -71,12 +86,20 @@ vi.mock('@/lib/drive/tab-election', () => ({
 const { DriveMirrorProvider } = await import('./DriveMirrorProvider');
 const { useDriveMirror, DRIVE_STATUS_INITIAL } = await import('./drive-mirror-context');
 const { markConnectConnected } = await import('@/lib/drive/consent');
+const {
+  DRIVE_CHECK_ANSWER_MS,
+  DRIVE_POLL_INTERVAL_MS,
+  DRIVE_STALE_AFTER_MS,
+  DRIVE_STALE_WATCH_MS,
+} = await import('@/lib/drive/cadence');
 
-const seen = { connecting: false };
+const seen = { connecting: false, checking: false, requestCheck: () => {} };
 function Probe() {
-  const { connecting } = useDriveMirror();
+  const { connecting, checking, requestCheck } = useDriveMirror();
   useEffect(() => {
     seen.connecting = connecting;
+    seen.checking = checking;
+    seen.requestCheck = requestCheck;
   });
   return null;
 }
@@ -96,6 +119,7 @@ beforeEach(() => {
   engines.length = 0;
   posted.length = 0;
   election.elect = true;
+  election.takenOver = 0;
   sessionStorage.clear();
 });
 afterEach(cleanup);
@@ -154,5 +178,119 @@ describe('DriveMirrorProvider', () => {
       } satisfies DriveTabMessage),
     );
     expect(seen.connecting).toBe(false);
+  });
+
+  describe('a visible tab is never left unsynced', () => {
+    beforeEach(() => vi.useFakeTimers({ now: 10 * 60 * 60_000 }));
+    afterEach(() => vi.useRealTimers());
+    const signedIn = async () => {
+      auth.value = { isSignedIn: true, authLoaded: true, clerkUserId: 'user_1' };
+      render(tree());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    };
+    const checks = () => posted.filter((m) => (m as { type: string }).type === 'check');
+
+    it('asks the tab that syncs for a check when this one is focused', async () => {
+      election.elect = false;
+      await signedIn();
+      act(() => void window.dispatchEvent(new Event('focus')));
+      expect(checks()).toEqual([{ type: 'check', kind: 'focus' }]);
+    });
+
+    it('keeps the 2-minute rhythm while visible, even after hours asleep', async () => {
+      election.elect = false;
+      await signedIn();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(DRIVE_POLL_INTERVAL_MS);
+      });
+      expect(checks()).toContainEqual({ type: 'check', kind: 'poll' });
+      // An answer each time, so it never takes over.
+      act(() => election.deliver!({ type: 'status', status: status({ state: 'idle' }) }));
+      // Asleep for hours: timers fire late, then the return brings a check.
+      vi.setSystemTime(Date.now() + 3 * 60 * 60_000);
+      act(() => void document.dispatchEvent(new Event('visibilitychange')));
+      expect(checks().at(-1)).toEqual({ type: 'check', kind: 'focus' });
+    });
+
+    it('takes the sync over when the tab that syncs does not answer', async () => {
+      election.elect = false;
+      await signedIn();
+      act(() => void window.dispatchEvent(new Event('focus')));
+      expect(engines).toHaveLength(0);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(DRIVE_CHECK_ANSWER_MS);
+      });
+      expect(election.takenOver).toBe(1);
+      expect(engines).toHaveLength(1);
+    });
+
+    it('does not take over when the tab that syncs answers', async () => {
+      election.elect = false;
+      await signedIn();
+      act(() => void window.dispatchEvent(new Event('focus')));
+      act(() => election.deliver!({ type: 'status', status: status({ state: 'idle' }) }));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(DRIVE_CHECK_ANSWER_MS);
+      });
+      expect(election.takenOver).toBe(0);
+    });
+
+    it('in the tab that syncs, answers a check with its status', async () => {
+      await signedIn();
+      await act(async () => {
+        election.deliver!({ type: 'check', kind: 'focus' });
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(engines[0]!.requestCheck).toHaveBeenCalledWith('focus');
+      expect(posted).toContainEqual({ type: 'status', status: null });
+    });
+
+    it('logs drive: stale and asks for a check when the last sync is too old', async () => {
+      election.elect = false;
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      await signedIn();
+      act(() =>
+        election.deliver!({
+          type: 'status',
+          status: status({ state: 'idle', lastSyncedAt: Date.now() - DRIVE_STALE_AFTER_MS - 1 }),
+        }),
+      );
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(DRIVE_STALE_WATCH_MS);
+      });
+      expect(warn).toHaveBeenCalledWith(
+        'drive: stale',
+        expect.objectContaining({ elected: false }),
+      );
+      expect(checks().at(-1)).toEqual({ type: 'check', kind: 'focus' });
+      warn.mockRestore();
+    });
+
+    it('checks when Cloud Sync comes into view, and says Checking until the result', async () => {
+      election.elect = false;
+      await signedIn();
+      act(() =>
+        election.deliver!({
+          type: 'status',
+          status: status({ state: 'idle', lastSyncedAt: Date.now() - 60_000 }),
+        }),
+      );
+      act(() => seen.requestCheck());
+      expect(checks().at(-1)).toEqual({ type: 'check', kind: 'view' });
+      expect(seen.checking).toBe(true);
+      act(() =>
+        election.deliver!({
+          type: 'status',
+          status: status({ state: 'idle', lastSyncedAt: Date.now() }),
+        }),
+      );
+      expect(seen.checking).toBe(false);
+      // Moments later: no second check.
+      const before = checks().length;
+      act(() => seen.requestCheck());
+      expect(checks()).toHaveLength(before);
+    });
   });
 });

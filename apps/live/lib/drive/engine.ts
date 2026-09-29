@@ -149,6 +149,17 @@ export class DriveMirrorEngine {
     this.scheduleWrite(this.deps.now() + DRIVE_WRITE_IDLE_MS);
   }
 
+  // A check another tab asked for (docs/specs/022-drive-mirror/drive-mirror.md, "A visible
+  // tab is never left unsynced"): the user returned to it (`focus`), opened
+  // Cloud Sync (`view`), or it keeps the 2-minute rhythm while visible (`poll`).
+  // Gated like this tab's own checks, so asking often costs nothing.
+  requestCheck(kind: 'focus' | 'view' | 'poll'): Promise<void> {
+    const gap =
+      kind === 'poll' ? this.backoff.pollIntervalMs(this.deps.now()) : DRIVE_FOCUS_POLL_MIN_GAP_MS;
+    if (this.deps.now() - this.lastInboundAt < gap) return Promise.resolve();
+    return this.pass(kind === 'poll' ? 'poll' : 'focus');
+  }
+
   onVisible(): Promise<void> {
     if (this.deps.now() - this.lastInboundAt >= DRIVE_FOCUS_POLL_MIN_GAP_MS)
       return this.pass('focus');

@@ -43,3 +43,15 @@ export const DRIVE_THUMBNAIL_MAX_BYTES = 2 * 1000 * 1000;
 // How long a pass must run before the Cloud Sync status says "Syncing…", so the
 // cheap 2-minute check never flickers it (D26).
 export const DRIVE_SYNCING_SHOW_DELAY_MS = 600;
+
+// How long a visible tab waits for the tab that syncs to answer a check before
+// taking the sync over (docs/specs/022-drive-mirror/drive-mirror.md, "A visible tab is never
+// left unsynced").
+export const DRIVE_CHECK_ANSWER_MS = 10 * SECOND;
+
+// A visible tab whose last successful check is older than this logs
+// `drive: stale` and asks for a check: two check intervals, and some slack.
+export const DRIVE_STALE_AFTER_MS = 2 * DRIVE_POLL_INTERVAL_MS + 30 * SECOND;
+
+// How often a visible tab looks for a stale check.
+export const DRIVE_STALE_WATCH_MS = MINUTE;

@@ -111,6 +111,14 @@ describe('the status at the top right', () => {
     });
   });
 
+  it('says Checking while a check the row asked for runs', () => {
+    expect(said({}, {}, { checking: true })).toEqual({ text: 'Checking…', warn: false });
+    expect(said({ state: 'syncing' }, {}, { checking: true, syncingLong: true })).toEqual({
+      text: 'Checking…',
+      warn: false,
+    });
+  });
+
   it('warns, with words, when something needs the user', () => {
     expect(said({ error: 'offline' })).toEqual({ text: 'Offline', warn: true });
     expect(
@@ -160,9 +168,14 @@ describe('phases (reserve per phase, not per message)', () => {
   it('shows only statuses and texts its phase reserves', () => {
     for (const over of states) {
       for (const connect of connects) {
-        for (const syncingLong of [false, true]) {
+        const views: [boolean, boolean][] = [
+          [false, false],
+          [true, false],
+          [false, true],
+        ];
+        for (const [syncingLong, checking] of views) {
           const s = status({ progress: null, ...over });
-          const copy = driveSyncCopy(s, connect, { now: NOW, syncingLong });
+          const copy = driveSyncCopy(s, connect, { now: NOW, syncingLong, checking });
           expect(copy.phase).toBe(driveSyncPhase(s));
           expect(driveStatusOptions(s, copy.phase)).toContainEqual(copy.status);
           expect(driveSyncTexts(s, copy.phase)).toContain(copy.text);

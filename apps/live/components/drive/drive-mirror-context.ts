@@ -22,6 +22,10 @@ export type DriveMirrorContextValue = {
   connectError: string | null;
   // The user came back from cancelling at Google.
   connectNote: 'cancelled' | null;
+  // A check the Cloud Sync row asked for is running.
+  checking: boolean;
+  // The Cloud Sync row came into view: check, unless one ran moments ago.
+  requestCheck(): void;
   connect(): Promise<void>;
   resume(): Promise<void>;
   disconnect(): Promise<void>;
@@ -48,6 +52,8 @@ export const DRIVE_MIRROR_OFF: DriveMirrorContextValue = {
   connecting: false,
   connectError: null,
   connectNote: null,
+  checking: false,
+  requestCheck: () => {},
   connect: noop,
   resume: noop,
   disconnect: noop,

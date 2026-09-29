@@ -100,6 +100,7 @@ export function driveStatusOptions(
       return [
         ...DRIVE_SINCE_SAMPLES.map(synced),
         DRIVE_STATUS.syncing,
+        DRIVE_STATUS.checking,
         copying({ done: total, total }),
         DRIVE_STATUS.offline,
         DRIVE_STATUS.notice,
@@ -136,7 +137,8 @@ export type DriveConnectState = {
 
 // `syncingLong`: this pass has run long enough to say Syncing… (so the cheap
 // 2-minute check never flickers it).
-export type DriveStatusView = { now: number; syncingLong: boolean };
+// `checking`: a check the row asked for is running.
+export type DriveStatusView = { now: number; syncingLong: boolean; checking?: boolean };
 
 // Where the mirror stands, in plain words, and the one thing to press.
 export function driveSyncCopy(
@@ -186,9 +188,11 @@ export function driveSyncCopy(
       ? copying(status.progress)
       : status.notices.length > 0
         ? DRIVE_STATUS.notice
-        : status.state === 'syncing' && (view.syncingLong || status.lastSyncedAt === null)
-          ? DRIVE_STATUS.syncing
-          : synced(since);
+        : view.checking
+          ? DRIVE_STATUS.checking
+          : status.state === 'syncing' && (view.syncingLong || status.lastSyncedAt === null)
+            ? DRIVE_STATUS.syncing
+            : synced(since);
   const text = offline
     ? DRIVE_OFFLINE
     : status.progress
