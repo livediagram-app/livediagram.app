@@ -12,14 +12,14 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="Selection Mode Buttons"
-  description="A button on the board that switches whoever presses it into a selection mode."
+  description="A button on the canvas that switches whoever presses it into a selection mode."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: 'Behaviour Elements', slug: 'behaviour' }}
   subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'mode-buttons')}
 >
 
-A Selection Mode button is an element that hands out a [selection mode](/help/selection-modes/). Put one on the board and anybody can press it, without ever having opened the mode picker.
+A Selection Mode button is an element that hands out a [selection mode](/help/selection-modes/). Put one on the canvas and anybody can press it, without ever having opened the mode picker.
 
 ## Adding one
 
@@ -41,11 +41,11 @@ A click presses the button; a drag still moves it, so you can arrange a bar of t
 
 ## Why a bar of them works
 
-A Selection Mode button keeps working while you are in a mode that makes the rest of the canvas read-only, so a row of them makes a usable little control bar. That is what makes it useful on a walkthrough board: the viewer has the controls they need in front of them, on the canvas, rather than in a panel they were never told about.
+A Selection Mode button keeps working while you are in a mode that makes the rest of the canvas read-only, so a row of them makes a usable little control bar. That is what makes it useful on a walkthrough: the viewer has the controls they need in front of them, on the canvas, rather than in a panel they were never told about.
 
 <Tip>
   Pair a **Highlighter** button with a **Select** button so a reviewer can pick up the marker, mark
-  the board up, and put it down again without leaving the canvas.
+  up what they see, and put it down again without leaving the canvas.
 </Tip>
 
 </ArticleLayout>

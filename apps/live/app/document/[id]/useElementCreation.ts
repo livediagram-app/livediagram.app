@@ -292,7 +292,7 @@ export function useElementCreation(opts: {
   ) => {
     // The insertion slot the drag was offering on an event-storming board
     // (docs/specs/021-event-storming/event-storming.md), consumed here so it can never outlive its own drag. Only
-    // ever set while the preview was live, so every other board reads null.
+    // ever set while the preview was live, so every other tab reads null.
     // The drop point already sits in the slot: the preview publishes its
     // offset through the same snap channel the ghost and the drop follow.
     const insertion = takeInsertionSlot();

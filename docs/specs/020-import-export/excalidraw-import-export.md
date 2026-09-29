@@ -35,7 +35,7 @@ An Excalidraw scene is `{ type: "excalidraw", version: 2, source, elements,
 appState, files }`. Import requires `type === "excalidraw"` and an `elements`
 array, tolerates any `version` (the format is additive in practice; unknown
 fields are ignored), and skips `isDeleted` elements. `files` maps a `fileId`
-to `{ mimeType, dataURL }`, the bytes of each image on the board; a missing or
+to `{ mimeType, dataURL }`, the bytes of each image in the scene; a missing or
 malformed `files` reads as empty.
 
 ## Embedded-scene PNG and SVG
@@ -125,7 +125,7 @@ image fills its box, centred) and its flip (`scale` of -1).
 ## Images
 
 Every `image` element becomes one image request keyed by its `fileId`, so a
-image used twice on the board is stored once. The request's source is the
+image used twice in the scene is stored once. The request's source is the
 `dataURL` from `files`; a `fileId` that `files` lacks is `missing-bytes`.
 `useTabImport` opens one import session for the document, resolves every request,
 fills `imageId` / `naturalWidth` / `naturalHeight` on the elements that stored,

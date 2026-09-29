@@ -150,7 +150,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
   const surface = opts.surface ?? 'light';
   // What a self-drawing element writes its own text in: the label's resolved
   // colour and face, so a chart's key and a rail's captions read like every
-  // other label on the board.
+  // other label on the canvas.
   const labelColor = label?.color ?? defaultTextColor(el, surface);
   const fontFamily = label?.fontFamily ?? exportFontFamily(el, opts.tabFont);
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
@@ -254,7 +254,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     // A SELF-PAINTING element's body is its own: the canvas gives it a
     // wrapper with no border and no background (element-variant.ts), and the
     // export drew one anyway, framing every chart, progress element, rating
-    // and rail in a box that is not on the board. Also gated on having drawn
+    // and rail in a box that is not on the canvas. Also gated on having drawn
     // a face, so a self-painting kind the export cannot draw yet (portal, an
     // unresolved icon) still renders its box rather than nothing at all. A
     // record and a page are NOT self-painting: their rows and masthead sit
@@ -453,7 +453,7 @@ export function renderElementsToSvg(
   // the one the event-storming notation asks for on its notes.
   // The categorical ramp the tab's theme gives its charts (docs/specs/009-elements/pie-chart.md), which is
   // what the canvas hands them. Without it every exported chart fell back to
-  // the built-in ramp and came out in different colours to the board.
+  // the built-in ramp and came out in different colours to the canvas.
   const chartPalette = themeChartPalette(
     getBuiltInTheme(tab.theme, surface === 'dark' ? 'dark' : 'light'),
   );

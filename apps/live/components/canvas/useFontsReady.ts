@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 // workshop note is written in marker, and marker is much wider than the
 // fallback the browser swaps in while the file is in flight. Measure during
 // that window and the note keeps a size fitted to the wrong face — text over
-// the edge of the paper — with nothing to trigger a re-measure on a board
+// the edge of the paper — with nothing to trigger a re-measure on a canvas
 // nobody has touched yet. One flip is enough: `document.fonts.ready` resolves
 // when every pending load has settled.
 //

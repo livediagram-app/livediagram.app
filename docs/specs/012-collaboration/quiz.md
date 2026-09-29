@@ -2,7 +2,7 @@
 
 Status: **implemented** (first cut, for review).
 
-One multiple-choice question on the board, run by the facilitator: it opens
+One multiple-choice question on the canvas, run by the facilitator: it opens
 for everyone at once, locks when its time is up, and the reveal shows the
 right answer and who got it.
 

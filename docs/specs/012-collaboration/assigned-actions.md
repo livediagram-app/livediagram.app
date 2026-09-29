@@ -236,7 +236,7 @@ or a document/team fact the two already share.
 **Invited-assignee caveat:** the panel's / popover's "mine" match is by
 `userId`, so an action assigned to a not-yet-identified invitee (null
 `userId`) renders by name but won't join their Mine view even after they
-accept — acceptable v1: the action is still on the board, and reassigning
+accept — acceptable v1: the action is still on the canvas, and reassigning
 (or completing) it works for anyone with edit access. Invitees the lazy
 claim already identified carry their real `userId` and match normally.
 

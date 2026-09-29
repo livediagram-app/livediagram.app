@@ -112,7 +112,7 @@ export function PollPanel({
           {isHost ? (
             <>
               {/* Keeping the result is the LOUD action (docs/specs/012-collaboration/poll-result-capture.md): a poll that
-                  leaves no trace is still one press away, but the board is the
+                  leaves no trace is still one press away, but the canvas is the
                   record of the session and the tallies belong on it. So it
                   gets the primary row. It does not end the poll: keep a chart
                   now, keep another later, end when the room is done. */}

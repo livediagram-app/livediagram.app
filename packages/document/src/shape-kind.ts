@@ -65,12 +65,12 @@ export type ShapeKind =
   | 'reaction-pad'
   // Comment pin (docs/specs/012-collaboration/comment-pin.md): a standalone marker whose whole job is to carry a
   // comment thread. Every element can already hold one; this one exists ONLY
-  // to hold one, so a remark can be pinned to a spot on the board rather than
+  // to hold one, so a remark can be pinned to a spot on the canvas rather than
   // to whichever shape happens to be nearest.
   | 'comment-pin'
   // Action panel (docs/specs/012-collaboration/action-panel.md): the Comment panel's sibling for assigned
   // actions. A card whose whole job is to carry ONE `action` (docs/specs/012-collaboration/assigned-actions.md) and
-  // show it on the board, so a follow-up can live where the room can read it.
+  // show it on the canvas, so a follow-up can live where the room can read it.
   | 'action-card'
   // Done check (docs/specs/012-collaboration/done-check.md): everyone marks themselves finished, and the card
   // shows who has and who has not. Live: the not-yet list is read from who is
@@ -166,7 +166,7 @@ export type ShapeKind =
   // like a line drawing; keeps aspect ratio when resized. See docs/specs/008-canvas/canvas-and-palette.md
   // "Icons" accordion.
   | 'icon'
-  // Sticker (docs/specs/010-palette/stickers.md): a die-cut colour sticker you slap on the board — a
+  // Sticker (docs/specs/010-palette/stickers.md): a die-cut colour sticker you slap on the canvas — a
   // colour emoji, or a word badge like APPROVED / BLOCKED. Which one is
   // carried by `stickerId` (a catalogue key, not a closed enum here, same as
   // `iconId`). Deliberately NOT an icon: it paints its own plate + shadow,

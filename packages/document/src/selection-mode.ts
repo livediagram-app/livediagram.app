@@ -57,7 +57,7 @@ export function isSelectionMode(value: unknown): value is SelectionMode {
 
 // Shape kinds that are a FIXED SIZE: a control, not a box you draw. They get no
 // resize handles, ignore a drag-to-draw's size, and are left alone when a
-// multi-selection is scaled — a button that is 40px on one diagram and 400 on
+// multi-selection is scaled — a button that is 40px on one canvas and 400 on
 // another stops looking like part of the product.
 // The Done check (docs/specs/012-collaboration/done-check.md) is one too: it is a roster and a button, laid
 // out for its own content, and stretching it only spreads the same three
@@ -129,8 +129,8 @@ export const SESSION_TOOLS = ['timer', 'stopwatch', 'vote', 'poll'] as const;
 export type SessionTool = (typeof SESSION_TOOLS)[number];
 
 // What a button with no configuration does. A timer is the safest default: it
-// starts nothing that anyone has to answer, and it is the tool a board reaches
-// for most often.
+// starts nothing that anyone has to answer, and it is the tool most often
+// reached for.
 export const DEFAULT_SESSION_TOOL: SessionTool = 'timer';
 export const DEFAULT_TIMER_MINUTES = 5;
 export const DEFAULT_VOTE_DOTS = 3;

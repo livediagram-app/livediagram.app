@@ -196,7 +196,7 @@ const DARK_INK = {
 // (docs/specs/009-elements/reveal-zone.md "The look"). Shared by the canvas
 // face and the headless renderer (exports, the minimap), so the two cannot
 // drift: the renderer once hard-coded the light base and drew a white cover
-// on a dark board's map.
+// on a dark canvas's map.
 export const REVEAL_COVER_BASE: Record<CanvasSurface, string> = {
   light: '#f1f5f9',
   dark: '#172131',

@@ -14,7 +14,7 @@ import { isBoxed } from './index';
 
 // How far off the source's own span a candidate may sit and still count as
 // "on that side". A fraction of the SOURCE's width/height rather than a fixed
-// px, so the rule reads the same on a dense diagram and a sparse one.
+// px, so the rule reads the same on a dense canvas and a sparse one.
 const LATERAL_SLACK = 0.75;
 
 // Beyond this (again relative to the source) a box is not "just over there"

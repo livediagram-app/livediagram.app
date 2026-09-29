@@ -11,7 +11,7 @@ Present a document as a **slide deck**: full-screen, one slide at a time, each s
 
 ## Why
 
-A finished diagram shows everything at once, which is great for reference and bad for narration. Presenters today zoom around manually with the laser pointer, and the audience watches the mouse hunt for the next box.
+A finished canvas shows everything at once, which is great for reference and bad for narration. Presenters today zoom around manually with the laser pointer, and the audience watches the mouse hunt for the next box.
 
 ## What a slide is
 
@@ -113,7 +113,7 @@ Reorder tabs. It was asked for while a slide belonged to a tab and the deck was 
 ## Presenting
 
 - **Full screen.** Browser fullscreen where available, all chrome hidden (the zen treatment, [Zen mode](../007-editor/zen-mode.md)).
-- **One slide at a time.** Only that slide's elements render. This is a deck, not a progressive reveal of a diagram: advancing does not accumulate.
+- **One slide at a time.** Only that slide's elements render. This is a deck, not a progressive reveal of a canvas: advancing does not accumulate.
 - **The backdrop is the slide's tab's** — its background colour, pattern and theme. Well-defined precisely because a slide belongs to one tab.
 - **Framing:** fit to the content bounds of the slide's elements (`contentBounds` + `computeFitToScreen`), with padding. **If a slide contains exactly one frame element, its bounds are used instead** — that gives precise, authored framing using an element the product already has, with nothing new to learn.
 - **Nothing on a slide can be CHANGED.** No editing, moving, resizing or deleting; and none of the session verbs either: no voting, no starting or pausing a timer, no ticking a Done check, no firing a reaction pad. You are on a projector in front of a room, and a stray click that alters the document is not a feature.
@@ -140,7 +140,7 @@ A deck should feel like a deck, and the transitions are what sell it.
 - **Between slides**: the outgoing slide slides out to the LEFT while the incoming one slides in from the RIGHT, moving together. Going **back** mirrors it: out to the right, in from the left, so the direction always says which way you are travelling through the deck.
 - **Exiting**: the reverse of entry, back to the editor.
 - Motion honours `prefers-reduced-motion`: those users get a cross-fade at the same durations, so the deck still reads as changing slides without the travel.
-- The travel is **the full width of the screen**, and the animated node is the canvas SURFACE, so the backdrop goes with it: the whole screen moves rather than the diagram sliding around inside a stationary frame. A gentle nudge was tried first and read as a wobble.
+- The travel is **the full width of the screen**, and the animated node is the canvas SURFACE, so the backdrop goes with it: the whole screen moves rather than what's on the canvas sliding around inside a stationary frame. A gentle nudge was tried first and read as a wobble.
 - The curve is a plain **decelerate** with no overshoot. Easing with a long slow tail reads as rubber-banding — the slide appears to arrive, then keeps creeping.
 - The transition attribute is cleared on the animation's **own `animationend`**, never on a timer. A timer has to guess the duration, and guessing even slightly short yanks the attribute mid-animation: the element snaps from wherever it had got to straight to its resting place, which is the little bounce at the end that reads as rubber-banding even once the curve is right. A long failsafe timeout still runs, so a missing surface or an animation that never fires cannot leave the attribute stuck and block the next transition.
 - Transitions are **CSS transforms on the slide surface**, not per-element animation. One moving layer is cheap at any slide size, so a hundred-element slide transitions exactly as fast as a one-element slide.
@@ -152,7 +152,7 @@ Top-right, carrying: the position (`7 / 23`), the slide's name, **previous** and
 
 The HUD does not fade while a popover is open, or the popover would be left orphaned over the slide.
 
-**Jumping to a slide.** `→` and `←` walk the deck and `Home` / `End` reach its ends, which is everything you need while the talk goes to plan. It goes to plan until somebody asks about the diagram you showed nine slides ago, and arrowing back through nine slides in front of a room is the moment a deck feels like a toy.
+**Jumping to a slide.** `→` and `←` walk the deck and `Home` / `End` reach its ends, which is everything you need while the talk goes to plan. It goes to plan until somebody asks about the part of the canvas you showed nine slides ago, and arrowing back through nine slides in front of a room is the moment a deck feels like a toy.
 
 The jump button (or `G`) opens a popover listing every slide by position and name, with the current one marked; picking one goes straight there. The list is the RUN, in deck order — hidden slides are not in it, because a slide left out of the presentation has no position to jump to. Click again, `Esc`, or picking a slide closes it, and `Esc` closes it before it leaves the deck (the popover precedence below).
 
@@ -214,7 +214,7 @@ Two ways out, because a presenter mid-sentence should not have to remember one:
 - **`Esc`**, any time.
 - **The close button** in the HUD.
 
-Exiting restores the previous tab, viewport and chrome. The viewport matters more than it sounds: a deck leaves the camera wherever the last slide needed it, often 250% on one box, so without the restore you came back to a diagram you had to go and find.
+Exiting restores the previous tab, viewport and chrome. The viewport matters more than it sounds: a deck leaves the camera wherever the last slide needed it, often 250% on one box, so without the restore you came back to a canvas you had to go and find.
 
 - Available to **every role including share-link viewers**: presenting is read-only by nature, and a viewer narrating a shared document is a core case.
 

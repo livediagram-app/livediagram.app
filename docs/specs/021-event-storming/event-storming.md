@@ -1,6 +1,6 @@
 # Event storming
 
-A **board kind**: the sticky-note workshop notation for exploring a
+A **tab kind**: the sticky-note workshop notation for exploring a
 business domain (Brandolini's event storming), started from a template
 under the picker's **Technical** category.
 
@@ -201,7 +201,7 @@ layer**, `layer:es:board` (`eventStormingLayers()`), and no view bar.
   board layer or any legacy stage-layer id, so boards authored before the
   field keep working; their bands remain ordinary [Layers](../006-document/layers.md) layers.
 - **The kind set is TOTAL**: `TabKind = 'diagram' | 'event-storming'`.
-  “Ordinary board” is a thing the model can SAY, so code switches over a
+  “Ordinary tab” is a thing the model can SAY, so code switches over a
   complete union and a third kind can’t be silently forgotten in a branch.
   `tabKindOf(tab)` resolves the absence that every pre-field tab will carry
   forever (no migration reaches an exported file or someone else’s offline
@@ -296,7 +296,7 @@ the board** — the drag people do most is moving a note they have already
 placed, and that is where making room in the middle earns its keep.
 
 - **Armed on a held Alt, never automatically.** Without the modifier the
-  drag behaves exactly as it does on every other board: no slot, no
+  drag behaves exactly as it does on every other tab: no slot, no
   ripple, no surprise. Automatic arming was tried first and was wrong
   twice over — an author dropping a note NEAR a row got the whole board
   rearranging under them, and the gesture was unavailable in the one
@@ -501,7 +501,7 @@ with an event-storming kind, `isEventStormingNote`) sits on a lane: its centre
 on a lane's centre line. Plain stickies, shapes, icons, images and arrows are
 not held; a plain sticky keeps the lane as an aid (20px). The ONE way off a
 lane is Cmd/Ctrl free placement, and a note placed that way stays exactly
-where it was put: nothing re-snaps it later. On an ordinary board there are no
+where it was put: nothing re-snaps it later. On an ordinary tab there are no
 lanes, so nothing is held.
 
 The rule is about ARRIVING notes. Whatever lands or moves a note puts it on a
@@ -723,7 +723,7 @@ so a photo of a wall with bare paper above the notes landed lanes too low).
   about x and says it where the note is actually going.
 - **Notes only** — one or many. A selection of notes snaps by the note in hand
   (see the rules table); a shape, an icon, an arrow or an image drags exactly as
-  it does on every other board. The Alt insertion still wants exactly one
+  it does on every other tab. The Alt insertion still wants exactly one
   note, which is its own rule.
 - **Precedence** (top rung wins): an open insertion slot (Alt, Phase 5) → free
   placement (Cmd/Ctrl, [Snap override (free drag)](../008-canvas/snap-override.md)) → the lane (y) and

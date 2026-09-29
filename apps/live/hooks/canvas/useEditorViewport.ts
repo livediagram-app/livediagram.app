@@ -281,7 +281,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // Centre a canvas point at a given zoom (docs/specs/012-collaboration/bring-focus.md). The zoom is somebody
   // else's, so this cannot go through fitToBounds, which derives one; the
   // point of Bring Focus is that everyone ends up seeing the same amount of
-  // board as the person who pressed.
+  // canvas as the person who pressed.
   const centreOn = useCallback((at: { x: number; y: number }, zoom: number) => {
     const node = canvasMainRef.current;
     if (!node) return;
@@ -292,7 +292,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     // The offset is in CANVAS units, not screen ones: the zoom is applied
     // separately about the viewport's own centre, which is why
     // computeFitToScreen's offset has no zoom factor in it either. Multiplying
-    // by the zoom here put everyone in the top-left corner of the board.
+    // by the zoom here put everyone in the top-left corner of the canvas.
     setViewportOffset({ x: rect.width / 2 - at.x, y: rect.height / 2 - at.y });
   }, []);
 

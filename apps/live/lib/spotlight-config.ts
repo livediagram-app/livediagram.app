@@ -36,7 +36,7 @@ export const SPOTLIGHT_SIZES: readonly { id: SpotlightSize; label: string }[] = 
 ];
 
 export const SPOTLIGHT_DIMS: readonly { id: SpotlightDim; label: string; hint: string }[] = [
-  { id: 'soft', label: 'Soft', hint: 'Muted, but the diagram still reads' },
+  { id: 'soft', label: 'Soft', hint: 'Muted, but the canvas still reads' },
   { id: 'normal', label: 'Normal', hint: 'The default: dark, with a hint of what surrounds it' },
   { id: 'dark', label: 'Dark', hint: 'Only the light is legible' },
   { id: 'blackout', label: 'Blackout', hint: 'For a projector, where anything less looks grey' },

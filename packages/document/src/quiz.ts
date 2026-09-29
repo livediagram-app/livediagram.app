@@ -156,7 +156,7 @@ export function quizOptionLetter(index: number): string {
 
 export const QUIZ_DESIGN_SIZE = 520;
 // The reveal's green: a fixed colour rather than a theme one, because "right"
-// has to read as right on any board (the decision record's chips take the
+// has to read as right on any canvas (the decision record's chips take the
 // same exception, docs/specs/012-collaboration/decision-record.md).
 export const QUIZ_CORRECT_GREEN = '#16a34a';
 export const QUIZ_DISC_RADIUS = 108;

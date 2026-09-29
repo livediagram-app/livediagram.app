@@ -154,7 +154,7 @@ export function doneSplit(
  * Is the whole room done?
  *
  * An EMPTY room is not done: with nobody present there is nothing to have
- * finished, and a card that flashed "everyone is done" at an empty board would
+ * finished, and a card that flashed "everyone is done" at an empty canvas would
  * be celebrating the absence of people.
  */
 export function allDone(

@@ -197,7 +197,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Roll call (docs/specs/012-collaboration/roll-call.md): two columns of names, six rows deep.
   'roll-call': { width: 300, height: 260 },
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), at the sizes the grouped composites they
-  // replace arrived at, so a board built from either reads the same.
+  // replace arrived at, so a canvas built from either reads the same.
   banner: { width: 440, height: 104 },
   callout: { width: 380, height: 116 },
   // Three 150px cards and two 16px gaps.
@@ -237,7 +237,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       // hairline border, dark text, and a soft lift off the canvas (docs/specs/008-canvas/element-shadows.md).
       // Deliberately NOT a saturated brand block — a solid slab of colour on
       // the canvas reads as a shape someone drew, not as a control, and it
-      // fought every diagram's own palette. The skin is NOT stored: it is the
+      // fought every canvas's own palette. The skin is NOT stored: it is the
       // kind's default per surface (behaviourSkin in colors.ts), so an
       // unstyled button follows light / dark and the tab theme like any shape.
       shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.24 },
@@ -256,7 +256,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     return {
       ...base,
       // Deliberately UNLABELLED: an unnamed portal is named positionally
-      // ("Portal 1", "Portal 2") wherever it's shown, so a diagram full of them
+      // ("Portal 1", "Portal 2") wherever it's shown, so a canvas full of them
       // is navigable without anyone typing a name. A label the author types
       // wins over the number. See portalName in apps/live/lib/portals.ts.
       fillColor: 'transparent',
@@ -336,7 +336,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   ) {
     // Deliberately NO fill / stroke / text colour: the card takes the tab
     // theme's element colours like a plain square does, so a dark theme gives
-    // a dark card. Pinning white here made them the only elements on the board
+    // a dark card. Pinning white here made them the only elements on the canvas
     // that stayed bright when everything around them darkened.
     const seed: ShapeElement = {
       ...base,

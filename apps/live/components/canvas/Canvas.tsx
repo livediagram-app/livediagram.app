@@ -127,7 +127,7 @@ export function Canvas(props: CanvasProps) {
   // paint mode from its first click (copy cursor, handles/label-drag/dblclick
   // suppressed on boxed elements AND arrows), not only once a source is armed.
   const isPaintMode = formatSourceId !== null || canvasTool === 'format';
-  // Nudge above the Fit button when the whole diagram has scrolled out of view.
+  // Nudge above the Fit button when everything on the canvas has scrolled out of view.
   const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
@@ -432,7 +432,7 @@ export function Canvas(props: CanvasProps) {
   // Throttling lives in page.tsx so the Canvas stays prop-driven.
   const handlePointerMoveCanvas = (e: React.PointerEvent) => {
     // Spotlight tracks the cursor in SCREEN space (px relative to <main>),
-    // not canvas-coords: its light must stay put on screen as the diagram
+    // not canvas-coords: its light must stay put on screen as the canvas
     // pans / zooms under it. <main> is `position: relative` with no border,
     // so its content origin is its bounding-rect top-left.
     if (canvasTool === 'spotlight' || canvasTool === 'eraser') {
@@ -554,7 +554,7 @@ export function Canvas(props: CanvasProps) {
       // the main landmark (not "application") because the floating
       // panels render inside it and must keep normal SR navigation.
       tabIndex={0}
-      aria-label="Diagram canvas"
+      aria-label="Canvas"
       data-canvas-a11y-root=""
       onPointerMove={handlePointerMoveCanvas}
       onPointerLeave={handlePointerLeaveCanvas}
@@ -601,7 +601,7 @@ export function Canvas(props: CanvasProps) {
           announcements land here. */}
       <CanvasLiveRegion />
       {/* Animated backdrops (docs/specs/008-canvas/canvas-and-palette.md) paint as an ambient overlay behind the
-          diagram content; the static patterns ride the <main> background
+          canvas content; the static patterns ride the <main> background
           above. tabBackgroundStyle returns just the backdrop colour for
           these, so this layer is the only thing that draws their motion. */}
       {isAnimatedPattern(tabBackgroundPattern) ? (
@@ -623,7 +623,7 @@ export function Canvas(props: CanvasProps) {
           surface.onWrapperDoubleClick(e);
         }}
         // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole
-        // diagram layer ignore pointer events so NO element kind can be
+        // canvas layer ignore pointer events so NO element kind can be
         // selected, dragged, or edited (a per-element capture guard can't
         // catch every select path — boxed elements, arrow hit-bands, labels,
         // click vs pointerdown). Clicks then fall through to <main>, where the
@@ -634,7 +634,7 @@ export function Canvas(props: CanvasProps) {
         // it's a read-only view tool. Clicks fall through to <main>, where a
         // drag pans (canvasTool === 'isometric' is added to `wantsPan`).
         // Avatar mode (docs/specs/008-canvas/avatar-mode.md): same treatment for the same reason — the mode
-        // is read-only, so the diagram layer goes inert and every click falls
+        // is read-only, so the canvas layer goes inert and every click falls
         // through to <main>, where the capture handler turns it into a walk.
         className={`absolute inset-0 origin-center touch-none ${
           canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar'
@@ -653,7 +653,7 @@ export function Canvas(props: CanvasProps) {
           // in screen space, so a drag moves the scene the way the cursor
           // moves at any camera angle. The fragment (built above as
           // isoFragment) pivots the tilt around the content centre so the
-          // diagram tilts in place / stays centred while orbiting rather than
+          // canvas tilts in place / stays centred while orbiting rather than
           // swinging off-screen. preserve-3d lets the depth layer's
           // translateZ stack read as real extruded height.
           transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${isoFragment}`,
@@ -707,10 +707,10 @@ export function Canvas(props: CanvasProps) {
           />
         </MindGrowProvider>
         {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
-            transformed wrapper so they pan / zoom with the diagram, and after
+            transformed wrapper so they pan / zoom with the canvas, and after
             the element layer so they stand in front of the content they walk
             over. Peers' characters render whether or not WE are in the mode —
-            someone else walking their diagram is worth seeing regardless. */}
+            someone else walking the canvas is worth seeing regardless. */}
         {props.remoteAvatars.map((peer) => (
           <AvatarWalker
             key={peer.id}
@@ -740,7 +740,7 @@ export function Canvas(props: CanvasProps) {
             than around a pad. Same engine, same particles: the pad and the
             avatar panel are two ways to set off one effect, not two effects.
             Positioned at the character's canvas point, inside the transformed
-            wrapper, so it pans and zooms with the board it is celebrating. */}
+            wrapper, so it pans and zooms with the canvas it is celebrating. */}
         {avatar.pos && avatarBurst ? (
           <div
             className="pointer-events-none absolute"
@@ -777,12 +777,12 @@ export function Canvas(props: CanvasProps) {
 
       {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the
           transformed wrapper so the light stays fixed on screen while the
-          diagram pans / zooms underneath. Rendered before CanvasChrome so the
+          canvas pans / zooms underneath. Rendered before CanvasChrome so the
           palette + chrome paint ON TOP and stay reachable to switch tools
           back; pointer-events-none lets clicks fall through to <main>. */}
       {/* The eraser's brush ring (docs/specs/008-canvas/eraser-panel.md): the same screen-space layer as
           the shroud, for the same reason — it must not pan or zoom with the
-          diagram, and it must never take a pointer event. */}
+          canvas, and it must never take a pointer event. */}
       {canvasTool === 'eraser' ? (
         <EraserBrushRing
           pos={eraserPos}

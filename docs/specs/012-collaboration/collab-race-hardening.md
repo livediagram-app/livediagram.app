@@ -191,7 +191,7 @@ and the next save from anybody repairs it.
   (shipped with phase 2).
 - **A session button can't start a vote over a running one.** Pressing a
   vote button mid-vote used to start a fresh vote, which reset every dot on
-  the board. It is now a no-op; ending the vote stays with the vote's own
+  the canvas. It is now a no-op; ending the vote stays with the vote's own
   controls.
 - **The live poll survives a socket.** The room keeps the running poll and
   every answer (`live-poll` in its storage) and replays them to each session

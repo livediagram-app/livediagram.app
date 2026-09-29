@@ -51,7 +51,7 @@ describe('resolveSlide', () => {
     expect(got.map((e) => e.id)).toEqual(['a', 'c']);
   });
 
-  // Paint order is the diagram's business, not the order you happened to
+  // Paint order is the canvas's business, not the order you happened to
   // click things in while building the slide.
   it('uses the tab’s paint order, not the slide’s list order', () => {
     const t = tab('t1', [shape('a'), shape('b'), shape('c')]);

@@ -23,7 +23,7 @@ The card paints from a **scheme**, not from the element's colours: `codeTheme` (
 
 `supportsColours` returns **false** for a code block, so the Colours and Border categories don't appear on one: the card ignored fill and stroke from the day it shipped, and every swatch in that category was inert while still writing to the element, autosaving, logging a change and broadcasting an op. The Style band opens for a code block carrying a **Presets** grid of the schemes instead, on the same hover-preview / click-commit flow as every other preset ([Style presets](../010-palette/style-presets.md)).
 
-One fixed look was right about where the colours come from and wrong about how many there are: a block on a light, warm board was a hole in it, and a fill swatch would have "fixed" that by letting you paint the card pink and leave the syntax colours unreadable on it. A closed set of complete schemes is the only version of the choice that can't produce an unreadable card.
+One fixed look was right about where the colours come from and wrong about how many there are: a block on a light, warm canvas was a hole in it, and a fill swatch would have "fixed" that by letting you paint the card pink and leave the syntax colours unreadable on it. A closed set of complete schemes is the only version of the choice that can't produce an unreadable card.
 
 Scheme ids are stored on elements, so they are permanent: a `name` may be reworded, an `id` never. An unknown id still renders (the resolver falls back to the default) but fails validation, so it can't be written.
 
@@ -40,7 +40,7 @@ hanging over the edge. A **Wrap Long Lines** toggle in the menu's Code section
 turns it off for the block whose lines mean something at their full length.
 
 The headless render wraps too (word-first, mid-token as a fallback), so a
-shared thumbnail shows the same amount of code the board does.
+shared thumbnail shows the same amount of code the canvas does.
 
 ## Syntax highlighting: lazy, hand-rolled, dependency-free
 

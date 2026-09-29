@@ -479,7 +479,7 @@ export function ZoomControls() {
   );
 }
 
-/** A row of tab pills along the bottom: one active board, a couple of others,
+/** A row of tab pills along the bottom: one active tab, a couple of others,
  *  a collapsible folder, and the + button. */
 export function TabBar() {
   return (

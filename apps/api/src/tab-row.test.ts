@@ -126,7 +126,7 @@ describe('rowToTab', () => {
           theme: 'cobalt',
           background: { pattern: 'grid', color: '#ffffff', patternColor: '#cbd5e1' },
           locked: true,
-          // Board kind (docs/specs/021-event-storming/event-storming.md): tab state with no column of its own, so
+          // Tab kind (docs/specs/021-event-storming/event-storming.md): tab state with no column of its own, so
           // the blob is the only thing carrying it.
           kind: 'event-storming',
         }),

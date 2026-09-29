@@ -13,7 +13,7 @@ everybody.
 
 ## Why
 
-On a big board, "look at the thing in the bottom right" is a sentence that does
+On a big canvas, "look at the thing in the bottom right" is a sentence that does
 not work. Every tool for it points AT something from where the speaker already
 is: the laser ([Laser Panel](../008-canvas/laser-panel.md)), the spotlight
 ([Spotlight Panel](../008-canvas/spotlight-panel.md)), a walked-to avatar
@@ -38,8 +38,8 @@ Nothing happens until they take it.
 This is the one place this element parts company with Follow Me, which is
 explicitly unilateral ("being in the room is the consent"). The difference is
 push versus pull: a follower chose to be moved and can stop whenever, whereas a
-yank arrives unasked, in the middle of whatever they were doing. A board where
-anybody can teleport everybody is a board where somebody's half-typed note gets
+yank arrives unasked, in the middle of whatever they were doing. A canvas where
+anybody can teleport everybody is a canvas where somebody's half-typed note gets
 lost, and the cost of the extra click is one click.
 
 - **One invitation at a time.** A second one replaces the first, because the
@@ -67,7 +67,7 @@ The op carries the element's **centre in canvas coordinates** and the presser's
 copying a pan lands the element off-centre (or off-screen) for anyone whose
 canvas is a different shape. Centring the point is the correct translation of
 "come and look at this", and the zoom is what makes their view show the same
-amount of board as the presser's.
+amount of canvas as the presser's.
 
 If the element is on another tab, **taking it switches you there first**, through the
 same tab-switch Follow Me uses.
@@ -103,7 +103,7 @@ renamed participant's invitation reads correctly.
   nothing visible. Three sentences, because there are three outcomes: "Asked
   everyone else to look here", "Everyone else is already looking at it" (every
   peer whose view we know is on that tab, on that point, at about that zoom),
-  and "Nobody else is on this board right now" when the room is empty. Saying
+  and "Nobody else is on this canvas right now" when the room is empty. Saying
   the last one to a presser looking at a row of avatars reads as the feature
   being broken, which is why the middle one exists. A peer who has published no
   viewport counts as asked, not as already there: unknown is not the same as
@@ -116,14 +116,14 @@ renamed participant's invitation reads correctly.
 
 `shape: 'focus-button'`, default 120×96, in the Behaviour family with the mode
 button and the session button. Its face is a target glyph over its label, which
-defaults to "Bring Focus" and is edited like any label, so a board can have
+defaults to "Bring Focus" and is edited like any label, so a canvas can have
 "Start here" and "The problem" rather than four identical buttons.
 
 Read-only surfaces (the export, the minimap, a view-only session) render the
-face inert rather than hiding it: a viewer should still see what the board is
+face inert rather than hiding it: a viewer should still see what the canvas is
 offering. In an export that means the chip, the target and the label, drawn by
 `svgBehaviourFace` from the same 24-unit reticle the canvas uses, so a picture
-of the board shows the button rather than an empty box with a word in it
+of the canvas shows the button rather than an empty box with a word in it
 ([Export fidelity](../020-import-export/export-fidelity.md)). The press states are the one thing left
 out, for the reason every other control's are: nothing in a still image can be
 hovered or held.

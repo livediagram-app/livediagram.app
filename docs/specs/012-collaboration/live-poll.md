@@ -149,7 +149,7 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    — and that stopped the room dead. A poll is a question asked DURING the work,
    and the thing people most want while answering "which of these?" is to look
    at the thing being asked about; the scrim covered exactly that. The canvas
-   now stays live behind the sheet: you can pan, point, read the board, and
+   now stays live behind the sheet: you can pan, point, read the canvas, and
    answer without dismissing anything.
 
    What follows from not blocking:

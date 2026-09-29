@@ -61,7 +61,7 @@ never arrives.
   ([Temperature check](../012-collaboration/temperature-check.md)), idea boxes
   ([Idea box](../012-collaboration/idea-box.md)), agendas ([Agenda](../012-collaboration/agenda.md)), decision
   records ([Decision record](../012-collaboration/decision-record.md)) and roll calls
-  ([Roll call](../012-collaboration/roll-call.md)). These are elements on the board, not a side
+  ([Roll call](../012-collaboration/roll-call.md)). These are elements on the canvas, not a side
   panel, which is why they keep arriving: the canvas already knew how to hold
   them.
 - **Presenting the result** ([Presentation mode](../012-collaboration/presentation-mode.md)): full-screen

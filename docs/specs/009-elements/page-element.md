@@ -11,7 +11,7 @@ workshop board is built around.
 
 Everything on the canvas so far is a label on a thing: short, centred, sized
 to its box. A sticky note is the closest, and it is deliberately a scrap. When
-someone wants a page, they leave for a doc and the diagram stops being the
+someone wants a page, they leave for a doc and the canvas stops being the
 whole artefact.
 
 ## It is a shape kind, not a new element type
@@ -130,7 +130,7 @@ page when it outgrows it rather than the page growing without bound.
 ## Out of scope
 
 - **Pagination.** One element is one page-shaped surface, not a document that
-  flows onto a second sheet. A diagram is not a word processor, and the moment
+  flows onto a second sheet. A canvas is not a word processor, and the moment
   it pretends to be, every missing word-processor feature becomes a bug.
 - **Tables, images or embeds inside the body.** The runs model is a flat text
   algebra; block content inside it is a different data structure and a much

@@ -1,6 +1,6 @@
 # The Comment Panel
 
-A **Collaborate** element: a card on the board carrying a whole comment thread —
+A **Collaborate** element: a card on the canvas carrying a whole comment thread —
 its count, the comments, a composer, and resolve / reopen — read where it sits
 rather than opened.
 
@@ -37,7 +37,7 @@ second way to store a comment, that is the bug.
 
 ## A panel, joined by an arrow
 
-The element is a **card on the board**, not a marker.
+The element is a **card on the canvas**, not a marker.
 
 - It shows the thread: a header, the comments, a composer, and resolve /
   reopen.
@@ -62,7 +62,7 @@ and right-click opens the ordinary element menu.
   is on screen settles in (the Q&A board's enter motion), and the thread keeps
   the newest in view. Your own comments carry a small delete on hover.
 - **Empty**: a speech-bubble glyph in a soft accent disc, **Start the
-  Conversation**, and "Replies stay on the board for everyone to read."
+  Conversation**, and "Replies stay on the canvas for everyone to read."
 - **Composer**: the shared rounded field with the round accent send button
   (Enter sends).
 - **Resolved**: the thread softens, the composer gives way to a dashed accent
@@ -71,7 +71,7 @@ and right-click opens the ordinary element menu.
 - **Export** draws the header (with **Resolved** once resolved) and the newest
   comments as bubbles with their authors (`svg-render-faces.ts`), so the card reads the same in a PNG.
 - **It does not collapse.** A collapse-to-summary was built and then dropped: a
-  panel you have deliberately put on the board is there to be READ, and folding
+  panel you have deliberately put on the canvas is there to be READ, and folding
   it left an element whose whole purpose sat behind another click. "I don't
   want to see this right now" is already answered by the anchored popover —
   you simply don't add a panel.
@@ -93,7 +93,7 @@ to the thread (the menu keeps `Add Comment`, the anchored popover).
 The first version was a standalone marker: a dot with a leader line that opened
 the ordinary anchored popover. It was replaced because a popover is **one
 reader's transient view**. A panel connected to what it is about sits on the
-board, in the export, and in everyone's session, which is what makes a remark
+canvas, in the export, and in everyone's session, which is what makes a remark
 part of the document rather than a note somebody left.
 
 It also means the shape is no longer self-painting: as a 40px bubble it drew
@@ -107,7 +107,7 @@ card gets.
   shape somebody drew.
 - **Excluded from `isSvgRenderedShape`**, which is allow-by-default: a new
   CSS-drawn kind left off that list renders as a transparent nothing.
-- **Keeps its own colours** (the Behaviour set in `themes.ts`): a pin is board
+- **Keeps its own colours** (the Behaviour set in `themes.ts`): a pin is canvas
   chrome, not a node in the tab's theme.
 - **Aspect-locked and square by default**, 40×40. A stretched pin reads as a
   shape rather than a marker.

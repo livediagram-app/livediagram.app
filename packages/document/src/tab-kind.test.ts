@@ -5,7 +5,7 @@ import { stampTabKind, tabKindOf } from './tab-kind';
 const tab = (t: Partial<Tab> = {}): Tab => ({ id: 't', name: 'T', elements: [], ...t }) as Tab;
 
 describe('tabKindOf', () => {
-  it('names the ordinary board rather than leaving it an absence', () => {
+  it('names the ordinary tab rather than leaving it an absence', () => {
     expect(tabKindOf(tab())).toBe('diagram');
   });
 

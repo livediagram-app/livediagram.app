@@ -37,7 +37,7 @@ Behaviour:
   the lock means the same thing here as it does on a drag handle. Setting both
   at once is not overruled — that IS the intent.
 - **Clamped to 8…20000px.** A zero or negative box is not a shape, and a stray
-  extra digit should not produce a diagram nobody can pan out of.
+  extra digit should not produce a canvas nobody can pan out of.
 - The boxes **follow the element**: a drag-resize, an undo, or the lock
   carrying the other dimension all update what is shown.
 

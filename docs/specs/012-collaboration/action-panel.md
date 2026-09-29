@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-A **Collaborate** element: a card on the board carrying a **list of assigned
+A **Collaborate** element: a card on the canvas carrying a **list of assigned
 actions** ([Assigned actions](assigned-actions.md)): each with its name, description, who it is assigned to,
 and whether it is done. It is read where it sits rather than opened, and every
 action on it is added, completed and edited from the card.
@@ -18,11 +18,11 @@ the Collaborate panel's rows, the Activity page ([Activity page](../013-workspac
 email, realtime and persistence all run against that field.
 
 What was missing is the same thing the Comment panel filled for comments:
-somewhere to put a piece of work that is about a **place** or about the board
+somewhere to put a piece of work that is about a **place** or about the canvas
 as a whole, rather than hanging it on whichever shape happens to be nearest.
 And, once it is there, a way to **read it without clicking**: an action on a
 shape is a small badge that opens a popover for one reader, while a follow-up
-the room agreed on belongs on the board, in the export, and in everyone's
+the room agreed on belongs on the canvas, in the export, and in everyone's
 session.
 
 ## The data: a list, and one way to read it
@@ -86,7 +86,7 @@ right-click opens the ordinary element menu.
 - **The footer** is a dashed accent bar, **Add Action**, which opens the dialog
   to append another. The list scrolls when it outgrows the card.
 - A completed action softens (title struck through and muted, the accent
-  swapped for green) but stays on the board: finished work is still a record
+  swapped for green) but stays on the canvas: finished work is still a record
   of what was agreed.
 - **Delete** lives in the dialog: editing a card's action shows a two-step
   **Delete Action** in its footer, the popover's rule ([Assigned actions](assigned-actions.md) §3). Deleting the
@@ -96,7 +96,7 @@ right-click opens the ordinary element menu.
   empty card there says **No Action Yet** with no invitation line.
 - **Export** draws the same card (`svg-render-panel-faces.ts`): the header, then
   as many rows as fit, each with its check (filled once done), name and
-  assignee, so a PNG or SVG of the board reads like the board.
+  assignee, so a PNG or SVG of the canvas reads like the canvas.
 
 The generic action **badge** is suppressed on this kind: the card IS the badge,
 and a badge in its corner repeating what the card says is one too many. It is the

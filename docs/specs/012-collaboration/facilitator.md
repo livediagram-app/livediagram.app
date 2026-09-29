@@ -14,7 +14,7 @@ as it does today.
 
 ## Why
 
-A board full of workshop tools has no idea who is running the workshop. Two
+A canvas full of workshop tools has no idea who is running the workshop. Two
 people start countdown timers over each other; somebody reveals the estimates
 while a third is still typing one; a poll ends mid-answer because a second
 person pressed End. Every one of those is a collision between people who all
@@ -23,7 +23,7 @@ have edit rights and all mean well.
 The missing idea is not a permission, it is a **role**: who is driving. The
 document already knows who owns it and who may edit it, and neither answers the
 question. The owner is frequently the wrong answer on purpose: somebody builds
-the board on Monday and asks a colleague to run the session on Tuesday.
+the canvas on Monday and asks a colleague to run the session on Tuesday.
 
 ## The constraint that shapes this
 
@@ -343,7 +343,7 @@ control is simply **absent**, exactly as it is for a view-only visitor today.
 That is the shape those faces already have (each verb is drawn only when its
 handler is passed), and a card is small enough that a row of disabled buttons
 reads as breakage rather than as a rule. The Studio's line is what explains the
-board, and it names the person to ask.
+canvas, and it names the person to ask.
 
 ## Edges
 

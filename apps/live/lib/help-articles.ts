@@ -148,7 +148,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   avatarMode: {
     title: 'Learn about Avatar mode',
-    description: 'Tips for walking the board as an avatar and leading a session.',
+    description: 'Tips for walking the canvas as an avatar and leading a session.',
   },
   laser: {
     title: 'Learn about the Laser',
@@ -168,7 +168,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   highlighter: {
     title: 'Learn about the Highlighter',
-    description: 'Tips for marking up the board with translucent strokes.',
+    description: 'Tips for marking up the canvas with translucent strokes.',
   },
   slideDeck: {
     title: 'Learn about the Slide Deck',
@@ -212,7 +212,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   changingTheBackground: {
     title: 'Learn about the canvas',
-    description: 'Tips for the background, patterns and the canvas behind your diagram.',
+    description: 'Tips for the background, patterns and the canvas behind what you draw.',
   },
   themes: { title: 'Learn about themes', description: 'How themes restyle a whole tab.' },
   changingTheme: {
@@ -233,7 +233,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   comments: {
     title: 'Learn about comments',
-    description: 'Tips and tricks for discussing a document right on the board.',
+    description: 'Tips and tricks for discussing a document right on the canvas.',
   },
   assignedActions: {
     title: 'Learn about assigned actions',
@@ -253,7 +253,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   minimap: {
     title: 'Learn about the Map',
-    description: 'Tips for finding your way around a big diagram.',
+    description: 'Tips for finding your way around a big canvas.',
   },
   sessionPolls: {
     title: 'Learn about polls',
@@ -261,7 +261,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   sessionVoting: {
     title: 'Learn about voting',
-    description: 'Tips for running a quick vote across the elements on the board.',
+    description: 'Tips for running a quick vote across the elements on the canvas.',
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',

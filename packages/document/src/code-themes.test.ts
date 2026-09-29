@@ -63,7 +63,7 @@ describe('code themes', () => {
 // Long-line wrapping in the STILL render (docs/specs/009-elements/code-block.md). The canvas wraps with CSS;
 // an export has to lay the lines out itself, and it must land on the same
 // amount of code or a shared thumbnail shows a different snippet than the
-// board does.
+// canvas does.
 describe('code block wrapping (headless render)', () => {
   const block = (over: Record<string, unknown>) =>
     ({

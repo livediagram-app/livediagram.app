@@ -1,8 +1,8 @@
 // Label font sizes (docs/specs/004-interface-design/fonts.md), in ONE place.
 //
 // The canvas and the exporters each had their own table, and they disagreed:
-// the default `md` drew at 22px on the board and 14px in an export, so every
-// diagram came out of an export with labels two thirds the size they were
+// the default `md` drew at 22px on the canvas and 14px in an export, so every
+// export came out with labels two thirds the size they were
 // drawn at. That is not a rounding difference, it is a different picture, and
 // it was invisible to every test because each renderer was consistent with
 // itself.

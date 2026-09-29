@@ -197,7 +197,7 @@ function SlideRow({
           </span>
           <span className="truncate text-[9px] text-slate-400">
             {/* The tab is named because a deck spans tabs: "3 elements" on its
-                own does not say which board they are on. A slide whose tab has
+                own does not say which tab they are on. A slide whose tab has
                 been deleted says so rather than showing a blank. */}
             {tabName ?? 'Tab deleted'} ·{' '}
             {slide.elementIds.length === 1 ? '1 element' : `${slide.elementIds.length} elements`}

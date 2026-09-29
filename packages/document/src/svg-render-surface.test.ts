@@ -7,9 +7,9 @@ import type { ShapeKind } from './index';
 // Surface fidelity (docs/specs/008-canvas/minimap.md "Fidelity"). The headless
 // renderer draws the Map, the layer thumbnails and the exports, and it has to
 // paint an element on dark paper the way the canvas does. The canvas never
-// shows a light card on a dark board unless the element stores that colour
+// shows a light card on a dark canvas unless the element stores that colour
 // itself, so neither may the renderer: a hard-coded light base is how the
-// Reveal cover came out as a white panel on a dark board's map.
+// Reveal cover came out as a white panel on a dark canvas's map.
 
 const KINDS = Object.keys(SHAPE_DEFAULT_SIZE) as ShapeKind[];
 
@@ -41,7 +41,7 @@ describe('svgBoxed on dark paper', () => {
     const offenders = KINDS.flatMap((kind) => {
       const el = createShape(kind, 0, 0);
       // A stored fill is the element's identity (a Page is a white sheet on
-      // any board) and the canvas paints it as-is, so it is exempt.
+      // any canvas) and the canvas paints it as-is, so it is exempt.
       if (el.fillColor) return [];
       const light = fullSizeFills(svgBoxed(el, { surface: 'dark' }), el.width, el.height).filter(
         isLight,

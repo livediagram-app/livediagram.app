@@ -166,7 +166,7 @@ export function usePaletteDragGuides({
         height: preview.height,
         elements: live,
         // Lanes are a NOTE grammar: a shape dragged in from the palette lands
-        // exactly as it does on every other board.
+        // exactly as it does on every other tab.
         timeline: preview.note === true ? lanes : null,
         laneHeld: preview.workshop === true,
       });

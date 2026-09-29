@@ -108,10 +108,10 @@ export const ALTERNATIVES: Alternative[] = [
       "It's free and MIT-licensed, so you can self-host it instead of paying per seat.",
       'Open a link and draw, with no sign-up wall in front of the canvas.',
       'Real-time multiplayer, live cursors and comments come standard, not gated behind a plan.',
-      'Assign action items to teammates on the diagram itself, tracked in an Actions panel.',
+      'Assign action items to teammates on the canvas itself, tracked in an Actions panel.',
       'Friction-free editing: tap once to add a shape, drag arrows that snap into place, and a format painter to copy a style across elements.',
-      'Themed templates and one-click whole-canvas themes turn a blank board into a polished diagram fast.',
-      'Walk a team through the board with the built-in present mode (laser pointer + spotlight), no export needed.',
+      'Themed templates and one-click whole-canvas themes turn a blank canvas into a polished diagram fast.',
+      'Walk a team through the canvas with the built-in present mode (laser pointer + spotlight), no export needed.',
       'Run a retro or planning session with the built-in per-tab timer and dot-voting, synced live to every participant.',
       'Import Mermaid or Markdown, export PNG, SVG, PDF, or Mermaid text.',
     ],
@@ -134,7 +134,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'Collaboration without the onboarding',
         paragraphs: [
           'In Miro, collaborating starts with accounts: your teammates sign up, join a team, get assigned to boards. In livediagram, collaborating is a URL. Share a link and anyone who opens it is on the canvas with you, live cursors and all, without creating an account. Share links can carry a password or an expiry date when you need them locked down.',
-          'The collaboration tools go beyond cursors: leave comments on elements, assign action items to teammates directly on the diagram (with an Actions panel to track them and optional email notifications), and review the change log to see who did what. Editing is protected by a selection lock, so two people never fight over the same element.',
+          'The collaboration tools go beyond cursors: leave comments on elements, assign action items to teammates directly on the canvas (with an Actions panel to track them and optional email notifications), and review the change log to see who did what. Editing is protected by a selection lock, so two people never fight over the same element.',
         ],
       },
       {

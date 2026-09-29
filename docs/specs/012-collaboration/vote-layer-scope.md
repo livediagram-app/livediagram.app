@@ -8,7 +8,7 @@ When starting a dot-vote ([Session tools (timer + voting)](session-tools.md)), t
 ([Layers](../006-document/layers.md)) is votable. Only elements on that layer take dots; everything else
 stays on the canvas but recedes, and the votable set is ringed.
 
-The case it solves: a tab where the ideas being voted on share the board with
+The case it solves: a tab where the ideas being voted on share the canvas with
 scaffolding — a background frame, an annotation layer, last round's output. A
 whole-tab vote makes all of it a target.
 
@@ -49,12 +49,12 @@ Both halves, per the issue: visible-but-dimmed for the rest, highlight for the
 votable.
 
 - **Off-layer elements drop to 0.35 opacity.** Visible, because you need the
-  board's context to judge what you're voting on; clearly behind, so the
+  canvas's context to judge what you're voting on; clearly behind, so the
   votable set reads as the foreground.
 - **Votable elements get a soft brand ring** (`ring-brand-400/70`,
   `pointer-events-none` so it can't intercept the cast). Dimming alone tells
   you what _isn't_ a target; the ring answers "where do I click".
-- **Both only while casting is open.** After **End vote** the board returns to
+- **Both only while casting is open.** After **End vote** the canvas returns to
   normal, so the results walkthrough reads against the full document.
 
 `votableInVote` is resolved **once** in `CanvasElementsLayer`, where the vote

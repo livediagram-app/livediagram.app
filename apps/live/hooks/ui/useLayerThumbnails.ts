@@ -35,7 +35,7 @@ export function useLayerThumbnails(
   // Re-render once the async icon catalogues land so icon glyphs pop in.
   const iconsLoaded = useIconCatalogs();
   // The canvas paper (docs/specs/008-canvas/minimap.md "Fidelity"), so a
-  // preview on a dark board shows the dark cards the canvas shows.
+  // preview on a dark canvas shows the dark cards the canvas shows.
   const surface = useCanvasSurface();
   return useMemo(() => {
     // The resolvers find nothing until the catalogues land; gating them on the

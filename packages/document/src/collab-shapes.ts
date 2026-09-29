@@ -212,7 +212,7 @@ export const DECISION_STATUS_COLORS: Record<DecisionStatus, { bg: string; text: 
 
 // One hue per status, for the badge, the glow and the driver markers
 // (docs/specs/012-collaboration/decision-record.md "The face"). The badge is tinted from it, so it reads
-// on light and dark boards alike, where the light chip colours above sat pasted
+// on light and dark canvases alike, where the light chip colours above sat pasted
 // onto a dark card. Shared by the canvas face and the export.
 export const DECISION_STATUS_HUES: Record<DecisionStatus, string> = {
   proposed: '#64748b',
@@ -256,7 +256,7 @@ export function isRollCallShape(kind: ShapeKind): boolean {
 // --- Chair (docs/specs/009-elements/chair.md) ------------------------------------------------------
 
 // Which way the seat points. 'n' = the chair's back is at the top, so the
-// sitter faces down the board toward the reader.
+// sitter faces down the canvas toward the reader.
 export type ChairFacing = 'n' | 'e' | 's' | 'w';
 export const CHAIR_FACINGS: readonly ChairFacing[] = ['n', 'e', 's', 'w'];
 export const DEFAULT_CHAIR_FACING: ChairFacing = 'n';
@@ -275,7 +275,7 @@ export function isChairFacing(value: unknown): value is ChairFacing {
 // Which way somebody sitting in the chair looks, in the avatar's own facing
 // vocabulary (the same four words CHAIR_FACING_LABELS prints). The seat points
 // AWAY from the back, so a chair with its back at the top ('n') faces its
-// sitter down the board.
+// sitter down the canvas.
 export type ChairSitterFacing = 'down' | 'left' | 'up' | 'right';
 
 export const CHAIR_SITTER_FACING: Record<ChairFacing, ChairSitterFacing> = {

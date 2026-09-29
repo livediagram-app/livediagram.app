@@ -65,7 +65,7 @@ export function expectNoPageErrors(pageErrors: string[]): void {
 // Start a document from a named TEMPLATE in a named category. The blank
 // helper below skips the category step entirely (Blank is on the first
 // screen), so template creation — builders, layers, per-template canvas
-// overrides, the board kind — is a genuinely different path through the
+// overrides, the tab kind — is a genuinely different path through the
 // wizard and needs its own way in.
 export async function startTemplateDocument(
   page: Page,

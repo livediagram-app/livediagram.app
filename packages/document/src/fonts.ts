@@ -2,7 +2,7 @@
 // can pick one; the id is stored in the model and mapped to a CSS stack
 // here at render time. Eleven Google Fonts spanning neutral / geometric /
 // rounded / condensed / techy sans, serif / display serif / slab, mono,
-// and handwriting / marker — a wide enough spread that a diagram can take
+// and handwriting / marker — a wide enough spread that a canvas can take
 // on a distinct voice without an open-ended font field.
 //
 // Fonts are a progressive enhancement: the stack always ends in a system
@@ -133,7 +133,7 @@ export function googleFontsHref(ids?: readonly string[]): string {
 
 // The font ids a set of elements + their tab actually use (docs/specs/004-interface-design/fonts.md), in
 // catalogue order. An export declares exactly these and no more: a
-// downloaded SVG shouldn't pull eleven families to draw a board that used
+// downloaded SVG shouldn't pull eleven families to draw a canvas that used
 // one, and the empty case must stay byte-identical to a font-less export.
 export function fontIdsUsed(
   elements: readonly { font?: string }[],

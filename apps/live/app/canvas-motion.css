@@ -1,7 +1,7 @@
 /*
  * Canvas motion (docs/specs/004-interface-design/motion.md "Where durations live").
  *
- * Motion OF the diagram, not of the chrome around it: element entry, the
+ * Motion OF the canvas, not of the chrome around it: element entry, the
  * animated-element set, arrow flow, icon / progress / rating / pie
  * animations, the event-storming insert preview, the done-check flash,
  * presentation slide transitions and the touch long-press ring. Each follows
@@ -587,7 +587,7 @@
 }
 
 /* Vote-results walkthrough focus (docs/specs/012-collaboration/session-tools.md): the currently-reviewed top pick
- * pulses an amber halo so it stands out even on a busy board. Rides the
+ * pulses an amber halo so it stands out even on a busy canvas. Rides the
  * winner-ring overlay div (ring-2 amber), adding the breathing glow. */
 @keyframes lvd-vote-focus {
   0%,
@@ -1377,7 +1377,7 @@
 /* Done check: the all-done flash (docs/specs/012-collaboration/done-check.md).
    A pulse of the card's own ring rather than a colour wash, so it reads on a
    card of any theme colour, and it RUNS OUT after a few cycles: a card that
-   flashed forever would be noise on a board somebody left open, and the state
+   flashed forever would be noise on a canvas somebody left open, and the state
    is still legible from the roster and the count once it stops. */
 @keyframes lvd-done-flash {
   0%,
@@ -1514,7 +1514,7 @@ html[data-presenting]:not([data-slide-transition]) [data-slide-move='in'] [data-
    the screen. A gentle 6% nudge was the first attempt and read as a wobble
    rather than as a slide — a deck changing slides is a big, obvious movement,
    and because the animated node is the canvas SURFACE it takes the backdrop
-   with it, so the whole screen moves rather than the diagram sliding around
+   with it, so the whole screen moves rather than what's on the canvas sliding around
    inside a stationary frame.
 
    The curve is a plain decelerate. The first two attempts used easing with a

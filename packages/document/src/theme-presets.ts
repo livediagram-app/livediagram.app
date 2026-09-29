@@ -410,7 +410,7 @@ export function themeChartPalette(theme: ThemeDefinition): string[] {
 //
 // A pad of note colours, and NOT theme-derived: a sticky is exempt from theme
 // recolouring (docs/specs/021-event-storming/event-storming.md) precisely because the colour of a note is the user's
-// own shorthand, not the board's palette. It had no presets at all, so
+// own shorthand, not the canvas's palette. It had no presets at all, so
 // recolouring one meant opening Colours and picking a fill and then a matching
 // text colour by hand, which is two decisions for what is really one.
 //

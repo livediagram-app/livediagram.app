@@ -30,7 +30,7 @@ import { ThumbnailLoader } from './ThumbnailLoader';
 //
 // Size is controlled by the caller via `className` (a small box in a
 // row, a large preview in a card); the <img> fills it with object-fit
-// contain so the whole diagram stays visible at any aspect ratio.
+// contain so the whole canvas stays visible at any aspect ratio.
 
 type State = { status: 'idle' } | ThumbnailEntry;
 // A fetch's outcome, tagged with the inputs it was fetched for.

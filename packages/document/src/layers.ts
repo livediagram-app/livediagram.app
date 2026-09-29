@@ -192,7 +192,7 @@ export function resolveActiveLayerId(
   // is paused rather than moving you somewhere you didn't ask to be.
   if (requested != null && ls.some((l) => l.id === requested)) return requested;
   // The FALLBACK is different — nobody chose it, so it must land somewhere
-  // you can actually work. Taking the top layer blindly stranded any board
+  // you can actually work. Taking the top layer blindly stranded any canvas
   // whose top layer was hidden or locked: every create path silently
   // no-opped, and no toast could explain it because the user had done
   // nothing for a toast to describe.

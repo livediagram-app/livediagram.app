@@ -213,7 +213,7 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
   // Sketches carry the same fill + stroke a shape does (open paths
   // render stroke-only, so a written fill is inert until the path is
   // closed); mirrors the theme-aware colours commitFreehand applies on
-  // creation so a sketch reads as part of the diagram either way.
+  // creation so a sketch reads as part of the canvas either way.
   freehand: [
     { element: 'fillColor', theme: 'elementFill' },
     { element: 'strokeColor', theme: 'elementStroke' },

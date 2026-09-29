@@ -102,7 +102,7 @@ export type BoxedElementViewProps = {
   onPressModeButton?: (element: import('@livediagram/document').ShapeElement) => void;
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else in the room to come and look at
   // this element. Absent on a surface with nobody to ask (an export, a solo
-  // board), which renders the face inert.
+  // canvas), which renders the face inert.
   onPressFocusButton?: (element: import('@livediagram/document').ShapeElement) => void;
   // Session button (docs/specs/012-collaboration/session-button.md): press it to start the tool it carries. Absent
   // on a surface with no session to run; `sessionStartBlocked` is the softer
@@ -272,7 +272,7 @@ export type BoxedElementViewProps = {
   // element (the menu's actions assume it is the current selection).
   onContextSelect: (id: string, screenX: number, screenY: number) => void;
   // The colour for the link/comment badges. Comes from the active
-  // tab's theme so the icons read as part of the diagram rather than
+  // tab's theme so the icons read as part of the canvas rather than
   // floating brand-blue dots on a coloured palette.
   badgeColor: string;
   // True when the tab as a whole is locked. Shows the LockBadge on

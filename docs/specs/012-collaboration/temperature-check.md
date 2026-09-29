@@ -8,7 +8,7 @@ shows the spread and the average as the answers land.
 ## Why
 
 "How does everyone feel about this?" is the cheapest facilitation move there
-is, and on a shared board it currently has no home. The rating element
+is, and on a shared canvas it currently has no home. The rating element
 ([Rating](../009-elements/rating.md)) looks like the answer and is not: it is **one** score that **one**
 person sets, and the next person to touch it overwrites the first. A dot-vote
 ([Session tools (timer + voting)](session-tools.md)) is per-person but targets whole elements and evaporates with the

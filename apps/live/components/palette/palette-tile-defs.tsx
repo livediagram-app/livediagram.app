@@ -98,7 +98,7 @@ export type PaletteTileSection =
   | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
   // docs/specs/012-collaboration/roll-call.md) had its own category on the reasoning that Behaviour is
-  // "pressing this does something to your session" while these are "the board
+  // "pressing this does something to your session" while these are "the canvas
   // is collecting an answer from everybody". In the picker that line never
   // held: both are elements whose content arrives at runtime, both are reached
   // for while facilitating, and a user looking for the Done check found it in
@@ -588,7 +588,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // you then have to change.
     id: 'tools:mode-avatar',
     tileGroup: 'mode',
-    blurb: 'Walk a character around the board',
+    blurb: 'Walk a character around the canvas',
     caption: 'Avatar',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -724,7 +724,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:mode-isometric',
     tileGroup: 'mode',
-    blurb: 'Tilt the board into 3D',
+    blurb: 'Tilt the canvas into 3D',
     caption: 'Isometric',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -995,7 +995,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Comment pin (docs/specs/012-collaboration/comment-pin.md): a remark about a PLACE rather than a shape.
     id: 'collab:comment-pin',
-    blurb: 'A comment thread as a card on the board',
+    blurb: 'A comment thread as a card on the canvas',
     caption: 'Comment',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -1013,10 +1013,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Action panel (docs/specs/012-collaboration/action-panel.md): one assigned action as a card on the board, the
+    // Action panel (docs/specs/012-collaboration/action-panel.md): one assigned action as a card on the canvas, the
     // Comment panel's sibling.
     id: 'collab:action-card',
-    blurb: 'An assigned action as a card on the board',
+    blurb: 'An assigned action as a card on the canvas',
     caption: 'Action',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -1145,7 +1145,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add decision record',
     caption: 'Decision record',
     description:
-      'A decision on the diagram beside the thing it decided: the statement, a status, the date, and what drove it.',
+      'A decision on the canvas beside the thing it decided: the statement, a status, the date, and what drove it.',
     filled: true,
     action: { type: 'shape', kind: 'decision' },
     icon: <DecisionIcon size={TILE_GLYPH_PX} />,
@@ -1351,7 +1351,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A marker that holds a note',
     section: 'tools',
     // Last in Write, and the odd one out in it: an annotation is a MARKER you
-    // drop on the diagram that happens to hold text, not a surface you write
+    // drop on the canvas that happens to hold text, not a surface you write
     // on like Text, a sticky or a Page. It briefly sat in its own Blocks group
     // for exactly that reason, but docs/specs/010-palette/palette-top-level-categories.md emptied Blocks out and deleted it,
     // so Write is where it lives — ordered last, after the three surfaces,

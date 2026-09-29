@@ -26,7 +26,7 @@ export function useIsometricView({
   const isoCamera = useIsometricCamera();
 
   // Centre of the boxed content, in canvas px — the point the isometric
-  // tilt pivots around so the diagram tilts in place (and stays put as you
+  // tilt pivots around so the canvas tilts in place (and stays put as you
   // orbit) instead of swinging off-screen. Only computed while the tool is
   // active; null when there's no boxed element to centre on.
   const isoContentCenter = useMemo(() => {
@@ -40,7 +40,7 @@ export function useIsometricView({
 
   // Isometric tilt fragment, appended innermost to the wrapper transform.
   // The pivot (content centre relative to the wrapper centre) makes the
-  // tilt rotate around the diagram rather than the wrapper centre, so the
+  // tilt rotate around the canvas rather than the wrapper centre, so the
   // content tilts in place and stays centred as the camera orbits. The
   // wrapper's unscaled size = the main canvas rect (it's `absolute inset-0`
   // and untransformed itself), observed only while the tool is active.

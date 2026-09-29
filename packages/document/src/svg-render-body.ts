@@ -62,7 +62,7 @@ export function svgElementBody(
   el: BoxedElement,
   o: {
     /** The label's resolved colour + face, so a body's own text reads like
-     *  every other label on the board. */
+     *  every other label on the canvas. */
     labelColor: string;
     fontFamily?: string;
     /** The element's resolved stroke + fill, which its body paints with. */

@@ -31,7 +31,7 @@ type PaletteDropDeps = {
   // A photo dropped on an EVENT-STORMING board is a piece of wall, not a
   // picture (docs/specs/021-event-storming/event-storming.md Phase 8): it is read, and nothing becomes an image
   // element. Supplied only on such a board with the model configured, so
-  // every other board — and this one without a key — keeps today's behaviour
+  // every other tab — and this one without a key — keeps today's behaviour
   // exactly, which is that a dropped file does nothing here at all.
   onDropPhoto?: (file: File) => void;
 };

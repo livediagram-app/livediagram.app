@@ -6,9 +6,9 @@ A canvas element that **starts a session tool when pressed**: a countdown timer,
 
 ## Why
 
-The session tools are facilitation, and facilitation is a script someone has to remember: start a five-minute timer, then vote three dots each, then poll the room. Today that script lives in a menu and in the facilitator's head, which means the board only works when the person who built it is the one running it.
+The session tools are facilitation, and facilitation is a script someone has to remember: start a five-minute timer, then vote three dots each, then poll the room. Today that script lives in a menu and in the facilitator's head, which means the canvas only works when the person who built it is the one running it.
 
-Putting the tools ON the board makes the board self-facilitating. A retro template can ship with a "5 minutes" button over the writing column and a "Vote — 3 dots" button over the results column, and anyone can run it. It is the same instinct as the Selection Mode button: put the affordance where the user already is.
+Putting the tools ON the canvas makes the canvas self-facilitating. A retro template can ship with a "5 minutes" button over the writing column and a "Vote — 3 dots" button over the results column, and anyone can run it. It is the same instinct as the Selection Mode button: put the affordance where the user already is.
 
 ## The element
 
@@ -38,7 +38,7 @@ Right-click → **Session**: the button's one setting — minutes for a timer, d
 `SESSION_TOOLS` is `timer | stopwatch | vote | poll`. The Session Studio keeps
 one Timer tool with a Countdown / Stopwatch toggle, because the Studio is where
 you choose which kind of clock to run. An ELEMENT is not: it is a countdown you
-placed on a board, with a length, and the question its `…` answers is "how
+placed on a canvas, with a length, and the question its `…` answers is "how
 long".
 
 Offering the toggle there offered to turn one element into a different element,
@@ -105,8 +105,8 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 ## Out of scope
 
 - Buttons that STOP a tool (the timer and vote already have their own controls, owned by whoever started them).
-- Chaining several tools behind one press ("start the timer AND the vote"). One button, one action; put two buttons on the board.
-- Scheduling ("start this in 10 minutes"). A board is not a cron.
+- Chaining several tools behind one press ("start the timer AND the vote"). One button, one action; put two buttons on the canvas.
+- Scheduling ("start this in 10 minutes"). A canvas is not a cron.
 
 ## One tile per tool in the palette
 
@@ -141,7 +141,7 @@ them.
 
 ## No tooltip on the button
 
-Removed. The button is small and usually sits near the top of a board, so its
+Removed. The button is small and usually sits near the top of a canvas, so its
 hover card landed over the **element toolbar directly above it** and blocked
 the controls the user was reaching for.
 
@@ -159,7 +159,7 @@ It is the **same timer as the pill in the top chrome**, in every sense worth
 having: the same `TabTimer` on the same tab field, the same pure
 `timerDisplayMs`, and — since the look was extracted into
 `components/chrome/timer-pill.tsx` — literally the same clock, drain and
-controls. Pausing on the board pauses in the chrome. Every client computes the
+controls. Pausing on the canvas pauses in the chrome. Every client computes the
 value locally off an absolute anchor, so there is no per-second network traffic
 and no drift between machines.
 
@@ -168,7 +168,7 @@ box on the canvas.
 
 - **Controls**: pause / resume, reset, and remove, plus a start when no timer
   is running. Reset returns the timer to its starting value; remove is what
-  actually gets it off the board, which is why both exist.
+  actually gets it off the canvas, which is why both exist.
 - The controls **swallow pointer-down**. The canvas reads a press on an element
   as select-and-maybe-drag, so without that the element moves whenever somebody
   tries to pause it. The element's face is otherwise inert, so the control row

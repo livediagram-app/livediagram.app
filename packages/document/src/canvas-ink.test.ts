@@ -22,7 +22,7 @@ import {
 // every unpainted element sat on white paper — and stopped being fine when
 // the Default colour scheme gained a dark half (docs/specs/007-editor/live-app.md), because a Default
 // tab deliberately stores NO element colours, so the dark canvas had nothing
-// but the light ink to fall back on and the whole board read as pale cards on
+// but the light ink to fall back on and the whole canvas read as pale cards on
 // near-black.
 //
 // So the ink follows the paper. Dark paper is the blue-slate set of the dark

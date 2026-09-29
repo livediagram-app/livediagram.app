@@ -150,7 +150,7 @@ export function applyMeta(
 // Upsert one tab body into a record (the autosave path). A new tab id is
 // appended; an existing one is replaced in place, preserving order.
 export function upsertTab(rec: OfflineDocumentRecord, tab: Tab, at: number): OfflineDocumentRecord {
-  // Stamp the board kind here for the same reason the cloud path stamps it
+  // Stamp the tab kind here for the same reason the cloud path stamps it
   // in tabForWire (docs/specs/021-event-storming/event-storming.md): both stores must agree on what a tab IS, or a
   // Sync Document would hand the cloud a board that has forgotten itself.
   const stamped = stampTabKind(tab);

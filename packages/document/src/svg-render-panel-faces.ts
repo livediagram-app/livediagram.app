@@ -109,7 +109,7 @@ export function svgCommentPanel(el: Face, title: string, color: string, a: Colla
           color,
           anchor: 'middle',
         }) +
-        text(w / 2, cy + 26, 'Replies stay on the board for everyone to read.', {
+        text(w / 2, cy + 26, 'Replies stay on the canvas for everyone to read.', {
           size: 11,
           color,
           anchor: 'middle',

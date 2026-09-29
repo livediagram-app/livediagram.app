@@ -416,7 +416,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           landing on, lit for the duration of the drag. Beside the guide
           overlay because it is the same kind of thing — help BEFORE the
           drop — and it publishes through its own store, so it costs nothing
-          on every other board. */}
+          on every other tab. */}
       <TimelineLanesOverlay
         timeline={props.esBoard === true ? ES_LANES : null}
         tabThemeId={tabThemeId}

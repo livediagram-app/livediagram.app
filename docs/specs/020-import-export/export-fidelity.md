@@ -6,7 +6,7 @@ Status: shipped
 
 **An exported image is a picture of the document.** Whatever the canvas draws,
 every export draws: same sizes, same colours, same marks, in the same places.
-A difference between the board and its export is a bug, not a degradation.
+A difference between the canvas and its export is a bug, not a degradation.
 
 That applies to all four surfaces the headless renderer feeds, because they are
 all "a picture of the document" to whoever is looking at one: the SVG / PNG / PDF
@@ -25,7 +25,7 @@ side. They were not small:
 
 - **Labels came out about two thirds the size they were drawn at.** The canvas
   and the exporters each kept a font table and they disagreed at every preset
-  (the default `md` was 22px on the board and 14px in an export).
+  (the default `md` was 22px on the canvas and 14px in an export).
 - **Twenty-two kinds exported as an empty labelled box.** Charts, progress bars
   and rings, ratings, timeline rails, record rows, a page's masthead, and every
   Behaviour / Collaborate card had no branch in the SVG emitter, so each fell
@@ -75,12 +75,12 @@ Agenda, Roll call) lay out at the element's own size rather than scaling.
 
 **A self-painting element gets no box and no label.** `SELF_PAINTING_SHAPES`
 already said which kinds draw their own body; the export now honours it, so a
-chart is not framed in a rectangle that is not on the board, and a rail does not
+chart is not framed in a rectangle that is not on the canvas, and a rail does not
 print its kind name across itself.
 
 ## What an export deliberately does not reproduce
 
-Not everything on a live board is a mark on a picture, and pretending otherwise
+Not everything on a live canvas is a mark on a picture, and pretending otherwise
 would be worse than the gap:
 
 - **Motion.** Every element animation is designed so its resting frame is the

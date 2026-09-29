@@ -1,10 +1,10 @@
 # Layers
 
-Photoshop-style layers per tab: named stacking bands that elements belong to, managed from a floating Layers panel. Layers give big diagrams structure (background / content / annotations), let you hide or freeze whole slices of a tab, and make z-order deliberate instead of an accident of insertion order.
+Photoshop-style layers per tab: named stacking bands that elements belong to, managed from a floating Layers panel. Layers give big canvases structure (background / content / annotations), let you hide or freeze whole slices of a tab, and make z-order deliberate instead of an accident of insertion order.
 
 ## Active layer: the fallback must be usable
 
-An explicit choice of active layer is honoured even when that layer is hidden or locked — hiding the layer you are ON is deliberate, and the editor toasts why creation is paused rather than moving you somewhere you did not ask to be. The FALLBACK (no stored preference) is different: it skips hidden and locked layers and lands on the topmost usable one. Taking the top layer blindly stranded any board whose top layer was hidden — every create path silently no-opped, and no toast could explain it, because the user had done nothing for a toast to describe.
+An explicit choice of active layer is honoured even when that layer is hidden or locked — hiding the layer you are ON is deliberate, and the editor toasts why creation is paused rather than moving you somewhere you did not ask to be. The FALLBACK (no stored preference) is different: it skips hidden and locked layers and lands on the topmost usable one. Taking the top layer blindly stranded any canvas whose top layer was hidden — every create path silently no-opped, and no toast could explain it, because the user had done nothing for a toast to describe.
 
 ## Data model (`@livediagram/document`)
 
@@ -63,7 +63,7 @@ the active layer behave exactly as with the panel on.
 
 ## Layered templates
 
-Templates whose scaffold stays put while their content moves ship with **pre-assigned layers** ([Canvas and palette](../008-canvas/canvas-and-palette.md)'s catalogue), so a fresh board lands with the split a careful user would build by hand: a scaffold band you can lock or hide in one click, and a content band that marquee / select-all sweeps without grabbing the frame behind it.
+Templates whose scaffold stays put while their content moves ship with **pre-assigned layers** ([Canvas and palette](../008-canvas/canvas-and-palette.md)'s catalogue), so a fresh canvas lands with the split a careful user would build by hand: a scaffold band you can lock or hide in one click, and a content band that marquee / select-all sweeps without grabbing the frame behind it.
 
 - The split lives entirely in `@livediagram/templates`: a layered template's builder stamps `layerId` on every element it returns, and `templateCanvasOverrides(kind)` carries the matching `Tab.layers` array (bottom → top, from `templateLayers(kind)` in `template-layers.ts`). All three application paths (the editor picker, `/new`, the MCP worker) already spread that override object onto the tab in the same commit as the elements, so no caller carries layer logic; and because the layers land in the same commit, the commit-boundary stamp (above) sees the template's ids as known and leaves them alone.
 - Every layered template shares the same TWO **fixed sentinel ids** (`layer:template:scaffold` under `layer:template:content`, the `layer:default` pattern), not random uuids: re-applying a template converges, and elements copied between any two layered-template tabs keep their band, even across template kinds. Only the display names vary per template.

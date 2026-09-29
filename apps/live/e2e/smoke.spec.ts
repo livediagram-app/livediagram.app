@@ -60,7 +60,7 @@ test('create a blank document, add a shape, and it survives a reload', async ({
   expectNoPageErrors(pageErrors);
 });
 
-// A board KIND is the one thing a unit test can't prove end to end: the
+// A tab KIND is the one thing a unit test can't prove end to end: the
 // template has to build, the tab has to persist its kind, and the editor has
 // to read it back and present differently because of it (docs/specs/021-event-storming/event-storming.md). This
 // walks that whole path in a browser, then reloads to prove the board is

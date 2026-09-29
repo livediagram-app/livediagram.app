@@ -9,7 +9,7 @@ import type { CodeTokenKind } from '@/lib/code-tokens';
 // The card still ignores the element's fill / stroke / theme, the way a sticky
 // stays a sticky: its colours come from its own SCHEME (code-themes.ts), which
 // the Presets grid picks. That one dark look was the whole identity for a
-// while, and it is still the default; a block on a light board just no longer
+// while, and it is still the default; a block on a light canvas just no longer
 // has to be a hole in it.
 
 const tokenColor = (scheme: CodeTheme): Record<CodeTokenKind, string> => ({

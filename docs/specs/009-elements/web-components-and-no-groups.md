@@ -94,7 +94,7 @@ hero.
 
 ## Existing diagrams
 
-- Components already on a board were built as loose primitives and **stay as they are**: once
+- Components already on a canvas were built as loose primitives and **stay as they are**: once
   groups are gone they are simply separate elements. We do not try to recognise and fuse them.
 - `groupId` on stored elements is **ignored** and stripped on load.
 - A legacy `pinned-group` arrow end is **frozen to a free endpoint** at the position it resolved

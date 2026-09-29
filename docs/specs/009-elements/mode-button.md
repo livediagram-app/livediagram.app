@@ -6,7 +6,7 @@ A canvas element that looks like a button and, when pressed, **switches whoever 
 
 ## Why
 
-A diagram can now be walked around, lasered over, spotlit, or tilted — but every one of those modes lives behind a picker in the palette, which means explaining it. A button ON the canvas turns that into an invitation: put "Walk with me" next to the title of a walkthrough diagram and a visitor who has never opened the mode picker can join in with one click. It is the same instinct as the Quick Start templates: put the affordance where the user already is.
+The canvas can now be walked around, lasered over, spotlit, or tilted — but every one of those modes lives behind a picker in the palette, which means explaining it. A button ON the canvas turns that into an invitation: put "Walk with me" next to the title of a walkthrough diagram and a visitor who has never opened the mode picker can join in with one click. It is the same instinct as the Quick Start templates: put the affordance where the user already is.
 
 It also gives a presenter somewhere to put a control bar — a row of buttons that hand the room a laser, a spotlight, or a character.
 
@@ -27,7 +27,7 @@ It also gives a presenter somewhere to put a control bar — a row of buttons th
 - It routes through the **same tool setter the palette picker uses**, so the mode's own rules all still apply: telemetry, the selection clear on entering Avatar / Spotlight, and the empty-canvas guard.
 - **Dragging it moves it, and does NOT press it.** The face fires on `click`, never on pointer-down — and swallows that click when the pointer travelled more than a wobble between press and release (`usePressWithoutDrag`), because a drag on an element still ends in a browser `click` event.
 - **A button that hands out Avatar mode spawns the character at the button**, just below it, rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it.
-- **It stays pressable inside a pointer-inert mode.** Avatar, Spotlight, and Isometric all make the diagram layer ignore pointers; a mode button keeps `pointer-events: auto` so it still works. Without that, a button offering "Select" would be unreachable from the very mode a user most wants out of, and a presenter's control bar would be a one-way door. Right-clicking a button in those modes likewise still opens its element menu (the canvas / tab menu stays suppressed), so it can be reconfigured mid-walk.
+- **It stays pressable inside a pointer-inert mode.** Avatar, Spotlight, and Isometric all make the canvas layer ignore pointers; a mode button keeps `pointer-events: auto` so it still works. Without that, a button offering "Select" would be unreachable from the very mode a user most wants out of, and a presenter's control bar would be a one-way door. Right-clicking a button in those modes likewise still opens its element menu (the canvas / tab menu stays suppressed), so it can be reconfigured mid-walk.
 - **Read-only surfaces**: the embed ([Read-only embeds (`/embed`)](../013-workspace/embeds.md)) has no tool picker to drive, so it renders the face inert rather than pretending.
 
 ## Configuring it
@@ -36,7 +36,7 @@ In the palette it is **Selection Mode**, in the Tools tab's **Behaviour** group 
 
 Right-click the button → **Button**: a "Switches the presser to" tile grid of all nine modes (Select, Hand, Laser, Spotlight, Avatar, Eraser, Format, Highlighter, Isometric), the current one marked active. Tiles rather than a list so the icons match the palette's own mode picker.
 
-The full set is deliberate. A button that hands someone the Eraser is an odd thing to build, but the author picks from a menu that names each one, and forbidding it would be us second-guessing a diagram we can't see. **Highlighter** ([Highlighter](../008-canvas/highlighter.md)) joined the set when the marker became a held mode rather than a draw tile: "here, mark up the board" is one of the most natural things to hand a room, so the button is one of the better reasons the element exists.
+The full set is deliberate. A button that hands someone the Eraser is an odd thing to build, but the author picks from a menu that names each one, and forbidding it would be us second-guessing a canvas we can't see. **Highlighter** ([Highlighter](../008-canvas/highlighter.md)) joined the set when the marker became a held mode rather than a draw tile: "here, mark up the canvas" is one of the most natural things to hand a room, so the button is one of the better reasons the element exists.
 
 ## Model + validation
 

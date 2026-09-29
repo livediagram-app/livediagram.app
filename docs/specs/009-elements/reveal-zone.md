@@ -2,13 +2,13 @@
 
 Status: **implemented**.
 
-A panel that **covers part of the canvas until someone clicks it**. Quiz answers, a retro column nobody should read before they have written their own, an estimate you don't want anchored by the first number on the board.
+A panel that **covers part of the canvas until someone clicks it**. Quiz answers, a retro column nobody should read before they have written their own, an estimate you don't want anchored by the first number on the canvas.
 
 ## Why
 
-A diagram is a shared surface, so everything on it is visible to everyone the moment it exists. That is usually the point, and occasionally exactly wrong: the value of an answer, an estimate, or a set of retro notes depends on people not seeing it too early.
+The canvas is a shared surface, so everything on it is visible to everyone the moment it exists. That is usually the point, and occasionally exactly wrong: the value of an answer, an estimate, or a set of retro notes depends on people not seeing it too early.
 
-The alternatives all fail in the same way. Hiding a layer hides it from everyone including the author; moving content off-screen is a race against panning; a second tab breaks the flow of the board. A cover you click is the smallest thing that works, and it reads as intentional — "there is something here, and it is not for you yet".
+The alternatives all fail in the same way. Hiding a layer hides it from everyone including the author; moving content off-screen is a race against panning; a second tab breaks the flow of the canvas. A cover you click is the smallest thing that works, and it reads as intentional — "there is something here, and it is not for you yet".
 
 ## Under a facilitator ([Facilitator](../012-collaboration/facilitator.md))
 
@@ -31,7 +31,7 @@ facilitator, nothing about this element changes.
 
 ## The look
 
-Built in the behaviour elements' current direction ([Participant responses](../012-collaboration/participant-responses.md): the paper kit is being retired). It replaced a light grey panel with a dashed border and diagonal scratch-panel hatching, which read as a disabled box rather than as something laid over the board on purpose.
+Built in the behaviour elements' current direction ([Participant responses](../012-collaboration/participant-responses.md): the paper kit is being retired). It replaced a light grey panel with a dashed border and diagonal scratch-panel hatching, which read as a disabled box rather than as something laid over the canvas on purpose.
 
 - **An opaque panel in the canvas's own tone** (light on light paper, deep slate on dark, from the paper under it, not the app's appearance), lit by two soft glows of the element's accent (its themed stroke), with a **solid** accent border. Still fully opaque: a cover you can read through is not a cover, and a blur would imply the content is protected, which it isn't.
 - **A slow sweep of light** crosses it every few seconds, the one ambient motion that says "something is under here" from across the room. Canvas motion, in `qa-board.css`; it stops under reduced motion.
@@ -43,9 +43,9 @@ Built in the behaviour elements' current direction ([Participant responses](../0
 
 Deliberately two, because the two cases are different:
 
-1. **Double-click (or double-tap) it — for yourself.** Local, ephemeral, never written to the document: the cover goes and a small **Hide** pill appears in its corner so you can put it back. Nobody else's board changes. This is the quiz case: everyone reveals when they are ready.
+1. **Double-click (or double-tap) it — for yourself.** Local, ephemeral, never written to the document: the cover goes and a small **Hide** pill appears in its corner so you can put it back. Nobody else's canvas changes. This is the quiz case: everyone reveals when they are ready.
 
-   **Two presses, not one**, and the face says which ("Double-click to reveal", "Double-tap" on a touch device). A cover exists to stay closed, and on a board where people are dragging things around a stray single click would undo its whole purpose. The Hide pill is a single click: putting the cover back by accident costs nothing. The double press is detected from two clicks in a 450ms window rather than the DOM's `dblclick`, so a tap and a click behave identically — `dblclick` competes with double-tap-to-zoom on touch.
+   **Two presses, not one**, and the face says which ("Double-click to reveal", "Double-tap" on a touch device). A cover exists to stay closed, and on a canvas where people are dragging things around a stray single click would undo its whole purpose. The Hide pill is a single click: putting the cover back by accident costs nothing. The double press is detected from two clicks in a 450ms window rather than the DOM's `dblclick`, so a tap and a click behave identically — `dblclick` competes with double-tap-to-zoom on touch.
 
 2. **Menu → Reveal for everyone.** Writes `revealed: true`, so it syncs, persists, and undoes like any other change. This is the facilitator case: the estimates come off together. **Hide for everyone** puts it back.
 

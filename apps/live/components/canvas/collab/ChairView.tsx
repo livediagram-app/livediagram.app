@@ -22,7 +22,7 @@ import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 export type ChairSitter = { name: string; color: string };
 
 // The drawing (and the rotation for each facing, 'n' being the drawn one:
-// back at the top, sitter facing down the board toward the reader) comes
+// back at the top, sitter facing down the canvas toward the reader) comes
 // from the shared CHAIR_GEOMETRY table (@livediagram/document
 // shape-geometry.ts), which the headless export draws too.
 
@@ -46,7 +46,7 @@ export function ChairView({
   // The seat's surface. `transparent` is the element default (the chair is
   // furniture, not a box), so it falls back to a wash of its own STROKE —
   // which the tab theme sets — rather than to a fixed light grey. A hard grey
-  // stayed bright on a dark-themed board, the one thing furniture must not do.
+  // stayed bright on a dark-themed canvas, the one thing furniture must not do.
   // (Not `currentColor`: that inherits the label's text colour and drew a
   // black chair.)
   const seat = chairSeatFill(element.fillColor, stroke);

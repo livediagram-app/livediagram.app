@@ -48,7 +48,7 @@ const MAP_HEIGHT: Record<MapSize, string> = {
 type MinimapProps = {
   elements: Element[];
   // The tab default face (docs/specs/004-interface-design/fonts.md): the miniature paints what the canvas
-  // paints, so a marker board reads as one in the map too.
+  // paints, so a canvas set in the marker face looks that way in the map too.
   tabFont?: string;
   viewportOffset: { x: number; y: number };
   viewportZoom: number;
@@ -278,7 +278,7 @@ export function Minimap({
             <>
               {/* Dim everything outside the current view (even-odd: outer box
                 minus the view hole) so the lit window reads at a glance as
-                "where you are on the canvas". Optional: on a dense board some
+                "where you are on the canvas". Optional: on a dense canvas some
                 people would rather read the whole map. */}
               {dimOutside ? (
                 <path

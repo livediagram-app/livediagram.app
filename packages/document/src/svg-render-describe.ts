@@ -85,7 +85,7 @@ export type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLa
 // What an export needs from its caller beyond the element itself: the three
 // art resolvers, and the tab's default font (docs/specs/004-interface-design/fonts.md) — an element without
 // its own face inherits the tab's, so a renderer that doesn't pass it paints
-// the wrong typeface for the whole board.
+// the wrong typeface for the whole canvas.
 export type BoxedExportOptions = {
   resolveImageHref?: ResolveImageHref;
   resolveIconArt?: ResolveIconArt;
@@ -106,7 +106,7 @@ export type BoxedExportOptions = {
 // The face a label paints in: the author's own choice, else the notation's
 // (a workshop note writes in marker, docs/specs/021-event-storming/event-storming.md), else the tab default. The
 // same ladder the canvas walks — an export that resolved it differently
-// would hand out a picture of a diagram nobody has.
+// would hand out a picture of a canvas nobody has.
 export function exportFontFamily(el: BoxedElement, tabFont?: string): string | undefined {
   return resolveFontStack(el.font ?? eventStormingNoteFont(el)) ?? resolveFontStack(tabFont);
 }

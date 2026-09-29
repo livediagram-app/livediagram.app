@@ -158,7 +158,7 @@ describe('paletteDragSnapAt — timeline lanes', () => {
     expect(out.lane).toMatchObject({ laneIndex: 1 });
   });
 
-  it('is inert without a timeline, exactly as every other board behaves', () => {
+  it('is inert without a timeline, exactly as every other tab behaves', () => {
     const out = paletteDragSnapAt({
       canvasX: 305 + 100,
       canvasY: ES_LANE_PITCH + 7 + 100,

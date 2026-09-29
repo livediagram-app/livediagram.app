@@ -177,7 +177,7 @@ export function useCanvasSurfaceGestures({
     }
     // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a non-editing presenter mode where a primary
     // click means "walk over there". Handled in the capture phase for the
-    // same reason as Spotlight: the diagram layer is pointer-inert, but arrow
+    // same reason as Spotlight: the canvas layer is pointer-inert, but arrow
     // hit-bands re-enable themselves via `pointer-events: stroke` and select
     // on ANY button, so we swallow the secondary button too. Middle-mouse
     // (pan) and held-Space (temporary pan) fall through untouched.

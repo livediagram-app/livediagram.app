@@ -436,7 +436,7 @@ export async function apiDelete(
 //     every document it's shared into, breaking per-document scope.
 // Shared by apiCreateDocument + apiSaveTab.
 // The single normalisation every tab passes through on its way to the wire:
-// strip the UI-only fields, and stamp the board kind (docs/specs/021-event-storming/event-storming.md).
+// strip the UI-only fields, and stamp the tab kind (docs/specs/021-event-storming/event-storming.md).
 //
 // The kind is stamped HERE rather than only at the editor's commit choke
 // point because several mutation paths reach persistence — the history

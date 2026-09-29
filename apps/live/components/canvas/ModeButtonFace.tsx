@@ -7,7 +7,7 @@
 //     the configured mode) instead of only selecting the element. Pointer-down
 //     is left alone rather than swallowed, so dragging the button still moves
 //     it — a click is a click, a drag is a drag.
-//  2. It keeps `pointer-events: auto` even inside a pointer-inert diagram
+//  2. It keeps `pointer-events: auto` even inside a pointer-inert canvas
 //     layer, which is what makes a button still work while someone is walking
 //     around in Avatar mode. A control bar of these is useless if the mode it
 //     hands out is a one-way portal.
@@ -121,9 +121,9 @@ export function ModeButtonFace({
   // fill (a plain surface by default) is the button, and a gradient wash over
   // it only muddied whatever colour the author picked. What sells "raised" is
   // the hairline highlight along the top edge, which works on any fill.
-  // A KEYCAP (docs/specs/012-collaboration/participant-responses.md). This is the one element on the board that IS a key —
+  // A KEYCAP (docs/specs/012-collaboration/participant-responses.md). This is the one element on the canvas that IS a key —
   // you press it and a tool comes out — so it is moulded like one: a lit top
-  // face, a shaded skirt, and a drop that stands it off the board. The old
+  // face, a shaded skirt, and a drop that stands it off the canvas. The old
   // flat white inset highlight said "button" in the abstract; this says which
   // button.
   const layout =
@@ -165,7 +165,7 @@ export function ModeButtonFace({
         // See usePressWithoutDrag.
         {...press}
         // Sits exactly over the chip `inner` draws. `pointer-events-auto`
-        // survives the inert diagram layer of Avatar / Spotlight / Isometric
+        // survives the inert canvas layer of Avatar / Spotlight / Isometric
         // mode; see the file header. The hover / active treatment is what
         // sells "pressable" — a ring and a lift on hover (desktop only, via
         // `sm:`, since a tap would leave it stuck on a phone) and a shrink on

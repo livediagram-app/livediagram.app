@@ -147,7 +147,7 @@ export function svgCollabFace(
     case 'quiz': {
       // Quiz (docs/specs/012-collaboration/quiz.md): the disc and its ring of answers. A still image
       // cannot run a countdown, so an unrevealed card exports as the closed
-      // disc (the question stays hidden, as it is on the board) and a revealed
+      // disc (the question stays hidden, as it is on the canvas) and a revealed
       // one exports the question with the right answer in green.
       const scale = Math.min(el.width, el.height) / QUIZ_DESIGN_SIZE;
       const ox = el.x + (el.width - QUIZ_DESIGN_SIZE * scale) / 2;

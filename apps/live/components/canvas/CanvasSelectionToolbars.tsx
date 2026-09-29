@@ -69,7 +69,7 @@ export function CanvasSelectionToolbars({
           dock on mobile. The previous mobile-only z-[var(--z-canvas)] was an
           older design choice that hid the toolbar behind chrome,
           which made multi-select edit ops awkward on a phone.
-          Diagram elements stay in the original wrapper at z-auto
+          Canvas elements stay in the original wrapper at z-auto
           and continue to be visually covered by panels where they
           overlap. */}
       {/* Hide the selection toolbar while a quick-connect ring is open — its

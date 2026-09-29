@@ -226,7 +226,7 @@ export type ShapeElement = {
   revealed?: boolean;
   // Picker (docs/specs/012-collaboration/picker.md): where the candidates come from, the written list when
   // that source is 'options', and the last result — kept on the element so the
-  // board still shows it after a reload. Only meaningful on the 'picker' kind.
+  // canvas still shows it after a reload. Only meaningful on the 'picker' kind.
   pickerSource?: PickerSource;
   pickerOptions?: string[];
   pickerResult?: string;

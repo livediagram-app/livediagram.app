@@ -239,7 +239,7 @@ describe('stripUiTabFields', () => {
 // the non-undoable session tick, remote applies), and a field that depends on
 // which one ran is a field you cannot trust. Every tab that goes out says
 // what it is.
-describe('tabForWire — board kind', () => {
+describe('tabForWire — tab kind', () => {
   const tab = (over: Partial<Tab> = {}): Tab =>
     ({ id: 't', name: 'T', elements: [], ...over }) as Tab;
 

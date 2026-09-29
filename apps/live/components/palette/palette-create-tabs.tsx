@@ -73,7 +73,7 @@ export function PaletteEventStormingTab({
   return (
     <>
       {/* Board-level switches first (docs/specs/021-event-storming/event-storming.md Phase 6), then the notation.
-          Absent on every other board, where they would control nothing. */}
+          Absent on every other tab, where they would control nothing. */}
       {board ? <EventStormingBoardRows controls={board} /> : null}
       <PaletteToolRows
         tiles={tilesInSection('event-storming')}
@@ -156,7 +156,7 @@ export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
   // on the reasoning that it is the one you reach for outside a facilitated
   // session and a group of one would be a click in front of the tab's
   // most-used tile. It is in **Record** now: a comment thread is a
-  // thing you leave behind on the board for somebody to find later, which is
+  // thing you leave behind on the canvas for somebody to find later, which is
   // what the agenda, the decision record and the roll call all are, and a
   // single row floating above six category tiles read as an oversight.
   return (

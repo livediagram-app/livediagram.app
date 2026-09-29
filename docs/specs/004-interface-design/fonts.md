@@ -101,9 +101,9 @@ macOS ignore `font-family` on `<option>`, so the names would all look alike).
 
 ## Exports carry the face
 
-An exported image is the diagram as far as its reader is concerned, so PNG /
+An exported image is the canvas as far as its reader is concerned, so PNG /
 SVG / PDF paint the same typeface the canvas did (they used to hardcode the UI
-sans, which quietly rewrote every board — loudest on an event-storming wall,
+sans, which quietly rewrote every canvas — loudest on an event-storming wall,
 whose marker face IS its notation).
 
 - `describeBoxedExport` resolves the face per element (`exportFontFamily`) and
@@ -116,7 +116,7 @@ whose marker face IS its notation).
   `<img>`, which blocks external resources outright, so a referenced font
   would silently come back as the fallback. Non-Latin text keeps the fallback
   face — embedding every script would multiply an export's weight for coverage
-  a diagram almost never uses.
+  a canvas almost never uses.
 - **A headless render declares instead.** `renderElementsToSvg` (the api / mcp
   workers, which have no font-fetch budget) emits `svgFontDefs`: an `@import`
   of the Google stylesheet for the used families only. A browser opening that

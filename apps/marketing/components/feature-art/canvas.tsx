@@ -906,7 +906,7 @@ export function RefreshArt() {
 
 // Spotlight presenter tool (docs/specs/008-canvas/canvas-and-palette.md): the canvas dims under a dark shroud and
 // only a soft circle around the cursor stays lit, so the presenter can draw
-// the room's eye to one part of the diagram. The clear circle is a transparent
+// the room's eye to one part of the canvas. The clear circle is a transparent
 // span with a huge dark box-shadow; it travels between two nodes.
 export function SpotlightArt() {
   return (

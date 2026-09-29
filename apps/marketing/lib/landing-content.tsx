@@ -225,9 +225,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <CommentsArt />,
         href: '/help/palette/collaborate/',
         group: 'Work together live',
-        title: 'Comment panels on the board',
+        title: 'Comment panels on the canvas',
         description:
-          'For a remark that belongs somewhere rather than to someone, drop a comment panel and join it to an element with an arrow. It is the same thread a comment badge opens, except it stays put: on the board, in the export, and in everyone else\u2019s session.',
+          'For a remark that belongs somewhere rather than to someone, drop a comment panel and join it to an element with an arrow. It is the same thread a comment badge opens, except it stays put: on the canvas, in the export, and in everyone else\u2019s session.',
       },
       {
         art: <SessionToolsArt />,
@@ -243,7 +243,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & facilitate',
         title: 'Celebrate on the canvas',
         description:
-          'Reaction pads throw confetti, sparkles, hearts, applause or fireworks over the board for everyone in the room. Press one, or walk an Avatar-mode character onto it. Nothing is saved: a reaction is a moment, not a mark on the diagram.',
+          'Reaction pads throw confetti, sparkles, hearts, applause or fireworks over the canvas for everyone in the room. Press one, or walk an Avatar-mode character onto it. Nothing is saved: a reaction is a moment, not a mark on the canvas.',
       },
       {
         art: <AssignedActionsArt />,
@@ -259,7 +259,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & facilitate',
         title: 'Run the session: timer + voting',
         description:
-          'Facilitate live from the canvas. Drop a timer straight onto the board — the real one, with start, pause, restart and a bar that drains as the time goes — or start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
+          'Facilitate live from the canvas. Drop a timer straight onto it — the real one, with start, pause, restart and a bar that drains as the time goes — or start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
       },
       {
         art: <FacilitatorArt />,
@@ -300,7 +300,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore the presentation tools',
     title: 'Presentation tools built right in',
     description:
-      'Everything you need to talk a room through a diagram, in the diagram itself. Run it as a slide deck, point with a laser, dim everything but the piece you mean, walk a character through it, tilt it into 3D, or clear the screen entirely — no export, no second tool, and nothing to keep in step afterwards.',
+      'Everything you need to talk a room through a diagram, on the canvas itself. Run it as a slide deck, point with a laser, dim everything but the piece you mean, walk a character through it, tilt it into 3D, or clear the screen entirely — no export, no second tool, and nothing to keep in step afterwards.',
     items: [
       {
         art: <SlideDeckArt />,
@@ -340,7 +340,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Presenting modes',
         title: 'Spotlight the room on one thing',
         description:
-          'Switch on Spotlight and the canvas dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy diagram one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
+          'Switch on Spotlight and the canvas dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy canvas one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
       },
       {
         art: <LaserArt />,
@@ -354,7 +354,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <AvatarModeArt />,
         href: '/help/selection-modes/avatar-mode/',
         group: 'Presenting modes',
-        title: 'Walk a character through your diagram',
+        title: 'Walk a character across your canvas',
         description:
           'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. Dress it how you like — gender, clothing, hair and size, remembered in your browser — and the box it stands on gets a ring. The canvas is read-only while you walk, and on a shared document everyone sees everyone else walking about in their own colour.',
       },
@@ -362,9 +362,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <IsometricArt />,
         href: '/help/selection-modes/isometric-mode/',
         group: 'Presenting modes',
-        title: 'Tilt the board into 3D',
+        title: 'Tilt the canvas into 3D',
         description:
-          'Isometric view tips the whole canvas onto an angle and lifts each layer off the one below, so a stack that reads as flat boxes becomes a scene you can see the depth of. Orbit it from the zoom cluster. It is a way of LOOKING at a diagram, not a change to it: nothing moves, and everyone else still sees it flat.',
+          'Isometric view tips the whole canvas onto an angle and lifts each layer off the one below, so a stack that reads as flat boxes becomes a scene you can see the depth of. Orbit it from the zoom cluster. It is a way of LOOKING at the canvas, not a change to it: nothing moves, and everyone else still sees it flat.',
       },
       {
         art: <ZenModeArt />,
@@ -421,7 +421,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Canvas & type',
         title: 'Eleven fonts',
         description:
-          'Set the typeface per element or as a tab-wide default, from eleven Google Fonts spanning sans, serif, slab, display, mono, and handwriting. New tabs inherit it, so a diagram reads consistently.',
+          'Set the typeface per element or as a tab-wide default, from eleven Google Fonts spanning sans, serif, slab, display, mono, and handwriting. New tabs inherit it, so every canvas reads consistently.',
       },
       {
         art: <ShapesArt />,
@@ -462,7 +462,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore animation',
     title: 'Bring the canvas to life',
     description:
-      'A diagram does not have to sit still. Animate a shape to signal status, send the flow marching along an arrow, let the backdrop drift, and reach for a spotlight when you present. Every animation is purely decorative motion: it freezes to a clean still frame when exported and respects reduced-motion.',
+      'The canvas does not have to sit still. Animate a shape to signal status, send the flow marching along an arrow, let the backdrop drift, and reach for a spotlight when you present. Every animation is purely decorative motion: it freezes to a clean still frame when exported and respects reduced-motion.',
     items: [
       {
         art: <AnimatedShapesArt />,
@@ -523,7 +523,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Select & lock',
         title: 'Lock anything in place',
         description:
-          'Lock an element, or a whole tab, and it turns read-only, so a finished part of the diagram cannot be nudged or edited by accident.',
+          'Lock an element, or a whole tab, and it turns read-only, so a finished part of the canvas cannot be nudged or edited by accident.',
       },
       {
         art: <LayersArt />,

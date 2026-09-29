@@ -76,7 +76,7 @@ const MAX_MESSAGE_CHARS = 256 * 1024;
 // Length clamp on the tab id we persist into the attachment from hello /
 // tab-focus frames. Real tab ids are UUIDs (36 chars); the clamp only
 // exists so a hostile frame can't balloon the attachment (see the size
-// note on SessionAttachment). MAX_TAB_ID_LEN comes from ./diagram-room-rules,
+// note on SessionAttachment). MAX_TAB_ID_LEN comes from ./document-room-rules,
 // which owns the clamp it applies to a hello frame's tabId.
 
 // How many recent mutation ops the room keeps for reconnect catch-up
@@ -540,7 +540,7 @@ export class DocumentRoom implements DurableObject {
       return;
     }
     // Per-session frame-rate cap (sliding 1s window). The decision is
-    // admitFrame in diagram-room-rules; this is the socket plumbing.
+    // admitFrame in document-room-rules; this is the socket plumbing.
     const decision = admitFrame(this.opRates.get(ws), Date.now(), OP_RATE_CAP);
     this.opRates.set(ws, decision.rate);
     if (!decision.admit) return;

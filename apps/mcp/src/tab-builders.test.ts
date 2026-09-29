@@ -95,7 +95,7 @@ describe('event-storming fields survive a tool write', () => {
     );
   });
 
-  it('keeps the board KIND when a tool rewrites the elements', () => {
+  it('keeps the tab KIND when a tool rewrites the elements', () => {
     // The tools spread the existing tab, so a tab-level field survives an
     // element replace without anyone having to remember it.
     const existing = { id: 't1', name: 'Wall', kind: 'event-storming', elements: [] };

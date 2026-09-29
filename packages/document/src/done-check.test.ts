@@ -45,7 +45,7 @@ describe('done check', () => {
 
   it('an empty room is never done', () => {
     // Nobody present means nothing has been finished; flashing at an empty
-    // board would be celebrating the absence of people.
+    // canvas would be celebrating the absence of people.
     expect(allDone(undefined, [])).toBe(false);
     expect(allDone(mark(['ghost']), [])).toBe(false);
   });

@@ -11,7 +11,7 @@ import { isBoxed, type Element, type ElementId } from './index';
 //    already snaps to, so a heading can be sized to line up with whatever is
 //    sitting next to the lane.
 //  - OTHER LANES' SEAMS. A stack of swimlanes with headings of slightly
-//    different widths is the thing that makes a board look untidy, and it is
+//    different widths is the thing that makes a canvas look untidy, and it is
 //    almost impossible to fix by eye: the seams are far apart vertically, so
 //    a few pixels of difference never sits in one glance. Snapping to them
 //    makes "line these up" a gesture rather than a fiddle.

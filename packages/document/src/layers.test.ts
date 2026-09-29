@@ -354,7 +354,7 @@ describe('isDefaultLayerName', () => {
 });
 
 // The fallback (no stored preference) must land somewhere you can actually
-// work. Picking the topmost layer blindly stranded a board whose top layer
+// work. Picking the topmost layer blindly stranded a canvas whose top layer
 // was hidden: every create path silently no-opped, with no toast to explain
 // it, because the user never chose that layer — nothing had happened for a
 // toast to describe.

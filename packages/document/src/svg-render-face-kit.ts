@@ -20,7 +20,7 @@ export const BODY_PX = 11;
 // Every text mark below leaves its face to the group the caller wraps these
 // in (see `svgFace`), so the element's own typeface reaches all of them
 // without being threaded through twenty-odd call sites. A card exported in a
-// different face to the one on the board is this branch's bug in smaller
+// different face to the one on the canvas is this branch's bug in smaller
 // type.
 
 export const text = (

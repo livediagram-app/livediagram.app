@@ -7,14 +7,14 @@ into one.
 
 ## Why
 
-Avatar mode ([Avatar mode](../008-canvas/avatar-mode.md)) put people inside the diagram and gave them one thing to
+Avatar mode ([Avatar mode](../008-canvas/avatar-mode.md)) put people inside the canvas and gave them one thing to
 do there: walk. A chair gives the room furniture, and furniture is what turns a
 space into a place.
 
-It earns its keep the moment a board has more than one: eight chairs around a
+It earns its keep the moment a canvas has more than one: eight chairs around a
 table is a seating plan, an attendance display, and a turn-taking device all at
 once, drawn with elements the author already knows how to place. "Everyone grab
-a seat" is a thing facilitators say, and on this board it becomes literal.
+a seat" is a thing facilitators say, and on this canvas it becomes literal.
 
 It is also the cheapest possible version of the idea — the walk hook already
 fires when a character arrives on top of something, which is exactly how the
@@ -28,7 +28,7 @@ button, portal, session button, reveal zone and picker.
 - Drawn as a chair seen from above-front: a seat, a back, and a shadow, so it
   reads as furniture rather than as a box with a label.
 - **`ShapeElement.chairFacing`** — `'n' | 'e' | 's' | 'w'`, which way the seat
-  points. Absent = `'n'` (back at the top, sitter facing down the board, toward
+  points. Absent = `'n'` (back at the top, sitter facing down the canvas, toward
   the reader). Set from the element's context menu.
 - **No settings `…` on its face.** Every other Behaviours card carries the
   shared ellipsis in its corner ([Canvas and palette](../008-canvas/canvas-and-palette.md)); a chair is furniture, not a card,
@@ -59,7 +59,7 @@ there).
 
 - The character **snaps to the chair's seat point** and switches to a seated
   pose — legs forward, body lowered, **facing the way the chair faces**
-  (`n` down the board, `e` left, `s` up, `w` right: the same words the menu
+  (`n` down the canvas, `e` left, `s` up, `w` right: the same words the menu
   tiles use). The seat point turns with the chair, so the sitter lands on the
   seat rather than on the backrest of a sideways chair.
 - While seated it **ignores walk targets**: clicking elsewhere on the canvas

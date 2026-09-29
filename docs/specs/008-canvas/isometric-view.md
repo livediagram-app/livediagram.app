@@ -1,9 +1,9 @@
 # Isometric view
 
 A fourth **canvas tool** alongside Select / Hand / Laser that renders the
-current tab as an **isometric scene with depth** — the flat diagram tilted
+current tab as an **isometric scene with depth** — the flat canvas tilted
 onto an isometric plane, each shape extruded into a raised block. It's a way
-to _look_ at a diagram (architecture decks, system maps, screenshots), not a
+to _look_ at a canvas (architecture decks, system maps, screenshots), not a
 way to edit one.
 
 ## What it does
@@ -11,7 +11,7 @@ way to edit one.
 Picking the **Isometric** tool re-projects the canvas content into an
 isometric (axonometric, parallel — no perspective) view:
 
-- The whole content layer tilts onto the isometric plane, so the diagram
+- The whole content layer tilts onto the isometric plane, so the canvas
   reads as a surface seen from above and to the side.
 - Each **boxed element** (shapes, tables, images, stickies, link
   cards, annotations) gains **extruded depth** — a solid raised
@@ -120,9 +120,9 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
   (`isoTransform` + `isoPivot` in `lib/isometric.ts`), where the pivot is the
   boxed-content bounding-box centre expressed relative to the wrapper centre
   (its `origin-center`). Without this the rotation pivots about the wrapper
-  centre, so any diagram whose centre sits away from that point swings
+  centre, so any canvas whose content centre sits away from that point swings
   off-screen the instant the view tilts and again as it orbits; pinning the
-  content centre makes the diagram tilt in place and stay centred while
+  content centre makes the canvas tilt in place and stay centred while
   orbiting. The pivot translates sit inside the tilt fragment, so the pan
   offset (outside it) still pans in screen space.
 - Orbit (Shift-drag) is a self-contained drag in `useIsometricCamera` that

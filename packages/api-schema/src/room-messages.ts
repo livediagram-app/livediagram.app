@@ -481,7 +481,7 @@ export type RoomOp =
   // the element off-centre (or off-screen) for anyone whose canvas is a
   // different shape; centring the point is the correct translation of "come
   // and look at this", and the zoom is what makes their view show the same
-  // amount of board.
+  // amount of canvas.
   //
   // No sender name: the envelope already identifies the sender and the
   // receiver resolves the name from the presence list it holds, so a renamed

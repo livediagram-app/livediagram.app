@@ -104,7 +104,7 @@ describe('useLaneSettle', () => {
     expect(h.commits).toHaveLength(1);
   });
 
-  it('leaves an ordinary board alone', () => {
+  it('leaves an ordinary tab alone', () => {
     const h = harness({ id: 't1', name: 'D', elements: [note('a', 130)] } as Tab);
     expect(h.commits).toHaveLength(0);
     expect(h.marks).toEqual([]);

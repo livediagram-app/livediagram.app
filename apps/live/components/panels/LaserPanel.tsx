@@ -50,7 +50,7 @@ function PenPreview({ config, colour }: { config: LaserConfig; colour: string })
 
   // A gentle S-curve across the box, sampled back in time so the tail is
   // already fading when it appears — the same shape a hand sweeping across a
-  // diagram makes.
+  // canvas makes.
   const points = Array.from({ length: 24 }, (_, i) => {
     const p = i / 23;
     return {

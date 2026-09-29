@@ -12,7 +12,7 @@ describe('mergeImportedTab', () => {
     expect(out.name).toBe('Mine');
   });
 
-  it('carries the board KIND, so an imported workshop board is still one', () => {
+  it('carries the tab KIND, so an imported workshop board is still one', () => {
     // Without this the export/import round trip quietly downgraded a
     // workshop board to an ordinary diagram: the notes came back, but the
     // palette, the stationery and the note menu did not.

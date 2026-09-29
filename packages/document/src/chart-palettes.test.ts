@@ -4,7 +4,7 @@ import { CHART_PALETTES, chartPaletteColors, isChartPaletteId } from './chart-pa
 // Palette ids are stored on elements, so they are permanent, and an absent or
 // unknown one must fall THROUGH rather than resolve to something: a chart with
 // no palette follows the tab theme, exactly as every chart did before this
-// existed, so nothing already on a board changes appearance.
+// existed, so nothing already on a canvas changes appearance.
 
 describe('chart palettes', () => {
   it('gives every palette a full run of colours', () => {

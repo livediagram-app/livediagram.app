@@ -3,7 +3,7 @@ import { migrateRetiredScheme, retiredSchemeOf } from './retired-schemes';
 import type { Element, Tab } from './index';
 
 // Retired colour schemes (docs/specs/011-theme/retired-schemes.md): a scheme leaves the catalogue by
-// being migrated away on read, so an old board opens as the scheme that replaced it.
+// being migrated away on read, so an old canvas opens in the scheme that replaced it.
 
 const CHARCOAL = {
   fill: '#2c2c33',

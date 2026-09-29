@@ -222,7 +222,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
     rawCommitTabs((ts) => {
-      // Board kind (docs/specs/021-event-storming/event-storming.md): a committed tab says what KIND of board it
+      // Tab kind (docs/specs/021-event-storming/event-storming.md): a committed tab says what KIND of board it
       // is, rather than leaving a reader to know that absence means
       // 'diagram'. Same choke point as the layer stamp below, and
       // `stampTabKind` returns the tab unchanged when it already has one,
@@ -1230,7 +1230,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Where the editor was looking before the deck took over, so exiting puts it
   // back. Without this you left a presentation zoomed to whatever the last
-  // slide needed — often 250% on one box — and had to hunt for your diagram.
+  // slide needed — often 250% on one box — and had to hunt around the canvas.
   const [preShowView, setPreShowView] = useState<{
     tabId: string;
     zoom: number;
@@ -1275,7 +1275,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     if (presentingTabId !== undefined && presentingTabId !== activeId) setActiveId(presentingTabId);
   }
   // A slide fills the screen by default. The editor's own fit caps at 100%
-  // because a small diagram blown up looks broken in a workspace; a slide is
+  // because a sparse canvas blown up looks broken in a workspace; a slide is
   // the only thing on a projector, so a one-box slide SHOULD be a big box —
   // unless the presenter has picked "Actual size" from the cog.
   const frameSlide = useEffectEvent((elements: NonNullable<typeof presentingElements>) => {

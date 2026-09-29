@@ -301,7 +301,7 @@ export const CHAIR_FACING_ROTATION: Record<ChairFacing, number> = { n: 0, e: 90,
 
 /** A chair's seat colour: its own fill, or with none (the default is
  *  `transparent`) a wash of its stroke, so it follows the tab theme rather
- *  than staying a fixed light grey on a dark board. */
+ *  than staying a fixed light grey on a dark canvas. */
 export function chairSeatFill(fillColor: string | undefined, stroke: string): string {
   return fillColor && fillColor !== 'transparent' ? fillColor : colorWash(stroke, 0.32);
 }

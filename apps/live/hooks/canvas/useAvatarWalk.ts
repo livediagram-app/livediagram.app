@@ -3,7 +3,7 @@
 // per-frame animation loop, and the camera nudge all read one source of truth.
 //
 // The avatar lives in CANVAS coordinates (unlike the spotlight beam, which
-// is screen-space): it stands IN the diagram, so it has to pan and zoom
+// is screen-space): it stands ON the canvas, so it has to pan and zoom
 // with the content. Position is the FEET, so it stands on the point you
 // clicked rather than being centred over it. Nothing here is persisted or
 // written to the change log; the only thing that leaves the browser is the

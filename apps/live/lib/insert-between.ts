@@ -61,7 +61,7 @@ export type InsertionGate = {
 
 // May this drag be offered an insertion right now? Only while ALT IS HELD —
 // the gesture is deliberate, never automatic, so an ordinary drag over a gap
-// behaves exactly as it does on every other board. Only on an event-storming
+// behaves exactly as it does on every other tab. Only on an event-storming
 // board. And only where the drop would actually be allowed to land: a preview
 // that opens a slot a read-only viewer, a locked tab or a blocked active layer
 // would then refuse is a promise the editor can't keep.

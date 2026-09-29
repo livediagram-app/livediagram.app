@@ -88,7 +88,7 @@ so peers only get the one that changed.
 A tab summary carries no `elements`, so before its `GET /tabs/:id`
 lands the tab is an empty placeholder. The canvas MUST NOT render its
 normal "Empty canvas" prompt over that placeholder — it reads as "your
-diagram is gone", and worse, if the user starts adding elements to the
+canvas is gone", and worse, if the user starts adding elements to the
 blank canvas the autosave persists the empty-plus-new tab and **wipes
 the real server row**. So while the active tab's content is outstanding:
 
@@ -254,7 +254,7 @@ The `change_log` table is tab-scoped — its row carries a `tab_id` (every entry
 
 ## Import carries identity, not just content
 
-When an exported tab lands in a receiving tab (`mergeImportedTab`), the **board kind** and the **layers** travel with the elements and styling.
+When an exported tab lands in a receiving tab (`mergeImportedTab`), the **tab kind** and the **layers** travel with the elements and styling.
 
 Without the kind, an exported event-storming board came back as an ordinary diagram: every note present, but the palette, the stationery and the note menu gone, with nothing on screen to explain why ([Event storming](../021-event-storming/event-storming.md)). Without the layers, every imported element’s `layerId` dangles and the bands the author organised the tab into are lost ([Layers](layers.md)).
 

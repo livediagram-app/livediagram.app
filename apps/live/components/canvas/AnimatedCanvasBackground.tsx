@@ -3,7 +3,7 @@
 // The animated canvas backdrops (docs/specs/008-canvas/canvas-and-palette.md). Five softly-moving patterns
 // (Flow / Drift / Aurora / Ripple / Ribbons) that bring an otherwise-static
 // canvas to life. They render as a single full-bleed, pointer-transparent overlay
-// layered behind the diagram content rather than as a CSS `background-image`
+// layered behind the canvas content rather than as a CSS `background-image`
 // (the static patterns' route), because none of these can be expressed as a
 // tiling image: they need independent per-element motion.
 //
@@ -274,7 +274,7 @@ function Ribbons({ scale, color }: { scale: number; color: string }) {
 
 // All keyframes + the reduced-motion freeze in one block. Element opacities
 // are kept modest so the patterns stay a backdrop, never competing with the
-// diagram content on top.
+// canvas content on top.
 const KEYFRAMES = `
   .lvd-flow-line {
     opacity: 0.4;

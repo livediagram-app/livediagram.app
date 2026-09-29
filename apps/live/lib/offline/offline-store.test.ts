@@ -139,7 +139,7 @@ describe('offline store ops (in-memory backend)', () => {
 // Both stores must agree on what a tab IS. An offline board that lost its
 // kind would come back from a Sync Document as an ordinary diagram — the
 // cloud copy would then be wrong too, and nothing could tell.
-describe('upsertTab — board kind', () => {
+describe('upsertTab — tab kind', () => {
   const rec = (): OfflineDocumentRecord =>
     ({
       id: 'off:1',

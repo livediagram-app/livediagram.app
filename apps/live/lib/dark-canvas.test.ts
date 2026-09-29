@@ -3,7 +3,7 @@ import { isDarkCanvas } from './dark-canvas';
 
 // A sticky's paper peel is a fixed ink (docs/specs/008-canvas/canvas-and-palette.md): tuned against a light
 // wall, it all but vanishes on a dark one — the shadow has to deepen with
-// the backdrop or the note stops lifting off the board. The canvas surface
+// the backdrop or the note stops lifting off the canvas. The canvas surface
 // flags its own darkness so the peel (pure CSS) can respond without
 // knowing anything about themes.
 describe('isDarkCanvas', () => {

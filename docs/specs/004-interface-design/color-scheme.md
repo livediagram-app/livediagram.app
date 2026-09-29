@@ -60,7 +60,7 @@ Reserved for status — never used decoratively.
 - **Links** are `brand-600` with underline on hover.
 - **Focus rings** are 2px `brand-500` with a 2px `brand-100` halo for accessibility.
 - **Selection / collaborator highlights** on the canvas use `brand-200`–`brand-300` tints. Individual collaborator cursors may shift hue (per-user color), but the default user's selection stays in the brand range.
-- **Page background**: `slate-50`. **Canvas background**: pure white (`#FFFFFF`) so diagrams read cleanly.
+- **Page background**: `slate-50`. **Canvas background**: pure white (`#FFFFFF`) so what's on the canvas reads cleanly.
 - **Dark mode** uses `slate-950` page bg, `slate-900` surfaces and the Steel accent, as the [dark palette](#dark-palette-steel) sets out.
 - **Glyphs in a circle or pill** centre their ink, not their line box, in both appearances: see
   [Optical alignment](optical-alignment.md).

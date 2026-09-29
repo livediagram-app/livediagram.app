@@ -8,7 +8,7 @@ While the **Eraser** tool ([Canvas and palette](canvas-and-palette.md)) is activ
 
 The eraser is the only tool that destroys work, and it has been the bluntest one in the app: press, and whatever is under the exact pixel goes. That fails in both directions.
 
-It is **too precise** when you have sketched over a diagram with the Pencil and want the sketch gone — you trace every stroke back with a one-pixel point. It is **too indiscriminate** when the sketch is over a dense flow: a drag meant for your annotations takes a box, an arrow, and someone's sticky with it, and the only recovery is undo (which takes the lot back, including what you did mean to remove).
+It is **too precise** when you have sketched over the canvas with the Pencil and want the sketch gone — you trace every stroke back with a one-pixel point. It is **too indiscriminate** when the sketch is over a dense flow: a drag meant for your annotations takes a box, an arrow, and someone's sticky with it, and the only recovery is undo (which takes the lot back, including what you did mean to remove).
 
 A size makes the first case one sweep. A target filter makes the second case impossible. Neither belongs in a settings dialog: you change them for the job in front of you, then move on.
 
@@ -18,7 +18,7 @@ Three accordion rows over a live preview of the brush.
 
 - **Mode** — **Sweep** (drag across things to erase them, today's behaviour) or **Tap** (one press, one thing). Tap is for surgical removal on a crowded canvas, where a two-pixel drag currently takes a neighbour with it.
 - **Size** — **Point** (the exact pixel, today) / **Small** (18px) / **Medium** (36px) / **Large** (72px) radius. Anything the brush touches goes, hit-tested by sampling a ring of points around the pointer rather than one — the DOM hit test the eraser already uses, called a few more times.
-- **Erases** — **Anything** (default), **Drawings only** (freehand + highlighter strokes), or **Arrows only**. "Drawings only" is the one that makes sketching over a diagram safe: sweep the whole thing at Large and the diagram underneath is untouched. "Arrows only" is for rewiring without disturbing the boxes.
+- **Erases** — **Anything** (default), **Drawings only** (freehand + highlighter strokes), or **Arrows only**. "Drawings only" is the one that makes sketching over the canvas safe: sweep the whole thing at Large and everything underneath is untouched. "Arrows only" is for rewiring without disturbing the boxes.
 
 A fourth row, **Groups** (just the piece, or the whole group), was removed with groups themselves ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)). A stored config still carrying it parses fine: the unknown field is ignored.
 

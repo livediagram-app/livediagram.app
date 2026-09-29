@@ -6,19 +6,19 @@ import { AvatarMode } from '@/components/illustrations/palette-modes';
 export const metadata = helpMetadata({
   title: 'Avatar Mode',
   description:
-    'Use Avatar mode in livediagram to drop a walking pixel character onto the canvas, click or use the arrow keys to walk it to whatever you are talking about, hop with a flag, and present your diagram as a tour.',
+    'Use Avatar mode in livediagram to drop a walking pixel character onto the canvas, click or use the arrow keys to walk it to whatever you are talking about, hop with a flag, and present your canvas as a tour.',
   path: '/help/selection-modes/avatar-mode/',
 });
 
 <ArticleLayout
   title="Avatar Mode"
-  description="Walk a little character around the diagram while you talk through it."
+  description="Walk a little character around the canvas while you talk through it."
   categoryTitle="Selection Modes"
   categorySlug="selection-modes"
   subArticles={getSubArticles("avatar-mode")}
 >
 
-Avatar mode drops a small pixel character onto the canvas and lets you walk it around. Instead of waving a cursor at the part of the diagram you are describing, you walk over to it, so the room follows a character moving between places. Choose it from the mode picker at the top of the floating palette, or press **`W`**.
+Avatar mode drops a small pixel character onto the canvas and lets you walk it around. Instead of waving a cursor at the part of the canvas you are describing, you walk over to it, so the room follows a character moving between places. Choose it from the mode picker at the top of the floating palette, or press **`W`**.
 
 ## Walking
 
@@ -69,9 +69,9 @@ Under the customisation rows are five **reactions** your character can perform o
 
 They are quick on purpose — a gesture, not a cutscene — and everyone else on a shared document sees the performance too. Starting one stops whatever walk was in progress, so the character performs where it stands.
 
-## The diagram is read-only while you walk
+## The canvas is read-only while you walk
 
-Every click means "walk over there", so nothing on the canvas can be selected, moved, resized, or edited while Avatar mode is on, and the element shortcuts stay dormant. That is deliberate: you can click around your diagram freely mid-presentation without any chance of nudging a shape out of place.
+Every click means "walk over there", so nothing on the canvas can be selected, moved, resized, or edited while Avatar mode is on, and the element shortcuts stay dormant. That is deliberate: you can click around the canvas freely mid-presentation without any chance of nudging a shape out of place.
 
 **Reaching for the palette lets you edit again.** Pick any palette tile — or drag one onto the canvas — and Avatar mode steps aside, back to whichever mode you were in before, and the element drops as normal. You do not have to leave the mode by hand first.
 

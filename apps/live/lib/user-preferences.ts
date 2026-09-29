@@ -45,10 +45,10 @@ export type UserPreferences = {
   // and `?? 'medium'`, so an existing user's map is unchanged.
   //
   // `mapDimOutside` shades everything outside the current view. It reads as
-  // "you are here" at a glance, but on a dense board some people want the
+  // "you are here" at a glance, but on a dense canvas some people want the
   // whole map bright, so it is a toggle rather than a rule.
   mapDimOutside?: boolean;
-  // How tall the map is. A big diagram is unreadable in a 144px strip; a
+  // How tall the map is. A big canvas is unreadable in a 144px strip; a
   // small one doesn't need more.
   mapSize?: MapSize;
   // Layers panel options (docs/specs/006-document/layers.md). Both default ON via `!== false`.

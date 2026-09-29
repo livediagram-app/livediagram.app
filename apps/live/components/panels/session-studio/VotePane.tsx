@@ -360,7 +360,7 @@ function LiveVote({
               ? 'Ending keeps every dot; nobody can add more.'
               : phase === 'closed'
                 ? 'Showing results walks the room through the winners, most dots first.'
-                : 'Clearing takes every dot off the board.'}
+                : 'Clearing takes every dot off the canvas.'}
           </span>
         </div>
       ) : (

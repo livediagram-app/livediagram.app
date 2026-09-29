@@ -70,7 +70,7 @@ describe('resolveNoteInsertion', () => {
     expect(resolve({ altHeld: false })).toBeNull();
   });
 
-  it('offers nothing on an ordinary board', () => {
+  it('offers nothing on an ordinary tab', () => {
     expect(resolve({ gate: { ...GATE, esBoard: false } })).toBeNull();
   });
 

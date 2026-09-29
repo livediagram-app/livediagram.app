@@ -14,7 +14,7 @@ import { isBoxed, type Element } from '@livediagram/document';
 export const AVATAR_SPAWN_GAP = 12;
 
 // How far a shoved character slides, in canvas px (docs/specs/008-canvas/avatar-mode.md). Far enough to be
-// unmistakably a push, short enough that nobody gets flung across the diagram.
+// unmistakably a push, short enough that nobody gets flung across the canvas.
 export const AVATAR_SHOVE_DISTANCE = 70;
 
 // How often a STANDING character republishes itself to the room (docs/specs/008-canvas/avatar-mode.md).

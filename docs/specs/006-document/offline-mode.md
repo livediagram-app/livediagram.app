@@ -11,7 +11,7 @@ This is a **deliberate, permanent choice for a document**, not a temporary
 network state. (Handling a transient dropped connection on a _cloud_ document is
 a separate concern — see [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) — and out of scope here.)
 
-Tab bodies are stamped with their **board kind** on the way into IndexedDB (`upsertTab`), exactly as the cloud path stamps them in `tabForWire` — the two stores must agree about what a tab IS, or a Sync Document would hand the cloud a board that has forgotten itself ([Event storming](../021-event-storming/event-storming.md)).
+Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upsertTab`), exactly as the cloud path stamps them in `tabForWire` — the two stores must agree about what a tab IS, or a Sync Document would hand the cloud a board that has forgotten itself ([Event storming](../021-event-storming/event-storming.md)).
 
 ## Turning it on
 

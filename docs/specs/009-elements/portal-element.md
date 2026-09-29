@@ -6,7 +6,7 @@ A **Portal**: a standing ring of energy on the canvas, linked to another one. Cl
 
 ## Why
 
-A big diagram is a place, and places have shortcuts. Two portals turn "scroll across the canvas hunting for the other half of this flow" into one click, and they make an Avatar-mode walkthrough feel like moving between rooms rather than panning a plane. It is the cheapest possible in-diagram navigation: no minimap coordinates, no bookmarks UI, just a thing you step into.
+A big canvas is a place, and places have shortcuts. Two portals turn "scroll across the canvas hunting for the other half of this flow" into one click, and they make an Avatar-mode walkthrough feel like moving between rooms rather than panning a plane. It is the cheapest possible in-canvas navigation: no minimap coordinates, no bookmarks UI, just a thing you step into.
 
 ## The element
 
@@ -19,7 +19,7 @@ A big diagram is a place, and places have shortcuts. Two portals turn "scroll ac
 
 A portal has no caption on the canvas: a label across the energy read as a sticker on a window, and the ring is recognisable without one. The name lives in the element menu (**Portal → Name**), and shows in the travel tooltip and in the picker.
 
-New portals arrive **unlabelled** and are named **positionally** — "Portal 1", "Portal 2", in tab order — so a diagram full of them is navigable without anyone typing a thing. A typed name wins over the number.
+New portals arrive **unlabelled** and are named **positionally** — "Portal 1", "Portal 2", in tab order — so a canvas full of them is navigable without anyone typing a thing. A typed name wins over the number.
 
 ## Linking
 

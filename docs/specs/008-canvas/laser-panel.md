@@ -19,7 +19,7 @@ A normal floating panel ([Panel corner docking](../007-editor/panel-docking.md))
 Four, each a single-open accordion row with its current value in the collapsed header, over a live **preview stroke** that draws with the current settings.
 
 - **Width** — Fine / Medium / Bold (2 / 3.5 / 6 canvas px). Constant on screen at any zoom, like the trail itself.
-- **Colour** — **Your colour** (the default: the participant colour that already ties your cursor, your name chip, and your avatar's shirt together) plus a small fixed palette (red, orange, yellow, green, cyan, blue, violet, white). A presenter on a dark diagram needs a laser that reads against it, which their identity colour cannot promise.
+- **Colour** — **Your colour** (the default: the participant colour that already ties your cursor, your name chip, and your avatar's shirt together) plus a small fixed palette (red, orange, yellow, green, cyan, blue, violet, white). A presenter on a dark canvas needs a laser that reads against it, which their identity colour cannot promise.
 - **Trail** — how long a sample lives before it fades out: Quick (400ms) / Normal (1s, today's behaviour) / Long (2.5s). Long is what turns the laser from a pointer into something you can draw a shape with.
 - **Effect** — **Beam** (the plain line + head dot), **Glow** (a soft wide halo under the stroke, for projectors), **Comet** (the stroke tapers from head to tail, so the direction of travel reads), **Spark** (a dotted trail rather than a continuous line).
 

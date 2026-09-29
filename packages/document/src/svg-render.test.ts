@@ -181,7 +181,7 @@ describe('renderElementsToSvg', () => {
   });
 
   // Fonts (docs/specs/004-interface-design/fonts.md) used to stop at the canvas: every export painted
-  // system-ui, so a downloaded board looked like a different diagram — most
+  // system-ui, so a downloaded canvas looked like a different one — most
   // obviously an event-storming wall, whose marker face IS the notation.
   describe('fonts', () => {
     // The renderer XML-escapes every attribute, quotes included; read the

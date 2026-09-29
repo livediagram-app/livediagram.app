@@ -4,7 +4,7 @@
 // In the document package because BOTH renderers need it: the canvas draws the
 // text and its plate from these numbers, and the headless SVG render (exports,
 // thumbnails, the MCP render) has to land on the same ones or an exported
-// caption is a different size to the one on the board. They used to live only
+// caption is a different size to the one on the canvas. They used to live only
 // in the editor, which is exactly why the export drew every caption at a fixed
 // 12px in a fixed near-black, ignoring the size and colour the user had picked.
 

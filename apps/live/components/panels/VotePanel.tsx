@@ -132,7 +132,7 @@ export function VotePanel({
                 </button>
               </>
             ) : (
-              // Results are up: Clear is how the host puts the board back
+              // Results are up: Clear is how the host puts the canvas back
               // (same effect as Done at the end of the walkthrough, but
               // reachable at any point in it).
               <button type="button" onClick={onClearVote} className={quietBtn}>

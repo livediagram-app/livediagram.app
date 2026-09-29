@@ -615,9 +615,9 @@ export function AnyDeviceArt() {
 }
 
 export function ExportArt() {
-  // The board on the left, the same board as a file on the right. The two
+  // The canvas on the left, the same canvas as a file on the right. The two
   // panels are deliberately identical: docs/specs/020-import-export/export-fidelity.md's whole rule is that an export
-  // is a picture of the diagram, not a lossy version of one.
+  // is a picture of the canvas, not a lossy version of one.
   return (
     <Frame>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">

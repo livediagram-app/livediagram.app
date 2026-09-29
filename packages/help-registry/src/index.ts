@@ -280,7 +280,7 @@ export const articles: Article[] = [
   {
     slug: 'zoom-controls',
     title: 'Zoom Controls',
-    description: 'Move in and out of the canvas, fit the diagram to the screen, and reset to 100%.',
+    description: 'Zoom in and out, fit the canvas to the screen, and reset to 100%.',
     keywords: 'zoom in out magnify fit screen percentage scale reset view dock',
     category: 'User Interface',
     categorySlug: 'user-interface',
@@ -800,7 +800,7 @@ export const articles: Article[] = [
   {
     slug: 'highlighter',
     title: 'Highlighter',
-    description: 'Mark up the board with a wide translucent marker in five colours.',
+    description: 'Mark up the canvas with a wide translucent marker in five colours.',
     keywords:
       'highlighter highlight marker mark up markup annotate emphasise emphasize pen draw attention translucent transparent yellow green pink blue orange colour color strength thin medium bold review workshop',
     category: 'Selection Modes',
@@ -833,7 +833,7 @@ export const articles: Article[] = [
   {
     slug: 'avatar-mode',
     title: 'Avatar Mode',
-    description: 'Walk a pixel character around the diagram while you talk through it.',
+    description: 'Walk a pixel character around the canvas while you talk through it.',
     keywords:
       'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small',
     category: 'Selection Modes',
@@ -853,7 +853,7 @@ export const articles: Article[] = [
     slug: 'slide-deck',
     title: 'Slide Deck',
     description:
-      'Build slides from your diagram and present them full screen, with notes, transitions and auto-advance.',
+      'Build slides from what is on your canvas and present them full screen, with notes, transitions and auto-advance.',
     keywords:
       'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck build slides element set spans tabs',
     category: 'Selection Modes',
@@ -1252,7 +1252,7 @@ export const articles: Article[] = [
   {
     slug: 'locking-tabs',
     title: 'Locking a Tab',
-    description: 'Make a whole board read-only so it cannot be changed by accident.',
+    description: "Make a tab's whole canvas read-only so it cannot be changed by accident.",
     keywords: 'read only protect freeze prevent editing lock board',
     category: 'Tabs',
     categorySlug: 'tabs',
@@ -1847,7 +1847,7 @@ export const articles: Article[] = [
   {
     slug: 'session-buttons',
     title: 'Session Buttons',
-    description: 'Start a timer, a dot vote or a poll for the room from the board.',
+    description: 'Start a timer, a dot vote or a poll for the room from the canvas.',
     keywords:
       'session button timer countdown minutes dot vote dots poll question answers answer style choices options yes no abstain rating free text start room facilitation running order agenda clock pause resume reset remove edit access view only',
     category: 'Palette',
@@ -1867,7 +1867,7 @@ export const articles: Article[] = [
   {
     slug: 'reaction-pads',
     title: 'Reaction Pads',
-    description: 'A pad the room can press to throw a burst over the board.',
+    description: 'A pad the room can press to throw a burst over the canvas.',
     keywords:
       'reaction pad confetti celebrate sparkles hearts applause clap fireworks emoji burst cheer thanks avatar walk onto ephemeral moment nothing saved',
     category: 'Palette',
@@ -1899,7 +1899,7 @@ export const articles: Article[] = [
   {
     slug: 'comment-panels',
     title: 'Comment Panels',
-    description: 'A whole comment thread, left out on the board.',
+    description: 'A whole comment thread, left out on the canvas.',
     keywords:
       'comment panel thread remark note reply discuss feedback annotate composer resolve reopen badge popover pinned about an element arrow export',
     category: 'Palette',
@@ -1909,7 +1909,7 @@ export const articles: Article[] = [
   {
     slug: 'action-panels',
     title: 'Action Panels',
-    description: 'One assigned action as a card on the board, set up from the card.',
+    description: 'One assigned action as a card on the canvas, set up from the card.',
     keywords:
       'action panel card task todo to-do assign assignee owner follow-up action item complete done reopen email teammate board',
     category: 'Palette',

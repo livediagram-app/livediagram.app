@@ -301,7 +301,7 @@ describe('useEditorDrag — inserting a note already on the board (docs/specs/02
   });
 
   describe('hostile paths', () => {
-    it('does nothing on an ordinary board, Alt or no Alt', () => {
+    it('does nothing on an ordinary tab, Alt or no Alt', () => {
       const h = harness({ esBoard: false });
       press(h, 'drag');
       move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });

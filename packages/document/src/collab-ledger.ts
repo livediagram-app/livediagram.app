@@ -69,7 +69,7 @@ const isStr = (v: unknown, max: number): v is string => typeof v === 'string' &&
 
 // The storage key an op's ledger entry lives under, or null for an op the
 // ledger doesn't track. One key per element (and one for the tab's vote) so
-// no single stored value grows with the size of the board.
+// no single stored value grows with the size of the canvas.
 export function ledgerKey(op: unknown): string | null {
   if (!op || typeof op !== 'object') return null;
   const o = op as { kind?: unknown; tabId?: unknown; elementId?: unknown };

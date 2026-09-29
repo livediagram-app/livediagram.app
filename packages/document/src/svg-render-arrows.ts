@@ -115,7 +115,7 @@ export function svgArrow(
   elements: Element[],
   surface: CanvasSurface = 'light',
   // The tab's font, for a caption that has not chosen one of its own
-  // (docs/specs/004-interface-design/fonts.md), so an exported caption reads in the same face as the board.
+  // (docs/specs/004-interface-design/fonts.md), so an exported caption reads in the same face as the canvas.
   tabFont?: string,
   // The tab's label pass (layouts + knockouts), computed once per render by the caller.
   labels: ArrowLabelPass = arrowLabelPass(elements, {

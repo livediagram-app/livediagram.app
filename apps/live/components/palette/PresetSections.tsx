@@ -66,7 +66,7 @@ export function ShapePresetsSection({
   shape: ShapeKind;
   // The grid to show. Defaults to the theme-derived shape looks; a sticky
   // passes its own pad of note colours instead, since a note is exempt from
-  // theme recolouring and wants paper colours rather than the board's.
+  // theme recolouring and wants paper colours rather than the canvas's.
   presets?: ShapeColorPreset[];
   // The shape's current style, to highlight a matching preset tile. In a
   // multi-selection this reads off the first selected shape.
@@ -301,7 +301,7 @@ export function TargetPresetsSection({
     );
   }
   // A sticky's own grid rather than the theme-derived shape looks: a note is
-  // exempt from theme recolouring, so the board's palette is the wrong
+  // exempt from theme recolouring, so the canvas's palette is the wrong
   // vocabulary for it. Previewed as a square, which is what a note is.
   if (target.type === 'sticky') {
     return (

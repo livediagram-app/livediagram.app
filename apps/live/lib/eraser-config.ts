@@ -10,7 +10,7 @@ import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-s
 export type EraserMode = 'sweep' | 'tap';
 export type EraserSize = 'point' | 'small' | 'medium' | 'large';
 // What the eraser is allowed to remove. 'drawings' is the one that makes
-// sketching over a diagram safe; 'arrows' is for rewiring without disturbing
+// sketching over the canvas safe; 'arrows' is for rewiring without disturbing
 // the boxes.
 export type EraserTarget = 'anything' | 'drawings' | 'arrows';
 

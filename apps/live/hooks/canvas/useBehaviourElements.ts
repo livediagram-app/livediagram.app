@@ -56,7 +56,7 @@ export function useBehaviourElements({
   // while one is paused RESUMES. Only a tab with no timer starts a new one.
   activeTimer: { running: boolean } | undefined;
   // The running vote, if any: a vote button pressed mid-vote must not start a
-  // fresh one over it, which reset every dot on the board (docs/specs/012-collaboration/collab-race-hardening.md).
+  // fresh one over it, which reset every dot on the canvas (docs/specs/012-collaboration/collab-race-hardening.md).
   activeVote: TabVote | undefined;
   startTimer: (mode: TimerMode, durationMs?: number) => void;
   pauseTimer: () => void;
@@ -115,7 +115,7 @@ export function useBehaviourElements({
   const toggleRevealForMe = (elementId: string) => {
     // While somebody is facilitating (docs/specs/012-collaboration/facilitator.md) a cover is theirs to lift, and
     // they lift it for the room through the element's own `revealed` field
-    // rather than peeking privately. The personal lift below is what a board
+    // rather than peeking privately. The personal lift below is what a canvas
     // with no facilitator keeps.
     if (sessionToolsBlocked) return;
     setRevealedIds((prev) => {

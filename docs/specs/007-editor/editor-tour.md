@@ -124,7 +124,7 @@ alone.
   [Event storming](../021-event-storming/event-storming.md)), so an anchor with no client rects is
   treated as absent — it is never clicked and never measured. That is the
   safety net; the step list itself is filtered up front (`tourStepsFor`,
-  by viewport and board kind) so the "N of M" count stays honest instead
+  by viewport and tab kind) so the "N of M" count stays honest instead
   of a hidden step burning its timeout mid-tour.
 - **Mobile + minimal panel layout**: panels there live behind the dock
   button row ([Live app](live-app.md) / [Canvas and palette](../008-canvas/canvas-and-palette.md)), so palette/explorer steps first tap the

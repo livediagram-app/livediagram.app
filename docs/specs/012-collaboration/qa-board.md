@@ -9,7 +9,7 @@ discussion and folds it away when the room is done with it.
 
 ## Why
 
-A workshop's question queue is the one collaborative object the board could
+A workshop's question queue is the one collaborative object the canvas could
 not hold. Sticky notes plus the dot vote ([Session tools (timer + voting)](session-tools.md)) come close, but they are the
 wrong shape in three ways:
 

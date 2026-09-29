@@ -673,7 +673,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M18.5 16.5h.01M21 16.5h.01" />
     </Glyph>
   ),
-  // A pad, and the burst it throws over the board.
+  // A pad, and the burst it throws over the canvas.
   'reaction-pads': (
     <Glyph>
       <rect x="4" y="12" width="12" height="8" rx="2" />
@@ -987,7 +987,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 7.8h.01" />
     </Glyph>
   ),
-  // The board, with its small map and the viewport box inside it.
+  // The canvas, with its small map and the viewport box inside it.
   minimap: (
     <Glyph>
       <rect x="2.5" y="3.5" width="19" height="17" rx="2" />

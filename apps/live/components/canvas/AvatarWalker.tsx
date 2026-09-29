@@ -3,7 +3,7 @@
 // The pixel art itself lives in avatar-sprite.tsx.
 //
 // It lives INSIDE the canvas's transformed wrapper, so it pans / zooms with the
-// diagram; its position is the FEET, so it stands on the point you clicked. The
+// canvas; its position is the FEET, so it stands on the point you clicked. The
 // same component draws PEERS' characters (from their presence snapshot), which
 // is why every animation input is a prop rather than read from the walk hook.
 

@@ -8,7 +8,7 @@
 // and no backdrop, so "fit this slide" would have no meaning across them.
 //
 // Slides reference elements, they never copy them. That is what keeps a deck
-// in step with the diagram it presents: edit a shape and every slide it is on
+// in step with the canvas it presents: edit a shape and every slide it is on
 // shows the new version, because no slide ever held the old one. It also makes
 // the delete case correct for free (see resolveSlide).
 //
@@ -73,7 +73,7 @@ export function slideName(slide: Slide, index: number): string {
  * a keystroke the user took back.
  *
  * Paint order comes from the TAB, not from `elementIds`: the slide decides
- * what is on it, the diagram decides what sits in front of what. Ordering by
+ * what is on it, the canvas decides what sits in front of what. Ordering by
  * the slide's list would let the order you happened to click things in
  * restack the drawing.
  */

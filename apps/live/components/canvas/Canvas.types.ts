@@ -69,7 +69,7 @@ export type CanvasProps = {
   // materialises one. Drives the band-aware paint order + hidden-layer
   // filtering in CanvasElementsLayer and the Minimap.
   tabLayers?: Layer[];
-  // The tab’s board kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
+  // The tab’s tab kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
   // presents as an event-storming board.
   tabKind?: TabKind;
   // The tab's timeline lane stack (docs/specs/021-event-storming/event-storming.md Phase 6) when lanes are on, else
@@ -104,7 +104,7 @@ export type CanvasProps = {
   onPressModeButton?: (element: import('@livediagram/document').ShapeElement) => void;
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else in the room to come and look at
   // this element. Absent on a surface with nobody to ask (an export, a solo
-  // board), which renders the face inert.
+  // canvas), which renders the face inert.
   onPressFocusButton?: (element: import('@livediagram/document').ShapeElement) => void;
   // Session button (docs/specs/012-collaboration/session-button.md): starts the tool the pressed element carries.
   onPressSessionButton?: (element: import('@livediagram/document').ShapeElement) => void;

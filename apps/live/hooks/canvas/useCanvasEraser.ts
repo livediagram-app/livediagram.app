@@ -105,7 +105,7 @@ export function useCanvasEraser(deps: EraserDeps) {
         // locked / hidden-or-locked-LAYER elements (protected, docs/specs/006-document/layers.md).
         if (!el || el.locked === true || layerInertIds.has(id)) continue;
         // And skip what the target filter protects — a sweep set to Drawings
-        // passes straight over the diagram underneath.
+        // passes straight over everything else on the canvas.
         if (!eraserAllows(el, config.target)) continue;
         erasedRef.current.add(id);
         changed = true;

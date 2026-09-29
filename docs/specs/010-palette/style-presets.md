@@ -169,7 +169,7 @@ multi-selection the preset applies to every selected arrow at once.
 
 A sticky had no presets at all, so recolouring a note meant picking a fill and then hunting a readable ink to go on it: two decisions for what is really one. The Style band now opens a **Presets** grid for a sticky too, from `STICKY_PRESETS` in `packages/document/src/theme-presets.ts`.
 
-It is a fixed pad, deliberately **not** theme-derived: a sticky is exempt from theme recolouring ([Event storming](../021-event-storming/event-storming.md)) precisely because the colour of a note is the user's own shorthand rather than the board's palette. Twelve notes, in three runs of four: warm (Classic, Lemon, Peach, Rose), cool (Lilac, Sky, Mint, Teal) and neutral (Slate, Paper, Charcoal, Ink). Each pairs its paper with an ink that reads on it, and a test holds that pairing, since a preset with unreadable text is worse than no preset.
+It is a fixed pad, deliberately **not** theme-derived: a sticky is exempt from theme recolouring ([Event storming](../021-event-storming/event-storming.md)) precisely because the colour of a note is the user's own shorthand rather than the canvas's palette. Twelve notes, in three runs of four: warm (Classic, Lemon, Peach, Rose), cool (Lilac, Sky, Mint, Teal) and neutral (Slate, Paper, Charcoal, Ink). Each pairs its paper with an ink that reads on it, and a test holds that pairing, since a preset with unreadable text is worse than no preset.
 
 A note carries **no border**: its edge against the peel shadow is its border. So a sticky preset's `stroke` is transparent with weight `none`, and applying one clears any hand-set `strokeColor` with it, which is what "one complete look" means for a note. The tiles preview as squares, which is what a note is.
 

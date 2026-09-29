@@ -40,7 +40,7 @@ export function AgendaFace({
   surface: string;
   // The tab's timer, or undefined when none is running. The agenda reads the
   // tab's clock rather than keeping one of its own, and ticks here rather than
-  // in the canvas host, so only a board with a running agenda pays for it.
+  // in the canvas host, so only a canvas with a running agenda pays for it.
   timer: TabTimer | undefined;
   onPressItem?: (index: number) => void;
 }) {

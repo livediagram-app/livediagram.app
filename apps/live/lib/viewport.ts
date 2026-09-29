@@ -9,7 +9,7 @@
 // matches the previous hard-coded value.
 export const FIT_TO_SCREEN_PADDING = 60;
 
-// Zoom clamps. The 5x ceiling stops tiny diagrams from blowing up;
+// Zoom clamps. The 5x ceiling stops a sparse canvas from blowing up;
 // the 0.1 floor stops massive scaffolds from shrinking below the "I
 // can see it" threshold. Cap at 1.0 too so fit-to-screen never
 // magnifies past 100% (the user can zoom further manually).
@@ -29,7 +29,7 @@ export type Offset = { x: number; y: number };
 // on the wrapper), centring on the viewport centre is `viewport-
 // centre minus bbox-centre`.
 // `maxZoom` exists for presenting (docs/specs/012-collaboration/presentation-mode.md). The editor's own fit caps at
-// 100% (FIT_TO_SCREEN_MAX_AT_FIT), which is right for "fit this diagram": a
+// 100% (FIT_TO_SCREEN_MAX_AT_FIT), which is right for "fit this canvas": a
 // four-box diagram blown up to 300% looks broken in a workspace. A SLIDE is
 // the opposite case — it is the only thing on a projector, and a slide holding
 // one box should fill the screen rather than sit tiny in the middle of it.

@@ -256,7 +256,7 @@ export type Element = BoxedElement | ArrowElement;
 // explain why. The editor stays one editor — a kind tunes presentation, it
 // does not fork persistence, realtime, comments or export.
 //
-// 'diagram' is an ordinary board and is written explicitly onto tabs the
+// 'diagram' is an ordinary tab and is written explicitly onto tabs the
 // editor commits; tabs stored before the field carry nothing, which reads
 // as 'diagram' via `tabKindOf` (see ./tab-kind).
 

@@ -20,7 +20,7 @@ export const ROOT_BRANCH = -1;
 // elements get ROOT_BRANCH; each distinct subtree hanging off a root
 // gets its own 0-based index, propagated to all its descendants; loose
 // (graph-less) boxed elements each take the next index in document
-// order so a flat board still gets rainbow variety.
+// order so a flat canvas still gets rainbow variety.
 //
 // Arrows are NOT in the returned map — they take the colour of the
 // branch they feed into, resolved by the caller from their endpoints

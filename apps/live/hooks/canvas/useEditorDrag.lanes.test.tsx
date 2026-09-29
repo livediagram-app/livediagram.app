@@ -294,7 +294,7 @@ describe('useEditorDrag — timeline lanes (docs/specs/021-event-storming/event-
     expect(h.xOf('drag')! - h.xOf('a')!).toBe(before);
   });
 
-  it('does nothing on an ordinary board', () => {
+  it('does nothing on an ordinary tab', () => {
     const h = harness({ esBoard: false });
     press(h, 'drag');
     move(h, DX, DY);

@@ -3,7 +3,7 @@
 // The card shipped as one fixed dark look, deliberately: a code block reads as
 // an editor window, so it ignores the element's fill / stroke / theme the way
 // a sticky stays amber. That was right about WHERE the colours come from and
-// wrong about how many there are. A block dropped on a light, warm board, or
+// wrong about how many there are. A block dropped on a light, warm canvas, or
 // next to a screenshot from someone's own editor, wants to match it, and the
 // only honest way to offer that is a small set of complete schemes rather than
 // a fill swatch that would let you paint the card pink and leave the syntax

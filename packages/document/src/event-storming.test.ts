@@ -214,7 +214,7 @@ describe('eventStormingNoteFont', () => {
 // checklist (all three stage layers, so deleting one stripped the board),
 // then as a single layer a facilitator can delete from the Layers panel.
 // `kind` says what the tab IS.
-describe('board kind', () => {
+describe('tab kind', () => {
   const tabWith = (t: Partial<Tab>): Tab => ({ id: 't', name: 'T', elements: [], ...t }) as Tab;
 
   it('recognises a board by its kind, with no layers at all', () => {

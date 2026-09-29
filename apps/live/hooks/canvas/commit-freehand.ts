@@ -202,7 +202,7 @@ export function makeCommitFreehand({
     const elementToInsert: typeof base = {
       ...base,
       // Theme-aware stroke colour so a freehand sketch reads as
-      // part of the diagram. Falls back to the default in
+      // part of the canvas. Falls back to the default in
       // defaultStrokeColor when the theme has no override.
       ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
       ...(closed && theme.elementFill ? { fillColor: theme.elementFill } : {}),
