@@ -2133,6 +2133,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useTabSession({
     editsBlocked,
     sessionToolsBlocked: facilitator.sessionToolsBlocked,
+    isFacilitator: facilitator.isFacilitator,
     activeId,
     activeTab,
     // The non-history mutator, per docs/specs/012-collaboration/session-tools.md: starting a timer or
@@ -2729,6 +2730,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useVoteReview({
     activeTab,
     selfId: voteSelfId,
+    facilitating: facilitator.isFacilitator,
     scrollIntoView,
     clearVote,
     setVoteReviewIndex,

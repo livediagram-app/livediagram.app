@@ -148,6 +148,13 @@ describe('SessionStudio', () => {
     expect(screen.queryByRole('button', { name: 'End vote' })).toBeNull();
   });
 
+  it('lets the facilitator end a vote somebody else started', () => {
+    const p = props({ vote: openVote, selfId: 'someone-else', facilitating: true });
+    render(<SessionStudio {...p} />);
+    fireEvent.click(screen.getByRole('button', { name: 'End vote' }));
+    expect(p.onEndVote).toHaveBeenCalled();
+  });
+
   it('names what a poll is missing instead of starting it', () => {
     const p = props();
     render(<SessionStudio {...p} />);

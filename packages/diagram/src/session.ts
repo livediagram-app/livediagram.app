@@ -110,10 +110,19 @@ export type TabVote = {
 };
 
 // May this participant drive the vote (end / reveal / clear it, and move
-// the results focus)? A vote written before `startedBy` existed has no
-// host, so it stays drivable by anyone rather than becoming unendable.
-export function isVoteHost(vote: TabVote | null | undefined, selfId: string): boolean {
+// the results focus)? The starter can, and so can whoever holds the
+// facilitator baton (docs/specs/012-collaboration/facilitator.md): the
+// starter's collab key is per-browser, so a vote started on another device,
+// or before the browser's storage was cleared, would otherwise be unendable,
+// and taking the baton is the documented way to take the room back. A vote
+// written before `startedBy` existed has no host, so anyone may drive it.
+export function isVoteHost(
+  vote: TabVote | null | undefined,
+  selfId: string,
+  facilitating = false,
+): boolean {
   if (!vote) return false;
+  if (facilitating) return true;
   if (vote.startedBy === undefined) return true;
   return vote.startedBy === selfId;
 }

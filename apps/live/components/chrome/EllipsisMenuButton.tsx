@@ -31,6 +31,7 @@ export function EllipsisMenuButton({
   onDelete,
   selfId,
   facilitatedBy,
+  facilitating,
   timer,
   vote,
   onStartTimer,
@@ -115,6 +116,7 @@ export function EllipsisMenuButton({
             canDelete={canDelete}
             canClearContent={canClearContent}
             facilitatedBy={facilitatedBy}
+            facilitating={facilitating}
             timer={timer}
             vote={vote}
             onStartTimer={onStartTimer}

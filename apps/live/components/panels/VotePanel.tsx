@@ -114,7 +114,7 @@ export function VotePanel({
           <p className="text-[10px] leading-snug text-slate-400">
             {vote.revealed
               ? 'The host is walking through the results.'
-              : 'Only the person who started this vote can end it.'}
+              : 'Only the person who started this vote, or the facilitator, can end it.'}
           </p>
         ) : (
           <div className="flex items-center gap-1">

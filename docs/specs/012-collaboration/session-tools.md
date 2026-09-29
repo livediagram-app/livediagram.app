@@ -299,7 +299,9 @@ ever renders after the reveal.
 
 `vote.startedBy` records the participant that started it, and `isVoteHost`
 is the single gate. **Only the host can End / Show results / Clear the vote,
-or move the results focus.** Everyone else casts dots and watches.
+or move the results focus.** Everyone else casts dots and watches. The
+**facilitator** ([Facilitator](facilitator.md)) counts as a host of every
+vote, whoever started it.
 
 Ending is the reason: you can always start another vote, but you cannot get
 the dots back, so an accidental End by a participant costs the room the whole
@@ -311,6 +313,11 @@ is this" has one answer rather than three.
   guard, not a security boundary: the vote is an ordinary tab field, so any
   edit-role peer could still write it directly. That matches the rest of
   [Session tools (timer + voting)](session-tools.md), where roles are the only real gate.
+- The facilitator drives any vote because `startedBy` is the starter's
+  per-browser collab key: a vote started on another device, or before this
+  browser's storage was cleared, matches nobody in the room, and a vote left
+  open over a weekend would otherwise be unendable forever. Taking the baton
+  (free to any editor, and always to the owner) is the way to take it back.
 - `startedBy` is **optional**, and `isVoteHost` treats its absence as "anyone
   may drive". A vote persisted before this shipped would otherwise become
   unendable — nobody matches a missing starter.

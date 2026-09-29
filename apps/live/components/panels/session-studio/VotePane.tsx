@@ -32,6 +32,7 @@ type VotePaneProps = Pick<
   | 'onEndVote'
   | 'onRevealVote'
   | 'onClearVote'
+  | 'facilitating'
 > & { selfId: string };
 
 export function VotePane(props: VotePaneProps) {
@@ -296,6 +297,7 @@ function PhaseTrack({ phase }: { phase: VotePhase }) {
 function LiveVote({
   vote,
   selfId,
+  facilitating,
   voteLayers,
   onEndVote,
   onRevealVote,
@@ -303,7 +305,7 @@ function LiveVote({
 }: VotePaneProps & { vote: TabVote }) {
   const phase = votePhase(vote);
   const { dots, voters } = voteTurnout(vote);
-  const host = isVoteHost(vote, selfId);
+  const host = isVoteHost(vote, selfId, facilitating);
   const rules = [
     `${vote.votesPerPerson} ${vote.votesPerPerson === 1 ? 'dot' : 'dots'} each`,
     vote.onePerElement ? 'One per item' : null,
@@ -362,7 +364,9 @@ function LiveVote({
           </span>
         </div>
       ) : (
-        <StudioCallout>Only the person who started this vote can move it on.</StudioCallout>
+        <StudioCallout>
+          Only the person who started this vote, or the facilitator, can move it on.
+        </StudioCallout>
       )}
     </div>
   );

@@ -134,6 +134,14 @@ describe('vote host (docs/specs/012-collaboration/session-tools.md)', () => {
     expect(isVoteHost(v, 'bob')).toBe(false);
   });
 
+  it('the facilitator drives any vote, whoever started it', () => {
+    // The starter's key is per-browser: a vote started on another device
+    // would otherwise be stranded (docs/specs/012-collaboration/facilitator.md).
+    const v: TabVote = { ...base, startedBy: 'ann' };
+    expect(isVoteHost(v, 'bob', true)).toBe(true);
+    expect(isVoteHost(null, 'bob', true)).toBe(false);
+  });
+
   it('a vote saved before hosts existed stays drivable by anyone', () => {
     // Otherwise an in-flight legacy vote would be unendable — nobody
     // matches an absent starter.

@@ -20,6 +20,9 @@ export type SessionToolsProps = {
   // shows the name and disables every control in one place, which is the
   // whole reason these sixteen verbs already travel as one bundle.
   facilitatedBy?: string | null;
+  // We hold the facilitator baton, so the vote's controls are ours even when
+  // somebody else started it (docs/specs/012-collaboration/session-tools.md).
+  facilitating?: boolean;
   timer: TabTimer | null;
   vote: TabVote | null;
   onStartTimer: (mode: TimerMode, durationMs?: number) => void;
