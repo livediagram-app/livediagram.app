@@ -107,6 +107,13 @@ pnpm --filter @livediagram/live test:e2e
 
 Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/live/out`, which it never rebuilds: run `pnpm --filter @livediagram/live build` first, or it exits naming the missing build.
 
+The signed-in specs (`apps/live/e2e/clerk-stub/`) need Clerk switched on, so they have their own build and run, on their own ports:
+
+```sh
+pnpm --filter @livediagram/live build:clerk-stub
+pnpm --filter @livediagram/live test:e2e:clerk-stub
+```
+
 Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3002` is already taken (a second checkout, a worktree):
 
 | Variable             | Default                 | What it moves                                                         |

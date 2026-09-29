@@ -24,7 +24,9 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const OUT_DIR = path.join(ROOT, 'apps', 'live', 'out');
+// E2E_LIVE_OUT serves another export of the live app, e.g. the Clerk-enabled `out-clerk-stub`
+// the signed-in specs run against (apps/live/scripts/build-clerk-stub.mjs).
+const OUT_DIR = path.join(ROOT, 'apps', 'live', process.env.E2E_LIVE_OUT ?? 'out');
 
 const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3002);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8787);

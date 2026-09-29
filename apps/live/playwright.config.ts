@@ -4,8 +4,16 @@ import { defineConfig, devices } from '@playwright/test';
 // against the real production build + api worker (scripts/e2e-stack.mjs),
 // or a developer's already-running `pnpm dev` stack when one is up
 // (reuseExistingServer below).
-const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:3002';
 const isCI = !!process.env.CI;
+// The signed-in specs (e2e/clerk-stub/, docs/specs/014-identity/blueprints/profile-picture.md) need
+// the Clerk-enabled export (`pnpm build:clerk-stub`). They run as their own invocation
+// (`pnpm test:e2e:clerk-stub`) on their own ports, so a guest stack already up on :3002 is never
+// mistaken for it.
+const clerkStub = process.env.E2E_CLERK_STUB === '1';
+const STUB_PORTS = { live: '3015', api: '8788', marketing: '3016' };
+const BASE_URL =
+  process.env.E2E_BASE_URL ??
+  (clerkStub ? `http://localhost:${STUB_PORTS.live}` : 'http://localhost:3002');
 
 export default defineConfig({
   testDir: './e2e',
@@ -25,7 +33,16 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /clerk-stub\// },
+    ...(clerkStub
+      ? [
+          {
+            name: 'clerk-stub',
+            use: { ...devices['Desktop Chrome'] },
+            testMatch: /clerk-stub\/.*\.spec\.ts/,
+          },
+        ]
+      : []),
     // Opt-in (E2E_WEBKIT=1, after `playwright install webkit`): the image import
     // pipeline's Safari path (docs/specs/020-import-export/import-image-pipeline.md). Kept
     // out of CI's default run to spare its minutes; the same specs run in Chromium.
@@ -48,5 +65,13 @@ export default defineConfig({
     timeout: 180_000,
     stdout: 'pipe',
     stderr: 'pipe',
+    env: clerkStub
+      ? {
+          E2E_LIVE_OUT: 'out-clerk-stub',
+          E2E_LIVE_PORT: STUB_PORTS.live,
+          E2E_API_PORT: STUB_PORTS.api,
+          E2E_MARKETING_PORT: STUB_PORTS.marketing,
+        }
+      : {},
   },
 });

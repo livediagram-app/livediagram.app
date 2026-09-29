@@ -8,6 +8,7 @@ build
 **/.next
 out
 **/out
+**/out-clerk-stub
 .turbo
 **/.turbo
 .wrangler

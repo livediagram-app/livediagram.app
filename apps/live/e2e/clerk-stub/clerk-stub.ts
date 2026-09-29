@@ -1,0 +1,84 @@
+import type { Page } from '@playwright/test';
+
+// A fake clerk-js for the signed-in e2e specs (docs/specs/014-identity/blueprints/profile-picture.md).
+//
+// @clerk/react hot-loads clerk-js from the publishable key's host, but skips the download when
+// `window.Clerk` already exists. Installing this before any page script runs therefore puts a
+// chosen signed-in user behind the real @clerk/react hooks, with no network and no Clerk account.
+// It implements only what those hooks read: `load`, `addListener`, the emitted resources, the
+// session's `getToken` and `signOut`. `status` is left undefined so @clerk/react marks itself
+// ready once `load` resolves, as it does for an older clerk-js.
+//
+// Runs against the Clerk-enabled export (`pnpm build:clerk-stub`); the guest-mode `out/` never
+// mounts Clerk at all.
+
+export type StubUser = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  hasImage: boolean;
+  imageUrl: string;
+  externalAccounts: { provider: string; imageUrl: string }[];
+};
+
+export async function installClerkStub(page: Page, user: StubUser): Promise<void> {
+  await page.addInitScript((u: StubUser) => {
+    const userResource = {
+      id: 'user_stub',
+      firstName: u.firstName,
+      lastName: u.lastName,
+      fullName: `${u.firstName} ${u.lastName}`,
+      username: null,
+      primaryEmailAddress: { emailAddress: u.email },
+      createdAt: new Date('2026-01-15T12:00:00Z'),
+      hasImage: u.hasImage,
+      imageUrl: u.imageUrl,
+      externalAccounts: u.externalAccounts,
+      organizationMemberships: [],
+      delete: async () => {},
+      reload: async () => userResource,
+    };
+    const session = {
+      id: 'sess_stub',
+      status: 'active',
+      user: userResource,
+      actor: null,
+      // @clerk/react counts a session as signed in only once it has claims.
+      lastActiveToken: { jwt: { claims: { sub: 'user_stub', sid: 'sess_stub' } } },
+      factorVerificationAge: null,
+      getToken: async () => 'stub-session-token',
+    };
+    const resources = {
+      client: { sessions: [session], activeSessions: [session] },
+      session,
+      user: userResource,
+      organization: null,
+    };
+    const listeners = new Set<(r: typeof resources) => void>();
+    const clerk = {
+      loaded: false,
+      version: 'stub',
+      client: resources.client,
+      session,
+      user: userResource,
+      organization: null,
+      isSignedIn: true,
+      __internal_lastEmittedResources: undefined as typeof resources | undefined,
+      async load() {
+        clerk.loaded = true;
+        clerk.__internal_lastEmittedResources = resources;
+        for (const l of listeners) l(resources);
+      },
+      addListener(cb: (r: typeof resources) => void, opts?: { skipInitialEmit?: boolean }) {
+        listeners.add(cb);
+        if (clerk.loaded && !opts?.skipInitialEmit) cb(resources);
+        return () => listeners.delete(cb);
+      },
+      signOut: async () => {},
+    };
+    Object.assign(window, { Clerk: clerk, __internal_ClerkUICtor: function ClerkUIStub() {} });
+  }, user);
+}
+
+/** A stand-in picture: a flat disc of colour, served as SVG from Clerk's image host. */
+export const STUB_PICTURE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><rect width="96" height="96" fill="#f59e0b"/><circle cx="48" cy="38" r="18" fill="#7c2d12"/><path d="M14 96c4-22 18-32 34-32s30 10 34 32z" fill="#7c2d12"/></svg>`;

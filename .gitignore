@@ -21,6 +21,8 @@ dist/
 # (docs/specs/002-project-scope/third-party-licences.md), apart from build and dev.
 .next-analyze/
 out/
+# The live app built with Clerk on for the signed-in e2e specs (apps/live/scripts/build-clerk-stub.mjs).
+out-clerk-stub/
 *.tsbuildinfo
 # Built from source by `pnpm demo:sticky-vision:build`; a committed copy drifts.
 /docs/demo/sticky-vision/sticky-vision.bundle.js
