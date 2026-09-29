@@ -23,4 +23,5 @@ One row per default applied where the spec is silent or qualitative.
 | D17 | drive-mirror | Test ports for the opt-in e2e                           | JWKS on 8795, the fake Google on 8796, both overridable (`E2E_DRIVE_JWKS_PORT`, `E2E_DRIVE_GOOGLE_PORT`) |
 | D18 | drive-mirror | Telemetry pairs for the spec's events                   | Reuse `Linked`, `Unlinked`, `Changed`, `Created`, `Opened`; add only the `Drive` category and `Applied`  |
 | D21 | drive-mirror | "On focus" guard at the 2-minute pace                   | At most one focus check every 30 seconds                                                                 |
-| D25 | drive-mirror | Look of Disconnect                                      | The shared `warning-outline` button (amber ring and text), and an amber confirm                          |
+| D25 | drive-mirror | Look of Disconnect                                      | The shared neutral `secondary` button, and a neutral confirm                                             |
+| D26 | drive-mirror | How long a sync runs before the status says Syncing…    | 600 ms, so the cheap 2-minute check never flickers it                                                    |
