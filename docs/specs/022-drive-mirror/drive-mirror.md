@@ -226,16 +226,25 @@ folder id):
 `drive.install`): a copy the user makes in Drive's own UI ("Make a copy") is
 **invisible to livediagram**. It is not a file livediagram created, so
 `files.list` does not show it and it never reaches `changes.list`. Drive-UI
-copies are therefore **not mirrored**: nothing happens in livediagram when one
-is made. What livediagram offers instead is an open decision for the operator;
-until then there is no copy feature.
+copies are therefore **not mirrored** automatically: nothing happens in
+livediagram when one is made. The way in is **Open with > livediagram** on the
+copy (below), or **Duplicate** inside livediagram.
 
 - **Open with on a copy.** Opening the copy with livediagram grants access to
   that one file, and it carries the **original's** `ldDiagramId` and
-  `ldOrigin`. It is a different Drive file, so it is never taken for the
-  original: when the mirror records another file for that diagram, the copy is
-  treated like a foreign file and **Import a copy** is offered. It never opens
-  the original diagram, and nothing re-tags or adopts it.
+  `ldOrigin`. It is a different Drive file: recognised because the mirror
+  records another file for that `ldDiagramId` (and `ldOrigin` is this
+  host). It is never taken for the original: livediagram never opens the
+  original from it and never re-tags or adopts it as the original. It offers
+  **Import as new document**, which makes a new Personal Space document from
+  the **copy's contents**.
+- **What the copy becomes** (the current rule, **pending the operator's
+  confirmation**): after the import the copy is re-tagged with the new
+  document's id and recorded, so it mirrors the new document like any mirrored
+  file and no second file is made for it. The new document lands in the
+  livediagram folder the copy's Drive folder mirrors; in Unsorted when the copy
+  sits in the root, and in Unsorted with [the notice](#folders-livediagram-cannot-see)
+  when it sits in a folder livediagram cannot see.
 - **Afterwards.** Once opened, the copy can reach livediagram's change feed.
   An inbound change for a file that carries a mirrored diagram's id under
   another file id is ignored (logged as `inbound-foreign-copy`), never
@@ -327,7 +336,8 @@ marked as coming from Drive so a view re-reads only for those.
   - **The user can open the diagram** in livediagram, and the file is the one
     the mirror records for it (or the mirror records none): go to it.
   - **A copy of a mirrored diagram** (the mirror records a different file for
-    that `ldDiagramId`): offer **Import a copy**, never the original.
+    that `ldDiagramId`): offer **Import as new document**
+    ([Copies made in Drive](#copies-made-in-drive)), never the original.
   - **They cannot** (someone shared the Drive file with them): offer
     **Import a copy**, which creates a new Personal Space diagram from the
     file's contents.

@@ -138,7 +138,9 @@ by the **Resume sync** click; any state to `disconnected` by **Disconnect**.
    never renamed). `PUT /api/drive/connection { rootFolderId, pageToken }`.
    Then **adopt**: list every file with `appProperties has { key='ldOrigin' and value='<host>' }` and record an item
    for each whose `ldDiagramId` / `ldFolderId` names a personal diagram, trashed diagram or folder with no item yet,
-   using the file's current Drive state (the `adopt` decisions of `planInbound`), then re-read the snapshot. On an
+   using the file's current Drive state (the `adopt` decisions of `planInbound`), then re-read the snapshot. Two
+   files claiming the same diagram (an original and a copy the user opened with livediagram) are both left
+   unadopted (logged `adopt-ambiguous`); the next write makes a fresh file. On an
    `arrival` pass a recorded root is checked once (`files.get`): a 404 makes it null again; a binned root stays the
    root.
 4. **Inbound.** First the gate: `drive.getStartPageToken()`; when it equals the stored page token nothing changed
@@ -207,27 +209,27 @@ Changes are coalesced to **one per file, the latest** (each entry carries the fi
 last entry's `time` dates it), then sorted **folders first**, then files, each in `time` order. `planInbound(change, snapshot, items)`
 returns one `InboundDecision`:
 
-| Situation                                                                              | Decision                                                      |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| No item for `fileId`, file lacks `ldOrigin === host`                                   | `ignore` (not ours, or the root)                              |
-| No item, `ldFolderId` names no folder, file not trashed                                | `recreate-folder` (same id, parent by Drive parent)           |
-| No item, `ldDiagramId` names a diagram whose item holds another file, not trashed      | `copy-diagram` (a copy made in Drive)                         |
-| No item, `ldDiagramId` names no live or trashed diagram, not trashed                   | `copy-diagram` from the file's contents                       |
-| No item, `ldFolderId` or `ldDiagramId` names a known entity                            | `adopt` (record the item, then re-plan)                       |
-| `removed`, diagram item, diagram in the personal Trash                                 | `purge`                                                       |
-| `removed`, diagram item, diagram live                                                  | `forget-file` (item dropped; outbound re-creates)             |
-| `removed`, diagram item, diagram outside Personal Space                                | `forget-file`                                                 |
-| `removed`, folder item                                                                 | `forget-file` (outbound re-creates it while the folder lives) |
-| No foreign field                                                                       | `echo`                                                        |
-| Folder item, `trashed` became true                                                     | `bin-folder`                                                  |
-| Diagram item, `trashed` became true, diagram live                                      | `trash`                                                       |
-| Diagram item, `trashed` became false, diagram in the personal Trash                    | `restore` then placement by Drive parent                      |
-| Name changed, livediagram name unchanged since sync (`name === ldName`) or Drive later | `rename` to `stripDriveName(file.name)`; empty keeps the old  |
-| Parent changed, livediagram parent unchanged or Drive later, parent a mirrored folder  | `move` to that folder                                         |
-| Parent changed, same, parent the root                                                  | `move` to Unsorted                                            |
-| Parent changed, same, parent unknown or none                                           | `move` to Unsorted (diagram) or top level (folder), `notice`  |
-| Only `md5` / `headRevisionId` changed                                                  | `rewrite` (item `mirroredSavedAt` set to 0)                   |
-| The value livediagram already holds                                                    | recorded only                                                 |
+| Situation                                                                              | Decision                                                               |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| No item for `fileId`, file lacks `ldOrigin === host`                                   | `ignore` (not ours, or the root)                                       |
+| No item, `ldFolderId` names no folder, file not trashed                                | `recreate-folder` (same id, parent by Drive parent)                    |
+| No item, `ldDiagramId` names a diagram whose item holds another file                   | `ignore` (`foreign-copy`, logged `inbound-foreign-copy`)               |
+| No item, `ldFolderId` names a known folder                                             | `adopt` (record the item, then re-plan)                                |
+| No item, `ldDiagramId` names a known diagram                                           | `ignore` (`unrecorded-diagram`); adopted only by the reconnect listing |
+| `removed`, diagram item, diagram in the personal Trash                                 | `purge`                                                                |
+| `removed`, diagram item, diagram live                                                  | `forget-file` (item dropped; outbound re-creates)                      |
+| `removed`, diagram item, diagram outside Personal Space                                | `forget-file`                                                          |
+| `removed`, folder item                                                                 | `forget-file` (outbound re-creates it while the folder lives)          |
+| No foreign field                                                                       | `echo`                                                                 |
+| Folder item, `trashed` became true                                                     | `bin-folder`                                                           |
+| Diagram item, `trashed` became true, diagram live                                      | `trash`                                                                |
+| Diagram item, `trashed` became false, diagram in the personal Trash                    | `restore` then placement by Drive parent                               |
+| Name changed, livediagram name unchanged since sync (`name === ldName`) or Drive later | `rename` to `stripDriveName(file.name)`; empty keeps the old           |
+| Parent changed, livediagram parent unchanged or Drive later, parent a mirrored folder  | `move` to that folder                                                  |
+| Parent changed, same, parent the root                                                  | `move` to Unsorted                                                     |
+| Parent changed, same, parent unknown or none                                           | `move` to Unsorted (diagram) or top level (folder), `notice`           |
+| Only `md5` / `headRevisionId` changed                                                  | `rewrite` (item `mirroredSavedAt` set to 0)                            |
+| The value livediagram already holds                                                    | recorded only                                                          |
 
 "Drive later" is `Date.parse(change.time) > ldChangedAt`, `ldChangedAt` being the diagram's `savedAt` or the
 folder's `updatedAt`. A decision may carry several effects (a restore that also moves). After applying, the item
@@ -238,24 +240,6 @@ is always recorded with the file's Drive state, so a lost conflict is corrected 
 their items in its batch). `recreate-folder` re-creates the folder with its old id (`POST /api/folders`), records
 its item, then lists the folder's children (`files.list q="'<id>' in parents"`) and plans each as a change, so the
 diagrams restored with it come back inside it whether or not Drive emitted a change per child.
-
-`copy-diagram` (docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive") carries the copy's file id, the
-new id `driveCopyDiagramId(fileId)` (`dc-` + the FNV-1a 64-bit hex of the file id: deterministic, so a retry lands on
-the same diagram, and no Drive id leaks into a share URL), the source (the original's id when it is live, else null),
-the name (`stripDriveName(file.name)`, else the original's, else "Diagram") and the folder (`ldFolderForParent` of the
-copy's parent; `undefined` becomes Unsorted with the unseen-folder notice). Applying it:
-
-1. `port.canOpenDiagram(newId)`: already there (an earlier pass stopped before the re-tag) skips step 2.
-2. A live source: `port.duplicateDiagram(source, { id, name, folderId })` (`lib/duplicate-diagram.ts`, the Duplicate
-   path, with an explicit target). No live source: `drive.download`, `parseDiagramEnvelope`,
-   `port.importDiagramCopy(envelope, { id, name, folderId })`; an unreadable envelope adds
-   `{ name, reason: 'unreadable' }` to the status's `skipped` list and records nothing.
-3. `drive.updateFile(fileId, { appProperties: { ldDiagramId: newId, ldOrigin } })`, then the item is recorded
-   (`mirroredSavedAt` null, so the next outbound pass writes the new diagram's contents). A failed re-tag fails the
-   pass, so the page token does not advance and the change is read again.
-
-A copy that arrives trashed, owned by someone else (`ownedByMe` false: a shared file opened with livediagram), or
-without `ldOrigin === host`, is ignored (no recognisable copy, nothing to show).
 
 Every applied decision goes through the ordinary routes via `LivediagramPort` and fires
 `track('Drive', 'Applied', type)`.
@@ -287,12 +271,13 @@ non-elected tab, handed to the elected one).
 `parseOpenState(search)` reads `state` as JSON; `ids[0]` is the file, `resourceKeys[id]` its key. Outcomes of
 `resolveOpenWith({ drive, port, host }, state)`:
 
-| File                                                             | Outcome                       | Telemetry       |
-| ---------------------------------------------------------------- | ----------------------------- | --------------- |
-| `ldDiagramId`, `ldOrigin === host`, `port.canOpenDiagram` true   | `open`                        | `Opened`        |
-| `ldDiagramId`, `ldOrigin === host`, cannot open (404, 403, 410)  | `import` (`no-access`)        | `ImportOffered` |
-| our MIME or `.livediagram`, other `ldOrigin` or no `ldDiagramId` | `import` (`foreign`, `no-id`) | `ImportOffered` |
-| anything else, 404, 403 or unreadable                            | `error`                       | `Error`         |
+| File                                                                       | Outcome                       | Telemetry       |
+| -------------------------------------------------------------------------- | ----------------------------- | --------------- |
+| `ldDiagramId`, `ldOrigin === host`, the mirror records another file for it | `import` (`copy`)             | `ImportOffered` |
+| `ldDiagramId`, `ldOrigin === host`, `port.canOpenDiagram` true             | `open`                        | `Opened`        |
+| `ldDiagramId`, `ldOrigin === host`, cannot open (404, 403, 410)            | `import` (`no-access`)        | `ImportOffered` |
+| our MIME or `.livediagram`, other `ldOrigin` or no `ldDiagramId`           | `import` (`foreign`, `no-id`) | `ImportOffered` |
+| anything else, 404, 403 or unreadable                                      | `error`                       | `Error`         |
 
 `import` shows **Import a copy**: download (`alt=media`), `parseDiagramEnvelope`, then
 `port.importDiagramCopy` (fresh diagram and tab ids, tab links remapped with `remapTabLinks`, the deck carried).
@@ -582,7 +567,7 @@ The sync mark: `driveIndicator(status, mode)` (`components/drive/drive-indicator
 | Kind        | When                                                                                 | Mark                                     | Label ("Google Drive …")                |
 | ----------- | ------------------------------------------------------------------------------------ | ---------------------------------------- | --------------------------------------- |
 | `none`      | mode `off`, `starting`, `disconnected`                                               | nothing                                  | (none)                                  |
-| `attention` | `needs_reconnect`, `needs_resume`, an `error`, a notice or a skipped copy            | amber dot                                | "needs attention"                       |
+| `attention` | `needs_reconnect`, `needs_resume`, an `error` or a notice                            | amber dot                                | "needs attention"                       |
 | `syncing`   | `syncing` for at least `DRIVE_SYNCING_MARK_DELAY_MS` (600 ms), or `progress` present | brand dot, a progress ring while copying | "syncing" / "copying {done} of {total}" |
 | `synced`    | `idle`, no error, `lastSyncedAt` set                                                 | green dot                                | "synced"                                |
 
@@ -604,7 +589,6 @@ Account menu item **Google Drive** (signed in, `driveUiMode !== 'off'`), opening
 | `rate_limited`     | "Google asked livediagram to slow down. Syncing continues less often for a while."                                                                           |
 | `offline`/`failed` | "Couldn't reach Google Drive. livediagram tries again when you come back."                                                                                   |
 | notice             | "{name}: Moved in Drive to a folder livediagram can't see." **Show this folder to livediagram** (only with a Picker key)                                     |
-| skipped            | "A copy made in Drive ({name}) couldn't be read, so no diagram was made from it." (the status's `skipped`, this session)                                     |
 
 Disconnect confirms: "Disconnect Google Drive? Your files stay in Drive; livediagram stops updating them."
 

@@ -22,8 +22,6 @@ One row per default applied where the spec is silent or qualitative.
 | D16 | drive-mirror | Which pages run the engine                              | Every page of the live app except `/embed` and the `/drive` routes, from the root layout                 |
 | D17 | drive-mirror | Test ports for the opt-in e2e                           | JWKS on 8795, the fake Google on 8796, both overridable (`E2E_DRIVE_JWKS_PORT`, `E2E_DRIVE_GOOGLE_PORT`) |
 | D18 | drive-mirror | Telemetry pairs for the spec's events                   | Reuse `Linked`, `Unlinked`, `Changed`, `Created`, `Opened`; add only the `Drive` category and `Applied`  |
-| D19 | drive-mirror | How a copy's new diagram id is made                     | `dc-` + FNV-1a 64-bit hex of the copy's Drive file id: deterministic for retries, no Drive id in URLs    |
-| D20 | drive-mirror | Where an unreadable copy is surfaced                    | A `skipped` list in the engine status, shown in the Drive panel for the session                          |
 | D21 | drive-mirror | "On focus" guard at the 2-minute pace                   | At most one focus check every 30 seconds                                                                 |
 | D22 | drive-mirror | Colours of the sync mark                                | Brand dot syncing, emerald synced, amber needs attention                                                 |
 | D23 | drive-mirror | How long "syncing" must last before the mark shows it   | 600 ms, so the cheap start-token check never flashes the mark                                            |
