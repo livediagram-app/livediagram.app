@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import {
   accountDeletedEmail,
-  diagramJoinedEmail,
+  documentJoinedEmail,
   inviteResponseEmail,
   teamInviteEmail,
   week1Email,
@@ -47,23 +47,23 @@ describe('email templates', () => {
   it('falls back gracefully on a null team name', () =>
     expect(teamInviteEmail(env, null).html).toContain('a team'));
 
-  // docs/specs/014-identity/profile-and-email-notifications.md — someone joined my diagram
-  it('diagram-joined names the diagram + joiner and CTAs to the explorer', () => {
-    const e = diagramJoinedEmail(env, 'Roadmap', 'Anna');
+  // docs/specs/014-identity/profile-and-email-notifications.md — someone joined my document
+  it('document-joined names the document + joiner and CTAs to the explorer', () => {
+    const e = documentJoinedEmail(env, 'Roadmap', 'Anna');
     expect(e.subject).toMatch(/Anna/);
     expect(e.html).toContain('Roadmap');
     expect(e.html).toContain('Anna');
     expect(e.html).toContain('https://app.test/explorer');
   });
 
-  it('diagram-joined falls back to "Someone" / "your diagram" when unknown', () => {
-    const e = diagramJoinedEmail(env, '', null);
+  it('document-joined falls back to "Someone" / "your document" when unknown', () => {
+    const e = documentJoinedEmail(env, '', null);
     expect(e.subject).toMatch(/Someone/);
-    expect(e.html).toContain('your diagram');
+    expect(e.html).toContain('your document');
   });
 
-  it('diagram-joined escapes a malicious diagram name', () => {
-    const e = diagramJoinedEmail(env, '<img src=x onerror=1>', null);
+  it('document-joined escapes a malicious document name', () => {
+    const e = documentJoinedEmail(env, '<img src=x onerror=1>', null);
     expect(e.html).not.toContain('<img src=x');
     expect(e.html).toContain('&lt;img');
   });

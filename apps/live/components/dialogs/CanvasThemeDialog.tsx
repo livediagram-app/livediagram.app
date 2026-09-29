@@ -10,13 +10,13 @@
 //
 // The tabs render shared components (CanvasStyleControls,
 // ThemeCategoryBrowser) so they're identical to the palette accordion and the
-// New-diagram picker respectively. Follows the standard modal contract
+// New-document picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
 import { lucideGrid3x3 } from '@livediagram/icons/lucide';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useRef } from 'react';
-import type { BackgroundPattern } from '@livediagram/diagram';
+import type { BackgroundPattern } from '@livediagram/document';
 import { Glyph, lucideGlyph, useEscape, useFocusTrap } from '@livediagram/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -24,7 +24,7 @@ import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
 import { DotsIcon, ResetIcon, ScaleIcon } from '@/components/palette/palette-icons';
 import { FontSelect } from '@/components/palette/FontSelect';
 import { SizeButton } from '@/components/palette/palette-controls';
-import type { TextSize } from '@livediagram/diagram';
+import type { TextSize } from '@livediagram/document';
 import { Portal } from '@/components/primitives/Portal';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 

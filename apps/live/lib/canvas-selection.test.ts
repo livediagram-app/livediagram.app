@@ -1,4 +1,4 @@
-import { type Element, type ShapeElement } from '@livediagram/diagram';
+import { type Element, type ShapeElement } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { deriveCanvasSelection } from './canvas-selection';
 
@@ -238,7 +238,7 @@ describe('deriveCanvasSelection — fixed-size elements', () => {
 // every control that doesn't serve "add a note, type, drag" is a
 // distraction. The quick-connect pluses ring every selected note with four
 // affordances nobody reaches for mid-workshop, so they stand down there —
-// and stay exactly as they are on every other board.
+// and stay exactly as they are on every other tab.
 describe('deriveCanvasSelection — quick-connect on an event-storming board', () => {
   const sticky = {
     id: 's',

@@ -6,36 +6,36 @@ import { OneTabShare } from '@/components/illustrations/collaboration';
 export const metadata = helpMetadata({
   title: 'Sharing One Tab',
   description:
-    'Scope a share link to a single tab, so the person you send it to sees that tab and nothing else in the diagram.',
+    'Scope a share link to a single tab, so the person you send it to sees that tab and nothing else in the document.',
   path: '/help/collaboration/sharing/one-tab/',
 });
 
-<ArticleLayout title="Sharing One Tab" description="Scope a share link to one tab; the rest of the diagram stays private." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "one-tab")}>
+<ArticleLayout title="Sharing One Tab" description="Scope a share link to one tab; the rest of the document stays private." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "one-tab")}>
 
-A share link normally opens the whole diagram, every tab of it. Sometimes you only want to show one: the roadmap to a client, but not the pricing tab next to it. A link scoped to one tab does exactly that, without copying the tab into a new diagram.
+A share link normally opens the whole document, every tab of it. Sometimes you only want to show one: the roadmap to a client, but not the pricing tab next to it. A link scoped to one tab does exactly that, without copying the tab into a new document.
 
 ## Scoping a new link
 
-When a diagram has more than one tab, the **Share** dialog gains an **Opens** dropdown under **Valid**. Leave it on **All tabs** for an ordinary link, or pick the tab you want to share, then **Create Pass**. The role still applies: a one-tab link can be an **Editor** or a **Viewer** pass.
+When a document has more than one tab, the **Share** dialog gains an **Opens** dropdown under **Valid**. Leave it on **All tabs** for an ordinary link, or pick the tab you want to share, then **Create Pass**. The role still applies: a one-tab link can be an **Editor** or a **Viewer** pass.
 
 You can make as many links as you like, each scoped differently: one tab to one person, another tab to someone else, and an All-tabs link for your team.
 
 ## What the visitor sees
 
-Someone opening a one-tab link lands straight on that tab. The other tabs stay in their tab bar as **Not shared** pills, so they know the diagram has more, but without names, and nothing happens when they press one. An element link or search result that points at another tab only tells them that tab isn't shared.
+Someone opening a one-tab link lands straight on that tab. The other tabs stay in their tab bar as **Not shared** pills, so they know the document has more, but without names, and nothing happens when they press one. An element link or search result that points at another tab only tells them that tab isn't shared.
 
-<Figure caption="A visitor on a one-tab link: the shared Roadmap tab, with the rest of the diagram shown as Not shared pills.">
+<Figure caption="A visitor on a one-tab link: the shared Roadmap tab, with the rest of the document shown as Not shared pills.">
   <OneTabShare />
 </Figure>
 
-The other tabs are private, not just hidden. Their content never reaches the visitor's browser: not their shapes, not their names, not their live edits. With an **Edit** link the visitor can change their tab, but not rename, add, reorder or delete tabs, rename the diagram, or build a slide deck (a deck spans tabs).
+The other tabs are private, not just hidden. Their content never reaches the visitor's browser: not their shapes, not their names, not their live edits. With an **Edit** link the visitor can change their tab, but not rename, add, reorder or delete tabs, rename the document, or build a slide deck (a deck spans tabs).
 
 ## Changing a link's tabs
 
 Every pass in the Share dialog shows which tabs it opens, beside **Opens**. Change it there at any time: widen a one-tab link to **All tabs**, narrow an All-tabs link to one tab, or move it to another tab. The link's URL stays the same, and anyone using it right now reloads into the new choice.
 
 <Tip>
-  Deleting the tab a link is scoped to deletes that link too. Anyone using it leaves the diagram,
+  Deleting the tab a link is scoped to deletes that link too. Anyone using it leaves the document,
   just as if you had revoked it.
 </Tip>
 

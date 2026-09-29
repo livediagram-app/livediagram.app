@@ -11,7 +11,7 @@ const PALETTE_FAVOURITES_KEY = 'livediagram:v2:palette-favourites';
 // Twelve, which is four rows of three — the grid's natural shape, so the
 // starting state has no ragged last row. The order is deliberate rather than
 // alphabetical: the three shapes anyone reaches for first, then the things you
-// put ON a diagram (text, arrow, frame, note, image), then the Shape Pen and a
+// put ON the canvas (text, arrow, frame, note, image), then the Shape Pen and a
 // table, then the two structured cards technical diagrams lean on: a code
 // block and an entity. Timer and Comment panel held those two slots; they
 // are session tools a facilitator reaches for on purpose, so they live in

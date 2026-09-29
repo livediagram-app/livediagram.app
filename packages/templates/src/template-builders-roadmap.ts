@@ -7,7 +7,7 @@
 // Element[]. Sizing constants live inline so the template is
 // self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createShape, createText, type Element } from '@livediagram/diagram';
+import { createShape, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // Theme chips reuse the conventional tint pairs the retro / SWOT

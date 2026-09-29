@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ChangeLogEntry } from '@livediagram/api-schema';
-import { HISTORY_LIMIT } from '@/hooks/canvas/useDiagramHistory';
+import { HISTORY_LIMIT } from '@/hooks/canvas/useDocumentHistory';
 import {
   emptyEntryHistory,
   entryHistoryCancel,

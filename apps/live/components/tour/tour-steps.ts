@@ -143,13 +143,13 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'explorer',
     title: 'The Explorer',
-    body: 'Find your diagrams and folders, without leaving the editor. Open, create, and organise from here.',
+    body: 'Find your documents and folders, without leaving the editor. Open, create, and organise from here.',
     target: 'explorer',
     // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): no corner panel to point at, the Explorer
     // opens as a popover under the top-left menu button, so the step opens it
     // there and rings the button + popover as one region.
     toolbar: {
-      body: 'The menu button opens the Explorer: find your diagrams and folders without leaving the editor. Open, create, and organise from here.',
+      body: 'The menu button opens the Explorer: find your documents and folders without leaving the editor. Open, create, and organise from here.',
       alsoHighlight: 'dock-explorer',
     },
     prepare: async (api) => {
@@ -177,7 +177,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'tabs',
     title: 'Tabs',
-    body: 'One diagram can hold many pages: this is your current tab, and + adds another. Each tab also has a menu of helpful tools and ways to organise, cleanup and customise.',
+    body: 'One document can hold many pages: this is your current tab, and + adds another. Each tab also has a menu of helpful tools and ways to organise, cleanup and customise.',
     // The active pill and the add button highlight as one region.
     target: 'active-tab',
     alsoHighlight: 'add-tab',

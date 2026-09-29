@@ -3,7 +3,7 @@
 // emitted. Undo must delete the entry for the step it reverts — and
 // ONLY that step's entry.
 //
-// History snapshots (useDiagramHistory) and log entries are not 1:1:
+// History snapshots (useDocumentHistory) and log entries are not 1:1:
 // plenty of commits push history without emitting (add / delete /
 // reorder tab, a checkpoint from a no-op drag), and the debounced
 // emitters attach one entry to a whole gesture up to 500ms after it
@@ -17,7 +17,7 @@
 // exactly one marker per history pop and acts only when it holds an
 // entry.
 //
-// Pure transitions over a plain value, mirroring useDiagramHistory's
+// Pure transitions over a plain value, mirroring useDocumentHistory's
 // exported kernel; the caller owns the ref AND mints the tokens (a
 // monotonic counter — uniqueness within the session is all that
 // matters). Caps must stay identical to the history stack's or the
@@ -26,7 +26,7 @@
 // a wrongly-paired one).
 
 import type { ChangeLogEntry } from '@livediagram/api-schema';
-import { HISTORY_LIMIT } from '@/hooks/canvas/useDiagramHistory';
+import { HISTORY_LIMIT } from '@/hooks/canvas/useDocumentHistory';
 
 // One marker per history step: the entry that step emitted (or null),
 // stamped with the caller-minted token that names the step.

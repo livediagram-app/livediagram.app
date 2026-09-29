@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ES_NOTE_GAP, type Element, type StickyElement } from '@livediagram/diagram';
+import { ES_NOTE_GAP, type Element, type StickyElement } from '@livediagram/document';
 import { NextNoteButtons } from './NextNoteButtons';
 
 // The next-note buttons (docs/specs/021-event-storming/event-storming.md Phase 7). At most two per note, only on the

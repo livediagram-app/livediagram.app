@@ -65,7 +65,7 @@ export function ToolbarExplorerButton({
       {open ? (
         button
       ) : (
-        <HoverCard title="Explorer" description="Your diagrams, folders and teams.">
+        <HoverCard title="Explorer" description="Your documents, folders and teams.">
           {button}
         </HoverCard>
       )}

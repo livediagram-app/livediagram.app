@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import type { CommentMention, ShapeElement } from '@livediagram/diagram';
+import type { CommentMention, ShapeElement } from '@livediagram/document';
 
 import { useRelativeNow } from '@/lib/relative-time';
 import { CollabPanel, tint } from '@/components/canvas/collab/collab-chrome';
@@ -23,7 +23,7 @@ import {
 } from '@/components/canvas/collab/qa/qa-parts';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 
-// The face of a Comment panel (docs/specs/012-collaboration/comment-pin.md): a card on the board that carries a
+// The face of a Comment panel (docs/specs/012-collaboration/comment-pin.md): a card on the canvas that carries a
 // comment thread and shows it in place, as a conversation.
 //
 // It carries NO comment machinery of its own. Every element can already hold a
@@ -34,14 +34,14 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 //
 // The point of a panel over the anchored popover is that it STAYS. A popover
 // is one reader's transient view; a panel connected to what it is about sits
-// on the board, in the export, and in everyone's session, which is what makes
-// a remark part of the diagram rather than a note somebody left.
+// on the canvas, in the export, and in everyone's session, which is what makes
+// a remark part of the document rather than a note somebody left.
 //
 // Built from the modern collab parts ("The look"): the accent scope, the
 // CollabPanel frame (reflowing, like the Q&A board: resizing makes room for
 // more of the thread, not bigger type), and the shared composer.
 
-// Same cap the api enforces on a comment (packages/diagram element-deltas).
+// Same cap the api enforces on a comment (packages/document element-deltas).
 const COMMENT_MAX_TEXT = 5000;
 
 export function CommentPanelFace({
@@ -129,7 +129,7 @@ export function CommentPanelFace({
               rows={0}
               glyph={<DiscussGlyph size={14} />}
             >
-              {onAddComment ? 'Replies stay on the board for everyone to read.' : undefined}
+              {onAddComment ? 'Replies stay on the canvas for everyone to read.' : undefined}
             </EmptyRows>
           ) : (
             <CommentBubbles

@@ -11,7 +11,7 @@ const ROWS: TelemetryCount[] = [
   row('Page', 'View', '/features/customise', 20),
   row('Page', 'View', '/alternatives', 5),
   row('Page', 'View', '/alternatives/miro', 15),
-  row('Page', 'View', '/diagram', 900),
+  row('Page', 'View', '/document', 900),
   row('Page', 'View', '/new', 80),
   row('Cta', 'Opened', 'Home.Hero', 40),
   row('Cta', 'Created', 'Home.Hero', 30),
@@ -21,7 +21,7 @@ const ROWS: TelemetryCount[] = [
   row('Cta', 'Created', 'Feature.Closing', 1),
   // Rows the funnel must not read.
   row('Cta', 'Opened', 'Home.Nope', 99),
-  row('Diagram', 'Created', 'Cloud', 500),
+  row('Document', 'Created', 'Cloud', 500),
 ];
 
 describe('landingFunnel', () => {
@@ -87,7 +87,7 @@ describe('bestSlot', () => {
   const slot = (source: string, arrived: number, created: number) =>
     ({ source, label: source, arrived, created }) as Parameters<typeof bestSlot>[0][number];
 
-  it('picks the most diagrams, breaking a tie on conversion', () => {
+  it('picks the most documents, breaking a tie on conversion', () => {
     expect(bestSlot([slot('Home.Hero', 40, 10), slot('Home.Gallery', 12, 10)])).toBe(
       'Home.Gallery',
     );

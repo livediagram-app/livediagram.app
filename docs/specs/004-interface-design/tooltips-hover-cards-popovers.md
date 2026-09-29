@@ -57,7 +57,7 @@ A control has at most one hint. If a hover card is present, it carries the name 
 
 ### On canvas elements, sparingly
 
-The Behaviour and Collaborate elements sit on a board people are working
+The Behaviour and Collaborate elements sit on a canvas people are working
 across, so a card that opens on every pass gets in the way. On them a hover
 card is kept **only where it says something the face cannot**:
 

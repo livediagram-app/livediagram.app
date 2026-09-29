@@ -6,7 +6,7 @@
 //
 // Per docs/specs/014-identity/auth-and-guest-access.md, this page is never required to use the editor — the
 // editor stays open to guests forever. Sign-in only unlocks per-account
-// persistence (diagrams travel across devices) and team workspaces.
+// persistence (documents travel across devices) and team workspaces.
 // Authenticated users get redirected straight to the editor; guests
 // can sign in here when they want to bind their session to an account.
 
@@ -217,7 +217,7 @@ function SignInContent() {
 
   return (
     <AuthCard
-      subtitle="Sign in to keep your diagrams and work across multiple devices."
+      subtitle="Sign in to keep your documents and work across multiple devices."
       error={error}
       footer={
         <>

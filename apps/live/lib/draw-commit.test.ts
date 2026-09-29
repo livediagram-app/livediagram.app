@@ -1,7 +1,7 @@
-import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livediagram/diagram';
-import { COMPONENT_SIZE } from '@livediagram/diagram';
+import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livediagram/document';
+import { COMPONENT_SIZE } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
-import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/diagram';
+import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/document';
 import {
   buildDrawnArrow,
   buildDrawnBoxed,

@@ -67,7 +67,7 @@ describe('ModifierHintBanner', () => {
       expect(screen.getByText(/insert it between two notes/i)).toBeTruthy();
     });
 
-    it('stays quiet for a palette drag on any other board', () => {
+    it('stays quiet for a palette drag on any other tab', () => {
       show({ esBoard: false });
       act(() => setPaletteDragPreview({ kind: 'square', width: 200, height: 200, note: true }));
       expect(screen.queryByText(/insert it between/i)).toBeNull();

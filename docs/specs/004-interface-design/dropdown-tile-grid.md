@@ -34,7 +34,7 @@ a grid is not always the better shape:
 ## Details that had to survive the change
 
 - **Band titles.** The canvas tool's three bands are named — **Edit** (the
-  tools that act on the diagram), **Present** (the ones you use in front of an
+  tools that act on the canvas), **Present** (the ones you use in front of an
   audience) and **Preview** (the whole-canvas views). A named band doesn't
   also need a rule to say it started, so the title replaces the divider rather
   than sitting under it. Passed as a `groupLabels` map keyed by group index,

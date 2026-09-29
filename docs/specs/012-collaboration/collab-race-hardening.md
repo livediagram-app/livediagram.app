@@ -74,7 +74,7 @@ The dot-vote pattern for every field many people write at once. A new room
 op, `{ kind: 'el-delta', tabId, elementId, delta }` (a MUTATION: sequenced,
 logged for catch-up, refused from a view-role sender), carries ONE change,
 applied by the sender and every receiver through the same pure
-`applyElementDelta` (`packages/diagram/src/element-deltas.ts`):
+`applyElementDelta` (`packages/document/src/element-deltas.ts`):
 
 - `response`: one participant's answer set, or withdrawn with `null`, keyed
   by `participantKey` (done check, estimate, temperature).
@@ -127,7 +127,7 @@ reload showed fewer marks than the room had seen.
 
 **The room keeps a ledger.** For every `el-delta` and `vote` op it
 sequences, the Durable Object records the change in a small per-element
-ledger in its own storage (`packages/diagram/src/collab-ledger.ts`, pure;
+ledger in its own storage (`packages/document/src/collab-ledger.ts`, pure;
 the DO only stores it):
 
 - answers: each participant's LATEST cast or withdraw in the element's
@@ -142,7 +142,7 @@ carry over, since rows have no round). One storage key per element, and
 a ledger that would outgrow the storage value limit stops recording rather
 than failing.
 
-**A save is merged with it.** When a tab PUT arrives for a diagram with a
+**A save is merged with it.** When a tab PUT arrives for a document with a
 room (shared, or in a team) carrying the room cursor its snapshot was taken at
 (`X-Room-Cursor: <epoch>:<seq>`), the api reads the room's ledger for that tab
 (`GET /ledger` on the DO stub, internal only) and merges into the incoming tab
@@ -158,7 +158,7 @@ than the incoming element's is ignored: the save carries a clear the
 ledger hasn't seen a delta for yet.
 
 If the room can't be reached, the save goes through unmerged, as before.
-A diagram with no room (never shared, not in a team) has one writer and
+A document with no room (never shared, not in a team) has one writer and
 isn't merged.
 
 **Comments joined the ledger in phase 5**, once the room stamped their
@@ -191,7 +191,7 @@ and the next save from anybody repairs it.
   (shipped with phase 2).
 - **A session button can't start a vote over a running one.** Pressing a
   vote button mid-vote used to start a fresh vote, which reset every dot on
-  the board. It is now a no-op; ending the vote stays with the vote's own
+  the canvas. It is now a no-op; ending the vote stays with the vote's own
   controls.
 - **The live poll survives a socket.** The room keeps the running poll and
   every answer (`live-poll` in its storage) and replays them to each session

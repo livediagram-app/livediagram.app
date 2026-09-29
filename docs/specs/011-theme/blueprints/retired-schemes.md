@@ -6,16 +6,16 @@ spec decides; this file adds engineering precision. Defaults are ledgered in [DE
 
 Scope, by file:
 
-| File                                               | Role                                                                     |
-| -------------------------------------------------- | ------------------------------------------------------------------------ |
-| `packages/diagram/src/retired-schemes.ts`          | Frozen retired colours; `retiredSchemeOf`; `migrateRetiredScheme`        |
-| `packages/diagram/src/stored-tab.ts`               | `migrateStoredTab`: retired scheme + stored-element migrations, one call |
-| `packages/diagram/src/themes-data.ts`, `themes.ts` | `LEGACY_THEMES` and the `'charcoal'` `ThemeId` are removed               |
-| `apps/live/lib/themes.ts`, `themes-taxonomy.ts`    | Drop the legacy lookup and Charcoal's taxonomy rows                      |
-| `apps/api/src/tab-row.ts`                          | `rowToTab` runs `migrateStoredTab`                                       |
-| `apps/api/src/thumbnail.ts`                        | `renderTabDataToSvg` runs `migrateStoredTab` on the parsed body          |
-| `apps/live/lib/offline/offline-store.ts`           | `offlineLoadTab` runs `migrateStoredTab`                                 |
-| `apps/live/lib/import-merge.ts`                    | `mergeImportedTab` runs `migrateStoredTab` on the imported tab first     |
+| File                                                | Role                                                                     |
+| --------------------------------------------------- | ------------------------------------------------------------------------ |
+| `packages/document/src/retired-schemes.ts`          | Frozen retired colours; `retiredSchemeOf`; `migrateRetiredScheme`        |
+| `packages/document/src/stored-tab.ts`               | `migrateStoredTab`: retired scheme + stored-element migrations, one call |
+| `packages/document/src/themes-data.ts`, `themes.ts` | `LEGACY_THEMES` and the `'charcoal'` `ThemeId` are removed               |
+| `apps/live/lib/themes.ts`, `themes-taxonomy.ts`     | Drop the legacy lookup and Charcoal's taxonomy rows                      |
+| `apps/api/src/tab-row.ts`                           | `rowToTab` runs `migrateStoredTab`                                       |
+| `apps/api/src/thumbnail.ts`                         | `renderTabDataToSvg` runs `migrateStoredTab` on the parsed body          |
+| `apps/live/lib/offline/offline-store.ts`            | `offlineLoadTab` runs `migrateStoredTab`                                 |
+| `apps/live/lib/import-merge.ts`                     | `mergeImportedTab` runs `migrateStoredTab` on the imported tab first     |
 
 ## Domain and naming
 
@@ -125,19 +125,19 @@ a tab with nothing to migrate.
 
 ## Testing
 
-| Rule                                                   | Test                                                              |
-| ------------------------------------------------------ | ----------------------------------------------------------------- |
-| Detection (three branches)                             | `packages/diagram/src/retired-schemes.test.ts`, "retiredSchemeOf" |
-| Charcoal → Default, baked colours removed              | `retired-schemes.test.ts`, "a Charcoal tab"                       |
-| Choices kept (I2), untouched kinds, table cell fill    | `retired-schemes.test.ts`                                         |
-| Previous dark half → current; single-colour match kept | `retired-schemes.test.ts`, "Default's previous dark half"         |
-| Idempotent (I1), same object (I3)                      | `retired-schemes.test.ts`                                         |
-| Composition (I4)                                       | `packages/diagram/src/stored-tab.test.ts`                         |
-| Charcoal no longer resolves or is offered              | `packages/diagram/src/default-scheme.test.ts`                     |
-| api read path                                          | `apps/api/src/tab-row.test.ts`                                    |
-| Thumbnail path                                         | `apps/api/src/thumbnail.test.ts`                                  |
-| Offline read path                                      | `apps/live/lib/offline/offline-store.test.ts`                     |
-| Import path                                            | `apps/live/lib/import-merge.test.ts`                              |
+| Rule                                                   | Test                                                               |
+| ------------------------------------------------------ | ------------------------------------------------------------------ |
+| Detection (three branches)                             | `packages/document/src/retired-schemes.test.ts`, "retiredSchemeOf" |
+| Charcoal → Default, baked colours removed              | `retired-schemes.test.ts`, "a Charcoal tab"                        |
+| Choices kept (I2), untouched kinds, table cell fill    | `retired-schemes.test.ts`                                          |
+| Previous dark half → current; single-colour match kept | `retired-schemes.test.ts`, "Default's previous dark half"          |
+| Idempotent (I1), same object (I3)                      | `retired-schemes.test.ts`                                          |
+| Composition (I4)                                       | `packages/document/src/stored-tab.test.ts`                         |
+| Charcoal no longer resolves or is offered              | `packages/document/src/default-scheme.test.ts`                     |
+| api read path                                          | `apps/api/src/tab-row.test.ts`                                     |
+| Thumbnail path                                         | `apps/api/src/thumbnail.test.ts`                                   |
+| Offline read path                                      | `apps/live/lib/offline/offline-store.test.ts`                      |
+| Import path                                            | `apps/live/lib/import-merge.test.ts`                               |
 
 ## Constants and configuration
 

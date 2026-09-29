@@ -11,7 +11,7 @@ import {
 } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
-import type { Comment, CommentMention, CommentThread } from '@livediagram/diagram';
+import type { Comment, CommentMention, CommentThread } from '@livediagram/document';
 import { MentionMenu } from '@/components/primitives/MentionMenu';
 import { MentionText } from '@/components/primitives/MentionText';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';

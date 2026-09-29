@@ -1,8 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { DEFAULT_MIND_FLOW, isMindNode, mindFlowOf, resolveLayerId } from '@livediagram/diagram';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { DEFAULT_MIND_FLOW, isMindNode, mindFlowOf, resolveLayerId } from '@livediagram/document';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets } from '@/lib/themes';
 import { panelEnabled } from '@/lib/user-preferences';
@@ -206,7 +206,7 @@ export function EditorContextMenuHost() {
       : DEFAULT_MIND_FLOW;
 
   // The selection's layer for the Layer section's move-to dropdown
-  // (docs/specs/006-diagram/layers.md): the single resolved layer every member shares, or null
+  // (docs/specs/006-document/layers.md): the single resolved layer every member shares, or null
   // when the selection spans layers.
   const ctxLayerIds = new Set(
     ctxMemberIds

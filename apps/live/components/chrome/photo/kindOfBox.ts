@@ -1,5 +1,5 @@
 import { classifyRgb, wallFloorsOf } from '@livediagram/sticky-vision';
-import type { EventStormingNoteKind } from '@livediagram/diagram';
+import type { EventStormingNoteKind } from '@livediagram/document';
 
 // The dominant paper colour inside a box the author drew, classified against
 // the notation's own fills. Wall, ink and unknown pixels are ignored; the note

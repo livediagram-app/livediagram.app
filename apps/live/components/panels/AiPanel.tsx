@@ -1,7 +1,7 @@
 'use client';
 
 import { AskIcon, BlinkCursor, CleanIcon, PlugIcon, SendIcon, Spinner } from './ai-panel-icons';
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import type { AiMode } from '@/lib/api-client';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useAiPanelSession } from './useAiPanelSession';

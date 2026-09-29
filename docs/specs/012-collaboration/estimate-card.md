@@ -11,7 +11,7 @@ Estimating out loud anchors — the first number said is the number the room
 converges on, and the most senior voice says it. The fix is older than software
 and is always the same: everyone commits before anyone sees.
 
-The board already knows how to hide things (the reveal zone, [Reveal zone](../009-elements/reveal-zone.md)) and how
+The canvas already knows how to hide things (the reveal zone, [Reveal zone](../009-elements/reveal-zone.md)) and how
 to collect one answer per person for a moment (the poll, [Live poll (ephemeral pulse-check)](live-poll.md)). Neither does
 this: the reveal zone hides content from **everyone equally**, including its
 author, and a poll evaporates. An estimate has to hide your neighbour's answer
@@ -84,7 +84,7 @@ replaced a row of number chips over a printed crosshatched card back, a "Shown"
 rubber stamp after the reveal, and Reveal / Clear pills side by side.
 
 - **Accent.** The tab theme's accent (the shared accent scope), so an unstyled
-  card follows the theme and light / dark like the rest of the board.
+  card follows the theme and light / dark like the rest of the canvas.
 - **The scale as cards.** Each value is a portrait card sharing the row's
   width, each capped so a wide card doesn't turn them into slabs. Your pick
   fills in the accent, lifts, and pops; pressing it again withdraws it.
@@ -98,7 +98,7 @@ rubber stamp after the reveal, and Reveal / Clear pills side by side.
   what it does.
 - **Empty**, a quiet line of face-down ghost cards over "No picks yet" and
   "Your pick stays hidden from everyone until the reveal."
-- The spread and the value order live in `@livediagram/diagram`
+- The spread and the value order live in `@livediagram/document`
   (`estimateSpread`, `estimateRank`), so the export draws the same card: the
   scale chooser while it has no scale; otherwise the scale's cards over the
   room's, face down before the reveal and face up after, sorted, with the spread

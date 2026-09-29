@@ -31,7 +31,7 @@ import {
   type Element,
   type ProgressAnim,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
 import { useMindMapSetters } from '@/hooks/canvas/useMindMapSetters';

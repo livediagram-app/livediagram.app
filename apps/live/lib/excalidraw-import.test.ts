@@ -6,7 +6,7 @@ import type {
   FreehandElement,
   ShapeElement,
   TextElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // Minimal scene wrapper — only the fields the importer reads.
 const scene = (elements: unknown[], appState?: Record<string, unknown>) =>

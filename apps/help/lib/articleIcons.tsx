@@ -39,7 +39,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // Requests going out and data coming back.
-  'working-with-diagrams': (
+  'working-with-documents': (
     <Glyph>
       <rect x="2.5" y="4" width="7" height="6" rx="1.5" />
       <rect x="14.5" y="14" width="7" height="6" rx="1.5" />
@@ -118,7 +118,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // ---- Privacy ----
-  // A cloud with a line through it: the diagram never leaves the browser.
+  // A cloud with a line through it: the document never leaves the browser.
   'offline-mode': (
     <Glyph>
       <path d="M6.5 17.5a4 4 0 01.3-8 5.5 5.5 0 0110.4 1.4A3.5 3.5 0 0117 17.5z" />
@@ -286,7 +286,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
   ),
 
   // ---- Troubleshooting ----
-  'diagram-not-loading': (
+  'document-not-loading': (
     <Glyph>
       <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
       <path d="M14 3v6h6" />

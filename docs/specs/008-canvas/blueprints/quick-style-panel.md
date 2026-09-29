@@ -8,19 +8,19 @@ Scope, by file:
 
 | File                                                                        | Role                                                                                                             |
 | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `packages/diagram/src/quick-swatches.ts`                                    | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
-| `packages/diagram/src/colors.ts`                                            | `unpaintedShapeInk(surface)`: the theme default on the Default scheme; `supportsColours` admits `text`           |
-| `packages/diagram/src/element-types.ts`, `arrow-types.ts`                   | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
-| `packages/diagram/src/validate.ts`                                          | Rejects a swatch field that is not a slot                                                                        |
-| `packages/diagram/src/quick-swatch-rederive.ts`                             | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
-| `packages/diagram/src/theme-graph.ts`                                       | The four theme walks call the re-derive last                                                                     |
+| `packages/document/src/quick-swatches.ts`                                   | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
+| `packages/document/src/colors.ts`                                           | `unpaintedShapeInk(surface)`: the theme default on the Default scheme; `supportsColours` admits `text`           |
+| `packages/document/src/element-types.ts`, `arrow-types.ts`                  | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
+| `packages/document/src/validate.ts`                                         | Rejects a swatch field that is not a slot                                                                        |
+| `packages/document/src/quick-swatch-rederive.ts`                            | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
+| `packages/document/src/theme-graph.ts`                                      | The four theme walks call the re-derive last                                                                     |
 | `apps/live/lib/style-presets.ts`                                            | Hand-set colour and presets clear the matching binding                                                           |
 | `apps/live/hooks/canvas/useColorStyleSetters.ts`, `useShapeStyleSetters.ts` | Resets clear both bindings                                                                                       |
 | `apps/live/lib/format-painter.ts`, `format-config.ts`                       | The painter carries a binding only together with its colour                                                      |
 | `apps/live/lib/quick-style.ts`                                              | Pure: eligibility, sections, shared values, the apply transforms, clear                                          |
 | `apps/live/lib/style-memory.ts`                                             | Pure: memory shape, record from an edit, apply to a new element, forget, parse                                   |
 | `apps/live/lib/quick-style-placement.ts`                                    | Pure: the candidate walk that keeps the panel clear of chrome                                                    |
-| `apps/live/hooks/canvas/useStyleMemory.ts`                                  | Per-diagram memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                             |
+| `apps/live/hooks/canvas/useStyleMemory.ts`                                  | Per-document memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                            |
 | `apps/live/hooks/canvas/useQuickStyle.ts`                                   | Panel actions: one commit per choice, memory, telemetry                                                          |
 | `apps/live/hooks/ui/useQuickStylePlacement.ts`                              | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
 | `apps/live/components/canvas/QuickStylePanel.tsx`                           | The panel: docked (Palette dress) or compact by layout                                                           |
@@ -30,8 +30,8 @@ Scope, by file:
 | `apps/live/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences                                    |
 | `apps/live/components/primitives/CustomThemeProvider.tsx`                   | Calls the prune on delete and when the custom-theme list loads                                                   |
 | `apps/live/components/canvas/SwatchOverridePopover.tsx`                     | The right-click popover: picker, hex field, Clear override                                                       |
-| `apps/live/app/diagram/[id]/useEditorState.ts`                              | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
-| `apps/live/app/diagram/[id]/EditorView.tsx`                                 | Mounts the panel                                                                                                 |
+| `apps/live/app/document/[id]/useEditorState.ts`                             | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
+| `apps/live/app/document/[id]/EditorView.tsx`                                | Mounts the panel                                                                                                 |
 
 ## Domain and naming
 
@@ -231,12 +231,12 @@ calls `forget` with the kind keys of every target it changed.
 - `forgetStyleKinds(memory, kinds)`: removes those entries.
 - `parseStyleMemory(raw)`: `safeJson`, keeps only known kind keys and memorable fields with the right
   primitive type (string / number); anything else is dropped (D36).
-- Storage: `localStorage` key `livediagram:v2:style-memory:<diagramId>`, written through
+- Storage: `localStorage` key `livediagram:v2:style-memory:<documentId>`, written through
   `writeLocalStorageSafe`, at most once per `STYLE_MEMORY_WRITE_DEBOUNCE_MS = 250` (D37), and flushed
-  on unmount. Read once per diagram id.
+  on unmount. Read once per document id.
 
-`useStyleMemory({ diagramId, theme })` returns `recordEdit(before, after)`, `styleNewElement(el)`,
-`forget(kindKeys)`. With `diagramId === null` (still loading) nothing is read or written and
+`useStyleMemory({ documentId, theme })` returns `recordEdit(before, after)`, `styleNewElement(el)`,
+`forget(kindKeys)`. With `documentId === null` (still loading) nothing is read or written and
 `styleNewElement` is the identity.
 
 Capture points (the panel **or** the context menu):
@@ -377,7 +377,7 @@ label", "Icon after label"; "Clear styles". The panel's region label: "Quick sty
 | Selection changes while a tooltip is open | Tooltip unmounts with its option                                           |
 | Element deleted by a peer mid-choice      | The commit maps the live elements; a missing id is simply not there        |
 | Locked element in the selection           | Not a target; never written                                                |
-| `diagramId` null                          | Memory inert                                                               |
+| `documentId` null                         | Memory inert                                                               |
 
 ## Security and trust
 
@@ -394,7 +394,7 @@ new network surface.
   of the panel and per bound element in a theme walk. Worst case a 2 000-element theme switch with
   every element bound: 4 000 calls, well under a frame each.
 - Memory size: kind keys are bounded by `ShapeKind` count + 1, each with at most 10 fields: well
-  under 10 KB per diagram.
+  under 10 KB per document.
 - `recordEdit` diffs the active tab's elements by id with a `Map`: `O(n)` per style commit.
 
 ## Observability

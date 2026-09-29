@@ -81,7 +81,7 @@ nothing written on it.
 
 - **Accent.** The tab theme's accent, from the element's themed stroke, with
   the ink that reads on it, exactly as the Q&A board does (one shared accent
-  scope). An unstyled box follows light and dark with the rest of the board.
+  scope). An unstyled box follows light and dark with the rest of the canvas.
 - **The composer is at the foot**, where people add from, as on the Q&A
   board, and it is the same composer: a rounded field with a send button in
   the accent. Where the Q&A board has an Anonymous switch, the idea box shows a
@@ -113,7 +113,7 @@ Opening is edit-role only and shared. There is no closing again: once the room
 has read the cards, a re-closed box is theatre, and the flag exists to protect
 the writing round, not to be a toggle.
 
-## Getting the ideas onto the board
+## Getting the ideas onto the canvas
 
 An open box's cards can be **scattered to sticky notes** in one action, which
 is what a retro does next: the cards become ordinary elements that group, move,

@@ -1,4 +1,4 @@
-import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/diagram';
+import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/document';
 import { hexToRgb, hueDistance, rgbToHsv, type Hsv } from './colour';
 import { rgbToLabInto, type Lab } from './lab';
 import { DEFAULT_FLOORS, FLOOR_CALIBRATION, VALUE_FLOOR, type PaperFloors } from './floors';

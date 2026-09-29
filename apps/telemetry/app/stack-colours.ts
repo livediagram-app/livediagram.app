@@ -8,7 +8,7 @@ import { categoryColor } from './event-vocab';
 // part of its category at a glance.
 //
 // Each member's line takes its category's colour. Members that share one (a
-// stack is often a single category: Diagram Actions is all Diagram) take
+// stack is often a single category: Document Actions is all Document) take
 // shades of it, darkest first, so the lines still tell apart while the stack
 // stays one family. Grouped by the colour, not the category name, since two
 // categories can share a hue (Folder and Facilitator) and must still split.

@@ -5,7 +5,7 @@ import {
   createShape,
   createSticky,
   createText,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { describeMany, describeOne, elementAriaLabel, kindLabel } from './element-names';
 
 // Shared element naming (docs/specs/004-interface-design/canvas-accessibility.md + docs/specs/012-collaboration/activity-and-audit.md): the change log and the

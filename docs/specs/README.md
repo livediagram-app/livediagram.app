@@ -13,12 +13,12 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./003-system-architecture/README.md - when touching source layout, the test setup, or cross-cutting code structure
 - ./004-interface-design/README.md - when working on the visual language: colour, fonts, motion, accessibility, shared UI mechanics
 - ./005-project-roadmap/README.md - when asking where the product is now and what is still ahead
-- ./006-diagram/README.md - when working on the diagram model: tabs, layers, storage, snapshots, offline diagrams
+- ./006-document/README.md - when working on the document model and its domain language: tabs, tab kinds, layers, storage, snapshots, offline documents
 - ./007-editor/README.md - when working on the live editor shell: routes, preferences, power user mode, panels, tours, AI, command palette
 - ./008-canvas/README.md - when working on canvas tools and gestures: drawing, arrows, snapping, sizing, tool panels
 - ./009-elements/README.md - when adding or changing an element kind or its content
 - ./010-palette/README.md - when working on the palette: categories, favourites, icon and sticker catalogues, presets
-- ./011-theme/README.md - when working on diagram themes: built-in, multi-colour and custom themes
+- ./011-theme/README.md - when working on tab themes: built-in, multi-colour and custom themes
 - ./012-collaboration/README.md - when working on realtime, sessions, facilitation, comments, actions or room tools
 - ./013-workspace/README.md - when working on the Explorer, folders, teams, favourites, share links or the Trash
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email

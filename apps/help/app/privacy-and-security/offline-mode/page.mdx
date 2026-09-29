@@ -4,46 +4,46 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Offline Mode',
   description:
-    'Create diagrams that are saved only in your browser, never to the server, and move them to and from your account.',
+    'Create documents that are saved only in your browser, never to the server, and move them to and from your account.',
   path: '/help/privacy-and-security/offline-mode/',
 });
 
-<ArticleLayout title="Offline Mode" description="Diagrams saved only in this browser, never on the server, and how to move them to and from your account." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
+<ArticleLayout title="Offline Mode" description="Documents saved only in this browser, never on the server, and how to move them to and from your account." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-Most diagrams are saved to livediagram's servers so you can reach them from any device and share them. **Offline Mode** is the opposite choice: a diagram saved **only in the browser you made it in**, that never touches the server at all. It suits private, local-first work, or simply wanting a diagram that physically never leaves your machine.
+Most documents are saved to livediagram's servers so you can reach them from any device and share them. **Offline Mode** is the opposite choice: a document saved **only in the browser you made it in**, that never touches the server at all. It suits private, local-first work, or simply wanting a document that physically never leaves your machine.
 
-## Creating an offline diagram
+## Creating an offline document
 
-Offline Mode is off by default and chosen per diagram, so you can keep normal diagrams and offline ones side by side.
+Offline Mode is off by default and chosen per document, so you can keep normal documents and offline ones side by side.
 
-- On the **New diagram** screen, step through the wizard to the **Location** step (the third step, after Template and Theme) and choose **Local Browser** under **Save location**, then click **Create**.
-- The diagram is written to your browser's local storage and opens like any other. An **Offline** badge next to its name, and an **Offline** tag in your Explorer list, mark it so you always know which diagrams are local-only.
+- On the **New document** screen, step through the wizard to the **Location** step (the third step, after Template and Theme) and choose **Local Browser** under **Save location**, then click **Create**.
+- The document is written to your browser's local storage and opens like any other. An **Offline** badge next to its name, and an **Offline** tag in your Explorer list, mark it so you always know which documents are local-only.
 
 <Note>
-  An offline diagram is **not synced and not backed up**. It lives only in this browser: clearing
+  An offline document is **not synced and not backed up**. It lives only in this browser: clearing
   your site data, or the browser reclaiming storage, will delete it. Keep anything important on the
   cloud, or export a copy.
 </Note>
 
 ## What's different
 
-An offline diagram is a normal diagram: every editor feature works, including shapes, arrows, layers, tabs, themes, undo/redo, and export. Only the features that need the server are unavailable, because there's no server copy to power them:
+An offline document is a normal document: every editor feature works, including shapes, arrows, layers, tabs, themes, undo/redo, and export. Only the features that need the server are unavailable, because there's no server copy to power them:
 
-- **Sharing** needs a diagram on the server, so opening **Share** on an offline diagram prompts you to sync it to your account first. Embeds are unavailable for the same reason.
-- **Live collaboration** and **teams** don't apply; an offline diagram is yours alone.
+- **Sharing** needs a document on the server, so opening **Share** on an offline document prompts you to sync it to your account first. Embeds are unavailable for the same reason.
+- **Live collaboration** and **teams** don't apply; an offline document is yours alone.
 - The AI assistant works while you're online (it reads your current canvas), but not with no connection.
-- Images you add are stored **inside the diagram**, so it stays fully local.
+- Images you add are stored **inside the document**, so it stays fully local.
 
 ## Moving to and from your account
 
-You can change your mind at any time, from the diagram's menu in the Explorer.
+You can change your mind at any time, from the document's menu in the Explorer.
 
-- **Sync Diagram** uploads an offline diagram to the cloud. It becomes a normal diagram, shareable and reachable from your other devices, and the local-only copy is removed.
-- **Take Offline** does the reverse: it downloads a cloud diagram into this browser and then **removes it from your account and every other device**. Because that deletes the server copy for good, we ask you to confirm first.
-- **A tab it shares with other diagrams** (see [Add a Tab to Another Diagram](/help/tabs/add-to-diagram/)) stays in those diagrams, and this browser keeps its own copy. From then on the two are separate: edits on one side no longer reach the other, and syncing the diagram back brings your copy in as a new tab beside the original.
+- **Sync Document** uploads an offline document to the cloud. It becomes a normal document, shareable and reachable from your other devices, and the local-only copy is removed.
+- **Take Offline** does the reverse: it downloads a cloud document into this browser and then **removes it from your account and every other device**. Because that deletes the server copy for good, we ask you to confirm first.
+- **A tab it shares with other documents** (see [Add a Tab to Another Document](/help/tabs/add-to-document/)) stays in those documents, and this browser keeps its own copy. From then on the two are separate: edits on one side no longer reach the other, and syncing the document back brings your copy in as a new tab beside the original.
 
 <Note>
-  "Take Offline" is deliberate and irreversible on the server side: once a diagram is offline it
+  "Take Offline" is deliberate and irreversible on the server side: once a document is offline it
   exists only in the browser you took it offline in. If it was shared, taking it offline also
   revokes the share links.
 </Note>

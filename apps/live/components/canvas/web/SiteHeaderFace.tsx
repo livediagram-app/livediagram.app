@@ -1,4 +1,4 @@
-import { BORDER_RADIUS_PX, headerLayout, WEB_TEXT_MAX } from '@livediagram/diagram';
+import { BORDER_RADIUS_PX, headerLayout, WEB_TEXT_MAX } from '@livediagram/document';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';

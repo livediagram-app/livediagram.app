@@ -572,7 +572,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'In the editor',
         label: 'In-Editor Notifications',
         description:
-          "Shows a brief confirmation when you do something whose result isn't on screen, like moving a diagram to a folder or linking a tab. Errors are always shown so a failure is never hidden. Turn off for a quieter editor.",
+          "Shows a brief confirmation when you do something whose result isn't on screen, like moving a document to a folder or linking a tab. Errors are always shown so a failure is never hidden. Turn off for a quieter editor.",
         read: (p) => p.notificationsEnabled !== false,
         write: (p, v) => ({ ...p, notificationsEnabled: v }),
         event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
@@ -590,20 +590,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Email Notifications',
         note: 'Sign in to choose which emails you get.',
         description:
-          'We can email you when someone joins one of your diagrams, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
+          'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
       {
         kind: 'toggle',
-        key: 'notifyDiagramJoin',
+        key: 'notifyDocumentJoin',
         keywords: 'email join collaborator opened',
         section: 'Email',
-        label: 'Someone Joins My Diagram',
-        description: 'When a new person opens one of your shared diagrams for the first time.',
+        label: 'Someone Joins My Document',
+        description: 'When a new person opens one of your shared documents for the first time.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyDiagramJoin !== false,
-        write: (p, v) => ({ ...p, notifyDiagramJoin: v }),
-        event: { category: 'UI', on: 'NotifyDiagramJoinOn', off: 'NotifyDiagramJoinOff' },
+        read: (p) => p.notifyDocumentJoin !== false,
+        write: (p, v) => ({ ...p, notifyDocumentJoin: v }),
+        event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
       },
       {
         kind: 'toggle',
@@ -622,8 +622,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'notifyComments',
         keywords: 'email comment reply feedback',
         section: 'Email',
-        label: 'Someone Comments on My Diagram',
-        description: 'When someone leaves a comment on a diagram you own.',
+        label: 'Someone Comments on My Document',
+        description: 'When someone leaves a comment on a document you own.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
         read: (p) => p.notifyComments !== false,
         write: (p, v) => ({ ...p, notifyComments: v }),
@@ -635,7 +635,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'email action assigned task todo',
         section: 'Email',
         label: 'Someone Assigns Me an Action',
-        description: 'When a teammate assigns you an action on a diagram element.',
+        description: 'When a teammate assigns you an action on an element.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
         read: (p) => p.notifyActionAssigned !== false,
         write: (p, v) => ({ ...p, notifyActionAssigned: v }),
@@ -673,7 +673,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Email',
         label: 'Milestones',
         description:
-          'A note when you hit a milestone, like sharing your first diagram or reaching your tenth.',
+          'A note when you hit a milestone, like sharing your first document or reaching your tenth.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
         read: (p) => p.notifyMilestones !== false,
         write: (p, v) => ({ ...p, notifyMilestones: v }),
@@ -702,7 +702,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'walkthrough onboarding intro show me around getting started',
         label: 'Show Welcome Tour',
         description:
-          'Offers the Show me around tour the next time you open a diagram. It switches itself off once you have taken or dismissed the tour, so it only ever offers itself once. Turn it back on and close Settings to run the tour again straight away.',
+          'Offers the Show me around tour the next time you open a document. It switches itself off once you have taken or dismissed the tour, so it only ever offers itself once. Turn it back on and close Settings to run the tour again straight away.',
         helpArticle: 'welcomeTour',
         // INVERTED against the stored preference: the row asks "show me the
         // tour?", `tourSeen` records "already seen". Switch on === not seen.
@@ -768,7 +768,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Guest',
         keywords: 'account profile identity name email signed in sign in avatar joined',
         description:
-          'Your name and email come from your account and are changed there, not here. Signing in keeps your diagrams across browsers and devices; without it they belong to this browser alone.',
+          'Your name and email come from your account and are changed there, not here. Signing in keeps your documents across browsers and devices; without it they belong to this browser alone.',
         helpArticle: 'guestVsAccount',
       },
       {
@@ -777,9 +777,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Your Data',
         label: 'Trash',
         keywords:
-          'trash bin recycle deleted undo undelete restore recover get back diagram permanently empty',
+          'trash bin recycle deleted undo undelete restore recover get back document diagram permanently empty',
         description:
-          'Deleted diagrams wait here for 30 days before they are removed for good. Restore one to put it back where it was.',
+          'Deleted documents wait here for 30 days before they are removed for good. Restore one to put it back where it was.',
         helpArticle: 'trash',
       },
       {
@@ -789,7 +789,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your diagrams, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
+          'Removes your documents, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
       },
     ],
   },

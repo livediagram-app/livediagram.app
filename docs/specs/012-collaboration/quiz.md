@@ -2,7 +2,7 @@
 
 Status: **implemented** (first cut, for review).
 
-One multiple-choice question on the board, run by the facilitator: it opens
+One multiple-choice question on the canvas, run by the facilitator: it opens
 for everyone at once, locks when its time is up, and the reveal shows the
 right answer and who got it.
 
@@ -121,7 +121,7 @@ other live fields, so one person's Ctrl+Z cannot un-start somebody's round.
 ## Limits, stated plainly
 
 - **The right answer is in the document.** `quizCorrect` syncs to everyone
-  like any field, so someone reading the raw diagram (the JSON export, the
+  like any field, so someone reading the raw document (the JSON export, the
   network tab) can see it before the reveal. The face never shows it early,
   and the Edit dialog is only offered to people who can run the card. Hiding
   it for real would need the server to hold it, the way the Q&A board's

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element } from '@livediagram/diagram';
+import type { ArrowElement, Element } from '@livediagram/document';
 import { buildTemplate } from './template-builders';
 
 // Structural pins for the three process templates rebuilt as worked examples

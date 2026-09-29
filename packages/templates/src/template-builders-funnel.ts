@@ -9,7 +9,7 @@
 // Element[]. Sizing constants live inline so the template is
 // self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createShape, createText, type Element } from '@livediagram/diagram';
+import { createShape, createText, type Element } from '@livediagram/document';
 
 export function buildFunnel(cx: number, cy: number): Element[] {
   // The trapezoid shape renders narrow-top / wide-bottom (22..78 over

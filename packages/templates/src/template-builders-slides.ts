@@ -8,7 +8,7 @@
 // self-describing alongside the shape it draws. See docs/specs/008-canvas/canvas-and-palette.md
 // "Templates" for the catalogue and per-template intent.
 
-import { createPinnedArrow, createShape, createText, type Element } from '@livediagram/diagram';
+import { createPinnedArrow, createShape, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // Slide deck: four slides in a 2x2 grid, each a framed square with a
@@ -50,7 +50,7 @@ export function buildSlideDeck(cx: number, cy: number): Element[] {
     width: w,
     height: h,
     textSize: opts.size ?? 'sm',
-    // Everything on a slide is content (docs/specs/006-diagram/layers.md); the frames below
+    // Everything on a slide is content (docs/specs/006-document/layers.md); the frames below
     // override this onto the scaffold layer.
     layerId: TEMPLATE_CONTENT_LAYER_ID,
     ...(opts.label !== undefined ? { label: opts.label } : {}),
@@ -184,7 +184,7 @@ export function buildStoryboard(cx: number, cy: number): Element[] {
     const fy = framesTop + row * rowPitch;
 
     // Frame first, then its contents layer above it. Frames + their
-    // number chips are the storyboard's scaffold layer (docs/specs/006-diagram/layers.md); the
+    // number chips are the storyboard's scaffold layer (docs/specs/006-document/layers.md); the
     // sketch glyphs and captions users redraw ride the content layer.
     const frame = {
       ...createShape('square', fx, fy),

@@ -18,7 +18,7 @@ import {
   type ArrowheadShape,
   type BoxedElement,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // The common Excalidraw element chassis. Excalidraw's restore() fills in
 // anything missing, but emitting the everyday fields keeps the file readable

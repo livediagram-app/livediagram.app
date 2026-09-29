@@ -1,12 +1,12 @@
-// Explorer-category illustrations (docs/specs/018-help/help-app.md): the full-page diagram library, the
+// Explorer-category illustrations (docs/specs/018-help/help-app.md): the full-page document library, the
 // compact in-editor panel, the sidebar sections (Recent, Shared with you, My
 // Work, Team Spaces) and the Library views (image gallery, saved themes).
 // Composed only from the shared primitives so the house style holds.
 
 import { Scene, Avatar, Label, Button } from './primitives';
 import {
-  DiagramCard,
-  DiagramRow,
+  DocumentCard,
+  DocumentRow,
   ExplorerSidebar,
   SidebarGlyph,
   SidebarRow,
@@ -15,7 +15,7 @@ import {
 // --- Scenes ------------------------------------------------------------------
 
 /** The whole full-page Explorer: sidebar of sections on the left, a breadcrumb
- *  and a grid of diagram cards on the right. */
+ *  and a grid of document cards on the right. */
 export function ExplorerOverview() {
   return (
     <Scene w={420} h={250} bg="plain">
@@ -37,10 +37,10 @@ export function ExplorerOverview() {
       <Button x={336} y={22} w={56} h={20} label="New" variant="primary" />
       <line x1={178} y1={48} x2={404} y2={48} className="stroke-slate-200" strokeWidth={1.5} />
       {/* Card grid */}
-      <DiagramCard x={192} y={60} title="Onboarding" thumb="flow" />
-      <DiagramCard x={296} y={60} title="Data model" thumb="grid" />
-      <DiagramCard x={192} y={144} title="Org chart" thumb="tree" />
-      <DiagramCard x={296} y={144} title="API flow" thumb="flow" />
+      <DocumentCard x={192} y={60} title="Onboarding" thumb="flow" />
+      <DocumentCard x={296} y={60} title="Data model" thumb="grid" />
+      <DocumentCard x={192} y={144} title="Org chart" thumb="tree" />
+      <DocumentCard x={296} y={144} title="API flow" thumb="flow" />
     </Scene>
   );
 }
@@ -83,15 +83,15 @@ export function ExplorerPanel() {
       </Label>
       <line x1={28} y1={54} x2={216} y2={54} className="stroke-slate-200" strokeWidth={1.5} />
       <SidebarRow x={28} y={66} w={188} label="Recent" count={8} active glyph="recent" />
-      <DiagramRow x={40} y={92} w={164} title="Onboarding flow" meta="edited 2m ago" active />
-      <DiagramRow x={40} y={126} w={164} title="Data model" meta="edited today" />
+      <DocumentRow x={40} y={92} w={164} title="Onboarding flow" meta="edited 2m ago" active />
+      <DocumentRow x={40} y={126} w={164} title="Data model" meta="edited today" />
       <SidebarRow x={28} y={162} w={188} label="Personal Space" glyph="folder" />
       <SidebarRow x={28} y={184} w={188} label="Shared with you" count={3} glyph="shared" />
     </Scene>
   );
 }
 
-/** A list of recently opened diagrams, newest first. */
+/** A list of recently opened documents, newest first. */
 export function RecentList() {
   return (
     <Scene w={420} h={224} bg="plain">
@@ -108,7 +108,7 @@ export function RecentList() {
         <SidebarGlyph kind="recent" active />
       </g>
       <Label x={56} y={33} size={10.5} weight={700} tone="strong">
-        Recent diagrams
+        Recent documents
       </Label>
       <g>
         <rect x={178} y={26} width={20} height={14} rx={7} className="fill-brand-500" />
@@ -117,10 +117,10 @@ export function RecentList() {
         </Label>
       </g>
       <line x1={24} y1={48} x2={396} y2={48} className="stroke-slate-200" strokeWidth={1.5} />
-      <DiagramRow x={40} y={58} w={340} title="Onboarding flow" meta="opened just now" active />
-      <DiagramRow x={40} y={94} w={340} title="Q3 roadmap" meta="opened 12m ago" />
-      <DiagramRow x={40} y={130} w={340} title="Auth sequence" meta="opened yesterday" />
-      <DiagramRow x={40} y={166} w={340} title="Data model" meta="opened 2 days ago" />
+      <DocumentRow x={40} y={58} w={340} title="Onboarding flow" meta="opened just now" active />
+      <DocumentRow x={40} y={94} w={340} title="Q3 roadmap" meta="opened 12m ago" />
+      <DocumentRow x={40} y={130} w={340} title="Auth sequence" meta="opened yesterday" />
+      <DocumentRow x={40} y={166} w={340} title="Data model" meta="opened 2 days ago" />
     </Scene>
   );
 }
@@ -145,7 +145,7 @@ export function SharedWithYou() {
         Shared with you
       </Label>
       <line x1={24} y1={46} x2={396} y2={46} className="stroke-slate-200" strokeWidth={1.5} />
-      <DiagramCard
+      <DocumentCard
         x={44}
         y={58}
         title="Sprint board"
@@ -153,7 +153,7 @@ export function SharedWithYou() {
         shared
         owner={{ initial: 'M', colour: 'violet' }}
       />
-      <DiagramCard
+      <DocumentCard
         x={162}
         y={58}
         title="System map"
@@ -161,7 +161,7 @@ export function SharedWithYou() {
         shared
         owner={{ initial: 'A', colour: 'emerald' }}
       />
-      <DiagramCard
+      <DocumentCard
         x={280}
         y={58}
         title="Hiring plan"
@@ -461,7 +461,7 @@ export function ThemesLibrary() {
   );
 }
 
-/** The Unsorted folder: the synthetic home for diagrams not filed anywhere,
+/** The Unsorted folder: the synthetic home for documents not filed anywhere,
  *  shown highlighted at the top of Personal Space with a couple of loose docs in it. */
 export function UnsortedFolder() {
   return (
@@ -480,7 +480,7 @@ export function UnsortedFolder() {
       </Label>
       <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
       <SidebarRow x={40} y={54} w={336} label="Unsorted" glyph="folder" active count={2} />
-      <SidebarRow x={64} y={92} w={312} label="Untitled diagram" glyph="doc" />
+      <SidebarRow x={64} y={92} w={312} label="Untitled document" glyph="doc" />
       <SidebarRow x={64} y={122} w={312} label="Quick sketch" glyph="doc" />
       <SidebarRow x={40} y={158} w={336} label="Projects" glyph="folder" />
     </Scene>
@@ -519,7 +519,7 @@ export function TimelineFeed() {
       </Label>
 
       <TimelineEventBubble y={74} tint="sky" title="Comment Added" meta="Priya · Payments" />
-      <TimelineEventBubble y={112} tint="sky" title="Diagram Updated" meta="You worked on Auth" />
+      <TimelineEventBubble y={112} tint="sky" title="Document Updated" meta="You worked on Auth" />
 
       <circle cx={46} cy={158} r={4} className="fill-slate-300" />
       <Label x={58} y={158} size={10} weight={700} tone="muted">
@@ -568,7 +568,7 @@ export function TimelineStacking() {
       <TimelineEventBubble
         y={46}
         tint="sky"
-        title="Diagrams Updated"
+        title="Documents Updated"
         meta="5 events · click to expand"
       />
       <Label x={40} y={132} size={9.5} tone="muted">

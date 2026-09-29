@@ -16,7 +16,7 @@ import { getSticker } from '@/lib/stickers';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 
 // The art in its own <svg>, sized by the caller. Shared with the palette
-// tile so a sticker looks the same in the picker as on the board.
+// tile so a sticker looks the same in the picker as on the canvas.
 export function StickerArt({ def, className }: { def: StickerDef; className?: string }) {
   const art = stickerArt(def);
   return (

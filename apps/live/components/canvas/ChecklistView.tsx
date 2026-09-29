@@ -1,4 +1,4 @@
-import type { ShapeElement } from '@livediagram/diagram';
+import type { ShapeElement } from '@livediagram/document';
 
 // The checklist's canvas view (docs/specs/009-elements/checklist.md): a themed card of checkbox rows.
 // Clicking a box toggles that row's done state (edit-role only, like the

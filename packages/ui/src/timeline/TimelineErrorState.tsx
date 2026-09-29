@@ -11,7 +11,7 @@
 //
 // Lives in the package rather than in the Explorer's panel folder
 // because every host of <Timeline> — the landing feed, a team's
-// activity card, one diagram's history — can fail the same way and
+// activity card, one document's history — can fail the same way and
 // should say so the same way.
 
 export function TimelineErrorState({ onRetry }: { onRetry?: () => void }) {

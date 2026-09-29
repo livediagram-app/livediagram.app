@@ -76,7 +76,7 @@ For longer listing bodies and "about this project" sections.
 >
 > Collaboration is real time and built in, not bolted on. Everyone on a diagram
 > sees live cursors, selection rings, and comment threads, with a laser pointer
-> for walking a group through a design. Each diagram gets its own realtime room,
+> for walking a group through a design. Each document gets its own realtime room,
 > so presence and edits stay snappy.
 >
 > The canvas is deep enough for real work: ten core shapes, sticky notes, text,
@@ -116,7 +116,7 @@ detailed GitHub / Product Hunt write-up.
 >
 > Collaboration is the product, not a feature. Everyone on a diagram sees live
 > cursors, selection rings, and comment threads as they happen, plus a laser
-> pointer for walking a group through a design in a call. Each diagram runs in
+> pointer for walking a group through a design in a call. Each document runs in
 > its own realtime room, so presence and edits stay responsive even with a
 > crowd on the canvas.
 >
@@ -136,15 +136,15 @@ detailed GitHub / Product Hunt write-up.
 > Open one of 17 templates (mind map, flowchart, Kanban, SWOT, retrospective,
 > org chart, timeline, fishbone, user journey, UI wireframes, and more) or start
 > blank. Recolor an entire diagram, every shape and arrow, with one of 18 themes
-> in a single click. Group related work into tabs within a diagram, link across
-> them, copy a tab into another diagram, and file everything into nested
+> in a single click. Group related work into tabs within a document, link across
+> them, copy a tab into another document, and file everything into nested
 > folders.
 >
 > #### Nothing gets lost
 >
 > Every change is recorded in a per-tab activity log, and you can revert any
 > single entry with one click, even after later edits landed on top of it.
-> Share view-only or editable links per diagram and revoke them whenever you
+> Share view-only or editable links per document and revoke them whenever you
 > want. Anyone you share with can make their own copy. Export any tab to
 > Markdown, PDF, PNG, or JSON, and import the JSON back as a new tab.
 >

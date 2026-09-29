@@ -12,7 +12,7 @@
 //
 // Mutations run through `tickTabs` (NO history push), the same carve-out
 // comments use: Cmd+Z must never silently unassign someone's work. The
-// live-state graft in @livediagram/diagram carries `action` across
+// live-state graft in @livediagram/document carries `action` across
 // undo/redo restores for the same reason.
 //
 // An Action panel holds a LIST (docs/specs/012-collaboration/action-panel.md "The data"), so every mutation
@@ -28,8 +28,8 @@ import {
   isBoxed,
   type ElementAction,
   type ElementActionAssignee,
-} from '@livediagram/diagram';
-import type { Tab } from '@livediagram/diagram';
+} from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 
 export type SaveActionInput = {

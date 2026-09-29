@@ -32,7 +32,7 @@ describe('HELP_SEARCH_ITEMS', () => {
     // opacity article (Layer Order and Opacity) in the editor's search.
     const out = buildSearchResults({
       query: 'opacity',
-      diagrams: [],
+      documents: [],
       folders: [],
       helpItems: HELP_SEARCH_ITEMS,
     });
@@ -43,7 +43,7 @@ describe('HELP_SEARCH_ITEMS', () => {
     // And by pure synonym: "transparency" appears in no title, only keywords.
     const bySynonym = buildSearchResults({
       query: 'transparency',
-      diagrams: [],
+      documents: [],
       folders: [],
       helpItems: HELP_SEARCH_ITEMS,
     });

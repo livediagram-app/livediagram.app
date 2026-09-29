@@ -18,7 +18,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // history it relates to.
 export function SaveStatusBadge({ status }: { status: SaveStatus; savedAt: number | null }) {
   // The "saved N ago" success state lives on the Explorer's Current
-  // Diagram row now — no need to duplicate it here. We still surface
+  // Document row now — no need to duplicate it here. We still surface
   // in-flight + error states because the Explorer doesn't carry
   // those signals, and silent save failures are precisely what we
   // want a visible warning for.
@@ -34,7 +34,7 @@ export function SaveStatusBadge({ status }: { status: SaveStatus; savedAt: numbe
     return (
       <HoverCard
         title="Not saved"
-        description="You no longer have permission to edit this diagram. Export a copy to keep your changes."
+        description="You no longer have permission to edit this document. Export a copy to keep your changes."
       >
         <span
           role="status"

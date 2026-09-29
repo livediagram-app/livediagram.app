@@ -8,7 +8,7 @@ import {
   type Element,
   type StickyElement,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { insertElementAt, type InsertionSlot } from '@/lib/insert-between';
 import { useNoteActions } from './useNoteActions';

@@ -9,12 +9,12 @@ const DAY = 24 * 60 * 60 * 1000;
 const T0 = 1_700_000_000_000;
 
 describe('trash clock', () => {
-  it('keeps a diagram for 30 days', () => {
+  it('keeps a document for 30 days', () => {
     expect(TRASH_RETENTION_MS).toBe(30 * DAY);
     expect(trashPurgeDueAt(T0)).toBe(T0 + 30 * DAY);
   });
 
-  it('shows 30 days left the moment a diagram is deleted', () => {
+  it('shows 30 days left the moment a document is deleted', () => {
     expect(trashDaysLeft(T0, T0)).toBe(30);
     expect(trashDaysLeft(T0, T0 + 1)).toBe(30);
   });

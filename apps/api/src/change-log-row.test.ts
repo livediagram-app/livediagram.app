@@ -6,7 +6,7 @@ import {
   type ChangeLogRow,
 } from './change-log-row';
 
-// `rowToChangeLog` is the read-side mapper for the per-diagram
+// `rowToChangeLog` is the read-side mapper for the per-document
 // activity log. The participant_name / participant_color columns
 // arrive as null whenever the writer's participants row was deleted
 // (sign-out cleanup, account delete), and the API must fill in
@@ -99,7 +99,7 @@ describe('rowToChangeLog', () => {
     expect(multi.elementIds).toEqual(['a', 'b', 'c']);
   });
 
-  it('preserves a null tab_id (tab-deleted entry, or a future diagram-level row)', async () => {
+  it('preserves a null tab_id (tab-deleted entry, or a future document-level row)', async () => {
     // tab_id is nullable in the schema (tab cascade deletes leave
     // the row in place but null the FK in some migration paths).
     // The DTO must surface null, not coerce it to "" or "null".

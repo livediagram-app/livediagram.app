@@ -20,7 +20,7 @@ import {
   type LivePoll,
   type PollStyle,
 } from '@livediagram/api-schema';
-import { POLL_STYLE_LABEL, pollStyleUsesRoster } from '@livediagram/diagram';
+import { POLL_STYLE_LABEL, pollStyleUsesRoster } from '@livediagram/document';
 import { pollCollaboratorOptions } from '@/lib/poll-collaborators';
 import { PollStyleTiles } from './PollStyleTiles';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
@@ -136,12 +136,12 @@ export function PollComposerBody({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Never a gate: a poll on an unshared diagram still runs (rehearsing
+      {/* Never a gate: a poll on an unshared document still runs (rehearsing
           one, or asking the people in the room you're presenting to), it just
           reaches nobody else, and the facilitator should know that first. */}
       {!hasAudience ? (
         <StudioCallout>
-          This diagram isn&apos;t shared, so only you will get this poll. Share it to ask others.
+          This document isn&apos;t shared, so only you will get this poll. Share it to ask others.
         </StudioCallout>
       ) : null}
       <div className="flex flex-col gap-1.5">
@@ -238,7 +238,7 @@ export function PollComposerBody({
       </StudioButton>
       <p className="text-center text-[10px] leading-snug text-slate-400">
         Everyone here is asked, view-only visitors included. Answers are anonymous and nothing is
-        saved to the diagram.
+        saved to the document.
       </p>
     </div>
   );
@@ -252,7 +252,7 @@ function RosterPreview({ options }: { options: string[] }) {
   if (options.length === 0) {
     return (
       <p className="rounded-lg bg-slate-50 px-2.5 py-2 text-[11px] text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
-        Nobody else is here yet. Share the diagram and this poll will list whoever has joined when
+        Nobody else is here yet. Share the document and this poll will list whoever has joined when
         you ask it.
       </p>
     );

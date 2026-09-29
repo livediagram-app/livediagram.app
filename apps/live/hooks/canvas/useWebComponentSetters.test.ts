@@ -13,7 +13,7 @@ import {
   type Element,
   type ImageElement,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 

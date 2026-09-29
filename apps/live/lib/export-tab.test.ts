@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, FreehandElement, ShapeElement, Tab } from '@livediagram/diagram';
+import type { ArrowElement, FreehandElement, ShapeElement, Tab } from '@livediagram/document';
 import {
   TAB_SCHEMA_VERSION,
   exportTabAsSvg,

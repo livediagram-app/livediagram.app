@@ -14,7 +14,7 @@ import {
   createText,
   type Anchor,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 export { buildVenn } from './template-builders-venn';
 
 export { buildJourney } from './template-builders-journey';

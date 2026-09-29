@@ -9,7 +9,7 @@
 
 import { CountBadge } from '@/components/primitives/CountBadge';
 import { useState } from 'react';
-import { IDEA_MAX_TEXT, type ShapeElement } from '@livediagram/diagram';
+import { IDEA_MAX_TEXT, type ShapeElement } from '@livediagram/document';
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { CollabComposer } from './CollabComposer';
@@ -55,7 +55,7 @@ export function IdeaBoxFace({
   /** The way out of the round controls to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
   onOpenSettings?: () => void;
   // Turns the open box's cards into ordinary sticky notes (docs/specs/012-collaboration/idea-box.md) so they
-  // can be grouped, moved and dot-voted like anything else on the board.
+  // can be grouped, moved and dot-voted like anything else on the canvas.
   onScatter?: () => void;
 }) {
   const cards = element.ideaCards ?? [];

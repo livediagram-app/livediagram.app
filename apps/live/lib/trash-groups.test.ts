@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TRASH_RETENTION_MS, type TrashedDiagram } from '@livediagram/api-schema';
+import { TRASH_RETENTION_MS, type TrashedDocument } from '@livediagram/api-schema';
 import { daysLeftLabel, trashGroups } from './trash-groups';
 
 // How the Trash view groups what it lists (docs/specs/013-workspace/trash.md,
@@ -9,7 +9,7 @@ import { daysLeftLabel, trashGroups } from './trash-groups';
 const T0 = 1_700_000_000_000;
 const DAY = 24 * 60 * 60 * 1000;
 
-const row = (id: string, team: [string, string] | null = null): TrashedDiagram => ({
+const row = (id: string, team: [string, string] | null = null): TrashedDocument => ({
   id,
   name: id,
   teamId: team?.[0] ?? null,
@@ -30,7 +30,7 @@ describe('trashGroups', () => {
       local: [row('l1')],
     });
     expect(groups.map((g) => [g.title, g.scope, g.rows.map((r) => r.id)])).toEqual([
-      ['Your diagrams', { kind: 'personal' }, ['p1']],
+      ['Your documents', { kind: 'personal' }, ['p1']],
       ['Alpha', { kind: 'team', teamId: 'a' }, ['t1']],
       ['Beta', { kind: 'team', teamId: 'b' }, ['t2', 't3']],
       ['This browser only', { kind: 'local' }, ['l1']],

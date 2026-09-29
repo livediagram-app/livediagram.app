@@ -7,7 +7,7 @@
 // edited from the context menu's Data category. The slice group carries the
 // `lvd-pie-*` animation (grow / pop / spin / pulse), reduced-motion-safe.
 
-import { legendFontPx, type ShapeElement } from '@livediagram/diagram';
+import { legendFontPx, type ShapeElement } from '@livediagram/document';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';

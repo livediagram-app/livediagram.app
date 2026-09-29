@@ -1,13 +1,13 @@
 // Getting-started-category illustrations (docs/specs/018-help/help-app.md): beginner walkthroughs for
-// the new-diagram welcome flow, the shape palette, quick-connecting arrows,
+// the new-document welcome flow, the shape palette, quick-connecting arrows,
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.
 
 import { Scene, Shape, Arrow, Panel, Dialog, Tabs, Tile, Label, Avatar } from './primitives';
 
-/** The new-diagram welcome flow: a Blank card and a couple of template cards,
- *  the entry point to every diagram. */
-export function NewDiagramWelcome() {
+/** The new-document welcome flow: a Blank card and a couple of template cards,
+ *  the entry point to every document. */
+export function NewDocumentWelcome() {
   return (
     <Scene w={420} h={236} bg="plain">
       <Dialog
@@ -15,7 +15,7 @@ export function NewDiagramWelcome() {
         y={18}
         w={324}
         h={200}
-        title="New diagram"
+        title="New document"
         sceneW={420}
         sceneH={236}
         scrim={false}

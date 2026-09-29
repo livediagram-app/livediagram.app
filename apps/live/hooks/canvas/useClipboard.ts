@@ -9,7 +9,7 @@
 // clipboard got a sentinel string, written purely to displace a lingering
 // image. That works within one editor instance and nowhere else — component
 // state cannot cross a browser tab, a second window, or a reload, which is
-// where "copy this and put it in that diagram" actually happens. The real
+// where "copy this and put it in that document" actually happens. The real
 // elements go on the clipboard now.
 //
 // The in-app buffer is KEPT as a fallback rather than deleted. Clipboard
@@ -30,12 +30,12 @@
 // internal.
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { duplicateElements, type Element, type Tab } from '@livediagram/diagram';
+import { duplicateElements, type Element, type Tab } from '@livediagram/document';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import { parseElementsPayload, serialiseElements, stripIdentity } from '@/lib/clipboard-payload';
 import { landPastedCopies, pasteTranslation } from '@/lib/paste-placement';
-import { addImageFileForDiagram } from '@/lib/upload-image';
+import { addImageFileForDocument } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -65,13 +65,13 @@ type ClipboardDeps = {
   setMultiSelectedIds: (ids: Set<string>) => void;
   // Drops a new image element pre-filled with an uploaded image. From
   // useEditorImages; undefined when image support is unavailable (no
-  // diagram id / read-only), in which case image paste is a no-op.
+  // document id / read-only), in which case image paste is a no-op.
   addImageFromGallery?: (image: ImageDescriptor) => void;
   // The local participant id — owner of uploaded paste images.
   ownerId: string;
-  // The current diagram id (null before hydration). Offline diagrams embed
-  // pasted images locally instead of uploading (docs/specs/006-diagram/offline-mode.md).
-  diagramId: string | null;
+  // The current document id (null before hydration). Offline documents embed
+  // pasted images locally instead of uploading (docs/specs/006-document/offline-mode.md).
+  documentId: string | null;
   toast: ReturnType<typeof useToast>;
   // Read a pasted PHOTO as a piece of wall instead of placing it as an image
   // (docs/specs/021-event-storming/event-storming.md Phase 8). Supplied only on an event-storming board with the
@@ -98,7 +98,7 @@ export function useClipboard(deps: ClipboardDeps) {
     setMultiSelectedIds,
     addImageFromGallery,
     ownerId,
-    diagramId,
+    documentId,
     toast,
     onPastePhoto,
     canvasPointerRef,
@@ -210,9 +210,9 @@ export function useClipboard(deps: ClipboardDeps) {
             type: file.type,
           });
     try {
-      // Cloud diagrams upload; offline diagrams embed the paste locally
-      // as a data URI (docs/specs/006-diagram/offline-mode.md) so no server copy is created.
-      const { image } = await addImageFileForDiagram(ownerId, diagramId, named);
+      // Cloud documents upload; offline documents embed the paste locally
+      // as a data URI (docs/specs/006-document/offline-mode.md) so no server copy is created.
+      const { image } = await addImageFileForDocument(ownerId, documentId, named);
       addImageFromGallery({
         id: image.id,
         width: image.width,

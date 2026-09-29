@@ -14,7 +14,7 @@ export function embedUrlFor(origin: string, code: string): string {
 // flowchart reads, short enough not to dominate the page. The border
 // matches the editor's hairline slate so the frame doesn't look like
 // a hole in the host page. allowfullscreen because the embed's
-// ZoomControls dock stays available and full-screening a diagram is
+// ZoomControls dock stays available and full-screening a document is
 // the natural "let me read this properly" gesture.
 export function buildEmbedSnippet(origin: string, code: string): string {
   return (

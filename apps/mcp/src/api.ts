@@ -96,7 +96,7 @@ export async function apiJson<T>(
 }
 
 // One MCP-side api failure to the Error category, labelled with the tool that
-// was running (`Http503.UpdateDiagram`, `Internal.FindDiagrams`; docs/specs/017-telemetry/telemetry.md), so
+// was running (`Http503.UpdateDocument`, `Internal.FindDocuments`; docs/specs/017-telemetry/telemetry.md), so
 // the Exceptions dashboard says which tool broke, not only that one did.
 export function reportApiFailure(env: Env, kind: string): void {
   postTelemetry(env, 'Error', 'Api', errorTypeToken(kind, currentTool()));

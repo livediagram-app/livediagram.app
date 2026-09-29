@@ -8,7 +8,7 @@
 // Element[]. Sizing constants live inline so each template is
 // self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createPinnedArrow, createShape, createText, type Element } from '@livediagram/diagram';
+import { createPinnedArrow, createShape, createText, type Element } from '@livediagram/document';
 
 // OKR tree: one objective branching into three measurable key results,
 // each backed by the two initiatives meant to move it. The KR labels

@@ -3,7 +3,7 @@
 // announcements read the same names the activity log prints, so the
 // two surfaces can't drift. Lifted verbatim from lib/change-log.ts.
 
-import type { BoxedElement, Element } from '@livediagram/diagram';
+import type { BoxedElement, Element } from '@livediagram/document';
 
 // Display kind for an element — capitalised, no article. Shapes
 // surface their concrete sub-kind ('Square', 'Diamond'…) so log

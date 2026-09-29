@@ -6,7 +6,7 @@ import type { useConfirm } from '@/hooks/ui/useConfirm';
 import { track } from '@/lib/telemetry';
 
 // Team-library folder mutations for the Explorer panel's team tree
-// (docs/specs/013-workspace/team-shared-diagrams.md), lifted out of EditorCanvasHost. Straight api calls plus a
+// (docs/specs/013-workspace/team-shared-documents.md), lifted out of EditorCanvasHost. Straight api calls plus a
 // sweep refresh: the swept team libraries are the panel's source, so a
 // mutation re-reads them rather than patching a copy. Teams are Clerk-only,
 // so signed out = no handlers at all, which is what hides the verbs.
@@ -57,12 +57,12 @@ export function useTeamFolderActions({
       delete: (id) => {
         const name = teamFolders.find((f) => f.id === id)?.name;
         // The same confirm the personal tree's delete uses, with the same
-        // consequences spelled out: a team folder's diagrams go to the
+        // consequences spelled out: a team folder's documents go to the
         // team's Unsorted and its subfolders are promoted.
         void confirm({
           title: name ? `Delete "${name}"?` : 'Delete this folder?',
           message:
-            'Diagrams inside the folder move to Unsorted. Subfolders are promoted to the root. The folder row itself is removed.',
+            'Documents inside the folder move to Unsorted. Subfolders are promoted to the root. The folder row itself is removed.',
           confirmLabel: 'Delete folder',
         }).then((ok) => {
           if (!ok) return;

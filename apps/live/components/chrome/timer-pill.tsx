@@ -1,6 +1,6 @@
 'use client';
 
-import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@livediagram/diagram';
+import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@livediagram/document';
 import { Glyph } from '@livediagram/ui';
 
 // The session timer's LOOK, in one place (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/session-button.md).
@@ -8,7 +8,7 @@ import { Glyph } from '@livediagram/ui';
 // Extracted from TimerWidget when the Timer session element became a real
 // timer on the canvas rather than a button that starts one: two surfaces
 // showing the same `TabTimer` should not be two drawings of it that drift.
-// The widget in the top chrome and the element on the board now render this,
+// The widget in the top chrome and the element on the canvas now render this,
 // so a change to the clock, the drain, or the controls lands on both.
 //
 // Presentation only. The timer state, the ticking and the handlers belong to

@@ -57,7 +57,7 @@ reconnect should do rather than silently unmarking somebody who dropped off
 wifi for ten seconds.
 
 An **empty room is never done**. With nobody present there is nothing to have
-finished, and flashing "everyone's done" at an empty board would be celebrating
+finished, and flashing "everyone's done" at an empty canvas would be celebrating
 the absence of people.
 
 ## The flash, and the finish
@@ -66,7 +66,7 @@ A pulse of a green ring around the card, not a colour wash: the card can be any
 theme colour, and a wash would fight it.
 
 It **runs out** after four cycles. A card left flashing forever is noise on a
-board somebody walked away from, and the completed state is still perfectly
+canvas somebody walked away from, and the completed state is still perfectly
 legible afterwards from the ring, the "Everyone's done!" line and the empty
 waiting list. Under `prefers-reduced-motion` it is a steady ring instead — the
 completion is information, so it stays visible; only the pulsing goes.
@@ -107,7 +107,7 @@ with two plain avatar lists and a grey pill button.
 - **The button** fills the foot: **I'm done** in the accent with a check, which
   pops when pressed; once you are done it turns quiet and reads **I'm not
   done**, the same press to take it back.
-- **An empty room** says so plainly ("Nobody here yet" over "Share the diagram
+- **An empty room** says so plainly ("Nobody here yet" over "Share the document
   and the card fills itself in") rather than drawing an empty ring.
 - Avatar gaps clear the presence ring (the ring is a box-shadow outside each
   avatar's layout box and eats 4px of any gap beside it).

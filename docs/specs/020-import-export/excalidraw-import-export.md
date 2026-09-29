@@ -26,7 +26,7 @@ degradation table below — nothing degrades silently outside that table.
   `Tab -> string` serialiser plugged into the Export dialog's text-panel
   registry (`TEXT_PANELS`), like `tabToJsonText` / `tabToMarkdownText`.
 - Neither module is needed by the MCP worker or any other app, so they stay in
-  `apps/live/lib` (Mermaid lives in `packages/diagram` only because the MCP
+  `apps/live/lib` (Mermaid lives in `packages/document` only because the MCP
   server also renders it).
 
 ## The file envelope
@@ -35,7 +35,7 @@ An Excalidraw scene is `{ type: "excalidraw", version: 2, source, elements,
 appState, files }`. Import requires `type === "excalidraw"` and an `elements`
 array, tolerates any `version` (the format is additive in practice; unknown
 fields are ignored), and skips `isDeleted` elements. `files` maps a `fileId`
-to `{ mimeType, dataURL }`, the bytes of each image on the board; a missing or
+to `{ mimeType, dataURL }`, the bytes of each image in the scene; a missing or
 malformed `files` reads as empty.
 
 ## Embedded-scene PNG and SVG
@@ -73,7 +73,7 @@ same converter, images included (the embedded scene carries `files` too).
 
 Element ids are re-minted to fresh UUIDs inside the converter (with a map so
 arrow bindings follow), so nothing can collide with
-elements already on the diagram — the JSON import's `remintElementIds` step is
+elements already on the document — the JSON import's `remintElementIds` step is
 not needed on this path.
 
 | Excalidraw                        | livediagram                                                                                                                                                                                                                            |
@@ -125,9 +125,9 @@ image fills its box, centred) and its flip (`scale` of -1).
 ## Images
 
 Every `image` element becomes one image request keyed by its `fileId`, so a
-image used twice on the board is stored once. The request's source is the
+image used twice in the scene is stored once. The request's source is the
 `dataURL` from `files`; a `fileId` that `files` lacks is `missing-bytes`.
-`useTabImport` opens one import session for the diagram, resolves every request,
+`useTabImport` opens one import session for the document, resolves every request,
 fills `imageId` / `naturalWidth` / `naturalHeight` on the elements that stored,
 and only then replaces the tab. Limits, offline handling, failures and the
 report are the pipeline's ([Import image pipeline](import-image-pipeline.md)).
@@ -176,7 +176,7 @@ with the colours you see, not blanks.
   (`application/json`).
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `track('Tab', 'Imported', type)` with
   `Excalidraw` for a scene, `ExcalidrawPng` / `ExcalidrawSvg` for an embedded
-  scene, and `track('Diagram', 'Exported', 'Excalidraw')`. The existing
+  scene, and `track('Document', 'Exported', 'Excalidraw')`. The existing
   category/action vocabulary, no schema change.
 - Help centre: the Importing a Tab + Exporting a Tab articles list the format,
   and their registry keywords gain `excalidraw` so searching it finds them.

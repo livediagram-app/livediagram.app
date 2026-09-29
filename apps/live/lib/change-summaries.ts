@@ -10,8 +10,8 @@
 // "Reshaped an Arrow"). Anything that doesn't match a known field
 // group falls back to the honest-but-vague "Edited X".
 
-import type { ArrowElement, BoxedElement, Element } from '@livediagram/diagram';
-import { elementActions, isBoxed } from '@livediagram/diagram';
+import type { ArrowElement, BoxedElement, Element } from '@livediagram/document';
+import { elementActions, isBoxed } from '@livediagram/document';
 import { article, describeMany, describeOne, kindLabel } from './element-names';
 import type { ChangeLogKind } from './api-client';
 

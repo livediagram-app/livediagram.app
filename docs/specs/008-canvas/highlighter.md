@@ -12,7 +12,7 @@ A highlighter stroke **is a `FreehandElement`** with one new optional field:
 pen?: 'highlighter'; // absent = ordinary pencil sketch
 ```
 
-No new element type. The stroke reuses the freehand pipeline end to end: normalised `points`, RDP simplification, bbox, history, sync, layers, eraser, export. `closed` is always `false` for highlighter strokes (no auto-close, no fill). Wire validation (`packages/diagram/src/validate.ts`) accepts the optional literal.
+No new element type. The stroke reuses the freehand pipeline end to end: normalised `points`, RDP simplification, bbox, history, sync, layers, eraser, export. `closed` is always `false` for highlighter strokes (no auto-close, no fill). Wire validation (`packages/document/src/validate.ts`) accepts the optional literal.
 
 ## Visual treatment
 
@@ -26,7 +26,7 @@ Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` use
 ## The tool
 
 - It lives in the palette's **canvas-tool dropdown**, in the **Edit** group (group 0) beside Select, Hand, Eraser and Format — `'highlighter'` on the editor's `CanvasTool` union, built in `canvas-tool-options.tsx`.
-- **It is the one tool in that dropdown that stays live on an empty canvas.** Everything from the Eraser down acts on existing content, so it disables with nothing to act on; the highlighter MAKES content, so an empty board is a fine place to start.
+- **It is the one tool in that dropdown that stays live on an empty canvas.** Everything from the Eraser down acts on existing content, so it disables with nothing to act on; the highlighter MAKES content, so an empty canvas is a fine place to start.
 - **It is held.** Entering the tool arms the freehand-marker gesture, **every committed stroke re-arms it**, and leaving the tool drops it (and only it — the marker's own intent, so putting the tool down never cancels a draw armed from the palette while holding it). A stray tap on the canvas no longer disarms anything.
 - **Strokes are not auto-selected after drawing.** The old one-shot selected the stroke it had just committed, which was helpful when the tool was over; on a held marker it means the next drag drags the thing you just drew instead of highlighting.
 - Each pass is its own undo, as it always was.
@@ -46,14 +46,14 @@ Above them sits a **live preview**: a real stroke at the chosen colour and width
 
 The vocabulary is data in `apps/live/lib/highlighter-config.ts` (`HIGHLIGHTER_COLORS`, `HIGHLIGHTER_WIDTHS`, plus id↔px helpers), read by both the panel and the commit path — the same shape the other tool panels' configs take, rather than living inside the one component that happened to draw them first.
 
-Both settings are **session-local editor state** (`useShapeDrawing`), deliberately not a persisted preference: the marker resets to yellow / medium on a fresh load, like a real pen cup. Nothing here is stored on the diagram or sent to the api. The live draw preview (`CanvasDrawPreview`) paints the in-flight polyline with the same colour and width, so what you see while dragging is what commits.
+Both settings are **session-local editor state** (`useShapeDrawing`), deliberately not a persisted preference: the marker resets to yellow / medium on a fresh load, like a real pen cup. Nothing here is stored on the document or sent to the api. The live draw preview (`CanvasDrawPreview`) paints the in-flight polyline with the same colour and width, so what you see while dragging is what commits.
 
 This replaced a pair of popovers hanging off the mode banner. That was the right home while the highlighter was an arm — the banner was the only thing on screen that knew the arm existed — and the wrong one the moment it became a mode, because a mode's settings belong wherever every other mode keeps theirs.
 
 ## Palette
 
 - The `tools:highlighter` **draw tile is gone**. The Draw category now holds four tiles: Freehand, Shape Pen, Polygon, Arrow.
-- A **Highlighter Mode Button** joins the Selection Mode tiles in the Behaviour section (`tools:mode-highlighter`, [Selection Mode button](../009-elements/mode-button.md)): drop one on the canvas and whoever presses it is handed the marker. `'highlighter'` is a `SelectionMode` in `packages/diagram/src/selection-mode.ts` for exactly this, so a saved button can carry it.
+- A **Highlighter Mode Button** joins the Selection Mode tiles in the Behaviour section (`tools:mode-highlighter`, [Selection Mode button](../009-elements/mode-button.md)): drop one on the canvas and whoever presses it is handed the marker. `'highlighter'` is a `SelectionMode` in `packages/document/src/selection-mode.ts` for exactly this, so a saved button can carry it.
 - The **default Favourites** list ([Palette Favourites](../010-palette/palette-favourites.md)) swapped the Highlighter's slot for `tools:table` — there is no tile to favourite any more, and Table kept the grid at twelve rather than leaving a ragged row. Anyone who had favourited the old id loses it silently on read, which is the existing behaviour for a retired tile.
 
 ## Everything else is inherited

@@ -1,13 +1,13 @@
 // Telemetry wire-format (docs/specs/017-telemetry/telemetry.md): the closed category/action vocabulary,
 // the TelemetryEvent shape + validator, and the dashboard summary/window
-// types. Self-contained (no diagram deps); split out of the schema barrel.
+// types. Self-contained (no document deps); split out of the schema barrel.
 
 // ---------------------------------------------------------------------
 // Telemetry (docs/specs/017-telemetry/telemetry.md)
 // ---------------------------------------------------------------------
 //
 // Anonymous, first-party product events. Each event is three small
-// fields: a `category` (the parent: Diagram, Element, …), an `action`
+// fields: a `category` (the parent: Document, Element, …), an `action`
 // (the verb: Created, Added, …), and an optional `type` (one
 // app-defined reference value: 'Square', 'Edit', a template id …).
 // NEVER carries user-generated content — no names, ids, or element
@@ -19,7 +19,7 @@ import { isCtaSource } from './cta-sources';
 import { isValidPageViewPath } from './page-views';
 
 export const TELEMETRY_CATEGORIES = [
-  'Diagram',
+  'Document',
   'Element',
   'Tab',
   'Theme',
@@ -35,7 +35,7 @@ export const TELEMETRY_CATEGORIES = [
   'Search',
   'UI',
   'Folder',
-  // Layers (docs/specs/006-diagram/layers.md): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
+  // Layers (docs/specs/006-document/layers.md): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
   // 'Reordered' for the layer rows, 'Toggled' with `type`
   // 'Hidden'/'Shown'/'Locked'/'Unlocked' for the eye + padlock,
   // 'Selected' for an active-layer switch, 'Moved' for move-selection-
@@ -67,7 +67,7 @@ export const TELEMETRY_CATEGORIES = [
   // via the consent screen, which mints a token under the hood).
   'Token',
   // MCP server tool calls (apps/mcp, docs/specs/015-api/mcp-server.md): 'Used' with `type` the tool
-  // name (CreateDiagram, ReadDiagram, ...). Emitted by the MCP worker, the
+  // name (CreateDocument, ReadDocument, ...). Emitted by the MCP worker, the
   // third app that reports telemetry, so usage shows up distinctly from the
   // in-editor AI panel.
   'Mcp',
@@ -93,33 +93,33 @@ export const TELEMETRY_CATEGORIES = [
   // the view mode, 'Selected' a filter chip's source type, and 'Loaded'
   // 'More' | 'Retry' — the second being a read that failed hard enough
   // that the reader pressed Try again (docs/specs/013-workspace/timeline.md §2.4), which is the
-  // only signal we get for a feed nobody could load. Never a diagram
+  // only signal we get for a feed nobody could load. Never a document
   // name, team name, or comment text.
   'Timeline',
-  // Activity page (docs/specs/013-workspace/activity-page.md): the Explorer's cross-diagram inbox of open
+  // Activity page (docs/specs/013-workspace/activity-page.md): the Explorer's cross-document inbox of open
   // actions + comment threads. 'Opened' once per visit; 'Selected' with
   // `type` 'Action' | 'Thread' on a row click (which kind of row sends
-  // people back into a diagram); 'Loaded'/'Retry' when a failed read is
-  // retried. Never an action name, comment text, or diagram name.
+  // people back into a document); 'Loaded'/'Retry' when a failed read is
+  // retried. Never an action name, comment text, or document name.
   'Activity',
   // Page views (docs/specs/017-telemetry/page-view-telemetry.md): 'View' with `type` the normalised page path
-  // ('/help/canvas/the-canvas', '/diagram'), reported by every
+  // ('/help/canvas/the-canvas', '/document'), reported by every
   // frontend on each path change. The one category whose `type` is a path,
   // so it validates against PAGE_VIEW_PATH_PATTERN instead of the token
   // pattern, and only ever pairs with 'View'.
   'Page',
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): a call to action on a public page brought
-  // somebody to /new ('Opened'), and that visit created a diagram
+  // somebody to /new ('Opened'), and that visit created a document
   // ('Created'). `type` is the CTA's source from the closed CTA_SOURCES
   // table ('Home.Hero', 'Feature.Closing'), never a visitor or a URL; the
   // editor sends both, the marketing site still sends only page views.
   'Cta',
   // Trash (docs/specs/013-workspace/trash.md): the quiet backstop behind every
-  // diagram delete. 'Opened' with `type` 'Settings' (its one way in);
+  // document delete. 'Opened' with `type` 'Settings' (its one way in);
   // 'Restored' / 'Deleted' (for good) / 'Cleared' (Empty
   // Trash) with `type` the Trash it happened in ('Personal' | 'Team' |
-  // 'Local'). Whether people ever come back for a deleted diagram is the
-  // question; never a diagram or team name.
+  // 'Local'). Whether people ever come back for a deleted document is the
+  // question; never a document or team name.
   'Trash',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
@@ -161,7 +161,7 @@ export const TELEMETRY_ACTIONS = [
   'Undone',
   'Redone',
   'Cleared',
-  // Diagram / Tab (docs/specs/017-telemetry/telemetry.md): an existing diagram was opened, or a tab's
+  // Document / Tab (docs/specs/017-telemetry/telemetry.md): an existing document was opened, or a tab's
   // content was fetched for viewing (incl. switching to it). Fires on
   // every open, the counterpart to 'Created' — an engagement/opens signal.
   'Loaded',
@@ -192,7 +192,7 @@ export const TELEMETRY_ACTIONS = [
   // later UTC day. Paired with 'Participant'/'Created', gated once per
   // UTC day client-side; type is 'Anonymous' | 'Authenticated'.
   'Returned',
-  // Trash (docs/specs/013-workspace/trash.md): a deleted diagram was brought
+  // Trash (docs/specs/013-workspace/trash.md): a deleted document was brought
   // back from the Trash.
   'Restored',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for

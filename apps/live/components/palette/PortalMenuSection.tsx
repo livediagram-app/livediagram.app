@@ -12,7 +12,7 @@
 // hover card, and in the linked portal's label — never drawn on the canvas ring,
 // where a caption over the energy looked like a sticker on a window.
 
-import type { ShapeElement, Tab } from '@livediagram/diagram';
+import type { ShapeElement, Tab } from '@livediagram/document';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { MENU_ICON_PX, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { portalName, portalSites } from '@/lib/portals';
@@ -48,9 +48,9 @@ export function PortalMenuSection({
   // Reset by another portal or a new label: both are in the key.
   const [name, setName] = useFollowingDraft(`${portal.id}\u0000${label}`, () => label);
 
-  // Every OTHER portal in the diagram, this tab first — a link can cross tabs
+  // Every OTHER portal in the document, this tab first — a link can cross tabs
   // (walk through here, come out on the Detail tab), so the candidate list is
-  // diagram-wide and each off-tab option says which tab it lives on.
+  // document-wide and each off-tab option says which tab it lives on.
   const candidates = portalSites(tabs)
     .filter((site) => site.portal.id !== portal.id)
     .map((site) => {
@@ -112,7 +112,7 @@ export function PortalMenuSection({
           />
         ))}
         {/* Always offered, and the only option when this is the first portal in
-            the diagram: the far end usually doesn't exist yet. */}
+            the document: the far end usually doesn't exist yet. */}
         <MenuTile icon={<PlusGlyph />} label="Create portal" onClick={onCreateLinkedPortal} />
       </MenuTileGrid>
     </MenuAccordionSection>

@@ -103,7 +103,7 @@ Shape:
 ```ts
 type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // 'collaborate' is the merged Comments + Actions panel; 'layers' is
-// docs/specs/006-diagram/layers.md. Eight panels are NOT always available — they exist only while
+// docs/specs/006-document/layers.md. Eight panels are NOT always available — they exist only while
 // their session tool / mode is running, so they join and leave their
 // corner stack rather than sitting in it: 'poll' (docs/specs/012-collaboration/live-poll.md), 'vote'
 // (docs/specs/012-collaboration/session-tools.md), 'avatar' (docs/specs/008-canvas/avatar-mode.md, the Avatar-mode character sheet),

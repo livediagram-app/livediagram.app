@@ -5,7 +5,7 @@
 //
 // The builder is pure: (cx, cy) -> Element[]. See docs/specs/008-canvas/canvas-and-palette.md
 // "Templates" for the catalogue entry.
-import { createArrow, createShape, createText, type Element } from '@livediagram/diagram';
+import { createArrow, createShape, createText, type Element } from '@livediagram/document';
 
 const SPINE_INK = '#334155';
 const MUTED = '#64748b';

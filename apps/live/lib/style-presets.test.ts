@@ -1,4 +1,4 @@
-import { ARROW_THICKNESS_PX, DEFAULT_ANIMATION_SPEED, type Element } from '@livediagram/diagram';
+import { ARROW_THICKNESS_PX, DEFAULT_ANIMATION_SPEED, type Element } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import type { ShapeColorPreset } from './themes';
 import {

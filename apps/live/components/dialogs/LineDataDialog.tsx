@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, CloseIcon } from '@livediagram/ui';
-import type { LineSeries } from '@livediagram/diagram';
+import type { LineSeries } from '@livediagram/document';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { parseCsvLineData } from '@/lib/csv';

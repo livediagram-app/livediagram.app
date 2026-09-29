@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import { isSelfDrawingShape } from '@livediagram/diagram';
+import { isSelfDrawingShape } from '@livediagram/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import type { PendingDraw } from '@/lib/draw-mode';

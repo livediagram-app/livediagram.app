@@ -12,14 +12,14 @@ import type { TimelineEvent } from './types';
 function event(over: Partial<TimelineEvent> = {}): TimelineEvent {
   return {
     id: 'e1',
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: 'd1',
-    eventType: 'diagram_created',
-    title: 'Diagram Created',
+    eventType: 'document_created',
+    title: 'Document Created',
     description: null,
     occurredAt: new Date(2026, 8, 21, 7, 22).getTime(),
     actorId: 'me',
-    snapshot: { diagramId: 'd1', diagramName: 'Payments' },
+    snapshot: { documentId: 'd1', documentName: 'Payments' },
     ...over,
   } as TimelineEvent;
 }
@@ -30,12 +30,12 @@ describe('TimelineCard', () => {
   it('titles the card with the subject and gives the stored category as the reason', () => {
     render(<TimelineCard event={event()} rendered={{ icon, subject: 'Payments' }} />);
     expect(screen.getByText('Payments')).toBeTruthy();
-    expect(screen.getByText('Diagram Created')).toBeTruthy();
+    expect(screen.getByText('Document Created')).toBeTruthy();
   });
 
   it('falls back to the stored title as the subject', () => {
     render(<TimelineCard event={event()} rendered={{ icon }} />);
-    expect(screen.getAllByText('Diagram Created')).toHaveLength(2);
+    expect(screen.getAllByText('Document Created')).toHaveLength(2);
   });
 
   it('shows the glyph box when there is no preview, and the preview when there is', () => {

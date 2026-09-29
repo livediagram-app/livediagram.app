@@ -12,7 +12,7 @@ One row per default applied where a spec is silent or qualitative.
 | D6  | third-party-licences | A vendored work's version when it has none | `bundled in <parent> <parent version>`                                                                                           |
 | D7  | third-party-licences | Label of a text                            | Its file name; an override's label names the upstream and version                                                                |
 | D8  | third-party-licences | Which package links are shown              | `homepage`, else `repository` (string, shorthand or `{ url }`), only when it resolves to `https:`                                |
-| D9  | third-party-licences | Opening the page from the editor           | A new tab, as the neighbouring GitHub row does, so an open diagram stays put                                                     |
+| D9  | third-party-licences | Opening the page from the editor           | A new tab, as the neighbouring GitHub row does, so an open document stays put                                                    |
 | D10 | third-party-licences | What "permissive and weak-copyleft" admits | The sixteen ids in `LICENCE_ALLOWLIST`: today's shipped licences plus common permissive peers                                    |
 | D11 | third-party-licences | Parallel or sequential analysis            | Sequential: deterministic logs, bounded memory beside turbo's own parallel builds                                                |
 | D12 | third-party-licences | Footer placement                           | In the footer nav after Privacy, among the legal links                                                                           |

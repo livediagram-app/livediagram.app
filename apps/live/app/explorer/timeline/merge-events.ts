@@ -31,7 +31,7 @@ export function mergeEvents(prev: TimelineEvent[], incoming: TimelineEvent[]): T
 // A first-page re-read, treated as authoritative for the stretch of
 // time it covers (docs/specs/013-workspace/timeline.md §2.4b).
 //
-// A plain merge only ever adds, so after the reader deletes a diagram
+// A plain merge only ever adds, so after the reader deletes a document
 // the worker's cascade (§3.5) has removed its cards from the server
 // while the copies on screen stay put — and a rename's coalesced edit
 // event, which the worker upserts in place, keeps its old time and old
@@ -90,7 +90,7 @@ function sameEvent(a: TimelineEvent, b: TimelineEvent): boolean {
 // every card about an entity that no longer exists. Same predicate as
 // `markTimelineEventsDeletedBySource` — keyed on the id, or referencing
 // it from the snapshot under `<sourceType>Id` — so a comment on the
-// deleted diagram goes the way its own cards do.
+// deleted document goes the way its own cards do.
 export function purgeEventsForSource(
   events: TimelineEvent[],
   sourceType: string,

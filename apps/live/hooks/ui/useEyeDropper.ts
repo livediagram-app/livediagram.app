@@ -4,7 +4,7 @@
 // anywhere on the screen, and the colour under the pointer comes back as a
 // hex. It samples the whole screen, not just the canvas, so a colour can be
 // lifted from an image, a logo in another window, or an element already on
-// the board. Chromium ships it; where it is missing the hook says so and the
+// the canvas. Chromium ships it; where it is missing the hook says so and the
 // pipette is simply not offered, since there is no fallback worth the
 // button.
 

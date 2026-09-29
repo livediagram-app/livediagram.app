@@ -242,9 +242,9 @@ export function useTimelineFeed(
   // "fix" with a browser refresh.
   useReturnToTab(() => void load('merge'), { enabled: enabled && !!ownerId });
 
-  // The reader's own actions (docs/specs/013-workspace/timeline.md §2.4b). Deleting a diagram from a
+  // The reader's own actions (docs/specs/013-workspace/timeline.md §2.4b). Deleting a document from a
   // card's menu used to leave the feed exactly as it was until a browser
-  // refresh: the worker had swept the diagram's cards and written its
+  // refresh: the worker had swept the document's cards and written its
   // tombstone, and nothing on the client asked. Now any successful
   // write re-reads the first page a beat later (the emit runs after the
   // response), and a DELETE that ended an entity drops its cards at

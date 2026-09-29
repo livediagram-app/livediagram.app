@@ -7,7 +7,7 @@ import { deleteOldUnusedImages } from '../db/image-retention';
 import type { Env } from '../types';
 import { runImageRefsBackfill } from './backfill';
 
-// Only images older than this AND referenced by no diagram are reaped: the
+// Only images older than this AND referenced by no document are reaped: the
 // floor keeps a fresh upload that isn't on the canvas yet out of reach.
 export const UNUSED_IMAGE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 

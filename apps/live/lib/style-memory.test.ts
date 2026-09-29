@@ -6,9 +6,9 @@ import {
   type Element,
   type ShapeElement,
   type StickyElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
-import type { ThemeDefinition } from '@livediagram/diagram';
+import type { ThemeDefinition } from '@livediagram/document';
 import {
   applyStyleMemory,
   forgetStyleKinds,

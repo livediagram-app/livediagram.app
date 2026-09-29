@@ -6,7 +6,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, ShapeElement, Tab } from '@livediagram/diagram';
+import type { Element, ShapeElement, Tab } from '@livediagram/document';
 import { useElementDuplication } from './useElementDuplication';
 
 const shape = (id: string, extra: Partial<ShapeElement> = {}): Element =>

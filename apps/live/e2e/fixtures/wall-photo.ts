@@ -1,4 +1,4 @@
-import { clamp, hexToRgb } from '@livediagram/diagram';
+import { clamp, hexToRgb } from '@livediagram/document';
 import { encodePng } from '@livediagram/sticky-vision/png';
 
 // A photograph of a sticky wall, drawn rather than photographed.

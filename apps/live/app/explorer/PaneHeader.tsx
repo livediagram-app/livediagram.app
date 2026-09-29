@@ -2,10 +2,10 @@
 
 // The Explorer pane header (docs/specs/013-workspace/folders.md): title + breadcrumb on the left, and on
 // the right a section "?" help button, any section-specific actions slot, and
-// a single Create dropdown (New diagram / New folder). Split out of views.tsx
+// a single Create dropdown (New document / New folder). Split out of views.tsx
 // so that barrel holds the list/row primitives while the header chrome (and
 // its private hamburger / caret icons) stands on its own.
-import { DiagramIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
+import { DocumentIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { Button, Glyph } from '@livediagram/ui';
 import { useState, type ReactNode } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -34,7 +34,7 @@ function CaretDownIcon() {
 export function PaneHeader({
   title,
   crumbs,
-  onCreateDiagram,
+  onCreateDocument,
   onCreateFolder,
   folderLabel,
   onOpenNav,
@@ -56,12 +56,12 @@ export function PaneHeader({
   onOpenNav?: () => void;
   // Optional CTAs rendered in the title row's right edge. Replaces
   // the standalone floating "+" FAB so the actions sit in their
-  // current context rather than as a global affordance. New diagram
+  // current context rather than as a global affordance. New document
   // renders first, then New folder / New subfolder (the label
   // varies by selection, so the caller passes it). Both are
   // optional: the Shared / Gallery views pass neither because the
   // verbs don't apply.
-  onCreateDiagram?: () => void;
+  onCreateDocument?: () => void;
   onCreateFolder?: () => void;
   // "New folder" at the root level, "New subfolder" inside an
   // existing folder. Caller resolves the wording.
@@ -69,9 +69,9 @@ export function PaneHeader({
   // Extra section-specific action(s) rendered in the actions row, just to the
   // right of the help "?" button (e.g. the API tokens "New token" popover
   // button, docs/specs/015-api/public-api-and-tokens.md). Lets a section add a header CTA without going through
-  // the diagram/folder Create dropdown.
+  // the document/folder Create dropdown.
   headerActions?: ReactNode;
-  // List/Card toggle (docs/specs/006-diagram/diagram-snapshots.md), shown at the far right of the actions row
+  // List/Card toggle (docs/specs/006-document/document-snapshots.md), shown at the far right of the actions row
   // on the browse views that can render either layout. Both must be
   // present for the toggle to appear; sections that only list one way
   // (gallery, tokens, …) omit them.
@@ -84,20 +84,20 @@ export function PaneHeader({
   const showCrumbs = crumbs.length >= 2;
   const showViewToggle = Boolean(viewMode && onSetViewMode);
   // A single "+ Create" dropdown (both desktop and mobile) replaces the
-  // standalone New-diagram / New-folder buttons where BOTH apply: two
+  // standalone New-document / New-folder buttons where BOTH apply: two
   // shrink-0 buttons squeezed the folder-name title to nothing on a narrow
   // phone, and one compact button keeps the title roomy on every screen.
   // Where only one applies it renders as itself — see pane-create-action.ts.
   const createMode = paneCreateMode({
-    hasCreateDiagram: Boolean(onCreateDiagram),
+    hasCreateDocument: Boolean(onCreateDocument),
     hasCreateFolder: Boolean(onCreateFolder),
   });
   const hasCreate = createMode.kind !== 'none';
   const hasActions = hasCreate || Boolean(helpArticle) || Boolean(headerActions) || showViewToggle;
   const singleCreate =
     createMode.kind === 'single'
-      ? createMode.action === 'diagram'
-        ? { label: 'New diagram', onClick: onCreateDiagram! }
+      ? createMode.action === 'document'
+        ? { label: 'New document', onClick: onCreateDocument! }
         : { label: folderLabel ?? 'New Folder', onClick: onCreateFolder! }
       : null;
   const [createOpen, setCreateOpen] = useState(false);
@@ -170,19 +170,19 @@ export function PaneHeader({
                     laid out 2-up when both actions apply, full-width when one. */}
                 <div
                   className={`grid gap-1 px-1.5 py-1.5 ${
-                    onCreateDiagram && onCreateFolder ? 'grid-cols-2' : 'grid-cols-1'
+                    onCreateDocument && onCreateFolder ? 'grid-cols-2' : 'grid-cols-1'
                   }`}
                 >
-                  {onCreateDiagram ? (
+                  {onCreateDocument ? (
                     <MenuTile
                       icon={
                         <span className="[&_svg]:h-5 [&_svg]:w-5">
-                          <DiagramIcon />
+                          <DocumentIcon />
                         </span>
                       }
-                      label="New diagram"
+                      label="New document"
                       onClick={() => {
-                        onCreateDiagram();
+                        onCreateDocument();
                         setCreateOpen(false);
                       }}
                     />

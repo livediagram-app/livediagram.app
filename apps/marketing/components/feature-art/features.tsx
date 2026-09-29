@@ -37,7 +37,7 @@ export function TabCopyArt() {
   return (
     <Frame>
       <div className="flex h-full items-center justify-center gap-2 px-3">
-        <MiniDiagram tabs={[{ c: SKY, on: true }, { c: '#94a3b8' }]} label="Diagram A" />
+        <MiniDiagram tabs={[{ c: SKY, on: true }, { c: '#94a3b8' }]} label="Document A" />
         <svg width="22" height="14" viewBox="0 0 22 14" className="shrink-0 text-slate-400">
           <path
             d="M2 7 H17 M13 3 L17 7 L13 11"
@@ -50,7 +50,7 @@ export function TabCopyArt() {
         </svg>
         <MiniDiagram
           tabs={[{ c: '#94a3b8' }, { c: SKY, on: true, popped: true }]}
-          label="Diagram B"
+          label="Document B"
         />
       </div>
     </Frame>
@@ -282,7 +282,7 @@ export function DragDuplicateArt() {
 
 // Three stacked layer planes (bottom -> top), each popping in with its
 // content, then an eye chip: the Layers panel's pitch in one glance —
-// bands you can stack and hide (docs/specs/006-diagram/layers.md).
+// bands you can stack and hide (docs/specs/006-document/layers.md).
 export function LayersArt() {
   return (
     <Frame canvas>
@@ -350,7 +350,7 @@ export function LayersArt() {
 }
 
 export function AccountSyncArt() {
-  // The same diagram on a laptop and phone, kept in sync via a free account.
+  // The same document on a laptop and phone, kept in sync via a free account.
   return (
     <Frame>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
@@ -478,10 +478,10 @@ export function AccountSyncArt() {
 
 // Global search: the modal floats over the (blurred) canvas, a query is
 // typed, and grouped results stream in with the first one highlighted, like
-// the real SearchPanel (diagram / folder / tab / element scopes).
+// the real SearchPanel (document / folder / tab / element scopes).
 export function SearchArt() {
   const rows = [
-    { kind: 'diagram', name: 'Q3 Architecture', active: true, meta: '' },
+    { kind: 'document', name: 'Q3 Architecture', active: true, meta: '' },
     { kind: 'tab', name: 'Auth flow', active: false, meta: 'tab' },
     { kind: 'element', name: 'Auth service', active: false, meta: 'on Backend' },
   ];

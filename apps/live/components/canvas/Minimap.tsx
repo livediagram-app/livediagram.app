@@ -11,7 +11,7 @@ import {
   svgBoxed,
   type Element,
   type Point,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
@@ -48,7 +48,7 @@ const MAP_HEIGHT: Record<MapSize, string> = {
 type MinimapProps = {
   elements: Element[];
   // The tab default face (docs/specs/004-interface-design/fonts.md): the miniature paints what the canvas
-  // paints, so a marker board reads as one in the map too.
+  // paints, so a canvas set in the marker face looks that way in the map too.
   tabFont?: string;
   viewportOffset: { x: number; y: number };
   viewportZoom: number;
@@ -56,7 +56,7 @@ type MinimapProps = {
   setViewportZoom: (zoom: number) => void;
   // The canvas <main>'s size, measured by the Canvas that owns it. Not observed here: the map renders
   // INSIDE <main>, and a child's layout effect runs before its parent's ref attaches, so a map mounted
-  // in the same commit as the canvas (any diagram opened with enough elements) would read a null ref,
+  // in the same commit as the canvas (any document opened with enough elements) would read a null ref,
   // never measure, and lose its current-view window.
   mainSize: { width: number; height: number };
   // The tab's resolved paper colour (the backdrop the canvas paints). The map
@@ -278,7 +278,7 @@ export function Minimap({
             <>
               {/* Dim everything outside the current view (even-odd: outer box
                 minus the view hole) so the lit window reads at a glance as
-                "where you are on the canvas". Optional: on a dense board some
+                "where you are on the canvas". Optional: on a dense canvas some
                 people would rather read the whole map. */}
               {dimOutside ? (
                 <path

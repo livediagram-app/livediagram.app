@@ -325,9 +325,9 @@ export function OneTabShare() {
   );
 }
 
-/** A read-only embedded diagram inside another page, with an embed-code
+/** A read-only embedded document inside another page, with an embed-code
  *  snippet beneath it. */
-export function EmbeddedDiagram() {
+export function EmbeddedDocument() {
   return (
     <Scene w={420} h={240} bg="plain">
       {/* Host page card */}
@@ -342,7 +342,7 @@ export function EmbeddedDiagram() {
       />
       <TextBar x={44} y={32} w={120} h={8} />
       <TextBar x={44} y={48} w={320} tone="faint" />
-      {/* Embedded diagram frame */}
+      {/* Embedded document frame */}
       <rect
         x={44}
         y={66}
@@ -511,7 +511,7 @@ export function TeamSharedTree() {
   ];
   return (
     <Scene w={420} h={230} bg="plain">
-      <Panel x={70} y={16} w={280} h={198} title="TEAM DIAGRAMS">
+      <Panel x={70} y={16} w={280} h={198} title="TEAM DOCUMENTS">
         {rows.map((r, i) => {
           const ry = 48 + i * 28;
           const tx = 88 + r.depth * 22;

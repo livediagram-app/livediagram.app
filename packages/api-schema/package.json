@@ -16,7 +16,7 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@livediagram/diagram": "workspace:*"
+    "@livediagram/document": "workspace:*"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",

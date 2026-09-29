@@ -142,7 +142,7 @@ describe('handleCustomThemes auth', () => {
   });
 
   // Every "Theme Saved" card for the theme goes, then "Theme Deleted" is
-  // written — the diagram delete's cascade-then-tombstone order, which
+  // written — the document delete's cascade-then-tombstone order, which
   // themes and folders used to skip, leaving their history beside the
   // tombstone.
   it('sweeps the themes earlier timeline cards before writing its tombstone', async () => {

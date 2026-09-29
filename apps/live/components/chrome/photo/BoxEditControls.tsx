@@ -1,7 +1,7 @@
 'use client';
 
 import type { PointerEvent } from 'react';
-import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
+import { EVENT_STORMING_NOTES } from '@livediagram/document';
 import { HoverCard, Tooltip, GlyphDisc } from '@livediagram/ui';
 import type { Corner } from '@/lib/photo-boxes';
 

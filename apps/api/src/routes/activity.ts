@@ -8,7 +8,7 @@
 //
 // Hybrid identity like the rest of the api (docs/specs/014-identity/auth-and-guest-access.md): the Clerk userId
 // when signed in, X-Owner-Id otherwise. Guests get their own page (their
-// self-assigned to-dos, threads on their diagrams), and it survives
+// self-assigned to-dos, threads on their documents), and it survives
 // sign-up through owner_aliases (docs/specs/013-workspace/activity-page.md §2.2).
 
 import { ACTIVITY_LIST_MAX } from '@livediagram/api-schema';

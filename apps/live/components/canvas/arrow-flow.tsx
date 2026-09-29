@@ -4,7 +4,7 @@ import {
   DEFAULT_ANIMATION_SPEED,
   type ArrowElement,
   type ArrowFlow,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // The flowing-arrow rendering slice (docs/specs/008-canvas/canvas-and-palette.md), lifted out of ArrowView:
 // the per-flow path class / dash tables, the phase-sync pinning hook,

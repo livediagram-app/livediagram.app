@@ -23,7 +23,7 @@ import {
   type ElementAnimation,
   type IconAnimation,
   type IconSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {
   AnimationKindGlyph,

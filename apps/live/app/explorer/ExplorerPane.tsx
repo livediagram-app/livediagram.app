@@ -6,18 +6,18 @@ import { useExplorer } from './ExplorerContext';
 import { NewTokenButton } from '@/components/panels/NewTokenButton';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import type { HelpArticleKey } from '@/lib/help-articles';
-import { ListView, PaneHeader, SharedList, SkeletonRows, type PaneDiagram } from './views';
+import { ListView, PaneHeader, SharedList, SkeletonRows, type PaneDocument } from './views';
 import { CardView } from './CardView';
 import { useExplorerViewMode } from './useExplorerViewMode';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DynamicFolderInfo } from './DynamicFolderInfo';
 import { TimelineControls, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
-import { DiagramHistoryDialog } from '@/components/panels/DiagramHistoryDialog';
+import { DocumentHistoryDialog } from '@/components/panels/DocumentHistoryDialog';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
 
-// The browse sections that render a folders + diagrams grid the List/Card
-// toggle (docs/specs/006-diagram/diagram-snapshots.md) can swap. Other sections (gallery, themes, tokens,
+// The browse sections that render a folders + documents grid the List/Card
+// toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes, tokens,
 // profile, team, invites, shared) have their own fixed layout.
 const BROWSE_KINDS = new Set([
   'recent',
@@ -37,7 +37,7 @@ const BROWSE_KINDS = new Set([
 const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
   timeline: 'timeline',
   activity: 'activity',
-  recent: 'recentDiagrams',
+  recent: 'recentDocuments',
   shared: 'sharedWithYou',
   gallery: 'imageGallery',
   themes: 'customThemes',
@@ -110,22 +110,22 @@ export function ExplorerPane() {
     paneTitle,
     paneCrumbs,
     paneContent,
-    unsortedDiagrams,
-    generatedDiagrams,
-    offlineDiagrams,
+    unsortedDocuments,
+    generatedDocuments,
+    offlineDocuments,
     childrenByParent,
-    diagramsByFolder,
+    documentsByFolder,
     setMobileNavOpen,
     createFolder,
     commitRenameFolder,
     renamingFolderId,
     setRenamingFolderId,
-    renamingDiagramId,
-    setRenamingDiagramId,
-    renameDiagram,
-    deleteDiagram,
-    duplicateDiagram,
-    openMovePickerForDiagram,
+    renamingDocumentId,
+    setRenamingDocumentId,
+    renameDocument,
+    deleteDocument,
+    duplicateDocument,
+    openMovePickerForDocument,
     folderActions,
     shared,
     dismissShared,
@@ -135,7 +135,7 @@ export function ExplorerPane() {
     refreshTeams,
     movePersonalFolders,
     moveTeamDests,
-    moveDiagramTo,
+    moveDocumentTo,
   } = useExplorer();
   const { signInHref } = useAuthHrefs();
 
@@ -152,13 +152,13 @@ export function ExplorerPane() {
   // Rows shared WITH you carry no folderId at all (they live in the sharer's
   // library, not yours), so they get no chip rather than a misleading one.
   const folderChipFor = useCallback(
-    (d: PaneDiagram): { label: string; onOpen: () => void } | null => {
+    (d: PaneDocument): { label: string; onOpen: () => void } | null => {
       // Recent AND Favourites both aggregate across folders, so both need
       // to say where a row actually lives (docs/specs/013-workspace/recent-folder-chip.md, docs/specs/013-workspace/favourites.md). Every other
       // pane IS a folder, where the chip would just repeat its title.
       const aggregates = selected.kind === 'recent' || selected.kind === 'favourites';
       if (!aggregates || d.shared) return null;
-      // A team diagram's folder belongs to the team's library, so the chip
+      // A team document's folder belongs to the team's library, so the chip
       // jumps into that team rather than your personal tree.
       if (d.team) {
         // Team folders live in the team's own tree, which `folderById`
@@ -189,7 +189,7 @@ export function ExplorerPane() {
   // its feed renders in the body. Gated like the other section hooks so
   // visiting Recent doesn't fetch a feed nobody is looking at.
   const timeline = useTimelineFeed(ownerId, selected.kind === 'timeline');
-  // Which diagram's history dialog is open, if any (docs/specs/013-workspace/timeline.md §3.4).
+  // Which document's history dialog is open, if any (docs/specs/013-workspace/timeline.md §3.4).
   const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
 
   return (
@@ -208,15 +208,15 @@ export function ExplorerPane() {
         }
         viewMode={isBrowse ? viewMode : undefined}
         onSetViewMode={isBrowse ? setViewMode : undefined}
-        onCreateDiagram={
+        onCreateDocument={
           // Timeline gets one too. A feed is a record of what happened rather
           // than a container you add to, so this started out omitted and left
           // to the empty state's CTA — but the empty state is exactly what a
           // returning user never sees, and Timeline is now the Explorer
-          // landing page (docs/specs/013-workspace/timeline.md §8.1). That made "start a new diagram" a
+          // landing page (docs/specs/013-workspace/timeline.md §8.1). That made "start a new document" a
           // dead end on the first screen of the app.
           //
-          // Activity does NOT: a new diagram puts nothing on an inbox of
+          // Activity does NOT: a new document puts nothing on an inbox of
           // open actions and threads (docs/specs/013-workspace/activity-page.md §1).
           selected.kind === 'activity' ||
           selected.kind === 'shared' ||
@@ -227,7 +227,7 @@ export function ExplorerPane() {
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           // Generated / Offline are read-through dynamic views, not places
-          // you hand-author into (offline diagrams are created from the /new
+          // you hand-author into (offline documents are created from the /new
           // wizard's Settings toggle).
           selected.kind === 'generated' ||
           selected.kind === 'offline' ||
@@ -262,8 +262,8 @@ export function ExplorerPane() {
       <DynamicFolderInfo selected={selected} />
 
       {/* Timeline runs ahead of the `loading` gate on purpose: that flag
-          tracks the DIAGRAM lists, which this section doesn't read, and
-          waiting on them would show diagram skeletons on the landing
+          tracks the DOCUMENT lists, which this section doesn't read, and
+          waiting on them would show document skeletons on the landing
           page before the feed's own skeleton. */}
       {selected.kind === 'timeline' ? (
         ownerId ? (
@@ -274,7 +274,7 @@ export function ExplorerPane() {
           />
         ) : null
       ) : selected.kind === 'activity' ? (
-        // Like the Timeline, ahead of the diagram-list `loading` gate: the
+        // Like the Timeline, ahead of the document-list `loading` gate: the
         // section reads its own feed (docs/specs/013-workspace/activity-page.md §5).
         <ActivityPane feed={activity} />
       ) : loading ? (
@@ -299,11 +299,11 @@ export function ExplorerPane() {
             onTeamsChanged={() => void refreshTeams()}
             onLeftTeam={() => go({ kind: 'timeline' })}
             onLoadResult={(found) => setNotFoundIn(found ? null : selected)}
-            // The shared-diagrams move picker offers every space (docs/specs/013-workspace/team-shared-diagrams.md):
-            // the personal tree + each team, with `moveDiagramTo` routing a
-            // cross-scope pick from the diagram's current placement.
+            // The shared-documents move picker offers every space (docs/specs/013-workspace/team-shared-documents.md):
+            // the personal tree + each team, with `moveDocumentTo` routing a
+            // cross-scope pick from the document's current placement.
             moveDests={{ personalFolders: movePersonalFolders, teams: moveTeamDests }}
-            onMoveDiagramTo={moveDiagramTo}
+            onMoveDocumentTo={moveDocumentTo}
           />
         ) : null
       ) : selected.kind === 'gallery' ? (
@@ -339,89 +339,89 @@ export function ExplorerPane() {
       ) : selected.kind === 'shared' ? (
         <SharedList shared={shared} ownerId={ownerId} onDismiss={dismissShared} />
       ) : paneContent.folders.length === 0 &&
-        paneContent.diagrams.length === 0 &&
+        paneContent.documents.length === 0 &&
         !paneContent.showUnsortedRow &&
         // All + Dynamic always lead with synthetic rows, so they're never
-        // "empty" even with zero folders and diagrams.
+        // "empty" even with zero folders and documents.
         selected.kind !== 'all' &&
         selected.kind !== 'dynamic' ? (
         <EmptyPane selected={selected} />
       ) : (
         (() => {
-          // List and Card take the SAME props (docs/specs/006-diagram/diagram-snapshots.md), so build them
+          // List and Card take the SAME props (docs/specs/006-document/document-snapshots.md), so build them
           // once and pick the component by the toggle.
           const ViewComponent = viewMode === 'card' ? CardView : ListView;
           return (
             <ViewComponent
               folders={paneContent.folders}
-              diagrams={paneContent.diagrams}
+              documents={paneContent.documents}
               ownerId={ownerId}
               // The three synthetic folders live inside the Dynamic parent
               // view; Personal Space (/all) leads with the single Dynamic row.
               showUnsortedRow={selected.kind === 'dynamic'}
-              unsortedCount={unsortedDiagrams.length}
+              unsortedCount={unsortedDocuments.length}
               onOpenUnsorted={() => go({ kind: 'unsorted' })}
               showGeneratedRow={selected.kind === 'dynamic'}
-              generatedCount={generatedDiagrams.length}
+              generatedCount={generatedDocuments.length}
               onOpenGenerated={() => go({ kind: 'generated' })}
               showOfflineRow={selected.kind === 'dynamic'}
-              offlineCount={offlineDiagrams.length}
+              offlineCount={offlineDocuments.length}
               onOpenOffline={() => go({ kind: 'offline' })}
               showDynamicRow={selected.kind === 'all'}
               dynamicCount={
-                unsortedDiagrams.length + generatedDiagrams.length + offlineDiagrams.length
+                unsortedDocuments.length + generatedDocuments.length + offlineDocuments.length
               }
               onOpenDynamic={() => go({ kind: 'dynamic' })}
               onOpenFolder={(id) => go({ kind: 'folder', id })}
               onCommitRenameFolder={commitRenameFolder}
               onCancelRenameFolder={() => setRenamingFolderId(null)}
               renamingFolderId={renamingFolderId}
-              renamingDiagramId={renamingDiagramId}
-              onCommitRenameDiagram={renameDiagram}
-              onCancelRenameDiagram={() => setRenamingDiagramId(null)}
+              renamingDocumentId={renamingDocumentId}
+              onCommitRenameDocument={renameDocument}
+              onCancelRenameDocument={() => setRenamingDocumentId(null)}
               folderActions={folderActions}
-              onStartRenameDiagram={(id) => setRenamingDiagramId(id)}
-              onDuplicateDiagram={(id) => void duplicateDiagram(id)}
-              onDeleteDiagram={deleteDiagram}
-              onMoveDiagram={openMovePickerForDiagram}
+              onStartRenameDocument={(id) => setRenamingDocumentId(id)}
+              onDuplicateDocument={(id) => void duplicateDocument(id)}
+              onDeleteDocument={deleteDocument}
+              onMoveDocument={openMovePickerForDocument}
               onDismissShared={dismissShared}
               recentExcludedIds={prefs.recentExcludedIds ?? []}
               onToggleRecentExclusion={toggleRecentExclusion}
               onShowHistory={(id) => {
-                const row = paneContent.diagrams.find((d) => d.id === id);
-                // Offline diagrams never reach the worker, so they have
-                // no server history to show (docs/specs/006-diagram/offline-mode.md).
+                const row = paneContent.documents.find((d) => d.id === id);
+                // Offline documents never reach the worker, so they have
+                // no server history to show (docs/specs/006-document/offline-mode.md).
                 if (row && !isOfflineIdSync(id)) setHistoryFor({ id, name: row.name });
               }}
               favouriteIds={favouriteIds}
               onToggleFavourite={toggleFavourite}
               folderChipFor={folderChipFor}
               childrenCount={(id) => childrenByParent.get(id)?.length ?? 0}
-              diagramsCount={(id) => diagramsByFolder.get(id)?.length ?? 0}
+              documentsCount={(id) => documentsByFolder.get(id)?.length ?? 0}
               // What each folder card previews (docs/specs/013-workspace/folder-content-previews.md) — the same
               // client-side indexes the counts come from, so no extra fetch.
               folderContents={(id) => ({
                 folders: childrenByParent.get(id) ?? [],
-                diagrams: diagramsByFolder.get(id) ?? [],
+                documents: documentsByFolder.get(id) ?? [],
               })}
               // Owner column (desktop): Recent mixes personal + team rows
-              // (docs/specs/013-workspace/team-shared-diagrams.md), so it's the one list where ownership varies.
+              // (docs/specs/013-workspace/team-shared-documents.md), so it's the one list where ownership varies.
               showOwner={selected.kind === 'recent'}
             />
           );
         })()
       )}
 
-      {/* One diagram's own history (docs/specs/013-workspace/timeline.md §3.4), opened from a row's
+      {/* One document's own history (docs/specs/013-workspace/timeline.md §3.4), opened from a row's
           menu. Lives at the pane level rather than per row so only one
           is ever mounted. */}
       {ownerId ? (
-        <DiagramHistoryDialog
+        <DocumentHistoryDialog
           open={historyFor !== null}
           onClose={() => setHistoryFor(null)}
           ownerId={ownerId}
-          diagramId={historyFor?.id ?? null}
-          diagramName={historyFor?.name ?? null}
+          documentId={historyFor?.id ?? null}
+          documentName={historyFor?.name ?? null}
         />
       ) : null}
     </>

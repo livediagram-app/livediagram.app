@@ -3,7 +3,7 @@
 import { getTheme, themePresetColors } from '@/lib/themes';
 import { addCustomSwatch, removeCustomSwatch } from '@/lib/custom-swatches';
 import { readUserPreferences } from '@/lib/user-preferences';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { ColourPalette } from '@/components/palette/context-menu-input-rows';
 
 // The colour palette every picker in the editor offers (docs/specs/008-canvas/canvas-and-palette.md Colours): the

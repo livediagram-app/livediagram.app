@@ -17,7 +17,7 @@ vi.mock('../db', () => db);
 import type { Env } from '../types';
 import { handleEvents } from './events';
 
-const EVENT = { category: 'Mcp', action: 'Used', type: 'ReadDiagram' };
+const EVENT = { category: 'Mcp', action: 'Used', type: 'ReadDocument' };
 
 const makeCtx = (opts: { env?: Partial<Env>; headers?: Record<string, string> } = {}) =>
   makeTestRouteContext('POST', '/api/events', {
@@ -101,12 +101,12 @@ describe('handleEvents page views (docs/specs/017-telemetry/page-view-telemetry.
       body: {
         events: [
           { category: 'Page', action: 'View', type: '/help/canvas/the-canvas' },
-          { category: 'Page', action: 'View', type: '/diagram' },
+          { category: 'Page', action: 'View', type: '/document' },
           // A raw URL with a query, an un-normalised id, the old id placeholder
           // and a bare token.
           { category: 'Page', action: 'View', type: '/join?token=abc' },
           { category: 'Page', action: 'View', type: '/Diagram/ABC' },
-          { category: 'Page', action: 'View', type: '/diagram/[id]' },
+          { category: 'Page', action: 'View', type: '/document/[id]' },
           { category: 'Page', action: 'View', type: 'help' },
         ],
       },
@@ -117,7 +117,7 @@ describe('handleEvents page views (docs/specs/017-telemetry/page-view-telemetry.
       expect.anything(),
       [
         { category: 'Page', action: 'View', type: '/help/canvas/the-canvas' },
-        { category: 'Page', action: 'View', type: '/diagram' },
+        { category: 'Page', action: 'View', type: '/document' },
       ],
       expect.any(Number),
     );
@@ -126,14 +126,14 @@ describe('handleEvents page views (docs/specs/017-telemetry/page-view-telemetry.
 
 describe('handleEvents server-emitted pairs (docs/specs/017-telemetry/telemetry.md)', () => {
   it('drops the pairs the worker counts itself, keeping the rest of the batch', async () => {
-    // Session·SignedUp / SignedIn and Diagram·Joined moved server-side; an
+    // Session·SignedUp / SignedIn and Document·Joined moved server-side; an
     // old cached editor bundle still posting them must not double count.
     const ctx = makeTestRouteContext('POST', '/api/events', {
       body: {
         events: [
           { category: 'Session', action: 'SignedUp' },
           { category: 'Session', action: 'SignedIn' },
-          { category: 'Diagram', action: 'Joined', type: 'Edit' },
+          { category: 'Document', action: 'Joined', type: 'Edit' },
           { category: 'Email', action: 'Sent', type: 'Welcome' },
           { category: 'Session', action: 'SignedOut' },
         ],

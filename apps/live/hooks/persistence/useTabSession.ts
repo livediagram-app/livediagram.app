@@ -20,7 +20,7 @@ import {
   type TabVote,
   type TimerMode,
   type VoteSetup,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 
 type TabSessionDeps = {

@@ -1,4 +1,4 @@
-import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livediagram/diagram';
+import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livediagram/document';
 import { PALETTE_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import { tileCaption } from './tile-caption';

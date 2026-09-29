@@ -18,7 +18,7 @@ import {
   layerOpacityOf,
   snapSeamCoordinate,
   arrowRoutePoints,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
@@ -275,14 +275,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const insertShift = useInsertShift();
   // Session-local view state for an open photo draft (docs/specs/021-event-storming/event-storming.md Phase 8).
   const draftView = usePhotoDraftView();
-  // Paint order (docs/specs/006-diagram/layers.md + docs/specs/008-canvas/canvas-and-palette.md): layer bands bottom -> top, keeping
+  // Paint order (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md): layer bands bottom -> top, keeping
   // array order within each band with frames hoisted to the front of
   // THEIR band (a frame is a section backdrop that must sit behind its
   // contents so they stay clickable). Hidden layers' elements drop out
   // here entirely — no DOM, so no hit-testing either. Same banding the
   // exporters use. Each element carries its band's opacity so per-layer
   // opacity multiplies over the element's own. While a Layers-panel row
-  // is hovered (`layerPreviewId`, docs/specs/006-diagram/layers.md hover-solo) ONLY that band
+  // is hovered (`layerPreviewId`, docs/specs/006-document/layers.md hover-solo) ONLY that band
   // renders — hidden or not — at full band opacity so the preview is
   // legible. Memoised for the same reason as the index (stable identity
   // when inputs are).

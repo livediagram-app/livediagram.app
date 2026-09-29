@@ -62,7 +62,7 @@ test.describe('Viewport on add', () => {
           const headers = { 'X-Owner-Id': localStorage.getItem('livediagram:v2:self-id') ?? '' };
           const id = location.pathname.split('/').filter(Boolean).pop();
           const tabId = new URLSearchParams(location.hash.slice(1)).get('t');
-          const res = await fetch(`/api/diagrams/${id}/tabs/${tabId}`, { headers });
+          const res = await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers });
           return res.ok ? ((await res.json()).tab?.elements?.length ?? 0) : 0;
         }),
       )

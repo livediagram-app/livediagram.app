@@ -65,7 +65,7 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
                 {row.label}
               </span>
               <span className="block text-xs text-slate-500 dark:text-slate-400">
-                You are working as a guest. Sign in to keep your diagrams across devices.
+                You are working as a guest. Sign in to keep your documents across devices.
               </span>
             </span>
           )}
@@ -78,7 +78,7 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
 // Delete account. Signed-in only, and not because of the UI: the api's
 // DELETE /api/account is Clerk-only by design (docs/specs/014-identity/profile-and-email-notifications.md), since the whole
 // point is wiping data bound to a VERIFIED identity. A guest's owner id is an
-// unverified header, so honouring it would let anyone wipe anyone's diagrams.
+// unverified header, so honouring it would let anyone wipe anyone's documents.
 // The row still renders for guests, saying why, rather than vanishing, so the
 // answer to "can I delete my data?" is in the panel either way.
 export function SettingsDeleteAccountRow({ row }: { row: SettingsDeleteAccountRowSpec }) {
@@ -97,7 +97,7 @@ export function SettingsDeleteAccountRow({ row }: { row: SettingsDeleteAccountRo
             </span>
             <span className="block text-xs text-slate-600 dark:text-slate-400">
               {signedIn
-                ? 'Permanently removes your diagrams (the Trash included), folders, and account. This cannot be undone.'
+                ? 'Permanently removes your documents (the Trash included), folders, and account. This cannot be undone.'
                 : 'Only available once you are signed in: deleting wipes the data held against a verified account, and a guest browser has none.'}
             </span>
           </span>

@@ -18,7 +18,7 @@ import {
   type Element,
   type Tab,
   stampTabKind,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { layoutGraph, type GraphInput } from './graph-input';
 import {
   TEMPLATES,
@@ -106,7 +106,7 @@ export function buildTemplateTab(
   themeId?: string,
 ): Tab {
   // stampTabKind fills the ordinary 'diagram' for every template that
-  // doesn't declare a board kind of its own (docs/specs/021-event-storming/event-storming.md), so a tab minted
+  // doesn't declare a tab kind of its own (docs/specs/021-event-storming/event-storming.md), so a tab minted
   // here is indistinguishable from one the editor commits.
   return stampTabKind({
     ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),

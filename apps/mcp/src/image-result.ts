@@ -6,7 +6,7 @@
 // that genuinely needs a rasteriser lives here.
 
 import { embedTabImages } from '@livediagram/api-schema';
-import { renderElementsToSvg, type Tab } from '@livediagram/diagram';
+import { renderElementsToSvg, type Tab } from '@livediagram/document';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
 import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
@@ -15,7 +15,7 @@ import { apiFetch } from './api';
 import type { Env } from './env';
 import { textResult, type StructuredValue, type ToolResult } from './tool-helpers';
 
-// Per-image cap for embedding (docs/specs/015-api/mcp-server.md §5): a diagram can reference large
+// Per-image cap for embedding (docs/specs/015-api/mcp-server.md §5): a document can reference large
 // uploads, and inlining them as base64 into the preview PNG's own base64
 // response would bloat what the model receives. Above this, the image falls
 // back to the placeholder box (as before) — the structured elements still carry
@@ -28,7 +28,7 @@ const MAX_EMBED_BYTES = 2 * 1024 * 1024;
 // the bytes must be inlined. Owner-authed via the caller's token — the same
 // GET /api/images/:id the app uses. The shared embedder reads them
 // concurrently under the per-image cap; any failure (missing, too big, error)
-// skips that image and the placeholder shows; a diagram with no images does no
+// skips that image and the placeholder shows; a document with no images does no
 // work.
 async function buildImageResolver(
   env: Env,

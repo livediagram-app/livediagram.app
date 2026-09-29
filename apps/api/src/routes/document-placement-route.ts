@@ -1,0 +1,159 @@
+// /api/documents/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md), split out
+// of routes/documents.ts: the scope-change policy is the densest rule
+// block under the document resource, so it owns its own module the way
+// the tab / share sub-paths own document-subresource-routes.ts.
+
+import {
+  getDocument,
+  getFolder,
+  getMembership,
+  getParticipant,
+  getTeam,
+  setDocumentFolder,
+} from '../db';
+import { forbidden, noContent, notFound } from '../responses';
+import {
+  audienceForDocument,
+  recordDocumentMoved,
+  recordTeamDocumentAdded,
+  recordTeamDocumentRemoved,
+} from '../timeline';
+import { missingDocument, ownsDocument, requireOwner, type RouteContext } from './context';
+
+// Returns null when the request isn't the placement route.
+export async function handleDocumentPlacement(ctx: RouteContext): Promise<Response | null> {
+  const { request, env, segments } = ctx;
+  // /api/documents/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md). Body:
+  // { folderId, teamId? }. A team document is managed by every joined
+  // member (docs/specs/013-workspace/team-shared-documents.md), so the rules are by membership, not ownership:
+  //   - INTO a team (or between teams): caller must be a joined
+  //     member of the destination team; if the document is currently
+  //     personal, only its owner may file it into a team; if it's in
+  //     another team, the caller must be a joined member of that team
+  //     too.
+  //   - WITHIN the current team: any joined member may re-folder it.
+  //   - OUT of a team to personal: any joined member may move it into
+  //     THEIR OWN personal library; ownership transfers to the mover
+  //     (folders are owner-scoped, so the row follows). The owner
+  //     moving it out keeps ownership.
+  //   - A purely personal move (no team on either side) stays owner-
+  //     only.
+  // Folder existence + scope match is validated before the write so
+  // the document never points at a folder outside its scope.
+  if (segments.length === 4 && segments[3] === 'folder') {
+    const id = segments[2]!;
+    if (request.method === 'PUT') {
+      const owner = requireOwner(ctx);
+      if (owner instanceof Response) return owner;
+      const existing = await getDocument(env, id);
+      if (!existing) return missingDocument(ctx, id);
+      const body = (await request.json()) as { folderId?: string | null; teamId?: string | null };
+      const folderId = body.folderId ?? null;
+      const teamId = body.teamId !== undefined ? body.teamId : existing.teamId;
+      // `ownsDocument`, not a bare id compare: a TEAM document's owner id is a
+      // Clerk id every teammate can read, and `isOwner` below decides whether
+      // the caller may change the document's SCOPE — including moving it out of
+      // the team into their own library, which transfers ownership.
+      const isOwner = await ownsDocument(ctx, existing);
+      const caller = ctx.verifiedUserId;
+
+      if (teamId !== existing.teamId) {
+        // Changing scope.
+        if (teamId !== null) {
+          // Into a team / between teams: joined member of the
+          // destination. A personal document can only be filed in by
+          // its owner; a team document can be moved by any joined
+          // member of its current team.
+          if (!caller) return forbidden();
+          const dest = await getMembership(env, teamId, caller);
+          if (dest?.status !== 'joined') return forbidden();
+          if (existing.teamId === null) {
+            if (!isOwner) return forbidden();
+          } else {
+            const src = await getMembership(env, existing.teamId, caller);
+            if (src?.status !== 'joined') return forbidden();
+          }
+        } else if (!isOwner) {
+          // Out of a team to personal: any joined member of the
+          // current team (it becomes the mover's personal document).
+          if (!caller || !existing.teamId) return forbidden();
+          const membership = await getMembership(env, existing.teamId, caller);
+          if (membership?.status !== 'joined') return forbidden();
+        }
+      } else if (!isOwner) {
+        // Same scope, non-owner: only legal inside a team the caller
+        // has joined (re-foldering a teammate's document).
+        if (!caller || !existing.teamId) return forbidden();
+        const membership = await getMembership(env, existing.teamId, caller);
+        if (membership?.status !== 'joined') return forbidden();
+      }
+
+      // A non-owner moving a team document out to personal takes
+      // ownership (docs/specs/013-workspace/team-shared-documents.md): the document lands in the mover's library.
+      const movingOutToPersonal = teamId === null && existing.teamId !== null;
+      const newOwnerId = movingOutToPersonal && !isOwner ? caller! : undefined;
+      // Whose personal folder a personal placement must belong to.
+      const personalOwner = newOwnerId ?? existing.ownerId;
+
+      if (folderId !== null) {
+        const folder = await getFolder(env, folderId);
+        if (!folder) return notFound();
+        // Scope match: personal placement needs that owner's personal
+        // folder; team placement needs a folder of that team.
+        if (teamId === null && (folder.teamId !== null || folder.ownerId !== personalOwner)) {
+          return notFound();
+        }
+        if (teamId !== null && folder.teamId !== teamId) return notFound();
+      }
+      // Resolve the OUTGOING team's audience before the row changes hands: once
+      // the document is personal, audienceForDocument returns only its new owner,
+      // so the team (and a displaced previous owner) would hear nothing. Same
+      // reason the delete path resolves its audience first.
+      const leavingAudience = movingOutToPersonal ? await audienceForDocument(env, existing) : null;
+      const leftTeam = movingOutToPersonal ? await getTeam(env, existing.teamId!) : null;
+      await setDocumentFolder(env, id, folderId, teamId, newOwnerId);
+      // docs/specs/013-workspace/timeline.md: publishing into a team library is a different event
+      // from filing something in a folder — the first tells a whole
+      // team a document is theirs to work on, the second is personal
+      // tidying. Re-read the document so the audience resolves against
+      // its NEW team, not the one it just left.
+      const moved = await getDocument(env, id);
+      if (moved) {
+        if (teamId !== null && teamId !== existing.teamId) {
+          const destination = await getTeam(env, teamId);
+          if (destination) {
+            ctx.waitUntil?.(recordTeamDocumentAdded(env, moved, destination.name, owner));
+          }
+        } else if (movingOutToPersonal && leavingAudience) {
+          // Leaving a team is its own event. It used to fall through to the
+          // `document_moved` arm below and read "Moved to a Folder →
+          // Unsorted" — in the MOVER's feed only, because the audience
+          // resolved against the now-personal document. So a document could
+          // leave a shared library and change hands with the team and the
+          // previous owner told nothing. Worse, a document sitting at the
+          // team-library root already has folderId === null, so
+          // `folderId !== existing.folderId` was false and NO event was
+          // written at all.
+          const newOwner = newOwnerId ? await getParticipant(env, newOwnerId) : null;
+          ctx.waitUntil?.(
+            recordTeamDocumentRemoved(
+              env,
+              moved,
+              leftTeam?.name ?? 'a team',
+              owner,
+              leavingAudience,
+              newOwner?.name ?? null,
+            ),
+          );
+        } else if (folderId !== existing.folderId) {
+          const folderName = folderId
+            ? ((await getFolder(env, folderId))?.name ?? 'a folder')
+            : 'Unsorted';
+          ctx.waitUntil?.(recordDocumentMoved(env, moved, folderName, owner));
+        }
+      }
+      return noContent();
+    }
+  }
+  return null;
+}

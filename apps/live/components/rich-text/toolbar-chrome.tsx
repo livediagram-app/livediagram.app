@@ -18,7 +18,7 @@ import {
   StrikethroughIcon,
   UnderlineIcon,
 } from '@/components/palette/palette-icons';
-import type { RunBoolKey } from '@livediagram/diagram';
+import type { RunBoolKey } from '@livediagram/document';
 
 // `extra` exists for one caller: the note toolbar wraps its buttons
 // (flex-wrap), so its buttons take `shrink-0` to keep their square. The label

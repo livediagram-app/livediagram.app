@@ -35,7 +35,7 @@ import {
   type PieSlice,
   type ElementAnimation,
   type IconAnimation,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import {
   AvatarModeIcon,
   EraserIcon,

@@ -34,7 +34,7 @@ import {
   type DecisionStatus,
   type EstimateScale,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';

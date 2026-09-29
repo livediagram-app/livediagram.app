@@ -7,11 +7,11 @@ the tab timer for that long and marks itself the segment the room is in.
 
 ## Why
 
-The session button ([Session button](session-button.md)) put a single facilitation act on the board and
-argued that a board carrying its own script works when the person who built it
+The session button ([Session button](session-button.md)) put a single facilitation act on the canvas and
+argued that a canvas carrying its own script works when the person who built it
 isn't the one running it. An agenda is that argument finished: a workshop is
 not one five-minute timer, it is six segments in an order, and today the order
-lives in the facilitator's head or in a doc nobody on the board can see.
+lives in the facilitator's head or in a doc nobody on the canvas can see.
 
 ## The element
 
@@ -35,7 +35,7 @@ an agenda nobody uses twice.
 
 There is deliberately **no auto-advance** when a timer expires. A segment
 ending is a prompt to a human, not an instruction — the room is mid-sentence,
-and a board that silently starts the next timer takes a decision that belongs
+and a canvas that silently starts the next timer takes a decision that belongs
 to the person facilitating.
 
 ## The face

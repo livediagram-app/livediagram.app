@@ -2,7 +2,7 @@ import { Button } from '@livediagram/ui';
 import { ArrowRightIcon, FolderOpenIcon, SparkleIcon, Spinner } from './template-picker-icons';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
-// The TemplatePicker's footer row (docs/specs/007-editor/new-diagram-route.md), lifted out of the picker:
+// The TemplatePicker's footer row (docs/specs/007-editor/new-document-route.md), lifted out of the picker:
 // identity mode keeps a flat Cancel + Join pair; both wizard modes
 // (welcome + templates) swap controls per step. The picker hides it
 // entirely while the theme builder is open (the builder carries its own
@@ -52,7 +52,7 @@ export function TemplatePickerFooter({
       ) : (
         <div className="flex items-center gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
           {/* Far-left escape hatch: the welcome flow jumps to the Explorer
-            to open an existing diagram; the in-editor templates flow
+            to open an existing document; the in-editor templates flow
             cancels back to the canvas. */}
           {isWelcome ? (
             onOpenExisting ? (
@@ -62,7 +62,7 @@ export function TemplatePickerFooter({
                 className="mr-auto inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
               >
                 <FolderOpenIcon />
-                Open Existing Diagram
+                Open Existing Document
               </button>
             ) : null
           ) : (
@@ -83,7 +83,7 @@ export function TemplatePickerFooter({
             Back button here read ambiguously against the category
             "All templates / All themes" bar, so it's gone. */}
           {isWelcome && step === 'template' ? (
-            /* Skip the wizard: Blank template, Default theme (docs/specs/007-editor/new-diagram-route.md).
+            /* Skip the wizard: Blank template, Default theme (docs/specs/007-editor/new-document-route.md).
              Only on the first (template) step — once the user has
              reached the theme step, Back / Create are the actions. */
             <Button

@@ -6,7 +6,7 @@
 //
 // The preview here matters more than in the other two: this is the tool that
 // destroys work, so the brush is drawn at its true radius over a scrap of
-// "diagram", and the ring turns amber whenever a target filter is on. A
+// "canvas", and the ring turns amber whenever a target filter is on. A
 // restricted eraser that looks identical to an unrestricted one is how someone
 // concludes the eraser is broken.
 
@@ -23,7 +23,7 @@ import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
 type Row = 'mode' | 'size' | 'target';
 
-// The brush at its true size over a scrap of diagram, so "Large" is a size
+// The brush at its true size over a scrap of canvas, so "Large" is a size
 // rather than a word. Capped to the preview box: a 72px radius is bigger than
 // the panel is tall, and a preview that overflows teaches nothing.
 function BrushPreview({ config }: { config: EraserConfig }) {

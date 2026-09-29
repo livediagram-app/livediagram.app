@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { NameEditor } from '@/components/primitives/NameEditor';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import type { Participant } from '@/lib/identity';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { useEscape, Glyph } from '@livediagram/ui';
 
-// One folder group in the tab bar (docs/specs/006-diagram/tab-folders.md). The folder renders as a
+// One folder group in the tab bar (docs/specs/006-document/tab-folders.md). The folder renders as a
 // compact chip (glyph + name + count) plus, when the ACTIVE tab lives in
 // the folder, that one member pill inline beside it — the rest of the
 // members stay off the bar so a big folder costs almost no horizontal
@@ -25,7 +25,7 @@ type TabFolderChipProps = {
   // folder members behave exactly like loose tabs.
   renderTab: (tab: Tab) => ReactNode;
   // Drop a dragged tab next to this folder. Reorder-only (membership is
-  // menu-only, docs/specs/006-diagram/tab-folders.md); the parent normalizes afterwards. The optional
+  // menu-only, docs/specs/006-document/tab-folders.md); the parent normalizes afterwards. The optional
   // `placeBefore` is unused here (dropping on the chip always joins at the
   // head), but keeps the signature aligned with the parent's onReorder.
   onReorder: (sourceId: string, targetId: string, placeBefore?: boolean) => void;
@@ -140,7 +140,7 @@ export function TabFolderChip({
               e.preventDefault();
               setDragOver(false);
               const src = e.dataTransfer.getData('text/plain');
-              // Drop onto the folder chip JOINS the folder (docs/specs/006-diagram/tab-folders.md):
+              // Drop onto the folder chip JOINS the folder (docs/specs/006-document/tab-folders.md):
               // onReorder adopts the target's folder, and the target is the
               // run's first member, so the dropped tab lands at the head of
               // this folder's run as a member. Works whether or not the fan

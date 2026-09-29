@@ -8,14 +8,14 @@ A canvas element that **chooses at random when pressed** — one of the people i
 
 Every session has a moment where someone has to pick, and picking by hand is either slow ("who hasn't gone yet?") or loaded (the same two people always volunteer). A visible, obviously-random choice settles it in a second and takes the decision off whoever is facilitating.
 
-It belongs on the canvas rather than in a menu for the same reason the other Behaviour elements do: the board is the shared surface everyone is already looking at, so the roll is something the room watches together rather than a result one person reads out.
+It belongs on the canvas rather than in a menu for the same reason the other Behaviour elements do: the canvas is the shared surface everyone is already looking at, so the roll is something the room watches together rather than a result one person reads out.
 
 ## The element
 
 - A **shape kind**, `picker`: a card with the choice shown large, and a button that rolls.
 - **`ShapeElement.pickerSource`** — `'participants'` (default) or `'options'`.
 - **`ShapeElement.pickerOptions`** — the written list, used when the source is `options`. Empty falls back to "nothing to pick from" rather than picking nothing silently.
-- **`ShapeElement.pickerResult`** — the last result, so the board still shows it after a reload and to anyone who joins later.
+- **`ShapeElement.pickerResult`** — the last result, so the canvas still shows it after a reload and to anyone who joins later.
 
 ## Rolling
 

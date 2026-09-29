@@ -95,7 +95,7 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   ai: 'top-right',
   activity: 'bottom-left',
   minimap: 'bottom-left',
-  // Layers (docs/specs/006-diagram/layers.md): the one panel homed bottom-right, above the fixed
+  // Layers (docs/specs/006-document/layers.md): the one panel homed bottom-right, above the fixed
   // zoom cluster (that corner's inset already clears it).
   layers: 'bottom-right',
   // Live poll (docs/specs/012-collaboration/live-poll.md): top-right under the Palette, where the panels

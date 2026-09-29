@@ -1,5 +1,5 @@
 /*
- * The diagram thumbnail loader (docs/specs/006-diagram/diagram-snapshots.md, ThumbnailLoader.tsx): the
+ * The document thumbnail loader (docs/specs/006-document/document-snapshots.md, ThumbnailLoader.tsx): the
  * placeholder sketch drawing itself while the snapshot is on its way. An
  * ambient indicator, so it loops (docs/specs/004-interface-design/motion.md); every part runs on the
  * same 5.4s cycle and the same per-card phase, and the percentages below

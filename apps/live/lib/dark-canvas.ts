@@ -1,8 +1,8 @@
-import { canvasSurface } from '@livediagram/diagram';
+import { canvasSurface } from '@livediagram/document';
 
 // Is the tab's canvas a DARK wall? The sticky paper-peel (docs/specs/008-canvas/canvas-and-palette.md) is a fixed
 // slate ink tuned against light paper; on a dark backdrop that ink all but
-// disappears and the note stops lifting off the board. The canvas surface
+// disappears and the note stops lifting off the canvas. The canvas surface
 // flags its own darkness (a data attribute) so the peel — pure CSS, with no
 // idea what a theme is — can deepen itself, and so can anything else that
 // needs the same answer later.

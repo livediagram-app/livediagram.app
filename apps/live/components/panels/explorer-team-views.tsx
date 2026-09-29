@@ -1,23 +1,23 @@
 'use client';
 
-// The panel's Teams accordion (docs/specs/013-workspace/team-shared-diagrams.md): a team expands to its folder tree
-// and the diagrams inside each folder, which open in place (any joined
+// The panel's Teams accordion (docs/specs/013-workspace/team-shared-documents.md): a team expands to its folder tree
+// and the documents inside each folder, which open in place (any joined
 // member may open them). The folders are the personal tree's FolderNode,
 // handed this team's rows; a team node adds only the team header and the
-// team-root diagrams (its synthetic Unsorted bucket).
+// team-root documents (its synthetic Unsorted bucket).
 
 import { useMemo } from 'react';
-import type { DiagramListItem } from '@/lib/api-client';
+import type { DocumentListItem } from '@/lib/api-client';
 import { TeamIcon } from '@/components/primitives/explorer-icons';
-import { groupDiagramsByFolder, indexFolders } from '@/lib/folder-tree';
+import { groupDocumentsByFolder, indexFolders } from '@/lib/folder-tree';
 import { FolderNode, type PanelFolder, type PanelFolderTree } from './FolderNode';
-import { PanelDiagramRows, type PanelRowActions } from './PanelDiagramRows';
+import { PanelDocumentRows, type PanelRowActions } from './PanelDocumentRows';
 import { TreeNodeHeader } from './TreeNodeHeader';
 
 export function TeamNode({
   team,
   folders,
-  diagrams,
+  documents: liveDocs,
   expanded,
   onToggleExpanded,
   onOpenTeam,
@@ -31,15 +31,15 @@ export function TeamNode({
   team: { id: string; name: string };
   // This team's folder rows (flat, with parentId and teamId).
   folders: PanelFolder[];
-  // This team's diagrams (carry folderId; null = the team's Unsorted).
-  diagrams: DiagramListItem[];
+  // This team's documents (carry folderId; null = the team's Unsorted).
+  documents: DocumentListItem[];
   expanded: Record<string, boolean>;
   onToggleExpanded: (id: string) => void;
   // The team NAME opens the full team page when there is nothing to
-  // expand; otherwise folders + diagrams browse inline (docs/specs/013-workspace/team-shared-diagrams.md).
+  // expand; otherwise folders + documents browse inline (docs/specs/013-workspace/team-shared-documents.md).
   onOpenTeam: (teamId: string) => void;
-  // The rows' verbs. Delete is open to every joined member (docs/specs/013-workspace/team-shared-diagrams.md): a
-  // team diagram is managed by the whole team, and a diagram shown here
+  // The rows' verbs. Delete is open to every joined member (docs/specs/013-workspace/team-shared-documents.md): a
+  // team document is managed by the whole team, and a document shown here
   // means the viewer is a member, so the only gate is a wired handler.
   // Change Folder opens the panel's picker inside this team, so the pick
   // routes through the scope-aware move. No drag-and-drop here.
@@ -52,10 +52,10 @@ export function TeamNode({
   onCreateChild?: (parentId: string | null) => void;
 }) {
   const foldersByParent = useMemo(() => indexFolders(folders).childrenByParent, [folders]);
-  const diagramsByFolder = useMemo(() => groupDiagramsByFolder(diagrams), [diagrams]);
+  const documentsByFolder = useMemo(() => groupDocumentsByFolder(liveDocs), [liveDocs]);
   const tree: PanelFolderTree = {
     foldersByParent,
-    diagramsByFolder,
+    documentsByFolder,
     expanded,
     onToggleExpanded,
     pendingRenameId,
@@ -66,9 +66,9 @@ export function TeamNode({
     rows,
   };
   const rootFolders = foldersByParent.get(null) ?? [];
-  // Diagrams loose at the team root (its synthetic Unsorted bucket).
-  const rootDiagrams = diagramsByFolder.get(null) ?? [];
-  const hasContent = rootFolders.length > 0 || rootDiagrams.length > 0;
+  // Documents loose at the team root (its synthetic Unsorted bucket).
+  const rootDocuments = documentsByFolder.get(null) ?? [];
+  const hasContent = rootFolders.length > 0 || rootDocuments.length > 0;
   const isExpanded = expanded[team.id] ?? false;
   return (
     <li>
@@ -82,7 +82,7 @@ export function TeamNode({
         // Clicking the team name expands it inline (like a folder), rather
         // than navigating to the team page. An empty team has nothing to
         // expand, so it falls back to opening the page (so you can still
-        // reach it to add a first diagram).
+        // reach it to add a first document).
         onLabelClick={() => (hasContent ? onToggleExpanded(team.id) : onOpenTeam(team.id))}
       />
       {isExpanded && hasContent ? (
@@ -90,7 +90,7 @@ export function TeamNode({
           {rootFolders.map((f) => (
             <FolderNode key={f.id} folder={f} depth={1} tree={tree} />
           ))}
-          <PanelDiagramRows diagrams={rootDiagrams} indent={4 + 1 * 12} rows={rows} />
+          <PanelDocumentRows documents={rootDocuments} indent={4 + 1 * 12} rows={rows} />
         </ul>
       ) : null}
     </li>

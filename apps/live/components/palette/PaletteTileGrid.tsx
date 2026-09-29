@@ -5,8 +5,8 @@ import type {
   SelectionMode,
   SessionTool,
   ShapeKind,
-} from '@livediagram/diagram';
-import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
+} from '@livediagram/document';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';

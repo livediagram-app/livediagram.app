@@ -31,7 +31,7 @@ type Row = 'colour' | 'strength';
 
 // A marker stroke at the real colour and width, laid over a line of mock text.
 // The stroke is drawn with the canvas's own recipe — translucent, flat caps —
-// so the preview and the board agree about what "Bold in pink" looks like.
+// so the preview and the canvas agree about what "Bold in pink" looks like.
 function MarkerPreview({ color, width }: { color: string; width: number }) {
   return (
     <div className="relative mb-1 flex h-14 items-center overflow-hidden rounded-lg bg-slate-100 px-3 dark:bg-slate-800">
@@ -110,7 +110,7 @@ export function HighlighterPanel({
           />
         </div>
         <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-400">
-          Drag across the board to highlight. The marker stays in your hand until you pick another
+          Drag across the canvas to highlight. The marker stays in your hand until you pick another
           tool, and each pass is its own undo.
         </p>
       </div>

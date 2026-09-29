@@ -54,12 +54,12 @@ export function ExplorerSidebar() {
     commitRenameFolder,
     setRenamingFolderId,
     folderActions,
-    unsortedDiagrams,
+    unsortedDocuments,
     favouriteIds,
-    diagrams,
-    teamDiagrams,
-    generatedDiagrams,
-    offlineDiagrams,
+    documents: liveDocs,
+    teamDocuments,
+    generatedDocuments,
+    offlineDocuments,
     shared,
     teams,
     teamFolders,
@@ -76,15 +76,15 @@ export function ExplorerSidebar() {
   // The Dynamic group's expand state. Session-local and open by default so
   // Unsorted stays one click away; collapsing it is a per-visit tidy-up.
   const [dynamicOpen, setDynamicOpen] = useState(true);
-  // Only count stars pointing at diagrams still in view: the FK cascade
-  // drops rows for deleted diagrams, but a star on a team diagram you've
+  // Only count stars pointing at documents still in view: the FK cascade
+  // drops rows for deleted documents, but a star on a team document you've
   // since left would linger server-side until touched.
-  const favouriteCount = [...diagrams, ...teamDiagrams].filter((d) =>
+  const favouriteCount = [...liveDocs, ...teamDocuments].filter((d) =>
     favouriteIds.has(d.id),
   ).length;
 
   // Per-team folder tree, indexed by parentId, for the expandable
-  // team subtrees (docs/specs/013-workspace/team-shared-diagrams.md). Built from the lazy library sweep.
+  // team subtrees (docs/specs/013-workspace/team-shared-documents.md). Built from the lazy library sweep.
   const teamTree = useMemo(
     () =>
       new Map(
@@ -168,7 +168,7 @@ export function ExplorerSidebar() {
       />
       {/* Favourites lives in Quick find rather than under Personal Space >
           Dynamic (docs/specs/013-workspace/timeline.md §8.2): it's the user's own curated shortlist,
-          not a synthetic view of where a diagram happens to sit, so it
+          not a synthetic view of where a document happens to sit, so it
           belongs beside Recent rather than a level down among Unsorted /
           Generated / Offline. */}
       <SidebarRow
@@ -189,7 +189,7 @@ export function ExplorerSidebar() {
       />
 
       {/* Personal Space lists the personal tree directly — Unsorted and the
-          root folders, no separate "All diagrams" parent row (docs/specs/013-workspace/team-shared-diagrams.md).
+          root folders, no separate "All documents" parent row (docs/specs/013-workspace/team-shared-documents.md).
           The /explorer/all route still backs the breadcrumb. The plus
           mirrors the Teams section: add a root-level folder. */}
       <SidebarSectionLabel
@@ -211,7 +211,7 @@ export function ExplorerSidebar() {
       {/* The synthetic ("dynamic") folders live under one collapsible
           Dynamic parent so Personal Space leads with the user's own folders:
           Unsorted (folder_id IS NULL), Generated (AI-made, docs/specs/013-workspace/folders.md), and
-          Offline (browser-only, docs/specs/006-diagram/offline-mode.md). All are live views, always
+          Offline (browser-only, docs/specs/006-document/offline-mode.md). All are live views, always
           present even when empty; badges hide at zero. Clicking the
           parent opens the /explorer/dynamic overview. Favourites used to
           sit here too and has moved up to Quick find (docs/specs/013-workspace/timeline.md §8.2), so
@@ -223,7 +223,8 @@ export function ExplorerSidebar() {
         onClick={() => go({ kind: 'dynamic' })}
         depth={0}
         badge={
-          unsortedDiagrams.length + generatedDiagrams.length + offlineDiagrams.length || undefined
+          unsortedDocuments.length + generatedDocuments.length + offlineDocuments.length ||
+          undefined
         }
         hasChildren
         expanded={dynamicOpen}
@@ -233,9 +234,9 @@ export function ExplorerSidebar() {
         <>
           {(
             [
-              ['unsorted', unsortedDiagrams.length],
-              ['generated', generatedDiagrams.length],
-              ['offline', offlineDiagrams.length],
+              ['unsorted', unsortedDocuments.length],
+              ['generated', generatedDocuments.length],
+              ['offline', offlineDocuments.length],
             ] as const
           ).map(([kind, count]) => {
             const { Icon, label } = SYNTHETIC_FOLDERS[kind];
@@ -302,7 +303,7 @@ export function ExplorerSidebar() {
             const isOpen = expanded.has(t.id);
             // Team folder click opens the team page AT that folder
             // (full load: the team page reads the &folder param at
-            // mount, docs/specs/013-workspace/team-shared-diagrams.md) — same as the search panel does.
+            // mount, docs/specs/013-workspace/team-shared-documents.md) — same as the search panel does.
             const openTeamFolder = (folderId: string) =>
               window.location.assign(
                 `/explorer/team?id=${encodeURIComponent(t.id)}&folder=${encodeURIComponent(folderId)}`,
@@ -366,7 +367,7 @@ export function ExplorerSidebar() {
         depth={0}
       />
       {/* Trash (docs/specs/013-workspace/trash.md): last in the Library, where
-          people look for a diagram they deleted. Also in Settings › Account. */}
+          people look for a document they deleted. Also in Settings › Account. */}
       <SidebarRow
         icon={<TrashIcon />}
         label="Trash"
@@ -405,7 +406,7 @@ export function ExplorerSidebar() {
               Sign in to access Teams and External connections
             </span>
             <span className="mt-0.5 block text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-              Free, and your guest diagrams come with you.
+              Free, and your guest documents come with you.
             </span>
           </span>
         </Link>

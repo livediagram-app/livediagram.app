@@ -7,7 +7,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { TabTimer, TabVote } from '@livediagram/diagram';
+import type { TabTimer, TabVote } from '@livediagram/document';
 import type { LivePoll } from '@livediagram/api-schema';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { SessionStudio } from './SessionStudio';
@@ -185,7 +185,7 @@ describe('SessionStudio', () => {
     });
   });
 
-  it('lets a poll start on an unshared diagram, with a note', () => {
+  it('lets a poll start on an unshared document, with a note', () => {
     const p = props({ pollHasAudience: false });
     render(<SessionStudio {...p} />);
     fireEvent.click(screen.getByRole('tab', { name: /Poll/ }));

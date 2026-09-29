@@ -3,7 +3,7 @@ import {
   elementKindLabel,
   elementSupportsText,
   isMindNode,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import type { deriveCanvasSelection } from '@/lib/canvas-selection';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -69,7 +69,7 @@ export function CanvasSelectionToolbars({
           dock on mobile. The previous mobile-only z-[var(--z-canvas)] was an
           older design choice that hid the toolbar behind chrome,
           which made multi-select edit ops awkward on a phone.
-          Diagram elements stay in the original wrapper at z-auto
+          Canvas elements stay in the original wrapper at z-auto
           and continue to be visually covered by panels where they
           overlap. */}
       {/* Hide the selection toolbar while a quick-connect ring is open — its
@@ -96,7 +96,7 @@ export function CanvasSelectionToolbars({
             title={selected ? `Selected ${elementKindLabel(selected)}` : 'Selected Element'}
             // In view-only mode we mount the popover with just
             // `onOpenComments`: visitors should be able to read +
-            // post comments on a diagram they don't own, but no
+            // post comments on a document they don't own, but no
             // other edit affordances apply. Every other handler
             // becomes undefined and the matching button drops out.
             locked={readOnly ? undefined : selectedLocked}
@@ -119,7 +119,7 @@ export function CanvasSelectionToolbars({
                 }
               : {})}
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
-            // Intra-layer z-order (docs/specs/006-diagram/layers.md): stack within the element's own
+            // Intra-layer z-order (docs/specs/006-document/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these
             // are the missing nudge for two things on the same one.
             onBringToFront={readOnly || !selected ? undefined : props.onBringSelectedToFront}

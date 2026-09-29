@@ -4,7 +4,7 @@ Status: shipped
 
 ## What
 
-A shared diagram sometimes reloaded itself with no user action, losing the
+A shared document sometimes reloaded itself with no user action, losing the
 viewport, the selection, and the undo history (issue #28). Two independent
 faults, both fixed here:
 

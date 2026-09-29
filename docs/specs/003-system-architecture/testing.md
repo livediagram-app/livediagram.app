@@ -50,7 +50,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
 - **No magic globals.** `describe` / `it` / `expect` are imported from
   `vitest`. This keeps test files lint-clean and explicit (`globals: false`).
 - **Prefer pure-function tests.** The highest-value, lowest-cost units are the
-  pure helpers: the diagram data model, the wire-format serializers, and the
+  pure helpers: the document data model, the wire-format serializers, and the
   canvas geometry. Those are tested first.
 - **Speed budgets are CPU time, not wall-clock.** A test asserting that work
   is fast (a linear scan, a converter, the sticky detector) measures it with
@@ -95,7 +95,7 @@ gitignored `coverage/` directory per workspace (`text` summary in the
 terminal, plus `html` + `lcov` for tooling). Only first-party source
 (`src/**`, `lib/**`) is counted; test files and type-only `.d.ts` are
 excluded. `index.ts` is intentionally **not** excluded — in this repo a
-package's `index.ts` is its implementation (e.g. `@livediagram/diagram`), not
+package's `index.ts` is its implementation (e.g. `@livediagram/document`), not
 a barrel of re-exports.
 
 There is no repo-wide percentage gate: the bar for most code is "logic has
@@ -104,13 +104,13 @@ tests," not a number.
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
-| Files                                                                                                 | Why                                                                                                                                                           |
-| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                                                                         | Decides WHO a request is — Clerk verification, guest-id signatures, api tokens, the read/edit gates                                                           |
-| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                | Mint, resolve and revoke the credentials that act as an account                                                                                               |
-| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                                         | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
-| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/diagram-share-routes.ts`                   | The only unauthenticated read path into a diagram, and the owner-only routes that grant it                                                                    |
-| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-retention.ts`, `src/db/diagram-removal.ts` | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
+| Files                                                                                                  | Why                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                                                          | Decides WHO a request is — Clerk verification, guest-id signatures, api tokens, the read/edit gates                                                           |
+| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                 | Mint, resolve and revoke the credentials that act as an account                                                                                               |
+| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                                          | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
+| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts`                   | The only unauthenticated read path into a document, and the owner-only routes that grant it                                                                   |
+| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-retention.ts`, `src/db/document-removal.ts` | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
 
 The rest of the worker fails visibly. These fail by serving the right response
 to the **wrong person**, or by deleting a picture someone placed: an outcome no amount of production monitoring
@@ -142,7 +142,7 @@ v5 test runner with every check green: nothing invoked the broken path.
   named workspace. This section records the SHAPE of coverage, not counts or
   filenames: `pnpm test` reports the counts, which change with every feature.
   A workspace that gains its first test file joins this list in the same change.
-  - `packages/diagram`: the data model end to end: element
+  - `packages/document`: the data model end to end: element
     factories + defaults, geometry / anchor / snap math, arrow path +
     avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels,
     layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps,
@@ -165,10 +165,10 @@ v5 test runner with every check green: nothing invoked the broken path.
     `optical-guard.test.ts` (no untrimmed text in a centring circle or pill;
     [Optical alignment](../004-interface-design/optical-alignment.md)), and every
     UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
-  - `apps/api`: auth guards (Clerk, guest signatures, diagram access, tokens),
+  - `apps/api`: auth guards (Clerk, guest signatures, document access, tokens),
     every defensive D1 row mapper, the D1 modules against real SQLite
-    (cascades, migrations), the `DiagramRoom` Durable Object's rules, ledger
-    and multiplayer paths, every route family (diagrams, tabs, share, images,
+    (cascades, migrations), the `DocumentRoom` Durable Object's rules, ledger
+    and multiplayer paths, every route family (documents, tabs, share, images,
     thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
     events, AI incl. the photo reader), the Timeline's writers and its catalogue
     against its spec, the image reference index, email lifecycle, the OpenAPI

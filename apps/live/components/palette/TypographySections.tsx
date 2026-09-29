@@ -5,8 +5,8 @@ import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primi
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { FontGlyph } from '@/components/rich-text/rich-text-toolbar-icons';
 import { DotsIcon, NonePaddingIcon, PaddingIcon, ScaleIcon } from './palette-icons';
-import { FONTS, resolveFontStack } from '@livediagram/diagram';
-import type { Padding, TextSize } from '@livediagram/diagram';
+import { FONTS, resolveFontStack } from '@livediagram/document';
+import type { Padding, TextSize } from '@livediagram/document';
 
 // The typography controls — Font / Size / Padding — as three collapsible
 // accordion sections, used by the element context menus' "Text" flyouts

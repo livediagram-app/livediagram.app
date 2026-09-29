@@ -145,7 +145,7 @@ Top to bottom, each a small title over one row of option buttons:
   in the menu's 3×3 grid. It shows only where it moves something: not on self-drawing kinds (no
   label) and not on kinds with their own face (the collab panels such as the Q&A board and agenda,
   the session tools, the chair, the comment and action panels, the portal), whose label is a fixed
-  title, and not on icons or stickers (a glyph, at most a short caption). One predicate, `supportsTextAlign` in `@livediagram/diagram`, gates both this panel and the
+  title, and not on icons or stickers (a glyph, at most a short caption). One predicate, `supportsTextAlign` in `@livediagram/document`, gates both this panel and the
   context menu's Text Alignment section, so the two can't disagree.
 - **Text colour** is the colour row a text element gets. A text element is its words, with no
   border or fill, so its colour is the one choice it has in common with the other rows, and without
@@ -243,11 +243,11 @@ identity otherwise, and into this browser's cache either way.
   a different colour in Forest than in Ocean. An override is recorded against the theme it was made
   in, and switching theme shows that theme's own slots with whatever overrides you set for it,
   and none from other themes.
-- **Per user, not per diagram.** A palette you build is a working habit that follows you between
-  diagrams and devices, like `customSwatches`. Colours a diagram should share with everyone who
+- **Per user, not per document.** A palette you build is a working habit that follows you between
+  documents and devices, like `customSwatches`. Colours a document should share with everyone who
   opens it are what [custom themes](../011-theme/custom-themes.md) are for: one mechanism for
-  shared colours, not two. Keeping overrides per diagram and per user would fragment them further,
-  so the same person would rebuild the same palette in every diagram.
+  shared colours, not two. Keeping overrides per document and per user would fragment them further,
+  so the same person would rebuild the same palette in every document.
 - **Multi-colour themes** work the same way: their six slots are the branch colours, and an
   override replaces one of them in the panel only. The theme's branch colouring of the diagram is
   untouched.
@@ -307,14 +307,14 @@ element of the same kind you draw.
   Shift-drag), a forked arrow branch (it takes its trunk's look), templates, import, the MCP server
   and AI never read memory: they carry styles of their own, and applying memory to them would
   silently restyle content the user did not draw.
-- **Per diagram, on this device.** Memory is kept in the browser (`localStorage`), keyed by diagram. It
-  is not synced, not in the diagram, and not part of [User preferences](../007-editor/user-preferences.md):
-  it is a working habit for one diagram's notation, like the panel layout is a habit for one screen.
+- **Per document, on this device.** Memory is kept in the browser (`localStorage`), keyed by document. It
+  is not synced, not in the document, and not part of [User preferences](../007-editor/user-preferences.md):
+  it is a working habit for one document's notation, like the panel layout is a habit for one screen.
 
 ## Clear styles
 
 The Actions section's first button. It resets the selected elements' quick-style fields to the
-diagram theme's default (stroke, background and label colour, width, style, text alignment, icon
+tab theme's default (stroke, background and label colour, width, style, text alignment, icon
 alignment; on an arrow its stroke colour, width, style and flow; on a text element its text colour) **and** forgets the memory of every
 kind it touched, so the next shape of those kinds is the default again. A one-off style stays a
 one-off: without the second half, clearing a shape would leave its style waiting in memory for the

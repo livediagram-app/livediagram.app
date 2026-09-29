@@ -2,11 +2,11 @@ import dynamic from 'next/dynamic';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useState, type ReactNode } from 'react';
 import {
-  folderNamesInDiagram,
+  folderNamesInDocument,
   groupTabsIntoRuns,
   tabFolderName,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import type { CleanupKind } from '@/lib/tab-cleanup';
@@ -69,7 +69,7 @@ type TabBarProps = {
   roleIcon?: ReactNode;
   tabs: Tab[];
   activeId: string;
-  // Folder membership actions (docs/specs/006-diagram/tab-folders.md), menu-only. Move the active tab
+  // Folder membership actions (docs/specs/006-document/tab-folders.md), menu-only. Move the active tab
   // into a folder by name (new or existing), make it loose again, or
   // rename a folder (rewrites every member).
   onMoveTabToFolder: (tabId: string, folderName: string) => void;
@@ -93,14 +93,14 @@ type TabBarProps = {
   // all live in one place).
   onImportTab: () => void;
   onExportTab: () => void;
-  // The user's other diagrams (excluding the current one). Drives the
-  // "Add to Diagram" submenu in the tab ellipsis; savedAt versions the
-  // destination-picker thumbnails (docs/specs/006-diagram/diagram-snapshots.md).
-  otherDiagrams: { id: string; name: string; savedAt?: number }[];
-  // Copy the active tab into another diagram. Callee handles the
+  // The user's other documents (excluding the current one). Drives the
+  // "Add to Document" submenu in the tab ellipsis; savedAt versions the
+  // destination-picker thumbnails (docs/specs/006-document/document-snapshots.md).
+  otherDocuments: { id: string; name: string; savedAt?: number }[];
+  // Copy the active tab into another document. Callee handles the
   // round-trip to the API. Returns a promise so the menu can dismiss
   // after the operation completes.
-  onCopyTabTo: (targetDiagramId: string) => Promise<void> | void;
+  onCopyTabTo: (targetDocumentId: string) => Promise<void> | void;
   // Flip tab.locked. Disables every mutator until toggled back on.
   // The lock icon appears on the tab itself + on every element.
   onToggleLockTab: () => void;
@@ -179,7 +179,7 @@ export function TabBar({
   pollCollaborators,
   voteLayers,
   activeLayerId,
-  otherDiagrams,
+  otherDocuments,
   onCopyTabTo,
   onToggleLockTab,
   onReorder,
@@ -220,9 +220,9 @@ export function TabBar({
   const { appearance } = useAppearance();
   const isDark = appearance === 'dark';
 
-  // Distinct folder names in this diagram, for the "Add to Folder"
-  // menu's pick list (docs/specs/006-diagram/tab-folders.md).
-  const folderNames = folderNamesInDiagram(tabs);
+  // Distinct folder names in this document, for the "Add to Folder"
+  // menu's pick list (docs/specs/006-document/tab-folders.md).
+  const folderNames = folderNamesInDocument(tabs);
 
   // The tab-menu callbacks for a given tab, shared by the per-tab ellipsis
   // menu and the canvas right-click menu so both drive the exact same
@@ -235,7 +235,7 @@ export function TabBar({
     locked: tab.locked === true,
     selfId,
     voteSelfId,
-    otherDiagrams,
+    otherDocuments,
     folderNames,
     currentFolder: tabFolderName(tab),
     onMoveToFolder: (name: string) => {
@@ -391,7 +391,7 @@ export function TabBar({
           onOpenSearch={onOpenSearch}
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"
-          settingsDescription="Your editor preferences — they follow your account, not this diagram."
+          settingsDescription="Your editor preferences — they follow your account, not this document."
           // Icons only under Minimal chrome; each keeps its hover card, titled with its name.
           labelled={!minimalChrome}
           github={false}
@@ -413,6 +413,6 @@ export function TabBar({
 }
 
 // UI light / dark mode toggle, pinned to the right edge of the
-// TabBar. Distinct from the per-tab diagram theme grid (Palette →
+// TabBar. Distinct from the per-tab theme grid (Palette →
 // Theme accordion): this only flips editor chrome, not the canvas.
 // docs/specs/007-editor/live-app.md "UI light / dark mode" documents the full surface.

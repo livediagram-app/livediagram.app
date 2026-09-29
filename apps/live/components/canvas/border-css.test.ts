@@ -1,4 +1,4 @@
-import type { BorderStyle } from '@livediagram/diagram';
+import type { BorderStyle } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { isCssNativeBorderStyle, nearestCssBorderStyle } from './border-css';
 

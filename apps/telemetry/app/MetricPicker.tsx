@@ -14,7 +14,7 @@ import type { Metric } from './metrics';
 //  - Type a query → flat token-AND matches across every metric's label.
 //  - Leave it empty → BROWSE the hierarchy: categories → actions → the
 //    specific (typed) metric, one level at a time. So a reader who only
-//    knows "it's something about diagrams" can drill in and discover the
+//    knows "it's something about documents" can drill in and discover the
 //    exact event without guessing its name.
 //
 // Both modes feed one `rows` list so keyboard nav (↑/↓, Enter) and the

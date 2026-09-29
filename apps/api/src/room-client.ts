@@ -4,20 +4,20 @@ import {
   type ElementDelta,
   type Tab,
   type TabLedger,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { Env } from './types';
 
-// The worker's calls into a diagram's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
+// The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
 // collaboration ledger to merge a save, and handing it a change the api made.
 
-// A diagram has a room when it is shared or in a team; anything else has one
+// A document has a room when it is shared or in a team; anything else has one
 // writer, and asking would wake a Durable Object for nothing. Null then.
 function roomStubFor(
   env: Env,
-  diagram: { id: string; shareable: boolean; teamId: string | null },
+  liveDoc: { id: string; shareable: boolean; teamId: string | null },
 ): DurableObjectStub | null {
-  if (!diagram.shareable && !diagram.teamId) return null;
-  return env.DIAGRAM_ROOM.get(env.DIAGRAM_ROOM.idFromName(diagram.id));
+  if (!liveDoc.shareable && !liveDoc.teamId) return null;
+  return env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(liveDoc.id));
 }
 
 // Merge the room's collaboration ledger into a tab a client is saving
@@ -35,7 +35,7 @@ function roomStubFor(
 // merged at all. That is what keeps a change the saver made while its socket
 // was down from being overruled by the room's older copy of it.
 //
-// Only for a diagram with a room (see roomStubFor). Best-effort by design: if the room can't answer, the
+// Only for a document with a room (see roomStubFor). Best-effort by design: if the room can't answer, the
 // save goes through as the client sent it, which is what happened before.
 //
 // Also returns who posted each comment the room has seen, so the save can
@@ -47,12 +47,12 @@ export type RoomMerge = {
 
 export async function mergeRoomLedger(
   env: Env,
-  diagram: { id: string; shareable: boolean; teamId: string | null },
+  liveDoc: { id: string; shareable: boolean; teamId: string | null },
   tab: Tab,
   cursorHeader: string | null,
 ): Promise<RoomMerge> {
   const unmerged: RoomMerge = { tab, commentAuthors: new Map() };
-  const stub = roomStubFor(env, diagram);
+  const stub = roomStubFor(env, liveDoc);
   const cursor = parseRoomCursor(cursorHeader);
   if (!stub || !cursor) return unmerged;
   try {
@@ -81,7 +81,7 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
   return { epoch, seq };
 }
 
-// Hand the diagram's realtime room a change the api itself just wrote, so
+// Hand the document's realtime room a change the api itself just wrote, so
 // everyone connected sees it (docs/specs/012-collaboration/collab-race-hardening.md).
 //
 // The one case today is a view-role visitor's comment. The room refuses
@@ -91,16 +91,16 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
 // erased it. Relayed as the same `el-delta` an editor's own comment sends, so
 // receivers need nothing new.
 //
-// Only for a diagram with a room. Best-effort, like the share-revoked
+// Only for a document with a room. Best-effort, like the share-revoked
 // broadcast: the D1 write is the record, this is the live copy.
 export async function relayElementDelta(
   env: Env,
-  diagram: { id: string; shareable: boolean; teamId: string | null },
+  liveDoc: { id: string; shareable: boolean; teamId: string | null },
   tabId: string,
   elementId: string,
   delta: ElementDelta,
 ): Promise<void> {
-  const stub = roomStubFor(env, diagram);
+  const stub = roomStubFor(env, liveDoc);
   if (!stub) return;
   try {
     await stub.fetch('https://room/mutation', {
@@ -113,18 +113,18 @@ export async function relayElementDelta(
   }
 }
 
-// Tell every socket in a diagram's room that a share link changed: revoked
+// Tell every socket in a document's room that a share link changed: revoked
 // (its holders leave the editor) or rescoped (they reload into the new scope,
 // docs/specs/013-workspace/tab-scoped-share-links.md). The room also closes those sockets. Best-effort: the
 // D1 write before it is the authoritative change, so a room that can't be
 // reached is logged rather than failing the request.
 export async function broadcastShareOp(
   env: Env,
-  diagramId: string,
+  documentId: string,
   op: { kind: 'share-revoked' | 'share-rescoped'; code: string },
 ): Promise<void> {
   try {
-    await env.DIAGRAM_ROOM.get(env.DIAGRAM_ROOM.idFromName(diagramId)).fetch(
+    await env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(documentId)).fetch(
       'https://room/broadcast',
       {
         method: 'POST',
@@ -133,28 +133,28 @@ export async function broadcastShareOp(
       },
     );
   } catch (err) {
-    console.warn(`[room-broadcast] ${op.kind} did not reach the room`, diagramId, err);
+    console.warn(`[room-broadcast] ${op.kind} did not reach the room`, documentId, err);
   }
 }
 
-// Tell a diagram's realtime room that the diagram was moved to the Trash
+// Tell a document's realtime room that the document was moved to the Trash
 // (docs/specs/013-workspace/trash.md): every open session hears the deleted
-// state, and the room closes every socket. Only for a diagram with a room.
+// state, and the room closes every socket. Only for a document with a room.
 // Best-effort like the share-op broadcast: the D1 write is the change, and a
-// session the room misses still has every save refused with diagram_trashed.
-export async function broadcastDiagramTrashed(
+// session the room misses still has every save refused with document_trashed.
+export async function broadcastDocumentTrashed(
   env: Env,
-  diagram: { id: string; shareable: boolean; teamId: string | null },
+  liveDoc: { id: string; shareable: boolean; teamId: string | null },
 ): Promise<void> {
   try {
-    const stub = roomStubFor(env, diagram);
+    const stub = roomStubFor(env, liveDoc);
     if (!stub) return;
     await stub.fetch('https://room/broadcast', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ op: { kind: 'diagram-trashed' } }),
+      body: JSON.stringify({ op: { kind: 'document-trashed' } }),
     });
   } catch (err) {
-    console.warn('[room-broadcast] diagram-trashed did not reach the room', diagram.id, err);
+    console.warn('[room-broadcast] document-trashed did not reach the room', liveDoc.id, err);
   }
 }

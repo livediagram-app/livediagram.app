@@ -8,7 +8,7 @@ participant in real time.
 ## Why they need no new infrastructure
 
 Both tools store their state as optional **`Tab` fields** — `tab.timer` and
-`tab.vote` (`packages/diagram/src/index.ts`, helpers in `session.ts`). That
+`tab.vote` (`packages/document/src/index.ts`, helpers in `session.ts`). That
 means they ride the **existing tab-sync pipeline** with zero realtime / API
 changes: a control mutates the tab via `commitTabs` → autosave (`useAutosave`,
 600 ms debounce) `PUT`s the tab to D1 → the `{kind:'tab'}` RoomOp broadcasts it
@@ -33,7 +33,7 @@ live counts but can't control or vote. No extra gating code.
 
 ## Starting one from the canvas
 
-Both tools can also be started by a [Session button](session-button.md) — a canvas element carrying "5 minute timer" or "vote, 3 dots each" — so a board can carry its own facilitation instead of relying on whoever built it. It presses through the same entry points described below, so every rule here still applies, the edit-role gate included.
+Both tools can also be started by a [Session button](session-button.md) — a canvas element carrying "5 minute timer" or "vote, 3 dots each" — so a canvas can carry its own facilitation instead of relying on whoever built it. It presses through the same entry points described below, so every rule here still applies, the edit-role gate included.
 
 ## The Session Studio
 
@@ -145,7 +145,7 @@ spendable, and a stale snapshot restoring a retracted dot took one away.
 
 The fix carries the **change**, not the state, so concurrent dots commute: every
 peer applies both in whatever order they land and converges on the same map
-(`applyVoteDelta`, `packages/diagram/src/session.ts`). It is the same move
+(`applyVoteDelta`, `packages/document/src/session.ts`). It is the same move
 [Realtime conflict resolution](realtime-conflict-resolution.md) made for elements, on the one
 field where concurrent writers are the whole point rather than the exception.
 
@@ -211,18 +211,18 @@ Ending a vote persists the host's final state. Server-side merge of the map is
 - **Casting**: while `vote.active`, pressing a votable element places one of
   your dots (`BoxedElementView` intercepts the pointer-down before
   select/drag); your budget (`votesPerPerson`), and the one-per-item rule when it is on, are enforced by `canCastVote`, the one check the cast handler and the stepper's plus both read.
-  Non-votable elements still select normally so the board stays editable.
+  Non-votable elements still select normally so the canvas stays editable.
   Counts are **live**. While casting is open, every votable element carries a
   **stepper** — minus, the count, plus — reading `0` before anything lands.
   Plus casts one of your dots, minus retracts one. It replaced a bare
   click-to-retract count that only appeared once an element already had a
-  dot, which made the first dot on a board an act of faith: nothing on
+  dot, which made the first dot on a canvas an act of faith: nothing on
   screen said an element was a target or how to add to it. Minus is
   disabled at zero and plus once your budget is spent (or, on a one-per-item vote, once you have a dot on that element), rather than
   hidden, so the row's width — and so the plus's position — never shifts
   under the pointer mid-vote. The stepper sits INSIDE the element's
   bottom-right corner (clearance from the edge, and from a neighbour's
-  stepper on a packed board) and stops its own pointer events so a minus
+  stepper on a packed canvas) and stops its own pointer events so a minus
   can't bubble into the element-body cast and re-add what it just removed.
   Once casting closes it reverts to a read-only count: a result to read,
   not a control. A floating **`VoteBanner`**
@@ -230,7 +230,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   participant how many dots they have left — and **only** that. It floats
   over the canvas for the whole vote, so it carries one glanceable phrase
   ("2 of 3 dots left") rather than instructions or status chips; anything
-  longer turns a status pill into a paragraph parked on the board.
+  longer turns a status pill into a paragraph parked on the canvas.
 - **Vote privacy** — two per-vote switches set before **Start vote** (see
   "Vote privacy" below); they live on the vote, not as a user preference.
 - **End vote** closes casting (tallies stay). **Show results** sets

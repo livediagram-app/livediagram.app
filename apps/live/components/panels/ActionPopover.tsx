@@ -13,7 +13,7 @@ import {
   GlyphDisc,
 } from '@livediagram/ui';
 import { useRef, useState, useCallback } from 'react';
-import type { ElementAction } from '@livediagram/diagram';
+import type { ElementAction } from '@livediagram/document';
 import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { initialsOf } from '@/lib/identity';

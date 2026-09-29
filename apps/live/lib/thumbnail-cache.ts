@@ -1,18 +1,18 @@
-import { apiFetchDiagramThumbnailUrl } from '@/lib/api-client';
+import { apiFetchDocumentThumbnailUrl } from '@/lib/api-client';
 
-// In-memory cache of diagram snapshot thumbnails (docs/specs/006-diagram/diagram-snapshots.md), shared
-// by every DiagramThumbnail on the page.
+// In-memory cache of document snapshot thumbnails (docs/specs/006-document/document-snapshots.md), shared
+// by every DocumentThumbnail on the page.
 //
 // Without it each thumbnail owned its blob URL and revoked it on unmount,
 // so switching Explorer views, folders or routes threw every preview away
 // and the next mount went back to the network (at best the browser's HTTP
 // cache) and re-decoded it, showing the loader in between. Keyed by the
-// same inputs the thumbnail fetches for (viewer, diagram, version, share
-// code), so an edited diagram's new `savedAt` is a new key and never
+// same inputs the thumbnail fetches for (viewer, document, version, share
+// code), so an edited document's new `savedAt` is a new key and never
 // reads the old picture.
 //
 // A "no snapshot" answer is cached too: it is version-keyed like the
-// picture, so it cannot change until the diagram does. A thrown fetch
+// picture, so it cannot change until the document does. A thrown fetch
 // (network error) is not, so the next mount retries it.
 
 export type ThumbnailEntry =
@@ -20,7 +20,7 @@ export type ThumbnailEntry =
 
 export type ThumbnailRequest = {
   ownerId: string;
-  diagramId: string;
+  documentId: string;
   version: number;
   shareCode: string | null;
 };
@@ -34,7 +34,7 @@ const entries = new Map<string, ThumbnailEntry>();
 const inflight = new Map<string, Promise<ThumbnailEntry>>();
 
 export function thumbnailKey(req: ThumbnailRequest): string {
-  return JSON.stringify([req.ownerId, req.diagramId, req.version, req.shareCode]);
+  return JSON.stringify([req.ownerId, req.documentId, req.version, req.shareCode]);
 }
 
 // A settled entry, if there is one. Pure (no recency bump), so a render
@@ -44,7 +44,7 @@ export function peekThumbnail(key: string): ThumbnailEntry | undefined {
 }
 
 // The entry for `req`, fetching it at most once however many thumbnails
-// ask at the same time (a diagram in both Recent and a folder mosaic).
+// ask at the same time (a document in both Recent and a folder mosaic).
 export function loadThumbnail(req: ThumbnailRequest): Promise<ThumbnailEntry> {
   const key = thumbnailKey(req);
   const hit = entries.get(key);
@@ -54,7 +54,7 @@ export function loadThumbnail(req: ThumbnailRequest): Promise<ThumbnailEntry> {
   }
   const pending = inflight.get(key);
   if (pending) return pending;
-  const request = apiFetchDiagramThumbnailUrl(req.ownerId, req.diagramId, {
+  const request = apiFetchDocumentThumbnailUrl(req.ownerId, req.documentId, {
     version: req.version,
     shareCode: req.shareCode,
   })

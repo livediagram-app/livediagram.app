@@ -35,7 +35,7 @@ export function FacilitatorButton({
   batonFree: boolean;
   /** Do we hold it? Our own row cannot be recognised by presence id. */
   iHoldIt: boolean;
-  /** Are we the diagram's owner? The one who can always take it back. */
+  /** Are we the document's owner? The one who can always take it back. */
   isOwner: boolean;
   onPress: () => void;
 }) {
@@ -45,7 +45,7 @@ export function FacilitatorButton({
   const mayMove = isOwner || iHoldIt || batonFree;
   if (!isSelf && !mayMove) return null;
   // Our own row, while somebody else runs the session: only the owner has a
-  // move here, and it is the one that makes "the diagram can always take back
+  // move here, and it is the one that makes "the document can always take back
   // control" true.
   if (isSelf && !iHoldIt && !batonFree && !isOwner) return null;
 
@@ -72,7 +72,7 @@ export function FacilitatorButton({
     <HoverCard
       title={label}
       description={
-        blocked ? 'Viewers cannot run a session: the tools write to the diagram.' : description
+        blocked ? 'Viewers cannot run a session: the tools write to the document.' : description
       }
     >
       <span>

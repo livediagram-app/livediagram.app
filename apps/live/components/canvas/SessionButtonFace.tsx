@@ -13,7 +13,7 @@ import {
   sessionButtonPlan,
   type SessionButtonConfig,
   type SessionPlan,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { SessionSettingsMenu } from '@/components/canvas/SessionSettingsMenu';
 import { PollIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
@@ -30,7 +30,7 @@ const TOOL_ICON: Record<SessionPlan['tool'], React.ReactNode> = {
 
 // What the face says when the author hasn't written their own label. Derived
 // from the SETTING, not just the tool, so re-pointing a button relabels it and
-// the board reads as instructions ("Vote — 3 dots each").
+// the canvas reads as instructions ("Vote — 3 dots each").
 export function sessionButtonText(
   plan: SessionPlan | null,
   // What the tab's timer is doing, so a timer button reads as the control it
@@ -145,7 +145,7 @@ export function SessionButtonFace({
     'flex h-full w-full flex-col items-center justify-center gap-2 rounded-[inherit] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]';
 
   // No hover cards on any of these branches. The button is small and usually
-  // sits near the top of a board, so the hover card landed over the element
+  // sits near the top of a canvas, so the hover card landed over the element
   // toolbar directly above it and blocked the controls the user was reaching
   // for. What each one said is either already on the button's own face (it
   // states the tool and the setting) or in the element menu; the accessible

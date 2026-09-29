@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-// The cascade utility (docs/specs/006-diagram/save-locations.md) carries a per-item animation-delay. The
+// The cascade utility (docs/specs/006-document/save-locations.md) carries a per-item animation-delay. The
 // global reduced-motion rules collapse animation-duration but say nothing
 // about delay, so without its own overrides a delayed row would sit
 // invisible (backwards fill) for a beat nobody sees. Read the stylesheet

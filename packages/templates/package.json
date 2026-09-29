@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
-    "@livediagram/diagram": "workspace:*",
+    "@livediagram/document": "workspace:*",
     "@livediagram/icons": "workspace:*"
   },
   "devDependencies": {

@@ -28,7 +28,7 @@ import {
   getTeamInviteLink,
   getTeamMember,
   joinTeamByInviteToken,
-  listDiagramsByTeam,
+  listDocumentsByTeam,
   listFoldersByTeam,
   listInvitesByUser,
   listTeamMembers,
@@ -214,17 +214,17 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   const isAdmin = me.role === 'admin' && me.status === 'joined';
 
   // /api/teams/<id>/library — the team's shared folder tree +
-  // diagrams (docs/specs/013-workspace/team-shared-diagrams.md). Any membership row passes the gate above,
+  // documents (docs/specs/013-workspace/team-shared-documents.md). Any membership row passes the gate above,
   // but the library is for JOINED members only — an invitee deciding
   // on an invite sees the team's shape, not its content.
   if (segments.length === 4 && segments[3] === 'library') {
     if (request.method === 'GET') {
       if (me.status !== 'joined') return forbidden();
-      const [folders, diagrams] = await Promise.all([
+      const [folders, liveDocs] = await Promise.all([
         listFoldersByTeam(env, teamId),
-        listDiagramsByTeam(env, teamId),
+        listDocumentsByTeam(env, teamId),
       ]);
-      return json({ folders, diagrams });
+      return json({ folders, documents: liveDocs });
     }
     return notFound();
   }
@@ -419,7 +419,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       const audience = await audienceForTeam(env, teamId);
       // What they made stays with the team. Left owned by them, the owner
       // leg of every access gate would keep it open to somebody the team
-      // just removed (docs/specs/013-workspace/team-shared-diagrams.md).
+      // just removed (docs/specs/013-workspace/team-shared-documents.md).
       if (member.status === 'joined' && member.userId) {
         await handTeamWorkToHeir(env, teamId, member.userId);
       }

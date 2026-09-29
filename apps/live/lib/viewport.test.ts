@@ -15,7 +15,7 @@ describe('computeFitToScreen', () => {
   // (no magnify past 100%).
   const viewport = { width: 1200, height: 800 };
 
-  it('caps zoom at FIT_TO_SCREEN_MAX_AT_FIT so tiny diagrams never magnify past 100%', () => {
+  it('caps zoom at FIT_TO_SCREEN_MAX_AT_FIT so a sparse canvas never magnifies past 100%', () => {
     const bbox = { x: 0, y: 0, width: 100, height: 50 };
     const out = computeFitToScreen(viewport, bbox);
     expect(out.zoom).toBe(FIT_TO_SCREEN_MAX_AT_FIT);

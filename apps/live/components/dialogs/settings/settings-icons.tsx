@@ -5,7 +5,7 @@
 // the desktop sidebar.
 //
 // Drawn here rather than pulled from @livediagram/icons because that package
-// is the canvas catalogue (what a user places on a diagram); these are chrome,
+// is the canvas catalogue (what a user places on the canvas); these are chrome,
 // sized for a 28px tile and stroked to read at that size.
 
 import type { ReactNode } from 'react';

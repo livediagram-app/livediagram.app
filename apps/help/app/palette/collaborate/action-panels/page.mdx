@@ -6,20 +6,20 @@ import { ActionPanelCard } from '@/components/illustrations/palette-collab-panel
 export const metadata = helpMetadata({
   title: 'Action Panels',
   description:
-    'A card on the board that shows one assigned action, with its name, description, assignee and status, set up and completed from the card itself.',
+    'A card on the canvas that shows one assigned action, with its name, description, assignee and status, set up and completed from the card itself.',
   path: '/help/palette/collaborate/action-panels/',
 });
 
 <ArticleLayout
   title="Action Panels"
-  description="A checklist of assigned actions, left out on the board where the room can read it."
+  description="A checklist of assigned actions, left out on the canvas where the room can read it."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
   subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'action-panels')}
 >
 
-An action panel is a card on the board that carries a list of [assigned actions](/help/collaboration/assigned-actions/): what needs doing, who each one is for, and whether it is done. It is the natural home for the follow-ups a meeting agrees on. You read it where it sits, without opening anything.
+An action panel is a card on the canvas that carries a list of [assigned actions](/help/collaboration/assigned-actions/): what needs doing, who each one is for, and whether it is done. It is the natural home for the follow-ups a meeting agrees on. You read it where it sits, without opening anything.
 
 ## Adding one
 
@@ -41,10 +41,10 @@ Each action is a row: a round check, its name, and who it is for. The header cou
 - **Click the action's name** to open the dialog with everything filled in, so you can rename it, change the description or hand it to someone else.
 - To remove one action, open it and use **Delete Action** at the bottom of the dialog (you confirm it with a second click). Deleting the card removes all of its actions.
 
-Each one is the same kind of action as any other: it appears in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel) and on your Activity page, and anyone who can view the diagram can read it, while only editors can change it.
+Each one is the same kind of action as any other: it appears in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel) and on your Activity page, and anyone who can view the document can read it, while only editors can change it.
 
 ## Panel or action badge
 
-You can already put an action on any element with **Assign Action** in its menu. That shows as a small badge that opens a popover for one reader at a time. A panel holds the same kind of action, as many as you like, left out on the board, so they are in the export and in everyone else's view.
+You can already put an action on any element with **Assign Action** in its menu. That shows as a small badge that opens a popover for one reader at a time. A panel holds the same kind of action, as many as you like, left out on the canvas, so they are in the export and in everyone else's view.
 
 </ArticleLayout>

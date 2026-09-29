@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { DiagramListItem } from '@/lib/api-client';
+import type { DocumentListItem } from '@/lib/api-client';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { FolderOutlineIcon } from '@/components/primitives/explorer-icons';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { FolderActionsMenu } from '@/app/explorer/folder-actions-menu';
-import { useDiagramDropTarget } from './useDiagramDropTarget';
-import { PanelDiagramRows, type PanelRowActions } from './PanelDiagramRows';
+import { useDocumentDropTarget } from './useDocumentDropTarget';
+import { PanelDocumentRows, type PanelRowActions } from './PanelDocumentRows';
 import { TreeNodeHeader } from './TreeNodeHeader';
 
 // A folder as the panel's tree needs it. Personal folders and the team
@@ -25,7 +25,7 @@ export type PanelFolder = {
 // unchanged at every level.
 export type PanelFolderTree = {
   foldersByParent: Map<string | null, PanelFolder[]>;
-  diagramsByFolder: Map<string | null, DiagramListItem[]>;
+  documentsByFolder: Map<string | null, DocumentListItem[]>;
   // Folder ids are globally unique, so the personal and team trees share
   // the panel's one expanded record.
   expanded: Record<string, boolean>;
@@ -42,7 +42,7 @@ export type PanelFolderTree = {
 
 // Recursive folder node in the panel's tree, personal (Personal tab) and
 // team (Teams tab) alike: the header with its menu, and when expanded the
-// child folders then the folder's diagrams. It was two near-identical
+// child folders then the folder's documents. It was two near-identical
 // components (FolderNode and TeamFolderNode) until they were merged; a
 // team folder simply arrives without the drag-and-drop handler.
 export function FolderNode({
@@ -57,14 +57,14 @@ export function FolderNode({
   const { expanded, onToggleExpanded, pendingRenameId, onRenameFolderCommitted } = tree;
   const { onRenameFolder, onDeleteFolder, onCreateChild } = tree;
   const childFolders = tree.foldersByParent.get(folder.id) ?? [];
-  const childDiagrams = tree.diagramsByFolder.get(folder.id) ?? [];
-  const childCount = childFolders.length + childDiagrams.length;
+  const childDocuments = tree.documentsByFolder.get(folder.id) ?? [];
+  const childCount = childFolders.length + childDocuments.length;
   const isExpanded = expanded[folder.id] ?? false;
 
   const [editing, setEditing] = useState(false);
   const menu = useRowMenu({ disabled: editing });
-  // Drop a dragged diagram on the header to file it here (docs/specs/013-workspace/folders.md).
-  const drop = useDiagramDropTarget(folder.id, tree.rows.onMoveDiagramToFolder);
+  // Drop a dragged document on the header to file it here (docs/specs/013-workspace/folders.md).
+  const drop = useDocumentDropTarget(folder.id, tree.rows.onMoveDocumentToFolder);
 
   // Auto-enter rename mode for freshly-created folders: entered during render when this folder
   // becomes the pending one, and the tree told (an effect) so it clears the request.
@@ -95,7 +95,7 @@ export function FolderNode({
         icon={<FolderOutlineIcon />}
         label={folder.name}
         count={childCount}
-        drop={tree.rows.onMoveDiagramToFolder ? drop : undefined}
+        drop={tree.rows.onMoveDocumentToFolder ? drop : undefined}
         // Right-click anywhere on the folder row opens the same actions
         // menu as the ellipsis button (anchored to it).
         onContextMenu={menu.onContextMenu}
@@ -140,8 +140,8 @@ export function FolderNode({
           {childFolders.map((f) => (
             <FolderNode key={f.id} folder={f} depth={depth + 1} tree={tree} />
           ))}
-          <PanelDiagramRows
-            diagrams={childDiagrams}
+          <PanelDocumentRows
+            documents={childDocuments}
             indent={4 + (depth + 1) * 12}
             rows={tree.rows}
           />

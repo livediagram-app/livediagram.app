@@ -1,4 +1,4 @@
-import { isFixedSizeElement } from '@livediagram/diagram';
+import { isFixedSizeElement } from '@livediagram/document';
 import {
   alignmentGuides,
   distributionSnap,
@@ -13,7 +13,7 @@ import {
   type DistributionGuide,
   type Element,
   type EsTimeline,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { LanePreview } from '@/lib/lane-preview';
 import {
   ALIGN_SNAP_THRESHOLD,

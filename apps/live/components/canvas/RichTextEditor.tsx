@@ -19,7 +19,7 @@
 // commit lifecycle) lives in useRichTextSession; this file keeps the
 // JSX and its event handlers.
 
-import type { RunBoolKey } from '@livediagram/diagram';
+import type { RunBoolKey } from '@livediagram/document';
 import { useMindLabelKeys } from '@/components/canvas/useMindLabelKeys';
 import { ALIGN_ITEMS, labelTypographyClass, TEXT_ALIGN } from '@/components/canvas/label-style';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';

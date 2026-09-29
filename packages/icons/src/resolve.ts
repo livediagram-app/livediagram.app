@@ -29,7 +29,7 @@ export function resolveIconExportArt(iconId: string): IconExportArt | undefined 
 // Resolve a sticker element's `stickerId` to its built artwork (docs/specs/010-palette/stickers.md), or
 // undefined for an unknown id — the renderer then falls back to a plain box,
 // the same way an unknown icon id does. Goes through `stickerArt`, the one
-// builder the editor canvas uses too, so a shared thumbnail and the board
+// builder the editor canvas uses too, so a shared thumbnail and the canvas
 // show the same sticker.
 export function resolveStickerArt(stickerId: string): StickerArt | undefined {
   const def = stickerById.get(stickerId);

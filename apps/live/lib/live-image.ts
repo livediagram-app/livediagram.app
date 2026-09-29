@@ -1,7 +1,7 @@
 // Live-image URL + snippet builders for the share dialog (docs/specs/013-workspace/live-image-share.md +
-// docs/specs/006-diagram/diagram-snapshots.md). The endpoint serves a diagram's cached SVG snapshot scoped
+// docs/specs/006-document/document-snapshots.md). The endpoint serves a document's cached SVG snapshot scoped
 // to a share code, so a bare <img> in a README / wiki / Notion can embed
-// it and it stays close to live (the worker re-renders when the diagram
+// it and it stays close to live (the worker re-renders when the document
 // is saved). Pure functions so the dialog's copy buttons and the tests
 // share one source of truth for the URL shape.
 //

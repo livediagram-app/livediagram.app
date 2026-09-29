@@ -26,7 +26,7 @@ export const CATEGORY_BANDS: Record<number, string> = {
   0: 'Common',
   // Structure (docs/specs/010-palette/palette-top-level-categories.md): the elements you lay a diagram OUT with — Build's
   // containers, the ready-made Components, the device frames. They sit above
-  // Decorate because arranging a board comes before dressing it.
+  // Decorate because arranging the canvas comes before dressing it.
   1: 'Structure',
   2: 'Decorate',
   3: 'Dynamic',

@@ -1,9 +1,9 @@
 'use client';
 
-// Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-diagrams.md): a Dialog shell around the
-// shared PlacementBrowser, so moving a diagram (or re-parenting a folder)
-// uses the exact same space -> folder tile browse as the New Diagram
-// wizard's Save In step (docs/specs/006-diagram/offline-mode.md). One selection UI everywhere a diagram
+// Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): a Dialog shell around the
+// shared PlacementBrowser, so moving a document (or re-parenting a folder)
+// uses the exact same space -> folder tile browse as the New Document
+// wizard's Save In step (docs/specs/006-document/offline-mode.md). One selection UI everywhere a document
 // can change folders.
 //
 // The browser keeps its "always something selected" rule: the picker opens
@@ -44,13 +44,13 @@ export type MoveDestination = { teamId: string | null; folderId: string | null }
 type MoveToFolderDialogProps = {
   // What's being moved, for the header ("Move "Roadmap 2026"").
   subjectName: string;
-  // Tweaks the copy: a folder move re-parents, a diagram move files.
-  subjectKind: 'diagram' | 'folder';
+  // Tweaks the copy: a folder move re-parents, a document move files.
+  subjectKind: 'document' | 'folder';
   // Personal folder nodes, pre-filtered by the caller (a folder move
   // excludes its own subtree). Omit entirely to hide the personal
   // space — team-scoped surfaces pass `teams` only.
   personalFolders?: MoveFolderNode[];
-  // Team libraries (docs/specs/013-workspace/team-shared-diagrams.md). Omitted / [] = no team spaces.
+  // Team libraries (docs/specs/013-workspace/team-shared-documents.md). Omitted / [] = no team spaces.
   teams?: MoveTeamDest[];
   // The subject's current placement: it opens pre-selected and the
   // Move button unlocks once the choice differs. teamId null +
@@ -140,7 +140,7 @@ export function MoveToFolderDialog({
           teamFolders={teamFolders}
           onCreateFolder={onCreateFolder}
           onCreateTeam={onCreateTeam}
-          // Rows, as in the New Diagram wizard: a four-across tile grid in a
+          // Rows, as in the New Document wizard: a four-across tile grid in a
           // dialog this wide clipped a team called "Web Foundations" to
           // "Web Foundati…", and a row gives every name the full width.
           layout="list"

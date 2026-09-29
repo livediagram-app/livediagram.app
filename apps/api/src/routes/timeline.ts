@@ -16,6 +16,7 @@
 // thinner one, since team and token events never reach them — and it
 // migrates to their account on sign-up (docs/specs/013-workspace/timeline.md §9).
 
+import { upgradeLegacyScope } from '../legacy-request-forms';
 import {
   TIMELINE_PAGE_MAX,
   TIMELINE_PAGE_SIZE,
@@ -31,7 +32,7 @@ import {
   markScopeSeen,
   readTimeline,
 } from '../db/timeline';
-import { getDiagram, getMembership } from '../db';
+import { getDocument, getMembership } from '../db';
 import { backfillUserScope } from '../timeline';
 import { badRequest, forbidden, json, missingAuth, noContent, notFound } from '../responses';
 import { gateRead, type RouteContext } from './context';
@@ -192,13 +193,13 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
 function resolveScope(url: URL, ownerId: string): TimelineScopeRef | null {
   const raw = url.searchParams.get('scope');
   if (!raw) return { scopeType: 'user', scopeId: ownerId };
-  return parseScope(raw);
+  return parseScope(upgradeLegacyScope(raw));
 }
 
 // Who may read which feed.
 //
 // This is the security boundary of the whole surface: a feed carries
-// diagram names and comment text, so getting it wrong hands one owner
+// document names and comment text, so getting it wrong hands one owner
 // another's work. Each scope type is allowed explicitly and anything
 // unrecognised is refused, so a scope type added later is inert until
 // somebody writes its rule here.
@@ -208,14 +209,14 @@ async function canReadScope(
   ownerId: string,
 ): Promise<boolean> {
   if (scope.scopeType === 'user') return scope.scopeId === ownerId;
-  if (scope.scopeType === 'diagram') {
-    // Exactly the diagram's own read gate: its owner, a joined member of
-    // its team, or a valid share-code visitor. A missing diagram is a
+  if (scope.scopeType === 'document') {
+    // Exactly the document's own read gate: its owner, a joined member of
+    // its team, or a valid share-code visitor. A missing document is a
     // refusal rather than a 404, so a guessed id can't be probed for
     // existence through this endpoint either.
-    const diagram = await getDiagram(ctx.env, scope.scopeId);
-    if (!diagram) return false;
-    return gateRead(ctx, scope.scopeId, diagram.ownerId, diagram.teamId);
+    const liveDoc = await getDocument(ctx.env, scope.scopeId);
+    if (!liveDoc) return false;
+    return gateRead(ctx, scope.scopeId, liveDoc.ownerId, liveDoc.teamId);
   }
   if (scope.scopeType === 'team') {
     // Joined members only — an `invited` row grants no access to the

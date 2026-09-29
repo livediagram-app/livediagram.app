@@ -14,7 +14,7 @@ import { rankTrend, windowLabel } from './windows';
 //
 // Every metric here was already being emitted, validated, and stored, and none
 // of it was rendered anywhere: `AI·Used` had no card on any tab, and the whole
-// `Layer` category (docs/specs/006-diagram/layers.md), plus Note, Folder and Action, appeared only in
+// `Layer` category (docs/specs/006-document/layers.md), plus Note, Folder and Action, appeared only in
 // the vocabulary labeller the old Raw table used. Data arriving and nobody reading
 // it is the same blind spot as data never sent, one step further along — the
 // Palette catalogue drifting out of the dashboard is exactly how four element
@@ -69,9 +69,9 @@ export function EditingView({
           <RankCard
             title="Export Formats"
             subtitle="Which formats diagrams leave in: PNG, SVG, PDF, JSON, Mermaid, Markdown, Excalidraw"
-            category="Diagram"
+            category="Document"
             action="Exported"
-            items={of('Diagram', 'Exported')}
+            items={of('Document', 'Exported')}
             daily={summary.daily}
             trend={trend}
             emptyLabel="Nothing was exported in this window yet."

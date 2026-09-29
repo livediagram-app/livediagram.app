@@ -6,7 +6,7 @@ as it is: manual, `workflow_dispatch`-only ([Deployment](deployment.md)).
 
 The point is to have somewhere a change is _running_ before anyone decides to ship it —
 in particular somewhere a **D1 migration runs against a real remote database** before it
-runs against the one holding people's diagrams.
+runs against the one holding people's documents.
 
 ## The two environments
 
@@ -74,7 +74,7 @@ prints the resolved binding table.
 
 Staging gets its own **D1 database**, **R2 bucket** and **KV namespace**. Durable Objects
 come free: a different script is a different DO namespace, so the staging
-`DIAGRAM_ROOM` is already separate.
+`DOCUMENT_ROOM` is already separate.
 
 Rate-limiter namespace ids are deliberately **left identical** to production's. They are
 scoped per script by Cloudflare, so the staging worker's `1001` is not production's
@@ -83,7 +83,7 @@ something.
 
 Consequence worth stating plainly: **staging has no production data.** It starts empty
 and stays a scratch environment. It is for exercising code paths and migrations, not for
-reproducing a specific user's diagram.
+reproducing a specific user's document.
 
 ## Migrations run on staging first
 
@@ -257,7 +257,7 @@ becomes a step if staging is ever moved to a Clerk production instance.
   Per-PR previews would need a worker per PR, a database per PR and a wildcard hostname;
   if that's wanted later it's a different spec, not a knob on this one.
 - **Not a production mirror.** No production data is copied in, ever. A staging bug must
-  never be debuggable by reading a real user's diagram.
+  never be debuggable by reading a real user's document.
 - **Not a rollback target.** Rolling production back is still a production deploy of an
   older `main`.
 

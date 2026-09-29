@@ -3,23 +3,23 @@
 import type { SharedWithItem } from '@livediagram/api-schema';
 import type { Env, ShareRole } from '../types';
 
-// Record a visitor's access to a shared diagram. Idempotent on
-// (owner_id, diagram_id): repeat visits just bump last_seen + role.
+// Record a visitor's access to a shared document. Idempotent on
+// (owner_id, document_id): repeat visits just bump last_seen + role.
 // Caller is expected to only invoke this when the visitor's resolved
-// owner differs from the diagram's owner (an owner opening their own
-// diagram via a share link shouldn't show up in their own
+// owner differs from the document's owner (an owner opening their own
+// document via a share link shouldn't show up in their own
 // "Shared with you" list).
 //
 // Returns whether this was a FIRST visit (no prior row). The share route
-// uses it to fire the "someone joined your diagram" notification (docs/specs/014-identity/profile-and-email-notifications.md)
-// and the Diagram·Joined telemetry count (docs/specs/017-telemetry/telemetry.md) once per (visitor,
-// diagram) rather than per reload. Decided by an INSERT OR IGNORE's row
+// uses it to fire the "someone joined your document" notification (docs/specs/014-identity/profile-and-email-notifications.md)
+// and the Document·Joined telemetry count (docs/specs/017-telemetry/telemetry.md) once per (visitor,
+// document) rather than per reload. Decided by an INSERT OR IGNORE's row
 // count, so two concurrent first opens can't both read as first; a repeat
 // visit then refreshes role + last_seen.
 export async function recordSharedAccess(
   env: Env,
   ownerId: string,
-  diagramId: string,
+  documentId: string,
   role: ShareRole,
   // The link's tab scope (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs. Last visit
   // wins, like role.
@@ -27,41 +27,41 @@ export async function recordSharedAccess(
 ): Promise<boolean> {
   const now = Date.now();
   const inserted = await env.DB.prepare(
-    'INSERT OR IGNORE INTO shared_with (owner_id, diagram_id, role, last_seen, tab_id) VALUES (?, ?, ?, ?, ?)',
+    'INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, last_seen, tab_id) VALUES (?, ?, ?, ?, ?)',
   )
-    .bind(ownerId, diagramId, role, now, tabId)
+    .bind(ownerId, documentId, role, now, tabId)
     .run();
   if (inserted.meta.changes === 1) return true;
   await env.DB.prepare(
-    'UPDATE shared_with SET role = ?, tab_id = ?, last_seen = ? WHERE owner_id = ? AND diagram_id = ?',
+    'UPDATE shared_with SET role = ?, tab_id = ?, last_seen = ? WHERE owner_id = ? AND document_id = ?',
   )
-    .bind(role, tabId, now, ownerId, diagramId)
+    .bind(role, tabId, now, ownerId, documentId)
     .run();
   return false;
 }
 
-// Whether this owner has ever opened the diagram through a share link
+// Whether this owner has ever opened the document through a share link
 // (a shared_with row exists). Used by the notify-action route (docs/specs/012-collaboration/assigned-actions.md)
-// as the "shared-with" leg of its caller-can-access-the-diagram check.
+// as the "shared-with" leg of its caller-can-access-the-document check.
 export async function hasSharedAccess(
   env: Env,
   ownerId: string,
-  diagramId: string,
+  documentId: string,
 ): Promise<boolean> {
   const row = await env.DB.prepare(
-    'SELECT 1 AS one FROM shared_with WHERE owner_id = ? AND diagram_id = ? LIMIT 1',
+    'SELECT 1 AS one FROM shared_with WHERE owner_id = ? AND document_id = ? LIMIT 1',
   )
-    .bind(ownerId, diagramId)
+    .bind(ownerId, documentId)
     .first<{ one: number }>();
   return row !== null;
 }
 
-// List diagrams shared with this owner, newest interaction first.
+// List documents shared with this owner, newest interaction first.
 // Joins through `diagrams` for the name + owner-side savedAt; also
 // surfaces a still-live `shareCode` for each row so the client can
-// build a `/live/diagram/<id>?s=<code>` URL the visitor can actually
+// build a `/live/document/<id>?s=<code>` URL the visitor can actually
 // open. Without the code the Shared list link would land on the
-// owner-only `/api/diagrams/:id` path and 404 every time.
+// owner-only `/api/documents/:id` path and 404 every time.
 //
 // The shareCode is sourced via a correlated subquery against
 // share_links matching the same role the visitor was granted —
@@ -82,7 +82,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
     `SELECT d.id, d.name, d.saved_at, s.role, s.tab_id,
             (SELECT code
                FROM share_links
-              WHERE share_links.diagram_id = d.id
+              WHERE share_links.document_id = d.id
                 AND share_links.role = s.role
                 AND share_links.tab_id IS s.tab_id
                 AND (share_links.expires_at IS NULL OR share_links.expires_at > ?)
@@ -91,7 +91,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
             p.name  AS owner_name,
             p.color AS owner_color
        FROM shared_with s
-       JOIN diagrams d ON d.id = s.diagram_id
+       JOIN documents d ON d.id = s.document_id
        LEFT JOIN participants p ON p.id = d.owner_id
       WHERE s.owner_id = ?
         AND d.shareable = 1
@@ -125,15 +125,15 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
 
 // Drop a single "shared with you" reference — used when the visitor
 // dismisses a row from their Shared list (they don't want it
-// showing up any more) or when the diagram's been duplicated into
+// showing up any more) or when the document's been duplicated into
 // the visitor's own files (#9) so the shared reference is no longer
 // useful.
 export async function dropSharedAccess(
   env: Env,
   ownerId: string,
-  diagramId: string,
+  documentId: string,
 ): Promise<void> {
-  await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ? AND diagram_id = ?')
-    .bind(ownerId, diagramId)
+  await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ? AND document_id = ?')
+    .bind(ownerId, documentId)
     .run();
 }

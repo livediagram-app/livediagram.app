@@ -1,4 +1,4 @@
-import type { ArrowElement, Element, Tab } from '@livediagram/diagram';
+import type { ArrowElement, Element, Tab } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import {
   TAB_SCHEMA_VERSION,

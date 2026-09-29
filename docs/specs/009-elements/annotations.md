@@ -63,7 +63,7 @@ and `note` stays the plain-text mirror, so everything below is unchanged.
 through every generic boxed path (selection, drag, layering, lock, group,
 link, colours, comments, the note feature). It carries the shared boxed
 fields plus `note?: string` (and `noteRich?: TextRun[]`, [Rich-text notes](rich-text-notes.md)). `createAnnotation(x, y)` (in
-`packages/diagram/src/factories.ts`) returns one at the default 44×44 marker
+`packages/document/src/factories.ts`) returns one at the default 44×44 marker
 size. `isBoxed` and the `BoxedElement` union include it.
 
 - **Sizing:** `inheritedSizeFor` keeps an annotation at its intrinsic marker
@@ -72,7 +72,7 @@ size. `isBoxed` and the `BoxedElement` union include it.
 - **Colours / theme:** annotation themes its `fillColor` (circle) and
   `strokeColor` (ring + glyph) via `THEME_COLOUR_FIELDS`, exactly like a
   shape's fill + stroke; it has no themed text (the note is plain). The
-  per-type colour defaults live in `packages/diagram/src/colors.ts`
+  per-type colour defaults live in `packages/document/src/colors.ts`
   (`defaultFillColor` / `defaultStrokeColor` / `defaultTextColor` /
   `defaultPadding`) and `supportsColours` returns true for it.
 - **Controls hidden:** the Shape morph grid, Border accordion, and aspect-lock

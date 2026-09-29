@@ -6,14 +6,14 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 
 ## What you'll provision on Cloudflare
 
-| Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                                                    |
-| ------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Workers paid plan**                | All seven workers | Durable Objects (per-diagram realtime room) need the paid plan.                                                                                                                                                                                                                                                                        |
-| **D1 database**                      | `apps/api`        | Diagrams, tabs, comments, folders, share links, shared-with index, change log, image metadata, user preferences, teams + membership + team library, custom themes, telemetry rows.                                                                                                                                                     |
-| **Durable Object namespace**         | `apps/api`        | One stateful room per diagram for realtime presence + ops.                                                                                                                                                                                                                                                                             |
-| **R2 bucket** (optional)             | `apps/api`        | Image uploads ([Image element + per-owner gallery](../specs/009-elements/images.md)) + diagram SVG snapshots ([Diagram SVG snapshots](../specs/006-diagram/diagram-snapshots.md): Explorer thumbnails + the live image share). Without it, image endpoints `503` and snapshot endpoints `404` (the Explorer row shows a generic icon). |
-| **Rate Limiter bindings** (optional) | `apps/api`        | Six abuse throttles: per-owner writes, plus telemetry ingest, share-code lookups, link unfurls, AI calls, and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                                                         |
-| **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                                                                                |
+| Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Workers paid plan**                | All seven workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                                                           |
+| **D1 database**                      | `apps/api`        | Documents, tabs, comments, folders, share links, shared-with index, change log, image metadata, user preferences, teams + membership + team library, custom themes, telemetry rows.                                                                                                                                                        |
+| **Durable Object namespace**         | `apps/api`        | One stateful room per document for realtime presence + ops.                                                                                                                                                                                                                                                                                |
+| **R2 bucket** (optional)             | `apps/api`        | Image uploads ([Image element + per-owner gallery](../specs/009-elements/images.md)) + document SVG snapshots ([Document SVG snapshots](../specs/006-document/document-snapshots.md): Explorer thumbnails + the live image share). Without it, image endpoints `503` and snapshot endpoints `404` (the Explorer row shows a generic icon). |
+| **Rate Limiter bindings** (optional) | `apps/api`        | Six abuse throttles: per-owner writes, plus telemetry ingest, share-code lookups, link unfurls, AI calls, and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                                                             |
+| **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                                                                                    |
 
 What you do NOT need:
 
@@ -87,7 +87,7 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 
    Without it, teams still work (create / roles / member management), but an invited address only connects when an admin re-invites after the claim is configured; the worker never trusts a client-supplied email.
 
-5. **Recommended when Clerk is on — sign guest ids.** Set a random HMAC secret so the worker mints signed guest ids and `POST /api/migrate` requires a valid signature before moving a guest's data into a Clerk account. Without it, anyone who observed a guest's id (it appears in shared-diagram DTOs / presence) could claim that guest's data at sign-up. Generate and set:
+5. **Recommended when Clerk is on — sign guest ids.** Set a random HMAC secret so the worker mints signed guest ids and `POST /api/migrate` requires a valid signature before moving a guest's data into a Clerk account. Without it, anyone who observed a guest's id (it appears in shared-document DTOs / presence) could claim that guest's data at sign-up. Generate and set:
 
    ```sh
    openssl rand -hex 32 | pnpm --filter @livediagram/api exec wrangler secret put GUEST_ID_HMAC_SECRET
@@ -95,7 +95,7 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 
    Leaving it unset keeps the legacy unsigned migrate, which is fine for a single-user self-host (no one else to claim from). See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).
 
-   With the secret set, you can also require a valid signature on the guest `X-Owner-Id` REST path ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §4) — this closes the "observe a guest id, use it as a credential" hole for shared diagrams. It's **off by default** so pre-signing guests aren't locked out; set `GUEST_SIG_ENFORCE_AFTER` to an epoch-ms cutoff once your active guests have rotated to signed ids (the app re-signs on load):
+   With the secret set, you can also require a valid signature on the guest `X-Owner-Id` REST path ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §4) — this closes the "observe a guest id, use it as a credential" hole for shared documents. It's **off by default** so pre-signing guests aren't locked out; set `GUEST_SIG_ENFORCE_AFTER` to an epoch-ms cutoff once your active guests have rotated to signed ids (the app re-signs on load):
 
    ```sh
    echo "$(date +%s000)" | pnpm --filter @livediagram/api exec wrangler secret put GUEST_SIG_ENFORCE_AFTER
@@ -151,7 +151,7 @@ See [Deployment](../specs/016-platform/deployment.md) for the deeper deploy mech
 ## MCP server (optional, needs Clerk)
 
 The `apps/mcp` worker ([MCP server](../specs/015-api/mcp-server.md)) lets people connect an AI tool (Claude, any MCP
-client) to drive their diagrams. It's **optional** — don't deploy it and nothing
+client) to drive their documents. It's **optional** — don't deploy it and nothing
 else references it — and **needs Clerk**, exactly like API tokens and teams: the
 OAuth consent page authenticates the user via Clerk and the api's
 `/api/oauth/exchange` requires a Clerk identity, so a no-auth self-host can mint
@@ -254,7 +254,7 @@ Both default to "no limit" when unset, blank, `0`, or non-numeric, which is the 
 Add a custom-domain route to the router worker (`apps/router/wrangler.toml`) and point your DNS at Cloudflare. The router stitches all paths under one hostname:
 
 - `/` → marketing
-- `/diagram/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/sso-callback` → live editor (clean routes; `/live/*` carries only its `_next` assets)
+- `/document/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/sso-callback` → live editor (clean routes; `/live/*` carries only its `_next` assets)
 - `/telemetry` → telemetry dashboard
 - `/help` → help centre
 - `/api/*` → api worker
@@ -264,5 +264,5 @@ The five downstream workers don't need their own domain; the router fans out via
 ## What can break, and how to debug
 
 - **`account not authorized` from wrangler**: the API token is missing a scope. See the token list above; most often it's missing **Account → Account Settings: Read**, which wrangler uses to look up your account.
-- **`Durable Object class is not exported`**: the api worker's `wrangler.toml` references `DiagramRoom` as the DO class. It IS exported from `apps/api/src/index.ts`; if you've forked + renamed, keep the export name in step with the binding.
-- **Editor loads but every request 403s**: the resolved owner doesn't match the diagram's stored owner. If you migrated from one auth setup to another (added Clerk after running guest-only), the old guest diagrams still belong to the old guest id. The `/api/migrate` endpoint moves rows from a guest id to a Clerk userId after sign-up; see [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).
+- **`Durable Object class is not exported`**: the api worker's `wrangler.toml` references `DocumentRoom` as the DO class. It IS exported from `apps/api/src/index.ts`; if you've forked + renamed, keep the export name in step with the binding.
+- **Editor loads but every request 403s**: the resolved owner doesn't match the document's stored owner. If you migrated from one auth setup to another (added Clerk after running guest-only), the old guest documents still belong to the old guest id. The `/api/migrate` endpoint moves rows from a guest id to a Clerk userId after sign-up; see [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).

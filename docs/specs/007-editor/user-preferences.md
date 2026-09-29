@@ -1,15 +1,15 @@
 # User preferences
 
 Per-user editor preference flags that toggle behaviour without
-changing diagram content. Most are exposed through a small
+changing document content. Most are exposed through a small
 Settings dialog launched from the footer (the **Application settings**
 gear button to the left
 of the dark-mode toggle); a small number are per-tool toggles
 that live next to the tool they affect (see the UI placement
 section below) rather than in Settings. Either way the
 persistence model is the same. Replaces the earlier
-per-diagram-settings shape: preferences are about the user's
-editor experience, not about any particular diagram, so they live
+per-document-settings shape: preferences are about the user's
+editor experience, not about any particular document, so they live
 once per account / device and apply everywhere.
 
 ## Where preferences live
@@ -75,10 +75,22 @@ blob. Don't fold panel placement into `UserPreferences`.
 ### Sign-up migration
 
 `POST /api/migrate` ([Auth + guest access](../014-identity/auth-and-guest-access.md)) moves `user_preferences.owner_id`
-along with the diagrams + folders + shared-with rows, so a guest
+along with the documents + folders + shared-with rows, so a guest
 who signs up keeps the settings they'd already chosen. Idempotent
 in the same shape as the existing migrations: a second call with
 the same `guestOwnerId` moves zero rows.
+
+<!-- legacy-names -->
+
+### Renamed keys
+
+- **Renamed key.** `notifyDiagramJoin` became `notifyDocumentJoin` when the container became a
+  document. Migration 0055 renames it in D1; `upgradeLegacyPreferences`
+  (`packages/api-schema/src/legacy-preferences.ts`) renames it wherever an older copy can still
+  arrive: the browser's cache on read, the server's copy before the merge, and the api's
+  notification check. An opt-out is never lost; when both keys exist, the new one wins.
+
+<!-- /legacy-names -->
 
 ### Self-host degradation
 
@@ -95,7 +107,7 @@ stays viable.
 type UserPreferences = {
   // When false, the live editor skips the auto-rebind that moves a
   // pinned arrow end to the side facing the other end once its drawn
-  // path runs through a shape after a move (packages/diagram's
+  // path runs through a shape after a move (packages/document's
   // `rebindArrowAnchorsAfterMove`, see ../008-canvas/arrow-anchors.md).
   // Defaults to ON.
   autoRebindArrows?: boolean;
@@ -214,8 +226,8 @@ type UserPreferences = {
   // toasts, not email.
   //
   // When false, suppress the "someone first opened one of my shared
-  // diagrams" email. Defaults to true (notify).
-  notifyDiagramJoin?: boolean;
+  // documents" email. Defaults to true (notify).
+  notifyDocumentJoin?: boolean;
   // When false, suppress the "someone accepted/declined a team invite I
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
@@ -330,17 +342,17 @@ Missing key === undefined === default behaviour. Concretely:
   itself bounded for everyone: chrome settles within 250ms and hovers
   within 150ms ([Motion](../004-interface-design/motion.md)); reduce
   motion is the stricter of the two and wins.
-- `notifyDiagramJoin` / `notifyInviteResponse` undefined / true → the
+- `notifyDocumentJoin` / `notifyInviteResponse` undefined / true → the
   matching email notification is on (the default; [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)). Setting
   either to `false` is the only state that suppresses its email. Read
   server-side by the api worker before sending; flipped from the
-  Settings dialog. Emit `UI`/`Toggled`/`NotifyDiagramJoin{On,Off}`
+  Settings dialog. Emit `UI`/`Toggled`/`NotifyDocumentJoin{On,Off}`
   and `NotifyInviteResponse{On,Off}` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 - `notificationsEnabled` undefined / true → notifications on (the
   default). Setting it to `false` suppresses the success + info toasts
   the editor shows for consequential, otherwise-silent actions (a
-  diagram moved to a folder, duplicated, or deleted from a long list; a
-  tab linked into another diagram). **Error toasts are never gated by
+  document moved to a folder, duplicated, or deleted from a long list; a
+  tab linked into another document). **Error toasts are never gated by
   this** — a failure the user would otherwise never see still surfaces,
   so turning notifications off quiets the chatter without hiding
   breakage. The gate is read fresh on each toast push (a synchronous

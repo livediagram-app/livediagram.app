@@ -21,7 +21,7 @@ import {
   type TextAlignX,
   type TextElement,
   type ThemeDefinition,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { parseImportedTab } from './import-tab';
 import { TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from './export-tab';
 

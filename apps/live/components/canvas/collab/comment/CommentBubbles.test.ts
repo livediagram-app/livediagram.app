@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Comment } from '@livediagram/diagram';
+import type { Comment } from '@livediagram/document';
 import { groupByAuthor } from './CommentBubbles';
 
 // Consecutive comments by one author read as one voice (docs/specs/012-collaboration/comment-pin.md "The look").

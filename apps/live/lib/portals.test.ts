@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element, type ShapeElement, type Tab } from '@livediagram/diagram';
+import { createShape, type Element, type ShapeElement, type Tab } from '@livediagram/document';
 import {
   portalExitPoint,
   portalName,

@@ -71,7 +71,7 @@ is where free placement leaves it, reads as a list hanging off a box.
 
 So growth first asks whether the map **is** tidy: whether every node already
 sits where the tidy layout (`layoutMindTree` in
-`packages/diagram/src/mind-layout.ts`) would put it, to within a pixel. If it
+`packages/document/src/mind-layout.ts`) would put it, to within a pixel. If it
 is, the new node joins the layout and the map is re-laid out around it:
 siblings slide to make room, parents re-centre, and the node lands in its slot.
 The root never moves. A map grown by Tab and Enter from a single node, or from
@@ -246,7 +246,7 @@ Resizing a node resizes only that node.
 Growth started with one arrangement, the one a keyboard-driven outline wants: a
 child to the right, siblings stacked down it. That is a **tree**, and it is only
 one of the shapes people draw. Four ship (`MindFlow` in
-`packages/diagram/src/mind-flow.ts`), picked from the **Mind Map** section of a
+`packages/document/src/mind-flow.ts`), picked from the **Mind Map** section of a
 selected node's menu:
 
 - **Tree** — branches right, siblings stacked down. The default, so every map

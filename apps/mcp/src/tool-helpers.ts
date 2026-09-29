@@ -6,7 +6,7 @@
 // tab-builders.ts, for the same reason. tools.ts keeps the registrations.
 
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import type { Diagram, DiagramResponse, TabRecord, TabResponse } from '@livediagram/api-schema';
+import type { LiveDoc, DocumentResponse, TabRecord, TabResponse } from '@livediagram/api-schema';
 import { apiJson } from './api';
 import type { Env } from './env';
 
@@ -23,12 +23,12 @@ export type ToolResult = {
   isError?: boolean;
 };
 
-export const deepLink = (id: string) => `https://livediagram.app/diagram/${id}`;
+export const deepLink = (id: string) => `https://livediagram.app/document/${id}`;
 
-// A share link's public URL (docs/specs/013-workspace/share-password.md): visitors land on /diagram/shared?s=<code>
-// and the app resolves the code to the diagram + granted role.
+// A share link's public URL (docs/specs/013-workspace/share-password.md): visitors land on /document/shared?s=<code>
+// and the app resolves the code to the document + granted role.
 export const shareUrl = (code: string) =>
-  `https://livediagram.app/diagram/shared?s=${encodeURIComponent(code)}`;
+  `https://livediagram.app/document/shared?s=${encodeURIComponent(code)}`;
 
 export function requireToken(extra: Extra): string {
   const token = extra.authInfo?.token;
@@ -47,19 +47,23 @@ export function errorResult(message: string): ToolResult {
   return { content: [{ type: 'text', text: message }], isError: true };
 }
 
-// Load a diagram and one of its tabs: the named tab, or the first one when the
+// Load a document and one of its tabs: the named tab, or the first one when the
 // caller didn't name one (the default every tab-scoped tool applies). Null when
-// the diagram has no tabs to default to; an unknown id surfaces as the api's
+// the document has no tabs to default to; an unknown id surfaces as the api's
 // own ApiError, like every other call.
 export async function loadTab(
   env: Env,
   token: string,
-  diagramId: string,
+  documentId: string,
   tabId?: string,
-): Promise<{ diagram: Diagram; tab: TabRecord } | null> {
-  const { diagram } = await apiJson<DiagramResponse>(env, token, `/diagrams/${diagramId}`);
-  const id = tabId ?? diagram.tabs[0]?.id;
+): Promise<{ document: LiveDoc; tab: TabRecord } | null> {
+  const { document: liveDoc } = await apiJson<DocumentResponse>(
+    env,
+    token,
+    `/documents/${documentId}`,
+  );
+  const id = tabId ?? liveDoc.tabs[0]?.id;
   if (!id) return null;
-  const { tab } = await apiJson<TabResponse>(env, token, `/diagrams/${diagramId}/tabs/${id}`);
-  return { diagram, tab };
+  const { tab } = await apiJson<TabResponse>(env, token, `/documents/${documentId}/tabs/${id}`);
+  return { document: liveDoc, tab };
 }

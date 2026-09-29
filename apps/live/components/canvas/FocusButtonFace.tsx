@@ -33,12 +33,12 @@ export function FocusButtonFace({
 }: {
   // The element's own label. Empty falls back to naming the action, so a
   // freshly dropped button reads as what it does; an author who types "The
-  // problem" over it wins, which is the point of having several on a board.
+  // problem" over it wins, which is the point of having several on a canvas.
   label: string;
   textColor: string;
   // Undefined on a surface that cannot ask anyone to look anywhere: an export,
-  // the minimap, a solo board. The face still renders, inert, because a viewer
-  // should see what the board is offering.
+  // the minimap, a solo canvas. The face still renders, inert, because a viewer
+  // should see what the canvas is offering.
   onPress?: () => void;
 }) {
   const press = usePressWithoutDrag(onPress);

@@ -29,7 +29,7 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
   {
     title: 'Your data is yours',
     description:
-      "Every diagram lives in your own row, scoped to your owner id. Export any tab to PNG, SVG, PDF, Mermaid, Markdown, or portable JSON whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
+      "Every document lives in your own row, scoped to your owner id. Export any tab to PNG, SVG, PDF, Mermaid, Markdown, or portable JSON whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
     art: <DataIsYoursArt />,
   },
   {
@@ -47,7 +47,7 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
   {
     title: 'Private by default',
     description:
-      'A new diagram is visible only to you until you generate a share link. Share links are unguessable codes you choose to hand out: protect them with a password, set them to expire automatically after a week, a month, or six months, or revoke them at any time, instantly disconnecting anyone currently using one.',
+      'A new document is visible only to you until you generate a share link. Share links are unguessable codes you choose to hand out: protect them with a password, set them to expire automatically after a week, a month, or six months, or revoke them at any time, instantly disconnecting anyone currently using one.',
     art: <PrivateByDefaultArt />,
   },
   {

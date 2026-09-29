@@ -1,16 +1,16 @@
 // account — owner-wide deletion + guest->authed owner-id migration.
-// These touch every table keyed (directly or via diagram_id) on an
+// These touch every table keyed (directly or via document_id) on an
 // owner, so they live together rather than under any one resource.
 
 import { deleteTimelineForOwner, migrateTimelineOwner } from './timeline';
 import { deleteCollabIndexForOwner, recordOwnerAlias } from './collab-index';
-import { thumbnailKey } from './diagrams';
-import { diagramRemovalStatements } from './diagram-removal';
+import { thumbnailKey } from './documents';
+import { documentRemovalStatements } from './document-removal';
 import { detachUserFromTeams } from './teams';
 import type { Env } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard
-// cap on diagram count, so chunk the snapshot-key deletes to stay under
+// cap on document count, so chunk the snapshot-key deletes to stay under
 // it (the image delete above relies on the per-owner gallery cap instead).
 const R2_DELETE_CHUNK = 1000;
 
@@ -19,9 +19,9 @@ const R2_DELETE_CHUNK = 1000;
 // (docs/specs/009-elements/images.md). account-owner-columns.test.ts holds
 // both functions here to that list against the real schema. Called from
 // DELETE /api/account when the user opts in via the "Delete account"
-// dialog. The diagrams go through diagramRemovalStatements, which drops
-// the tabs (and their history) no other owner's diagram still holds;
-// share links and the other per-diagram rows cascade from `diagrams.id`.
+// dialog. The documents go through documentRemovalStatements, which drops
+// the tabs (and their history) no other owner's document still holds;
+// share links and the other per-document rows cascade from `documents.id`.
 // Folders carry their own owner_id and need their
 // own DELETE. Participants are owner-less in the schema but their id
 // IS the owner id, so a single id-match delete clears the display-
@@ -29,17 +29,17 @@ const R2_DELETE_CHUNK = 1000;
 // the R2 object key matches the row id, so we enumerate before the
 // D1 wipe + bulk-delete from R2 + then drop the rows.
 //
-// Returns `{ diagrams, folders, images }` change counts for the
+// Returns `{ documents, folders, images }` change counts for the
 // audit log. Idempotent: re-running with the same owner id is a
 // no-op once the rows are gone.
 export async function deleteAccount(
   env: Env,
   ownerId: string,
-): Promise<{ diagrams: number; folders: number; images: number }> {
-  // Teams first (docs/specs/013-workspace/teams.md/35): transfer the user's team-library diagrams
+): Promise<{ documents: number; folders: number; images: number }> {
+  // Teams first (docs/specs/013-workspace/teams.md/35): transfer the user's team-library documents
   // to a remaining member, drop their memberships (promoting a new
   // admin when they were the last one), and delete teams they were the
-  // last joined member of. MUST run before the diagrams DELETE below —
+  // last joined member of. MUST run before the documents DELETE below —
   // that wipe would otherwise destroy shared team work, and the dead
   // Clerk id would linger as a ghost (or sole-admin-blocking) member.
   await detachUserFromTeams(env, ownerId);
@@ -59,28 +59,28 @@ export async function deleteAccount(
   const imagesRes = await env.DB.prepare('DELETE FROM images WHERE owner_id = ?')
     .bind(ownerId)
     .run();
-  // Diagram SVG snapshots (docs/specs/006-diagram/diagram-snapshots.md) live in R2 under thumb/<diagramId>,
-  // keyed off the diagram id rather than carried on a D1 row, so — like
+  // Document SVG snapshots (docs/specs/006-document/document-snapshots.md) live in R2 under thumb/<documentId>,
+  // keyed off the document id rather than carried on a D1 row, so — like
   // the images above — the cascade can't reach them. Enumerate the
-  // owner's diagram ids while the rows still exist, then bulk-delete
-  // their snapshot objects before the diagrams DELETE drops the ids.
+  // owner's document ids while the rows still exist, then bulk-delete
+  // their snapshot objects before the documents DELETE drops the ids.
   if (env.IMAGES) {
-    const diagramRows = await env.DB.prepare('SELECT id FROM diagrams WHERE owner_id = ?')
+    const documentRows = await env.DB.prepare('SELECT id FROM documents WHERE owner_id = ?')
       .bind(ownerId)
       .all<{ id: string }>();
-    const thumbKeys = (diagramRows.results ?? []).map((r) => thumbnailKey(r.id));
+    const thumbKeys = (documentRows.results ?? []).map((r) => thumbnailKey(r.id));
     for (let i = 0; i < thumbKeys.length; i += R2_DELETE_CHUNK) {
       await env.IMAGES.delete(thumbKeys.slice(i, i + R2_DELETE_CHUNK));
     }
   }
-  // Link-aware (docs/specs/006-diagram/tab-diagram-many-to-many.md): a tab
-  // shared into a diagram someone else owns stays there.
+  // Link-aware (docs/specs/006-document/tab-document-many-to-many.md): a tab
+  // shared into a document someone else owns stays there.
   const removal = await env.DB.batch(
-    diagramRemovalStatements(env, { column: 'owner_id', value: ownerId }),
+    documentRemovalStatements(env, { column: 'owner_id', value: ownerId }),
   );
-  const diagramsRes = removal[removal.length - 1]!;
+  const documentsRes = removal[removal.length - 1]!;
   // Personal folders only. A team folder carries its creator's owner_id but
-  // belongs to the team (access is by membership), and teammates' diagrams
+  // belongs to the team (access is by membership), and teammates' documents
   // sit in it: deleting it dropped them out of the team library behind a
   // dangling folder_id. That includes teams this user LEFT earlier, which
   // detachUserFromTeams no longer sees.
@@ -105,24 +105,24 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
   // auth_accounts (docs/specs/017-telemetry/telemetry.md): the first-seen row the sign-up count keys on.
   await env.DB.prepare('DELETE FROM auth_accounts WHERE owner_id = ?').bind(ownerId).run();
-  // shared_with rows POINTING AT this owner's diagrams die with the
-  // diagrams (FK cascade), but the rows this owner accumulated by
-  // visiting OTHER people's diagrams are keyed on their owner_id and
+  // shared_with rows POINTING AT this owner's documents die with the
+  // documents (FK cascade), but the rows this owner accumulated by
+  // visiting OTHER people's documents are keyed on their owner_id and
   // need their own DELETE — same table migrateOwnerId already handles.
   await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(ownerId).run();
   // favourites (docs/specs/013-workspace/favourites.md): the same split as
-  // shared_with. Stars on this owner's diagrams cascade; the stars they put on
-  // teammates' and other people's diagrams are theirs and go here.
+  // shared_with. Stars on this owner's documents cascade; the stars they put on
+  // teammates' and other people's documents are theirs and go here.
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
   await deleteTimelineForOwner(env, ownerId);
   // Activity (docs/specs/013-workspace/activity-page.md): the alias rows + the backfill stamp. The index
-  // rows themselves went with the tabs diagramRemovalStatements dropped above.
+  // rows themselves went with the tabs documentRemovalStatements dropped above.
   await deleteCollabIndexForOwner(env, ownerId);
   return {
-    diagrams: diagramsRes.meta.changes ?? 0,
+    documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
     images: imagesRes.meta.changes ?? 0,
   };
@@ -133,15 +133,15 @@ export async function deleteAccount(
 // `toOwnerId`. Called
 // from POST /api/migrate when a guest signs up: their localStorage
 // participant id moves to their Clerk userId so the new account sees
-// the diagrams, folders, shared-with-them list, editor preferences,
+// the documents, folders, shared-with-them list, editor preferences,
 // AND uploaded images they built as a guest.
 //
-// shared_with's primary key is (owner_id, diagram_id), so a naive
+// shared_with's primary key is (owner_id, document_id), so a naive
 // UPDATE could PK-collide if the visitor accepted the same share
 // link both as a guest AND, later in the same session, as Clerk
 // (recordSharedAccess upserts a row each time). INSERT OR IGNORE
 // then DELETE handles both cases in one shot: copy guest rows to
-// the Clerk userId, skip rows where (clerkId, diagramId) already
+// the Clerk userId, skip rows where (clerkId, documentId) already
 // exists, then drop every leftover guest row. The skipped Clerk
 // rows keep the role + last_seen they already had (which is the
 // more recent of the two paths the user actually used).
@@ -150,35 +150,35 @@ export async function deleteAccount(
 // dedupe. UPDATE OR IGNORE skips rows whose sha256 already exists
 // on the Clerk side (the user uploaded the same bytes under both
 // identities). The skipped guest row stays at fromOwnerId; the
-// formerly-guest diagrams (now Clerk-owned) still resolve those
-// image ids via the diagram-reference fallback in GET
+// formerly-guest documents (now Clerk-owned) still resolve those
+// image ids via the document-reference fallback in GET
 // /api/images/:id (docs/specs/009-elements/images.md), so the canvas keeps rendering them.
 // Only the gallery list filters by owner_id, so the dedupe loser
 // stops showing up there, which is the right outcome (the Clerk
 // twin is identical bytes anyway).
 //
 // Other tables (`change_log`, `share_links`, `tabs`) don't carry
-// their own owner_id, they link via `diagram_id` which is
-// owner-bound, so updating the diagrams cascade-fixes them
+// their own owner_id, they link via `document_id` which is
+// owner-bound, so updating the documents cascade-fixes them
 // implicitly.
 //
-// Returns `{ diagrams, folders, shared, images }`. Idempotent:
+// Returns `{ documents, folders, shared, images }`. Idempotent:
 // re-running with the same `fromOwnerId` is a no-op once the rows
 // have moved.
 export async function migrateOwnerId(
   env: Env,
   fromOwnerId: string,
   toOwnerId: string,
-): Promise<{ diagrams: number; folders: number; shared: number; images: number }> {
-  const diagramsRes = await env.DB.prepare('UPDATE diagrams SET owner_id = ? WHERE owner_id = ?')
+): Promise<{ documents: number; folders: number; shared: number; images: number }> {
+  const documentsRes = await env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
   const foldersRes = await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
   const sharedInsertRes = await env.DB.prepare(
-    `INSERT OR IGNORE INTO shared_with (owner_id, diagram_id, role, last_seen)
-     SELECT ?, diagram_id, role, last_seen
+    `INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, last_seen)
+     SELECT ?, document_id, role, last_seen
      FROM shared_with
      WHERE owner_id = ?`,
   )
@@ -201,12 +201,12 @@ export async function migrateOwnerId(
     .run();
   await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(fromOwnerId).run();
   // favourites (docs/specs/013-workspace/favourites.md): the primary key is
-  // (owner_id, diagram_id), and both identities may have starred the same
-  // diagram, so INSERT OR IGNORE then DELETE like shared_with. A collision
+  // (owner_id, document_id), and both identities may have starred the same
+  // document, so INSERT OR IGNORE then DELETE like shared_with. A collision
   // keeps the account's star and its original created_at.
   await env.DB.prepare(
-    `INSERT OR IGNORE INTO favourites (owner_id, diagram_id, created_at)
-     SELECT ?, diagram_id, created_at
+    `INSERT OR IGNORE INTO favourites (owner_id, document_id, created_at)
+     SELECT ?, document_id, created_at
      FROM favourites
      WHERE owner_id = ?`,
   )
@@ -240,21 +240,21 @@ export async function migrateOwnerId(
   // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
   // sha256) collision case (same bytes on both identities) and
   // leaves those guest rows in place so the image id stays
-  // resolvable by every formerly-guest diagram that references it.
+  // resolvable by every formerly-guest document that references it.
   const imagesRes = await env.DB.prepare(
     'UPDATE OR IGNORE images SET owner_id = ? WHERE owner_id = ?',
   )
     .bind(toOwnerId, fromOwnerId)
     .run();
   // custom_themes (docs/specs/011-theme/custom-themes.md): move the guest's saved themes onto the
-  // authed identity so the diagrams that reference them keep their look
+  // authed identity so the documents that reference them keep their look
   // after sign-up. Plain UPDATE — the id is the PK (no per-owner unique
   // constraint to collide on), so no OR IGNORE needed.
   await env.DB.prepare('UPDATE custom_themes SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
   return {
-    diagrams: diagramsRes.meta.changes ?? 0,
+    documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
     shared: sharedInsertRes.meta.changes ?? 0,
     images: imagesRes.meta.changes ?? 0,

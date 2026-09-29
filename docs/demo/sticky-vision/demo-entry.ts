@@ -2,7 +2,7 @@
 // sticky-vision.bundle.js; imports by relative path so the bundle does not
 // need the workspace package names to resolve from the repo root.
 import { detectStickies } from '../../../packages/sticky-vision/src/detect';
-import { EVENT_STORMING_NOTES } from '../../../packages/diagram/src/event-storming';
+import { EVENT_STORMING_NOTES } from '../../../packages/document/src/event-storming';
 
 declare global {
   interface Window {

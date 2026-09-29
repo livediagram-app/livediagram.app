@@ -1,6 +1,6 @@
 // A real MCP client connected to the real tools over an in-memory transport, for
 // tests that need the SDK's own behaviour: input schemas parsed (the name cap,
-// docs/specs/006-diagram/name-length.md) and results validated against each tool's outputSchema
+// docs/specs/006-document/name-length.md) and results validated against each tool's outputSchema
 // (docs/specs/015-api/mcp-server.md §4.17). The api worker is the caller's `fetch` stub.
 //
 // A caller must still stub `./image-result` (vi.mock is per file): the resvg

@@ -6,12 +6,12 @@
 // which route a card opens, what its preview shows, and when to say
 // "you" instead of a name. The components in @livediagram/ui take this
 // registry as a prop and never import a route themselves, which is what
-// lets a per-diagram feed reuse them without inheriting the Explorer's
+// lets a per-document feed reuse them without inheriting the Explorer's
 // copy.
 //
-// Copy rule (docs/specs/013-workspace/timeline.md §2): a card's TITLE is the subject (the diagram,
+// Copy rule (docs/specs/013-workspace/timeline.md §2): a card's TITLE is the subject (the document,
 // the team, the token) and its REASON LINE is the stored Title Case
-// category ("Diagram Created"). Renderers therefore set `subject` and
+// category ("Document Created"). Renderers therefore set `subject` and
 // leave `label` to fall back to `event.title`, so every card and every
 // collapsed stack draws its wording from the same field and the feed
 // can't drift into a mix of "created" and "Created". People and detail
@@ -24,7 +24,7 @@ import type {
   TimelineRendererRegistry,
 } from '@livediagram/ui';
 import { SourceTypeIcon } from '@livediagram/ui';
-import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { EVENT_ICONS } from './icons';
 
 function str(snapshot: Record<string, unknown>, key: string): string | null {
@@ -52,21 +52,21 @@ function byActor(event: TimelineEvent, ctx: TimelineRendererContext): string {
   return isMine(event, ctx) ? 'by you' : `by ${actorName(event, ctx)}`;
 }
 
-// The diagram's snapshot, filling the card's preview box. Reuses the
+// The document's snapshot, filling the card's preview box. Reuses the
 // Explorer's own thumbnail component, so this inherits its lazy
 // intersection-observer fetch, its blob-URL auth handling, and its
 // stable placeholder: a feed of fifty cards doesn't fire fifty renders
-// for diagrams the reader never scrolls to.
+// for documents the reader never scrolls to.
 function preview(event: TimelineEvent, ctx: TimelineRendererContext) {
-  const diagramId = str(event.snapshot, 'diagramId');
-  if (!diagramId) return undefined;
+  const documentId = str(event.snapshot, 'documentId');
+  if (!documentId) return undefined;
   return (
-    <DiagramThumbnail
+    <DocumentThumbnail
       ownerId={ctx.viewerId}
-      diagramId={diagramId}
+      documentId={documentId}
       // The event's own timestamp as the cache-bust key. The coalesced
       // edit event's timestamp walks forward through a day, so an
-      // actively-edited diagram re-fetches; a months-old card keeps
+      // actively-edited document re-fetches; a months-old card keeps
       // serving its cached snapshot rather than re-rendering on scroll.
       version={event.occurredAt}
       className="h-full w-full"
@@ -74,17 +74,17 @@ function preview(event: TimelineEvent, ctx: TimelineRendererContext) {
   );
 }
 
-const diagramRenderer: TimelineRenderer = (event, ctx) => {
-  const name = str(event.snapshot, 'diagramName') ?? 'A diagram';
-  const diagramId = str(event.snapshot, 'diagramId');
+const documentRenderer: TimelineRenderer = (event, ctx) => {
+  const name = str(event.snapshot, 'documentName') ?? 'A document';
+  const documentId = str(event.snapshot, 'documentId');
   // No id, no link: a row from an older worker (or one whose snapshot
   // lost its id) must not point the reader at nothing. The card dims
   // itself when there's no handler.
-  const open = diagramId
-    ? () => window.location.assign(`/diagram/${encodeURIComponent(diagramId)}`)
+  const open = documentId
+    ? () => window.location.assign(`/document/${encodeURIComponent(documentId)}`)
     : undefined;
   // `description: null` clears the stored line: the reason line already
-  // says what happened and the title already names the diagram, so
+  // says what happened and the title already names the document, so
   // repeating either underneath is noise. Comments are the exception.
   const base = {
     icon: icon(event),
@@ -95,19 +95,19 @@ const diagramRenderer: TimelineRenderer = (event, ctx) => {
   };
 
   switch (event.eventType) {
-    case 'diagram_edited':
+    case 'document_edited':
       return { ...base, meta: byActor(event, ctx) };
-    case 'diagram_duplicated': {
+    case 'document_duplicated': {
       const source = str(event.snapshot, 'sourceName');
       return { ...base, meta: source ? `Copy of ${source}` : undefined };
     }
-    case 'diagram_moved':
+    case 'document_moved':
       return { ...base, meta: `To ${str(event.snapshot, 'destination') ?? 'a folder'}` };
-    case 'team_diagram_added':
+    case 'team_document_added':
       return { ...base, meta: str(event.snapshot, 'teamName') ?? undefined };
-    case 'team_diagram_removed': {
-      // Who has it now. A non-owner pulling a team diagram out takes
-      // ownership of it (docs/specs/013-workspace/team-shared-diagrams.md), so this is the part a reader of the
+    case 'team_document_removed': {
+      // Who has it now. A non-owner pulling a team document out takes
+      // ownership of it (docs/specs/013-workspace/team-shared-documents.md), so this is the part a reader of the
       // TEAM's copy of this event actually needs.
       const owner = str(event.snapshot, 'newOwnerName');
       return {
@@ -120,7 +120,7 @@ const diagramRenderer: TimelineRenderer = (event, ctx) => {
       // The stored description holds the comment's words (for a
       // resolution, the thread's opening comment), which is the whole
       // reason to look, so it stays. The person goes in the meta,
-      // because on a shared diagram "who" is the next thing worth
+      // because on a shared document "who" is the next thing worth
       // knowing.
       return { ...base, meta: actorName(event, ctx), description: undefined };
     case 'action_assigned': {
@@ -140,10 +140,10 @@ const diagramRenderer: TimelineRenderer = (event, ctx) => {
         description: str(event.snapshot, 'actionName') ?? null,
         meta: byActor(event, ctx),
       };
-    case 'diagram_offline':
+    case 'document_offline':
       return { ...base, meta: 'Kept only in this browser' };
-    case 'diagram_opened_by_visitor':
-    case 'diagram_copied_by_visitor':
+    case 'document_opened_by_visitor':
+    case 'document_copied_by_visitor':
       return {
         ...base,
         meta: str(event.snapshot, 'visitorName') ?? 'Someone with the share link',
@@ -245,7 +245,7 @@ const accountRenderer: TimelineRenderer = (event) => {
 };
 
 export const TIMELINE_RENDERERS: TimelineRendererRegistry = {
-  diagram: diagramRenderer,
+  document: documentRenderer,
   team: teamRenderer,
   account: accountRenderer,
 };

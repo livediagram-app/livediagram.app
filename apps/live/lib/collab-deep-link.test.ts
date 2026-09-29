@@ -7,8 +7,8 @@ import { collabDeepLinkHref, parseCollabDeepLink } from './collab-deep-link';
 // parameter names cannot drift. The round trip is the contract.
 
 const place: ActivityPlace = {
-  diagramId: 'd 1',
-  diagramName: 'Payments',
+  documentId: 'd 1',
+  documentName: 'Payments',
   teamId: null,
   via: 'own',
   shareCode: null,
@@ -19,19 +19,19 @@ const place: ActivityPlace = {
 };
 
 describe('collabDeepLinkHref', () => {
-  it('builds the owned-diagram form with an encoded fragment', () => {
+  it('builds the owned-document form with an encoded fragment', () => {
     expect(collabDeepLinkHref(place, 'action')).toBe(
-      '/diagram/d%201#t=tab%2F1&el=el%261&open=action',
+      '/document/d%201#t=tab%2F1&el=el%261&open=action',
     );
   });
 
-  it('uses the visitor URL for a diagram shared with the reader', () => {
+  it('uses the visitor URL for a document shared with the reader', () => {
     expect(collabDeepLinkHref({ ...place, via: 'shared', shareCode: 'c/1' }, 'comments')).toBe(
-      '/diagram/d%201?s=c%2F1#t=tab%2F1&el=el%261&open=comments',
+      '/document/d%201?s=c%2F1#t=tab%2F1&el=el%261&open=comments',
     );
   });
 
-  it('never appends a share code to an owned or team diagram', () => {
+  it('never appends a share code to an owned or team document', () => {
     expect(
       collabDeepLinkHref({ ...place, via: 'team', shareCode: 'leak' }, 'action'),
     ).not.toContain('?s=');

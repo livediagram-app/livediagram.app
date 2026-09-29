@@ -6,7 +6,7 @@ grouped, keyboard-navigable results list with an **Actions** group backed by
 the command registry (`lib/editor-commands.ts`). This spec promotes that
 Actions group into a full command palette by (a) binding the conventional
 **Cmd/Ctrl+K** shortcut alongside the existing Cmd/Ctrl+., and (b) widening
-the registry from selection/diagram verbs to the whole app surface.
+the registry from selection/document verbs to the whole app surface.
 
 ## Shortcut
 

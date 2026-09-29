@@ -1,6 +1,6 @@
 'use client';
 
-import { QUIZ_OPTION_HEIGHT, QUIZ_OPTION_WIDTH } from '@livediagram/diagram';
+import { QUIZ_OPTION_HEIGHT, QUIZ_OPTION_WIDTH } from '@livediagram/document';
 import type { Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { tint } from '@/lib/element-tint';

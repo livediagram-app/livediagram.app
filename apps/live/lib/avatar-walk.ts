@@ -4,7 +4,7 @@
 // keeps it on screen, and what it is standing on. No React, no DOM, so
 // the walk behaviour is unit-testable without a canvas.
 
-import { isBoxed, type Element } from '@livediagram/diagram';
+import { isBoxed, type Element } from '@livediagram/document';
 
 // Walk speed in CANVAS px per second. Constant on purpose: an eased
 // glide reads as a camera move, a constant walk reads as a character.
@@ -14,7 +14,7 @@ import { isBoxed, type Element } from '@livediagram/diagram';
 export const AVATAR_SPAWN_GAP = 12;
 
 // How far a shoved character slides, in canvas px (docs/specs/008-canvas/avatar-mode.md). Far enough to be
-// unmistakably a push, short enough that nobody gets flung across the diagram.
+// unmistakably a push, short enough that nobody gets flung across the canvas.
 export const AVATAR_SHOVE_DISTANCE = 70;
 
 // How often a STANDING character republishes itself to the room (docs/specs/008-canvas/avatar-mode.md).

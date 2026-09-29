@@ -10,7 +10,7 @@
 // the current settings, because "Comet at Bold over a long trail" means nothing
 // as three words and everything as a stroke.
 //
-// Nothing here is a diagram edit: the pen is device-local (see
+// Nothing here is a document edit: the pen is device-local (see
 // lib/laser-config) and rides your laser samples so peers see the same beam.
 
 import { useEffect, useState } from 'react';
@@ -50,7 +50,7 @@ function PenPreview({ config, colour }: { config: LaserConfig; colour: string })
 
   // A gentle S-curve across the box, sampled back in time so the tail is
   // already fading when it appears — the same shape a hand sweeping across a
-  // diagram makes.
+  // canvas makes.
   const points = Array.from({ length: 24 }, (_, i) => {
     const p = i / 23;
     return {

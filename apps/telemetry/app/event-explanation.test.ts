@@ -120,8 +120,8 @@ describe('eventExplanation', () => {
   });
 
   it('reads a client error code as where it broke', () => {
-    expect(eventExplanation('Error', 'Client', 'Uncaught.Diagram.TypeError')).toBe(
-      'The diagram page hit an unexpected missing or wrong kind of value that nothing in the code caught.',
+    expect(eventExplanation('Error', 'Client', 'Uncaught.Document.TypeError')).toBe(
+      'The document page hit an unexpected missing or wrong kind of value that nothing in the code caught.',
     );
   });
 

@@ -6,7 +6,7 @@ import {
   QUIZ_OPTION_HEIGHT,
   QUIZ_OPTION_WIDTH,
   quizOptionLetter,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { tint } from '@/lib/element-tint';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 

@@ -12,7 +12,7 @@
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createShape, createText, type Element } from '@livediagram/diagram';
+import { createShape, createText, type Element } from '@livediagram/document';
 
 const GAP = 40;
 const TITLE_H = 48;

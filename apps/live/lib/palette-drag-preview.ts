@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import type { ShapeKind } from '@livediagram/diagram';
+import type { ShapeKind } from '@livediagram/document';
 
 // Shared, transient state for the palette drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md). A
 // palette tile publishes what it's dragging on `dragstart` so the canvas's

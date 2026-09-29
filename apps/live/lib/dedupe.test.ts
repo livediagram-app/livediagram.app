@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { dedupeInFlight } from './dedupe';
 
 // dedupeInFlight backs four list / load endpoints in api-client.ts
-// (apiLoadTab, apiListDiagrams, apiListSharedWith, apiListFolders).
+// (apiLoadTab, apiListDocuments, apiListSharedWith, apiListFolders).
 // Its contract is small but load-bearing: callers expect concurrent
 // duplicates to collapse, distinct keys to stay isolated, and a
 // settled promise to release the entry so the next call is fresh.

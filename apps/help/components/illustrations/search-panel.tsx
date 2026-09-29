@@ -170,8 +170,8 @@ function SearchOverlay({
 
 // --- Reusable result icons ---------------------------------------------------
 
-/** A diagram / board glyph: a small framed canvas with two nodes. */
-function DiagramIcon() {
+/** A document glyph: a small framed canvas with two nodes. */
+function DocumentIcon() {
   return (
     <g>
       <rect
@@ -244,19 +244,19 @@ function TableIcon() {
 
 // --- Scenes ------------------------------------------------------------------
 
-/** Mixed results across diagrams, tabs, and elements: search at a glance. */
+/** Mixed results across documents, tabs, and elements: search at a glance. */
 export function SearchOverview() {
   return (
     <SearchOverlay
       query="check"
       groups={[
         {
-          title: 'Diagrams',
-          rows: [{ icon: <DiagramIcon />, label: 'Checkout flow', active: true }],
+          title: 'Documents',
+          rows: [{ icon: <DocumentIcon />, label: 'Checkout flow', active: true }],
         },
         {
           title: 'Tabs',
-          rows: [{ icon: <TabIcon />, label: 'Checkout', meta: 'this diagram' }],
+          rows: [{ icon: <TabIcon />, label: 'Checkout', meta: 'this document' }],
         },
         {
           title: 'Elements',
@@ -270,15 +270,15 @@ export function SearchOverview() {
   );
 }
 
-/** Results limited to diagrams, folders, and shared diagrams. */
-export function SearchDiagrams() {
+/** Results limited to documents, folders, and shared documents. */
+export function SearchDocuments() {
   return (
     <SearchOverlay
       query="onboarding"
       groups={[
         {
-          title: 'Diagrams',
-          rows: [{ icon: <DiagramIcon />, label: 'Onboarding flow', active: true }],
+          title: 'Documents',
+          rows: [{ icon: <DocumentIcon />, label: 'Onboarding flow', active: true }],
         },
         {
           title: 'Personal Space',
@@ -286,14 +286,14 @@ export function SearchDiagrams() {
         },
         {
           title: 'Shared with you',
-          rows: [{ icon: <DiagramIcon />, label: 'Onboarding v2', meta: 'shared' }],
+          rows: [{ icon: <DocumentIcon />, label: 'Onboarding v2', meta: 'shared' }],
         },
       ]}
     />
   );
 }
 
-/** Results showing teams plus their shared folders and diagrams. */
+/** Results showing teams plus their shared folders and documents. */
 export function SearchTeams() {
   return (
     <SearchOverlay
@@ -304,7 +304,7 @@ export function SearchTeams() {
           rows: [
             { icon: <TeamIcon />, label: 'Platform team', active: true },
             { icon: <FolderIcon accent />, label: 'Architecture', meta: 'in Platform' },
-            { icon: <DiagramIcon />, label: 'Platform overview', meta: 'in Platform' },
+            { icon: <DocumentIcon />, label: 'Platform overview', meta: 'in Platform' },
           ],
         },
       ]}
@@ -341,8 +341,8 @@ export function SearchAddToCanvas() {
       query="cylinder"
       groups={[
         {
-          title: 'Diagrams',
-          rows: [{ icon: <DiagramIcon />, label: 'Storage cylinder demo' }],
+          title: 'Documents',
+          rows: [{ icon: <DocumentIcon />, label: 'Storage cylinder demo' }],
         },
         {
           title: 'Add to canvas',
@@ -385,7 +385,7 @@ export function SearchCreateTab() {
         {
           title: 'Tabs',
           rows: [
-            { icon: <TabIcon active />, label: 'New ideas', active: true, meta: 'this diagram' },
+            { icon: <TabIcon active />, label: 'New ideas', active: true, meta: 'this document' },
           ],
         },
         {

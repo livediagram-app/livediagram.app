@@ -19,15 +19,15 @@ import * as outputs from './output-schema';
 // neither SDK side does, a result field the schema never declared.
 
 const TAB = { id: 't1', name: 'Tab 1', elements: [] };
-const DIAGRAM = { id: 'd1', name: 'Roadmap', tabs: [{ id: 't1', name: 'Tab 1' }] };
+const LIVE_DOC = { id: 'd1', name: 'Roadmap', tabs: [{ id: 't1', name: 'Tab 1' }] };
 
 // A plausible api with non-empty lists, so the array item schemas are exercised.
 async function api(request: Request): Promise<Response> {
   const path = new URL(request.url).pathname.replace(/^\/api/, '');
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
-  if (path === '/diagrams' && request.method === 'GET') {
-    return json({ diagrams: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
+  if (path === '/documents' && request.method === 'GET') {
+    return json({ documents: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
   }
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') {
@@ -35,52 +35,52 @@ async function api(request: Request): Promise<Response> {
       trash: [{ id: 'd2', name: 'Old', teamId: null, trashedAt: 1, purgeAt: 2 }],
     });
   }
-  if (path.endsWith('/restore')) return json({ diagram: DIAGRAM });
+  if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
-  return json({ diagram: DIAGRAM });
+  return json({ document: LIVE_DOC });
 }
 
 // Each tool, with both result branches of rename and delete.
 const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, unknown> }[] = [
-  { tool: 'find_diagrams', output: 'findDiagramsOutput', args: {} },
-  { tool: 'read_diagram', output: 'readDiagramOutput', args: { diagramId: 'd1' } },
+  { tool: 'find_documents', output: 'findDocumentsOutput', args: {} },
+  { tool: 'read_document', output: 'readDocumentOutput', args: { documentId: 'd1' } },
   { tool: 'list_templates', output: 'listTemplatesOutput', args: {} },
   {
-    tool: 'create_diagram',
-    output: 'createDiagramOutput',
+    tool: 'create_document',
+    output: 'createDocumentOutput',
     args: { name: 'New', tabs: [{ name: 'Tab', elements: [] }] },
   },
   {
     tool: 'add_tab',
     output: 'addTabOutput',
-    args: { diagramId: 'd1', name: 'Detail', elements: [] },
+    args: { documentId: 'd1', name: 'Detail', elements: [] },
   },
   {
-    tool: 'update_diagram',
-    output: 'updateDiagramOutput',
-    args: { diagramId: 'd1', mode: 'replace', elements: [] },
+    tool: 'update_document',
+    output: 'updateDocumentOutput',
+    args: { documentId: 'd1', mode: 'replace', elements: [] },
   },
-  { tool: 'share_diagram', output: 'shareDiagramOutput', args: { diagramId: 'd1' } },
+  { tool: 'share_document', output: 'shareDocumentOutput', args: { documentId: 'd1' } },
   {
-    tool: 'rename_diagram',
-    output: 'renameDiagramOutput',
-    args: { diagramId: 'd1', name: 'Renamed' },
+    tool: 'rename_document',
+    output: 'renameDocumentOutput',
+    args: { documentId: 'd1', name: 'Renamed' },
   },
   {
-    tool: 'rename_diagram',
-    output: 'renameDiagramOutput',
-    args: { diagramId: 'd1', tabId: 't1', name: 'Renamed' },
+    tool: 'rename_document',
+    output: 'renameDocumentOutput',
+    args: { documentId: 'd1', tabId: 't1', name: 'Renamed' },
   },
-  { tool: 'delete_diagram', output: 'deleteDiagramOutput', args: { diagramId: 'd1' } },
+  { tool: 'delete_document', output: 'deleteDocumentOutput', args: { documentId: 'd1' } },
   {
-    tool: 'delete_diagram',
-    output: 'deleteDiagramOutput',
-    args: { diagramId: 'd1', tabId: 't1' },
+    tool: 'delete_document',
+    output: 'deleteDocumentOutput',
+    args: { documentId: 'd1', tabId: 't1' },
   },
   { tool: 'list_trash', output: 'listTrashOutput', args: {} },
-  { tool: 'restore_diagram', output: 'restoreDiagramOutput', args: { diagramId: 'd2' } },
+  { tool: 'restore_document', output: 'restoreDocumentOutput', args: { documentId: 'd2' } },
 ];
 
 describe('tool output schemas', () => {
@@ -95,7 +95,9 @@ describe('tool output schemas', () => {
     // A new tool must be added to CALLS, or its schema is never exercised.
     const client = await connectTestClient(api);
     const { tools } = await client.listTools();
-    expect(new Set(CALLS.map((c) => c.tool))).toEqual(new Set(tools.map((t) => t.name)));
+    // Deprecated aliases share their successor's output schema (tools.test.ts).
+    const current = tools.filter((t) => !(t.description ?? '').startsWith('Deprecated'));
+    expect(new Set(CALLS.map((c) => c.tool))).toEqual(new Set(current.map((t) => t.name)));
   });
 
   for (const { tool, output, args } of CALLS) {
@@ -116,7 +118,7 @@ describe('tool output schemas', () => {
   it('sends no structuredContent on an error result', async () => {
     const client = await connectTestClient(api);
     const result = await client.callTool({
-      name: 'create_diagram',
+      name: 'create_document',
       arguments: { name: 'New', tabs: [{ name: 'Tab', template: 'no-such-template' }] },
     });
     expect(result.isError).toBe(true);

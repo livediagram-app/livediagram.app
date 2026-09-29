@@ -1,4 +1,4 @@
-import { ES_LANES } from '@livediagram/diagram';
+import { ES_LANES } from '@livediagram/document';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
@@ -7,8 +7,8 @@ import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
 // is gated on `showTemplatePicker`, which is false for the common
-// path (a returning user opening an existing diagram with tabs that
-// already have content). For first-time guests on a fresh diagram
+// path (a returning user opening an existing document with tabs that
+// already have content). For first-time guests on a fresh document
 // the gate is true on first paint, but the empty canvas underneath
 // has already rendered by then, so the user sees the welcome modal
 // fade in a frame later rather than blocking the route on the
@@ -89,7 +89,7 @@ type ChromeExtras = {
   onIsoReset: () => void;
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the character's customisation, owned by
   // useAvatarConfig in Canvas (it persists per browser, so it lives with the
-  // sprite rather than in the editor's diagram state) and edited by the
+  // sprite rather than in the editor's document state) and edited by the
   // Avatar Panel down in the chrome.
   avatarConfig: import('@/lib/avatar-config').AvatarConfig;
   onChangeAvatarField: <K extends keyof import('@/lib/avatar-config').AvatarConfig>(
@@ -100,7 +100,7 @@ type ChromeExtras = {
   onRandomiseAvatar: () => void;
   onAvatarReaction: (kind: import('@/lib/avatar-reactions').AvatarReactionKind) => void;
   // Throw one of the Reaction Pad's bursts (docs/specs/009-elements/reaction-pad.md) around the character.
-  onAvatarBurst?: (reaction: import('@livediagram/diagram').Reaction) => void;
+  onAvatarBurst?: (reaction: import('@livediagram/document').Reaction) => void;
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen, owned by useLaserConfig in Canvas (it
   // persists per browser, like the avatar's costume) and edited down here.
   laserConfig?: import('@/lib/laser-config').LaserConfig;
@@ -143,7 +143,7 @@ type ChromeExtras = {
   slideDeckPanelPosition?: { x: number; y: number } | null;
   onMoveSlideDeckPanel?: (x: number, y: number) => void;
   onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/diagram/[id]/useSlideDeck').SlideDeckState;
+  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@/lib/format-config').FormatConfig;
@@ -199,7 +199,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     canRedo,
     canUndo,
     canvasTool,
-    diagramName,
+    documentName,
     dockButtonRefs,
     drawDrag,
     drawHover,
@@ -405,7 +405,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           mode={templatePickerMode}
           participant={selfParticipant}
           currentThemeId={tabThemeId}
-          diagramName={diagramName}
+          documentName={documentName}
           lockedName={templatePickerLockedName}
           onPick={onChooseTemplate}
           onSkip={onSkipTemplatePicker}
@@ -416,7 +416,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           landing on, lit for the duration of the drag. Beside the guide
           overlay because it is the same kind of thing — help BEFORE the
           drop — and it publishes through its own store, so it costs nothing
-          on every other board. */}
+          on every other tab. */}
       <TimelineLanesOverlay
         timeline={props.esBoard === true ? ES_LANES : null}
         tabThemeId={tabThemeId}
@@ -583,7 +583,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canRedo={canRedo}
               />
             ) : null}
-            {/* Layers (docs/specs/006-diagram/layers.md): see LayersClusterButton. */}
+            {/* Layers (docs/specs/006-document/layers.md): see LayersClusterButton. */}
             {!zenMode && !readOnly && panelsOn.layers && (clusterPopovers || layersMinimized) ? (
               <LayersClusterButton
                 popoverOpen={clusterPopovers && activeMobilePanel === 'layers'}

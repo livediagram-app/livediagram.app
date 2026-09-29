@@ -4,13 +4,13 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { normaliseUrl } from '@/lib/url-safety';
-import type { ElementLink } from '@livediagram/diagram';
+import type { ElementLink } from '@livediagram/document';
 import { DialogHeader } from './DialogHeader';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // Shared link picker, styled like the import / export dialogs (centred
 // modal, brand chrome). Used for BOTH element links and per-cell table
-// links (docs/specs/008-canvas/canvas-and-palette.md). Three modes — link to a Tab, another Diagram, or an
+// links (docs/specs/008-canvas/canvas-and-palette.md). Three modes — link to a Tab, another Document, or an
 // external URL — plus a Remove action when a link already exists.
 //
 // Generic by design: the dialog builds the chosen `ElementLink` and
@@ -25,19 +25,19 @@ type LinkPickerDialogProps = {
   // The link currently on the target, or null. Seeds the active mode +
   // the URL field, and reveals the Remove button.
   currentLink: ElementLink | null;
-  // Tabs in this diagram. The current tab is marked but still selectable
+  // Tabs in this document. The current tab is marked but still selectable
   // (a cell may legitimately link back to its own tab's start).
   tabs: LinkTarget[];
   currentTabId: string;
-  // The caller's other diagrams (newest first), for the Diagram mode.
-  recentDiagrams: LinkTarget[];
+  // The caller's other documents (newest first), for the Document mode.
+  recentDocuments: LinkTarget[];
   // Pre-select a mode (the context menu's split Link entries open the modal
-  // straight onto webpage / tab / diagram). Falls back to the current link's
+  // straight onto webpage / tab / document). Falls back to the current link's
   // kind, then 'url', when unset.
-  initialMode?: 'tab' | 'diagram' | 'url';
+  initialMode?: 'tab' | 'document' | 'url';
   // Restricts the dialog to the URL mode, with caller-supplied copy and
   // validation. For an element whose link IS its content — a video's YouTube
-  // URL (docs/specs/009-elements/youtube-video.md) — the tab and diagram modes are not a narrower choice, they
+  // URL (docs/specs/009-elements/youtube-video.md) — the tab and document modes are not a narrower choice, they
   // are a meaningless one: a video pointed at a tab has nothing to play.
   urlOnly?: UrlOnlyConfig;
   onCommit: (link: ElementLink | null) => void;
@@ -45,7 +45,7 @@ type LinkPickerDialogProps = {
 };
 
 export type UrlOnlyConfig = {
-  // Replaces the header's "Jump to a tab, open another diagram, ..." line.
+  // Replaces the header's "Jump to a tab, open another document, ..." line.
   subtitle: string;
   fieldLabel: string;
   placeholder: string;
@@ -57,12 +57,12 @@ export type UrlOnlyConfig = {
   validate: (url: string) => string | null;
 };
 
-type Mode = 'tab' | 'diagram' | 'url';
+type Mode = 'tab' | 'document' | 'url';
 
 const MODES: { id: Mode; label: string }[] = [
   { id: 'url', label: 'External URL' },
   { id: 'tab', label: 'Tab' },
-  { id: 'diagram', label: 'Diagram' },
+  { id: 'document', label: 'Document' },
 ];
 
 export function LinkPickerDialog({
@@ -70,7 +70,7 @@ export function LinkPickerDialog({
   currentLink,
   tabs,
   currentTabId,
-  recentDiagrams,
+  recentDocuments,
   initialMode,
   urlOnly,
   onCommit,
@@ -81,8 +81,8 @@ export function LinkPickerDialog({
   const [mode, setMode] = useState<Mode>(
     (urlOnly ? 'url' : undefined) ??
       initialMode ??
-      (currentLink?.kind === 'diagram'
-        ? 'diagram'
+      (currentLink?.kind === 'document'
+        ? 'document'
         : currentLink?.kind === 'tab' || currentLink?.kind === 'element'
           ? 'tab'
           : 'url'),
@@ -109,7 +109,7 @@ export function LinkPickerDialog({
 
   const linkedTabId =
     currentLink?.kind === 'tab' || currentLink?.kind === 'element' ? currentLink.tabId : null;
-  const linkedDiagramId = currentLink?.kind === 'diagram' ? currentLink.diagramId : null;
+  const linkedDocumentId = currentLink?.kind === 'document' ? currentLink.documentId : null;
 
   return (
     <Dialog open onClose={onClose} ariaLabel={title} size="lg" className="max-h-[90vh]">
@@ -118,7 +118,7 @@ export function LinkPickerDialog({
         subtitle={
           urlOnly
             ? urlOnly.subtitle
-            : 'Jump to a tab, open another diagram, or go to a web address.'
+            : 'Jump to a tab, open another document, or go to a web address.'
         }
       >
         {/* A URL-restricted picker is an embed's link dialog (docs/specs/009-elements/embed-providers.md), so
@@ -175,20 +175,20 @@ export function LinkPickerDialog({
               </li>
             ))}
           </ul>
-        ) : mode === 'diagram' ? (
-          recentDiagrams.length === 0 ? (
+        ) : mode === 'document' ? (
+          recentDocuments.length === 0 ? (
             <div className="flex flex-col items-center gap-1 py-10 text-center">
-              <DiagramGlyph muted />
-              <p className="text-xs text-slate-400 dark:text-slate-400">No other diagrams yet.</p>
+              <DocumentGlyph muted />
+              <p className="text-xs text-slate-400 dark:text-slate-400">No other documents yet.</p>
             </div>
           ) : (
             <ul className="flex flex-col gap-1">
-              {recentDiagrams.map((d) => (
+              {recentDocuments.map((d) => (
                 <li key={d.id}>
                   <RowButton
-                    active={linkedDiagramId === d.id}
-                    icon={<DiagramGlyph />}
-                    onClick={() => commit({ kind: 'diagram', diagramId: d.id, name: d.name })}
+                    active={linkedDocumentId === d.id}
+                    icon={<DocumentGlyph />}
+                    onClick={() => commit({ kind: 'document', documentId: d.id, name: d.name })}
                   >
                     <span className="truncate">{d.name}</span>
                   </RowButton>
@@ -303,7 +303,7 @@ function TabGlyph() {
   );
 }
 
-function DiagramGlyph({ muted }: { muted?: boolean }) {
+function DocumentGlyph({ muted }: { muted?: boolean }) {
   return (
     <Glyph
       size={muted ? 28 : 14}

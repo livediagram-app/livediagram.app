@@ -13,9 +13,9 @@ function setup(overrides: Partial<Deps> = {}) {
   const deps: Deps = {
     roomRef: { current: { send: (m: RoomOutgoing) => void sent.push(m) } },
     hydrated: true,
-    diagramId: 'd1',
-    diagramShareable: true,
-    diagramTeamId: null,
+    documentId: 'd1',
+    documentShareable: true,
+    documentTeamId: null,
     activeId: 'tab1',
     canvasTool: 'laser',
     cursorsHidden: false,

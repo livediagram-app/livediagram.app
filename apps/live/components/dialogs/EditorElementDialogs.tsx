@@ -8,10 +8,10 @@ import {
   EMBED_PROVIDER_HINT,
   EMBED_PROVIDER_LABEL,
   embedTargetFor,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
 const LinkPickerDialog = dynamic(
   () => import('@/components/dialogs/LinkPickerDialog').then((m) => m.LinkPickerDialog),
@@ -43,8 +43,8 @@ export function EditorElementDialogs() {
     tabs,
     activeId,
     linkPickerInitialMode,
-    diagramList,
-    diagramId,
+    documentList,
+    documentId,
     applyElementLink,
     setLinkPickerOpenForId,
     cellLinkPickerOpenFor,
@@ -66,7 +66,7 @@ export function EditorElementDialogs() {
 
   // A video's link IS its content (docs/specs/009-elements/youtube-video.md), so its picker is the URL mode
   // only, validated as a YouTube link. Every other element keeps the full
-  // tab / diagram / URL choice.
+  // tab / document / URL choice.
   const linkTarget = activeTab.elements.find((e) => e.id === linkPickerOpenForId);
   // The provider the embed was created for, when it came from one of the
   // provider tiles (docs/specs/009-elements/embed-providers.md). Names the dialog; the validator still accepts
@@ -115,8 +115,8 @@ export function EditorElementDialogs() {
           tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
           currentTabId={activeId}
           initialMode={linkPickerInitialMode ?? undefined}
-          recentDiagrams={diagramList
-            .filter((d) => d.id !== diagramId)
+          recentDocuments={documentList
+            .filter((d) => d.id !== documentId)
             .slice(0, 8)
             .map((d) => ({ id: d.id, name: d.name }))}
           onCommit={(link) => {
@@ -126,7 +126,7 @@ export function EditorElementDialogs() {
               track(
                 'Element',
                 'Linked',
-                link.kind === 'url' ? 'Url' : link.kind === 'diagram' ? 'Diagram' : 'Tab',
+                link.kind === 'url' ? 'Url' : link.kind === 'document' ? 'Document' : 'Tab',
               );
           }}
           onClose={() => setLinkPickerOpenForId(null)}
@@ -145,8 +145,8 @@ export function EditorElementDialogs() {
           })()}
           tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
           currentTabId={activeId}
-          recentDiagrams={diagramList
-            .filter((d) => d.id !== diagramId)
+          recentDocuments={documentList
+            .filter((d) => d.id !== documentId)
             .slice(0, 8)
             .map((d) => ({ id: d.id, name: d.name }))}
           onCommit={(link) => {
@@ -156,7 +156,7 @@ export function EditorElementDialogs() {
               track(
                 'Element',
                 'Linked',
-                link.kind === 'url' ? 'Url' : link.kind === 'diagram' ? 'Diagram' : 'Tab',
+                link.kind === 'url' ? 'Url' : link.kind === 'document' ? 'Document' : 'Tab',
               );
           }}
           onClose={() => setCellLinkPickerOpenFor(null)}
@@ -194,10 +194,10 @@ export function EditorElementDialogs() {
             );
           })()
         : null}
-      {imagePickerOpenFor && diagramId && !isReadOnly ? (
+      {imagePickerOpenFor && documentId && !isReadOnly ? (
         <ImagePicker
           ownerId={selfParticipant.id}
-          diagramId={diagramId}
+          documentId={documentId}
           forElementId={imagePickerOpenFor.forElementId}
           currentImageId={(() => {
             const targetId = imagePickerOpenFor.forElementId;
@@ -217,7 +217,7 @@ export function EditorElementDialogs() {
               closeImagePicker();
             }
             // Refresh the Current Tab → Images accordion so the
-            // just-uploaded image surfaces without a diagram reload.
+            // just-uploaded image surfaces without a document reload.
             refreshRecentImages(selfParticipant.id);
           }}
           onClose={closeImagePicker}

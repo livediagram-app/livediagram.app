@@ -8,7 +8,7 @@ import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { ActivityPanel } from '@/components/panels/ActivityPanel';
 import { LayersPanel } from '@/components/panels/LayersPanel';
-import { visibleLayerElements } from '@livediagram/diagram';
+import { visibleLayerElements } from '@livediagram/document';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
@@ -20,7 +20,7 @@ import { useCanvasToolPanels } from './useCanvasToolPanels';
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
-// top-right panel). Most diagrams never accumulate comments, so deferring
+// top-right panel). Most documents never accumulate comments, so deferring
 // the 164-line panel + its relative-time formatting
 // dependencies keeps the editor's initial chunk lean.
 const CollaboratePanel = dynamic(
@@ -100,9 +100,9 @@ export function useCanvasChromePanels({
     actionRows,
     commentRows,
     commentsPanelPosition,
-    currentDiagramId,
-    diagramList,
-    diagramListLoading,
+    currentDocumentId,
+    documentList,
+    documentListLoading,
     elements,
     explorerBottomY,
     explorerPosition,
@@ -156,22 +156,22 @@ export function useCanvasChromePanels({
     onClearActivity,
     onClearRevertPreview,
     onCreateFolder,
-    onDeleteDiagram,
+    onDeleteDocument,
     onDeleteFolder,
     onDismissShared,
-    onDuplicateDiagram,
+    onDuplicateDocument,
     onMoveActivity,
     onMoveCommentsPanel,
-    onMoveDiagramToFolder,
-    onMoveDiagramTo,
+    onMoveDocumentToFolder,
+    onMoveDocumentTo,
     onMoveExplorer,
     onMovePalette,
-    onNewDiagram,
+    onNewDocument,
     explorerMenuActions,
     onOpenActionForElement,
     onToggleActionDone,
     onOpenCommentsForElement,
-    onOpenDiagram,
+    onOpenDocument,
     onRedo,
     onRenameCurrent,
     onRenameFolder,
@@ -199,11 +199,11 @@ export function useCanvasChromePanels({
     setExplorerBottomY,
     setPaletteBottomY,
     settings,
-    sharedDiagrams,
+    sharedDocuments,
     tabLocked,
     tabName,
     tabThemeId,
-    teamDiagrams,
+    teamDocuments,
     teamFolders,
     teams,
     viewportZoom,
@@ -221,16 +221,16 @@ export function useCanvasChromePanels({
     onDismissShared,
     onMoveExplorer,
     onResetExplorer,
-    onOpenDiagram,
-    onNewDiagram,
+    onOpenDocument,
+    onNewDocument,
     onRenameCurrent,
-    onDeleteDiagram,
-    onDuplicateDiagram,
+    onDeleteDocument,
+    onDuplicateDocument,
     onCreateFolder,
     onRenameFolder,
     onDeleteFolder,
-    onMoveDiagramToFolder,
-    onMoveDiagramTo,
+    onMoveDocumentToFolder,
+    onMoveDocumentTo,
     onMenuShare: explorerMenuActions?.onShare,
     onMenuExport: explorerMenuActions?.onExport,
     onMenuSearch: explorerMenuActions?.onSearch,
@@ -338,31 +338,31 @@ export function useCanvasChromePanels({
       favouriteIds={favouriteIds}
       onToggleFavourite={onToggleFavourite}
       position={explorerWiring.position}
-      diagrams={diagramList}
+      documents={documentList}
       ownerId={selfParticipant?.id ?? null}
       folders={folders}
-      loading={diagramListLoading}
-      shared={sharedDiagrams}
+      loading={documentListLoading}
+      shared={sharedDocuments}
       teams={teams}
       teamFolders={teamFolders}
-      teamDiagrams={teamDiagrams}
+      teamDocuments={teamDocuments}
       onDismissShared={explorerHandlers.onDismissShared}
-      currentDiagramId={currentDiagramId}
+      currentDocumentId={currentDocumentId}
       onMoveTo={explorerHandlers.onMoveExplorer}
       onReset={explorerWiring.onReset}
       dock={explorerWiring.dock}
-      onOpenDiagram={explorerHandlers.onOpenDiagram}
-      onNewDiagram={explorerHandlers.onNewDiagram}
+      onOpenDocument={explorerHandlers.onOpenDocument}
+      onNewDocument={explorerHandlers.onNewDocument}
       menuActions={explorerMenu}
       onRenameCurrent={explorerHandlers.onRenameCurrent}
-      onDeleteDiagram={explorerHandlers.onDeleteDiagram}
-      onDuplicateDiagram={explorerHandlers.onDuplicateDiagram}
+      onDeleteDocument={explorerHandlers.onDeleteDocument}
+      onDuplicateDocument={explorerHandlers.onDuplicateDocument}
       onCreateFolder={explorerHandlers.onCreateFolder}
       onRenameFolder={explorerHandlers.onRenameFolder}
       onDeleteFolder={explorerHandlers.onDeleteFolder}
       onTeamFolders={onTeamFolders}
-      onMoveDiagramToFolder={explorerHandlers.onMoveDiagramToFolder}
-      onMoveDiagramTo={onMoveDiagramTo ? explorerHandlers.onMoveDiagramTo : undefined}
+      onMoveDocumentToFolder={explorerHandlers.onMoveDocumentToFolder}
+      onMoveDocumentTo={onMoveDocumentTo ? explorerHandlers.onMoveDocumentTo : undefined}
       onSize={onExplorerSize}
       mobileOpenOverride={activeMobilePanel === 'explorer'}
       mobileDockAnchor={activeDockAnchor ?? undefined}
@@ -464,7 +464,7 @@ export function useCanvasChromePanels({
       />
     );
 
-  // Layers panel (docs/specs/006-diagram/layers.md). Edit sessions only (a viewer can't manage
+  // Layers panel (docs/specs/006-document/layers.md). Edit sessions only (a viewer can't manage
   // layers; visibility / lock still shape what they see via the render
   // path). Floating: hidden while minimised into its bottom-right cluster
   // button. As a popover (clusterPopovers): always mounted so that button can
@@ -548,7 +548,7 @@ export function useCanvasChromePanels({
   const mapEnabled = settings?.showMinimap !== false;
   const mapAccent = paletteTheme.elementStroke;
   const minimapWiring = panelWiringFor('minimap', props.mapPosition, props.onResetMap);
-  // Hidden layers (docs/specs/006-diagram/layers.md) drop out of the miniature too, so the map
+  // Hidden layers (docs/specs/006-document/layers.md) drop out of the miniature too, so the map
   // matches the canvas. Not rendered at all in the minimal panel layout
   // (docs/specs/008-canvas/minimap.md): minimal collapses panels to dock buttons, and a
   // free-floating map contradicts that.

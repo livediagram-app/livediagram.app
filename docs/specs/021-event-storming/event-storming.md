@@ -1,6 +1,6 @@
 # Event storming
 
-A **board kind**: the sticky-note workshop notation for exploring a
+A **tab kind**: the sticky-note workshop notation for exploring a
 business domain (Brandolini's event storming), started from a template
 under the picker's **Technical** category.
 
@@ -75,7 +75,7 @@ semantic colour:
 | `hotspot`         | `#fca5a5` | a conflict, question, or risk       |
 
 - **Single source of truth:** `EVENT_STORMING_NOTES` in
-  `@livediagram/diagram` (`src/event-storming.ts`) — kind, label, blurb,
+  `@livediagram/document` (`src/event-storming.ts`) — kind, label, blurb,
   fill. The palette tiles derive from it (a `map`, not hand-copies) and
   the template builder reads its orange from it, so the surfaces cannot
   drift (pinned by `event-storming.test.ts` + `palette-tile-defs.test.tsx`).
@@ -136,7 +136,7 @@ semantic colour:
   wall of them reads as one hand: capitals stay legible from across the
   room, hold an even block of colour on the paper, and stop a board looking
   like eight people's sentence-case handwriting. The rule is
-  PRESENTATION-only (`eventStormingLabelText` in `@livediagram/diagram`, a
+  PRESENTATION-only (`eventStormingLabelText` in `@livediagram/document`, a
   CSS `text-transform` on the canvas): the typed label is stored exactly as
   written, so search, the JSON export and the day a note stops being a note
   all keep the author's casing. It applies wherever a note PAINTS — display
@@ -188,7 +188,7 @@ layer**, `layer:es:board` (`eventStormingLayers()`), and no view bar.
   is distraction-free capture, and it earned its place only by driving
   the layers it has now lost.
 - **Identity is a FIRST-CLASS field**: `Tab.kind = 'event-storming'`
-  (`TabKind` in `@livediagram/diagram`). It used to be inferred from layer
+  (`TabKind` in `@livediagram/document`). It used to be inferred from layer
   ids, and that broke twice — first as a checklist (all three stage
   layers, so deleting one stripped the board), then as a single layer a
   facilitator can delete from the Layers panel — each time taking the
@@ -199,9 +199,9 @@ layer**, `layer:es:board` (`eventStormingLayers()`), and no view bar.
   the picker, /new and the MCP worker all land it in one commit.
   `isEventStormingTab(tab)` reads the kind first and falls back to the
   board layer or any legacy stage-layer id, so boards authored before the
-  field keep working; their bands remain ordinary [Layers](../006-diagram/layers.md) layers.
+  field keep working; their bands remain ordinary [Layers](../006-document/layers.md) layers.
 - **The kind set is TOTAL**: `TabKind = 'diagram' | 'event-storming'`.
-  “Ordinary board” is a thing the model can SAY, so code switches over a
+  “Ordinary tab” is a thing the model can SAY, so code switches over a
   complete union and a third kind can’t be silently forgotten in a branch.
   `tabKindOf(tab)` resolves the absence that every pre-field tab will carry
   forever (no migration reaches an exported file or someone else’s offline
@@ -296,7 +296,7 @@ the board** — the drag people do most is moving a note they have already
 placed, and that is where making room in the middle earns its keep.
 
 - **Armed on a held Alt, never automatically.** Without the modifier the
-  drag behaves exactly as it does on every other board: no slot, no
+  drag behaves exactly as it does on every other tab: no slot, no
   ripple, no surprise. Automatic arming was tried first and was wrong
   twice over — an author dropping a note NEAR a row got the whole board
   rearranging under them, and the gesture was unavailable in the one
@@ -492,7 +492,7 @@ stretch and the rhythm resumes after it; the empty places after that are sized
 by the note being PLACED. Across lanes it aligns on its left edge, and its brick
 is centred on the gap, so its own width decides where its left edge falls. All
 of it lives in `rhythmSlots` and `gutterCentres` in
-`packages/diagram/src/event-storming-lanes.ts`, so a ruling is a small change.
+`packages/document/src/event-storming-lanes.ts`, so a ruling is a small change.
 
 ### Always on a lane
 
@@ -501,7 +501,7 @@ with an event-storming kind, `isEventStormingNote`) sits on a lane: its centre
 on a lane's centre line. Plain stickies, shapes, icons, images and arrows are
 not held; a plain sticky keeps the lane as an aid (20px). The ONE way off a
 lane is Cmd/Ctrl free placement, and a note placed that way stays exactly
-where it was put: nothing re-snaps it later. On an ordinary board there are no
+where it was put: nothing re-snaps it later. On an ordinary tab there are no
 lanes, so nothing is held.
 
 The rule is about ARRIVING notes. Whatever lands or moves a note puts it on a
@@ -519,7 +519,7 @@ is arriving (the Alt insertion stays the one verb that makes room).
 | **Paste, the pointer anywhere else**              | STAGGERED on the original: the same lane, 24px to the right. Overlapping the original is fine; it is a copy you are about to move. Over a panel, or with the pointer outside the window, is "anywhere else".                                                                                                               |
 | **Duplicate** (⌘D, the menu, the command palette) | Staggered on the original: the same lane, 24px to the right.                                                                                                                                                                                                                                                               |
 | **Photo import**                                  | Rows of the photograph to lanes, with a cascade; notes above one another share a column. See below.                                                                                                                                                                                                                        |
-| **MCP** (`update_diagram`)                        | Every workshop note the call adds or moves is an arriving note: rows to lanes, and a lone arrival landing on an occupied spot takes the nearest free slot.                                                                                                                                                                 |
+| **MCP** (`update_document`)                       | Every workshop note the call adds or moves is an arriving note: rows to lanes, and a lone arrival landing on an occupied spot takes the nearest free slot.                                                                                                                                                                 |
 | **File import** (JSON into the tab)               | Every workshop note to its nearest lane, x untouched.                                                                                                                                                                                                                                                                      |
 | **Next-note button**                              | The lane of the note it was added from (that note's nearest lane, when it was free-placed off one).                                                                                                                                                                                                                        |
 | **Alt insertion**                                 | The lane of the row it is inserted into.                                                                                                                                                                                                                                                                                   |
@@ -723,7 +723,7 @@ so a photo of a wall with bare paper above the notes landed lanes too low).
   about x and says it where the note is actually going.
 - **Notes only** — one or many. A selection of notes snaps by the note in hand
   (see the rules table); a shape, an icon, an arrow or an image drags exactly as
-  it does on every other board. The Alt insertion still wants exactly one
+  it does on every other tab. The Alt insertion still wants exactly one
   note, which is its own rule.
 - **Precedence** (top rung wins): an open insertion slot (Alt, Phase 5) → free
   placement (Cmd/Ctrl, [Snap override (free drag)](../008-canvas/snap-override.md)) → the lane (y) and
@@ -762,11 +762,11 @@ radius 50 (`PHOTO_COLUMN_RADIUS`, a quarter note), x capture radius 100
 (`ES_CANDIDATE_RADIUS_X`, half a standard note), reach 2 lanes
 (`ES_CANDIDATE_REACH_LANES`). They sit in one constants block at the top of the
 geometry module, because they are a single model and get corrected together. The
-geometry is `packages/diagram/src/event-storming-lanes.ts` (including
+geometry is `packages/document/src/event-storming-lanes.ts` (including
 `ES_LANES`, the one fixed stack); the lit lane is the module store `lib/lane-preview.ts` rendered by
 `components/canvas/TimelineLanesOverlay.tsx`; the two drag paths resolve it in
 `hooks/canvas/boxed-drag-resolve.ts` and `lib/palette-drag-snap.ts`. Everything
-that lands notes without a drag is `packages/diagram/src/event-storming-lane-landing.ts`
+that lands notes without a drag is `packages/document/src/event-storming-lane-landing.ts`
 (`landArrivals`, `settleNotesOnLanes`, rows to lanes) and, for a photograph,
 `event-storming-photo-place.ts`; the editor wires them in `lib/paste-placement.ts`,
 `lib/canvas-pointer.ts`, `hooks/canvas/useLaneSettle.ts`, `useNudgeSelection` and
@@ -830,7 +830,7 @@ then just two notes: the board keeps no relation between them.
   second and third choices where there are several).
 
 **Where it lives.** The catalogue and the geometry are
-`packages/diagram/src/event-storming-next.ts` (`ES_NEXT_NOTES`,
+`packages/document/src/event-storming-next.ts` (`ES_NEXT_NOTES`,
 `nextNoteSides`, `nextNoteKind`, `nextNoteBounds`); the placement decision is
 `apps/live/lib/next-note-add.ts`; the act is `hooks/canvas/useNoteActions.ts`;
 the tabs and their preview are `components/canvas/NextNoteButtons.tsx`.
@@ -1535,8 +1535,8 @@ hundred small notes.
 
 ## Domain learnings (session log)
 
-One-liners captured as they were learned — product truths for this diagram
-type, kept current every session. Each should stay true on its own.
+One-liners captured as they were learned — product truths for this tab
+kind, kept current every session. Each should stay true on its own.
 
 - The board is a super-low-threshold capture surface: add, type, drag —
   anything between a thought and a sticky is friction to remove.

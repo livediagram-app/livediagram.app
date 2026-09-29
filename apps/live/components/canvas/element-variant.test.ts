@@ -1,4 +1,4 @@
-import type { BoxedElement } from '@livediagram/diagram';
+import type { BoxedElement } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { describeVariant } from '@/components/canvas/element-variant';
 

@@ -7,10 +7,10 @@
 // picker for the CustomThemeBuilder with a Cancel back to browsing.
 //
 // Shared by the right-click Tab Look & Feel dialog (docs/specs/011-theme/canvas-and-theme-dialog.md) and the
-// New-diagram / template picker (docs/specs/007-editor/new-diagram-route.md) so the two surfaces, and the
+// New-document / template picker (docs/specs/007-editor/new-document-route.md) so the two surfaces, and the
 // custom-theme create/edit flow, can't drift. Selection is reported via
 // onSelect / onCommit; the host decides what that means: apply live (the
-// dialog) or stage the choice until Create (the new-diagram wizard).
+// dialog) or stage the choice until Create (the new-document wizard).
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { customDefinitionFromTheme } from '@/lib/custom-theme-registry';
@@ -32,7 +32,7 @@ export function CustomThemePicker({
   // "Reset elements to theme" action). Hidden while the builder is open.
   footer,
   // Notifies the host when the builder opens / closes, so a host with its
-  // own chrome (the new-diagram wizard's Back / Create footer) can hide it
+  // own chrome (the new-document wizard's Back / Create footer) can hide it
   // while the builder owns the surface.
   onBuildingChange,
   browserClassName = 'mt-4',
@@ -91,7 +91,7 @@ export function CustomThemePicker({
     if (
       await confirm({
         title: `Delete "${theme?.name ?? 'theme'}"?`,
-        message: 'Diagrams using it fall back to the Default theme. This cannot be undone.',
+        message: 'Documents using it fall back to the Default theme. This cannot be undone.',
         confirmLabel: 'Delete',
         variant: 'danger',
       })

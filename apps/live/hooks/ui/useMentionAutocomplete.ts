@@ -7,13 +7,13 @@
 // who was picked, so the send can keep the mentions still in the text.
 
 import { useMemo, useState, type KeyboardEvent, type RefObject } from 'react';
-import { mentionsInText, type CommentMention } from '@livediagram/diagram';
+import { mentionsInText, type CommentMention } from '@livediagram/document';
 import type { MentionScope } from '@/components/canvas/collab/comment/MentionContext';
 import type { MentionCandidate } from '@/hooks/collab/useCommentMentions';
 
 // How many suggestions show at once.
 const MENTION_SUGGESTIONS_MAX = 6;
-export const MENTION_UNAVAILABLE_HINT = 'Mention teammates on a team diagram';
+export const MENTION_UNAVAILABLE_HINT = 'Mention teammates on a team document';
 
 type Field = HTMLInputElement | HTMLTextAreaElement;
 

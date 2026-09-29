@@ -30,7 +30,7 @@
 
 import { useRef } from 'react';
 import type { ChangeLogEntry } from '@livediagram/api-schema';
-import { arrowReferencesAny, type Element, type Tab } from '@livediagram/diagram';
+import { arrowReferencesAny, type Element, type Tab } from '@livediagram/document';
 
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import {
@@ -49,7 +49,7 @@ type EraserDeps = {
   // eraser: a one-pixel sweep that removes anything it touches, one element
   // at a time.
   config?: EraserConfig;
-  // Elements on a hidden or locked layer (docs/specs/006-diagram/layers.md): the eraser passes
+  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): the eraser passes
   // over them like element-locked ones.
   layerInertIds: Set<string>;
   activeId: string;
@@ -102,10 +102,10 @@ export function useCanvasEraser(deps: EraserDeps) {
         if (erasedRef.current.has(id)) continue;
         const el = activeTab.elements.find((e) => e.id === id);
         // Skip unknown ids (a wrapper for something on another layer) and
-        // locked / hidden-or-locked-LAYER elements (protected, docs/specs/006-diagram/layers.md).
+        // locked / hidden-or-locked-LAYER elements (protected, docs/specs/006-document/layers.md).
         if (!el || el.locked === true || layerInertIds.has(id)) continue;
         // And skip what the target filter protects — a sweep set to Drawings
-        // passes straight over the diagram underneath.
+        // passes straight over everything else on the canvas.
         if (!eraserAllows(el, config.target)) continue;
         erasedRef.current.add(id);
         changed = true;

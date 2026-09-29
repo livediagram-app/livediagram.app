@@ -194,7 +194,7 @@ apps/
   router/       # Cloudflare Worker stitching the apps under one hostname
 packages/
   ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
-  diagram/        # diagram data model (Tab, Element types + element helpers)
+  document/       # document data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor Quick Start + MCP)
   template-previews/ # per-template preview SVGs (editor picker + marketing template gallery)
@@ -248,7 +248,7 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
   - **Authed path**: a Clerk session JWT in `Authorization: Bearer <token>`, verified via `CLERK_JWKS_URL`.
   - The api worker uses the `sub` claim as the owner id.
 - The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.
-- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (custom UI; email-code or Google OAuth). On sign-up, guest diagrams migrate from the localStorage id to the Clerk user id via `POST /api/migrate`.
+- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (custom UI; email-code or Google OAuth). On sign-up, guest documents migrate from the localStorage id to the Clerk user id via `POST /api/migrate`.
 
 ## Core principle: reuse over duplication
 

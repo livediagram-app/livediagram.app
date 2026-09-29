@@ -1,16 +1,16 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { qaVoterId, type QaNote } from '@livediagram/diagram';
+import { qaVoterId, type QaNote } from '@livediagram/document';
 import type { QaWriteRequest } from '../qa-board-write';
 
 // The Q&A board endpoint (docs/specs/012-collaboration/qa-board.md). What the ROUTE has to get right: the role
 // split (audience verbs on read access, board-running verbs on edit access),
 // an actor derived from the authenticated caller rather than the request, and
-// handing the write to the diagram's room. The write and its serialisation are
-// the room's, covered in diagram-room-qa.test.ts and qa-board-write.test.ts.
+// handing the write to the document's room. The write and its serialisation are
+// the room's, covered in document-room-qa.test.ts and qa-board-write.test.ts.
 
 const { db, gates } = vi.hoisted(() => ({
-  db: { getDiagram: vi.fn(), getParticipant: vi.fn() },
+  db: { getDocument: vi.fn(), getParticipant: vi.fn() },
   gates: { gateRead: vi.fn(), gateEdit: vi.fn() },
 }));
 vi.mock('../db', () => db);
@@ -22,13 +22,13 @@ vi.mock('./context', async (orig) => ({
 
 import { handleQaBoardRoute } from './qa-board-routes';
 
-const PATH = '/api/diagrams/d1/tabs/t1/qa';
+const PATH = '/api/documents/d1/tabs/t1/qa';
 
 function setup(reply: () => Response = () => Response.json({ notes: [], rev: 1 })) {
   const sent: { url: string; body: QaWriteRequest; room: string }[] = [];
   let room = '';
   const env = {
-    DIAGRAM_ROOM: {
+    DOCUMENT_ROOM: {
       idFromName: (n: string) => n,
       get: (id: string) => {
         room = id;
@@ -48,7 +48,7 @@ function setup(reply: () => Response = () => Response.json({ notes: [], rev: 1 }
 
 beforeEach(() => {
   for (const fn of [...Object.values(db), ...Object.values(gates)]) fn.mockReset();
-  db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'owner-0', teamId: null, tabs: [] });
+  db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'owner-0', teamId: null, tabs: [] });
   db.getParticipant.mockResolvedValue({ name: 'Priya', color: '#0af' });
   gates.gateRead.mockResolvedValue(true);
   gates.gateEdit.mockResolvedValue(false);
@@ -56,7 +56,7 @@ beforeEach(() => {
 
 describe('handleQaBoardRoute', () => {
   it('ignores other paths', async () => {
-    const res = await handleQaBoardRoute(makeTestRouteContext('POST', '/api/diagrams/d1/tabs/t1'));
+    const res = await handleQaBoardRoute(makeTestRouteContext('POST', '/api/documents/d1/tabs/t1'));
     expect(res).toBeNull();
   });
 
@@ -70,10 +70,10 @@ describe('handleQaBoardRoute', () => {
     expect(gates.gateEdit).not.toHaveBeenCalled();
     expect(sent).toHaveLength(1);
     expect(sent[0]!.url).toBe('https://room/qa');
-    // The diagram's own room, so every write for it queues in one place.
+    // The document's own room, so every write for it queues in one place.
     expect(sent[0]!.room).toBe('d1');
     expect(sent[0]!.body).toMatchObject({
-      diagramId: 'd1',
+      documentId: 'd1',
       tabId: 't1',
       elementId: 'b1',
       action: { type: 'add', id: 'n1', text: 'Why?', anonymous: false },
@@ -110,7 +110,7 @@ describe('handleQaBoardRoute', () => {
     expect(sent).toEqual([]);
   });
 
-  it('refuses a caller who cannot read the diagram', async () => {
+  it('refuses a caller who cannot read the document', async () => {
     gates.gateRead.mockResolvedValue(false);
     const { call } = setup();
     const res = await call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: true } });

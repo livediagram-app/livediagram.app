@@ -17,7 +17,7 @@ the use case is "things are a few px off", not "this diagram has no layout". Ide
 
 ## Auto Layout (Tidy up)
 
-`autoLayoutElements` (`packages/diagram/src/auto-layout.ts`, a pure transform over the
+`autoLayoutElements` (`packages/document/src/auto-layout.ts`, a pure transform over the
 element model so importers and the editor share it — see GitHub issue #12). A
 **structural layout**: it reads the arrow graph, splits it into connected components,
 and computes brand-new positions — a layered (Sugiyama-style) layout for DAG-ish

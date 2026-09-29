@@ -10,7 +10,7 @@
 // shared with the note editor (docs/specs/009-elements/rich-text-notes.md).
 
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
-import { runsFromPlainText, runsPlainText, type TextRun } from '@livediagram/diagram';
+import { runsFromPlainText, runsPlainText, type TextRun } from '@livediagram/document';
 import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import {
   effectiveRunStyle,

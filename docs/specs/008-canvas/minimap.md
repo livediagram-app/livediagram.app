@@ -47,7 +47,7 @@ lets you jump the viewport anywhere with a tap or drag.
   light or dark, derived from the tab's resolved backdrop), so the map reads
   the SAME surface the canvas elements read (`useCanvasSurface`) and hands it
   to `svgBoxed` / `svgArrow`. A Behaviour or Collaborate card that is a dark
-  card on a dark board is a dark card on the map, never the light skin. The
+  card on a dark canvas is a dark card on the map, never the light skin. The
   map's own background is the tab's resolved paper colour
   (`tabBackgroundColor`), not a fixed grey, and the dim outside the current
   view darkens rather than greys on dark paper. A kind whose look depends on

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isLightColor, type Tab } from '@livediagram/diagram';
+import { isLightColor, type Tab } from '@livediagram/document';
 import { legibleColor, legibleTabAccent } from './tab-accent';
 
 // The legibility transform: a colour too pale for the light bar gets darkened,

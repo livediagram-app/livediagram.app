@@ -5,10 +5,10 @@
 //    single prefix (`emoji-*` and `badge-*`), so both are listed here.
 //
 // 2. `isLegacyEmojiIconId` is the compatibility hinge. Under docs/specs/010-palette/emoji-icons.md these
-//    emoji shipped as ICONS: real diagrams out there hold
+//    emoji shipped as ICONS: real documents out there hold
 //    `{ shape: 'icon', iconId: 'emoji-thumbs-up' }`. docs/specs/010-palette/stickers.md made stickers
 //    their own element kind, and those elements are NOT migrated — silently
-//    restyling somebody's saved diagram with a plate, a shadow and a tilt is
+//    restyling somebody's saved document with a plate, a shadow and a tilt is
 //    not ours to do. So the icon catalogue keeps rendering them exactly as it
 //    did, and only the palette moved.
 

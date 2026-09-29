@@ -3,9 +3,9 @@ import {
   expect,
   dismissQuickTour,
   expectNoPageErrors,
-  startBlankDiagram,
+  startBlankDocument,
   startEventStormingRow,
-  startTemplateDiagram,
+  startTemplateDocument,
 } from './fixtures';
 
 // End-to-end smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Small by design: it answers "does
@@ -13,9 +13,9 @@ import {
 // tests can't reach. Every test also fails on any uncaught page error
 // (the `pageErrors` fixture).
 
-test('the new-diagram wizard renders', async ({ page, pageErrors }) => {
+test('the new-document wizard renders', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.getByText('New Diagram', { exact: false })).toBeVisible();
+  await expect(page.getByText('New Document', { exact: false })).toBeVisible();
   // The Quick Start template grid is the client-rendered heart of the
   // wizard; its presence proves the picker mounted, not just the shell.
   await expect(page.getByText('Quick Start', { exact: false })).toBeVisible();
@@ -31,13 +31,13 @@ test('the explorer renders for a guest', async ({ page, pageErrors }) => {
   expectNoPageErrors(pageErrors);
 });
 
-test('create a blank diagram, add a shape, and it survives a reload', async ({
+test('create a blank document, add a shape, and it survives a reload', async ({
   page,
   pageErrors,
 }) => {
-  await startBlankDiagram(page);
-  // The wizard created a real diagram and routed to it.
-  await expect(page).toHaveURL(/\/diagram\/[0-9a-f-]{36}/);
+  await startBlankDocument(page);
+  // The wizard created a real document and routed to it.
+  await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
 
   // The palette is open by default on desktop; its shape tiles are
   // aria-labelled ("Add square"). Arm the Square, then drop it on the
@@ -60,14 +60,14 @@ test('create a blank diagram, add a shape, and it survives a reload', async ({
   expectNoPageErrors(pageErrors);
 });
 
-// A board KIND is the one thing a unit test can't prove end to end: the
+// A tab KIND is the one thing a unit test can't prove end to end: the
 // template has to build, the tab has to persist its kind, and the editor has
 // to read it back and present differently because of it (docs/specs/021-event-storming/event-storming.md). This
 // walks that whole path in a browser, then reloads to prove the board is
 // still a board after a round trip through the api.
 test('an event-storming board stays a board across a reload', async ({ page, pageErrors }) => {
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
-  await expect(page).toHaveURL(/\/diagram\/[0-9a-f-]{36}/);
+  await startTemplateDocument(page, /Browse Technical templates/, /^Event storming/i);
+  await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
 
   // The notation palette is the board presenting itself: on any other tab
   // these tiles are behind a category dropdown.
@@ -301,7 +301,7 @@ test.describe('mobile', () => {
     page,
     pageErrors,
   }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     // A fresh guest gets the tour offer over a scrim that eats taps.
     const declineTour = page.getByRole('button', { name: /^no thanks$/i });
     if (await declineTour.count()) await declineTour.tap();

@@ -12,11 +12,11 @@
 // remains self-describing alongside the shape it draws. See docs/specs/008-canvas/canvas-and-palette.md
 // "Templates" for the catalogue and per-template intent.
 
-import { createShape, type Element } from '@livediagram/diagram';
+import { createShape, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 export { buildLaptopWireframe } from './template-builders-laptop';
 
-// All three wireframes ship pre-layered (docs/specs/006-diagram/layers.md "Layered templates"):
+// All three wireframes ship pre-layered (docs/specs/006-document/layers.md "Layered templates"):
 // the device shells sit on a "Frames" scaffold layer, and every inner
 // placeholder box lands on a "UI" content layer, so rearranging the UI
 // never drags the device along. Each builder's local box / pill / dot

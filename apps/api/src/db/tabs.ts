@@ -1,7 +1,7 @@
-// tabs — one row per tab, linked to diagrams through the
-// diagram_tabs many-to-many table (migration 0011 / docs/specs/006-diagram/tab-diagram-many-to-many.md).
+// tabs — one row per tab, linked to documents through the
+// document_tabs many-to-many table (migration 0011 / docs/specs/006-document/tab-document-many-to-many.md).
 
-import { capElementActions, type Tab } from '@livediagram/diagram';
+import { capElementActions, type Tab } from '@livediagram/document';
 import { rowToTab, type TabRow } from '../tab-row';
 import type { SharedTabsSummary } from '@livediagram/api-schema';
 import type { Env, TabDTO } from '../types';
@@ -13,61 +13,61 @@ import {
   imageRefReplaceStatements,
 } from './image-refs';
 
-export async function getTab(env: Env, diagramId: string, tabId: string): Promise<TabDTO | null> {
-  // Resolve via the diagram_tabs link table (docs/specs/006-diagram/tab-diagram-many-to-many.md) so a
-  // linked tab surfaces from every diagram that contains it. The link
-  // also carries the per-diagram order_index, so the returned summary's
-  // position is correct for whichever diagram the caller asked about.
+export async function getTab(env: Env, documentId: string, tabId: string): Promise<TabDTO | null> {
+  // Resolve via the document_tabs link table (docs/specs/006-document/tab-document-many-to-many.md) so a
+  // linked tab surfaces from every document that contains it. The link
+  // also carries the per-document order_index, so the returned summary's
+  // position is correct for whichever document the caller asked about.
   const row = await env.DB.prepare(
-    `SELECT t.id, dt.diagram_id, t.name, dt.order_index, t.data, t.updated_at, dt.folder
+    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, dt.folder
        FROM tabs t
-       JOIN diagram_tabs dt ON dt.tab_id = t.id
-      WHERE t.id = ? AND dt.diagram_id = ?`,
+       JOIN document_tabs dt ON dt.tab_id = t.id
+      WHERE t.id = ? AND dt.document_id = ?`,
   )
-    .bind(tabId, diagramId)
+    .bind(tabId, documentId)
     .first<TabRow>();
   return row ? rowToTab(row) : null;
 }
 
-// The raw `tabs.data` JSON for a diagram's first tab (lowest
-// order_index in the diagram_tabs link), or null when the diagram has
-// no tabs. Used by the SVG snapshot render-cache (docs/specs/006-diagram/diagram-snapshots.md), which needs
+// The raw `tabs.data` JSON for a document's first tab (lowest
+// order_index in the document_tabs link), or null when the document has
+// no tabs. Used by the SVG snapshot render-cache (docs/specs/006-document/document-snapshots.md), which needs
 // only the element body — never the full TabDTO hydration — so this
 // reads the single `data` column rather than going through getTab.
-export async function getFirstTabData(env: Env, diagramId: string): Promise<string | null> {
+export async function getFirstTabData(env: Env, documentId: string): Promise<string | null> {
   const row = await env.DB.prepare(
     `SELECT t.data
-       FROM diagram_tabs dt
+       FROM document_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.diagram_id = ?
+      WHERE dt.document_id = ?
       ORDER BY dt.order_index ASC
       LIMIT 1`,
   )
-    .bind(diagramId)
+    .bind(documentId)
     .first<{ data: string }>();
   return row?.data ?? null;
 }
 
-// The raw `tabs.data` JSON for a SPECIFIC tab in a diagram, or null when
-// that tab isn't part of the diagram. Resolved through the diagram_tabs
-// link (like getTab) so a tab id only renders for a diagram that
-// actually contains it — a share code for diagram A can never coax out
-// a tab that lives only in diagram B. Backs the per-tab live image
+// The raw `tabs.data` JSON for a SPECIFIC tab in a document, or null when
+// that tab isn't part of the document. Resolved through the document_tabs
+// link (like getTab) so a tab id only renders for a document that
+// actually contains it — a share code for document A can never coax out
+// a tab that lives only in document B. Backs the per-tab live image
 // (docs/specs/013-workspace/live-image-share.md); mirrors getFirstTabData but keyed by tab id instead of the
 // lowest order_index.
 export async function getTabData(
   env: Env,
-  diagramId: string,
+  documentId: string,
   tabId: string,
 ): Promise<string | null> {
   const row = await env.DB.prepare(
     `SELECT t.data
-       FROM diagram_tabs dt
+       FROM document_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.diagram_id = ? AND dt.tab_id = ?
+      WHERE dt.document_id = ? AND dt.tab_id = ?
       LIMIT 1`,
   )
-    .bind(diagramId, tabId)
+    .bind(documentId, tabId)
     .first<{ data: string }>();
   return row?.data ?? null;
 }
@@ -77,7 +77,7 @@ export async function getTabData(
 // queries can return summaries without parsing element trees.
 export async function upsertTab(
   env: Env,
-  diagramId: string,
+  documentId: string,
   input: Tab,
   orderIndex: number,
 ): Promise<void> {
@@ -87,8 +87,8 @@ export async function upsertTab(
   const { id, name, ...rest } = tab;
   const data = JSON.stringify(rest);
   const now = Date.now();
-  // The body goes to `tabs`, this diagram's position to its `diagram_tabs`
-  // link (docs/specs/006-diagram/tab-diagram-many-to-many.md). The two writes
+  // The body goes to `tabs`, this document's position to its `document_tabs`
+  // link (docs/specs/006-document/tab-document-many-to-many.md). The two writes
   // are independent — even if the link upsert no-ops (existing entry)
   // the tab body still gets updated.
   // One DB.batch instead of three sequential round trips: this runs
@@ -104,13 +104,13 @@ export async function upsertTab(
          updated_at = excluded.updated_at`,
     ).bind(id, name, data, now),
     env.DB.prepare(
-      `INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at)
+      `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
        VALUES (?, ?, ?, ?)
-       ON CONFLICT (diagram_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
-    ).bind(diagramId, id, orderIndex, now),
-    // Bump the diagram's saved_at so the Explorer's "Updated X ago"
+       ON CONFLICT (document_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
+    ).bind(documentId, id, orderIndex, now),
+    // Bump the document's saved_at so the Explorer's "Updated X ago"
     // line stays accurate. Pure metadata write — no element JSON.
-    env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId),
+    env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(now, documentId),
     // The collaboration index (docs/specs/013-workspace/activity-page.md §2.1): the tab's action + thread
     // rows, replaced in the SAME batch as the blob they mirror so the two
     // can never drift. After the tabs upsert, which the rows' FK needs.
@@ -121,13 +121,13 @@ export async function upsertTab(
   ]);
 }
 
-// Bulk-seed a fresh diagram's tabs in one batch (create path). The
+// Bulk-seed a fresh document's tabs in one batch (create path). The
 // per-tab upsertTab does three sequential writes each (tab body,
 // link row, and a redundant saved_at bump), so seeding K tabs that
 // way costs ~3K serial round trips. Here we collect every insert and
 // submit one batch, then bump saved_at exactly once. Same ON CONFLICT
 // semantics as upsertTab so a retried create stays idempotent.
-export async function seedTabs(env: Env, diagramId: string, tabs: Tab[]): Promise<void> {
+export async function seedTabs(env: Env, documentId: string, tabs: Tab[]): Promise<void> {
   if (tabs.length === 0) return;
   const now = Date.now();
   const capped = tabs.map((t) => ({ ...t, elements: capElementActions(t.elements) }));
@@ -144,13 +144,15 @@ export async function seedTabs(env: Env, diagramId: string, tabs: Tab[]): Promis
            updated_at = excluded.updated_at`,
       ).bind(id, name, data, now),
       env.DB.prepare(
-        `INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at)
+        `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)
-         ON CONFLICT (diagram_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
-      ).bind(diagramId, id, idx, now),
+         ON CONFLICT (document_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
+      ).bind(documentId, id, idx, now),
     ];
   });
-  stmts.push(env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId));
+  stmts.push(
+    env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(now, documentId),
+  );
   // Index rows for every seeded tab (docs/specs/013-workspace/activity-page.md §2.1): a JSON import or a
   // copy from a share link can carry actions and threads in on create.
   for (const tab of capped) {
@@ -160,43 +162,43 @@ export async function seedTabs(env: Env, diagramId: string, tabs: Tab[]): Promis
   await env.DB.batch(stmts);
 }
 
-// Which of `tabIds` already name a tab that is NOT in `diagramId`: a create
-// seeding one of those would write into a tab another diagram holds, so the
-// create re-mints it (docs/specs/006-diagram/offline-mode.md, "Shared tabs fork").
-// A tab already in this diagram is a retried create and keeps its id.
+// Which of `tabIds` already name a tab that is NOT in `documentId`: a create
+// seeding one of those would write into a tab another document holds, so the
+// create re-mints it (docs/specs/006-document/offline-mode.md, "Shared tabs fork").
+// A tab already in this document is a retried create and keeps its id.
 export async function tabIdsHeldElsewhere(
   env: Env,
-  diagramId: string,
+  documentId: string,
   tabIds: string[],
 ): Promise<Set<string>> {
   if (tabIds.length === 0) return new Set();
   const rows = await env.DB.prepare(
     `SELECT id FROM tabs
       WHERE id IN (SELECT value FROM json_each(?))
-        AND NOT EXISTS (SELECT 1 FROM diagram_tabs dt WHERE dt.diagram_id = ? AND dt.tab_id = tabs.id)`,
+        AND NOT EXISTS (SELECT 1 FROM document_tabs dt WHERE dt.document_id = ? AND dt.tab_id = tabs.id)`,
   )
-    .bind(JSON.stringify(tabIds), diagramId)
+    .bind(JSON.stringify(tabIds), documentId)
     .all<{ id: string }>();
   return new Set((rows.results ?? []).map((r) => r.id));
 }
 
-// Remove the tab from this diagram (drops the `diagram_tabs` link
+// Remove the tab from this document (drops the `document_tabs` link
 // row). The underlying `tabs` row only goes away when no other
-// diagram still references it: linked tabs (per docs/specs/006-diagram/tab-diagram-many-to-many.md) survive
-// an unlink from one of their containing diagrams so the body
+// document still references it: linked tabs (per docs/specs/006-document/tab-document-many-to-many.md) survive
+// an unlink from one of their containing documents so the body
 // stays readable from the rest. Legacy single-link tabs end up
 // fully deleted, matching the prior contract.
 //
 // change_log entries follow the tabs row: they live on the tab id
-// (per #14 in docs/specs/006-diagram/tab-diagram-many-to-many.md), so they get dropped only when the tab
+// (per #14 in docs/specs/006-document/tab-document-many-to-many.md), so they get dropped only when the tab
 // itself goes away. Cascading the log on every unlink would wipe
-// the audit panel for every other diagram that still surfaces the
+// the audit panel for every other document that still surfaces the
 // shared tab.
-export async function deleteTabRow(env: Env, diagramId: string, tabId: string): Promise<void> {
-  await env.DB.prepare('DELETE FROM diagram_tabs WHERE diagram_id = ? AND tab_id = ?')
-    .bind(diagramId, tabId)
+export async function deleteTabRow(env: Env, documentId: string, tabId: string): Promise<void> {
+  await env.DB.prepare('DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?')
+    .bind(documentId, tabId)
     .run();
-  const remaining = await env.DB.prepare('SELECT COUNT(*) AS n FROM diagram_tabs WHERE tab_id = ?')
+  const remaining = await env.DB.prepare('SELECT COUNT(*) AS n FROM document_tabs WHERE tab_id = ?')
     .bind(tabId)
     .first<{ n: number }>();
   if ((remaining?.n ?? 0) === 0) {
@@ -209,54 +211,58 @@ export async function deleteTabRow(env: Env, diagramId: string, tabId: string): 
   }
 }
 
-// Link an existing tab into another diagram (docs/specs/006-diagram/tab-diagram-many-to-many.md). Inserts a
-// `diagram_tabs` row at the end of the target diagram's order,
+// Link an existing tab into another document (docs/specs/006-document/tab-document-many-to-many.md). Inserts a
+// `document_tabs` row at the end of the target document's order,
 // idempotent on conflict so re-linking the same pair returns 200
 // without double-counting. The `tabs` row itself is untouched: the
-// tab body lives in one place and edits propagate to every diagram
+// tab body lives in one place and edits propagate to every document
 // that references it. Returns true when a fresh link was created,
 // false when the link already existed (idempotent path).
-export async function linkTabToDiagram(
+export async function linkTabToDocument(
   env: Env,
-  diagramId: string,
+  documentId: string,
   tabId: string,
 ): Promise<boolean> {
   const existing = await env.DB.prepare(
-    'SELECT 1 AS present FROM diagram_tabs WHERE diagram_id = ? AND tab_id = ?',
+    'SELECT 1 AS present FROM document_tabs WHERE document_id = ? AND tab_id = ?',
   )
-    .bind(diagramId, tabId)
+    .bind(documentId, tabId)
     .first<{ present: number }>();
   if (existing) return false;
-  const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM diagram_tabs WHERE diagram_id = ?')
-    .bind(diagramId)
+  const count = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM document_tabs WHERE document_id = ?',
+  )
+    .bind(documentId)
     .first<{ n: number }>();
   const orderIndex = count?.n ?? 0;
   const now = Date.now();
   await env.DB.prepare(
-    `INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at)
+    `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
      VALUES (?, ?, ?, ?)
-     ON CONFLICT (diagram_id, tab_id) DO NOTHING`,
+     ON CONFLICT (document_id, tab_id) DO NOTHING`,
   )
-    .bind(diagramId, tabId, orderIndex, now)
+    .bind(documentId, tabId, orderIndex, now)
     .run();
-  await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId).run();
+  await env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?')
+    .bind(now, documentId)
+    .run();
   return true;
 }
 
 // The link endpoint's authorisation check in one query: is this tab
-// linked into at least one diagram owned by `ownerId`? Replaces the
-// old "list every containing diagram id, then getDiagram() each in a
-// loop" pattern (N full diagram hydrations to read one column). The
+// linked into at least one document owned by `ownerId`? Replaces the
+// old "list every containing document id, then getDocument() each in a
+// loop" pattern (N full document hydrations to read one column). The
 // JOIN + LIMIT 1 stops at the first owned match.
-export async function tabLinkedToOwnedDiagram(
+export async function tabLinkedToOwnedDocument(
   env: Env,
   tabId: string,
   ownerId: string,
 ): Promise<boolean> {
   const row = await env.DB.prepare(
     `SELECT 1 AS present
-       FROM diagram_tabs dt
-       JOIN diagrams d ON d.id = dt.diagram_id
+       FROM document_tabs dt
+       JOIN documents d ON d.id = dt.document_id
       WHERE dt.tab_id = ? AND d.owner_id = ? AND d.trashed_at IS NULL
       LIMIT 1`,
   )
@@ -265,35 +271,35 @@ export async function tabLinkedToOwnedDiagram(
   return row !== null;
 }
 
-// How many of this diagram's tabs are shared (also linked into another
-// diagram), and across how many other diagrams: what deleting or taking the
-// diagram offline leaves behind (docs/specs/006-diagram/tab-diagram-many-to-many.md,
+// How many of this document's tabs are shared (also linked into another
+// document), and across how many other documents: what deleting or taking the
+// document offline leaves behind (docs/specs/006-document/tab-document-many-to-many.md,
 // "Shared-tab notice").
-export async function sharedTabsSummary(env: Env, diagramId: string): Promise<SharedTabsSummary> {
+export async function sharedTabsSummary(env: Env, documentId: string): Promise<SharedTabsSummary> {
   const row = await env.DB.prepare(
-    `SELECT COUNT(DISTINCT dt.tab_id) AS tabs, COUNT(DISTINCT o.diagram_id) AS diagrams
-       FROM diagram_tabs dt
-       JOIN diagram_tabs o ON o.tab_id = dt.tab_id AND o.diagram_id <> dt.diagram_id
-      WHERE dt.diagram_id = ?`,
+    `SELECT COUNT(DISTINCT dt.tab_id) AS tabs, COUNT(DISTINCT o.document_id) AS documents
+       FROM document_tabs dt
+       JOIN document_tabs o ON o.tab_id = dt.tab_id AND o.document_id <> dt.document_id
+      WHERE dt.document_id = ?`,
   )
-    .bind(diagramId)
+    .bind(documentId)
     .first<SharedTabsSummary>();
-  return { tabs: row?.tabs ?? 0, diagrams: row?.diagrams ?? 0 };
+  return { tabs: row?.tabs ?? 0, documents: row?.documents ?? 0 };
 }
 
-// Look up every diagram id that links the given tab. Used by the
+// Look up every document id that links the given tab. Used by the
 // link endpoint's auth check (caller must own at least one of
 // them) and would also drive a future "this tab is shared with N
-// diagrams" indicator.
-export async function diagramsContainingTab(env: Env, tabId: string): Promise<string[]> {
-  const rows = await env.DB.prepare('SELECT diagram_id FROM diagram_tabs WHERE tab_id = ?')
+// documents" indicator.
+export async function documentsContainingTab(env: Env, tabId: string): Promise<string[]> {
+  const rows = await env.DB.prepare('SELECT document_id FROM document_tabs WHERE tab_id = ?')
     .bind(tabId)
-    .all<{ diagram_id: string }>();
-  return (rows.results ?? []).map((r) => r.diagram_id);
+    .all<{ document_id: string }>();
+  return (rows.results ?? []).map((r) => r.document_id);
 }
 
-// One position in a reorder request: the tab id plus its per-diagram
-// folder (docs/specs/006-diagram/tab-folders.md). Folder rides this path — never the per-tab content
+// One position in a reorder request: the tab id plus its per-document
+// folder (docs/specs/006-document/tab-folders.md). Folder rides this path — never the per-tab content
 // PUT — so a content save can't clobber membership. `null`/omitted =
 // loose. A plain `string` is accepted for the legacy (pre-folder)
 // payload shape and treated as loose.
@@ -311,25 +317,27 @@ export function normalizeReorderEntry(entry: ReorderEntry): { id: string; folder
 // Update tab order + folder membership. Caller passes the entries in
 // their new positions; we rewrite every order_index (and folder) in
 // one batch. Cheap given the < 20-tab scale we see in practice (see
-// docs/specs/006-diagram/per-tab-storage.md "Risk"). Empty / whitespace folder names normalise to NULL
+// docs/specs/006-document/per-tab-storage.md "Risk"). Empty / whitespace folder names normalise to NULL
 // so a blank folder can never persist.
 export async function reorderTabs(
   env: Env,
-  diagramId: string,
+  documentId: string,
   entries: ReorderEntry[],
 ): Promise<void> {
   const now = Date.now();
-  // Order and folder live on the link, per diagram
-  // (docs/specs/006-diagram/tab-diagram-many-to-many.md): moving a tab here
-  // leaves its place in every other diagram, and its body, untouched.
+  // Order and folder live on the link, per document
+  // (docs/specs/006-document/tab-document-many-to-many.md): moving a tab here
+  // leaves its place in every other document, and its body, untouched.
   const batch = entries.map((entry, idx) => {
     const { id: tabId, folder } = normalizeReorderEntry(entry);
     return env.DB.prepare(
-      'UPDATE diagram_tabs SET order_index = ?, folder = ? WHERE diagram_id = ? AND tab_id = ?',
-    ).bind(idx, folder, diagramId, tabId);
+      'UPDATE document_tabs SET order_index = ?, folder = ? WHERE document_id = ? AND tab_id = ?',
+    ).bind(idx, folder, documentId, tabId);
   });
   if (batch.length > 0) await env.DB.batch(batch);
-  await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId).run();
+  await env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?')
+    .bind(now, documentId)
+    .run();
 }
 
 // Compare-and-swap one tab's `data` blob (docs/specs/012-collaboration/qa-board.md). Writes `nextData` only
@@ -345,7 +353,7 @@ export async function reorderTabs(
 // concurrent save, and a delete would then drop references the winner wrote.
 export async function swapTabData(
   env: Env,
-  diagramId: string,
+  documentId: string,
   tabId: string,
   expectedData: string,
   nextData: string,
@@ -361,6 +369,8 @@ export async function swapTabData(
     ...imageRefAddStatements(env, tabId, imageRefIdsFromData(nextData)),
   ]);
   if ((res?.meta?.changes ?? 0) === 0) return false;
-  await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId).run();
+  await env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?')
+    .bind(now, documentId)
+    .run();
   return true;
 }

@@ -11,7 +11,7 @@ frames, and hero shapes depth without faking it with offset duplicate shapes.
 **sticky**, **image**, and **link-card**. Text, freehand, annotation, table,
 and arrows don't carry one (arrows are a possible follow-up; a rectangular
 shadow under a line or a text run reads as a rendering bug, not a style).
-`supportsShadow(el)` in `@livediagram/diagram` is the single gate the UI and
+`supportsShadow(el)` in `@livediagram/document` is the single gate the UI and
 renderers share.
 
 ```ts
@@ -39,7 +39,7 @@ style group (and in the multi-select Style flyout, applying selection-wide
 like Border does). Contents:
 
 - **Preset tiles** — `None`, `Soft`, `Drop`, `Lifted`, `Hard`
-  (`SHADOW_PRESETS` in `@livediagram/diagram`): hover-to-preview /
+  (`SHADOW_PRESETS` in `@livediagram/document`): hover-to-preview /
   click-to-commit like the border grids. `None` clears the field. `Hard` is
   the zero-blur offset "poster" shadow; the other three are elevation steps.
 - **Sliders** — Offset X (±24), Offset Y (±24), Blur (0..48), Opacity
@@ -64,7 +64,7 @@ Headless SVG export (`renderElementsToSvg` + the in-app export): one
 block (deterministic id via `shadowFilterId`, so elements sharing a shadow
 share a def), referenced from the element's `<g filter="url(#…)">`.
 `feDropShadow.stdDeviation` is `blur / 2` (the CSS blur radius ≈ 2σ
-equivalence), so exports match the canvas. Snapshots ([Diagram SVG snapshots](../006-diagram/diagram-snapshots.md)), embeds
+equivalence), so exports match the canvas. Snapshots ([Document SVG snapshots](../006-document/document-snapshots.md)), embeds
 ([Read-only embeds (`/embed`)](../013-workspace/embeds.md)), and MCP renders inherit parity for free.
 
 ## Interactions with existing style machinery

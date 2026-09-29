@@ -24,7 +24,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'AI|Used|Clean':
     "Someone used the AI Assistant's Clean mode to tidy up a tab's labels, sizes, and styles.",
   'AI|Used|PhotoNotes':
-    'Someone imported the sticky notes from a photo of a real wall onto an event-storming board, a workshop-style diagram built as a timeline of business events.',
+    'Someone imported the sticky notes from a photo of a real wall onto an event-storming board, a workshop-style tab built as a timeline of business events.',
   'Action|Changed|Edited':
     "Someone edited the details of an action assigned to an element, without changing who it's assigned to.",
   'Action|Changed|Reassigned':
@@ -34,8 +34,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Action|Created|EmailOn':
     'Someone assigned an action to a teammate on an element and chose to email them about it.',
   'Action|Deleted|': 'Someone removed an assigned action from an element.',
-  'Action|Moved|DiagramToTeam':
-    "While assigning an action to someone, the diagram was moved into that person's team so they'd have access to it.",
+  'Action|Moved|DocumentToTeam':
+    "While assigning an action to someone, the document was moved into that person's team so they'd have access to it.",
   'Action|Opened|': 'Someone opened the popover for an action already assigned to an element.',
   'Action|Resolved|': 'Someone marked an assigned action as done.',
   'Action|Unresolved|': 'Someone reopened an assigned action that had been marked done.',
@@ -68,7 +68,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Canvas|Used|InsertBetween':
     'Someone held Alt and dragged a note into the gap between two notes on an event-storming board (a workshop technique that maps a process as a timeline of sticky notes), and the board made room for it.',
   'Canvas|Used|Isometric':
-    'Someone switched the canvas into Isometric view, which renders the board at an angle for a 3D-style look.',
+    'Someone switched the canvas into Isometric view, which renders the canvas at an angle for a 3D-style look.',
   'Canvas|Used|LanesSettled':
     'An older event-storming board was opened by someone who can edit it, and its notes that sat between lanes were lined up on the lanes in one undoable step. Once per board.',
   'Canvas|Used|Laser':
@@ -92,35 +92,36 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Comment|Mentioned|': 'A comment was sent that @-mentioned at least one teammate.',
   'Comment|Resolved|': 'A comment thread was marked resolved.',
   'Comment|Unresolved|': 'A resolved comment thread was reopened.',
-  'Diagram|Created|Cloud': 'A brand-new diagram was created.',
-  'Diagram|Created|Offline': 'A brand-new diagram was created.',
-  'Diagram|Deleted|': 'A diagram was deleted.',
-  'Diagram|Duplicated|': 'A diagram was duplicated into a new one.',
-  'Diagram|Duplicated|Copy': 'A diagram was duplicated into a new one.',
-  'Diagram|Joined|Edit':
-    'Someone came into a diagram through an edit-role share link. Counted once per person per diagram, not on every revisit.',
-  'Diagram|Loaded|':
-    'A diagram was opened, counted on every open (including a page refresh and the first open of a diagram just created).',
-  'Diagram|Moved|': 'A diagram was moved into (or out of) a folder.',
-  'Diagram|Moved|SavedToCloud':
-    'Someone synced an offline diagram to their account, turning it into a cloud diagram kept on the server.',
-  'Diagram|Moved|TakenOffline':
-    'Someone took a diagram offline, moving it out of their account into this browser only.',
-  'Diagram|Redone|': 'Someone hit Redo on a diagram edit.',
-  'Diagram|Removed|ShareLink':
-    "Someone revoked a share link from a diagram's Share dialog, so it stops working.",
-  'Diagram|Renamed|': 'A diagram was renamed.',
-  'Diagram|Reverted|': 'Someone reverted a single change from the diagram activity log.',
-  'Diagram|Shared|Edit': 'Someone generated an edit-role share link for a diagram.',
-  'Diagram|Shared|ExpiryWeek': 'Someone set a share link to expire after a week, when creating it.',
-  'Diagram|Shared|Extended':
+  'Document|Created|Cloud': 'A brand-new document was created.',
+  'Document|Created|Offline': 'A brand-new document was created.',
+  'Document|Deleted|': 'A document was deleted.',
+  'Document|Duplicated|': 'A document was duplicated into a new one.',
+  'Document|Duplicated|Copy': 'A document was duplicated into a new one.',
+  'Document|Joined|Edit':
+    'Someone came into a document through an edit-role share link. Counted once per person per document, not on every revisit.',
+  'Document|Loaded|':
+    'A document was opened, counted on every open (including a page refresh and the first open of a document just created).',
+  'Document|Moved|': 'A document was moved into (or out of) a folder.',
+  'Document|Moved|SavedToCloud':
+    'Someone synced an offline document to their account, turning it into a cloud document kept on the server.',
+  'Document|Moved|TakenOffline':
+    'Someone took a document offline, moving it out of their account into this browser only.',
+  'Document|Redone|': 'Someone hit Redo on a document edit.',
+  'Document|Removed|ShareLink':
+    "Someone revoked a share link from a document's Share dialog, so it stops working.",
+  'Document|Renamed|': 'A document was renamed.',
+  'Document|Reverted|': "Someone reverted a single change from a tab's activity log.",
+  'Document|Shared|Edit': 'Someone generated an edit-role share link for a document.',
+  'Document|Shared|ExpiryWeek':
+    'Someone set a share link to expire after a week, when creating it.',
+  'Document|Shared|Extended':
     'Someone re-armed an expiring share link for another full round of its original lifetime.',
-  'Diagram|Shared|PasswordCleared': "Someone removed the password from a diagram's share link.",
-  'Diagram|Shared|PasswordSet': "Someone set a password on a diagram's share link.",
-  'Diagram|Shared|View': 'Someone generated a view-role share link for a diagram.',
-  'Diagram|Undone|': 'Someone hit Undo on a diagram edit.',
-  'Diagram|Used|Multiplayer':
-    'A diagram was open with at least one other person live in the room, counted once per diagram per visit. The one event that counts collaboration happening rather than being offered.',
+  'Document|Shared|PasswordCleared': "Someone removed the password from a document's share link.",
+  'Document|Shared|PasswordSet': "Someone set a password on a document's share link.",
+  'Document|Shared|View': 'Someone generated a view-role share link for a document.',
+  'Document|Undone|': 'Someone hit Undo on a document edit.',
+  'Document|Used|Multiplayer':
+    'A document was open with at least one other person live in the room, counted once per document per visit. The one event that counts collaboration happening rather than being offered.',
   'Element|Changed|Agenda':
     'Someone pressed a segment on an Agenda element, starting its timer and marking it as the current item.',
   'Element|Changed|Animation':
@@ -276,7 +277,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Grouped|': 'A multi-selection was grouped (before groups were removed).',
   'Element|Linked|ArrowPoint':
     "Someone dragged an arrow's end onto another element, pinning that end to it so the arrow follows if the element moves.",
-  'Element|Linked|Diagram': 'Someone linked an element to another diagram.',
+  'Element|Linked|Document': 'Someone linked an element to another document.',
   'Element|Linked|Tab': 'Someone linked an element to another tab.',
   'Element|Linked|Url': 'Someone linked an element to a web address.',
   'Element|Locked|': "An element's lock was turned on (no edits allowed).",
@@ -310,11 +311,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed a Reaction Pad element and played its burst for everyone.',
   'Element|Used|Video': 'Someone pressed play on a video element.',
   'Element|Voted|': 'Someone cast a dot in a dot vote.',
-  'Email|Sent|DiagramJoined':
-    "An email went out to a diagram's owner after someone opened it for the first time through a share link.",
-  'Email|Sent|FirstShare': "An email went out marking someone's first time sharing a diagram.",
+  'Email|Sent|DocumentJoined':
+    "An email went out to a document's owner after someone opened it for the first time through a share link.",
+  'Email|Sent|FirstShare': "An email went out marking someone's first time sharing a document.",
   'Email|Sent|Milestone':
-    'An email went out congratulating someone on reaching a diagram-count milestone.',
+    'An email went out congratulating someone on reaching a document-count milestone.',
   'Email|Sent|Week1': 'The one-week onboarding email went out.',
   'Email|Sent|Week2': 'The two-week onboarding email went out.',
   'Email|Sent|Welcome': 'The welcome email went out just after someone signed up.',
@@ -323,7 +324,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Error|Api|Network.SendEmail':
     "An email (a welcome message, an invite, a notification) couldn't be sent, because the email provider couldn't be reached at all.",
   'Error|Client|RealtimeResync':
-    'The editor noticed it had missed updates during a live session and refetched the diagram to catch back up. This is the editor recovering on its own, not a crash.',
+    'The editor noticed it had missed updates during a live session and refetched the document to catch back up. This is the editor recovering on its own, not a crash.',
   'Error|Client|Uncaught':
     'A part of the editor or help centre crashed with an error nothing in the code caught. No longer recorded in this bare form; a crash like this now also records which page it happened on and what kind of error it was.',
   'Error|Client|UnhandledRejection':
@@ -338,12 +339,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The facilitator of a live session stepped down, leaving nobody in charge of its shared tools.',
   'Facilitator|Started|Claimed':
     'Someone took the facilitator role in a live session, becoming the one in charge of its shared tools: the timer, votes, and polls.',
-  'Folder|Created|': 'A new folder was created in the diagram explorer.',
+  'Folder|Created|': 'A new folder was created in the document explorer.',
   'Folder|Created|Tab':
-    'A new tab folder was created inside a diagram, by typing a name the diagram had not used before.',
-  'Folder|Created|Team': 'A new folder was created in the diagram explorer.',
-  'Folder|Deleted|': 'A folder was deleted (contained diagrams move to Unsorted).',
-  'Folder|Deleted|Team': 'A folder was deleted (contained diagrams move to Unsorted).',
+    'A new tab folder was created inside a document, by typing a name the document had not used before.',
+  'Folder|Created|Team': 'A new folder was created in the document explorer.',
+  'Folder|Deleted|': 'A folder was deleted (contained documents move to Unsorted).',
+  'Folder|Deleted|Team': 'A folder was deleted (contained documents move to Unsorted).',
   'Folder|Moved|': 'A folder was re-parented under another folder (or the root).',
   'Folder|Moved|Team': 'A folder was re-parented under another folder (or the root).',
   'Folder|Renamed|': 'A folder was renamed.',
@@ -370,20 +371,21 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Layer|Toggled|OthersHidden': 'Someone hid every layer except one.',
   'Layer|Toggled|Shown': 'A hidden layer was shown again.',
   'Layer|Toggled|Unlocked': 'A locked layer was unlocked.',
-  'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a diagram.',
-  'Mcp|Used|CreateDiagram': 'An AI tool connected over MCP created a new diagram.',
-  'Mcp|Used|FindDiagrams': "An AI tool connected over MCP searched for one of the user's diagrams.",
-  'Mcp|Used|ReadDiagram': "An AI tool connected over MCP read a diagram's contents.",
-  'Mcp|Used|RenameDiagram': 'An AI tool connected over MCP renamed a diagram.',
-  'Mcp|Used|ShareDiagram': 'An AI tool connected over MCP generated a share link for a diagram.',
-  'Mcp|Used|UpdateDiagram': "An AI tool connected over MCP updated a tab's content in a diagram.",
+  'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a document.',
+  'Mcp|Used|CreateDocument': 'An AI tool connected over MCP created a new document.',
+  'Mcp|Used|FindDocuments':
+    "An AI tool connected over MCP searched for one of the user's documents.",
+  'Mcp|Used|ReadDocument': "An AI tool connected over MCP read a document's contents.",
+  'Mcp|Used|RenameDocument': 'An AI tool connected over MCP renamed a document.',
+  'Mcp|Used|ShareDocument': 'An AI tool connected over MCP generated a share link for a document.',
+  'Mcp|Used|UpdateDocument': "An AI tool connected over MCP updated a tab's content in a document.",
   'Note|Added|': 'A note was added to an element (first non-empty save).',
   'Note|Changed|': "An existing note's text was edited.",
   'Note|Deleted|': 'A note was cleared from an element.',
   'Note|Opened|': 'Someone opened the note popover on an element.',
   'Page|View|/': 'Someone visited the marketing homepage.',
-  'Page|View|/diagram':
-    "Someone opened a diagram in the editor. Every diagram's page counts under this same path, with no diagram-specific detail recorded.",
+  'Page|View|/document':
+    "Someone opened a document in the editor. Every document's page counts under this same path, with no document-specific detail recorded.",
   'Page|View|/explorer': 'Someone opened the Explorer, landing on its default section.',
   'Page|View|/explorer/activity': "Someone navigated to the Explorer's Activity section.",
   'Page|View|/explorer/shared': "Someone navigated to the Explorer's Shared with You section.",
@@ -392,7 +394,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone visited the marketing site's Foundations features page.",
   'Page|View|/features/simple': "Someone visited the marketing site's Simple features page.",
   'Page|View|/help/canvas/links': 'Someone opened the help centre\'s "Learn about links" article.',
-  'Page|View|/new': 'Someone opened the New Diagram wizard.',
+  'Page|View|/new': 'Someone opened the New Document wizard.',
   'Page|View|/sign-in': 'Someone opened the sign-in page.',
   'Page|View|/sso-callback':
     'Someone was redirected through the sign-in callback page after completing Google sign-in.',
@@ -410,7 +412,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Session|Deleted|Account':
     'Someone permanently deleted their account and its data, after typing their email address to confirm.',
   'Session|Opened|Embed':
-    'A read-only embedded copy of a diagram was loaded on an outside page (for example an iframe in a wiki or a doc). Counted once per rendered embed.',
+    'A read-only embedded copy of a document was loaded on an outside page (for example an iframe in a wiki or a doc). Counted once per rendered embed.',
   'Session|SignedIn|': 'A visitor just signed in to their account.',
   'Session|SignedOut|': 'A visitor just signed out.',
   'Session|SignedUp|': 'A visitor just created an account.',
@@ -428,8 +430,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|TimerReset': "Someone reset a tab's timer back to its starting length.",
   'Tab|Cleared|': "A tab's content was wiped.",
   'Tab|Cleared|Vote': "A tab's content was wiped.",
-  'Tab|Created|': 'A new tab was added to a diagram.',
-  'Tab|Deleted|': 'A tab was removed from a diagram.',
+  'Tab|Created|': 'A new tab was added to a document.',
+  'Tab|Deleted|': 'A tab was removed from a document.',
   'Tab|Duplicated|': 'A tab was duplicated.',
   'Tab|Ended|CountdownTimer':
     "Someone cleared a tab's countdown timer, whether it had run out or was dismissed early.",
@@ -443,9 +445,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone imported a tab from a PNG exported by Excalidraw with its scene embedded.',
   'Tab|Imported|ExcalidrawSvg':
     'Someone imported a tab from an SVG exported by Excalidraw with its scene embedded.',
-  'Tab|Linked|': 'A tab was linked into another diagram.',
+  'Tab|Linked|': 'A tab was linked into another document.',
   'Tab|Loaded|':
-    "A tab's content was fetched for viewing (the first tab when a diagram opens, then each tab switched to).",
+    "A tab's content was fetched for viewing (the first tab when a document opens, then each tab switched to).",
   'Tab|Locked|': 'A tab was locked (read-only).',
   'Tab|Moved|Folder': 'A tab was filed into a tab folder.',
   'Tab|Removed|Folder':
@@ -464,7 +466,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Unlocked|': 'A tab was unlocked (edits resume).',
   'Tab|Voted|Poll':
     'Someone answered a live poll. Counted once per person per poll, even if they change their answer.',
-  'Team|Added|Diagram': "A diagram was added to a team's shared library.",
+  'Team|Added|Document': "A document was added to a team's shared library.",
   'Team|Added|Member':
     'An admin invited someone to a team by email. This counts invitations sent, not accepted: that is Joined.',
   'Team|Changed|': "Someone updated a team's name or organisation in its settings.",
@@ -474,9 +476,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned down a team invite. Read against Joined: the two are the accept rate on an invitation.',
   'Team|Deleted|': 'An admin deleted a team.',
   'Team|Joined|': 'Someone accepted a team invite, by email or by invite link.',
-  'Team|Moved|Diagram':
-    "A diagram already in a team's shared library was moved: re-foldered within the team, moved to a different team, or taken back to the owner's personal space.",
-  'Team|Removed|Diagram': 'An admin removed a member who had joined the team.',
+  'Team|Moved|Document':
+    "A document already in a team's shared library was moved: re-foldered within the team, moved to a different team, or taken back to the owner's personal space.",
+  'Team|Removed|Document': 'An admin removed a member who had joined the team.',
   'Team|Removed|Link': "A team's shareable invite link was turned off.",
   'Team|Removed|Self': 'Someone left a team they had joined.',
   'Team|Shared|Link':
@@ -497,7 +499,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards.',
   'Timeline|Opened|Nav': 'Someone switched to the Timeline from another section of the Explorer.',
   'Timeline|Opened|Stack':
-    'Someone expanded a collapsed run of similar Timeline entries (like "12 diagrams renamed") into its individual cards.',
+    'Someone expanded a collapsed run of similar Timeline entries (like "12 documents renamed") into its individual cards.',
   'Timeline|Removed|Entry': 'Someone removed a single entry from their Timeline feed.',
   'Timeline|Removed|Stack':
     'Someone removed every entry in a collapsed run from their Timeline feed at once, from its ⋯ menu.',
@@ -696,9 +698,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|AutoRebindOn': 'Someone turned on auto-attach for arrows, in Settings > Editor.',
   'UI|Toggled|Dark': "Someone set the editor's appearance to Dark.",
   'UI|Toggled|ExplorerViewCard':
-    'Someone switched the Explorer to Card view, showing a large preview of each diagram.',
+    'Someone switched the Explorer to Card view, showing a large preview of each document.',
   'UI|Toggled|ExplorerViewList':
-    'Someone switched the Explorer to List view, showing diagrams as compact rows.',
+    'Someone switched the Explorer to List view, showing documents as compact rows.',
   'UI|Toggled|HiddenLayersExport':
     'Someone turned on including hidden layers when exporting an image.',
   'UI|Toggled|IsometricExport':
@@ -743,13 +745,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|NotifyMentionsOn':
     'Someone turned on the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications.',
   'UI|Toggled|NotifyCommentsOff':
-    'Someone turned off the email that arrives when someone comments on a diagram they own, in Settings > Notifications.',
+    'Someone turned off the email that arrives when someone comments on a document they own, in Settings > Notifications.',
   'UI|Toggled|NotifyCommentsOn':
-    'Someone turned on the email that arrives when someone comments on a diagram they own, in Settings > Notifications.',
-  'UI|Toggled|NotifyDiagramJoinOff':
-    'Someone turned off the email that arrives when a new person opens one of their shared diagrams, in Settings > Notifications.',
-  'UI|Toggled|NotifyDiagramJoinOn':
-    'Someone turned on the email that arrives when a new person opens one of their shared diagrams, in Settings > Notifications.',
+    'Someone turned on the email that arrives when someone comments on a document they own, in Settings > Notifications.',
+  'UI|Toggled|NotifyDocumentJoinOff':
+    'Someone turned off the email that arrives when a new person opens one of their shared documents, in Settings > Notifications.',
+  'UI|Toggled|NotifyDocumentJoinOn':
+    'Someone turned on the email that arrives when a new person opens one of their shared documents, in Settings > Notifications.',
   'UI|Toggled|NotifyInviteResponseOff':
     'Someone turned off the email that arrives when a team invite they sent is accepted or declined, in Settings > Notifications.',
   'UI|Toggled|NotifyInviteResponseOn':
@@ -791,9 +793,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
   'UI|Used|JustDraw':
-    'Someone landed on the New Diagram page through a link that skips the wizard and goes straight into a blank diagram.',
+    'Someone landed on the New Document page through a link that skips the wizard and goes straight into a blank document.',
   'UI|Used|TemplateLink':
-    'Someone landed on the New Diagram page through a link that skips the wizard and goes straight into a specific template.',
+    'Someone landed on the New Document page through a link that skips the wizard and goes straight into a specific template.',
   'UI|View|TourStepCategories':
     'The welcome tour reached its "Shape categories" step, pointing out the palette\'s category tabs.',
   'UI|View|TourStepContextMenu':
@@ -812,16 +814,16 @@ export const EXACT: Readonly<Record<string, string>> = {
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
   'Cta|Opened':
-    'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Diagram page.',
+    'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',
   'Cta|Created':
-    'Someone who arrived from a call to action on a public page went on to create a diagram. Counted once per arrival.',
+    'Someone who arrived from a call to action on a public page went on to create a document. Counted once per arrival.',
   'AI|Toggled': 'Someone turned an AI setting on or off in Settings under AI Tools.',
   'AI|Used':
     'Someone used a feature of the AI Assistant panel, or another AI-powered tool in the editor.',
   'Action|Changed': 'Someone changed something about an action assigned to an element.',
   'Action|Created': 'Someone assigned an action to a teammate, or to themselves, on an element.',
   'Action|Deleted': 'Someone removed an assigned action from an element.',
-  'Action|Moved': "A diagram was moved into a teammate's team while assigning them an action.",
+  'Action|Moved': "A document was moved into a teammate's team while assigning them an action.",
   'Action|Opened': 'Someone opened the popover for an action already assigned to an element.',
   'Action|Resolved': 'Someone marked an assigned action as done.',
   'Action|Unresolved': 'Someone reopened an assigned action that had been marked done.',
@@ -838,23 +840,23 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Comment|Mentioned': 'A comment was sent that @-mentioned at least one teammate.',
   'Comment|Resolved': 'A comment thread was marked resolved.',
   'Comment|Unresolved': 'A resolved comment thread was reopened.',
-  'Diagram|Created': 'A brand-new diagram was created.',
-  'Diagram|Deleted': 'A diagram was deleted.',
-  'Diagram|Duplicated': 'A diagram was duplicated into a new one.',
-  'Diagram|Joined':
-    'Someone came into a diagram through a share link. Counted once per person per diagram, not on every revisit.',
-  'Diagram|Loaded':
-    'A diagram was opened, counted on every open (including a page refresh and the first open of a diagram just created).',
-  'Diagram|Moved': 'A diagram was moved into (or out of) a folder.',
-  'Diagram|Redone': 'Someone hit Redo on a diagram edit.',
-  'Diagram|Removed':
-    "Someone removed something from a diagram's sharing, such as revoking a share link.",
-  'Diagram|Renamed': 'A diagram was renamed.',
-  'Diagram|Reverted': 'Someone reverted a single change from the diagram activity log.',
-  'Diagram|Shared':
-    "Someone created or changed a diagram's share link: its role, how long it lasts, or its password.",
-  'Diagram|Undone': 'Someone hit Undo on a diagram edit.',
-  'Diagram|Used': 'A diagram was used in a particular way, such as with other people live in it.',
+  'Document|Created': 'A brand-new document was created.',
+  'Document|Deleted': 'A document was deleted.',
+  'Document|Duplicated': 'A document was duplicated into a new one.',
+  'Document|Joined':
+    'Someone came into a document through a share link. Counted once per person per document, not on every revisit.',
+  'Document|Loaded':
+    'A document was opened, counted on every open (including a page refresh and the first open of a document just created).',
+  'Document|Moved': 'A document was moved into (or out of) a folder.',
+  'Document|Redone': 'Someone hit Redo on a document edit.',
+  'Document|Removed':
+    "Someone removed something from a document's sharing, such as revoking a share link.",
+  'Document|Renamed': 'A document was renamed.',
+  'Document|Reverted': "Someone reverted a single change from a tab's activity log.",
+  'Document|Shared':
+    "Someone created or changed a document's share link: its role, how long it lasts, or its password.",
+  'Document|Undone': 'Someone hit Undo on a document edit.',
+  'Document|Used': 'A document was used in a particular way, such as with other people live in it.',
   'Element|Changed':
     "Someone changed a property of one or more selected elements, from a style panel, the right-click menu, or an element's own controls.",
   'Element|Copied': 'Someone copied one or more selected elements to the clipboard.',
@@ -862,7 +864,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Duplicated': 'Someone duplicated one or more elements on the canvas.',
   'Element|Grouped': 'A multi-selection was grouped (before groups were removed).',
   'Element|Linked':
-    'Someone linked an element to something: another element, a web address, a diagram or a tab.',
+    'Someone linked an element to something: another element, a web address, a document or a tab.',
   'Element|Locked': "An element's lock was turned on (no edits allowed).",
   'Element|Removed':
     'Someone took something off an element, such as one of their dots in a dot vote.',
@@ -879,7 +881,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Used': 'Someone used an interactive element on the canvas, such as a Reaction Pad.',
   'Element|Voted': 'Someone cast a dot in a dot vote.',
   'Email|Sent':
-    'An automatic email went out: a welcome message, an onboarding nudge, a team invite, or a notification about activity on a diagram. The type names which one; it never says who received it.',
+    'An automatic email went out: a welcome message, an onboarding nudge, a team invite, or a notification about activity on a document. The type names which one; it never says who received it.',
   'Error|Api':
     "A request to livediagram's servers failed, or a server itself hit an error while handling one. The type says what kind of failure it was and which operation was being attempted; see the accompanying pattern for how to read it.",
   'Error|Client':
@@ -890,8 +892,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Something changed about who is facilitating a live session, or an element lock the facilitator freed.',
   'Facilitator|Ended': 'The facilitator role in a live session ended.',
   'Facilitator|Started': 'Someone became the facilitator of a live session.',
-  'Folder|Created': 'A new folder was created in the diagram explorer.',
-  'Folder|Deleted': 'A folder was deleted (contained diagrams move to Unsorted).',
+  'Folder|Created': 'A new folder was created in the document explorer.',
+  'Folder|Deleted': 'A folder was deleted (contained documents move to Unsorted).',
   'Folder|Moved': 'A folder was re-parented under another folder (or the root).',
   'Folder|Renamed': 'A folder was renamed.',
   'Help|Helpful':
@@ -911,7 +913,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Layer|Reordered': 'Someone dragged a layer to restack it.',
   'Layer|Selected': 'Someone switched which layer is active.',
   'Layer|Toggled': 'Someone switched something on a layer on or off, such as hiding or locking it.',
-  'Mcp|Used': 'An AI tool connected to livediagram over MCP used one of its actions on a diagram.',
+  'Mcp|Used': 'An AI tool connected to livediagram over MCP used one of its actions on a document.',
   'Note|Added': 'A note was added to an element (first non-empty save).',
   'Note|Changed': "An existing note's text was edited.",
   'Note|Deleted': 'A note was cleared from an element.',
@@ -937,14 +939,14 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "Someone tidied a tab's layout with Auto Layout, arranging its elements automatically.",
   'Tab|Changed': "Someone changed a tab-wide setting, such as the tab's default font or text size.",
   'Tab|Cleared': "A tab's content was wiped.",
-  'Tab|Created': 'A new tab was added to a diagram.',
-  'Tab|Deleted': 'A tab was removed from a diagram.',
+  'Tab|Created': 'A new tab was added to a document.',
+  'Tab|Deleted': 'A tab was removed from a document.',
   'Tab|Duplicated': 'A tab was duplicated.',
   'Tab|Ended': 'Someone ended a live activity on a tab, such as a poll or a timer.',
   'Tab|Imported': 'Someone imported a tab from a file.',
-  'Tab|Linked': 'A tab was linked into another diagram.',
+  'Tab|Linked': 'A tab was linked into another document.',
   'Tab|Loaded':
-    "A tab's content was fetched for viewing (the first tab when a diagram opens, then each tab switched to).",
+    "A tab's content was fetched for viewing (the first tab when a document opens, then each tab switched to).",
   'Tab|Locked': 'A tab was locked (read-only).',
   'Tab|Moved': 'A tab was filed into a tab folder.',
   'Tab|Removed': 'Someone took a tab out of its tab folder, making it a loose tab again.',
@@ -958,13 +960,13 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Unlocked': 'A tab was unlocked (edits resume).',
   'Tab|Voted': 'Someone answered a live vote or poll on a tab. Counted once per person per poll.',
   'Team|Added':
-    'Something was added to a team: an invitation sent, or a diagram added to its shared library.',
+    'Something was added to a team: an invitation sent, or a document added to its shared library.',
   'Team|Changed': "Something about a team's settings, or a member's role, was changed.",
   'Team|Created': 'Someone created a new team.',
   'Team|Declined': 'Someone turned down a team invite.',
   'Team|Deleted': 'An admin deleted a team.',
   'Team|Joined': 'Someone accepted a team invite, by email or by invite link.',
-  'Team|Moved': "A diagram already in a team's shared library was moved somewhere else.",
+  'Team|Moved': "A document already in a team's shared library was moved somewhere else.",
   'Team|Removed':
     'Someone was taken off a team, left one, or had a pending invite or the invite link withdrawn.',
   'Team|Shared': 'A team turned on a way for people to ask to join it.',
@@ -977,12 +979,12 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timeline|Removed': 'Someone removed one or more entries from their Timeline feed.',
   'Timeline|Selected':
     "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
-  'Trash|Opened': 'Someone opened the Trash, where deleted diagrams wait for 30 days.',
+  'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
   'Trash|Cleared':
-    'Someone emptied one group of their Trash (their own diagrams, a team, or this browser), deleting everything in it for good.',
-  'Trash|Deleted': 'Someone deleted a diagram in the Trash for good, before its 30 days were up.',
+    'Someone emptied one group of their Trash (their own documents, a team, or this browser), deleting everything in it for good.',
+  'Trash|Deleted': 'Someone deleted a document in the Trash for good, before its 30 days were up.',
   'Trash|Restored':
-    'Someone brought a deleted diagram back from the Trash, putting it back where it was.',
+    'Someone brought a deleted document back from the Trash, putting it back where it was.',
   'Token|Created':
     'A new API token was created, either by hand or for an AI tool connected over MCP.',
   'Token|Removed': 'Someone revoked an API token.',
@@ -1004,72 +1006,73 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone picked an option from a dropdown, or clicked through on a banner, somewhere in the editor.',
   'UI|Started': 'Someone started a presentation or the welcome tour.',
   'UI|Toggled': 'Someone turned an editor setting on or off.',
-  'UI|Used': 'Someone used a wizard-skipping entry point into a new diagram, or accepted an offer.',
+  'UI|Used':
+    'Someone used a wizard-skipping entry point into a new document, or accepted an offer.',
   'UI|Declined': 'Someone turned down an offer the editor made them.',
   'UI|View': 'The welcome tour advanced to (or back to) a particular stage.',
 };
 
 export const API_OPERATIONS: Readonly<Record<string, string>> = {
   AcceptTeamInvite: 'accepting a team invite',
-  AddTab: 'adding a tab to a diagram, from an AI tool connected over MCP',
-  AppendChangeLog: "recording an entry in a diagram's change history",
-  CopyDiagram: 'duplicating a diagram',
+  AddTab: 'adding a tab to a document, from an AI tool connected over MCP',
+  AppendChangeLog: "recording an entry in a document's change history",
+  CopyDocument: 'duplicating a document',
   CreateCustomTheme: 'saving a new custom theme',
-  CreateDiagram: 'creating a new diagram',
+  CreateDocument: 'creating a new document',
   CreateFolder: 'creating a folder',
   CreateShareLink: 'generating a share link',
   CreateTeam: 'creating a team',
   CreateToken: 'creating an API token',
-  DeleteChangeLog: "clearing a diagram's change history",
-  DeleteChangeLogEntry: "removing one entry from a diagram's change history",
+  DeleteChangeLog: "clearing a document's change history",
+  DeleteChangeLogEntry: "removing one entry from a document's change history",
   DeleteComment: 'deleting a comment',
   DeleteCustomTheme: 'deleting a saved custom theme',
-  DeleteDiagram: 'deleting a diagram',
+  DeleteDocument: 'deleting a document',
   DeleteFolder: 'deleting a folder',
   DeleteImage: 'deleting a saved image',
   DeleteShareLink: 'deleting a share link',
   DeleteTab: 'deleting a tab',
   DeleteTeam: 'deleting a team',
-  DismissShared: "removing a shared diagram from a visitor's shared list",
+  DismissShared: "removing a shared document from a visitor's shared list",
   DismissTimelineEvent: 'clearing one entry from the activity timeline',
   DismissTimelineEvents: 'clearing entries from the activity timeline',
   ExtendShareLink: "extending a share link's expiry",
-  FindDiagrams: 'searching for a diagram, from an AI tool connected over MCP',
+  FindDocuments: 'searching for a document, from an AI tool connected over MCP',
   InviteTeamMember: 'inviting someone to a team',
   JoinTeamByInviteLink: 'joining a team through its invite link',
-  LinkTab: 'linking a tab into another diagram',
-  List: "listing a visitor's diagrams",
-  ListChangeLog: "listing a diagram's change history",
+  LinkTab: 'linking a tab into another document',
+  List: "listing a visitor's documents",
+  ListChangeLog: "listing a document's change history",
   ListCustomThemes: "listing an account's saved custom themes",
   ListFolders: "listing an account's folders",
   ListImages: 'listing the images saved to an account',
-  ListShareLinks: "listing a diagram's share links",
-  ListShared: 'listing diagrams shared with a visitor',
+  ListShareLinks: "listing a document's share links",
+  ListShared: 'listing documents shared with a visitor',
   ListTeamInvites: "listing an account's pending team invites",
   ListTeams: "listing an account's teams",
   ListTemplates: 'listing available templates, from an AI tool connected over MCP',
   ListTokens: "listing an account's API tokens",
   LoadSelf: "loading a visitor's own profile details",
-  LoadShared: 'opening a diagram through a share link',
+  LoadShared: 'opening a document through a share link',
   LoadTab: "loading a tab's contents",
   LoadTeam: "loading a team's details",
-  LoadTeamLibrary: "loading a team's shared diagram library",
+  LoadTeamLibrary: "loading a team's shared document library",
   NotifyAssignedAction: 'emailing someone about an action assigned to them',
   OauthExchange: 'connecting an AI tool over MCP',
-  ReadDiagram: 'reading a diagram, from an AI tool connected over MCP',
-  RenameDiagram: 'renaming a diagram, from an AI tool connected over MCP',
+  ReadDocument: 'reading a document, from an AI tool connected over MCP',
+  RenameDocument: 'renaming a document, from an AI tool connected over MCP',
   ResolveTeamInviteLink: "opening a team's invite link",
   RevokeTeamInviteLink: "turning off a team's invite link",
   RevokeToken: 'revoking an API token',
-  SaveDiagramMeta: "saving a diagram's name or other details",
+  SaveDocumentMeta: "saving a document's name or other details",
   SaveSelf: "saving a visitor's own profile details",
   SaveTab: "saving a tab's contents",
   SendEmail: 'sending a transactional or lifecycle email',
-  SetFolder: 'moving a diagram into, or out of, a folder',
+  SetFolder: 'moving a document into, or out of, a folder',
   SetSharePassword: 'setting a password on a share link',
-  ShareDiagram: 'generating a share link, from an AI tool connected over MCP',
+  ShareDocument: 'generating a share link, from an AI tool connected over MCP',
   UpdateCustomTheme: 'updating a saved custom theme',
-  UpdateDiagram: 'updating a diagram, from an AI tool connected over MCP',
+  UpdateDocument: 'updating a document, from an AI tool connected over MCP',
   UpdateFolder: 'renaming or updating a folder',
   UpdateTeam: "updating a team's name or organisation",
   UploadImage: 'uploading an image',

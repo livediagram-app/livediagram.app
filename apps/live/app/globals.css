@@ -233,9 +233,9 @@
 }
 
 /*
- * Explorer diagram-row enter / exit. Used by the Explorer to make
+ * Explorer document-row enter / exit. Used by the Explorer to make
  * add + delete feel responsive when the list has many similarly-
- * named diagrams. Max-height collapse + horizontal translate +
+ * named documents. Max-height collapse + horizontal translate +
  * fade gives a real sense of motion; the row above slides up into
  * the gap as the deleted row collapses out.
  *
@@ -508,7 +508,7 @@
 }
 
 /* Sticky-note paper peel (docs/specs/008-canvas/canvas-and-palette.md): the note is glued along its top strip
-   and the rest of the sheet lifts ever so slightly off the board. The note
+   and the rest of the sheet lifts ever so slightly off the canvas. The note
    itself never changes — same flat rectangle, same fill — and no mask or
    clip is involved anywhere, so no hard edge can exist: the lift lives in
    ::before, a caster whose FILL is a long vertical gradient (nothing above
@@ -523,7 +523,7 @@
    pressed-glue shading at the top strip. Element rotation on the wrapper
    rotates sheet and shadow together. A user-set element shadow (docs/specs/008-canvas/element-shadows.md)
    replaces the whole treatment — element-variant.ts drops this class when
-   one is set. Recipe hand-tuned on a live board against Miro's renderer
+   one is set. Recipe hand-tuned on a live canvas against Miro's renderer
    (the numbers are the winner of a 25-variant bake-off; see docs/specs/008-canvas/canvas-and-palette.md). */
 .lvd-sticky-peel::before {
   content: '';
@@ -592,7 +592,7 @@
 /* The floating chrome gets its OWN compositing layer while isometric is on.
    Isometric puts a large preserve-3d scene on the page, and the panels sit
    above it in z but shared its repaint region — which is why the palette
-   flickered too, not just the diagram. `will-change` is the promotion hint
+   flickered too, not just the canvas. `will-change` is the promotion hint
    that doesn't touch `transform`, which MovablePanel needs for dragging.
    Gated on the scene being there rather than unconditional: a promoted layer
    loses sub-pixel text anti-aliasing on a 1x display, so every panel's small

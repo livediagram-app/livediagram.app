@@ -53,7 +53,7 @@ type ActivityPanelProps = {
   // the editor to jump to the related element (tab-meta entries like
   // "Changed theme to X" just clear the selection).
   onRowClick: (entry: ChangeLogEntry) => void;
-  // Wipe every audit entry for the active tab. The diagram state is
+  // Wipe every audit entry for the active tab. The document state is
   // untouched (only the log dies). Disabled when the list is empty
   // so the button doesn't no-op. Optional so view-role visitors can
   // open the panel (to see the trail of edits) without exposing a
@@ -78,7 +78,7 @@ type ActivityPanelProps = {
   onMobileClose?: () => void;
 };
 
-// Floating "Activity" panel — per-diagram audit of every edit, with a
+// Floating "Activity" panel — per-document audit of every edit, with a
 // surgical Revert button on each row and the Undo / Redo controls
 // docked at the top. Same shape language as Explorer / Palette so the
 // editor's chrome stays consistent. See docs/specs/012-collaboration/activity-and-audit.md.
@@ -202,7 +202,7 @@ function ActivityPanelImpl({
             <HoverCard
               block
               title="Clear Activity"
-              description="Delete every entry for this tab. The diagram is untouched."
+              description="Delete every entry for this tab. The document is untouched."
             >
               <button
                 type="button"

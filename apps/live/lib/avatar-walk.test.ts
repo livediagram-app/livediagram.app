@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/diagram';
+import { createShape, type Element } from '@livediagram/document';
 import {
   AVATAR_HEIGHT,
   AVATAR_JUMP_VELOCITY,

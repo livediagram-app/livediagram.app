@@ -1,4 +1,4 @@
-// POST /api/diagrams/<id>/tabs/<tabId>/qa — one action on a Q&A board
+// POST /api/documents/<id>/tabs/<tabId>/qa — one action on a Q&A board
 // (docs/specs/012-collaboration/qa-board.md).
 //
 // The board is the one element whose state the SERVER owns: every add, vote
@@ -8,19 +8,24 @@
 // because the voter id is derived from the authenticated caller rather than
 // claimed by them.
 //
-// The write itself happens in the diagram's ROOM, not here: a room voting in
+// The write itself happens in the document's ROOM, not here: a room voting in
 // the same second is forty read-modify-writes of one row, and worker requests
 // run in parallel isolates, so the only place they can be put in single file
-// is the one object every request for this diagram reaches. The room applies
+// is the one object every request for this document reaches. The room applies
 // them one at a time (with a compare-and-swap as a second line against the
 // editors' tab autosave) and broadcasts each result as a sequenced system op,
 // so every peer, and the sender, converges on exactly what D1 holds.
 
-import { isParticipantQaAction, parseQaAction, qaVoterId, type QaNote } from '@livediagram/diagram';
-import { getDiagram, getParticipant } from '../db';
+import {
+  isParticipantQaAction,
+  parseQaAction,
+  qaVoterId,
+  type QaNote,
+} from '@livediagram/document';
+import { getDocument, getParticipant } from '../db';
 import type { QaWriteRequest } from '../qa-board-write';
 import { badRequest, conflict, forbidden, json, notFound } from '../responses';
-import { gateEdit, gateRead, missingDiagram, requireOwner, type RouteContext } from './context';
+import { gateEdit, gateRead, missingDocument, requireOwner, type RouteContext } from './context';
 
 export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
@@ -36,8 +41,8 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
   const tabId = segments[4]!;
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  const existing = await getDiagram(env, id);
-  if (!existing) return missingDiagram(ctx, id);
+  const existing = await getDocument(env, id);
+  if (!existing) return missingDocument(ctx, id);
 
   let body: { elementId?: unknown; action?: unknown };
   try {
@@ -50,7 +55,7 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
   const action = parseQaAction(body.action);
   if (!action) return badRequest('invalid action');
 
-  // The audience's two verbs are open to anyone who can read the diagram;
+  // The audience's two verbs are open to anyone who can read the document;
   // running the board needs edit rights. The facilitator baton is a
   // client-side rule on top (docs/specs/012-collaboration/facilitator.md): this route can't see which socket
   // holds it.
@@ -69,14 +74,14 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
         )
       : null;
 
-  // Hand the write to the diagram's room, which runs board writes one at a
-  // time and broadcasts each result in order (DiagramRoom.handleQaWrite).
-  const stub = env.DIAGRAM_ROOM.get(env.DIAGRAM_ROOM.idFromName(id));
+  // Hand the write to the document's room, which runs board writes one at a
+  // time and broadcasts each result in order (DocumentRoom.handleQaWrite).
+  const stub = env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(id));
   const res = await stub.fetch('https://room/qa', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      diagramId: id,
+      documentId: id,
       tabId,
       elementId,
       action,

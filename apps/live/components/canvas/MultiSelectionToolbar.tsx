@@ -1,4 +1,4 @@
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import {
   DuplicateIcon,
   EllipsisIcon,

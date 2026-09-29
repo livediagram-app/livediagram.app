@@ -60,7 +60,7 @@ Reserved for status — never used decoratively.
 - **Links** are `brand-600` with underline on hover.
 - **Focus rings** are 2px `brand-500` with a 2px `brand-100` halo for accessibility.
 - **Selection / collaborator highlights** on the canvas use `brand-200`–`brand-300` tints. Individual collaborator cursors may shift hue (per-user color), but the default user's selection stays in the brand range.
-- **Page background**: `slate-50`. **Canvas background**: pure white (`#FFFFFF`) so diagrams read cleanly.
+- **Page background**: `slate-50`. **Canvas background**: pure white (`#FFFFFF`) so what's on the canvas reads cleanly.
 - **Dark mode** uses `slate-950` page bg, `slate-900` surfaces and the Steel accent, as the [dark palette](#dark-palette-steel) sets out.
 - **Glyphs in a circle or pill** centre their ink, not their line box, in both appearances: see
   [Optical alignment](optical-alignment.md).
@@ -143,7 +143,7 @@ The wordmark's "diagram" half is the one vivid note: **sky-400 `#38bdf8`** in da
 - `brand-500` on white meets AA for large text only — for small text, use `brand-700` or darker.
 - Never rely on color alone to convey status; pair semantic colors with an icon or label.
 - **Contrast guard (dark mode).** A Playwright audit (`apps/live/e2e/contrast-audit.spec.ts`) walks every visible
-  text node on the New Diagram wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
+  text node on the New Document wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
   the real background under it, and fails below 4.5:1 (3:1 for large text: 24px, or 18.66px bold). It has no
   allow-list. It covers **dark mode only**: light mode's colours are owned by Thomas
   ([@tommcclean](https://github.com/tommcclean)) under [#74](https://github.com/livediagram-app/livediagram.app/issues/74),

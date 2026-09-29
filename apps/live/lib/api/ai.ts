@@ -10,7 +10,7 @@ import type {
   ReadNotesResponse,
 } from '@livediagram/api-schema';
 import { READ_MAX_CROPS_PER_REQUEST } from '@livediagram/api-schema';
-import { isValidElement, type Element } from '@livediagram/diagram';
+import { isValidElement, type Element } from '@livediagram/document';
 import { API_BASE, apiHeaders, apiFetch } from './core';
 
 // Fetch server capabilities once at editor mount. Returns everything
@@ -33,7 +33,7 @@ export async function apiGetCapabilities(): Promise<CapabilitiesResponse> {
 // shape still shows; a dropped one leaves arrows pointing at nothing. The
 // data-carrying composites (charts / rail / rating / progress / icon) are
 // deliberately excluded: without their extra fields they'd render empty, so
-// they collapse to a plain square. Keep in sync with packages/diagram
+// they collapse to a plain square. Keep in sync with packages/document
 // ShapeKind (the simple, self-contained subset).
 //
 // That exclusion is about elements the model INVENTS. It must never reach an
@@ -81,7 +81,7 @@ const AI_DEFAULT_SHAPE_H = 64;
 const AI_ELEMENT_TYPES = new Set(['shape', 'text', 'sticky', 'arrow']);
 
 // Parse, normalise, then hold the result to the SAME structural guard every
-// save goes through (`isValidElement` from @livediagram/diagram). A looser
+// save goes through (`isValidElement` from @livediagram/document). A looser
 // local copy used to live here: it let through arrows with junk endpoints and
 // non-finite coordinates, which rendered, then failed the api's tab validation
 // on save. Normalising first keeps the forgiving part (a stray kind or a

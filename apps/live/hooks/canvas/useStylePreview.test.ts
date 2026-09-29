@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 // pre-hover snapshot. The hook renders once per harness and its closures share
 // that one ref, which is exactly the per-instance behaviour we want.
 
-import { createShape, type Element, type Tab } from '@livediagram/diagram';
+import { createShape, type Element, type Tab } from '@livediagram/document';
 import type { ShapeColorPreset } from '@/lib/themes';
 import { useStylePreview } from './useStylePreview';
 
