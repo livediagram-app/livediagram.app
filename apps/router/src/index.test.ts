@@ -84,6 +84,17 @@ describe('production dispatch (service bindings)', () => {
     expect(live.urls).toEqual(['https://livediagram.app/icon.svg']);
   });
 
+  it('serves the licences page and its texts from marketing', async () => {
+    // docs/specs/002-project-scope/third-party-licences.md
+    const { env, marketing } = makeEnv();
+    await dispatch('/licences', env);
+    await dispatch('/licences/texts/0123456789abcdef.txt', env);
+    expect(marketing.urls).toEqual([
+      'https://livediagram.app/licences',
+      'https://livediagram.app/licences/texts/0123456789abcdef.txt',
+    ]);
+  });
+
   it('everything else lands on marketing', async () => {
     const { env, marketing, live } = makeEnv();
     await dispatch('/', env);

@@ -83,7 +83,7 @@ export function ShareRail() {
   return (
     <div className="fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 xl:block">
       <div className="flex flex-col items-center gap-1 rounded-l-xl border border-r-0 border-slate-200 bg-white/90 py-3 pl-2 pr-1.5 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
-        <span className="mb-1 rotate-180 text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400 [writing-mode:vertical-rl]">
+        <span className="mb-1 rotate-180 text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400 [writing-mode:vertical-rl]">
           Share
         </span>
         {TARGETS.map((target) => (

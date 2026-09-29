@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "clean": "rm -rf .next .next-dev out node_modules .turbo"
+    "clean": "rm -rf .next .next-dev .next-analyze out node_modules .turbo"
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",

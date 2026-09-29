@@ -1,6 +1,6 @@
 # Architecture
 
-A pnpm + Turborepo monorepo: seven Cloudflare-deployed apps and thirteen shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
+A pnpm + Turborepo monorepo: seven Cloudflare-deployed apps and fourteen shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
 
 ```
 apps/
@@ -22,6 +22,7 @@ packages/
   sticky-vision/  finds sticky notes in a photo of a wall (classical CV, no DOM)
   sticky-model/   the learned boundary model's pure parts (cues, decode) + its training scripts
   telemetry-client/ shared browser telemetry emitter (buffer / flush / page-hide beacon)
+  licences/       build-time generator of the /licences page from what each app bundles
   eslint-config/  shared ESLint flat config
   prettier-config/shared Prettier config
   tailwind-config/shared Tailwind theme (brand palette, motion tokens) + the motion-budget guard
@@ -60,6 +61,7 @@ Each app pulls these in via `workspace:*`:
 - **`@livediagram/templates`** owns the template library: the catalogue (kinds, titles, categories, per-template canvas overrides) and the pure per-template element builders. Two callers: the editor's Quick Start picker (which layers its theme recolour on top in `apps/live/lib/template-builders.ts`) and the mcp worker's `list_templates` / `template` tools ([MCP server](../specs/015-api/mcp-server.md)), so the scaffolds can't drift between them.
 - **`@livediagram/template-previews`** owns the per-template preview illustrations: one static SVG per `TemplateKind`, rendered by the editor's template picker and by the marketing site's template gallery, so a template's card looks the same wherever it is offered and a new kind gets its artwork in one place. Its tests assert every listed template has a preview and that each drawing stays inside its viewBox.
 - **`@livediagram/help-registry`** owns the help-centre article + category registry: slugs, titles, descriptions, and per-article search keywords, plus the pure href/search helpers. Two callers: the help app's browse + search (`apps/help/lib/articles.ts` re-exports it) and the live editor's search-panel Help group (`apps/live/lib/help-search.ts`), so adding an article once makes it findable in both.
+- **`@livediagram/licences`** generates the third-party licences page ([Third-party licences](../specs/002-project-scope/third-party-licences.md)). The marketing build runs it after every other app has built: it reads what each Next app ships to the browser from `next experimental-analyze` and what each worker bundles from a `wrangler --dry-run` metafile, collects each package's licence and notice files (with reviewed overrides for packages that ship none, and a reviewed table for what sits inside WASM and fonts), and writes a manifest plus deduplicated plain-text files that `apps/marketing/app/licences` renders. A package with no licence text, an unrecognised licence, a disallowed one or an unreviewed binary fails the build with a named error.
 - **`@livediagram/eslint-config`** / **`prettier-config`** / **`tailwind-config`** / **`vitest-config`** own the shared lint / format / theme / test configs so every workspace stays consistent. `tailwind-config` also owns the motion tokens (`duration-micro` / `-short` / `-long`, mirrored as numbers in `@livediagram/tailwind-config/motion`) and the static motion-budget guard every app runs in its tests ([Motion](../specs/004-interface-design/motion.md)).
 
 ## Tech stack

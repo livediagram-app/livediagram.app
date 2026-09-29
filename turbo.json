@@ -12,6 +12,45 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**"]
     },
+    // Marketing's build also generates the /licences page from what EVERY app
+    // bundles (docs/specs/002-project-scope/third-party-licences.md), so any
+    // app's or package's source, or the lockfile, is an input: a change there
+    // must never replay a cached page that lists stale works. It runs after the
+    // other apps' builds because Next's analyzer uses an app's Turbopack build
+    // cache (.next/cache) whatever its distDir: beside that app's own build, the
+    // two processes corrupt it.
+    "@livediagram/marketing#build": {
+      "dependsOn": [
+        "^build",
+        "@livediagram/live#build",
+        "@livediagram/help#build",
+        "@livediagram/telemetry#build",
+        "@livediagram/api#build",
+        "@livediagram/mcp#build",
+        "@livediagram/router#build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "$TURBO_ROOT$/pnpm-lock.yaml",
+        "$TURBO_ROOT$/apps/**",
+        "$TURBO_ROOT$/packages/**",
+        // Explicit root globs ignore .gitignore: keep build output out.
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/test-results/**",
+        "!$TURBO_ROOT$/**/playwright-report/**",
+        "!$TURBO_ROOT$/**/next-env.d.ts",
+        "!$TURBO_ROOT$/apps/marketing/generated/**",
+        "!$TURBO_ROOT$/apps/marketing/public/licences/**"
+      ],
+      "outputs": [".next/**", "!.next/cache/**", "out/**", "generated/**", "public/licences/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true

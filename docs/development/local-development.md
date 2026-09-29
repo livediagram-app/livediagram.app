@@ -90,6 +90,7 @@ Run from the repo root:
 | `pnpm format`                              | Prettier write across the repo.                                                                                                                                                                                                                              |
 | `pnpm format:check`                        | Prettier check (this is what CI runs).                                                                                                                                                                                                                       |
 | `pnpm staging:check`                       | Dry-run the `[env.staging]` wrangler configs and print the resolved bindings (CI runs it).                                                                                                                                                                   |
+| `pnpm licences`                            | Regenerate the `/licences` page data (`apps/marketing/generated/`, `public/licences/`) from what every app bundles ([Third-party licences](../specs/002-project-scope/third-party-licences.md)); the marketing build runs it itself.                         |
 | `pnpm icons:vendor`                        | Regenerate the vendored Lucide glyphs from `packages/icons/lucide-manifest.json` ([Iconography](../specs/004-interface-design/iconography.md)).                                                                                                              |
 | `pnpm icons:sheet`                         | Render every editor icon at 1x and 4x into HTML + PNG contact sheets (`$ICON_SHEET_DIR`, default `/tmp/icon-sheet`) for review.                                                                                                                              |
 | `pnpm demo:sticky-vision`                  | Bundle + serve the sticky-detection demo at <http://localhost:4199> ([Event storming](../specs/021-event-storming/event-storming.md)).                                                                                                                       |
@@ -172,7 +173,7 @@ To try a hosted reader whose free budget is spent, swap `E2E_NO_AI=1` for
 `/api/ai/read-notes` call answers 429 `ai_quota`, and the import fails over
 to the in-browser model and says so ([Event storming](../specs/021-event-storming/event-storming.md) Phase 9).
 
-## Three gotchas
+## Four gotchas
 
 - **All four Next.js dev servers (`marketing`, `live`, `telemetry`, `help`) run through `scripts/next-dev.mjs`.** It frees the port, points dev at an isolated `.next-dev/` cache, and wipes that cache on every start, so a `next build` running in the same checkout can't corrupt the dev server (the recurring "unstyled help page" / `Cannot find module './NNNN.js'` failures) and a crashed restart never inherits a broken cache. All four run on Turbopack, which is also what `next build` uses under Next 16, so dev compiles the same way the deployed bundle does. If a dev server ever does get stuck, stop it and restart — the wipe-on-start clears it.
 
@@ -181,6 +182,8 @@ to the in-browser model and says so ([Event storming](../specs/021-event-stormin
   Next 16 also writes three files into whichever app you run it from, all of them gitignored on purpose: `next-env.d.ts` (it now names the active distDir inside itself, so dev and build would otherwise rewrite it over each other), and an `AGENTS.md` + `CLAUDE.md` pair of agent instructions. Don't un-ignore or hand-edit them; the repo's agent instructions live in the root `AGENTS.md`, and each app's tsconfig already picks up the Next types without `next-env.d.ts` being tracked.
 
   The webpack escape hatch is still there — `pnpm --filter @livediagram/live dev:webpack` boots the editor on webpack, and `scripts/next-dev.mjs` honours `--webpack` from any app. It exists for the case where Turbopack genuinely doesn't support something the app needs, and it is a diagnostic rather than a default: Turbopack became the default precisely because webpack's HMR kept desynchronising here and serving `__webpack_modules__[moduleId] is not a function` until someone wiped `.next`. If you find yourself needing the hatch, that is worth a spec note rather than a habit. The editor on webpack also runs without the React Compiler, whose native Rust port is Turbopack-only ([React state and effects](../specs/003-system-architecture/react-state-and-effects.md)), so a render bug seen only on one bundler may be the compiler.
+
+- **`/licences` needs its generated data.** `pnpm dev` does not run the generator (it takes about 20 seconds), so the marketing dev server fails that one page with `LicencesManifestMissing` until you run `pnpm licences` once. Don't run `pnpm licences` while a `next build` of the editor, help centre or telemetry dashboard is running: Next's analyzer shares an app's Turbopack build cache (`.next/cache`), and two processes on it corrupt it. `pnpm build` orders them for you.
 
 - **The api worker's local D1 file lives at `apps/api/.wrangler/state/v3/d1/`.** Delete the folder to start over with an empty database.
 
