@@ -56,12 +56,17 @@ async function api(
   return res.status() === 204 ? null : ((await res.json()) as Record<string, unknown>);
 }
 
-async function signIn(page: import('@playwright/test').Page) {
+async function signIn(page: import('@playwright/test').Page, user = USER) {
   await page.addInitScript(
     (session: string) => localStorage.setItem('livediagram:e2e:session', session),
-    JSON.stringify({ token, userId: USER, email: EMAIL, firstName: 'Drive' }),
+    JSON.stringify({
+      token: user === USER ? token : identity.token(user, EMAIL),
+      userId: user,
+      email: EMAIL,
+      firstName: 'Drive',
+    }),
   );
-  await routeGoogle(page, google.fake, USER);
+  await routeGoogle(page, google.fake, user);
 }
 
 // Settings > Account > Cloud Sync (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"):
@@ -440,7 +445,7 @@ test('disconnect revokes and leaves the Drive files in place', async ({ page, pa
   const account = page.getByRole('button', { name: 'Account menu' });
   await expect(page.getByRole('button', { name: /Google Drive/ })).toBeVisible();
   const marked = await account.boundingBox();
-  let panel = await openCloudSync(page, 'badge');
+  const panel = await openCloudSync(page, 'badge');
   await settled(page);
 
   // Google drops the grant: Needs reconnect, in the same shape.
@@ -461,6 +466,18 @@ test('disconnect revokes and leaves the Drive files in place', async ({ page, pa
   expect(await api(page, 'GET', '/drive/connection')).toEqual({ connection: null });
   expect(google.fake.appFiles(USER).length).toBe(before);
 
+  expectNoPageErrors(pageErrors);
+});
+
+test('leaving for Google comes back to Cloud Sync: a cancel, and Back', async ({
+  page,
+  pageErrors,
+}) => {
+  // docs/specs/022-drive-mirror/drive-mirror.md, "Leaving for Google and coming back".
+  // A user of its own, clear of the token rate limit the tests above spend.
+  await signIn(page, `${USER}_back`);
+  await page.goto('/explorer/recent');
+  let panel: import('@playwright/test').Locator;
   // A cancel at Google comes back to exactly where it started, Cloud Sync
   // open, saying so calmly.
   await page.route(
@@ -502,5 +519,6 @@ test('disconnect revokes and leaves the Drive files in place', async ({ page, pa
   // Closing Settings takes it out of the URL.
   await closeSettings(page);
   expect(new URL(page.url()).search).toBe('');
+
   expectNoPageErrors(pageErrors);
 });
