@@ -47,6 +47,9 @@ type ToolConfig<InputArgs extends ZodRawShapeCompat> = {
   // wire unannotated, because omitting this is a type error.
   behaviour: ToolBehaviour;
   inputSchema: InputArgs;
+  // Required for the same reason (docs/specs/015-api/mcp-server.md §4.17): the result shape, from
+  // output-schema.ts. The SDK validates each success's structuredContent against it.
+  outputSchema: ZodRawShapeCompat;
 };
 
 /**

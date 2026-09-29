@@ -67,6 +67,12 @@ describe('textResult', () => {
     });
   });
 
+  it('carries the same value as structuredContent', () => {
+    // The SDK validates this against the tool's outputSchema (docs/specs/015-api/mcp-server.md §4.17).
+    const value = { id: 'd1', name: 'Roadmap' };
+    expect(textResult(value).structuredContent).toBe(value);
+  });
+
   it('is not marked as an error', () => {
     // The MCP client branches on isError; a success that carried it would make
     // every tool call look failed.
@@ -78,6 +84,7 @@ describe('errorResult', () => {
   it('marks the result as an error and passes the message through verbatim', () => {
     const r = errorResult('diagram not found');
     expect(r.isError).toBe(true);
+    expect(r.structuredContent).toBeUndefined();
     expect(r.content[0]).toEqual({ type: 'text', text: 'diagram not found' });
   });
 

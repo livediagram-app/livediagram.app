@@ -13,7 +13,7 @@ import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/reso
 import { svgToPngBase64 } from './render';
 import { apiFetch } from './api';
 import type { Env } from './env';
-import type { ToolResult } from './tool-helpers';
+import { textResult, type StructuredValue, type ToolResult } from './tool-helpers';
 
 // Per-image cap for embedding (docs/specs/015-api/mcp-server.md §5): a diagram can reference large
 // uploads, and inlining them as base64 into the preview PNG's own base64
@@ -50,7 +50,7 @@ async function buildImageResolver(
 // `auth` (env + the caller's token) enables real image embedding; omit it to
 // render placeholders for image elements (the pre-embedding behaviour).
 export async function imageResult(
-  value: unknown,
+  value: StructuredValue,
   tab: Tab,
   auth?: { env: Env; token: string },
 ): Promise<ToolResult> {
@@ -62,10 +62,10 @@ export async function imageResult(
       resolveStickerArt,
     }),
   );
+  // The structured result (and its text form) first, then the preview.
+  const result = textResult(value);
   return {
-    content: [
-      { type: 'text', text: JSON.stringify(value, null, 2) },
-      { type: 'image', data: png, mimeType: 'image/png' },
-    ],
+    ...result,
+    content: [...result.content, { type: 'image', data: png, mimeType: 'image/png' }],
   };
 }
