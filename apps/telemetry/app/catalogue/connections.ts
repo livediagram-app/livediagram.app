@@ -111,7 +111,7 @@ export const DRIVE_CHANGES_APPLIED = chart(
   'Drive',
   'Applied',
   'Changes From Drive',
-  'A rename, move, bin, restore or permanent delete made in Google Drive, applied here.',
+  'A copy, rename, move, bin, restore or permanent delete made in Google Drive, applied here.',
 );
 
 export const DRIVE_OPEN_WITH = chart(

@@ -20,7 +20,12 @@ import {
 } from '../export-diagram-text';
 import { createDriveRestClient } from './drive-rest-client';
 import { DriveMirrorEngine, type DriveMirrorStatus, type Timers } from './engine';
-import { copyEnvelope, type LivediagramPort, type MirrorFolder } from './livediagram-port';
+import {
+  copyEnvelope,
+  type CopyTarget,
+  type LivediagramPort,
+  type MirrorFolder,
+} from './livediagram-port';
 import { memorySeenStore } from './tombstones';
 import type { TokenSource } from './token-source';
 
@@ -218,14 +223,14 @@ export class FakeLivediagram {
           this.folders.get(id)!.parentId = parentId;
         }),
       deleteFolder: (id) => write(() => this.deleteFolder(id)),
-      importDiagramCopy: (envelope: DiagramEnvelope) =>
+      importDiagramCopy: (envelope: DiagramEnvelope, target?: CopyTarget) =>
         write(() => {
-          const id = `copy-${this.diagrams.size + 1}`;
+          const id = target?.id ?? `copy-${this.diagrams.size + 1}`;
           const { tabs, presentation } = copyEnvelope(envelope);
           this.diagrams.set(id, {
             id,
-            name: envelope.diagram.name,
-            folderId: null,
+            name: target?.name ?? envelope.diagram.name,
+            folderId: target?.folderId ?? null,
             teamId: null,
             savedAt: this.clock.now,
             createdAt: this.clock.now,
@@ -234,6 +239,21 @@ export class FakeLivediagram {
             presentation,
           });
           return id;
+        }),
+      duplicateDiagram: (sourceId: string, target: CopyTarget) =>
+        write(() => {
+          const src = this.live(sourceId);
+          this.diagrams.set(target.id, {
+            id: target.id,
+            name: target.name,
+            folderId: target.folderId,
+            teamId: null,
+            savedAt: this.clock.now,
+            createdAt: this.clock.now,
+            trashedAt: null,
+            tabs: src.tabs.map((t) => ({ ...t, id: `${t.id}-${target.id}` })),
+            presentation: src.presentation,
+          });
         }),
       getConnection: async () => (this.connection ? { ...this.connection } : null),
       putConnection: (patch) =>

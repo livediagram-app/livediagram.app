@@ -50,6 +50,12 @@ export function driveStatusLine(status: DriveMirrorStatus): string {
   }
 }
 
+// A copy made in Drive that livediagram recognised but could not read
+// (docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive").
+export function driveSkippedText(name: string): string {
+  return `A copy made in Drive (${name}) couldn't be read, so no diagram was made from it.`;
+}
+
 export function DriveDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const drive = useDriveMirror();
   const { status } = drive;
@@ -103,6 +109,19 @@ export function DriveDialog({ open, onClose }: { open: boolean; onClose: () => v
               {lastSyncedLabel(status.lastSyncedAt, now)}
             </span>
           </p>
+        ) : null}
+
+        {status.skipped.length > 0 ? (
+          <ul className="space-y-2">
+            {status.skipped.map((entry) => (
+              <li
+                key={`${entry.reason}:${entry.name}`}
+                className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/60 dark:bg-amber-950/40"
+              >
+                {driveSkippedText(entry.name)}
+              </li>
+            ))}
+          </ul>
         ) : null}
 
         {status.notices.length > 0 ? (

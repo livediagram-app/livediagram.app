@@ -23,7 +23,7 @@ import { applyInbound, folderAppProperties } from './engine-inbound';
 import { runOutbound } from './engine-outbound';
 import type { LivediagramPort } from './livediagram-port';
 import { driveLog, driveWarn } from './log';
-import { PassContext } from './pass-context';
+import { PassContext, type DriveSkipped } from './pass-context';
 import { planOutbound } from './plan-outbound';
 import { LD_NAME_MAX, planInbound } from './plan-inbound';
 import { buildSnapshot, itemKey, ldFolderForParent, type MirrorSnapshot } from './snapshot';
@@ -50,6 +50,8 @@ export type DriveMirrorStatus = {
   error: 'offline' | 'rate_limited' | 'failed' | null;
   leaseHeldElsewhere: boolean;
   notices: DriveMirrorNotice[];
+  // What livediagram recognised in Drive but could not act on, this session.
+  skipped: DriveSkipped[];
 };
 
 export type DriveEngineTelemetry = (
@@ -87,6 +89,7 @@ const INITIAL: DriveMirrorStatus = {
   error: null,
   leaseHeldElsewhere: false,
   notices: [],
+  skipped: [],
 };
 
 export class DriveMirrorEngine {
@@ -402,6 +405,12 @@ export class DriveMirrorEngine {
       rasterise: this.deps.rasterise,
       track: (action, type) => this.deps.track(action, type),
       now: this.deps.now,
+      skip: (entry) => {
+        const known = this.status.skipped.some(
+          (s) => s.name === entry.name && s.reason === entry.reason,
+        );
+        if (!known) this.publish({ skipped: [...this.status.skipped, entry].slice(-10) });
+      },
     });
   }
 

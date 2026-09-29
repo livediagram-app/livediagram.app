@@ -550,6 +550,7 @@ Account menu item **Google Drive** (signed in, `driveUiMode !== 'off'`), opening
 | `rate_limited`     | "Google asked livediagram to slow down. Syncing continues less often for a while."                                                                           |
 | `offline`/`failed` | "Couldn't reach Google Drive. livediagram tries again when you come back."                                                                                   |
 | notice             | "{name}: Moved in Drive to a folder livediagram can't see." **Show this folder to livediagram** (only with a Picker key)                                     |
+| skipped            | "A copy made in Drive ({name}) couldn't be read, so no diagram was made from it." (the status's `skipped`, this session)                                     |
 
 Disconnect confirms: "Disconnect Google Drive? Your files stay in Drive; livediagram stops updating them."
 

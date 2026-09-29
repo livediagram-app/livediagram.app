@@ -3,7 +3,12 @@
 // the port, and the snapshot follows along so later changes in the same read
 // see what the earlier ones did.
 
-import { DRIVE_PROP_FOLDER_ID, DRIVE_PROP_ORIGIN } from '@livediagram/api-schema';
+import {
+  DRIVE_PROP_DIAGRAM_ID,
+  DRIVE_PROP_FOLDER_ID,
+  DRIVE_PROP_ORIGIN,
+} from '@livediagram/api-schema';
+import { parseDiagramEnvelope } from '../export-diagram-text';
 import { ApiError } from '../api/core';
 import type { DriveChange } from './drive-client';
 import { driveLog, driveWarn } from './log';
@@ -120,6 +125,50 @@ async function applyEffect(
         queue.push({ fileId: file.id, removed: false, time: change.time, file });
       return;
     }
+    case 'copy-diagram':
+      await applyCopy(ctx, effect);
+      return;
+  }
+}
+
+// A copy made in Drive (docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive").
+// Throws CopyUnreadable when there is nothing to make the diagram from.
+async function applyCopy(
+  ctx: PassContext,
+  effect: Extract<InboundEffect, { kind: 'copy-diagram' }>,
+): Promise<void> {
+  const target = { id: effect.newId, name: effect.name, folderId: effect.folderId };
+  // An earlier pass that stopped before the re-tag already made it.
+  if (!(await ctx.port.canOpenDiagram(effect.newId))) {
+    if (effect.sourceId) {
+      await ctx.port.duplicateDiagram(effect.sourceId, target);
+    } else {
+      const parsed = parseDiagramEnvelope(await ctx.drive.download(effect.fileId));
+      if (!parsed.ok) throw new CopyUnreadable(parsed.failure);
+      await ctx.port.importDiagramCopy(parsed.envelope, target);
+    }
+  }
+  ctx.snapshot.diagrams.set(effect.newId, {
+    id: effect.newId,
+    name: effect.name,
+    folderId: effect.folderId,
+    savedAt: ctx.now(),
+    createdAt: ctx.now(),
+  });
+  // From now on the copy mirrors the new diagram. A failure here fails the
+  // pass, so the page token stays and the change is read again.
+  await ctx.drive.updateFile(effect.fileId, {
+    appProperties: {
+      [DRIVE_PROP_DIAGRAM_ID]: effect.newId,
+      [DRIVE_PROP_ORIGIN]: ctx.snapshot.host,
+    },
+  });
+}
+
+class CopyUnreadable extends Error {
+  constructor(failure: string) {
+    super(`copy unreadable: ${failure}`);
+    this.name = 'CopyUnreadable';
   }
 }
 
@@ -157,7 +206,16 @@ async function applyDecision(
     case 'apply': {
       for (const effect of decision.effects) {
         driveLog('inbound', { effect: effect.kind, fileId: change.fileId });
-        await applyEffect(ctx, effect, change, queue);
+        try {
+          await applyEffect(ctx, effect, change, queue);
+        } catch (err) {
+          // Never silent: a copy with nothing to make a diagram from is listed
+          // in the Drive panel, and nothing is recorded.
+          if (!(err instanceof CopyUnreadable) || effect.kind !== 'copy-diagram') throw err;
+          driveWarn('copy-unreadable', { fileId: change.fileId, error: err.message });
+          ctx.skip({ name: effect.name, reason: 'unreadable' });
+          return false;
+        }
       }
       // Recorded once the effects landed (a re-created folder is then the
       // parent its queued children resolve to). A purge or a binned folder

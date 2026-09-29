@@ -27,9 +27,14 @@ import { remapTabLinks, type Tab } from '@livediagram/diagram';
 import { apiCreateDiagram, apiLoadDiagram, apiLoadTab, apiSaveDiagramMeta } from './api-client';
 import { isOfflineId, offlineCreateDiagram } from './offline/offline-store';
 
+// `target` pins the new diagram's id, name and folder: the Google Drive
+// mirror duplicates this way when a copy is made in Drive
+// (docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive").
+// Without it, a fresh id and "<name> copy" in Unsorted, as ever.
 export async function duplicateDiagram(
   ownerId: string,
   sourceId: string,
+  target: { id?: string; name?: string; folderId?: string | null } = {},
 ): Promise<string | undefined> {
   const src = await apiLoadDiagram(ownerId, sourceId).catch(() => null);
   if (!src) return undefined;
@@ -51,17 +56,15 @@ export async function duplicateDiagram(
     const elements = remapTabLinks(tab.elements, tabIdMap);
     remappedTabs.push({ ...tab, id: newTabId, elements });
   }
-  const newId = crypto.randomUUID();
+  const newId = target.id ?? crypto.randomUUID();
+  const newName = target.name ?? `${src.name} copy`;
   // Offline Mode (docs/specs/006-diagram/offline-mode.md): a copy of an offline diagram is another OFFLINE
   // diagram. Creating it on the server instead would silently upload content
   // the user explicitly chose to keep in this browser. Tabs are stored whole
   // (per-tab `folder` included), so no follow-up meta write is needed.
   if (await isOfflineId(sourceId)) {
     try {
-      await offlineCreateDiagram(
-        { id: newId, name: `${src.name} copy`, tabs: remappedTabs },
-        Date.now(),
-      );
+      await offlineCreateDiagram({ id: newId, name: newName, tabs: remappedTabs }, Date.now());
       return newId;
     } catch {
       return undefined;
@@ -73,8 +76,9 @@ export async function duplicateDiagram(
   try {
     await apiCreateDiagram(ownerId, {
       id: newId,
-      name: `${src.name} copy`,
+      name: newName,
       tabs: remappedTabs,
+      ...(target.folderId ? { folderId: target.folderId } : {}),
     });
   } catch {
     return undefined;

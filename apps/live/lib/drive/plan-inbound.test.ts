@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DriveItem } from '@livediagram/api-schema';
 import type { DriveChange, DriveFile } from './drive-client';
-import { orderChanges, planInbound } from './plan-inbound';
+import { driveCopyDiagramId, orderChanges, planInbound } from './plan-inbound';
 import { buildSnapshot } from './snapshot';
 
 // Each row of the spec's Inbound table as a pure decision
@@ -246,7 +246,7 @@ describe('planInbound: folders', () => {
 });
 
 describe('planInbound: unrecorded files', () => {
-  it('ignores files from other deployments or unknown to livediagram', () => {
+  it('ignores files from other deployments, and makes a diagram of one no diagram owns', () => {
     const empty = buildSnapshot({
       host: HOST,
       rootFolderId: 'root',
@@ -261,7 +261,50 @@ describe('planInbound: unrecorded files', () => {
         empty,
       ),
     ).toMatchObject({ kind: 'ignore', reason: 'not-ours' });
-    expect(planInbound(change(file()), empty)).toMatchObject({ kind: 'ignore' });
+    // A livediagram file whose diagram is gone becomes a diagram of its own.
+    expect(planInbound(change(file()), empty)).toMatchObject({
+      kind: 'apply',
+      effects: [{ kind: 'copy-diagram', sourceId: null, newId: driveCopyDiagramId('file-d1') }],
+      types: ['Copy'],
+    });
+    expect(planInbound(change(file({ trashed: true })), empty)).toMatchObject({
+      kind: 'ignore',
+      reason: 'binned-copy',
+    });
+  });
+
+  it('reads a new file carrying a mirrored diagram id as a copy of it', () => {
+    const d = planInbound(
+      change(file({ id: 'file-copy', name: 'Copy of Plan.livediagram', parents: ['file-f1'] }), {
+        fileId: 'file-copy',
+      }),
+      snap(),
+    );
+    expect(d).toMatchObject({
+      kind: 'apply',
+      effects: [
+        {
+          kind: 'copy-diagram',
+          fileId: 'file-copy',
+          newId: driveCopyDiagramId('file-copy'),
+          sourceId: 'd1',
+          name: 'Copy of Plan',
+          folderId: 'f1',
+        },
+      ],
+      record: {
+        kind: 'diagram',
+        ldId: driveCopyDiagramId('file-copy'),
+        driveFileId: 'file-copy',
+        mirroredSavedAt: null,
+      },
+    });
+  });
+
+  it('derives the copy diagram id from its file id, the same every time', () => {
+    expect(driveCopyDiagramId('abc')).toBe(driveCopyDiagramId('abc'));
+    expect(driveCopyDiagramId('abc')).not.toBe(driveCopyDiagramId('abd'));
+    expect(driveCopyDiagramId('abc')).toMatch(/^dc-[0-9a-f]{16}$/);
   });
 
   it('adopts a file of a known diagram with no row (a reconnect)', () => {

@@ -380,3 +380,38 @@ describe('failures', () => {
     expect(fake.requests).toEqual([{ method: 'GET', path: '/drive/v3/changes/startPageToken' }]);
   });
 });
+
+describe('userCopy', () => {
+  it('makes a new file beside the original, keeping contents and appProperties, visible to the app', async () => {
+    const { fake, call } = setup();
+    const folder = await createFolder(call, 'f');
+    const up = multipart(
+      { name: 'Plan.livediagram', parents: [folder.id], appProperties: { ldDiagramId: 'd1' } },
+      'body',
+    );
+    const file = (
+      await call(
+        'POST',
+        `/upload/drive/v3/files?uploadType=multipart&fields=${FILE_FIELDS}`,
+        up.body,
+        up.headers,
+      )
+    ).body!;
+    const copyId = fake.userCopy(file.id!);
+    const copy = (await call('GET', `/drive/v3/files/${copyId}?fields=${FILE_FIELDS}`)).body!;
+    expect(copy).toMatchObject({
+      name: 'Copy of Plan.livediagram',
+      parents: [folder.id],
+      appProperties: { ldDiagramId: 'd1' },
+      md5Checksum: file.md5Checksum,
+    });
+  });
+
+  it('can make a copy without appProperties, or one the app never sees', async () => {
+    const { fake, call } = setup();
+    const f = await createFolder(call, 'f');
+    expect(fake.get(fake.userCopy(f.id, { keepAppProperties: false }))!.appProperties).toEqual({});
+    const hidden = fake.userCopy(f.id, { visibleToApp: false });
+    expect((await call('GET', `/drive/v3/files/${hidden}`)).status).toBe(404);
+  });
+});

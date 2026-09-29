@@ -38,6 +38,7 @@ import {
 } from '../api-client';
 import { apiFetch, apiHeaders, expectOk } from '../api/core';
 import type { DiagramListResponse } from '@livediagram/api-schema';
+import { duplicateDiagram } from '../duplicate-diagram';
 import {
   diagramToEnvelopeText,
   type DiagramEnvelope,
@@ -51,6 +52,8 @@ export type MirrorDiagram = {
   savedAt: number;
   createdAt: number;
 };
+
+export type CopyTarget = { id: string; name: string; folderId: string | null };
 
 export type MirrorFolder = { id: string; name: string; parentId: string | null; updatedAt: number };
 
@@ -77,8 +80,11 @@ export interface LivediagramPort {
   renameFolder(id: string, name: string): Promise<void>;
   moveFolder(id: string, parentId: string | null): Promise<void>;
   deleteFolder(id: string): Promise<void>;
-  // A new Personal Space diagram from an envelope; returns its id.
-  importDiagramCopy(envelope: DiagramEnvelope): Promise<string>;
+  // A new Personal Space diagram from an envelope; returns its id. `target`
+  // pins the id, name and folder (a copy made in Drive).
+  importDiagramCopy(envelope: DiagramEnvelope, target?: CopyTarget): Promise<string>;
+  // Duplicate, exactly as the Duplicate command does, into `target`.
+  duplicateDiagram(sourceId: string, target: CopyTarget): Promise<void>;
 
   getConnection(): Promise<DriveConnection | null>;
   putConnection(patch: {
@@ -201,10 +207,20 @@ export function createApiLivediagramPort(ownerId: string): LivediagramPort {
       await apiUpdateFolder(ownerId, id, { parentId });
     },
     deleteFolder: (id) => apiDeleteFolder(ownerId, id),
-    async importDiagramCopy(envelope) {
-      const id = crypto.randomUUID();
+    async duplicateDiagram(sourceId, target) {
+      const id = await duplicateDiagram(ownerId, sourceId, target);
+      if (!id) throw new Error(`duplicate of ${sourceId} failed`);
+    },
+    async importDiagramCopy(envelope, target) {
+      const id = target?.id ?? crypto.randomUUID();
       const { tabs, presentation } = copyEnvelope(envelope);
-      await apiCreateDiagram(ownerId, { id, name: envelope.diagram.name, tabs, presentation });
+      await apiCreateDiagram(ownerId, {
+        id,
+        name: target?.name ?? envelope.diagram.name,
+        tabs,
+        presentation,
+        folderId: target?.folderId ?? null,
+      });
       // Per-diagram tab folders ride the meta write, not the tab bodies.
       if (tabs.some((t) => t.folder)) {
         await apiSaveDiagramMeta(ownerId, {

@@ -176,6 +176,28 @@ export class FakeGoogle {
     this.store.writeContent(this.file(id), content);
   }
 
+  // Drive's "Make a copy" in its own UI. Modelled as what real Drive most
+  // likely does (unverified, docs/specs/022-drive-mirror/drive-mirror.md,
+  // "Copies made in Drive"): a new file id, "Copy of <name>" in the same
+  // folder, the same contents, the appProperties kept, and the app still able
+  // to see it. `keepAppProperties` / `visibleToApp` switch off the other branch.
+  userCopy(
+    id: string,
+    options: { keepAppProperties?: boolean; visibleToApp?: boolean; content?: string } = {},
+  ): string {
+    const source = this.file(id);
+    const copy = this.store.create({
+      user: source.owner,
+      name: `Copy of ${source.name}`,
+      mimeType: source.mimeType,
+      parents: [...source.parents],
+      appProperties: options.keepAppProperties === false ? {} : { ...source.appProperties },
+      content: options.content ?? source.content,
+      viaApp: options.visibleToApp !== false,
+    });
+    return copy.id;
+  }
+
   // A folder made in Drive's UI: livediagram cannot see it under drive.file.
   userCreateFolder(user: string, name: string, parent = 'root'): string {
     return this.store.create({
