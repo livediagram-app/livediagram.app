@@ -19,7 +19,10 @@ function browserWith(value: string) {
   vi.stubGlobal(
     'Event',
     class {
-      constructor(public type: string) {}
+      type: string;
+      constructor(type: string) {
+        this.type = type;
+      }
     },
   );
   return store;

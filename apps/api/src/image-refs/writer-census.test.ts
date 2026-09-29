@@ -29,7 +29,11 @@ const KNOWN_WRITERS: Record<string, number> = {
 // The last migration that wrote `tabs` without having to think about the
 // index; anything after it must maintain `image_refs` and be listed here.
 const LAST_UNINDEXED_MIGRATION = '0050';
-const KNOWN_MIGRATION_WRITERS: string[] = [];
+const KNOWN_MIGRATION_WRITERS: string[] = [
+  // Rewrites element links to another document ({"kind":"diagram","diagramId":…} to
+  // {"kind":"document","documentId":…}); no image reference changes, so the index stays exact.
+  '0055_documents.sql',
+];
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
