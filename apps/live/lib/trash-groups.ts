@@ -56,6 +56,16 @@ export function trashGroups(listing: TrashListing): TrashGroup[] {
   return groups;
 }
 
+// A row's lead: when it went in, and, for one the empty clean-up moved, why
+// (docs/specs/013-workspace/empty-diagram-cleanup.md "In the Trash").
+export function trashedOnLabel(row: Pick<TrashedDiagram, 'trashedAt' | 'reason'>): string {
+  const on = new Date(row.trashedAt).toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+  });
+  return row.reason === 'empty' ? `Moved here ${on} because it was empty` : `Deleted ${on}`;
+}
+
 export function daysLeftLabel(trashedAt: number, now: number): string {
   const days = trashDaysLeft(trashedAt, now);
   if (days === 0) return 'Removed at the next clean-up';

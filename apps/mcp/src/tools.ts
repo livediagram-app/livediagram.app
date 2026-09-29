@@ -558,7 +558,7 @@ export function registerTools(server: McpServer, env: Env): void {
       description:
         'List the diagrams in the user’s Trash (their own and every team they belong to), ' +
         `each restorable with restore_diagram until it is purged ${TRASH_RETENTION_DAYS} days ` +
-        'after deletion. Returns id, name, library, when it was deleted, and when it goes.',
+        'after deletion. Returns id, name, library, why it is there, when it was deleted, and when it goes.',
       inputSchema: listTrashShape,
       outputSchema: listTrashOutput,
     },
@@ -570,6 +570,7 @@ export function registerTools(server: McpServer, env: Env): void {
           id: t.id,
           name: t.name,
           library: t.teamName ?? (t.teamId ? 'team' : 'personal'),
+          reason: t.reason,
           deletedAt: new Date(t.trashedAt).toISOString(),
           purgeAt: new Date(t.purgeAt).toISOString(),
         })),

@@ -490,8 +490,10 @@ The way back from `delete_diagram`, with exactly the REST Trash's authority
 and every team Trash they have joined.
 
 - **`list_trash`** — `{}`. Read-only. Each diagram the user may restore:
-  `{ id, name, library, deletedAt, purgeAt }`, `library` being `personal` or
-  the team's name, the two times ISO 8601.
+  `{ id, name, library, reason, deletedAt, purgeAt }`, `library` being
+  `personal` or the team's name, `reason` being `deleted` or `empty` (moved by
+  the [empty diagram clean-up](../013-workspace/empty-diagram-cleanup.md)),
+  the two times ISO 8601.
 - **`restore_diagram`** — `{ diagramId }`. Restores it to its folder, or
   Unsorted when that folder is gone, and returns `{ restored, id, name, url }`.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
@@ -679,7 +681,7 @@ and no `structuredContent`; MCP exempts errors from the output schema.
 | `share_diagram`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `diagramUrl`                                    |
 | `rename_diagram`  | `renamed` (`diagram` or `tab`), `name`, then `id` + `url` for a diagram or `tabId` for a tab              |
 | `delete_diagram`  | `deleted` (`diagram` or `tab`), `diagramId`, then `trashed` + `restorableForDays` or `tabId`              |
-| `list_trash`      | `trash[]` of `{ id, name, library, deletedAt, purgeAt }` (ISO timestamps)                                 |
+| `list_trash`      | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
 | `restore_diagram` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
 
 **The schema and the result can't drift.** The schemas live in

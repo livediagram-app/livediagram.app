@@ -16,7 +16,9 @@ teammate can restore it …"). There is no undo toast and no "moved to Trash"
 message.
 
 Every delete of a whole diagram goes to the Trash: the Explorer, the editor,
-the team library, the public API with a token, and the MCP server. The rule is
+the team library, the public API with a token, and the MCP server. So does a
+diagram left empty for 30 days, moved there by the daily
+[empty diagram clean-up](empty-diagram-cleanup.md). The rule is
 the same for guests and signed-in users. Tabs are not trashed; deleting a tab
 is unchanged.
 
@@ -53,7 +55,8 @@ One view lists everything the person can restore, grouped:
 - **This browser only**: the local Trash of offline diagrams, labelled as such.
 
 Each row shows the diagram's name, when it was deleted, and how many days are
-left before it is purged. Each row offers **Restore** and **Delete
+left before it is purged. A diagram the clean-up moved says so instead: "Moved
+here {d MMM} because it was empty". Each row offers **Restore** and **Delete
 permanently**; each group offers **Empty Trash**. Delete permanently and Empty
 Trash are always confirmed. Restore is not: it destroys nothing.
 
@@ -169,7 +172,7 @@ delete authority they have today.
 The Trash has its own resource:
 
 - `GET /api/trash`: what the caller may restore, personal and every joined
-  team's, each row naming its team.
+  team's, each row naming its team and its `reason` (`deleted` or `empty`).
 - `POST /api/trash/:id/restore`: restore one.
 - `DELETE /api/trash/:id`: purge one.
 - `DELETE /api/trash`: empty the personal Trash; `?team=<id>` empties that
@@ -215,7 +218,8 @@ back for a deleted diagram is the question these answer; no names are sent.
   diagram. Only the doors that owe a person the deleted state look further.
 - **No "deleted by".** The Trash does not record who binned a diagram. It would
   be one more owner id to erase on account deletion, and nothing in the view
-  needs it.
+  needs it. It records only why, `diagrams.trash_reason`: unset for a delete,
+  `empty` for the [clean-up](empty-diagram-cleanup.md).
 - **Timeline history is hidden, not swept.** A hard delete sweeps a diagram's
   Timeline events; trashing hides them, so a restored diagram comes back with
   its history. The purge sweeps them.

@@ -12,6 +12,7 @@ import {
   deleteOldTimelineEvents,
   purgeExpiredTrash,
   resolveApiToken,
+  trashEmptyDiagrams,
 } from './db';
 import {
   apiRouteLabel,
@@ -349,6 +350,8 @@ export default {
   //   - images,     30-day floor, unused only, after the reference-index backfill
   //                 (docs/specs/009-elements/images.md "Retention").
   //   - trash,      30 days after deletion (docs/specs/013-workspace/trash.md).
+  //   - empty,      diagrams empty and unsaved for 30 days move to the Trash
+  //                 (docs/specs/013-workspace/empty-diagram-cleanup.md).
   // All are no-ops when nothing is over the floor; all use
   // `ctx.waitUntil` so they run concurrently and the worker can
   // exit as soon as the schedule callback returns.
@@ -403,6 +406,14 @@ export default {
         purgeExpiredTrash(env, now)
           .then((count) => console.log(`trash sweep: purged ${count} diagrams`))
           .catch((err) => console.error('trash sweep failed', err)),
+      );
+      // docs/specs/013-workspace/empty-diagram-cleanup.md: move diagrams empty and
+      // unsaved for 30 days to the Trash, stamped `now`, so the purge above
+      // never takes one this run: it waits its full 30 days there.
+      ctx.waitUntil(
+        trashEmptyDiagrams(env, now)
+          .then((count) => console.log(`empty sweep: moved ${count} diagrams to the Trash`))
+          .catch((err) => console.error('empty sweep failed', err)),
       );
       // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
       // then reap unused images. runImageRetention logs its own outcome.

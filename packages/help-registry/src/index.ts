@@ -535,7 +535,7 @@ export const articles: Article[] = [
     title: 'Trash',
     description: 'Deleted diagrams wait 30 days: restore one, or delete it for good.',
     keywords:
-      'trash bin recycle deleted undo undelete restore recover get back permanently empty thirty days',
+      'trash bin recycle deleted undo undelete restore recover get back permanently empty blank unused automatic automatically clean up cleanup thirty days',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },

@@ -82,6 +82,7 @@ describe('offlineListTrash', () => {
         teamName: null,
         trashedAt: T0 + 1,
         purgeAt: T0 + 1 + TRASH_RETENTION_MS,
+        reason: 'deleted',
       },
       {
         id: 'd1',
@@ -90,6 +91,7 @@ describe('offlineListTrash', () => {
         teamName: null,
         trashedAt: T0,
         purgeAt: T0 + TRASH_RETENTION_MS,
+        reason: 'deleted',
       },
     ]);
   });

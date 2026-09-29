@@ -20,6 +20,8 @@ function trashRow(rec: OfflineDiagramRecord & { trashedAt: number }): TrashedDia
     teamName: null,
     trashedAt: rec.trashedAt,
     purgeAt: trashPurgeDueAt(rec.trashedAt),
+    // Only the server's clean-up moves empty diagrams; a local row was deleted.
+    reason: 'deleted',
   };
 }
 

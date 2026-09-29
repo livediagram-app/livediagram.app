@@ -19,6 +19,7 @@ const ROW = {
   teamName: null,
   trashedAt: T0,
   purgeAt: T0 + TRASH_RETENTION_MS,
+  reason: 'deleted' as const,
 };
 
 type Seen = { method: string; url: string };

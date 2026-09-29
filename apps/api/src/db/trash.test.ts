@@ -279,6 +279,7 @@ describe('listTrash', () => {
         teamName: 'Team joined',
         trashedAt: T0 + 1,
         purgeAt: T0 + 1 + TRASH_RETENTION_MS,
+        reason: 'deleted',
       },
       {
         id: 'mine',
@@ -287,6 +288,7 @@ describe('listTrash', () => {
         teamName: null,
         trashedAt: T0,
         purgeAt: T0 + TRASH_RETENTION_MS,
+        reason: 'deleted',
       },
     ]);
   });

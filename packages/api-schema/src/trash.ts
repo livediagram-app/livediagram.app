@@ -9,6 +9,17 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const TRASH_RETENTION_DAYS = 30;
 export const TRASH_RETENTION_MS = TRASH_RETENTION_DAYS * DAY_MS;
 
+// How long a diagram must sit empty and unsaved before the daily clean-up
+// moves it to the Trash (docs/specs/013-workspace/empty-diagram-cleanup.md).
+// Operator decision; the help article promises it.
+export const EMPTY_DIAGRAM_STALE_DAYS = 30;
+export const EMPTY_DIAGRAM_STALE_MS = EMPTY_DIAGRAM_STALE_DAYS * DAY_MS;
+
+// Why a diagram is in the Trash: someone deleted it, or the clean-up moved it
+// because it stayed empty. The database stores NULL for `deleted`.
+export const TRASH_REASONS = ['deleted', 'empty'] as const;
+export type TrashReason = (typeof TRASH_REASONS)[number];
+
 // The error every door answers for a diagram that is in the Trash, to a
 // caller who could have opened it (HTTP 410).
 export const DIAGRAM_TRASHED_ERROR = 'diagram_trashed';
@@ -28,6 +39,7 @@ export type TrashedDiagram = {
   // When it was deleted, and when the daily purge becomes due (epoch ms).
   trashedAt: number;
   purgeAt: number;
+  reason: TrashReason;
 };
 
 export function trashPurgeDueAt(trashedAt: number): number {
