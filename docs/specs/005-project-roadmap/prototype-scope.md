@@ -45,7 +45,15 @@ The editor is real:
 - **Anonymous first-party telemetry** + the public `/telemetry` dashboard. The editor emits a closed-vocabulary `{category, action, type}` event for every meaningful interaction (shapes added, themes changed, comments posted, etc.) via batched POSTs to `/api/events`; the dashboard renders aggregate counts read from the api worker's D1 summary. No third-party analytics; no identifiers crossing the wire. Off by default for self-hosters (the api's `TELEMETRY_ENABLED` flag + the live build's `NEXT_PUBLIC_TELEMETRY_ENABLED` both need to be on for events to flow end-to-end), and a per-user opt-out ([User preferences](../007-editor/user-preferences.md)) overrides both when off. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
 - **Transactional + lifecycle email** (optional): welcome on first sign-in, week-1 / week-2 onboarding tips off the daily cron, and transactional team-invite + account-deleted messages, sent via Resend. Off until a `RESEND_API_KEY` is set; guests never receive email (it is authenticated-only). See [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md).
 
-The editor never touches `localStorage` for diagrams — `apps/live/lib/api-client.ts` is the single persistence boundary. `localStorage` is only used for **identity bootstrap** (the guest participant id + name-confirmed flag — Clerk users key off their userId instead).
+**No diagram content lives in `localStorage`.** A diagram is stored on the server, or in IndexedDB for an Offline Mode diagram, and `apps/live/lib/api-client.ts` is the single persistence boundary over both. `localStorage` holds only small per-browser state, under `livediagram:*` keys:
+
+- **Identity bootstrap**: the guest participant id, the name-confirmed flag and the collaboration key (`lib/local-identity.ts`); Clerk users key their data off their userId instead.
+- **Device-local preferences and UI state**: the preferences cache ([User preferences](../007-editor/user-preferences.md)), the UI mode, the panel layout, per-tool configs (format painter, eraser, laser, spotlight, avatar, presentation), palette favourites, recent toolbar tiles, style memory, the Explorer and Settings views, and the keyboard-shortcuts switch.
+- **One-off prompts and counters**: the pending tour, the sign-in prompt and banner dismissals, the power-user offer, the last active day.
+- **The share-password cache**: one entry per share code, so a returning visitor skips the gate ([Share password](../013-workspace/share-password.md#password-cache)).
+- **A contributor switch** arming the photo import's ground-truth export (`livediagram:truth`, [Event storming](../021-event-storming/event-storming.md)).
+
+`sessionStorage` holds only the facilitator baton, per diagram, for the life of the browser tab ([Facilitator](../012-collaboration/facilitator.md)).
 
 ## Still out of scope
 

@@ -3,7 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./folders.md - when working on Folders: Nested folders for diagrams in the Explorer; Unsorted default
-- ./share-password.md - when working on Share password: Optional per-diagram password gating share-link view + edit access
+- ./share-password.md - when working on Share password: Optional per-diagram password gating share-link view + edit access; the visitor's per-share-code password cache in localStorage
 - ./teams.md - when working on Teams: Teams with Admin/Member roles, email invites, Explorer section
 - ./embeds.md - when working on Read-only embeds (`/embed`): Iframe-able `/embed` share view + Copy-embed-code in Share
 - ./tab-scoped-share-links.md - when working on Tab-scoped share links: A share link scoped to one tab; other tabs locked, enforced server-side incl. the room
