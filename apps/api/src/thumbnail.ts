@@ -41,13 +41,28 @@ const THUMBNAIL_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
 // budget fall back to their placeholder instead.
 const IMAGE_EMBED_BUDGET_BYTES = 3 * 1024 * 1024;
 
+// The diagram fields a snapshot needs. `thumbRenderedAt` is optional: a
+// caller that already read it alongside the diagram row (the Explorer
+// thumbnail route, via getDiagramThumbMeta) passes it and saves a query;
+// one that didn't leaves it out and it is read here.
+export type ThumbnailSubject = Pick<DiagramDTO, 'id' | 'name' | 'savedAt'> & {
+  thumbRenderedAt?: number | null;
+};
+
+// `defer` hands the cache write (R2 put + freshness stamp) to the
+// request's waitUntil, so a stale snapshot's response goes out as soon as
+// it is rendered instead of after two more round trips. Without it the
+// write is awaited inline, as before.
+export type ThumbnailOptions = { defer?: (write: Promise<unknown>) => void };
+
 // Resolve a diagram's cached SVG snapshot, rendering + caching it first
 // if stale. Returns null — caller should 404 / fall back to an icon —
 // when there's nothing to show: no R2 binding (self-host without
 // storage), no tab, or an empty / unparseable first tab.
 export async function getDiagramThumbnailSvg(
   env: Env,
-  diagram: DiagramDTO,
+  diagram: ThumbnailSubject,
+  opts: ThumbnailOptions = {},
 ): Promise<string | null> {
   // No object store: nothing to cache into or read from. The endpoints
   // 404 and the Explorer row keeps its generic icon, same graceful
@@ -57,7 +72,10 @@ export async function getDiagramThumbnailSvg(
 
   // Fresh = rendered at or after the last save. saved_at is bumped by
   // every tab write, so any content change makes the snapshot stale.
-  const renderedAt = await getThumbRenderedAt(env, diagram.id);
+  const renderedAt =
+    diagram.thumbRenderedAt !== undefined
+      ? diagram.thumbRenderedAt
+      : await getThumbRenderedAt(env, diagram.id);
   if (renderedAt !== null && renderedAt >= diagram.savedAt) {
     const cached = await env.IMAGES.get(key);
     // A present object is the happy path. A miss here means the object
@@ -75,12 +93,17 @@ export async function getDiagramThumbnailSvg(
   // so the next read renders again. Only stamp the row as fresh once the
   // object is actually in R2, or a later read would trust a stale/absent
   // object and skip the re-render.
-  try {
-    await env.IMAGES.put(key, svg, { httpMetadata: { contentType: THUMBNAIL_CONTENT_TYPE } });
-    await markThumbRendered(env, diagram.id, Date.now());
-  } catch {
-    // Swallow: the SVG is still returned to the caller below.
-  }
+  const images = env.IMAGES;
+  const write = (async () => {
+    try {
+      await images.put(key, svg, { httpMetadata: { contentType: THUMBNAIL_CONTENT_TYPE } });
+      await markThumbRendered(env, diagram.id, Date.now());
+    } catch {
+      // Swallow: the SVG is still returned to the caller below.
+    }
+  })();
+  if (opts.defer) opts.defer(write);
+  else await write;
   return svg;
 }
 
@@ -95,7 +118,7 @@ export async function getDiagramThumbnailSvg(
 // store, the tab isn't in the diagram, or the tab is empty / unparseable.
 export async function getDiagramTabImageSvg(
   env: Env,
-  diagram: DiagramDTO,
+  diagram: ThumbnailSubject,
   tabId: string,
 ): Promise<string | null> {
   // Gate on the same optional R2 binding as the cached path, so the
@@ -108,7 +131,7 @@ export async function getDiagramTabImageSvg(
 // Render the diagram's first tab to SVG, or null when the tab is
 // missing, unparseable, or has no elements (an empty canvas has no
 // meaningful thumbnail — the row shows its icon instead).
-async function renderFirstTab(env: Env, diagram: DiagramDTO): Promise<string | null> {
+async function renderFirstTab(env: Env, diagram: ThumbnailSubject): Promise<string | null> {
   return renderTabDataToSvg(env, diagram, await getFirstTabData(env, diagram.id));
 }
 
@@ -117,7 +140,7 @@ async function renderFirstTab(env: Env, diagram: DiagramDTO): Promise<string | n
 // unparseable, or has no elements.
 async function renderTabDataToSvg(
   env: Env,
-  diagram: DiagramDTO,
+  diagram: ThumbnailSubject,
   data: string | null,
 ): Promise<string | null> {
   if (!data) return null;

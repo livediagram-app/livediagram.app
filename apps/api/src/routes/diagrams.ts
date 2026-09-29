@@ -26,6 +26,7 @@ import {
   deleteChangeLogEntry,
   deleteChangeLogForTab,
   getDiagram,
+  getDiagramThumbMeta,
   getTrashedDiagramMeta,
   getFolder,
   countDiagramsByOwner,
@@ -419,7 +420,10 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
   if (segments.length === 4 && segments[3] === 'thumbnail') {
     const id = segments[2]!;
     if (request.method === 'GET') {
-      const d = await getDiagram(env, id);
+      // One query for the gate AND the cache-freshness check: this runs for
+      // every preview in the Explorer grid, so its D1 round trips are the
+      // floor on how fast a card can paint.
+      const d = await getDiagramThumbMeta(env, id);
       if (!d) return notFound();
       const grant = await gateGrant(ctx, id, d.ownerId, d.teamId);
       if (!grant) return notFound();
@@ -427,8 +431,17 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // first-tab snapshot.
       const svg = grant.tabScope
         ? await getDiagramTabImageSvg(env, d, grant.tabScope)
-        : await getDiagramThumbnailSvg(env, d);
-      if (svg == null) return notFound();
+        : await getDiagramThumbnailSvg(env, d, { defer: ctx.waitUntil });
+      // Nothing drawn (or no snapshot store). Past the gate, so this says
+      // nothing about access, and the URL carries `?v=<savedAt>`: the answer
+      // cannot change until the diagram does, so let the browser keep it
+      // instead of re-asking on every Explorer visit.
+      if (svg == null) {
+        return json(
+          { error: 'not_found' },
+          { status: 404, headers: { 'Cache-Control': 'private, max-age=86400' } },
+        );
+      }
       // The client cache-busts via a `?v=<savedAt>` query param, so a
       // long private max-age is safe: a changed diagram changes the URL.
       return svgImage(svg, 'private, max-age=86400');

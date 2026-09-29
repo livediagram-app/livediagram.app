@@ -74,11 +74,33 @@ diagram renders lazily.
   (the same pattern image elements use, [Image element + per-owner gallery](../009-elements/images.md)). `?v=<savedAt>` busts
   the browser cache when the diagram changes; the worker ignores it.
   `Cache-Control: private, max-age=86400`.
+- One D1 read gates it: `getDiagramThumbMeta` returns the owner, team,
+  name, `saved_at` and `thumb_rendered_at` in one query, so a fresh
+  snapshot costs that query, the access gate and the R2 read. The full
+  diagram (participant and tab summaries) is never loaded for a preview.
+- A stale snapshot is returned as soon as it is rendered; the R2 write
+  and the freshness stamp run in the request's `waitUntil`.
 - The Explorer row fetches **lazily** (IntersectionObserver): only rows
   scrolled into view fetch, so a long list never fires dozens of
   requests / renders for rows the user never reaches.
+- The live app keeps settled thumbnails in a page-wide, least-recently-used
+  cache of 200 entries keyed by viewer, diagram, version and share code
+  (`lib/thumbnail-cache.ts`). A remount (a view switch, a folder, coming
+  back to the Explorer) paints from it at once, and two thumbnails of one
+  diagram share one request. The cache owns each blob URL and revokes it
+  on eviction.
+- While the snapshot is on its way the box shows the **loader**: the
+  placeholder's three-node sketch drawing itself in the placeholder's own
+  slate, so it never reads as a real preview. Each card starts at a point
+  in the cycle derived from its diagram id, so a loading grid ripples
+  rather than pulsing in step. Under reduced motion it is the finished
+  sketch, still. The snapshot fades in over it; the box never changes
+  size.
 - Degrades gracefully: no R2 binding, no access, or an empty diagram →
-  404 → the row keeps its generic icon.
+  404 → the row shows the still, dashed sketch, captioned "Nothing drawn
+  yet" where there is room. The no-snapshot 404 (past the access gate)
+  carries the same `private, max-age=86400` as the image, because it is
+  version-keyed too; an access-denied 404 carries no cache header.
 
 ## Delivery path 2 — Live image share (public, share-code-scoped)
 
