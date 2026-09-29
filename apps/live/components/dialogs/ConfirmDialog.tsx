@@ -24,11 +24,11 @@ export type ConfirmDialogProps = {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  // Danger variant paints the confirm button rose; warning paints it amber
-  // (reversible, like disconnecting a sync); neutral keeps it brand-blue. Default is `danger` because every current caller is
+  // Danger variant paints the confirm button rose; neutral keeps it
+  // brand-blue. Default is `danger` because every current caller is
   // a destructive flow, and forgetting to set it would understate
   // the consequences.
-  variant?: 'danger' | 'warning' | 'neutral';
+  variant?: 'danger' | 'neutral';
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -72,7 +72,7 @@ export function ConfirmDialog({
         </Button>
         <Button
           ref={confirmRef}
-          variant={variant === 'neutral' ? 'primary' : variant}
+          variant={variant === 'danger' ? 'danger' : 'primary'}
           onClick={onConfirm}
         >
           {confirmLabel}

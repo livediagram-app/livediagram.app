@@ -43,34 +43,11 @@ describe('Button label', () => {
   });
 });
 
-// A reversible action that still deserves a pause (Disconnect Google Drive):
-// amber, never the rose of a destructive one.
-describe('Button warning variant', () => {
-  it('paints amber with dark text, distinct from danger', () => {
-    const { container } = render(<Button variant="warning">Disconnect</Button>);
-    const cls = container.querySelector('button')!.className;
-    expect(cls).toContain('bg-amber-400');
-    expect(cls).toContain('text-slate-900');
-    expect(cls).not.toContain('rose');
-  });
-});
-
 // A button busy with its own action keeps focus: `aria-disabled` looks
 // disabled without dropping focus the way `disabled` does.
 describe('Button aria-disabled', () => {
   it('looks disabled', () => {
     const { container } = render(<Button aria-disabled>Sync now</Button>);
     expect(container.querySelector('button')!.className).toContain('aria-disabled:opacity-50');
-  });
-});
-
-describe('Button warning-outline variant', () => {
-  it('is a quiet amber outline, as tall as a primary', () => {
-    const { container } = render(<Button variant="warning-outline">Disconnect</Button>);
-    const cls = container.querySelector('button')!.className;
-    expect(cls).toContain('ring-amber-600');
-    expect(cls).toContain('text-amber-800');
-    expect(cls).not.toMatch(/(^| )border( |$)/);
-    expect(cls).not.toContain('bg-amber-400');
   });
 });

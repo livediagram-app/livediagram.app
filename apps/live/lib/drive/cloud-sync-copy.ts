@@ -1,44 +1,21 @@
 // The Google Drive row's words in Settings > Account > Cloud Sync
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"; blueprint "Cloud Sync in
-// Settings"). Pure, so every state is tested; the rhythm is derived from the
-// cadence constants so the words cannot drift from what the engine does.
+// Settings"). Pure, so every state is tested.
 //
 // The row keeps one size within each phase and reserves nothing for another
 // phase (Layout stability, "reserve per phase, not per message"), so every
 // wording here is listed per phase.
 
 import { relativeSince } from '../relative-time';
-import { DRIVE_POLL_INTERVAL_MS, DRIVE_WRITE_IDLE_MS } from './cadence';
 import type { DriveMirrorStatus } from './engine';
 
-const SECOND = 1000;
-const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
-
-// A cadence as a person says it: "30 seconds", "a minute", "2 minutes".
-export function durationWords(ms: number): string {
-  if (ms % HOUR === 0) return ms === HOUR ? 'an hour' : `${ms / HOUR} hours`;
-  if (ms % MINUTE === 0) return ms === MINUTE ? 'a minute' : `${ms / MINUTE} minutes`;
-  const seconds = Math.round(ms / SECOND);
-  return seconds === 1 ? 'a second' : `${seconds} seconds`;
-}
-
-export function driveRhythmText(): string {
-  return (
-    `Checks for changes every ${durationWords(DRIVE_POLL_INTERVAL_MS)} while livediagram is open. ` +
-    `Your edits are copied ${durationWords(DRIVE_WRITE_IDLE_MS)} after you stop.`
-  );
-}
-
-// Beside the pill: "1 min ago", or "Not synced yet".
-export function sinceText(at: number | null, now: number): string {
-  return at === null ? DRIVE_NOT_SYNCED_YET : relativeSince(at, now);
-}
+// Under the connected line. The exact rhythm is in the help article.
+export const DRIVE_RHYTHM = 'Syncs happen continuously while livediagram is open.';
 
 export const DRIVE_NOT_SYNCED_YET = 'Not synced yet';
 
-// The widest values the time beside the pill realistically shows, so it
-// keeps one width while connected.
+// The widest values the status's time realistically shows, so it keeps one
+// width while connected.
 export const DRIVE_SINCE_SAMPLES = [
   'just now',
   '59 secs ago',
@@ -62,8 +39,8 @@ export const DRIVE_NOTICE_TEXT = "Moved to a Drive folder livediagram can't see.
 
 export function driveConnectedText(rootName: string | null): string {
   return rootName
-    ? `Copied to your Google Drive, in “${rootName}”.`
-    : 'Copied to your Google Drive.';
+    ? `Your documents are synced to “${rootName}” in Google Drive.`
+    : 'Your documents are synced to Google Drive.';
 }
 
 export function driveCopyingText(progress: { done: number; total: number }): string {
@@ -85,29 +62,65 @@ export function driveSyncPhase(status: DriveMirrorStatus): DriveSyncPhase {
   }
 }
 
-// The pill's wordings per phase: it is as wide as the longest of its phase.
-export const DRIVE_PHASE_BADGES = {
-  'not-connected': ['Checking', 'Not connected', 'Connecting'],
-  connected: ['Synced', 'Syncing', 'Copying', 'Needs attention'],
-  attention: ['Needs attention'],
-} as const satisfies Record<DriveSyncPhase, readonly string[]>;
+// The status at the card's top right: plain words, the warning colour and a
+// glyph when something needs the user.
+export type DriveStatusText = { text: string; warn: boolean };
 
-export type DriveSyncBadge = (typeof DRIVE_PHASE_BADGES)[DriveSyncPhase][number];
+const plain = (text: string): DriveStatusText => ({ text, warn: false });
+const warn = (text: string): DriveStatusText => ({ text, warn: true });
 
-// The primary button's wordings per phase.
+export const DRIVE_STATUS = {
+  checking: plain('Checking…'),
+  notConnected: plain('Not connected'),
+  connecting: plain('Connecting…'),
+  syncing: plain('Syncing…'),
+  offline: warn('Offline'),
+  notice: warn('Needs attention'),
+  reconnect: warn('Needs reconnecting'),
+  paused: warn('Paused'),
+} as const;
+
+const synced = (since: string): DriveStatusText =>
+  plain(since === DRIVE_NOT_SYNCED_YET ? since : `Synced ${since}`);
+const copying = (p: { done: number; total: number }) => plain(`Copying ${p.done} of ${p.total}…`);
+
+// Every status a phase can show, times and counts at their widest: the status
+// is always as wide as the widest of its phase.
+export function driveStatusOptions(
+  status: DriveMirrorStatus,
+  phase: DriveSyncPhase,
+): DriveStatusText[] {
+  switch (phase) {
+    case 'not-connected':
+      return [DRIVE_STATUS.checking, DRIVE_STATUS.notConnected, DRIVE_STATUS.connecting];
+    case 'attention':
+      return [DRIVE_STATUS.reconnect, DRIVE_STATUS.paused, DRIVE_STATUS.connecting];
+    case 'connected': {
+      const total = status.progress?.total ?? 0;
+      return [
+        ...DRIVE_SINCE_SAMPLES.map(synced),
+        DRIVE_STATUS.syncing,
+        copying({ done: total, total }),
+        DRIVE_STATUS.offline,
+        DRIVE_STATUS.notice,
+      ];
+    }
+  }
+}
+
+// The primary button's wordings per phase; connected has none (syncing is
+// automatic), only Disconnect.
 export const DRIVE_PHASE_PRIMARY = {
   'not-connected': ['Connect Google Drive', 'Connecting…'],
-  connected: ['Sync now', 'Syncing…'],
-  attention: ['Reconnect', 'Resume sync', 'Connecting…'],
+  connected: [],
+  attention: ['Reconnect', 'Resume', 'Connecting…'],
 } as const satisfies Record<DriveSyncPhase, readonly string[]>;
 
-export type DriveSyncTone = 'off' | 'ok' | 'busy' | 'attention';
-export type DriveSyncAction = 'connect' | 'reconnect' | 'resume' | 'syncNow' | null;
+export type DriveSyncAction = 'connect' | 'reconnect' | 'resume' | null;
 
 export type DriveSyncCopy = {
   phase: DriveSyncPhase;
-  badge: DriveSyncBadge;
-  tone: DriveSyncTone;
+  status: DriveStatusText;
   text: string;
   action: DriveSyncAction;
   // The text is why the last Connect could not start.
@@ -121,21 +134,25 @@ export type DriveConnectState = {
   connectNote: 'cancelled' | null;
 };
 
+// `syncingLong`: this pass has run long enough to say Syncing… (so the cheap
+// 2-minute check never flickers it).
+export type DriveStatusView = { now: number; syncingLong: boolean };
+
 // Where the mirror stands, in plain words, and the one thing to press.
 export function driveSyncCopy(
   status: DriveMirrorStatus,
   connect: DriveConnectState,
+  view: DriveStatusView,
 ): DriveSyncCopy {
   const phase = driveSyncPhase(status);
   const failed = !!connect.connectError && !connect.connecting;
   if (phase === 'not-connected') {
     if (status.state === 'starting' && !connect.connecting) {
-      return { phase, badge: 'Checking', tone: 'off', text: DRIVE_CHECKING, action: null };
+      return { phase, status: DRIVE_STATUS.checking, text: DRIVE_CHECKING, action: null };
     }
     const base = {
       phase,
-      badge: connect.connecting ? ('Connecting' as const) : ('Not connected' as const),
-      tone: 'off' as const,
+      status: connect.connecting ? DRIVE_STATUS.connecting : DRIVE_STATUS.notConnected,
       action: 'connect' as const,
     };
     if (failed) return { ...base, text: connect.connectError!, failed: true };
@@ -146,38 +163,42 @@ export function driveSyncCopy(
   }
   if (phase === 'attention') {
     const reconnect = status.state === 'needs_reconnect';
-    const action = reconnect ? 'reconnect' : 'resume';
     const base = {
       phase,
-      badge: 'Needs attention' as const,
-      tone: 'attention' as const,
-      action,
-    } as const;
+      status: connect.connecting
+        ? DRIVE_STATUS.connecting
+        : reconnect
+          ? DRIVE_STATUS.reconnect
+          : DRIVE_STATUS.paused,
+      action: reconnect ? ('reconnect' as const) : ('resume' as const),
+    };
     if (failed) return { ...base, text: connect.connectError!, failed: true };
     return { ...base, text: reconnect ? DRIVE_NEEDS_RECONNECT : DRIVE_NEEDS_RESUME };
   }
-  if (status.progress) {
-    return {
-      phase,
-      badge: 'Copying',
-      tone: 'busy',
-      text: driveCopyingText(status.progress),
-      action: 'syncNow',
-    };
-  }
-  const attention = status.error !== null || status.notices.length > 0;
-  const syncing = status.state === 'syncing';
-  const tone: DriveSyncTone = attention ? 'attention' : syncing ? 'busy' : 'ok';
-  const badge: DriveSyncBadge = attention ? 'Needs attention' : syncing ? 'Syncing' : 'Synced';
-  const text =
-    status.error === 'rate_limited'
-      ? DRIVE_RATE_LIMITED
-      : status.error === 'offline' || status.error === 'failed'
-        ? DRIVE_OFFLINE
+  const offline = status.error === 'offline' || status.error === 'failed';
+  const since =
+    status.lastSyncedAt === null
+      ? DRIVE_NOT_SYNCED_YET
+      : relativeSince(status.lastSyncedAt, view.now);
+  const statusText = offline
+    ? DRIVE_STATUS.offline
+    : status.progress
+      ? copying(status.progress)
+      : status.notices.length > 0
+        ? DRIVE_STATUS.notice
+        : status.state === 'syncing' && (view.syncingLong || status.lastSyncedAt === null)
+          ? DRIVE_STATUS.syncing
+          : synced(since);
+  const text = offline
+    ? DRIVE_OFFLINE
+    : status.progress
+      ? driveCopyingText(status.progress)
+      : status.error === 'rate_limited'
+        ? DRIVE_RATE_LIMITED
         : status.leaseHeldElsewhere
           ? DRIVE_LEASE_ELSEWHERE
           : driveConnectedText(status.rootName);
-  return { phase, badge, tone, text, action: 'syncNow' };
+  return { phase, status: statusText, text, action: null };
 }
 
 // Every text the row's line can show in this phase, for this root name and

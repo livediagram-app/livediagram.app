@@ -24,7 +24,6 @@ export type DriveMirrorContextValue = {
   connectNote: 'cancelled' | null;
   connect(): Promise<void>;
   resume(): Promise<void>;
-  syncNow(): void;
   disconnect(): Promise<void>;
   adopt(notice: DriveMirrorNotice): Promise<void>;
 };
@@ -51,7 +50,6 @@ export const DRIVE_MIRROR_OFF: DriveMirrorContextValue = {
   connectNote: null,
   connect: noop,
   resume: noop,
-  syncNow: () => {},
   disconnect: noop,
   adopt: noop,
 };

@@ -286,6 +286,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     handToEngine(await requestBrowserAccessToken(googleClientId, () => Date.now(), ''));
   }, [mode, connect, handToEngine]);
 
+  // Another pass at once, in whichever tab runs the mirror (after a disconnect).
   const syncNow = useCallback(() => {
     const rt = runtime.current;
     if (rt?.engine) void rt.engine.syncNow();
@@ -298,7 +299,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
       title: 'Disconnect Google Drive?',
       message: 'Your files stay in Drive; livediagram stops updating them.',
       confirmLabel: 'Disconnect',
-      variant: 'warning',
+      variant: 'neutral',
     });
     if (!ok) return;
     await apiDisconnectDrive(clerkUserId);
@@ -353,7 +354,6 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
             connectNote,
             connect,
             resume,
-            syncNow,
             disconnect,
             adopt,
           },
@@ -367,7 +367,6 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
       connectNote,
       connect,
       resume,
-      syncNow,
       disconnect,
       adopt,
     ],

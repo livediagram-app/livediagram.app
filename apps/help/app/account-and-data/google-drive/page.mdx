@@ -33,7 +33,7 @@ Open **Settings**, then **Account**, then **Cloud Sync**. It shows whether Googl
 
 ## What stays in sync
 
-Syncing runs while a livediagram tab is open, and catches up when you come back. Nothing happens while nobody is here. It checks for changes every 2 minutes while livediagram is open, and copies your edits a minute after you stop, at most once every 5 minutes per document, so a long editing session writes to Drive a few times rather than on every keystroke.
+Syncing is automatic: there is nothing to press. It runs while a livediagram tab is open, and catches up when you come back; nothing happens while nobody is here. It checks for changes every 2 minutes while livediagram is open, and again when you return to the tab, and copies your edits a minute after you stop, at most once every 5 minutes per document, so a long editing session writes to Drive a few times rather than on every keystroke.
 
 | Here in livediagram               | In Google Drive                         |
 | --------------------------------- | --------------------------------------- |
@@ -60,9 +60,9 @@ Folders you create in livediagram always appear in Drive, so building your tree 
 ## When Cloud Sync needs attention
 
 - **Syncing a little slower for now.** Google limits how often an app may use Drive. When livediagram reaches that limit, Google asks it to slow down; it waits longer between checks for a while, then returns to its usual pace. There is nothing to do.
-- **Can't reach Google Drive.** Your connection or Google is unavailable. livediagram tries again by itself; **Sync now** tries at once.
+- **Can't reach Google Drive.** Your connection or Google is unavailable. livediagram tries again by itself, and at once when you return to the tab.
 - **Google Drive needs reconnecting.** Google stopped accepting livediagram's access: you removed it from your Google account, changed your password, or Google expired it. Syncing pauses and **nothing is deleted**, here or in Drive. Choose **Reconnect** and sync carries on where it stopped.
-- **Syncing paused in this browser.** Some setups keep Drive access only for a while in the browser. Choose **Resume sync** to carry on.
+- **Syncing paused in this browser.** Some setups keep Drive access only for a while in the browser. Choose **Resume** to carry on.
 
 ## Opening a document from Drive
 
