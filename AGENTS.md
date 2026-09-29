@@ -217,7 +217,8 @@ Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestr
 
 ## What's built, what's still ahead
 
-See [Build phase](docs/specs/005-project-roadmap/prototype-scope.md).
+- Built: see [Build phase](docs/specs/005-project-roadmap/prototype-scope.md#where-we-are-now).
+- Still ahead: see [Next and Later](docs/specs/005-project-roadmap/prototype-scope.md#next).
 
 ## Open source
 
