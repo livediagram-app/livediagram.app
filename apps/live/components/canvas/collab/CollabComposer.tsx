@@ -6,7 +6,7 @@
 // Idea box's fixed Anonymous badge).
 
 import { useRef, useState, type ReactNode } from 'react';
-import type { CommentMention } from '@livediagram/diagram';
+import type { CommentMention } from '@livediagram/document';
 import { MentionMenu } from '@/components/primitives/MentionMenu';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';
 import type { MentionScope } from './comment/MentionContext';

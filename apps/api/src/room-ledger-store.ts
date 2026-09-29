@@ -6,7 +6,7 @@ import {
   type ElementLedger,
   type TabLedger,
   type VoteLedger,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // The room's side of the collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3): each answer,
 // idea, tick, comment and dot the room sequences is noted in DO storage, one

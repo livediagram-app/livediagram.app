@@ -3,7 +3,7 @@
 // The SERVER generates the id (a fresh UUID) and returns it together with
 // its HMAC signature. Because the id is server-chosen, a caller can only
 // ever obtain a signature for an id we handed to them — never for an id
-// they observed in someone else's diagram DTO or presence frame. The live
+// they observed in someone else's document DTO or presence frame. The live
 // app caches both and replays the signature in the /api/migrate body so
 // the worker can prove the caller actually owns the guest data it's
 // claiming (see auth/owner-signature.ts + docs/specs/014-identity/auth-and-guest-access.md).

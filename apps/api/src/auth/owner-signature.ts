@@ -1,10 +1,10 @@
 // HMAC-SHA256 signature over a guest owner-id.
 //
 // Why: a guest's owner-id (the `X-Owner-Id` UUID) is a bearer value that
-// leaks — it rides in diagram DTOs and realtime presence frames. Without
+// leaks — it rides in document DTOs and realtime presence frames. Without
 // a signature, /api/migrate trusted a body-supplied `guestOwnerId` with no
 // proof of possession, so anyone who *observed* a victim's id could claim
-// all of that guest's diagrams into their own account. The fix is to bind
+// all of that guest's documents into their own account. The fix is to bind
 // possession to a secret the observer can't have:
 //
 //   - The signature is minted server-side at POST /api/guest-id, where the

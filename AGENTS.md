@@ -88,14 +88,14 @@ _Note:_ There is no need to stop in between phases; just keep going.
 - Specs are never task lists and carry no checkboxes.
 - Spec files SHOULD be unnumbered and named by subject; a category MAY hold several related specs.
 - Write the spec BEFORE implementing anything non-trivial, and keep it true afterwards.
-- Iterate the existing spec rather than adding a new one on the same subject; stay cognizant of the delta each change makes.
+- Iterate the existing spec rather than adding one on the same subject; stay cognizant of each delta.
 
 **Category folders**
 
 - The first five categories are reserved:
   - `001-project-vision` - the "why": problem, target audience, value proposition.
   - `002-project-scope` - the "what" and "what-not": features, high-level outline, technical constraints, non-goals.
-  - `003-system-architecture` - the "how" under the hood: data flow, infrastructure, state management, and the language and runtime boundaries.
+  - `003-system-architecture` - the "how" underneath: data flow, infrastructure, state, language/runtime boundaries.
   - `004-interface-design` - the "how" at the surface: UX/UI, wireframes, user journeys, visual language.
   - `005-project-roadmap` - the "when": milestones as outcomes, phases, launch strategy.
 - Further category folders MUST BE named after a **system** or, preferably, a **domain concept**.
@@ -111,8 +111,8 @@ _Note:_ There is no need to stop in between phases; just keep going.
 - Change flows in one-direction and is deterministic: a spec change updates the blueprint and then the code.
 - Any changes outside that are folded back into the spec and blueprint.
 - Blueprints do not invent design; if the spec is ambiguous, fix the spec first rather than guess.
-- Iterate the existing blueprints rather than rewriting them: change only what the spec changed, and stay cognizant of the delta.
-- Blueprints SHOULD apply documented defaults, recorded as one row per default in the category's `blueprints/DEFAULTS.md`.
+- Iterate existing blueprints, never rewrite: change only what the spec changed; stay cognizant of the delta.
+- Blueprints SHOULD apply documented defaults, one row per default in the category's `blueprints/DEFAULTS.md`.
 - A blueprint is complete only when every applicable **completeness category** is covered and checked off in `blueprints/COMPLETENESS.md`
 
 **Completeness categories**
@@ -133,7 +133,7 @@ _Note:_ There is no need to stop in between phases; just keep going.
 - **Assets and external resources** - every asset has a source, a licence, a path, and reproducible generation.
 - **Defaults ledger** - every default applied for a silent or qualitative spec has a ledger row.
 
-For each blueprint, record the applicable categories in the topic's committed `blueprints/COMPLETENESS.md`, a simple list, one line each:
+Record each blueprint's applicable categories in the committed `blueprints/COMPLETENESS.md`, one line each:
 
 - [x] Domain and naming
 - [x] Behaviour and state
@@ -146,22 +146,23 @@ Leave out any category that does not apply; unchecked means applicable but not c
 
 - Instruction sets live in `docs/instructions/<process>.md`, unnumbered and named after the process they encode.
 - They are indexed under `docs/instructions/README.md`.
-- Instruction sets are **reusable process memory**: _how a process is done_, not scoped to one piece of work like a plan.
+- Instruction sets are **reusable process memory**: _how a process is done_, not scoped to one piece of work.
 - Instruction sets carry no checkboxes; a plan MAY link to one, and progress is ticked in the plan.
 - Steps are **chronological**; ordered the way the work is actually done, not grouped by theme.
 - Steps are **granular**; each is small enough that "did it happen?" has a yes or no answer.
 - Steps are **opinionated**; taste, preferences and domain specifics are woven in, not left to model defaults.
-- Only **genuine forks** (taste, preference, business knowledge) are surfaced; every other decision is written down once.
+- Surface only **genuine forks** (taste, preference, business knowledge); write every other decision down once.
 - Instruction sets grow **empirically**; gotchas, hard gained knowledge, user input or missed steps are folded back in.
 
 ## Specs are the source of truth
 
-Before building or proposing anything, **check `docs/specs/`**. Every product decision, feature, constraint, and rule lives there. The index is at [`docs/specs/README.md`](docs/specs/README.md).
+- Before building or proposing anything, **check `docs/specs/`** ([index](docs/specs/README.md)).
+- Every product decision, feature, constraint and rule lives in `docs/specs/`.
 
 Workflow:
 
 - New feature, scope change, or rule → write or update a spec **first**, code second.
-- When a user request lands, capture it in a spec before writing code, and keep specs organised in their category folders (see Organisation process above).
+- Capture each user request in a spec before writing code, filed in its category folder.
 - Reference specs by filename in PRs and discussions.
 - If specs and code disagree, that's a bug — usually the spec is right; if not, fix the spec first.
 
@@ -193,7 +194,7 @@ apps/
   router/       # Cloudflare Worker stitching the apps under one hostname
 packages/
   ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
-  diagram/        # diagram data model (Tab, Element types + element helpers)
+  document/       # document data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor Quick Start + MCP)
   template-previews/ # per-template preview SVGs (editor picker + marketing template gallery)
@@ -202,6 +203,7 @@ packages/
   sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
   sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
+  licences/     # build-time generator of the /licences page from what each app bundles
   eslint-config/  # shared ESLint flat config
   prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
@@ -215,12 +217,8 @@ Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestr
 
 ## What's built, what's still ahead
 
-The frontend-only prototype phase ended when the API app landed (see [Build phase](docs/specs/005-project-roadmap/prototype-scope.md) and [API app](docs/specs/015-api/api.md)). Today the editor talks to a Cloudflare Worker API backed by D1 (durable diagram storage) + Durable Objects (per-diagram realtime room). A diagram can also live **only in the browser**, in IndexedDB, if the author picks Offline Mode ([Offline Mode](docs/specs/006-diagram/offline-mode.md)) — so there are two stores, not one.
-
-`apps/live/lib/api-client.ts` is the single persistence boundary over both: `lib/api/*` sends each load / save / delete to the api or to `lib/offline/offline-store.ts` on `isOfflineId(id)`, so the rest of the editor takes the same code path either way. Listing is the exception that isn't a dispatch — the Explorer shows both sets, so it MERGES them, and still returns the offline ones when the cloud fetch fails. The one caller-decided branch is **create**, which has no registered id to dispatch on yet: the New Diagram wizard calls `offlineCreateDiagram` directly when the author chose offline, and that call is what registers the id every later operation routes on. The editor never reads or writes `localStorage` for diagrams — that is IndexedDB's job, and `localStorage` holds only the participant id and device-local preferences.
-
-- **Built:** the canvas editor (shapes including code blocks + checklists, arrows of every style with draggable curve / elbow handles, freehand sketches via the Freehand + Shape Pen tools (the Shape Pen recognises a rough shape on release; see [Two pens instead of a pen and a mode](docs/specs/008-canvas/two-pens.md)) plus the Highlighter, which is a held canvas mode rather than a palette tile (see [Highlighter](docs/specs/008-canvas/highlighter.md)), a multi-point polygon / polyline tool, marquee + multi-select, format painter, web components that lay themselves out (banner / callout / stat row / process / header / hero, see [Web components are elements; groups are gone](docs/specs/009-elements/web-components-and-no-groups.md), which also removed groups), element drop shadows (see [Element shadows](docs/specs/008-canvas/element-shadows.md)), comments with @-mentions of teammates (see [Comment mentions](docs/specs/012-collaboration/comment-mentions.md)), assigned actions (assign element-level work to a teammate, with a Collaborate panel, Action panel checklists + optional email; see [Assigned actions](docs/specs/012-collaboration/assigned-actions.md)), links, themed templates, folders, tabs groupable into one-level collapsible folders, per-tab Photoshop-style layers with a dockable Layers panel (see [Layers](docs/specs/006-diagram/layers.md)), presentation mode: full-screen slide decks built from element sets that can span tabs, run from a Slide Deck panel (see [Presentation mode](docs/specs/012-collaboration/presentation-mode.md)), and per-tab import/export covering JSON, Mermaid, Markdown, and Excalidraw (see [Mermaid import & export](docs/specs/020-import-export/mermaid.md), [Excalidraw import & export](docs/specs/020-import-export/excalidraw-import-export.md))), the api worker (REST + share links + change log + Durable Object realtime room with cursor/select/log ops), per-tab storage, Offline Mode (a diagram kept only in this browser's IndexedDB, convertible both ways with Sync Diagram / Take Offline; see [Offline Mode](docs/specs/006-diagram/offline-mode.md)), anonymous first-party telemetry + the public `/telemetry` dashboard (see [Telemetry + public transparency dashboard](docs/specs/017-telemetry/telemetry.md)), teams with Admin/Member roles + email invites in the Explorer (see [Teams](docs/specs/013-workspace/teams.md)) plus a per-team shared library of diagrams + folders any member can manage (see [Team shared diagrams](docs/specs/013-workspace/team-shared-diagrams.md)), signed-in-only API tokens for external / programmatic callers (see [Public API and API tokens](docs/specs/015-api/public-api-and-tokens.md)), an MCP server (`apps/mcp`) that connects the editor to AI tools over OAuth (see [MCP server](docs/specs/015-api/mcp-server.md)), and optional transactional + lifecycle email via Resend (welcome / week-1 / week-2 onboarding series + team-invite + account-deleted, gated on `RESEND_API_KEY`; see [Transactional & lifecycle email (Resend)](docs/specs/014-identity/transactional-email.md)).
-- **Still ahead:** finer-grained team permissions (today every member can edit every team diagram). Realtime conflict resolution shipped (granular element-op merge so concurrent edits to different elements don't clobber + an ordered room with reconnect catch-up; see [Realtime conflict resolution](docs/specs/012-collaboration/realtime-conflict-resolution.md)). Same-element concurrent edits remain last-writer-wins: the selection lock ([Live app](docs/specs/007-editor/live-app.md)) is advisory and client-only, so it makes them rare rather than impossible. A full field-level CRDT to merge them was scoped and deliberately dropped as not worth the dependency + second sync path.
+- Built: see [Build phase](docs/specs/005-project-roadmap/prototype-scope.md#where-we-are-now).
+- Still ahead: see [Next and Later](docs/specs/005-project-roadmap/prototype-scope.md#next).
 
 ## Open source
 
@@ -247,9 +245,10 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 - **The canvas always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
   - **Guest path**: a per-browser participant id (`livediagram:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
-  - **Authed path**: a Clerk session JWT in `Authorization: Bearer <token>`. The api worker verifies via `CLERK_JWKS_URL` (`apps/api/src/auth/clerk.ts`) and uses the `sub` claim as the owner id. Required for per-account sync and future team workspaces.
+  - **Authed path**: a Clerk session JWT in `Authorization: Bearer <token>`, verified via `CLERK_JWKS_URL`.
+  - The api worker uses the `sub` claim as the owner id.
 - The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.
-- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (custom UI; email-code or Google OAuth). On sign-up, guest diagrams migrate from the localStorage id to the Clerk user id via `POST /api/migrate`.
+- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (custom UI; email-code or Google OAuth). On sign-up, guest documents migrate from the localStorage id to the Clerk user id via `POST /api/migrate`.
 
 ## Core principle: reuse over duplication
 
@@ -267,7 +266,15 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 **Decide where code belongs before you write it. Never accrete into god files.** Non-negotiable.
 
-- **Prefer small, cohesive files; extract on cohesion, not on a line count.** Don't wait for a file to get huge: pull a slice into its own module the moment it's independently meaningful (a self-contained component, hook, or helper), even when the host file is well under any threshold. A 200-line file mixing two unrelated concerns is worth splitting; size is a smell, not the trigger. **Soft target: keep source files under ~400 lines.** This isn't a hard cap, but a file over 400 lines reads as neglect to a new contributor regardless of how cohesive it is, so treat crossing it as a prompt to extract a cohesive slice (a render branch into its own component, a state slice into its own hook). Never hit the target by deleting explanatory comments — that trades a real quality signal for a cosmetic one; bring the number down by moving real code. A file past ~1000 lines is almost certainly doing too much and must be broken up. **Pure data is exempt from the line target.** A flat catalogue — one (or a few) exported array/record of data with no logic, like an icon set, a tech-icon catalogue, or the help-article registry — stays a single file however long it gets. The target measures _code_, where length signals cognitive load and tangled concerns; a data array has neither, so chopping it into `*-data-1/2/3` parts at arbitrary entry boundaries only scatters the catalogue across files and adds churn with no readability gain. Split a data file only when it genuinely holds two _different_ catalogues that deserve separate homes, not to chase a number. This was earned: `apps/live/app/diagram/[id]/editor-page.tsx` was a 3,647-line god component, now split into `useEditorState.ts` (orchestration hook), `EditorView.tsx` (JSX), and `EditorContext.tsx` (context, `EditorContextValue = ReturnType<typeof useEditorState>`), with a ~130-line page shell. `Canvas.tsx` and `FeatureArt.tsx` were split the same way. `useEditorState.ts` and `Canvas.tsx` already sit large, so prefer extracting new slices out of them rather than adding in. **A fully-decomposed orchestration root is exempt like pure data.** `useEditorState.ts` is the clearest case: it has already been split into ~30 domain sub-hooks, so what remains is irreducible — wiring (calling each hook and threading its deps) plus the assembled return view-model (`EditorContextValue`). Pushing such a root under the target would mean bundling hook-calls into meta-hooks (pure indirection) or splitting the return object (awkward), churn that doesn't improve the code. Keep pulling a genuinely-cohesive slice out of it whenever one appears (an inline effect, a self-contained handler group), but don't force the line count — for an orchestration root the bar is cohesion, not the number.
+- **Prefer small, cohesive files; extract on cohesion, not on a line count.**
+- Pull a slice into its own module the moment it's independently meaningful, even under any threshold.
+- **Soft target: keep source files under ~400 lines.** Crossing it is a prompt to extract a cohesive slice.
+- Never hit the target by deleting explanatory comments; bring the number down by moving real code.
+- A file past ~1000 lines is almost certainly doing too much and must be broken up.
+- **Pure data is exempt from the line target.** A flat catalogue stays a single file however long it gets.
+- Split a data file only when it genuinely holds two _different_ catalogues that deserve separate homes.
+- **A fully-decomposed orchestration root is exempt like pure data**; its bar is cohesion, not the number.
+- `useEditorState.ts` and `Canvas.tsx` already sit large; extract new slices out of them rather than adding in.
 - A new dialog / page / overlay → its **own component file** (e.g. `components/chrome/ApiErrorPage.tsx`), not another branch inside an existing screen.
 - New behaviour or a slice of state → its **own hook** (`useXxx.ts`), then composed in. Editor state lives in domain slices, not piled into one hook.
 - When you add to an existing file, confirm it's the _cohesive_ home, not just the convenient one. Wire new pieces in with the smallest edit to the host file.
@@ -281,75 +288,13 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 ## Tech stack
 
-What the product runs on. Items marked ✗ haven't shipped yet — see "What's built, what's still ahead".
-
-- **Frontend:** Next.js (`output: 'export'`), React, TypeScript 7 (native/Go compiler), Tailwind CSS — ✓
-- **APIs:** Cloudflare Workers — ✓
-- **Routing edge:** Cloudflare Workers (the router app) — ✓
-- **Database:** Cloudflare D1 (via the api worker only) — ✓
-- **Realtime:** Cloudflare Durable Objects (per-diagram room) — ✓
-- **Auth:** Clerk (optional), ✓ (frontend ClerkProvider; api worker JWT verification + hybrid `X-Owner-Id` fallback)
-- **Email:** Resend (optional) — ✓ (transactional + lifecycle email via the api worker; off without `RESEND_API_KEY`, see [Transactional & lifecycle email (Resend)](docs/specs/014-identity/transactional-email.md))
-
-## Naming conventions
-
-- Workspace packages: `@livediagram/<name>`.
-- Apps in `apps/<name>` (e.g. `apps/marketing`, `apps/live`, `apps/telemetry`, `apps/help`, `apps/api`, `apps/mcp`, `apps/router`).
-- Cross-workspace deps use `"@livediagram/foo": "workspace:*"`.
-
-## Shared config
-
-- **TypeScript:** every workspace's `tsconfig.json` extends `../../tsconfig.base.json`. Two TypeScripts are installed on purpose: `@typescript/native` (an alias for `typescript@7`, the Go compiler) provides the `tsc` that `pnpm typecheck` runs, while `typescript` aliases `@typescript/typescript6` because 7.0 ships no compiler API and typescript-eslint / Next.js / Prettier import one. See [`docs/development/contributing.md`](docs/development/contributing.md#two-typescripts).
-- **ESLint:** flat config. Each workspace has `eslint.config.js`:
-  ```js
-  import config from '@livediagram/eslint-config';
-  export default config;
-  ```
-- **Prettier:** root `prettier.config.js` re-exports `@livediagram/prettier-config`; resolves automatically for all workspaces.
-- **Tailwind:** each app's `globals.css` imports the shared theme:
-  ```css
-  @import 'tailwindcss';
-  @import '@livediagram/tailwind-config';
-  ```
+See [Architecture](docs/development/architecture.md#tech-stack).
 
 ## Deployment
 
-See [Deployment](docs/specs/016-platform/deployment.md).
+See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment](docs/specs/016-platform/staging-environment.md).
 
-All deploys happen via **GitHub Actions** to **Cloudflare Workers** (with Static Assets for `marketing`, `live`, `telemetry`, and `help`). CI runs lint / format / typecheck / test / build / `staging:check` on every PR and push.
-
-Either environment builds once, then deploys `marketing` + `live` + `telemetry` + `help` + `api` in parallel, `mcp` once `api` is up, then `router` last (its service bindings depend on the five path-routed workers existing; mcp is its own host).
-
-**Two environments** ([Staging environment](docs/specs/016-platform/staging-environment.md)), both running those same jobs out of the reusable `deploy-reusable.yml` so they can't drift:
-
-- **Production** (`livediagram.app`) — `deploy.yml`, **manual-only** (`workflow_dispatch`, intentionally not chained to CI): trigger it from the Actions tab (it appears as **Deploy Production**) or `gh workflow run deploy.yml --ref main` once CI on `main` is green and you've decided to ship.
-- **Staging** (`staging.livediagram.app`) — `deploy-staging.yml`, **automatic** on every green CI run on `main`. Wrangler `[env.staging]` blocks give it `-staging` worker names and its own D1 / R2 / KV, so a migration runs against a real remote database one deploy before it reaches the one holding real diagrams. Public but `noindex`, stamped by the router.
-
-When you touch a worker's bindings, **add the same change to its `[env.staging]` block** — wrangler does not inherit `vars` / `d1_databases` / `r2_buckets` / `kv_namespaces` / `durable_objects` / `services` / `unsafe` into a named environment, so a binding added only at the top level is silently absent from staging. `pnpm staging:check` (in CI) dry-runs the staging configs and prints the resolved bindings.
-
-Worker names: `livediagram-marketing`, `livediagram-live`, `livediagram-telemetry`, `livediagram-help`, `livediagram-api`, `livediagram-mcp`, `livediagram-router`, matching the service-binding targets in `apps/router/wrangler.toml` (staging's are the same names suffixed `-staging`). Deploy order: marketing + live + telemetry + help + api in parallel, then `mcp` after api (it has a service binding to api; its own host `mcp.livediagram.app`, not a router path), then router last (its service bindings depend on the other five existing).
-
-Production is live at **https://livediagram.app** (`/` → marketing; `/diagram`, `/explorer`, `/new`, `/join`, ... → editor at clean routes, with only its `_next` assets under `/live`; `/telemetry` → telemetry dashboard; `/help` → help centre; `/api/*` → api).
-
-Secrets needed in the GitHub repo: `CF_API_TOKEN`, `CF_ACCOUNT_ID`. See [secrets policy](docs/specs/002-project-scope/secrets-policy.md).
-
-## Common commands
-
-Run from the repo root:
-
-| Command              | What it does                                      |
-| -------------------- | ------------------------------------------------- |
-| `pnpm install`       | Install all workspace deps                        |
-| `pnpm dev`           | `turbo run dev` across workspaces                 |
-| `pnpm build`         | `turbo run build`                                 |
-| `pnpm lint`          | `turbo run lint`                                  |
-| `pnpm typecheck`     | `turbo run typecheck`                             |
-| `pnpm test`          | `turbo run test`                                  |
-| `pnpm format`        | Prettier write across the repo                    |
-| `pnpm format:check`  | Prettier check (CI)                               |
-| `pnpm staging:check` | Dry-run the `[env.staging]` wrangler configs (CI) |
-
-Run a script in a single workspace: `pnpm --filter @livediagram/<name> <script>`.
+- When you touch a worker's bindings, add the same change to its `[env.staging]` block; `pnpm staging:check` verifies it.
 
 ## Guidelines
 
@@ -358,4 +303,8 @@ Run a script in a single workspace: `pnpm --filter @livediagram/<name> <script>`
 - Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - D1 schemas and migrations (when they arrive) live with the Worker that owns the binding.
 - The router worker (`apps/router`) holds **no business logic** — only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.
-- **Track key new functionality** via the anonymous-events schema (see [`docs/specs/017-telemetry/telemetry.md`](docs/specs/017-telemetry/telemetry.md)): when you ship a feature that meaningfully changes user behaviour (a new element kind, a new dialog, a new mode, a new shortcut surface, a new setting toggle), add a one-liner `track(category, action, type)` at the interaction's handler. Reuse the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums in `@livediagram/api-schema`, extending them only when no existing pair fits. The `type` is a preset enum value (e.g., `Square`, `DrawToAddOn`), never user content. The editor (`apps/live`) and the help centre (`apps/help`) emit, both through the shared `@livediagram/telemetry-client` engine with app-owned enable/opt-out policy; settings flips fire BEFORE the change is persisted so an opt-out event still reaches the wire.
+- **Track key new functionality** via the anonymous-events schema ([spec](docs/specs/017-telemetry/telemetry.md)).
+- A feature that meaningfully changes user behaviour gets a one-liner `track(category, action, type)` in its handler.
+- Reuse the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums; extend them only when no existing pair fits.
+- The `type` is a preset enum value (e.g., `Square`, `DrawToAddOn`), never user content.
+- Settings flips fire BEFORE the change is persisted so an opt-out event still reaches the wire.

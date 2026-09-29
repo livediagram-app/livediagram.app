@@ -1,6 +1,6 @@
 // Inline a tab's uploaded images as base64 data URLs, so a server-side render
 // shows the real picture instead of a placeholder box. Both workers render
-// tabs: the api for the Explorer thumbnail + live share image (docs/specs/006-diagram/diagram-snapshots.md), the
+// tabs: the api for the Explorer thumbnail + live share image (docs/specs/006-document/document-snapshots.md), the
 // mcp for the PNG it hands the model (docs/specs/015-api/mcp-server.md §5). Neither renderer can fetch
 // (resvg is WASM; a cached SVG must be self-contained), so each prefetches the
 // bytes and passes a `resolveImageHref` that reads this map.
@@ -21,7 +21,7 @@
 // Any image that is missing, over a limit, fails to load, or isn't one of the
 // accepted raster formats is left out, and the renderer draws its placeholder.
 
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { bytesToBase64 } from './bytes';
 import { sniffImageType } from './image-sniff';
 

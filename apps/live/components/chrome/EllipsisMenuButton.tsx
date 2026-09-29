@@ -16,7 +16,7 @@ export function EllipsisMenuButton({
   canDelete,
   canClearContent,
   locked,
-  otherDiagrams,
+  otherDocuments,
   folderNames,
   currentFolder,
   onMoveToFolder,
@@ -31,6 +31,7 @@ export function EllipsisMenuButton({
   onDelete,
   selfId,
   facilitatedBy,
+  facilitating,
   timer,
   vote,
   onStartTimer,
@@ -60,9 +61,9 @@ export function EllipsisMenuButton({
   canDelete: boolean;
   canClearContent: boolean;
   locked: boolean;
-  // Viewer identity, forwarded to the menu's Add to Diagram thumbnails.
+  // Viewer identity, forwarded to the menu's Add to Document thumbnails.
   selfId: string;
-  otherDiagrams: { id: string; name: string; savedAt?: number }[];
+  otherDocuments: { id: string; name: string; savedAt?: number }[];
   folderNames: string[];
   currentFolder: string | null;
   onMoveToFolder: (folderName: string) => void;
@@ -72,7 +73,7 @@ export function EllipsisMenuButton({
   onClearContent: () => void;
   onImport: () => void;
   onExport: () => void;
-  onCopyTo: (targetDiagramId: string) => void;
+  onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   onDelete: () => void;
 } & SessionToolsProps) {
@@ -106,7 +107,7 @@ export function EllipsisMenuButton({
             onToggleLock={onToggleLock}
             locked={locked}
             selfId={selfId}
-            otherDiagrams={otherDiagrams}
+            otherDocuments={otherDocuments}
             folderNames={folderNames}
             currentFolder={currentFolder}
             onMoveToFolder={onMoveToFolder}
@@ -115,6 +116,7 @@ export function EllipsisMenuButton({
             canDelete={canDelete}
             canClearContent={canClearContent}
             facilitatedBy={facilitatedBy}
+            facilitating={facilitating}
             timer={timer}
             vote={vote}
             onStartTimer={onStartTimer}

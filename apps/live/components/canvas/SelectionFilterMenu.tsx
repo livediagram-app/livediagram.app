@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { elementKindLabel, type Element } from '@livediagram/diagram';
+import { elementKindLabel, type Element } from '@livediagram/document';
 import { PortalMenu, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { HoverCard, Glyph } from '@livediagram/ui';
 

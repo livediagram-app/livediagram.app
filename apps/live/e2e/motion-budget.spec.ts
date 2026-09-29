@@ -95,7 +95,7 @@ async function tourTheChrome(page: Page): Promise<void> {
   await toggle(page, 'Canvas tool');
   await toggle(page, 'Palette category');
   await toggle(page, 'Fit to screen');
-  await openAndClose(page, () => page.getByRole('button', { name: 'Diagram menu' }).click());
+  await openAndClose(page, () => page.getByRole('button', { name: 'Document menu' }).click());
   await openAndClose(page, () => page.getByRole('button', { name: 'Tab menu' }).click());
   await openAndClose(page, () => square.click({ button: 'right' }));
   await openAndClose(page, () =>

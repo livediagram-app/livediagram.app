@@ -7,6 +7,7 @@ import {
   lucideEyeOff,
   lucideFileInput,
   lucideFolder,
+  lucideScale,
   lucideSlidersHorizontal,
 } from '@livediagram/icons/lucide';
 
@@ -22,7 +23,7 @@ export function TabLockIcon() {
 export const TabNotSharedIcon = lucideGlyph(lucideEyeOff, 12);
 
 export const FolderMenuIcon = lucideGlyph(lucideFolder, MENU_ICON_PX);
-// Add the tab to another diagram.
+// Add the tab to another document.
 export const MoveIcon = lucideGlyph(lucideFileInput, MENU_ICON_PX);
 // Clear the tab's contents.
 export const ClearIcon = lucideGlyph(lucideBrushCleaning, MENU_ICON_PX);
@@ -44,6 +45,10 @@ export function GithubIcon() {
     </Glyph>
   );
 }
+
+// Third-party licences (docs/specs/002-project-scope/third-party-licences.md): the
+// scales of the law, a row of the Explorer's ⋯ menu.
+export const ScaleIcon = lucideGlyph(lucideScale, MENU_ICON_PX);
 
 // Settings: two sliders, never a cog (a cog's spokes read as a sun, the appearance toggle).
 export const SettingsIcon = lucideGlyph(lucideSlidersHorizontal, 16);

@@ -12,7 +12,7 @@ const T = Date.parse('2026-09-28T12:00:00Z');
 
 function item(over: Partial<DriveItem> = {}): DriveItem {
   return {
-    kind: 'diagram',
+    kind: 'document',
     ldId: 'd1',
     driveFileId: 'file-d1',
     name: 'Plan.livediagram',
@@ -46,7 +46,7 @@ function file(over: Partial<DriveFile> = {}): DriveFile {
     mimeType: 'application/vnd.livediagram+json',
     parents: ['root'],
     trashed: false,
-    appProperties: { ldDiagramId: 'd1', ldOrigin: HOST },
+    appProperties: { ldDocumentId: 'd1', ldOrigin: HOST },
     md5Checksum: 'm1',
     headRevisionId: 'r1',
     ownedByMe: true,
@@ -77,7 +77,7 @@ function snap(
   return buildSnapshot({
     host: HOST,
     rootFolderId: 'root',
-    diagrams:
+    documents:
       opts.live === false
         ? []
         : [
@@ -95,16 +95,16 @@ function snap(
   });
 }
 
-describe('planInbound: diagrams', () => {
+describe('planInbound: documents', () => {
   it('treats a change matching the recorded state as an echo', () => {
     expect(planInbound(change(file()), snap())).toEqual({ kind: 'echo' });
   });
 
-  it('renames the diagram, dropping the extension', () => {
+  it('renames the document, dropping the extension', () => {
     const d = planInbound(change(file({ name: 'Roadmap.livediagram' })), snap());
     expect(d).toMatchObject({
       kind: 'apply',
-      effects: [{ kind: 'rename-diagram', id: 'd1', name: 'Roadmap' }],
+      effects: [{ kind: 'rename-document', id: 'd1', name: 'Roadmap' }],
       types: ['Rename'],
       record: { name: 'Roadmap.livediagram', ldName: 'Roadmap' },
     });
@@ -127,17 +127,17 @@ describe('planInbound: diagrams', () => {
       change(file({ name: 'Drive.livediagram' })),
       snap({ name: 'Local', savedAt: T - 1000 }),
     );
-    expect(driveLater).toMatchObject({ effects: [{ kind: 'rename-diagram', name: 'Drive' }] });
+    expect(driveLater).toMatchObject({ effects: [{ kind: 'rename-document', name: 'Drive' }] });
   });
 
   it('moves into a mirrored folder, or to Unsorted for the root', () => {
     expect(planInbound(change(file({ parents: ['file-f1'] })), snap())).toMatchObject({
-      effects: [{ kind: 'move-diagram', folderId: 'f1' }],
+      effects: [{ kind: 'move-document', folderId: 'f1' }],
       types: ['Move'],
     });
     const fromFolder = snap({ folderId: 'f1', items: [item({ parentId: 'file-f1' }), folderItem] });
     expect(planInbound(change(file({ parents: ['root'] })), fromFolder)).toMatchObject({
-      effects: [{ kind: 'move-diagram', folderId: null }],
+      effects: [{ kind: 'move-document', folderId: null }],
     });
   });
 
@@ -147,7 +147,7 @@ describe('planInbound: diagrams', () => {
       snap({ folderId: 'f1', items: [item({ parentId: 'file-f1' }), folderItem] }),
     );
     expect(d).toMatchObject({
-      effects: [{ kind: 'move-diagram', folderId: null }],
+      effects: [{ kind: 'move-document', folderId: null }],
       types: ['UnknownFolder'],
       record: { notice: 'unseen_folder', noticeParentId: 'hidden', parentId: 'hidden' },
     });
@@ -155,33 +155,33 @@ describe('planInbound: diagrams', () => {
     expect(outside).toMatchObject({ types: ['UnknownFolder'] });
   });
 
-  it('trashes a live diagram binned in Drive', () => {
+  it('trashes a live document binned in Drive', () => {
     expect(planInbound(change(file({ trashed: true })), snap())).toMatchObject({
-      effects: [{ kind: 'trash-diagram', id: 'd1' }],
+      effects: [{ kind: 'trash-document', id: 'd1' }],
       types: ['Trash'],
     });
   });
 
-  it('restores a trashed diagram and places it where its file sits', () => {
+  it('restores a trashed document and places it where its file sits', () => {
     const d = planInbound(
       change(file({ trashed: false, parents: ['file-f1'] })),
       snap({ live: false, trashed: true, items: [item({ trashed: true }), folderItem] }),
     );
     expect(d).toMatchObject({
-      effects: [{ kind: 'restore-diagram' }, { kind: 'move-diagram', folderId: 'f1' }],
+      effects: [{ kind: 'restore-document' }, { kind: 'move-document', folderId: 'f1' }],
       types: ['Restore'],
     });
   });
 
-  it('purges a trashed diagram whose file was deleted for good', () => {
+  it('purges a trashed document whose file was deleted for good', () => {
     const d = planInbound(
       change(null),
       snap({ live: false, trashed: true, items: [item({ trashed: true }), folderItem] }),
     );
-    expect(d).toMatchObject({ effects: [{ kind: 'purge-diagram', id: 'd1' }], types: ['Purge'] });
+    expect(d).toMatchObject({ effects: [{ kind: 'purge-document', id: 'd1' }], types: ['Purge'] });
   });
 
-  it('never deletes a live diagram whose file was removed; it forgets the file', () => {
+  it('never deletes a live document whose file was removed; it forgets the file', () => {
     expect(planInbound(change(null), snap())).toMatchObject({ kind: 'forget' });
   });
 
@@ -230,7 +230,7 @@ describe('planInbound: folders', () => {
     const noFolder = buildSnapshot({
       host: HOST,
       rootFolderId: 'root',
-      diagrams: [],
+      documents: [],
       folders: [],
       trash: [],
       items: [],
@@ -250,7 +250,7 @@ describe('planInbound: unrecorded files', () => {
     buildSnapshot({
       host: HOST,
       rootFolderId: 'root',
-      diagrams: [],
+      documents: [],
       folders: [],
       trash: [],
       items: [],
@@ -259,7 +259,7 @@ describe('planInbound: unrecorded files', () => {
   it('ignores files from other deployments, saying whether they carried appProperties', () => {
     expect(
       planInbound(
-        change(file({ appProperties: { ldDiagramId: 'd1', ldOrigin: 'other.host' } })),
+        change(file({ appProperties: { ldDocumentId: 'd1', ldOrigin: 'other.host' } })),
         empty(),
       ),
     ).toEqual({ kind: 'ignore', reason: 'not-ours', hadAppProperties: true });
@@ -278,14 +278,14 @@ describe('planInbound: unrecorded files', () => {
     });
   });
 
-  it('never makes a diagram from a file no diagram owns', () => {
+  it('never makes a document from a file no document owns', () => {
     expect(planInbound(change(file()), empty())).toEqual({
       kind: 'ignore',
-      reason: 'unrecorded-diagram',
+      reason: 'unrecorded-document',
     });
   });
 
-  it('leaves a copy of a mirrored diagram alone: another file carrying its id', () => {
+  it('leaves a copy of a mirrored document alone: another file carrying its id', () => {
     // docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive": never applied,
     // re-tagged or adopted.
     const copy = file({ id: 'file-copy', name: 'Copy of Plan.livediagram', parents: ['file-f1'] });
@@ -298,16 +298,16 @@ describe('planInbound: unrecorded files', () => {
     ).toEqual({ kind: 'ignore', reason: 'foreign-copy' });
   });
 
-  it('leaves an unrecorded file of a known diagram to the reconnect listing', () => {
+  it('leaves an unrecorded file of a known document to the reconnect listing', () => {
     expect(planInbound(change(file({ id: 'other-file' })), snap({ items: [] }))).toEqual({
       kind: 'ignore',
-      reason: 'unrecorded-diagram',
+      reason: 'unrecorded-document',
     });
   });
 });
 
 describe('planAdoption (a reconnect)', () => {
-  it('adopts the one file of a known diagram, and known folders', () => {
+  it('adopts the one file of a known document, and known folders', () => {
     const folderFile = file({
       id: 'file-f1',
       name: 'Work',
@@ -322,12 +322,12 @@ describe('planAdoption (a reconnect)', () => {
     );
     expect(adopt.map((i) => [i.kind, i.ldId, i.driveFileId])).toEqual([
       ['folder', 'f1', 'file-f1'],
-      ['diagram', 'd1', 'other-file'],
+      ['document', 'd1', 'other-file'],
     ]);
     expect(ambiguous).toEqual([]);
   });
 
-  it('adopts neither of two files claiming one diagram: a copy is never the original', () => {
+  it('adopts neither of two files claiming one document: a copy is never the original', () => {
     const { adopt, ambiguous } = planAdoption(
       [file(), file({ id: 'file-copy', name: 'Copy of Plan.livediagram' })],
       snap({ items: [] }),
@@ -336,13 +336,13 @@ describe('planAdoption (a reconnect)', () => {
     expect(ambiguous).toEqual(['d1']);
   });
 
-  it('skips files of diagrams already recorded, unknown diagrams and other deployments', () => {
+  it('skips files of documents already recorded, unknown documents and other deployments', () => {
     expect(
       planAdoption(
         [
           file({ id: 'file-copy' }),
-          file({ id: 'x', appProperties: { ldDiagramId: 'gone', ldOrigin: HOST } }),
-          file({ id: 'y', appProperties: { ldDiagramId: 'd1', ldOrigin: 'other.host' } }),
+          file({ id: 'x', appProperties: { ldDocumentId: 'gone', ldOrigin: HOST } }),
+          file({ id: 'y', appProperties: { ldDocumentId: 'd1', ldOrigin: 'other.host' } }),
         ],
         snap(),
       ),

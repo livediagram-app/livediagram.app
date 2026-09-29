@@ -15,9 +15,9 @@ describe('localSeenStore', () => {
   it('keeps rows per owner as compact tuples', () => {
     const s = storage();
     const store = localSeenStore(s);
-    store.write('user_a', [{ kind: 'diagram', ldId: 'd1', driveFileId: 'f1' }]);
-    expect(s.map.get('livediagram:v2:drive-seen:user_a')).toBe('[["diagram","d1","f1"]]');
-    expect(store.read('user_a')).toEqual([{ kind: 'diagram', ldId: 'd1', driveFileId: 'f1' }]);
+    store.write('user_a', [{ kind: 'document', ldId: 'd1', driveFileId: 'f1' }]);
+    expect(s.map.get('livediagram:v2:drive-seen:user_a')).toBe('[["document","d1","f1"]]');
+    expect(store.read('user_a')).toEqual([{ kind: 'document', ldId: 'd1', driveFileId: 'f1' }]);
     expect(store.read('user_b')).toEqual([]);
     store.clear('user_a');
     expect(store.read('user_a')).toEqual([]);

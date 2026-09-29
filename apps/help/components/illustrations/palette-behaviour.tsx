@@ -182,7 +182,7 @@ export function BehaviourGroups() {
   );
 }
 
-/** A control bar of Selection Mode buttons across the top of a board: two
+/** A control bar of Selection Mode buttons across the top of a canvas: two
  *  offering a mode, one offering the way back out. */
 export function ModeButtonBar() {
   const buttons: { label: string; icon: ReactNode; leaving?: boolean }[] = [

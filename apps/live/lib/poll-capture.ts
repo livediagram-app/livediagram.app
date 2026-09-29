@@ -7,7 +7,7 @@
 // "End & keep results", from tallies already in their own memory.
 
 import { pollOptionTokens, tallyPoll, type LivePoll } from '@livediagram/api-schema';
-import { createShape, type ShapeElement } from '@livediagram/diagram';
+import { createShape, type ShapeElement } from '@livediagram/document';
 
 // A token poll becomes a BAR CHART; a free-text poll becomes an opened IDEA
 // BOX. Neither is a new element kind, which is the point (docs/specs/012-collaboration/poll-result-capture.md): the

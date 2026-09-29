@@ -18,7 +18,7 @@ import {
   DEFAULT_DECISION_STATUS,
   type DecisionStatus,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { Glyph } from '@livediagram/ui';
 import { CollabPanel, tint } from './collab-chrome';
 

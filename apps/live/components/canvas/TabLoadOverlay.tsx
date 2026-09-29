@@ -4,12 +4,12 @@ import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import { Glyph } from '@livediagram/ui';
 
 // Blocking overlay shown over the canvas while the ACTIVE tab's content
-// is still being fetched (docs/specs/006-diagram/per-tab-storage.md lazy per-tab load), or after that
+// is still being fetched (docs/specs/006-document/per-tab-storage.md lazy per-tab load), or after that
 // fetch failed. It must BLOCK interaction rather than just decorate, for
 // two reasons:
 //   1. Until the GET lands, local state holds an empty-elements
 //      placeholder. Without this overlay the user sees the "Empty
-//      canvas" prompt and assumes their diagram was lost.
+//      canvas" prompt and assumes their document was lost.
 //   2. If they then add an element to that placeholder, the autosave
 //      persists the empty-plus-new tab and WIPES the real server row.
 //      An opaque, pointer-capturing backdrop makes that impossible.

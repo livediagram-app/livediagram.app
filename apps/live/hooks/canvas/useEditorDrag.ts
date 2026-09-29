@@ -30,7 +30,7 @@ import {
   rebindArrowAnchorsAfterMove,
   type ArrowElement,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@/lib/tech-icons';

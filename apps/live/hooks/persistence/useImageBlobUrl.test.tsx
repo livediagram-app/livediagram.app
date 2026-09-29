@@ -23,7 +23,7 @@ describe('useImageBlobUrl', () => {
     expect(renderHook(() => useImageBlobUrl('u', null)).result.current).toEqual({ status: 'idle' });
   });
 
-  it('uses an embedded data URI as is (docs/specs/006-diagram/offline-mode.md)', () => {
+  it('uses an embedded data URI as is (docs/specs/006-document/offline-mode.md)', () => {
     const { result } = renderHook(() => useImageBlobUrl('u', 'data:image/png;base64,AA'));
     expect(result.current).toEqual({ status: 'ready', src: 'data:image/png;base64,AA' });
     expect(apiFetchImageBlobUrl).not.toHaveBeenCalled();

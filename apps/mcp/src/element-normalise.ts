@@ -19,7 +19,7 @@ import {
   normalizeTable,
   type TableElement,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 type Raw = Record<string, unknown>;
 

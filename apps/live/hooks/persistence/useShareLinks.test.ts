@@ -25,7 +25,7 @@ const { useShareLinks } = await import('./useShareLinks');
 
 const link = (over: Partial<ShareLink> = {}): ShareLink => ({
   code: 'CODE2345',
-  diagramId: 'd1',
+  documentId: 'd1',
   role: 'view',
   createdAt: 1,
   expiry: 'never',
@@ -41,14 +41,14 @@ function setup(links: ShareLink[] = []) {
   });
   const { result } = renderHook(() =>
     useShareLinks({
-      diagramId: 'd1',
+      documentId: 'd1',
       selfParticipant: { id: 'me', name: 'Ada', color: '#0ea5e9', status: 'online' },
       setSelfParticipant: vi.fn(),
       setShareLinks,
       setSharePassword: vi.fn(),
-      setDiagramShareable: vi.fn(),
-      setDiagramShareCode: vi.fn(),
-      diagramShareCode: null,
+      setDocumentShareable: vi.fn(),
+      setDocumentShareCode: vi.fn(),
+      documentShareCode: null,
       confirmName: vi.fn(),
     }),
   );
@@ -67,14 +67,14 @@ describe('useShareLinks scope', () => {
     await result.current.createShareLink('view', 'never', 't2');
     expect(api.apiCreateShareLink).toHaveBeenCalledWith('me', 'd1', 'view', 'never', 't2');
     expect(links()).toEqual([link({ tabId: 't2' })]);
-    expect(track).toHaveBeenCalledWith('Diagram', 'Shared', 'TabScoped');
+    expect(track).toHaveBeenCalledWith('Document', 'Shared', 'TabScoped');
   });
 
   it('does not count an All-tabs link as scoped', async () => {
     api.apiCreateShareLink.mockResolvedValue(link());
     const { result } = setup();
     await result.current.createShareLink('view', 'never', null);
-    expect(track).not.toHaveBeenCalledWith('Diagram', 'Shared', 'TabScoped');
+    expect(track).not.toHaveBeenCalledWith('Document', 'Shared', 'TabScoped');
   });
 
   it('rescopes a link in place and counts it', async () => {
@@ -86,7 +86,7 @@ describe('useShareLinks scope', () => {
       ['CODE2345', 't2'],
       ['OTHER234', null],
     ]);
-    expect(track).toHaveBeenCalledWith('Diagram', 'Shared', 'Rescoped');
+    expect(track).toHaveBeenCalledWith('Document', 'Shared', 'Rescoped');
   });
 
   it('leaves the link as it was when the rescope fails', async () => {

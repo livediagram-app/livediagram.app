@@ -8,9 +8,9 @@ export type DriveMode = 'off' | 'browser' | 'broker';
 
 export type DriveConnectionStatus = 'connected' | 'needs_reconnect';
 
-export type DriveItemKind = 'diagram' | 'folder';
+export type DriveItemKind = 'document' | 'folder';
 
-export const DRIVE_ITEM_KINDS: readonly DriveItemKind[] = ['diagram', 'folder'];
+export const DRIVE_ITEM_KINDS: readonly DriveItemKind[] = ['document', 'folder'];
 
 // The item was moved in Drive into a folder livediagram cannot see.
 export type DriveNotice = 'unseen_folder';
@@ -26,7 +26,7 @@ export type DriveConnection = {
   connectedAt: number;
 };
 
-// One mirrored diagram or folder, with the Drive state livediagram last wrote
+// One mirrored document or folder, with the Drive state livediagram last wrote
 // (or last accepted from Drive). `name` is the name as Drive holds it; `ldName`
 // the livediagram name it mirrors.
 export type DriveItem = {
@@ -57,7 +57,7 @@ export const DRIVE_SCOPES = [
 ] as const;
 
 // appProperties keys (each key plus value at most 124 bytes).
-export const DRIVE_PROP_DIAGRAM_ID = 'ldDiagramId';
+export const DRIVE_PROP_DOCUMENT_ID = 'ldDocumentId';
 export const DRIVE_PROP_FOLDER_ID = 'ldFolderId';
 export const DRIVE_PROP_ORIGIN = 'ldOrigin';
 export const DRIVE_PROP_ROOT = 'ldRoot';
@@ -100,7 +100,7 @@ export function isDriveFileId(value: unknown): value is string {
   );
 }
 
-// Diagram and folder ids are uuids or short url-safe ids; the same charset.
+// Document and folder ids are uuids or short url-safe ids; the same charset.
 export const isLivediagramId = isDriveFileId;
 
 export function isDriveLeaseHolder(value: unknown): value is string {

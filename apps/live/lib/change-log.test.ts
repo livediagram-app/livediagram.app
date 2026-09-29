@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ShapeElement } from '@livediagram/diagram';
+import type { ShapeElement } from '@livediagram/document';
 import { applyRevert, coalesceDiff, diffElements } from './change-log';
 
 // Helper — every test wants a basic shape element with a stable id.

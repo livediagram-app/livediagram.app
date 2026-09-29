@@ -8,7 +8,7 @@ import {
   type LaneLike,
   type TextAlignX,
   type TextAlignY,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // A lane's title gutter (docs/specs/009-elements/lane.md): the tinted strip behind its title, with a
 // divider where it meets the body.
@@ -21,7 +21,7 @@ import {
 // The gutter runs along whichever EDGE the title is pinned to, so re-aligning
 // the title takes its backdrop with it.
 
-// The geometry (which edge, how thick) lives in @livediagram/diagram, because
+// The geometry (which edge, how thick) lives in @livediagram/document, because
 // the headless renderer has to draw the same strip on the same edge or an
 // exported swimlane is a plain box with its title floating in the work.
 // Re-exported so this module stays the one import a lane view needs.
@@ -34,7 +34,7 @@ export {
   laneSizeOfElement,
   type LaneGutterEdge,
   type LaneLike,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // A gutter narrower than this has no room for a title; wider than the lane
 // itself is not a gutter any more, it is the lane. Clamped on both sides so a

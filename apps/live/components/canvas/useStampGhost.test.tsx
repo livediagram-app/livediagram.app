@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ES_LANES, laneCentre, type Element } from '@livediagram/diagram';
+import { ES_LANES, laneCentre, type Element } from '@livediagram/document';
 import { getLanePreview, setLanePreview } from '@/lib/lane-preview';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { useStampGhost } from './useStampGhost';

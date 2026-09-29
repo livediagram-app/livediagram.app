@@ -86,6 +86,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.4,
     },
+    // Third-party licences (docs/specs/002-project-scope/third-party-licences.md):
+    // a transparency page, regenerated every build (blueprint D13).
+    {
+      url: `${base}/licences`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.2,
+    },
     // Comparison / "alternative" pages (docs/specs/019-marketing/comparison-pages.md). Derived from the same
     // ALTERNATIVES list the route + metadata use, so adding a competitor
     // updates the sitemap automatically.

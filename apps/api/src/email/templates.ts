@@ -1,7 +1,7 @@
 // docs/specs/014-identity/transactional-email.md: the five email bodies. Plain, inline-styled, email-client-safe HTML
 // (no external CSS, tables for layout where it matters). Each builder returns
 // { subject, html }; links resolve against APP_BASE_URL via appBaseUrl(env).
-// Content only: never a diagram's contents, only the user's own account facts
+// Content only: never a document's contents, only the user's own account facts
 // plus a team name the inviter already chose.
 
 import { xmlEscape } from '@livediagram/icons';
@@ -40,7 +40,7 @@ export type EmailKind =
   | 'FirstShare'
   | 'TeamInvite'
   | 'InviteResponse'
-  | 'DiagramJoined'
+  | 'DocumentJoined'
   | 'CommentNotification'
   | 'ActionAssigned'
   | 'Mentioned'
@@ -149,10 +149,10 @@ export function week1Email(env: Env): RenderedEmail {
     kind: 'Week1',
     subject: 'Find your way around the Explorer',
     html: shell({
-      heading: 'Your diagrams, organised',
-      intro: 'Now that you’ve made a few diagrams, the Explorer is where you keep them tidy:',
+      heading: 'Your documents, organised',
+      intro: 'Now that you’ve made a few documents, the Explorer is where you keep them tidy:',
       points: [
-        '<strong>Folders</strong> group related diagrams; drag to sort, and collapse folders you’re not using.',
+        '<strong>Folders</strong> group related documents; drag to sort, and collapse folders you’re not using.',
         '<strong>Search and Recents</strong> jump you straight back to what you were working on.',
         '<strong>Share or export</strong> right from the grid: a view-only or editor link, or a PDF / PNG / SVG / Markdown copy.',
       ],
@@ -170,7 +170,7 @@ export function week2Email(env: Env): RenderedEmail {
     html: shell({
       heading: 'Diagrams are better together',
       intro:
-        'If you’re working with other people, a team gives everyone a shared home for diagrams:',
+        'If you’re working with other people, a team gives everyone a shared home for documents:',
       points: [
         '<strong>Create a team</strong> from the Explorer and invite people by email.',
         '<strong>A shared folder</strong> every member can open and edit (no more passing links around).',
@@ -192,7 +192,7 @@ export function teamInviteEmail(env: Env, teamName: string | null): RenderedEmai
     subject: `You’ve been invited to ${named ? escapeText(teamName!.trim()) : 'a team'} on livediagram`,
     html: shell({
       heading: `You’re invited to ${name}`,
-      intro: `Someone invited you to join <strong>${name}</strong> on livediagram, a shared space for diagrams you and your teammates can open and edit together.`,
+      intro: `Someone invited you to join <strong>${name}</strong> on livediagram, a shared space for documents you and your teammates can open and edit together.`,
       outro:
         'Sign in (or sign up, it’s free) with this email address and the invite will be waiting on your invites page.',
       ctaText: 'View your invite',
@@ -211,7 +211,7 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
     html: shell({
       heading: 'Your account has been deleted',
       intro:
-        'This confirms that your livediagram account and the diagrams stored under it have been permanently removed, as you requested. There’s nothing left for you to do.',
+        'This confirms that your livediagram account and the documents stored under it have been permanently removed, as you requested. There’s nothing left for you to do.',
       outro:
         'If this wasn’t you, or you change your mind, you’re always welcome back. The canvas is free and needs no account to start.',
       ctaText: 'Start a new diagram',
@@ -222,33 +222,34 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
   };
 }
 
-// docs/specs/014-identity/profile-and-email-notifications.md: a new person opened one of the owner's shared diagrams for the
-// first time. Sent to the diagram OWNER, so the diagram name is their own
+// docs/specs/014-identity/profile-and-email-notifications.md: a new person opened one of the owner's shared documents for the
+// first time. Sent to the document OWNER, so the document name is their own
 // content coming back to them (not a docs/specs/014-identity/transactional-email.md §7 leak). `joinerName` is the
 // visitor's display name when known (already visible to the owner in live
 // presence / the Shared list); null falls back to "Someone".
-export function diagramJoinedEmail(
+export function documentJoinedEmail(
   env: Env,
-  diagramName: string,
+  documentName: string,
   joinerName: string | null,
 ): RenderedEmail {
   const base = appBaseUrl(env);
   const who = joinerName && joinerName.trim() ? escapeHtml(joinerName.trim()) : 'Someone';
-  const named = diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'your diagram';
+  const named =
+    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'your document';
   const whoText = joinerName && joinerName.trim() ? escapeText(joinerName.trim()) : 'Someone';
   return {
-    kind: 'DiagramJoined',
-    subject: `${whoText} opened one of your diagrams`,
+    kind: 'DocumentJoined',
+    subject: `${whoText} opened one of your documents`,
     html: shell({
-      heading: 'Someone joined your diagram',
-      intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a diagram you shared. They can collaborate on it with the access you granted.`,
+      heading: 'Someone joined your document',
+      intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a document you shared. They can collaborate on it with the access you granted.`,
       outro:
         'You’re getting this because you turned on join notifications. You can turn them off any time from your profile.',
-      ctaText: 'Open the diagram',
+      ctaText: 'Open the document',
       ctaHref: `${base}/explorer`,
       footer: manageNotificationsFooter(
         env,
-        'You’re receiving this because someone opened a diagram you shared.',
+        'You’re receiving this because someone opened a document you shared.',
       ),
     }),
     unsubscribeUrl: profilePath(env),
@@ -289,19 +290,19 @@ export function inviteResponseEmail(
   };
 }
 
-// docs/specs/012-collaboration/assigned-actions.md: someone assigned the recipient an action on a diagram element.
+// docs/specs/012-collaboration/assigned-actions.md: someone assigned the recipient an action on a document element.
 // Sent to the assignee (a joined teammate of the assigner). Opt-out
 // (notifyActionAssigned). Everything user-influenced here (assigner name,
-// diagram name, action name, description) is either the assigner's own words
-// being delivered on their behalf or a diagram/team fact the two already
+// document name, action name, description) is either the assigner's own words
+// being delivered on their behalf or a document/team fact the two already
 // share (docs/specs/014-identity/transactional-email.md §7), and all of it is escaped.
 const ACTION_DESCRIPTION_PREVIEW_CHARS = 200;
 
 export function actionAssignedEmail(
   env: Env,
   assignerName: string | null,
-  diagramName: string,
-  diagramId: string,
+  documentName: string,
+  documentId: string,
   actionName: string,
   description: string | null,
 ): RenderedEmail {
@@ -309,8 +310,8 @@ export function actionAssignedEmail(
   const who = assignerName && assignerName.trim() ? escapeHtml(assignerName.trim()) : 'A teammate';
   const whoText =
     assignerName && assignerName.trim() ? escapeText(assignerName.trim()) : 'A teammate';
-  const diagram =
-    diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'a shared diagram';
+  const liveDoc =
+    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'a shared document';
   const action = escapeHtml(actionName.trim());
   const detail = description?.trim()
     ? escapeHtml(
@@ -324,10 +325,10 @@ export function actionAssignedEmail(
     subject: `${whoText} assigned you an action`,
     html: shell({
       heading: 'You have a new action',
-      intro: `<strong>${who}</strong> assigned you an action on <strong>${diagram}</strong>: <strong>${action}</strong>.`,
+      intro: `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`,
       ...(detail ? { outro: detail } : {}),
-      ctaText: 'Open the diagram',
-      ctaHref: `${base}/diagram/${encodeURIComponent(diagramId)}`,
+      ctaText: 'Open the document',
+      ctaHref: `${base}/document/${encodeURIComponent(documentId)}`,
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate assigned you an action.',
@@ -338,7 +339,7 @@ export function actionAssignedEmail(
 }
 
 // docs/specs/012-collaboration/comment-mentions.md: a teammate @-mentioned the recipient in a comment. The
-// author and diagram name come from server state (the notify-mention route);
+// author and document name come from server state (the notify-mention route);
 // the quote is the author's own words, escaped and cut at a word.
 export const MENTION_QUOTE_CHARS = 280;
 
@@ -353,26 +354,26 @@ export function mentionQuote(text: string): string {
 export function mentionedEmail(
   env: Env,
   authorName: string | null,
-  diagramName: string,
-  diagramId: string,
+  documentName: string,
+  documentId: string,
   commentText: string,
 ): RenderedEmail {
   const base = appBaseUrl(env);
   const who = authorName && authorName.trim() ? escapeHtml(authorName.trim()) : 'A teammate';
   const whoText = authorName && authorName.trim() ? escapeText(authorName.trim()) : 'A teammate';
-  const diagram =
-    diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'a shared diagram';
-  const diagramText =
-    diagramName && diagramName.trim() ? escapeText(diagramName.trim()) : 'a diagram';
+  const liveDoc =
+    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'a shared document';
+  const documentText =
+    documentName && documentName.trim() ? escapeText(documentName.trim()) : 'a document';
   return {
     kind: 'Mentioned',
-    subject: `${whoText} mentioned you in ${diagramText}`,
+    subject: `${whoText} mentioned you in ${documentText}`,
     html: shell({
       heading: 'You were mentioned',
-      intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${diagram}</strong>:`,
+      intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${liveDoc}</strong>:`,
       outro: `“${escapeHtml(mentionQuote(commentText))}”`,
-      ctaText: 'Open the diagram',
-      ctaHref: `${base}/diagram/${encodeURIComponent(diagramId)}`,
+      ctaText: 'Open the document',
+      ctaHref: `${base}/document/${encodeURIComponent(documentId)}`,
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate mentioned you in a comment.',
@@ -422,7 +423,7 @@ export function tokenExpiringEmail(
     subject: 'Your livediagram API token expires soon',
     html: shell({
       heading: 'An API token is about to expire',
-      intro: `Your API token <strong>${name}</strong> expires on ${when}. Once it lapses, any script or connected tool using it will stop being able to reach your diagrams.`,
+      intro: `Your API token <strong>${name}</strong> expires on ${when}. Once it lapses, any script or connected tool using it will stop being able to reach your documents.`,
       points: [
         'Create a fresh token from Explorer, Tokens before this one expires.',
         'Update whatever uses it (your scripts, or a connected AI tool) with the new token.',
@@ -438,7 +439,7 @@ export function tokenExpiringEmail(
 }
 
 // docs/specs/014-identity/transactional-email.md (#4): a gentle nudge for someone who signed up but hasn't created a
-// diagram yet (fires once, ~3 days in). Onboarding, not opt-out.
+// document yet (fires once, ~3 days in). Onboarding, not opt-out.
 export function activationEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
@@ -460,33 +461,34 @@ export function activationEmail(env: Env): RenderedEmail {
   };
 }
 
-// docs/specs/014-identity/transactional-email.md (#1): someone other than the owner left a comment on a diagram the
+// docs/specs/014-identity/transactional-email.md (#1): someone other than the owner left a comment on a document the
 // recipient owns. Opt-out (notifyComments). Never includes the comment text
-// (privacy): just who, which diagram, and a link to open it.
+// (privacy): just who, which document, and a link to open it.
 export function commentNotificationEmail(
   env: Env,
-  diagramName: string,
-  diagramId: string,
+  documentName: string,
+  documentId: string,
   commenterName: string | null,
 ): RenderedEmail {
   const base = appBaseUrl(env);
   const whoText =
     commenterName && commenterName.trim() ? escapeText(commenterName.trim()) : 'Someone';
   const nameText =
-    diagramName && diagramName.trim() ? escapeText(diagramName.trim()) : 'your diagram';
+    documentName && documentName.trim() ? escapeText(documentName.trim()) : 'your document';
   const who = commenterName && commenterName.trim() ? escapeHtml(commenterName.trim()) : 'Someone';
-  const name = diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'your diagram';
+  const name =
+    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'your document';
   return {
     kind: 'CommentNotification',
     subject: `${whoText} commented on ${nameText}`,
     html: shell({
-      heading: 'New comment on your diagram',
-      intro: `<strong>${who}</strong> left a comment on <strong>${name}</strong>. Open the diagram to read it and reply.`,
-      ctaText: 'Open the diagram',
-      ctaHref: `${base}/diagram/${encodeURIComponent(diagramId)}`,
+      heading: 'New comment on your document',
+      intro: `<strong>${who}</strong> left a comment on <strong>${name}</strong>. Open the document to read it and reply.`,
+      ctaText: 'Open the document',
+      ctaHref: `${base}/document/${encodeURIComponent(documentId)}`,
       footer: manageNotificationsFooter(
         env,
-        'You’re receiving this because someone commented on a diagram you own.',
+        'You’re receiving this because someone commented on a document you own.',
       ),
     }),
     unsubscribeUrl: profilePath(env),
@@ -499,18 +501,18 @@ export function winBackEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'WinBack',
-    subject: 'Your diagrams are waiting',
+    subject: 'Your documents are waiting',
     html: shell({
       heading: 'It’s been a while',
       intro:
-        'You haven’t opened livediagram in a few weeks, and your diagrams are right where you left them. A few things you can pick back up:',
+        'You haven’t opened livediagram in a few weeks, and your documents are right where you left them. A few things you can pick back up:',
       points: [
         'Start something new in seconds from a template or theme.',
-        'Share a diagram with a live link, or bring a team onto the canvas.',
+        'Share a document with a live link, or bring a team onto the canvas.',
         'Export to PDF / PNG / SVG / Markdown whenever you need a copy.',
       ],
       outro: 'No rush: it’s all still here whenever you want it.',
-      ctaText: 'Open your diagrams',
+      ctaText: 'Open your documents',
       ctaHref: `${base}/explorer`,
       footer: manageNotificationsFooter(
         env,
@@ -521,16 +523,16 @@ export function winBackEmail(env: Env): RenderedEmail {
   };
 }
 
-// docs/specs/014-identity/transactional-email.md (#6): a small celebration when an owner reaches a diagram-count
+// docs/specs/014-identity/transactional-email.md (#6): a small celebration when an owner reaches a document-count
 // milestone. Opt-out (notifyMilestones).
 export function milestoneEmail(env: Env, count: number): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Milestone',
-    subject: `You’ve made ${count} diagrams on livediagram`,
+    subject: `You’ve made ${count} documents on livediagram`,
     html: shell({
-      heading: `That’s ${count} diagrams`,
-      intro: `Nice work, you’ve created <strong>${count}</strong> diagrams on livediagram. Thanks for building with us.`,
+      heading: `That’s ${count} documents`,
+      intro: `Nice work, you’ve created <strong>${count}</strong> documents on livediagram. Thanks for building with us.`,
       outro: 'Here’s to the next one.',
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,
@@ -544,17 +546,17 @@ export function milestoneEmail(env: Env, count: number): RenderedEmail {
 }
 
 // docs/specs/014-identity/transactional-email.md (#6): the first time an owner creates a share link. Opt-out
-// (notifyMilestones), same category as the diagram-count milestone.
+// (notifyMilestones), same category as the document-count milestone.
 export function firstShareEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'FirstShare',
-    subject: 'You shared your first diagram',
+    subject: 'You shared your first document',
     html: shell({
-      heading: 'Your first shared diagram',
+      heading: 'Your first shared document',
       preheader: 'Anyone with the link can open it now, and you stay in control.',
       intro:
-        'Nice work, you just shared a diagram for the first time. Anyone with the link can open it, and you stay in control:',
+        'Nice work, you just shared a document for the first time. Anyone with the link can open it, and you stay in control:',
       points: [
         'Hand out a <strong>view-only</strong> or an <strong>editor</strong> link, whichever fits.',
         'Set a link to <strong>expire</strong> after a week, a month, or six months.',

@@ -147,7 +147,7 @@ describe('files', () => {
         name: 'A.livediagram',
         parents: [root.id],
         mimeType: 'application/vnd.livediagram+json',
-        appProperties: { ldDiagramId: 'd1' },
+        appProperties: { ldDocumentId: 'd1' },
         contentHints: { thumbnail: { image: fakePngBase64Url(400), mimeType: 'image/png' } },
       },
       '{"x":1}',
@@ -163,7 +163,7 @@ describe('files', () => {
       name: 'A.livediagram',
       parents: [root.id],
       trashed: false,
-      appProperties: { ldDiagramId: 'd1' },
+      appProperties: { ldDocumentId: 'd1' },
     });
     expect(file.body!.md5Checksum).toMatch(/^[0-9a-f]{32}$/);
     // Without fields: Drive's default subset only.
@@ -386,7 +386,7 @@ describe('userCopy', () => {
     const { fake, call } = setup();
     const folder = await createFolder(call, 'f');
     const up = multipart(
-      { name: 'Plan.livediagram', parents: [folder.id], appProperties: { ldDiagramId: 'd1' } },
+      { name: 'Plan.livediagram', parents: [folder.id], appProperties: { ldDocumentId: 'd1' } },
       'body',
     );
     const file = (
@@ -405,7 +405,7 @@ describe('userCopy', () => {
     expect(copy).toMatchObject({
       name: 'Copy of Plan.livediagram',
       parents: [folder.id],
-      appProperties: { ldDiagramId: 'd1' },
+      appProperties: { ldDocumentId: 'd1' },
       md5Checksum: file.md5Checksum,
     });
   });

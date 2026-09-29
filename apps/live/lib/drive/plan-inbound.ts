@@ -10,7 +10,7 @@
 // pass rather than lingering.
 
 import {
-  DRIVE_PROP_DIAGRAM_ID,
+  DRIVE_PROP_DOCUMENT_ID,
   DRIVE_PROP_FOLDER_ID,
   DRIVE_PROP_ORIGIN,
   stripDriveName,
@@ -18,7 +18,7 @@ import {
 } from '@livediagram/api-schema';
 import type { DriveChange, DriveFile } from './drive-client';
 import {
-  expectedDiagramParent,
+  expectedDocumentParent,
   expectedFolderParent,
   fileState,
   itemKey,
@@ -33,11 +33,11 @@ export const LD_NAME_MAX = 200;
 export type InboundType = 'Rename' | 'Move' | 'Trash' | 'Restore' | 'Purge' | 'UnknownFolder';
 
 export type InboundEffect =
-  | { kind: 'rename-diagram'; id: string; name: string }
-  | { kind: 'move-diagram'; id: string; folderId: string | null }
-  | { kind: 'trash-diagram'; id: string }
-  | { kind: 'restore-diagram'; id: string }
-  | { kind: 'purge-diagram'; id: string }
+  | { kind: 'rename-document'; id: string; name: string }
+  | { kind: 'move-document'; id: string; folderId: string | null }
+  | { kind: 'trash-document'; id: string }
+  | { kind: 'restore-document'; id: string }
+  | { kind: 'purge-document'; id: string }
   | { kind: 'rename-folder'; id: string; name: string }
   | { kind: 'move-folder'; id: string; parentId: string | null }
   | { kind: 'bin-folder'; id: string }
@@ -69,7 +69,7 @@ function blankItem(
 }
 
 // A file livediagram made but holds no row for: a folder deleted here and
-// restored in Drive, or a diagram's file seen before its row exists.
+// restored in Drive, or a document's file seen before its row exists.
 function planUnrecorded(change: DriveChange, snapshot: MirrorSnapshot): InboundDecision {
   const file = change.file;
   if (!file || change.removed) return { kind: 'ignore', reason: 'unknown-removed' };
@@ -102,16 +102,16 @@ function planUnrecorded(change: DriveChange, snapshot: MirrorSnapshot): InboundD
       types: ['Restore'],
     };
   }
-  const diagramId = file.appProperties[DRIVE_PROP_DIAGRAM_ID];
-  if (diagramId) {
-    // Another file mirrors that diagram: this one is a copy the user opened
+  const documentId = file.appProperties[DRIVE_PROP_DOCUMENT_ID];
+  if (documentId) {
+    // Another file mirrors that document: this one is a copy the user opened
     // with livediagram (docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive").
     // Never applied, re-tagged or adopted; Open with offers Import as new document.
-    if (snapshot.items.has(itemKey('diagram', diagramId)))
+    if (snapshot.items.has(itemKey('document', documentId)))
       return { kind: 'ignore', reason: 'foreign-copy' };
-    // Only the reconnect listing adopts a diagram's file (planAdoption), where
-    // every file claiming the diagram is seen at once.
-    return { kind: 'ignore', reason: 'unrecorded-diagram' };
+    // Only the reconnect listing adopts a document's file (planAdoption), where
+    // every file claiming the document is seen at once.
+    return { kind: 'ignore', reason: 'unrecorded-document' };
   }
   return { kind: 'ignore', reason: 'unrecorded' };
 }
@@ -120,7 +120,7 @@ function driveIsLater(change: DriveChange, ldChangedAt: number): boolean {
   return Date.parse(change.time) > ldChangedAt;
 }
 
-function planDiagram(
+function planDocument(
   change: DriveChange,
   item: DriveItem,
   file: DriveFile,
@@ -133,7 +133,7 @@ function planDiagram(
   const contentChanged = state.md5 !== item.md5 || state.headRevisionId !== item.headRevisionId;
   if (!nameChanged && !parentChanged && !trashedChanged && !contentChanged) return { kind: 'echo' };
 
-  const live = snapshot.diagrams.get(item.ldId);
+  const live = snapshot.documents.get(item.ldId);
   const trashed = snapshot.trash.get(item.ldId);
   const effects: InboundEffect[] = [];
   const types: InboundType[] = [];
@@ -147,16 +147,16 @@ function planDiagram(
   };
   if (contentChanged && item.md5 !== null) record.mirroredSavedAt = 0;
 
-  // Restoring from the bin places the diagram where its file sits.
+  // Restoring from the bin places the document where its file sits.
   let restored = false;
   if (trashedChanged) {
     if (state.trashed && live) {
-      effects.push({ kind: 'trash-diagram', id: item.ldId });
+      effects.push({ kind: 'trash-document', id: item.ldId });
       types.push('Trash');
       return { kind: 'apply', effects, record, types };
     }
     if (!state.trashed && trashed) {
-      effects.push({ kind: 'restore-diagram', id: item.ldId });
+      effects.push({ kind: 'restore-document', id: item.ldId });
       types.push('Restore');
       restored = true;
     }
@@ -168,22 +168,23 @@ function planDiagram(
   if (nameChanged && driveName !== null && driveName !== current.name) {
     const ldChanged = current.name !== item.ldName;
     if (!ldChanged || driveIsLater(change, current.savedAt)) {
-      effects.push({ kind: 'rename-diagram', id: item.ldId, name: driveName });
+      effects.push({ kind: 'rename-document', id: item.ldId, name: driveName });
       types.push('Rename');
     }
   }
   if (parentChanged || restored) {
-    const ldChanged = !restored && expectedDiagramParent(snapshot, current, item) !== item.parentId;
+    const ldChanged =
+      !restored && expectedDocumentParent(snapshot, current, item) !== item.parentId;
     if (!ldChanged || driveIsLater(change, current.savedAt)) {
       const target = ldFolderForParent(snapshot, state.parentId);
       if (target === undefined) {
-        effects.push({ kind: 'move-diagram', id: item.ldId, folderId: null });
+        effects.push({ kind: 'move-document', id: item.ldId, folderId: null });
         types.push('UnknownFolder');
         record.notice = 'unseen_folder';
         record.noticeParentId = state.parentId;
       } else {
         if (restored || target !== current.folderId) {
-          effects.push({ kind: 'move-diagram', id: item.ldId, folderId: target });
+          effects.push({ kind: 'move-document', id: item.ldId, folderId: target });
           if (!restored) types.push('Move');
         }
         record.notice = null;
@@ -260,27 +261,27 @@ export function planInbound(change: DriveChange, snapshot: MirrorSnapshot): Inbo
   const item = snapshot.itemsByFile.get(change.fileId);
   if (!item) return planUnrecorded(change, snapshot);
   if (change.removed || !change.file) {
-    if (item.kind === 'diagram' && snapshot.trash.has(item.ldId)) {
+    if (item.kind === 'document' && snapshot.trash.has(item.ldId)) {
       return {
         kind: 'apply',
-        effects: [{ kind: 'purge-diagram', id: item.ldId }],
+        effects: [{ kind: 'purge-document', id: item.ldId }],
         record: item,
         types: ['Purge'],
       };
     }
-    // Deleted for good while the diagram is live, or access lost: never a
-    // reason to delete a live diagram. Forget the file; outbound re-creates.
+    // Deleted for good while the document is live, or access lost: never a
+    // reason to delete a live document. Forget the file; outbound re-creates.
     return { kind: 'forget', item, reason: 'removed' };
   }
-  return item.kind === 'diagram'
-    ? planDiagram(change, item, change.file, snapshot)
+  return item.kind === 'document'
+    ? planDocument(change, item, change.file, snapshot)
     : planFolder(change, item, change.file, snapshot);
 }
 
 // One entry per file, the latest: every entry carries the file's CURRENT
 // state, so only the last one's time says when that state came about.
 // Then folders first, files after, each by time, so a restored folder exists
-// before the diagrams restored with it are placed.
+// before the documents restored with it are placed.
 export function orderChanges(changes: DriveChange[], snapshot: MirrorSnapshot): DriveChange[] {
   const latest = new Map<string, DriveChange>();
   for (const c of changes) {
@@ -296,7 +297,7 @@ export function orderChanges(changes: DriveChange[], snapshot: MirrorSnapshot): 
 }
 
 // After a (re)connect, the files livediagram made earlier, all at once: the
-// rows to record instead of making second files. A diagram claimed by more than
+// rows to record instead of making second files. A document claimed by more than
 // one file (its file and a copy the user opened with livediagram) is left to
 // neither, so a copy is never taken for the original; the next write makes a
 // fresh file for it.
@@ -316,21 +317,21 @@ export function planAdoption(
       if (decision.kind === 'adopt') adopt.push(decision.item);
       continue;
     }
-    const diagramId = file.appProperties[DRIVE_PROP_DIAGRAM_ID];
-    if (!diagramId || snapshot.items.has(itemKey('diagram', diagramId))) continue;
-    claims.set(diagramId, [...(claims.get(diagramId) ?? []), file]);
+    const documentId = file.appProperties[DRIVE_PROP_DOCUMENT_ID];
+    if (!documentId || snapshot.items.has(itemKey('document', documentId))) continue;
+    claims.set(documentId, [...(claims.get(documentId) ?? []), file]);
   }
   const ambiguous: string[] = [];
-  for (const [diagramId, claimants] of claims) {
-    const known = snapshot.diagrams.get(diagramId) ?? snapshot.trash.get(diagramId);
+  for (const [documentId, claimants] of claims) {
+    const known = snapshot.documents.get(documentId) ?? snapshot.trash.get(documentId);
     if (!known) continue;
     if (claimants.length > 1) {
-      ambiguous.push(diagramId);
+      ambiguous.push(documentId);
       continue;
     }
     const file = claimants[0]!;
     adopt.push(
-      blankItem('diagram', diagramId, file, stripDriveName(file.name, LD_NAME_MAX) ?? known.name),
+      blankItem('document', documentId, file, stripDriveName(file.name, LD_NAME_MAX) ?? known.name),
     );
   }
   return { adopt, ambiguous };

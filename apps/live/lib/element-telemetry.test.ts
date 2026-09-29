@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SHAPE_KINDS, type Element } from '@livediagram/diagram';
+import { SHAPE_KINDS, type Element } from '@livediagram/document';
 import { ALL_PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 
 const trackMock = vi.fn();

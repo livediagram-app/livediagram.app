@@ -6,7 +6,7 @@
 // Re-exported from export-tab.ts so existing `@/lib/export-tab` import
 // paths keep resolving unchanged.
 
-import { isBoxed, type ArrowElement, type BoxedElement, type Tab } from '@livediagram/diagram';
+import { isBoxed, type ArrowElement, type BoxedElement, type Tab } from '@livediagram/document';
 
 // ---------------------------------------------------------------------
 // File (JSON)

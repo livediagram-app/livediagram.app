@@ -7,7 +7,7 @@ import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
 import { ToastProvider } from '@/hooks/ui/useToast';
-import { googleFontsHref } from '@livediagram/diagram';
+import { googleFontsHref } from '@livediagram/document';
 import { APPEARANCE_BOOT_SCRIPT, BRAND_ICONS, DARK_READER_LOCK } from '@livediagram/ui';
 import { REDUCE_MOTION_BOOT_SCRIPT } from './pre-hydration-scripts';
 import './globals.css';
@@ -72,7 +72,7 @@ export const viewport: Viewport = {
 // additive (signed-in users get per-account persistence; guests keep
 // the localStorage participant id).
 //
-// The existing app/not-found.tsx → EditorPage mechanism (docs/specs/007-editor/new-diagram-route.md, fixes
+// The existing app/not-found.tsx → EditorPage mechanism (docs/specs/007-editor/new-document-route.md, fixes
 // the static-export dynamic-segment 404) is unaffected by the provider
 // — ClerkProvider doesn't touch the route tree.
 export default function RootLayout({ children }: { children: ReactNode }) {

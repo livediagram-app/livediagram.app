@@ -3,7 +3,7 @@
 // telemetry types. Consumed by the Cleanup menu tiles, the command palette,
 // and useTabCanvas so the three surfaces can't drift.
 
-import type { AutoLayoutOptions } from '@livediagram/diagram';
+import type { AutoLayoutOptions } from '@livediagram/document';
 
 export type AutoLayoutChoice = 'smart' | 'flow-down' | 'flow-right' | 'tree' | 'mindmap';
 

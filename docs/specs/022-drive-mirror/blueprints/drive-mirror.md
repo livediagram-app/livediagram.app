@@ -10,21 +10,21 @@ Scope, by file:
 | File                                                            | Role                                                                        |
 | --------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | `packages/api-schema/src/drive.ts`                              | Wire types, `DriveMode`, `DRIVE_*` shared constants, `driveFileName`        |
-| `apps/api/migrations/0054_drive_mirror.sql`                     | `drive_connections`, `drive_items`                                          |
+| `apps/api/migrations/0057_drive_mirror.sql`                     | `drive_connections`, `drive_items`                                          |
 | `apps/api/src/drive/config.ts`                                  | `driveMode(env)`, the Google OAuth origin                                   |
 | `apps/api/src/drive/crypto.ts`                                  | AES-GCM seal / open of the refresh token                                    |
 | `apps/api/src/drive/state.ts`                                   | Signed consent `state`                                                      |
 | `apps/api/src/drive/google-oauth.ts`                            | Code exchange, refresh, revoke                                              |
 | `apps/api/src/db/drive.ts`                                      | Every statement on the two tables                                           |
 | `apps/api/src/routes/drive.ts`                                  | `/api/drive/*`                                                              |
-| `apps/api/src/db/diagram-removal.ts`                            | Drops the doomed diagrams' `drive_items`                                    |
+| `apps/api/src/db/document-removal.ts`                           | Drops the doomed documents' `drive_items`                                   |
 | `apps/api/src/db/folders.ts`                                    | `deleteFolder` is one batch, dropping the folder's `drive_items`            |
 | `apps/api/src/db/account.ts`                                    | Account deletion revokes and drops the Drive rows                           |
 | `apps/api/src/routes/capabilities.ts`                           | `driveMode`                                                                 |
 | `apps/api/hosted-vars.json`, `apps/api/scripts/hosted-vars.mjs` | The hosted profile: the client id per environment, and its verifies         |
 | `apps/api/src/openapi/manifest.ts`                              | The Drive routes, tag `Drive`                                               |
 | `packages/fake-google/`                                         | The fake Google (Drive REST + OAuth) every test uses                        |
-| `apps/live/lib/export-diagram-text.ts`                          | The `livediagram.diagram` envelope                                          |
+| `apps/live/lib/export-document-text.ts`                         | The `livediagram.document` envelope                                         |
 | `apps/live/lib/api/drive.ts`                                    | Wire calls to `/api/drive/*`                                                |
 | `apps/live/lib/drive/config.ts`                                 | Client id, Picker key, `driveUiMode`                                        |
 | `apps/live/lib/drive/cadence.ts`                                | Every cadence constant                                                      |
@@ -69,32 +69,32 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term           | Identifier                                        | Meaning                                                                   |
-| -------------- | ------------------------------------------------- | ------------------------------------------------------------------------- |
-| Mirror         | `drive-mirror`                                    | The copy of Personal Space in the user's Drive                            |
-| Connection     | `drive_connections` row, `DriveConnection`        | One user's grant and mirror state                                         |
-| Mode           | `DriveMode`: `off` \| `browser` \| `broker`       | How the deployment gets Google access tokens                              |
-| Status         | `DriveConnectionStatus`                           | `connected` \| `needs_reconnect`                                          |
-| Item           | `drive_items` row, `DriveItem`                    | One mirrored diagram or folder and the Drive state livediagram last wrote |
-| Item kind      | `DriveItemKind`: `diagram` \| `folder`            |                                                                           |
-| Root           | `root_folder_id`                                  | The mirror's root folder, named `driveRootName(host)`; Unsorted           |
-| Diagram file   | `.livediagram` file                               | A diagram's mirror                                                        |
-| Envelope       | `DiagramEnvelope`, `livediagram.diagram`          | The file's contents                                                       |
-| Drive state    | `fileState(file)`                                 | `{ name, parentId, trashed, md5, headRevisionId }` of one Drive file      |
-| Echo           | `planInbound` answering `echo`                    | A change whose Drive state equals the item's: livediagram's own write     |
-| Foreign change | the differing attributes in `planInbound`         | The attributes of a change that differ from the item                      |
-| Pass           | `DriveMirrorEngine.pass(kind)`                    | One run: token, snapshot, inbound, outbound                               |
-| Inbound        | `planInbound`                                     | Drive to livediagram                                                      |
-| Outbound       | `planOutbound`                                    | livediagram to Drive                                                      |
-| Lease          | `lease_holder`, `lease_expires_at`                | Which device may write outbound                                           |
-| Device id      | `livediagram:v2:drive-device`                     | A per-browser random id, the lease holder                                 |
-| Elected tab    | Web Lock `livediagram:drive-mirror`               | The one tab per browser that runs the engine                              |
-| Tombstone      | `SeenRow` in a `SeenStore`                        | A row this browser saw that has since disappeared                         |
-| Notice         | `notice = 'unseen_folder'`                        | The item was moved in Drive to a folder livediagram cannot see            |
-| Adoption       | `adoptFolder`                                     | Showing an unseen folder to livediagram with the Picker                   |
-| Foreign file   | `resolveOpenWith` = `import` (`foreign`, `no-id`) | A `.livediagram` file from another deployment, or with no `ldDiagramId`   |
+| Term           | Identifier                                        | Meaning                                                                    |
+| -------------- | ------------------------------------------------- | -------------------------------------------------------------------------- |
+| Mirror         | `drive-mirror`                                    | The copy of Personal Space in the user's Drive                             |
+| Connection     | `drive_connections` row, `DriveConnection`        | One user's grant and mirror state                                          |
+| Mode           | `DriveMode`: `off` \| `browser` \| `broker`       | How the deployment gets Google access tokens                               |
+| Status         | `DriveConnectionStatus`                           | `connected` \| `needs_reconnect`                                           |
+| Item           | `drive_items` row, `DriveItem`                    | One mirrored document or folder and the Drive state livediagram last wrote |
+| Item kind      | `DriveItemKind`: `document` \| `folder`           |                                                                            |
+| Root           | `root_folder_id`                                  | The mirror's root folder, named `driveRootName(host)`; Unsorted            |
+| Document file  | `.livediagram` file                               | A document's mirror                                                        |
+| Envelope       | `DocumentEnvelope`, `livediagram.document`        | The file's contents                                                        |
+| Drive state    | `fileState(file)`                                 | `{ name, parentId, trashed, md5, headRevisionId }` of one Drive file       |
+| Echo           | `planInbound` answering `echo`                    | A change whose Drive state equals the item's: livediagram's own write      |
+| Foreign change | the differing attributes in `planInbound`         | The attributes of a change that differ from the item                       |
+| Pass           | `DriveMirrorEngine.pass(kind)`                    | One run: token, snapshot, inbound, outbound                                |
+| Inbound        | `planInbound`                                     | Drive to livediagram                                                       |
+| Outbound       | `planOutbound`                                    | livediagram to Drive                                                       |
+| Lease          | `lease_holder`, `lease_expires_at`                | Which device may write outbound                                            |
+| Device id      | `livediagram:v2:drive-device`                     | A per-browser random id, the lease holder                                  |
+| Elected tab    | Web Lock `livediagram:drive-mirror`               | The one tab per browser that runs the engine                               |
+| Tombstone      | `SeenRow` in a `SeenStore`                        | A row this browser saw that has since disappeared                          |
+| Notice         | `notice = 'unseen_folder'`                        | The item was moved in Drive to a folder livediagram cannot see             |
+| Adoption       | `adoptFolder`                                     | Showing an unseen folder to livediagram with the Picker                    |
+| Foreign file   | `resolveOpenWith` = `import` (`foreign`, `no-id`) | A `.livediagram` file from another deployment, or with no `ldDocumentId`   |
 
-Banned synonyms: "sync target", "backup", "Drive location", "Drive save". The mirror is never where a diagram lives.
+Banned synonyms: "sync target", "backup", "Drive location", "Drive save". The mirror is never where a document lives.
 
 ## Behaviour and state
 
@@ -132,7 +132,7 @@ by the **Resume sync** click; any state to `disconnected` by **Disconnect**.
 `DriveMirrorEngine` runs one pass at a time (a second trigger while one runs sets `rerun` and returns). A pass:
 
 1. **Token.** `tokenSource.get()`; failure ends the pass with the matching state.
-2. **Snapshot.** In parallel: `port.listPersonalDiagrams()`, `port.listPersonalFolders()`, `port.listPersonalTrash()`,
+2. **Snapshot.** In parallel: `port.listPersonalDocuments()`, `port.listPersonalFolders()`, `port.listPersonalTrash()`,
    `port.getConnection()`, `port.listItems()`. Build `MirrorSnapshot`.
 3. **Root.** When `rootFolderId` is null (first mirror, or after a reconnect): if `pageToken` is null, take
    `changes.getStartPageToken` first, so every later write is read back and recognised as an echo (D1). Then look
@@ -140,9 +140,9 @@ by the **Resume sync** click; any state to `disconnected` by **Disconnect**.
    else create `driveRootName(host)` in My Drive with `ldRoot` (the name is given at creation only; a found root is
    never renamed). `PUT /api/drive/connection { rootFolderId, pageToken }`.
    Then **adopt**: list every file with `appProperties has { key='ldOrigin' and value='<host>' }` and record an item
-   for each whose `ldDiagramId` / `ldFolderId` names a personal diagram, trashed diagram or folder with no item yet,
+   for each whose `ldDocumentId` / `ldFolderId` names a personal document, trashed document or folder with no item yet,
    using the file's current Drive state (the `adopt` decisions of `planInbound`), then re-read the snapshot. Two
-   files claiming the same diagram (an original and a copy the user opened with livediagram) are both left
+   files claiming the same document (an original and a copy the user opened with livediagram) are both left
    unadopted (logged `adopt-ambiguous`); the next write makes a fresh file. On an
    `arrival` pass a recorded root is checked once (`files.get`): a 404 makes it null again; a binned root stays the
    root.
@@ -169,7 +169,7 @@ Pass kinds and triggers:
 | `poll`    | Every `DRIVE_POLL_INTERVAL_MS` x back-off while `document.visibilityState === 'visible'`                                |
 | `focus`   | `focus` or `visibilitychange` to visible, when the last inbound read is older than `DRIVE_FOCUS_POLL_MIN_GAP_MS` (30 s) |
 | `write`   | `DRIVE_WRITE_IDLE_MS` after the last api write signal (`subscribeApiWrites`, relayed across tabs)                       |
-| `flush`   | `visibilitychange` to hidden, `pagehide`, and `requestDriveFlush()` when the editor leaves a diagram                    |
+| `flush`   | `visibilitychange` to hidden, `pagehide`, and `requestDriveFlush()` when the editor leaves a document                   |
 | `manual`  | A request from another tab over the tab channel (a finished connection, a disconnect)                                   |
 
 Polls are scheduled only while the state is `idle`: a disconnected or needs-reconnecting engine waits for a trigger.
@@ -186,8 +186,8 @@ stops the pass on a rate-limit error. `expectedParent(folderId)` is the folder's
    - no item: `createFolder { name, parentId: expectedParent(parentId), appProperties: { ldFolderId, ldOrigin } }`.
    - item: `updateFolder` with the differing of: `name` when `folder.name !== item.ldName`; parents when
      `expectedParent(folder.parentId) !== item.parentId`; `trashed: false` when `item.trashed`.
-2. **Live diagrams, oldest `createdAt` first:**
-   - no item: `createFile` (content, thumbnail, `appProperties { ldDiagramId, ldOrigin }`, name
+2. **Live documents, oldest `createdAt` first:**
+   - no item: `createFile` (content, thumbnail, `appProperties { ldDocumentId, ldOrigin }`, name
      `driveFileName(name)`, parent `expectedParent(folderId)`). A notice is never set by outbound.
    - item: metadata `updateFile` with the differing of name (`name !== item.ldName`, or Drive's recorded name strips
      to nothing), parents, `trashed: false`.
@@ -195,10 +195,10 @@ stops the pass on a rate-limit error. `expectedParent(folderId)` is the folder's
    - content (the `content` flag of an `update-file` op) when `savedAt > (item.mirroredSavedAt ?? 0)` and, unless the kind is `flush`,
      `now - savedAt >= DRIVE_WRITE_IDLE_MS` and `now - lastContentWrite(id) >= DRIVE_WRITE_MIN_INTERVAL_MS` x back-off.
      A deferred upload schedules a `write` pass for the moment it becomes due.
-3. **Trashed personal diagrams** with an item not trashed: `updateFile { trashed: true }`.
-4. **Items of diagrams neither live nor trashed in Personal Space** (moved into a team) not trashed:
+3. **Trashed personal documents** with an item not trashed: `updateFile { trashed: true }`.
+4. **Items of documents neither live nor trashed in Personal Space** (moved into a team) not trashed:
    `updateFile { trashed: true }`; the row stays, so a move back out restores it (step 2).
-5. **Tombstones:** for each: `getFile`; 404 or already gone: drop. Diagram: `trashed` then `deleteFile`, else
+5. **Tombstones:** for each: `getFile`; 404 or already gone: drop. Document: `trashed` then `deleteFile`, else
    `updateFile { trashed: true }`. Folder: `updateFile { trashed: true }` (its contents moved up in steps 1 and 2).
 
 Every write asks Google for `DRIVE_FILE_FIELDS` and records the returned state with `PUT /api/drive/items`
@@ -212,37 +212,37 @@ Changes are coalesced to **one per file, the latest** (each entry carries the fi
 last entry's `time` dates it), then sorted **folders first**, then files, each in `time` order. `planInbound(change, snapshot, items)`
 returns one `InboundDecision`:
 
-| Situation                                                                              | Decision                                                               |
-| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| No item for `fileId`, file lacks `ldOrigin === host`                                   | `ignore` (not ours, or the root)                                       |
-| No item, `ldFolderId` names no folder, file not trashed                                | `recreate-folder` (same id, parent by Drive parent)                    |
-| No item, `ldDiagramId` names a diagram whose item holds another file                   | `ignore` (`foreign-copy`, logged `inbound-foreign-copy`)               |
-| No item, `ldFolderId` names a known folder                                             | `adopt` (record the item, then re-plan)                                |
-| No item, `ldDiagramId` names a known diagram                                           | `ignore` (`unrecorded-diagram`); adopted only by the reconnect listing |
-| `removed`, diagram item, diagram in the personal Trash                                 | `purge`                                                                |
-| `removed`, diagram item, diagram live                                                  | `forget-file` (item dropped; outbound re-creates)                      |
-| `removed`, diagram item, diagram outside Personal Space                                | `forget-file`                                                          |
-| `removed`, folder item                                                                 | `forget-file` (outbound re-creates it while the folder lives)          |
-| No foreign field                                                                       | `echo`                                                                 |
-| Folder item, `trashed` became true                                                     | `bin-folder`                                                           |
-| Diagram item, `trashed` became true, diagram live                                      | `trash`                                                                |
-| Diagram item, `trashed` became false, diagram in the personal Trash                    | `restore` then placement by Drive parent                               |
-| Name changed, livediagram name unchanged since sync (`name === ldName`) or Drive later | `rename` to `stripDriveName(file.name)`; empty keeps the old           |
-| Parent changed, livediagram parent unchanged or Drive later, parent a mirrored folder  | `move` to that folder                                                  |
-| Parent changed, same, parent the root                                                  | `move` to Unsorted                                                     |
-| Parent changed, same, parent unknown or none                                           | `move` to Unsorted (diagram) or top level (folder), `notice`           |
-| Only `md5` / `headRevisionId` changed                                                  | `rewrite` (item `mirroredSavedAt` set to 0)                            |
-| The value livediagram already holds                                                    | recorded only                                                          |
+| Situation                                                                              | Decision                                                                |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| No item for `fileId`, file lacks `ldOrigin === host`                                   | `ignore` (not ours, or the root)                                        |
+| No item, `ldFolderId` names no folder, file not trashed                                | `recreate-folder` (same id, parent by Drive parent)                     |
+| No item, `ldDocumentId` names a document whose item holds another file                 | `ignore` (`foreign-copy`, logged `inbound-foreign-copy`)                |
+| No item, `ldFolderId` names a known folder                                             | `adopt` (record the item, then re-plan)                                 |
+| No item, `ldDocumentId` names a known document                                         | `ignore` (`unrecorded-document`); adopted only by the reconnect listing |
+| `removed`, document item, document in the personal Trash                               | `purge`                                                                 |
+| `removed`, document item, document live                                                | `forget-file` (item dropped; outbound re-creates)                       |
+| `removed`, document item, document outside Personal Space                              | `forget-file`                                                           |
+| `removed`, folder item                                                                 | `forget-file` (outbound re-creates it while the folder lives)           |
+| No foreign field                                                                       | `echo`                                                                  |
+| Folder item, `trashed` became true                                                     | `bin-folder`                                                            |
+| Document item, `trashed` became true, document live                                    | `trash`                                                                 |
+| Document item, `trashed` became false, document in the personal Trash                  | `restore` then placement by Drive parent                                |
+| Name changed, livediagram name unchanged since sync (`name === ldName`) or Drive later | `rename` to `stripDriveName(file.name)`; empty keeps the old            |
+| Parent changed, livediagram parent unchanged or Drive later, parent a mirrored folder  | `move` to that folder                                                   |
+| Parent changed, same, parent the root                                                  | `move` to Unsorted                                                      |
+| Parent changed, same, parent unknown or none                                           | `move` to Unsorted (document) or top level (folder), `notice`           |
+| Only `md5` / `headRevisionId` changed                                                  | `rewrite` (item `mirroredSavedAt` set to 0)                             |
+| The value livediagram already holds                                                    | recorded only                                                           |
 
-"Drive later" is `Date.parse(change.time) > ldChangedAt`, `ldChangedAt` being the diagram's `savedAt` or the
+"Drive later" is `Date.parse(change.time) > ldChangedAt`, `ldChangedAt` being the document's `savedAt` or the
 folder's `updatedAt`. A decision may carry several effects (a restore that also moves). After applying, the item
 is always recorded with the file's Drive state, so a lost conflict is corrected by the next outbound pass.
 
-`bin-folder`: every live personal diagram in the folder's livediagram subtree goes to the Trash (`DELETE
-/api/diagrams/:id`), then the subtree's folders are deleted deepest first (`DELETE /api/folders/:id`, which drops
+`bin-folder`: every live personal document in the folder's livediagram subtree goes to the Trash (`DELETE
+/api/documents/:id`), then the subtree's folders are deleted deepest first (`DELETE /api/folders/:id`, which drops
 their items in its batch). `recreate-folder` re-creates the folder with its old id (`POST /api/folders`), records
 its item, then lists the folder's children (`files.list q="'<id>' in parents"`) and plans each as a change, so the
-diagrams restored with it come back inside it whether or not Drive emitted a change per child.
+documents restored with it come back inside it whether or not Drive emitted a change per child.
 
 Every applied decision goes through the ordinary routes via `LivediagramPort` and fires
 `track('Drive', 'Applied', type)`.
@@ -251,7 +251,7 @@ Every applied decision goes through the ordinary routes via `LivediagramPort` an
 
 `localSeenStore` keeps, per owner, in `localStorage` key `livediagram:v2:drive-seen:<ownerId>`, the rows the last
 pass saw as `[kind, ldId, driveFileId]`. At the start of outbound, a remembered row that is no longer an item and
-whose entity is neither a live personal diagram / folder nor in the personal Trash becomes a tombstone op. The
+whose entity is neither a live personal document / folder nor in the personal Trash becomes a tombstone op. The
 memory is rewritten at the end of each pass and cleared on disconnect.
 
 ### Tab election
@@ -274,26 +274,26 @@ non-elected tab, handed to the elected one).
 `parseOpenState(search)` reads `state` as JSON; `ids[0]` is the file, `resourceKeys[id]` its key. Outcomes of
 `resolveOpenWith({ drive, port, host }, state)`:
 
-| File                                                                               | Outcome                       | Telemetry       |
-| ---------------------------------------------------------------------------------- | ----------------------------- | --------------- |
-| `ldDiagramId`, `ldOrigin === host`, `port.listItems()` records another file for it | `import` (`copy`)             | `ImportOffered` |
-| `ldDiagramId`, `ldOrigin === host`, `port.canOpenDiagram` true                     | `open`                        | `Opened`        |
-| `ldDiagramId`, `ldOrigin === host`, cannot open (404, 403, 410)                    | `import` (`no-access`)        | `ImportOffered` |
-| our MIME or `.livediagram`, other `ldOrigin` or no `ldDiagramId`                   | `import` (`foreign`, `no-id`) | `ImportOffered` |
-| anything else, 404, 403 or unreadable                                              | `error`                       | `Error`         |
+| File                                                                                | Outcome                       | Telemetry       |
+| ----------------------------------------------------------------------------------- | ----------------------------- | --------------- |
+| `ldDocumentId`, `ldOrigin === host`, `port.listItems()` records another file for it | `import` (`copy`)             | `ImportOffered` |
+| `ldDocumentId`, `ldOrigin === host`, `port.canOpenDocument` true                    | `open`                        | `Opened`        |
+| `ldDocumentId`, `ldOrigin === host`, cannot open (404, 403, 410)                    | `import` (`no-access`)        | `ImportOffered` |
+| our MIME or `.livediagram`, other `ldOrigin` or no `ldDocumentId`                   | `import` (`foreign`, `no-id`) | `ImportOffered` |
+| anything else, 404, 403 or unreadable                                               | `error`                       | `Error`         |
 
 `import` shows **Import a copy** (`no-access`, `foreign`, `no-id`) or **Import as new document** (`copy`): download
-(`alt=media`), `parseDiagramEnvelope`, then `port.importDiagramCopy` (fresh diagram and tab ids, tab links remapped
+(`alt=media`), `parseDocumentEnvelope`, then `port.importDocumentCopy` (fresh document and tab ids, tab links remapped
 with `remapTabLinks`, the deck carried). A `copy` import also runs `importAsNewDocument`
 (`apps/live/lib/drive/open-with-copy.ts`):
 
 1. `port.getConnection()` for the root, `port.listItems()` and `port.listPersonalFolders()` for the placement:
    `placeCopy(parentId)` is `{ folderId: null, unseen: false }` for the root, the folder a live recorded folder item
    names, else `{ folderId: null, unseen: true }` (a folder livediagram cannot see).
-2. `port.importDiagramCopy(envelope, { id: crypto.randomUUID(), name, folderId })`, `name` the copy's
+2. `port.importDocumentCopy(envelope, { id: crypto.randomUUID(), name, folderId })`, `name` the copy's
    `stripDriveName(file.name)` or the envelope's name.
 3. `claimCopy` (**pending the operator's confirmation**; one function, the only place the rule lives), only when the
-   file is `ownedByMe` and not trashed: `drive.updateFile(fileId, { appProperties: { ldDiagramId: newId, ldOrigin:
+   file is `ownedByMe` and not trashed: `drive.updateFile(fileId, { appProperties: { ldDocumentId: newId, ldOrigin:
 host } })`, then `port.putItems([{ kind: 'diagram', ldId: newId, driveFileId: fileId, ...fileState(updated),
 ldName: name, mirroredSavedAt: null, notice, noticeParentId }])` with `notice = 'unseen_folder'` and
    `noticeParentId = parentId` when unseen. `mirroredSavedAt: null` lets outbound write the new document's contents
@@ -301,7 +301,7 @@ ldName: name, mirroredSavedAt: null, notice, noticeParentId }])` with `notice = 
    document still opens: the copy stays a foreign copy, ignored inbound, and outbound makes the new document its own
    file.
 
-The diagram is created before the item is recorded: an item whose diagram is missing is binned by outbound, so the
+The document is created before the item is recorded: an item whose document is missing is binned by outbound, so the
 reverse order would bin the copy.
 Signed out: redirect to `/sign-in?redirect_url=<this URL>`. No usable token: **Allow access** runs the consent flow
 with the pending return set to this URL.
@@ -313,7 +313,7 @@ with the pending return set to this URL.
 ```ts
 type DriveMode = 'off' | 'browser' | 'broker';
 type DriveConnectionStatus = 'connected' | 'needs_reconnect';
-type DriveItemKind = 'diagram' | 'folder';
+type DriveItemKind = 'document' | 'folder';
 type DriveNotice = 'unseen_folder';
 type DriveConnection = {
   status: DriveConnectionStatus;
@@ -420,21 +420,21 @@ type DriveFileWrite = {
 
 ### LivediagramPort (`lib/drive/livediagram-port.ts`)
 
-Reads: `listPersonalDiagrams`, `listPersonalFolders`, `listPersonalTrash`, `loadEnvelope(id)`,
-`loadSnapshotSvg(id)`, `canOpenDiagram(id)`. Writes: `renameDiagram`, `moveDiagram`, `trashDiagram`,
-`restoreDiagram`, `purgeDiagram`, `createFolder(id, name, parentId)`, `renameFolder`, `moveFolder`, `deleteFolder`,
-`importDiagramCopy(envelope)`. Mirror rows: `getConnection`, `putConnection`, `listItems`, `putItems`, `deleteItem`,
+Reads: `listPersonalDocuments`, `listPersonalFolders`, `listPersonalTrash`, `loadEnvelope(id)`,
+`loadSnapshotSvg(id)`, `canOpenDocument(id)`. Writes: `renameDocument`, `moveDocument`, `trashDocument`,
+`restoreDocument`, `purgeDocument`, `createFolder(id, name, parentId)`, `renameFolder`, `moveFolder`, `deleteFolder`,
+`importDocumentCopy(envelope)`. Mirror rows: `getConnection`, `putConnection`, `listItems`, `putItems`, `deleteItem`,
 `acquireLease`, `releaseLease`. The production implementation is a thin map onto `lib/api/*`; tests use
 `FakeLivediagram`.
 
-### Envelope (`lib/export-diagram-text.ts`)
+### Envelope (`lib/export-document-text.ts`)
 
 ```ts
-type DiagramEnvelope = {
-  kind: 'livediagram.diagram';
+type DocumentEnvelope = {
+  kind: 'livediagram.document';
   schemaVersion: 1;
   exportedAt: number;
-  diagram: {
+  document: {
     id: string;
     name: string;
     presentation: string | null;
@@ -443,13 +443,13 @@ type DiagramEnvelope = {
 };
 ```
 
-`diagramToEnvelopeText(diagram, tabs)` serialises with two-space indent (stable `md5` for unchanged content apart
-from `exportedAt`, D3). `parseDiagramEnvelope(text)` returns the envelope or a named failure:
+`documentToEnvelopeText(document, tabs)` serialises with two-space indent (stable `md5` for unchanged content apart
+from `exportedAt`, D3). `parseDocumentEnvelope(text)` returns the envelope or a named failure:
 `not_json`, `wrong_kind`, `unsupported_version`, `malformed`.
 
 ## Data and persistence
 
-`0054_drive_mirror.sql`:
+`0057_drive_mirror.sql`:
 
 ```sql
 CREATE TABLE drive_connections (
@@ -465,7 +465,7 @@ CREATE TABLE drive_connections (
 );
 CREATE TABLE drive_items (
   owner_id TEXT NOT NULL,
-  item_kind TEXT NOT NULL CHECK (item_kind IN ('diagram', 'folder')),
+  item_kind TEXT NOT NULL CHECK (item_kind IN ('document', 'folder')),
   ld_id TEXT NOT NULL,
   drive_file_id TEXT NOT NULL,
   name TEXT NOT NULL,
@@ -488,11 +488,11 @@ CREATE INDEX drive_items_ld_idx ON drive_items (item_kind, ld_id);
 | `refresh_token_enc`            | secret, encrypted | `v1.<iv b64url>.<ciphertext b64url>`, AAD = owner id; never read out |
 | `root_folder_id`, `page_token` | mirror state      | Drive ids, not personal data                                         |
 | `lease_*`                      | coordination      | Overwritten freely                                                   |
-| `drive_items.name`, `ld_name`  | user content      | Diagram and folder names, as the diagrams table already holds        |
+| `drive_items.name`, `ld_name`  | user content      | Document and folder names, as the documents table already holds      |
 | everything else                | mirror state      |                                                                      |
 
-Removal: `diagramRemovalStatements` gains `DELETE FROM drive_items WHERE item_kind = 'diagram' AND ld_id IN
-(doomed)` before the diagrams delete; `deleteFolder` becomes one batch that also drops `item_kind = 'folder' AND
+Removal: `documentRemovalStatements` gains `DELETE FROM drive_items WHERE item_kind = 'document' AND ld_id IN
+(doomed)` before the documents delete; `deleteFolder` becomes one batch that also drops `item_kind = 'folder' AND
 ld_id = ?`; `deleteAccount` revokes (when a refresh token decrypts) and deletes both tables' owner rows.
 `migrateOwnerId` leaves both untouched (`account-only`: a guest never holds a connection). No snapshot or restore
 beyond D1's own; a connection is re-creatable by reconnecting. `DELETE /api/drive/connection` deletes both.
@@ -517,7 +517,7 @@ beyond D1's own; a connection is re-creatable by reconnecting. `DELETE /api/driv
 | Name over `MAX_NAME_LEN` from Drive                     | Truncated to `MAX_NAME_LEN`                                                                     |
 | `PUT /drive/items` unique conflict on file id           | `409 drive_item_conflict`; the engine drops the stale row holding that file id and retries once |
 | `changes.list` page token rejected (400/404)            | New start page token; a full adoption listing runs (step 3 adopt), logged                       |
-| Diagram restored in Drive while in a team               | Recorded; outbound bins it again                                                                |
+| Document restored in Drive while in a team              | Recorded; outbound bins it again                                                                |
 | Open with: signed out                                   | Sign-in redirect, back to the same URL                                                          |
 | Open with on a copy someone else owns, or a binned copy | Imported as a new document, not claimed                                                         |
 | Open with: the claim fails after the import             | `open-with-claim-failed`; the new document opens, the copy stays unclaimed                      |
@@ -559,13 +559,13 @@ raises the same signal on receipt. The provider's own write relay ignores `drive
 `useAfterDriveChange(onChange)` (`hooks/persistence/useAfterDriveChange.ts`) is `useAfterApiWrite` with a
 `filter` for `drive` signals; its callers re-read quietly (no loading skeleton):
 
-| View                                    | Re-read                                                                                                                     |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Explorer page (`useExplorerState`)      | `load(ownerId)`: diagrams, shared, folders                                                                                  |
-| Any `useFolders` with an owner          | its folder list (the Explorer, the editor, the wizard)                                                                      |
-| Trash view (`useTrash`)                 | the Trash listing                                                                                                           |
-| Editor (`useDriveFollow`)               | `refreshDiagramList`; the open diagram's meta: a new name sets `diagramName`, a 410 `diagram_trashed` sets the deleted card |
-| New Diagram page (`RecentDiagramsCard`) | its recent list                                                                                                             |
+| View                                      | Re-read                                                                                                                         |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Explorer page (`useExplorerState`)        | `load(ownerId)`: documents, shared, folders                                                                                     |
+| Any `useFolders` with an owner            | its folder list (the Explorer, the editor, the wizard)                                                                          |
+| Trash view (`useTrash`)                   | the Trash listing                                                                                                               |
+| Editor (`useDriveFollow`)                 | `refreshDocumentList`; the open document's meta: a new name sets `documentName`, a 410 `document_trashed` sets the deleted card |
+| New Document page (`RecentDocumentsCard`) | its recent list                                                                                                                 |
 
 ### Not-ours logging
 
@@ -717,30 +717,30 @@ Events: `elected`, `pass-start`, `pass-end`, `token`, `root-created`, `root-foun
 
 ## Testing
 
-| Spec rule                                  | Test                                                                    |
-| ------------------------------------------ | ----------------------------------------------------------------------- |
-| Encryption, AAD, never returned            | `apps/api/src/drive/crypto.test.ts`, `routes/drive.test.ts`             |
-| Signed state                               | `apps/api/src/drive/state.test.ts`                                      |
-| Token routes, `invalid_grant`, revoke      | `apps/api/src/routes/drive.test.ts`                                     |
-| Clerk-only, 503 when off                   | `routes/drive.test.ts`                                                  |
-| Rows removed with diagram, folder, account | `db/drive-removal.test.ts`, `account-owner-columns.test.ts`             |
-| OpenAPI parity                             | `openapi/route-parity.test.ts`                                          |
-| Envelope                                   | `apps/live/lib/export-diagram-text.test.ts`                             |
-| REST client against the fake               | `apps/live/lib/drive/drive-rest-client.test.ts`                         |
-| Every outbound row                         | `apps/live/lib/drive/engine.outbound.test.ts`                           |
-| Every inbound row, echo, conflicts         | `apps/live/lib/drive/engine.inbound.test.ts`, `plan-inbound.test.ts`    |
-| Two devices, catch-up, folder bin, unseen  | `apps/live/lib/drive/engine.scenarios.test.ts`                          |
-| Cadence, back-off, page-token throttle     | `apps/live/lib/drive/engine.scenarios.test.ts`, `backoff.test.ts`       |
-| Open with outcomes                         | `apps/live/lib/drive/open-with.test.ts`                                 |
-| Fake Google                                | `packages/fake-google/src/*.test.ts`                                    |
-| The whole flow in a browser (opt-in)       | `apps/live/e2e/drive-mirror.spec.ts`                                    |
-| Consent URL, return path, state memory     | `apps/live/lib/drive/consent.test.ts`                                   |
-| Back-off, tombstone memory                 | `backoff.test.ts`, `tombstones.test.ts`                                 |
-| Connection, items, lease statements        | `apps/api/src/db/drive.test.ts`                                         |
-| Disconnect and account deletion revoke     | `apps/api/src/drive/disconnect.test.ts`                                 |
-| OAuth calls, mode resolution, capabilities | `google-oauth.test.ts`, `config.test.ts`, `routes/capabilities.test.ts` |
-| Bearer survives a second session mount     | `apps/live/hooks/persistence/useClerkApiBootstrap.test.tsx`             |
-| Telemetry vocabulary                       | `apps/live/lib/telemetry-coverage.test.ts`, `apps/telemetry` tests      |
+| Spec rule                                   | Test                                                                    |
+| ------------------------------------------- | ----------------------------------------------------------------------- |
+| Encryption, AAD, never returned             | `apps/api/src/drive/crypto.test.ts`, `routes/drive.test.ts`             |
+| Signed state                                | `apps/api/src/drive/state.test.ts`                                      |
+| Token routes, `invalid_grant`, revoke       | `apps/api/src/routes/drive.test.ts`                                     |
+| Clerk-only, 503 when off                    | `routes/drive.test.ts`                                                  |
+| Rows removed with document, folder, account | `db/drive-removal.test.ts`, `account-owner-columns.test.ts`             |
+| OpenAPI parity                              | `openapi/route-parity.test.ts`                                          |
+| Envelope                                    | `apps/live/lib/export-document-text.test.ts`                            |
+| REST client against the fake                | `apps/live/lib/drive/drive-rest-client.test.ts`                         |
+| Every outbound row                          | `apps/live/lib/drive/engine.outbound.test.ts`                           |
+| Every inbound row, echo, conflicts          | `apps/live/lib/drive/engine.inbound.test.ts`, `plan-inbound.test.ts`    |
+| Two devices, catch-up, folder bin, unseen   | `apps/live/lib/drive/engine.scenarios.test.ts`                          |
+| Cadence, back-off, page-token throttle      | `apps/live/lib/drive/engine.scenarios.test.ts`, `backoff.test.ts`       |
+| Open with outcomes                          | `apps/live/lib/drive/open-with.test.ts`                                 |
+| Fake Google                                 | `packages/fake-google/src/*.test.ts`                                    |
+| The whole flow in a browser (opt-in)        | `apps/live/e2e/drive-mirror.spec.ts`                                    |
+| Consent URL, return path, state memory      | `apps/live/lib/drive/consent.test.ts`                                   |
+| Back-off, tombstone memory                  | `backoff.test.ts`, `tombstones.test.ts`                                 |
+| Connection, items, lease statements         | `apps/api/src/db/drive.test.ts`                                         |
+| Disconnect and account deletion revoke      | `apps/api/src/drive/disconnect.test.ts`                                 |
+| OAuth calls, mode resolution, capabilities  | `google-oauth.test.ts`, `config.test.ts`, `routes/capabilities.test.ts` |
+| Bearer survives a second session mount      | `apps/live/hooks/persistence/useClerkApiBootstrap.test.tsx`             |
+| Telemetry vocabulary                        | `apps/live/lib/telemetry-coverage.test.ts`, `apps/telemetry` tests      |
 
 The browser e2e is opt-in (`pnpm --filter @livediagram/live test:e2e:drive`), kept out of CI's default run to spare
 its minutes: it rebuilds the live app with `NEXT_PUBLIC_E2E_AUTH=1`, which swaps Clerk for `E2EAuthBridge` (a

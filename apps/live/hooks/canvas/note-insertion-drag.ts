@@ -1,4 +1,4 @@
-import { isBoxed, type Element, type ElementId } from '@livediagram/diagram';
+import { isBoxed, type Element, type ElementId } from '@livediagram/document';
 import type { ShapeBounds } from '@/lib/canvas';
 import {
   canInsertBetweenOn,
@@ -44,7 +44,7 @@ type NoteInsertionInput = {
   // Pointer travel so far, in canvas units.
   dx: number;
   dy: number;
-  // Elements on a hidden or locked layer (docs/specs/006-diagram/layers.md): they can't define the row
+  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): they can't define the row
   // but still travel with the ripple.
   inertIds: ReadonlySet<string>;
   // The slot currently on offer, fed back in so it survives a shaky hand.

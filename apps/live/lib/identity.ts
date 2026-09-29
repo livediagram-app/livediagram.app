@@ -42,9 +42,9 @@ export type Participant = {
   // legacy callers that don't track it can still construct a
   // Participant; treated as "now" when omitted.
   lastActiveAt?: number;
-  // Server-verified share-code role inside this diagram. Set by the
+  // Server-verified share-code role inside this document. Set by the
   // api worker at WS upgrade time; clients can't forge it. Optional
-  // because guest / private-diagram sessions don't have a role. The
+  // because guest / private-document sessions don't have a role. The
   // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
   // their name.
   role?: 'edit' | 'view';
@@ -168,8 +168,8 @@ export function nextFreeColor(taken: Set<string>, preferred?: string): string {
 }
 
 // Up to two characters for the avatar: shared with the headless export, so
-// it lives in @livediagram/diagram (names.ts).
-export { initialsOf } from '@livediagram/diagram';
+// it lives in @livediagram/document (names.ts).
+export { initialsOf } from '@livediagram/document';
 
 // Status ring colour for the header avatar. Greens / oranges / reds are
 // the conventional presence vocabulary.

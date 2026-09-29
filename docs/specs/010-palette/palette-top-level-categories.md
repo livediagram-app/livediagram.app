@@ -162,7 +162,7 @@ which two groups they are. A rename that broke seven live links to say
 **Collaborate was merged into Behaviour**, and the survivor is named
 **Behaviours** (32 tiles in 6 groups). The two were split on a real
 distinction — Behaviour is "pressing this does something to your session",
-Collaborate is "the board is collecting an answer from everybody" — and it
+Collaborate is "the canvas is collecting an answer from everybody" — and it
 turned out to be a line to memorise rather than one to navigate by. You reach
 for both while running a session, and nothing told a user hunting for the Done
 check why it sat apart from the estimate card. [The Done check](../012-collaboration/done-check.md)
@@ -195,7 +195,7 @@ this is a palette grouping, not a model change.
 The **Comment panel** is in **Record**. It sat loose above the groups at
 first, on the reasoning that it is the one you reach for outside a facilitated
 session and a group of one would be a click in front of the category's
-most-used tile. But a comment thread is a thing you leave behind on the board
+most-used tile. But a comment thread is a thing you leave behind on the canvas
 for somebody to find later, which is exactly what the agenda, the decision
 record and the roll call are — and one row floating above six category tiles
 read as an oversight rather than as a shortcut. Every tile is in a group now.
@@ -227,9 +227,9 @@ one shape kind each with a mode field; the choice rides the draw intent.
 
 Build, Components and Devices sit in their own band above Decorate.
 
-All three are things you lay a board OUT with rather than draw on it: Build's
+All three are things you lay a canvas OUT with rather than draw on it: Build's
 containers, the ready-made page composites, the device frames a wireframe sits
-inside. Arranging a board comes before dressing it, which is the order the
+inside. Arranging a canvas comes before dressing it, which is the order the
 bands now read in — Common, Structure, Decorate, Dynamic.
 
 The category array must stay sorted by band: `PaletteTabBar` renders it
@@ -241,4 +241,4 @@ misplaced entry appears under the wrong one.
 A collapsible group shows its tile count as a badge beside the title, not
 folded into the blurb. "5 ways to celebrate on the board" made the reader
 parse a sentence to learn a quantity, and left the blurb unable to simply say
-what the group is for ("React on the board").
+what the group is for ("React on the canvas").

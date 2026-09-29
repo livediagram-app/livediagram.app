@@ -98,7 +98,7 @@ export async function uploadImageFile(ownerId: string, file: File): Promise<Uplo
   }
 }
 
-// Offline Mode (docs/specs/006-diagram/offline-mode.md): an offline diagram must stay self-contained, so
+// Offline Mode (docs/specs/006-document/offline-mode.md): an offline document must stay self-contained, so
 // instead of uploading to the server gallery the file is embedded straight
 // into the element as a base64 data URI (the renderer and the exporters
 // treat a data-URI imageId as the bytes themselves, the same shape Take
@@ -131,17 +131,17 @@ async function embedImageFile(file: File): Promise<UploadResult> {
 }
 
 // The single entry point for "the user handed the editor an image file for
-// THIS diagram" (picker upload, drag-drop, clipboard paste): cloud diagrams
-// upload to the gallery, offline diagrams embed locally so no server copy
-// is created for a diagram the server doesn't know about. The offline id
-// cache is warm whenever an offline diagram is open, so the sync check is
+// THIS document" (picker upload, drag-drop, clipboard paste): cloud documents
+// upload to the gallery, offline documents embed locally so no server copy
+// is created for a document the server doesn't know about. The offline id
+// cache is warm whenever an offline document is open, so the sync check is
 // reliable here.
-export async function addImageFileForDiagram(
+export async function addImageFileForDocument(
   ownerId: string,
-  diagramId: string | null,
+  documentId: string | null,
   file: File,
 ): Promise<UploadResult> {
-  if (diagramId && isOfflineIdSync(diagramId)) return embedImageFile(file);
+  if (documentId && isOfflineIdSync(documentId)) return embedImageFile(file);
   return uploadImageFile(ownerId, file);
 }
 

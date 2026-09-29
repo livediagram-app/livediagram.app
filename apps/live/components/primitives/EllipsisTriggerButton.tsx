@@ -11,7 +11,7 @@ export function EllipsisGlyph({ size = 14 }: { size?: number }) {
 const SIZE_CLASS = {
   // The panel's dense rows (Explorer tree, slide deck, panel header).
   sm: 'h-5 w-5',
-  // The Explorer page's sidebar tree and the panel's diagram rows.
+  // The Explorer page's sidebar tree and the panel's document rows.
   md: 'h-6 w-6',
   // The Explorer page's list rows and cards.
   lg: 'h-7 w-7',
@@ -27,7 +27,7 @@ const SIZE_CLASS = {
 //   the button has keyboard focus. Always visible on touch, where there
 //   is no hover. An open menu (`expanded`) pins it visible, so the
 //   anchor doesn't vanish from under its own menu.
-// - `tuck`: the card variant's corner-tuck margins (DiagramCard /
+// - `tuck`: the card variant's corner-tuck margins (DocumentCard /
 //   FolderCard headers).
 // - `onPointerDown`: for triggers inside draggable / pressable rows,
 //   which stop the press from starting a drag.

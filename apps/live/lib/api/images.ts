@@ -69,7 +69,7 @@ export async function apiDeleteImage(ownerId: string, imageId: string): Promise<
   });
 }
 
-// Inverse-index of which diagrams reference each owned image.
+// Inverse-index of which documents reference each owned image.
 // Backs the Explorer Image Gallery's "Used in" badge. Images that
 // aren't placed on any canvas yet are absent from the map (treat a
 // missing key as "0 uses, safe to delete"). 503 collapses to an
@@ -105,7 +105,7 @@ export const apiImageUsage = dedupeInFlight(_apiImageUsage, (ownerId) => ownerId
 export async function apiFetchImageBlobUrl(
   ownerId: string,
   imageId: string,
-  opts: { diagramId?: string; shareCode?: string | null } = {},
+  opts: { documentId?: string; shareCode?: string | null } = {},
 ): Promise<string | null> {
   const res = await fetchImage(ownerId, imageId, opts);
   if (!res) return null;
@@ -120,7 +120,7 @@ export async function apiFetchImageBlobUrl(
 export async function apiFetchImageDataUrl(
   ownerId: string,
   imageId: string,
-  opts: { diagramId?: string; shareCode?: string | null } = {},
+  opts: { documentId?: string; shareCode?: string | null } = {},
 ): Promise<string | null> {
   const res = await fetchImage(ownerId, imageId, opts);
   if (!res) return null;
@@ -134,10 +134,10 @@ export async function apiFetchImageDataUrl(
 async function fetchImage(
   ownerId: string,
   imageId: string,
-  opts: { diagramId?: string; shareCode?: string | null },
+  opts: { documentId?: string; shareCode?: string | null },
 ): Promise<Response | null> {
   const params = new URLSearchParams();
-  if (opts.diagramId) params.set('d', opts.diagramId);
+  if (opts.documentId) params.set('d', opts.documentId);
   const url = `${API_BASE}/images/${encodeURIComponent(imageId)}${
     params.toString() ? `?${params.toString()}` : ''
   }`;

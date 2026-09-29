@@ -7,7 +7,7 @@ import {
   type BoardNote,
   type PhotoAddition,
   type PhotoNote,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { clusterRows } from '../src/rows';
 import { truthDir, truthFor } from './truth';
 

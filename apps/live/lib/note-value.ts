@@ -13,7 +13,7 @@ import {
   runsPlainText,
   trimRuns,
   type TextRun,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 export type NoteFields = {
   // Empty string means "no note" — the caller strips both fields.

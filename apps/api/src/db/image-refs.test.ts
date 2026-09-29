@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { applyMigration, sqliteD1 } from '../test-sqlite-d1';
+import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
 import { imageRefIdsFromData } from '../image-refs/extract';
 import {
-  imageRefIndexDiagramStatement,
+  imageRefIndexDocumentStatement,
   imageRefIndexOwnerStatement,
   imageRefIndexPageStatement,
   isImageRefIndexComplete,
@@ -104,7 +104,7 @@ describe('the SQL extractor', () => {
     expect(refsByTab(sql)).toEqual({ t2: ['i2'] });
   });
 
-  it("scopes to an owner's or a diagram's tabs", async () => {
+  it("scopes to an owner's or a document's tabs", async () => {
     const { env, sql } = sqliteD1();
     for (const [d, owner] of [
       ['A', 'me'],
@@ -112,18 +112,18 @@ describe('the SQL extractor', () => {
     ]) {
       sql
         .prepare(
-          'INSERT INTO diagrams (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 0, 0)',
+          'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 0, 0)',
         )
         .run(d!, owner!, d!);
     }
     tabRow(sql, 'ta', JSON.stringify({ elements: [img('ia')] }));
     tabRow(sql, 'tb', JSON.stringify({ elements: [img('ib')] }));
     sql.exec(
-      "INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at) VALUES ('A', 'ta', 0, 0), ('B', 'tb', 0, 0)",
+      "INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('A', 'ta', 0, 0), ('B', 'tb', 0, 0)",
     );
     await imageRefIndexOwnerStatement(env, 'me').run();
     expect(refsByTab(sql)).toEqual({ ta: ['ia'] });
-    await imageRefIndexDiagramStatement(env, 'B').run();
+    await imageRefIndexDocumentStatement(env, 'B').run();
     expect(refsByTab(sql)).toEqual({ ta: ['ia'], tb: ['ib'] });
   });
 });
@@ -138,7 +138,7 @@ describe('migration 0050', () => {
   it('starts incomplete, with nothing indexed, on a database with tabs', async () => {
     const { env, sql } = sqliteD1({}, { before: '0050' });
     tabRow(sql, 't1', JSON.stringify({ elements: [img('a')] }));
-    applyMigration(sql, '0050');
+    migrateFrom(sql, '0050');
     expect(await readImageRefsBackfill(env)).toMatchObject({ cursor: 0, completed_at: null });
     expect(await isImageRefIndexComplete(env)).toBe(false);
     expect(refsByTab(sql)).toEqual({});

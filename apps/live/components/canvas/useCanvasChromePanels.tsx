@@ -8,7 +8,7 @@ import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { ActivityPanel } from '@/components/panels/ActivityPanel';
 import { LayersPanel } from '@/components/panels/LayersPanel';
-import { visibleLayerElements } from '@livediagram/diagram';
+import { visibleLayerElements } from '@livediagram/document';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
@@ -20,7 +20,7 @@ import { useCanvasToolPanels } from './useCanvasToolPanels';
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
-// top-right panel). Most diagrams never accumulate comments, so deferring
+// top-right panel). Most documents never accumulate comments, so deferring
 // the 164-line panel + its relative-time formatting
 // dependencies keeps the editor's initial chunk lean.
 const CollaboratePanel = dynamic(
@@ -58,6 +58,7 @@ export function useCanvasChromePanels({
   dockingActive,
   toolbarActive,
   panelWiringFor,
+  panelsOn,
 }: {
   props: CanvasChromeProps;
   chromeHidden: boolean;
@@ -68,6 +69,9 @@ export function useCanvasChromePanels({
   // instead of floating in its corner.
   toolbarActive: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
+  // Which panels are on in Settings (docs/specs/007-editor/user-preferences.md), read by CanvasChrome
+  // so each panel and its cluster button agree.
+  panelsOn: { activity: boolean; layers: boolean; collaborate: boolean };
 }): {
   panelEls: Partial<Record<PanelId, ReactNode>>;
   // The Explorer, when it belongs to the Toolbar layout's menu button rather
@@ -96,9 +100,9 @@ export function useCanvasChromePanels({
     actionRows,
     commentRows,
     commentsPanelPosition,
-    currentDiagramId,
-    diagramList,
-    diagramListLoading,
+    currentDocumentId,
+    documentList,
+    documentListLoading,
     elements,
     explorerBottomY,
     explorerPosition,
@@ -152,22 +156,22 @@ export function useCanvasChromePanels({
     onClearActivity,
     onClearRevertPreview,
     onCreateFolder,
-    onDeleteDiagram,
+    onDeleteDocument,
     onDeleteFolder,
     onDismissShared,
-    onDuplicateDiagram,
+    onDuplicateDocument,
     onMoveActivity,
     onMoveCommentsPanel,
-    onMoveDiagramToFolder,
-    onMoveDiagramTo,
+    onMoveDocumentToFolder,
+    onMoveDocumentTo,
     onMoveExplorer,
     onMovePalette,
-    onNewDiagram,
+    onNewDocument,
     explorerMenuActions,
     onOpenActionForElement,
     onToggleActionDone,
     onOpenCommentsForElement,
-    onOpenDiagram,
+    onOpenDocument,
     onRedo,
     onRenameCurrent,
     onRenameFolder,
@@ -195,11 +199,11 @@ export function useCanvasChromePanels({
     setExplorerBottomY,
     setPaletteBottomY,
     settings,
-    sharedDiagrams,
+    sharedDocuments,
     tabLocked,
     tabName,
     tabThemeId,
-    teamDiagrams,
+    teamDocuments,
     teamFolders,
     teams,
     viewportZoom,
@@ -217,16 +221,16 @@ export function useCanvasChromePanels({
     onDismissShared,
     onMoveExplorer,
     onResetExplorer,
-    onOpenDiagram,
-    onNewDiagram,
+    onOpenDocument,
+    onNewDocument,
     onRenameCurrent,
-    onDeleteDiagram,
-    onDuplicateDiagram,
+    onDeleteDocument,
+    onDuplicateDocument,
     onCreateFolder,
     onRenameFolder,
     onDeleteFolder,
-    onMoveDiagramToFolder,
-    onMoveDiagramTo,
+    onMoveDocumentToFolder,
+    onMoveDocumentTo,
     onMenuShare: explorerMenuActions?.onShare,
     onMenuExport: explorerMenuActions?.onExport,
     onMenuSearch: explorerMenuActions?.onSearch,
@@ -334,31 +338,31 @@ export function useCanvasChromePanels({
       favouriteIds={favouriteIds}
       onToggleFavourite={onToggleFavourite}
       position={explorerWiring.position}
-      diagrams={diagramList}
+      documents={documentList}
       ownerId={selfParticipant?.id ?? null}
       folders={folders}
-      loading={diagramListLoading}
-      shared={sharedDiagrams}
+      loading={documentListLoading}
+      shared={sharedDocuments}
       teams={teams}
       teamFolders={teamFolders}
-      teamDiagrams={teamDiagrams}
+      teamDocuments={teamDocuments}
       onDismissShared={explorerHandlers.onDismissShared}
-      currentDiagramId={currentDiagramId}
+      currentDocumentId={currentDocumentId}
       onMoveTo={explorerHandlers.onMoveExplorer}
       onReset={explorerWiring.onReset}
       dock={explorerWiring.dock}
-      onOpenDiagram={explorerHandlers.onOpenDiagram}
-      onNewDiagram={explorerHandlers.onNewDiagram}
+      onOpenDocument={explorerHandlers.onOpenDocument}
+      onNewDocument={explorerHandlers.onNewDocument}
       menuActions={explorerMenu}
       onRenameCurrent={explorerHandlers.onRenameCurrent}
-      onDeleteDiagram={explorerHandlers.onDeleteDiagram}
-      onDuplicateDiagram={explorerHandlers.onDuplicateDiagram}
+      onDeleteDocument={explorerHandlers.onDeleteDocument}
+      onDuplicateDocument={explorerHandlers.onDuplicateDocument}
       onCreateFolder={explorerHandlers.onCreateFolder}
       onRenameFolder={explorerHandlers.onRenameFolder}
       onDeleteFolder={explorerHandlers.onDeleteFolder}
       onTeamFolders={onTeamFolders}
-      onMoveDiagramToFolder={explorerHandlers.onMoveDiagramToFolder}
-      onMoveDiagramTo={onMoveDiagramTo ? explorerHandlers.onMoveDiagramTo : undefined}
+      onMoveDocumentToFolder={explorerHandlers.onMoveDocumentToFolder}
+      onMoveDocumentTo={onMoveDocumentTo ? explorerHandlers.onMoveDocumentTo : undefined}
       onSize={onExplorerSize}
       mobileOpenOverride={activeMobilePanel === 'explorer'}
       mobileDockAnchor={activeDockAnchor ?? undefined}
@@ -378,9 +382,10 @@ export function useCanvasChromePanels({
   // Collaborate panel (docs/specs/012-collaboration/assigned-actions.md §5): a popover hanging above its
   // cluster button after Layers, in every layout (the button opens it through
   // the dock's one-open-at-a-time slot; mobileOpenOverride gates the render).
-  // Mounted only while the tab has a thread or an action, the button's gate.
+  // Mounted only while the tab has a thread or an action, the button's gate,
+  // and never while its Settings switch is off (docs/specs/007-editor/user-preferences.md).
   const collaborateEl =
-    !chromeHidden && (commentRows.length > 0 || actionRows.length > 0) ? (
+    !chromeHidden && panelsOn.collaborate && (commentRows.length > 0 || actionRows.length > 0) ? (
       <CollaboratePanel
         position={collaborateWiring.position}
         commentRows={commentRows}
@@ -421,48 +426,52 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
-  const activityEl = chromeHidden ? null : (
-    <ActivityPanel
-      position={activityWiring.position}
-      // As a popover there is no minimised panel to expand: the cluster
-      // button opens it (mobileOpenOverride) instead.
-      minimized={clusterPopovers ? false : activityMinimized}
-      tabLocked={tabLocked}
-      entries={changeLog}
-      loading={changeLogLoading}
-      readOnly={readOnly}
-      canUndo={canUndo}
-      canRedo={canRedo}
-      onUndo={activityHandlers.onUndo}
-      onRedo={activityHandlers.onRedo}
-      onRevert={activityHandlers.onRevertChange}
-      onPreviewRevert={activityHandlers.onPreviewRevert}
-      onClearRevertPreview={activityHandlers.onClearRevertPreview}
-      revertHoverPreview={settings?.activityRevertHoverPreview !== false}
-      onRowClick={activityHandlers.onActivityRowClick}
-      onClearActivity={activityHandlers.onClearActivity}
-      saveStatus={saveStatus}
-      savedAt={savedAt}
-      onMoveTo={activityHandlers.onMoveActivity}
-      onReset={activityWiring.onReset}
-      dock={clusterPopovers ? undefined : activityWiring.dock}
-      onToggleMinimized={activityHandlers.onToggleActivityMinimized}
-      mobileOpenOverride={clusterPopovers ? activeMobilePanel === 'activity' : undefined}
-      mobileDockAnchor={activeDockAnchor ?? undefined}
-      forceDockMode={clusterPopovers}
-      // A press on the canvas (anywhere outside) puts the popover away.
-      dismissOnOutside={clusterPopovers}
-      onMobileClose={closeMobilePanel}
-    />
-  );
+  // Off in Settings (docs/specs/007-editor/user-preferences.md): no panel; Undo / Redo stay in the
+  // cluster strip, which CanvasChrome then shows in every layout.
+  const activityEl =
+    chromeHidden || !panelsOn.activity ? null : (
+      <ActivityPanel
+        position={activityWiring.position}
+        // As a popover there is no minimised panel to expand: the cluster
+        // button opens it (mobileOpenOverride) instead.
+        minimized={clusterPopovers ? false : activityMinimized}
+        tabLocked={tabLocked}
+        entries={changeLog}
+        loading={changeLogLoading}
+        readOnly={readOnly}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={activityHandlers.onUndo}
+        onRedo={activityHandlers.onRedo}
+        onRevert={activityHandlers.onRevertChange}
+        onPreviewRevert={activityHandlers.onPreviewRevert}
+        onClearRevertPreview={activityHandlers.onClearRevertPreview}
+        revertHoverPreview={settings?.activityRevertHoverPreview !== false}
+        onRowClick={activityHandlers.onActivityRowClick}
+        onClearActivity={activityHandlers.onClearActivity}
+        saveStatus={saveStatus}
+        savedAt={savedAt}
+        onMoveTo={activityHandlers.onMoveActivity}
+        onReset={activityWiring.onReset}
+        dock={clusterPopovers ? undefined : activityWiring.dock}
+        onToggleMinimized={activityHandlers.onToggleActivityMinimized}
+        mobileOpenOverride={clusterPopovers ? activeMobilePanel === 'activity' : undefined}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={clusterPopovers}
+        // A press on the canvas (anywhere outside) puts the popover away.
+        dismissOnOutside={clusterPopovers}
+        onMobileClose={closeMobilePanel}
+      />
+    );
 
-  // Layers panel (docs/specs/006-diagram/layers.md). Edit sessions only (a viewer can't manage
+  // Layers panel (docs/specs/006-document/layers.md). Edit sessions only (a viewer can't manage
   // layers; visibility / lock still shape what they see via the render
   // path). Floating: hidden while minimised into its bottom-right cluster
   // button. As a popover (clusterPopovers): always mounted so that button can
   // pop it open (mobileOpenOverride gates the actual render).
+  // Its Settings switch removes it outright; layers themselves keep applying.
   const layersEl =
-    !chromeHidden && !readOnly && (clusterPopovers ? true : !layersMinimized) ? (
+    !chromeHidden && !readOnly && panelsOn.layers && (clusterPopovers ? true : !layersMinimized) ? (
       <LayersPanel
         layers={layers}
         tabFont={props.tabFont}
@@ -539,7 +548,7 @@ export function useCanvasChromePanels({
   const mapEnabled = settings?.showMinimap !== false;
   const mapAccent = paletteTheme.elementStroke;
   const minimapWiring = panelWiringFor('minimap', props.mapPosition, props.onResetMap);
-  // Hidden layers (docs/specs/006-diagram/layers.md) drop out of the miniature too, so the map
+  // Hidden layers (docs/specs/006-document/layers.md) drop out of the miniature too, so the map
   // matches the canvas. Not rendered at all in the minimal panel layout
   // (docs/specs/008-canvas/minimap.md): minimal collapses panels to dock buttons, and a
   // free-floating map contradicts that.

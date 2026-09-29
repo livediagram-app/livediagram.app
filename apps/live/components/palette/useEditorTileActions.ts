@@ -5,7 +5,7 @@
 // (tileHandler) is what keeps a search add identical to clicking the tile.
 // No mobile-close / draw-armed wrapping: that is the palette's own chrome.
 
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { PaletteTileActions } from './PaletteTileGrid';
 
 export function useEditorTileActions(): PaletteTileActions {

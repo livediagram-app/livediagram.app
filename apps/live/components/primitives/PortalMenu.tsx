@@ -38,7 +38,7 @@ const PLACEMENT_TRANSFORM: Record<Placement, string> = {
  * viewport edges; closes when the user clicks outside the menu.
  *
  * Used by the tab bar (above the ellipsis button) and the editor header
- * (below the diagram-title ellipsis button).
+ * (below the document-title ellipsis button).
  */
 export function PortalMenu({ anchor, placement = 'below', onClose, children }: PortalMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -195,7 +195,7 @@ export function MenuActionRow({
   onPointerEnter?: PointerEventHandler<HTMLButtonElement>;
   onPointerLeave?: PointerEventHandler<HTMLButtonElement>;
   // Sentence-case, 13px, full-contrast: the reading size for a menu
-  // that IS the list (the diagram actions menu), where the uppercase
+  // that IS the list (the document actions menu), where the uppercase
   // label rhythm of a category header is too quiet to scan eight verbs
   // by. A danger row is red at rest here, not only on hover.
   plain?: boolean;
@@ -261,7 +261,7 @@ export function MenuActionRow({
   );
 }
 
-// A quiet first row naming what the menu is FOR: the diagram's name and
+// A quiet first row naming what the menu is FOR: the document's name and
 // its visibility badge. A ⋯ menu opens away from its trigger (below a
 // card, beside a row), and on a grid of near-identical cards the reader
 // needs the menu itself to say which one they opened.

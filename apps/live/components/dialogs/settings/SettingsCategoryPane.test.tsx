@@ -96,9 +96,9 @@ describe('SettingsCategoryPane on a phone', () => {
 // with a note, rather than flipping to no visible effect.
 describe('SettingsCategoryPane desktop-only rows', () => {
   const MAP = SETTINGS_CATEGORIES.find((c) => c.id === 'map')!;
-  const mapSwitch = () => screen.getByRole('switch', { name: /Show Map/ });
+  const mapSwitch = () => screen.getByRole('switch', { name: /Enable Map/ });
 
-  it('greys out Show Map on a phone, says why, and ignores a tap', () => {
+  it('greys out Enable Map on a phone, says why, and ignores a tap', () => {
     mobile.value = true;
     const onChange = show(vi.fn(), MAP);
     expect((mapSwitch() as HTMLButtonElement).disabled).toBe(true);
@@ -121,7 +121,7 @@ describe('SettingsCategoryPane desktop-only rows', () => {
     expect([...sizes].every((b) => b.disabled)).toBe(true);
   });
 
-  it('leaves Show Map working on desktop, with no note', () => {
+  it('leaves Enable Map working on desktop, with no note', () => {
     const onChange = show(vi.fn(), MAP);
     expect((mapSwitch() as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(mapSwitch());

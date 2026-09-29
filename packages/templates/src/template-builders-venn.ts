@@ -2,7 +2,7 @@
 // re-exports it) once the fully labelled redesign outgrew a shared file.
 // Pure: (cx, cy) -> Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates".
 
-import { createShape, createText, type Element } from '@livediagram/diagram';
+import { createShape, createText, type Element } from '@livediagram/document';
 
 // Muted slate for the one-line explainers under each region label.
 const MUTED = '#64748b';

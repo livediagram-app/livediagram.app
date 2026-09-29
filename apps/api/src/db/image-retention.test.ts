@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { applyMigration, sqliteD1 } from '../test-sqlite-d1';
+import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
 import { resetImageRefIndexMemo } from './image-refs';
 import { deleteOldUnusedImages, IMAGE_SWEEP_PAGE, sweepTripped } from './image-retention';
-import { deleteDiagram } from './diagrams';
+import { deleteDocument } from './documents';
 import { upsertTab } from './tabs';
 import {
   CUTOFF,
-  diagram,
+  liveDoc,
   ids,
   imageIds,
   images,
@@ -47,7 +47,7 @@ describe('deleteOldUnusedImages', () => {
   it('deletes nothing while the index backfill is incomplete', async () => {
     const db = setup({ before0050: true });
     db.sql.exec("INSERT INTO tabs (id, name, data, updated_at) VALUES ('t', 't', '{}', 0)");
-    applyMigration(db.sql, '0050');
+    migrateFrom(db.sql, '0050');
     images(db.sql, OLD, 'old');
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
     expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(0);
@@ -58,8 +58,8 @@ describe('deleteOldUnusedImages', () => {
 
   it('reaps old unreferenced images only, D1 then R2', async () => {
     const db = setup();
-    diagram(db.sql, 'A');
-    diagram(db.sql, 'B', 'someone-else');
+    liveDoc(db.sql, 'A');
+    liveDoc(db.sql, 'B', 'someone-else');
     images(db.sql, OLD, 'old-unused', 'old-used', 'old-used-elsewhere');
     images(db.sql, YOUNG, 'young-unused');
     await upsertTab(db.env, 'A', tabWith('t1', 'old-used'), 0);
@@ -70,13 +70,13 @@ describe('deleteOldUnusedImages', () => {
     expect(db.bucket.delete).toHaveBeenCalledWith(['old-unused']);
   });
 
-  it('counts a tab no diagram links (kept conservatively) but not a dangling reference', async () => {
+  it('counts a tab no document links (kept conservatively) but not a dangling reference', async () => {
     const db = setup();
-    diagram(db.sql, 'A');
+    liveDoc(db.sql, 'A');
     images(db.sql, OLD, 'on-orphan-tab', 'on-deleted-tab');
     await upsertTab(db.env, 'A', tabWith('orphan', 'on-orphan-tab'), 0);
     await upsertTab(db.env, 'A', tabWith('gone', 'on-deleted-tab'), 1);
-    db.sql.exec("DELETE FROM diagram_tabs WHERE tab_id = 'orphan'");
+    db.sql.exec("DELETE FROM document_tabs WHERE tab_id = 'orphan'");
     // A tab removed by a path that didn't prune: its row dangles.
     db.sql.exec("DELETE FROM tabs WHERE id = 'gone'");
     expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(1);
@@ -84,19 +84,19 @@ describe('deleteOldUnusedImages', () => {
     expect(refsFor(db.sql, 'on-deleted-tab')).toBe(0);
   });
 
-  it('reaps the images of a deleted diagram', async () => {
+  it('reaps the images of a deleted document', async () => {
     const db = setup();
-    diagram(db.sql, 'A');
+    liveDoc(db.sql, 'A');
     images(db.sql, OLD, 'img');
     await upsertTab(db.env, 'A', tabWith('t1', 'img'), 0);
     expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(0);
-    await deleteDiagram(db.env, 'A');
+    await deleteDocument(db.env, 'A');
     expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(1);
   });
 
   it('keeps an image placed after it was counted', async () => {
     const db = setup();
-    diagram(db.sql, 'A');
+    liveDoc(db.sql, 'A');
     images(db.sql, OLD, 'late');
     const prepare = db.env.DB.prepare.bind(db.env.DB);
     // Place the image in the instant between the page read and the delete.
@@ -125,7 +125,7 @@ describe('deleteOldUnusedImages', () => {
 
   it('pages through more unused images than one R2 call takes', async () => {
     const db = setup();
-    diagram(db.sql, 'A');
+    liveDoc(db.sql, 'A');
     const unused = ids('unused', IMAGE_SWEEP_PAGE + 1);
     const used = ids('used', IMAGE_SWEEP_PAGE + 2);
     images(db.sql, OLD, ...unused, ...used);

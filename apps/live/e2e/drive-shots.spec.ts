@@ -155,7 +155,7 @@ for (const theme of THEMES) {
         height: 90,
         label,
       });
-      await api(page, 'POST', '/diagrams', {
+      await api(page, 'POST', '/documents', {
         id: PLAN,
         name: 'Quarterly plan',
         tabs: [
@@ -166,14 +166,14 @@ for (const theme of THEMES) {
           },
         ],
       });
-      await api(page, 'PUT', `/diagrams/${PLAN}/folder`, { folderId: `f-${PLAN}` });
-      await api(page, 'POST', '/diagrams', {
+      await api(page, 'PUT', `/documents/${PLAN}/folder`, { folderId: `f-${PLAN}` });
+      await api(page, 'POST', '/documents', {
         id: NOTES,
         name: 'Meeting notes',
         tabs: [{ id: `t-${NOTES}`, name: 'Tab 1', elements: [] }],
       });
       for (const [i, name] of ['Roadmap', 'Architecture', 'Onboarding', 'Retro'].entries()) {
-        await api(page, 'POST', '/diagrams', {
+        await api(page, 'POST', '/documents', {
           id: `shots-${i}-${theme}-${RUN}`,
           name,
           tabs: [
@@ -284,17 +284,17 @@ for (const theme of THEMES) {
         name: 'Team roadmap.livediagram',
         mimeType: DRIVE_FILE_MIME,
         content: JSON.stringify({
-          kind: 'livediagram.diagram',
+          kind: 'livediagram.document',
           schemaVersion: 1,
           exportedAt: 1,
-          diagram: {
+          document: {
             id: 'not-yours',
             name: 'Team roadmap',
             presentation: null,
             tabs: [{ id: 't', name: 'Tab 1', elements: [] }],
           },
         }),
-        appProperties: { ldDiagramId: 'not-yours', ldOrigin: new URL(page.url()).host },
+        appProperties: { ldDocumentId: 'not-yours', ldOrigin: new URL(page.url()).host },
         shareWith: USER,
       });
       await page.goto(
@@ -320,12 +320,12 @@ for (const theme of THEMES) {
       await page.goto(
         `/drive/open?state=${encodeURIComponent(google.fake.openWithState(USER, mine.id))}`,
       );
-      await page.waitForURL('**/diagram/**');
+      await page.waitForURL('**/document/**');
       await expect(page.getByText('Architecture').first()).toBeVisible();
       await shot(
         page,
         'open-with-3-opens-mirrored',
-        'Open with on a mirrored file: it lands in the diagram',
+        'Open with on a mirrored file: it lands in the document',
       );
 
       // Needs reconnect: Google drops the grant.

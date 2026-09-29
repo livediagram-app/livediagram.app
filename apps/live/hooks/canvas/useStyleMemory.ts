@@ -1,11 +1,11 @@
 'use client';
 
 // Style memory's state and storage (docs/specs/008-canvas/quick-style-panel.md "Style memory"): read once
-// per diagram from this browser, written back at most every 250 ms. Never
-// synced and never in the diagram. The logic is pure, in lib/style-memory.
+// per document from this browser, written back at most every 250 ms. Never
+// synced and never in the document. The logic is pure, in lib/style-memory.
 
 import { useEffect, useRef } from 'react';
-import type { Element, ThemeDefinition } from '@livediagram/diagram';
+import type { Element, ThemeDefinition } from '@livediagram/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 import {
   applyStyleMemory,
@@ -29,10 +29,10 @@ export type StyleMemoryApi = {
 };
 
 export function useStyleMemory({
-  diagramId,
+  documentId,
   theme,
 }: {
-  diagramId: string | null;
+  documentId: string | null;
   theme: ThemeDefinition;
 }): StyleMemoryApi {
   const memoryRef = useRef<StyleMemory>({});
@@ -40,17 +40,17 @@ export function useStyleMemory({
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warnedWrite = useRef(false);
 
-  // Read synchronously on the first call for a diagram, so an element drawn in
+  // Read synchronously on the first call for a document, so an element drawn in
   // the same tick as the load already sees it.
   const ensureLoaded = (): boolean => {
-    if (!diagramId) return false;
-    if (loadedFor.current !== diagramId) {
-      const raw = readLocalStorageSafe(styleMemoryKey(diagramId));
+    if (!documentId) return false;
+    if (loadedFor.current !== documentId) {
+      const raw = readLocalStorageSafe(styleMemoryKey(documentId));
       memoryRef.current = parseStyleMemory(raw);
       if (raw !== null && Object.keys(memoryRef.current).length === 0 && raw !== '{}') {
-        console.warn('[style-memory] unreadable', styleMemoryKey(diagramId));
+        console.warn('[style-memory] unreadable', styleMemoryKey(documentId));
       }
-      loadedFor.current = diagramId;
+      loadedFor.current = documentId;
     }
     return true;
   };
@@ -75,8 +75,8 @@ export function useStyleMemory({
     pending.current = setTimeout(flush, STYLE_MEMORY_WRITE_DEBOUNCE_MS);
   };
 
-  // A diagram switch or unmount writes what is pending for the old one.
-  useEffect(() => () => flush(), [diagramId]);
+  // A document switch or unmount writes what is pending for the old one.
+  useEffect(() => () => flush(), [documentId]);
 
   const commit = (next: StyleMemory, log: string, detail: unknown) => {
     if (next === memoryRef.current) return;

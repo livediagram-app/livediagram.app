@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DiagramDTO, Env } from './types';
+import type { DocumentDTO, Env } from './types';
 
 // The render-cache reads/writes the snapshot freshness + first-tab body
 // through the db layer; mock it so the test pins the cache decision tree
@@ -13,17 +13,17 @@ const db = vi.hoisted(() => ({
 }));
 vi.mock('./db', () => db);
 
-import { getDiagramThumbnailSvg } from './thumbnail';
+import { getDocumentThumbnailSvg } from './thumbnail';
 
 function r2() {
   return { get: vi.fn(), put: vi.fn().mockResolvedValue(undefined), delete: vi.fn() };
 }
 
-function diagram(over: Partial<DiagramDTO> = {}): DiagramDTO {
+function liveDoc(over: Partial<DocumentDTO> = {}): DocumentDTO {
   return {
     id: 'd1',
     ownerId: 'o1',
-    name: 'Diagram',
+    name: 'Document',
     tabs: [],
     shareable: false,
     shareCode: null,
@@ -49,9 +49,9 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('getDiagramThumbnailSvg', () => {
+describe('getDocumentThumbnailSvg', () => {
   it('returns null without an R2 binding (self-host without storage)', async () => {
-    const out = await getDiagramThumbnailSvg({} as Env, diagram());
+    const out = await getDocumentThumbnailSvg({} as Env, liveDoc());
     expect(out).toBeNull();
     expect(db.getThumbRenderedAt).not.toHaveBeenCalled();
   });
@@ -62,7 +62,7 @@ describe('getDiagramThumbnailSvg', () => {
     db.getThumbRenderedAt.mockResolvedValue(2000); // >= savedAt 1000 → fresh
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDiagramThumbnailSvg(env, diagram());
+    const out = await getDocumentThumbnailSvg(env, liveDoc());
 
     expect(out).toBe('<svg>cached</svg>');
     expect(db.getFirstTabData).not.toHaveBeenCalled();
@@ -77,11 +77,46 @@ describe('getDiagramThumbnailSvg', () => {
     db.getFirstTabData.mockResolvedValue(TAB_DATA);
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDiagramThumbnailSvg(env, diagram());
+    const out = await getDocumentThumbnailSvg(env, liveDoc());
 
     expect(out).toContain('<svg');
     expect(images.put).toHaveBeenCalledOnce();
     expect(images.put.mock.calls[0]![0]).toBe('thumb/d1');
+    expect(db.markThumbRendered).toHaveBeenCalledWith(env, 'd1', expect.any(Number));
+  });
+
+  it('trusts a freshness stamp the caller already read, saving the query', async () => {
+    const images = r2();
+    images.get.mockResolvedValue({ text: async () => '<svg>cached</svg>' });
+    const env = { IMAGES: images } as unknown as Env;
+
+    const out = await getDocumentThumbnailSvg(env, { ...liveDoc(), thumbRenderedAt: 2000 });
+
+    expect(out).toBe('<svg>cached</svg>');
+    expect(db.getThumbRenderedAt).not.toHaveBeenCalled();
+  });
+
+  it('hands the cache write to `defer` instead of awaiting it', async () => {
+    const images = r2();
+    let finishPut!: () => void;
+    images.put.mockReturnValue(new Promise<void>((resolve) => (finishPut = resolve)));
+    db.getFirstTabData.mockResolvedValue(TAB_DATA);
+    const env = { IMAGES: images } as unknown as Env;
+    const deferred: Promise<unknown>[] = [];
+
+    // Resolves while the put is still pending: the response is not held
+    // behind the R2 write + D1 stamp.
+    const out = await getDocumentThumbnailSvg(
+      env,
+      { ...liveDoc(), thumbRenderedAt: null },
+      { defer: (p) => deferred.push(p) },
+    );
+    expect(out).toContain('<svg');
+    expect(deferred).toHaveLength(1);
+    expect(db.markThumbRendered).not.toHaveBeenCalled();
+
+    finishPut();
+    await deferred[0];
     expect(db.markThumbRendered).toHaveBeenCalledWith(env, 'd1', expect.any(Number));
   });
 
@@ -92,32 +127,32 @@ describe('getDiagramThumbnailSvg', () => {
     db.getFirstTabData.mockResolvedValue(TAB_DATA);
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDiagramThumbnailSvg(env, diagram());
+    const out = await getDocumentThumbnailSvg(env, liveDoc());
 
     expect(out).toContain('<svg');
     expect(images.put).toHaveBeenCalledOnce();
   });
 
-  it('returns null for an empty diagram and never caches it', async () => {
+  it('returns null for an empty document and never caches it', async () => {
     const images = r2();
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getFirstTabData.mockResolvedValue(JSON.stringify({ elements: [] }));
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDiagramThumbnailSvg(env, diagram());
+    const out = await getDocumentThumbnailSvg(env, liveDoc());
 
     expect(out).toBeNull();
     expect(images.put).not.toHaveBeenCalled();
     expect(db.markThumbRendered).not.toHaveBeenCalled();
   });
 
-  it('returns null when the diagram has no tabs', async () => {
+  it('returns null when the document has no tabs', async () => {
     const images = r2();
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getFirstTabData.mockResolvedValue(null);
     const env = { IMAGES: images } as unknown as Env;
 
-    expect(await getDiagramThumbnailSvg(env, diagram())).toBeNull();
+    expect(await getDocumentThumbnailSvg(env, liveDoc())).toBeNull();
     expect(images.put).not.toHaveBeenCalled();
   });
 
@@ -138,7 +173,7 @@ describe('getDiagramThumbnailSvg', () => {
     );
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDiagramThumbnailSvg(env, diagram());
+    const out = await getDocumentThumbnailSvg(env, liveDoc());
 
     expect(out).toContain('<image');
     // btoa of bytes [1,2,3,4] is "AQIDBA==".
@@ -156,7 +191,7 @@ describe('getDiagramThumbnailSvg', () => {
     images.get.mockResolvedValue(null); // image bytes absent
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDiagramThumbnailSvg(env, diagram());
+    const out = await getDocumentThumbnailSvg(env, liveDoc());
 
     expect(out).toContain('stroke-dasharray="4 4"'); // dashed placeholder
     expect(out).not.toContain('<image');
@@ -170,7 +205,7 @@ describe('getDiagramThumbnailSvg', () => {
     db.getFirstTabData.mockResolvedValue(TAB_DATA);
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDiagramThumbnailSvg(env, diagram());
+    const out = await getDocumentThumbnailSvg(env, liveDoc());
 
     expect(out).toContain('<svg');
     expect(db.markThumbRendered).not.toHaveBeenCalled();
@@ -204,7 +239,7 @@ describe('a thumbnail of a Charcoal tab', () => {
         ],
       }),
     );
-    const out = await getDiagramThumbnailSvg({ IMAGES: images } as unknown as Env, diagram());
+    const out = await getDocumentThumbnailSvg({ IMAGES: images } as unknown as Env, liveDoc());
     expect(out).not.toContain('#2c2c33');
     expect(out).toContain('#0d121a');
   });

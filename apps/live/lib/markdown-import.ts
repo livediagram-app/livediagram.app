@@ -23,7 +23,7 @@ import {
   type TableElement,
   type TextSize,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { getTheme, recolourElementsForTheme } from './themes';
 
 // ---------------------------------------------------------------------

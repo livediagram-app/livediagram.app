@@ -16,7 +16,11 @@ import { HoverCard } from '@livediagram/ui';
 // (`onTogglePopover`), pressed while it's open. `data-mobile-dock` makes a
 // second press close it through the toggle, and keeps Undo / Redo presses
 // from closing it.
+//
+// With the Activity panel off in Settings (`showActivity` false,
+// docs/specs/007-editor/user-preferences.md) the strip is just Undo / Redo.
 export function ActivityClusterStrip({
+  showActivity = true,
   popoverOpen,
   onExpand,
   onTogglePopover,
@@ -25,6 +29,7 @@ export function ActivityClusterStrip({
   canUndo,
   canRedo,
 }: {
+  showActivity?: boolean;
   popoverOpen: boolean;
   onExpand?: () => void;
   onTogglePopover?: (button: HTMLElement) => void;
@@ -59,7 +64,7 @@ export function ActivityClusterStrip({
       className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
       {/* No hover card while open: it would sit over the panel it names. */}
-      {popoverOpen ? (
+      {!showActivity ? null : popoverOpen ? (
         activityButton
       ) : (
         <HoverCard title="Open Tab Activity" description="Expand the Tab Activity panel.">

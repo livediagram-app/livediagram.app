@@ -69,7 +69,7 @@ export function routeSourceFiles(): string[] {
 
 /** The `case '<segment>':` blocks of index.ts's dispatch switch, with the source
  *  of every route module each block reaches (transitively through sibling
- *  `./<module>` imports, since the diagram routes are split across files). */
+ *  `./<module>` imports, since the document routes are split across files). */
 export function dispatchSources(): Map<string, string[]> {
   const index = readSource('index.ts')!;
   const handlerFile = new Map<string, string>();
@@ -117,7 +117,7 @@ export function routeVocabulary(): RouteVocabulary {
   return out;
 }
 
-/** `/diagrams/{id}/copy` → `['diagrams', '{id}', 'copy']`. */
+/** `/documents/{id}/copy` → `['documents', '{id}', 'copy']`. */
 export function templateSegments(template: string): string[] {
   return template.replace(/^\//, '').split('/');
 }
@@ -163,7 +163,7 @@ export async function probeDispatch(
   const env = {
     DB: trap('DB'),
     IMAGES: trap('IMAGES'),
-    DIAGRAM_ROOM: trap('DIAGRAM_ROOM'),
+    DOCUMENT_ROOM: trap('DOCUMENT_ROOM'),
     TELEMETRY_ENABLED: 'true',
     OPENAI_API_KEY: 'probe-key',
     // The Drive mirror in broker mode (docs/specs/022-drive-mirror/drive-mirror.md).

@@ -7,7 +7,7 @@ import {
   type Element,
   type EsTimeline,
   type EventStormingNoteKind,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import {
   getPaletteDragSnap,
   setPaletteDragPreview,
@@ -213,7 +213,7 @@ describe('usePaletteDragGuides — insert between (docs/specs/021-event-storming
   });
 
   // Q2: the gesture is about the note grammar. A shape dragged in from the
-  // palette lands where it is dropped, exactly as on any other board — the
+  // palette lands where it is dropped, exactly as on any other tab — the
   // same rule the existing-element path follows.
   it('never offers a slot for something that will not be a note', () => {
     const { wrapperRef, result } = render({ esBoard: true, note: false });
@@ -222,7 +222,7 @@ describe('usePaletteDragGuides — insert between (docs/specs/021-event-storming
     expect(result.current.guides.length).toBeGreaterThan(0);
   });
 
-  it('never offers a slot on an ordinary board, Alt or no Alt', () => {
+  it('never offers a slot on an ordinary tab, Alt or no Alt', () => {
     const { wrapperRef, result } = render({ esBoard: false });
     altDragOver(wrapperRef.current, 236, 100);
     expect(getInsertionSlot()).toBeNull();

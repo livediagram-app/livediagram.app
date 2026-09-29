@@ -16,7 +16,7 @@ import {
   isProgressShape,
   isRailShape,
   isRatingShape,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { isTechIconId } from '@/lib/tech-icons';
 import { TechIconGlyph } from '@/components/primitives/tech-icon-glyph';

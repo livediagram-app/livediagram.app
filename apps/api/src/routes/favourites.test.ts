@@ -1,8 +1,8 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Route surface for per-user diagram stars (docs/specs/013-workspace/favourites.md). Favourites are
-// deliberately owner-scoped with NO diagram-access check — a star is a
+// Route surface for per-user document stars (docs/specs/013-workspace/favourites.md). Favourites are
+// deliberately owner-scoped with NO document-access check — a star is a
 // private bookmark that grants nothing — so what matters here is that the
 // owner gate holds and that every id reaching the db layer is scoped to
 // the resolved owner.
@@ -47,7 +47,7 @@ describe('handleFavourites', () => {
     expect(db.listFavouriteIds).toHaveBeenCalledWith({}, 'owner-1');
   });
 
-  it('PUT stars the diagram for THIS owner', async () => {
+  it('PUT stars the document for THIS owner', async () => {
     const res = await handleFavourites(makeCtx('PUT', '/api/favourites/d1'));
     expect(res.status).toBe(204);
     expect(db.addFavourite).toHaveBeenCalledWith({}, 'owner-1', 'd1');
@@ -65,7 +65,7 @@ describe('handleFavourites', () => {
     expect(db.addFavourite).toHaveBeenCalledWith({}, 'owner-2', 'd1');
   });
 
-  it('404s a write with no diagram id, rather than starring nothing', async () => {
+  it('404s a write with no document id, rather than starring nothing', async () => {
     const res = await handleFavourites(makeCtx('PUT', '/api/favourites'));
     expect(res.status).toBe(404);
     expect(db.addFavourite).not.toHaveBeenCalled();

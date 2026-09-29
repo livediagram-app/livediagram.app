@@ -6,11 +6,11 @@
 
 import { cleanup, render, screen, fireEvent } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ElementAction } from '@livediagram/diagram';
+import type { ElementAction } from '@livediagram/document';
 import { AssignActionDialog } from './AssignActionDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('next/navigation', () => ({ usePathname: () => '/diagram/d1' }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/document/d1' }));
 
 type Props = Parameters<typeof AssignActionDialog>[0];
 
@@ -36,8 +36,8 @@ function props(over: Partial<Props> = {}): Props {
     ownerId: null,
     selfUserId: 'me',
     selfName: 'Ada',
-    diagramId: 'd1',
-    diagramTeamId: null,
+    documentId: 'd1',
+    documentTeamId: null,
     emailEnabled: false,
     onSubmit: vi.fn(),
     onClose: vi.fn(),

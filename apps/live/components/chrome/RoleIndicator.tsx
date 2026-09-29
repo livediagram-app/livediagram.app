@@ -4,7 +4,7 @@ import { useId } from 'react';
 import { PencilIcon, Tooltip } from '@livediagram/ui';
 import { EyeIcon } from '@/components/panels/layers-panel-icons';
 
-// Whether you are editing or viewing this diagram, in two shapes
+// Whether you are editing or viewing this document, in two shapes
 // (docs/specs/007-editor/live-app.md#role-pill): the title bar's pill, and Minimal chrome's
 // status bar icon (docs/specs/007-editor/power-user-mode.md). Both toggle the local view
 // preview when `onToggle` is given, i.e. when your role allows editing.

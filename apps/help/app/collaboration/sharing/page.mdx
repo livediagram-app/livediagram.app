@@ -1,31 +1,31 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { ShareLinks, EmbeddedDiagram } from '@/components/illustrations/collaboration';
+import { ShareLinks, EmbeddedDocument } from '@/components/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Sharing and Embeds',
   description:
-    'Share a diagram with a link for real-time collaboration, protect it with a password, set an expiry, or embed it in another page.',
+    'Share a document with a link for real-time collaboration, protect it with a password, set an expiry, or embed it in another page.',
   path: '/help/collaboration/sharing/',
 });
 
 <ArticleLayout title="Sharing and Embeds" description="Share links for live collaboration, optional passwords and expiry, and embeds." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("sharing")}>
 
-Sharing turns a diagram into something other people can open. A share link lets anyone with the URL join your diagram in real time, with live cursors and edits flowing between everyone. You can protect a link with a password, give it an expiry date, or embed the diagram in another page. None of this needs the other person to sign in: a share link can be handed to a guest who edits without an account.
+Sharing turns a document into something other people can open. A share link lets anyone with the URL join your document in real time, with live cursors and edits flowing between everyone. You can protect a link with a password, give it an expiry date, or embed the document in another page. None of this needs the other person to sign in: a share link can be handed to a guest who edits without an account.
 
 ## Share links
 
-Open the **Share** dialog on a diagram to create a link. The dialog draws every link as a **pass**, a ticket that lets whoever holds it in, and the line under its title always tells you who can get in right now: only you, or anyone holding one of your passes.
+Open the **Share** dialog on a document to create a link. The dialog draws every link as a **pass**, a ticket that lets whoever holds it in, and the line under its title always tells you who can get in right now: only you, or anyone holding one of your passes.
 
 Pick what the pass lets people do, then press **Create Pass**. The link is created and copied in one go, ready to paste. Each pass carries a role, printed on its coloured stub:
 
-- An **Editor** pass lets the visitor change the diagram with you, live.
+- An **Editor** pass lets the visitor change the document with you, live.
 - A **Viewer** pass lets them watch and pan and zoom, but not edit.
 
-A diagram can have several links at once, so you can hand out an edit link to your team and a view link to everyone else. Whoever opens a link joins the same realtime room, so cursors and changes appear as they happen.
+A document can have several links at once, so you can hand out an edit link to your team and a view link to everyone else. Whoever opens a link joins the same realtime room, so cursors and changes appear as they happen.
 
-A link opens every tab unless you [scope it to one tab](/help/collaboration/sharing/one-tab/). The person you send a one-tab link to sees that tab, and the rest of the diagram never reaches their browser.
+A link opens every tab unless you [scope it to one tab](/help/collaboration/sharing/one-tab/). The person you send a one-tab link to sees that tab, and the rest of the document never reaches their browser.
 
 <Figure caption="The Share dialog shows an edit pass and a view pass, each with its role on the stub and a copy button in its link.">
   <ShareLinks />
@@ -35,17 +35,17 @@ A link opens every tab unless you [scope it to one tab](/help/collaboration/shar
 
 Two self-serve controls let you bound who gets in and for how long:
 
-- A [share password](/help/collaboration/sharing/share-passwords/) makes every link prompt for a password before it opens. The diagram's owner always bypasses it.
+- A [share password](/help/collaboration/sharing/share-passwords/) makes every link prompt for a password before it opens. The document's owner always bypasses it.
 - A [share link expiry](/help/collaboration/sharing/share-link-expiry/) gives a link a lifetime (a week, a month, or six months). When it runs out the link stops working, but stays in your dialog so you can extend or delete it.
 
 These are independent: you can use either, both, or neither. They are layered on top of the link role, not a replacement for it.
 
-## Embedding a diagram
+## Embedding a document
 
-An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a diagram inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: a **view** link embeds a read-only canvas with pan and zoom, while an **edit** link embeds a fully editable one. Either way it hides the editor chrome and updates as the diagram is edited. Each pass in the Share dialog has an **Embed** menu offering **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
+An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a document inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: a **view** link embeds a read-only canvas with pan and zoom, while an **edit** link embeds a fully editable one. Either way it hides the editor chrome and updates as the document is edited. Each pass in the Share dialog has an **Embed** menu offering **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
 
-<Figure caption="A diagram embedded in another page, alongside the iframe snippet that places it.">
-  <EmbeddedDiagram />
+<Figure caption="A document embedded in another page, alongside the iframe snippet that places it.">
+  <EmbeddedDocument />
 </Figure>
 
 <Tip>
@@ -54,14 +54,14 @@ An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a diagram in
 </Tip>
 
 <Note>
-  An [offline diagram](/help/privacy-and-security/offline-mode/) lives only in your browser, so
+  An [offline document](/help/privacy-and-security/offline-mode/) lives only in your browser, so
   there is nothing on the server to share yet. Opening **Share** on one shows a gate instead of the
-  link controls, with a **Sync Diagram** button that uploads it to your account first.
+  link controls, with a **Sync Document** button that uploads it to your account first.
 </Note>
 
 <FeatureGrid>
   <Feature slug="embeds" title="Embeds">
-    Drop a live diagram into another page, read-only or editable depending on the link.
+    Drop a live document into another page, read-only or editable depending on the link.
   </Feature>
   <Feature slug="teams" title="Teams">
     Share a whole library with teammates instead of one link at a time.

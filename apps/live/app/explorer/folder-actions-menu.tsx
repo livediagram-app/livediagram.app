@@ -2,8 +2,8 @@
 
 // The one folder actions menu (docs/specs/013-workspace/folders.md): the Explorer page's rows, cards
 // and sidebar tree, and the floating Explorer panel's personal and team
-// trees all open this. Same shape as the diagram menu in
-// diagram-row-shared.tsx: a header naming the folder, full-width rows
+// trees all open this. Same shape as the document menu in
+// document-row-shared.tsx: a header naming the folder, full-width rows
 // with the icon on the left, Delete last under its own separator.
 //
 // Every verb is optional and a row only renders when its handler is

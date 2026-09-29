@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { Button } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
@@ -19,7 +19,7 @@ import { statusLabel, type Participant } from '@/lib/identity';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { legibleTabAccent } from '@/lib/tab-accent';
 
-// The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the diagram, grouped by
+// The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the document, grouped by
 // the tab they are on, opened by clicking any avatar in a tab's presence
 // stack. Each other tab gets a Go to Tab, each other person a Follow
 // (docs/specs/012-collaboration/follow-me-viewport.md moved here from the avatar click). The person whose avatar was
@@ -43,7 +43,7 @@ type CollaboratorsDialogProps = {
   // routes and the row asks the one that applies to it.
   facilitatorId: string | null;
   isFacilitator: boolean;
-  /** Whether we own this diagram: the one person who can take a held baton. */
+  /** Whether we own this document: the one person who can take a held baton. */
   isOwner: boolean;
   onMakeFacilitator: (participantId: string) => void;
   onTakeFacilitation: () => void;

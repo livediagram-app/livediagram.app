@@ -6,7 +6,7 @@
 // many setters scattered across the page (next slice on deck).
 //
 // Throttle: both broadcasters cap at ~30 Hz (33 ms between sends).
-// That matches the cursor / laser packet rates the diagram-room
+// That matches the cursor / laser packet rates the document-room
 // Durable Object expects per docs/specs/015-api/api.md; faster sends would just be
 // dropped on the wire.
 
@@ -36,12 +36,12 @@ type EditorBroadcastDeps = {
   // realtime effect won't have opened the socket otherwise and we'd
   // be sending into the void.
   hydrated: boolean;
-  diagramId: string | null;
-  diagramShareable: boolean;
-  // The diagram's team (docs/specs/013-workspace/team-shared-diagrams.md), null for a personal diagram. A team
-  // diagram is a live room for its members even without a share link,
+  documentId: string | null;
+  documentShareable: boolean;
+  // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
+  // document is a live room for its members even without a share link,
   // so cursor / laser ops broadcast for it too.
-  diagramTeamId: string | null;
+  documentTeamId: string | null;
   // Which tab is currently active. Stamped on every cursor / laser
   // op so peers can filter trails by tab (a laser drawn on Tab 1
   // doesn't show on Tab 2).
@@ -131,7 +131,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
 
   const broadcastCursor = (pos: { x: number; y: number } | null) => {
     if (deps.cursorsHidden) return;
-    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     const now = performance.now();
     if (pos && now - lastCursorSentRef.current < BROADCAST_THROTTLE_MS) return;
@@ -162,7 +162,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     // Your own trail still draws locally (it's your own pointer); only the
     // outbound half is withheld while a hide-cursors vote is open.
     if (deps.cursorsHidden) return;
-    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     deps.roomRef.current?.send({
       kind: 'op',
@@ -178,7 +178,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // un-throttled, otherwise a peer keeps a ghost standing on their canvas.
   const broadcastAvatar = (avatar: AvatarPresence | null) => {
     if (deps.cursorsHidden) return;
-    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     const now = performance.now();
     if (avatar && now - lastAvatarSentRef.current < BROADCAST_THROTTLE_MS) return;
@@ -193,7 +193,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // cursor — no room, no publish — on its own slower throttle.
   const broadcastViewport = (pan: { x: number; y: number }, zoom: number) => {
     if (deps.cursorsHidden) return;
-    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     const now = performance.now();
     if (now - lastViewportSentRef.current < VIEWPORT_THROTTLE_MS) return;
@@ -212,7 +212,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // only one here rather than watching a button do nothing.
   const broadcastFocusHere = (at: { x: number; y: number }, zoom: number): boolean => {
     if (deps.cursorsHidden) return false;
-    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return false;
     const room = deps.roomRef.current;
     if (!room) return false;
@@ -225,7 +225,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // presence gate: no room, no push.
   const broadcastAvatarPush = (targetId: string, dx: number, dy: number) => {
     if (deps.cursorsHidden) return;
-    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     deps.roomRef.current?.send({
       kind: 'op',
@@ -237,7 +237,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // throttled, never dropped, same presence gate.
   const broadcastReaction = (elementId: string, reaction: string) => {
     if (deps.cursorsHidden) return;
-    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     deps.roomRef.current?.send({
       kind: 'op',

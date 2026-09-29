@@ -3,7 +3,7 @@
 // heading, a one-line explainer, and an optional CTA slot (children). CSS-only
 // motion (the `animate-empty-*` utilities + keyframes live in the shared
 // tailwind theme, paused under prefers-reduced-motion). Shared across apps —
-// the live Explorer's diagram-list + per-feature empty states and the
+// the live Explorer's document-list + per-feature empty states and the
 // telemetry dashboard's no-data states — so they all read alike.
 import type { ReactNode } from 'react';
 

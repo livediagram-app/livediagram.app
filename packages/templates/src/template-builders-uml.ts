@@ -14,7 +14,7 @@ import {
   createShape,
   type Element,
   type EntityField,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // A small media-library class model: an abstract MediaItem with Song /
 // Podcast subclasses and a Playlist aggregating items.

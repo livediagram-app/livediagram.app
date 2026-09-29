@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ShapeElement } from '@livediagram/diagram';
+import type { ShapeElement } from '@livediagram/document';
 import { EstimateFace } from './EstimateFace';
 
 afterEach(cleanup);

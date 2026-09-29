@@ -127,14 +127,14 @@ export type EditorKeyboardShortcutsDeps = {
   // shortcuts still fire there.
   onTypeIntoSelected: (elementId: string, char: string) => boolean;
   // Zoom controls. Allowed for view-role visitors (zooming doesn't
-  // mutate the diagram). Ctrl/Cmd + = / + zooms in, - zooms out,
+  // change the document). Ctrl/Cmd + = / + zooms in, - zooms out,
   // 0 resets to 100%. Mirrors the ZoomControls buttons.
   onZoomIn: () => void;
   onZoomOut: () => void;
   onZoomReset: () => void;
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). `Z` toggles it; `Escape` exits when
-  // active. Allowed for view-role too (focusing doesn't mutate the
-  // diagram). `zenMode` lets the listener route Escape to exit only
+  // active. Allowed for view-role too (focusing doesn't change the
+  // document). `zenMode` lets the listener route Escape to exit only
   // while the mode is on.
   zenMode: boolean;
   onToggleZen: () => void;
@@ -221,7 +221,7 @@ export const EDIT_KEYS: Record<string, ShortcutAction> = {
 export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDeps): boolean {
   const key = e.key;
   const lower = key.toLowerCase();
-  // Zoom: allowed for view-role visitors — doesn't mutate the diagram.
+  // Zoom: allowed for view-role visitors — doesn't change the document.
   // + / = zoom in (= is the unshifted + key), - zooms out, 0 resets.
   if (key === '=' || key === '+') {
     e.preventDefault();

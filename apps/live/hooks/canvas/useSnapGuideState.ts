@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AlignmentGuide, DistributionGuide } from '@livediagram/diagram';
+import type { AlignmentGuide, DistributionGuide } from '@livediagram/document';
 import { sameDistGuides, sameGuides, sameTargets } from '@/lib/drag-geometry';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 

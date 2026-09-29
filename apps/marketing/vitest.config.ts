@@ -10,6 +10,8 @@ import { defineProject } from '@livediagram/vitest-config';
 // cleanly under the node test runner without a React global in scope.
 export default defineProject({
   esbuild: { jsx: 'automatic' },
+  // A component test opts into jsdom per file; unmount after each, as packages/ui does.
+  test: { setupFiles: ['@livediagram/vitest-config/react-cleanup'] },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./', import.meta.url)),

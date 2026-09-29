@@ -1,7 +1,7 @@
 'use client';
 
-import type { QuizPhase } from '@livediagram/diagram';
-import { QUIZ_CORRECT_GREEN } from '@livediagram/diagram';
+import type { QuizPhase } from '@livediagram/document';
+import { QUIZ_CORRECT_GREEN } from '@livediagram/document';
 import { CollabButton } from '../collab-chrome';
 
 // What the disc in the middle of a Quiz says (docs/specs/012-collaboration/quiz.md), one branch per phase.

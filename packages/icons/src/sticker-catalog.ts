@@ -1,4 +1,4 @@
-// The sticker catalogue (docs/specs/010-palette/stickers.md): the art you slap on a board. Two
+// The sticker catalogue (docs/specs/010-palette/stickers.md): the art you slap on the canvas. Two
 // flavours in one list — colour emoji, and word badges like APPROVED /
 // BLOCKED / WIP that no emoji says. Pure-data catalogue, size-exempt per
 // AGENTS.md.

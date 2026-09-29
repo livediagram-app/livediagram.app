@@ -1,4 +1,4 @@
-import { bannerLayout, BORDER_RADIUS_PX, PAGE_HEADING_MAX } from '@livediagram/diagram';
+import { bannerLayout, BORDER_RADIUS_PX, PAGE_HEADING_MAX } from '@livediagram/document';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';

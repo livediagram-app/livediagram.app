@@ -34,7 +34,7 @@ export default function robots(): MetadataRoute.Robots {
       // keep the editor + auth surfaces out of crawlers' budget. NOT a
       // bare '/' — that would block the marketing site itself.
       disallow: [
-        '/diagram/',
+        '/document/',
         '/explorer/',
         '/new',
         '/join',

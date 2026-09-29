@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element } from '@livediagram/diagram';
+import type { ArrowElement, Element } from '@livediagram/document';
 import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 
 // The apply side of docs/specs/008-canvas/arrow-collision-avoidance.md: pure elements map, so the whole creation
 // wiring short of the pointer gesture is testable here. The geometry
-// itself is covered in packages/diagram/src/arrow-avoidance.test.ts;
+// itself is covered in packages/document/src/arrow-avoidance.test.ts;
 // these assertions pin the mapping around it (role assignment, the
 // untouched-default guard, and the written wire fields).
 

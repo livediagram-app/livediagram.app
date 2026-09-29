@@ -9,18 +9,18 @@ const getShareLinkMock = vi.fn<(env: Env, code: string) => Promise<ShareLink | n
 const getSharePasswordMock = vi.fn<(env: Env, id: string) => Promise<string | null>>();
 vi.mock('../db', () => ({
   getShareLink: (env: Env, code: string) => getShareLinkMock(env, code),
-  getDiagramSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
+  getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
 }));
 
 import {
   isPersonalOwner,
-  shareLinkForDiagram,
+  shareLinkForDocument,
   sharePasswordOk,
   sharePasswordStatus,
 } from './share-access';
 
 const ENV = {} as Env;
-const link = (diagramId: string, role: 'edit' | 'view') => ({ diagramId, role }) as ShareLink;
+const link = (documentId: string, role: 'edit' | 'view') => ({ documentId, role }) as ShareLink;
 
 beforeEach(() => {
   getShareLinkMock.mockReset();
@@ -29,10 +29,10 @@ beforeEach(() => {
 });
 
 describe('isPersonalOwner', () => {
-  it('accepts a matching owner on a personal diagram', () => {
+  it('accepts a matching owner on a personal document', () => {
     expect(isPersonalOwner('a', 'a', null)).toBe(true);
   });
-  it('never accepts the bare owner id on a team diagram', () => {
+  it('never accepts the bare owner id on a team document', () => {
     expect(isPersonalOwner('a', 'a', 'team-1')).toBe(false);
   });
   it('rejects a missing or different owner', () => {
@@ -41,24 +41,24 @@ describe('isPersonalOwner', () => {
   });
 });
 
-describe('shareLinkForDiagram', () => {
-  it('returns the link when it belongs to the diagram', async () => {
+describe('shareLinkForDocument', () => {
+  it('returns the link when it belongs to the document', async () => {
     getShareLinkMock.mockResolvedValue(link('d1', 'view'));
-    expect(await shareLinkForDiagram(ENV, 'code', 'd1')).toEqual(link('d1', 'view'));
+    expect(await shareLinkForDocument(ENV, 'code', 'd1')).toEqual(link('d1', 'view'));
   });
-  it('refuses a code for a different diagram', async () => {
+  it('refuses a code for a different document', async () => {
     getShareLinkMock.mockResolvedValue(link('d2', 'edit'));
-    expect(await shareLinkForDiagram(ENV, 'code', 'd1')).toBeNull();
+    expect(await shareLinkForDocument(ENV, 'code', 'd1')).toBeNull();
   });
   it('skips the lookup for a missing or empty code', async () => {
-    expect(await shareLinkForDiagram(ENV, null, 'd1')).toBeNull();
-    expect(await shareLinkForDiagram(ENV, '', 'd1')).toBeNull();
+    expect(await shareLinkForDocument(ENV, null, 'd1')).toBeNull();
+    expect(await shareLinkForDocument(ENV, '', 'd1')).toBeNull();
     expect(getShareLinkMock).not.toHaveBeenCalled();
   });
 });
 
 describe('sharePasswordStatus', () => {
-  it('is ok when the diagram has no password', async () => {
+  it('is ok when the document has no password', async () => {
     expect(await sharePasswordStatus(ENV, 'd1', null)).toBe('ok');
   });
   it('tells a missing password apart from a wrong one', async () => {

@@ -9,25 +9,25 @@ import type { TimelineEvent } from './types';
 function event(id: string, name: string): TimelineEvent {
   return {
     id,
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: id,
-    eventType: 'diagram_renamed',
-    title: 'Diagram Renamed',
+    eventType: 'document_renamed',
+    title: 'Document Renamed',
     description: null,
     occurredAt: 1_700_000_000_000,
     actorId: 'me',
-    snapshot: { diagramId: id, diagramName: name },
+    snapshot: { documentId: id, documentName: name },
   } as TimelineEvent;
 }
 
 const stack: TimelineStack = {
   key: 'a',
-  bucket: 'diagram::diagram_renamed',
+  bucket: 'document::document_renamed',
   events: [event('a', 'Payments'), event('b', 'Search'), event('c', 'Inventory')],
 };
 
 const registry = {
-  diagram: (e: TimelineEvent) => ({ icon: <svg />, subject: String(e.snapshot['diagramName']) }),
+  document: (e: TimelineEvent) => ({ icon: <svg />, subject: String(e.snapshot['documentName']) }),
 };
 
 describe('StackedCard', () => {
@@ -40,7 +40,7 @@ describe('StackedCard', () => {
         onToggle={() => {}}
       />,
     );
-    expect(screen.getByText('Diagrams Renamed')).toBeTruthy();
+    expect(screen.getByText('Documents Renamed')).toBeTruthy();
     expect(screen.getByText('3 events · click to expand')).toBeTruthy();
     expect(screen.queryByText('Payments')).toBeNull();
   });
@@ -55,7 +55,7 @@ describe('StackedCard', () => {
         onToggle={onToggle}
       />,
     );
-    fireEvent.click(screen.getByText('Diagrams Renamed'));
+    fireEvent.click(screen.getByText('Documents Renamed'));
     expect(onToggle).toHaveBeenCalledTimes(1);
 
     rerender(
@@ -68,7 +68,7 @@ describe('StackedCard', () => {
       />,
     );
     expect(screen.getByText('3 events · click to collapse')).toBeTruthy();
-    fireEvent.click(screen.getByText('Diagrams Renamed'));
+    fireEvent.click(screen.getByText('Documents Renamed'));
     expect(onToggle).toHaveBeenCalledTimes(2);
   });
 
@@ -88,7 +88,7 @@ describe('StackedCard', () => {
     );
     fireEvent.click(screen.getByText('Menu'));
     expect(onToggle).not.toHaveBeenCalled();
-    fireEvent.contextMenu(screen.getByText('Diagrams Renamed'));
+    fireEvent.contextMenu(screen.getByText('Documents Renamed'));
     expect(onContextMenu).toHaveBeenCalledTimes(1);
     expect(onToggle).not.toHaveBeenCalled();
   });

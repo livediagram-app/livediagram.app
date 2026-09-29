@@ -8,7 +8,7 @@ import {
   type ElementLink,
   type TableCellStyle,
   type TableElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { nearestCssBorderStyle } from '@/components/canvas/border-css';
 import {
@@ -62,7 +62,7 @@ export function TableView({
   element: TableElement;
   isSelected: boolean;
   readOnly: boolean;
-  // This diagram's tabs (id + name), so a linked cell's hover card can
+  // This document's tabs (id + name), so a linked cell's hover card can
   // name the tab/element it points at (docs/specs/008-canvas/canvas-and-palette.md).
   tabSummaries: { id: string; name: string }[];
   // Resolved CSS font-family for the table's text (docs/specs/004-interface-design/fonts.md). Set on the
@@ -79,7 +79,7 @@ export function TableView({
   // Open the shared link picker for a cell (docs/specs/008-canvas/canvas-and-palette.md). Undefined for
   // read-only viewers (no editing).
   onLinkCell?: (tableId: string, r: number, c: number) => void;
-  // Follow a cell's link when its badge is clicked (tab / diagram / url).
+  // Follow a cell's link when its badge is clicked (tab / document / url).
   onFollowLink?: (link: ElementLink) => void;
   // Canvas zoom, so the floating UI (per-cell toolbar + column / row header
   // controls) can counter-scale (1/zoom) and stay a fixed on-screen size like

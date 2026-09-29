@@ -4,12 +4,12 @@
 
 import type { DriveItem, DriveItemKind } from '@livediagram/api-schema';
 import type { DriveFile } from './drive-client';
-import type { MirrorDiagram, MirrorFolder, MirrorTrashed } from './livediagram-port';
+import type { MirrorDocument, MirrorFolder, MirrorTrashed } from './livediagram-port';
 
 export type MirrorSnapshot = {
   host: string;
   rootFolderId: string;
-  diagrams: Map<string, MirrorDiagram>;
+  documents: Map<string, MirrorDocument>;
   folders: Map<string, MirrorFolder>;
   trash: Map<string, MirrorTrashed>;
   // Keyed by itemKey(kind, ldId).
@@ -22,7 +22,7 @@ export const itemKey = (kind: DriveItemKind, ldId: string) => `${kind}:${ldId}`;
 export function buildSnapshot(input: {
   host: string;
   rootFolderId: string;
-  diagrams: MirrorDiagram[];
+  documents: MirrorDocument[];
   folders: MirrorFolder[];
   trash: MirrorTrashed[];
   items: DriveItem[];
@@ -30,7 +30,7 @@ export function buildSnapshot(input: {
   return {
     host: input.host,
     rootFolderId: input.rootFolderId,
-    diagrams: new Map(input.diagrams.map((d) => [d.id, d])),
+    documents: new Map(input.documents.map((d) => [d.id, d])),
     folders: new Map(input.folders.map((f) => [f.id, f])),
     trash: new Map(input.trash.map((t) => [t.id, t])),
     items: new Map(input.items.map((i) => [itemKey(i.kind, i.ldId), i])),
@@ -67,18 +67,18 @@ export function folderFileId(snapshot: MirrorSnapshot, folderId: string | null):
   return snapshot.items.get(itemKey('folder', folderId))?.driveFileId ?? null;
 }
 
-// Where a diagram's file belongs. A diagram sitting in Unsorted because it was
+// Where a document's file belongs. A document sitting in Unsorted because it was
 // moved in Drive into a folder livediagram cannot see stays where the user put
 // it, so the notice's folder is its expected parent until it moves again.
-export function expectedDiagramParent(
+export function expectedDocumentParent(
   snapshot: MirrorSnapshot,
-  diagram: MirrorDiagram,
+  liveDoc: MirrorDocument,
   item: DriveItem | undefined,
 ): string | null {
-  if (diagram.folderId === null && item?.notice === 'unseen_folder' && item.noticeParentId) {
+  if (liveDoc.folderId === null && item?.notice === 'unseen_folder' && item.noticeParentId) {
     return item.noticeParentId;
   }
-  return folderFileId(snapshot, diagram.folderId);
+  return folderFileId(snapshot, liveDoc.folderId);
 }
 
 export function expectedFolderParent(

@@ -16,7 +16,7 @@ import {
   voteHidesCursors,
   voteHidesTallies,
   type TabVote,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { votePhase, voteTurnout, type VotePhase } from './session-studio';
@@ -32,6 +32,7 @@ type VotePaneProps = Pick<
   | 'onEndVote'
   | 'onRevealVote'
   | 'onClearVote'
+  | 'facilitating'
 > & { selfId: string };
 
 export function VotePane(props: VotePaneProps) {
@@ -296,6 +297,7 @@ function PhaseTrack({ phase }: { phase: VotePhase }) {
 function LiveVote({
   vote,
   selfId,
+  facilitating,
   voteLayers,
   onEndVote,
   onRevealVote,
@@ -303,7 +305,7 @@ function LiveVote({
 }: VotePaneProps & { vote: TabVote }) {
   const phase = votePhase(vote);
   const { dots, voters } = voteTurnout(vote);
-  const host = isVoteHost(vote, selfId);
+  const host = isVoteHost(vote, selfId, facilitating);
   const rules = [
     `${vote.votesPerPerson} ${vote.votesPerPerson === 1 ? 'dot' : 'dots'} each`,
     vote.onePerElement ? 'One per item' : null,
@@ -358,11 +360,13 @@ function LiveVote({
               ? 'Ending keeps every dot; nobody can add more.'
               : phase === 'closed'
                 ? 'Showing results walks the room through the winners, most dots first.'
-                : 'Clearing takes every dot off the board.'}
+                : 'Clearing takes every dot off the canvas.'}
           </span>
         </div>
       ) : (
-        <StudioCallout>Only the person who started this vote can move it on.</StudioCallout>
+        <StudioCallout>
+          Only the person who started this vote, or the facilitator, can move it on.
+        </StudioCallout>
       )}
     </div>
   );

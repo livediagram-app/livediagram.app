@@ -2,7 +2,7 @@
 
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useRef, useState } from 'react';
-import { isLayerLocked, layerOpacityOf, type Layer } from '@livediagram/diagram';
+import { isLayerLocked, layerOpacityOf, type Layer } from '@livediagram/document';
 import { EyeIcon, LockIcon } from '@/components/panels/layers-panel-icons';
 import { ClearIcon } from '@/components/chrome/tab-bar-icons';
 import { Portal } from '@/components/primitives/Portal';
@@ -25,7 +25,7 @@ import {
 import { lucideGlyph, useClickOutside, useEscape } from '@livediagram/ui';
 import { lucideFileText, lucideMerge } from '@livediagram/icons/lucide';
 
-// Right-click menu for a Layers-panel row (docs/specs/006-diagram/layers.md), styled like the tab
+// Right-click menu for a Layers-panel row (docs/specs/006-document/layers.md), styled like the tab
 // menu: a quick-verbs toolbar (Rename / Delete) over collapsible
 // categories — Layer (opacity + restack-to-edge + hide others), Content
 // (lock + clear), Merge (into the neighbour above / below). Anchored to

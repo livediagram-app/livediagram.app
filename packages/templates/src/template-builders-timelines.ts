@@ -12,7 +12,7 @@ import {
   createShape,
   createText,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // The quick timeline: a year of product milestones on one forward-pointing
@@ -48,7 +48,7 @@ export function buildTimeline(cx: number, cy: number): Element[] {
 
   const elements: Element[] = [];
   // Spine: forward in time, so it carries an arrowhead at the future end.
-  // It is the scaffold layer (docs/specs/006-diagram/layers.md); markers + labels ride the
+  // It is the scaffold layer (docs/specs/006-document/layers.md); markers + labels ride the
   // content layer above it.
   elements.push({
     ...createArrow(startX, cy, startX + lineLength, cy),

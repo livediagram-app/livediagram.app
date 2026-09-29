@@ -3,7 +3,7 @@
 //
 // Device-local by design, like the panel layout (docs/specs/007-editor/panel-docking.md) and the palette
 // favourites (docs/specs/010-palette/palette-favourites.md): which character you walk around as is an ergonomic /
-// personal choice, not diagram data, so it lives ONLY in localStorage and is
+// personal choice, not document data, so it lives ONLY in localStorage and is
 // never sent to the api or folded into the synced preferences blob. It IS
 // published to peers as part of the ephemeral presence snapshot, so they draw
 // the same character you see.
@@ -122,7 +122,7 @@ export function avatarScale(size: AvatarSize): number {
 }
 
 // A random character for a first-time visitor: gender, clothing, and hair are
-// rolled from their catalogues so two people walking into a diagram don't
+// rolled from their catalogues so two people walking into a document don't
 // arrive as the same figure. SIZE is deliberately not rolled — it changes how
 // much of the canvas the character covers, so it starts Regular and stays a
 // deliberate choice.

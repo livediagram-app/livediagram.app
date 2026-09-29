@@ -1,4 +1,4 @@
-import type { BoxedElement, Element, ShapeElement } from '@livediagram/diagram';
+import type { BoxedElement, Element, ShapeElement } from '@livediagram/document';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@/components/primitives/hover-preview';
@@ -60,14 +60,16 @@ export function MultiPlacementSections({
           <MenuTile icon={<LayerUpIcon />} label="Bring to Front" onClick={props.onBringToFront} />
           <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onSendToBack} />
         </MenuTileGrid>
-        {/* Move the whole selection to a named layer (docs/specs/006-diagram/layers.md). */}
-        <MoveToLayerRow
-          layers={props.layers}
-          elements={props.elements}
-          tabFont={props.tabFont}
-          currentLayerId={props.selectionLayerId}
-          onMove={props.onMoveSelectionToLayer}
-        />
+        {/* Move the whole selection to a named layer (docs/specs/006-document/layers.md). */}
+        {props.onMoveSelectionToLayer ? (
+          <MoveToLayerRow
+            layers={props.layers}
+            elements={props.elements}
+            tabFont={props.tabFont}
+            currentLayerId={props.selectionLayerId}
+            onMove={props.onMoveSelectionToLayer}
+          />
+        ) : null}
         <ContextMenuDivider />
         <OpacityRow
           value={(sel[0] as { opacity?: number } | undefined)?.opacity ?? 1}

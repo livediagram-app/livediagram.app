@@ -5,7 +5,7 @@ import {
   createShape,
   createText,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import {
   DEFAULT_ERASER_CONFIG,
   eraserAllows,
@@ -64,7 +64,7 @@ describe('eraserAllows', () => {
     for (const el of [shape, text, arrow, drawing]) expect(eraserAllows(el, 'anything')).toBe(true);
   });
 
-  it('protects the diagram when set to drawings', () => {
+  it('protects the rest of the canvas when set to drawings', () => {
     expect(eraserAllows(drawing, 'drawings')).toBe(true);
     expect(eraserAllows(shape, 'drawings')).toBe(false);
     expect(eraserAllows(arrow, 'drawings')).toBe(false);

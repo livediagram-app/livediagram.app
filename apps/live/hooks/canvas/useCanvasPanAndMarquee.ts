@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { buildElementIndex, endpointPosition, isBoxed, type Element } from '@livediagram/diagram';
+import { buildElementIndex, endpointPosition, isBoxed, type Element } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { useLatest } from '@/hooks/ui/useLatest';
 

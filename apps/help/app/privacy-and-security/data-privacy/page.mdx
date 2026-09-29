@@ -1,52 +1,52 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { DiagramStorage, AccessControl } from '@/components/illustrations/privacy';
+import { DocumentStorage, AccessControl } from '@/components/illustrations/privacy';
 
 export const metadata = helpMetadata({
   title: 'Data Privacy',
   description:
-    'Where your livediagram diagrams live, what is stored, and the control you have over your own data.',
+    'Where your livediagram documents live, what is stored, and the control you have over your own data.',
   path: '/help/privacy-and-security/data-privacy/',
 });
 
-<ArticleLayout title="Data Privacy" description="Where your diagrams live, what gets stored, and how you stay in control of your own data." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
+<ArticleLayout title="Data Privacy" description="Where your documents live, what gets stored, and how you stay in control of your own data." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-Your diagrams are the whole point, so it helps to know exactly where they live and who can reach them. livediagram stores diagrams on Cloudflare infrastructure behind an authenticated API, never in some third-party analytics product, and you keep control of them whether you sign in or stay a guest.
+Your documents are the whole point, so it helps to know exactly where they live and who can reach them. livediagram stores documents on Cloudflare infrastructure behind an authenticated API, never in some third-party analytics product, and you keep control of them whether you sign in or stay a guest.
 
-## Where your diagrams live
+## Where your documents live
 
-Diagrams are saved through a single Cloudflare Worker API that holds the database binding. The browser never talks to the database directly.
+Documents are saved through a single Cloudflare Worker API that holds the database binding. The browser never talks to the database directly.
 
-- **Durable storage** lives in Cloudflare D1, the API's database. Each diagram, its tabs, folders, share links, and change history are rows there.
-- **Real-time state** (who is in the room, live cursors, in-flight edits) lives in a Cloudflare Durable Object, one room per diagram, while people are actively collaborating.
+- **Durable storage** lives in Cloudflare D1, the API's database. Each document, its tabs, folders, share links, and change history are rows there.
+- **Real-time state** (who is in the room, live cursors, in-flight edits) lives in a Cloudflare Durable Object, one room per document, while people are actively collaborating.
 - **Images** you add are stored in Cloudflare object storage and served back through the same API.
 
-**Or nowhere but your own machine.** A diagram created in [Offline Mode](/help/privacy-and-security/offline-mode/) lives only in this browser's IndexedDB. It is never sent to the API, so none of the storage above holds a copy of it, and it stays that way until you choose **Sync Diagram** to move it to the cloud.
+**Or nowhere but your own machine.** A document created in [Offline Mode](/help/privacy-and-security/offline-mode/) lives only in this browser's IndexedDB. It is never sent to the API, so none of the storage above holds a copy of it, and it stays that way until you choose **Sync Document** to move it to the cloud.
 
-Nothing about your diagram content is handed to an outside vendor. The hosted version runs entirely on Cloudflare, and a self-hoster runs the same stack on their own account.
+Nothing about your document content is handed to an outside vendor. The hosted version runs entirely on Cloudflare, and a self-hoster runs the same stack on their own account.
 
 <Figure caption="Your edits travel through one API to Cloudflare storage, never straight from the browser to the database.">
-  <DiagramStorage />
+  <DocumentStorage />
 </Figure>
 
 ## What is stored, and who can read it
 
-A diagram is owned by an identity. That identity is either a signed-in account or, for guests, a per-browser id kept in your browser's local storage. Only the owner, people holding a valid [share link](/help/collaboration/sharing/), and the members of a [team](/help/collaboration/teams/) the diagram has been shared into can read a diagram. Requests for a diagram you cannot access return a plain "not found", so the API never even confirms a private diagram exists.
+A document is owned by an identity. That identity is either a signed-in account or, for guests, a per-browser id kept in your browser's local storage. Only the owner, people holding a valid [share link](/help/collaboration/sharing/), and the members of a [team](/help/collaboration/teams/) the document has been shared into can read a document. Requests for a document you cannot access return a plain "not found", so the API never even confirms a private document exists.
 
-<Figure caption="A diagram is tied to its owner, so a request from anyone else comes back as a plain not found.">
+<Figure caption="A document is tied to its owner, so a request from anyone else comes back as a plain not found.">
   <AccessControl />
 </Figure>
 
-The [activity log](/help/activity-panel/what-it-is/) keeps a per-diagram record of editorial changes with author attribution, and older entries are swept automatically after 90 days.
+The [activity log](/help/activity-panel/what-it-is/) keeps a per-document record of editorial changes with author attribution, and older entries are swept automatically after 90 days.
 
 ## Staying in control
 
-- **Guest by default.** You can build and share diagrams without ever creating an account. See [working as a guest](/help/getting-started/guest-vs-account/).
+- **Guest by default.** You can build and share documents without ever creating an account. See [working as a guest](/help/getting-started/guest-vs-account/).
 - **Share on your terms.** Add a [share password](/help/privacy-and-security/share-link-security/) or an expiry to any share link, and revoke links at any time.
-- **Delete what you own.** Deleting a diagram removes it and its tabs, share links, and history. Signed-in users can delete their whole account, which wipes their diagrams, folders, images, and stored preferences.
+- **Delete what you own.** Deleting a document removes it and its tabs, share links, and history. Signed-in users can delete their whole account, which wipes their documents, folders, images, and stored preferences.
 
 <Note>
-  livediagram does not claim end-to-end encryption. Diagram content is protected by authentication
+  livediagram does not claim end-to-end encryption. Document content is protected by authentication
   and access controls, not by client-side encryption.
 </Note>
 

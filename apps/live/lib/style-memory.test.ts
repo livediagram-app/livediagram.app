@@ -6,9 +6,9 @@ import {
   type Element,
   type ShapeElement,
   type StickyElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
-import type { ThemeDefinition } from '@livediagram/diagram';
+import type { ThemeDefinition } from '@livediagram/document';
 import {
   applyStyleMemory,
   forgetStyleKinds,
@@ -172,5 +172,26 @@ describe('keys', () => {
     expect(styleKindOf(shape('a', 'diamond'))).toBe('shape:diamond');
     expect(styleKindOf(arrow('a'))).toBe('arrow');
     expect(styleMemoryKey('d1')).toBe('livediagram:v2:style-memory:d1');
+  });
+});
+
+describe('text elements', () => {
+  const text = (id: string, extra: Record<string, unknown> = {}) =>
+    ({ id, type: 'text', x: 0, y: 0, width: 220, height: 64, ...extra }) as Element;
+
+  it('remember their text colour in one bucket, and dress the next one', () => {
+    const colour = quickSwatchColor(forest, 'text', 4);
+    const memory = edit({}, [text('a')], (el) => ({ ...el, textColor: colour, textSwatch: 4 }));
+    expect(memory).toEqual({ text: { textColor: colour, textSwatch: 4 } });
+    expect(styleKindOf(text('b'))).toBe('text');
+    expect(applyStyleMemory(text('b'), memory, ocean)).toMatchObject({
+      textColor: quickSwatchColor(ocean, 'text', 4),
+      textSwatch: 4,
+    });
+  });
+
+  it('survive a parse round trip', () => {
+    const memory = { text: { textColor: '#aa0000' } };
+    expect(parseStyleMemory(JSON.stringify(memory))).toEqual(memory);
   });
 });

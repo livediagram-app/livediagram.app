@@ -39,9 +39,9 @@ describe('opForScope (what a scoped session receives)', () => {
     expect(opForScope({ kind: 'log' }, SCOPE)).toBeNull();
   });
 
-  it('redacts diagram-meta the way the REST diagram is redacted', () => {
+  it('redacts document-meta the way the REST document is redacted', () => {
     const op = {
-      kind: 'diagram-meta',
+      kind: 'document-meta',
       name: 'Plan',
       tabs: [
         { id: 't1', name: 'Pricing', orderIndex: 0, folder: 'Money' },
@@ -49,7 +49,7 @@ describe('opForScope (what a scoped session receives)', () => {
       ],
     };
     expect(opForScope(op, SCOPE)).toEqual({
-      kind: 'diagram-meta',
+      kind: 'document-meta',
       name: 'Plan',
       tabs: [
         { id: 't1', name: '', orderIndex: 0, outOfScope: true },
@@ -66,7 +66,7 @@ describe('opForScope (what a scoped session receives)', () => {
       'poll-end',
       'share-revoked',
       'share-rescoped',
-      'diagram-trashed',
+      'document-trashed',
     ]) {
       const op = { kind };
       expect(opForScope(op, SCOPE), kind).toBe(op);
@@ -77,13 +77,13 @@ describe('opForScope (what a scoped session receives)', () => {
     expect(opForScope({ kind: 'something-new' }, SCOPE)).toBeNull();
     expect(opForScope(null, SCOPE)).toBeNull();
     expect(opForScope('el', SCOPE)).toBeNull();
-    expect(opForScope({ kind: 'diagram-meta', tabs: 'nope' }, SCOPE)).toBeNull();
+    expect(opForScope({ kind: 'document-meta', tabs: 'nope' }, SCOPE)).toBeNull();
   });
 });
 
 describe('scopedSenderMayRelay (what a scoped session may send)', () => {
   it('lets an unscoped session send anything the role allows', () => {
-    expect(scopedSenderMayRelay({ kind: 'diagram-meta' }, null)).toBe(true);
+    expect(scopedSenderMayRelay({ kind: 'document-meta' }, null)).toBe(true);
   });
 
   it('lets it act on its own tab', () => {
@@ -98,8 +98,8 @@ describe('scopedSenderMayRelay (what a scoped session may send)', () => {
     expect(scopedSenderMayRelay({ kind: 'select', elementId: 'e1' }, SCOPE)).toBe(false);
   });
 
-  it('refuses diagram-meta outright: the structure is not theirs', () => {
-    expect(scopedSenderMayRelay({ kind: 'diagram-meta', name: 'x', tabs: [] }, SCOPE)).toBe(false);
+  it('refuses document-meta outright: the structure is not theirs', () => {
+    expect(scopedSenderMayRelay({ kind: 'document-meta', name: 'x', tabs: [] }, SCOPE)).toBe(false);
   });
 
   it('lets it take part in the session', () => {

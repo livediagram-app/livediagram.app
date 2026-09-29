@@ -16,7 +16,7 @@ export default function PrivacyAndSecurityPage() {
   return (
     <BrowsePage
       title="Privacy and Security"
-      lede="How your data is handled and how to keep your diagrams safe."
+      lede="How your data is handled and how to keep your documents safe."
     >
       {articles.map((article) => (
         <ArticleCard key={article.slug} article={article} />

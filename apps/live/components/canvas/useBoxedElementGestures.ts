@@ -1,6 +1,6 @@
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
-import { opensInlineLabelEditor } from '@livediagram/diagram';
+import { opensInlineLabelEditor } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { pressLedger } from '@/lib/double-press';
@@ -81,7 +81,7 @@ export function useBoxedElementGestures({
     // Dot-voting (docs/specs/012-collaboration/session-tools.md): while a vote is open, pressing a votable
     // element casts one of your dots instead of selecting / dragging it.
     // Non-votable elements (text / frame / arrow / …) still select, so
-    // the facilitator can keep arranging the board.
+    // the facilitator can keep arranging the canvas.
     if (vote?.active && onCastVote && votableInVote) {
       onCastVote(element.id);
       return;

@@ -24,7 +24,7 @@ const T0 = 1_700_000_000_000;
 
 function item(over: Partial<DriveItem> = {}): DriveItem {
   return {
-    kind: 'diagram',
+    kind: 'document',
     ldId: 'd1',
     driveFileId: 'f1',
     name: 'One.livediagram',
@@ -141,7 +141,7 @@ describe('items', () => {
     ]);
     const items = await listDriveItems(env, 'user_a');
     expect(items).toHaveLength(2);
-    expect(items.find((i) => i.kind === 'diagram')).toEqual(
+    expect(items.find((i) => i.kind === 'document')).toEqual(
       item({
         name: 'Two.livediagram',
         ldName: 'Two',
@@ -171,7 +171,7 @@ describe('items', () => {
   it('deletes one item', async () => {
     const { env } = sqliteD1();
     await putDriveItems(env, 'user_a', [item(), item({ ldId: 'd2', driveFileId: 'f2' })]);
-    await deleteDriveItem(env, 'user_a', 'diagram', 'd1');
+    await deleteDriveItem(env, 'user_a', 'document', 'd1');
     expect((await listDriveItems(env, 'user_a')).map((i) => i.ldId)).toEqual(['d2']);
   });
 });

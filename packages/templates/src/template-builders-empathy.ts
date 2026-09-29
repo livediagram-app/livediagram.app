@@ -10,7 +10,7 @@ import {
   runsPlainText,
   type Element,
   type TextRun,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // Empathy map: a persona card over Says / Thinks / Does / Feels quadrants,

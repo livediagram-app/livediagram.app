@@ -3,7 +3,7 @@
 // The animated canvas backdrops (docs/specs/008-canvas/canvas-and-palette.md). Five softly-moving patterns
 // (Flow / Drift / Aurora / Ripple / Ribbons) that bring an otherwise-static
 // canvas to life. They render as a single full-bleed, pointer-transparent overlay
-// layered behind the diagram content rather than as a CSS `background-image`
+// layered behind the canvas content rather than as a CSS `background-image`
 // (the static patterns' route), because none of these can be expressed as a
 // tiling image: they need independent per-element motion.
 //
@@ -11,7 +11,7 @@
 //   - Theme-matched: every glyph paints in the tab's `patternColor` (read
 //     from the `--lvd-pat` custom property the container sets).
 //   - Ambient, not pan-locked: the motion is decorative and independent of
-//     the canvas pan (matching the new-diagram page's AnimatedLinesBackdrop).
+//     the canvas pan (matching the new-document page's AnimatedLinesBackdrop).
 //   - Size-aware: the pattern-size slider (`scale`, docs/specs/008-canvas/canvas-and-palette.md) scales each
 //     motif so "bigger pattern" reads consistently with the static ones.
 //   - Opacity-aware: the whole layer fades with the backdrop-opacity slider.
@@ -21,7 +21,7 @@
 //   - Deterministic: all positions / delays come from fixed tables (no
 //     Math.random) so server and client markup match.
 
-import { shade, tint, type AnimatedBackgroundPattern } from '@livediagram/diagram';
+import { shade, tint, type AnimatedBackgroundPattern } from '@livediagram/document';
 import type { CSSProperties } from 'react';
 
 type AnimatedCanvasBackgroundProps = {
@@ -68,7 +68,7 @@ export function AnimatedCanvasBackground({
 
 // ── Flow ────────────────────────────────────────────────────────────────
 // Parallel diagonal lines whose dashes stream along their length, the
-// canvas-wide cousin of the new-diagram page's AnimatedLinesBackdrop.
+// canvas-wide cousin of the new-document page's AnimatedLinesBackdrop.
 // Resting frame: evenly spaced dashed diagonals.
 function Flow({ scale }: { scale: number }) {
   const gap = 150 * scale;
@@ -228,7 +228,7 @@ function Ripple({ scale }: { scale: number }) {
 
 // ── Ribbons ──────────────────────────────────────────────────────────────
 // Thick curved lines that slowly draw + flow along their paths: the canvas
-// port of the new-diagram page's AnimatedLinesBackdrop, but coloured from
+// port of the new-document page's AnimatedLinesBackdrop, but coloured from
 // the theme. The new-page version uses a fixed rainbow palette; here every
 // ribbon is a tint / shade of the tab's pattern colour, so the effect stays
 // "theme related" while keeping the layered, multi-tone depth. Resting
@@ -274,7 +274,7 @@ function Ribbons({ scale, color }: { scale: number; color: string }) {
 
 // All keyframes + the reduced-motion freeze in one block. Element opacities
 // are kept modest so the patterns stay a backdrop, never competing with the
-// diagram content on top.
+// canvas content on top.
 const KEYFRAMES = `
   .lvd-flow-line {
     opacity: 0.4;

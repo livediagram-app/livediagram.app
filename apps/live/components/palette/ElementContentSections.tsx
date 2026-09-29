@@ -1,4 +1,4 @@
-import { isBoxed, type Element } from '@livediagram/diagram';
+import { isBoxed, type Element } from '@livediagram/document';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import {
   BoldIcon,

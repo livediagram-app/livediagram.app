@@ -1,7 +1,7 @@
 // Per-user editor preferences (docs/specs/007-editor/user-preferences.md), lifted out of useEditorState.
-// One localStorage key, applies to every diagram the user opens from
+// One localStorage key, applies to every document the user opens from
 // this device. Read from the device cache once hydrated (not gated on
-// diagramId, since preferences aren't diagram-scoped) and mutated through
+// documentId, since preferences aren't document-scoped) and mutated through
 // the SettingsDialog. Also owns the two ref mirrors the drag hook reads on
 // every pointer move, and the side effects that apply preference flags
 // (reduce motion, AI panel auto-open).

@@ -122,7 +122,7 @@ describe('the status at the top right', () => {
   it('warns, with words, when something needs the user', () => {
     expect(said({ error: 'offline' })).toEqual({ text: 'Offline', warn: true });
     expect(
-      said({ notices: [{ kind: 'diagram', ldId: 'd', name: 'Plan', parentId: 'p' }] }),
+      said({ notices: [{ kind: 'document', ldId: 'd', name: 'Plan', parentId: 'p' }] }),
     ).toEqual({ text: 'Needs attention', warn: true });
     expect(said({ state: 'needs_reconnect' })).toEqual({ text: 'Needs reconnecting', warn: true });
     expect(said({ state: 'needs_resume' })).toEqual({ text: 'Paused', warn: true });
@@ -155,7 +155,7 @@ describe('phases (reserve per phase, not per message)', () => {
     { error: 'failed' },
     { error: 'rate_limited' },
     { leaseHeldElsewhere: true },
-    { notices: [{ kind: 'diagram', ldId: 'd', name: 'Plan', parentId: 'p' }] },
+    { notices: [{ kind: 'document', ldId: 'd', name: 'Plan', parentId: 'p' }] },
     { lastSyncedAt: null },
     {},
   ];

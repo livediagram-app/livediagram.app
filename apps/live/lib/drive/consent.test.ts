@@ -54,7 +54,7 @@ describe('googleConsentUrl', () => {
 
 describe('safeReturnPath', () => {
   it('keeps same-origin paths and refuses the rest', () => {
-    expect(safeReturnPath('/diagram/abc#t=1')).toBe('/diagram/abc#t=1');
+    expect(safeReturnPath('/document/abc#t=1')).toBe('/document/abc#t=1');
     expect(safeReturnPath('//evil.example')).toBe('/explorer');
     expect(safeReturnPath('https://evil.example')).toBe('/explorer');
     expect(safeReturnPath('/drive/connected?code=x')).toBe('/explorer');
@@ -83,7 +83,7 @@ describe('safeReturnPath', () => {
     expect(safeReturnPath('/explorer/recent?settings=account&section=cloud-sync')).toBe(
       '/explorer/recent?settings=account&section=cloud-sync',
     );
-    expect(safeReturnPath('/diagram/a?x=1#t')).toBe('/diagram/a?x=1#t');
+    expect(safeReturnPath('/document/a?x=1#t')).toBe('/document/a?x=1#t');
   });
 });
 
@@ -113,8 +113,8 @@ describe('withSettingsTarget', () => {
     expect(withSettingsTarget('/explorer/recent', 'account', 'cloud-sync')).toBe(
       '/explorer/recent?settings=account&section=cloud-sync',
     );
-    expect(withSettingsTarget('/diagram/a?view=1#t', 'account', 'cloud-sync')).toBe(
-      '/diagram/a?view=1&settings=account&section=cloud-sync#t',
+    expect(withSettingsTarget('/document/a?view=1#t', 'account', 'cloud-sync')).toBe(
+      '/document/a?view=1&settings=account&section=cloud-sync#t',
     );
     expect(
       withSettingsTarget('/explorer?settings=privacy&section=x', 'account', 'cloud-sync'),

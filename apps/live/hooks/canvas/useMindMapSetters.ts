@@ -5,7 +5,7 @@ import {
   relayoutMindMap,
   type Element,
   type MindFlow,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 
 type MindMapSetterDeps = {

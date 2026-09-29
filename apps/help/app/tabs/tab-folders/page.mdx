@@ -5,13 +5,13 @@ import { TabFolderStates, AddToFolderMenu } from '@/components/illustrations/tab
 export const metadata = helpMetadata({
   title: 'Tab Folders',
   description:
-    'Group related tabs in a diagram under a named, collapsible folder so a long tab bar stays organised and readable.',
+    'Group related tabs in a document under a named, collapsible folder so a long tab bar stays organised and readable.',
   path: '/help/tabs/tab-folders/',
 });
 
-<ArticleLayout title="Tab Folders" description="Once a diagram grows past a handful of tabs, group the related ones under a named, collapsible folder along the tab bar." categoryTitle="Tabs" categorySlug="tabs">
+<ArticleLayout title="Tab Folders" description="Once a document grows past a handful of tabs, group the related ones under a named, collapsible folder along the tab bar." categoryTitle="Tabs" categorySlug="tabs">
 
-When a diagram's tab bar fills up, a flat list of tabs gets hard to scan. A **tab folder** gathers related tabs under one named chip you can collapse down when you are not using it. Put three tabs under "Organisation" and two under "Plans", collapse the ones you are done with, and the bar stays calm.
+When a document's tab bar fills up, a flat list of tabs gets hard to scan. A **tab folder** gathers related tabs under one named chip you can collapse down when you are not using it. Put three tabs under "Organisation" and two under "Plans", collapse the ones you are done with, and the bar stays calm.
 
 ## How folders work
 
@@ -19,7 +19,7 @@ A few things are worth knowing about how tab folders behave:
 
 - **One level.** A folder holds tabs. Folders never contain other folders.
 - **A folder is just a name.** There is no separate folder object to create or delete. A folder exists as long as at least one tab carries its name, and it disappears when the last tab leaves it.
-- **Per-diagram.** If a tab is shared into more than one diagram, it can sit in a folder in one diagram and be loose in another. The folder belongs to the diagram, not to the tab's content.
+- **Per-document.** If a tab is shared into more than one document, it can sit in a folder in one document and be loose in another. The folder belongs to the document, not to the tab's content.
 - **Folders are contiguous.** A folder's tabs always sit next to each other in the bar, drawn under a single chip with the folder's name and a small count badge.
 
 <Figure caption="A folder expanded shows its chip plus its tab pills; collapsed it shrinks to just the named chip and a count badge.">

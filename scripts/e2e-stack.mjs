@@ -9,7 +9,7 @@
 //      migrations to a fresh local database, so persistence works.
 //   2. live — a static file server for `out/` that reproduces the three
 //      things production does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
-//      rewrite `/diagram/*` to the single placeholder, and proxy
+//      rewrite `/document/*` to the single placeholder, and proxy
 //      `/api/*` (WebSocket upgrades included) to the api worker so the app
 //      is same-origin.
 //
@@ -146,8 +146,8 @@ function resolveStatic(pathname) {
   // The build references assets as `/live/_next/*` (assetPrefix); the
   // files live at out/_next/*.
   let p = pathname.startsWith('/live/') ? pathname.slice('/live'.length) : pathname;
-  // /diagram and everything under it share one placeholder HTML.
-  if (p === '/diagram' || p.startsWith('/diagram/')) p = '/diagram/placeholder';
+  // /document and everything under it share one placeholder HTML.
+  if (p === '/document' || p.startsWith('/document/')) p = '/document/placeholder';
   if (p === '/') p = '/index';
   const candidates = [
     path.join(OUT_DIR, p), // exact file (assets)
@@ -198,7 +198,7 @@ function proxyApi(req, res) {
   req.pipe(proxyReq);
 }
 
-// The realtime room is a WebSocket on /api/diagrams/<id>/ws. Production routes
+// The realtime room is a WebSocket on /api/documents/<id>/ws. Production routes
 // the upgrade through the router like any other /api request; without this the
 // browser's socket was never answered here, so no e2e test could see a room op.
 // Relays the raw upgrade to the api worker and pipes both directions.
@@ -271,7 +271,7 @@ function startLiveServer() {
     // this the stack answered 404, the page recovered client-side without its
     // query string, and `?truth=1` typed on `/new/` armed nothing.
     const bare = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : null;
-    if (bare && !bare.startsWith('/diagram') && existsSync(path.join(OUT_DIR, `${bare}.html`))) {
+    if (bare && !bare.startsWith('/document') && existsSync(path.join(OUT_DIR, `${bare}.html`))) {
       const search = new URL(req.url, 'http://localhost').search;
       res.writeHead(307, { Location: `${bare}${search}` });
       res.end();

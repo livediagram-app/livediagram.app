@@ -1,5 +1,5 @@
 // The answer list for a `collaborators` poll (docs/specs/012-collaboration/live-poll.md): the people currently
-// in the diagram, frozen into the poll's own options when it starts.
+// in the document, frozen into the poll's own options when it starts.
 //
 // Pure and separate from the poll hook that calls it, because the interesting
 // part is not "read the roster" but what has to happen to it first, and that

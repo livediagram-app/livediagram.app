@@ -1,6 +1,6 @@
 'use client';
 
-import { timerDone, type TabTimer } from '@livediagram/diagram';
+import { timerDone, type TabTimer } from '@livediagram/document';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { TimerPillBody, timerFillStyle } from '@/components/chrome/timer-pill';
 import { useNow } from '@/hooks/ui/useNow';

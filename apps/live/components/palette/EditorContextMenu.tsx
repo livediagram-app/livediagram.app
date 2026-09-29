@@ -25,7 +25,7 @@ import {
   arrowThicknessOf,
   isBoxed,
   isSelfDrawingShape,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
@@ -245,15 +245,17 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                 onClick={props.onSendToBack}
               />
             </MenuTileGrid>
-            {/* Move to a named layer (docs/specs/006-diagram/layers.md) — only once the tab has
+            {/* Move to a named layer (docs/specs/006-document/layers.md) — only once the tab has
               more than one layer (the row renders nothing otherwise). */}
-            <MoveToLayerRow
-              layers={props.layers}
-              elements={props.elements}
-              tabFont={props.tabFont}
-              currentLayerId={props.selectionLayerId}
-              onMove={props.onMoveSelectionToLayer}
-            />
+            {props.onMoveSelectionToLayer ? (
+              <MoveToLayerRow
+                layers={props.layers}
+                elements={props.elements}
+                tabFont={props.tabFont}
+                currentLayerId={props.selectionLayerId}
+                onMove={props.onMoveSelectionToLayer}
+              />
+            ) : null}
             <ContextMenuDivider />
             {/* Opacity slider — a non-closing row (dragging stays inside the
               menu, so the outside-click guard leaves it open). */}

@@ -24,31 +24,31 @@ async function applyEffect(
 ): Promise<void> {
   const snap = ctx.snapshot;
   switch (effect.kind) {
-    case 'rename-diagram': {
-      await ctx.port.renameDiagram(effect.id, effect.name);
-      const d = snap.diagrams.get(effect.id);
-      if (d) snap.diagrams.set(effect.id, { ...d, name: effect.name, savedAt: ctx.now() });
+    case 'rename-document': {
+      await ctx.port.renameDocument(effect.id, effect.name);
+      const d = snap.documents.get(effect.id);
+      if (d) snap.documents.set(effect.id, { ...d, name: effect.name, savedAt: ctx.now() });
       return;
     }
-    case 'move-diagram': {
-      await ctx.port.moveDiagram(effect.id, effect.folderId);
-      const d = snap.diagrams.get(effect.id);
-      if (d) snap.diagrams.set(effect.id, { ...d, folderId: effect.folderId });
+    case 'move-document': {
+      await ctx.port.moveDocument(effect.id, effect.folderId);
+      const d = snap.documents.get(effect.id);
+      if (d) snap.documents.set(effect.id, { ...d, folderId: effect.folderId });
       return;
     }
-    case 'trash-diagram': {
-      await ctx.port.trashDiagram(effect.id);
-      const d = snap.diagrams.get(effect.id);
-      snap.diagrams.delete(effect.id);
+    case 'trash-document': {
+      await ctx.port.trashDocument(effect.id);
+      const d = snap.documents.get(effect.id);
+      snap.documents.delete(effect.id);
       if (d) snap.trash.set(effect.id, { id: d.id, name: d.name, trashedAt: ctx.now() });
       return;
     }
-    case 'restore-diagram': {
-      await ctx.port.restoreDiagram(effect.id);
+    case 'restore-document': {
+      await ctx.port.restoreDocument(effect.id);
       const t = snap.trash.get(effect.id);
       snap.trash.delete(effect.id);
       if (t)
-        snap.diagrams.set(effect.id, {
+        snap.documents.set(effect.id, {
           id: t.id,
           name: t.name,
           folderId: null,
@@ -57,12 +57,12 @@ async function applyEffect(
         });
       return;
     }
-    case 'purge-diagram': {
-      await ctx.port.purgeDiagram(effect.id);
+    case 'purge-document': {
+      await ctx.port.purgeDocument(effect.id);
       snap.trash.delete(effect.id);
       // The purge's own batch dropped the row.
-      dropSnapshotItem(snap, 'diagram', effect.id);
-      ctx.discard('diagram', effect.id);
+      dropSnapshotItem(snap, 'document', effect.id);
+      ctx.discard('document', effect.id);
       return;
     }
     case 'rename-folder': {
@@ -87,14 +87,14 @@ async function applyEffect(
       return;
     }
     case 'bin-folder': {
-      // Its diagrams go to the Trash, then the folders go, deepest first.
+      // Its documents go to the Trash, then the folders go, deepest first.
       const subtree = folderSubtree(snap, effect.id);
-      for (const d of [...snap.diagrams.values()]) {
+      for (const d of [...snap.documents.values()]) {
         if (d.folderId === null || !subtree.includes(d.folderId)) continue;
-        await applyEffect(ctx, { kind: 'trash-diagram', id: d.id }, change, queue);
+        await applyEffect(ctx, { kind: 'trash-document', id: d.id }, change, queue);
         // Drive binned the file with its folder; the row says so, so outbound
         // leaves it implicitly binned and restoring the folder restores it.
-        const item = snap.items.get(itemKey('diagram', d.id));
+        const item = snap.items.get(itemKey('document', d.id));
         if (item) await ctx.record({ ...item, trashed: true });
       }
       for (const folderId of [...subtree].reverse()) {
@@ -174,7 +174,7 @@ async function applyDecision(
       // parent its queued children resolve to). A purge or a binned folder
       // took its row with it.
       const gone = decision.effects.some(
-        (e) => e.kind === 'purge-diagram' || e.kind === 'bin-folder',
+        (e) => e.kind === 'purge-document' || e.kind === 'bin-folder',
       );
       if (!gone) await ctx.record(decision.record);
       for (const type of decision.types) ctx.track('Applied', type);

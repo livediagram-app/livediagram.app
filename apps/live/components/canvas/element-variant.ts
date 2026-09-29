@@ -13,7 +13,7 @@ import {
   supportsShadow,
   type BoxedElement,
   type CanvasSurface,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 
@@ -81,7 +81,7 @@ export function describeVariant(
       // selection ring.
       // A portal (docs/specs/009-elements/portal-element.md) is in the same family: its ring IS the element, so
       // a wrapper box behind it would frame the energy in a rectangle.
-      // SELF_PAINTING_SHAPES (@livediagram/diagram) is the single list of
+      // SELF_PAINTING_SHAPES (@livediagram/document) is the single list of
       // kinds that draw their own body. The menu reads the same set to decide
       // whether to offer Border at all — they used to keep separate lists and
       // drifted, leaving dead Border controls on a code block, a checklist, a

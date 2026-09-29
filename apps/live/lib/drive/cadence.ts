@@ -15,9 +15,9 @@ export const DRIVE_POLL_INTERVAL_MAX_MS = 60 * MINUTE;
 export const DRIVE_FOCUS_POLL_MIN_GAP_MS = 30 * SECOND;
 // Google's maximum, so a catch-up is usually one call.
 export const DRIVE_CHANGES_PAGE_SIZE = 1000;
-// Mirror a diagram once it has had no edits for this long.
+// Mirror a document once it has had no edits for this long.
 export const DRIVE_WRITE_IDLE_MS = 60 * SECOND;
-// At most one content write per diagram per interval.
+// At most one content write per document per interval.
 export const DRIVE_WRITE_MIN_INTERVAL_MS = 5 * MINUTE;
 // The write interval's ceiling under back-off.
 export const DRIVE_WRITE_MIN_INTERVAL_MAX_MS = 30 * MINUTE;

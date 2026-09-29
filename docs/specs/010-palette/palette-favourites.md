@@ -12,10 +12,10 @@ spirit of customising iOS Control Centre.
 - A new entry, **Favourites**, in the palette category dropdown
   (`PaletteTabBar` — see [Canvas and palette](../008-canvas/canvas-and-palette.md)), listed
   **first** (above Shapes) with a star icon.
-- **Favourites is the default open category** on every diagram load — the
+- **Favourites is the default open category** on every document load — the
   palette lands on the user's own go-to tiles. (This supersedes [Canvas and palette](../008-canvas/canvas-and-palette.md)'s
   earlier Shapes-by-default rule; the palette still deliberately does not
-  persist the last-used category across diagrams.)
+  persist the last-used category across documents.)
 
 ## The grid
 

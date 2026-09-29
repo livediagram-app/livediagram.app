@@ -1,9 +1,9 @@
 # Isometric view
 
 A fourth **canvas tool** alongside Select / Hand / Laser that renders the
-current tab as an **isometric scene with depth** — the flat diagram tilted
+current tab as an **isometric scene with depth** — the flat canvas tilted
 onto an isometric plane, each shape extruded into a raised block. It's a way
-to _look_ at a diagram (architecture decks, system maps, screenshots), not a
+to _look_ at a canvas (architecture decks, system maps, screenshots), not a
 way to edit one.
 
 ## What it does
@@ -11,7 +11,7 @@ way to edit one.
 Picking the **Isometric** tool re-projects the canvas content into an
 isometric (axonometric, parallel — no perspective) view:
 
-- The whole content layer tilts onto the isometric plane, so the diagram
+- The whole content layer tilts onto the isometric plane, so the canvas
   reads as a surface seen from above and to the side.
 - Each **boxed element** (shapes, tables, images, stickies, link
   cards, annotations) gains **extruded depth** — a solid raised
@@ -68,7 +68,7 @@ Isometric is **navigation-only**, modelled on the Hand tool:
   Select. **Escape** exits the view to the default editing tool — Select on
   desktop, Hand (pan) on touch viewports where Select isn't the default
   (mirrors how Spotlight reverts to Select).
-- It is **purely a view state**: it changes nothing about the diagram, never
+- It is **purely a view state**: it changes nothing about the document, never
   persists to the server, and is **not synced** to other participants — each
   viewer tilts independently (same contract as Zen mode, [Zen mode](../007-editor/zen-mode.md)).
 
@@ -113,16 +113,16 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
   angle). The wrapper is made `pointer-events-none` so no element kind can be
   selected or dragged; pan still works because drag-to-pan is handled on
   `<main>` (and `wantsPan` gains the `isometric` case, like `pan` / `laser`).
-  No change to the diagram data model — every element stays 2D
+  No change to the document data model — every element stays 2D
   (`x, y, width, height`) and the view is a pure projection on top.
 - The tilt **pivots around the content centre**, not the wrapper centre. The
   rotation fragment is wrapped in `translate(pivot) … translate(-pivot)`
   (`isoTransform` + `isoPivot` in `lib/isometric.ts`), where the pivot is the
   boxed-content bounding-box centre expressed relative to the wrapper centre
   (its `origin-center`). Without this the rotation pivots about the wrapper
-  centre, so any diagram whose centre sits away from that point swings
+  centre, so any canvas whose content centre sits away from that point swings
   off-screen the instant the view tilts and again as it orbits; pinning the
-  content centre makes the diagram tilt in place and stay centred while
+  content centre makes the canvas tilt in place and stay centred while
   orbiting. The pivot translates sit inside the tilt fragment, so the pan
   offset (outside it) still pans in screen space.
 - Orbit (Shift-drag) is a self-contained drag in `useIsometricCamera` that
@@ -175,4 +175,4 @@ export reads with depth, not as a flat tilted plane.
 
 See also [Canvas and palette](canvas-and-palette.md) (the tool row +
 shortcuts), [Zen mode](../007-editor/zen-mode.md) (view-only, non-synced view state), and
-[Diagram structure](../006-diagram/diagram-structure.md) (the 2D element model this projects).
+[Document structure](../006-document/document-structure.md) (the 2D element model this projects).

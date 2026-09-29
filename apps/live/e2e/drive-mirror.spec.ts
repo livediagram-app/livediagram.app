@@ -207,10 +207,10 @@ const fileNamed = (name: string) => google.fake.appFiles(USER).find((f) => f.nam
 test('connect, first mirror, then changes in Drive come back', async ({ page, pageErrors }) => {
   await signIn(page);
   await api(page, 'POST', '/folders', { id: FOLDER, name: 'Work', parentId: null });
-  await api(page, 'POST', '/diagrams', {
+  await api(page, 'POST', '/documents', {
     id: PLAN,
     name: 'Quarterly plan',
-    // Content, so the diagram has an SVG snapshot for the Drive thumbnail.
+    // Content, so the document has an SVG snapshot for the Drive thumbnail.
     tabs: [
       {
         id: `e2e-tab-1-${RUN}`,
@@ -240,8 +240,8 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
       },
     ],
   });
-  await api(page, 'PUT', `/diagrams/${PLAN}/folder`, { folderId: FOLDER });
-  await api(page, 'POST', '/diagrams', {
+  await api(page, 'PUT', `/documents/${PLAN}/folder`, { folderId: FOLDER });
+  await api(page, 'POST', '/documents', {
     id: NOTES,
     name: 'Meeting notes',
     tabs: [{ id: `e2e-tab-2-${RUN}`, name: 'Tab 1', elements: [] }],
@@ -351,20 +351,20 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await expect
     .poll(
       async () =>
-        ((await api(page, 'GET', `/diagrams/${NOTES}`)) as { diagram: { name: string } }).diagram
+        ((await api(page, 'GET', `/documents/${NOTES}`)) as { document: { name: string } }).document
           .name,
     )
     .toBe('Standup notes');
   expect(
     (
-      (await api(page, 'GET', `/diagrams/${PLAN}`)) as {
-        diagram: { folderId: string | null };
+      (await api(page, 'GET', `/documents/${PLAN}`)) as {
+        document: { folderId: string | null };
       }
-    ).diagram.folderId,
+    ).document.folderId,
   ).toBeNull();
 
   // Show the folder to livediagram (the Picker picks it): adopted, and the
-  // diagram moves into the new Personal Space folder.
+  // document moves into the new Personal Space folder.
   google.fake.grantAccess(USER, hidden);
   await page.evaluate(
     (id) => ((window as unknown as { __e2ePickFolder: string }).__e2ePickFolder = id),
@@ -378,11 +378,11 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   const clients = folders.folders.find((f) => f.name === 'Clients')!;
   expect(clients).toBeDefined();
   expect(
-    ((await api(page, 'GET', `/diagrams/${PLAN}`)) as { diagram: { folderId: string } }).diagram
+    ((await api(page, 'GET', `/documents/${PLAN}`)) as { document: { folderId: string } }).document
       .folderId,
   ).toBe(clients.id);
 
-  // Binned in Drive: the diagram goes to the Trash.
+  // Binned in Drive: the document goes to the Trash.
   google.fake.userTrash(fileNamed('Standup notes.livediagram')!.id);
   await syncNow(page);
   await expect
@@ -394,7 +394,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   expectNoPageErrors(pageErrors);
 });
 
-test('Open with: your diagram opens; a file shared with you offers a copy', async ({
+test('Open with: your document opens; a file shared with you offers a copy', async ({
   page,
   pageErrors,
 }) => {
@@ -403,24 +403,24 @@ test('Open with: your diagram opens; a file shared with you offers a copy', asyn
   await page.goto(
     `/drive/open?state=${encodeURIComponent(google.fake.openWithState(USER, mine.id))}`,
   );
-  await page.waitForURL(`**/diagram/${PLAN}**`);
+  await page.waitForURL(`**/document/${PLAN}**`);
 
   const theirs = google.fake.otherUserFile({
     owner: 'someone-else',
     name: 'Their roadmap.livediagram',
     mimeType: DRIVE_FILE_MIME,
     content: JSON.stringify({
-      kind: 'livediagram.diagram',
+      kind: 'livediagram.document',
       schemaVersion: 1,
       exportedAt: 1,
-      diagram: {
+      document: {
         id: 'not-yours',
         name: 'Their roadmap',
         presentation: null,
         tabs: [{ id: 't', name: 'Tab 1', elements: [] }],
       },
     }),
-    appProperties: { ldDiagramId: 'not-yours', ldOrigin: new URL(page.url()).host },
+    appProperties: { ldDocumentId: 'not-yours', ldOrigin: new URL(page.url()).host },
     shareWith: USER,
   });
   await page.goto(
@@ -429,7 +429,7 @@ test('Open with: your diagram opens; a file shared with you offers a copy', asyn
   await expect(page.getByRole('heading', { name: 'Their roadmap' })).toBeVisible();
   await page.screenshot({ path: `${SHOTS}/05-import.png` });
   await page.getByRole('button', { name: 'Import a copy' }).click();
-  await page.waitForURL('**/diagram/**');
+  await page.waitForURL('**/document/**');
   expect(page.url()).not.toContain('not-yours');
   expectNoPageErrors(pageErrors);
 });
@@ -448,14 +448,15 @@ test('Open with on a copy made in Drive imports it as a new document', async ({
   await expect(page.getByRole('heading', { name: 'Copy of Quarterly plan' })).toBeVisible();
   await page.screenshot({ path: `${SHOTS}/05b-import-copy.png` });
   await page.getByRole('button', { name: 'Import as new document' }).click();
-  await page.waitForURL('**/diagram/**');
+  await page.waitForURL('**/document/**');
   const newId = decodeURIComponent(new URL(page.url()).pathname.split('/').filter(Boolean).pop()!);
   expect(newId).not.toBe(PLAN);
   // The original is untouched; the copy now mirrors the new document.
-  expect(google.fake.get(original.id)!.appProperties.ldDiagramId).toBe(PLAN);
-  expect(google.fake.get(copyId)!.appProperties.ldDiagramId).toBe(newId);
+  expect(google.fake.get(original.id)!.appProperties.ldDocumentId).toBe(PLAN);
+  expect(google.fake.get(copyId)!.appProperties.ldDocumentId).toBe(newId);
   expect(
-    ((await api(page, 'GET', `/diagrams/${newId}`)) as { diagram: { name: string } }).diagram.name,
+    ((await api(page, 'GET', `/documents/${newId}`)) as { document: { name: string } }).document
+      .name,
   ).toBe('Copy of Quarterly plan');
   expectNoPageErrors(pageErrors);
 });
@@ -472,7 +473,7 @@ test('a change made in Drive reaches the open Explorer within two minutes, no re
   const arrived = page.waitForEvent('console', (m) => m.text().includes('[drive-mirror] pass-end'));
   await page.goto('/explorer/recent');
   await arrived;
-  const plan = google.fake.appFiles(USER).find((f) => f.appProperties.ldDiagramId === PLAN)!;
+  const plan = google.fake.appFiles(USER).find((f) => f.appProperties.ldDocumentId === PLAN)!;
   google.fake.userRename(plan.id, 'Renamed in Drive.livediagram');
   await expect(page.getByText('Renamed in Drive', { exact: true })).toHaveCount(0);
   await page.clock.fastForward('02:05');
@@ -583,7 +584,7 @@ test('a connection made in one tab starts syncing at once while another tab runs
   await api(
     page,
     'POST',
-    '/diagrams',
+    '/documents',
     {
       id: `${PLAN}-tabs`,
       name: 'Tabs plan',

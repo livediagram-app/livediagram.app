@@ -9,7 +9,7 @@ import {
   API_TOKEN_ACTIVITY,
   CALLS_TO_ACTION,
   COUNTDOWNS,
-  DIAGRAM_ACTIONS,
+  DOCUMENT_ACTIONS,
   TRASH,
   DISCUSSION,
   EDITOR_CHROME,
@@ -81,7 +81,7 @@ export const GROUPS: MetricGroup[] = [
   {
     title: 'Content',
     metrics: [
-      DIAGRAM_ACTIONS,
+      DOCUMENT_ACTIONS,
       TRASH,
       TAB_ACTIONS,
       ELEMENTS_ADDED,

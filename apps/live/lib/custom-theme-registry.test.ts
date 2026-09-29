@@ -48,7 +48,7 @@ describe('custom-theme registry (docs/specs/011-theme/custom-themes.md)', () => 
   it('getTheme falls back to the default for an unregistered (or deleted) custom id', () => {
     registerCustomTheme(theme('custom:1', 'Brandy'));
     unregisterCustomTheme('custom:1');
-    // A diagram still referencing the deleted theme keeps rendering: it
+    // A document still referencing the deleted theme keeps rendering: it
     // gets the default (brand) theme, not a crash.
     expect(getTheme('custom:1').id).toBe('brand');
   });

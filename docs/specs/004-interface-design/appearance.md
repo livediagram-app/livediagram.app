@@ -1,6 +1,6 @@
 # Appearance (light / dark / system), site-wide
 
-**Appearance** is the reader's own choice of light or dark chrome. It is one setting for the whole origin: the editor (`apps/live`), the marketing site (`apps/marketing`), the help centre (`apps/help`) and the telemetry dashboard (`apps/telemetry`) all read and write the same value, so a pick made anywhere holds everywhere. It is distinct from a diagram's **theme**, which recolours canvas content and is stored in the diagram ([Live app](../007-editor/live-app.md#appearance-light--dark--system) covers the editor-specific parts: the Default theme following it, the match nudge).
+**Appearance** is the reader's own choice of light or dark chrome. It is one setting for the whole origin: the editor (`apps/live`), the marketing site (`apps/marketing`), the help centre (`apps/help`) and the telemetry dashboard (`apps/telemetry`) all read and write the same value, so a pick made anywhere holds everywhere. It is distinct from a document's **theme**, which recolours canvas content and is stored in the document ([Live app](../007-editor/live-app.md#appearance-light--dark--system) covers the editor-specific parts: the Default theme following it, the match nudge).
 
 ## The setting
 

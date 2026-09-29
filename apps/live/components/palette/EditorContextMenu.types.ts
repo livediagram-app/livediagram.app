@@ -1,4 +1,4 @@
-import type { EventStormingNoteKind } from '@livediagram/diagram';
+import type { EventStormingNoteKind } from '@livediagram/document';
 import type {
   AnimationSpeed,
   ArrowEnds,
@@ -40,7 +40,7 @@ import type {
   ShapeMarker,
   TablePreset,
   TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { ArrowPreset } from '@/components/palette/StylePresets';
 import type { ColourPalette } from '@/components/palette/context-menu-input-rows';
 import type { ShapeColorPreset } from '@/lib/themes';
@@ -78,8 +78,8 @@ export type EditorContextMenuProps = {
   // fresh shape's menu hides exactly the options the user is typing for.
   editingId: string | null;
   // Open the link picker for the element, optionally pre-selecting a mode
-  // (webpage / tab / diagram) so the modal lands on the right tab.
-  onLinkElement: (elementId: string, mode?: 'url' | 'tab' | 'diagram') => void;
+  // (webpage / tab / document) so the modal lands on the right tab.
+  onLinkElement: (elementId: string, mode?: 'url' | 'tab' | 'document') => void;
   // Remove an inline icon from the element. Only surfaced when the
   // clicked element actually carries one (a non-'icon' shape with iconId).
   onRemoveIcon: (elementId: string) => void;
@@ -100,12 +100,13 @@ export type EditorContextMenuProps = {
   onDeleteElement: () => void;
   onStackFront: () => void;
   onStackBack: () => void;
-  // Layers (docs/specs/006-diagram/layers.md): the tab's normalised stack (bottom -> top) for the
+  // Layers (docs/specs/006-document/layers.md): the tab's normalised stack (bottom -> top) for the
   // Layer section's move-to dropdown, the selection's resolved layer
-  // (null when members span layers), and the selection-wide move.
+  // (null when members span layers), and the selection-wide move. The move
+  // is absent while the Layers panel is off in Settings, and its tiles with it.
   layers: Layer[];
   selectionLayerId: string | null;
-  onMoveSelectionToLayer: (layerId: string) => void;
+  onMoveSelectionToLayer?: (layerId: string) => void;
   // Toggle aspect-ratio lock + set opacity on the clicked element (boxed
   // only). Read the current values off the target below.
   onToggleAspectLock: () => void;
@@ -201,10 +202,10 @@ export type EditorContextMenuProps = {
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected stat row / process /
   // header (each field only lands on its own kind), and an image's hero
   // caption card on or off.
-  onSetWebRows: (rows: import('@livediagram/diagram').WebRows) => void;
+  onSetWebRows: (rows: import('@livediagram/document').WebRows) => void;
   onSetHeroCaption: (on: boolean) => void;
   // Mode button (docs/specs/009-elements/mode-button.md): which selection mode pressing it hands out.
-  onSetButtonMode: (mode: import('@livediagram/diagram').SelectionMode) => void;
+  onSetButtonMode: (mode: import('@livediagram/document').SelectionMode) => void;
   // Portal (docs/specs/009-elements/portal-element.md): which portal this one leads to; null unpairs it.
   onSetPortalTarget: (targetId: string | null) => void;
   // Portal (docs/specs/009-elements/portal-element.md): its name (menu-only — the canvas ring stays clean), and
@@ -213,12 +214,12 @@ export type EditorContextMenuProps = {
   onCreateLinkedPortal: () => void;
   // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
   // their settings, applied to the element the menu is acting on.
-  onSetSession: (config: import('@livediagram/diagram').SessionButtonConfig) => void;
+  onSetSession: (config: import('@livediagram/document').SessionButtonConfig) => void;
   onSetRevealed: (revealed: boolean) => void;
-  onSetPickerSource: (source: import('@livediagram/diagram').PickerSource) => void;
+  onSetPickerSource: (source: import('@livediagram/document').PickerSource) => void;
   onSetPickerOptions: (options: string[]) => void;
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst the pad throws.
-  onSetReaction: (reaction: import('@livediagram/diagram').Reaction) => void;
+  onSetReaction: (reaction: import('@livediagram/document').Reaction) => void;
   // The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130). The temperature
   // check, idea box and roll call carry no settings — everything they do
   // happens on their own faces — so they need no setter here.
@@ -230,7 +231,7 @@ export type EditorContextMenuProps = {
   onSetChairFacing: (facing: ChairFacing) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
-  tabs: import('@livediagram/diagram').Tab[];
+  tabs: import('@livediagram/document').Tab[];
   activeTabId: string;
   // Style presets (docs/specs/010-palette/style-presets.md): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are

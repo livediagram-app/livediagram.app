@@ -11,7 +11,7 @@ import {
 // cursor. The shroud + the hole are one radial-gradient: transparent at the
 // centre, ramping to a dark fill at the light's radius and holding that fill
 // across the rest of the canvas. The gradient centre tracks the cursor in
-// screen space (so the light does NOT pan / zoom with the diagram), and the
+// screen space (so the light does NOT pan / zoom with the canvas), and the
 // feathered rim gives the "emits light" falloff a hard-edged mask can't.
 //
 // The glowing dot at the centre is drawn here as a DOM element (the OS cursor
@@ -58,9 +58,9 @@ export function SpotlightOverlay({
     <div
       aria-hidden
       // No explicit z-index: as a later DOM sibling than the (z-auto) element
-      // wrapper it paints ABOVE the diagram, while the floating chrome
+      // wrapper it paints ABOVE the canvas, while the floating chrome
       // (palette / Explorer at z-[var(--z-panel)]/z-[var(--z-toolbar)], popovers at z-[var(--z-overlay)]) stays on top — so
-      // the shroud dims the diagram but not the UI, and the presenter can
+      // the shroud dims the canvas but not the UI, and the presenter can
       // still reach the tool picker to switch back.
       className="pointer-events-none absolute inset-0"
       style={{
@@ -69,7 +69,7 @@ export function SpotlightOverlay({
     >
       {/* Glowing dot marking the exact centre of the light (the hidden OS
           cursor's stand-in). A bright sky core with a white rim reads on both
-          light diagram content and the dark shroud; the box-shadow is the
+          light canvas content and the dark shroud; the box-shadow is the
           glow. */}
       <div
         className="absolute h-2.5 w-2.5 rounded-full"

@@ -2,7 +2,7 @@
 
 // /drive/open: the Drive UI integration's Open URL
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Open with"). Google passes
-// `state`; this reads the file and opens the diagram, offers **Import a copy**
+// `state`; this reads the file and opens the document, offers **Import a copy**
 // (or **Import as new document** for a copy of a mirrored file), or says the
 // file cannot be opened.
 
@@ -100,7 +100,7 @@ export function DriveOpen() {
         if (!live) return;
         track('Drive', 'Opened', openWithTelemetryType(outcome));
         if (outcome.kind === 'open')
-          window.location.assign(`/diagram/${encodeURIComponent(outcome.diagramId)}`);
+          window.location.assign(`/document/${encodeURIComponent(outcome.documentId)}`);
         else setPhase({ kind: 'outcome', outcome });
       })
       .catch((err: unknown) => {
@@ -133,7 +133,7 @@ export function DriveOpen() {
         state,
         reason,
       );
-      window.location.assign(`/diagram/${encodeURIComponent(id)}`);
+      window.location.assign(`/document/${encodeURIComponent(id)}`);
     } catch (err) {
       driveWarn('open-with-import-failed', {
         error: err instanceof Error ? err.message : String(err),

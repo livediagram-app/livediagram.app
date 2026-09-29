@@ -92,7 +92,7 @@ export function openDriveTabChannel(
   };
 }
 
-// The editor asks for a flush when the user leaves a diagram; whichever tab
+// The editor asks for a flush when the user leaves a document; whichever tab
 // runs the engine picks it up.
 const flushListeners = new Set<() => void>();
 

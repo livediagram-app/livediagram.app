@@ -1,4 +1,4 @@
-import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/diagram';
+import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/document';
 import { classifyRgb, isPaleShade, PALE_SHADE_KINDS } from './classify';
 import { localFloorsOf, type PaperFloors } from './floors';
 import { greyWorldBalance, type ImageBuffer } from './colour';

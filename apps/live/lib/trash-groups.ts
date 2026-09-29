@@ -2,7 +2,7 @@
 // view"): your personal Trash, one group per joined team (by name), then this
 // browser's local Trash. Each group is one Empty Trash scope. Pure.
 
-import { trashDaysLeft, type TrashedDiagram } from '@livediagram/api-schema';
+import { trashDaysLeft, type TrashedDocument } from '@livediagram/api-schema';
 import type { TrashListing } from './api/trash';
 
 export type TrashScope =
@@ -14,7 +14,7 @@ export type TrashGroup = {
   scope: TrashScope;
   // The Trash telemetry `type` for actions in this group.
   telemetryType: 'Personal' | 'Team' | 'Local';
-  rows: TrashedDiagram[];
+  rows: TrashedDocument[];
 };
 
 export function trashGroups(listing: TrashListing): TrashGroup[] {
@@ -24,13 +24,13 @@ export function trashGroups(listing: TrashListing): TrashGroup[] {
   if (personal.length > 0) {
     groups.push({
       key: 'personal',
-      title: 'Your diagrams',
+      title: 'Your documents',
       scope: { kind: 'personal' },
       telemetryType: 'Personal',
       rows: personal,
     });
   }
-  const teams = new Map<string, TrashedDiagram[]>();
+  const teams = new Map<string, TrashedDocument[]>();
   for (const r of cloud) {
     if (r.teamId === null) continue;
     teams.set(r.teamId, [...(teams.get(r.teamId) ?? []), r]);

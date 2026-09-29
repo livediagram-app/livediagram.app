@@ -391,7 +391,7 @@ export class DriveMirrorEngine {
   }
 
   // After a (re)connect: record a row for every file livediagram made earlier
-  // whose diagram or folder still exists, instead of making a second copy.
+  // whose document or folder still exists, instead of making a second copy.
   private async adoptExisting(snapshot: MirrorSnapshot): Promise<void> {
     const files = await this.deps.drive.listFiles(
       `appProperties has { key='${DRIVE_PROP_ORIGIN}' and value='${this.deps.host}' }`,
@@ -400,19 +400,26 @@ export class DriveMirrorEngine {
     const { adopt, ambiguous } = planAdoption(files, snapshot);
     for (const item of adopt) await ctx.record(item);
     await ctx.flushItems();
-    if (ambiguous.length > 0) driveWarn('adopt-ambiguous', { diagrams: ambiguous.length });
+    if (ambiguous.length > 0) driveWarn('adopt-ambiguous', { documents: ambiguous.length });
     driveLog('adopted', { files: files.length, adopted: adopt.length });
   }
 
   private async loadSnapshot(rootFolderId: string): Promise<MirrorSnapshot> {
     const { port } = this.deps;
-    const [diagrams, folders, trash, items] = await Promise.all([
-      port.listPersonalDiagrams(),
+    const [liveDocs, folders, trash, items] = await Promise.all([
+      port.listPersonalDocuments(),
       port.listPersonalFolders(),
       port.listPersonalTrash(),
       port.listItems(),
     ]);
-    return buildSnapshot({ host: this.deps.host, rootFolderId, diagrams, folders, trash, items });
+    return buildSnapshot({
+      host: this.deps.host,
+      rootFolderId,
+      documents: liveDocs,
+      folders,
+      trash,
+      items,
+    });
   }
 
   private context(snapshot: MirrorSnapshot): PassContext {
@@ -544,8 +551,8 @@ export class DriveMirrorEngine {
   private maybeReportFirstMirror(snapshot: MirrorSnapshot, connection: DriveConnection): void {
     const { deps } = this;
     if (deps.firstMirror.done(connection.connectedAt)) return;
-    for (const d of snapshot.diagrams.values()) {
-      if (snapshot.items.get(itemKey('diagram', d.id))?.mirroredSavedAt == null) return;
+    for (const d of snapshot.documents.values()) {
+      if (snapshot.items.get(itemKey('document', d.id))?.mirroredSavedAt == null) return;
     }
     deps.firstMirror.mark(connection.connectedAt);
     deps.track('FirstMirrorFinished');
@@ -556,8 +563,8 @@ export class DriveMirrorEngine {
     for (const item of snapshot.items.values()) {
       if (item.notice !== 'unseen_folder') continue;
       const name =
-        item.kind === 'diagram'
-          ? snapshot.diagrams.get(item.ldId)?.name
+        item.kind === 'document'
+          ? snapshot.documents.get(item.ldId)?.name
           : snapshot.folders.get(item.ldId)?.name;
       if (name !== undefined)
         out.push({ kind: item.kind, ldId: item.ldId, name, parentId: item.noticeParentId });
@@ -612,7 +619,7 @@ export class DriveMirrorEngine {
         });
       }
       const item = snapshot.items.get(itemKey(kind, ldId));
-      if (kind === 'diagram') await deps.port.moveDiagram(ldId, folderId);
+      if (kind === 'document') await deps.port.moveDocument(ldId, folderId);
       else await deps.port.moveFolder(ldId, folderId);
       if (item) await ctx.record({ ...item, notice: null, noticeParentId: null });
       await ctx.flushItems();

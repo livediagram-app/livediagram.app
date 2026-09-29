@@ -5,7 +5,7 @@ import { ActionIcon, GlyphDisc } from '@livediagram/ui';
 import {
   ClockIcon,
   Cursor,
-  DiagramIcon,
+  DocumentIcon,
   FolderIcon,
   LinkIcon,
   PixelWalker,
@@ -443,11 +443,11 @@ export function FoldersArt() {
           <span>Product</span>
         </div>
         <div className="fa-reveal ml-4 flex items-center gap-1" style={{ animationDelay: '0s' }}>
-          <DiagramIcon />
+          <DocumentIcon />
           <span className="text-slate-500 dark:text-slate-400">Architecture</span>
         </div>
         <div className="fa-reveal ml-4 flex items-center gap-1" style={{ animationDelay: '0.15s' }}>
-          <DiagramIcon />
+          <DocumentIcon />
           <span className="text-slate-500 dark:text-slate-400">Onboarding flow</span>
         </div>
         <div className="ml-0 flex items-center gap-1 text-slate-400">
@@ -459,8 +459,8 @@ export function FoldersArt() {
   );
 }
 
-// Tab folders (docs/specs/006-diagram/tab-folders.md): grouping a diagram's TABS along the tab bar,
-// distinct from FoldersArt above (filing whole diagrams in the explorer).
+// Tab folders (docs/specs/006-document/tab-folders.md): grouping a document's TABS along the tab bar,
+// distinct from FoldersArt above (filing whole documents in the explorer).
 export function TabFoldersArt() {
   const members = [
     { name: 'Auth', c: '#8b5cf6' },
@@ -906,7 +906,7 @@ export function RefreshArt() {
 
 // Spotlight presenter tool (docs/specs/008-canvas/canvas-and-palette.md): the canvas dims under a dark shroud and
 // only a soft circle around the cursor stays lit, so the presenter can draw
-// the room's eye to one part of the diagram. The clear circle is a transparent
+// the room's eye to one part of the canvas. The clear circle is a transparent
 // span with a huge dark box-shadow; it travels between two nodes.
 export function SpotlightArt() {
   return (
@@ -1027,7 +1027,7 @@ export function AvatarModeArt() {
 }
 
 // Custom themes (docs/specs/011-theme/custom-themes.md): build your own palette, save it to your account,
-// and reuse it across diagrams like any built-in theme. A swatch row with one
+// and reuse it across documents like any built-in theme. A swatch row with one
 // selected, then a preview adopting the custom (brand-purple) colours.
 export function CustomThemesArt() {
   const swatches = ['#7c3aed', '#0ea5e9', '#ec4899', '#16a34a', '#f59e0b', '#0f172a'];

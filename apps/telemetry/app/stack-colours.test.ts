@@ -15,13 +15,13 @@ const ALL_GROUPS = [...DASHBOARD, ...EDITING, ...EXCEPTIONS, ...HELP, ...SETTING
 describe('stack colours', () => {
   it('gives a lone member its category colour and shades a shared one', () => {
     const colors = stackMemberColors([
-      { category: 'Diagram' },
+      { category: 'Document' },
       { category: 'Tab' },
-      { category: 'Diagram' },
+      { category: 'Document' },
     ]);
     expect(colors[1]).toBe(categoryColor('Tab'));
     expect(colors[0]).not.toBe(colors[2]);
-    expect(colors[0]).not.toBe(categoryColor('Diagram'));
+    expect(colors[0]).not.toBe(categoryColor('Document'));
   });
 
   it('splits two categories that share a hue', () => {
@@ -32,9 +32,9 @@ describe('stack colours', () => {
 
   it('takes the accent from the most common hue, the first on a tie', () => {
     expect(
-      stackAccent([{ category: 'Tab' }, { category: 'Diagram' }, { category: 'Diagram' }]),
-    ).toBe(categoryColor('Diagram'));
-    expect(stackAccent([{ category: 'Tab' }, { category: 'Diagram' }])).toBe(categoryColor('Tab'));
+      stackAccent([{ category: 'Tab' }, { category: 'Document' }, { category: 'Document' }]),
+    ).toBe(categoryColor('Document'));
+    expect(stackAccent([{ category: 'Tab' }, { category: 'Document' }])).toBe(categoryColor('Tab'));
   });
 
   it('draws every stack on every tab with a distinct line per member', () => {

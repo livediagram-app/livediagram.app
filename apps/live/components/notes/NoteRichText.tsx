@@ -10,7 +10,7 @@
 // value that leaves the text layer is a link address, and that is re-checked
 // against the safe-scheme allowlist before it reaches an href.
 
-import { runsFromPlainText, type TextRun } from '@livediagram/diagram';
+import { runsFromPlainText, type TextRun } from '@livediagram/document';
 import { noteRunHref, noteRunStyle, NOTE_BASE_PX } from './note-run-style';
 
 // Split runs into lines at '\n', keeping each line's runs intact. A note is

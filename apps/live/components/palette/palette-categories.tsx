@@ -127,7 +127,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Stickers',
     group: 2,
     description:
-      'Colour emoji for reacting, showing how you feel, marking status, pointing at things, celebrating, and prettying the board up.',
+      'Colour emoji for reacting, showing how you feel, marking status, pointing at things, celebrating, and prettying the canvas up.',
     icon: <StickersTabIcon />,
   },
   {
@@ -160,7 +160,7 @@ export const PALETTE_CATEGORIES: {
     // what the room thinks (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md, docs/specs/012-collaboration/comment-pin.md).
     //
     // ONE category, not two. They were split on "pressing this does something
-    // to your session" versus "the board is collecting an answer from
+    // to your session" versus "the canvas is collecting an answer from
     // everybody" — a real distinction, and a useless one to navigate by. You
     // reach for both while facilitating, and nothing told a user hunting for
     // the Done check why it lived apart from the Estimate card.
@@ -168,7 +168,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Behaviours',
     group: 3,
     description:
-      'Elements that come alive with the room: ask for an estimate or a temperature, run a quiz, leave a comment or an action on the board, collect ideas, rank the room’s questions, check who is done, run a timer or a stopwatch, vote or poll, keep an agenda or a decision, throw a reaction, switch a mode, jump through a portal, or bring everyone to look at one spot.',
+      'Elements that come alive with the room: ask for an estimate or a temperature, run a quiz, leave a comment or an action on the canvas, collect ideas, rank the room’s questions, check who is done, run a timer or a stopwatch, vote or poll, keep an agenda or a decision, throw a reaction, switch a mode, jump through a portal, or bring everyone to look at one spot.',
     icon: <BehaviourTabIcon />,
   },
 ];

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { QaNote } from '@livediagram/diagram';
+import type { QaNote } from '@livediagram/document';
 
 // One board write (docs/specs/012-collaboration/qa-board.md): the reducer applied to what D1 holds, the rev
 // bumped, and a compare-and-swap that re-reads when another writer (an
@@ -30,7 +30,7 @@ const boardData = (notes: QaNote[] = [], rev = 0, extra: Record<string, unknown>
   });
 
 const req = (action: QaWriteRequest['action'], voterId = 'v1'): QaWriteRequest => ({
-  diagramId: 'd1',
+  documentId: 'd1',
   tabId: 't1',
   elementId: 'b1',
   action,

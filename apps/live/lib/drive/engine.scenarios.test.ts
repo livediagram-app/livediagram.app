@@ -17,7 +17,7 @@ const MIN = 60_000;
 describe('two devices', () => {
   it('the lease lets one device write; the other still reads changes from Drive', async () => {
     const w = world();
-    w.ld.createDiagram('d1', 'Plan');
+    w.ld.createDocument('d1', 'Plan');
     const a = makeEngine({ ...w, deviceId: 'device-a' });
     await a.engine.start();
     const b = makeEngine({ ...w, deviceId: 'device-b' });
@@ -25,52 +25,52 @@ describe('two devices', () => {
 
     // A holds the lease: B's outbound is skipped, and B says so.
     w.clock.tick(MIN);
-    await w.ld.port().renameDiagram('d1', 'From B');
+    await w.ld.port().renameDocument('d1', 'From B');
     await b.engine.syncNow();
-    expect(fileOf(w.google, w.ld, 'diagram', 'd1')!.name).toBe('Plan.livediagram');
+    expect(fileOf(w.google, w.ld, 'document', 'd1')!.name).toBe('Plan.livediagram');
     expect(b.statuses.at(-1)!.leaseHeldElsewhere).toBe(true);
     // A writes it.
     await a.engine.syncNow();
-    expect(fileOf(w.google, w.ld, 'diagram', 'd1')!.name).toBe('From B.livediagram');
+    expect(fileOf(w.google, w.ld, 'document', 'd1')!.name).toBe('From B.livediagram');
 
     // B still applies a change made in Drive.
-    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, 'Drive.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Drive.livediagram');
     await b.engine.syncNow();
-    expect(w.ld.diagram('d1')!.name).toBe('Drive');
+    expect(w.ld.document('d1')!.name).toBe('Drive');
 
     // A hides: it flushes and hands the lease over at once.
     await a.engine.onHidden();
     await a.engine.releaseLease();
     w.clock.tick(MIN);
-    await w.ld.port().renameDiagram('d1', 'B again');
+    await w.ld.port().renameDocument('d1', 'B again');
     await b.engine.syncNow();
-    expect(fileOf(w.google, w.ld, 'diagram', 'd1')!.name).toBe('B again.livediagram');
+    expect(fileOf(w.google, w.ld, 'document', 'd1')!.name).toBe('B again.livediagram');
     expect(b.statuses.at(-1)!.leaseHeldElsewhere).toBe(false);
   });
 });
 
 describe('arrival catch-up', () => {
-  it('uploads every diagram saved since it was last mirrored, after reading Drive', async () => {
+  it('uploads every document saved since it was last mirrored, after reading Drive', async () => {
     const w = world();
-    w.ld.createDiagram('d1', 'Plan');
-    w.ld.createDiagram('d2', 'Notes');
+    w.ld.createDocument('d1', 'Plan');
+    w.ld.createDocument('d2', 'Notes');
     const first = makeEngine(w);
     await first.engine.start();
     first.engine.stop();
-    const md5 = fileOf(w.google, w.ld, 'diagram', 'd1')!.md5Checksum;
+    const md5 = fileOf(w.google, w.ld, 'document', 'd1')!.md5Checksum;
 
-    // Away: edited on another device, a new diagram, a Drive rename.
+    // Away: edited on another device, a new document, a Drive rename.
     w.clock.tick(3 * 60 * MIN);
     w.ld.edit('d1');
-    w.ld.createDiagram('d3', 'New');
-    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd2')!.id, 'Renamed.livediagram');
+    w.ld.createDocument('d3', 'New');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd2')!.id, 'Renamed.livediagram');
     w.clock.tick(5 * MIN);
 
     const next = makeEngine(w);
     await next.engine.start();
-    expect(fileOf(w.google, w.ld, 'diagram', 'd1')!.md5Checksum).not.toBe(md5);
-    expect(fileOf(w.google, w.ld, 'diagram', 'd3')).toBeDefined();
-    expect(w.ld.diagram('d2')!.name).toBe('Renamed');
+    expect(fileOf(w.google, w.ld, 'document', 'd1')!.md5Checksum).not.toBe(md5);
+    expect(fileOf(w.google, w.ld, 'document', 'd3')).toBeDefined();
+    expect(w.ld.document('d2')!.name).toBe('Renamed');
   });
 });
 
@@ -106,13 +106,13 @@ describe('cadence', () => {
 
   it('writes the page token to D1 only when changed, at most every 10 minutes, and on flush', async () => {
     const w = world();
-    w.ld.createDiagram('d1', 'Plan');
+    w.ld.createDocument('d1', 'Plan');
     const { engine } = makeEngine(w);
     await engine.start();
     const saved = () => w.ld.connection!.pageToken;
     const afterStart = saved();
 
-    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, 'X.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'X.livediagram');
     await engine.syncNow();
     expect(saved()).toBe(afterStart);
 
@@ -121,7 +121,7 @@ describe('cadence', () => {
     expect(saved()).not.toBe(afterStart);
 
     const t = saved();
-    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, 'Y.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Y.livediagram');
     await engine.syncNow();
     expect(saved()).toBe(t);
     await engine.flush();
@@ -131,7 +131,7 @@ describe('cadence', () => {
 
   it('backs off on a rate limit: status says so and the poll interval doubles', async () => {
     const w = world();
-    w.ld.createDiagram('d1', 'Plan');
+    w.ld.createDocument('d1', 'Plan');
     const { engine, statuses } = makeEngine(w);
     await engine.start();
     w.google.fail({ status: 403, reason: 'userRateLimitExceeded' });
@@ -201,10 +201,10 @@ describe('tokens', () => {
 });
 
 describe('folders livediagram cannot see', () => {
-  it('adopting the picked folder makes the matching folder and moves the diagram in; it then syncs both ways', async () => {
+  it('adopting the picked folder makes the matching folder and moves the document in; it then syncs both ways', async () => {
     const w = world();
     w.ld.createFolderAs('f1', 'Work');
-    w.ld.createDiagram('d1', 'Plan', 'f1');
+    w.ld.createDocument('d1', 'Plan', 'f1');
     const { engine, statuses } = makeEngine(w);
     await engine.start();
     w.clock.tick(MIN);
@@ -213,17 +213,17 @@ describe('folders livediagram cannot see', () => {
       'Clients',
       fileOf(w.google, w.ld, 'folder', 'f1')!.id,
     );
-    w.google.userMove(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, hidden);
+    w.google.userMove(fileOf(w.google, w.ld, 'document', 'd1')!.id, hidden);
     await engine.syncNow();
     expect(statuses.at(-1)!.notices).toHaveLength(1);
 
     // The Picker grants access to the folder itself.
     w.google.grantAccess(OWNER, hidden);
-    await engine.adoptFolder('diagram', 'd1', hidden);
+    await engine.adoptFolder('document', 'd1', hidden);
     const adopted = [...w.ld.folders.values()].find((f) => f.name === 'Clients')!;
     expect(adopted.parentId).toBe('f1');
-    expect(w.ld.diagram('d1')!.folderId).toBe(adopted.id);
-    expect(w.ld.item('diagram', 'd1')!.notice).toBeNull();
+    expect(w.ld.document('d1')!.folderId).toBe(adopted.id);
+    expect(w.ld.item('document', 'd1')!.notice).toBeNull();
     expect(statuses.at(-1)!.notices).toEqual([]);
     expect(w.google.get(hidden)!.appProperties).toMatchObject({ ldFolderId: adopted.id });
 
@@ -241,7 +241,7 @@ describe('disconnect and reconnect', () => {
   it('a reconnect finds the root again and matches existing files instead of copying them', async () => {
     const w = world();
     w.ld.createFolderAs('f1', 'Work');
-    w.ld.createDiagram('d1', 'Plan', 'f1');
+    w.ld.createDocument('d1', 'Plan', 'f1');
     const first = makeEngine(w);
     await first.engine.start();
     first.engine.stop();
@@ -324,30 +324,30 @@ describe('the 2-minute gated pace (docs/specs/022-drive-mirror/drive-mirror.md, 
 
   it('asks only for the start token when nothing changed, and lists when it moved', async () => {
     const w = world();
-    w.ld.createDiagram('d1', 'Plan');
+    w.ld.createDocument('d1', 'Plan');
     const { engine } = makeEngine(w);
     await engine.start();
     await engine.syncNow();
     const before = listCalls(w);
     await engine.syncNow();
     expect(listCalls(w)).toBe(before);
-    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, 'Moved.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Moved.livediagram');
     await engine.syncNow();
     expect(listCalls(w)).toBe(before + 1);
-    expect(w.ld.diagram('d1')!.name).toBe('Moved');
+    expect(w.ld.document('d1')!.name).toBe('Moved');
   });
 
   it('never skips a real change, even when the token also moves for files it cannot see', async () => {
     const w = world();
-    w.ld.createDiagram('d1', 'Plan');
+    w.ld.createDocument('d1', 'Plan');
     const { engine } = makeEngine(w);
     await engine.start();
     // Invisible activity elsewhere in the user's Drive moves the token too.
     w.google.userCreateFolder(OWNER, 'Elsewhere');
     await engine.syncNow();
-    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, 'Seen.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Seen.livediagram');
     await engine.syncNow();
-    expect(w.ld.diagram('d1')!.name).toBe('Seen');
+    expect(w.ld.document('d1')!.name).toBe('Seen');
   });
 
   it('logs the E-A3 diagnostic only when asked to', async () => {
@@ -401,13 +401,13 @@ describe('the 2-minute gated pace (docs/specs/022-drive-mirror/drive-mirror.md, 
 describe('views follow (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow")', () => {
   it('announces a pass that applied a change from Drive, and only those', async () => {
     const w = world();
-    w.ld.createDiagram('d1', 'Plan');
+    w.ld.createDocument('d1', 'Plan');
     let applied = 0;
     const { engine } = makeEngine({ ...w, onInboundApplied: () => void (applied += 1) });
     await engine.start();
     await engine.syncNow();
     expect(applied).toBe(0);
-    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, 'Renamed.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Renamed.livediagram');
     await engine.syncNow();
     expect(applied).toBe(1);
   });
@@ -416,14 +416,14 @@ describe('views follow (docs/specs/022-drive-mirror/drive-mirror.md, "Other view
 describe('not-ours logging', () => {
   it('logs a file it does not take as its own, saying whether it had any appProperties', async () => {
     const w = world();
-    w.ld.createDiagram('d1', 'Plan');
+    w.ld.createDocument('d1', 'Plan');
     const lines: unknown[][] = [];
     const info = console.info;
     console.info = (...args: unknown[]) => void lines.push(args);
     try {
       const { engine } = makeEngine(w);
       await engine.start();
-      w.google.userCopy(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, {
+      w.google.userCopy(fileOf(w.google, w.ld, 'document', 'd1')!.id, {
         keepAppProperties: false,
         visibleToApp: true,
       });
@@ -441,22 +441,22 @@ describe('not-ours logging', () => {
 describe('the root folder (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting")', () => {
   it('keeps syncing after the user moves and renames it, and never renames it back', async () => {
     const w = world();
-    w.ld.createDiagram('d1', 'Plan');
+    w.ld.createDocument('d1', 'Plan');
     const { engine } = makeEngine(w);
     await engine.start();
     const root = w.ld.connection!.rootFolderId!;
     const mine = w.google.userCreateFolder(OWNER, 'My projects');
-    w.google.userRename(root, 'Diagrams');
+    w.google.userRename(root, 'Documents');
     w.google.userMove(root, mine);
     w.clock.tick(MIN);
-    w.ld.createDiagram('d2', 'Later');
+    w.ld.createDocument('d2', 'Later');
     await engine.syncNow();
     // A fresh arrival too, the check that could have re-made the root.
     const next = makeEngine({ ...w, deviceId: 'device-b' });
     await next.engine.start();
     expect(w.ld.connection!.rootFolderId).toBe(root);
-    expect(w.google.get(root)).toMatchObject({ name: 'Diagrams', parents: [mine] });
-    expect(fileOf(w.google, w.ld, 'diagram', 'd2')!.parents).toEqual([root]);
+    expect(w.google.get(root)).toMatchObject({ name: 'Documents', parents: [mine] });
+    expect(fileOf(w.google, w.ld, 'document', 'd2')!.parents).toEqual([root]);
     expect(w.google.appFiles(OWNER).filter((f) => f.appProperties.ldRoot)).toHaveLength(1);
   });
 });
@@ -468,9 +468,9 @@ describe('the root folder name in the status (blueprint "Cloud Sync in Settings"
     await engine.start();
     // The test host is a self-hosted one.
     expect(statuses.at(-1)!.rootName).toBe('livediagram (self-hosted)');
-    w.google.userRename(w.ld.connection!.rootFolderId!, 'My diagrams');
+    w.google.userRename(w.ld.connection!.rootFolderId!, 'My documents');
     await engine.syncNow();
-    expect(statuses.at(-1)!.rootName).toBe('My diagrams');
+    expect(statuses.at(-1)!.rootName).toBe('My documents');
   });
 
   it('reads the name of a root it finds on arrival', async () => {
@@ -487,7 +487,7 @@ describe('the root folder name in the status (blueprint "Cloud Sync in Settings"
 describe('checks asked for by another tab (docs/specs/022-drive-mirror/drive-mirror.md, "A visible tab is never left unsynced")', () => {
   it('runs a gated check for focus or view past the focus guard, and says Synced for it', async () => {
     const w = world();
-    w.ld.createDiagram('d1', 'Plan');
+    w.ld.createDocument('d1', 'Plan');
     const { engine, statuses } = makeEngine(w);
     await engine.start();
     const calls = () =>

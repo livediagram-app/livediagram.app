@@ -113,7 +113,7 @@ describe('createTelemetryEmitter', () => {
 
   it('flushes on pagehide too (the beacon iteration-9 conversions rely on)', () => {
     const emitter = makeEmitter();
-    emitter.track('Diagram', 'Moved', 'SavedToCloud');
+    emitter.track('Document', 'Moved', 'SavedToCloud');
     windowTarget.fire('pagehide');
     expect(sendBeacon).toHaveBeenCalledTimes(1);
   });
@@ -261,13 +261,13 @@ describe('installClientErrorTracking', () => {
 
   it('names the kind, the page, and the error constructor', () => {
     const track = vi.fn();
-    at('/diagram/0b7c5f9e-1111-4222-8333-944445555666');
+    at('/document/0b7c5f9e-1111-4222-8333-944445555666');
     mod.installClientErrorTracking(track);
     windowTarget.fire('error', { error: new TypeError('x is undefined') });
     windowTarget.fire('unhandledrejection', { reason: new RangeError('bad') });
     expect(track.mock.calls).toEqual([
-      ['Error', 'Client', 'Uncaught.Diagram.TypeError'],
-      ['Error', 'Client', 'UnhandledRejection.Diagram.RangeError'],
+      ['Error', 'Client', 'Uncaught.Document.TypeError'],
+      ['Error', 'Client', 'UnhandledRejection.Document.RangeError'],
     ]);
   });
 
@@ -275,7 +275,7 @@ describe('installClientErrorTracking', () => {
     const track = vi.fn();
     at('/explorer/team/abc123def456ghi789');
     mod.installClientErrorTracking(track);
-    const odd = new Error('secret diagram name');
+    const odd = new Error('secret document name');
     odd.name = 'MyCustomError';
     windowTarget.fire('error', { error: odd });
     windowTarget.fire('unhandledrejection', { reason: 'a string' });
@@ -294,7 +294,7 @@ describe('installClientErrorTracking', () => {
 
   it('caps each distinct type per page load so an error storm cannot flood', () => {
     const track = vi.fn();
-    at('/diagram');
+    at('/document');
     mod.installClientErrorTracking(track);
     for (let i = 0; i < 25; i++) windowTarget.fire('error', { error: new TypeError('x') });
     expect(track).toHaveBeenCalledTimes(10);

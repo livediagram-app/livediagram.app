@@ -16,7 +16,7 @@ import { MAX_PARTICIPANT_NAME_LEN, MAX_COLOR_LEN } from '../limits';
 // caller who knew (or guessed) another participant's id could
 // rewrite their display name + colour — and because change-log
 // rows store name + colour denormalised at write time, that
-// vandalism would propagate across every diagram they'd
+// vandalism would propagate across every document they'd
 // collaborated on. The guard requires the caller's resolved
 // owner (Clerk Bearer OR X-Owner-Id, docs/specs/014-identity/auth-and-guest-access.md) to match the
 // participant id being mutated.

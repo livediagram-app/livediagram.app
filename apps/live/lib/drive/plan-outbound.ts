@@ -6,9 +6,9 @@
 
 import { stripDriveName, type DriveItem } from '@livediagram/api-schema';
 import { DRIVE_WRITE_IDLE_MS } from './cadence';
-import type { MirrorDiagram, MirrorFolder } from './livediagram-port';
+import type { MirrorDocument, MirrorFolder } from './livediagram-port';
 import {
-  expectedDiagramParent,
+  expectedDocumentParent,
   expectedFolderParent,
   foldersParentsFirst,
   itemKey,
@@ -26,10 +26,10 @@ export type OutboundOp =
       move: boolean;
       untrash: boolean;
     }
-  | { op: 'create-file'; diagram: MirrorDiagram }
+  | { op: 'create-file'; document: MirrorDocument }
   | {
       op: 'update-file';
-      diagram: MirrorDiagram;
+      document: MirrorDocument;
       item: DriveItem;
       rename: boolean;
       move: boolean;
@@ -43,10 +43,10 @@ export type OutboundPlan = { ops: OutboundOp[]; nextDueAt: number | null };
 
 export type OutboundOptions = {
   now: number;
-  // A flush writes every changed diagram now, ignoring idle and interval.
+  // A flush writes every changed document now, ignoring idle and interval.
   flush: boolean;
   writeIntervalMs: number;
-  lastContentWrite: (diagramId: string) => number | undefined;
+  lastContentWrite: (documentId: string) => number | undefined;
   seen: SeenRow[];
 };
 
@@ -75,48 +75,56 @@ export function planOutbound(snapshot: MirrorSnapshot, opts: OutboundOptions): O
     }
   }
 
-  const diagrams = [...snapshot.diagrams.values()].sort(
+  const liveDocs = [...snapshot.documents.values()].sort(
     (a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id),
   );
-  for (const diagram of diagrams) {
-    const item = snapshot.items.get(itemKey('diagram', diagram.id));
+  for (const liveDoc of liveDocs) {
+    const item = snapshot.items.get(itemKey('document', liveDoc.id));
     if (!item) {
-      ops.push({ op: 'create-file', diagram });
+      ops.push({ op: 'create-file', document: liveDoc });
       continue;
     }
-    const parent = expectedDiagramParent(snapshot, diagram, item);
-    const rename = namesDiffer(diagram.name, item);
+    const parent = expectedDocumentParent(snapshot, liveDoc, item);
+    const rename = namesDiffer(liveDoc.name, item);
     const move = parent !== null && parent !== item.parentId;
     let content = false;
-    if (diagram.savedAt > (item.mirroredSavedAt ?? 0)) {
-      const last = opts.lastContentWrite(diagram.id);
+    if (liveDoc.savedAt > (item.mirroredSavedAt ?? 0)) {
+      const last = opts.lastContentWrite(liveDoc.id);
       const dueAt = opts.flush
         ? opts.now
         : Math.max(
-            diagram.savedAt + DRIVE_WRITE_IDLE_MS,
+            liveDoc.savedAt + DRIVE_WRITE_IDLE_MS,
             last === undefined ? 0 : last + opts.writeIntervalMs,
           );
       if (dueAt <= opts.now) content = true;
       else nextDueAt = nextDueAt === null ? dueAt : Math.min(nextDueAt, dueAt);
     }
     if (rename || move || item.trashed || content) {
-      ops.push({ op: 'update-file', diagram, item, rename, move, untrash: item.trashed, content });
+      ops.push({
+        op: 'update-file',
+        document: liveDoc,
+        item,
+        rename,
+        move,
+        untrash: item.trashed,
+        content,
+      });
     }
   }
 
   // Binned here, or no longer in Personal Space (moved into a team): the file
   // goes to the bin, and the row stays so a way back restores it.
   for (const item of snapshot.items.values()) {
-    if (item.kind !== 'diagram' || item.trashed) continue;
-    if (!snapshot.diagrams.has(item.ldId)) ops.push({ op: 'trash-file', item });
+    if (item.kind !== 'document' || item.trashed) continue;
+    if (!snapshot.documents.has(item.ldId)) ops.push({ op: 'trash-file', item });
   }
 
   // Rows this browser saw that a purge or folder deletion took with it.
   // Folders last: their contents have moved up by now.
   const vanished = opts.seen.filter((row) => {
     if (snapshot.items.has(itemKey(row.kind, row.ldId))) return false;
-    if (row.kind === 'diagram')
-      return !snapshot.diagrams.has(row.ldId) && !snapshot.trash.has(row.ldId);
+    if (row.kind === 'document')
+      return !snapshot.documents.has(row.ldId) && !snapshot.trash.has(row.ldId);
     return !snapshot.folders.has(row.ldId);
   });
   vanished.sort((a, b) => Number(a.kind === 'folder') - Number(b.kind === 'folder'));

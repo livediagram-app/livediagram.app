@@ -73,8 +73,8 @@ export function CommandPalette(props: CommandPaletteProps) {
         <PaletteTintProvider tint={themeTint}>
           <PaletteTabBar
             // No storageKey: the palette always opens on Favourites when a
-            // diagram loads (the user's go-to tiles, docs/specs/010-palette/palette-favourites.md) rather than
-            // restoring the last-used category across diagrams — EXCEPT on
+            // document loads (the user's go-to tiles, docs/specs/010-palette/palette-favourites.md) rather than
+            // restoring the last-used category across documents — EXCEPT on
             // an event-storming board (docs/specs/021-event-storming/event-storming.md), where the notation is the
             // whole point: it opens on the Event Storming category. Keyed so
             // crossing an ES / non-ES tab boundary re-lands on the right
@@ -95,7 +95,7 @@ export function CommandPalette(props: CommandPaletteProps) {
                 // travel for a flat choice between equal-weight modes.
                 grid
                 // The three bands the tools fall into (docs/specs/004-interface-design/dropdown-tile-grid.md): what you do TO
-                // the diagram, what you do in front of an audience, and the
+                // the document, what you do in front of an audience, and the
                 // whole-canvas views.
                 groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
                 // 'zen' is an action entry, not a tool (see usePaletteCatalogue).

@@ -4,12 +4,12 @@ Status: shipped
 
 ## The rule
 
-**An exported image is a picture of the diagram.** Whatever the canvas draws,
+**An exported image is a picture of the document.** Whatever the canvas draws,
 every export draws: same sizes, same colours, same marks, in the same places.
-A difference between the board and its export is a bug, not a degradation.
+A difference between the canvas and its export is a bug, not a degradation.
 
 That applies to all four surfaces the headless renderer feeds, because they are
-all "a picture of the diagram" to whoever is looking at one: the SVG / PNG / PDF
+all "a picture of the document" to whoever is looking at one: the SVG / PNG / PDF
 export, the Explorer's preview thumbnails, the public live-image share link
 ([Live image share link](../013-workspace/live-image-share.md)), and the inline images the MCP server
 returns ([MCP server](../015-api/mcp-server.md)).
@@ -17,7 +17,7 @@ returns ([MCP server](../015-api/mcp-server.md)).
 ## Why it kept breaking
 
 There are **three** renderers for the same content: the canvas (React, DOM +
-CSS + SVG), the SVG emitters in `packages/diagram/src/svg-render*.ts`, and the
+CSS + SVG), the SVG emitters in `packages/document/src/svg-render*.ts`, and the
 PNG / PDF canvas-2D drawers in `apps/live/lib/export-tab-canvas-draw.ts`. Each
 was internally consistent, so each looked right in its own tests, and the
 differences between them were invisible until someone laid two pictures side by
@@ -25,7 +25,7 @@ side. They were not small:
 
 - **Labels came out about two thirds the size they were drawn at.** The canvas
   and the exporters each kept a font table and they disagreed at every preset
-  (the default `md` was 22px on the board and 14px in an export).
+  (the default `md` was 22px on the canvas and 14px in an export).
 - **Twenty-two kinds exported as an empty labelled box.** Charts, progress bars
   and rings, ratings, timeline rails, record rows, a page's masthead, and every
   Behaviour / Collaborate card had no branch in the SVG emitter, so each fell
@@ -39,7 +39,7 @@ side. They were not small:
 
 ## How it is held
 
-**One definition per decision, in `@livediagram/diagram`,** imported by both
+**One definition per decision, in `@livediagram/document`,** imported by both
 sides rather than reimplemented. That is the only mechanism that works: a rule
 written down in two places is a rule that drifts. What moved there for this:
 
@@ -75,12 +75,12 @@ Agenda, Roll call) lay out at the element's own size rather than scaling.
 
 **A self-painting element gets no box and no label.** `SELF_PAINTING_SHAPES`
 already said which kinds draw their own body; the export now honours it, so a
-chart is not framed in a rectangle that is not on the board, and a rail does not
+chart is not framed in a rectangle that is not on the canvas, and a rail does not
 print its kind name across itself.
 
 ## What an export deliberately does not reproduce
 
-Not everything on a live board is a mark on a picture, and pretending otherwise
+Not everything on a live canvas is a mark on a picture, and pretending otherwise
 would be worse than the gap:
 
 - **Motion.** Every element animation is designed so its resting frame is the
@@ -141,7 +141,7 @@ known gap is the Callout body's indent, a few pixels off the canvas's.
 
 ## Checking it
 
-`packages/diagram/src/export-consistency.test.ts` holds the wiring rather than
+`packages/document/src/export-consistency.test.ts` holds the wiring rather than
 pixels: that the exporter reads the canvas font table, that every kind with a
 body draws more than a box, that a face's title is not also printed as a centred
 label, and that every kind whose body the SVG draws is one the PNG rasterises.

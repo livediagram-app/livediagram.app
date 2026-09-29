@@ -51,7 +51,7 @@ describe('useAfterApiWrite', () => {
   it('hands a purge over immediately and still schedules the re-read', () => {
     const run = vi.fn();
     renderHook(() => useAfterApiWrite(run, { delayMs: 1000, minIntervalMs: 5000 }));
-    const purge = { sourceType: 'diagram', sourceId: 'd1' };
+    const purge = { sourceType: 'document', sourceId: 'd1' };
     notifyApiWrite({ purge });
     expect(run).toHaveBeenCalledWith({ purge });
     vi.advanceTimersByTime(1000);

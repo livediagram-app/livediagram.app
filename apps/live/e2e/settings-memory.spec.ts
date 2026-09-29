@@ -66,10 +66,14 @@ test('Settings reopens on the last category and row, across a resize', async ({
   await page.keyboard.press('Escape');
   await expect(dialog(page)).toBeHidden();
 
-  // Narrower and shorter: the rows above the anchor reflow (660 is narrow
-  // enough to wrap Editor's first footnote onto another line while staying
-  // above the phone breakpoint), so a pixel offset would miss.
-  await page.setViewportSize({ width: 660, height: 600 });
+  // Down to a phone: the pane loses a quarter of its width, so every row
+  // above the anchor reflows and a pixel offset would miss. (A desktop resize
+  // can't promise that: the dialog is capped at 672px and the phone layout
+  // starts below 640px, and a 50px change in pane width only rewraps a
+  // footnote when the font's metrics happen to fall that way. It did on
+  // macOS and not on CI's Linux.) Short too, so the pane still has the scroll
+  // range to put the row back where it was rather than clamping at the end.
+  await page.setViewportSize({ width: 390, height: 560 });
   await openSettings(page);
   await expect(dialog(page).getByRole('switch', { name: 'Middle-Mouse Pan' })).toBeVisible();
   await expect(async () => {

@@ -66,8 +66,8 @@ export function useDriveMirror(): DriveMirrorContextValue {
   return useContext(DriveMirrorContext);
 }
 
-// The unseen-folder notice on one diagram, if any.
-export function useDriveNotice(diagramId: string): DriveMirrorNotice | null {
+// The unseen-folder notice on one document, if any.
+export function useDriveNotice(documentId: string): DriveMirrorNotice | null {
   const { status } = useDriveMirror();
-  return status.notices.find((n) => n.kind === 'diagram' && n.ldId === diagramId) ?? null;
+  return status.notices.find((n) => n.kind === 'document' && n.ldId === documentId) ?? null;
 }

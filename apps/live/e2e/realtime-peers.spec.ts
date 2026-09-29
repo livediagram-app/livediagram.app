@@ -1,7 +1,7 @@
 import type { Browser, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 
-// Two people on one shared diagram (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
+// Two people on one shared document (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
 // the other online, an edit reaches the other side live, the autosave keeps everyone's edits (a peer's is
 // never saved back over or reverted), and a walking avatar shows on the other screen
 // (docs/specs/008-canvas/avatar-mode.md).
@@ -47,7 +47,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
   const headers = { 'X-Owner-Id': owner, Origin: new URL(baseURL!).origin };
-  const seeded = await page.request.post(`${apiBase}/diagrams`, {
+  const seeded = await page.request.post(`${apiBase}/documents`, {
     headers,
     data: {
       id,
@@ -64,15 +64,15 @@ test('two peers see each other, edit live, and every edit is kept', async ({
     },
   });
   expect(seeded.ok()).toBe(true);
-  const share = await page.request.post(`${apiBase}/diagrams/${id}/share`, {
+  const share = await page.request.post(`${apiBase}/documents/${id}/share`, {
     headers,
     data: { role: 'edit' },
   });
   const code = ((await share.json()) as { link: { code: string } }).link.code;
 
-  const ownerPage = await openAs(browser, baseURL!, `/diagram/${id}`, owner);
+  const ownerPage = await openAs(browser, baseURL!, `/document/${id}`, owner);
   await ownerPage.locator(CANVAS).waitFor();
-  const peerPage = await openAs(browser, baseURL!, `/diagram/shared?s=${code}`, null);
+  const peerPage = await openAs(browser, baseURL!, `/document/shared?s=${code}`, null);
   await peerPage.getByRole('button', { name: /^join$/i }).click();
   await peerPage.locator(CANVAS).waitFor();
   await declineTour(ownerPage);
@@ -98,7 +98,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   await ownerPage.keyboard.press('Escape');
   await expect
     .poll(async () => {
-      const res = await ownerPage.request.get(`${apiBase}/diagrams/${id}/tabs/${tabId}`, {
+      const res = await ownerPage.request.get(`${apiBase}/documents/${id}/tabs/${tabId}`, {
         headers,
       });
       return res.ok()

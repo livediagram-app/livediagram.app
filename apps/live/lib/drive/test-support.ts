@@ -1,7 +1,7 @@
 // Test support for the Drive mirror engine (docs/specs/022-drive-mirror/blueprints/drive-mirror.md,
 // "Testing"): an in-memory livediagram behind LivediagramPort that keeps the
 // api's own rules (the Trash, folder deletion moving contents up, mirror rows
-// removed with their diagram or folder, the lease), and a harness wiring
+// removed with their document or folder, the lease), and a harness wiring
 // engines to it and to the fake Google. Not a `.test.ts` file; tests import it.
 
 import {
@@ -14,10 +14,10 @@ import {
 import { FakeGoogle, fakePngBase64Url } from '@livediagram/fake-google';
 import { ApiError } from '../api/core';
 import {
-  diagramToEnvelopeText,
-  type DiagramEnvelope,
+  documentToEnvelopeText,
+  type DocumentEnvelope,
   type EnvelopeTab,
-} from '../export-diagram-text';
+} from '../export-document-text';
 import { createDriveRestClient } from './drive-rest-client';
 import { DriveMirrorEngine, type DriveMirrorStatus, type Timers } from './engine';
 import {
@@ -33,7 +33,7 @@ export const HOST = 'livediagram.test';
 export const OWNER = 'user_me';
 export const T0 = Date.parse('2026-09-28T09:00:00Z');
 
-type StoredDiagram = {
+type StoredDocument = {
   id: string;
   name: string;
   folderId: string | null;
@@ -87,7 +87,7 @@ export class ManualTimers implements Timers {
 }
 
 export class FakeLivediagram {
-  readonly diagrams = new Map<string, StoredDiagram>();
+  readonly documents = new Map<string, StoredDocument>();
   readonly folders = new Map<string, MirrorFolder>();
   connection: DriveConnection | null = null;
   readonly items = new Map<string, DriveItem>();
@@ -100,9 +100,9 @@ export class FakeLivediagram {
   }
 
   // ---- the person using livediagram --------------------------------------
-  createDiagram(id: string, name: string, folderId: string | null = null): void {
+  createDocument(id: string, name: string, folderId: string | null = null): void {
     const t = this.clock.now;
-    this.diagrams.set(id, {
+    this.documents.set(id, {
       id,
       name,
       folderId,
@@ -129,22 +129,22 @@ export class FakeLivediagram {
     this.live(id).teamId = 'team-1';
   }
   moveOutOfTeam(id: string): void {
-    this.diagrams.get(id)!.teamId = null;
+    this.documents.get(id)!.teamId = null;
   }
   takeOffline(id: string): void {
-    this.diagrams.delete(id);
-    this.items.delete(`diagram:${id}`);
+    this.documents.delete(id);
+    this.items.delete(`document:${id}`);
   }
-  diagram(id: string): StoredDiagram | undefined {
-    return this.diagrams.get(id);
+  document(id: string): StoredDocument | undefined {
+    return this.documents.get(id);
   }
-  private live(id: string): StoredDiagram {
-    const d = this.diagrams.get(id);
+  private live(id: string): StoredDocument {
+    const d = this.documents.get(id);
     if (!d || d.trashedAt !== null)
-      throw new ApiError('load', d ? 410 : 404, d ? 'diagram_trashed' : null);
+      throw new ApiError('load', d ? 410 : 404, d ? 'document_trashed' : null);
     return d;
   }
-  private personal(d: StoredDiagram): boolean {
+  private personal(d: StoredDocument): boolean {
     return d.teamId === null;
   }
 
@@ -159,8 +159,8 @@ export class FakeLivediagram {
       }
     };
     return {
-      listPersonalDiagrams: async () =>
-        [...this.diagrams.values()]
+      listPersonalDocuments: async () =>
+        [...this.documents.values()]
           .filter((d) => d.trashedAt === null && this.personal(d))
           .map((d) => ({
             id: d.id,
@@ -171,41 +171,41 @@ export class FakeLivediagram {
           })),
       listPersonalFolders: async () => [...this.folders.values()].map((f) => ({ ...f })),
       listPersonalTrash: async () =>
-        [...this.diagrams.values()]
+        [...this.documents.values()]
           .filter((d) => d.trashedAt !== null && this.personal(d))
           .map((d) => ({ id: d.id, name: d.name, trashedAt: d.trashedAt! })),
       loadEnvelope: async (id) => {
-        const d = this.diagrams.get(id);
+        const d = this.documents.get(id);
         if (!d || d.trashedAt !== null) return null;
-        return { text: diagramToEnvelopeText(d, d.tabs, d.savedAt), savedAt: d.savedAt };
+        return { text: documentToEnvelopeText(d, d.tabs, d.savedAt), savedAt: d.savedAt };
       },
       loadSnapshotSvg: async () => this.svg,
-      canOpenDiagram: async (id) => {
-        const d = this.diagrams.get(id);
+      canOpenDocument: async (id) => {
+        const d = this.documents.get(id);
         return !!d && d.trashedAt === null;
       },
-      renameDiagram: (id, name) =>
+      renameDocument: (id, name) =>
         write(() => {
           const d = this.live(id);
           d.name = name;
           d.savedAt = this.clock.now;
         }),
-      moveDiagram: (id, folderId) =>
+      moveDocument: (id, folderId) =>
         write(() => {
           this.live(id).folderId = folderId;
         }),
-      trashDiagram: (id) =>
+      trashDocument: (id) =>
         write(() => {
           this.live(id).trashedAt = this.clock.now;
         }),
-      restoreDiagram: (id) =>
+      restoreDocument: (id) =>
         write(() => {
-          const d = this.diagrams.get(id);
+          const d = this.documents.get(id);
           if (!d || d.trashedAt === null) throw new ApiError('restore', 404, null);
           d.trashedAt = null;
           if (d.folderId && !this.folders.has(d.folderId)) d.folderId = null;
         }),
-      purgeDiagram: (id) => write(() => this.purge(id)),
+      purgeDocument: (id) => write(() => this.purge(id)),
       createFolder: (id, name, parentId) => write(() => this.createFolderAs(id, name, parentId)),
       renameFolder: (id, name) =>
         write(() => {
@@ -223,13 +223,13 @@ export class FakeLivediagram {
           this.folders.get(id)!.parentId = parentId;
         }),
       deleteFolder: (id) => write(() => this.deleteFolder(id)),
-      importDiagramCopy: (envelope: DiagramEnvelope, target?: CopyTarget) =>
+      importDocumentCopy: (envelope: DocumentEnvelope, target?: CopyTarget) =>
         write(() => {
-          const id = target?.id ?? `copy-${this.diagrams.size + 1}`;
+          const id = target?.id ?? `copy-${this.documents.size + 1}`;
           const { tabs, presentation } = copyEnvelope(envelope);
-          this.diagrams.set(id, {
+          this.documents.set(id, {
             id,
-            name: target?.name ?? envelope.diagram.name,
+            name: target?.name ?? envelope.document.name,
             folderId: target?.folderId ?? null,
             teamId: null,
             savedAt: this.clock.now,
@@ -283,14 +283,14 @@ export class FakeLivediagram {
 
   // The api's own removals, with the mirror rows in the same batch.
   purge(id: string): void {
-    const d = this.diagrams.get(id);
-    if (!d || d.trashedAt === null) throw new ApiError('purge diagram', 404, null);
-    this.diagrams.delete(id);
-    this.items.delete(`diagram:${id}`);
+    const d = this.documents.get(id);
+    if (!d || d.trashedAt === null) throw new ApiError('purge document', 404, null);
+    this.documents.delete(id);
+    this.items.delete(`document:${id}`);
   }
   deleteFolder(id: string): void {
     for (const f of this.folders.values()) if (f.parentId === id) f.parentId = null;
-    for (const d of this.diagrams.values()) if (d.folderId === id) d.folderId = null;
+    for (const d of this.documents.values()) if (d.folderId === id) d.folderId = null;
     this.items.delete(`folder:${id}`);
     this.folders.delete(id);
   }
@@ -360,7 +360,7 @@ export function world() {
   return { clock, timers, google, ld };
 }
 
-// The Drive file mirroring a diagram or folder.
+// The Drive file mirroring a document or folder.
 export function fileOf(google: FakeGoogle, ld: FakeLivediagram, kind: DriveItemKind, ldId: string) {
   const item = ld.item(kind, ldId);
   return item ? google.get(item.driveFileId) : undefined;

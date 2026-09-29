@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/diagram';
-import { isEventStormingTab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
+import { isEventStormingTab } from '@livediagram/document';
 import { tabToJsonText } from './export-tab-text';
 import { parseImportedTab } from './import-tab';
 import { mergeImportedTab } from './import-merge';

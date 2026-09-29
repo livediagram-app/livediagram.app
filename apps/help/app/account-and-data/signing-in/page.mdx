@@ -5,13 +5,13 @@ import { SignInCard, MigrateOnSignUp } from '@/components/illustrations/account'
 export const metadata = helpMetadata({
   title: 'Signing In',
   description:
-    'Signing in to livediagram is optional and free. Learn what an account adds and how your guest diagrams move across.',
+    'Signing in to livediagram is optional and free. Learn what an account adds and how your guest documents move across.',
   path: '/help/account-and-data/signing-in/',
 });
 
-<ArticleLayout title="Signing In" description="An account is optional and free. It keeps your diagrams in sync across devices, and your guest work comes with you." categoryTitle="Account and Data" categorySlug="account-and-data">
+<ArticleLayout title="Signing In" description="An account is optional and free. It keeps your documents in sync across devices, and your guest work comes with you." categoryTitle="Account and Data" categorySlug="account-and-data">
 
-Signing in to livediagram is entirely optional. The canvas works without an account, so there is never a sign-in wall in front of the editor. An account simply adds something useful on top: it keeps your diagrams with you across browsers and devices instead of being tied to one [guest identity](/help/account-and-data/guest-identity/), unlocks [teams](/help/collaboration/teams/), and lets you create [API tokens](/help/account-and-data/api-tokens/) to call the API from your own scripts.
+Signing in to livediagram is entirely optional. The canvas works without an account, so there is never a sign-in wall in front of the editor. An account simply adds something useful on top: it keeps your documents with you across browsers and devices instead of being tied to one [guest identity](/help/account-and-data/guest-identity/), unlocks [teams](/help/collaboration/teams/), and lets you create [API tokens](/help/account-and-data/api-tokens/) to call the API from your own scripts.
 
 ## Creating an account
 
@@ -20,7 +20,7 @@ There are two routes:
 - **Sign up** at `/get-started`. You provide your name and email, then confirm with a 6-digit code. Some deployments also offer a Google sign-in button.
 - **Sign in** at `/sign-in` if you already have an account, using the same email-code (or Google) flow.
 
-Accounts are free, with no paid tier and nothing to upgrade. After signing in, a returning user lands on the [Explorer](/explorer/recent) to see their existing diagrams, while a brand-new sign-up lands on the new-diagram flow to start building.
+Accounts are free, with no paid tier and nothing to upgrade. After signing in, a returning user lands on the [Explorer](/explorer/recent) to see their existing documents, while a brand-new sign-up lands on the new-document flow to start building.
 
 <Figure caption="Sign in with an email code, or with Google where it is enabled." width="narrow">
   <SignInCard />
@@ -28,20 +28,20 @@ Accounts are free, with no paid tier and nothing to upgrade. After signing in, a
 
 Sign-in is an optional capability of livediagram. On self-hosted instances where accounts have not been configured, the sign-in pages show a friendly "not enabled" notice with a "Continue as guest" option, and the editor works exactly as before.
 
-## Your guest diagrams come with you
+## Your guest documents come with you
 
-The best part of signing up is that you keep the work you have already done. When you create an account, the diagrams you built as a guest migrate into it automatically, so nothing is lost.
+The best part of signing up is that you keep the work you have already done. When you create an account, the documents you built as a guest migrate into it automatically, so nothing is lost.
 
-The migration moves your guest content, including your diagrams, folders, shared-link records, images, and saved preferences, from your per-browser guest id over to your new account. From then on, that content is owned by your account and follows you to any browser or device where you sign in.
+The migration moves your guest content, including your documents, folders, shared-link records, images, and saved preferences, from your per-browser guest id over to your new account. From then on, that content is owned by your account and follows you to any browser or device where you sign in.
 
-<Figure caption="On sign-up, your guest diagrams move from the per-browser id over to your new account.">
+<Figure caption="On sign-up, your guest documents move from the per-browser id over to your new account.">
   <MigrateOnSignUp />
 </Figure>
 
 The process runs once, the first time you are signed in, and is safe to repeat: a second attempt simply moves nothing. Once your account syncs everything, the Explorer's sign-in nudge disappears, because there is nothing left to prompt you about.
 
 <Tip>
-  Build freely as a guest, then sign up when you want your diagrams everywhere. The hand-off is
+  Build freely as a guest, then sign up when you want your documents everywhere. The hand-off is
   automatic, so there is no manual import to do.
 </Tip>
 

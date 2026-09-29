@@ -1,4 +1,10 @@
-import type { BoxedElement, TextAlignX, TextAlignY, TextRun, TextSize } from '@livediagram/diagram';
+import type {
+  BoxedElement,
+  TextAlignX,
+  TextAlignY,
+  TextRun,
+  TextSize,
+} from '@livediagram/document';
 
 export type RichTextEditorProps = {
   // The element being edited — its whole-element text* fields are the

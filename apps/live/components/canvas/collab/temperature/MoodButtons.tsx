@@ -6,7 +6,7 @@
 // viewer who can't answer sees them unpressable.
 
 import { useState } from 'react';
-import { TEMPERATURE_COLORS, TEMPERATURE_MOODS, TEMPERATURE_VALUES } from '@livediagram/diagram';
+import { TEMPERATURE_COLORS, TEMPERATURE_MOODS, TEMPERATURE_VALUES } from '@livediagram/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { stopPointer } from '../qa/qa-parts';

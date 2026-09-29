@@ -3,7 +3,7 @@ import {
   deriveTextColorForBg,
   type AlignmentGuide,
   type DistributionGuide,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { getTheme, type ThemeId } from '@/lib/themes';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';

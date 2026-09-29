@@ -10,10 +10,10 @@ const ME = 'me';
 function event(over: Partial<TimelineEvent> = {}): TimelineEvent {
   return {
     id: 'e1',
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: 'd1',
-    eventType: 'diagram_created',
-    title: 'Diagram Created',
+    eventType: 'document_created',
+    title: 'Document Created',
     occurredAt: 1_700_000_000_000,
     actorId: ME,
     ...over,
@@ -68,17 +68,17 @@ describe('useTimelineControls', () => {
       const noon = new Date(2026, 8, 21, 12, 0).getTime();
       const created = event({
         id: 'c',
-        eventType: 'diagram_created',
-        title: 'Diagram Created',
+        eventType: 'document_created',
+        title: 'Document Created',
         occurredAt: noon,
-        snapshot: { diagramId: 'd1', diagramName: 'Payments' },
+        snapshot: { documentId: 'd1', documentName: 'Payments' },
       } as Partial<TimelineEvent>);
       const edited = event({
         id: 'e',
-        eventType: 'diagram_edited',
-        title: 'Diagram Updated',
+        eventType: 'document_edited',
+        title: 'Document Updated',
         occurredAt: noon + 3 * 60 * 60 * 1000,
-        snapshot: { diagramId: 'd1', diagramName: 'Payments' },
+        snapshot: { documentId: 'd1', documentName: 'Payments' },
       } as Partial<TimelineEvent>);
       const { result } = renderHook(() => useTimelineControls([edited, created], { viewerId: ME }));
       expect(result.current.visibleEvents.map((e) => e.id)).toEqual(['c']);

@@ -15,7 +15,7 @@ export type ComponentSchemas = Record<string, JsonSchema>;
 /** A request/response body schema in the manifest: either a `$ref`-able
  *  component name (a key of the generated schemas) or an inline JSON Schema
  *  (used for the small response envelopes that wrap a payload, e.g.
- *  `{ diagrams: DiagramSummary[] }`). */
+ *  `{ documents: DocumentSummary[] }`). */
 export type BodySchema = string | JsonSchema;
 
 export interface OpenApiDocument {

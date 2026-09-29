@@ -81,7 +81,7 @@ async function connect(db: SqliteD1, owner = 'user_a') {
 
 function item(over: Partial<DriveItem> = {}): DriveItem {
   return {
-    kind: 'diagram',
+    kind: 'document',
     ldId: 'd1',
     driveFileId: 'f1',
     name: 'One.livediagram',
@@ -362,7 +362,7 @@ describe('items', () => {
     const db = sqliteD1(BROWSER);
     await call(db, 'PUT', '/connection', { body: {} });
     await call(db, 'PUT', '/items', { body: { items: [item()] } });
-    expect((await call(db, 'DELETE', '/items/diagram/d1')).status).toBe(204);
+    expect((await call(db, 'DELETE', '/items/document/d1')).status).toBe(204);
     expect((await body<{ items: unknown[] }>(await call(db, 'GET', '/items'))).items).toEqual([]);
     expect((await call(db, 'DELETE', '/items/nope/d1')).status).toBe(400);
   });

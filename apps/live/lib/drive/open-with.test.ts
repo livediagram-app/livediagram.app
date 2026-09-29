@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FakeGoogle } from '@livediagram/fake-google';
 import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
-import { diagramToEnvelopeText } from '../export-diagram-text';
+import { documentToEnvelopeText } from '../export-document-text';
 import { createDriveRestClient } from './drive-rest-client';
 import {
   importOpenWithCopy,
@@ -23,7 +23,7 @@ function setup() {
     getAccessToken: async () => google.issueAccessToken(OWNER),
   });
   const deps = { drive, port: ld.port(), host: HOST };
-  const envelope = diagramToEnvelopeText(
+  const envelope = documentToEnvelopeText(
     {
       id: 'd1',
       name: 'Shared plan',
@@ -76,26 +76,26 @@ describe('parseOpenState', () => {
 });
 
 describe('resolveOpenWith', () => {
-  it('opens a diagram the user can open', async () => {
+  it('opens a document the user can open', async () => {
     const s = setup();
-    s.ld.createDiagram('d1', 'Shared plan');
-    const outcome = await resolveOpenWith(s.deps, s.file({ ldDiagramId: 'd1', ldOrigin: HOST }));
-    expect(outcome).toEqual({ kind: 'open', diagramId: 'd1' });
+    s.ld.createDocument('d1', 'Shared plan');
+    const outcome = await resolveOpenWith(s.deps, s.file({ ldDocumentId: 'd1', ldOrigin: HOST }));
+    expect(outcome).toEqual({ kind: 'open', documentId: 'd1' });
     expect(openWithTelemetryType(outcome)).toBe('Opened');
   });
 
   it('offers Import a copy when the user cannot open it (shared in Drive only)', async () => {
     const s = setup();
-    const outcome = await resolveOpenWith(s.deps, s.file({ ldDiagramId: 'd1', ldOrigin: HOST }));
+    const outcome = await resolveOpenWith(s.deps, s.file({ ldDocumentId: 'd1', ldOrigin: HOST }));
     expect(outcome).toEqual({ kind: 'import', reason: 'no-access', name: 'Shared plan' });
     expect(openWithTelemetryType(outcome)).toBe('ImportOffered');
   });
 
-  it('offers Import a copy only, for another deployment or no diagram id', async () => {
+  it('offers Import a copy only, for another deployment or no document id', async () => {
     const s = setup();
-    s.ld.createDiagram('d1', 'Mine');
+    s.ld.createDocument('d1', 'Mine');
     expect(
-      await resolveOpenWith(s.deps, s.file({ ldDiagramId: 'd1', ldOrigin: 'other.host' })),
+      await resolveOpenWith(s.deps, s.file({ ldDocumentId: 'd1', ldOrigin: 'other.host' })),
     ).toMatchObject({ kind: 'import', reason: 'foreign' });
     expect(await resolveOpenWith(s.deps, s.file({}))).toMatchObject({
       kind: 'import',
@@ -119,14 +119,14 @@ describe('resolveOpenWith', () => {
 });
 
 describe('importOpenWithCopy', () => {
-  it('creates a new diagram with fresh tab ids, folders and the deck following', async () => {
+  it('creates a new document with fresh tab ids, folders and the deck following', async () => {
     const s = setup();
     const id = await importOpenWithCopy(
       s.deps,
-      s.file({ ldDiagramId: 'd1', ldOrigin: HOST }),
+      s.file({ ldDocumentId: 'd1', ldOrigin: HOST }),
       'foreign',
     );
-    const copy = s.ld.diagram(id)!;
+    const copy = s.ld.document(id)!;
     expect(copy.name).toBe('Shared plan');
     expect(copy.tabs).toHaveLength(1);
     expect(copy.tabs[0]!.id).not.toBe('t1');

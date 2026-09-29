@@ -1,12 +1,12 @@
 # Google Drive mirror
 
 A signed-in user can **mirror their Personal Space to their own Google Drive**.
-Every diagram becomes a `.livediagram` file in a folder tree that matches their
+Every document becomes a `.livediagram` file in a folder tree that matches their
 livediagram folders, kept in step both ways while a livediagram tab is open.
 Double-clicking such a file in Drive opens it in livediagram.
 
-The mirror is a **copy**, never the diagram's home
-([Save Locations](../006-diagram/save-locations.md#google-drive-is-a-mirror-not-a-location)).
+The mirror is a **copy**, never the document's home
+([Save Locations](../006-document/save-locations.md#google-drive-is-a-mirror-not-a-location)).
 livediagram's database stays the source of truth, so realtime collaboration,
 share links and the change log are untouched by it.
 
@@ -20,8 +20,8 @@ this spec does not restate it.
   account to. The verified Clerk user id owns the connection; the unsigned
   `X-Owner-Id` header never reaches any Drive route.
 - **Personal Space only.** Team libraries are not mirrored (whose Drive would
-  hold a team's copy is unresolved). Diagrams shared with the user, and Offline
-  Mode diagrams, are not mirrored either.
+  hold a team's copy is unresolved). Documents shared with the user, and Offline
+  Mode documents, are not mirrored either.
 - **Everyone, free.** Hosted livediagram.app offers it to every signed-in user.
   Self-hosters enable it with their own Google project (see
   [Self-hosting](#self-hosting)); without one, the feature is absent, not broken.
@@ -99,7 +99,7 @@ this spec does not restate it.
     continue." with **Resume**, beside **Disconnect**. The why (rate limits,
     reconnecting, the rhythm and its per-document limit, copies made in
     Drive) is in the help article.
-  - **Terminology:** "documents", not diagrams; "Google Drive", then "Drive"
+  - **Terminology:** "documents", not documents; "Google Drive", then "Drive"
     once named; "sync" for the ongoing work, "copy" only for the first copy.
   - **Below the card:** "Your Personal Space, copied to your Google Drive in
     matching folders. Renames, moves and deletions sync both ways. livediagram
@@ -142,7 +142,7 @@ this spec does not restate it.
   token and stores it. The browser never sees the refresh token.
 - **First mirror:** the browser creates the root folder in My Drive (or
   reuses the one recorded for this user), creates the folder tree,
-  then uploads every Personal Space diagram, oldest first, with progress in
+  then uploads every Personal Space document, oldest first, with progress in
   the Cloud Sync row. It is resumable: a closed tab continues where it stopped on the
   next visit.
 - **The root folder's name** comes from the deployment's address, with no
@@ -200,29 +200,29 @@ this spec does not restate it.
 
 ## The file
 
-- **Name:** the diagram name plus `.livediagram`. Names that Drive would
+- **Name:** the document name plus `.livediagram`. Names that Drive would
   alter are stored as Drive holds them, and the next inbound rename is
   compared against that stored form, never against the livediagram name.
 - **MIME type:** `application/vnd.livediagram+json`, registered as the app's
   default type for "Open with".
-- **Contents:** a whole-diagram envelope, the sibling of the per-tab export's
+- **Contents:** a whole-document envelope, the sibling of the per-tab export's
   `livediagram.tab` envelope (`apps/live/lib/export-tab-text.ts`):
-  `{ kind: 'livediagram.diagram', schemaVersion, exportedAt, diagram }`, where
+  `{ kind: 'livediagram.document', schemaVersion, exportedAt, document }`, where
   `diagram` holds the id, name and every tab with its folders and slide
   deck. Images stay references to livediagram's image store; the file does
   not embed image bytes.
 - **Thumbnail:** a PNG of the first tab, rasterised in the browser from the
   existing SVG snapshot, sent as `contentHints.thumbnail` (PNG, at least 220 px
   wide, under 2 MB). There is no separate preview file.
-- **`appProperties`:** `ldDiagramId` (the diagram id) and `ldOrigin` (the
-  deployment's host), so a file maps back to its diagram after any rename or
+- **`appProperties`:** `ldDocumentId` (the document id) and `ldOrigin` (the
+  deployment's host), so a file maps back to its document after any rename or
   move, and a file from another deployment is recognised as foreign. Mirrored
   folders carry `ldFolderId` and `ldOrigin` the same way, so a folder
   restored from the bin, or met again after a reconnect, is recognised too.
 
 ## Folders
 
-- The root folder is **Unsorted**: diagrams without a folder sit
+- The root folder is **Unsorted**: documents without a folder sit
   directly in it.
 - Every Personal Space folder is a Drive folder at the same place in the tree.
 - **Folders created in Drive** by the user are invisible to livediagram under
@@ -231,39 +231,39 @@ this spec does not restate it.
 
 ## Outbound: livediagram to Drive
 
-| In livediagram                   | In Drive                                                                                                                  |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Diagram created                  | File created in its folder                                                                                                |
-| Diagram edited                   | File contents and thumbnail rewritten, at the [cadence](#cadence)                                                         |
-| Diagram renamed                  | File renamed                                                                                                              |
-| Diagram moved to another folder  | File moved                                                                                                                |
-| Diagram deleted (to Trash)       | File moved to Drive's bin                                                                                                 |
-| Diagram restored from Trash      | File restored from the bin (re-created if it is gone)                                                                     |
-| Diagram purged from Trash        | File permanently deleted, if still in the bin                                                                             |
-| Diagram moved into a team        | File moved to Drive's bin (the diagram left Personal Space)                                                               |
-| Diagram moved out of a team      | File created (or restored), as a new Personal Space diagram                                                               |
-| Folder created / renamed / moved | Folder created / renamed / moved                                                                                          |
-| Folder deleted                   | Its diagrams and subfolders move up ([Folders](../013-workspace/folders.md)), then the empty Drive folder goes to the bin |
+| In livediagram                   | In Drive                                                                                                                   |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Document created                 | File created in its folder                                                                                                 |
+| Document edited                  | File contents and thumbnail rewritten, at the [cadence](#cadence)                                                          |
+| Document renamed                 | File renamed                                                                                                               |
+| Document moved to another folder | File moved                                                                                                                 |
+| Document deleted (to Trash)      | File moved to Drive's bin                                                                                                  |
+| Document restored from Trash     | File restored from the bin (re-created if it is gone)                                                                      |
+| Document purged from Trash       | File permanently deleted, if still in the bin                                                                              |
+| Document moved into a team       | File moved to Drive's bin (the document left Personal Space)                                                               |
+| Document moved out of a team     | File created (or restored), as a new Personal Space document                                                               |
+| Folder created / renamed / moved | Folder created / renamed / moved                                                                                           |
+| Folder deleted                   | Its documents and subfolders move up ([Folders](../013-workspace/folders.md)), then the empty Drive folder goes to the bin |
 
 ## Inbound: Drive to livediagram
 
 The browser reads `changes.list` from the stored page token and applies each
-change whose file it recognises (by `appProperties.ldDiagramId` or a recorded
+change whose file it recognises (by `appProperties.ldDocumentId` or a recorded
 folder id):
 
 | In Drive                                             | In livediagram                                                                                         |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | File copied (Drive's "Make a copy")                  | Nothing: livediagram never sees the copy (**verified**, [Copies made in Drive](#copies-made-in-drive)) |
-| File renamed                                         | Diagram renamed (the `.livediagram` extension is dropped; an empty name keeps the old one)             |
-| File moved to another mirrored folder                | Diagram moved to that folder                                                                           |
-| File moved to the root folder                        | Diagram moved to Unsorted                                                                              |
-| File moved to a folder livediagram cannot see        | Diagram moved to Unsorted, with a notice (see below)                                                   |
+| File renamed                                         | Document renamed (the `.livediagram` extension is dropped; an empty name keeps the old one)            |
+| File moved to another mirrored folder                | Document moved to that folder                                                                          |
+| File moved to the root folder                        | Document moved to Unsorted                                                                             |
+| File moved to a folder livediagram cannot see        | Document moved to Unsorted, with a notice (see below)                                                  |
 | File moved outside the `livediagram` tree entirely   | Same as a folder livediagram cannot see                                                                |
-| File moved to the bin                                | Diagram moved to Trash ([Trash](../013-workspace/trash.md))                                            |
-| File restored from the bin                           | Diagram restored from Trash                                                                            |
-| File permanently deleted (`removed`, or bin emptied) | Diagram purged from Trash                                                                              |
+| File moved to the bin                                | Document moved to Trash ([Trash](../013-workspace/trash.md))                                           |
+| File restored from the bin                           | Document restored from Trash                                                                           |
+| File permanently deleted (`removed`, or bin emptied) | Document purged from Trash                                                                             |
 | Folder renamed / moved between mirrored folders      | Folder renamed / moved                                                                                 |
-| Folder moved to the bin                              | Its diagrams go to Trash and the folder is removed; restoring the folder in Drive restores both        |
+| Folder moved to the bin                              | Its documents go to Trash and the folder is removed; restoring the folder in Drive restores both       |
 | File contents edited                                 | Ignored; the next outbound write replaces them                                                         |
 
 - **Our own writes are not echoes.** For each mirrored item the api stores the
@@ -275,14 +275,14 @@ folder id):
   local name.
 - **Both sides changed the same attribute** since the last sync: the later
   change wins, by Drive's change `time` against the livediagram change's time
-  (a diagram's `savedAt`, a folder's `updatedAt`). "Changed since the last
+  (a document's `savedAt`, a folder's `updatedAt`). "Changed since the last
   sync" is judged against the item row: Drive's side against the stored Drive
   state, livediagram's side against `ld_name` and the stored parent. A change
   whose value livediagram already holds is recorded, not applied.
-- **Restoring from the bin places the diagram where its file sits** in Drive,
-  so restoring a binned folder brings back its diagrams inside it.
+- **Restoring from the bin places the document where its file sits** in Drive,
+  so restoring a binned folder brings back its documents inside it.
 - **A permanent delete only purges from the Trash.** `removed` also means
-  "livediagram lost access", so a live diagram whose file is removed is not
+  "livediagram lost access", so a live document whose file is removed is not
   deleted; its file is re-created on the next write.
 - **A file whose contents were edited in Drive** (a new `md5Checksum`) is
   rewritten from livediagram on the next outbound pass, so the canonical copy
@@ -302,9 +302,9 @@ livediagram when one is made. The way in is **Open with > livediagram** on the
 copy (below), or **Duplicate** inside livediagram.
 
 - **Open with on a copy.** Opening the copy with livediagram grants access to
-  that one file, and it carries the **original's** `ldDiagramId` and
+  that one file, and it carries the **original's** `ldDocumentId` and
   `ldOrigin`. It is a different Drive file: recognised because the mirror
-  records another file for that `ldDiagramId` (and `ldOrigin` is this
+  records another file for that `ldDocumentId` (and `ldOrigin` is this
   host). It is never taken for the original: livediagram never opens the
   original from it and never re-tags or adopts it as the original. It offers
   **Import as new document**, which makes a new Personal Space document from
@@ -318,10 +318,10 @@ copy (below), or **Duplicate** inside livediagram.
   sits in the root, and in Unsorted with [the notice](#folders-livediagram-cannot-see)
   when it sits in a folder livediagram cannot see.
 - **Afterwards.** Once opened, the copy can reach livediagram's change feed.
-  An inbound change for a file that carries a mirrored diagram's id under
+  An inbound change for a file that carries a mirrored document's id under
   another file id is ignored (logged as `inbound-foreign-copy`), never
   applied, re-tagged or adopted. The same holds when the mirror is re-met after
-  a reconnect: two files claiming one diagram are both left alone, and the next
+  a reconnect: two files claiming one document are both left alone, and the next
   write makes a fresh file for it.
 - **Traceable.** A file livediagram is shown but does not take as its own
   (no `ldOrigin` of this deployment) is logged quietly
@@ -331,21 +331,21 @@ copy (below), or **Duplicate** inside livediagram.
 ## Folders livediagram cannot see
 
 Under `drive.file`, a folder the user creates in Drive is invisible to
-livediagram: moving a diagram's file into it shows up only as "moved to an
+livediagram: moving a document's file into it shows up only as "moved to an
 unknown folder". The user's goal is to shape the tree from either side with
 the same result, so the mirror handles this openly, never silently:
 
-- The diagram moves to **Unsorted**, and a notice in the Cloud Sync row (and on
-  the diagram's Explorer row) says so: "Moved in Drive to a folder livediagram
+- The document moves to **Unsorted**, and a notice in the Cloud Sync row (and on
+  the document's Explorer row) says so: "Moved in Drive to a folder livediagram
   can't see." The notice is kept on the item row, so every device shows it; it
-  clears when the diagram is moved again from either side, or when the folder
+  clears when the document is moved again from either side, or when the folder
   is adopted. Until then the file stays where the user put it in Drive. A folder moved into one is placed at
   the top level with the same notice in the Cloud Sync row.
 - **Adopting a folder:** the notice offers **Show this folder to livediagram**,
   which opens the Google Picker with folder selection. Picking the folder
   grants livediagram access to it; livediagram then creates the matching
   Personal Space folder, places it under its nearest mirrored ancestor (or at
-  the root when that is unknown too), and moves the diagram into it. From then
+  the root when that is unknown too), and moves the document into it. From then
   on that folder syncs both ways like any other. Widening access to all of
   Drive (a restricted scope with a yearly paid security assessment) is
   deliberately not the answer.
@@ -365,10 +365,10 @@ Named constants in one cadence module of the mirror code, with the values and bu
   signed-in session has settled.
 - **One tab syncs per browser**, elected with the Web Locks API; across
   devices, a short lease row in D1 keeps two browsers from writing the same
-  diagram at once. The lease lasts 15 minutes, is renewed only when a pass
+  document at once. The lease lasts 15 minutes, is renewed only when a pass
   has something to write and under 5 minutes remain, and is released when the
   tab hides, so a device that walks away hands over at once.
-- **Arrival:** one `changes.list` catch-up, then re-upload of every diagram
+- **Arrival:** one `changes.list` catch-up, then re-upload of every document
   saved since its last mirrored revision.
 - **A visible tab is never left unsynced.** While any livediagram tab of the
   browser is visible, Drive is checked every **2 minutes** and when the user
@@ -393,9 +393,9 @@ Named constants in one cadence module of the mirror code, with the values and bu
 - **Diagnostic:** with `localStorage['livediagram:v2:drive-diagnostics'] = '1'`
   every check logs `drive: start-token moved=<bool> listed=<n>`, which is how
   the unverified point below (research E-A3) is settled against real Drive.
-- **Writes:** a diagram is mirrored after 60 seconds without edits, at most
+- **Writes:** a document is mirrored after 60 seconds without edits, at most
   once per 5 minutes, and flushed when the tab hides or the user leaves the
-  diagram.
+  document.
 - **Back-off:** on `403 userRateLimitExceeded` or `429`, the intervals double
   (the check up to 60 minutes, writes up to 30), returning to normal after an
   hour without errors.
@@ -407,7 +407,7 @@ Named constants in one cadence module of the mirror code, with the values and bu
 When a check applies a change from Drive, every open view that lists or shows
 documents re-reads itself without a reload: the Explorer (Recent, folders,
 Unsorted, the Trash view), the editor's own Explorer panel and folders, the
-New Diagram page's recent list, and the open editor itself (its title after a
+New Document page's recent list, and the open editor itself (its title after a
 rename, its folder after a move, the deleted card after a move to the Trash).
 Every open tab follows, not only the one that ran the check. It rides the
 existing "something was just written" signal the Timeline already listens to,
@@ -418,16 +418,16 @@ marked as coming from Drive so a view re-reads only for those.
 - The live app serves `/drive/open`, the Drive UI integration's Open URL.
   Google passes `state={"ids":[...],"action":"open",...}`.
 - The browser reads the file's `appProperties`:
-  - **The user can open the diagram** in livediagram, and the file is the one
+  - **The user can open the document** in livediagram, and the file is the one
     the mirror records for it (or the mirror records none): go to it.
-  - **A copy of a mirrored diagram** (the mirror records a different file for
-    that `ldDiagramId`): offer **Import as new document**
+  - **A copy of a mirrored document** (the mirror records a different file for
+    that `ldDocumentId`): offer **Import as new document**
     ([Copies made in Drive](#copies-made-in-drive)), never the original.
   - **They cannot** (someone shared the Drive file with them): offer
-    **Import a copy**, which creates a new Personal Space diagram from the
+    **Import a copy**, which creates a new Personal Space document from the
     file's contents.
   - **The file is from another deployment** (`ldOrigin` differs) or has no
-    `ldDiagramId`: offer **Import a copy** only.
+    `ldDocumentId`: offer **Import a copy** only.
   - **Not a livediagram file**, or unreadable: a clear error page.
 - A signed-out visitor is asked to sign in first, then continues.
 - A signed-in user with no usable Drive access (never connected, or the grant
@@ -444,7 +444,7 @@ marked as coming from Drive so a view re-reads only for those.
 - **Disconnect** revokes the grant, deletes the stored token and mirror rows,
   and **leaves every Drive file in place**. Reconnecting later starts a fresh
   mirror into a new or re-chosen root, matching existing files by
-  `ldDiagramId` where it can.
+  `ldDocumentId` where it can.
 - **Account deletion** does the same revoke and delete as part of deleting the
   account. Drive files are the user's and stay.
 
@@ -458,10 +458,10 @@ D1, owned by the api worker:
   `lease_expires_at`.
 - `drive_items`: `owner_id`, `item_kind` (`diagram` | `folder`), `ld_id`,
   `drive_file_id`, and the last written `name`, `parent_id`, `trashed`,
-  `md5`, `head_revision_id`, plus `mirrored_saved_at` (the diagram revision
+  `md5`, `head_revision_id`, plus `mirrored_saved_at` (the document revision
   last uploaded). Unique on `(owner_id, item_kind, ld_id)` and on
   `(owner_id, drive_file_id)`.
-- Deleting a diagram, folder or account deletes its rows in the same batch as
+- Deleting a document, folder or account deletes its rows in the same batch as
   the rest of the removal.
 - `refresh_token_enc` is empty for a browser-only connection (client id only).
 - `drive_items` also keeps `ld_name` (the livediagram name the Drive name
@@ -469,9 +469,9 @@ D1, owned by the api worker:
   `notice_parent_id` for the [unseen-folder notice](#folders-livediagram-cannot-see).
 - **Finishing a removal in Drive.** Because a purge or a folder deletion takes
   the row with it, each browser remembers the rows it last saw. A row that
-  disappears while its diagram or folder is gone from livediagram is finished
+  disappears while its document or folder is gone from livediagram is finished
   in Drive by the next pass in any browser that saw it: a binned file is
-  deleted for good, anything else goes to the bin (a diagram taken offline,
+  deleted for good, anything else goes to the bin (a document taken offline,
   a deleted folder once its contents have moved up). A file nobody saw go is
   left to Drive's own 30-day bin.
 
@@ -481,7 +481,7 @@ D1, owned by the api worker:
   arrival or focus; the Cloud Sync row shows **Last synced** honestly.
 - **A mirrored file or folder deleted outside livediagram's knowledge**
   (`404` on write): the item is re-created in its expected place.
-- **Diagram JSON over 5 MB:** uploaded with a resumable upload instead of
+- **Document JSON over 5 MB:** uploaded with a resumable upload instead of
   multipart.
 - **Quota or rate errors:** back-off as above; a persistent failure shows in
   the Cloud Sync row, never silently.
@@ -605,7 +605,7 @@ leaves the pair as it is.
 
 ## Non-goals
 
-- Drive as a place a diagram lives.
+- Drive as a place a document lives.
 - Mirroring team libraries.
 - Importing content edits made to a file in Drive.
 - Server-side polling or Drive push notifications.
@@ -613,7 +613,7 @@ leaves the pair as it is.
 
 ## References
 
-[Save Locations](../006-diagram/save-locations.md),
+[Save Locations](../006-document/save-locations.md),
 [Trash](../013-workspace/trash.md),
 [Folders](../013-workspace/folders.md),
 [Auth + guest access](../014-identity/auth-and-guest-access.md),

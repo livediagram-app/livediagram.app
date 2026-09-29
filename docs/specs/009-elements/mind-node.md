@@ -10,6 +10,12 @@ from the keyboard.
 - **Tab** on a selected node adds a **child**.
 - **Enter** adds a **sibling** directly after it.
 
+The same two actions are one click away, for anyone who doesn't know the keys:
+**Add child** and **Add sibling** buttons on the node's selection toolbar (after
+Edit text), and the same two options on its quick-connect "+" ring. Each names
+its shortcut in its hover card. The toolbar buttons are not offered on a locked
+node (growing re-lays the map) or to a view-role visitor.
+
 Each new node is placed in the map, connected to its parent with a pinned
 arrow, selected, and put straight into label editing — so a whole branch is
 typed without touching the mouse.
@@ -65,7 +71,7 @@ is where free placement leaves it, reads as a list hanging off a box.
 
 So growth first asks whether the map **is** tidy: whether every node already
 sits where the tidy layout (`layoutMindTree` in
-`packages/diagram/src/mind-layout.ts`) would put it, to within a pixel. If it
+`packages/document/src/mind-layout.ts`) would put it, to within a pixel. If it
 is, the new node joins the layout and the map is re-laid out around it:
 siblings slide to make room, parents re-centre, and the node lands in its slot.
 The root never moves. A map grown by Tab and Enter from a single node, or from
@@ -240,7 +246,7 @@ Resizing a node resizes only that node.
 Growth started with one arrangement, the one a keyboard-driven outline wants: a
 child to the right, siblings stacked down it. That is a **tree**, and it is only
 one of the shapes people draw. Four ship (`MindFlow` in
-`packages/diagram/src/mind-flow.ts`), picked from the **Mind Map** section of a
+`packages/document/src/mind-flow.ts`), picked from the **Mind Map** section of a
 selected node's menu:
 
 - **Tree** — branches right, siblings stacked down. The default, so every map

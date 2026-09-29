@@ -7,7 +7,7 @@ const KEY = 'livediagram:explorer-view';
 
 afterEach(() => window.localStorage.clear());
 
-// List vs card layout (docs/specs/006-diagram/diagram-snapshots.md).
+// List vs card layout (docs/specs/006-document/document-snapshots.md).
 describe('useExplorerViewMode', () => {
   it('shows cards to somebody who never chose, and ignores a junk value', () => {
     expect(renderHook(() => useExplorerViewMode()).result.current[0]).toBe('card');

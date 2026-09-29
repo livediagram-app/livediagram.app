@@ -164,7 +164,7 @@ describe('GoogleDriveSyncRow', () => {
   });
 
   it('puts a folder notice in place of the rhythm, one line with Show folder', () => {
-    const notice = { kind: 'diagram' as const, ldId: 'd1', name: 'Plan', parentId: 'p' };
+    const notice = { kind: 'document' as const, ldId: 'd1', name: 'Plan', parentId: 'p' };
     const v = show(
       { state: 'idle', lastSyncedAt: NOW, notices: [notice, { ...notice, ldId: 'd2' }] },
       { canAdopt: true },

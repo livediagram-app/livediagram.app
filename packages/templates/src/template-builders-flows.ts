@@ -4,7 +4,7 @@ import {
   createText,
   type Element,
   type ShapeKind,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // Process-style template builders (swimlane, decision tree, approval
 // workflow). Split out of template-builders.ts; each is pure

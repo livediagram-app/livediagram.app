@@ -70,7 +70,7 @@ deliberate rather than ragged. Being canvas units it scales with zoom like
 everything else. Box-proportional sizing was rejected — a large box already
 makes a long break by being wide, so scaling on top over-cuts the line.
 
-## How (packages/diagram/src/arrow-behind.ts + ArrowView)
+## How (packages/document/src/arrow-behind.ts + ArrowView)
 
 `routeBehindHoles(arrow, from, to, elements)` returns the margin-inflated
 rects, filtered by the rules above and by intersection with the arrow's padded
@@ -103,7 +103,7 @@ to the visible path and the selection halo:
 
 ## Exports
 
-The shared SVG arrow renderer (`svgArrow` in `packages/diagram/src/svg-render-arrows.ts`)
+The shared SVG arrow renderer (`svgArrow` in `packages/document/src/svg-render-arrows.ts`)
 punches the same holes into the same mask as the label knockouts, so every
 export shows the gaps the canvas shows: SVG, PNG / PDF (which rasterise the
 arrows from that markup), server snapshots and thumbnails, and the MCP's inline

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import { useEditModeContextMenu } from './useEditModeContextMenu';
 
 // The auto-open-menu-on-edit behaviour (docs/specs/008-canvas/canvas-and-palette.md): entering text-edit mode on

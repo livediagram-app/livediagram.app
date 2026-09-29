@@ -8,7 +8,7 @@
 // correctly once the fetch lands and the provider re-renders.
 //
 // The ThemeDefinition import is type-only (erased at runtime), so the
-import { THEMES } from '@livediagram/diagram';
+import { THEMES } from '@livediagram/document';
 // themes.ts -> registry runtime dependency stays one-way (no import
 // cycle): themes.ts calls lookupCustomTheme(); this file only borrows
 // the type.
@@ -90,7 +90,7 @@ export function isCustomThemeId(id: string | undefined): boolean {
 // copies agree is a rule waiting to be broken by whoever edits one of them.
 //
 // The built-in fallback (title-casing the id) is for an id with no catalogue
-// entry — a theme removed from THEMES while a diagram still names it. Still a
+// entry — a theme removed from THEMES while a document still names it. Still a
 // preset token, since built-in ids are ours, not the user's.
 export function themeTelemetryLabel(themeId: string | undefined): string {
   if (!themeId) return 'Unknown';

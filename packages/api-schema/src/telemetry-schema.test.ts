@@ -104,7 +104,7 @@ describe('isValidTelemetryEvent', () => {
       expect(
         isValidTelemetryEvent({ category: 'Theme', action: 'Changed', type: 'High Contrast' }),
       ).toBe(true);
-      expect(isValidTelemetryEvent({ category: 'Diagram', action: 'Exported', type: 'PDF' })).toBe(
+      expect(isValidTelemetryEvent({ category: 'Document', action: 'Exported', type: 'PDF' })).toBe(
         true,
       );
       expect(

@@ -14,9 +14,9 @@ import { Portal } from '@/components/primitives/Portal';
 import { readUserPreferences } from '@/lib/user-preferences';
 
 // Lightweight toast surface. Two jobs: (1) make previously-silent async
-// failures visible (linkTab, copy diagram, clipboard + upload errors
+// failures visible (linkTab, copy document, clipboard + upload errors
 // that happen in the background), and (2) confirm consequential,
-// otherwise-silent actions (a diagram moved to a folder, duplicated,
+// otherwise-silent actions (a document moved to a folder, duplicated,
 // deleted from a long list). NOT used for autosave (it has its own
 // header pill) nor for anything already visible on screen (adding an
 // element, a copy button that flips to "Copied" inline) — toasting
@@ -35,7 +35,7 @@ import { readUserPreferences } from '@/lib/user-preferences';
 // returns an imperative `toast.error(msg) / toast.success(msg) /
 // toast.info(msg)` so call sites stay terse:
 //
-//   catch (e) { toast.error('Failed to add tab to that diagram'); }
+//   catch (e) { toast.error('Failed to add tab to that document'); }
 //
 // Toasts auto-dismiss after 4 seconds; users can click the close
 // icon to drop one early. Identical messages within a short window

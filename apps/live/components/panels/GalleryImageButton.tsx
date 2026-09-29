@@ -19,7 +19,7 @@ import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 type GalleryImageButtonProps = {
   image: ImageSummary;
   ownerId: string;
-  diagramId: string;
+  documentId: string;
   // Optional share code. The bytes endpoint accepts an X-Share-Code
   // header for visitors authorised via a share link; owners pass
   // null. Picker callers (owner-only) omit it entirely.
@@ -31,13 +31,13 @@ type GalleryImageButtonProps = {
 export function GalleryImageButton({
   image,
   ownerId,
-  diagramId,
+  documentId,
   shareCode,
   onClick,
   ariaLabel,
 }: GalleryImageButtonProps) {
   const state = useImageBlobUrl(ownerId, image.id, {
-    diagramId,
+    documentId,
     shareCode: shareCode ?? null,
   });
   return (

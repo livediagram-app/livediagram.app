@@ -7,7 +7,7 @@ Status: shipped
 A **Stickers** category in the palette, in the **Decorate** band ([Palette top-level categories and bands](palette-top-level-categories.md)),
 between Icons and Tech — and a **`sticker` shape kind** behind it.
 
-A sticker is the thing you slap on a board: a die-cut plate with a soft shadow,
+A sticker is the thing you slap on a canvas: a die-cut plate with a soft shadow,
 in colours that are its own. Two flavours:
 
 - **Emoji** — ~193 colour emoji on a white die-cut plate.
@@ -17,19 +17,19 @@ in colours that are its own. Two flavours:
 Eleven groups, browsed by drill-in with a breadcrumb and searched across all of
 them at once — the same navigation every catalogue tab uses ([Browsing the palette by category](palette-category-browse.md)):
 
-| Group         | What it holds                                                               |
-| ------------- | --------------------------------------------------------------------------- |
-| **Badges**    | The word pills, tone-coloured by what they mean                             |
-| **Reactions** | Responding to somebody's work: thumbs, clap, heart, fire, 💯, eyes          |
-| **Feelings**  | The face set: happy, laughing, thinking, confused, sad, angry, mind-blown   |
-| **Status**    | Check, cross, warning, traffic-light dots, blocked, WIP, new, trend arrows  |
-| **Direction** | Arrows, pointing hands, pins, compass, play — pointing at things on a board |
-| **Celebrate** | Party popper, confetti, trophy, medals, cake, gift, crown, rocket           |
-| **Decorate**  | Sparkles, rainbow, sun, flowers, hearts in every colour, gems               |
-| **Meeting**   | Timers, calendar, speech + thought bubbles, megaphone, mic, coffee, brain   |
-| **Work**      | Bug, wrench, gear, key, folder, package, laptop, money, target              |
-| **People**    | Person, people, raising a hand, bowing, worker, detective, walking          |
-| **Fun**       | Robot, alien, unicorn, cat, pizza, dice, controller, music                  |
+| Group         | What it holds                                                                |
+| ------------- | ---------------------------------------------------------------------------- |
+| **Badges**    | The word pills, tone-coloured by what they mean                              |
+| **Reactions** | Responding to somebody's work: thumbs, clap, heart, fire, 💯, eyes           |
+| **Feelings**  | The face set: happy, laughing, thinking, confused, sad, angry, mind-blown    |
+| **Status**    | Check, cross, warning, traffic-light dots, blocked, WIP, new, trend arrows   |
+| **Direction** | Arrows, pointing hands, pins, compass, play — pointing at things on a canvas |
+| **Celebrate** | Party popper, confetti, trophy, medals, cake, gift, crown, rocket            |
+| **Decorate**  | Sparkles, rainbow, sun, flowers, hearts in every colour, gems                |
+| **Meeting**   | Timers, calendar, speech + thought bubbles, megaphone, mic, coffee, brain    |
+| **Work**      | Bug, wrench, gear, key, folder, package, laptop, money, target               |
+| **People**    | Person, people, raising a hand, bowing, worker, detective, walking           |
+| **Fun**       | Robot, alien, unicorn, cat, pizza, dice, controller, music                   |
 
 Groups are **disjoint** — every sticker has exactly one home, pinned by a test,
 the same rule the icon categories follow. Search cuts across all eleven, and a
@@ -41,7 +41,7 @@ The first cut of this made stickers ordinary `icon` elements, on the reasoning
 that everything an icon does on the canvas a sticker also wants. That was
 wrong, and it showed the moment one landed: it looked exactly like an icon,
 because it _was_ one. An icon is a glyph you tint, caption and fold into a
-shape's label. A sticker is a physical-feeling object you stick on the board.
+shape's label. A sticker is a physical-feeling object you stick on the canvas.
 Those want opposite treatment on every axis, so a sticker is its own shape kind
 carrying its own `stickerId`:
 
@@ -124,9 +124,9 @@ rotated shape, or paste one, and it now enters at its angle.
 
 ## Legacy emoji stay icons
 
-[Emoji section in the Icons tab](emoji-icons.md) shipped ~60 of these emoji as **icons**, so saved diagrams hold
+[Emoji section in the Icons tab](emoji-icons.md) shipped ~60 of these emoji as **icons**, so saved documents hold
 `{ shape: 'icon', iconId: 'emoji-thumbs-up' }` elements. Those are **not
-migrated**: silently restyling somebody's saved diagram with a plate, a shadow
+migrated**: silently restyling somebody's saved document with a plate, a shadow
 and a tilt is not ours to do.
 
 So the icon catalogue keeps rendering them exactly as it always has. Those

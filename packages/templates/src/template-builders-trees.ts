@@ -1,4 +1,4 @@
-import { createPinnedArrow, createShape, type Element } from '@livediagram/diagram';
+import { createPinnedArrow, createShape, type Element } from '@livediagram/document';
 
 // Org chart and flowchart template builders. Split out of
 // template-builders.ts; each is pure (cx, cy) -> Element[]. See docs/specs/008-canvas/canvas-and-palette.md.

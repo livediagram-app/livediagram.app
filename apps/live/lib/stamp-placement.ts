@@ -4,7 +4,7 @@ import {
   isEventStormingTab,
   type Element,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { LanePreview } from '@/lib/lane-preview';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';

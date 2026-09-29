@@ -24,7 +24,7 @@ type SeenTuple = [DriveItemKind, string, string];
 function isSeenTuple(v: unknown): v is SeenTuple {
   if (!Array.isArray(v) || v.length !== 3) return false;
   return (
-    (v[0] === 'diagram' || v[0] === 'folder') &&
+    (v[0] === 'document' || v[0] === 'folder') &&
     typeof v[1] === 'string' &&
     typeof v[2] === 'string'
   );

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
 import { DRIVE_WRITE_IDLE_MS, DRIVE_WRITE_MIN_INTERVAL_MS } from './cadence';
-import { diagramToEnvelopeText } from '../export-diagram-text';
+import { documentToEnvelopeText } from '../export-document-text';
 import { createDriveRestClient } from './drive-rest-client';
 import {
   importOpenWithCopy,
@@ -16,7 +16,7 @@ import { fileOf, HOST, makeEngine, OWNER, world } from './test-support';
 // "Copies made in Drive"; blueprint "Open with"). The copy is made in Drive's own UI, so
 // the app only sees it once the user opens it with livediagram.
 
-const COPY_CONTENT = diagramToEnvelopeText(
+const COPY_CONTENT = documentToEnvelopeText(
   { id: 'd1', name: 'Plan', presentation: null },
   [{ id: 'x1', name: 'Edited in the copy', elements: [] }],
   1,
@@ -25,7 +25,7 @@ const COPY_CONTENT = diagramToEnvelopeText(
 async function mirrored(opts: { folder?: boolean } = {}) {
   const w = world();
   if (opts.folder) w.ld.createFolderAs('f1', 'Work');
-  w.ld.createDiagram('d1', 'Plan', opts.folder ? 'f1' : null);
+  w.ld.createDocument('d1', 'Plan', opts.folder ? 'f1' : null);
   const { engine, statuses } = makeEngine(w);
   await engine.start();
   const drive = createDriveRestClient({
@@ -33,15 +33,15 @@ async function mirrored(opts: { folder?: boolean } = {}) {
     getAccessToken: async () => w.google.issueAccessToken(OWNER),
   });
   const deps = { drive, port: w.ld.port(), host: HOST };
-  const original = () => fileOf(w.google, w.ld, 'diagram', 'd1')!;
+  const original = () => fileOf(w.google, w.ld, 'document', 'd1')!;
   const openWith = (fileId: string): OpenWithState =>
     parseOpenState(`?state=${encodeURIComponent(w.google.openWithState(OWNER, fileId))}`)!;
   const copy = () => w.google.userCopy(original().id, { content: COPY_CONTENT });
   return { ...w, engine, statuses, deps, original, openWith, copy };
 }
 
-const diagramFiles = (w: Awaited<ReturnType<typeof mirrored>>) =>
-  w.google.appFiles(OWNER).filter((f) => f.appProperties.ldDiagramId);
+const documentFiles = (w: Awaited<ReturnType<typeof mirrored>>) =>
+  w.google.appFiles(OWNER).filter((f) => f.appProperties.ldDocumentId);
 
 describe('Open with on a copy of a mirrored file', () => {
   it('offers Import as new document, never the original', async () => {
@@ -57,12 +57,12 @@ describe('Open with on a copy of a mirrored file', () => {
     const originalBefore = { ...w.original(), appProperties: { ...w.original().appProperties } };
     const newId = await importOpenWithCopy(w.deps, w.openWith(copyId), 'copy');
     expect(newId).not.toBe('d1');
-    const doc = w.ld.diagram(newId)!;
+    const doc = w.ld.document(newId)!;
     expect(doc).toMatchObject({ name: 'Copy of Plan', folderId: null });
     expect(doc.tabs.map((t) => t.name)).toEqual(['Edited in the copy']);
-    // The original: same diagram, same file, same tags.
-    expect(w.ld.diagram('d1')!.tabs.map((t) => t.name)).toEqual(['Tab 1']);
-    expect(w.ld.item('diagram', 'd1')!.driveFileId).toBe(originalBefore.id);
+    // The original: same document, same file, same tags.
+    expect(w.ld.document('d1')!.tabs.map((t) => t.name)).toEqual(['Tab 1']);
+    expect(w.ld.item('document', 'd1')!.driveFileId).toBe(originalBefore.id);
     expect(w.google.get(originalBefore.id)!.appProperties).toEqual(originalBefore.appProperties);
   });
 
@@ -70,8 +70,8 @@ describe('Open with on a copy of a mirrored file', () => {
     const w = await mirrored();
     const copyId = w.copy();
     const newId = await importOpenWithCopy(w.deps, w.openWith(copyId), 'copy');
-    expect(w.google.get(copyId)!.appProperties).toEqual({ ldDiagramId: newId, ldOrigin: HOST });
-    expect(w.ld.item('diagram', newId)).toMatchObject({
+    expect(w.google.get(copyId)!.appProperties).toEqual({ ldDocumentId: newId, ldOrigin: HOST });
+    expect(w.ld.item('document', newId)).toMatchObject({
       driveFileId: copyId,
       ldName: 'Copy of Plan',
       mirroredSavedAt: null,
@@ -89,8 +89,8 @@ describe('Open with on a copy of a mirrored file', () => {
     w.clock.tick(DRIVE_WRITE_IDLE_MS + DRIVE_WRITE_MIN_INTERVAL_MS);
     await w.engine.syncNow();
     expect(
-      diagramFiles(w)
-        .map((f) => [f.id, f.appProperties.ldDiagramId])
+      documentFiles(w)
+        .map((f) => [f.id, f.appProperties.ldDocumentId])
         .sort(),
     ).toEqual(
       [
@@ -98,15 +98,15 @@ describe('Open with on a copy of a mirrored file', () => {
         [copyId, newId],
       ].sort(),
     );
-    expect(w.ld.item('diagram', 'd1')!.driveFileId).toBe(originalId);
-    expect(w.ld.item('diagram', newId)!.driveFileId).toBe(copyId);
+    expect(w.ld.item('document', 'd1')!.driveFileId).toBe(originalId);
+    expect(w.ld.item('document', newId)!.driveFileId).toBe(copyId);
     // Outbound wrote the new document into the copy.
-    expect(JSON.parse(w.google.get(copyId)!.content).diagram.id).toBe(newId);
+    expect(JSON.parse(w.google.get(copyId)!.content).document.id).toBe(newId);
     expect(w.statuses.at(-1)).toMatchObject({ error: null, notices: [] });
     // The copy now opens its own document.
     expect(await resolveOpenWith(w.deps, w.openWith(copyId))).toEqual({
       kind: 'open',
-      diagramId: newId,
+      documentId: newId,
     });
   });
 
@@ -115,7 +115,7 @@ describe('Open with on a copy of a mirrored file', () => {
     w.copy();
     expect(await resolveOpenWith(w.deps, w.openWith(w.original().id))).toEqual({
       kind: 'open',
-      diagramId: 'd1',
+      documentId: 'd1',
     });
   });
 
@@ -125,16 +125,16 @@ describe('Open with on a copy of a mirrored file', () => {
     w.openWith(copyId);
     w.google.userRename(copyId, 'Copy of Plan 2.livediagram');
     await w.engine.syncNow();
-    expect(w.google.get(copyId)!.appProperties.ldDiagramId).toBe('d1');
-    expect(w.ld.item('diagram', 'd1')!.driveFileId).toBe(w.original().id);
-    expect(w.ld.diagram('d1')!.name).toBe('Plan');
-    expect(diagramFiles(w)).toHaveLength(2);
+    expect(w.google.get(copyId)!.appProperties.ldDocumentId).toBe('d1');
+    expect(w.ld.item('document', 'd1')!.driveFileId).toBe(w.original().id);
+    expect(w.ld.document('d1')!.name).toBe('Plan');
+    expect(documentFiles(w)).toHaveLength(2);
   });
 
   it('places the new document in the folder the copy sits in', async () => {
     const w = await mirrored({ folder: true });
     const newId = await importOpenWithCopy(w.deps, w.openWith(w.copy()), 'copy');
-    expect(w.ld.diagram(newId)!.folderId).toBe('f1');
+    expect(w.ld.document(newId)!.folderId).toBe('f1');
   });
 
   it('puts it in Unsorted with the unseen-folder notice when its folder is one livediagram cannot see', async () => {
@@ -143,15 +143,15 @@ describe('Open with on a copy of a mirrored file', () => {
     const hidden = w.google.userCreateFolder(OWNER, 'Private');
     w.google.userMove(copyId, hidden);
     const newId = await importOpenWithCopy(w.deps, w.openWith(copyId), 'copy');
-    expect(w.ld.diagram(newId)!.folderId).toBeNull();
-    expect(w.ld.item('diagram', newId)).toMatchObject({
+    expect(w.ld.document(newId)!.folderId).toBeNull();
+    expect(w.ld.item('document', newId)).toMatchObject({
       notice: 'unseen_folder',
       noticeParentId: hidden,
     });
     await w.engine.syncNow();
     expect(w.google.get(copyId)!.parents).toEqual([hidden]);
     expect(w.statuses.at(-1)!.notices).toEqual([
-      expect.objectContaining({ kind: 'diagram', ldId: newId }),
+      expect.objectContaining({ kind: 'document', ldId: newId }),
     ]);
   });
 
@@ -162,15 +162,15 @@ describe('Open with on a copy of a mirrored file', () => {
       name: 'Their copy.livediagram',
       mimeType: DRIVE_FILE_MIME,
       content: COPY_CONTENT,
-      appProperties: { ldDiagramId: 'd1', ldOrigin: HOST },
+      appProperties: { ldDocumentId: 'd1', ldOrigin: HOST },
       shareWith: OWNER,
     });
     const state = w.openWith(theirs);
     expect(await resolveOpenWith(w.deps, state)).toMatchObject({ reason: 'copy' });
     const newId = await importOpenWithCopy(w.deps, state, 'copy');
-    expect(w.ld.diagram(newId)).toBeDefined();
-    expect(w.google.get(theirs)!.appProperties.ldDiagramId).toBe('d1');
-    expect(w.ld.item('diagram', newId)).toBeUndefined();
+    expect(w.ld.document(newId)).toBeDefined();
+    expect(w.google.get(theirs)!.appProperties.ldDocumentId).toBe('d1');
+    expect(w.ld.item('document', newId)).toBeUndefined();
   });
 
   it('still opens the new document when the claim fails, and says so in the log', async () => {
@@ -180,8 +180,8 @@ describe('Open with on a copy of a mirrored file', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     w.google.fail({ status: 500, match: (r) => r.method === 'PATCH' && r.path.includes(copyId) });
     const newId = await importOpenWithCopy(w.deps, state, 'copy');
-    expect(w.ld.diagram(newId)).toBeDefined();
-    expect(w.ld.item('diagram', newId)).toBeUndefined();
+    expect(w.ld.document(newId)).toBeDefined();
+    expect(w.ld.item('document', newId)).toBeUndefined();
     expect(warn).toHaveBeenCalledWith(
       '[drive-mirror] open-with-claim-failed',
       expect.objectContaining({ status: 500 }),

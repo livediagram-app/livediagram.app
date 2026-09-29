@@ -113,7 +113,7 @@ const ELEMENT_WHY = 'an element kind, as the palette catalogue spells it';
 const API_ERRORS = [
   'Http403.LoadTab.Forbidden',
   'Http500.SaveTab',
-  'Network.Put.Diagrams.Tabs',
+  'Network.Put.Documents.Tabs',
   'Auth.NoSessionToken',
   'SaveFailed.TypeError',
 ];
@@ -127,14 +127,14 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'Http<status>.SendEmail, any status Resend answers',
   },
   'apps/api/src/index.ts Error·Api': {
-    values: ['Internal.Put.Diagrams.Tabs', 'Internal.Get.Diagrams'],
+    values: ['Internal.Put.Documents.Tabs', 'Internal.Get.Documents'],
     open: 'Internal.<Method>.<Route>, the route the worker was serving',
   },
 
   // The MCP worker.
   'apps/mcp/src/tool-annotations.ts Mcp·Used': { values: MCP_TOOLS },
   'apps/mcp/src/api.ts Error·Api': {
-    values: ['Http503.CreateDiagram', 'Internal.ReadDiagram'],
+    values: ['Http503.CreateDocument', 'Internal.ReadDocument'],
     open: 'a status or Internal, plus the tool that failed',
   },
 
@@ -145,25 +145,25 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
 
   // Shared packages.
   'packages/telemetry-client/src/index.ts Error·Client': {
-    values: ['Uncaught.Diagram.TypeError', 'UnhandledRejection.Explorer.Error'],
+    values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
   },
   'packages/ui/src/PageViewTracker.tsx Page·View': {
-    values: ['/', '/diagram', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
+    values: ['/', '/document', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
   },
 
   // The editor.
-  'apps/live/app/diagram/[id]/useElementCreation.ts Element·Added': {
+  'apps/live/app/document/[id]/useElementCreation.ts Element·Added': {
     values: ELEMENT_KINDS,
     open: ELEMENT_WHY,
   },
-  'apps/live/app/diagram/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
-  'apps/live/app/diagram/[id]/useTemplateFlow.ts Template·Used': {
+  'apps/live/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
+  'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
   },
-  'apps/live/app/diagram/[id]/useTemplateFlow.ts Theme·Changed': {
+  'apps/live/app/document/[id]/useTemplateFlow.ts Theme·Changed': {
     values: THEMES,
     open: THEME_WHY,
   },
@@ -187,7 +187,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
-  'apps/live/app/diagram/[id]/useDiagramTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
   // The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
   // the inbound change types and the Open with outcomes, read from their unions.
   'apps/live/lib/drive/browser-engine.ts Drive·Applied': { values: DRIVE_INBOUND_TYPES },
@@ -216,7 +216,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
-    values: ['Diagram', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
+    values: ['Document', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
   },
   'apps/live/components/panels/useTeamPaneActions.ts Team·Removed': {
     values: ['Invite', 'Member', 'Self'],
@@ -262,7 +262,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'elementTelemetryType of the web component a row was added to',
   },
   'apps/live/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
-  'apps/live/hooks/persistence/useShareLinks.ts Diagram·Shared': {
+  'apps/live/hooks/persistence/useShareLinks.ts Document·Shared': {
     values: ['ExpiryWeek', 'ExpiryMonth', 'ExpirySixMonths'],
   },
   'apps/live/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },

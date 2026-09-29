@@ -36,9 +36,9 @@ Common gate (all must hold):
 The pane reserves extra bottom padding while it's up so the last row
 never hides behind it.
 
-**Editor** (`app/diagram/[id]/EditorView.tsx`): shown only **after a
+**Editor** (`app/document/[id]/EditorView.tsx`): shown only **after a
 ~5 minute delay** into the session (`SIGNIN_BANNER_DELAY_MS`), so it
-never greets someone the instant they open a diagram. It sits above
+never greets someone the instant they open a document. It sits above
 the tab bar and over the canvas chrome, and is additionally hidden:
 
 - in **embed** mode (the read-only `/embed` iframe, [Read-only embeds (`/embed`)](../013-workspace/embeds.md)), and
@@ -47,7 +47,7 @@ the tab bar and over the canvas chrome, and is additionally hidden:
   in / embed / dismissed) and zen only hides the card at render.
 
 The delay is per editor session (per page load); it isn't persisted
-across reloads. Opening diagram after diagram in quick succession
+across reloads. Opening document after document in quick succession
 never triggers it; staying in one for 5+ minutes does.
 
 ## Banner
@@ -67,15 +67,15 @@ never triggers it; staying in one for 5+ minutes does.
 Reuses the app's portal-based modal pattern (Escape + backdrop close).
 Lists the benefits, each with an icon, headline, and a sentence:
 
-1. **Keep your diagrams safe.** Guest diagrams live under a
+1. **Keep your documents safe.** Guest documents live under a
    per-browser id; clearing your browser cache or cookies can lose
    access to them. Signing in ties them to your account so they
    survive a cache clear or browser restart.
 2. **Open them anywhere.** Your work syncs to your account, so the
-   same diagrams are there on your laptop, desktop, and phone.
+   same documents are there on your laptop, desktop, and phone.
 3. **Work as a team.** Create teams, invite teammates by email, and
-   share a team library everyone can manage ([Teams](../013-workspace/teams.md), [Team shared diagrams](../013-workspace/team-shared-diagrams.md)).
-4. **Use your real name.** Shared diagrams and live cursors show your
+   share a team library everyone can manage ([Teams](../013-workspace/teams.md), [Team shared documents](../013-workspace/team-shared-documents.md)).
+4. **Use your real name.** Shared documents and live cursors show your
    account name instead of a random guest identity, so collaborators
    know who did what.
 5. **Your shares, organised.** Manage every share link and expiry from

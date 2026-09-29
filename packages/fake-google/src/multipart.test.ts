@@ -11,13 +11,13 @@ describe('parseMultipartRelated', () => {
       '--b1',
       'Content-Type: application/vnd.livediagram+json',
       '',
-      '{"kind":"livediagram.diagram"}',
+      '{"kind":"livediagram.document"}',
       '--b1--',
       '',
     ].join('\r\n');
     expect(parseMultipartRelated('multipart/related; boundary=b1', body)).toEqual([
       { contentType: 'application/json; charset=UTF-8', body: '{"name":"x"}' },
-      { contentType: 'application/vnd.livediagram+json', body: '{"kind":"livediagram.diagram"}' },
+      { contentType: 'application/vnd.livediagram+json', body: '{"kind":"livediagram.document"}' },
     ]);
   });
 

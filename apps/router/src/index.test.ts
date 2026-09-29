@@ -44,8 +44,8 @@ const dispatch = (path: string, env: Env) =>
 describe('production dispatch (service bindings)', () => {
   it('forwards /api/* to the api worker with the prefix KEPT', async () => {
     const { env, api } = makeEnv();
-    await dispatch('/api/diagrams/abc', env);
-    expect(api.urls).toEqual(['https://livediagram.app/api/diagrams/abc']);
+    await dispatch('/api/documents/abc', env);
+    expect(api.urls).toEqual(['https://livediagram.app/api/documents/abc']);
   });
 
   it('strips /live off the asset-prefix requests for the live worker', async () => {
@@ -70,10 +70,10 @@ describe('production dispatch (service bindings)', () => {
 
   it('forwards the clean live page routes UNstripped', async () => {
     const { env, live } = makeEnv();
-    await dispatch('/diagram/abc123', env);
+    await dispatch('/document/abc123', env);
     await dispatch('/new?blank=1', env);
     expect(live.urls).toEqual([
-      'https://livediagram.app/diagram/abc123',
+      'https://livediagram.app/document/abc123',
       'https://livediagram.app/new?blank=1',
     ]);
   });
@@ -82,6 +82,17 @@ describe('production dispatch (service bindings)', () => {
     const { env, live } = makeEnv();
     await dispatch('/icon.svg', env);
     expect(live.urls).toEqual(['https://livediagram.app/icon.svg']);
+  });
+
+  it('serves the licences page and its texts from marketing', async () => {
+    // docs/specs/002-project-scope/third-party-licences.md
+    const { env, marketing } = makeEnv();
+    await dispatch('/licences', env);
+    await dispatch('/licences/texts/0123456789abcdef.txt', env);
+    expect(marketing.urls).toEqual([
+      'https://livediagram.app/licences',
+      'https://livediagram.app/licences/texts/0123456789abcdef.txt',
+    ]);
   });
 
   it('everything else lands on marketing', async () => {
@@ -194,7 +205,7 @@ describe('staging noindex header', () => {
   });
 
   it('marks the api and the editor too, not just the indexable pages', async () => {
-    for (const path of ['/api/diagrams/abc', '/diagram/xyz', '/help/canvas/shadows/']) {
+    for (const path of ['/api/documents/abc', '/document/xyz', '/help/canvas/shadows/']) {
       const { env } = makeEnv();
       const res = await dispatch(path, staging(env));
       expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
@@ -232,7 +243,7 @@ describe('staging noindex header', () => {
       API: { fetch: () => Promise.resolve(upgrade) } as unknown as Fetcher,
       DEPLOY_ENV: 'staging',
     };
-    const res = await dispatch('/api/diagrams/abc/ws', env);
+    const res = await dispatch('/api/documents/abc/ws', env);
     expect(res).toBe(upgrade);
     expect(res.webSocket).toBe(socket);
   });

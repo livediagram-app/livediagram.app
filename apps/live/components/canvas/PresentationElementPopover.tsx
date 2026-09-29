@@ -10,7 +10,7 @@
 //
 // This is a different thing from the HUD's notes popover, and they never
 // overlap: the HUD's carries the SLIDE's presenter note (what you mean to
-// say), this one carries the ELEMENT's (what the diagram records about it).
+// say), this one carries the ELEMENT's (what the document records about it).
 //
 // It reuses the Comment panel's thread (CommentBubbles) rather than growing a
 // third rendering of a comment thread, with no delete handler and no self, so
@@ -22,7 +22,7 @@ import {
   isBoxed,
   type BoxedElement,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { CloseIcon } from '@livediagram/ui';
 
 import { CommentBubbles } from '@/components/canvas/collab/comment/CommentBubbles';

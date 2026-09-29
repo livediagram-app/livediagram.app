@@ -10,7 +10,7 @@
 // Purely presentational: every change is a callback prop applied live to
 // the active tab. The "Show more" expansion is local UI state owned here.
 
-import { isAnimatedPattern, type BackgroundPattern } from '@livediagram/diagram';
+import { isAnimatedPattern, type BackgroundPattern } from '@livediagram/document';
 import { useShowMoreList } from '@/hooks/ui/useShowMoreList';
 import {
   ColorSwatch,

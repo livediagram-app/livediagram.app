@@ -1,7 +1,7 @@
 # Live poll (ephemeral pulse-check)
 
 A facilitator-run **poll**: ask the room a question, everyone viewing the
-diagram gets a prompt, answers tally live, and when the host ends it the whole
+document gets a prompt, answers tally live, and when the host ends it the whole
 thing evaporates. Sits beside the timer and dot-vote in the tab menu's session
 band ([Session tools (timer + voting)](session-tools.md)) but is deliberately **not** built like them.
 
@@ -10,7 +10,7 @@ band ([Session tools (timer + voting)](session-tools.md)) but is deliberately **
 The timer and vote live as `Tab` fields, which is exactly why they survive a
 reload and reach late joiners: they ride the tab-sync pipeline into D1
 ([Session tools (timer + voting)](session-tools.md)). A poll wants the **opposite** guarantee — "no trace of the poll
-(question, options, or responses) is left on the diagram afterward". Storing it
+(question, options, or responses) is left on the document afterward". Storing it
 on the tab would `PUT` the question and every response to D1 for the duration
 and rely on a delete to clean up.
 
@@ -46,7 +46,7 @@ and reads these three to keep the running poll (above).
   re-sending replaces their previous answer, across a reconnect too.
 - `{ kind: 'poll-end'; pollId: string }` — tear it down everywhere.
 
-None of them touches the diagram. `poll-answer` relays unordered like cursor /
+None of them touches the document. `poll-answer` relays unordered like cursor /
 select / laser (it is open to view-role); `poll-start` / `poll-end` are
 edit-role mutations. What a joiner needs comes from the room's replay on
 hello, not from the op log. Two polls started in the same moment converge on
@@ -71,14 +71,14 @@ across that line:
 `LivePoll.style`, all reducing to a single string `value` on the wire so one
 tally path serves them all:
 
-| Style           | Options                           |
-| --------------- | --------------------------------- |
-| `yesNo`         | Yes / No                          |
-| `yesNoAbstain`  | Yes / No / Abstain                |
-| `choice`        | 2–10 creator-defined options      |
-| `collaborators` | everyone currently in the diagram |
-| `rating`        | 1–5                               |
-| `text`          | free text                         |
+| Style           | Options                            |
+| --------------- | ---------------------------------- |
+| `yesNo`         | Yes / No                           |
+| `yesNoAbstain`  | Yes / No / Abstain                 |
+| `choice`        | 2–10 creator-defined options       |
+| `collaborators` | everyone currently in the document |
+| `rating`        | 1–5                                |
+| `text`          | free text                          |
 
 ### `collaborators` — vote for a person
 
@@ -109,10 +109,10 @@ shows the truncation before it is asked rather than after.
 Precedent: the Picker ([Picker](picker.md)) already draws candidates from
 `participants`, and this is the same idea pointed at a poll.
 
-The union lives in **`@livediagram/diagram`** (`poll-style.ts`), not beside
+The union lives in **`@livediagram/document`** (`poll-style.ts`), not beside
 `LivePoll` here, because a Session button ([Session button](session-button.md))
 STORES a style on the element and so needs it in a `Tab` field — and
-api-schema depends on diagram, never the reverse. `PollStyle` is re-exported
+api-schema depends on document, never the reverse. `PollStyle` is re-exported
 from api-schema so existing imports keep resolving. The fixed answer sets
 (`Yes / No`, `1-5`) moved down with it, which is what lets the authoring menus
 preview a style's answers before any poll exists: `pollOptionTokens(poll)` is
@@ -135,7 +135,7 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    prompt reads, so a typo is caught before it lands on every screen. The
    button names what is missing while it can't ask ("Write a question to
    ask", "Add at least 2 answers") instead of sitting greyed out. Edit-role
-   only. A diagram that isn't shared or on a team does NOT block a poll: it
+   only. A document that isn't shared or on a team does NOT block a poll: it
    runs locally, just for the host (rehearsing one, or asking a room you are
    presenting to), and the composer shows a note that only you will get it.
    The canvas Session button behaves the same way.
@@ -149,7 +149,7 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    — and that stopped the room dead. A poll is a question asked DURING the work,
    and the thing people most want while answering "which of these?" is to look
    at the thing being asked about; the scrim covered exactly that. The canvas
-   now stays live behind the sheet: you can pan, point, read the board, and
+   now stays live behind the sheet: you can pan, point, read the canvas, and
    answer without dismissing anything.
 
    What follows from not blocking:
@@ -223,7 +223,7 @@ answer content is ever emitted; `type` stays the fixed `'Poll'` token.
   no-persistence rule, not oversights.
 - **A saved history of past polls.** Nothing is stored, so there is nothing to
   browse; the clipboard copy is the export path.
-- **Multiple concurrent polls.** One poll at a time per diagram; starting a
+- **Multiple concurrent polls.** One poll at a time per document; starting a
   second replaces the first, matching the one-timer-per-tab rule in [Session tools (timer + voting)](session-tools.md).
-- **Per-tab scoping.** A poll goes to everyone on the diagram, not just the
+- **Per-tab scoping.** A poll goes to everyone on the document, not just the
   people on the host's tab — a pulse-check is about the room, not the canvas.

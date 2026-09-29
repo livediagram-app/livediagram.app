@@ -62,12 +62,12 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
 
 function ShellChrome({ children }: { children: ReactNode }) {
   const {
-    diagrams,
+    documents: liveDocs,
     folders,
     shared,
     teams,
     teamFolders,
-    teamDiagrams,
+    teamDocuments,
     go,
     mobileNavOpen,
     setMobileNavOpen,
@@ -85,7 +85,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
     setMoveTarget,
     movePersonalFolders,
     moveTeamDests,
-    moveDiagramTo,
+    moveDocumentTo,
     moveFolderToParent,
     createMoveFolder,
     teamsEnabled,
@@ -206,22 +206,22 @@ function ShellChrome({ children }: { children: ReactNode }) {
         />
       </div>
 
-      {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-diagrams.md): the shared
-          placement browser (docs/specs/006-diagram/offline-mode.md's Save In UI) for every diagram
+      {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): the shared
+          placement browser (docs/specs/006-document/offline-mode.md's Save In UI) for every document
           (personal or team) and for folder re-parenting. It offers
-          "Personal Space" plus each team as a space (for diagram moves);
-          `moveDiagramTo` routes the pick from the subject's current
+          "Personal Space" plus each team as a space (for document moves);
+          `moveDocumentTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}
       {moveTarget
         ? (() => {
             const teamRow =
-              moveTarget.kind === 'diagram'
-                ? teamDiagrams.find((d) => d.id === moveTarget.id)
+              moveTarget.kind === 'document'
+                ? teamDocuments.find((d) => d.id === moveTarget.id)
                 : undefined;
             const personalRow =
-              moveTarget.kind === 'diagram'
-                ? diagrams.find((d) => d.id === moveTarget.id)
+              moveTarget.kind === 'document'
+                ? liveDocs.find((d) => d.id === moveTarget.id)
                 : undefined;
             const folderRow =
               moveTarget.kind === 'folder'
@@ -238,14 +238,14 @@ function ShellChrome({ children }: { children: ReactNode }) {
                 subjectName={subjectName}
                 subjectKind={moveTarget.kind}
                 personalFolders={movePersonalFolders}
-                teams={moveTarget.kind === 'diagram' ? moveTeamDests : undefined}
+                teams={moveTarget.kind === 'document' ? moveTeamDests : undefined}
                 currentTeamId={currentTeamId}
                 currentFolderId={currentFolderId}
                 onCreateFolder={createMoveFolder}
-                // A diagram can be moved into a team made on the spot;
+                // A document can be moved into a team made on the spot;
                 // folder moves stay personal, and guests have no teams.
                 onCreateTeam={
-                  teamsEnabled && moveTarget.kind === 'diagram'
+                  teamsEnabled && moveTarget.kind === 'document'
                     ? async (name) => {
                         const team = await hookCreateTeam({ name });
                         return team ? { id: team.id, name: team.name } : null;
@@ -255,7 +255,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
                 onPick={(dest) => {
                   if (moveTarget.kind === 'folder')
                     moveFolderToParent(moveTarget.id, dest.folderId);
-                  else moveDiagramTo(moveTarget.id, dest);
+                  else moveDocumentTo(moveTarget.id, dest);
                 }}
                 onClose={() => setMoveTarget(null)}
               />
@@ -276,23 +276,23 @@ function ShellChrome({ children }: { children: ReactNode }) {
       />
       {searchOpen ? (
         <SearchPanel
-          diagrams={diagrams.map((d) => ({ id: d.id, name: d.name }))}
+          documents={liveDocs.map((d) => ({ id: d.id, name: d.name }))}
           folders={folders.map((f) => ({ id: f.id, name: f.name }))}
           shared={shared.map((s) => ({ id: s.id, name: s.name, shareCode: s.shareCode }))}
           teams={teams.map((t) => ({ id: t.id, name: t.name }))}
           teamFolders={teamFolders}
-          teamDiagrams={teamDiagrams.map((d) => ({
+          teamDocuments={teamDocuments.map((d) => ({
             id: d.id,
             name: d.name,
             teamId: d.team.id,
             teamName: d.team.name,
           }))}
-          onSelectDiagram={(id) => {
-            window.location.assign(`/diagram/${id}`);
+          onSelectDocument={(id) => {
+            window.location.assign(`/document/${id}`);
           }}
           onSelectShared={(id, shareCode) => {
-            // Non-owners can only open the diagram on the visitor URL.
-            window.location.assign(`/diagram/${id}?s=${encodeURIComponent(shareCode)}`);
+            // Non-owners can only open the document on the visitor URL.
+            window.location.assign(`/document/${id}?s=${encodeURIComponent(shareCode)}`);
           }}
           onSelectFolder={(id) => {
             go({ kind: 'folder', id });
@@ -304,7 +304,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
           }}
           onSelectTeamFolder={(teamId, folderId) => {
             // Full load rather than go(): the team page reads the
-            // folder deep-link param at mount (docs/specs/013-workspace/team-shared-diagrams.md).
+            // folder deep-link param at mount (docs/specs/013-workspace/team-shared-documents.md).
             window.location.assign(
               `/explorer/team?id=${encodeURIComponent(teamId)}&folder=${encodeURIComponent(folderId)}`,
             );

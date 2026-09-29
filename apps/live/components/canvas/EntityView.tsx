@@ -1,6 +1,6 @@
 'use client';
 
-import { entityHeaderHeight, type EntityField, type ShapeElement } from '@livediagram/diagram';
+import { entityHeaderHeight, type EntityField, type ShapeElement } from '@livediagram/document';
 
 // A record box (docs/specs/009-elements/entity.md): a title bar over a list of `name: Type` rows — a
 // UML class, an ER entity, a struct.

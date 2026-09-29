@@ -20,7 +20,7 @@ The product is split into focused apps, each deployed as a named Cloudflare Work
 - **marketing** serves the public landing site at the root.
 - **live** is the diagram editor itself, served at clean routes such as `/new` and `/explorer`.
 - **telemetry** is the public, read-only analytics dashboard at `/telemetry`.
-- **api** is the Worker that holds the REST and WebSocket layer, backed by the D1 database and the per-diagram Durable Object.
+- **api** is the Worker that holds the REST and WebSocket layer, backed by the D1 database and the per-document Durable Object.
 - **router** sits in front and forwards each request to the right app by URL path. It holds no business logic, only routing.
 
 There is also a **help** app (the site you are reading now), which is another static app served under its own path. The router is what makes all of these appear under one domain.

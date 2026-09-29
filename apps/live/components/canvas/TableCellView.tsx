@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
-import type { ElementLink, TableCellStyle, TableElement } from '@livediagram/diagram';
+import type { ElementLink, TableCellStyle, TableElement } from '@livediagram/document';
 import { CellLinkIcon } from '@/components/canvas/table-icons';
 import { TableCellEditor } from '@/components/canvas/TableCellEditor';
 import { describeLink } from '@/lib/link-label';

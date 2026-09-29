@@ -13,7 +13,7 @@ import {
   responseStats,
   responseTally,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { CollabPanel } from './collab-chrome';
 import { MoodBars } from './temperature/MoodBars';
 import { MoodButtons } from './temperature/MoodButtons';

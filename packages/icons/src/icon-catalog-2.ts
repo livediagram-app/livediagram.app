@@ -6,7 +6,7 @@
 // the Workers' ./resolve).
 //
 // The legacy entries are the compatibility half of docs/specs/010-palette/stickers.md. Emoji shipped as
-// icons under docs/specs/010-palette/emoji-icons.md, so saved diagrams hold `iconId: 'emoji-*'` elements;
+// icons under docs/specs/010-palette/emoji-icons.md, so saved documents hold `iconId: 'emoji-*'` elements;
 // they are derived from the sticker catalogue (never hand-copied) so the two
 // can't drift, and they keep rendering as the bare tinted glyph those
 // elements have always been. The palette does not offer them — the Stickers

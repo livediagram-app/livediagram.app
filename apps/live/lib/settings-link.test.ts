@@ -16,9 +16,9 @@ describe('the Settings deep link', () => {
     window.history.replaceState(
       null,
       '',
-      '/diagram/a?view=1&settings=account&section=cloud-sync#t',
+      '/document/a?view=1&settings=account&section=cloud-sync#t',
     );
     dropSettingsLink();
-    expect(`${location.pathname}${location.search}${location.hash}`).toBe('/diagram/a?view=1#t');
+    expect(`${location.pathname}${location.search}${location.hash}`).toBe('/document/a?view=1#t');
   });
 });

@@ -9,7 +9,7 @@
 //
 // Session-local by design, like the other tool panels: the marker resets to
 // yellow / medium on a fresh editor load, the way a real pen cup does. Nothing
-// here is stored on the diagram or sent to the api.
+// here is stored on the document or sent to the api.
 
 // The marker cup: yellow (the default) plus the classic set. Fixed hexes, not
 // theme colours — a highlighter that changed colour with the tab's palette

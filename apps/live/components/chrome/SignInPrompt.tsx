@@ -1,16 +1,16 @@
 'use client';
 
 // Persistence-model prompt shown inside the Explorer. Present for guest
-// sessions so the user understands their diagrams are browser-local
+// sessions so the user understands their documents are browser-local
 // until they sign in; rendered shape depends on what the deployment
 // supports:
 //
 //   - Clerk disabled, any session
-//        → "Diagrams are saved to this browser only — sign-in isn't
+//        → "Documents are saved to this browser only — sign-in isn't
 //          enabled on this deployment."
 //
 //   - Clerk enabled, signed out
-//        → "Sign in to keep your diagrams across devices." + CTA to
+//        → "Sign in to keep your documents across devices." + CTA to
 //          /live/sign-in/.
 //
 //   - Clerk enabled, signed in
@@ -102,7 +102,7 @@ function SignInPromptEnabled({ fallback }: SignInPromptProps) {
   return (
     <PromptShell
       title="Sign in to keep your content"
-      body="A free account keeps your diagrams and content across sessions and devices."
+      body="A free account keeps your documents and content across sessions and devices."
       onDismiss={dismiss}
       action={
         <Link
@@ -122,8 +122,8 @@ function SignInPromptDisabled({ fallback }: SignInPromptProps) {
   if (dismissed) return <>{fallback ?? null}</>;
   return (
     <PromptShell
-      title="Diagrams saved to this browser"
-      body="Sign-in isn't enabled on this deployment, so diagrams stay local to this browser. Clear your storage and they're gone."
+      title="Documents saved to this browser"
+      body="Sign-in isn't enabled on this deployment, so documents stay local to this browser. Clear your storage and they're gone."
       onDismiss={dismiss}
     />
   );

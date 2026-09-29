@@ -1,7 +1,7 @@
 import { classMaskOf, detectStickies } from '../src/detect';
 import { labImageOf, type LabImage } from '../src/lab';
 import { median } from '../src/stats';
-import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
+import { EVENT_STORMING_NOTES } from '@livediagram/document';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { encodePng } from './png';
 import { listPhotos, loadPhoto } from './photos';

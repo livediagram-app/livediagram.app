@@ -3,6 +3,7 @@
 // don't exist and each app is a plain HTTP origin to proxy instead.
 // See docs/specs/016-platform/router-app.md.
 
+import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
 
 export interface Env {
@@ -131,7 +132,7 @@ function forward(
 // api's JSON included.
 //
 // A 101 is returned UNTOUCHED. The realtime room answers
-// `/api/diagrams/<id>/ws` with a WebSocket upgrade, and a Response carrying a
+// `/api/documents/<id>/ws` with a WebSocket upgrade, and a Response carrying a
 // `webSocket` cannot be reconstructed — `new Response(body, res)` drops the
 // socket and takes realtime collab down on staging alone, on one path, which
 // is precisely the sort of breakage that survives a smoke test. Crawlers do
@@ -172,12 +173,16 @@ async function route(request: Request, env: Env): Promise<Response> {
     // static app — same prefix-strip as the live app's assets.
     return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
   }
+  const legacyHelp = legacyHelpRedirect(url);
+  if (legacyHelp) return legacyHelp;
   if (hasPrefix(url.pathname, HELP_PATH)) {
     // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
     // prefix-strip as telemetry.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
-  // Clean live-app page routes (/diagram, /explorer, /new, ...) and
+  const legacyEditor = legacyEditorRedirect(url);
+  if (legacyEditor) return legacyEditor;
+  // Clean live-app page routes (/document, /explorer, /new, ...) and
   // its root-served icon: forwarded AS-IS (no strip — the worker's
   // files are already `/live`-free).
   if (isLivePageRoute(url.pathname)) {

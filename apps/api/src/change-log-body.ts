@@ -1,4 +1,4 @@
-// Defensive parser for the POST /api/diagrams/:id/log request body.
+// Defensive parser for the POST /api/documents/:id/log request body.
 // Lifted out of the route handler in index.ts so the validation has
 // a testable surface (the route itself is awkward to unit-test
 // because of the env binding) and so the rules are documented in

@@ -48,7 +48,7 @@ which is never us.
 ## Nothing loads until asked
 
 Unchanged from [More than YouTube](embed-providers.md) and load-bearing: the iframe is not mounted until the
-user presses **Load embed**. Opening a diagram containing five website embeds
+user presses **Load embed**. Opening a document containing five website embeds
 must not fetch five third-party pages, and a self-hoster ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) should not
 be silently shipping their users anywhere on page load.
 

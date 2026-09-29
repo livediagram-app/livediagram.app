@@ -8,7 +8,7 @@ import {
   type Element,
   type StickyElement,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { getPhotoDraftView, setPhotoDraftView } from '@/lib/photo-draft-preview';
 import { usePhotoDraft } from './usePhotoDraft';
 

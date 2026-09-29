@@ -24,7 +24,7 @@ import type {
   RunHeading,
   TextAlignX,
   TextAlignY,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { HoverCard } from '@livediagram/ui';
 
 // Matches the element toolbar's PopoverButton (h-8 w-8 rounded-md, same

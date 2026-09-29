@@ -20,15 +20,15 @@ There are two equally supported ways to use livediagram, and both have the same 
 - **Hosted by livediagram** at livediagram.app, free for everyone, a convenience and a public home for the project.
 - **Self-hosted**, where you deploy and run it yourself.
 
-You might self-host to keep diagram data on infrastructure you control, to meet an internal policy, to fork and customise the editor, or simply to run a private instance for your team. Since it is **MIT-licensed**, you are free to modify, embed, or build on it, commercially or not.
+You might self-host to keep document data on infrastructure you control, to meet an internal policy, to fork and customise the editor, or simply to run a private instance for your team. Since it is **MIT-licensed**, you are free to modify, embed, or build on it, commercially or not.
 
 ## What it runs on
 
 livediagram runs entirely on Cloudflare. The frontends are static (built with Next.js in export mode, so there is no server-side rendering and no Node runtime to operate), and all server-side logic lives in Cloudflare Workers.
 
 - **Cloudflare Workers** serve the apps and host the API.
-- **Cloudflare D1** is the database where diagrams live, reached only through the API Worker.
-- **Cloudflare Durable Objects** power the per-diagram real-time room.
+- **Cloudflare D1** is the database where documents live, reached only through the API Worker.
+- **Cloudflare Durable Objects** power the per-document real-time room.
 
 This means there is no separate database server, no container fleet, and no always-on box to babysit. You deploy Workers and static assets to your Cloudflare account.
 

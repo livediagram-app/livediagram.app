@@ -1,4 +1,4 @@
-import type { BackgroundPattern, Tab } from '@livediagram/diagram';
+import type { BackgroundPattern, Tab } from '@livediagram/document';
 import { titleCase } from '@livediagram/api-schema';
 import { templateLayers } from './template-layers';
 
@@ -592,27 +592,29 @@ export function templateCategory(kind: TemplateKind): TemplateCategory {
 
 // True when `value` names a template in the catalogue. The guard for a kind
 // that arrives as a plain string from outside the type system: the MCP
-// `template` argument, the `/new?template=<kind>` query (docs/specs/007-editor/new-diagram-route.md).
+// `template` argument, the `/new?template=<kind>` query (docs/specs/007-editor/new-document-route.md).
 export function isTemplateKind(value: unknown): value is TemplateKind {
   return typeof value === 'string' && TEMPLATES.some((t) => t.kind === value);
 }
 
 // The editor URL that creates this template without the wizard and opens it
-// (docs/specs/007-editor/new-diagram-route.md): what an outside surface links to, such as the marketing site's
+// (docs/specs/007-editor/new-document-route.md): what an outside surface links to, such as the marketing site's
 // template gallery (docs/specs/019-marketing/marketing-site.md). The route is the editor's; the builder lives
 // here so every caller spells the query the same way `isTemplateKind` reads.
 export function templateCreateHref(kind: TemplateKind): string {
   return `/new?template=${encodeURIComponent(kind)}`;
 }
 
-// Default name for a freshly-created diagram: "Untitled <Template Title>" in
-// title case so a templated diagram is recognisable in the Explorer (e.g.
+// Default name for a freshly-created document: "Untitled <Template Title>" in
+// title case so a templated document is recognisable in the Explorer (e.g.
 // "Untitled Tree Mind Map"), while a blank one (or no template) keeps the plain
-// "Untitled diagram".
+// "Untitled document".
+export const UNTITLED_DOCUMENT_NAME = 'Untitled document';
+
 export function untitledNameForTemplate(kind: TemplateKind | null): string {
-  if (!kind || kind === 'blank') return 'Untitled diagram';
+  if (!kind || kind === 'blank') return UNTITLED_DOCUMENT_NAME;
   const title = TEMPLATES.find((t) => t.kind === kind)?.title;
-  return title ? `Untitled ${titleCase(title)}` : 'Untitled diagram';
+  return title ? `Untitled ${titleCase(title)}` : UNTITLED_DOCUMENT_NAME;
 }
 
 // The canvas backdrop pattern that best suits each template's layout.
@@ -701,7 +703,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
 // of whatever theme is selected. Each template carries its preferred
 // backdrop pattern (see TEMPLATE_PATTERNS); Mind map and User journey
 // additionally soften the canvas opacity so the pattern recedes behind
-// the radiating branches / the stage row. Layered templates (docs/specs/006-diagram/layers.md)
+// the radiating branches / the stage row. Layered templates (docs/specs/006-document/layers.md)
 // also carry their `Tab.layers` here, matching the `layerId`s their
 // builder pre-stamps, so every application path lands scaffold and
 // layers in one commit.

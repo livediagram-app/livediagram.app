@@ -7,7 +7,7 @@
 // Ids are re-minted to fresh UUIDs here (with a map so arrow bindings
 // follow), so the caller doesn't need the JSON path's
 // remintElementIds step and imported elements can't collide with anything
-// already on the diagram.
+// already on the document.
 
 import {
   anchorPosition,
@@ -23,7 +23,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { ImportImageRequest } from './import-images';
 
 // The slice of an Excalidraw element we read. Everything is optional —

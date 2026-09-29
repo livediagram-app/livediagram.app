@@ -281,7 +281,7 @@ export async function recordTeamDeleted(
       title: 'Team Deleted',
       description: team.name,
       // No teamId, so the row can't link at a team that no longer
-      // exists — the same structural guard the diagram tombstone uses.
+      // exists — the same structural guard the document tombstone uses.
       snapshot: { teamName: team.name },
     },
     audience,

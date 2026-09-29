@@ -6,7 +6,7 @@
 
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Tooltip, Glyph } from '@livediagram/ui';
-import { isLightColor } from '@livediagram/diagram';
+import { isLightColor } from '@livediagram/document';
 
 export type QuickOption<V> = {
   value: V;

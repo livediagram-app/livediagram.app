@@ -5,38 +5,38 @@ import { GuestIdentity } from '@/components/illustrations/account';
 export const metadata = helpMetadata({
   title: 'How Guest Identity Works',
   description:
-    'Understand how livediagram identifies you as a guest with a per-browser id, and what that means for your diagrams.',
+    'Understand how livediagram identifies you as a guest with a per-browser id, and what that means for your documents.',
   path: '/help/account-and-data/guest-identity/',
 });
 
-<ArticleLayout title="How Guest Identity Works" description="The canvas works without signing in. Here is how livediagram knows which diagrams are yours when you are a guest." categoryTitle="Account and Data" categorySlug="account-and-data">
+<ArticleLayout title="How Guest Identity Works" description="The canvas works without signing in. Here is how livediagram knows which documents are yours when you are a guest." categoryTitle="Account and Data" categorySlug="account-and-data">
 
-The canvas always works without signing in. You can land on [a new diagram](/new), build something real, and only later decide whether you want an account. To make that possible, livediagram gives every guest a quiet, per-browser identity that owns the diagrams you create.
+The canvas always works without signing in. You can land on [a new document](/new), build something real, and only later decide whether you want an account. To make that possible, livediagram gives every guest a quiet, per-browser identity that owns the documents you create.
 
 ## Your per-browser id
 
-The first time you visit, livediagram mints a unique guest id and stores it in your browser's `localStorage`. Every diagram, folder, and image you create as a guest is owned by that id, which is how the app knows which content to show you when you come back.
+The first time you visit, livediagram mints a unique guest id and stores it in your browser's `localStorage`. Every document, folder, and image you create as a guest is owned by that id, which is how the app knows which content to show you when you come back.
 
-<Figure caption="A per-browser guest id owns the diagrams you create, with no sign-in required.">
+<Figure caption="A per-browser guest id owns the documents you create, with no sign-in required.">
   <GuestIdentity />
 </Figure>
 
 Two things follow from this:
 
-- **It is per browser, not per person.** The id lives in one browser on one device. Open livediagram in a different browser or on another device and you get a fresh guest id, so your earlier diagrams will not appear there.
+- **It is per browser, not per person.** The id lives in one browser on one device. Open livediagram in a different browser or on another device and you get a fresh guest id, so your earlier documents will not appear there.
 - **It is not cross-device.** Guest content does not sync between devices, because there is no account tying them together yet.
 
 As a guest you still get the full feature set: persistence, share links, and real-time collaboration all work exactly as they do for signed-in users. The only difference is how the request is identified behind the scenes.
 
 ## What this means for your data
 
-Because your guest content is tied to a single browser, clearing that browser's storage, or using private browsing that discards it, means the app can no longer recognise you as the owner. Treat your guest diagrams as living in that browser.
+Because your guest content is tied to a single browser, clearing that browser's storage, or using private browsing that discards it, means the app can no longer recognise you as the owner. Treat your guest documents as living in that browser.
 
-If you want your diagrams to follow you across browsers and devices, [signing in](/help/account-and-data/signing-in/) is the answer. When you create an account, the diagrams you built as a guest migrate into it automatically, so you do not lose the work you have already done.
+If you want your documents to follow you across browsers and devices, [signing in](/help/account-and-data/signing-in/) is the answer. When you create an account, the documents you built as a guest migrate into it automatically, so you do not lose the work you have already done.
 
 <Tip>
   Doing serious work as a guest? Create an account before clearing your browser data. Your guest
-  diagrams move into the account on sign-up, so nothing is left behind.
+  documents move into the account on sign-up, so nothing is left behind.
 </Tip>
 
 </ArticleLayout>

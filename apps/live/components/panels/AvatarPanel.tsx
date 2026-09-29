@@ -32,7 +32,7 @@ import { AvatarSprite } from '@/components/canvas/avatar-sprite';
 // meaning (give me another random one), so it stays the same icon.
 import { RefreshIcon, HoverCard } from '@livediagram/ui';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
-import { REACTION_EMOJI, REACTION_LABEL, REACTIONS, type Reaction } from '@livediagram/diagram';
+import { REACTION_EMOJI, REACTION_LABEL, REACTIONS, type Reaction } from '@livediagram/document';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { ChevronIcon } from '@/components/primitives/ChevronIcon';
 

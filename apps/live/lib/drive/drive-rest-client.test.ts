@@ -39,14 +39,14 @@ describe('createDriveRestClient', () => {
       mimeType: DRIVE_FILE_MIME,
       content: '{"a":1}',
       thumbnailPng: fakePngBase64Url(400),
-      appProperties: { ldDiagramId: 'd1' },
+      appProperties: { ldDocumentId: 'd1' },
     });
     expect(file).toMatchObject({
       name: 'A.livediagram',
       parents: [root.id],
       trashed: false,
       ownedByMe: true,
-      appProperties: { ldDiagramId: 'd1' },
+      appProperties: { ldDocumentId: 'd1' },
     });
     expect(file.md5Checksum).toMatch(/^[0-9a-f]{32}$/);
     expect(fake.get(file.id)!.thumbnail).toMatchObject({ mimeType: 'image/png' });

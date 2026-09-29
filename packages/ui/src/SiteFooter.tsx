@@ -37,6 +37,10 @@ export function SiteFooter() {
           >
             Privacy
           </a>
+          {/* Third-party licences (docs/specs/002-project-scope/third-party-licences.md). */}
+          <a href="/licences" className="hover:text-slate-900 dark:hover:text-slate-100">
+            Licences
+          </a>
           <a href="/status" className="hover:text-slate-900 dark:hover:text-slate-100">
             Status
           </a>
@@ -58,7 +62,7 @@ export function SiteFooter() {
         </nav>
       </div>
       <div className="border-t border-slate-100 dark:border-slate-800">
-        <div className="mx-auto flex max-w-6xl flex-col gap-1.5 px-6 py-4 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-1.5 px-6 py-4 text-xs text-slate-500 sm:flex-row dark:text-slate-400 sm:items-center sm:justify-between">
           <p>
             <span>&copy; {new Date().getFullYear()} livediagram. MIT licensed.</span>
           </p>

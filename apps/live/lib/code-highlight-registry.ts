@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from 'react';
 
-import type { CodeLanguage } from '@livediagram/diagram';
+import type { CodeLanguage } from '@livediagram/document';
 import type { CodeToken } from './code-tokens';
 
 // Async loader for the code tokenizer (docs/specs/009-elements/code-block.md), on the icon-registry

@@ -42,7 +42,7 @@ export function ApiArt() {
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
           </div>
           <div className="px-2 py-1.5 font-mono text-[7px] leading-relaxed">
-            <div className="text-slate-400">$ curl …/api/diagrams</div>
+            <div className="text-slate-400">$ curl …/api/documents</div>
             <div className="text-slate-600 dark:text-slate-300">
               -H &quot;Authorization:{' '}
               <span className="font-semibold text-brand-600 dark:text-brand-300">Bearer lvd_…</span>
@@ -76,7 +76,7 @@ export function McpArt() {
             <div className="text-slate-600 dark:text-slate-300">
               ▸{' '}
               <span className="font-semibold text-brand-600 dark:text-brand-300">
-                create_diagram
+                create_document
               </span>
             </div>
             <div className="text-slate-400">&quot;auth flow&quot; → livediagram</div>
@@ -428,7 +428,7 @@ export function MultiplayerArt() {
 }
 
 export function AnyDeviceArt() {
-  // The same diagram on a laptop, tablet, and phone. A highlight ring
+  // The same document on a laptop, tablet, and phone. A highlight ring
   // cycles across the three (like the template tiles).
   return (
     <Frame>
@@ -615,9 +615,9 @@ export function AnyDeviceArt() {
 }
 
 export function ExportArt() {
-  // The board on the left, the same board as a file on the right. The two
+  // The canvas on the left, the same canvas as a file on the right. The two
   // panels are deliberately identical: docs/specs/020-import-export/export-fidelity.md's whole rule is that an export
-  // is a picture of the diagram, not a lossy version of one.
+  // is a picture of the canvas, not a lossy version of one.
   return (
     <Frame>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">

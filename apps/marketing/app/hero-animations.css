@@ -3,8 +3,8 @@
 
 /* The editor's canvas for every diagram in the mock-ups, here and in the feature art
    (docs/specs/004-interface-design/appearance.md, docs/specs/019-marketing/marketing-site.md): the
-   Default colour scheme (packages/diagram/src/themes-data.ts, canvas-colors.ts), light half under
-   :root and dark half under .dark, and the colours packages/diagram/src/colors.ts gives an
+   Default colour scheme (packages/document/src/themes-data.ts, canvas-colors.ts), light half under
+   :root and dark half under .dark, and the colours packages/document/src/colors.ts gives an
    unpainted element on it: a shape's ink, a text element, an arrow and its label, a table's
    grid, and the shade a heading band or marker takes above a shape. The --art-pick-* set is the
    scheme the hero's theme beat picks: Forest in light, Pine in dark. app/dark-art.test.ts holds

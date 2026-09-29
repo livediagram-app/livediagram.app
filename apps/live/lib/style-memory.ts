@@ -9,12 +9,13 @@ import {
   rederiveQuickSwatches,
   type Element,
   type ThemeDefinition,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { safeJson } from './local-storage-safe';
 import { isQuickStyleTarget } from './quick-style';
 
-// `shape:<ShapeKind>` for a shape, `arrow` for every arrow.
-export type StyleKindKey = `shape:${string}` | 'arrow';
+// `shape:<ShapeKind>` for a shape, `arrow` for every arrow, `text` for every
+// text element.
+export type StyleKindKey = `shape:${string}` | 'arrow' | 'text';
 export type RememberedStyle = Record<string, string | number>;
 export type StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>;
 
@@ -40,6 +41,10 @@ const ARROW_MEMORY_FIELDS = {
   strokeStyle: 'string',
   flow: 'string',
 } as const;
+const TEXT_MEMORY_FIELDS = {
+  textColor: 'string',
+  textSwatch: 'number',
+} as const;
 type FieldTypes = Readonly<Record<string, 'string' | 'number'>>;
 
 // Colour fields whose theme value is not a memory.
@@ -50,20 +55,22 @@ const THEME_VALUE_OF: Readonly<Record<string, 'elementFill' | 'elementStroke' | 
 };
 
 const STORAGE_PREFIX = 'livediagram:v2:style-memory:';
-export const styleMemoryKey = (diagramId: string): string => `${STORAGE_PREFIX}${diagramId}`;
+export const styleMemoryKey = (documentId: string): string => `${STORAGE_PREFIX}${documentId}`;
 
 export function styleKindOf(el: Element): StyleKindKey | null {
   if (el.type === 'arrow') return 'arrow';
+  if (el.type === 'text') return 'text';
   if (el.type === 'shape') return `shape:${el.shape}`;
   return null;
 }
 
 function fieldsFor(kind: StyleKindKey): FieldTypes {
-  return kind === 'arrow' ? ARROW_MEMORY_FIELDS : SHAPE_MEMORY_FIELDS;
+  if (kind === 'arrow') return ARROW_MEMORY_FIELDS;
+  return kind === 'text' ? TEXT_MEMORY_FIELDS : SHAPE_MEMORY_FIELDS;
 }
 
 function isKnownKind(key: string): key is StyleKindKey {
-  if (key === 'arrow') return true;
+  if (key === 'arrow' || key === 'text') return true;
   return key.startsWith('shape:') && SHAPE_KINDS.has(key.slice('shape:'.length));
 }
 

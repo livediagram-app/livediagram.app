@@ -1,14 +1,14 @@
 'use client';
 
-// The unseen-folder mark on a diagram's Explorer row
+// The unseen-folder mark on a document's Explorer row
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Folders livediagram cannot see").
 
 import { HoverCard, Glyph } from '@livediagram/ui';
 import { DRIVE_NOTICE_TEXT } from '@/lib/drive/cloud-sync-copy';
 import { useDriveNotice } from './drive-mirror-context';
 
-export function DriveNoticeMarker({ diagramId }: { diagramId: string }) {
-  const notice = useDriveNotice(diagramId);
+export function DriveNoticeMarker({ documentId }: { documentId: string }) {
+  const notice = useDriveNotice(documentId);
   if (!notice) return null;
   return (
     <HoverCard

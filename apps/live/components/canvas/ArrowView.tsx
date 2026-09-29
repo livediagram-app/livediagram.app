@@ -13,7 +13,7 @@ import {
   type ArrowLabelLayout,
   type Element,
   type ElementIndex,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { sameLabelRender, type ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
 import type { ArrowEnd } from '@/lib/canvas';
 import { deriveArrowViewFrame } from './arrow-view-frame';

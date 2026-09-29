@@ -4,9 +4,9 @@ import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
-import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
+import { DEFAULT_BUTTON_MODE } from '@livediagram/document';
 import { useMemo, useState } from 'react';
-import { isVoteHost } from '@livediagram/diagram';
+import { isVoteHost } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { participantKey } from '@/lib/identity';
@@ -19,7 +19,7 @@ import { getTheme, resolveTabBackdrop, themeChartPalette, type ThemeId } from '@
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -180,19 +180,19 @@ export function EditorCanvasHost() {
     commitHeaderSize,
     createFolder,
     deleteCurvePoint,
-    deleteDiagram,
+    deleteDocument,
     deleteFolder,
     deleteMultiSelected,
     deleteSelected,
-    diagramId,
-    diagramList,
-    diagramListLoading,
-    diagramName,
-    dismissSharedDiagram,
+    documentId,
+    documentList,
+    documentListLoading,
+    documentName,
+    dismissSharedDocument,
     distGuides,
     dropIconOnElement,
     dropPaletteItem,
-    duplicateDiagram,
+    duplicateDocument,
     duplicateMultiSelected,
     contextMenu,
     duplicateSelected,
@@ -227,18 +227,18 @@ export function EditorCanvasHost() {
     livePresence,
     lockedByOther,
     mapPosition,
-    moveDiagramToFolder,
-    moveDiagramTo,
+    moveDocumentToFolder,
+    moveDocumentTo,
     multiSelectedIds,
     narrowMultiSelection,
-    newDiagram,
+    newDocument,
     openActionPopover,
     openAssignActionDialog,
     completeAction,
     reopenAction,
     openCellLinkPicker,
     openComments,
-    openDiagram,
+    openDocument,
     openNote,
     openTemplatePicker,
     palettePosition,
@@ -293,8 +293,8 @@ export function EditorCanvasHost() {
     setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
-    setDiagramList,
-    setDiagramName,
+    setDocumentList,
+    setDocumentName,
     setEditingId,
     setExplorerPosition,
     setExportOpen,
@@ -318,7 +318,7 @@ export function EditorCanvasHost() {
     setUserPreferences,
     setViewportOffset,
     setViewportZoom,
-    sharedDiagrams,
+    sharedDocuments,
     shiftDupGhostIds,
     skipTemplatePicker,
     snapGuides,
@@ -327,7 +327,7 @@ export function EditorCanvasHost() {
     startTimer,
     startVote,
     tabSummaries,
-    teamDiagrams,
+    teamDocuments,
     teamFolders,
     teams,
     refreshTeamLibraries,
@@ -364,7 +364,7 @@ export function EditorCanvasHost() {
   // Both recompute only when their real inputs change, not per frame.
   const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
   // Team-library folder mutations for the Explorer panel's team tree
-  // (docs/specs/013-workspace/team-shared-diagrams.md) - see useTeamFolderActions.
+  // (docs/specs/013-workspace/team-shared-documents.md) - see useTeamFolderActions.
   const viewerId = selfParticipant?.id ?? null;
   const onTeamFolders = useTeamFolderActions({
     clerkUserId,
@@ -395,7 +395,7 @@ export function EditorCanvasHost() {
     () => changeLog.filter((entry) => entry.tabId === activeId),
     [changeLog, activeId],
   );
-  // Lazy per-tab load gate (docs/specs/006-diagram/per-tab-storage.md): show a blocking loader / error over
+  // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so
   // the user never edits a blank placeholder whose autosave would
   // overwrite the real server row. Derived once in useEditorState (it also
@@ -438,7 +438,7 @@ export function EditorCanvasHost() {
         activeTabId={activeTab.id}
         tabLocked={activeTabLocked}
         readOnly={isReadOnly}
-        diagramName={diagramName}
+        documentName={documentName}
         tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
         tabBackgroundColor={backdrop.backgroundColor}
         tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
@@ -695,14 +695,14 @@ export function EditorCanvasHost() {
         onResetPalette={() => setPalettePosition(null)}
         onMoveExplorer={(x, y) => setExplorerPosition({ x, y })}
         onResetExplorer={() => setExplorerPosition(null)}
-        diagramList={diagramList}
+        documentList={documentList}
         folders={folders}
-        sharedDiagrams={sharedDiagrams}
+        sharedDocuments={sharedDocuments}
         teams={explorerTeams}
         teamFolders={teamFolders}
-        teamDiagrams={teamDiagrams}
-        onDismissShared={dismissSharedDiagram}
-        diagramListLoading={diagramListLoading}
+        teamDocuments={teamDocuments}
+        onDismissShared={dismissSharedDocument}
+        documentListLoading={documentListLoading}
         changeLog={activeTabChangeLog}
         changeLogLoading={changeLogLoading}
         activityPosition={activityPosition}
@@ -801,7 +801,11 @@ export function EditorCanvasHost() {
         onResetAvatarPanel={() => setAvatarPanelPosition(null)}
         voteResults={voteResults}
         onJumpToVoteResult={jumpToVoteResult}
-        isVoteHost={isVoteHost(activeTab.vote, participantKey(selfParticipant))}
+        isVoteHost={isVoteHost(
+          activeTab.vote,
+          participantKey(selfParticipant),
+          facilitator.isFacilitator,
+        )}
         // +1 for the local participant: livePresence is the REMOTE roster.
         participantCount={livePresence.length + 1}
         onToggleLayersMinimized={() => {
@@ -863,9 +867,9 @@ export function EditorCanvasHost() {
         onClearActivity={isReadOnly ? undefined : clearActivityForActiveTab}
         saveStatus={saveStatus}
         savedAt={savedAt}
-        currentDiagramId={diagramId}
-        onOpenDiagram={openDiagram}
-        onNewDiagram={newDiagram}
+        currentDocumentId={documentId}
+        onOpenDocument={openDocument}
+        onNewDocument={newDocument}
         explorerMenuActions={{
           // The header's Share gate: owners only (docs/specs/013-workspace/folders.md, docs/specs/015-api/api.md).
           onShare:
@@ -891,23 +895,23 @@ export function EditorCanvasHost() {
           },
         }}
         onRenameCurrent={(next) => {
-          const prev = diagramName.trim();
+          const prev = documentName.trim();
           const nextTrim = next.trim();
-          setDiagramName(next);
-          if (nextTrim && diagramId)
-            setDiagramList((prev) =>
-              prev.map((d) => (d.id === diagramId ? { ...d, name: nextTrim } : d)),
+          setDocumentName(next);
+          if (nextTrim && documentId)
+            setDocumentList((prev) =>
+              prev.map((d) => (d.id === documentId ? { ...d, name: nextTrim } : d)),
             );
-          if (nextTrim && nextTrim !== prev) track('Diagram', 'Renamed');
+          if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
         }}
-        onDeleteDiagram={deleteDiagram}
-        onDuplicateDiagram={(id) => void duplicateDiagram(id)}
+        onDeleteDocument={deleteDocument}
+        onDuplicateDocument={(id) => void duplicateDocument(id)}
         onCreateFolder={createFolder}
         onRenameFolder={renameFolder}
         onDeleteFolder={deleteFolder}
         onTeamFolders={onTeamFolders}
-        onMoveDiagramToFolder={moveDiagramToFolder}
-        onMoveDiagramTo={moveDiagramTo}
+        onMoveDocumentToFolder={moveDocumentToFolder}
+        onMoveDocumentTo={moveDocumentTo}
         onDeselect={() => {
           // Clicking empty canvas also cancels an armed arrow-connect, and
           // wraps up the Format tool — restoring the pre-Format tool — so a
@@ -1069,7 +1073,7 @@ export function EditorCanvasHost() {
         }
         hydrated={hydrated}
         templatePickerMode={effectiveTemplatePickerMode}
-        // Visitor on someone else's diagram + signed in → lock the
+        // Visitor on someone else's document + signed in → lock the
         // identity input to their Clerk name. Owner branch never
         // shows the identity prompt so `lockedName` is moot there;
         // pure guests pass null and keep the editable name field.

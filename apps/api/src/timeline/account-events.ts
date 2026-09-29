@@ -79,8 +79,8 @@ export async function recordThemeSaved(
   );
 }
 
-// Coalesced per day like diagram editing: someone pasting a dozen
-// screenshots into a diagram is one moment, not twelve. The snapshot's
+// Coalesced per day like document editing: someone pasting a dozen
+// screenshots into a document is one moment, not twelve. The snapshot's
 // count is what the renderer reads to say "3 images uploaded".
 export async function recordImageUploaded(env: Env, ownerId: string): Promise<void> {
   const now = Date.now();

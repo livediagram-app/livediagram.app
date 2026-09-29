@@ -16,7 +16,7 @@ import { guestMigrationPending, settleGuestMigration } from '@/lib/guest-migrati
 //
 //   2. Run the guest → authed migration the first time the user is
 //      signed in AND `livediagram:v2:self-id` is still in localStorage.
-//      `POST /api/migrate` reassigns every `diagrams.owner_id` +
+//      `POST /api/migrate` reassigns every `documents.owner_id` +
 //      `folders.owner_id` row from the guest id to the Clerk userId
 //      (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). On success we drop the localStorage key so
 //      subsequent loads skip the call entirely. `authLoaded` stays
@@ -49,7 +49,7 @@ type BootstrapResult = {
   // seed the participant record on first load so a signed-in user
   // never appears under the random "Sleepy Lemur" placeholder, and
   // to lock the welcome-modal name input when joining someone
-  // else's diagram (the user explicitly asked that visitors with a
+  // else's document (the user explicitly asked that visitors with a
   // Clerk account aren't allowed to type a different display name).
   // Null when Clerk hasn't surfaced the user yet, the user signed
   // out, or the user genuinely has no name configured.

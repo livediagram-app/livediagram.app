@@ -1,4 +1,4 @@
-import { contrastRatio } from '@livediagram/diagram';
+import { contrastRatio } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { PARTICIPANT_COLORS } from './identity';
 import { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';

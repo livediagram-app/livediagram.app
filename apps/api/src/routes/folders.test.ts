@@ -114,7 +114,7 @@ describe('handleFolders auth', () => {
   });
 
   // Deleting a folder used to leave its "Folder Created" card on the feed
-  // beside the "Folder Deleted" one, where a diagram delete had always
+  // beside the "Folder Deleted" one, where a document delete had always
   // swept its history first. Same cascade, same order: the earlier cards
   // go, and the tombstone is written AFTER so it isn't swept with them.
   it('sweeps the folders earlier timeline cards before writing its tombstone', async () => {

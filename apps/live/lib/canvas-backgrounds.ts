@@ -1,4 +1,4 @@
-import type { BackgroundPattern } from '@livediagram/diagram';
+import type { BackgroundPattern } from '@livediagram/document';
 
 // Canvas pattern + backdrop builders lifted out of Canvas.tsx. Pure
 // functions: given a tab's chosen `BackgroundPattern`, the current
@@ -63,7 +63,7 @@ function scaleBackgroundSize(spec: string, k: number): string {
 // puts world point p at `z * (p + o) + C * (1 - z)`; this is that for p = 0.
 // Feeding the raw offset instead drifted the pattern against the elements at
 // any zoom but 1, which a phone (it opens at 0.6) showed on every pan.
-// Pair it with `patternScale * zoom` so the tiles scale with the diagram.
+// Pair it with `patternScale * zoom` so the tiles scale with the canvas.
 export function worldPatternOrigin(
   offset: { x: number; y: number },
   zoom: number,

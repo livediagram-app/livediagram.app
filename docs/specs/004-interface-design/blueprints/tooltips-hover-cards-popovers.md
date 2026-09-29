@@ -180,7 +180,7 @@ None. Hints persist nothing; the registry and warm-up clock are per page and res
 ## Security and trust
 
 Hints render text through React only: no `dangerouslySetInnerHTML`, no HTML from props. A label built from user data
-(a diagram name, a participant name) is escaped like any other text node. There is no network, storage or cross-origin
+(a document name, a participant name) is escaped like any other text node. There is no network, storage or cross-origin
 surface.
 
 ## Performance and limits

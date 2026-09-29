@@ -1,4 +1,4 @@
-import type { BorderStyle } from '@livediagram/diagram';
+import type { BorderStyle } from '@livediagram/document';
 
 // CSS `border-style` only understands solid / dashed / dotted (plus a
 // few 3D styles we don't use); it can't express the composite dash

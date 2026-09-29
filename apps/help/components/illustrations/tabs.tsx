@@ -283,7 +283,7 @@ export function AddToFolderMenu() {
 }
 
 /** A link on tab 1 jumping to tab 2: an element with a Follow-link badge, an
- *  arrow across to a second board, and the tab bar below. */
+ *  arrow across to a second tab, and the tab bar below. */
 export function CrossTabLink() {
   const barY = 158;
   return (
@@ -309,7 +309,7 @@ export function CrossTabLink() {
       {/* The jump */}
       <Arrow from={[140, 74]} to={[252, 74]} kind="curved" />
 
-      {/* Tab 2: target board */}
+      {/* Tab 2: target tab */}
       <Shape x={258} y={48} w={104} h={52} kind="rect" accent label="Internals" />
 
       <TabBar y={barY} w={420} />
@@ -320,9 +320,9 @@ export function CrossTabLink() {
   );
 }
 
-/** The tab ellipsis menu with the Add to Diagram option and a target-diagram
+/** The tab ellipsis menu with the Add to Document option and a target-document
  *  picker submenu. */
-export function AddToDiagramMenu() {
+export function AddToDocumentMenu() {
   const barY = 158;
   return (
     <Scene w={420} h={210}>
@@ -334,10 +334,10 @@ export function AddToDiagramMenu() {
         x={14}
         y={28}
         w={142}
-        items={['Add to Folder', 'Add to Diagram', 'Link Element']}
+        items={['Add to Folder', 'Add to Document', 'Link Element']}
         active={1}
       />
-      {/* The destination-diagram picker */}
+      {/* The destination-document picker */}
       <Menu
         x={170}
         y={48}

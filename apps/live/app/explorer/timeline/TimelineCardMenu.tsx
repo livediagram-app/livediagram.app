@@ -2,8 +2,8 @@
 
 // The ⋯ menu on a Timeline card (docs/specs/013-workspace/timeline.md §2.8, §2.9).
 //
-// Three shapes behind one trigger. A card about a diagram the Explorer
-// has loaded gets the same `DiagramActionsMenu` a Recent card uses, and
+// Three shapes behind one trigger. A card about a document the Explorer
+// has loaded gets the same `DocumentActionsMenu` a Recent card uses, and
 // a card about a folder the Explorer has loaded gets the same
 // `FolderActionsMenu` a folder card uses — so whatever the Explorer
 // offers the thing, Timeline offers it too — each with "Remove from
@@ -12,7 +12,7 @@
 // tokens page and revoke this token; open the team, edit it, leave it;
 // accept or decline this invite; edit or delete this theme), with
 // "Remove from Timeline" among them and the destructive verbs last
-// under their own separator, the way the diagram menu keeps Delete.
+// under their own separator, the way the document menu keeps Delete.
 // An entry with no verbs of its own still gets the one it always has.
 //
 // Controlled, not self-owned: the card's right-click has to open the
@@ -29,11 +29,11 @@ import {
   MenuHeader,
   PortalMenu,
 } from '@/components/primitives/PortalMenu';
-import { DiagramActionsMenu } from '../diagram-row-shared';
+import { DocumentActionsMenu } from '../document-row-shared';
 import { FolderActionsMenu } from '../folder-actions-menu';
-import type { PaneDiagram } from '../views';
+import type { PaneDocument } from '../views';
 
-export type TimelineDiagramMenuHandlers = {
+export type TimelineDocumentMenuHandlers = {
   ownerId: string | null;
   onStartRename: () => void;
   onDuplicate: () => void;
@@ -77,18 +77,18 @@ type Shared = {
 
 type Shape =
   | {
-      diagram: PaneDiagram;
-      handlers: TimelineDiagramMenuHandlers;
+      document: PaneDocument;
+      handlers: TimelineDocumentMenuHandlers;
       folder?: undefined;
       items?: undefined;
     }
   | {
       folder: { id: string; name: string };
       folderHandlers: TimelineFolderMenuHandlers;
-      diagram?: undefined;
+      document?: undefined;
       items?: undefined;
     }
-  | { items?: TimelineMenuItem[]; diagram?: undefined; folder?: undefined };
+  | { items?: TimelineMenuItem[]; document?: undefined; folder?: undefined };
 
 export function TimelineCardMenu(props: Shared & Shape) {
   const { subject, open, onOpenChange, onRemove } = props;
@@ -108,9 +108,9 @@ export function TimelineCardMenu(props: Shared & Shape) {
         expanded={open}
         onClick={() => onOpenChange(!open)}
       />
-      {!open ? null : props.diagram ? (
-        <DiagramActionsMenu
-          diagram={props.diagram}
+      {!open ? null : props.document ? (
+        <DocumentActionsMenu
+          document={props.document}
           anchor={trigger}
           onClose={close}
           onRemoveFromTimeline={onRemove}

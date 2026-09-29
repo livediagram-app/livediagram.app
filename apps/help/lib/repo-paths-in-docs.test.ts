@@ -1,6 +1,6 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -39,7 +39,7 @@ const WORKSPACE_ROOTS = [
   'apps/telemetry/',
   'apps/router/src/',
   'apps/router/',
-  'packages/diagram/',
+  'packages/document/',
   'packages/api-schema/',
   'packages/icons/',
   'packages/ui/',
@@ -89,12 +89,61 @@ function trackedTextFiles(): string[] {
     .filter((f) => TEXT_FILE.test(f) && existsSync(`${ROOT}/${f}`));
 }
 
-function resolves(quoted: string): boolean {
+// What git tracks, files and the directories holding them. The disk is not the
+// answer: a local build leaves outputs there that a fresh CI checkout lacks, so
+// a check against it passes or fails by whatever was last built.
+function trackedPaths(): Set<string> {
+  const paths = new Set<string>();
+  for (const f of execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n')) {
+    const parts = f.split('/');
+    for (let i = 1; i <= parts.length; i++) paths.add(parts.slice(0, i).join('/'));
+  }
+  return paths;
+}
+
+// Of the given paths, those git declares ignored: build outputs such as the
+// marketing app's generated licence manifest. A blueprint names what the build
+// writes, and that is true on every checkout, built or not. One batched call.
+function ignoredPaths(paths: string[]): Set<string> {
+  const inRepo = paths.filter((p) => !p.startsWith('../'));
+  if (inRepo.length === 0) return new Set();
+  const run = spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {
+    cwd: ROOT,
+    input: inRepo.join('\n'),
+    encoding: 'utf8',
+  });
+  // Exit 1 means none of them is ignored; anything above it is git failing.
+  if (run.status !== 0 && run.status !== 1) {
+    throw new Error(`git check-ignore failed (${run.status}): ${run.stderr}`);
+  }
+  return new Set(run.stdout.split('\n').filter(Boolean));
+}
+
+function candidates(quoted: string): string[] {
+  return WORKSPACE_ROOTS.map((prefix) => posix.normalize(`${prefix}${quoted}`));
+}
+
+// Every repo path the quotes could name: tracked, or a declared build output.
+function knownPaths(quotes: string[]): Set<string> {
+  const known = trackedPaths();
+  const untracked = quotes
+    .filter(namesRepoPath)
+    .flatMap(candidates)
+    .filter((p) => !known.has(p));
+  for (const p of ignoredPaths([...new Set(untracked)])) known.add(p);
+  return known;
+}
+
+function namesRepoPath(quoted: string): boolean {
   // A leading slash makes it a URL route, not a repo path — `/api/openapi.json`
   // is an endpoint the api worker serves, not a file anyone can open.
-  if (quoted.startsWith('/')) return true;
-  if (DELIBERATE.some((re) => re.test(quoted))) return true;
-  return WORKSPACE_ROOTS.some((prefix) => existsSync(`${ROOT}/${prefix}${quoted}`));
+  if (quoted.startsWith('/')) return false;
+  return !DELIBERATE.some((re) => re.test(quoted));
+}
+
+function resolves(quoted: string, known: Set<string>): boolean {
+  if (!namesRepoPath(quoted)) return true;
+  return candidates(quoted).some((path) => known.has(path));
 }
 
 // Bare filenames — `useToast.tsx`, no directory — are the blind spot of the
@@ -199,15 +248,25 @@ describe('repo paths quoted in specs and docs', () => {
   });
 
   it('all point at files that exist', () => {
-    const broken: string[] = [];
-    for (const f of files) {
-      const src = readFileSync(`${ROOT}/${f}`, 'utf8');
-      for (const m of src.matchAll(QUOTED_PATH)) {
-        const quoted = m[1]!;
-        if (quoted.includes('/') && !resolves(quoted)) broken.push(`${f}: ${quoted}`);
-      }
-    }
+    const quotes = files.flatMap((f) =>
+      [...readFileSync(`${ROOT}/${f}`, 'utf8').matchAll(QUOTED_PATH)]
+        .map((m) => m[1]!)
+        .filter((quoted) => quoted.includes('/'))
+        .map((quoted) => ({ f, quoted })),
+    );
+    const known = knownPaths(quotes.map(({ quoted }) => quoted));
+    const broken = quotes
+      .filter(({ quoted }) => !resolves(quoted, known))
+      .map(({ f, quoted }) => `${f}: ${quoted}`);
     expect(broken).toEqual([]);
+  });
+
+  it('accepts a declared build output and rejects a misspelt directory', () => {
+    const built = 'apps/marketing/generated/licences.json';
+    const misspelt = 'apps/marketing/generatd/licences.json';
+    const known = knownPaths([built, misspelt]);
+    expect(resolves(built, known)).toBe(true);
+    expect(resolves(misspelt, known)).toBe(false);
   });
 
   it('never name a bare file with the wrong TypeScript extension', () => {

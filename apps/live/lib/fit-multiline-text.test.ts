@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { labelMeasure, wrapLabel } from '@livediagram/diagram';
+import { labelMeasure, wrapLabel } from '@livediagram/document';
 import { fitMultilineFontPx, FIT_MAX_PX, FIT_MIN_PX } from './fit-multiline-text';
 
 // Genuine auto-fit for multi-line labels (stickies, docs/specs/021-event-storming/event-storming.md): `scale` should
@@ -168,7 +168,7 @@ describe('fitMultilineFontPx — two words must share a line', () => {
 // The ceiling is 25px. A short label on a big note used to balloon to 44px,
 // which reads as a poster rather than a sticky: on a real wall the pen width
 // is fixed, so "Cart Emptied" and a two-line policy are written at roughly
-// the same size and the board stays legible as one surface. The floor still
+// the same size and the canvas stays legible as one surface. The floor still
 // lets a long note shrink; only the top end is pinned.
 describe('fitMultilineFontPx — the 25px ceiling', () => {
   it('never exceeds it, however much room there is', () => {

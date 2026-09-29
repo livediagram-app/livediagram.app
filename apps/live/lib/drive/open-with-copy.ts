@@ -1,15 +1,15 @@
 // "Open with" on a copy of a mirrored file: **Import as new document**
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive"; blueprint
-// "Open with"). The copy carries the original's ldDiagramId, but it is another
+// "Open with"). The copy carries the original's ldDocumentId, but it is another
 // Drive file, so it never opens, re-tags or adopts the original.
 
 import {
-  DRIVE_PROP_DIAGRAM_ID,
+  DRIVE_PROP_DOCUMENT_ID,
   DRIVE_PROP_ORIGIN,
   stripDriveName,
   type DriveItem,
 } from '@livediagram/api-schema';
-import type { DiagramEnvelope } from '../export-diagram-text';
+import type { DocumentEnvelope } from '../export-document-text';
 import { DriveApiError, type DriveClient, type DriveFile } from './drive-client';
 import type { LivediagramPort } from './livediagram-port';
 import { driveLog, driveWarn } from './log';
@@ -18,7 +18,7 @@ import { fileState } from './snapshot';
 
 export type CopyPort = Pick<
   LivediagramPort,
-  'importDiagramCopy' | 'getConnection' | 'listItems' | 'listPersonalFolders' | 'putItems'
+  'importDocumentCopy' | 'getConnection' | 'listItems' | 'listPersonalFolders' | 'putItems'
 >;
 
 type Placement = { folderId: string | null; unseen: boolean };
@@ -55,11 +55,11 @@ async function claimCopy(
   }
   try {
     const updated = await deps.drive.updateFile(file.id, {
-      appProperties: { [DRIVE_PROP_DIAGRAM_ID]: claim.newId, [DRIVE_PROP_ORIGIN]: deps.host },
+      appProperties: { [DRIVE_PROP_DOCUMENT_ID]: claim.newId, [DRIVE_PROP_ORIGIN]: deps.host },
     });
     const unseen = claim.placement.unseen;
     const item: DriveItem = {
-      kind: 'diagram',
+      kind: 'document',
       ldId: claim.newId,
       driveFileId: file.id,
       ...fileState(updated),
@@ -84,13 +84,13 @@ async function claimCopy(
 export async function importAsNewDocument(
   deps: { drive: DriveClient; port: CopyPort; host: string },
   file: DriveFile,
-  envelope: DiagramEnvelope,
+  envelope: DocumentEnvelope,
 ): Promise<string> {
   // Created before the item is recorded: outbound bins the file of an item
-  // whose diagram is missing.
+  // whose document is missing.
   const placement = await placeCopy(deps.port, file.parents[0] ?? null);
-  const name = stripDriveName(file.name, LD_NAME_MAX) ?? envelope.diagram.name;
-  const newId = await deps.port.importDiagramCopy(envelope, {
+  const name = stripDriveName(file.name, LD_NAME_MAX) ?? envelope.document.name;
+  const newId = await deps.port.importDocumentCopy(envelope, {
     id: crypto.randomUUID(),
     name,
     folderId: placement.folderId,

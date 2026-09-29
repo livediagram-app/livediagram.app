@@ -4,9 +4,9 @@
 import { sha256Hex } from '@livediagram/api-schema';
 import {
   deleteImage,
-  diagramReferencesImage,
+  documentReferencesImage,
   findImageBySha,
-  getDiagram,
+  getDocument,
   getImage,
   imageTotalsByOwner,
   imageUsageByOwner,
@@ -233,7 +233,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
 
   // GET /api/images/usage: owner-only. Returns the inverse
   // index used by the Explorer Image Gallery: imageId →
-  // [{ id, name }] for every owned diagram that references
+  // [{ id, name }] for every owned document that references
   // it. Empty arrays for images that aren't placed on any
   // canvas yet (the entry simply doesn't appear in the map).
   // See docs/specs/013-workspace/folders.md + docs/specs/009-elements/images.md.
@@ -245,9 +245,9 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   }
 
   // GET /api/images/:id: byte read. Auth: owner of the
-  // image, OR caller has read access to the diagram named
-  // by `?d=<diagramId>` (owner or X-Share-Code) AND that
-  // diagram references this image.
+  // image, OR caller has read access to the document named
+  // by `?d=<documentId>` (owner or X-Share-Code) AND that
+  // document references this image.
   if (segments.length === 3 && request.method === 'GET') {
     const imageId = segments[2]!;
     const meta = await getImage(env, imageId);
@@ -257,17 +257,17 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     if (!allowed) {
       const d = url.searchParams.get('d');
       if (d) {
-        // Reader must be able to read diagram `d` (owner OR
+        // Reader must be able to read document `d` (owner OR
         // a valid share code that resolves to it), AND that
-        // diagram must actually use this image. The image's
+        // document must actually use this image. The image's
         // own owner doesn't have to be the share-code's
-        // owner: if a diagram references an image owned by
+        // owner: if a document references an image owned by
         // a different owner (only happens via Copy-Diagram
         // in v1), the share recipient can still load it.
-        const diagram = await getDiagram(env, d);
-        if (diagram) {
-          // canReadDiagram (owner OR any valid share code
-          // mapping to this diagram, see auth/diagram-access.ts)
+        const liveDoc = await getDocument(env, d);
+        if (liveDoc) {
+          // canReadDocument (owner OR any valid share code
+          // mapping to this document, see auth/document-access.ts)
           // is the same access policy spelled out inline here
           // before commit 069b785 / 5527329 extracted it.
           // Reusing the helper keeps the image-read auth in
@@ -276,10 +276,10 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
           // explicit expiry, IP throttling) lands once and
           // both routes follow.
           // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) reads the images their
-          // own tab uses, not every image in the diagram.
-          const grant = await gateGrant(ctx, d, diagram.ownerId, diagram.teamId);
+          // own tab uses, not every image in the document.
+          const grant = await gateGrant(ctx, d, liveDoc.ownerId, liveDoc.teamId);
           if (grant) {
-            allowed = await diagramReferencesImage(env, d, imageId, grant.tabScope);
+            allowed = await documentReferencesImage(env, d, imageId, grant.tabScope);
           }
         }
       }
@@ -299,7 +299,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
 
   // DELETE /api/images/:id: gallery delete. Owner only.
   // Removes the R2 object + the D1 row. Existing references
-  // on diagrams stay; the renderer falls back to a broken-
+  // on documents stay; the renderer falls back to a broken-
   // image placeholder.
   if (segments.length === 3 && request.method === 'DELETE') {
     const imageId = segments[2]!;

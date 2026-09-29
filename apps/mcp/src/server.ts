@@ -21,7 +21,7 @@ export function buildServer(env: Env): McpServer {
       title: 'livediagram element schema',
       description:
         'Element types, shape vocabulary, pinned-arrow anchors, and design rules for ' +
-        'producing well-formed diagrams. Read before create_diagram / update_diagram.',
+        'producing well-formed diagrams. Read before create_document / update_document.',
       mimeType: 'text/markdown',
     },
     async (uri) => ({

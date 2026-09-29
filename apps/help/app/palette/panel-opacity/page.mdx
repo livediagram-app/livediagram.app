@@ -6,19 +6,19 @@ import { PaletteSettings, PanelOpacity } from '@/components/illustrations/palett
 export const metadata = helpMetadata({
   title: 'Panel Opacity',
   description:
-    'Make the editor’s floating panels translucent with a slider, so the canvas shows through them while you work.',
+    'Make the editor’s panels translucent with a slider, so the canvas shows through them while you work.',
   path: '/help/palette/panel-opacity/',
 });
 
 <ArticleLayout
   title="Panel Opacity"
-  description="Make the floating panels translucent so the canvas shows through, set with a slider in Settings."
+  description="Make the editor's panels translucent so the canvas shows through, set with a slider in Settings."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("panel-opacity")}
 >
 
-Panel Opacity lets you see the canvas through the editor’s floating panels. It is a slider, and it lives in [Settings](/help/user-interface/settings/), under **Panels**.
+Panel Opacity lets you see the canvas through the editor’s panels. It is a slider, and it lives in [Settings](/help/user-interface/settings/), under **Panels**.
 
 <Figure caption="The Appearance settings, with the Panel opacity slider highlighted.">
   <PaletteSettings highlight="panel-opacity" />
@@ -26,9 +26,9 @@ Panel Opacity lets you see the canvas through the editor’s floating panels. It
 
 ## What it does
 
-Drag the slider down and every floating panel becomes translucent, so the diagram behind them stays visible while you work near an edge. The percentage next to the slider shows the current setting. At 100% the panels are fully solid, the default.
+Drag the slider down and every panel becomes translucent, so the canvas behind them stays visible while you work near an edge. The percentage next to the slider shows the current setting. At 100% the panels are fully solid, the default.
 
-<Figure caption="At a lower opacity the floating panels turn translucent, so the diagram behind them stays visible.">
+<Figure caption="At a lower opacity the panels turn translucent, so the canvas behind them stays visible.">
   <PanelOpacity />
 </Figure>
 
@@ -36,7 +36,7 @@ So a translucent panel never gets in your way, each panel snaps back to fully op
 
 ## Where it applies
 
-Panel Opacity only affects the **full, floating** panels. If you have switched on [Minimal panels](/help/palette/minimal-panels/), the compact button bar that replaces the floating panels is always fully opaque, and the opacity slider is hidden, since there is nothing floating over the canvas to see through. Turn Minimal panels back off and the slider returns at the value you last set.
+Panel Opacity affects every panel, in every [layout](/help/palette/toolbar-layout/): the floating panels, the panels that open as popovers in [Minimal panels](/help/palette/minimal-panels/) and on a phone, the Layers, Activity and Collaborate panels, the Map, the Quick Style panel and the Toolbar layout's strip. Buttons are not panels, so the Minimal button bar and the buttons in the bottom-right corner stay fully opaque.
 
 ## Resetting it
 

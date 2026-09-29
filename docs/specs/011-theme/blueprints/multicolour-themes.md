@@ -8,10 +8,10 @@ Scope, by file:
 
 | File                                              | Role                                                              |
 | ------------------------------------------------- | ----------------------------------------------------------------- |
-| `packages/diagram/src/hierarchy.ts`               | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH` |
-| `packages/diagram/src/theme-graph.ts`             | The four wrappers and the per-element branch resolution           |
-| `packages/diagram/src/themes-data.ts`             | The five built-in multi-colour themes                             |
-| `packages/diagram/src/colors.ts`                  | `contrastRatio`, the WCAG contrast helper (D3)                    |
+| `packages/document/src/hierarchy.ts`              | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH` |
+| `packages/document/src/theme-graph.ts`            | The four wrappers and the per-element branch resolution           |
+| `packages/document/src/themes-data.ts`            | The five built-in multi-colour themes                             |
+| `packages/document/src/colors.ts`                 | `contrastRatio`, the WCAG contrast helper (D3)                    |
 | `apps/api/src/routes/custom-themes.ts`            | The empty-palette rejection                                       |
 | `apps/live/components/primitives/ThemeSwatch.tsx` | The card preview                                                  |
 
@@ -115,7 +115,7 @@ export function resetThemeElementsToTheme(elements: Element[], theme: ThemeDefin
 export function resetArrowsToTheme(elements: Element[], theme: ThemeDefinition): Element[];
 ```
 
-New, in `packages/diagram/src/colors.ts` (D3):
+New, in `packages/document/src/colors.ts` (D3):
 
 ```ts
 // WCAG 2.2 contrast ratio of two #rrggbb colours, in [1, 21]; order-independent.
@@ -139,7 +139,7 @@ call before any database write.
 ## Data and persistence
 
 - **Static data.** The `palette` and `rootColor` of built-in themes live in
-  `packages/diagram/src/themes-data.ts` and ship in the bundle.
+  `packages/document/src/themes-data.ts` and ship in the bundle.
 - **Persisted.** The `palette` and `rootColor` of a custom theme live in `custom_themes.definition`
   (D1, JSON text).
 - **Never persisted.** The branch map is derived on every apply and never stored. An element stores

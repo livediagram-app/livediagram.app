@@ -4,7 +4,7 @@ import {
   folderBreadcrumb,
   folderDescendants,
   groupBy,
-  groupDiagramsByFolder,
+  groupDocumentsByFolder,
 } from './folder-tree';
 import type { Folder } from '@livediagram/api-schema';
 
@@ -105,7 +105,7 @@ describe('indexFolders on a non-Folder row shape', () => {
   });
 });
 
-describe('groupDiagramsByFolder', () => {
+describe('groupDocumentsByFolder', () => {
   const d = (id: string, folderId: string | null, savedAt: number, offline = false) => ({
     id,
     folderId,
@@ -114,18 +114,18 @@ describe('groupDiagramsByFolder', () => {
   });
 
   it('buckets by folder id, null being the root', () => {
-    const map = groupDiagramsByFolder([d('a', null, 1), d('b', 'f', 2), d('c', null, 3)]);
+    const map = groupDocumentsByFolder([d('a', null, 1), d('b', 'f', 2), d('c', null, 3)]);
     expect(map.get(null)?.map((x) => x.id)).toEqual(['c', 'a']);
     expect(map.get('f')?.map((x) => x.id)).toEqual(['b']);
   });
 
   it('sorts every bucket newest first', () => {
-    const map = groupDiagramsByFolder([d('old', 'f', 1), d('new', 'f', 9), d('mid', 'f', 5)]);
+    const map = groupDocumentsByFolder([d('old', 'f', 1), d('new', 'f', 9), d('mid', 'f', 5)]);
     expect(map.get('f')?.map((x) => x.id)).toEqual(['new', 'mid', 'old']);
   });
 
   it('drops excluded rows before bucketing', () => {
-    const map = groupDiagramsByFolder([d('a', null, 1, true), d('b', null, 2)], {
+    const map = groupDocumentsByFolder([d('a', null, 1, true), d('b', null, 2)], {
       exclude: (x) => x.offline,
     });
     expect(map.get(null)?.map((x) => x.id)).toEqual(['b']);
@@ -133,7 +133,7 @@ describe('groupDiagramsByFolder', () => {
 
   it('does not reorder the input', () => {
     const input = [d('a', null, 1), d('b', null, 2)];
-    groupDiagramsByFolder(input);
+    groupDocumentsByFolder(input);
     expect(input.map((x) => x.id)).toEqual(['a', 'b']);
   });
 });

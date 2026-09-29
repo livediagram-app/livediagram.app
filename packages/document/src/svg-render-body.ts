@@ -1,0 +1,109 @@
+// Which BODY an element draws in an export, and the list of kinds that have
+// one (docs/specs/020-import-export/export-fidelity.md).
+//
+// Two things that must agree, so they live together: the dispatch below picks
+// an element's body, and `shapeHasBespokeBody` names the kinds it picks one
+// for. `boxedNeedsSvgRaster` reads the second to decide what the PNG / PDF
+// path has to rasterise instead of drawing with its canvas-2D drawers, so a
+// kind added to one and not the other is a kind that exports as a chart in an
+// SVG and a plain box in a PNG. That is the exact bug docs/specs/020-import-export/export-fidelity.md exists to stop,
+// and keeping the pair in one module is how it is stopped.
+
+import { isCollabPanelShape } from './collab-shapes';
+import {
+  isBarShape,
+  isLineShape,
+  isPieShape,
+  isRailShape,
+  isRatingShape,
+  isSelfDrawingShape,
+} from './data-shapes';
+import { defaultPadding, PADDING_PX } from './index';
+import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
+import {
+  svgEntityRows,
+  svgProgressBar,
+  svgProgressRing,
+  svgRating,
+  svgTimelineRail,
+} from './svg-render-data';
+import { svgPageMasthead } from './svg-render-page';
+import { BEHAVIOUR_FACE_SHAPES, svgBehaviourFace, svgFace } from './svg-render-faces';
+import { svgCollabFace } from './svg-render-collab-faces';
+import { svgWebComponent } from './svg-render-web';
+import { isWebComponentShape } from './web-components';
+import type { BoxedElement, ShapeKind } from './index';
+import type { CanvasSurface } from './colors';
+
+// The canvas's progress track when an element sets no fill of its own.
+const PROGRESS_TRACK_DEFAULT = '#e2e8f0';
+
+/** The kinds whose body these emitters draw, rather than it being a box with a
+ *  label. See the module comment: the PNG path reads this. */
+export function shapeHasBespokeBody(kind: ShapeKind): boolean {
+  return (
+    isSelfDrawingShape(kind) ||
+    isCollabPanelShape(kind) ||
+    BEHAVIOUR_FACE_SHAPES.has(kind) ||
+    isWebComponentShape(kind) ||
+    kind === 'entity' ||
+    kind === 'page' ||
+    kind === 'lane' ||
+    kind === 'browser'
+  );
+}
+
+/**
+ * What an element draws INSTEAD of (or under) a plain label: its plot, its
+ * value, its rows, its face. Empty string when the kind has none, which is
+ * what tells the caller to keep drawing the box.
+ */
+export function svgElementBody(
+  el: BoxedElement,
+  o: {
+    /** The label's resolved colour + face, so a body's own text reads like
+     *  every other label on the canvas. */
+    labelColor: string;
+    fontFamily?: string;
+    /** The element's resolved stroke + fill, which its body paints with. */
+    stroke: string;
+    fill: string;
+    /** The tab theme's categorical ramp, for the charts. */
+    chartPalette?: readonly string[];
+    /** The element's label text, for the faces that write their own title. */
+    label: string;
+    /** The paper under the element, for the faces whose base follows it. */
+    surface?: CanvasSurface;
+  },
+): string {
+  if (el.type !== 'shape') return '';
+  const { labelColor, fontFamily, stroke, fill, chartPalette, label } = o;
+  if (isPieShape(el.shape)) return svgPieChart(el, labelColor, chartPalette, fontFamily);
+  if (isBarShape(el.shape)) return svgBarChart(el, labelColor, chartPalette, fontFamily);
+  if (isLineShape(el.shape)) return svgLineChart(el, labelColor, chartPalette, fontFamily);
+  // The empty track is the element's OWN fill, else a fixed slate on light
+  // paper (ShapeContentRouter), not the theme's card fill a resolved `fill`
+  // carries. On dark paper the canvas keeps that light slate, which leaves the
+  // white percentage unreadable; the export keeps the themed dark track there
+  // rather than copy that (reported as a canvas bug).
+  const track = el.fillColor ?? (o.surface === 'dark' ? fill : PROGRESS_TRACK_DEFAULT);
+  if (el.shape === 'progress-bar') return svgProgressBar(el, stroke, track, labelColor, fontFamily);
+  if (el.shape === 'progress-ring')
+    return svgProgressRing(el, stroke, track, labelColor, fontFamily);
+  if (isRatingShape(el.shape)) return svgRating(el, stroke);
+  if (isRailShape(el.shape)) return svgTimelineRail(el, stroke, labelColor, fontFamily);
+  if (el.shape === 'entity') return svgEntityRows(el, labelColor, fontFamily);
+  // The web components (docs/specs/009-elements/web-components-and-no-groups.md) lay out their own text, label included.
+  if (isWebComponentShape(el.shape))
+    return svgWebComponent(el, { stroke, fill, labelColor, label, fontFamily });
+  if (el.shape === 'page')
+    return svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily);
+  // The Behaviour + Collaborate faces (docs/specs/009-elements/mode-button.md to /137), which all exported
+  // as the same blank labelled box as each other.
+  return svgFace(
+    svgBehaviourFace(el, label, labelColor, stroke, o.surface, o.fill) ??
+      svgCollabFace(el, label, labelColor, stroke, o.fill) ??
+      '',
+    fontFamily,
+  );
+}

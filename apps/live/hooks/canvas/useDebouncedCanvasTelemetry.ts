@@ -4,7 +4,7 @@
 //
 // A slider drag emits one event, ~800ms after the last tick, rather than one
 // per tick. The catch with a trailing debounce is the tail: a user who drags
-// the background colour and then closes the tab or leaves the diagram within
+// the background colour and then closes the tab or leaves the document within
 // the window never sent it, and the pending timer simply died with the page.
 // So pending emits are flushed on unmount and on page hide, the latter through
 // the shared `onPageHide`, which runs ahead of the engine's own final flush so

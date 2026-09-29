@@ -5,7 +5,7 @@ import { TimelineFeed, TimelineStacking } from '@/components/illustrations/explo
 export const metadata = helpMetadata({
   title: 'Timeline',
   description:
-    'The Explorer opens on your Timeline: a day-by-day feed of everything that happened across your diagrams, teams, and account.',
+    'The Explorer opens on your Timeline: a day-by-day feed of everything that happened across your documents, teams, and account.',
   path: '/help/explorer/timeline/',
 });
 
@@ -26,40 +26,40 @@ export const metadata = helpMetadata({
 
 Every event on the feed comes from something that actually happened in your account. Nothing is guessed, and nothing is written by hand.
 
-- **Your diagrams** — created, renamed, duplicated, filed into a folder, published to a team, deleted, and a daily summary of the days you worked on one.
-- **Collaboration** — comments added to diagrams you own or share, threads resolved, [actions](/help/collaboration/assigned-actions/) assigned to you or completed by someone else, and share links created.
+- **Your documents** — created, renamed, duplicated, filed into a folder, published to a team, deleted, and a daily summary of the days you worked on one.
+- **Collaboration** — comments added to documents you own or share, threads resolved, [actions](/help/collaboration/assigned-actions/) assigned to you or completed by someone else, and share links created.
 - **Teams** — invites you receive, members joining or leaving, people being removed, and role changes, for every [team](/help/explorer/team-spaces/) you belong to.
 - **Your account** — [API tokens](/help/account-and-data/api-tokens/) created, custom themes saved, and images uploaded.
 
-If a diagram lives in a team's shared library, everyone in that team sees its events. A personal diagram's events are yours alone.
+If a document lives in a team's shared library, everyone in that team sees its events. A personal document's events are yours alone.
 
 ## What is new since you were last here
 
 That is the question the Timeline exists to answer, so it keeps a watermark of when you last read it.
 
 - **Anything that arrived since then is marked `New`.** The mark is per reader: your teammate's Timeline has its own.
-- **The sidebar's Timeline row carries a count** of what you haven't seen, so you can tell from any other Explorer section that something happened. It counts **other people's** events only, because a number that goes up because _you_ renamed a diagram is not news.
+- **The sidebar's Timeline row carries a count** of what you haven't seen, so you can tell from any other Explorer section that something happened. It counts **other people's** events only, because a number that goes up because _you_ renamed a document is not news.
 - The watermark moves forward when you read the feed, and only from the top of it, so paging back through last month never marks the month as read.
 
 ## Reading a day
 
-Events are grouped by the day they happened, newest day first, with a dot and a line running down the left. Today's group is marked with a **Today** pill, and each day's events are laid out as **cards**, the same cards [Recent](/help/explorer/recent/) uses, so you recognise a diagram by its picture before you read a word.
+Events are grouped by the day they happened, newest day first, with a dot and a line running down the left. Today's group is marked with a **Today** pill, and each day's events are laid out as **cards**, the same cards [Recent](/help/explorer/recent/) uses, so you recognise a document by its picture before you read a word.
 
 Days and times are **your local ones**, so an evening's work in Sydney sits under that evening rather than under yesterday.
 
-A card leads with a preview of the diagram, then its name, then **why it is on the timeline**: "Diagram Created", "Diagram Updated", "Comment Added", with the time and, where it matters, who did it. Events with nothing to picture (a team, a folder, an API token) show their glyph in the preview space instead, so every card in a row is the same shape.
+A card leads with a preview of the document, then its name, then **why it is on the timeline**: "Document Created", "Document Updated", "Comment Added", with the time and, where it matters, who did it. Events with nothing to picture (a team, a folder, an API token) show their glyph in the preview space instead, so every card in a row is the same shape.
 
-Click a card to go to whatever it is about: the diagram, the team, your invites. Cards you cannot open are dimmed, so you can tell at a glance. A deleted folder or theme is the usual case: there is nothing left to open.
+Click a card to go to whatever it is about: the document, the team, your invites. Cards you cannot open are dimmed, so you can tell at a glance. A deleted folder or theme is the usual case: there is nothing left to open.
 
-**A diagram card has the same ⋯ menu as it does in Recent.** Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, Take Offline or Sync, Delete: if you spot yesterday's diagram on the feed and want to file it, you do it from there rather than finding it again in a folder. Right-clicking the card opens the same menu. **A folder card has the same ⋯ menu as a folder does elsewhere in the Explorer**: Rename, New Subfolder, Change Folder, Delete. Whatever you do from a card shows on the feed straight away, with no need to refresh the page.
+**A document card has the same ⋯ menu as it does in Recent.** Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, Take Offline or Sync, Delete: if you spot yesterday's document on the feed and want to file it, you do it from there rather than finding it again in a folder. Right-clicking the card opens the same menu. **A folder card has the same ⋯ menu as a folder does elsewhere in the Explorer**: Rename, New Subfolder, Change Folder, Delete. Whatever you do from a card shows on the feed straight away, with no need to refresh the page.
 
-**Other cards offer what you can do with that kind of thing.** An API token's card can revoke the token; a team's card can open, edit, leave or delete the team (edit and delete for admins); an invite's card can accept or decline it; a theme's card can edit or delete the theme. A diagram card also has **Share**, which opens the diagram with its Share dialog up. If the thing no longer exists (a revoked token, an answered invite), the card just offers to open that section.
+**Other cards offer what you can do with that kind of thing.** An API token's card can revoke the token; a team's card can open, edit, leave or delete the team (edit and delete for admins); an invite's card can accept or decline it; a theme's card can edit or delete the theme. A document card also has **Share**, which opens the document with its Share dialog up. If the thing no longer exists (a revoked token, an answered invite), the card just offers to open that section.
 
-**Deleting a diagram takes it off the Timeline entirely.** Every card about it goes, and nothing is written in its place: from the feed's point of view it never existed. Folders, themes and teams you delete keep one "Deleted" card, since other people may have relied on them.
+**Deleting a document takes it off the Timeline entirely.** Every card about it goes, and nothing is written in its place: from the feed's point of view it never existed. Folders, themes and teams you delete keep one "Deleted" card, since other people may have relied on them.
 
 **Every card's menu ends with "Remove from Timeline".** If today is getting cluttered, take off the cards you don't need to see again. A stack has the same menu, and removing it takes every card in the run off at once. It only tidies _your_ feed: a teammate looking at the same event still has it, and a team's activity feed keeps everything. A removed card stays removed even if the same thing happens again later that day.
 
-A diagram you created and then worked on the same day shows **one card, "Diagram Created"**, rather than a Created and an Updated card with the same picture. Editing a new diagram on the day you made it is not news.
+A document you created and then worked on the same day shows **one card, "Document Created"**, rather than a Created and an Updated card with the same picture. Editing a new document on the day you made it is not news.
 
 Anything that happened since you last opened the Timeline carries a **New** badge, and the sidebar shows a count of other people's activity waiting for you.
 
@@ -75,7 +75,7 @@ Three colours rather than one per feature, because the question you are asking a
 
 ### Busy days collapse
 
-A day where you renamed six diagrams should not be six cards. When several events of the same kind land on one day, they fold into a single stacked card that says how many there were.
+A day where you renamed six documents should not be six cards. When several events of the same kind land on one day, they fold into a single stacked card that says how many there were.
 
 <Figure caption="Several events of one kind become one stacked card; clicking expands the run in place.">
   <TimelineStacking />
@@ -86,7 +86,7 @@ Click it to open the run. The stacked card stays at the front of the run; click 
 Two kinds never collapse, because collapsing them would hide the thing you came to read:
 
 - **Comments** stay separate, so you can always read what was actually said.
-- **Deleted diagrams** stay separate, so a deletion can never hide inside a stack.
+- **Deleted documents** stay separate, so a deletion can never hide inside a stack.
 
 ## What is coming up
 
@@ -107,7 +107,7 @@ The arrows page one month at a time, empty or not, because the gaps are part of 
 
 The **Filter** button opens two things. **Activity by** switches the whole feed between **Everyone** and **Other people**, which is the one to reach for on a busy account where your own edits bury everyone else's. Events nobody performed, a token about to expire, survive that filter: no person did them, and they are exactly what "what did I miss" is asking about.
 
-Below it sits a chip per area — Diagrams, Teams, Account — and a small calendar for jumping to a particular day. Turn a chip off and that area drops out of the feed; a dot on the button tells you a filter is on.
+Below it sits a chip per area — Documents, Teams, Account — and a small calendar for jumping to a particular day. Turn a chip off and that area drops out of the feed; a dot on the button tells you a filter is on.
 
 The Timeline is not live. It loads when you open it, so it never shifts under you while you are reading; reopening the page brings anything new.
 
@@ -115,20 +115,20 @@ Filters and the calendar view are per visit. Come back tomorrow and the Timeline
 
 ## Guests and signing in
 
-The Timeline works without an account, like the rest of the canvas. A guest sees their own diagram activity and comments on their diagrams; team, invite, and token events need an account, so they simply do not appear.
+The Timeline works without an account, like the rest of the canvas. A guest sees their own document activity and comments on their documents; team, invite, and token events need an account, so they simply do not appear.
 
-**Your history follows you.** Signing up moves your Timeline to your new account alongside your diagrams, so a week of work as a guest is still there afterwards.
+**Your history follows you.** Signing up moves your Timeline to your new account alongside your documents, so a week of work as a guest is still there afterwards.
 
-## Team and diagram histories
+## Team and document histories
 
 The same feed appears in two other places:
 
 - **A team's own activity**, on the team page. Unlike your personal Timeline, it goes back to the beginning of the team — so if you joined last month you can still read what happened before you arrived.
-- **One diagram's history**, from the **History** item in a diagram's menu. Everything that has happened to that diagram: created, renamed, commented on, shared, filed.
+- **One document's history**, from the **History** item in a document's menu. Everything that has happened to that document: created, renamed, commented on, shared, filed.
 
 <Tip>
-  The Timeline keeps a year of history. The per-diagram [Activity panel](/help/activity-panel/) is
-  the other half of this: it records every individual element change on one diagram, and lets you
+  The Timeline keeps a year of history. The per-document [Activity panel](/help/activity-panel/) is
+  the other half of this: it records every individual element change on one document, and lets you
   undo them.
 </Tip>
 

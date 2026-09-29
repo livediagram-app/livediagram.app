@@ -136,7 +136,7 @@ describe('telemetry coverage', () => {
   });
 
   it('never emits a pair the api worker counts itself', () => {
-    // Session·SignedUp / SignedIn and Diagram·Joined are counted server-side
+    // Session·SignedUp / SignedIn and Document·Joined are counted server-side
     // (docs/specs/017-telemetry/telemetry.md) and dropped at the ingest; an editor emit would be dead code
     // at best, and a double count if the ingest filter ever went away.
     expect(emitted.filter((pair) => SERVER_EMITTED_EVENT_PAIRS.includes(pair))).toEqual([]);

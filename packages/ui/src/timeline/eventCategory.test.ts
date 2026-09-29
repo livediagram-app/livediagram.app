@@ -31,29 +31,29 @@ describe('eventCategory', () => {
 
   // The design decision worth pinning: chips group by CONSEQUENCE, not by which
   // table the row came from. Someone scanning for "did anything disappear?"
-  // wants a lost diagram, folder, theme, team and working token in one place.
+  // wants a lost document, folder, theme, team and working token in one place.
   it('groups losses together regardless of what was lost', () => {
     for (const type of ['folder_deleted', 'theme_deleted', 'team_deleted', 'token_revoked']) {
       expect(eventCategory(type)).toBe('deletions');
     }
   });
 
-  it('counts someone reaching your work as sharing, not as a diagram event', () => {
-    expect(eventCategory('diagram_opened_by_visitor')).toBe('sharing');
-    expect(eventCategory('diagram_copied_by_visitor')).toBe('sharing');
-    expect(eventCategory('team_diagram_added')).toBe('sharing');
-    expect(eventCategory('team_diagram_removed')).toBe('sharing');
+  it('counts someone reaching your work as sharing, not as a document event', () => {
+    expect(eventCategory('document_opened_by_visitor')).toBe('sharing');
+    expect(eventCategory('document_copied_by_visitor')).toBe('sharing');
+    expect(eventCategory('team_document_added')).toBe('sharing');
+    expect(eventCategory('team_document_removed')).toBe('sharing');
   });
 
-  it('separates where a diagram lives from what changed inside it', () => {
-    expect(eventCategory('diagram_moved')).toBe('filing');
-    expect(eventCategory('diagram_offline')).toBe('filing');
-    expect(eventCategory('diagram_synced')).toBe('filing');
-    expect(eventCategory('diagram_edited')).toBe('edits');
+  it('separates where a document lives from what changed inside it', () => {
+    expect(eventCategory('document_moved')).toBe('filing');
+    expect(eventCategory('document_offline')).toBe('filing');
+    expect(eventCategory('document_synced')).toBe('filing');
+    expect(eventCategory('document_edited')).toBe('edits');
   });
 
-  it('keeps renames in one chip across diagrams and teams', () => {
-    expect(eventCategory('diagram_renamed')).toBe('renames');
+  it('keeps renames in one chip across documents and teams', () => {
+    expect(eventCategory('document_renamed')).toBe('renames');
     expect(eventCategory('team_renamed')).toBe('renames');
   });
 });

@@ -25,7 +25,7 @@ import {
 } from './templates';
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-const ACTIVATION_DELAY_MS = 3 * 24 * 60 * 60 * 1000; // nudge zero-diagram signups ~day 3
+const ACTIVATION_DELAY_MS = 3 * 24 * 60 * 60 * 1000; // nudge zero-document signups ~day 3
 const WINBACK_QUIET_MS = 4 * WEEK_MS; // re-engage after ~4 weeks of no activity
 const SWEEP_LIMIT = 100; // bounded per daily run, oldest-first
 
@@ -55,7 +55,7 @@ export async function runLifecycleSweep(env: Env): Promise<void> {
   // user can't have toggled before it fires). Every LATER tip/check-in respects
   // notifyTips, so the "Tips and check-ins" toggle genuinely turns them all off.
   await sweepStage(env, 'welcome', now, false);
-  // Activation nudge (docs/specs/014-identity/transactional-email.md #4): zero-diagram signups ~3 days in. Runs before
+  // Activation nudge (docs/specs/014-identity/transactional-email.md #4): zero-document signups ~3 days in. Runs before
   // week 1 so an empty account hears this first; dueForActivation excludes rows
   // that already reached week 1.
   await sweepActivation(env, now - ACTIVATION_DELAY_MS);

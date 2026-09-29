@@ -11,7 +11,7 @@ import { TeamPane } from './TeamPane';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('./ScopedTimeline', () => ({ TeamTimeline: () => null }));
-vi.mock('@/components/panels/TeamSharedDiagrams', () => ({ TeamSharedDiagrams: () => null }));
+vi.mock('@/components/panels/TeamSharedDocuments', () => ({ TeamSharedDocuments: () => null }));
 
 const getTeam = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api-client', () => ({ apiGetTeam: getTeam }));

@@ -25,7 +25,7 @@ import { rankTrend, windowLabel } from './windows';
 // (created / applied / edited / deleted) as counts. Everything reflects
 // the global window; we can only show presets that have events in it.
 //
-// Theme·Changed is not only a switch: the New Diagram wizard and the
+// Theme·Changed is not only a switch: the New Document wizard and the
 // template picker both fire it for the theme they start the tab with, so the
 // Themes card counts themes CHOSEN, at creation or later, and says so.
 
@@ -67,7 +67,7 @@ export function LookAndFeelView({
           <RankCard
             trend={trend}
             title="Templates"
-            subtitle="Scaffolds picked when starting a diagram or seeding a tab"
+            subtitle="Scaffolds picked when starting a document or seeding a tab"
             category="Template"
             action="Used"
             items={templates}
@@ -77,7 +77,7 @@ export function LookAndFeelView({
           <RankCard
             trend={trend}
             title="Themes Chosen"
-            subtitle="Built-in palettes picked for a tab, including the one chosen when a diagram or template is created"
+            subtitle="Built-in palettes picked for a tab, including the one chosen when a document or template is created"
             category="Theme"
             action="Changed"
             items={themes}

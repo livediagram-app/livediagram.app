@@ -1,5 +1,5 @@
 // Timeline components (docs/specs/013-workspace/timeline.md §7). Product-agnostic: they lay a feed
-// out and know nothing about diagrams, teams, or routes. The consumer
+// out and know nothing about documents, teams, or routes. The consumer
 // supplies a renderer registry keyed by source type.
 //
 // The controls and the feed are separate exports on purpose — the host

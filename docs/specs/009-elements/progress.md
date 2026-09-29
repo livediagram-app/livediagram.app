@@ -4,7 +4,7 @@ Two canvas elements for showing a 0–100 percentage: a **horizontal progress ba
 
 ## Model
 
-They are `ShapeElement`s with new `ShapeKind`s `'progress-bar'` and `'progress-ring'` (grouped by the `isProgressShape` helper in `packages/diagram`). Two fields back them:
+They are `ShapeElement`s with new `ShapeKind`s `'progress-bar'` and `'progress-ring'` (grouped by the `isProgressShape` helper in `packages/document`). Two fields back them:
 
 - `progress?: number` — the filled percentage, clamped to 0–100, default **50**. Set from the element's context menu.
 - `progressAnim?: ProgressAnim` — `'fill' | 'pulse' | 'stripes'` (unset = a static fill). Animates **how the filled portion behaves**:
@@ -14,7 +14,7 @@ They are `ShapeElement`s with new `ShapeKind`s `'progress-bar'` and `'progress-r
 - `progressAnimSpeed?: AnimationSpeed` — `slow | normal | fast`, the same duration multiplier (`ANIMATION_SPEED_FACTOR`) the boxed-element animations use, fed to the `lvd-prog-*` keyframes as `--lvd-prog-speed`. Undefined = normal.
 - `progressAnimRepeat?: boolean` — whether the animation loops. Undefined defaults per kind: **fill plays once**, **pulse / stripes loop** (they are continuous by nature). Exposed inline to the keyframes as `--lvd-prog-iter` (`1` or `infinite`).
 
-`createShape` (in `packages/diagram/src/factories.ts`) seeds both at `progress: 50` **and `progressAnim: 'fill'`**, so a freshly dropped bar / ring fills in on arrival; the ring is `aspectLocked` on create so it stays circular. Default sizes: bar 220×44 (a wide pill), ring 130×130.
+`createShape` (in `packages/document/src/factories.ts`) seeds both at `progress: 50` **and `progressAnim: 'fill'`**, so a freshly dropped bar / ring fills in on arrival; the ring is `aspectLocked` on create so it stays circular. Default sizes: bar 220×44 (a wide pill), ring 130×130.
 
 ## Rendering
 

@@ -1,6 +1,6 @@
 // The Drive thumbnail (docs/specs/022-drive-mirror/drive-mirror.md, "The file"): Drive
 // takes PNG, GIF or JPEG only, at least 220 px wide and under 2 MB, so the
-// diagram's existing SVG snapshot is rasterised to PNG in the browser and sent
+// document's existing SVG snapshot is rasterised to PNG in the browser and sent
 // as `contentHints.thumbnail`.
 
 import { bytesToBase64Url } from '@livediagram/api-schema';

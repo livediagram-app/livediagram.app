@@ -8,7 +8,7 @@ import type { ShareLink as ShareLinkDTO, ShareLinkExpiry } from '@livediagram/ap
 
 export type ShareLinkRow = {
   code: string;
-  diagram_id: string;
+  document_id: string;
   role: string;
   created_at: number;
   expiry: string | null;
@@ -41,7 +41,7 @@ export type ShareLinkRow = {
 export function rowToShareLink(row: ShareLinkRow): ShareLinkDTO {
   return {
     code: row.code,
-    diagramId: row.diagram_id,
+    documentId: row.document_id,
     role: row.role === 'view' ? 'view' : 'edit',
     createdAt: row.created_at,
     expiry: normaliseExpiry(row.expiry),

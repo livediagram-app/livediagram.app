@@ -38,7 +38,7 @@ export function TimelineControls({ controls }: { controls: Controls }) {
           Gone below `sm:`, where it moves into the filter popover
           (docs/specs/013-workspace/timeline.md §2.3): collapsing the labels to icons bought enough
           room for a while, but three of them plus Filter, Help and New
-          diagram still crowded a phone's header into a scrum of glyphs.
+          document still crowded a phone's header into a scrum of glyphs.
           One button that opens everything beats five that fit. */}
       <div className="hidden items-center rounded-lg border border-slate-200 bg-white p-0.5 shadow-sm sm:inline-flex dark:border-slate-700 dark:bg-slate-800">
         {TIMELINE_MODES.map((value) => (

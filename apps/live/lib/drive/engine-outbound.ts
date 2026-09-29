@@ -5,7 +5,7 @@
 
 import {
   DRIVE_FILE_MIME,
-  DRIVE_PROP_DIAGRAM_ID,
+  DRIVE_PROP_DOCUMENT_ID,
   DRIVE_PROP_ORIGIN,
   driveFileName,
   type DriveItem,
@@ -17,15 +17,15 @@ import type { PassContext } from './pass-context';
 import type { OutboundOp } from './plan-outbound';
 import {
   dropSnapshotItem,
-  expectedDiagramParent,
+  expectedDocumentParent,
   expectedFolderParent,
   fileState,
   itemKey,
 } from './snapshot';
-import type { MirrorDiagram } from './livediagram-port';
+import type { MirrorDocument } from './livediagram-port';
 
 export type OutboundHooks = {
-  onContentWritten(diagramId: string): void;
+  onContentWritten(documentId: string): void;
   onCreated(): void;
 };
 
@@ -51,59 +51,59 @@ function recordFromFile(
   } as DriveItem;
 }
 
-async function contentFor(ctx: PassContext, diagram: MirrorDiagram) {
-  const envelope = await ctx.port.loadEnvelope(diagram.id);
+async function contentFor(ctx: PassContext, liveDoc: MirrorDocument) {
+  const envelope = await ctx.port.loadEnvelope(liveDoc.id);
   if (!envelope) return null;
   let thumbnailPng: string | null = null;
   try {
-    const svg = await ctx.port.loadSnapshotSvg(diagram.id);
+    const svg = await ctx.port.loadSnapshotSvg(liveDoc.id);
     thumbnailPng = svg ? await ctx.rasterise(svg) : null;
   } catch (err) {
-    driveWarn('thumbnail-failed', { id: diagram.id, error: String(err) });
+    driveWarn('thumbnail-failed', { id: liveDoc.id, error: String(err) });
   }
   return { text: envelope.text, savedAt: envelope.savedAt, thumbnailPng };
 }
 
-async function createDiagramFile(
+async function createDocumentFile(
   ctx: PassContext,
-  diagram: MirrorDiagram,
+  liveDoc: MirrorDocument,
   hooks: OutboundHooks,
   previous?: DriveItem,
 ): Promise<void> {
-  const parentId = expectedDiagramParent(ctx.snapshot, diagram, previous);
+  const parentId = expectedDocumentParent(ctx.snapshot, liveDoc, previous);
   if (parentId === null) {
-    driveLog('deferred', { id: diagram.id, reason: 'parent-not-mirrored' });
+    driveLog('deferred', { id: liveDoc.id, reason: 'parent-not-mirrored' });
     return;
   }
-  const content = await contentFor(ctx, diagram);
+  const content = await contentFor(ctx, liveDoc);
   if (!content) return;
   const file = await ctx.drive.createFile({
-    name: driveFileName(diagram.name),
+    name: driveFileName(liveDoc.name),
     parentId,
     mimeType: DRIVE_FILE_MIME,
     content: content.text,
     thumbnailPng: content.thumbnailPng,
-    appProperties: { [DRIVE_PROP_DIAGRAM_ID]: diagram.id, [DRIVE_PROP_ORIGIN]: ctx.snapshot.host },
+    appProperties: { [DRIVE_PROP_DOCUMENT_ID]: liveDoc.id, [DRIVE_PROP_ORIGIN]: ctx.snapshot.host },
   });
   driveLog('outbound', {
     op: previous ? 'recreate-file' : 'create-file',
-    id: diagram.id,
+    id: liveDoc.id,
     fileId: file.id,
   });
   await ctx.record(
     recordFromFile(
       {
-        kind: 'diagram',
-        ldId: diagram.id,
+        kind: 'document',
+        ldId: liveDoc.id,
         mirroredSavedAt: content.savedAt,
         notice: previous?.notice ?? null,
         noticeParentId: previous?.noticeParentId ?? null,
       },
       file,
-      diagram.name,
+      liveDoc.name,
     ),
   );
-  hooks.onContentWritten(diagram.id);
+  hooks.onContentWritten(liveDoc.id);
   hooks.onCreated();
 }
 
@@ -146,16 +146,16 @@ async function runOp(ctx: PassContext, op: OutboundOp, hooks: OutboundHooks): Pr
       return;
     }
     case 'create-file':
-      await createDiagramFile(ctx, op.diagram, hooks);
+      await createDocumentFile(ctx, op.document, hooks);
       return;
     case 'update-file': {
-      const item = snap.items.get(itemKey('diagram', op.diagram.id)) ?? op.item;
-      const parentId = expectedDiagramParent(snap, op.diagram, item);
+      const item = snap.items.get(itemKey('document', op.document.id)) ?? op.item;
+      const parentId = expectedDocumentParent(snap, op.document, item);
       const move = op.move && parentId !== null && parentId !== item.parentId;
-      const content = op.content ? await contentFor(ctx, op.diagram) : null;
+      const content = op.content ? await contentFor(ctx, op.document) : null;
       try {
         const file = await ctx.drive.updateFile(item.driveFileId, {
-          ...(op.rename ? { name: driveFileName(op.diagram.name) } : {}),
+          ...(op.rename ? { name: driveFileName(op.document.name) } : {}),
           ...(move
             ? { addParent: parentId!, ...(item.parentId ? { removeParent: item.parentId } : {}) }
             : {}),
@@ -164,7 +164,7 @@ async function runOp(ctx: PassContext, op: OutboundOp, hooks: OutboundHooks): Pr
         });
         driveLog('outbound', {
           op: 'update-file',
-          id: op.diagram.id,
+          id: op.document.id,
           rename: op.rename,
           move,
           content: !!content,
@@ -177,15 +177,15 @@ async function runOp(ctx: PassContext, op: OutboundOp, hooks: OutboundHooks): Pr
               ...(move ? { notice: null, noticeParentId: null } : {}),
             },
             file,
-            op.diagram.name,
+            op.document.name,
           ),
         );
-        if (content) hooks.onContentWritten(op.diagram.id);
+        if (content) hooks.onContentWritten(op.document.id);
       } catch (err) {
         // Deleted outside livediagram's knowledge: re-create it where it belongs.
         if (err instanceof DriveApiError && err.isNotFound) {
-          driveLog('recreated', { id: op.diagram.id, fileId: item.driveFileId });
-          await createDiagramFile(ctx, op.diagram, hooks, item);
+          driveLog('recreated', { id: op.document.id, fileId: item.driveFileId });
+          await createDocumentFile(ctx, op.document, hooks, item);
           return;
         }
         throw err;
@@ -199,9 +199,9 @@ async function runOp(ctx: PassContext, op: OutboundOp, hooks: OutboundHooks): Pr
         await ctx.record({ ...op.item, ...fileState(file) });
       } catch (err) {
         if (err instanceof DriveApiError && err.isNotFound) {
-          await ctx.port.deleteItem('diagram', op.item.ldId);
-          dropSnapshotItem(snap, 'diagram', op.item.ldId);
-          ctx.discard('diagram', op.item.ldId);
+          await ctx.port.deleteItem('document', op.item.ldId);
+          dropSnapshotItem(snap, 'document', op.item.ldId);
+          ctx.discard('document', op.item.ldId);
           return;
         }
         throw err;
@@ -216,7 +216,7 @@ async function runOp(ctx: PassContext, op: OutboundOp, hooks: OutboundHooks): Pr
         if (err instanceof DriveApiError && err.isNotFound) return;
         throw err;
       }
-      if (op.row.kind === 'diagram' && file.trashed) {
+      if (op.row.kind === 'document' && file.trashed) {
         await ctx.drive.deleteFile(file.id);
         driveLog('tombstone', { op: 'delete', ldId: op.row.ldId });
       } else if (!file.trashed) {
