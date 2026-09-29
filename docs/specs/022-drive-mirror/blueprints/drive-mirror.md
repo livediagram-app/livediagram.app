@@ -206,6 +206,8 @@ returns one `InboundDecision`:
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | No item for `fileId`, file lacks `ldOrigin === host`                                   | `ignore` (not ours, or the root)                              |
 | No item, `ldFolderId` names no folder, file not trashed                                | `recreate-folder` (same id, parent by Drive parent)           |
+| No item, `ldDiagramId` names a diagram whose item holds another file, not trashed      | `copy-diagram` (a copy made in Drive)                         |
+| No item, `ldDiagramId` names no live or trashed diagram, not trashed                   | `copy-diagram` from the file's contents                       |
 | No item, `ldFolderId` or `ldDiagramId` names a known entity                            | `adopt` (record the item, then re-plan)                       |
 | `removed`, diagram item, diagram in the personal Trash                                 | `purge`                                                       |
 | `removed`, diagram item, diagram live                                                  | `forget-file` (item dropped; outbound re-creates)             |
@@ -231,6 +233,23 @@ is always recorded with the file's Drive state, so a lost conflict is corrected 
 their items in its batch). `recreate-folder` re-creates the folder with its old id (`POST /api/folders`), records
 its item, then lists the folder's children (`files.list q="'<id>' in parents"`) and plans each as a change, so the
 diagrams restored with it come back inside it whether or not Drive emitted a change per child.
+
+`copy-diagram` (docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive") carries the copy's file id, the
+new id `driveCopyDiagramId(fileId)` (`dc-` + the FNV-1a 64-bit hex of the file id: deterministic, so a retry lands on
+the same diagram, and no Drive id leaks into a share URL), the source (the original's id when it is live, else null),
+the name (`stripDriveName(file.name)`, else the original's, else "Diagram") and the folder (`ldFolderForParent` of the
+copy's parent; `undefined` becomes Unsorted with the unseen-folder notice). Applying it:
+
+1. `port.canOpenDiagram(newId)`: already there (an earlier pass stopped before the re-tag) skips step 2.
+2. A live source: `port.duplicateDiagram(source, { id, name, folderId })` (`lib/duplicate-diagram.ts`, the Duplicate
+   path, with an explicit target). No live source: `drive.download`, `parseDiagramEnvelope`,
+   `port.importDiagramCopy(envelope, { id, name, folderId })`; an unreadable envelope adds
+   `{ name, reason: 'unreadable' }` to the status's `skipped` list and records nothing.
+3. `drive.updateFile(fileId, { appProperties: { ldDiagramId: newId, ldOrigin } })`, then the item is recorded
+   (`mirroredSavedAt` null, so the next outbound pass writes the new diagram's contents). A failed re-tag fails the
+   pass, so the page token does not advance and the change is read again.
+
+A copy that arrives trashed, or without `ldOrigin === host`, is ignored (no recognisable copy, nothing to show).
 
 Every applied decision goes through the ordinary routes via `LivediagramPort` and fires
 `track('Drive', 'Applied', type)`.
