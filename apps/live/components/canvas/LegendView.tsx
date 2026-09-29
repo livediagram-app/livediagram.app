@@ -3,7 +3,7 @@ import {
   legendFontPx,
   PIE_PALETTE,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // The legend's canvas view (docs/specs/009-elements/pie-chart.md): a themed card of colour-coded rows, one
 // dot and one label each. A key, not a chart, so nothing here is clickable:

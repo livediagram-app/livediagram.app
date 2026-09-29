@@ -25,7 +25,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { isTechIconId } from '@/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';

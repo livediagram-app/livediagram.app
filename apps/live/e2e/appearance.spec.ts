@@ -2,7 +2,7 @@ import { expect, test, dismissQuickTour, expectNoPageErrors } from './fixtures';
 
 // Appearance (docs/specs/007-editor/live-app.md) end to end: the three settings on the real control, and
 // the thing the merge was for — a tab on the Default theme repainting
-// with the viewer, canvas AND elements, without writing to the diagram.
+// with the viewer, canvas AND elements, without writing to the document.
 //
 // Unit tests can only say the store resolves and the helpers return the right
 // hex. Whether the canvas a reader is looking at actually changes needs the
@@ -10,7 +10,7 @@ import { expect, test, dismissQuickTour, expectNoPageErrors } from './fixtures';
 
 const CANVAS = '[data-canvas-a11y-root]';
 
-// The wizard's Skip path (docs/specs/007-editor/new-diagram-route.md): a blank diagram on the Default colour
+// The wizard's Skip path (docs/specs/007-editor/new-document-route.md): a blank document on the Default colour
 // scheme, in one click. What this suite needs is a default tab, not the wizard.
 async function justDraw(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('/new');
@@ -106,7 +106,7 @@ test.describe('Appearance', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('changing the appearance never writes to the diagram', async ({ page, pageErrors }) => {
+  test('changing the appearance never writes to the document', async ({ page, pageErrors }) => {
     // The whole reason Default resolves per viewer instead of baking a half at
     // pick time: switching chrome is not an edit. If it were, one reader's
     // appearance would travel to everyone else on the tab.
@@ -126,8 +126,8 @@ test.describe('Appearance', () => {
     await page.waitForTimeout(2000); // well past the autosave debounce
 
     // A preference write is fine (it is the user's own setting); a write to the
-    // diagram, its tabs or its change log is not.
-    expect(writes.filter((w) => /\/api\/diagrams/.test(w))).toEqual([]);
+    // document, its tabs or its change log is not.
+    expect(writes.filter((w) => /\/api\/documents/.test(w))).toEqual([]);
     expectNoPageErrors(pageErrors);
   });
 

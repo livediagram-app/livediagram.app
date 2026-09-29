@@ -6,7 +6,7 @@ vi.mock('./auth/clerk', () => ({ getClerkIdentity: async () => null }));
 const { resolveApiTokenMock } = vi.hoisted(() => ({ resolveApiTokenMock: vi.fn() }));
 vi.mock('./db', () => ({
   resolveApiToken: resolveApiTokenMock,
-  listDiagramsByOwner: async () => [],
+  listDocumentsByOwner: async () => [],
   deleteOldChangeLogEntries: async () => {},
   deleteOldEvents: async () => {},
 }));
@@ -28,18 +28,18 @@ function get(path: string, headers: Record<string, string> = {}): Request {
 describe('worker §4 guest X-Owner-Id signature gate', () => {
   beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
   it('401s an unsigned X-Owner-Id on an owner-scoped route when enforcing', async () => {
-    const res = await worker.fetch(get('/api/diagrams', { 'X-Owner-Id': 'guest-1' }), env());
+    const res = await worker.fetch(get('/api/documents', { 'X-Owner-Id': 'guest-1' }), env());
     expect(res.status).toBe(401);
   });
 
   it('401s an X-Owner-Id carrying a Clerk sub with no signature (signed-up Bearer-only)', async () => {
-    const res = await worker.fetch(get('/api/diagrams', { 'X-Owner-Id': 'user_abc' }), env());
+    const res = await worker.fetch(get('/api/documents', { 'X-Owner-Id': 'user_abc' }), env());
     expect(res.status).toBe(401);
   });
 
   it('401s an invalid signature', async () => {
     const res = await worker.fetch(
-      get('/api/diagrams', { 'X-Owner-Id': 'guest-1', 'X-Owner-Sig': 'bogus' }),
+      get('/api/documents', { 'X-Owner-Id': 'guest-1', 'X-Owner-Sig': 'bogus' }),
       env(),
     );
     expect(res.status).toBe(401);
@@ -48,14 +48,14 @@ describe('worker §4 guest X-Owner-Id signature gate', () => {
   it('lets a validly signed X-Owner-Id through the gate', async () => {
     const sig = (await signOwnerId(SECRET, 'guest-1'))!;
     const res = await worker.fetch(
-      get('/api/diagrams', { 'X-Owner-Id': 'guest-1', 'X-Owner-Sig': sig }),
+      get('/api/documents', { 'X-Owner-Id': 'guest-1', 'X-Owner-Sig': sig }),
       env(),
     );
     expect(res.status).not.toBe(401);
   });
 
   it('does not gate when no X-Owner-Id is presented (public reads still resolve)', async () => {
-    const res = await worker.fetch(get('/api/diagrams'), env());
+    const res = await worker.fetch(get('/api/documents'), env());
     expect(res.status).not.toBe(401);
   });
 });
@@ -73,14 +73,14 @@ describe('worker refusal of a Clerk account id in X-Owner-Id', () => {
 
   it('401s a Clerk sub presented as the guest header, with the gate disarmed', async () => {
     const res = await worker.fetch(
-      get('/api/diagrams', { 'X-Owner-Id': 'user_2abcDEF' }),
+      get('/api/documents', { 'X-Owner-Id': 'user_2abcDEF' }),
       noEnforcement(),
     );
     expect(res.status).toBe(401);
     expect(await res.json()).toEqual({ error: 'account_id_not_a_guest_credential' });
   });
 
-  it('covers every owner-scoped resource, not just diagrams', async () => {
+  it('covers every owner-scoped resource, not just documents', async () => {
     for (const seg of ['folders', 'images', 'custom-themes', 'preferences', 'shared', 'timeline']) {
       const res = await worker.fetch(
         get(`/api/${seg}`, { 'X-Owner-Id': 'user_2abcDEF' }),
@@ -92,7 +92,7 @@ describe('worker refusal of a Clerk account id in X-Owner-Id', () => {
 
   it('lets a real guest UUID through (the shape the server actually mints)', async () => {
     const res = await worker.fetch(
-      get('/api/diagrams', { 'X-Owner-Id': crypto.randomUUID() }),
+      get('/api/documents', { 'X-Owner-Id': crypto.randomUUID() }),
       noEnforcement(),
     );
     expect(res.status).not.toBe(401);
@@ -108,7 +108,7 @@ describe('worker refusal of a Clerk account id in X-Owner-Id', () => {
       readOnly: false,
     });
     const res = await worker.fetch(
-      get('/api/diagrams', { Authorization: `Bearer lvd_${'a'.repeat(40)}` }),
+      get('/api/documents', { Authorization: `Bearer lvd_${'a'.repeat(40)}` }),
       noEnforcement(),
     );
     expect(res.status).not.toBe(401);
@@ -129,7 +129,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
 
   const RO = { Authorization: `Bearer ${LVD}` };
   const req = (method: string) =>
-    new Request('https://api.test/api/diagrams', { method, headers: RO });
+    new Request('https://api.test/api/documents', { method, headers: RO });
 
   it('403s a POST from a read-only token', async () => {
     const res = await worker.fetch(req('POST'), env());
@@ -139,7 +139,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
 
   it('403s a PUT from a read-only token', async () => {
     const res = await worker.fetch(
-      new Request('https://api.test/api/diagrams/d1', { method: 'PUT', headers: RO }),
+      new Request('https://api.test/api/documents/d1', { method: 'PUT', headers: RO }),
       env(),
     );
     expect(res.status).toBe(403);
@@ -147,7 +147,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
 
   it('403s a DELETE from a read-only token', async () => {
     const res = await worker.fetch(
-      new Request('https://api.test/api/diagrams/d1', { method: 'DELETE', headers: RO }),
+      new Request('https://api.test/api/documents/d1', { method: 'DELETE', headers: RO }),
       env(),
     );
     expect(res.status).toBe(403);

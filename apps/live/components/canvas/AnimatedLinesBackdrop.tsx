@@ -1,4 +1,4 @@
-// Soft animated backdrop for the new-diagram screen: thick, multi-colour
+// Soft animated backdrop for the new-document screen: thick, multi-colour
 // curved lines that slowly draw and flow along their paths, giving the
 // page life behind the wizard card. Pure SVG + CSS (no rAF loop, no JS
 // per frame), so it's cheap and GPU-composited. Decorative only:

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ES_LANES, laneCentre, type Element, type Tab } from '@livediagram/diagram';
+import { ES_LANES, laneCentre, type Element, type Tab } from '@livediagram/document';
 import { stampPlacement, stampSizeFor } from './stamp-placement';
 
 // Placing a fixed-size note from an armed tile (docs/specs/021-event-storming/event-storming.md Phase 4): the note is

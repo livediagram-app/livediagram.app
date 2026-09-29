@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { THEMES } from '@livediagram/diagram';
+import { THEMES } from '@livediagram/document';
 import { LEAD_THEME_IDS, darkCategorySchemes, isLeadTheme, shuffledThemes } from './theme-order';
 import { themeCategory } from './themes-taxonomy';
 

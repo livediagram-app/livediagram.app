@@ -37,11 +37,11 @@ type Fetched = { key: string; state: State };
 export function useImageBlobUrl(
   ownerId: string,
   imageId: string | null,
-  opts: { diagramId: string; shareCode?: string | null } = { diagramId: '' },
+  opts: { documentId: string; shareCode?: string | null } = { documentId: '' },
 ): State {
-  const { diagramId } = opts;
+  const { documentId } = opts;
   const shareCode = opts.shareCode ?? null;
-  const key = [ownerId, imageId, diagramId, shareCode].join('\0');
+  const key = [ownerId, imageId, documentId, shareCode].join('\0');
   const [fetched, setFetched] = useState<Fetched | null>(null);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export function useImageBlobUrl(
     if (!imageId || imageId.startsWith('data:')) return;
     let cancelled = false;
     let activeUrl: string | null = null;
-    apiFetchImageBlobUrl(ownerId, imageId, { diagramId, shareCode })
+    apiFetchImageBlobUrl(ownerId, imageId, { documentId, shareCode })
       .then((url) => {
         if (cancelled) {
           if (url) URL.revokeObjectURL(url);
@@ -69,10 +69,10 @@ export function useImageBlobUrl(
       cancelled = true;
       if (activeUrl) URL.revokeObjectURL(activeUrl);
     };
-  }, [key, ownerId, imageId, diagramId, shareCode]);
+  }, [key, ownerId, imageId, documentId, shareCode]);
 
   if (!imageId) return IDLE;
-  // Offline Mode (docs/specs/006-diagram/offline-mode.md): an embedded image IS its bytes — a base64
+  // Offline Mode (docs/specs/006-document/offline-mode.md): an embedded image IS its bytes — a base64
   // data URI in imageId. Nothing to fetch and nothing to revoke.
   if (imageId.startsWith('data:')) return { status: 'ready', src: imageId };
   return fetched?.key === key ? fetched.state : LOADING;

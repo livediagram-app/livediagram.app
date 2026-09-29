@@ -51,7 +51,7 @@ import type {
   ElementAnimation,
   IconAnimation,
   ProgressAnim,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 /** Size step of every menu row and section icon. */
 export const MENU_ICON_PX = 14;

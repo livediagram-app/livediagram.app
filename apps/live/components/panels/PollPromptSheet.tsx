@@ -9,7 +9,7 @@
 // asked DURING the work, and the thing people most often want while answering
 // "which of these?" is to look at the thing being asked about. A modal put a
 // scrim over exactly that. Now the canvas stays live behind it — you can pan,
-// point, read the board, and answer without dismissing anything.
+// point, read the canvas, and answer without dismissing anything.
 //
 // Consequences of not blocking, all deliberate:
 //   - No focus trap and no autofocus. Focus stays wherever the person was

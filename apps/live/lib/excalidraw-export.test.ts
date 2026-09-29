@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { tabToExcalidrawText } from './excalidraw-export';
-import type { Element, Tab } from '@livediagram/diagram';
+import type { Element, Tab } from '@livediagram/document';
 
 const tab = (elements: Element[], over: Partial<Tab> = {}): Tab => ({
   id: 'tab-1',

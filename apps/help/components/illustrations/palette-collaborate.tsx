@@ -126,7 +126,7 @@ export function CollaborateGroups() {
           Comment panel
         </Label>
         <Label x={px + 48} y={py + 57} size={8} tone="muted">
-          A whole thread, left out on the board
+          A whole thread, left out on the canvas
         </Label>
         {[
           { label: 'Ask the room', blurb: 'Estimates, temperature, ideas' },

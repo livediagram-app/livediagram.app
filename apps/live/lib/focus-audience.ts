@@ -15,10 +15,10 @@ export type FocusView = {
 };
 
 // Within a twentieth of the zoom: close enough to be seeing the same amount of
-// board, loose enough to survive a nudge of the slider.
+// canvas, loose enough to survive a nudge of the slider.
 const ZOOM_TOLERANCE = 0.05;
 // And within a tenth of the viewport of the point, measured on screen: a
-// tenth of a board at 10% zoom is not a difference anybody can see.
+// tenth of a canvas at 10% zoom is not a difference anybody can see.
 const CENTRE_SLACK = 0.1;
 
 /** Is that canvas point already at the middle of this view, at about that zoom? */
@@ -39,7 +39,7 @@ export function viewIsCentredOn(view: FocusView, at: { x: number; y: number }, z
 export type FocusPressOutcome = 'alone' | 'already-there' | 'asked';
 
 export const FOCUS_PRESS_MESSAGE: Record<FocusPressOutcome, string> = {
-  alone: 'Nobody else is on this board right now',
+  alone: 'Nobody else is on this canvas right now',
   // Pressing twice is normal (to catch a latecomer, or because half the room
   // said no), and the people who came are deliberately not asked again. Saying
   // "nobody is here" to a presser looking at a row of avatars reads as the

@@ -75,7 +75,7 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   creation/editing and to return a structured error rather than comply.
 - For the mutating mode (Clean) `response_format: { type: "json_object" }` is set on the
   OpenAI request so the model can only return parseable JSON, preventing injection of
-  arbitrary text through the diagram data layer.
+  arbitrary text through the document data layer.
 - Max-token caps: the mutating mode (Clean) 8 000, the text mode (Ask) 400.
 
 ## API
@@ -107,7 +107,7 @@ Request body:
 }
 ```
 
-`elements` is the full active-tab `Element[]` from `@livediagram/diagram`. `focusIds` is the optional list of selected element IDs; the system prompt steers the model toward editing those while preserving everything else. `history` is the optional prior-turn list (capped server-side at the last 6 turns); both fields default to `[]`.
+`elements` is the full active-tab `Element[]` from `@livediagram/document`. `focusIds` is the optional list of selected element IDs; the system prompt steers the model toward editing those while preserving everything else. `history` is the optional prior-turn list (capped server-side at the last 6 turns); both fields default to `[]`.
 
 Response for **both modes**: `Content-Type: text/event-stream`, OpenAI SSE format piped through with CORS headers added. The JSON-mode payload (Clean) is collected by the client into a single `{ elements: [...] }` block on stream completion:
 
@@ -121,7 +121,7 @@ Response for **both modes**: `Content-Type: text/event-stream`, OpenAI SSE forma
 `Clean` never re-flows: it preserves the layout the user arranged and only tidies sizes,
 labels, and styles in place. With **Generate** removed, the AI assistant no longer produces
 fresh graphs, so it runs no auto-layout pass. The deterministic layout engine itself —
-`autoLayoutElements` (`packages/diagram/src/auto-layout.ts`, pure + unit-tested) — still
+`autoLayoutElements` (`packages/document/src/auto-layout.ts`, pure + unit-tested) — still
 exists and is now driven by the MCP server ([MCP server](../015-api/mcp-server.md)), where the calling model produces the
 graph and the server lays it out on request. (`mergeAiElements` in `editor-page-helpers.ts`
 retains a general clean/replace merge; the Clean path spreads the AI patch over each
@@ -146,7 +146,7 @@ what drifted: `checklist` was requested by name, with its `checklistItems` schem
 squared on arrival.
 
 Past that normalisation (kind coerced, a missing size defaulted), a streamed element is held
-to the same structural guard every save is: `isValidElement` from `@livediagram/diagram`,
+to the same structural guard every save is: `isValidElement` from `@livediagram/document`,
 limited to the four types the assistant may add (shape, text, sticky, arrow). A looser local
 check used to live in the client and let through what the api then refused on save (an
 arrow with a junk endpoint, a non-finite coordinate). Renamed additions carry every
@@ -286,7 +286,7 @@ Missing / `false` = panel hidden. Only shown in Settings when `capabilities.aiEn
 Fetches `GET /api/capabilities` once at editor mount. Returns `{ aiEnabled: boolean }`.
 On network failure defaults to `{ aiEnabled: false }` (fail-closed). The hook takes an
 `enabled` flag so the call is deferred while a visitor is behind a share-link password
-gate ([Share password](../013-workspace/share-password.md)): on a password-protected diagram, capabilities (and the server-side
+gate ([Share password](../013-workspace/share-password.md)): on a password-protected document, capabilities (and the server-side
 preferences sync) don't fire until the correct password is entered, so wrong attempts
 cost no extra requests.
 
@@ -296,7 +296,7 @@ A floating, draggable panel rendered over the canvas via `MovablePanel` (drag to
 reposition; reset returns it to its default spot). It's surfaced from the **Assistant**
 accordion in the Editor side panel, and on mobile through the bottom dock popover. Visible
 when `capabilities.aiEnabled && userPreferences.aiAssistanceEnabled`. Hidden in read-only /
-view-role sessions (AI mutates the diagram; guests can't persist changes they don't own).
+view-role sessions (AI mutates the document; guests can't persist changes they don't own).
 
 Contains:
 

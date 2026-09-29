@@ -17,7 +17,7 @@ import {
   runsPlainText,
   type Element,
   type TextRun,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // The retrospective lives in its own module; re-exported so build-template
@@ -33,7 +33,7 @@ export { buildRetrospective } from './template-builders-retrospective';
 // hand-built reference (505x835 lanes, 457x112 cards), re-centred on the
 // supplied canvas point. Colours are left to the theme
 // (recolourElementsForTheme); cards read via their borders + the chip.
-// The board ships pre-layered (docs/specs/006-diagram/layers.md "Layered templates"): the title,
+// The board ships pre-layered (docs/specs/006-document/layers.md "Layered templates"): the title,
 // lane containers and headers sit on a "Board" scaffold layer under a
 // "Cards" content layer holding the tickets, so cards drag between
 // lanes without grabbing the lane behind them. templateCanvasOverrides
@@ -312,7 +312,7 @@ export function buildSwot(cx: number, cy: number): Element[] {
     textAlignX: 'center',
     // The subject under analysis ties all four quadrants together → hero preset.
     colorPreset: 'bold',
-    // Content layer (docs/specs/006-diagram/layers.md): the rename target rides with the notes, so
+    // Content layer (docs/specs/006-document/layers.md): the rename target rides with the notes, so
     // it stays clickable when the quadrant scaffold is locked.
     layerId: TEMPLATE_CONTENT_LAYER_ID,
   });

@@ -34,7 +34,7 @@ describe('truthArmed', () => {
 
   it('leaves the flag alone when the URL says nothing about it', () => {
     localStorage.setItem(TRUTH_ARMED_KEY, '1');
-    armTruthFromUrl('https://livediagram.app/diagram/abc/');
+    armTruthFromUrl('https://livediagram.app/document/abc/');
     expect(truthArmed()).toBe(true);
   });
 

@@ -279,7 +279,9 @@ jobs:
 
   deploy-live:
     name: Deploy live
-    needs: build
+    # After the api, so a new editor never calls an api that lacks its routes
+    # (docs/specs/016-platform/deployment.md, "Renaming migrations").
+    needs: [build, deploy-api]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -360,38 +362,6 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: pnpm exec wrangler whoami || true
 
-      # Apply any pending D1 migrations before the new worker code is
-      # deployed. Idempotent: wrangler tracks applied migrations in a
-      # bookkeeping table and skips any it's already run. Has to
-      # happen BEFORE the worker deploy so the new code doesn't
-      # briefly run against a schema it doesn't understand.
-      #
-      # If a migration's bad, this step will fail and the deploy
-      # halts before the worker is updated — that's the desired
-      # safety: we'd rather block the deploy than leave this
-      # environment's database half-migrated.
-      #
-      # This is also the step staging exists for: on the staging
-      # caller it runs against `livediagram-staging`, so every merge
-      # to main rehearses the migration against a real remote D1 one
-      # deploy before it reaches the database holding real diagrams
-      # (docs/specs/016-platform/staging-environment.md).
-      - name: Apply D1 migrations (remote)
-        working-directory: apps/api
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        # Database arg is the binding name (`DB`) — wrangler resolves
-        # it via wrangler.toml, and `--env` decides WHICH database that
-        # binding points at. Wrangler 4 auto-skips the confirmation
-        # prompt in non-interactive CI environments, so no flag is
-        # needed (the `--yes` flag from wrangler 3 was removed).
-        # If this step fails, the most common cause is the CF_API_TOKEN
-        # secret missing the D1: Edit permission on the account that
-        # owns the database — but the `Verify Cloudflare token` step
-        # above is the authoritative diagnostic.
-        run: pnpm exec wrangler d1 migrations apply DB --remote ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
-
       # Push the Clerk JWKS URL as a worker secret so the
       # worker can verify tokens. Repo secret because the
       # user doesn't want the value in wrangler.toml. `wrangler
@@ -443,6 +413,41 @@ jobs:
         run: |
           printf '%s' "$INTERNAL_EVENTS_KEY" \
             | pnpm exec wrangler secret put INTERNAL_EVENTS_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+
+      # Runs straight before the deploy, after the secret syncs, so the time the
+      # live worker runs against a schema newer than its code is only the deploy
+      # itself (docs/specs/016-platform/deployment.md, "Renaming migrations").
+      # Apply any pending D1 migrations before the new worker code is
+      # deployed. Idempotent: wrangler tracks applied migrations in a
+      # bookkeeping table and skips any it's already run. Has to
+      # happen BEFORE the worker deploy so the new code doesn't
+      # briefly run against a schema it doesn't understand.
+      #
+      # If a migration's bad, this step will fail and the deploy
+      # halts before the worker is updated — that's the desired
+      # safety: we'd rather block the deploy than leave this
+      # environment's database half-migrated.
+      #
+      # This is also the step staging exists for: on the staging
+      # caller it runs against `livediagram-staging`, so every merge
+      # to main rehearses the migration against a real remote D1 one
+      # deploy before it reaches the database holding real diagrams
+      # (docs/specs/016-platform/staging-environment.md).
+      - name: Apply D1 migrations (remote)
+        working-directory: apps/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        # Database arg is the binding name (`DB`) — wrangler resolves
+        # it via wrangler.toml, and `--env` decides WHICH database that
+        # binding points at. Wrangler 4 auto-skips the confirmation
+        # prompt in non-interactive CI environments, so no flag is
+        # needed (the `--yes` flag from wrangler 3 was removed).
+        # If this step fails, the most common cause is the CF_API_TOKEN
+        # secret missing the D1: Edit permission on the account that
+        # owns the database — but the `Verify Cloudflare token` step
+        # above is the authoritative diagnostic.
+        run: pnpm exec wrangler d1 migrations apply DB --remote ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       - name: Deploy to Cloudflare Workers
         working-directory: apps/api

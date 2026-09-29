@@ -15,7 +15,7 @@
 // a single themed element-fill would merge all six bars into one block
 // and the timeline would stop reading as separate tasks.
 
-import { createShape, createText, type Element } from '@livediagram/diagram';
+import { createShape, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 const STROKE = '#334155';
@@ -125,7 +125,7 @@ function rect(x: number, y: number, w: number, h: number, fill: string, lockFill
   };
 }
 
-// The chart ships pre-layered (docs/specs/006-diagram/layers.md "Layered templates"): the month
+// The chart ships pre-layered (docs/specs/006-document/layers.md "Layered templates"): the month
 // header + tracks + row labels form a fixed "Grid" scaffold layer, with
 // the duration bars users slide and stretch on a "Bars" content layer.
 export function buildGanttChart(cx: number, cy: number): Element[] {

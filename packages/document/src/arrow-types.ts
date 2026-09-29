@@ -1,0 +1,204 @@
+// Arrow type definitions (anchors, endpoints, arrowheads, the ArrowElement
+// itself), split out of index.ts the same way element-types.ts was and for the
+// same reason: index.ts is the package's public surface plus the shared
+// domain enums, and the two element families had grown past what one file
+// should carry.
+//
+// Pure types; re-exported through index.ts so the public
+// `@livediagram/document` surface is unchanged.
+
+import type { ArrowFlow, ElementId, ElementLink, TextSize } from './index';
+import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
+import type { AnimationSpeed } from './animation';
+import type { BorderStyle } from './border-style';
+import type { QuickSwatchSlot } from './quick-swatches';
+
+// The sixteen anchors of a boxed element, named after the compass rose
+// (docs/specs/008-canvas/arrow-anchors.md): corners, edge midpoints and the
+// quarter points between them. Their table (side, class, position) is
+// anchors.ts.
+export type Anchor =
+  | 'n'
+  | 'nne'
+  | 'ne'
+  | 'ene'
+  | 'e'
+  | 'ese'
+  | 'se'
+  | 'sse'
+  | 's'
+  | 'ssw'
+  | 'sw'
+  | 'wsw'
+  | 'w'
+  | 'wnw'
+  | 'nw'
+  | 'nnw';
+
+// Clockwise from north.
+export const ALL_ANCHORS: readonly Anchor[] = [
+  'n',
+  'nne',
+  'ne',
+  'ene',
+  'e',
+  'ese',
+  'se',
+  'sse',
+  's',
+  'ssw',
+  'sw',
+  'wsw',
+  'w',
+  'wnw',
+  'nw',
+  'nnw',
+];
+
+export type Endpoint =
+  | { kind: 'free'; x: number; y: number }
+  | { kind: 'pinned'; elementId: ElementId; anchor: Anchor }
+  // Connected to a point ALONG another arrow's line (docs/specs/008-canvas/arrow-to-arrow.md) — `t` is the
+  // parametric position (0 = the target arrow's `from`, 1 = its `to`). The
+  // position resolves dynamically from the target arrow's centreline, so it
+  // tracks the target as it moves / reshapes (e.g. sequence-diagram messages
+  // attached to a lifeline arrow). Resolved by `endpointPosition`.
+  | { kind: 'on-arrow'; arrowId: ElementId; t: number };
+
+// Which endpoint(s) of an arrow get an arrowhead marker. 'to' (default)
+// is the conventional one-way arrow; 'from' flips it; 'both' makes a
+// two-headed connector. There's no 'none' yet — a line with no
+// direction is rare enough to defer.
+export type ArrowEnds = 'from' | 'to' | 'both' | 'none';
+
+export type ArrowElement = {
+  id: ElementId;
+  type: 'arrow';
+  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
+  layerId?: string;
+  from: Endpoint;
+  to: Endpoint;
+  locked?: boolean;
+  // Stroke colour for the line + arrowhead. Falls through to the
+  // default arrow slate when unset. There's no fill or text on an
+  // arrow so this is the only colour field.
+  strokeColor?: string;
+  // The quick-swatch slot the stroke was picked from (docs/specs/008-canvas/quick-style-panel.md), so a
+  // theme change re-derives it rather than resetting it to the theme stroke.
+  strokeSwatch?: QuickSwatchSlot;
+  // Arrowhead colour, when it should differ from the line's. Unset means the
+  // heads take the line's colour, which is the usual case and how every arrow
+  // drawn before this behaved: the shared markers inherit it through SVG's
+  // `context-stroke`. Setting this makes the arrow carry its own marker, so a
+  // red head on a grey line is a colour choice rather than two elements.
+  arrowheadColor?: string;
+  opacity?: number; // 0..1, defaults to 1
+  link?: ElementLink;
+  arrowEnds?: ArrowEnds;
+  // Stroke width in px. Defaults to the medium preset when unset so
+  // existing arrows render unchanged. Presets surface via the Palette;
+  // the underlying field is a free number so future inputs (sliders,
+  // numeric entry) work without a schema migration.
+  strokeWidth?: number;
+  // Line pattern preset (solid / dashed / dotted). Shares the
+  // BorderStyle union with the shape Border accordion so a future
+  // pattern addition lands on both. Defaults to 'solid' (no
+  // dasharray) so existing arrows render unchanged.
+  strokeStyle?: BorderStyle;
+  // Arrowhead size preset. Lives separately from `strokeWidth` so a
+  // thin line can carry a chunky arrowhead and vice versa. Snapped
+  // to a named preset for the toggle UI (see `arrowheadSizeOf`).
+  arrowheadSize?: ArrowheadSize;
+  // Arrowhead head SHAPE preset (filled triangle / hollow triangle /
+  // open V / dot / diamond ...). Independent of size + ends so a UML
+  // diagram can pair a hollow triangle (inheritance) or diamond
+  // (aggregation / composition) with any line weight. Defaults to the
+  // filled triangle so arrows authored before the field render
+  // unchanged (see `arrowheadShapeOf`).
+  arrowheadShape?: ArrowheadShape;
+  // Path shape. 'straight' is the default and matches every arrow
+  // authored before the field existed. 'curved' bows the line out
+  // perpendicular to the from→to chord (smooth quadratic Bezier).
+  // 'angled' renders the connector as an axis-aligned L-shape with
+  // a single right-angle bend. See `arrowStyleOf`.
+  arrowStyle?: ArrowStyle;
+  // Route behind intervening boxes (docs/specs/008-canvas/arrow-route-behind.md): where the line would cross an
+  // unrelated box it breaks a short distance before it and resumes on the far
+  // side, so a dense parent-to-children fan doesn't draw arrows over the
+  // boxes between. Absent = ON: this is the default reading for an arrow, and
+  // `false` is the explicit opt-out for the cases where crossing is wanted.
+  routeBehind?: boolean;
+  // Flowing-arrow animation (docs/specs/008-canvas/canvas-and-palette.md): marching dashes or a travelling dot
+  // along the path to show flow direction. Undefined = static.
+  flow?: ArrowFlow;
+  // Speed of `flow` (multiplier on its base duration). Default 'slow'
+  // (DEFAULT_ANIMATION_SPEED).
+  flowSpeed?: AnimationSpeed;
+  // Whether `flow` loops. Undefined / true = loop forever (the default);
+  // false = play once and hold.
+  flowRepeat?: boolean;
+  // Optional override for the curve control point. Stored as a
+  // delta from the chord midpoint (canvas coords) so the curve
+  // translates with the arrow when an endpoint moves: the chord
+  // midpoint shifts, the offset stays the same, and the user's
+  // chosen bow direction + magnitude is preserved. Only consulted
+  // when `arrowStyle === 'curved'`; the auto perpendicular bow is
+  // used whenever this field is absent so existing curved arrows
+  // render unchanged. Setting it back to undefined "resets" the
+  // curve to its default shape.
+  curveOffset?: { dx: number; dy: number };
+  // Optional extra control points for a multi-bend curve (docs/specs/008-canvas/canvas-and-palette.md). Each is
+  // a delta from the chord midpoint (canvas coords), like `curveOffset`, so
+  // the whole curve translates with the arrow when an endpoint moves. When
+  // present (and `arrowStyle === 'curved'`) the curve is a smooth spline
+  // through from -> these points -> to, letting the user click the line to
+  // add bends rather than being stuck with a single bow. Absent or empty =
+  // the single-control-point behaviour above. `curveOffset` is treated as
+  // the first point when this is absent, so existing curved arrows are
+  // unchanged.
+  curvePoints?: { dx: number; dy: number }[];
+  // Optional override for the angled-arrow elbow position. Stored
+  // as a delta from the auto-computed elbow (the right-angle corner
+  // a default angled arrow draws at `(to.x, from.y)` or `(from.x,
+  // to.y)`). Lets the user drag the visible elbow handle to bend
+  // the arrow somewhere other than the default corner. Only
+  // consulted when `arrowStyle === 'angled'`; the auto right-angle
+  // applies when this field is absent so existing angled arrows
+  // render unchanged.
+  elbowOffset?: { dx: number; dy: number };
+  // Optional label rendered next to the arrow's midpoint. Empty /
+  // missing → no label is drawn. Double-click on the arrow opens an
+  // inline editor for this field. When `labelOffset` is absent the
+  // placement is computed at render time to dodge nearby boxed
+  // elements (right → below → left → above of midpoint).
+  label?: string;
+  // Optional user-chosen label placement: `t` is the position along
+  // the line (0..1 by arc length), `offset` the signed perpendicular
+  // distance from the line (positive = left of travel, negative =
+  // right) so the label can sit on either side. Set by dragging the
+  // label; absent → the auto midpoint placement above. Translates
+  // with the arrow because it's parameterised against the line, not
+  // stored as absolute coords.
+  labelOffset?: { t: number; offset: number };
+  // Optional label-text formatting, mirroring the boxed-element fields so
+  // an arrow's label can be sized / styled / coloured / fonted from the
+  // Selected Element panel's Text accordion. All optional: absent → the
+  // label renders at the default small (12px) size in the arrow's stroke
+  // colour. Alignment + padding don't apply (the label sits at the
+  // midpoint), so those fields are intentionally omitted.
+  textSize?: TextSize;
+  textBold?: boolean;
+  textItalic?: boolean;
+  textUnderline?: boolean;
+  textStrikethrough?: boolean;
+  // Label colour, independent of `strokeColor` (the line). Falls back to
+  // the stroke colour when unset so the label matches the line by default.
+  textColor?: string;
+  // A plate behind the label (docs/specs/008-canvas/canvas-and-palette.md "Caption"). Absent = none, which is how
+  // the label has always drawn: straight onto the canvas. A caption crossing
+  // its own line, another arrow, or a busy backdrop is the case this exists
+  // for, and it is a deliberate choice rather than a default because an
+  // opaque plate on an otherwise clean diagram adds a box nobody asked for.
+  labelFill?: string;
+  font?: string;
+};

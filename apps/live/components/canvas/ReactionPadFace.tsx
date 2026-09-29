@@ -1,7 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { REACTION_EMOJI, REACTION_HUES, REACTION_LABEL, type Reaction } from '@livediagram/diagram';
+import {
+  REACTION_EMOJI,
+  REACTION_HUES,
+  REACTION_LABEL,
+  type Reaction,
+} from '@livediagram/document';
 
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '@/lib/element-tint';
@@ -31,7 +36,7 @@ export function ReactionPadFace({
   reaction: Reaction;
   textColor: string;
   // Undefined on a read-only surface, which renders the pad inert rather than
-  // hiding it: a viewer should still see what the board is offering.
+  // hiding it: a viewer should still see what the canvas is offering.
   onFire?: () => void;
 }) {
   // Counts presses, to replay the ring on each one (it is keyed on this).

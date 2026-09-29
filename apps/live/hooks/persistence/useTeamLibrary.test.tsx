@@ -13,10 +13,10 @@ afterEach(() => vi.clearAllMocks());
 
 const lib = (teamId: string) => ({
   folders: [{ id: `${teamId}-f`, name: 'F', parentId: null }],
-  diagrams: [{ id: `${teamId}-d`, name: 'D', folderId: null }],
+  documents: [{ id: `${teamId}-d`, name: 'D', folderId: null }],
 });
 
-// One team's shared library (docs/specs/013-workspace/team-shared-diagrams.md).
+// One team's shared library (docs/specs/013-workspace/team-shared-documents.md).
 describe('useTeamLibrary', () => {
   it('loads the team library', async () => {
     apiGetTeamLibrary.mockResolvedValue(lib('t1'));

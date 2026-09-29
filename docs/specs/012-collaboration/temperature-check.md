@@ -8,7 +8,7 @@ shows the spread and the average as the answers land.
 ## Why
 
 "How does everyone feel about this?" is the cheapest facilitation move there
-is, and on a shared board it currently has no home. The rating element
+is, and on a shared canvas it currently has no home. The rating element
 ([Rating](../009-elements/rating.md)) looks like the answer and is not: it is **one** score that **one**
 person sets, and the next person to touch it overwrites the first. A dot-vote
 ([Session tools (timer + voting)](session-tools.md)) is per-person but targets whole elements and evaporates with the
@@ -66,7 +66,7 @@ graduated gauge plate.
 Colour runs cool-to-warm across the five values in **fixed hues** (blue, cyan, lime, amber, rose),
 not the theme's palette: a temperature check that recoloured with the tab theme would read as five
 arbitrary bars, and "the low one is the cold one" is the whole glanceable part. The hues and words
-live in `@livediagram/diagram` (`TEMPERATURE_COLORS`, `TEMPERATURE_MOODS`), so the export draws the
+live in `@livediagram/document` (`TEMPERATURE_COLORS`, `TEMPERATURE_MOODS`), so the export draws the
 same card: the five faces over their numbers (`TEMPERATURE_FACE_MOUTHS`, shared with the canvas), the bars, the gradient track and the average. Everything else
 is `tint()` of the element's own colours, so the card holds on any theme and in either appearance,
 and every motion collapses under reduced motion. Its durations are canvas motion, so they live in

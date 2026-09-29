@@ -11,7 +11,7 @@ describe('viewIsCentredOn', () => {
     expect(viewIsCentredOn(centred, AT, 0.5)).toBe(true);
   });
 
-  it('says no once the zoom is a different amount of board', () => {
+  it('says no once the zoom is a different amount of canvas', () => {
     expect(viewIsCentredOn({ ...centred, zoom: 0.75 }, AT, 0.5)).toBe(false);
   });
 
@@ -25,9 +25,9 @@ describe('viewIsCentredOn', () => {
     expect(viewIsCentredOn(panned, AT, 0.5)).toBe(false);
   });
 
-  it('measures the slack on screen, not on the board', () => {
+  it('measures the slack on screen, not on the canvas', () => {
     // 100 canvas units: 50px at 50% zoom (inside the 80px slack), but 200px
-    // at 200% zoom (outside it). Same board distance, different thing to see.
+    // at 200% zoom (outside it). Same canvas distance, different thing to see.
     const off = (zoom: number) => ({
       size: SIZE,
       pan: { x: SIZE.width / 2 - 400 - 100, y: SIZE.height / 2 - 300 },

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import { completedActions, newActions, newComments, newlyResolvedThreads } from './tab-diff';
 
 // The diff is the only place that can tell "a comment was added" or "a

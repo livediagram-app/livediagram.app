@@ -17,7 +17,7 @@ These five were filed by **what they look like**, and it scattered them: the
 mind node sat with the wordy elements because it holds a word, the lane and
 the frame with the gesture tools because you drag them out, the timeline with
 the web components, the table with the charts. Nothing about that grouping
-helps somebody who is about to structure a board.
+helps somebody who is about to structure a canvas.
 
 What the five have in common is the thing worth grouping on: **each one holds
 other work**. A frame gathers a region, a lane carries the steps in a row, a
@@ -26,7 +26,7 @@ hangs children off itself. You reach for them at the same moment — when you
 have decided how the diagram is arranged, before you have decided what goes in
 it — and that moment deserves one place to look.
 
-It sits in **Common** because structuring a board is ordinary work, not a
+It sits in **Common** because structuring a canvas is ordinary work, not a
 decoration or a dynamic behaviour, and second in the band (after Shapes)
 because the two are the same kind of act: putting a thing on the canvas.
 

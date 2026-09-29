@@ -59,7 +59,7 @@ function bodyToSchema(body: BodySchema): JsonSchema {
   return typeof body === 'string' ? { $ref: `#/components/schemas/${body}` } : body;
 }
 
-// `/diagrams/{id}` → ['id']. Drives the generated path-parameter list so the
+// `/documents/{id}` → ['id']. Drives the generated path-parameter list so the
 // manifest doesn't repeat them.
 function pathParams(path: string): string[] {
   return [...path.matchAll(/\{(\w+)\}/g)].flatMap((m) => (m[1] ? [m[1]] : []));
@@ -88,7 +88,7 @@ function operationId(route: RouteSpec): string {
 //     whole realtime session (docs/specs/015-api/api.md).
 // A read that no token can reach cannot 429, and saying otherwise would send
 // an integrator writing retry logic for a status it will never see.
-const RATE_LIMIT_EXEMPT_WRITES = new Set(['post /events', 'post /diagrams/{id}/room-ticket']);
+const RATE_LIMIT_EXEMPT_WRITES = new Set(['post /events', 'post /documents/{id}/room-ticket']);
 
 function isRateLimited(route: RouteSpec): boolean {
   const id = `${route.method.toLowerCase()} ${route.path}`;
@@ -175,16 +175,16 @@ function operationFor(route: RouteSpec): Record<string, unknown> {
 }
 
 const TAGS = [
-  { name: 'Diagrams', description: 'Create, read, update, and delete diagrams and their tabs.' },
-  { name: 'Sharing', description: 'Share links, passwords, and the diagrams shared with you.' },
-  { name: 'Folders', description: 'Organise diagrams into a personal or team folder tree.' },
+  { name: 'Documents', description: 'Create, read, update, and delete documents and their tabs.' },
+  { name: 'Sharing', description: 'Share links, passwords, and the documents shared with you.' },
+  { name: 'Folders', description: 'Organise documents into a personal or team folder tree.' },
   {
     name: 'Trash',
-    description: 'Deleted diagrams, restorable for 30 days before they are purged.',
+    description: 'Deleted documents, restorable for 30 days before they are purged.',
   },
   { name: 'Images', description: 'Upload, list, and reference image assets.' },
   { name: 'Themes', description: 'Saved custom themes.' },
-  { name: 'Activity', description: 'Per-diagram change log.' },
+  { name: 'Activity', description: 'Per-document change log.' },
   { name: 'API tokens', description: 'Mint and revoke the credentials external callers use.' },
   { name: 'Teams', description: 'Teams, members, invites, and shared libraries.' },
   { name: 'Participants', description: 'Display name and colour for a collaborator.' },

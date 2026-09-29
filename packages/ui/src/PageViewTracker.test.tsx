@@ -19,8 +19,8 @@ beforeEach(() => {
 describe('reportPageView', () => {
   it('reports the normalised path', () => {
     const track = vi.fn();
-    reportPageView(track, '/diagram/3f2b8c1e-9a4d-4e7b-8c21-0d5e6f7a8b9c');
-    expect(track).toHaveBeenCalledWith('Page', 'View', '/diagram');
+    reportPageView(track, '/document/3f2b8c1e-9a4d-4e7b-8c21-0d5e6f7a8b9c');
+    expect(track).toHaveBeenCalledWith('Page', 'View', '/document');
   });
 
   it('counts the same page twice in a row once, but a return after leaving again', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import { attachImportImages } from './attach';
 import type {
   ImportImageOutcome,

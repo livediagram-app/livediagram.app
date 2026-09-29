@@ -10,7 +10,7 @@
 // (the label's collapsed caret means the whole text, the note's means the
 // line — docs/specs/009-elements/rich-text-notes.md), and that lives in each editor's session, not here.
 
-import type { ListStyle, RunHeading } from '@livediagram/diagram';
+import type { ListStyle, RunHeading } from '@livediagram/document';
 import {
   BLOCK_TYPES,
   blockTypeApplies,

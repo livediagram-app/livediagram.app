@@ -3,7 +3,7 @@
 // a breathing "live" dot. The facilitator closes it from here, or closes it
 // and brings up the next top note in one press.
 
-import type { QaNote } from '@livediagram/diagram';
+import type { QaNote } from '@livediagram/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import {

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/diagram';
-import { flushDiagramSavesBeacon } from './tabs';
+import type { Tab } from '@livediagram/document';
+import { flushDocumentSavesBeacon } from './tabs';
 import * as offlineStore from '../offline/offline-store';
 
 vi.mock('../offline/offline-store', async (importOriginal) => ({
@@ -8,10 +8,10 @@ vi.mock('../offline/offline-store', async (importOriginal) => ({
   isOfflineIdSync: vi.fn(() => false),
   offlineSaveTab: vi.fn(async () => {}),
   offlineDeleteTab: vi.fn(async () => {}),
-  offlineSaveDiagramMeta: vi.fn(async () => {}),
+  offlineSaveDocumentMeta: vi.fn(async () => {}),
 }));
 
-// flushDiagramSavesBeacon is the beforeunload flush (docs/specs/006-diagram/per-tab-storage.md), now a pure
+// flushDocumentSavesBeacon is the beforeunload flush (docs/specs/006-document/per-tab-storage.md), now a pure
 // function at the persistence boundary instead of inline raw fetch in
 // useAutosave. These lock the wire behaviour the extraction had to
 // preserve: keepalive on every write, X-Allow-Empty gated by loaded
@@ -23,7 +23,7 @@ function makeTab(id: string, extra: Partial<Tab> = {}): Tab {
 
 type FetchCall = { url: string; init: RequestInit };
 
-describe('flushDiagramSavesBeacon', () => {
+describe('flushDocumentSavesBeacon', () => {
   let calls: FetchCall[];
 
   beforeEach(() => {
@@ -42,7 +42,7 @@ describe('flushDiagramSavesBeacon', () => {
 
   const base = {
     ownerId: 'owner-1',
-    diagramId: 'diag-1',
+    documentId: 'diag-1',
     shareCode: null,
     loadedTabIds: new Set<string>(),
     orderChanged: false,
@@ -52,14 +52,14 @@ describe('flushDiagramSavesBeacon', () => {
 
   it('flushes an offline rename / reorder to IndexedDB, not just its tabs', () => {
     vi.mocked(offlineStore.isOfflineIdSync).mockReturnValueOnce(true);
-    flushDiagramSavesBeacon({
+    flushDocumentSavesBeacon({
       ...base,
       nameChanged: true,
       changedTabs: [],
       deletedIds: [],
       tabs: [makeTab('t1', { folder: 'f' }), makeTab('t2')],
     });
-    expect(offlineStore.offlineSaveDiagramMeta).toHaveBeenCalledWith(
+    expect(offlineStore.offlineSaveDocumentMeta).toHaveBeenCalledWith(
       'diag-1',
       {
         name: 'My diagram',
@@ -74,14 +74,14 @@ describe('flushDiagramSavesBeacon', () => {
   });
 
   it('PUTs each changed tab with keepalive and the owner header', () => {
-    flushDiagramSavesBeacon({
+    flushDocumentSavesBeacon({
       ...base,
       changedTabs: [makeTab('t1')],
       deletedIds: [],
       tabs: [makeTab('t1')],
     });
     expect(calls).toHaveLength(1);
-    expect(calls[0]!.url).toBe('/api/diagrams/diag-1/tabs/t1');
+    expect(calls[0]!.url).toBe('/api/documents/diag-1/tabs/t1');
     expect(calls[0]!.init.method).toBe('PUT');
     expect(calls[0]!.init.keepalive).toBe(true);
     expect((calls[0]!.init.headers as Record<string, string>)['X-Owner-Id']).toBe('owner-1');
@@ -89,7 +89,7 @@ describe('flushDiagramSavesBeacon', () => {
 
   it('skips the flush for a signed-in owner with no cached token, since every write would 401', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    flushDiagramSavesBeacon({
+    flushDocumentSavesBeacon({
       ...base,
       ownerId: 'user_abc',
       changedTabs: [makeTab('t1')],
@@ -102,7 +102,7 @@ describe('flushDiagramSavesBeacon', () => {
   });
 
   it('sends X-Allow-Empty only for tabs whose content was authoritatively loaded', () => {
-    flushDiagramSavesBeacon({
+    flushDocumentSavesBeacon({
       ...base,
       loadedTabIds: new Set(['loaded']),
       changedTabs: [makeTab('loaded'), makeTab('placeholder')],
@@ -115,8 +115,8 @@ describe('flushDiagramSavesBeacon', () => {
     expect(headersFor('placeholder')['X-Allow-Empty']).toBeUndefined();
   });
 
-  it('DELETEs removed tabs and only PUTs diagram meta when order/name changed', () => {
-    flushDiagramSavesBeacon({
+  it('DELETEs removed tabs and only PUTs document meta when order/name changed', () => {
+    flushDocumentSavesBeacon({
       ...base,
       orderChanged: true,
       changedTabs: [],
@@ -124,15 +124,15 @@ describe('flushDiagramSavesBeacon', () => {
       tabs: [makeTab('t1')],
     });
     const del = calls.find((c) => c.init.method === 'DELETE')!;
-    expect(del.url).toBe('/api/diagrams/diag-1/tabs/gone');
+    expect(del.url).toBe('/api/documents/diag-1/tabs/gone');
     expect(del.init.keepalive).toBe(true);
-    const meta = calls.find((c) => c.url === '/api/diagrams/diag-1')!;
+    const meta = calls.find((c) => c.url === '/api/documents/diag-1')!;
     expect(meta.init.method).toBe('PUT');
     expect(meta.init.keepalive).toBe(true);
   });
 
   it('carries the share code header when present', () => {
-    flushDiagramSavesBeacon({
+    flushDocumentSavesBeacon({
       ...base,
       shareCode: 'abc',
       changedTabs: [makeTab('t1')],

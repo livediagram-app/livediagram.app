@@ -15,7 +15,7 @@
 
 import { useState } from 'react';
 import { CloseIcon, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
-import { isLightColor } from '@livediagram/diagram';
+import { isLightColor } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 

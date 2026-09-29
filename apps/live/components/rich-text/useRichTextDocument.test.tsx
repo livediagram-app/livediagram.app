@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { useRichTextDocument } from './useRichTextDocument';
-import type { TextRun } from '@livediagram/diagram';
+import type { TextRun } from '@livediagram/document';
 
 // The editor's live text is state, updated whenever the runs change, so render reads it rather than the
 // contentEditable (docs/specs/003-system-architecture/react-state-and-effects.md). It drives the list

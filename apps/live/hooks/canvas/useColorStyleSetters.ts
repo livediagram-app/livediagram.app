@@ -7,7 +7,7 @@
 // file makes it auditable. `resetColorsSelected` (the "Reset to theme"
 // action) lives here too since it is the inverse of these writes.
 
-import type { Element, ElementShadow, Tab } from '@livediagram/diagram';
+import type { Element, ElementShadow, Tab } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import {
   applyFillColorToEl,
@@ -158,6 +158,7 @@ export function useColorStyleSetters(deps: {
               : { textColor: undefined }),
             fillColor: undefined,
             strokeColor: undefined,
+            textSwatch: undefined,
           };
         }
         if (el.type === 'sticky') {

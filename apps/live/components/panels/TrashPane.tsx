@@ -1,7 +1,7 @@
 'use client';
 
 // The Explorer's Trash view (docs/specs/013-workspace/trash.md, "The Trash
-// view"): what the person may restore, grouped as their own diagrams, each
+// view"): what the person may restore, grouped as their own documents, each
 // joined team, then this browser only. Each row offers Restore and Delete
 // permanently; each group Empty Trash. The two destructive actions confirm in
 // a popover beside the button, as the Explorer's delete does. Reached from
@@ -11,7 +11,7 @@ import { Button, EmptyState, TrashIcon } from '@livediagram/ui';
 import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { InfoNote } from '@/components/primitives/InfoNote';
-import { DiagramIcon } from '@/components/primitives/explorer-icons';
+import { DocumentIcon } from '@/components/primitives/explorer-icons';
 import { daysLeftLabel, trashGroups, trashedOnLabel, type TrashGroup } from '@/lib/trash-groups';
 import type { TrashController } from '@/hooks/persistence/useTrash';
 
@@ -28,7 +28,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
   return (
     <div className="flex flex-col gap-5">
       <InfoNote>
-        Deleted diagrams wait here for {TRASH_RETENTION_DAYS} days, then they are removed for good.
+        Deleted documents wait here for {TRASH_RETENTION_DAYS} days, then they are removed for good.
         Restoring one puts it back where it was.
       </InfoNote>
 
@@ -40,7 +40,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
         <EmptyState
           icon={<TrashIcon size={18} />}
           title="Nothing in the Trash right now"
-          description={`Delete a diagram and it is kept here for ${TRASH_RETENTION_DAYS} days, so you can restore it.`}
+          description={`Delete a document and it is kept here for ${TRASH_RETENTION_DAYS} days, so you can restore it.`}
         />
       ) : (
         groups.map((group) => (
@@ -59,7 +59,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
                 </h2>
                 {group.scope.kind === 'local' ? (
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Offline diagrams, kept only in this browser.
+                    Offline documents, kept only in this browser.
                   </p>
                 ) : null}
               </div>
@@ -75,11 +75,11 @@ export function TrashPane({ trash }: { trash: TrashController }) {
               {group.rows.map((row) => (
                 <li key={row.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300">
-                    <DiagramIcon size={14} />
+                    <DocumentIcon size={14} />
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
-                      {row.name || 'Untitled diagram'}
+                      {row.name || 'Untitled document'}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {trashedOnLabel(row)} · {daysLeftLabel(row.trashedAt, now)}
@@ -89,19 +89,19 @@ export function TrashPane({ trash }: { trash: TrashController }) {
                     <Button
                       variant="secondary"
                       size="xs"
-                      aria-label={`Restore ${row.name || 'Untitled diagram'}`}
+                      aria-label={`Restore ${row.name || 'Untitled document'}`}
                       onClick={() => void trash.restore(row.id, group)}
                     >
                       Restore
                     </Button>
                     <button
                       type="button"
-                      aria-label={`Delete ${row.name || 'Untitled diagram'} permanently`}
+                      aria-label={`Delete ${row.name || 'Untitled document'} permanently`}
                       onClick={(e) =>
                         setConfirming({
                           kind: 'purge',
                           id: row.id,
-                          name: row.name || 'Untitled diagram',
+                          name: row.name || 'Untitled document',
                           group,
                           anchor: e.currentTarget,
                         })
@@ -144,7 +144,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
 
 function emptyMessage(group: TrashGroup): string {
   const n = group.rows.length;
-  const what = n === 1 ? '1 diagram' : `${n} diagrams`;
+  const what = n === 1 ? '1 document' : `${n} documents`;
   if (group.scope.kind === 'team') {
     return `Delete ${what} in ${group.title}'s Trash for good, for the whole team? This cannot be undone.`;
   }

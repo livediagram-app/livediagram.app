@@ -93,7 +93,7 @@ export const LANDING_BEATS: LandingBeat[] = [
     id: 'open',
     title: 'Open, private, and connected',
     description:
-      'MIT-licensed and self-hostable. Your work saves itself and reverts in one click, a diagram can live only in your browser, and your AI tools can read and build diagrams for you.',
+      'MIT-licensed and self-hostable. Your work saves itself and reverts in one click, a document can live only in your browser, and your AI tools can read and build diagrams for you.',
     sections: [
       { id: 'foundations', label: 'Open source' },
       { id: 'reliability', label: 'Reliability' },

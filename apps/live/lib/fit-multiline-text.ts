@@ -1,4 +1,4 @@
-import { labelMeasure, wrapLabel } from '@livediagram/diagram';
+import { labelMeasure, wrapLabel } from '@livediagram/document';
 
 // Auto-fit for MULTI-LINE labels (docs/specs/021-event-storming/event-storming.md): the font size at which the
 // wrapped text just fills its box. `scale` on a sticky used to mean a fixed
@@ -16,7 +16,7 @@ import { labelMeasure, wrapLabel } from '@livediagram/diagram';
 //
 // The ceiling is the pen: on a real wall everyone writes at roughly one size,
 // so a two-word event and a two-line policy sit at the same weight and the
-// board reads as one surface. Let a short label fill its paper and it becomes
+// canvas reads as one surface. Let a short label fill its paper and it becomes
 // a poster that shouts down every note beside it — which is what 44px did.
 // The floor stops an essay shrinking into illegibility (past it the box
 // simply clips, as it always did).

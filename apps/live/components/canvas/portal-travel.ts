@@ -1,5 +1,5 @@
 import type { Ref } from 'react';
-import type { Element, ShapeElement, Tab } from '@livediagram/diagram';
+import type { Element, ShapeElement, Tab } from '@livediagram/document';
 import {
   portalExitPoint,
   portalName,

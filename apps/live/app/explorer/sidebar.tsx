@@ -60,7 +60,7 @@ export function SidebarSectionLabel({
   );
 }
 
-// One sidebar row. Re-used for the "Recent", "All diagrams", and
+// One sidebar row. Re-used for the "Recent", "All documents", and
 // "Shared with me" special entries. Folder rows wrap this via
 // SidebarFolderSubtree so they get chevron + recursive rendering.
 export function SidebarRow({
@@ -136,7 +136,7 @@ export function SidebarRow({
   );
 }
 
-// A team library's folder subtree in the sidebar (docs/specs/013-workspace/team-shared-diagrams.md). Reuses
+// A team library's folder subtree in the sidebar (docs/specs/013-workspace/team-shared-documents.md). Reuses
 // the SidebarRow primitive for visual parity with the personal tree,
 // but is navigation-only: a click opens the team page at that folder
 // (rename / move / delete live on the team page, not here), so there's

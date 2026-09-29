@@ -4,7 +4,7 @@
 //
 // Each one shows the IDEA rather than a screenshot: a deck of slides built
 // from a diagram, one slide filling a screen, notes only the presenter opens,
-// the fact that nobody else is dragged along, and the board tilted into 3D.
+// the fact that nobody else is dragged along, and the canvas tilted into 3D.
 
 import { ARROW_STROKE, BLUE_STROKE, Frame, INK_FILL, INK_STROKE, INK_TEXT, SKY } from './shared';
 

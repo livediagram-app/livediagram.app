@@ -1,16 +1,16 @@
 // Who should see a timeline event (docs/specs/013-workspace/timeline.md §4.1).
 //
 // The whole reason the scope join table exists: one event row, many
-// recipients. A comment on a diagram in a twelve-person team library is
+// recipients. A comment on a document in a twelve-person team library is
 // one row plus twelve memberships, not twelve copies of the text.
 //
 // Kept apart from db/timeline.ts (which is pure D1 over the timeline
 // tables) because resolving an audience means reading OTHER resources'
-// tables — diagrams, team_members — and that dependency shouldn't leak
+// tables — documents, team_members — and that dependency shouldn't leak
 // into the storage layer.
 
 import type { TimelineScopeRef } from '@livediagram/api-schema';
-import type { DiagramDTO, Env } from '../types';
+import type { DocumentDTO, Env } from '../types';
 
 export function userScope(ownerId: string): TimelineScopeRef {
   return { scopeType: 'user', scopeId: ownerId };
@@ -20,13 +20,13 @@ export function teamScope(teamId: string): TimelineScopeRef {
   return { scopeType: 'team', scopeId: teamId };
 }
 
-export function diagramScope(diagramId: string): TimelineScopeRef {
-  return { scopeType: 'diagram', scopeId: diagramId };
+export function documentScope(documentId: string): TimelineScopeRef {
+  return { scopeType: 'document', scopeId: documentId };
 }
 
-// Everyone who should see an event about this diagram: its owner, plus
+// Everyone who should see an event about this document: its owner, plus
 // every JOINED member of its team when it lives in a team library
-// (docs/specs/013-workspace/team-shared-diagrams.md). `invited` rows are excluded — an invite grants no
+// (docs/specs/013-workspace/team-shared-documents.md). `invited` rows are excluded — an invite grants no
 // membership until it's accepted (docs/specs/013-workspace/teams.md), and it must not leak the
 // contents of a library the person hasn't joined.
 //
@@ -34,25 +34,25 @@ export function diagramScope(diagramId: string): TimelineScopeRef {
 // in your own history; the renderer resolves the pronoun by comparing
 // actorId against the viewer, which is what lets one row serve the
 // whole audience.
-export async function audienceForDiagram(
+export async function audienceForDocument(
   env: Env,
-  diagram: Pick<DiagramDTO, 'id' | 'ownerId' | 'teamId'>,
+  liveDoc: Pick<DocumentDTO, 'id' | 'ownerId' | 'teamId'>,
 ): Promise<TimelineScopeRef[]> {
   // The owner is added before the team lookup, so a failed lookup
   // degrades to "the owner still sees it" rather than to silence.
-  const owners = new Set<string>([diagram.ownerId]);
-  if (diagram.teamId) {
-    for (const id of await joinedMemberIds(env, diagram.teamId)) owners.add(id);
+  const owners = new Set<string>([liveDoc.ownerId]);
+  if (liveDoc.teamId) {
+    for (const id of await joinedMemberIds(env, liveDoc.teamId)) owners.add(id);
   }
-  // Plus the diagram's own history, which anyone who can read the
-  // diagram can read — including a share-link visitor who is in nobody's
+  // Plus the document's own history, which anyone who can read the
+  // document can read — including a share-link visitor who is in nobody's
   // user scope.
-  const scopes = [...[...owners].map(userScope), diagramScope(diagram.id)];
+  const scopes = [...[...owners].map(userScope), documentScope(liveDoc.id)];
   // …and the team's own feed, so somebody who joins next month can read
   // back what happened before they arrived. The per-member scopes above
   // are still written: they are what makes a personal feed a single
   // indexed scan instead of a union across every team you belong to.
-  return diagram.teamId ? [...scopes, teamScope(diagram.teamId)] : scopes;
+  return liveDoc.teamId ? [...scopes, teamScope(liveDoc.teamId)] : scopes;
 }
 
 // Everyone in a team, for team-level events (a member joined, a role
@@ -68,7 +68,7 @@ export async function audienceForTeam(env: Env, teamId: string): Promise<Timelin
 // `record` swallows — audience resolution genuinely has to run on the
 // critical path for deletes: the team link disappears with the row, so
 // there is nothing left to resolve afterwards. That means a failure
-// here would take down a legitimate member removal or diagram delete,
+// here would take down a legitimate member removal or document delete,
 // which is exactly the trade the timeline is not allowed to make. An
 // empty list costs one missing bubble.
 async function joinedMemberIds(env: Env, teamId: string): Promise<string[]> {
@@ -108,7 +108,7 @@ export async function adminsForTeam(env: Env, teamId: string): Promise<TimelineS
 
 // Merge audiences without duplicating a scope. Used where an event has
 // two natural audiences — an assigned action reaches the assignee AND
-// everyone who can see the diagram, and those sets usually overlap.
+// everyone who can see the document, and those sets usually overlap.
 export function mergeScopes(...groups: TimelineScopeRef[][]): TimelineScopeRef[] {
   const seen = new Map<string, TimelineScopeRef>();
   for (const group of groups) {

@@ -11,7 +11,7 @@ export function isTabOutOfScope(tabId: string, scope: string | null): boolean {
   return scope !== null && tabId !== scope;
 }
 
-// The tab whose content a freshly opened diagram fetches first and shows:
+// The tab whose content a freshly opened document fetches first and shows:
 // the scoped tab when there is one, otherwise the first.
 export function firstTabToLoad(
   tabs: readonly { id: string }[],

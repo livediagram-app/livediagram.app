@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { elementActions, type ShapeElement } from '@livediagram/diagram';
+import { elementActions, type ShapeElement } from '@livediagram/document';
 
 import { CollabPanel } from '@/components/canvas/collab/collab-chrome';
 import { CollabDoneChip } from '@/components/canvas/collab/CollabDoneChip';
@@ -18,7 +18,7 @@ import {
 } from '@/components/canvas/collab/qa/qa-parts';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 
-// The face of an Action panel (docs/specs/012-collaboration/action-panel.md): a card on the board that carries a
+// The face of an Action panel (docs/specs/012-collaboration/action-panel.md): a card on the canvas that carries a
 // LIST of assigned actions (docs/specs/012-collaboration/assigned-actions.md) and shows them in place.
 //
 // Like the Comment panel it carries NO action machinery of its own. The Assign

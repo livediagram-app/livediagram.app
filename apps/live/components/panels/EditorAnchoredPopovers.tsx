@@ -1,13 +1,13 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { apiSetDiagramFolder } from '@/lib/api-client';
-import { elementActions, isBoxed } from '@livediagram/diagram';
+import { apiSetDocumentFolder } from '@/lib/api-client';
+import { elementActions, isBoxed } from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
 import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
 import { apiAddComment, apiDeleteComment } from '@/lib/api-client';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
 const CommentThreadPopover = dynamic(
   () => import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
@@ -37,7 +37,7 @@ export function EditorAnchoredPopovers() {
     activeTab,
     addComment,
     isReadOnly,
-    diagramId,
+    documentId,
     selfParticipant,
     sessionShareCode,
     deleteComment,
@@ -59,9 +59,9 @@ export function EditorAnchoredPopovers() {
     deleteAction,
     teams,
     clerkUserId,
-    setDiagramTeamId,
+    setDocumentTeamId,
     clerkDisplayName,
-    diagramTeamId,
+    documentTeamId,
     emailEnabled,
   } = useEditorContext();
 
@@ -96,11 +96,11 @@ export function EditorAnchoredPopovers() {
                   addComment(
                     target.id,
                     text,
-                    isReadOnly && diagramId
+                    isReadOnly && documentId
                       ? () =>
                           apiAddComment(
                             selfParticipant.id,
-                            diagramId,
+                            documentId,
                             activeTab.id,
                             target.id,
                             text,
@@ -121,11 +121,11 @@ export function EditorAnchoredPopovers() {
                   deleteComment(
                     target.id,
                     cid,
-                    isReadOnly && diagramId
+                    isReadOnly && documentId
                       ? () =>
                           apiDeleteComment(
                             selfParticipant.id,
-                            diagramId,
+                            documentId,
                             activeTab.id,
                             cid,
                             sessionShareCode,
@@ -203,22 +203,22 @@ export function EditorAnchoredPopovers() {
                 ownerId={clerkUserId ?? null}
                 selfUserId={actionSelfId}
                 selfName={actionSelfName}
-                diagramId={diagramId}
-                diagramTeamId={diagramTeamId}
+                documentId={documentId}
+                documentTeamId={documentTeamId}
                 emailEnabled={emailEnabled}
-                // Inline personal-diagram fix (docs/specs/012-collaboration/assigned-actions.md §2): file the diagram
+                // Inline personal-document fix (docs/specs/012-collaboration/assigned-actions.md §2): file the document
                 // into the picked team's library root so the picker can offer
                 // that team's members without an Explorer round-trip. The
-                // server enforces the docs/specs/013-workspace/team-shared-diagrams.md placement rules; on success the
+                // server enforces the docs/specs/013-workspace/team-shared-documents.md placement rules; on success the
                 // local team id flips and the member fetch re-runs.
                 onMoveToTeam={async (teamId) => {
-                  if (!clerkUserId || !diagramId) return false;
+                  if (!clerkUserId || !documentId) return false;
                   try {
-                    await apiSetDiagramFolder(clerkUserId, diagramId, null, teamId);
+                    await apiSetDocumentFolder(clerkUserId, documentId, null, teamId);
                   } catch {
                     return false;
                   }
-                  setDiagramTeamId(teamId);
+                  setDocumentTeamId(teamId);
                   return true;
                 }}
                 onSubmit={(input) => saveAction(target.id, input, assignActionId)}

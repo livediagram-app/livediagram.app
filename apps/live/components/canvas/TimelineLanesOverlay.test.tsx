@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ES_LANE_HEIGHT, laneTop, type EsTimeline } from '@livediagram/diagram';
+import { ES_LANE_HEIGHT, laneTop, type EsTimeline } from '@livediagram/document';
 import { setLanePreview } from '@/lib/lane-preview';
 import { TimelineLanesOverlay } from './TimelineLanesOverlay';
 

@@ -1,12 +1,12 @@
 // The element-schema MCP resource (docs/specs/015-api/mcp-server.md §4.5) + the tools' zod input shapes.
-// Element types + anchors come from packages/diagram (single source of truth);
+// Element types + anchors come from packages/document (single source of truth);
 // the design rules are curated guidance. The element STRUCTURE is carried inline
 // on every tool argument that takes elements (ELEMENT_SCHEMA_HINT) so the whole
 // format is available from the tool definition itself, with no second lookup to
 // make. It states that completeness as a fact about the tools rather than as a
 // rule for the caller: a description that tells a model how to behave, or steers
 // it away from other tools, is a connector-listing flag (docs/specs/015-api/mcp-server.md §4.15).
-// isValidTab in the diagram package stays the runtime guard, so
+// isValidTab in the document package stays the runtime guard, so
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
 import { GRAPH_LABEL_MAX } from './graph-input';
@@ -23,7 +23,7 @@ import {
   STICKY_PRESETS,
   THEMES,
   truncateName,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 export const SCHEMA_RESOURCE_URI = 'livediagram://schema/elements';
 
@@ -34,7 +34,7 @@ const themeIds = THEMES.map((t) => t.id).join(', ');
 
 // The content fields of the kinds that carry content (docs/specs/015-api/mcp-server.md §4.7a), as
 // facts. One copy, shared by the tool argument and the schema resource; the
-// vocabularies come from packages/diagram so they can't drift.
+// vocabularies come from packages/document so they can't drift.
 const stickyPairs = STICKY_PRESETS.map((p) => `${p.name.toLowerCase()} ${p.fill}/${p.text}`).join(
   ', ',
 );
@@ -79,9 +79,9 @@ export function elementSchemaDoc(): string {
   return `# livediagram element schema
 
 A tab is { name, elements: Element[] }. Every element needs a unique string "id".
-A diagram has one or more tabs, each its own canvas. create_diagram makes a
-diagram with one or more tabs at once; add_tab appends another tab to an existing
-diagram (e.g. an overview tab, then a detail tab zooming into one subsystem).
+A document has one or more tabs, each its own canvas. create_document makes a
+document with one or more tabs at once; add_tab appends another tab to an existing
+document (e.g. an overview tab, then a detail tab zooming into one subsystem).
 
 ## Element types
 ${types}
@@ -127,7 +127,7 @@ YOU decide the layout; the server does not override a real arrangement.
   describes, not in a loose pile.
 
 ## Themes (the look)
-Set "theme" on create_diagram / add_tab to one of these presets and the server
+Set "theme" on create_document / add_tab to one of these presets and the server
 paints the whole diagram + canvas with it (you still omit per-element colours):
   ${themeIds}
 Defaults to "brand", the Default scheme: the plain, un-themed canvas, which
@@ -138,7 +138,7 @@ cream; dark backdrops = midnight / plum / abyss / espresso (or leave it on
 "brand", which is dark for a reader in dark mode); multi-colour (each branch a
 different hue) = rainbow / pastel / tropical / autumn / jewel; uml = standard
 UML notation colours. Pick one that fits the subject; one scheme applies to all
-tabs in a create_diagram call.
+tabs in a create_document call.
 
 ## Design rules (diagrams that read well)
 - Nodes are SHAPES, not text. Use type "shape" (shape: "square" by default,
@@ -152,8 +152,8 @@ tabs in a create_diagram call.
 - Give every node an id and a short, clear label.
 - For a standard artefact (kanban, flowchart, SWOT, gantt, wireframe, ...),
   don't rebuild it from raw elements: call list_templates and pass its kind as
-  "template" on create_diagram / add_tab, then personalise the labels with
-  update_diagram. The hand-tuned scaffold reads better than a from-scratch one.
+  "template" on create_document / add_tab, then personalise the labels with
+  update_document. The hand-tuned scaffold reads better than a from-scratch one.
 `;
 }
 
@@ -161,7 +161,7 @@ tabs in a create_diagram call.
 // resources (docs/specs/015-api/mcp-server.md §4.5). Phrased as facts about the server (what it does
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
-export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livediagram diagrams.
+export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livediagram documents.
 The calling model produces the diagram elements AND decides their layout; this
 server validates, persists, and renders them, and only auto-arranges the graph
 when you ask it to (or leave nodes unplaced). The full element format is
@@ -179,9 +179,9 @@ and the theme owns colours (a sticky keeps its own). Stickies, tables, code bloc
 entities, lanes and charts carry content fields, documented on each tool's
 element argument. For a standard artefact (kanban, flowchart, SWOT,
 gantt, wireframe, ...) check list_templates first and pass its kind as
-"template" on create_diagram / add_tab — the hand-tuned scaffold beats
+"template" on create_document / add_tab — the hand-tuned scaffold beats
 rebuilding one from raw elements — then fill in real labels with
-update_diagram.`;
+update_document.`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
 // is the real guard, so there's no second schema to drift. ---
@@ -207,7 +207,7 @@ const templateField = z
       'kind from list_templates (e.g. "kanban", "flowchart", "gantt"). The server ' +
       'materialises its curated layout ("layout" is ignored for a template tab) and paints ' +
       'it with the chosen theme. Personalise the placeholder labels afterwards with ' +
-      'update_diagram mode "ops". Provide template OR elements, not both.',
+      'update_document mode "ops". Provide template OR elements, not both.',
   );
 
 const themeField = z
@@ -329,17 +329,17 @@ const mermaidField = z
       'applies. Provide one of graph, mermaid, elements or template.',
   );
 
-export const findDiagramsShape = {
-  query: z.string().optional().describe('Only diagrams whose name contains this text.'),
+export const findDocumentsShape = {
+  query: z.string().optional().describe('Only documents whose name contains this text.'),
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),
 };
 
-export const readDiagramShape = {
-  diagramId: z.string().describe('The diagram id (from find_diagrams).'),
+export const readDocumentShape = {
+  documentId: z.string().describe('The document id (from find_documents).'),
   tabId: z.string().optional().describe('Which tab to read; defaults to the first.'),
 };
 
-// A diagram or tab name (docs/specs/006-diagram/name-length.md). Shortened with
+// A document or tab name (docs/specs/006-document/name-length.md). Shortened with
 // the same truncateName the api worker applies, so the name a tool reports back
 // is the one stored; the cap is stated for the model in the description.
 const nameField = (what: string, schema: z.ZodString = z.string()) =>
@@ -358,8 +358,8 @@ const tabShape = z.object({
   template: templateField,
 });
 
-export const createDiagramShape = {
-  name: nameField('Name for the new diagram.'),
+export const createDocumentShape = {
+  name: nameField('Name for the new document.'),
   // `tabs` is preferred; `tab` is accepted as an alias for a single tab so a
   // client with a stale cached schema (or one that just sends `tab`) still works
   // — provide one or the other.
@@ -370,7 +370,7 @@ export const createDiagramShape = {
     .optional()
     .describe(
       'One or more tabs, each its own canvas. Preferred — pass several to create a multi-tab ' +
-        'diagram in one call (e.g. an overview tab plus a detail tab per subsystem).',
+        'document in one call (e.g. an overview tab plus a detail tab per subsystem).',
     ),
   tab: tabShape.optional().describe('A single tab — accepted as an alias for tabs: [tab].'),
   layout: layoutField,
@@ -378,9 +378,9 @@ export const createDiagramShape = {
 };
 
 export const addTabShape = {
-  diagramId: z
+  documentId: z
     .string()
-    .describe('The diagram to add a tab to (from find_diagrams / read_diagram).'),
+    .describe('The document to add a tab to (from find_documents / read_document).'),
   name: nameField('Name of the new tab.'),
   graph: graphField,
   mermaid: mermaidField,
@@ -390,8 +390,8 @@ export const addTabShape = {
   theme: themeField,
 };
 
-export const updateDiagramShape = {
-  diagramId: z.string().describe('The diagram to edit (from find_diagrams / read_diagram).'),
+export const updateDocumentShape = {
+  documentId: z.string().describe('The document to edit (from find_documents / read_document).'),
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
   mode: z.enum(['replace', 'ops']).describe('"replace" the whole tab, or apply granular "ops".'),
   graph: graphField,
@@ -423,8 +423,8 @@ export const updateDiagramShape = {
     .describe('ops mode: ordered add / update / remove against existing element ids.'),
 };
 
-export const shareDiagramShape = {
-  diagramId: z.string().describe('The diagram to share (from find_diagrams / read_diagram).'),
+export const shareDocumentShape = {
+  documentId: z.string().describe('The document to share (from find_documents / read_document).'),
   role: z
     .enum(['view', 'edit'])
     .optional()
@@ -439,31 +439,31 @@ export const shareDiagramShape = {
     .describe('When the link stops working. Defaults to "never" (until revoked).'),
 };
 
-export const deleteDiagramShape = {
-  diagramId: z.string().describe('The diagram to delete (from find_diagrams / read_diagram).'),
+export const deleteDocumentShape = {
+  documentId: z.string().describe('The document to delete (from find_documents / read_document).'),
   tabId: z
     .string()
     .optional()
     .describe(
-      'Delete only this ONE tab instead of the whole diagram. A diagram must keep at ' +
+      'Delete only this ONE tab instead of the whole document. A document must keep at ' +
         'least one tab, so deleting the last remaining tab is refused. A tab is deleted ' +
         'outright; it does not go to the Trash.',
     ),
 };
 
-// The Trash (docs/specs/013-workspace/trash.md): restore one diagram by id.
-export const restoreDiagramShape = {
-  diagramId: z.string().describe('The diagram to restore (from list_trash).'),
+// The Trash (docs/specs/013-workspace/trash.md): restore one document by id.
+export const restoreDocumentShape = {
+  documentId: z.string().describe('The document to restore (from list_trash).'),
 };
 
 // Listing the Trash takes no arguments: it is everything the user may restore.
 export const listTrashShape = {};
 
-export const renameDiagramShape = {
-  diagramId: z.string().describe('The diagram to rename (from find_diagrams / read_diagram).'),
+export const renameDocumentShape = {
+  documentId: z.string().describe('The document to rename (from find_documents / read_document).'),
   name: nameField('The new name.', z.string().min(1)),
   tabId: z
     .string()
     .optional()
-    .describe('Rename this tab within the diagram instead of the diagram itself.'),
+    .describe('Rename this tab within the document instead of the document itself.'),
 };

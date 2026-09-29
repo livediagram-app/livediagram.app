@@ -1,5 +1,5 @@
 // Shared row builders for the Trash's tests (db/trash.test.ts,
-// db/empty-diagram-sweep.test.ts): plain INSERTs on a real SQLite with every
+// db/empty-document-sweep.test.ts): plain INSERTs on a real SQLite with every
 // migration applied. Not a `.test.ts` file, so vitest doesn't collect it.
 
 import type { DatabaseSync } from 'node:sqlite';
@@ -18,12 +18,12 @@ export function insert(
     .run(...Object.values(row));
 }
 
-export function diagram(
+export function liveDoc(
   sql: DatabaseSync,
   id: string,
   opts: { owner?: string; team?: string | null; folder?: string | null; savedAt?: number } = {},
 ) {
-  insert(sql, 'diagrams', {
+  insert(sql, 'documents', {
     id,
     owner_id: opts.owner ?? 'owner',
     name: `Diagram ${id}`,

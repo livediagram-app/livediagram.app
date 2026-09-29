@@ -18,7 +18,7 @@ import {
   isSelfDrawingShape,
   type ShapeMarker,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { LaneGutter } from '@/components/canvas/LaneGutter';
@@ -160,8 +160,8 @@ function BoxedElementViewImpl({
   const rotation = element.rotation ?? 0;
   const isRotated = rotation % 360 !== 0;
   // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md). Only while casting is OPEN: after End
-  // vote the board goes back to normal so the results walkthrough reads
-  // against the full diagram. `votableInVote` already folds in the kind
+  // vote the canvas goes back to normal so the results walkthrough reads
+  // against the full canvas. `votableInVote` already folds in the kind
   // rule, so a text element on the votable layer dims too — correct, it
   // can't take a dot either.
   const voteScoped = vote?.active === true && !!vote.voteLayerId;
@@ -250,7 +250,7 @@ function BoxedElementViewImpl({
   // panel (docs/specs/012-collaboration/action-panel.md) shows its action on its face, so it is the badge.
   const isActionPanel = element.type === 'shape' && element.shape === 'action-card';
   const hasOpenAction = !isActionPanel && isOpenAction(element.action);
-  // Both 'tab' and 'diagram' kinds get the "linked" badge; the
+  // Both 'tab' and 'document' kinds get the "linked" badge; the
   // follow-handler dispatches off the kind via the parent's
   // onFollowLink callback. 'element' kind is the spec'd
   // jump-and-focus that isn't surfaced in the UI yet. A link-card is
@@ -259,7 +259,9 @@ function BoxedElementViewImpl({
   const linked =
     element.type !== 'link-card' &&
     element.link !== undefined &&
-    (element.link.kind === 'tab' || element.link.kind === 'diagram' || element.link.kind === 'url');
+    (element.link.kind === 'tab' ||
+      element.link.kind === 'document' ||
+      element.link.kind === 'url');
 
   // An inline icon sits beside the label on a regular shape (the
   // dedicated 'icon' shape kind has its own glyph-above-caption render
@@ -366,10 +368,10 @@ function BoxedElementViewImpl({
         height: element.height,
         color: textColor,
         // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): elements off the votable layer stay
-        // VISIBLE — you still need the board's context to judge what
+        // VISIBLE — you still need the canvas's context to judge what
         // you're voting on — but drop back so the votable set reads as the
         // foreground. Only while casting is open; once the vote ends the
-        // board returns to normal for the results walkthrough.
+        // canvas returns to normal for the results walkthrough.
         opacity:
           (element.opacity ?? 1) * (layerOpacity ?? 1) * (voteDimmed ? VOTE_DIMMED_OPACITY : 1),
         ...variant.style,

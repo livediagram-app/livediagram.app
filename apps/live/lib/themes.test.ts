@@ -6,9 +6,9 @@ import type {
   StickyElement,
   TableElement,
   TextElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape } from '@livediagram/diagram';
+import { createPinnedArrow, createShape } from '@livediagram/document';
 import {
   THEMES,
   deriveNewBoxedColours,
@@ -620,7 +620,7 @@ describe('switchThemeElement', () => {
     expect(switchThemeElement(sNote, prev, next)).toEqual(sNote);
   });
 
-  it('switches stroke on arrows so themed connectors flip with the diagram', () => {
+  it('switches stroke on arrows so themed connectors flip with the canvas', () => {
     const a: ArrowElement = {
       id: 'a',
       type: 'arrow',
@@ -999,7 +999,7 @@ describe('multi-colour (rainbow) themes', () => {
   it('gives each multi-colour theme a backdrop that visibly differs from the default white canvas', () => {
     // Regression guard: the first cut shipped white/near-white grid
     // backdrops, so picking a multi-colour theme left the canvas looking
-    // unchanged (and did nothing visible on an empty diagram). Each must
+    // unchanged (and did nothing visible on an empty canvas). Each must
     // shift the canvas colour and/or pattern away from the brand default.
     const brand = THEMES.find((t) => t.id === 'brand')!;
     for (const t of THEMES.filter((x) => themeCategory(x.id) === 'multicolour')) {

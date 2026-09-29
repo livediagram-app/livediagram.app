@@ -20,16 +20,16 @@ async function openBoard(page: Page, layout?: 'floating' | 'toolbar'): Promise<v
   await openJustDraw(page);
 }
 
-// The saved elements of the diagram's first tab, read through the api.
+// The saved elements of the document's first tab, read through the api.
 async function savedElements(page: Page): Promise<El[]> {
   return page.evaluate(async () => {
     const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
     const id = location.pathname.split('/').filter(Boolean).pop()!;
     const headers = { 'X-Owner-Id': owner };
-    const diagram = await (await fetch(`/api/diagrams/${id}`, { headers })).json();
-    const tabId = diagram.diagram?.tabs?.[0]?.id;
+    const liveDoc = await (await fetch(`/api/documents/${id}`, { headers })).json();
+    const tabId = liveDoc.document?.tabs?.[0]?.id;
     if (!tabId) return [];
-    const got = await (await fetch(`/api/diagrams/${id}/tabs/${tabId}`, { headers })).json();
+    const got = await (await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })).json();
     return (got.tab?.elements ?? []) as El[];
   });
 }

@@ -91,7 +91,7 @@ export function folderDescendants(
 
 // Rows split by a key, each bucket keeping the input order. The by-team
 // splits (the sidebar's and panel's Teams sections) and the by-folder
-// diagram buckets below all start here.
+// document buckets below all start here.
 export function groupBy<R, K>(rows: readonly R[], keyOf: (r: R) => K): Map<K, R[]> {
   const map = new Map<K, R[]>();
   for (const r of rows) {
@@ -103,15 +103,15 @@ export function groupBy<R, K>(rows: readonly R[], keyOf: (r: R) => K): Map<K, R[
   return map;
 }
 
-// Diagrams per folder id (null = the root's Unsorted bucket), newest first
+// Documents per folder id (null = the root's Unsorted bucket), newest first
 // in every bucket: the order every Explorer list shows a folder's contents
 // in. `exclude` drops rows before bucketing, for the panel, which keeps
-// offline diagrams out of Unsorted because they get their own node.
-export function groupDiagramsByFolder<D extends { folderId: string | null; savedAt: number }>(
-  diagrams: readonly D[],
+// offline documents out of Unsorted because they get their own node.
+export function groupDocumentsByFolder<D extends { folderId: string | null; savedAt: number }>(
+  liveDocs: readonly D[],
   opts: { exclude?: (d: D) => boolean } = {},
 ): Map<string | null, D[]> {
-  const kept = opts.exclude ? diagrams.filter((d) => !opts.exclude!(d)) : diagrams;
+  const kept = opts.exclude ? liveDocs.filter((d) => !opts.exclude!(d)) : liveDocs;
   const map = groupBy(kept, (d) => d.folderId);
   for (const bucket of map.values()) bucket.sort((a, b) => b.savedAt - a.savedAt);
   return map;

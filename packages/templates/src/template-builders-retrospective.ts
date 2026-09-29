@@ -5,7 +5,7 @@
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import { createShape, createSticky, createText, type Element } from '@livediagram/diagram';
+import { createShape, createSticky, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // A retro a team actually wants to run, laid out in the order it is run.

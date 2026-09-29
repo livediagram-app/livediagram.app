@@ -2,7 +2,7 @@
 
 Status: shipped
 
-Improvements to how you see and reach the other people in a diagram, centred
+Improvements to how you see and reach the other people in a document, centred
 on the presence avatars in the tab bar and what they open. Each improvement is
 its own numbered section, so later ones land here rather than in a new spec.
 
@@ -21,9 +21,9 @@ result for a click whose obvious meaning is "tell me about this person".
 
 - **Clicking any avatar in a tab's presence stack opens the Collaborators
   modal**, including your own avatar, the "+N" overflow badge, and the stack on
-  a folder chip ([Tab folders](../006-diagram/tab-folders.md)). The "+N" popover that listed the
+  a folder chip ([Tab folders](../006-document/tab-folders.md)). The "+N" popover that listed the
   hidden participants is gone: the modal lists everyone, so it replaces it.
-- The modal lists **every person in the diagram, grouped by the tab they are
+- The modal lists **every person in the document, grouped by the tab they are
   on**, in tab-bar order. A tab nobody is on is left out. People on a tab that
   no longer exists (a peer's focus can briefly point at a tab just deleted) are
   grouped under **Another Tab** rather than dropped.
@@ -55,14 +55,14 @@ result for a click whose obvious meaning is "tell me about this person".
 - View-role visitors get the full modal: it mutates nothing, and following is
   already allowed for them ([Follow-me viewport](follow-me-viewport.md)).
 - Available wherever the presence stack is, which is only a shared or team
-  diagram (a private diagram has no stack, [Live app](../007-editor/live-app.md)). Hidden in embed mode, like
+  document (a private document has no stack, [Live app](../007-editor/live-app.md)). Hidden in embed mode, like
   the tab bar.
 - **Also reachable by name from the search panel** ([Canvas and palette](../008-canvas/canvas-and-palette.md)),
   as the `collaborators` command. The presence stack is the discoverable entry
-  point but it is easy to miss and, on a private diagram, absent — so the modal
+  point but it is easy to miss and, on a private document, absent — so the modal
   had exactly one door and no way in by typing. The command is in the
   **view-safe** set: it opens a panel and changes nothing, so a view-only
-  visitor gets it too, and it is not gated on the diagram being shared or on
+  visitor gets it too, and it is not gated on the document being shared or on
   anyone else being present — "Just you so far" is a real answer to "who is
   here", and the same subtitle already says it.
 

@@ -5,7 +5,7 @@ import { useCategoryColor } from './useCategoryColor';
 
 // One public surface's landing funnel (docs/specs/019-marketing/landing-funnel.md): its three counts as a
 // shrinking bar, the step rate between each, then every CTA slot on it with
-// its arrivals, diagrams and conversion, so the buttons on one page can be
+// its arrivals, documents and conversion, so the buttons on one page can be
 // compared directly.
 
 // Rows in a card besides its slots (title, three steps, the table head), for
@@ -35,7 +35,7 @@ export function FunnelSurfaceCard({
           {surface.label}
         </h3>
         <span className="text-xs text-slate-400">
-          {formatRate(rate(surface.created, surface.views))} of views became a diagram
+          {formatRate(rate(surface.created, surface.views))} of views became a document
         </span>
       </div>
 
@@ -54,9 +54,9 @@ export function FunnelSurfaceCard({
           color={ctaColor}
           faded
         />
-        <StepRate value={rate(surface.created, surface.arrived)} verb="created a diagram" />
+        <StepRate value={rate(surface.created, surface.arrived)} verb="created a document" />
         <FunnelStep
-          label="Created a diagram"
+          label="Created a document"
           count={surface.created}
           width={pct(surface.created, widest)}
           color={ctaColor}
@@ -174,7 +174,7 @@ function StepRate({ value, verb }: { value: number | null; verb: string }) {
 function BestTag() {
   return (
     <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-      Most diagrams
+      Most documents
     </span>
   );
 }

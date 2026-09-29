@@ -7,7 +7,7 @@
 // so, and the spec is the honest record of it.
 //
 // Uncovering locally takes a DOUBLE press: a cover exists to stay closed, and
-// one stray click on a board people are dragging things around would undo the
+// one stray click on a canvas people are dragging things around would undo the
 // whole point of it. The Hide pill stays a single click — putting the cover
 // back by accident costs nothing.
 //
@@ -19,7 +19,7 @@
 
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
-import { REVEAL_COVER_BASE } from '@livediagram/diagram';
+import { REVEAL_COVER_BASE } from '@livediagram/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { tint } from '@/lib/element-tint';
 import { LockGlyph } from '@/components/canvas/collab/qa/qa-parts';

@@ -5,13 +5,13 @@ Status: shipped
 ## What
 
 Every row and card in the Explorer's **Recent** and **Favourites** views
-carries a small chip naming the folder the diagram lives in. Clicking it goes
-to that folder instead of opening the diagram.
+carries a small chip naming the folder the document lives in. Clicking it goes
+to that folder instead of opening the document.
 
 Those are the two panes that AGGREGATE across folders, so without this there
 is no way to tell a "Q3 plan" filed in Design from one in Archive without
 opening it. Every other pane _is_ a folder, where the chip would just repeat
-the pane's own title. (Favourites arrived with [Favourite diagrams](favourites.md), which needs exactly
+the pane's own title. (Favourites arrived with [Favourite documents](favourites.md), which needs exactly
 this as its "which team did this come from" indicator.)
 
 ## Immediate parent only
@@ -26,7 +26,7 @@ Special cases:
 
 - **No folder** still shows a location: `Unsorted`, linking to that synthetic
   view. "Filed nowhere" is information too.
-- **Team diagrams** name the **team** and open its library. A team diagram's
+- **Team documents** name the **team** and open its library. A team document's
   folder lives in the team's own tree, which the personal `folderById` index
   doesn't cover — and for a team row the team is the location that matters.
 - **Shared-with-you rows get no chip.** They carry no `folderId` at all: they
@@ -36,13 +36,13 @@ Special cases:
 
 The chip is deliberately _not_ the `badgeBase` treatment used by Offline /
 Shared / Team / Private. Those are uppercase, ring-outlined statements about
-the diagram; this is a quiet lower-case location that happens to be
+the document; this is a quiet lower-case location that happens to be
 clickable, so it reads as a link rather than competing with them for the same
 attention. It also hides below `sm` in the list view, where the row has no
 width to spare.
 
 The click `preventDefault()`s and `stopPropagation()`s: the whole row is a
-link to the diagram, so without that the chip would open the diagram it is
+link to the document, so without that the chip would open the document it is
 supposed to navigate away from.
 
 ## Scope: the Explorer page only
@@ -50,7 +50,7 @@ supposed to navigate away from.
 The editor's floating Explorer panel does **not** get the chip.
 
 Its Recent list is five rows in a ~256 px rail, where a chip would crowd out
-the thing you came for — the diagram name. Its folder sections are also
+the thing you came for — the document name. Its folder sections are also
 expandable accordions rather than routes, so "click to go to the folder" has
 no natural destination there short of navigating out of the editor entirely,
 which is a heavy thing to do from a side panel. The panel also has no
@@ -61,7 +61,7 @@ Worth revisiting if the panel ever grows a routable folder view.
 
 ## Where it lives
 
-- `FolderChip`: `apps/live/app/explorer/diagram-badges.tsx`, beside
+- `FolderChip`: `apps/live/app/explorer/document-badges.tsx`, beside
   `VisibilityBadge`, so the list row and the card can't drift.
 - The resolver — `folderChipFor` in `apps/live/app/explorer/ExplorerPane.tsx`,
   which is also where the "Recent only" gate lives. Rows and cards take a

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PHOTO_MAX_EDGE_PX } from '@livediagram/api-schema';
-import { eventStormingNote } from '@livediagram/diagram';
+import { eventStormingNote } from '@livediagram/document';
 import { cropBoxes, detectAndCrop, photoTypeError, PhotoDetectFailed } from './photo-detect';
 import { boundaryCuesFor } from './photo-model/client';
 

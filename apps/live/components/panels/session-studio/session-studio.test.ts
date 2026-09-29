@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TabTimer, TabVote } from '@livediagram/diagram';
+import type { TabTimer, TabVote } from '@livediagram/document';
 import {
   clampTimerMinutes,
   dialAngle,

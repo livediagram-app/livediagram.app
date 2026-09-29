@@ -19,7 +19,7 @@ const ctx = vi.hoisted(() => ({
   writeUserPreferences: vi.fn(),
   selfParticipant: { id: 'me' },
 }));
-vi.mock('@/app/diagram/[id]/EditorContext', () => ({ useEditorContext: () => ctx }));
+vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx }));
 
 import { TourLayoutPicker } from './TourLayoutPicker';
 

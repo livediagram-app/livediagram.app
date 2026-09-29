@@ -16,7 +16,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { TemplatePickerFooter } from './TemplatePickerFooter';
 import { parsePlacement } from '@/components/placement/PlacementBrowser';
-import { NewDiagramSettingsStep } from './template-picker-settings';
+import { NewDocumentSettingsStep } from './template-picker-settings';
 import { DEFAULT_SAVE_LOCATION, type SaveLocationId } from '@/lib/save-locations';
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
 import { PencilIcon } from './template-picker-icons';
@@ -28,11 +28,11 @@ const noSubscription = () => () => {};
 const isClient = () => true;
 const isServer = () => false;
 
-// What the welcome wizard's Settings step (docs/specs/006-diagram/offline-mode.md) hands back on Create.
-export type NewDiagramSettings = {
-  // Where the diagram is stored (docs/specs/006-diagram/save-locations.md): the api, or this browser only.
+// What the welcome wizard's Settings step (docs/specs/006-document/offline-mode.md) hands back on Create.
+export type NewDocumentSettings = {
+  // Where the document is stored (docs/specs/006-document/save-locations.md): the api, or this browser only.
   saveLocation: SaveLocationId;
-  diagramName?: string;
+  documentName?: string;
   // Personal folder placement, or a team library. At most one is set.
   folderId?: string | null;
   teamId?: string | null;
@@ -43,7 +43,7 @@ type TemplatePickerProps = {
   // 'templates' — opened from the empty-state card's "Browse templates"
   // button on an existing tab; just the template grid + Apply. Keeps the
   // current participant name + current tab theme untouched.
-  // 'identity' — a participant has joined an existing diagram and hasn't
+  // 'identity' — a participant has joined an existing document and hasn't
   // confirmed their name yet. Identity section only (no templates, no
   // theme grid); confirm becomes "Join".
   mode: 'welcome' | 'templates' | 'identity';
@@ -54,20 +54,25 @@ type TemplatePickerProps = {
   // only theme in templates-only mode. A string, not ThemeId, because it
   // can be a custom `custom:<uuid>` id (docs/specs/011-theme/custom-themes.md).
   currentThemeId: string;
-  // Name of the diagram being joined. Used by the 'identity' mode to
-  // greet visitors with the actual diagram name ("Welcome to 'API
-  // sketch'") instead of the generic "Welcome to this diagram".
-  diagramName?: string;
+  // Name of the document being joined. Used by the 'identity' mode to
+  // greet visitors with the actual document name ("Welcome to 'API
+  // sketch'") instead of the generic "Welcome to this document".
+  documentName?: string;
   // When provided, the visitor is signed in and their display name is
   // dictated by their Clerk account — the input becomes read-only and
   // the shuffle button hides so they can't masquerade under a
-  // different identity on someone else's diagram. Has no effect in
+  // different identity on someone else's document. Has no effect in
   // 'welcome' / 'templates' modes (no identity row to lock).
   lockedName?: string | null;
-  // The welcome wizard's Settings step (docs/specs/006-diagram/offline-mode.md) collects these alongside the
+  // The welcome wizard's Settings step (docs/specs/006-document/offline-mode.md) collects these alongside the
   // participant name + theme. Other modes pass just the default location (the
-  // diagram already exists, so name/folder/team don't apply).
-  onPick: (kind: TemplateKind, name: string, themeId: string, settings: NewDiagramSettings) => void;
+  // document already exists, so name/folder/team don't apply).
+  onPick: (
+    kind: TemplateKind,
+    name: string,
+    themeId: string,
+    settings: NewDocumentSettings,
+  ) => void;
   // Personal folders + teams for the Settings step's placement picker (welcome
   // mode). Empty when none / still loading.
   folders?: { id: string; name: string; parentId: string | null }[];
@@ -86,17 +91,17 @@ type TemplatePickerProps = {
   // Inline team creation from the placement browser's space overview
   // (signed-in only; the host omits it for guests).
   onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
-  // Dismiss the modal without picking a template or theme. The diagram
+  // Dismiss the modal without picking a template or theme. The document
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
   // and the empty-state card prompts the next step. Triggered by the X in
   // the header (all modes) or the Cancel button (non-welcome modes only:
   // the welcome wizard offers Skip instead, which commits Blank + the Default theme).
   onSkip: () => void;
-  // True while the host is committing the pick (the new-diagram POST can
+  // True while the host is committing the pick (the new-document POST can
   // take a moment). Drives the primary button's spinner + disabled state
   // so the user gets feedback and can't double-submit.
   busy?: boolean;
-  // When provided (welcome flow), a bottom-left "Open Existing Diagram"
+  // When provided (welcome flow), a bottom-left "Open Existing Document"
   // button navigates away to the Explorer, so this screen can stay focused
   // on creating without rendering an Explorer panel of its own.
   onOpenExisting?: () => void;
@@ -107,7 +112,7 @@ type TemplatePickerProps = {
 // search / shuffle sees them.
 const LISTED_TEMPLATES = TEMPLATES.filter((t) => !t.hidden);
 
-// The "Start a new diagram" modal, also the welcome screen. In welcome
+// The "Start a new document" modal, also the welcome screen. In welcome
 // mode it's a two-step wizard (template, then theme); other modes keep a
 // single page. Picking is confirmed explicitly (Create / Apply / Join) so
 // users can review their choices before committing.
@@ -115,7 +120,7 @@ export function TemplatePicker({
   mode,
   participant,
   currentThemeId,
-  diagramName,
+  documentName,
   lockedName,
   onPick,
   onSkip,
@@ -135,7 +140,7 @@ export function TemplatePicker({
   useEscape(onSkip);
   const isWelcome = mode === 'welcome';
   const isIdentity = mode === 'identity';
-  // Both the welcome (new-diagram) and the in-editor templates flows run as
+  // Both the welcome (new-document) and the in-editor templates flows run as
   // a two-step wizard (template, then theme). Identity mode is the only
   // single-section, non-wizard surface.
   const isWizard = !isIdentity;
@@ -183,37 +188,39 @@ export function TemplatePicker({
   // A non-empty search query overrides this and shows flat results.
   const [openCategory, setOpenCategory] = useState<TemplateCategory | null>(null);
   // Initial theme is whatever the caller hands us: the /new flow passes
-  // 'brand' (so Default is pre-selected for a fresh diagram), while a new
+  // 'brand' (so Default is pre-selected for a fresh document), while a new
   // tab copying an existing one passes that tab's theme.
   const [themeId, setThemeId] = useState<string>(currentThemeId);
-  // Save location (docs/specs/006-diagram/save-locations.md): livediagram (cloud) or Local Browser (Offline
-  // Mode, docs/specs/006-diagram/offline-mode.md). Welcome wizard only; threaded into every onPick so Skip /
+  // Save location (docs/specs/006-document/save-locations.md): livediagram (cloud) or Local Browser (Offline
+  // Mode, docs/specs/006-document/offline-mode.md). Welcome wizard only; threaded into every onPick so Skip /
   // guided tour / Create all honour it. Stays at the default in non-welcome
   // modes (the chooser never renders there).
   const [saveLocation, setSaveLocation] = useState<SaveLocationId>(DEFAULT_SAVE_LOCATION);
-  // Settings step (docs/specs/006-diagram/offline-mode.md): diagram name (defaults per template) + placement.
+  // Settings step (docs/specs/006-document/offline-mode.md): document name (defaults per template) + placement.
   // `placement` is 'unsorted' | `folder:<id>` | `team:<id>` in one control.
   // The default name tracks the chosen template ("Untitled Mind Map", not a
-  // flat "Untitled diagram"); we keep syncing the field to it until the user
+  // flat "Untitled document"); we keep syncing the field to it until the user
   // types their own, so switching templates updates the suggestion.
   const templateDefaultName = untitledNameForTemplate(templateKind);
-  const [diagramNameInput, setDiagramNameInput] = useState(() => untitledNameForTemplate('blank'));
-  const diagramNameEdited = useRef(false);
+  const [documentNameInput, setDocumentNameInput] = useState(() =>
+    untitledNameForTemplate('blank'),
+  );
+  const documentNameEdited = useRef(false);
   useEffect(() => {
-    if (!diagramNameEdited.current) setDiagramNameInput(untitledNameForTemplate(templateKind));
+    if (!documentNameEdited.current) setDocumentNameInput(untitledNameForTemplate(templateKind));
   }, [templateKind]);
   const [placement, setPlacement] = useState(initialPlacement ?? 'unsorted');
-  // The settings the wizard commits with. Diagram name defaults to the
+  // The settings the wizard commits with. Document name defaults to the
   // template's default when the field is left blank. Parameterised on the
   // placement so a double-click commit can pass the just-picked value
   // before the setPlacement state update has applied.
-  const settingsFor = (p: string): NewDiagramSettings => {
-    const name = diagramNameInput.trim() || templateDefaultName;
-    return { saveLocation, diagramName: name, ...parsePlacement(p) };
+  const settingsFor = (p: string): NewDocumentSettings => {
+    const name = documentNameInput.trim() || templateDefaultName;
+    return { saveLocation, documentName: name, ...parsePlacement(p) };
   };
   const settings = () => settingsFor(placement);
   // Welcome mode is a two-step wizard: pick a template, then a theme
-  // (docs/specs/007-editor/new-diagram-route.md). Other modes keep the single-page layout. `themeBuilding`
+  // (docs/specs/007-editor/new-document-route.md). Other modes keep the single-page layout. `themeBuilding`
   // tracks whether the theme step's custom-theme builder is open, so the
   // wizard hides its own Back / Create footer while the builder owns the
   // surface (the builder has its own Save / Cancel).
@@ -226,7 +233,7 @@ export function TemplatePicker({
   const STEP_ORDER = ['template', 'theme', 'settings'] as const;
   const goToStep = (next: 'template' | 'theme' | 'settings') => {
     // The Settings step only exists on the welcome flow (an existing
-    // diagram has no name / placement / offline choice to make).
+    // document has no name / placement / offline choice to make).
     if (next === 'settings' && !isWelcome) return;
     setStepDir(STEP_ORDER.indexOf(next) >= STEP_ORDER.indexOf(step) ? 'forward' : 'backward');
     setStep(next);
@@ -273,12 +280,12 @@ export function TemplatePicker({
   const showTemplateSection = showTemplates && (!isWizard || step === 'template');
   const showThemeSection = showThemes && (!isWizard || step === 'theme');
   // Skip the wizard entirely: the documented shortcut is Blank template +
-  // Default theme (docs/specs/007-editor/new-diagram-route.md), committed straight away. Placement still honours
+  // Default theme (docs/specs/007-editor/new-document-route.md), committed straight away. Placement still honours
   // the URL context (/new?folder=…, ?team=…) the picker was pre-seeded with,
-  // so skipping doesn't silently drop the diagram into personal Unsorted.
+  // so skipping doesn't silently drop the document into personal Unsorted.
   const skipToDefaults = () =>
     onPick('blank', effectiveName, 'brand', { saveLocation, ...parsePlacement(placement) });
-  // The step rail's "Just Draw" shortcut (docs/specs/007-editor/new-diagram-route.md) is the same commit with
+  // The step rail's "Just Draw" shortcut (docs/specs/007-editor/new-document-route.md) is the same commit with
   // its own adoption signal (docs/specs/017-telemetry/telemetry.md).
   const justDraw = () => {
     if (busy) return;
@@ -309,7 +316,7 @@ export function TemplatePicker({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={isIdentity ? 'Confirm your name' : 'Start a new diagram'}
+        aria-label={isIdentity ? 'Confirm your name' : 'Start a new document'}
         className={`pointer-events-auto flex h-full w-full animate-fly-up-in flex-col bg-white dark:bg-slate-900 sm:h-auto sm:max-h-[90vh] ${isIdentity ? 'sm:w-[26rem]' : 'sm:w-[44rem]'} sm:max-w-[92%] sm:rounded-xl sm:border sm:border-slate-200 sm:shadow-2xl sm:shadow-slate-900/10 dark:sm:border-slate-800 dark:sm:shadow-black/40`}
       >
         <div className="flex flex-col gap-4 border-b border-slate-100 px-6 pt-6 pb-5 dark:border-slate-800">
@@ -317,11 +324,11 @@ export function TemplatePicker({
             <div>
               <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                 {isWelcome
-                  ? 'New Diagram'
+                  ? 'New Document'
                   : isIdentity
-                    ? diagramName && diagramName.trim()
-                      ? `Welcome to '${diagramName.trim()}'`
-                      : 'Welcome to this diagram'
+                    ? documentName && documentName.trim()
+                      ? `Welcome to '${documentName.trim()}'`
+                      : 'Welcome to this document'
                     : step === 'theme'
                       ? 'Pick a theme'
                       : 'Quick Start'}
@@ -332,10 +339,10 @@ export function TemplatePicker({
                     ? 'Choose a template to start from.'
                     : step === 'theme'
                       ? 'Pick a theme, or build your own.'
-                      : 'Name your diagram and choose where it lives.'
+                      : 'Name your document and choose where it lives.'
                   : nameLocked
-                    ? 'This is the name from your account; others will see it on this diagram.'
-                    : 'Pick the name people will see while you collaborate on this diagram.'}
+                    ? 'This is the name from your account; others will see it on this document.'
+                    : 'Pick the name people will see while you collaborate on this document.'}
               </p>
             </div>
             <div className="-mr-2 -mt-1 flex shrink-0 items-center gap-0.5">
@@ -358,7 +365,7 @@ export function TemplatePicker({
           {/* Step indicator: a modern two-segment progress rail so the
               wizard reads as 1 of 2 at a glance. Both wizard modes. On the
               welcome flow the rail row also carries the "Just Draw" shortcut
-              (docs/specs/007-editor/new-diagram-route.md) far right — straight to a blank canvas, no wizard.
+              (docs/specs/007-editor/new-document-route.md) far right — straight to a blank canvas, no wizard.
               Desktop only (sm+); mobile keeps the footer Skip. The hiding
               is on a wrapper: Button's own `inline-flex` outranks a
               `hidden` passed in className (same property, emitted later),
@@ -386,7 +393,7 @@ export function TemplatePicker({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 pt-5 pb-8">
-          {/* Identity row — first-run welcome + join-existing-diagram
+          {/* Identity row — first-run welcome + join-existing-document
               flows. See TemplatePickerIdentityRow. */}
           {showIdentity ? (
             <TemplatePickerIdentityRow
@@ -443,7 +450,7 @@ export function TemplatePicker({
             {showThemeSection ? (
               <CustomThemePicker
                 themeId={themeId}
-                // Single-click a theme (docs/specs/006-diagram/offline-mode.md): in the welcome wizard,
+                // Single-click a theme (docs/specs/006-document/offline-mode.md): in the welcome wizard,
                 // selecting a theme advances straight to the Settings step; in
                 // the in-editor templates flow (no Settings step) it just sets
                 // the theme, leaving Apply to commit.
@@ -460,13 +467,13 @@ export function TemplatePicker({
                 browserClassName="mt-1"
               />
             ) : null}
-            {/* Settings step (docs/specs/006-diagram/offline-mode.md, docs/specs/006-diagram/save-locations.md): name, save location, placement. */}
+            {/* Settings step (docs/specs/006-document/offline-mode.md, docs/specs/006-document/save-locations.md): name, save location, placement. */}
             {isWizard && step === 'settings' ? (
-              <NewDiagramSettingsStep
-                diagramName={diagramNameInput}
-                onDiagramName={(v) => {
-                  diagramNameEdited.current = true;
-                  setDiagramNameInput(v);
+              <NewDocumentSettingsStep
+                documentName={documentNameInput}
+                onDocumentName={(v) => {
+                  documentNameEdited.current = true;
+                  setDocumentNameInput(v);
                 }}
                 placeholder={templateDefaultName}
                 placement={placement}

@@ -6,24 +6,24 @@ import { SearchCreateTab } from '@/components/illustrations/search-panel';
 export const metadata = helpMetadata({
   title: 'Creating a Tab from Search',
   description:
-    'The search panel offers a Create new tab action when your query looks like "tab" or "new", so you can add a board without leaving search.',
+    'The search panel offers a Create new tab action when your query looks like "tab" or "new", so you can add a tab without leaving search.',
   path: '/help/search-panel/the-search-panel/search-create-tab/',
 });
 
 <ArticleLayout
   title="Creating a Tab from Search"
-  description="Search can act, not just find: when your query looks like you want a new board, it offers a Create new tab action."
+  description="Search can act, not just find: when your query looks like you want a new tab, it offers a Create new tab action."
   categoryTitle="Search Panel"
   categorySlug="search-panel"
   parentArticle={{ title: 'The Search Panel', slug: 'the-search-panel' }}
   subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-create-tab')}
 >
 
-As well as finding things, the [search panel](/help/search-panel/the-search-panel/) can run **actions**: editor commands offered as results. One of the handiest is creating a [tab](/help/tabs/using-tabs/): when you are inside a diagram and your query looks like you want a new board, search offers a **Create new tab** result.
+As well as finding things, the [search panel](/help/search-panel/the-search-panel/) can run **actions**: editor commands offered as results. One of the handiest is creating a [tab](/help/tabs/using-tabs/): when you are inside a document and your query looks like you want a new board, search offers a **Create new tab** result.
 
 ## When it appears
 
-The action surfaces when your query matches its keywords, for example typing `tab`, `new`, `create`, or `add`. It only shows inside a diagram, where there is something to add a tab to, never from the Explorer. **Create new tab** is an ordinary editor command, listed in the **Actions** group of the results. That group sits below the navigation and element matches, so an actual match still wins the default `Enter`, and you arrow down to the command to choose it deliberately.
+The action surfaces when your query matches its keywords, for example typing `tab`, `new`, `create`, or `add`. It only shows inside a document, where there is something to add a tab to, never from the Explorer. **Create new tab** is an ordinary editor command, listed in the **Actions** group of the results. That group sits below the navigation and element matches, so an actual match still wins the default `Enter`, and you arrow down to the command to choose it deliberately.
 
 <Figure caption="A real match keeps the first slot, with Create new tab offered below as a deliberate action.">
   <SearchCreateTab />
@@ -31,12 +31,12 @@ The action surfaces when your query matches its keywords, for example typing `ta
 
 ## What it does
 
-Picking **Create new tab** adds a fresh, empty tab to the current diagram and switches to it, the same as the `+` button on the tab bar, without you leaving the keyboard. From there it is an ordinary tab: rename it, fold it into a [folder](/help/tabs/tab-folders/), or start placing elements.
+Picking **Create new tab** adds a fresh, empty tab to the current document and switches to it, the same as the `+` button on the tab bar, without you leaving the keyboard. From there it is an ordinary tab: rename it, fold it into a [folder](/help/tabs/tab-folders/), or start placing elements.
 
 <Tip>
   Think of search actions as shortcuts for "I know what I want to do". The panel doubles as a
   command palette: alongside creating a tab, it can run many other editor actions, from renaming the
-  tab to sharing the diagram, all matched the same way.
+  tab to sharing the document, all matched the same way.
 </Tip>
 
 </ArticleLayout>

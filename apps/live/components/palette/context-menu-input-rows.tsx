@@ -3,7 +3,7 @@ import { Tooltip, Glyph } from '@livediagram/ui';
 import { useEyeDropper } from '@/hooks/ui/useEyeDropper';
 import { hexish, ToggleSwitch } from '@/components/palette/palette-controls';
 import { DirArrow } from '@/components/palette/context-menu-icons';
-import { type IconPosition } from '@livediagram/diagram';
+import { type IconPosition } from '@livediagram/document';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 
 const NOOP = () => {};

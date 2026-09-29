@@ -5,7 +5,7 @@
 // They live together because they share a shape — a press resolves what to do
 // from the element, then calls something that already exists (the session-tool
 // entry points, the presence list, the element commit) — and because none of
-// them belongs to the style hooks: two of the three don't write to the diagram
+// them belongs to the style hooks: two of the three don't write to the document
 // at all.
 
 import { useState } from 'react';
@@ -17,7 +17,7 @@ import {
   type Tab,
   type TabVote,
   type TimerMode,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { Participant } from '@/lib/identity';
 import { pickerCandidates, rollPicker } from '@/lib/picker';
 import { track } from '@/lib/telemetry';
@@ -56,7 +56,7 @@ export function useBehaviourElements({
   // while one is paused RESUMES. Only a tab with no timer starts a new one.
   activeTimer: { running: boolean } | undefined;
   // The running vote, if any: a vote button pressed mid-vote must not start a
-  // fresh one over it, which reset every dot on the board (docs/specs/012-collaboration/collab-race-hardening.md).
+  // fresh one over it, which reset every dot on the canvas (docs/specs/012-collaboration/collab-race-hardening.md).
   activeVote: TabVote | undefined;
   startTimer: (mode: TimerMode, durationMs?: number) => void;
   pauseTimer: () => void;
@@ -109,13 +109,13 @@ export function useBehaviourElements({
 
   // --- Reveal zone (docs/specs/009-elements/reveal-zone.md) -----------------------------------------------
   // Which covers THIS viewer has lifted. Session state, deliberately: it is
-  // not a property of the diagram, it is a property of having looked. Lost on
+  // not a property of the document, it is a property of having looked. Lost on
   // reload, which is right for something whose job is to start closed.
   const [revealedIds, setRevealedIds] = useState<ReadonlySet<string>>(new Set());
   const toggleRevealForMe = (elementId: string) => {
     // While somebody is facilitating (docs/specs/012-collaboration/facilitator.md) a cover is theirs to lift, and
     // they lift it for the room through the element's own `revealed` field
-    // rather than peeking privately. The personal lift below is what a board
+    // rather than peeking privately. The personal lift below is what a canvas
     // with no facilitator keeps.
     if (sessionToolsBlocked) return;
     setRevealedIds((prev) => {

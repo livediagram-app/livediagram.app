@@ -1,6 +1,6 @@
-// "Did anyone actually work together on this?" (docs/specs/017-telemetry/telemetry.md, Diagram·Used·Multiplayer).
+// "Did anyone actually work together on this?" (docs/specs/017-telemetry/telemetry.md, Document·Used·Multiplayer).
 //
-// Counted by the diagram room, not the browsers. It used to be a client emit
+// Counted by the document room, not the browsers. It used to be a client emit
 // fired when a tab's presence list first held a peer, which meant EVERY
 // participant reported the same session: two people counted 2, a five-person
 // retro counted 5, while the card said "once per session". The room is the

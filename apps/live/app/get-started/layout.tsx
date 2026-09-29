@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
   title: 'Create your account | livediagram',
-  description: 'Sign up for a livediagram account to keep your diagrams across devices.',
+  description: 'Sign up for a livediagram account to keep your documents across devices.',
 };
 
 export default function GetStartedLayout({ children }: { children: ReactNode }) {

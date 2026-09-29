@@ -10,7 +10,7 @@ import {
   LABEL_PAD_X_PX,
   LABEL_PAD_Y_PX,
   type ArrowLabelLayout,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { BRAND_600 } from './arrow-handle-style';
 
 // Browsers and the canvas measure text a hair apart; the editor gets this

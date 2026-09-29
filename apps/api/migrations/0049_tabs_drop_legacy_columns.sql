@@ -1,4 +1,4 @@
--- Drop tabs.diagram_id + tabs.order_index (docs/specs/006-diagram/tab-diagram-many-to-many.md,
+-- Drop tabs.diagram_id + tabs.order_index (docs/specs/006-document/tab-document-many-to-many.md,
 -- phase 5). Every read has gone through diagram_tabs since 0011, and the
 -- diagram_id FK's ON DELETE CASCADE was a trap: deleting the diagram a tab
 -- was born in destroyed the tab in every other diagram it was linked into.

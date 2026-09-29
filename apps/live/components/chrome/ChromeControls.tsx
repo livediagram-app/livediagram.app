@@ -19,7 +19,7 @@ export function ChromeControls({
 }: {
   onOpenSearch?: () => void;
   onOpenSettings?: () => void;
-  // The editor's settings are per-diagram; the Explorer's read the same
+  // The editor's settings are per-document; the Explorer's read the same
   // synced preferences. Let the host phrase the hover card.
   settingsLabel?: string;
   settingsDescription?: string;
@@ -32,7 +32,7 @@ export function ChromeControls({
   return (
     <>
       {onOpenSearch ? (
-        <HoverCard title="Search" description="Find diagrams, folders, tabs and elements.">
+        <HoverCard title="Search" description="Find documents, folders, tabs and elements.">
           <button type="button" onClick={onOpenSearch} aria-label="Search" className={BTN}>
             <SearchGlyph />
             <ChromeLabel show={labelled}>Search</ChromeLabel>

@@ -16,14 +16,14 @@ import { forAppearance } from './appearance-colours';
 // here until it gets a description (the lookup still tolerates stray
 // strings via the `?? fallback` at the call site).
 export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
-  Diagram:
-    'Whole-diagram lifecycle: opening, creating, sharing, joining, exporting, undo/redo, moving between folders.',
+  Document:
+    'Whole-document lifecycle: opening, creating, sharing, joining, exporting, undo/redo, moving between folders.',
   Element:
     'Things on the canvas: shapes, text, stickies, arrows, images. Add, delete, group, link, layer order.',
   Tab: 'Per-tab actions: open, create, rename, reorder, lock, import JSON, clear content, auto-align.',
-  Theme: 'Diagram theme switches (the canvas-content palette: brand, slate, mint, etc.).',
+  Theme: 'Tab theme switches (the canvas-content palette: brand, slate, mint, etc.).',
   Canvas: 'Canvas background pattern changes and zoom controls (in, out, fit, reset).',
-  Template: 'Template scaffolds picked when starting a new diagram or seeding a fresh tab.',
+  Template: 'Template scaffolds picked when starting a new document or seeding a fresh tab.',
   Comment: 'Per-element comment threads: add, delete, resolve, reopen, open the popover.',
   Note: 'Per-element notes (a single paragraph, no thread): add, edit, delete, open the popover.',
   Action:
@@ -31,26 +31,26 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Search: 'Global search panel: open, query, picked-result kind.',
   UI: 'Editor chrome: light/dark toggle, dialogs (Settings, Shortcuts, Share, Activity), share-link copy, welcome dismiss.',
   Folder:
-    'Folders: create, rename, delete, re-parent. Explorer folders of diagrams, or (type Tab) tab folders inside one diagram.',
+    'Folders: create, rename, delete, re-parent. Explorer folders of documents, or (type Tab) tab folders inside one document.',
   Layer:
     'Tab layers (Photoshop-style stacking bands): add, rename, delete, restack, show / hide, lock, move elements between layers, open the panel.',
   Session: 'Accounts, where sign-in is set up: signing up, signing in, signing out.',
   Facilitator:
     'The live-session baton: somebody taking the timer / votes / polls for a room, handing them on, or stepping down.',
   AI: 'The optional in-editor AI assistant: running its Ask / Clean requests on the current tab.',
-  Team: 'Teams: creating and joining, renaming, role changes, member invites and removals, and the shared team library of diagrams.',
+  Team: 'Teams: creating and joining, renaming, role changes, member invites and removals, and the shared team library of documents.',
   Participant:
     'Visitor arrivals: a first-time visitor (once per new browser), and a returning browser reopening the app (once per day, split guest vs signed-in).',
   Help: 'Help-centre articles: views and per-article helpful / not-really feedback.',
   Page: 'Pages viewed across the whole site (marketing, editor, help centre, this dashboard), by path, with ids and query strings stripped.',
-  Cta: 'The landing funnel: a call to action on a public page (the landing hero, a template card, a header button) brought somebody to the New Diagram page, and whether that visit created a diagram. Named by which button it was, never who pressed it.',
+  Cta: 'The landing funnel: a call to action on a public page (the landing hero, a template card, a header button) brought somebody to the New Document page, and whether that visit created a document. Named by which button it was, never who pressed it.',
   Timeline:
     "The Explorer's activity feed: opening it (split by whether it was the landing view or a deliberate visit), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
   Activity:
-    "The Explorer's Activity page (open actions and comment threads across every diagram): opening it, clicking a row through to the diagram (split by action vs thread), and retrying a failed read.",
+    "The Explorer's Activity page (open actions and comment threads across every document): opening it, clicking a row through to the document (split by action vs thread), and retrying a failed read.",
   Token: 'API tokens: created by hand or by an AI tool connecting over MCP, and revoked.',
   Trash:
-    'The Trash deleted diagrams wait in for 30 days: opened, restored from, deleted from for good, and emptied.',
+    'The Trash deleted documents wait in for 30 days: opened, restored from, deleted from for good, and emptied.',
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Email:
     'Emails the product sends (welcome, onboarding, team invites, notifications). Which email only, never who received it.',
@@ -66,7 +66,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
 // `categoryColor` accessor keeps a slate fallback for stray strings. In dark
 // it hands back the hue lifted to read on the dark card (appearance-colours).
 const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
-  Diagram: '#0ea5e9',
+  Document: '#0ea5e9',
   Element: '#10b981',
   Tab: '#f59e0b',
   Theme: '#8b5cf6',
@@ -90,13 +90,13 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   // Deep green, the funnel's colour: apart from Element's emerald and the
   // lime of Comment and Action.
   Cta: '#15803d',
-  // Distinct from Diagram's sky (#0ea5e9) and Session's slate: the
+  // Distinct from Document's sky (#0ea5e9) and Session's slate: the
   // Timeline sits next to both in the stacked bar.
   Timeline: '#0369a1',
   // Amber, so the inbox reads apart from the Timeline's deep sky beside it.
   Activity: '#d97706',
   Token: '#d946ef',
-  // Warm stone: a quiet backstop, apart from Diagram's sky and Error's red.
+  // Warm stone: a quiet backstop, apart from Document's sky and Error's red.
   Trash: '#78716c',
   Mcp: '#f43f5e',
   Email: '#0d9488',

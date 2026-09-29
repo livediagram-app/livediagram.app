@@ -11,7 +11,7 @@
 // new palette glyph belongs here unless it's shared across panels
 // (in which case it goes into a sibling icon module).
 
-import type { TextAlignX, TextAlignY } from '@livediagram/diagram';
+import type { TextAlignX, TextAlignY } from '@livediagram/document';
 import {
   lucideArmchair,
   lucideChartNoAxesColumnIncreasing,
@@ -96,7 +96,7 @@ export function LaserIcon({ size = 14 }: IconSizeProps = {}) {
 }
 
 // Isometric view tool (docs/specs/008-canvas/isometric-view.md): a cube drawn in isometric projection —
-// a top rhombus plus the two front faces — signalling "see the diagram in
+// a top rhombus plus the two front faces — signalling "see the canvas in
 // 3-D, tilted". The shared vertical edge hints at the extruded depth.
 export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="isometric" size={size} />;

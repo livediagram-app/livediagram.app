@@ -6,7 +6,7 @@
 // onto the export canvas without tainting it — then decode it to an
 // HTMLImageElement for the canvas path. Browser-only (uses Image / FileReader);
 // never reached in the no-DOM test runs.
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { apiFetchImageDataUrl } from './api/images';
 
 type ExportImageEntry = {
@@ -25,7 +25,7 @@ export type ExportImageMap = Map<string, ExportImageEntry>;
 // bitmap never aborts the export — that element just renders its placeholder.
 export async function loadTabImages(
   tab: Tab,
-  ctx: { ownerId: string; diagramId: string; shareCode: string | null },
+  ctx: { ownerId: string; documentId: string; shareCode: string | null },
 ): Promise<ExportImageMap> {
   const ids = Array.from(
     new Set(tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : []))),
@@ -34,11 +34,11 @@ export async function loadTabImages(
   await Promise.all(
     ids.map(async (id) => {
       try {
-        // Offline Mode (docs/specs/006-diagram/offline-mode.md): an embedded image already IS a data URL.
+        // Offline Mode (docs/specs/006-document/offline-mode.md): an embedded image already IS a data URL.
         const href = id.startsWith('data:')
           ? id
           : await apiFetchImageDataUrl(ctx.ownerId, id, {
-              diagramId: ctx.diagramId,
+              documentId: ctx.documentId,
               shareCode: ctx.shareCode,
             });
         if (!href) return;

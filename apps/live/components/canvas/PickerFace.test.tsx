@@ -135,7 +135,7 @@ describe('PickerFace', () => {
   });
 
   it('shows a result that was already there without spinning', () => {
-    // Joining a diagram somebody already rolled on is not a roll happening.
+    // Joining a document somebody already rolled on is not a roll happening.
     render(
       <PickerFace label="Who demos?" result="Priya" candidates={CANDIDATES} textColor="#000" />,
     );

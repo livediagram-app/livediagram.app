@@ -5,7 +5,7 @@
 
 import { Scene, Shape, Arrow, Dialog, Button, Menu, Label, TextBar } from './primitives';
 
-/** A browser window holding a per-browser guest id that owns the diagrams it
+/** A browser window holding a per-browser guest id that owns the documents it
  *  created, with no sign-in required. */
 export function GuestIdentity() {
   return (
@@ -55,7 +55,7 @@ export function GuestIdentity() {
       <Label x={82} y={98} size={11} weight={600} tone="accent">
         livediagram:self-id
       </Label>
-      {/* The diagrams it owns */}
+      {/* The documents it owns */}
       <Label x={70} y={128} size={9} weight={700} tone="muted">
         OWNS
       </Label>
@@ -138,7 +138,7 @@ export function SignInCard() {
   );
 }
 
-/** Guest diagrams migrating from the per-browser id over to a new account on
+/** Guest documents migrating from the per-browser id over to a new account on
  *  sign-up. */
 export function MigrateOnSignUp() {
   return (
@@ -214,7 +214,7 @@ export function ExportMenu() {
   );
 }
 
-/** A delete-confirmation dialog for a single diagram, warning the linked
+/** A delete-confirmation dialog for a single document, warning the linked
  *  content goes with it. */
 export function DeleteDialog() {
   return (
@@ -224,7 +224,7 @@ export function DeleteDialog() {
         y={28}
         w={248}
         h={164}
-        title="Delete diagram?"
+        title="Delete document?"
         scrim={false}
         sceneW={420}
         sceneH={220}

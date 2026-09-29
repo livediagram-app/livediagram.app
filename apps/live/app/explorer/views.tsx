@@ -9,11 +9,11 @@
 
 import Link from 'next/link';
 import type { ExplorerViewProps } from '@/app/explorer/explorer-view-props';
-import type { DiagramListItem, SharedWithItem } from '@/lib/api-client';
+import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
 import { EmptyPane } from './ExplorerEmptyState';
-import { DiagramRow } from './explorer-route-diagram-row';
+import { DocumentRow } from './explorer-route-document-row';
 import { FolderRow } from './folder-row';
-import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import { CountBadge } from '@/components/primitives/CountBadge';
 import { DISMISS_SHARED, DismissSharedIcon } from '@/components/primitives/dismiss-shared';
@@ -30,25 +30,25 @@ export { PaneHeader } from './PaneHeader';
 export { menuHandlers as folderMenuHandlers } from './folder-row';
 export { FolderRow };
 
-// Diagram rows render the api client's DiagramListItem directly
+// Document rows render the api client's DocumentListItem directly
 // (same rows the floating Explorer panel uses), so the two explorer
 // surfaces can't drift apart on what a list item carries. Recent rows
-// (docs/specs/013-workspace/team-shared-diagrams.md) may additionally carry:
-//   - `team`: the team library the diagram lives in — a "Team"
+// (docs/specs/013-workspace/team-shared-documents.md) may additionally carry:
+//   - `team`: the team library the document lives in — a "Team"
 //     visibility badge + the team as owner, and a team-scoped menu.
-//   - `shared`: a diagram shared WITH the viewer (not theirs) — a
+//   - `shared`: a document shared WITH the viewer (not theirs) — a
 //     "Shared" badge, the sharer as owner, a share-link title, and a
 //     "Dismiss" action. Mutually exclusive with `team`.
-export type PaneDiagram = DiagramListItem & {
+export type PaneDocument = DocumentListItem & {
   team?: { id: string; name: string };
   shared?: { ownerName: string | null; role: 'edit' | 'view'; shareCode: string };
 };
 
-// A diagram shared WITH the viewer, as a pane row. It lives in the
+// A document shared WITH the viewer, as a pane row. It lives in the
 // sharer's library, not yours, so it carries no folder and an empty
 // owner; the share code is what makes it openable. One helper so Recent
 // and the Timeline's card menus build the same row.
-export function sharedToPaneDiagram(s: SharedWithItem): PaneDiagram {
+export function sharedToPaneDocument(s: SharedWithItem): PaneDocument {
   return {
     id: s.id,
     name: s.name,
@@ -68,13 +68,13 @@ export type SelectedNode =
   // The landing view (docs/specs/013-workspace/timeline.md): a day-grouped feed of everything that
   // happened, rather than a list of files.
   | { kind: 'timeline' }
-  // What is outstanding for the reader across every diagram (docs/specs/013-workspace/activity-page.md):
+  // What is outstanding for the reader across every document (docs/specs/013-workspace/activity-page.md):
   // open actions assigned to / by them, unresolved threads they're in.
   | { kind: 'activity' }
   | { kind: 'recent' }
   | { kind: 'all' }
   | { kind: 'unsorted' }
-  // Diagrams this user starred, personal or team (docs/specs/013-workspace/favourites.md).
+  // Documents this user starred, personal or team (docs/specs/013-workspace/favourites.md).
   | { kind: 'favourites' }
   | { kind: 'generated' }
   | { kind: 'offline' }
@@ -95,20 +95,20 @@ export type SelectedNode =
 export function ListView(props: ExplorerViewProps) {
   const {
     folders,
-    diagrams,
+    documents: liveDocs,
     ownerId,
     onOpenFolder,
     onCommitRenameFolder,
     onCancelRenameFolder,
     renamingFolderId,
-    renamingDiagramId,
-    onCommitRenameDiagram,
-    onCancelRenameDiagram,
+    renamingDocumentId,
+    onCommitRenameDocument,
+    onCancelRenameDocument,
     folderActions,
-    onStartRenameDiagram,
-    onDuplicateDiagram,
-    onDeleteDiagram,
-    onMoveDiagram,
+    onStartRenameDocument,
+    onDuplicateDocument,
+    onDeleteDocument,
+    onMoveDocument,
     onDismissShared,
     recentExcludedIds,
     favouriteIds,
@@ -117,7 +117,7 @@ export function ListView(props: ExplorerViewProps) {
     onToggleRecentExclusion,
     onShowHistory,
     childrenCount,
-    diagramsCount,
+    documentsCount,
     showOwner = false,
   } = props;
   return (
@@ -145,26 +145,26 @@ export function ListView(props: ExplorerViewProps) {
             key={f.id}
             folder={f}
             renaming={renamingFolderId === f.id}
-            childCount={childrenCount(f.id) + diagramsCount(f.id)}
+            childCount={childrenCount(f.id) + documentsCount(f.id)}
             onOpen={() => onOpenFolder(f.id)}
             onCommitRename={(name) => onCommitRenameFolder(f.id, name)}
             onCancelRename={onCancelRenameFolder}
             getActionsForAnchor={(anchor) => folderActions(f, anchor)}
           />
         ))}
-        {diagrams.map((d) => (
-          <DiagramRow
+        {liveDocs.map((d) => (
+          <DocumentRow
             key={d.id}
-            diagram={d}
+            document={d}
             ownerId={ownerId}
             showOwner={showOwner}
-            renaming={renamingDiagramId === d.id}
-            onStartRename={() => onStartRenameDiagram(d.id)}
-            onCommitRename={(name) => onCommitRenameDiagram(d.id, name)}
-            onCancelRename={onCancelRenameDiagram}
-            onDuplicate={() => onDuplicateDiagram(d.id)}
-            onDelete={() => onDeleteDiagram(d.id)}
-            onMove={(anchor) => onMoveDiagram(d.id, anchor)}
+            renaming={renamingDocumentId === d.id}
+            onStartRename={() => onStartRenameDocument(d.id)}
+            onCommitRename={(name) => onCommitRenameDocument(d.id, name)}
+            onCancelRename={onCancelRenameDocument}
+            onDuplicate={() => onDuplicateDocument(d.id)}
+            onDelete={() => onDeleteDocument(d.id)}
+            onMove={(anchor) => onMoveDocument(d.id, anchor)}
             onDismiss={d.shared && onDismissShared ? () => onDismissShared(d.id) : undefined}
             folderChip={folderChipFor?.(d) ?? null}
             favourite={favouriteIds?.has(d.id) === true}
@@ -231,7 +231,7 @@ export function SharedList({
   onDismiss,
 }: {
   shared: SharedWithItem[];
-  // Viewer identity for each row's thumbnail fetch (docs/specs/006-diagram/diagram-snapshots.md); the share
+  // Viewer identity for each row's thumbnail fetch (docs/specs/006-document/document-snapshots.md); the share
   // code on the item authorises the read.
   ownerId: string | null;
   onDismiss: (id: string) => void;
@@ -255,12 +255,12 @@ export function SharedList({
             className="group grid grid-cols-[1fr_60px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700 sm:grid-cols-[1fr_110px_60px_140px_40px]"
           >
             <Link
-              href={`/diagram/${s.id}?s=${encodeURIComponent(s.shareCode)}`}
+              href={`/document/${s.id}?s=${encodeURIComponent(s.shareCode)}`}
               className="flex min-w-0 items-center gap-2 truncate text-sm font-medium text-slate-900 hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
             >
-              <DiagramThumbnail
+              <DocumentThumbnail
                 ownerId={ownerId}
-                diagramId={s.id}
+                documentId={s.id}
                 version={s.savedAt}
                 shareCode={s.shareCode}
               />

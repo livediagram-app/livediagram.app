@@ -17,7 +17,7 @@ import {
   isBoxed,
   type Comment,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 export type CollabActionRow = {
   elementId: string;

@@ -1,6 +1,6 @@
 'use client';
 
-import { votesSpentBy, type TabVote } from '@livediagram/diagram';
+import { votesSpentBy, type TabVote } from '@livediagram/document';
 import type { VoteReview } from '@/hooks/canvas/useVoteReview';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';

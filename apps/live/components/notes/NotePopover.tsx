@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { clampIntoRange } from '@livediagram/ui';
-import type { TextRun } from '@livediagram/diagram';
+import type { TextRun } from '@livediagram/document';
 import { Portal } from '@/components/primitives/Portal';
 import { NoteRichText, noteRuns } from '@/components/notes/NoteRichText';
 import { NoteRichTextEditor } from '@/components/notes/NoteRichTextEditor';

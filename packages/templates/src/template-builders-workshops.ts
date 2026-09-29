@@ -9,7 +9,7 @@
 // Element[]. Sizing constants live inline so each template is
 // self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createShape, createSticky, createText, type Element } from '@livediagram/diagram';
+import { createShape, createSticky, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // Affinity map: a research question up top, three dashed cluster frames

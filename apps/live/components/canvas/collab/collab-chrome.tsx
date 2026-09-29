@@ -6,7 +6,7 @@
 // class strings and they drift the first time one is tweaked.
 
 import { createContext, useContext } from 'react';
-import { SHAPE_DEFAULT_SIZE, type ShapeElement } from '@livediagram/diagram';
+import { SHAPE_DEFAULT_SIZE, type ShapeElement } from '@livediagram/document';
 import { tint } from '@/lib/element-tint';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 // Re-exported: every collab face already reaches for it through this module,

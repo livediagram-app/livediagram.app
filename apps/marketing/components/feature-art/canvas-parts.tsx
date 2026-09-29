@@ -45,7 +45,7 @@ export function FolderIcon({ muted = false }: { muted?: boolean }) {
   );
 }
 
-export function DiagramIcon() {
+export function DocumentIcon() {
   return (
     <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#94a3b8" strokeWidth="1.4">
       <rect x="2" y="2" width="12" height="12" rx="2" />
@@ -125,7 +125,7 @@ export function ClockIcon() {
   );
 }
 
-// Avatar mode (docs/specs/008-canvas/avatar-mode.md): a little pixel character stands in the diagram and
+// Avatar mode (docs/specs/008-canvas/avatar-mode.md): a little pixel character stands on the canvas and
 // walks to whatever the presenter is talking about. Two characters here — the
 // presenter's and a peer's, in a second colour — so the art carries the "you
 // can all walk around together" half of the feature. Pure rects on a coarse

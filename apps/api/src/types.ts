@@ -7,8 +7,8 @@
 // the worker-only `Env` binding shape that has nowhere else to live.
 
 export type {
-  Diagram as DiagramDTO,
-  DiagramSummary,
+  LiveDoc as DocumentDTO,
+  DocumentSummary,
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
@@ -29,7 +29,7 @@ export type {
 // wire format (purely a server-side capability handle).
 export type Env = {
   DB: D1Database;
-  DIAGRAM_ROOM: DurableObjectNamespace;
+  DOCUMENT_ROOM: DurableObjectNamespace;
   // Clerk JWKS URL: when set, the request handler verifies Bearer
   // tokens against it via `src/auth/clerk.ts` and prefers the
   // resulting userId over `X-Owner-Id`. When unset, the worker stays
@@ -70,7 +70,7 @@ export type Env = {
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for the anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
-  // real diagram writes. Keyed on CF-Connecting-IP. Optional: absent
+  // real document writes. Keyed on CF-Connecting-IP. Optional: absent
   // (self-host) falls through to "allow", same as the write limiter.
   EVENTS_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for share-code resolution (GET /api/share/<code>),

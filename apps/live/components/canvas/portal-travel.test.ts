@@ -2,7 +2,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type ShapeElement, type Tab } from '@livediagram/diagram';
+import { createShape, type ShapeElement, type Tab } from '@livediagram/document';
 import { usePortalTravel, type PortalTravelDeps } from './portal-travel';
 
 // Going through a portal (docs/specs/009-elements/portal-element.md) does three things that have to happen

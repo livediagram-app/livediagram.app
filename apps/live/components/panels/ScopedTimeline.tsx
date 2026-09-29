@@ -1,7 +1,7 @@
 'use client';
 
 // A Timeline for something other than the reader's own feed (docs/specs/013-workspace/timeline.md
-// §3.4) — a team's activity, or one diagram's history.
+// §3.4) — a team's activity, or one document's history.
 //
 // Self-contained, unlike the Explorer's landing pane: it owns its
 // controls as well as its data, because it drops into a card on a
@@ -50,9 +50,9 @@ export function ScopedTimeline({
             {emptyMessage}
           </p>
         }
-        // A team's activity or a diagram's history can fail to read for
+        // A team's activity or a document's history can fail to read for
         // exactly the reasons the landing feed can, and "nothing has
-        // happened to this diagram yet" is just as wrong an answer.
+        // happened to this document yet" is just as wrong an answer.
         error={feed.error}
         onRetry={feed.retry}
         hasMore={feed.hasMore}
@@ -80,13 +80,13 @@ export function TeamTimeline({ ownerId, teamId }: { ownerId: string; teamId: str
   );
 }
 
-export function DiagramTimeline({ ownerId, diagramId }: { ownerId: string; diagramId: string }) {
+export function DocumentTimeline({ ownerId, documentId }: { ownerId: string; documentId: string }) {
   return (
     <ScopedTimeline
       ownerId={ownerId}
-      scope={{ scopeType: 'diagram', scopeId: diagramId }}
+      scope={{ scopeType: 'document', scopeId: documentId }}
       title="History"
-      emptyMessage="Nothing has happened to this diagram yet."
+      emptyMessage="Nothing has happened to this document yet."
     />
   );
 }

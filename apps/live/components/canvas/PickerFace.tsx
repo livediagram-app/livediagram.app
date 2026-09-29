@@ -83,7 +83,7 @@ export function PickerFace({
 
   // The last result we have already accounted for — either because we watched
   // it land or because it was on the element when we arrived. Seeded from the
-  // first render, so joining a diagram where somebody already rolled shows the
+  // first render, so joining a document where somebody already rolled shows the
   // answer rather than replaying a spin nobody is waiting for.
   //
   // Keyed on the landing alone: re-running when the candidate list changes

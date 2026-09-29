@@ -35,10 +35,10 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { ShapeColorPreset } from './themes';
 import { isTechIconId } from './tech-icons';
-import type { TablePreset } from '@livediagram/diagram';
+import type { TablePreset } from '@livediagram/document';
 
 // Apply a theme-derived style preset to a shape: its colours (fill + stroke +
 // text) AND its border weight / pattern together — a preset is one complete
@@ -141,6 +141,8 @@ export function applyStrokeColorToEl(el: Element, color: string): Element {
 export function applyTextColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape') return { ...el, textColor: color, colorPreset: undefined };
   if (el.type === 'table') return { ...el, textColor: color, tablePreset: undefined };
+  // A hand-picked colour is no longer the quick-swatch slot it came from.
+  if (el.type === 'text') return { ...el, textColor: color, textSwatch: undefined };
   if (isBoxed(el) || el.type === 'arrow') return { ...el, textColor: color };
   return el;
 }

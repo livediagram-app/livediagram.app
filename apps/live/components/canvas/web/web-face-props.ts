@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { LayoutRect, ShapeElement, WebRows } from '@livediagram/diagram';
+import type { LayoutRect, ShapeElement, WebRows } from '@livediagram/document';
 
 // What every web component face (docs/specs/009-elements/web-components-and-no-groups.md) is handed by ElementFaceRouter.
 export type WebFaceProps = {

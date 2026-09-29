@@ -10,7 +10,7 @@
 
 import { listStyleOfText } from '@/components/rich-text/block-type';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
-import { type RunBoolKey, type TextRun } from '@livediagram/diagram';
+import { type RunBoolKey, type TextRun } from '@livediagram/document';
 import { NOTE_BASE_PX } from './note-run-style';
 import { NoteFormatToolbar } from './NoteFormatToolbar';
 import { useNoteRichTextSession } from './useNoteRichTextSession';

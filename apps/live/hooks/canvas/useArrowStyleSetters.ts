@@ -9,7 +9,7 @@ import {
   type ArrowThickness,
   type BorderStyle,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { applyArrowPresetToEl } from '@/lib/style-presets';
 import { track } from '@/lib/telemetry';
 

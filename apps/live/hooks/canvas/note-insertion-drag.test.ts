@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type Element, type StickyElement } from '@livediagram/diagram';
+import { type Element, type StickyElement } from '@livediagram/document';
 import type { ShapeBounds } from '@/lib/canvas';
 import { isSingleNoteDrag, landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
 
@@ -70,7 +70,7 @@ describe('resolveNoteInsertion', () => {
     expect(resolve({ altHeld: false })).toBeNull();
   });
 
-  it('offers nothing on an ordinary board', () => {
+  it('offers nothing on an ordinary tab', () => {
     expect(resolve({ gate: { ...GATE, esBoard: false } })).toBeNull();
   });
 

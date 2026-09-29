@@ -51,7 +51,7 @@ describe('resolvePostAuthDestination', () => {
   });
 
   it('returns a safe same-origin path as-is (clean routing, no basePath strip)', () => {
-    expect(resolvePostAuthDestination(params('redirect_url=/diagram/abc'))).toBe('/diagram/abc');
+    expect(resolvePostAuthDestination(params('redirect_url=/document/abc'))).toBe('/document/abc');
     expect(resolvePostAuthDestination(params('redirect_url=/explorer/recent'))).toBe(
       '/explorer/recent',
     );
@@ -70,7 +70,7 @@ describe('resolveOAuthCompleteUrl', () => {
       POST_AUTH_DEFAULT,
     );
     expect(resolveOAuthCompleteUrl(params('redirect_url=/sign-in'))).toBe(POST_AUTH_DEFAULT);
-    expect(resolveOAuthCompleteUrl(params('redirect_url=/diagram/abc'))).toBe('/diagram/abc');
+    expect(resolveOAuthCompleteUrl(params('redirect_url=/document/abc'))).toBe('/document/abc');
     expect(resolveOAuthCompleteUrl(params('redirect_url=/explorer/recent'))).toBe(
       '/explorer/recent',
     );
@@ -89,17 +89,17 @@ describe('authHrefWithReturn', () => {
     expect(authHrefWithReturn('/sign-in/', '/explorer/recent')).toBe(
       '/sign-in/?redirect_url=%2Fexplorer%2Frecent',
     );
-    // Query + hash survive so you land on the exact diagram tab.
-    expect(authHrefWithReturn('/get-started/', '/diagram/abc?x=1#t=t2')).toBe(
-      '/get-started/?redirect_url=%2Fdiagram%2Fabc%3Fx%3D1%23t%3Dt2',
+    // Query + hash survive so you land on the exact document tab.
+    expect(authHrefWithReturn('/get-started/', '/document/abc?x=1#t=t2')).toBe(
+      '/get-started/?redirect_url=%2Fdocument%2Fabc%3Fx%3D1%23t%3Dt2',
     );
   });
 
   it('round-trips through the resolver back to the original path', () => {
-    const href = authHrefWithReturn('/sign-in/', '/diagram/abc?x=1');
+    const href = authHrefWithReturn('/sign-in/', '/document/abc?x=1');
     const qs = href.slice(href.indexOf('?') + 1);
     expect(resolvePostAuthDestination(new URLSearchParams(qs), POST_AUTH_SIGNIN_DEFAULT)).toBe(
-      '/diagram/abc?x=1',
+      '/document/abc?x=1',
     );
   });
 
@@ -186,11 +186,11 @@ describe('sign-in default (POST_AUTH_SIGNIN_DEFAULT)', () => {
     // A protected-page bounce must return where it came from, not the
     // Explorer, even on the sign-in flow.
     expect(
-      resolvePostAuthDestination(params('redirect_url=/diagram/abc'), POST_AUTH_SIGNIN_DEFAULT),
-    ).toBe('/diagram/abc');
+      resolvePostAuthDestination(params('redirect_url=/document/abc'), POST_AUTH_SIGNIN_DEFAULT),
+    ).toBe('/document/abc');
     expect(
-      resolveOAuthCompleteUrl(params('redirect_url=/diagram/abc'), POST_AUTH_SIGNIN_DEFAULT),
-    ).toBe('/diagram/abc');
+      resolveOAuthCompleteUrl(params('redirect_url=/document/abc'), POST_AUTH_SIGNIN_DEFAULT),
+    ).toBe('/document/abc');
   });
 
   it('falls back to the Explorer for an unsafe / auth-loop redirect_url', () => {

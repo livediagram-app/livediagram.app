@@ -4,7 +4,7 @@
 // reads it. Built in the behaviour elements' current look ("The face").
 
 import { useState } from 'react';
-import type { RollCallEntry, ShapeElement } from '@livediagram/diagram';
+import type { RollCallEntry, ShapeElement } from '@livediagram/document';
 import { GlyphDisc, Glyph } from '@livediagram/ui';
 import { initialsOf } from '@/lib/identity';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
@@ -92,7 +92,7 @@ export function RollCallFace({
       >
         {entries.length === 0 ? (
           <EmptyRows textColor={textColor} title="Nobody recorded yet" rows={0}>
-            Take the roll to freeze who is here into the diagram.
+            Take the roll to freeze who is here into the document.
           </EmptyRows>
         ) : (
           <div className="flex min-h-0 flex-col gap-2.5">

@@ -3,9 +3,9 @@
 // browser's local Trash. Each group is one Empty Trash scope. Pure.
 
 import {
-  EMPTY_DIAGRAM_STALE_DAYS,
+  EMPTY_DOCUMENT_STALE_DAYS,
   trashDaysLeft,
-  type TrashedDiagram,
+  type TrashedDocument,
 } from '@livediagram/api-schema';
 import type { TrashListing } from './api/trash';
 
@@ -18,7 +18,7 @@ export type TrashGroup = {
   scope: TrashScope;
   // The Trash telemetry `type` for actions in this group.
   telemetryType: 'Personal' | 'Team' | 'Local';
-  rows: TrashedDiagram[];
+  rows: TrashedDocument[];
 };
 
 export function trashGroups(listing: TrashListing): TrashGroup[] {
@@ -28,13 +28,13 @@ export function trashGroups(listing: TrashListing): TrashGroup[] {
   if (personal.length > 0) {
     groups.push({
       key: 'personal',
-      title: 'Your diagrams',
+      title: 'Your documents',
       scope: { kind: 'personal' },
       telemetryType: 'Personal',
       rows: personal,
     });
   }
-  const teams = new Map<string, TrashedDiagram[]>();
+  const teams = new Map<string, TrashedDocument[]>();
   for (const r of cloud) {
     if (r.teamId === null) continue;
     teams.set(r.teamId, [...(teams.get(r.teamId) ?? []), r]);
@@ -61,8 +61,8 @@ export function trashGroups(listing: TrashListing): TrashGroup[] {
 }
 
 // A row's lead: when it went in, and, for one the empty clean-up moved, why
-// (docs/specs/013-workspace/empty-diagram-cleanup.md "In the Trash").
-export function trashedOnLabel(row: Pick<TrashedDiagram, 'trashedAt' | 'reason'>): string {
+// (docs/specs/013-workspace/empty-document-cleanup.md "In the Trash").
+export function trashedOnLabel(row: Pick<TrashedDocument, 'trashedAt' | 'reason'>): string {
   const on = new Date(row.trashedAt).toLocaleDateString(undefined, {
     day: 'numeric',
     month: 'short',
@@ -71,10 +71,10 @@ export function trashedOnLabel(row: Pick<TrashedDiagram, 'trashedAt' | 'reason'>
 }
 
 // The deleted card's lead for someone who may restore it, with the days left.
-export function trashedCardLead(row: Pick<TrashedDiagram, 'trashedAt' | 'reason'>, now: number) {
+export function trashedCardLead(row: Pick<TrashedDocument, 'trashedAt' | 'reason'>, now: number) {
   const where =
     row.reason === 'empty'
-      ? `It was empty for ${EMPTY_DIAGRAM_STALE_DAYS} days, so it moved to the Trash`
+      ? `It was empty for ${EMPTY_DOCUMENT_STALE_DAYS} days, so it moved to the Trash`
       : 'It is in the Trash';
   return `${where} (${daysLeftLabel(row.trashedAt, now).toLowerCase()}).`;
 }

@@ -2,7 +2,7 @@
 
 import { lucideFile, lucideLink, lucidePanelsTopLeft } from '@livediagram/icons/lucide';
 import { useState } from 'react';
-import { defaultTextColor, type LinkCardElement } from '@livediagram/diagram';
+import { defaultTextColor, type LinkCardElement } from '@livediagram/document';
 import { Glyph, Prims } from '@livediagram/ui';
 
 // Inner content of a link-card element (docs/specs/009-elements/link-cards.md): a favicon / glyph + title +
@@ -23,7 +23,7 @@ function hostOf(url: string): string {
 
 // Title (top, bold) + destination (bottom, muted) for each link kind. The
 // destination line names exactly where the card goes: the URL, the linked
-// diagram, or the tab.
+// document, or the tab.
 function describeCard(
   link: NonNullable<LinkCardElement['link']>,
   meta: LinkCardElement['meta'],
@@ -32,14 +32,14 @@ function describeCard(
   switch (link.kind) {
     case 'url':
       return { title: meta?.title ?? hostOf(link.url), destination: link.url };
-    case 'diagram':
-      return { title: 'Diagram', destination: link.name };
+    case 'document':
+      return { title: 'Document', destination: link.name };
     case 'tab':
     case 'element': {
       const name = tabs?.find((t) => t.id === link.tabId)?.name?.trim();
       return {
         title: link.kind === 'element' ? 'Element' : 'Tab',
-        destination: name ? name : 'this diagram',
+        destination: name ? name : 'this document',
       };
     }
   }
@@ -51,7 +51,7 @@ export function LinkCardView({
   onFollow,
 }: {
   element: LinkCardElement;
-  // This diagram's tabs (id + name) so a tab / element link can name its
+  // This document's tabs (id + name) so a tab / element link can name its
   // target tab on the destination line.
   tabs?: { id: string; name: string }[];
   // Follow the card's configured link. Provided only when the card HAS a
@@ -165,9 +165,9 @@ export function LinkCardView({
 // favicon failed / hasn't unfurled): a small kind-appropriate glyph so the
 // row never collapses to a bare label.
 function LinkGlyph({ kind }: { kind: NonNullable<LinkCardElement['link']>['kind'] }) {
-  // A diagram is a document, a tab or element jump a panel, anything else a URL.
+  // A document is a file, a tab or element jump a panel, anything else a URL.
   const prims =
-    kind === 'diagram'
+    kind === 'document'
       ? lucideFile
       : kind === 'tab' || kind === 'element'
         ? lucidePanelsTopLeft

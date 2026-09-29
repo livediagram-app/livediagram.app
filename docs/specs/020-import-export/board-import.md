@@ -12,7 +12,7 @@ a result plus an honest report. [Miro import](miro-import.md) and
 
 - Each source is a **format card in the Import dialog**, next to Markdown,
   Mermaid and Excalidraw, with the same **replace-the-tab** semantics and a
-  **single undo step**. A user moving a board creates a diagram, then imports
+  **single undo step**. A user moving a board creates a document, then imports
   into its tab. No new surface is added.
 - Each importer is its own module in `apps/live/lib/` (beside
   `excalidraw-import.ts`), reusing the shared image stage
@@ -36,7 +36,7 @@ throws. Only the parse stage has to be pure.
    encoding, upload, deduplication, concurrency and every image failure.
 4. **Commit**: the elements replace the tab in one undoable step. The commit
    target is a parameter of the stage, so a later bulk importer can commit to a
-   new diagram without touching stages 1 to 3.
+   new document without touching stages 1 to 3.
 5. **Report**: shown in the Import dialog's result panel, in space the panel
    reserves before the import starts (no toast, no layout shift). It is not
    persisted.

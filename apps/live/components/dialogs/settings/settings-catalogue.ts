@@ -3,10 +3,12 @@ import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import type { TelemetryCategory } from '@livediagram/api-schema';
 import {
   autoRebindArrowsEnabled,
+  panelEnabled,
   resolvePanelLayout,
   withPanelLayout,
   type MapSize,
   type PanelLayout,
+  type PanelSwitch,
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
@@ -39,10 +41,13 @@ import type { SettingsIllustrationId } from './settings-illustrations';
 // to. A guest flipping them would be writing preferences that can never
 // apply, so they are absent rather than dead.
 // Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
+// `preferences` (the live values) lets a nested row follow its parent switch
+// for the same reason: a setting for a panel that is off has nothing to act on.
 export type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
   powerUserMode?: boolean;
+  preferences?: UserPreferences;
 };
 
 type RowBase = {
@@ -69,8 +74,7 @@ type RowBase = {
   // description: a test fails if a row that needs them has none.
   keywords?: string;
   // Sub-heading this row sits under, within its category. A category holding
-  // several unrelated clusters (Panels covers Layers, Activity and the
-  // minimap) reads as one long undifferentiated list without them. Rows
+  // several unrelated clusters (Editor's Power User rows) reads as one long undifferentiated list without them. Rows
   // sharing a section must be ADJACENT; the pane groups consecutive runs, so
   // a section cannot be split and silently re-headed further down.
   section?: string;
@@ -182,8 +186,8 @@ export type SettingsRowSpec =
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
   label: string;
-  // The top-level category this is a sub-category of (Panels holds Layers,
-  // Activity and Map). The list nests it, untiled and indented, beneath its
+  // The top-level category this is a sub-category of (Panels holds one per
+  // panel). The list nests it, untiled and indented, beneath its
   // parent; it is still its own pane. A parent's sub-categories follow it
   // directly, like a section's rows.
   parent?: SettingsIconId;
@@ -196,6 +200,23 @@ export type SettingsCategorySpec = {
 // three of its rows are inert there and share this note.
 const MINIMAP_DESKTOP_ONLY =
   'The Map is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
+
+// The panel switches (docs/specs/007-editor/user-preferences.md), each on
+// unless stored `false`. One row per Panels sub-category, first in its pane,
+// with that panel's other rows nested beneath it (`parent`), so they are
+// offered only while it is on (see `visibleCategories`).
+function panelSwitch(
+  key: PanelSwitch,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'keywords' | 'description' | 'event'>,
+): SettingsToggleRowSpec {
+  return {
+    kind: 'toggle',
+    key,
+    ...row,
+    read: (p) => panelEnabled(p, key),
+    write: (p, v) => ({ ...p, [key]: v }),
+  };
+}
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
@@ -369,7 +390,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'transparency translucent fade see through alpha',
         label: 'Panel Opacity',
         description:
-          'Fades the floating panels so the canvas shows through behind them; they snap back to fully opaque while hovered or focused. The minimal button bar is unaffected.',
+          'Fades every panel, in every layout, so the canvas shows through behind it; a panel snaps back to fully opaque while hovered or focused. Buttons stay opaque.',
         helpArticle: 'panelOpacity',
         min: 0.3,
         max: 1,
@@ -386,9 +407,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Layers',
     parent: 'panels',
     rows: [
+      panelSwitch('layersPanelEnabled', {
+        label: 'Enable Layers Panel',
+        keywords: 'layers panel hide show turn off remove move to layer',
+        description:
+          'Shows the Layers panel, its button in the bottom-right corner and the “Move to layer” choices in the element menu. Turned off, layers keep working: their order, visibility and lock still apply.',
+        event: { category: 'UI', on: 'LayersPanelOn', off: 'LayersPanelOff' },
+      }),
       {
         kind: 'toggle',
         key: 'layersShowPreview',
+        parent: 'layersPanelEnabled',
         keywords: 'thumbnail preview layer picture',
         illustration: 'layerThumbnails',
         label: 'Layer Thumbnails',
@@ -401,6 +430,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'toggle',
         key: 'layersShowCount',
+        parent: 'layersPanelEnabled',
         keywords: 'number badge count layer',
         label: 'Layer Element Counts',
         description:
@@ -412,6 +442,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'toggle',
         key: 'layerHoverPreview',
+        parent: 'layersPanelEnabled',
         keywords: 'highlight hover layer preview',
         label: 'Preview Layer on Hover',
         description:
@@ -427,9 +458,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Activity',
     parent: 'panels',
     rows: [
+      panelSwitch('activityPanelEnabled', {
+        label: 'Enable Activity Panel',
+        keywords: 'activity history panel hide show turn off remove',
+        description:
+          'Shows the Activity panel, the tab’s history of changes, and its button beside Undo and Redo. Turned off, Undo and Redo stay.',
+        event: { category: 'UI', on: 'ActivityPanelOn', off: 'ActivityPanelOff' },
+      }),
       {
         kind: 'toggle',
         key: 'activityRevertHoverPreview',
+        parent: 'activityPanelEnabled',
         keywords: 'undo history revert preview hover activity',
         label: 'Preview Revert on Hover',
         description:
@@ -446,11 +485,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     parent: 'panels',
     rows: [
       {
+        // The Map's switch, written out rather than a panelSwitch: it keeps its
+        // older key and telemetry tokens so stored choices and the dashboard
+        // carry over the rename from "Show Map".
         kind: 'toggle',
         key: 'showMinimap',
-        keywords: 'minimap overview thumbnail navigator birds eye',
+        keywords: 'minimap overview thumbnail navigator birds eye hide show turn off',
         illustration: 'showMinimap',
-        label: 'Show Map',
+        label: 'Enable Map',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
         description:
           'Shows the Map, a small overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Tap or drag it to jump around; scroll on it to zoom. Desktop only.',
@@ -461,6 +503,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'toggle',
         key: 'mapDimOutside',
+        parent: 'showMinimap',
         keywords: 'shade minimap viewport dim',
         illustration: 'mapDimOutside',
         label: 'Dim Outside the View',
@@ -474,6 +517,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'choice',
         key: 'mapSize',
+        parent: 'showMinimap',
         keywords: 'minimap height short medium tall',
         label: 'Map Size',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
@@ -490,6 +534,34 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
+    id: 'collaborate',
+    label: 'Collaborate',
+    parent: 'panels',
+    rows: [
+      panelSwitch('collaboratePanelEnabled', {
+        label: 'Enable Collaborate Panel',
+        keywords: 'collaborate comments threads actions tasks panel hide show turn off',
+        description:
+          'Shows the Collaborate panel, a list of the tab’s comment threads and actions, and its button in the bottom-right corner. It only appears while the tab has a comment or an action. Turned off, comments and actions still work from the elements themselves.',
+        event: { category: 'UI', on: 'CollaboratePanelOn', off: 'CollaboratePanelOff' },
+      }),
+    ],
+  },
+  {
+    id: 'quickStyle',
+    label: 'Quick Style',
+    parent: 'panels',
+    rows: [
+      panelSwitch('quickStylePanelEnabled', {
+        label: 'Enable Quick Style Panel',
+        keywords: 'quick style colour color stroke fill width panel selection hide show turn off',
+        description:
+          'Shows the Quick Style panel beside a selected shape or arrow, with its most-used colours, widths and alignments. Turned off, every style is still in the element’s right-click menu.',
+        event: { category: 'UI', on: 'QuickStylePanelOn', off: 'QuickStylePanelOff' },
+      }),
+    ],
+  },
+  {
     id: 'notifications',
     label: 'Notifications',
     rows: [
@@ -500,7 +572,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'In the editor',
         label: 'In-Editor Notifications',
         description:
-          "Shows a brief confirmation when you do something whose result isn't on screen, like moving a diagram to a folder or linking a tab. Errors are always shown so a failure is never hidden. Turn off for a quieter editor.",
+          "Shows a brief confirmation when you do something whose result isn't on screen, like moving a document to a folder or linking a tab. Errors are always shown so a failure is never hidden. Turn off for a quieter editor.",
         read: (p) => p.notificationsEnabled !== false,
         write: (p, v) => ({ ...p, notificationsEnabled: v }),
         event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
@@ -518,20 +590,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Email Notifications',
         note: 'Sign in to choose which emails you get.',
         description:
-          'We can email you when someone joins one of your diagrams, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
+          'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
       {
         kind: 'toggle',
-        key: 'notifyDiagramJoin',
+        key: 'notifyDocumentJoin',
         keywords: 'email join collaborator opened',
         section: 'Email',
-        label: 'Someone Joins My Diagram',
-        description: 'When a new person opens one of your shared diagrams for the first time.',
+        label: 'Someone Joins My Document',
+        description: 'When a new person opens one of your shared documents for the first time.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyDiagramJoin !== false,
-        write: (p, v) => ({ ...p, notifyDiagramJoin: v }),
-        event: { category: 'UI', on: 'NotifyDiagramJoinOn', off: 'NotifyDiagramJoinOff' },
+        read: (p) => p.notifyDocumentJoin !== false,
+        write: (p, v) => ({ ...p, notifyDocumentJoin: v }),
+        event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
       },
       {
         kind: 'toggle',
@@ -550,8 +622,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'notifyComments',
         keywords: 'email comment reply feedback',
         section: 'Email',
-        label: 'Someone Comments on My Diagram',
-        description: 'When someone leaves a comment on a diagram you own.',
+        label: 'Someone Comments on My Document',
+        description: 'When someone leaves a comment on a document you own.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
         read: (p) => p.notifyComments !== false,
         write: (p, v) => ({ ...p, notifyComments: v }),
@@ -563,7 +635,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'email action assigned task todo',
         section: 'Email',
         label: 'Someone Assigns Me an Action',
-        description: 'When a teammate assigns you an action on a diagram element.',
+        description: 'When a teammate assigns you an action on an element.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
         read: (p) => p.notifyActionAssigned !== false,
         write: (p, v) => ({ ...p, notifyActionAssigned: v }),
@@ -601,7 +673,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Email',
         label: 'Milestones',
         description:
-          'A note when you hit a milestone, like sharing your first diagram or reaching your tenth.',
+          'A note when you hit a milestone, like sharing your first document or reaching your tenth.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
         read: (p) => p.notifyMilestones !== false,
         write: (p, v) => ({ ...p, notifyMilestones: v }),
@@ -630,7 +702,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'walkthrough onboarding intro show me around getting started',
         label: 'Show Welcome Tour',
         description:
-          'Offers the Show me around tour the next time you open a diagram. It switches itself off once you have taken or dismissed the tour, so it only ever offers itself once. Turn it back on and close Settings to run the tour again straight away.',
+          'Offers the Show me around tour the next time you open a document. It switches itself off once you have taken or dismissed the tour, so it only ever offers itself once. Turn it back on and close Settings to run the tour again straight away.',
         helpArticle: 'welcomeTour',
         // INVERTED against the stored preference: the row asks "show me the
         // tour?", `tourSeen` records "already seen". Switch on === not seen.
@@ -696,7 +768,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Guest',
         keywords: 'account profile identity name email signed in sign in avatar joined',
         description:
-          'Your name and email come from your account and are changed there, not here. Signing in keeps your diagrams across browsers and devices; without it they belong to this browser alone.',
+          'Your name and email come from your account and are changed there, not here. Signing in keeps your documents across browsers and devices; without it they belong to this browser alone.',
         helpArticle: 'guestVsAccount',
       },
       {
@@ -705,9 +777,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Your Data',
         label: 'Trash',
         keywords:
-          'trash bin recycle deleted undo undelete restore recover get back diagram permanently empty',
+          'trash bin recycle deleted undo undelete restore recover get back document diagram permanently empty',
         description:
-          'Deleted diagrams wait here for 30 days before they are removed for good. Restore one to put it back where it was.',
+          'Deleted documents wait here for 30 days before they are removed for good. Restore one to put it back where it was.',
         helpArticle: 'trash',
       },
       {
@@ -717,7 +789,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your diagrams, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
+          'Removes your documents, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
       },
     ],
   },
@@ -751,8 +823,26 @@ export function visibleCategories(
   ctx: SettingsRowContext,
 ): SettingsCategorySpec[] {
   return SETTINGS_CATEGORIES.filter((c) => !c.requiresAi || aiCapable)
-    .map((c) => ({ ...c, rows: c.rows.filter((r) => !r.available || r.available(ctx)) }))
+    .map((c) => ({
+      ...c,
+      rows: c.rows.filter(
+        (r) => (!r.available || r.available(ctx)) && parentSwitchOn(c, r, ctx.preferences),
+      ),
+    }))
     .filter((c) => c.rows.length > 0);
+}
+
+// A row nested under a switch (`parent`) is offered only while that switch is
+// on, when the live preferences are known. One rule for every nested row, so
+// a new panel's rows follow its Enable switch with no extra wiring.
+function parentSwitchOn(
+  category: SettingsCategorySpec,
+  row: SettingsRowSpec,
+  preferences: UserPreferences | undefined,
+): boolean {
+  if (!row.parent || !preferences) return true;
+  const parent = category.rows.find((r) => r.key === row.parent);
+  return parent?.kind !== 'toggle' || parent.read(preferences);
 }
 
 // A category's name as a path from the top level: "Panels › Layers" for a

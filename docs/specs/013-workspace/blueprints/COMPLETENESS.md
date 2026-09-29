@@ -17,7 +17,7 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## empty-diagram-cleanup
+## empty-document-cleanup
 
 - [x] Domain and naming
 - [x] Behaviour and state

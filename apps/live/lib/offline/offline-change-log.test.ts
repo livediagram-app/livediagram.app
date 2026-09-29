@@ -11,7 +11,7 @@ import {
 } from './offline-change-log';
 import {
   __setOfflineBackend,
-  offlineCreateDiagram,
+  offlineCreateDocument,
   offlineLoadTab,
   offlineSaveTab,
 } from './offline-store';
@@ -65,7 +65,7 @@ describe('offline change-log transforms', () => {
 describe('offline change-log ops (in-memory backend)', () => {
   it('append → list → delete entry → delete for tab round-trip', async () => {
     __setOfflineBackend(memBackend());
-    await offlineCreateDiagram({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
+    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
 
     await offlineAppendChangeLogEntry('d1', entry('e1'));
     await offlineAppendChangeLogEntry('d1', entry('e2'));
@@ -79,7 +79,7 @@ describe('offline change-log ops (in-memory backend)', () => {
     expect((await offlineListChangeLog('d1')).map((e) => e.id)).toEqual(['e3']);
   });
 
-  it('lists empty for an unknown diagram and appends without creating one', async () => {
+  it('lists empty for an unknown document and appends without creating one', async () => {
     __setOfflineBackend(memBackend());
     expect(await offlineListChangeLog('nope')).toEqual([]);
     await offlineAppendChangeLogEntry('nope', entry('e1'));
@@ -88,7 +88,7 @@ describe('offline change-log ops (in-memory backend)', () => {
 
   it('log entries survive a tab save (whole-record rewrite keeps the log)', async () => {
     __setOfflineBackend(memBackend());
-    await offlineCreateDiagram({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
+    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
     await offlineAppendChangeLogEntry('d1', entry('e1'));
 
     await offlineSaveTab('d1', tab('t1', { name: 'Edited' }), 200);

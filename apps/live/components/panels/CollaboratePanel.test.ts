@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { BoxedElement, Comment } from '@livediagram/diagram';
+import type { BoxedElement, Comment } from '@livediagram/document';
 import { commentRowsFromElements } from '@/components/panels/CollaboratePanel';
 
 // commentRowsFromElements turns a tab's element list into the rows

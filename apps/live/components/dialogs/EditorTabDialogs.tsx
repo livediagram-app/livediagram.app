@@ -2,10 +2,11 @@
 
 import dynamic from 'next/dynamic';
 
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
-import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { resolveTabBackdrop } from '@/lib/themes';
+import { panelEnabled } from '@/lib/user-preferences';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -20,19 +21,20 @@ const ShareDialog = dynamic(
   { ssr: false },
 );
 
-// Tab-scoped export / import dialogs + the diagram share dialog. Each is
+// Tab-scoped export / import dialogs + the document share dialog. Each is
 // gated on its own open flag and reads everything from EditorContext, so
 // EditorView just renders <EditorTabDialogs />. Grouped because all three
-// are "act on this tab / diagram as a whole" modals launched from the
+// are "act on this tab / document as a whole" modals launched from the
 // header, distinct from the global editor modals in EditorModals.
 export function EditorTabDialogs() {
   const {
+    userPreferences,
     exportOpen,
     exportScope,
     activeTab,
     tabs,
     multiSelectedIds,
-    diagramName,
+    documentName,
     imageContext,
     setExportOpen,
     importOpen,
@@ -46,23 +48,23 @@ export function EditorTabDialogs() {
     shareUrlFor,
     clerkUserId,
     clerkDisplayName,
-    diagramId,
+    documentId,
     updateParticipantName,
     createShareLink,
     revokeShareLink,
     extendShareLink,
     rescopeShareLink,
-    setDiagramSharePassword,
+    setDocumentSharePassword,
     setShareDialogOpen,
   } = useEditorContext();
 
-  // Offline diagrams (docs/specs/006-diagram/offline-mode.md) can't be shared until they're synced to the
+  // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
   // owner's account; the Share dialog shows a gate that runs this conversion,
-  // then reloads so the editor re-hydrates as a normal cloud diagram.
-  const isOffline = useIsOfflineDiagram(diagramId);
+  // then reloads so the editor re-hydrates as a normal cloud document.
+  const isOffline = useIsOfflineDocument(documentId);
   const syncToCloud = async () => {
-    if (!diagramId) return;
-    await saveOfflineToCloud(diagramId, selfParticipant.id);
+    if (!documentId) return;
+    await saveOfflineToCloud(documentId, selfParticipant.id);
     window.location.reload();
   };
 
@@ -82,8 +84,9 @@ export function EditorTabDialogs() {
               : {}),
           }}
           scope={exportScope}
-          diagramName={diagramName}
+          documentName={documentName}
           imageContext={imageContext}
+          offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}
         />
       ) : null}
@@ -111,7 +114,7 @@ export function EditorTabDialogs() {
           onRevokeLink={revokeShareLink}
           onRescopeLink={rescopeShareLink}
           onExtendLink={extendShareLink}
-          onSetPassword={setDiagramSharePassword}
+          onSetPassword={setDocumentSharePassword}
           offline={isOffline}
           onSyncToCloud={syncToCloud}
           onClose={() => setShareDialogOpen(false)}

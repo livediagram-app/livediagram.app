@@ -18,7 +18,7 @@ import {
   createSticky,
   createText,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // Page geometry, relative to the card's centre.
 const PAGE_H = 900;

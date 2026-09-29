@@ -43,6 +43,14 @@ export function applyMigration(sql: DatabaseSync, prefix: string): void {
   sql.exec(readFileSync(MIGRATIONS_DIR + file, 'utf8'));
 }
 
+// Run every migration from `prefix` on, bringing a database seeded under an older schema up to
+// the one the current code reads.
+export function migrateFrom(sql: DatabaseSync, prefix: string): void {
+  for (const file of migrationFiles().filter((f) => f >= prefix)) {
+    sql.exec(readFileSync(MIGRATIONS_DIR + file, 'utf8'));
+  }
+}
+
 // `before` stops short of that migration (e.g. '0049'), leaving it for the
 // test to apply with applyMigration.
 export function sqliteD1(base: Partial<Env> = {}, opts: { before?: string } = {}): SqliteD1 {

@@ -3,7 +3,7 @@
 // A few events can only be counted honestly by the api worker, because the
 // browser either never sees them (an email sent from a cron) or cannot tell
 // whether they are the first of their kind (a new account, a first visit to a
-// shared diagram). Those rows are written straight to the events table rather
+// shared document). Those rows are written straight to the events table rather
 // than through POST /api/events.
 //
 // Gated on TELEMETRY_ENABLED like every other emit, and its own failure is

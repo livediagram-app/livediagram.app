@@ -69,7 +69,7 @@ What differs from a frame is presentation only:
     The drag **snaps**, to the ordinary alignment grid AND to **other lanes'
     seams** (`lane-seam-snapping.ts`). The second is the one that matters: a
     stack of swimlanes with headings a few pixels apart is the thing that
-    makes a board look untidy, and it is nearly impossible to fix by eye
+    makes a canvas look untidy, and it is nearly impossible to fix by eye
     because the seams are too far apart vertically to sit in one glance. Only
     lanes whose heading runs along the same axis are offered, since a column's
     seam and a row's seam are different lines. A centred strip has two seams

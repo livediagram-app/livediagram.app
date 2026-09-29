@@ -24,7 +24,7 @@ import {
   type GraphNode,
   type LayoutStyle,
   withOrthogonalBends,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 export const GRAPH_LABEL_MAX = 40;
 

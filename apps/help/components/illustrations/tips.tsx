@@ -187,7 +187,7 @@ export function CommandPalette() {
   );
 }
 
-/** Zen mode: a clean full-screen canvas with only the diagram and the zoom
+/** Zen mode: a clean full-screen view with only the canvas and the zoom
  *  controls, every other panel hidden. */
 export function ZenMode() {
   return (

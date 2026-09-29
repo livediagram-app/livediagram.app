@@ -12,18 +12,18 @@ captioned with what it shows so copywriters can match it to a claim in
 
 ### Desktop (`desktop/`)
 
-| File                | Shows                                                                                                                                                                            |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `landing.png`       | The marketing landing page: "A picture tells a thousand words, tell your story" hero, the **Start drawing** CTA, and a mind-map editor preview below.                            |
-| `explorer.png`      | The Explorer library (`/live/explorer`): folders (Unsorted, Management, Product) with diagram counts, the Recent / Folders / Image Gallery / Shared sidebar, New diagram/folder. |
-| `new.png`           | The **Quick Start** new-diagram modal (`/live/new`): the template grid (Blank, Mind map, Org chart, Retrospective, Flowchart, Kanban, SWOT, Timeline) and the theme picker.      |
-| `share.png`         | The **Share this diagram** dialog: editor vs view-only links, optional password gate, active links with copy, create-new-link.                                                   |
-| `comments.png`      | A comment thread open on an element, the element toolbar, and the Comments panel listing comment-bearing elements.                                                               |
-| `more.png`          | The element context menu: Duplicate, Edit link, Bring to front / Send to back, Add note, Comment.                                                                                |
-| `settings.png`      | The Settings dialog with its grouped toggles: Canvas, Interface (Minimal panel layout), AI (AI Assistant), Privacy (anonymous usage events).                                     |
-| `org-hierarchy.png` | An org-chart diagram (CEO to VPs to leads) in **dark mode**, with theme-coloured tabs.                                                                                           |
-| `backlog.png`       | A Kanban sprint board (Backlog to Done) in dark mode, with the compact dock popover open.                                                                                        |
-| `sprint-review.png` | A retrospective / Sprint Review board with per-person image-upload cards, and the Tab Activity log panel.                                                                        |
+| File                | Shows                                                                                                                                                                             |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `landing.png`       | The marketing landing page: "A picture tells a thousand words, tell your story" hero, the **Start drawing** CTA, and a mind-map editor preview below.                             |
+| `explorer.png`      | The Explorer library (`/live/explorer`): folders (Unsorted, Management, Product) with document counts, the Recent / Folders / Image Gallery / Shared sidebar, New diagram/folder. |
+| `new.png`           | The **Quick Start** new-document modal (`/live/new`): the template grid (Blank, Mind map, Org chart, Retrospective, Flowchart, Kanban, SWOT, Timeline) and the theme picker.      |
+| `share.png`         | The **Share this diagram** dialog: editor vs view-only links, optional password gate, active links with copy, create-new-link.                                                    |
+| `comments.png`      | A comment thread open on an element, the element toolbar, and the Comments panel listing comment-bearing elements.                                                                |
+| `more.png`          | The element context menu: Duplicate, Edit link, Bring to front / Send to back, Add note, Comment.                                                                                 |
+| `settings.png`      | The Settings dialog with its grouped toggles: Canvas, Interface (Minimal panel layout), AI (AI Assistant), Privacy (anonymous usage events).                                      |
+| `org-hierarchy.png` | An org-chart diagram (CEO to VPs to leads) in **dark mode**, with theme-coloured tabs.                                                                                            |
+| `backlog.png`       | A Kanban sprint board (Backlog to Done) in dark mode, with the compact dock popover open.                                                                                         |
+| `sprint-review.png` | A retrospective / Sprint Review board with per-person image-upload cards, and the Tab Activity log panel.                                                                         |
 
 ### Mobile (`mobile/`)
 
@@ -31,9 +31,21 @@ captioned with what it shows so copywriters can match it to a claim in
 | -------------- | ------------------------------------------------------------------------------------------------ |
 | `canvas.PNG`   | The mobile editor: a diagram on the canvas with the bottom dock visible.                         |
 | `diagram.PNG`  | A diagram open on a phone, the dock collapsed so the canvas takes the full viewport.             |
-| `explorer.PNG` | The Explorer library on mobile, with the diagram list and the sidebar accessible from the dock.  |
+| `explorer.PNG` | The Explorer library on mobile, with the document list and the sidebar accessible from the dock. |
 | `palette.PNG`  | The mobile palette popover open above the dock, showing the shapes / tools / devices accordions. |
-| `search.PNG`   | The search panel on mobile, surfacing results across diagrams, folders, tabs, and elements.      |
+| `search.PNG`   | The search panel on mobile, surfacing results across documents, folders, tabs, and elements.     |
+
+## Icons (`icons/`)
+
+The brand mark. Its source is the apps' shared `apps/*/app/icon.svg`.
+
+| File                                   | Background                                                                                                       |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `livediagram-icon-{256,512,1024}.png`  | White. For surfaces that show the icon as a tile, such as social previews.                                       |
+| `livediagram-icon-transparent-<n>.png` | Transparent, at 16, 32, 64, 128, 256 and 512. For surfaces that draw their own background, such as Google Drive. |
+
+Regenerate the transparent set after changing the mark with `pnpm icons:brand`
+(`apps/live/scripts/brand-icons/render.mjs`, rendered by Playwright's Chromium).
 
 ## Guidance
 
@@ -56,6 +68,7 @@ media/
   README.md      this file
   desktop/       desktop product screenshots (see table above)
   mobile/        mobile product screenshots (see table above)
+  icons/         the brand mark as PNGs (see table above)
 ```
 
 Likely additions as the asset set grows:

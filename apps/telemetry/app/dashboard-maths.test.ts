@@ -56,7 +56,7 @@ describe('buildMetrics', () => {
     // `category|action|` is how the api encodes an event with no type. A ''
     // here would render as a stray separator in the label and never match a
     // null-typed row in the window counts.
-    const [m] = buildMetrics(daily({ 'Diagram|Created|': [1] }));
+    const [m] = buildMetrics(daily({ 'Document|Created|': [1] }));
     expect(m!.type).toBeNull();
   });
 
@@ -122,7 +122,7 @@ describe('buildWindowCounts', () => {
     last7: window_([{ category: 'Element', action: 'Added', type: 'Square', count: 9 }]),
     last30: window_([
       { category: 'Element', action: 'Added', type: 'Square', count: 40 },
-      { category: 'Diagram', action: 'Created', type: null, count: 7 },
+      { category: 'Document', action: 'Created', type: null, count: 7 },
     ]),
   };
 
@@ -138,7 +138,7 @@ describe('buildWindowCounts', () => {
 
   it('handles a null type the same way on both sides of the join', () => {
     const counts = buildWindowCounts(windows);
-    const [m] = buildMetrics(daily({ [metricKey('Diagram', 'Created', null)]: [7] }));
+    const [m] = buildMetrics(daily({ [metricKey('Document', 'Created', null)]: [7] }));
     expect(counts.last30.get(m!.key)).toBe(7);
   });
 
@@ -146,7 +146,7 @@ describe('buildWindowCounts', () => {
     // The caller distinguishes "no events in this window" from "not a metric",
     // so the lookup must not invent a zero.
     const counts = buildWindowCounts(windows);
-    expect(counts.today.get(metricKey('Diagram', 'Created', null))).toBeUndefined();
+    expect(counts.today.get(metricKey('Document', 'Created', null))).toBeUndefined();
   });
 
   it('builds a map for every window even when one is empty', () => {

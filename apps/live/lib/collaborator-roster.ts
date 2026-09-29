@@ -1,6 +1,6 @@
 import type { Participant, ParticipantStatus } from '@/lib/identity';
 
-// The Collaborators modal's roster (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the diagram,
+// The Collaborators modal's roster (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the document,
 // grouped by the tab they are on. Built from the same `participantsByTab`
 // map the tab bar's presence stacks render, so the modal and the stacks can
 // never disagree about who is where.

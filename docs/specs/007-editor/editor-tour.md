@@ -9,10 +9,10 @@ card were removed once this tour proved the better introduction.
 
 ## Where it appears
 
-- **Automatically, on a brand-new user's first diagram.** When a
-  **zero-owned-diagrams** user (the `/new` page already learns the count
+- **Automatically, on a brand-new user's first document.** When a
+  **zero-owned-documents** user (the `/new` page already learns the count
   from the Jump-back-in fetch; `null` = unknown = no offer) creates a
-  diagram through the wizard (any path: Create or Skip), the editor opens
+  document through the wizard (any path: Create or Skip), the editor opens
   with a centred **welcome offer card**: "Show me around" starts the tour,
   "No thanks" dismisses it. There is no wizard toggle; the offer IS the
   opt-in, and declining must be one obvious, equal-weight click.
@@ -45,7 +45,7 @@ card were removed once this tour proved the better introduction.
 
 ## Handoff
 
-Create hard-navigates to `/diagram/<id>`, so the intent crosses pages via a
+Create hard-navigates to `/document/<id>`, so the intent crosses pages via a
 **sessionStorage flag** (`livediagram:v2:tour-pending`), set just before
 `window.location.assign`. The editor PEEKS at the flag and clears it only
 when the offer is **resolved** (completed, skipped, or declined) — never on
@@ -77,7 +77,7 @@ live in `apps/live/components/tour/tour-steps.ts`):
    Shapes / Tools / Components / Devices / Icons / Technology). A
    dedicated "Tools category" step existed briefly and was cut — the
    category dropdown already tells that story.
-4. **The Explorer**: the in-editor diagram/folder browser.
+4. **The Explorer**: the in-editor document/folder browser.
 5. **Element context menu**: selects an element (adding a theme-coloured
    square at the viewport centre first if the tab is empty) and opens its
    right-click menu programmatically.
@@ -102,7 +102,7 @@ ring surrounds the current target; it never blocks pointer input, so the
 user can poke at whatever is highlighted mid-tour. Phase changes are
 animated: the ring keeps the previous rect and **glides** to the next
 target, the popover transitions its position, and the card content slides
-directionally (the New Diagram wizard's tip-next / tip-prev motion). The
+directionally (the New Document wizard's tip-next / tip-prev motion). The
 dropdown steps highlight the **union** of the trigger button and its
 portalled menu, so the ring wraps the whole control, not the floating menu
 alone.
@@ -124,7 +124,7 @@ alone.
   [Event storming](../021-event-storming/event-storming.md)), so an anchor with no client rects is
   treated as absent — it is never clicked and never measured. That is the
   safety net; the step list itself is filtered up front (`tourStepsFor`,
-  by viewport and board kind) so the "N of M" count stays honest instead
+  by viewport and tab kind) so the "N of M" count stays honest instead
   of a hidden step burning its timeout mid-tour.
 - **Mobile + minimal panel layout**: panels there live behind the dock
   button row ([Live app](live-app.md) / [Canvas and palette](../008-canvas/canvas-and-palette.md)), so palette/explorer steps first tap the

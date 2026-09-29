@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TextRun } from '@livediagram/diagram';
+import type { TextRun } from '@livediagram/document';
 import { noteRunHref, noteRunStyle, NOTE_BASE_PX } from './note-run-style';
 import { noteRuns, runsToLines } from './NoteRichText';
 

@@ -4,7 +4,7 @@
 //
 // Spotlight is a LOCAL view aid: it dims the canvas and keeps a soft circle
 // of light around the cursor clear. The light follows the pointer in SCREEN
-// space (it must not pan / zoom with the diagram), so `pos` is stored in
+// space (it must not pan / zoom with the canvas), so `pos` is stored in
 // pixels relative to the canvas <main>, not in canvas-coords. Left-click
 // grows the light, right-click shrinks it; the radius is clamped and
 // persists across tool switches (the hook outlives a Pan/Select detour

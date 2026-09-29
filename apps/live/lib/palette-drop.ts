@@ -2,7 +2,7 @@
 //
 // Clicking a palette tile ARMS it: the next click on the canvas draws that
 // thing. Dragging the tile onto the canvas draws it too — and used to leave
-// the tile still armed afterwards, so the next click anywhere on the board
+// the tile still armed afterwards, so the next click anywhere on the canvas
 // silently minted a second note. The drag already did what the arming was for,
 // so landing a palette drag disarms it.
 //

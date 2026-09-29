@@ -6,7 +6,7 @@ import { LaserMode } from '@/components/illustrations/palette-modes';
 export const metadata = helpMetadata({
   title: 'Laser Pointer',
   description:
-    'Use the Laser Pointer mode in livediagram to draw a temporary, fading trail that highlights parts of a diagram while presenting.',
+    'Use the Laser Pointer mode in livediagram to draw a temporary, fading trail that highlights parts of the canvas while presenting.',
   path: '/help/selection-modes/laser/',
 });
 
@@ -18,11 +18,11 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("laser")}
 >
 
-The Laser Pointer mode gives you a temporary laser trail for drawing attention while presenting or walking a group through a diagram. Choose it from the mode picker at the top of the floating palette, or press **`K`**.
+The Laser Pointer mode gives you a temporary laser trail for drawing attention while presenting or walking a group through the canvas. Choose it from the mode picker at the top of the floating palette, or press **`K`**.
 
 ## How it works
 
-Move the cursor to leave a glowing trail that fades on its own. It is purely for emphasis: it draws nothing permanent and changes none of your elements, so you can gesture freely without altering the diagram.
+Move the cursor to leave a glowing trail that fades on its own. It is purely for emphasis: it draws nothing permanent and changes none of your elements, so you can gesture freely without altering the canvas.
 
 <Figure caption="The Laser Pointer is lit in the mode picker, leaving a glowing trail that fades behind the cursor.">
   <LaserMode />
@@ -33,7 +33,7 @@ Move the cursor to leave a glowing trail that fades on its own. It is purely for
 While the mode is active a **Laser** panel sits under the palette, with four settings over a live preview of the stroke:
 
 - **Width** — Fine, Medium, or Bold.
-- **Colour** — your own participant colour (the default) or one of eight presets, for when your colour doesn't read against the diagram you are presenting.
+- **Colour** — your own participant colour (the default) or one of eight presets, for when your colour doesn't read against the canvas you are presenting.
 - **Trail** — how long the line lingers: Quick, Normal, or Long. Long turns the pointer into something you can draw a shape with.
 - **Effect** — **Beam** (a clean line), **Glow** (a soft halo that survives a projector), **Comet** (tapers away behind the tip), or **Spark** (a dotted trail).
 
@@ -41,7 +41,7 @@ Everyone in the room sees your pen, not their own default, and the settings are 
 
 ## The laser inside a presentation
 
-The laser is not only an editor tool. While you are running a [slide deck](/help/selection-modes/slide-deck/presenting/), press **`L`** to arm it over the slide and `L` again to put it away. It is one of only two tools reachable from a presentation (the [spotlight](/help/selection-modes/spotlight/) is the other), because pointing at the diagram is the one thing a presenter needs to do to it and neither tool can change it.
+The laser is not only an editor tool. While you are running a [slide deck](/help/selection-modes/slide-deck/presenting/), press **`L`** to arm it over the slide and `L` again to put it away. It is one of only two tools reachable from a presentation (the [spotlight](/help/selection-modes/spotlight/) is the other), because pointing at the canvas is the one thing a presenter needs to do to it and neither tool can change it.
 
 While the laser is armed, clicking draws rather than advancing the slide. The keys and the buttons in the presenter's controls still move the deck. Leaving the presentation gives your tool back the way you found it.
 

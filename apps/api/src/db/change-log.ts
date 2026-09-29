@@ -1,4 +1,4 @@
-// change_log — per-diagram audit log (migration 0004). Row shape and
+// change_log — per-document audit log (migration 0004). Row shape and
 // the denormalisation fallback live in change-log-row.ts (so the
 // pure mapper has its own test surface); D1 queries here use them.
 
@@ -6,18 +6,18 @@ import { CHANGE_LOG_LIST_LIMIT } from '@livediagram/api-schema';
 import { rowToChangeLog, type ChangeLogRow } from '../change-log-row';
 import type { ChangeLogEntryDTO, Env } from '../types';
 
-// Per-diagram log read: change_log.diagram_id was dropped in
+// Per-document log read: the change log's own document column was dropped in
 // migration 0012 (item #14), so the filter joins through
-// diagram_tabs to find every tab currently linked to the diagram
+// document_tabs to find every tab currently linked to the document
 // and pulls log entries for those tabs. A tab shared between
-// diagrams surfaces in both diagrams' logs — which is the right
-// answer once docs/specs/006-diagram/tab-diagram-many-to-many.md's many-to-many tabs land: the change exists
-// in every diagram it shows up in.
+// documents surfaces in both documents' logs — which is the right
+// answer once docs/specs/006-document/tab-document-many-to-many.md's many-to-many tabs land: the change exists
+// in every document it shows up in.
 // `onlyTabId` narrows the list to one tab for a tab-scoped visitor
 // (docs/specs/013-workspace/tab-scoped-share-links.md), in SQL so the cap applies to that tab.
 export async function listChangeLog(
   env: Env,
-  diagramId: string,
+  documentId: string,
   onlyTabId: string | null = null,
 ): Promise<ChangeLogEntryDTO[]> {
   // LEFT JOIN through participants so rows whose author has been
@@ -30,16 +30,16 @@ export async function listChangeLog(
             p.color AS participant_color,
             cl.kind, cl.summary, cl.element_ids, cl.before_state, cl.after_state, cl.created_at
        FROM change_log cl
-       JOIN diagram_tabs dt ON dt.tab_id = cl.tab_id
+       JOIN document_tabs dt ON dt.tab_id = cl.tab_id
        LEFT JOIN participants p ON p.id = cl.participant_id
-      WHERE dt.diagram_id = ?${onlyTabId === null ? '' : ' AND cl.tab_id = ?'}
+      WHERE dt.document_id = ?${onlyTabId === null ? '' : ' AND cl.tab_id = ?'}
       ORDER BY cl.created_at DESC
       LIMIT ?`,
   )
     .bind(
       ...(onlyTabId === null
-        ? [diagramId, CHANGE_LOG_LIST_LIMIT]
-        : [diagramId, onlyTabId, CHANGE_LOG_LIST_LIMIT]),
+        ? [documentId, CHANGE_LOG_LIST_LIMIT]
+        : [documentId, onlyTabId, CHANGE_LOG_LIST_LIMIT]),
     )
     .all<ChangeLogRow>();
   return (result.results ?? []).map(rowToChangeLog);
@@ -90,34 +90,34 @@ export async function insertChangeLogEntry(env: Env, entry: ChangeLogEntryDTO): 
 // Bulk-drop every log entry for a tab. Used by the live app when it
 // deletes a tab — the tab no longer exists, its history is dead with
 // it. See docs/specs/012-collaboration/activity-and-audit.md. The delete is SCOPED to the
-// caller's diagram (via diagram_tabs): migration 0012 dropped
-// change_log.diagram_id, so a bare `WHERE tab_id = ?` would let an
-// owner of one diagram wipe a foreign diagram's tab log by id (IDOR).
-// Requiring the tab to be linked to `diagramId` (which the route has
+// caller's document (via document_tabs): migration 0012 dropped
+// change_log.document_id, so a bare `WHERE tab_id = ?` would let an
+// owner of one document wipe a foreign document's tab log by id (IDOR).
+// Requiring the tab to be linked to `documentId` (which the route has
 // already authorised) closes that.
 export async function deleteChangeLogForTab(
   env: Env,
-  diagramId: string,
+  documentId: string,
   tabId: string,
 ): Promise<void> {
   await env.DB.prepare(
     `DELETE FROM change_log
       WHERE tab_id = ?
-        AND tab_id IN (SELECT tab_id FROM diagram_tabs WHERE diagram_id = ?)`,
+        AND tab_id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?)`,
   )
-    .bind(tabId, diagramId)
+    .bind(tabId, documentId)
     .run();
 }
 
 // Drop a single log entry. Used by the live app when the user clicks
 // Revert — the original entry vanishes rather than gaining a
 // 'reverted' counterpart, so the log stays compact. SCOPED to the
-// caller's diagram for the same reason as deleteChangeLogForTab: the
-// entry id alone is not diagram-bound post-0012, so the delete must
-// confirm the entry's tab belongs to the authorised diagram.
+// caller's document for the same reason as deleteChangeLogForTab: the
+// entry id alone is not document-bound post-0012, so the delete must
+// confirm the entry's tab belongs to the authorised document.
 export async function deleteChangeLogEntry(
   env: Env,
-  diagramId: string,
+  documentId: string,
   entryId: string,
   // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) deletes on their tab only.
   onlyTabId: string | null = null,
@@ -125,9 +125,9 @@ export async function deleteChangeLogEntry(
   await env.DB.prepare(
     `DELETE FROM change_log
       WHERE id = ?
-        AND tab_id IN (SELECT tab_id FROM diagram_tabs WHERE diagram_id = ?)${onlyTabId === null ? '' : '\n        AND tab_id = ?'}`,
+        AND tab_id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?)${onlyTabId === null ? '' : '\n        AND tab_id = ?'}`,
   )
-    .bind(...(onlyTabId === null ? [entryId, diagramId] : [entryId, diagramId, onlyTabId]))
+    .bind(...(onlyTabId === null ? [entryId, documentId] : [entryId, documentId, onlyTabId]))
     .run();
 }
 

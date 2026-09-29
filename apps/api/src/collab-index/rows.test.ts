@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import { collabIndexRowsFromElements } from './rows';
 
 // The pure projection every tab write feeds the collaboration index

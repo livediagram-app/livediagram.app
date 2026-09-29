@@ -16,10 +16,10 @@
 // up to 24 px onto shared lines; that overreached — it resized deliberately
 // varied elements and shuffled rows, so a tidy intent often came out worse.
 // Structural re-layout (reading the arrow graph, relocating freely) is the
-// separate **Auto Layout** / Tidy up pass (`packages/diagram/auto-layout.ts`).
+// separate **Auto Layout** / Tidy up pass (`packages/document/auto-layout.ts`).
 
 import { MIN_SIZE } from './canvas';
-import { isBoxed, type Element } from '@livediagram/diagram';
+import { isBoxed, type Element } from '@livediagram/document';
 
 // Snap step in canvas pixels. Picked so the rounding is visible
 // enough to tidy up drift (a 3 px misalignment becomes 0 or 10) but

@@ -1,3 +1,8 @@
+import {
+  fromLegacyRequest,
+  isLegacyDocumentsPath,
+  toLegacyResponse,
+} from './legacy-documents-alias';
 import { getClerkIdentity } from './auth/clerk';
 import { noteAuthSighting } from './auth/session-telemetry';
 import { emailEnabled } from './email/client';
@@ -12,7 +17,7 @@ import {
   deleteOldTimelineEvents,
   purgeExpiredTrash,
   resolveApiToken,
-  trashEmptyDiagrams,
+  trashEmptyDocuments,
 } from './db';
 import {
   apiRouteLabel,
@@ -26,7 +31,7 @@ import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
-import { DiagramRoom } from './diagram-room';
+import { DocumentRoom } from './document-room';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { insertTelemetryEvents } from './db/telemetry';
 import { clientIp } from './client-ip';
@@ -39,7 +44,7 @@ import { handleOpenapi } from './routes/openapi';
 import { handleCustomThemes } from './routes/custom-themes';
 import { handleUnfurl } from './routes/unfurl';
 import type { RouteContext } from './routes/context';
-import { handleDiagrams } from './routes/diagrams';
+import { handleDocuments } from './routes/documents';
 import { handleEvents } from './routes/events';
 import { handleFolders } from './routes/folders';
 import { handleImages } from './routes/images';
@@ -57,7 +62,7 @@ import { handleTelemetry } from './routes/telemetry';
 import { handleTrash } from './routes/trash';
 import type { Env } from './types';
 
-export { DiagramRoom };
+export { DocumentRoom };
 
 // Per-owner write rate limit (security audit item). Returns true
 // when the caller is over the configured cap (wrangler.toml's
@@ -74,10 +79,17 @@ async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
 // the welcomeOnSighting call below.
 const sightedThisIsolate = new Set<string>();
 
-export default {
+const worker = {
   async fetch(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: CORS_HEADERS });
+    }
+    // The deprecated /api/diagrams… alias: served by the /api/documents… routes, in the old shape.
+    if (isLegacyDocumentsPath(new URL(request.url).pathname)) {
+      console.warn('[legacy-documents-alias]', request.method, new URL(request.url).pathname);
+      const current = await fromLegacyRequest(request, MAX_BODY_BYTES);
+      if (!current) return payloadTooLarge();
+      return toLegacyResponse(await worker.fetch(current, env, executionCtx));
     }
 
     const url = new URL(request.url);
@@ -88,7 +100,7 @@ export default {
     // the top of the handler — null when `CLERK_JWKS_URL` is unset,
     // no Bearer was sent, or the token failed verification. Every
     // dispatch site below uses `resolveOwner()` instead of the legacy
-    // `ownerOf(request)`, so a signed-in user's diagrams come back
+    // `ownerOf(request)`, so a signed-in user's documents come back
     // under their Clerk userId and guests keep working via the
     // legacy `X-Owner-Id` header.
     const clerkIdentity = await getClerkIdentity(env, request);
@@ -179,13 +191,13 @@ export default {
     // Per-owner write rate limit. Gates POST / PUT / DELETE at a
     // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
     // pacing under Cloudflare's DDoS threshold still can't spam
-    // diagram / image creation through to D1 / R2 quota
+    // document / image creation through to D1 / R2 quota
     // exhaustion. Reads pass through untouched. When neither a
     // Clerk token nor X-Owner-Id resolves the caller, fall back to
     // a literal 'anonymous' key so one unauthenticated client still
     // can't burn the global quota. Telemetry ingest (/api/events)
     // is deliberately exempt: it's anonymous, high-frequency, and
-    // must never compete with a user's real diagram writes for the
+    // must never compete with a user's real document writes for the
     // per-owner write budget (docs/specs/017-telemetry/telemetry.md). Client-side batching keeps
     // its volume low instead.
     const isWrite =
@@ -217,7 +229,7 @@ export default {
     // whole session's realtime (the connector has no reconnect loop).
     // Mint volume is one row per room join and the route does no
     // unbounded work, so it isn't a quota-exhaustion vector.
-    const isRoomTicketMint = segments[1] === 'diagrams' && segments[3] === 'room-ticket';
+    const isRoomTicketMint = segments[1] === 'documents' && segments[3] === 'room-ticket';
     if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint) {
       // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
       // runaway integration is throttled independently of the owner's
@@ -283,8 +295,8 @@ export default {
           return await handleShared(ctx);
         case 'images':
           return await handleImages(ctx);
-        case 'diagrams':
-          return await handleDiagrams(ctx);
+        case 'documents':
+          return await handleDocuments(ctx);
         case 'folders':
           return await handleFolders(ctx);
         case 'custom-themes':
@@ -325,7 +337,7 @@ export default {
       // Same TELEMETRY_ENABLED gate as the ingest; off the response's
       // critical path (waitUntil), and its own failure is swallowed —
       // the 500 must still go out. The type names the endpoint by its
-      // route words only (`Internal.Put.Diagrams.Tabs`), never an id.
+      // route words only (`Internal.Put.Documents.Tabs`), never an id.
       if (env.TELEMETRY_ENABLED === 'true') {
         const type = errorTypeToken('Internal', apiRouteLabel(request.method, url.pathname));
         const report = insertTelemetryEvents(
@@ -350,8 +362,8 @@ export default {
   //   - images,     30-day floor, unused only, after the reference-index backfill
   //                 (docs/specs/009-elements/images.md "Retention").
   //   - trash,      30 days after deletion (docs/specs/013-workspace/trash.md).
-  //   - empty,      diagrams empty and unsaved for 30 days move to the Trash
-  //                 (docs/specs/013-workspace/empty-diagram-cleanup.md).
+  //   - empty,      documents empty and unsaved for 30 days move to the Trash
+  //                 (docs/specs/013-workspace/empty-document-cleanup.md).
   // All are no-ops when nothing is over the floor; all use
   // `ctx.waitUntil` so they run concurrently and the worker can
   // exit as soon as the schedule callback returns.
@@ -404,15 +416,15 @@ export default {
       // 30 days, oldest first, capped per run (TRASH_PURGE_MAX_BATCHES).
       ctx.waitUntil(
         purgeExpiredTrash(env, now)
-          .then((count) => console.log(`trash sweep: purged ${count} diagrams`))
+          .then((count) => console.log(`trash sweep: purged ${count} documents`))
           .catch((err) => console.error('trash sweep failed', err)),
       );
-      // docs/specs/013-workspace/empty-diagram-cleanup.md: move diagrams empty and
+      // docs/specs/013-workspace/empty-document-cleanup.md: move documents empty and
       // unsaved for 30 days to the Trash, stamped `now`, so the purge above
       // never takes one this run: it waits its full 30 days there.
       ctx.waitUntil(
-        trashEmptyDiagrams(env, now)
-          .then((count) => console.log(`empty sweep: moved ${count} diagrams to the Trash`))
+        trashEmptyDocuments(env, now)
+          .then((count) => console.log(`empty sweep: moved ${count} documents to the Trash`))
           .catch((err) => console.error('empty sweep failed', err)),
       );
       // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
@@ -421,6 +433,8 @@ export default {
     }
   },
 } satisfies ExportedHandler<Env>;
+
+export default worker;
 
 // Run one daily retention sweep in the background: delete rows older than
 // `cutoff`, then log the count (or the failure) to `wrangler tail`. The

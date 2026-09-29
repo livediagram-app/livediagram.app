@@ -38,19 +38,19 @@ describe('eventTone', () => {
     expect(eventTone('team_member_left')).toBe('structural');
     expect(eventTone('team_invite_declined')).toBe('structural');
     expect(eventTone('comment_resolved')).toBe('create');
-    expect(eventTone('diagram_moved')).toBe('structural');
+    expect(eventTone('document_moved')).toBe('structural');
   });
 
   it('treats renames and team changes as structural', () => {
-    expect(eventTone('diagram_renamed')).toBe('structural');
+    expect(eventTone('document_renamed')).toBe('structural');
     expect(eventTone('team_member_joined')).toBe('structural');
     expect(eventTone('team_role_changed')).toBe('structural');
     expect(eventTone('share_link_created')).toBe('structural');
   });
 
   it('treats making and editing as create', () => {
-    expect(eventTone('diagram_created')).toBe('create');
-    expect(eventTone('diagram_edited')).toBe('create');
+    expect(eventTone('document_created')).toBe('create');
+    expect(eventTone('document_edited')).toBe('create');
     expect(eventTone('comment_added')).toBe('create');
   });
 

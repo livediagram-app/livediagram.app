@@ -6,7 +6,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { TabBar } from './TabBar';
 
 type Props = ComponentProps<typeof TabBar>;
@@ -22,7 +22,7 @@ function props(over: Partial<Props>): Props {
     tabs,
     activeId: 't1',
     activeTabHasContent: false,
-    otherDiagrams: [],
+    otherDocuments: [],
     participantsByTab: new Map(),
     selfId: 'me',
     ...over,

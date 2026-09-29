@@ -1,5 +1,5 @@
 // Barrel for the livediagram HTTP/WS client. The implementation is split
-// by domain under lib/api/* (core plumbing + diagrams / tabs / share /
+// by domain under lib/api/* (core plumbing + documents / tabs / share /
 // change-log / folders / self / room / images / preferences / ai); this
 // file re-exports the public surface so existing `@/lib/api-client`
 // imports keep working unchanged.
@@ -34,7 +34,7 @@ export { ApiError, SessionTokenUnavailableError } from './api/core';
 export { reportSaveFailure, setApiErrorReporter } from './api/error-report';
 export {
   API_BASE,
-  DIAGRAM_LIST_LOAD_SAFETY_MS,
+  DOCUMENT_LIST_LOAD_SAFETY_MS,
   setTokenProvider,
   setSessionSharePassword,
   getSessionSharePassword,
@@ -42,7 +42,7 @@ export {
   writeCachedSharePassword,
 } from './api/core';
 
-export * from './api/diagrams';
+export * from './api/documents';
 export * from './api/tabs';
 export * from './api/qa-board';
 export * from './api/share';

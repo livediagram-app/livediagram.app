@@ -9,7 +9,7 @@ import {
   type DistributionGuide,
   type Element,
   type EsTimeline,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
 import type { LanePreview } from '@/lib/lane-preview';
 

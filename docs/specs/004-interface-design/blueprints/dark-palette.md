@@ -14,9 +14,9 @@ Scope, by file:
 | `packages/tailwind-config/theme.css`                  | `.dark` surface + Steel tokens                                                           |
 | `packages/ui/src/brand-classes.ts`                    | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
 | `packages/ui/src/Brand.tsx`                           | Wordmark accent `dark:text-sky-400`                                                      |
-| `packages/diagram/src/canvas-colors.ts`               | Dark canvas + pattern constants                                                          |
-| `packages/diagram/src/colors.ts`                      | `DARK_INK`, `defaultArrowLabelColor`                                                     |
-| `packages/diagram/src/svg-render-arrows.ts`           | Export caption colour through `defaultArrowLabelColor`                                   |
+| `packages/document/src/canvas-colors.ts`              | Dark canvas + pattern constants                                                          |
+| `packages/document/src/colors.ts`                     | `DARK_INK`, `defaultArrowLabelColor`                                                     |
+| `packages/document/src/svg-render-arrows.ts`          | Export caption colour through `defaultArrowLabelColor`                                   |
 | `packages/template-previews/src/preview-art-tile.css` | Editor `.dark` tile rule landing on the canvas colour                                    |
 | `apps/live/components/canvas/ArrowView.tsx`           | Canvas caption colour through `defaultArrowLabelColor`                                   |
 | `apps/live/components/canvas/element-variant.ts`      | `DARK_SELECTION_RING` on every single selection                                          |
@@ -81,7 +81,7 @@ Invariants:
 export const SOLID_BRAND_DARK = 'dark:bg-brand-600';
 export const SOLID_BRAND_DARK_CONTROL = 'dark:bg-brand-600 dark:hover:bg-brand-700';
 
-// packages/diagram/src/colors.ts
+// packages/document/src/colors.ts
 export function defaultArrowLabelColor(
   arrow: { strokeColor?: string; textColor?: string },
   surface?: CanvasSurface, // default 'light'
@@ -193,7 +193,7 @@ The Charcoal migration logs as its blueprint states.
 
 | Rule                                                         | Test                                                                       |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| Dark canvas, blended pattern, ink values                     | `packages/diagram/src/canvas-ink.test.ts`, `default-scheme.test.ts`        |
+| Dark canvas, blended pattern, ink values                     | `packages/document/src/canvas-ink.test.ts`, `default-scheme.test.ts`       |
 | Stroke >= 3:1 on canvas and fill; text >= 4.5:1              | `canvas-ink.test.ts`, "dark ink contrast"                                  |
 | Caption colour (B3, I4)                                      | `canvas-ink.test.ts`, "defaultArrowLabelColor"                             |
 | Export caption uses the same colour                          | `svg-render.test.ts`, "caption colour on dark paper"                       |

@@ -3,7 +3,7 @@ import {
   ANIMATED_BACKGROUND_PATTERNS,
   type AnimatedBackgroundPattern,
   type BackgroundPattern,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { tabBackgroundStyle, worldPatternOrigin } from './canvas-backgrounds';
 
 // `tabBackgroundStyle` is the single entry point Canvas stamps onto

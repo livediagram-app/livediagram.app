@@ -2,7 +2,7 @@
 // navigation-only isometric canvas tool. Kept out of Canvas.tsx so the
 // geometry is unit-testable and the canvas just consumes the values.
 
-import { shapePolygonVertices, type BoxedElement, type ShapeKind } from '@livediagram/diagram';
+import { shapePolygonVertices, type BoxedElement, type ShapeKind } from '@livediagram/document';
 
 // Whether a boxed element gets an extrusion column in isometric view
 // (docs/specs/008-canvas/isometric-view.md). One predicate shared by the live IsometricDepthLayer and both
@@ -17,7 +17,7 @@ import { shapePolygonVertices, type BoxedElement, type ShapeKind } from '@livedi
 //   anonymous block and buries the artwork.
 export function isoExtrudes(el: BoxedElement): boolean {
   if (el.type === 'text') return false;
-  // A sticker is a flat thing stuck ON the board (docs/specs/010-palette/stickers.md), so it gets no
+  // A sticker is a flat thing stuck ON the canvas (docs/specs/010-palette/stickers.md), so it gets no
   // extruded column — the same reason a glyph and a frame section don't.
   if (
     el.type === 'shape' &&
@@ -32,7 +32,7 @@ export function isoExtrudes(el: BoxedElement): boolean {
 // circle / diamond / cylinder reads as a square block behind the shape (the
 // reported bug). Clipping every layer to the shape's own outline makes the
 // column follow the silhouette instead. The polygon points come from the
-// shared geometry table (@livediagram/diagram shape-geometry.ts), whose
+// shared geometry table (@livediagram/document shape-geometry.ts), whose
 // `0 0 100 100` viewBox equals CSS percentages, so the extrusion and the
 // painted shape share one geometry source. Shapes without an entry (square,
 // browser, document, cloud, devices, text / sticky / image / table …) fall
@@ -99,7 +99,7 @@ export function clampElevation(deg: number): number {
 // `pivot` (canvas px, relative to the wrapper centre — see isoPivot) makes
 // the tilt rotate AROUND the content's own centre instead of the wrapper
 // centre. Without it the rotation pivots about the wrapper centre, so any
-// diagram whose centre sits away from that point swings off-screen the
+// content whose centre sits away from that point swings off-screen the
 // instant the view tilts (and again as you orbit). Wrapping the rotation in
 // translate(pivot) … translate(-pivot) pins the content centre in place; the
 // translates stay INSIDE this fragment, so the pan offset (outside it) is
@@ -116,7 +116,7 @@ export function isoTransform(
 
 // The 2D affine matrix equivalent of `isoTransform` for a flat (z=0) plane,
 // used by the image export (docs/specs/010-palette/style-presets.md isometric export). Isometric is a parallel
-// (orthographic) projection with no perspective, so projecting the diagram
+// (orthographic) projection with no perspective, so projecting the canvas
 // plane under `rotateX(elevation) rotateZ(azimuth)` collapses to a plain 2x2
 // affine map: an in-plane rotation by the azimuth, then a vertical squash by
 // cos(elevation) (the tilt's foreshortening). Returned in canvas

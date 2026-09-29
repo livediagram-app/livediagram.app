@@ -1,5 +1,5 @@
 // Relative-time formatting shared by the footer save indicator, the
-// Explorer's "Your diagrams" list, and the Activity panel rows.
+// Explorer's "Your documents" list, and the Activity panel rows.
 // Kept here so all three panels read identically — previously each
 // surface had its own slightly different copy.
 //

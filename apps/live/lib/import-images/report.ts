@@ -9,7 +9,7 @@ const FAILURE_SENTENCES: Record<ImportImageFailure, string> = {
   'too-large': 'The image was too large to import.',
   'gallery-full': "Your image gallery is full. Free up space in the Explorer's Image Gallery.",
   'images-unavailable': "This server doesn't store images.",
-  'offline-budget': 'This offline diagram reached its image limit for one import.',
+  'offline-budget': 'This offline document reached its image limit for one import.',
   'upload-failed': "The upload didn't go through. Check your connection and try again.",
 };
 

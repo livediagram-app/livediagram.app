@@ -1,7 +1,7 @@
 // Share-link + share-password calls (docs/specs/013-workspace/share-password.md): resolve a share code to
-// a diagram, list/create/delete links, and set the diagram password.
+// a document, list/create/delete links, and set the document password.
 import type {
-  DiagramResponse,
+  DocumentResponse,
   ShareLink,
   ShareLinkExpiry,
   ShareLinkResponse,
@@ -14,14 +14,14 @@ import {
   apiHeaders,
   expectOk,
   expectOkOrNull,
-  type SharedDiagramResolution,
+  type SharedDocumentResolution,
   type ShareLinksResponse,
   type SharePasswordResponse,
   apiFetch,
 } from './core';
 
-// Resolve a share code to a full diagram + the role granted by that
-// code. Visitors landing on `/diagram/shared?s=<code>` use
+// Resolve a share code to a full document + the role granted by that
+// code. Visitors landing on `/document/shared?s=<code>` use
 // this; revoked codes return 404 from the API. Deduped by `${code}|
 // ${ownerId}` so Strict Mode's double-invoke doesn't fire two share
 // lookups for the same visitor, while a different visitor on the
@@ -32,11 +32,11 @@ import {
 async function _apiLoadShared(
   code: string,
   ownerId: string,
-): Promise<SharedDiagramResolution | null> {
+): Promise<SharedDocumentResolution | null> {
   const res = await apiFetch(`${API_BASE}/share/${code}`, {
     headers: await apiHeaders(ownerId, { share: null }),
   });
-  // Password gate (docs/specs/013-workspace/share-password.md): 401 = the diagram is protected and we sent
+  // Password gate (docs/specs/013-workspace/share-password.md): 401 = the document is protected and we sent
   // no (or no longer-valid) password; 403 = we sent a wrong one. Both
   // surface as `passwordRequired` so the editor shows the gate; only
   // 403 flags `invalid` so it can show an error line. The password the
@@ -44,13 +44,13 @@ async function _apiLoadShared(
   if (res.status === 401 || res.status === 403) {
     return { passwordRequired: true, invalid: res.status === 403 };
   }
-  const body = await expectOkOrNull<DiagramResponse & { role?: ShareRole; tabId?: string | null }>(
+  const body = await expectOkOrNull<DocumentResponse & { role?: ShareRole; tabId?: string | null }>(
     res,
     'load shared',
   );
   if (!body) return null;
   return {
-    diagram: body.diagram,
+    document: body.document,
     role: body.role === 'view' ? 'view' : 'edit',
     tabId: typeof body.tabId === 'string' ? body.tabId : null,
   };
@@ -63,13 +63,13 @@ export const apiLoadShared = dedupeInFlight(
 // Deduped on `${ownerId}|${id}`: editor mount fires this for the
 // share-dialog state alongside the other read endpoints. Strict
 // Mode doubling collapses to one fetch.
-// Returns the diagram's share links AND its current share password
+// Returns the document's share links AND its current share password
 // (docs/specs/013-workspace/share-password.md) in one owner-only round-trip — the Share dialog needs both.
 async function _apiListShareLinks(
   ownerId: string,
   id: string,
 ): Promise<{ links: ShareLink[]; password: string | null }> {
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}/share`, {
     headers: await apiHeaders(ownerId),
   });
   const { links, password } = await expectOk<ShareLinksResponse>(res, 'list share links');
@@ -80,14 +80,14 @@ export const apiListShareLinks = dedupeInFlight(
   (ownerId, id) => `${ownerId}|${id}`,
 );
 
-// Set (or clear, with null / empty) the diagram's share password.
+// Set (or clear, with null / empty) the document's share password.
 // Owner-only on the api side. Returns the stored value (normalised).
 export async function apiSetSharePassword(
   ownerId: string,
   id: string,
   password: string | null,
 ): Promise<string | null> {
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share-password`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}/share-password`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ password }),
@@ -104,7 +104,7 @@ export async function apiCreateShareLink(
   // The one tab the link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
   tabId: string | null = null,
 ): Promise<ShareLink> {
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}/share`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ role, expiry, tabId }),
@@ -120,7 +120,7 @@ export async function apiExtendShareLink(
   id: string,
   code: string,
 ): Promise<ShareLink> {
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share/${code}/extend`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}/share/${code}/extend`, {
     method: 'POST',
     headers: await apiHeaders(ownerId),
   });
@@ -136,7 +136,7 @@ export async function apiRescopeShareLink(
   code: string,
   tabId: string | null,
 ): Promise<ShareLink> {
-  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share/${code}`, {
+  const res = await apiFetch(`${API_BASE}/documents/${id}/share/${code}`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ tabId }),
@@ -146,7 +146,7 @@ export async function apiRescopeShareLink(
 }
 
 export async function apiDeleteShareLink(ownerId: string, id: string, code: string): Promise<void> {
-  return apiDelete(`${API_BASE}/diagrams/${id}/share/${code}`, ownerId, {
+  return apiDelete(`${API_BASE}/documents/${id}/share/${code}`, ownerId, {
     action: 'delete share link',
   });
 }

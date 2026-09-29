@@ -7,8 +7,8 @@ import type {
   SelectionMode,
   SessionTool,
   ShapeKind,
-} from '@livediagram/diagram';
-import { EMBED_PROVIDER_LABEL, eventStormingNote } from '@livediagram/diagram';
+} from '@livediagram/document';
+import { EMBED_PROVIDER_LABEL, eventStormingNote } from '@livediagram/document';
 
 // Draw-to-size intent. Picking any element from the palette except the
 // annotation (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas
@@ -74,7 +74,7 @@ export type PendingDraw =
   // gestural by definition) and the gesture collects a
   // stream of pointer samples during the drag, simplified +
   // smoothed on release into a FreehandElement (see docs/specs/008-canvas/canvas-and-palette.md Pencil
-  // (freehand) subsection, docs/specs/006-diagram/diagram-structure.md FreehandElement). The
+  // (freehand) subsection, docs/specs/006-document/document-structure.md FreehandElement). The
   // 'highlighter' variant (docs/specs/008-canvas/highlighter.md) rides the same gesture but
   // commits the marker recipe: no shape recognition, no
   // close-to-fill, wide translucent stroke.

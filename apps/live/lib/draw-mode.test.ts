@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EMBED_PROVIDERS } from '@livediagram/diagram';
+import { EMBED_PROVIDERS } from '@livediagram/document';
 import { drawBannerMessage, drawIntentCursor, type PendingDraw } from './draw-mode';
 
 // Every pen variant, keyed so the compiler owns the list: `variant` is an

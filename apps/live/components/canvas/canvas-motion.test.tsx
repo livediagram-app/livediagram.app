@@ -2,7 +2,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import type { BoxedElement } from '@livediagram/diagram';
+import type { BoxedElement } from '@livediagram/document';
 import { useBoxedElementAnimation } from './useBoxedElementAnimation';
 
 // Canvas motion is out of the chrome budget (docs/specs/004-interface-design/motion.md):

@@ -62,7 +62,7 @@ export function SearchGlyph({ kind }: { kind: string }) {
     strokeWidth: 1.6,
     'aria-hidden': true,
   } as const;
-  if (kind === 'diagram')
+  if (kind === 'document')
     return (
       <svg {...common}>
         <rect x="3" y="3" width="10" height="10" rx="1.5" />

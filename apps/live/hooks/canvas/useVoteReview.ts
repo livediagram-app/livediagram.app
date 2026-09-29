@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useMemo, useRef } from 'react';
-import { isBoxed, isVotable, isVoteHost, type Tab } from '@livediagram/diagram';
+import { isBoxed, isVotable, isVoteHost, type Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 
 // Vote-results review (docs/specs/012-collaboration/session-tools.md). Once a vote's results are revealed, the
@@ -29,6 +29,7 @@ export type VoteReview = {
 export function useVoteReview({
   activeTab,
   selfId,
+  facilitating = false,
   scrollIntoView,
   clearVote,
   setVoteReviewIndex,
@@ -36,6 +37,8 @@ export function useVoteReview({
   activeTab: Tab;
   // The local participant id, matched against the vote's `startedBy`.
   selfId: string;
+  // We hold the facilitator baton, which drives any vote (isVoteHost).
+  facilitating?: boolean;
   // Removes the tab's vote session (useTabSession). Done calls it so
   // finishing the walkthrough also clears the vote for everyone.
   clearVote: () => void;
@@ -45,7 +48,7 @@ export function useVoteReview({
   scrollIntoView: (x: number, y: number, w: number, h: number, opts?: { center?: boolean }) => void;
 }) {
   const vote = activeTab.vote ?? null;
-  const canControl = isVoteHost(vote, selfId);
+  const canControl = isVoteHost(vote, selfId, facilitating);
 
   // The review order: every votable element holding at least one dot, most
   // dots first; ties keep the tab's element order so the walk is stable.

@@ -1,4 +1,4 @@
-// 404 card surfaced when the URL points at a diagram that doesn't
+// 404 card surfaced when the URL points at a document that doesn't
 // exist OR isn't owned by the current participant. The API returns
 // 404 for both (we don't leak existence to strangers). The card is
 // designed to drop into the same chrome as /live/new — EditorHeader
@@ -6,7 +6,7 @@
 // layout. Renders as an absolute overlay so the Explorer behind
 // stays interactive.
 
-// The new-diagram sparkle, shared with the template picker's footer so
+// The new-document sparkle, shared with the template picker's footer so
 // the two create-new surfaces can't drift.
 import { SparkleIcon } from '@/components/palette/template-picker-icons';
 import { Button, CircleXIcon } from '@livediagram/ui';
@@ -26,15 +26,15 @@ export function NotFound({ onCreateNew }: NotFoundProps) {
           404
         </p>
         <h1 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">
-          Diagram not found
+          Document not found
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-          This diagram doesn&apos;t exist or isn&apos;t yours. Open one from the Explorer or start
+          This document doesn&apos;t exist or isn&apos;t yours. Open one from the Explorer or start
           fresh.
         </p>
         <Button size="md" onClick={onCreateNew} className="mt-6 shadow-sm">
           <SparkleIcon />
-          Create a new diagram
+          Create a new document
         </Button>
       </div>
     </div>

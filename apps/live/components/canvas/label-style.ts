@@ -4,7 +4,7 @@
 // tables + per-run style resolution without an import cycle through
 // element-labels.tsx (which imports the editor).
 
-import { LABEL_FONT_PX, NOTE_FONT_PX } from '@livediagram/diagram';
+import { LABEL_FONT_PX, NOTE_FONT_PX } from '@livediagram/document';
 import type {
   BoxedElement,
   RunSize,
@@ -12,7 +12,7 @@ import type {
   TextAlignY,
   TextRun,
   RunHeading,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { RunDefaults } from '@/components/rich-text/rich-text-format';
 
 // The base a label run's unset deltas inherit: the element's whole-element
@@ -39,17 +39,17 @@ export const TEXT_ALIGN: Record<TextAlignX, 'left' | 'center' | 'right'> = {
   right: 'right',
 };
 
-// The label px tables live in @livediagram/diagram, because the EXPORTERS
+// The label px tables live in @livediagram/document, because the EXPORTERS
 // need the same numbers: they kept their own set (12 / 14 / 20 / 18 against
 // these) and every exported label came out about two thirds the size it was
 // drawn at. Re-exported here so the canvas's label renderers keep importing
 // them from the module they always have.
 export const FIXED_FONT_PX: Record<
-  Exclude<import('@livediagram/diagram').TextSize, 'scale'>,
+  Exclude<import('@livediagram/document').TextSize, 'scale'>,
   number
 > = LABEL_FONT_PX;
 
-export const MULTI_FONT_PX: Record<import('@livediagram/diagram').TextSize, number> = NOTE_FONT_PX;
+export const MULTI_FONT_PX: Record<import('@livediagram/document').TextSize, number> = NOTE_FONT_PX;
 
 // Per-run sm/md/lg map to the same px table the element's base size uses,
 // so a run's size override reads consistently against its neighbours.

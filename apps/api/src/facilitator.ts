@@ -1,7 +1,7 @@
 // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who holds it, and who may move it.
 //
 // Pure decisions, no sockets and no storage, so every rule can be read (and
-// tested) in one place while `diagram-room.ts` keeps the plumbing. The room is
+// tested) in one place while `document-room.ts` keeps the plumbing. The room is
 // the only thing that can arbitrate this: it alone sees every socket, and it
 // alone can mint a secret that reaches exactly one of them.
 //
@@ -50,7 +50,7 @@ const canHold = (asker: Pick<Asker, 'role'>) => asker.role === 'edit';
 /**
  * Take a free baton — or, as the owner, take one somebody else is holding.
  *
- * That second row is the whole of "the diagram can always take back control",
+ * That second row is the whole of "the document can always take back control",
  * and it is why the upgrade forwards an owner bit at all.
  */
 export function claimBaton(state: FacilitatorState, asker: Asker, token: string): BatonMove | null {

@@ -1,0 +1,184 @@
+'use client';
+
+import { useCallback, useState } from 'react';
+import { graftLiveTabState, type Tab } from '@livediagram/document';
+
+// Bounded undo/redo over the tabs array. See docs/specs/008-canvas/canvas-and-palette.md ("Undo / Redo").
+//
+// Three primitives:
+//   commit(mapTabs)         — push current to past, replace present, clear future
+//   tick(mapTabs)            — update present only (no history change; for drags)
+//   markCheckpoint()         — push current to past without changing present
+//                              (use at drag start so undo returns to pre-drag state)
+//
+// All keep the past stack capped to HISTORY_LIMIT.
+
+export const HISTORY_LIMIT = 3;
+
+export type History = {
+  past: Tab[][];
+  present: Tab[];
+  future: Tab[][];
+};
+
+// Pure transitions on a History value — exported for unit tests.
+// The hook wraps them with `setHistory((h) => transition(h, ...))`.
+
+export function historyCommit(h: History, mapTabs: (tabs: Tab[]) => Tab[]): History {
+  return {
+    past: [...h.past, h.present].slice(-HISTORY_LIMIT),
+    present: mapTabs(h.present),
+    future: [],
+  };
+}
+
+export function historyTick(h: History, mapTabs: (tabs: Tab[]) => Tab[]): History {
+  return { ...h, present: mapTabs(h.present) };
+}
+
+export function historyMarkCheckpoint(h: History): History {
+  return {
+    past: [...h.past, h.present].slice(-HISTORY_LIMIT),
+    present: h.present,
+    future: [],
+  };
+}
+
+// Undo / redo re-graft the LIVE non-undoable state onto the restored
+// snapshot: comment threads (docs/specs/008-canvas/canvas-and-palette.md — typing a comment then Ctrl+Z
+// mustn't wipe it) AND the session tools' `timer` / `vote` tab fields
+// (docs/specs/012-collaboration/session-tools.md — not undoable, mutated via tick so no snapshot ever holds
+// them). Restoring a snapshot verbatim silently dropped both (then
+// autosave persisted + broadcast the stripped tab to every peer).
+
+export function historyUndo(h: History): History {
+  if (h.past.length === 0) return h;
+  const prev = h.past[h.past.length - 1]!;
+  return {
+    past: h.past.slice(0, -1),
+    present: graftLiveTabState(h.present, prev),
+    future: [h.present, ...h.future].slice(0, HISTORY_LIMIT),
+  };
+}
+
+// Abort an in-flight gesture: restore the newest snapshot (the
+// checkpoint its first mutation pushed) into the present and DISCARD
+// that step — unlike undo, nothing lands on the redo side, because a
+// cancelled drag never happened. Live comment/session state grafts on
+// exactly as undo does.
+export function historyCancel(h: History): History {
+  if (h.past.length === 0) return h;
+  const prev = h.past[h.past.length - 1]!;
+  return {
+    past: h.past.slice(0, -1),
+    present: graftLiveTabState(h.present, prev),
+    future: h.future,
+  };
+}
+
+export function historyRedo(h: History): History {
+  if (h.future.length === 0) return h;
+  const next = h.future[0]!;
+  return {
+    past: [...h.past, h.present].slice(-HISTORY_LIMIT),
+    present: graftLiveTabState(h.present, next),
+    future: h.future.slice(1),
+  };
+}
+
+export function historyReset(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[])): History {
+  const next = typeof tabs === 'function' ? tabs(h.present) : tabs;
+  return { past: [], present: next, future: [] };
+}
+
+// Merge a remote peer's change into the present WITHOUT touching the
+// undo / redo stacks. Used by inbound `tab` / `document-meta` ops: peers
+// autosave ~every 600ms, so clearing history on each (what `reset` did)
+// made the local user's undo stack vanish several times a second during
+// any shared session. The retained past states predate the remote
+// change, so undoing far enough can locally drop a peer's edit — an
+// accepted limitation of last-write-wins collab without OT / CRDT, and
+// far better than undo not working at all while someone else is editing.
+export function historyApplyRemote(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[])): History {
+  const next = typeof tabs === 'function' ? tabs(h.present) : tabs;
+  return { ...h, present: next };
+}
+
+type DocumentHistory = {
+  tabs: Tab[];
+  canUndo: boolean;
+  canRedo: boolean;
+  commit: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
+  tick: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
+  markCheckpoint: () => void;
+  cancelToCheckpoint: () => void;
+  reset: (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => void;
+  applyRemote: (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => void;
+  undo: () => void;
+  redo: () => void;
+};
+
+export function useDocumentHistory(initialTabs: Tab[]): DocumentHistory {
+  const [history, setHistory] = useState<History>({
+    past: [],
+    present: initialTabs,
+    future: [],
+  });
+
+  const commit = (mapTabs: (tabs: Tab[]) => Tab[]) => {
+    setHistory((h) => historyCommit(h, mapTabs));
+  };
+
+  // Stable identity: the delta sender (useElementDeltas) memoises on it.
+  const tick = useCallback((mapTabs: (tabs: Tab[]) => Tab[]) => {
+    setHistory((h) => historyTick(h, mapTabs));
+  }, []);
+
+  const markCheckpoint = () => {
+    setHistory(historyMarkCheckpoint);
+  };
+
+  const undo = () => {
+    setHistory(historyUndo);
+  };
+
+  // Abort-to-checkpoint for Escape during a drag (see historyCancel).
+  const cancelToCheckpoint = () => {
+    setHistory(historyCancel);
+  };
+
+  const redo = () => {
+    setHistory(historyRedo);
+  };
+
+  // Replace the present tab list with `tabs` and CLEAR history. For
+  // genuine context switches (hydrating on mount, opening a different
+  // document, loading a tab) where prior undo states no longer apply.
+  // Remote peer merges use `applyRemote` instead, to keep history.
+  // Stable identity (setHistory never changes): the per-tab load effect
+  // (usePerTabLoad) reaches this through resetTabs, and a fresh function
+  // every render once made that effect refetch a failed tab on every
+  // re-render (docs/specs/017-telemetry/telemetry.md).
+  const reset = useCallback((tabs: Tab[] | ((prev: Tab[]) => Tab[])) => {
+    setHistory((h) => historyReset(h, tabs));
+  }, []);
+
+  // Merge a remote peer's change into the present, preserving undo/redo.
+  const applyRemote = (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => {
+    setHistory((h) => historyApplyRemote(h, tabs));
+  };
+
+  return {
+    tabs: history.present,
+    canUndo: history.past.length > 0,
+    canRedo: history.future.length > 0,
+    commit,
+    tick,
+    markCheckpoint,
+    cancelToCheckpoint,
+    reset,
+    applyRemote,
+    undo,
+    redo,
+  };
+}

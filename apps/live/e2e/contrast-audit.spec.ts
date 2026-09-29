@@ -1,5 +1,5 @@
 import { auditContrast, type ContrastReport } from './contrast';
-import { CANVAS, darkVisitor, freshDarkPage, seedDiagram, shareLink } from './audit-screens';
+import { CANVAS, darkVisitor, freshDarkPage, seedDocument, shareLink } from './audit-screens';
 import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
@@ -23,10 +23,10 @@ function expectAA(report: ContrastReport, screen: string): void {
 }
 
 test.describe('Contrast audit, dark mode', () => {
-  test('the New Diagram wizard', async ({ page, pageErrors }) => {
+  test('the New Document wizard', async ({ page, pageErrors }) => {
     await darkVisitor(page);
     await page.goto('/new');
-    await page.getByText('New Diagram', { exact: false }).first().waitFor();
+    await page.getByText('New Document', { exact: false }).first().waitFor();
     await expect(page.locator('html')).toHaveClass(/dark/);
     expectAA(await auditContrast(page), 'wizard, template step');
 
@@ -43,9 +43,9 @@ test.describe('Contrast audit, dark mode', () => {
   test('the editor, its panels and dialogs', async ({ page, pageErrors, baseURL }) => {
     const owner = crypto.randomUUID();
     const origin = new URL(baseURL!).origin;
-    const id = await seedDiagram(page, owner, origin);
+    const id = await seedDocument(page, owner, origin);
     await darkVisitor(page, owner);
-    await page.goto(`/diagram/${id}`);
+    await page.goto(`/document/${id}`);
     await page.locator(CANVAS).waitFor();
     await dismissQuickTour(page);
     await expect(page.getByRole('img', { name: /Spinner/ }).first()).toBeVisible();
@@ -64,7 +64,7 @@ test.describe('Contrast audit, dark mode', () => {
     await page.keyboard.press('Escape');
 
     await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share this diagram' }).waitFor();
+    await page.getByRole('dialog', { name: 'Share this document' }).waitFor();
     expectAA(await auditContrast(page), 'Share dialog');
     await page.keyboard.press('Escape');
     expectNoPageErrors(pageErrors);
@@ -73,10 +73,10 @@ test.describe('Contrast audit, dark mode', () => {
   test('the Join dialog a share link opens', async ({ page, browser, baseURL }) => {
     const owner = crypto.randomUUID();
     const origin = new URL(baseURL!).origin;
-    const id = await seedDiagram(page, owner, origin);
+    const id = await seedDocument(page, owner, origin);
     const code = await shareLink(page, owner, origin, id);
     const visitor = await freshDarkPage(browser);
-    await visitor.goto(`/diagram/shared?s=${code}`);
+    await visitor.goto(`/document/shared?s=${code}`);
     await visitor.getByRole('button', { name: /^join$/i }).waitFor();
     expectAA(await auditContrast(visitor), 'Join dialog');
     await visitor.context().close();
@@ -84,7 +84,7 @@ test.describe('Contrast audit, dark mode', () => {
 
   test('the Explorer', async ({ page, pageErrors, baseURL }) => {
     const owner = crypto.randomUUID();
-    await seedDiagram(page, owner, new URL(baseURL!).origin);
+    await seedDocument(page, owner, new URL(baseURL!).origin);
     await darkVisitor(page, owner);
     await page.goto('/explorer');
     await page.getByText('Contrast').first().waitFor();

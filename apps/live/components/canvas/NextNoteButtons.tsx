@@ -11,7 +11,7 @@ import {
   type Element,
   type EsSide,
   type EventStormingNoteKind,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { NoteGhost } from '@/components/canvas/NoteGhost';
 
 // The next-note buttons (docs/specs/021-event-storming/event-storming.md Phase 7): on each side of the SELECTED note

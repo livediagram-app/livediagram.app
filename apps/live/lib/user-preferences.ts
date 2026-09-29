@@ -17,6 +17,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // their own `localStorage.setItem` (like `lib/telemetry.ts`'s
 // in-memory gate cache) still refresh promptly.
 
+import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
 import { apiGetPreferences, apiPutPreferences } from './api-client';
@@ -25,7 +26,7 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-saf
 export type UserPreferences = {
   // When `false`, the editor skips the auto-rebind on move
   // (docs/specs/008-canvas/arrow-anchors.md, `rebindArrowAnchorsAfterMove`
-  // in packages/diagram). Missing / undefined / true === on.
+  // in packages/document). Missing / undefined / true === on.
   // Consumers derive the effective value via
   // `autoRebindArrowsEnabled` below so the default lives here once.
   autoRebindArrows?: boolean;
@@ -44,20 +45,33 @@ export type UserPreferences = {
   // and `?? 'medium'`, so an existing user's map is unchanged.
   //
   // `mapDimOutside` shades everything outside the current view. It reads as
-  // "you are here" at a glance, but on a dense board some people want the
+  // "you are here" at a glance, but on a dense canvas some people want the
   // whole map bright, so it is a toggle rather than a rule.
   mapDimOutside?: boolean;
-  // How tall the map is. A big diagram is unreadable in a 144px strip; a
+  // How tall the map is. A big canvas is unreadable in a 144px strip; a
   // small one doesn't need more.
   mapSize?: MapSize;
-  // Layers panel options (docs/specs/006-diagram/layers.md). Both default ON via `!== false`.
+  // Layers panel options (docs/specs/006-document/layers.md). Both default ON via `!== false`.
   //
   // The row thumbnail is the quickest way to tell two similarly-named layers
   // apart, but it is also the tallest thing in a row — turning it off gives a
-  // compact list on a diagram with many layers.
+  // compact list on a document with many layers.
   layersShowPreview?: boolean;
   // The per-layer element count, beside the name.
   layersShowCount?: boolean;
+  // Panel switches (docs/specs/007-editor/user-preferences.md), each ON
+  // unless stored `false`. Off removes the panel and the chrome that reaches
+  // it, never the feature underneath. Read them through `panelEnabled`.
+  //
+  // Layers: the panel, its cluster button, "Move to layer" in the element
+  // menus and the export's "Hidden layers" row. Layers still apply.
+  layersPanelEnabled?: boolean;
+  // Activity: the panel and its button. Undo / Redo stay.
+  activityPanelEnabled?: boolean;
+  // Collaborate: the panel and its button. Comments and actions stay.
+  collaboratePanelEnabled?: boolean;
+  // Quick style: the selection's style panel. Style memory stays.
+  quickStylePanelEnabled?: boolean;
   // AI Assistance panel (docs/specs/007-editor/ai-assistance.md). When `true`, the AI panel is
   // rendered in the editor. Defaults to false (opt-in). Only
   // surfaced in Settings when the api worker reports aiEnabled:true
@@ -82,13 +96,13 @@ export type UserPreferences = {
   // dock, docs/specs/008-canvas/canvas-and-palette.md) or 'toolbar' (the Palette as a top strip, no Explorer
   // panel). Missing → derived from `minimalPanels`.
   panelLayout?: PanelLayout;
-  // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of the FULL floating
-  // panels (Explorer, Palette, Editor, AI) at rest, so the canvas shows
-  // through; they snap back to fully opaque while hovered / focused.
-  // Applied via the `--lvd-panel-opacity` custom property (see
-  // usePanelOpacity). Deliberately scoped to floating panels: the minimal
-  // dock bar never reads the var, so this leaves the minimal layout
-  // untouched. Missing / undefined / 1 === fully opaque, the default.
+  // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of EVERY panel at
+  // rest (floating, popover, the Map, Quick style, the Toolbar strip), so the
+  // canvas shows through; they snap back to fully opaque while hovered /
+  // focused. Applied via the `--lvd-panel-opacity` custom property (see
+  // usePanelOpacity) on every `data-panel-translucent` surface. Buttons are
+  // not panels: the minimal dock bar and the cluster buttons stay opaque.
+  // Missing / undefined / 1 === fully opaque, the default.
   panelOpacity?: number;
   // Quick-add on hover (docs/specs/008-canvas/canvas-and-palette.md). When `true`, an element's quick-add "+"
   // buttons open their menu on hover instead of requiring a click; moving
@@ -113,7 +127,7 @@ export type UserPreferences = {
   reduceMotion?: boolean;
   // Toast notifications (docs/specs/007-editor/user-preferences.md). When `false`, the editor suppresses
   // the confirmation / status toasts (success + info tones) it shows
-  // for consequential, otherwise-silent actions (a diagram moved to a
+  // for consequential, otherwise-silent actions (a document moved to a
   // folder, a tab linked, etc.). ERROR toasts are NOT gated by this:
   // a failure the user would otherwise never see still surfaces, so
   // turning notifications off quiets the chatter without hiding
@@ -131,7 +145,7 @@ export type UserPreferences = {
   // the tab has a few elements, the Activity panel is minimised, and on
   // desktop). The minimap's own close button writes an explicit `false`.
   showMinimap?: boolean;
-  // Layers panel hover-solo (docs/specs/006-diagram/layers.md). When `false`, resting the pointer
+  // Layers panel hover-solo (docs/specs/006-document/layers.md). When `false`, resting the pointer
   // on a Layers-panel row no longer solos that layer on the canvas.
   // Missing / undefined / true === on, the default. Flipped from the
   // panel's settings gear (desktop-only chrome, like the hover itself).
@@ -150,14 +164,14 @@ export type UserPreferences = {
   // Missing / undefined / true === notify (opt-out); an explicit false
   // suppresses that email.
   //
-  // "Someone first opened one of my shared diagrams."
-  notifyDiagramJoin?: boolean;
+  // "Someone first opened one of my shared documents."
+  notifyDocumentJoin?: boolean;
   // "Someone accepted / declined a team invite I sent" (to the team's admins).
   notifyInviteResponse?: boolean;
   notifyComments?: boolean;
   notifyTips?: boolean;
   notifyMilestones?: boolean;
-  // "A teammate assigned me an action on a diagram element" (docs/specs/012-collaboration/assigned-actions.md).
+  // "A teammate assigned me an action on an element in a document" (docs/specs/012-collaboration/assigned-actions.md).
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
@@ -168,9 +182,9 @@ export type UserPreferences = {
   // Settings as "I've seen the editor tour"; unchecking it there and
   // closing Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
-  // Diagrams this user has hidden from the Explorer's Recent list
-  // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the diagram: your Recent
-  // is your view of your own work, and on a shared diagram one
+  // Documents this user has hidden from the Explorer's Recent list
+  // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the document: your Recent
+  // is your view of your own work, and on a shared document one
   // collaborator hiding it must not hide it from everyone else.
   //
   // Ids only, so the list stays small; the whole preferences blob has a
@@ -204,25 +218,25 @@ export type UserPreferences = {
   powerUserOfferShown?: boolean;
 };
 
-// How many excluded ids we keep. A diagram id is a 36-char UUID, so 200
+// How many excluded ids we keep. A document id is a 36-char UUID, so 200
 // of them is ~7.4 KB of JSON on its own — well past the api's 4 KB cap on
 // the serialised preferences blob, which would start rejecting EVERY
 // preference write, not just this one. 60 is far more than anyone will
 // hide by hand and leaves plenty of room for the other flags.
 export const RECENT_EXCLUDED_LIMIT = 60;
 
-// Is this diagram hidden from Recent?
-export function isRecentExcluded(prefs: UserPreferences, diagramId: string): boolean {
-  return prefs.recentExcludedIds?.includes(diagramId) === true;
+// Is this document hidden from Recent?
+export function isRecentExcluded(prefs: UserPreferences, documentId: string): boolean {
+  return prefs.recentExcludedIds?.includes(documentId) === true;
 }
 
-// Flip a diagram's Recent exclusion, returning the NEXT id list. Newest
+// Flip a document's Recent exclusion, returning the NEXT id list. Newest
 // exclusions are kept at the front so the cap drops the oldest choice
 // rather than the one just made.
-export function toggleRecentExcluded(prefs: UserPreferences, diagramId: string): string[] {
+export function toggleRecentExcluded(prefs: UserPreferences, documentId: string): string[] {
   const current = prefs.recentExcludedIds ?? [];
-  if (current.includes(diagramId)) return current.filter((id) => id !== diagramId);
-  return [diagramId, ...current].slice(0, RECENT_EXCLUDED_LIMIT);
+  if (current.includes(documentId)) return current.filter((id) => id !== documentId);
+  return [documentId, ...current].slice(0, RECENT_EXCLUDED_LIMIT);
 }
 
 // Re-exported under this module's own name because everything here reads it
@@ -288,7 +302,7 @@ export function readUserPreferences(): UserPreferences {
     if (typeof parsed !== 'object' || parsed === null) return {};
     // Keep unknown keys: forward-compat for future-versioned flags
     // a different client may have written.
-    return parsed as UserPreferences;
+    return upgradeLegacyPreferences(parsed as Record<string, unknown>) as UserPreferences;
   } catch {
     return {};
   }
@@ -334,10 +348,25 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
   const remote = await apiGetPreferences(ownerId);
   if (remote === null) return null;
   const local = readUserPreferences();
-  const merged: UserPreferences = { ...local, ...(remote as UserPreferences) };
+  const merged: UserPreferences = {
+    ...local,
+    ...(upgradeLegacyPreferences(remote as Record<string, unknown>) as UserPreferences),
+  };
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }
   return merged;
+}
+
+// Whether a panel switch is on (docs/specs/007-editor/user-preferences.md):
+// on unless stored `false`, so the Settings row and every surface it gates
+// read one rule.
+export type PanelSwitch =
+  | 'layersPanelEnabled'
+  | 'activityPanelEnabled'
+  | 'collaboratePanelEnabled'
+  | 'quickStylePanelEnabled';
+export function panelEnabled(prefs: UserPreferences | undefined, key: PanelSwitch): boolean {
+  return prefs?.[key] !== false;
 }

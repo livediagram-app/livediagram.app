@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { entityHeight, isValidTab } from '@livediagram/diagram';
+import { entityHeight, isValidTab } from '@livediagram/document';
 import { lanesToFront, normaliseElement, normaliseElements } from './element-normalise';
 
 // docs/specs/015-api/mcp-server.md §4.7a: the content-carrying kinds are made safe before validation.

@@ -1,8 +1,8 @@
 // Folder calls (docs/specs/013-workspace/folders.md): list / create / update / delete, plus moving
-// a diagram into (or out of) a folder.
+// a document into (or out of) a folder.
 import type { Folder } from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
-import { isOfflineId, offlineSetDiagramFolder } from '../offline/offline-store';
+import { isOfflineId, offlineSetDocumentFolder } from '../offline/offline-store';
 import {
   API_BASE,
   apiDelete,
@@ -14,7 +14,7 @@ import {
   apiFetch,
 } from './core';
 
-// Same dedupe rationale as apiListDiagrams. useFolders runs once
+// Same dedupe rationale as apiListDocuments. useFolders runs once
 // per page surface; concurrent mounts on multi-panel pages (e.g.
 // /new shows the floating Explorer AND the welcome flow, both
 // gated on the same ownerId) would otherwise fire duplicate
@@ -37,7 +37,7 @@ export async function apiCreateFolder(
       id: input.id,
       name: input.name,
       parentId: input.parentId ?? null,
-      // Team scope (docs/specs/013-workspace/team-shared-diagrams.md): non-null creates a folder in that
+      // Team scope (docs/specs/013-workspace/team-shared-documents.md): non-null creates a folder in that
       // team's shared library instead of the personal tree.
       teamId: input.teamId ?? null,
     }),
@@ -68,24 +68,24 @@ export async function apiDeleteFolder(ownerId: string, id: string): Promise<void
   });
 }
 
-// Placement write (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-diagrams.md). `teamId` undefined = keep the
-// diagram's current scope (the server defaults to it); null = the
+// Placement write (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md). `teamId` undefined = keep the
+// document's current scope (the server defaults to it); null = the
 // owner's personal tree; a team id = that team's shared library.
-export async function apiSetDiagramFolder(
+export async function apiSetDocumentFolder(
   ownerId: string,
-  diagramId: string,
+  documentId: string,
   folderId: string | null,
   teamId?: string | null,
 ): Promise<void> {
-  // Offline Mode (docs/specs/006-diagram/offline-mode.md): the placement lives on the IndexedDB record.
-  // A team destination is impossible for an offline diagram (the shared
+  // Offline Mode (docs/specs/006-document/offline-mode.md): the placement lives on the IndexedDB record.
+  // A team destination is impossible for an offline document (the shared
   // library is server-side); the picker doesn't offer one, and throwing
   // here keeps a stray call from reaching the server.
-  if (await isOfflineId(diagramId)) {
-    if (teamId) throw new Error('offline diagrams cannot join a team');
-    return offlineSetDiagramFolder(diagramId, folderId, Date.now());
+  if (await isOfflineId(documentId)) {
+    if (teamId) throw new Error('offline documents cannot join a team');
+    return offlineSetDocumentFolder(documentId, folderId, Date.now());
   }
-  const res = await apiFetch(`${API_BASE}/diagrams/${diagramId}/folder`, {
+  const res = await apiFetch(`${API_BASE}/documents/${documentId}/folder`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify(teamId === undefined ? { folderId } : { folderId, teamId }),

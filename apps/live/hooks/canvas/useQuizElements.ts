@@ -16,7 +16,7 @@ import {
   responseDeltaFor,
   type ShapeElement,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { participantKey, type Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';

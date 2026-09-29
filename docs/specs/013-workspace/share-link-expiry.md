@@ -30,7 +30,7 @@ Pre-existing rows have NULL in both → never expire. The `ShareLink` DTO gains 
 
 ## Enforcement
 
-`getShareLink(env, code)` (the db lookup behind both access gates in `auth/diagram-access.ts`, the WebSocket-upgrade role resolution, and `GET /api/share/:code`) only returns links whose `expires_at` is NULL or in the future. One choke point, so an expired link simultaneously:
+`getShareLink(env, code)` (the db lookup behind both access gates in `auth/document-access.ts`, the WebSocket-upgrade role resolution, and `GET /api/share/:code`) only returns links whose `expires_at` is NULL or in the future. One choke point, so an expired link simultaneously:
 
 - stops resolving for visitors (the share URL and the embed view show the same not-found surface as a revoked link),
 - stops authorising reads/writes carried by `X-Share-Code`,
@@ -40,9 +40,9 @@ Owner-side paths that must still see expired rows (the Share dialog's list, dele
 
 ## API
 
-- `POST /api/diagrams/:id/share` body gains optional `expiry: 'never' | 'week' | 'month' | 'sixMonths'` (default / unknown value → `never`).
-- `POST /api/diagrams/:id/share/:code/extend` — owner-only. Re-arms the link: `expires_at = now + lifetime(expiry)`, where `expiry` is the duration **chosen when the link was created**. Works on active links too (pushes the deadline out from now). `400` on a never-expiring link (nothing to extend). Returns the updated link.
-- `GET /api/diagrams/:id/share` (owner list) returns all links, expired included; the client splits them.
+- `POST /api/documents/:id/share` body gains optional `expiry: 'never' | 'week' | 'month' | 'sixMonths'` (default / unknown value → `never`).
+- `POST /api/documents/:id/share/:code/extend` — owner-only. Re-arms the link: `expires_at = now + lifetime(expiry)`, where `expiry` is the duration **chosen when the link was created**. Works on active links too (pushes the deadline out from now). `400` on a never-expiring link (nothing to extend). Returns the updated link.
+- `GET /api/documents/:id/share` (owner list) returns all links, expired included; the client splits them.
 
 ## Share dialog
 
@@ -52,7 +52,7 @@ Owner-side paths that must still see expired rows (the Share dialog's list, dele
 
 ## Telemetry
 
-Reuses [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) vocabulary: creation keeps `Diagram/Shared/<Edit|View>` and, when a lifetime is chosen, also emits `Diagram/Shared/<ExpiryWeek|ExpiryMonth|ExpirySixMonths>`. Extend emits `Diagram/Shared/Extended`. Delete keeps the existing `Diagram/Removed/ShareLink`.
+Reuses [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) vocabulary: creation keeps `Document/Shared/<Edit|View>` and, when a lifetime is chosen, also emits `Document/Shared/<ExpiryWeek|ExpiryMonth|ExpirySixMonths>`. Extend emits `Document/Shared/Extended`. Delete keeps the existing `Document/Removed/ShareLink`.
 
 ## Marketing
 

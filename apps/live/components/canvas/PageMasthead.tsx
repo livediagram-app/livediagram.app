@@ -1,6 +1,6 @@
 'use client';
 
-import { PAGE_HEADING_MAX, type ShapeElement } from '@livediagram/diagram';
+import { PAGE_HEADING_MAX, type ShapeElement } from '@livediagram/document';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 
 // A Page's fixed masthead (docs/specs/009-elements/page-element.md): a heading and a subtitle above the body,

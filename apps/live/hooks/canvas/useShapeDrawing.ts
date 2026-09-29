@@ -18,7 +18,7 @@
 // hook. Verbatim relocation — no behaviour change.
 
 import { useRef, useState } from 'react';
-import { createFreehand, type Element, type Tab } from '@livediagram/diagram';
+import { createFreehand, type Element, type Tab } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';

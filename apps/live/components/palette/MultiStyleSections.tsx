@@ -21,7 +21,7 @@ import {
   type Element,
   type ElementShadow,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { isTechIconId } from '@/lib/tech-icons';
 import {
   AnimationMenuGlyph,

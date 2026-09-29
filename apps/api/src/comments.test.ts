@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Comment, Element, ShapeElement } from '@livediagram/diagram';
+import type { Comment, Element, ShapeElement } from '@livediagram/document';
 import {
   findComment,
   hasNewComments,

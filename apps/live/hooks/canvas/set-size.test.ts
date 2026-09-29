@@ -63,7 +63,7 @@ describe('typed element size', () => {
 
   it('clamps a zero, a negative and a runaway number', () => {
     // A zero box is not a shape, and a stray extra digit should not produce a
-    // diagram nobody can pan out of.
+    // canvas nobody can pan out of.
     expect(resize({ width: 100, height: 100 }, { width: 0 }).width).toBe(MIN_SIZE_PX);
     expect(resize({ width: 100, height: 100 }, { width: -50 }).width).toBe(MIN_SIZE_PX);
     expect(resize({ width: 100, height: 100 }, { width: 9_000_000 }).width).toBe(MAX_SIZE_PX);

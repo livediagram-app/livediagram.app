@@ -1,7 +1,7 @@
 // The user's own colour palette (docs/specs/008-canvas/canvas-and-palette.md Colours): the colours they have
 // actually used that the theme did not already offer.
 //
-// A theme's presets answer "what goes with this diagram"; this answers "what
+// A theme's presets answer "what goes with this canvas"; this answers "what
 // did I just use on the last three elements". Without it, giving a second
 // element the exact colour of the first means re-picking it off the OS colour
 // wheel and matching by eye, which nobody does accurately.

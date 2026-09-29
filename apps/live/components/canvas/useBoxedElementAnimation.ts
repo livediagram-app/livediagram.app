@@ -4,7 +4,7 @@ import {
   DEFAULT_ANIMATION_SPEED,
   defaultFillColor,
   type BoxedElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 

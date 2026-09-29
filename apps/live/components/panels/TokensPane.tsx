@@ -78,7 +78,7 @@ export function TokensPane({
     <div className="flex flex-col gap-4">
       <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         API tokens let your own scripts or AI agents call the livediagram API as you. Treat a token
-        like a password: it has full read + write access to your diagrams. Each token lasts 6
+        like a password: it has full read + write access to your documents. Each token lasts 6
         months, then you create a new one with the New token button above.
       </p>
 

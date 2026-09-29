@@ -1,10 +1,10 @@
 // Timeline renderer contracts (docs/specs/013-workspace/timeline.md §7).
 //
 // The components in this folder know how to lay a feed out; they know
-// nothing about diagrams, teams, or routes. A consumer supplies a
+// nothing about documents, teams, or routes. A consumer supplies a
 // registry of renderers keyed by source type, and each renderer turns
 // one event into the parts of a card. That split is what lets the
-// same components back a per-diagram or per-team feed without
+// same components back a per-document or per-team feed without
 // inheriting the Explorer's copy.
 
 import type { MouseEvent, ReactNode } from 'react';
@@ -17,13 +17,13 @@ export type TimelineCardRender = {
   // The event's glyph. Drawn small in the reason line, and large in the
   // preview box when the renderer supplies no preview.
   icon: ReactNode;
-  // The card title: the SUBJECT of the event (a diagram's name, a
+  // The card title: the SUBJECT of the event (a document's name, a
   // team's name). Falls back to the event's title when a renderer has
   // nothing more specific to say.
   subject?: ReactNode;
   // The reason line: why this card is on the feed. Falls back to the
   // stored event title, which is a Title Case category by contract
-  // ("Diagram Created"); an override must keep that casing so cards and
+  // ("Document Created"); an override must keep that casing so cards and
   // collapsed stacks read the same.
   label?: ReactNode;
   // Free text under the reason line (a comment's words). `undefined`
@@ -31,7 +31,7 @@ export type TimelineCardRender = {
   description?: ReactNode;
   // Quiet detail after the time: "by Priya", "Now: New name".
   meta?: ReactNode;
-  // Fills the card's preview box (a diagram snapshot, say). Sized by the
+  // Fills the card's preview box (a document snapshot, say). Sized by the
   // card, so it should stretch to `h-full w-full`. When absent the box
   // shows the glyph on the event's tone tint instead, so every card in
   // a row is the same height whatever mix of kinds it holds.
@@ -45,7 +45,7 @@ export type TimelineCardRender = {
 // The parts a HOST can add to a card that a renderer can't (docs/specs/013-workspace/timeline.md
 // §2.8): the ⋯ menu, which needs more than the event; a right-click
 // handler that opens the same menu; the subject as the host knows it
-// NOW (a diagram renamed since the event still shows its current name);
+// NOW (a document renamed since the event still shows its current name);
 // and a full replacement for the title row's text (an inline rename
 // input). All optional; a card with none is just a card.
 export type TimelineCardSlots = {

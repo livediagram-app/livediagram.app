@@ -3,7 +3,7 @@
 // real work (header row + column, zebra striping), so users see tables
 // earning their keep straight away.
 
-import { createShape, createTable, createText, type Element } from '@livediagram/diagram';
+import { createShape, createTable, createText, type Element } from '@livediagram/document';
 
 export function buildComparisonTable(cx: number, cy: number): Element[] {
   const cells = [

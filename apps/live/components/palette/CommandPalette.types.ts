@@ -1,5 +1,5 @@
-import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
-import type { ShapeKind } from '@livediagram/diagram';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
+import type { ShapeKind } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { PaletteTint } from '@/components/palette/palette-controls';
@@ -62,10 +62,10 @@ export type CommandPaletteProps = {
   onAddShape: (
     kind: ShapeKind,
     opts?: {
-      session?: import('@livediagram/diagram').SessionTool;
-      reaction?: import('@livediagram/diagram').Reaction;
-      mode?: import('@livediagram/diagram').SelectionMode;
-      estimateScale?: import('@livediagram/diagram').EstimateScale;
+      session?: import('@livediagram/document').SessionTool;
+      reaction?: import('@livediagram/document').Reaction;
+      mode?: import('@livediagram/document').SelectionMode;
+      estimateScale?: import('@livediagram/document').EstimateScale;
     },
   ) => void;
   // Drops a curated icon glyph (shape kind 'icon') carrying the chosen
@@ -138,7 +138,7 @@ export type CommandPaletteProps = {
   // palette as it changes height.
   onSize?: (size: { width: number; height: number; bottomY: number }) => void;
   // Mobile-only top override (the palette banner sits below the
-  // Explorer banner so signed-out users can switch diagrams without
+  // Explorer banner so signed-out users can switch documents without
   // leaving the canvas). See MovablePanel for semantics.
   mobileTopOverridePx?: number;
   // Mobile dock control — forwarded to the inner MovablePanel.

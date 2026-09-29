@@ -1,7 +1,7 @@
 // Follow-me viewport (docs/specs/012-collaboration/follow-me-viewport.md): pin your pan / zoom / tab to a peer's until
 // you take the canvas back.
 //
-// "Look at this" is the most common sentence spoken over a shared board, and
+// "Look at this" is the most common sentence spoken over a shared canvas, and
 // every tool that answers it today — the laser, the spotlight, a walked-to
 // avatar — points AT something from where the speaker already is, which is no
 // use to somebody scrolled elsewhere. Following is the missing half: instead

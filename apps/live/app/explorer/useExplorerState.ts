@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import {
-  apiListDiagrams,
+  apiListDocuments,
   apiListSharedWith,
-  type DiagramListItem,
+  type DocumentListItem,
   type Folder,
   type SharedWithItem,
 } from '@/lib/api-client';
@@ -25,7 +25,7 @@ import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep
 import { useTeams } from '@/hooks/persistence/useTeams';
 import { useTokens } from '@/hooks/persistence/useTokens';
 import { useConfirm } from '@/hooks/ui/useConfirm';
-import { useDiagramListActions } from '@/hooks/persistence/useDiagramListActions';
+import { useDocumentListActions } from '@/hooks/persistence/useDocumentListActions';
 import { useToast } from '@/hooks/ui/useToast';
 import { explorerPathFor, selectedFromRoute } from './routes';
 import { useTimelineUnread } from './useTimelineUnread';
@@ -73,7 +73,7 @@ export function useExplorerState() {
   // editor's useIdentityBootstrap) rather than a bare ensureGuestSelfId, so the
   // `X-Owner-Sig` the §4 REST gate may require (docs/specs/015-api/public-api-and-tokens.md) is minted even for a
   // guest who opens the Explorer before ever touching the editor — otherwise
-  // their diagram / folder list calls would 401 once enforcement is on. Async,
+  // their document / folder list calls would 401 once enforcement is on. Async,
   // so ownerId stays null until it resolves (the lists are autoLoad:false off
   // ownerId, and the common case — an existing signed id — resolves with no
   // network).
@@ -98,7 +98,7 @@ export function useExplorerState() {
     if (!authLoaded) return;
     trackDailyReturn(!!clerkUserId);
   }, [authLoaded, clerkUserId]);
-  const [diagrams, setDiagrams] = useState<DiagramListItem[]>([]);
+  const [liveDocs, setDocuments] = useState<DocumentListItem[]>([]);
   const {
     folders,
     createFolder: hookCreateFolder,
@@ -128,8 +128,8 @@ export function useExplorerState() {
   // Folder id mid-rename so the tree / list row swaps to an input
   // until the user commits or escapes.
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
-  // Diagram id mid-rename. Same pattern as folders.
-  const [renamingDiagramId, setRenamingDiagramId] = useState<string | null>(null);
+  // Document id mid-rename. Same pattern as folders.
+  const [renamingDocumentId, setRenamingDocumentId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   // Settings lives here rather than in ExplorerShell because the sidebar's
   // account button opens it too, now that the profile page it used to open
@@ -165,20 +165,20 @@ export function useExplorerState() {
   // Which folder branches (and which teams) are open in the sidebar.
   // Local state only; a fresh visit starts everything collapsed. Team
   // ids live in the same set so a team's folder subtree expands the
-  // same way a personal folder does (one expand model, docs/specs/013-workspace/team-shared-diagrams.md).
+  // same way a personal folder does (one expand model, docs/specs/013-workspace/team-shared-documents.md).
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set<string>());
-  // Team libraries swept lazily (docs/specs/013-workspace/team-shared-diagrams.md) for the four consumers: the
+  // Team libraries swept lazily (docs/specs/013-workspace/team-shared-documents.md) for the four consumers: the
   // search panel's Folders group, the move modal's team destinations,
   // the Recent list's team rows, and the sidebar's team subtrees.
   // Recent is the landing section, so signed-in members effectively
   // sweep on arrival; guests (no teams) never fetch.
   const {
     teamFolders,
-    teamDiagrams,
+    teamDocuments,
     refresh: refreshTeamLibraries,
   } = useTeamLibrariesSweep(ownerId, teams, {
     // The sidebar renders every team as a collapsible folder tree on
-    // EVERY explorer route (docs/specs/013-workspace/team-shared-diagrams.md), so it needs each team's folders to
+    // EVERY explorer route (docs/specs/013-workspace/team-shared-documents.md), so it needs each team's folders to
     // know whether to show the expand chevron — not just on Recent /
     // search / move. Gating on the route (e.g. `selected.kind === 'recent'`)
     // meant a hard navigation onto a team folder (which the sidebar opens
@@ -210,17 +210,17 @@ export function useExplorerState() {
   const load = useCallback(
     (ownerId: string) =>
       Promise.all([
-        apiListDiagrams(ownerId).catch(() => null),
+        apiListDocuments(ownerId).catch(() => null),
         apiListSharedWith(ownerId).catch(() => null),
         refreshFolders(),
       ]).then(([list, sharedList]) => {
         // A failed load must not masquerade as an empty account: set only what
         // actually came back (a failed list keeps its prior value) and tell the
-        // user, rather than flashing the "you have no diagrams" empty state.
-        if (list !== null) setDiagrams(list);
+        // user, rather than flashing the "you have no documents" empty state.
+        if (list !== null) setDocuments(list);
         if (sharedList !== null) setShared(sharedList);
         if (list === null || sharedList === null) {
-          toast.error('Could not load your diagrams. Check your connection and try again.');
+          toast.error('Could not load your documents. Check your connection and try again.');
         }
         setLoading(false);
       }),
@@ -299,22 +299,22 @@ export function useExplorerState() {
     renameFolder(id, name);
   };
 
-  // Diagram-row + Shared-row mutations come from the shared
-  // useDiagramListActions hook (the same behaviours behind the
+  // Document-row + Shared-row mutations come from the shared
+  // useDocumentListActions hook (the same behaviours behind the
   // editor's Explorer panel and /new), so the optimistic updates,
   // API calls, telemetry, and confirm copy stay single-sourced. The
   // hook wraps the rename to also clear its inline-rename state.
   const {
-    renameDiagram: listRenameDiagram,
-    deleteDiagram: listDeleteDiagram,
+    renameDocument: listRenameDocument,
+    deleteDocument: listDeleteDocument,
     deleteFolder: deleteFolderWithCascade,
-    moveDiagramToFolder,
-    duplicateDiagram: listDuplicateDiagram,
-    dismissSharedDiagram: dismissShared,
-  } = useDiagramListActions({
+    moveDocumentToFolder,
+    duplicateDocument: listDuplicateDocument,
+    dismissSharedDocument: dismissShared,
+  } = useDocumentListActions({
     ownerId,
-    diagramList: diagrams,
-    setDiagramList: setDiagrams,
+    documentList: liveDocs,
+    setDocumentList: setDocuments,
     confirm,
     toast,
     deleteFolderFromHook: deleteFolder,
@@ -322,72 +322,72 @@ export function useExplorerState() {
     // so the copy's row appears.
     afterDuplicate: async () => {
       if (!ownerId) return;
-      const list = await apiListDiagrams(ownerId).catch(() => null);
-      if (list) setDiagrams(list);
+      const list = await apiListDocuments(ownerId).catch(() => null);
+      if (list) setDocuments(list);
     },
-    sharedDiagrams: shared,
-    setSharedDiagrams: setShared,
+    sharedDocuments: shared,
+    setSharedDocuments: setShared,
   });
 
   // Rename / delete / duplicate also re-sweep the team libraries:
-  // these actions are wired against the personal `diagrams` list, so a
-  // team diagram in Recent (which lives in the sweep, not `diagrams`)
-  // wouldn't otherwise repaint after the action lands (docs/specs/013-workspace/team-shared-diagrams.md).
-  const renameDiagram = (id: string, name: string) => {
-    setRenamingDiagramId(null);
-    listRenameDiagram(id, name);
+  // these actions are wired against the personal `liveDocs` list, so a
+  // team document in Recent (which lives in the sweep, not `liveDocs`)
+  // wouldn't otherwise repaint after the action lands (docs/specs/013-workspace/team-shared-documents.md).
+  const renameDocument = (id: string, name: string) => {
+    setRenamingDocumentId(null);
+    listRenameDocument(id, name);
     refreshTeamLibraries();
   };
 
-  const deleteDiagram = async (
+  const deleteDocument = async (
     id: string,
     beforeRemove?: () => Promise<void> | void,
     opts?: { skipConfirm?: boolean },
   ) => {
-    await listDeleteDiagram(id, beforeRemove, opts);
+    await listDeleteDocument(id, beforeRemove, opts);
     refreshTeamLibraries();
   };
 
-  const duplicateDiagram = async (id: string) => {
-    await listDuplicateDiagram(id);
+  const duplicateDocument = async (id: string) => {
+    await listDuplicateDocument(id);
     refreshTeamLibraries();
   };
 
   // The unified move picker's state, handlers, and destination trees
-  // (docs/specs/013-workspace/team-shared-diagrams.md) live in useExplorerMoves.
+  // (docs/specs/013-workspace/team-shared-documents.md) live in useExplorerMoves.
   const {
     moveTarget,
     setMoveTarget,
     moveAnchorRef,
     moveFolderToParent,
     createMoveFolder,
-    moveDiagramToTeam,
-    moveTeamDiagramToFolder,
-    moveTeamDiagramOut,
-    moveDiagramTo,
-    openMovePickerForDiagram,
+    moveDocumentToTeam,
+    moveTeamDocumentToFolder,
+    moveTeamDocumentOut,
+    moveDocumentTo,
+    openMovePickerForDocument,
     openMovePickerForFolder,
     movePersonalFolders,
     moveTeamDests,
   } = useExplorerMoves({
     ownerId,
-    diagrams,
-    setDiagrams,
+    documents: liveDocs,
+    setDocuments,
     folders,
     teams,
     teamFolders,
-    teamDiagrams,
+    teamDocuments,
     descendantSet,
     refreshFolders,
     refreshTeamLibraries,
     refreshPersonal: refresh,
-    moveDiagramToFolder,
+    moveDocumentToFolder,
     toast,
   });
 
   // Right-pane derivations (buckets, synthetic folders, pane content /
   // title / crumbs, Recent badge) live in useExplorerPane.
-  // Per-user diagram stars (docs/specs/013-workspace/favourites.md). Its own D1 table rather than the
+  // Per-user document stars (docs/specs/013-workspace/favourites.md). Its own D1 table rather than the
   // preferences blob, which is 4 KB-capped; favourites are unlimited.
   const { favouriteIds, toggleFavourite } = useFavourites(ownerId);
 
@@ -399,18 +399,18 @@ export function useExplorerState() {
   const activity = useActivityFeed(ownerId);
 
   const {
-    diagramsByFolder,
-    unsortedDiagrams,
-    generatedDiagrams,
-    offlineDiagrams,
+    documentsByFolder,
+    unsortedDocuments,
+    generatedDocuments,
+    offlineDocuments,
     paneContent,
     recentCount,
     paneTitle,
     paneCrumbs,
   } = useExplorerPane({
     selected,
-    diagrams,
-    teamDiagrams,
+    documents: liveDocs,
+    teamDocuments,
     shared,
     childrenByParent,
     folderById,
@@ -433,15 +433,15 @@ export function useExplorerState() {
     };
   }, [ownerId]);
 
-  // Hide / show a diagram in Recent (docs/specs/013-workspace/hide-from-recent.md). Read-modify-writes from the
+  // Hide / show a document in Recent (docs/specs/013-workspace/hide-from-recent.md). Read-modify-writes from the
   // CACHE rather than the React snapshot: the PUT sends the whole blob, so
   // a stale snapshot would clobber sibling flags written by another tab.
   const toggleRecentExclusion = useCallback(
-    (diagramId: string) => {
+    (documentId: string) => {
       const latest = readUserPreferences();
       const next: UserPreferences = {
         ...latest,
-        recentExcludedIds: toggleRecentExcluded(latest, diagramId),
+        recentExcludedIds: toggleRecentExcluded(latest, documentId),
       };
       setPrefs(next);
       writeUserPreferences(next, ownerId ?? undefined);
@@ -465,7 +465,7 @@ export function useExplorerState() {
     newSubfolder: () => void createFolder(f.id),
     move: () => openMovePickerForFolder(f.id, anchor),
     delete: async () => {
-      // Confirm + diagram-side cascade + useFolders delete, all in the
+      // Confirm + document-side cascade + useFolders delete, all in the
       // shared hook. Only bounce off the route if the deleted folder
       // itself was focused: descendants survive the delete (they're
       // now root folders), so a B-was-selected, delete-A flow should
@@ -488,22 +488,22 @@ export function useExplorerState() {
     selected,
     go,
     // Data
-    diagrams,
+    documents: liveDocs,
     folders,
     shared,
     teams,
     teamFolders,
-    teamDiagrams,
+    teamDocuments,
     invites,
     tokens,
     loading,
     folderById,
     childrenByParent,
     rootFolders,
-    diagramsByFolder,
-    unsortedDiagrams,
-    generatedDiagrams,
-    offlineDiagrams,
+    documentsByFolder,
+    unsortedDocuments,
+    generatedDocuments,
+    offlineDocuments,
     paneContent,
     recentCount,
     // Unread Timeline events (docs/specs/013-workspace/timeline.md §2.5), for the sidebar badge.
@@ -511,7 +511,7 @@ export function useExplorerState() {
     // What's outstanding for the reader (docs/specs/013-workspace/activity-page.md): the Activity pane's
     // lists + the sidebar badge's count.
     activity,
-    // Per-user diagram stars (docs/specs/013-workspace/favourites.md).
+    // Per-user document stars (docs/specs/013-workspace/favourites.md).
     favouriteIds,
     toggleFavourite,
     // Preferences (docs/specs/007-editor/user-preferences.md) + the Recent exclusion toggle (docs/specs/013-workspace/hide-from-recent.md).
@@ -533,25 +533,25 @@ export function useExplorerState() {
     setSettingsFocus,
     settingsCategory,
     setSettingsCategory,
-    // Folder + diagram actions
+    // Folder + document actions
     folderActions,
     createFolder,
     commitRenameFolder,
     renamingFolderId,
     setRenamingFolderId,
-    renamingDiagramId,
-    setRenamingDiagramId,
-    renameDiagram,
-    deleteDiagram,
-    duplicateDiagram,
-    moveDiagramToFolder,
-    moveDiagramToTeam,
-    moveTeamDiagramToFolder,
-    moveTeamDiagramOut,
-    moveDiagramTo,
+    renamingDocumentId,
+    setRenamingDocumentId,
+    renameDocument,
+    deleteDocument,
+    duplicateDocument,
+    moveDocumentToFolder,
+    moveDocumentToTeam,
+    moveTeamDocumentToFolder,
+    moveTeamDocumentOut,
+    moveDocumentTo,
     moveFolderToParent,
     createMoveFolder,
-    openMovePickerForDiagram,
+    openMovePickerForDocument,
     moveTarget,
     setMoveTarget,
     moveAnchorRef,
@@ -564,7 +564,7 @@ export function useExplorerState() {
     declineInvite,
     refreshTeams,
     // After a restore from the Trash (docs/specs/013-workspace/trash.md): the
-    // diagram is back in a personal or team list.
+    // document is back in a personal or team list.
     refreshLibraries: () => {
       if (ownerId) void refresh(ownerId);
       refreshTeamLibraries();

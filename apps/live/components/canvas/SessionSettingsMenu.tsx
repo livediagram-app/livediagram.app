@@ -13,7 +13,7 @@
 // where the trigger lives: they have their own face (SessionTimerFace), whose
 // `…` renders the very same body.
 
-import type { SessionButtonConfig } from '@livediagram/diagram';
+import type { SessionButtonConfig } from '@livediagram/document';
 import {
   ElementEllipsisMenu,
   ElementMenuSettingsRow,

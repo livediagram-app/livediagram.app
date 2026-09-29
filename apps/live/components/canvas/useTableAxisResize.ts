@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import type { TableElement } from '@livediagram/diagram';
+import type { TableElement } from '@livediagram/document';
 
 // Column / row divider resizing for TableView (docs/specs/008-canvas/canvas-and-palette.md Table): the
 // rest-to-arm dividers, the live track overrides while a drag is in

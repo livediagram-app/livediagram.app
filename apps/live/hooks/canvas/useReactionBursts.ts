@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import { isReaction, REACTION_DEFAULT, type Reaction } from '@livediagram/diagram';
+import { isReaction, REACTION_DEFAULT, type Reaction } from '@livediagram/document';
 
 // The reaction bursts currently playing (docs/specs/009-elements/reaction-pad.md).
 //

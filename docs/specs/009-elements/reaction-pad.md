@@ -56,7 +56,7 @@ the paper kit is being retired). It replaced printed concentric "tread" rings
 around the emoji.
 
 - **Each reaction has a colour**, a fixed pair of hues (`REACTION_HUES` in
-  `@livediagram/diagram`): confetti amber to rose, sparkles violet to cyan,
+  `@livediagram/document`): confetti amber to rose, sparkles violet to cyan,
   hearts pink to purple, applause amber to orange, fireworks indigo to
   fuchsia. A soft glow of it sits behind the emoji. Fixed rather than the
   theme's, for the same reason the Temperature check's are: the reaction's

@@ -1,4 +1,4 @@
-import { ES_LANES } from '@livediagram/diagram';
+import { ES_LANES } from '@livediagram/document';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
@@ -7,8 +7,8 @@ import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
 // is gated on `showTemplatePicker`, which is false for the common
-// path (a returning user opening an existing diagram with tabs that
-// already have content). For first-time guests on a fresh diagram
+// path (a returning user opening an existing document with tabs that
+// already have content). For first-time guests on a fresh document
 // the gate is true on first paint, but the empty canvas underneath
 // has already rendered by then, so the user sees the welcome modal
 // fade in a frame later rather than blocking the route on the
@@ -43,6 +43,7 @@ import { HoverCard } from '@livediagram/ui';
 import { useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
+import { panelEnabled } from '@/lib/user-preferences';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -88,7 +89,7 @@ type ChromeExtras = {
   onIsoReset: () => void;
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the character's customisation, owned by
   // useAvatarConfig in Canvas (it persists per browser, so it lives with the
-  // sprite rather than in the editor's diagram state) and edited by the
+  // sprite rather than in the editor's document state) and edited by the
   // Avatar Panel down in the chrome.
   avatarConfig: import('@/lib/avatar-config').AvatarConfig;
   onChangeAvatarField: <K extends keyof import('@/lib/avatar-config').AvatarConfig>(
@@ -99,7 +100,7 @@ type ChromeExtras = {
   onRandomiseAvatar: () => void;
   onAvatarReaction: (kind: import('@/lib/avatar-reactions').AvatarReactionKind) => void;
   // Throw one of the Reaction Pad's bursts (docs/specs/009-elements/reaction-pad.md) around the character.
-  onAvatarBurst?: (reaction: import('@livediagram/diagram').Reaction) => void;
+  onAvatarBurst?: (reaction: import('@livediagram/document').Reaction) => void;
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen, owned by useLaserConfig in Canvas (it
   // persists per browser, like the avatar's costume) and edited down here.
   laserConfig?: import('@/lib/laser-config').LaserConfig;
@@ -142,7 +143,7 @@ type ChromeExtras = {
   slideDeckPanelPosition?: { x: number; y: number } | null;
   onMoveSlideDeckPanel?: (x: number, y: number) => void;
   onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/diagram/[id]/useSlideDeck').SlideDeckState;
+  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@/lib/format-config').FormatConfig;
@@ -198,7 +199,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     canRedo,
     canUndo,
     canvasTool,
-    diagramName,
+    documentName,
     dockButtonRefs,
     drawDrag,
     drawHover,
@@ -233,6 +234,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     highlighterWidth,
     readOnly,
     selfParticipant,
+    settings,
     snapGuides,
     distGuides,
     snapTargets,
@@ -250,6 +252,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // folds it in next to the welcome-flow gate that already suppresses
   // the same panels, so each panel stays hidden in either state.
   const chromeHidden = welcomeOpen || zenMode === true;
+  // Panels turned off in Settings (docs/specs/007-editor/user-preferences.md) take their cluster
+  // buttons with them (Undo / Redo stay). Read once here and handed to
+  // useCanvasChromePanels, so a button and its panel share one value.
+  const panelsOn = {
+    activity: panelEnabled(settings, 'activityPanelEnabled'),
+    layers: panelEnabled(settings, 'layersPanelEnabled'),
+    collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
+  };
 
   // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
@@ -326,6 +336,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     dockingActive,
     toolbarActive,
     panelWiringFor,
+    panelsOn,
   });
 
   // Measured against the real top-corner stacks (useStripCrowdsCorners). A
@@ -394,7 +405,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           mode={templatePickerMode}
           participant={selfParticipant}
           currentThemeId={tabThemeId}
-          diagramName={diagramName}
+          documentName={documentName}
           lockedName={templatePickerLockedName}
           onPick={onChooseTemplate}
           onSkip={onSkipTemplatePicker}
@@ -405,7 +416,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           landing on, lit for the duration of the drag. Beside the guide
           overlay because it is the same kind of thing — help BEFORE the
           drop — and it publishes through its own store, so it costs nothing
-          on every other board. */}
+          on every other tab. */}
       <TimelineLanesOverlay
         timeline={props.esBoard === true ? ES_LANES : null}
         tabThemeId={tabThemeId}
@@ -551,8 +562,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
             {/* Activity + Undo / Redo (docs/specs/012-collaboration/activity-and-audit.md): see ActivityClusterStrip. */}
-            {!zenMode && !readOnly && (clusterPopovers ? true : activityMinimized) ? (
+            {/* With the Activity panel off there is no panel to carry Undo /
+                Redo in Floating, so the strip shows in every layout, as just
+                those two. */}
+            {!zenMode &&
+            !readOnly &&
+            (!panelsOn.activity || clusterPopovers || activityMinimized) ? (
               <ActivityClusterStrip
+                showActivity={panelsOn.activity}
                 popoverOpen={clusterPopovers && activeMobilePanel === 'activity'}
                 onExpand={onToggleActivityMinimized}
                 onTogglePopover={
@@ -566,8 +583,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canRedo={canRedo}
               />
             ) : null}
-            {/* Layers (docs/specs/006-diagram/layers.md): see LayersClusterButton. */}
-            {!zenMode && !readOnly && (clusterPopovers ? true : layersMinimized) ? (
+            {/* Layers (docs/specs/006-document/layers.md): see LayersClusterButton. */}
+            {!zenMode && !readOnly && panelsOn.layers && (clusterPopovers || layersMinimized) ? (
               <LayersClusterButton
                 popoverOpen={clusterPopovers && activeMobilePanel === 'layers'}
                 onExpand={onToggleLayersMinimized}
@@ -581,7 +598,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): right after Layers, only while
                 the tab has a comment thread or an action. A view-role visitor
                 gets it too: they read threads and answer them. */}
-            {!zenMode && (commentRows.length > 0 || actionRows.length > 0) ? (
+            {!zenMode &&
+            panelsOn.collaborate &&
+            (commentRows.length > 0 || actionRows.length > 0) ? (
               <CollaborateClusterButton
                 openCount={kindCounts('open', commentRows, actionRows).all}
                 popoverOpen={activeMobilePanel === 'collaborate'}

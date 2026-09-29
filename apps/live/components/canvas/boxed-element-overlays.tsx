@@ -6,7 +6,7 @@ import {
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
   type FreehandElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // Browser chrome rendered as fixed-pixel HTML rather than scaled SVG so
 // the window dots stay round, the nav icons keep their stroke weight,
@@ -19,7 +19,7 @@ import {
 // elements should scale with the canvas zoom like the rest of the
 // shape so a small browser at low zoom still reads as a browser.
 // Every size and glyph comes from the shared BROWSER_CHROME table
-// (@livediagram/diagram shape-geometry.ts), which the headless export
+// (@livediagram/document shape-geometry.ts), which the headless export
 // lays out the same way, so an exported browser matches this strip.
 export function BrowserChrome({ stroke, zoom: _zoom }: { stroke: string; zoom: number }) {
   const c = BROWSER_CHROME;

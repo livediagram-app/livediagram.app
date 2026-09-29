@@ -1,21 +1,21 @@
-# Hide a diagram from Recent
+# Hide a document from Recent
 
 Status: shipped
 
 ## What
 
-A per-diagram menu item, **Hide from Recent** / **Show in Recent**, in both
+A per-document menu item, **Hide from Recent** / **Show in Recent**, in both
 Explorer surfaces (the `/explorer` route and the editor's floating Explorer
-panel). A hidden diagram never appears in Recent however recently it was
+panel). A hidden document never appears in Recent however recently it was
 opened or edited, and behaves exactly as before everywhere else — folders,
 search, direct links, sharing, teams.
 
-## Per-user, not per-diagram
+## Per-user, not per-document
 
 Stored as `recentExcludedIds` in the synced `UserPreferences` blob ([User preferences](../007-editor/user-preferences.md)).
 
 Recent is **your view of your own work**, so the choice belongs to the viewer,
-not the document. On a shared or team diagram, one collaborator tidying their
+not the document. On a shared or team document, one collaborator tidying their
 Recent must not tidy everyone else's. Preferences already do exactly the right
 thing here: the same blob syncs to D1 for **guests** (via the per-browser
 `X-Owner-Id`) and for **signed-in users** (via the Clerk `sub`), so the choice
@@ -32,14 +32,14 @@ survives.
 ## Where it is enforced
 
 Both Recent lists filter on it, and both filter **before** the cap so hiding
-one diagram promotes the next one in rather than leaving a gap:
+one document promotes the next one in rather than leaving a gap:
 
 - `apps/live/app/explorer/useExplorerPane.ts` — the route's Recent list, and
   the sidebar's **Recent badge count**, which counts what Recent will actually
   show. (It previously counted all sources without re-running the filter,
   which would have made the badge promise rows the pane then dropped.)
 - `apps/live/components/panels/useExplorerViewModel.ts` — the editor panel's
-  Recent list, alongside the existing "not the currently-open diagram" rule.
+  Recent list, alongside the existing "not the currently-open document" rule.
 
 Preference ownership moved into `useExplorerState` for the route. It was in
 `ExplorerShell`, but the pane needs it too, and two `useState` copies of the
@@ -54,13 +54,13 @@ clobber sibling flags another tab had written. Same rule `ProfilePane` follows.
 Deliberate. The menu item's label states what the click will do — and by doing
 so tells you the current state — right where you would change it. A chip on
 every folder row would compete with the existing Offline / Shared / Team /
-Private badges, which describe the **diagram**; this describes _your view of_
-the diagram, which is a different kind of fact and a rarer one.
+Private badges, which describe the **document**; this describes _your view of_
+the document, which is a different kind of fact and a rarer one.
 
 ## Out of scope
 
 - **Bulk hide / a management list.** Nothing surfaces the hidden set as a
-  whole; you un-hide from the diagram's own menu wherever it lives. Worth
+  whole; you un-hide from the document's own menu wherever it lives. Worth
   revisiting if the 60 cap ever feels near.
 - **Hiding shared-with-you rows.** Those already have **Dismiss**, which
   removes the share outright (a server-side row delete) — a different and

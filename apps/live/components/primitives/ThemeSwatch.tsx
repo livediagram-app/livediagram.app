@@ -7,7 +7,7 @@ import type { ThemeDefinition } from '@/lib/themes';
 // The preview inside a theme card. Rather than a flat colour dot, it
 // renders a miniature diagram scene — a titled node flowing into two
 // others, with soft shadows, arrowheads and a faint grid — drawn in the
-// theme's actual colours, so the card previews what a diagram in this
+// theme's actual colours, so the card previews what a canvas in this
 // theme looks like, not just its palette. Shared by the palette
 // accordion, the welcome / template picker, and the Tab Look & Feel dialog +
 // Explorer theme surfaces so they can't drift.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/diagram';
+import type { Element, Tab } from '@livediagram/document';
 import { landPastedCopies, pasteTranslation } from './paste-placement';
 
 // Where a paste lands (docs/specs/021-event-storming/event-storming.md "Always on a lane"): at the pointer when it

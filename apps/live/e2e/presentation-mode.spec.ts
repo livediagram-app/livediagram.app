@@ -36,7 +36,7 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
       },
     ],
   };
-  const seeded = await page.request.post(`${apiBase}/diagrams`, {
+  const seeded = await page.request.post(`${apiBase}/documents`, {
     headers: { 'X-Owner-Id': owner, Origin: new URL(baseURL!).origin },
     data: {
       id,
@@ -54,7 +54,7 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
       JSON.stringify({ panelLayout: 'toolbar' }),
     );
   }, owner);
-  await page.goto(`/diagram/${id}`);
+  await page.goto(`/document/${id}`);
   await page.locator(CANVAS).waitFor();
   const decline = page.getByRole('button', { name: /^no thanks$/i }).first();
   if (await decline.isVisible().catch(() => false)) await decline.click();

@@ -6,13 +6,13 @@ import { LockedTab } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Locking a Tab',
   description:
-    'Lock a tab to make a whole board read-only, so its elements cannot be moved, edited, erased, or deleted by accident. Unlock it to edit again.',
+    'Lock a tab to make its whole canvas read-only, so its elements cannot be moved, edited, erased, or deleted by accident. Unlock it to edit again.',
   path: '/help/tabs/locking-tabs/',
 });
 
-<ArticleLayout title="Locking a Tab" description="Make an entire board read-only in one step, so a finished tab stays exactly as you left it." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("locking-tabs")}>
+<ArticleLayout title="Locking a Tab" description="Make an entire canvas read-only in one step, so a finished tab stays exactly as you left it." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("locking-tabs")}>
 
-When a whole board is finished, locking the tab protects everything on it at once, rather than locking elements one by one. A locked tab becomes read-only: you can still look at it and switch to it, but nothing on it changes until you unlock it.
+When a whole canvas is finished, locking the tab protects everything on it at once, rather than locking elements one by one. A locked tab becomes read-only: you can still look at it and switch to it, but nothing on it changes until you unlock it.
 
 <Figure caption="A locked tab carries a padlock and is marked read-only in the tab bar.">
   <LockedTab />
@@ -34,12 +34,12 @@ You can still **rename** or **duplicate** the tab from the same menu, and duplic
 
 ## When to use it
 
-- Freeze a signed-off or presented board so a later edit can't disturb it.
+- Freeze a signed-off or presented canvas so a later edit can't disturb it.
 - Protect a reference or template tab you copy from but never change.
-- Hand a diagram to collaborators with the finished tabs locked, leaving only the working tabs open.
+- Hand a document to collaborators with the finished tabs locked, leaving only the working tabs open.
 
 <Tip>
-  To protect just a few elements rather than a whole board, lock them individually instead. See
+  To protect just a few elements rather than a whole canvas, lock them individually instead. See
   [locking elements](/help/canvas/locking/).
 </Tip>
 

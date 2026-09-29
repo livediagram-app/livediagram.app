@@ -7,7 +7,7 @@
 //
 // Delete sequence:
 //
-//   1. POST DELETE /api/account — wipes the caller's diagrams +
+//   1. POST DELETE /api/account — wipes the caller's documents +
 //      folders + participant row on the backend. Returns the change
 //      counts on success.
 //   2. Clerk's `user.delete()` — drops the Clerk account itself.
@@ -143,7 +143,7 @@ export function DeleteAccountDialog({
               Delete account
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              This permanently removes your diagrams (including any in the Trash), folders, and
+              This permanently removes your documents (including any in the Trash), folders, and
               participant record from the livediagram server, then deletes your account. This cannot
               be undone.
             </p>

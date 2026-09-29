@@ -2,14 +2,14 @@
 
 Status: **implemented**.
 
-A card that freezes **who was in the room** at a moment, onto the board.
+A card that freezes **who was in the room** at a moment, onto the canvas.
 
 ## Why
 
 The presence stack shows who is here now, and forgets. Every session that
 produces a record — a workshop, an incident review, a design review, a
 decision ([Decision record](decision-record.md)) — needs the attendance beside the output, and today the
-board that holds the output can't hold the attendance.
+canvas that holds the output can't hold the attendance.
 
 ## Take, don't track
 
@@ -54,11 +54,11 @@ bottom edge.
   a roll is taken while the card is on screen they cascade in.
 - **Take roll** at the foot as the accent bar; once taken, **Take again**.
 - Before the first roll, the shared invitation ("Nobody recorded yet", "Take
-  the roll to freeze who is here into the diagram").
+  the roll to freeze who is here into the document").
 
 ## Guests count
 
 An unsigned guest is a participant ([Auth + guest access](../014-identity/auth-and-guest-access.md)) and appears in the roll under
 whatever name they are using, with no distinction drawn from a signed-in one.
-Attendance is about who was in the room, and the board has never cared which
+Attendance is about who was in the room, and the canvas has never cared which
 door they came through.

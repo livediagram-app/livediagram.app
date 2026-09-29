@@ -8,8 +8,8 @@ import {
   type Element,
   type Endpoint,
   type ShapeElement,
-} from '@livediagram/diagram';
-import type { Tab } from '@livediagram/diagram';
+} from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
 import type { MutableRefObject } from 'react';
 import { ARROW_SNAP_THRESHOLD_PX } from '@/lib/canvas';
 import { NEW_ARROW_THEME_STROKE_FALLBACK } from '@/lib/draw-commit';
@@ -202,7 +202,7 @@ export function makeCommitFreehand({
     const elementToInsert: typeof base = {
       ...base,
       // Theme-aware stroke colour so a freehand sketch reads as
-      // part of the diagram. Falls back to the default in
+      // part of the canvas. Falls back to the default in
       // defaultStrokeColor when the theme has no override.
       ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
       ...(closed && theme.elementFill ? { fillColor: theme.elementFill } : {}),

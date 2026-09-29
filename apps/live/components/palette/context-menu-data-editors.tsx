@@ -14,7 +14,7 @@ import {
   type MindFlow,
   type LineSeries,
   type PieSlice,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { hexish } from '@/components/palette/palette-controls';
 import { MenuActionButton, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';

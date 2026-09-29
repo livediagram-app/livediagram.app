@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import { useCanvasA11y } from './useCanvasA11y';
 
 // Tab means two things on a focused canvas: walk to the next element

@@ -2,7 +2,7 @@
 // completes or reopens it, its name (struck through once done), and who it is
 // for. Pressing the rest of the row edits it. The check pops green on done.
 
-import { COLLAB_DONE_COLOR as ACTION_DONE, type ElementAction } from '@livediagram/diagram';
+import { COLLAB_DONE_COLOR as ACTION_DONE, type ElementAction } from '@livediagram/document';
 import { GlyphDisc } from '@livediagram/ui';
 import { initialsOf } from '@/lib/identity';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';

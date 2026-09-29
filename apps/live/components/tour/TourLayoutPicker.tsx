@@ -1,6 +1,6 @@
 'use client';
 
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { choiceRow, choiceTelemetryType } from '@/components/dialogs/settings/settings-catalogue';
 import { CHOICE_ILLUSTRATIONS } from '@/components/dialogs/settings/settings-choice-illustrations';
 import { H, StateFrame, W } from '@/components/dialogs/settings/settings-illustration-kit';

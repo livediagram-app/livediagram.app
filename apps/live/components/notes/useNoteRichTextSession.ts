@@ -13,7 +13,7 @@ import {
   type RunBoolKey,
   type RunHeading,
   type TextRun,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { PLAIN_RUN_DEFAULTS } from '@/components/rich-text/rich-text-format';
 import { useRichTextDocument } from '@/components/rich-text/useRichTextDocument';
 import { track } from '@/lib/telemetry';

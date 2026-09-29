@@ -1,23 +1,23 @@
 // The MCP tools (docs/specs/015-api/mcp-server.md §4). Each is a thin wrapper over the api worker
-// plus the shared diagram helpers (validate / auto-layout / renderElementsToSvg)
+// plus the shared document helpers (validate / auto-layout / renderElementsToSvg)
 // — no business logic the editor doesn't already own. The calling LLM produces
 // the elements; these tools validate, lay out, persist, and render. The
 // shared result / auth / tab-building plumbing lives in tool-helpers.ts.
 import { layoutGraph, resolveGraphInput } from './graph-input';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type {
-  DiagramListResponse,
-  DiagramResponse,
+  DocumentListResponse,
+  DocumentResponse,
   ShareLinkResponse,
   TabResponse,
 } from '@livediagram/api-schema';
-import { coerceShapeKind, isValidTab, type Element, type Tab } from '@livediagram/diagram';
+import { coerceShapeKind, isValidTab, type Element, type Tab } from '@livediagram/document';
 import { lanesToFront, normaliseElement, normaliseElements } from './element-normalise';
 import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
-import { TRASH_RETENTION_DAYS, type TrashedDiagram } from '@livediagram/api-schema';
+import { TRASH_RETENTION_DAYS, type TrashedDocument } from '@livediagram/api-schema';
 import { ApiError, apiFetch, apiJson, reportApiFailure } from './api';
 import type { Env } from './env';
-import { fetchTeamLibraries, matchDiagrams } from './find-diagrams';
+import { fetchTeamLibraries, matchDocuments } from './find-documents';
 import {
   deepLink,
   errorResult,
@@ -40,85 +40,85 @@ import {
 import { registerTool } from './tool-annotations';
 import {
   addTabOutput,
-  createDiagramOutput,
-  deleteDiagramOutput,
-  findDiagramsOutput,
+  createDocumentOutput,
+  deleteDocumentOutput,
+  findDocumentsOutput,
   listTemplatesOutput,
   listTrashOutput,
-  readDiagramOutput,
-  renameDiagramOutput,
-  restoreDiagramOutput,
-  shareDiagramOutput,
-  updateDiagramOutput,
+  readDocumentOutput,
+  renameDocumentOutput,
+  restoreDocumentOutput,
+  shareDocumentOutput,
+  updateDocumentOutput,
 } from './output-schema';
 import {
   addTabShape,
-  createDiagramShape,
-  findDiagramsShape,
-  deleteDiagramShape,
+  createDocumentShape,
+  findDocumentsShape,
+  deleteDocumentShape,
   listTrashShape,
-  restoreDiagramShape,
-  readDiagramShape,
-  renameDiagramShape,
-  shareDiagramShape,
-  updateDiagramShape,
+  restoreDocumentShape,
+  readDocumentShape,
+  renameDocumentShape,
+  shareDocumentShape,
+  updateDocumentShape,
 } from './schema';
 
 export function registerTools(server: McpServer, env: Env): void {
   registerTool(
     server,
     env,
-    'find_diagrams',
+    'find_documents',
     {
       behaviour: 'read',
-      title: 'Find diagrams',
+      title: 'Find documents',
       description:
-        'Search the user’s diagrams by name — their personal library AND the shared ' +
+        'Search the user’s documents by name — their personal library AND the shared ' +
         'libraries of every team they belong to. Returns a compact list (id, name, ' +
         'updated time, which library it lives in, and a link to open it). Lightweight ' +
-        'and image-free so you can scan many results, then read_diagram the one you want.',
-      inputSchema: findDiagramsShape,
-      outputSchema: findDiagramsOutput,
+        'and image-free so you can scan many results, then read_document the one you want.',
+      inputSchema: findDocumentsShape,
+      outputSchema: findDocumentsOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      // Personal + team shared libraries (docs/specs/013-workspace/team-shared-diagrams.md): a diagram filed into a
+      // Personal + team shared libraries (docs/specs/013-workspace/team-shared-documents.md): a document filed into a
       // team leaves the personal list, so both must be swept.
-      const [{ diagrams }, teamLibraries] = await Promise.all([
-        apiJson<DiagramListResponse>(env, token, '/diagrams'),
+      const [{ documents: liveDocs }, teamLibraries] = await Promise.all([
+        apiJson<DocumentListResponse>(env, token, '/documents'),
         fetchTeamLibraries(env, token),
       ]);
-      const matched = matchDiagrams(diagrams, teamLibraries, args.query, args.limit ?? 20).map(
+      const matched = matchDocuments(liveDocs, teamLibraries, args.query, args.limit ?? 20).map(
         (d) => ({ ...d, url: deepLink(d.id) }),
       );
-      return textResult({ count: matched.length, diagrams: matched });
+      return textResult({ count: matched.length, documents: matched });
     },
   );
 
   registerTool(
     server,
     env,
-    'read_diagram',
+    'read_document',
     {
       behaviour: 'read',
-      title: 'Read + visualise a diagram',
+      title: 'Read + visualise a document',
       description:
-        'Fetch one diagram tab’s elements as structured JSON AND an inline PNG of the ' +
-        'tab, plus a link to open it. Use after find_diagrams to view or before editing.',
-      inputSchema: readDiagramShape,
-      outputSchema: readDiagramOutput,
+        'Fetch one tab’s elements as structured JSON AND an inline PNG of the ' +
+        'tab, plus a link to open it. Use after find_documents to view or before editing.',
+      inputSchema: readDocumentShape,
+      outputSchema: readDocumentOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      const loaded = await loadTab(env, token, args.diagramId, args.tabId);
-      if (!loaded) return errorResult('That diagram has no tabs.');
-      const { diagram, tab } = loaded;
+      const loaded = await loadTab(env, token, args.documentId, args.tabId);
+      if (!loaded) return errorResult('That document has no tabs.');
+      const { document: liveDoc, tab } = loaded;
       return imageResult(
         {
-          id: diagram.id,
-          name: diagram.name,
+          id: liveDoc.id,
+          name: liveDoc.name,
           tab: { id: tab.id, name: tab.name, elements: tab.elements },
-          url: deepLink(diagram.id),
+          url: deepLink(liveDoc.id),
         },
         tab,
         { env, token },
@@ -137,8 +137,8 @@ export function registerTools(server: McpServer, env: Env): void {
         'Browse the template library — the same hand-tuned scaffolds the editor\u2019s Quick ' +
         'Start offers (kanban, flowchart, SWOT, gantt, wireframes, ...). Returns categories ' +
         'plus { kind, title, description, category } per template. Pass a kind as "template" ' +
-        'on create_diagram / add_tab to start from it, then personalise the labels with ' +
-        'update_diagram.',
+        'on create_document / add_tab to start from it, then personalise the labels with ' +
+        'update_document.',
       inputSchema: {},
       outputSchema: listTemplatesOutput,
     },
@@ -162,20 +162,20 @@ export function registerTools(server: McpServer, env: Env): void {
   registerTool(
     server,
     env,
-    'create_diagram',
+    'create_document',
     {
       behaviour: 'write',
-      title: 'Create a diagram',
+      title: 'Create a document',
       description:
-        'Create a new diagram from elements you produce. The full element format is ' +
+        'Create a new document from diagram elements you produce. The full element format is ' +
         'documented inline on the "tabs" argument below. ' +
-        'Pass one tab, or several to build a multi-tab diagram in one call (an ' +
+        'Pass one tab, or several to build a multi-tab document in one call (an ' +
         'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
         'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
         'out each tab per the layout arg, tags it as AI-generated so it shows in your ' +
         '"Generated" folder, and returns the link + an inline PNG of the first tab.',
-      inputSchema: createDiagramShape,
-      outputSchema: createDiagramOutput,
+      inputSchema: createDocumentShape,
+      outputSchema: createDocumentOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
@@ -224,10 +224,10 @@ export function registerTools(server: McpServer, env: Env): void {
         tabs.push(buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, args.theme));
       }
       const id = crypto.randomUUID();
-      // Tag the diagram as MCP-generated (docs/specs/013-workspace/folders.md). The Explorer surfaces a
+      // Tag the document as MCP-generated (docs/specs/013-workspace/folders.md). The Explorer surfaces a
       // synthetic "Generated" folder over source != null, so there's no
       // real folder to create / place it in.
-      await apiJson(env, token, '/diagrams', {
+      await apiJson(env, token, '/documents', {
         method: 'POST',
         body: JSON.stringify({ id, name: args.name, tabs, source: 'mcp' }),
       });
@@ -252,13 +252,13 @@ export function registerTools(server: McpServer, env: Env): void {
     'add_tab',
     {
       behaviour: 'write',
-      title: 'Add a tab to a diagram',
+      title: 'Add a tab to a document',
       description:
-        'Add a NEW tab (its own canvas) to an existing diagram — e.g. a detail view zooming ' +
-        'into one part of an architecture. Produce the elements like create_diagram (or pass ' +
+        'Add a NEW tab (its own canvas) to an existing document — e.g. a detail view zooming ' +
+        'into one part of an architecture. Produce the elements like create_document (or pass ' +
         '"template" instead of elements to start from a hand-tuned scaffold); the ' +
         'server validates, lays out per the layout arg, appends the tab, and returns an ' +
-        'inline PNG. Run read_diagram first to see the diagram and its existing tabs.',
+        'inline PNG. Run read_document first to see the document and its existing tabs.',
       inputSchema: addTabShape,
       outputSchema: addTabOutput,
     },
@@ -287,14 +287,14 @@ export function registerTools(server: McpServer, env: Env): void {
             'needs id/type/x/y/width/height (arrows need from/to), and arrays must be well-formed.',
         );
       }
-      // Default the new tab's theme to the diagram's existing one so it matches
+      // Default the new tab's theme to the document's existing one so it matches
       // the other tabs rather than landing as a clashing brand-white tab. The
       // model can still override via args.theme. Best-effort: fall back to the
       // buildTab default if the lookup fails.
       let themeId = args.theme;
       if (!themeId) {
         try {
-          const loaded = await loadTab(env, token, args.diagramId);
+          const loaded = await loadTab(env, token, args.documentId);
           if (loaded) themeId = loaded.tab.theme;
         } catch {
           /* keep buildTab's default */
@@ -305,12 +305,12 @@ export function registerTools(server: McpServer, env: Env): void {
         : input.graph
           ? buildGraphTab(tabId, args.name, input.graph, themeId)
           : buildTab(tabId, args.name, (candidate as Tab).elements, args.layout, themeId);
-      await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${tabId}`, {
+      await apiJson(env, token, `/documents/${args.documentId}/tabs/${tabId}`, {
         method: 'PUT',
         body: JSON.stringify(tab),
       });
       return imageResult(
-        { diagramId: args.diagramId, tabId, name: args.name, url: deepLink(args.diagramId) },
+        { documentId: args.documentId, tabId, name: args.name, url: deepLink(args.documentId) },
         tab,
         { env, token },
       );
@@ -320,23 +320,23 @@ export function registerTools(server: McpServer, env: Env): void {
   registerTool(
     server,
     env,
-    'update_diagram',
+    'update_document',
     {
       behaviour: 'destructive',
-      title: 'Update a diagram',
+      title: 'Update a document',
       description:
         'Edit an existing tab. mode "replace" swaps the whole tab’s elements (validated + ' +
         'auto-laid-out); mode "ops" applies an ordered list of add/update/remove against ' +
         'existing element ids and PRESERVES positions (no auto-layout). On an event-storming tab, ' +
         'event-storming notes you add or move land on the board’s horizontal lanes (240px apart, ' +
         'lane 0 centred at y=100). Returns an inline PNG.',
-      inputSchema: updateDiagramShape,
-      outputSchema: updateDiagramOutput,
+      inputSchema: updateDocumentShape,
+      outputSchema: updateDocumentOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      const loaded = await loadTab(env, token, args.diagramId, args.tabId);
-      if (!loaded) return errorResult('That diagram has no tabs.');
+      const loaded = await loadTab(env, token, args.documentId, args.tabId);
+      if (!loaded) return errorResult('That document has no tabs.');
       const { tab } = loaded;
       const tabId = tab.id;
 
@@ -359,7 +359,7 @@ export function registerTools(server: McpServer, env: Env): void {
         if (!args.ops) return errorResult('ops mode requires "ops".');
         const byId = new Map<string, unknown>(tab.elements.map((e) => [e.id, e as unknown]));
         // Only the elements an edit touches are made safe (§4.7a); the rest of
-        // the diagram is left exactly as it is.
+        // the document is left exactly as it is.
         const touched = new Set<string>();
         for (const op of args.ops) {
           const el = op.element as { id?: string } | undefined;
@@ -403,11 +403,11 @@ export function registerTools(server: McpServer, env: Env): void {
         args.mode === 'replace' ? 'replace' : 'ops',
       );
       const nextTab: Tab = { ...(tab as Tab), id: tabId, elements };
-      await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${tabId}`, {
+      await apiJson(env, token, `/documents/${args.documentId}/tabs/${tabId}`, {
         method: 'PUT',
         body: JSON.stringify(nextTab),
       });
-      return imageResult({ id: args.diagramId, tabId, url: deepLink(args.diagramId) }, nextTab, {
+      return imageResult({ id: args.documentId, tabId, url: deepLink(args.documentId) }, nextTab, {
         env,
         token,
       });
@@ -417,16 +417,16 @@ export function registerTools(server: McpServer, env: Env): void {
   registerTool(
     server,
     env,
-    'share_diagram',
+    'share_document',
     {
       behaviour: 'write',
-      title: 'Share a diagram',
+      title: 'Share a document',
       description:
-        'Create a shareable link to a diagram so anyone with the URL can open it — no ' +
+        'Create a shareable link to a document so anyone with the URL can open it — no ' +
         'sign-in required. Choose "view" (read-only, the default) or "edit". Returns the ' +
-        'link URL. Use after creating or finding a diagram to hand it to teammates.',
-      inputSchema: shareDiagramShape,
-      outputSchema: shareDiagramOutput,
+        'link URL. Use after creating or finding a document to hand it to teammates.',
+      inputSchema: shareDocumentShape,
+      outputSchema: shareDocumentOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
@@ -437,14 +437,14 @@ export function registerTools(server: McpServer, env: Env): void {
       const { link } = await apiJson<ShareLinkResponse>(
         env,
         token,
-        `/diagrams/${args.diagramId}/share`,
+        `/documents/${args.documentId}/share`,
         { method: 'POST', body: JSON.stringify({ role, expiry: args.expiry ?? 'never' }) },
       );
       return textResult({
         url: shareUrl(link.code),
         role: link.role,
         expiresAt: link.expiresAt,
-        diagramUrl: deepLink(args.diagramId),
+        documentUrl: deepLink(args.documentId),
       });
     },
   );
@@ -452,15 +452,15 @@ export function registerTools(server: McpServer, env: Env): void {
   registerTool(
     server,
     env,
-    'rename_diagram',
+    'rename_document',
     {
       behaviour: 'write',
-      title: 'Rename a diagram or tab',
+      title: 'Rename a document or tab',
       description:
-        'Rename a diagram, or (with tabId) one of its tabs. Non-destructive; returns the ' +
+        'Rename a document, or (with tabId) one of its tabs. Non-destructive; returns the ' +
         'updated name.',
-      inputSchema: renameDiagramShape,
-      outputSchema: renameDiagramOutput,
+      inputSchema: renameDocumentShape,
+      outputSchema: renameDocumentOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
@@ -470,25 +470,25 @@ export function registerTools(server: McpServer, env: Env): void {
         const { tab } = await apiJson<TabResponse>(
           env,
           token,
-          `/diagrams/${args.diagramId}/tabs/${args.tabId}`,
+          `/documents/${args.documentId}/tabs/${args.tabId}`,
         );
-        await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${args.tabId}`, {
+        await apiJson(env, token, `/documents/${args.documentId}/tabs/${args.tabId}`, {
           method: 'PUT',
           body: JSON.stringify({ ...tab, name: args.name }),
         });
         return textResult({ renamed: 'tab', tabId: args.tabId, name: args.name });
       }
-      const { diagram } = await apiJson<DiagramResponse>(
+      const { document: liveDoc } = await apiJson<DocumentResponse>(
         env,
         token,
-        `/diagrams/${args.diagramId}`,
+        `/documents/${args.documentId}`,
         { method: 'PUT', body: JSON.stringify({ name: args.name }) },
       );
       return textResult({
-        renamed: 'diagram',
-        id: diagram.id,
-        name: diagram.name,
-        url: deepLink(diagram.id),
+        renamed: 'document',
+        id: liveDoc.id,
+        name: liveDoc.name,
+        url: deepLink(liveDoc.id),
       });
     },
   );
@@ -496,25 +496,25 @@ export function registerTools(server: McpServer, env: Env): void {
   registerTool(
     server,
     env,
-    'delete_diagram',
+    'delete_document',
     {
       behaviour: 'destructive',
-      title: 'Delete a diagram or tab',
+      title: 'Delete a document or tab',
       description:
-        'Delete a diagram by moving it to the Trash, where it can be restored for ' +
-        `${TRASH_RETENTION_DAYS} days (with restore_diagram, or from Settings › Trash) before ` +
+        'Delete a document by moving it to the Trash, where it can be restored for ' +
+        `${TRASH_RETENTION_DAYS} days (with restore_document, or from Settings › Trash) before ` +
         'it is purged. With tabId, delete just one of its tabs, outright: tabs have no ' +
-        'Trash. Confirm with the user first. A diagram must keep at least one tab.',
-      inputSchema: deleteDiagramShape,
-      outputSchema: deleteDiagramOutput,
+        'Trash. Confirm with the user first. A document must keep at least one tab.',
+      inputSchema: deleteDocumentShape,
+      outputSchema: deleteDocumentOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      // A whole diagram only ever goes to the Trash (docs/specs/013-workspace/trash.md):
+      // A whole document only ever goes to the Trash (docs/specs/013-workspace/trash.md):
       // a permanent delete is the REST API's, never an AI tool's. A tab has no Trash.
       const path = args.tabId
-        ? `/diagrams/${args.diagramId}/tabs/${args.tabId}`
-        : `/diagrams/${args.diagramId}`;
+        ? `/documents/${args.documentId}/tabs/${args.tabId}`
+        : `/documents/${args.documentId}`;
       // DELETE returns 204 with no body, so use apiFetch (apiJson would choke
       // parsing an empty response) and surface a clear message on failure.
       const res = await apiFetch(env, token, path, { method: 'DELETE' });
@@ -525,18 +525,18 @@ export function registerTools(server: McpServer, env: Env): void {
         return errorResult(
           `Could not delete (${res.status}). ` +
             (args.tabId
-              ? 'A diagram must keep at least one tab — you cannot delete the last one.'
+              ? 'A document must keep at least one tab — you cannot delete the last one.'
               : res.status === 410
                 ? 'It is already in the Trash (see list_trash).'
-                : 'Check the diagram id and that you own it.'),
+                : 'Check the document id and that you own it.'),
         );
       }
       return textResult(
         args.tabId
-          ? { deleted: 'tab', diagramId: args.diagramId, tabId: args.tabId }
+          ? { deleted: 'tab', documentId: args.documentId, tabId: args.tabId }
           : {
-              deleted: 'diagram',
-              diagramId: args.diagramId,
+              deleted: 'document',
+              documentId: args.documentId,
               trashed: true,
               restorableForDays: TRASH_RETENTION_DAYS,
             },
@@ -545,7 +545,7 @@ export function registerTools(server: McpServer, env: Env): void {
   );
 
   // The Trash (docs/specs/013-workspace/trash.md, docs/specs/015-api/mcp-server.md §4.9):
-  // what delete_diagram put there, and the way back. Same authorisation as
+  // what delete_document put there, and the way back. Same authorisation as
   // GET /api/trash and POST /api/trash/<id>/restore: the user's personal Trash
   // and every team Trash they have joined.
   registerTool(
@@ -556,15 +556,15 @@ export function registerTools(server: McpServer, env: Env): void {
       behaviour: 'read',
       title: 'List the Trash',
       description:
-        'List the diagrams in the user’s Trash (their own and every team they belong to), ' +
-        `each restorable with restore_diagram until it is purged ${TRASH_RETENTION_DAYS} days ` +
+        'List the documents in the user’s Trash (their own and every team they belong to), ' +
+        `each restorable with restore_document until it is purged ${TRASH_RETENTION_DAYS} days ` +
         'after deletion. Returns id, name, library, why it is there, when it was deleted, and when it goes.',
       inputSchema: listTrashShape,
       outputSchema: listTrashOutput,
     },
     async (_args, extra) => {
       const token = requireToken(extra as Extra);
-      const { trash } = await apiJson<{ trash?: TrashedDiagram[] }>(env, token, '/trash');
+      const { trash } = await apiJson<{ trash?: TrashedDocument[] }>(env, token, '/trash');
       return textResult({
         trash: (trash ?? []).map((t) => ({
           id: t.id,
@@ -581,36 +581,33 @@ export function registerTools(server: McpServer, env: Env): void {
   registerTool(
     server,
     env,
-    'restore_diagram',
+    'restore_document',
     {
       behaviour: 'write',
-      title: 'Restore a diagram from the Trash',
+      title: 'Restore a document from the Trash',
       description:
-        'Bring a deleted diagram back from the Trash, to the folder it was in (or Unsorted ' +
+        'Bring a deleted document back from the Trash, to the folder it was in (or Unsorted ' +
         'if that folder is gone), with its tabs and share links. Find it with list_trash.',
-      inputSchema: restoreDiagramShape,
-      outputSchema: restoreDiagramOutput,
+      inputSchema: restoreDocumentShape,
+      outputSchema: restoreDocumentOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
       try {
-        const { diagram } = await apiJson<{ diagram?: { id: string; name: string } | null }>(
-          env,
-          token,
-          `/trash/${encodeURIComponent(args.diagramId)}/restore`,
-          { method: 'POST' },
-        );
+        const { document: liveDoc } = await apiJson<{
+          document?: { id: string; name: string } | null;
+        }>(env, token, `/trash/${encodeURIComponent(args.documentId)}/restore`, { method: 'POST' });
         return textResult({
-          restored: 'diagram',
-          id: diagram?.id ?? args.diagramId,
-          name: diagram?.name ?? null,
-          url: deepLink(diagram?.id ?? args.diagramId),
+          restored: 'document',
+          id: liveDoc?.id ?? args.documentId,
+          name: liveDoc?.name ?? null,
+          url: deepLink(liveDoc?.id ?? args.documentId),
         });
       } catch (err) {
         // Not in the Trash, or not the user's to restore: model-correctable.
         if (err instanceof ApiError && err.status === 404) {
           return errorResult(
-            'That diagram is not in the Trash, or is not yours to restore. Check the id with list_trash.',
+            'That document is not in the Trash, or is not yours to restore. Check the id with list_trash.',
           );
         }
         throw err;

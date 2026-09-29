@@ -1,18 +1,18 @@
 // The local Trash (docs/specs/013-workspace/trash.md, "The local Trash"): an
-// Offline Mode diagram lives only in this browser, so its Trash does too.
+// Offline Mode document lives only in this browser, so its Trash does too.
 // Deleting one stamps `trashedAt` on its IndexedDB record; the record keeps
 // everything else. The 30-day rule is the api's, applied whenever the app
-// lists diagrams instead of by a cron.
+// lists documents instead of by a cron.
 
-import { isTrashExpired, trashPurgeDueAt, type TrashedDiagram } from '@livediagram/api-schema';
+import { isTrashExpired, trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
 import {
   offlineBackend,
-  offlineDeleteDiagram,
+  offlineDeleteDocument,
   serializeOfflineWrite,
-  type OfflineDiagramRecord,
+  type OfflineDocumentRecord,
 } from './offline-store';
 
-function trashRow(rec: OfflineDiagramRecord & { trashedAt: number }): TrashedDiagram {
+function trashRow(rec: OfflineDocumentRecord & { trashedAt: number }): TrashedDocument {
   return {
     id: rec.id,
     name: rec.name,
@@ -20,19 +20,19 @@ function trashRow(rec: OfflineDiagramRecord & { trashedAt: number }): TrashedDia
     teamName: null,
     trashedAt: rec.trashedAt,
     purgeAt: trashPurgeDueAt(rec.trashedAt),
-    // Only the server's clean-up moves empty diagrams; a local row was deleted.
+    // Only the server's clean-up moves empty documents; a local row was deleted.
     reason: 'deleted',
   };
 }
 
 function isTrashed(
-  rec: OfflineDiagramRecord | undefined,
-): rec is OfflineDiagramRecord & { trashedAt: number } {
+  rec: OfflineDocumentRecord | undefined,
+): rec is OfflineDocumentRecord & { trashedAt: number } {
   return rec?.trashedAt !== undefined;
 }
 
 // Move a live record to the local Trash. The first deletion time stands.
-export async function offlineTrashDiagram(id: string, now: number): Promise<void> {
+export async function offlineTrashDocument(id: string, now: number): Promise<void> {
   await serializeOfflineWrite(async () => {
     const rec = await offlineBackend().get(id);
     if (!rec || isTrashed(rec)) return;
@@ -42,7 +42,7 @@ export async function offlineTrashDiagram(id: string, now: number): Promise<void
 
 // Bring a trashed record back exactly as it was: folder, star, deck. False
 // when it isn't in the local Trash.
-export async function offlineRestoreDiagram(id: string): Promise<boolean> {
+export async function offlineRestoreDocument(id: string): Promise<boolean> {
   return serializeOfflineWrite(async () => {
     const rec = await offlineBackend().get(id);
     if (!isTrashed(rec)) return false;
@@ -54,14 +54,14 @@ export async function offlineRestoreDiagram(id: string): Promise<boolean> {
 
 // Delete a trashed record for good. Never a live one: the local Trash can't
 // be skipped by naming an id.
-export async function offlinePurgeDiagram(id: string): Promise<boolean> {
+export async function offlinePurgeDocument(id: string): Promise<boolean> {
   if (!isTrashed(await offlineBackend().get(id))) return false;
-  await offlineDeleteDiagram(id);
+  await offlineDeleteDocument(id);
   return true;
 }
 
 // Newest first, as rows of the same shape the api's Trash returns.
-export async function offlineListTrash(): Promise<TrashedDiagram[]> {
+export async function offlineListTrash(): Promise<TrashedDocument[]> {
   const recs = await offlineBackend().all();
   return recs
     .filter(isTrashed)
@@ -74,7 +74,7 @@ export async function offlinePurgeExpiredTrash(now: number): Promise<number> {
   const expired = (await offlineBackend().all()).filter(
     (r) => isTrashed(r) && isTrashExpired(r.trashedAt, now),
   );
-  for (const rec of expired) await offlineDeleteDiagram(rec.id);
+  for (const rec of expired) await offlineDeleteDocument(rec.id);
   if (expired.length > 0) console.info('[trash] purged local', expired.length);
   return expired.length;
 }

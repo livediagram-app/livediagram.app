@@ -29,7 +29,7 @@ async function _apiLoadSelf(id: string): Promise<Participant | null> {
 }
 export const apiLoadSelf = dedupeInFlight(_apiLoadSelf, (id) => id);
 
-// Account self-deletion (Clerk-only). Wipes the caller's diagrams,
+// Account self-deletion (Clerk-only). Wipes the caller's documents,
 // folders, and participant row server-side; the caller is expected
 // to follow up with Clerk's `user.delete()` to drop the Clerk
 // account itself. Order matters — backend first, then Clerk — so a
@@ -38,7 +38,7 @@ export const apiLoadSelf = dedupeInFlight(_apiLoadSelf, (id) => id);
 // on any non-2xx so the caller can decide whether to proceed with
 // the Clerk delete.
 export async function apiDeleteAccount(): Promise<{
-  diagrams: number;
+  documents: number;
   folders: number;
 } | null> {
   // ownerId arg is unused server-side for this endpoint (the
@@ -50,7 +50,7 @@ export async function apiDeleteAccount(): Promise<{
     headers: await apiHeaders(''),
   });
   if (!res.ok) return null;
-  const body = (await res.json()) as { deleted: { diagrams: number; folders: number } };
+  const body = (await res.json()) as { deleted: { documents: number; folders: number } };
   return body.deleted;
 }
 
@@ -65,15 +65,15 @@ export async function apiDeleteAccount(): Promise<{
 // requires a verified Bearer token: there is no `X-Owner-Id`
 // fallback, because the whole point is to bind orphan guest data
 // to a Clerk account. Returns
-// `{ migrated: { diagrams, folders, shared, images } }`.
+// `{ migrated: { documents, folders, shared, images } }`.
 export async function apiMigrateGuestData(
   guestOwnerId: string,
   guestSignature: string | null,
-): Promise<{ diagrams: number; folders: number; shared: number; images: number } | null> {
+): Promise<{ documents: number; folders: number; shared: number; images: number } | null> {
   const res = await apiFetch(`${API_BASE}/migrate`, {
     method: 'POST',
     // `apiHeaders` reads the registered token provider; the Clerk
-    // Bearer will be on every call from the editor / new-diagram
+    // Bearer will be on every call from the editor / new-document
     // pages after they've set the provider. ownerId is unused
     // server-side for this endpoint but the helper still expects
     // it; pass the guest id to keep signatures uniform.
@@ -86,7 +86,7 @@ export async function apiMigrateGuestData(
   });
   if (!res.ok) return null;
   const body = (await res.json()) as {
-    migrated: { diagrams: number; folders: number; shared: number; images: number };
+    migrated: { documents: number; folders: number; shared: number; images: number };
   };
   return body.migrated;
 }

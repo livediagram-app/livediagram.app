@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
 // `passwordGate` is the route-side helper that translates a
-// password-protected diagram + visitor-supplied password into one of
+// password-protected document + visitor-supplied password into one of
 // three outcomes: access allowed (null), `password_required` 401 (no
 // password supplied yet), or `password_invalid` 403 (supplied the
 // wrong one). The live editor's SharePasswordGate component
@@ -13,60 +13,60 @@ import type { Env } from '../types';
 // back to the prompt without an error message. These cases pin the
 // mapping.
 //
-// `getDiagramSharePassword` is the only db helper the gate reaches
+// `getDocumentSharePassword` is the only db helper the gate reaches
 // for, so the mock factory below stubs it and the test drives the
 // three branches by setting the stubbed return value per case.
 
 const getSharePasswordMock = vi.fn<(env: Env, id: string) => Promise<string | null>>();
 vi.mock('../db', () => ({
   // Real exports under '../db' that share.ts imports. Only
-  // getDiagramSharePassword is consulted by passwordGate; the rest
+  // getDocumentSharePassword is consulted by passwordGate; the rest
   // need stub entries so the share.ts module can finish evaluating
   // its top-level imports.
-  getDiagram: vi.fn(),
-  // Trashed diagrams answer 410 (docs/specs/013-workspace/trash.md); none here.
-  getTrashedDiagramMeta: vi.fn(async () => null),
-  getDiagramSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
+  getDocument: vi.fn(),
+  // Trashed documents answer 410 (docs/specs/013-workspace/trash.md); none here.
+  getTrashedDocumentMeta: vi.fn(async () => null),
+  getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
   getShareLink: vi.fn(),
   getParticipant: vi.fn(),
   recordSharedAccess: vi.fn(),
 }));
 
-// The live-image endpoint (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md) delegates the actual
+// The live-image endpoint (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md) delegates the actual
 // render-cache to ./thumbnail; stub it so this suite pins the route's
 // resolve + password-exclusion wiring, not the rendering.
 vi.mock('../email/notifications', () => ({
   // docs/specs/014-identity/profile-and-email-notifications.md's owner email: a seam here, tested for real in email/*.test.ts.
-  notifyDiagramJoin: vi.fn(),
+  notifyDocumentJoin: vi.fn(),
 }));
 
-// docs/specs/017-telemetry/telemetry.md's server-side Diagram·Joined count: a seam, the insert itself is
+// docs/specs/017-telemetry/telemetry.md's server-side Document·Joined count: a seam, the insert itself is
 // the shared server-telemetry helper.
 vi.mock('../server-telemetry', () => ({
   reportServerEvent: vi.fn(async () => {}),
 }));
 
 vi.mock('../thumbnail', () => ({
-  getDiagramThumbnailSvg: vi.fn(),
-  getDiagramTabImageSvg: vi.fn(),
+  getDocumentThumbnailSvg: vi.fn(),
+  getDocumentTabImageSvg: vi.fn(),
 }));
 
 // Import AFTER the mock so the share.ts module picks up the stubbed
 // db helpers. passwordGate is module-private to share.ts, exported
 // only for this suite (see the comment on the export).
 import { handleShare, passwordGate } from './share';
-import { getDiagram, getParticipant, getShareLink, recordSharedAccess } from '../db';
-import { notifyDiagramJoin } from '../email/notifications';
+import { getDocument, getParticipant, getShareLink, recordSharedAccess } from '../db';
+import { notifyDocumentJoin } from '../email/notifications';
 import { reportServerEvent } from '../server-telemetry';
-import { getDiagramTabImageSvg, getDiagramThumbnailSvg } from '../thumbnail';
+import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
 import type { RouteContext } from './context';
 
 const FAKE_ENV = {} as Env;
 
-const getDiagramMock = vi.mocked(getDiagram);
+const getDocumentMock = vi.mocked(getDocument);
 const getShareLinkMock = vi.mocked(getShareLink);
-const getThumbnailMock = vi.mocked(getDiagramThumbnailSvg);
-const getTabImageMock = vi.mocked(getDiagramTabImageSvg);
+const getThumbnailMock = vi.mocked(getDocumentThumbnailSvg);
+const getTabImageMock = vi.mocked(getDocumentTabImageSvg);
 
 function imageCtx(code: string, tab?: string): RouteContext {
   const url = new URL(`https://api.test/api/share/${code}/image.svg`);
@@ -83,10 +83,10 @@ function imageCtx(code: string, tab?: string): RouteContext {
   };
 }
 
-function shareLink(diagramId: string) {
+function shareLink(documentId: string) {
   return {
     code: 'C',
-    diagramId,
+    documentId,
     role: 'view' as const,
     createdAt: 0,
     expiry: 'never' as const,
@@ -95,7 +95,7 @@ function shareLink(diagramId: string) {
   };
 }
 
-function diagram(id: string) {
+function liveDoc(id: string) {
   return {
     id,
     ownerId: 'o1',
@@ -119,13 +119,13 @@ beforeEach(() => {
 });
 
 describe('passwordGate (docs/specs/013-workspace/share-password.md status-code mapping)', () => {
-  it('returns null when the diagram has no password (gate is a no-op)', async () => {
+  it('returns null when the document has no password (gate is a no-op)', async () => {
     getSharePasswordMock.mockResolvedValue(null);
     const result = await passwordGate(FAKE_ENV, 'diag-1', null);
     expect(result).toBeNull();
   });
 
-  it('returns null when the diagram has no password and a password is supplied anyway', async () => {
+  it('returns null when the document has no password and a password is supplied anyway', async () => {
     // The owner clears the password while a visitor is mid-session
     // still holding the old one. The gate must not reject them with
     // 403 here; "no password required" wins regardless of what they
@@ -185,9 +185,9 @@ describe('passwordGate (docs/specs/013-workspace/share-password.md status-code m
   });
 });
 
-describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md live image)', () => {
+describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md live image)', () => {
   beforeEach(() => {
-    getDiagramMock.mockReset();
+    getDocumentMock.mockReset();
     getShareLinkMock.mockReset();
     getThumbnailMock.mockReset();
     getTabImageMock.mockReset();
@@ -196,7 +196,7 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
 
   it('serves the cached SVG with a public stale-while-revalidate cache', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDiagramMock.mockResolvedValue(diagram('d1'));
+    getDocumentMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue(null);
     getThumbnailMock.mockResolvedValue('<svg>live</svg>');
 
@@ -208,16 +208,16 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     expect(await res.text()).toBe('<svg>live</svg>');
   });
 
-  it('404s a password-protected diagram WITHOUT rendering (an <img> cannot supply the password)', async () => {
+  it('404s a password-protected document WITHOUT rendering (an <img> cannot supply the password)', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDiagramMock.mockResolvedValue(diagram('d1'));
+    getDocumentMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue('hunter2');
 
     const res = await handleShare(imageCtx('C'));
 
     expect(res.status).toBe(404);
     // The security property: we never even reach the renderer for a
-    // gated diagram, so no bytes can leak past the password gate.
+    // gated document, so no bytes can leak past the password gate.
     expect(getThumbnailMock).not.toHaveBeenCalled();
   });
 
@@ -225,22 +225,22 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     getShareLinkMock.mockResolvedValue(null);
     const res = await handleShare(imageCtx('NOPE'));
     expect(res.status).toBe(404);
-    expect(getDiagramMock).not.toHaveBeenCalled();
+    expect(getDocumentMock).not.toHaveBeenCalled();
   });
 
-  it('404s when the link points at a diagram that no longer exists', async () => {
-    // The link outliving its diagram is the shape a deleted-then-embedded
+  it('404s when the link points at a document that no longer exists', async () => {
+    // The link outliving its document is the shape a deleted-then-embedded
     // image takes; it must 404 rather than reach the render cache.
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDiagramMock.mockResolvedValue(null);
+    getDocumentMock.mockResolvedValue(null);
     const res = await handleShare(imageCtx('C'));
     expect(res.status).toBe(404);
     expect(getThumbnailMock).not.toHaveBeenCalled();
   });
 
-  it('404s an empty diagram (the render-cache yields no snapshot)', async () => {
+  it('404s an empty document (the render-cache yields no snapshot)', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDiagramMock.mockResolvedValue(diagram('d1'));
+    getDocumentMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue(null);
     getThumbnailMock.mockResolvedValue(null);
 
@@ -250,7 +250,7 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
 
   it('renders the requested tab (not the cached snapshot) when ?tab= is present (docs/specs/013-workspace/live-image-share.md)', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDiagramMock.mockResolvedValue(diagram('d1'));
+    getDocumentMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue(null);
     getTabImageMock.mockResolvedValue('<svg>tab2</svg>');
 
@@ -264,11 +264,11 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     expect(getThumbnailMock).not.toHaveBeenCalled();
   });
 
-  it('404s ?tab= with an unknown tab id (no cross-diagram leak) without falling back to tab one', async () => {
+  it('404s ?tab= with an unknown tab id (no cross-document leak) without falling back to tab one', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDiagramMock.mockResolvedValue(diagram('d1'));
+    getDocumentMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue(null);
-    getTabImageMock.mockResolvedValue(null); // tab not in this diagram
+    getTabImageMock.mockResolvedValue(null); // tab not in this document
 
     const res = await handleShare(imageCtx('C', 'other-diagrams-tab'));
 
@@ -282,7 +282,7 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     const scopedLink = () => ({ ...shareLink('d1'), tabId: 'tab-2' });
     beforeEach(() => {
       getShareLinkMock.mockResolvedValue(scopedLink());
-      getDiagramMock.mockResolvedValue(diagram('d1'));
+      getDocumentMock.mockResolvedValue(liveDoc('d1'));
       getSharePasswordMock.mockResolvedValue(null);
       getTabImageMock.mockResolvedValue('<svg>tab2</svg>');
     });
@@ -305,9 +305,9 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     });
   });
 
-  it('still 404s a password-protected diagram for a ?tab= request (gate before render)', async () => {
+  it('still 404s a password-protected document for a ?tab= request (gate before render)', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDiagramMock.mockResolvedValue(diagram('d1'));
+    getDocumentMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue('hunter2');
 
     const res = await handleShare(imageCtx('C', 'tab-2'));
@@ -319,12 +319,12 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
 
 // The resolve itself: what a visitor landing on a share link gets back, and
 // what the worker records about them. This is the only unauthenticated read
-// path into a diagram, so each branch below is either "who may see this" or
+// path into a document, so each branch below is either "who may see this" or
 // "what does the owner learn about who looked".
 describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + docs/specs/014-identity/profile-and-email-notifications.md)', () => {
   const recordSharedAccessMock = vi.mocked(recordSharedAccess);
   const getParticipantMock = vi.mocked(getParticipant);
-  const notifyDiagramJoinMock = vi.mocked(notifyDiagramJoin);
+  const notifyDocumentJoinMock = vi.mocked(notifyDocumentJoin);
   const reportServerEventMock = vi.mocked(reportServerEvent);
 
   function resolveCtx(opts: { code?: string; visitor?: string | null; password?: string } = {}): {
@@ -354,43 +354,43 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
   }
 
   beforeEach(() => {
-    getDiagramMock.mockReset();
+    getDocumentMock.mockReset();
     getShareLinkMock.mockReset();
     getSharePasswordMock.mockReset();
     recordSharedAccessMock.mockReset();
     getParticipantMock.mockReset();
-    notifyDiagramJoinMock.mockReset();
+    notifyDocumentJoinMock.mockReset();
     reportServerEventMock.mockClear();
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDiagramMock.mockResolvedValue(diagram('d1'));
+    getDocumentMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue(null);
     recordSharedAccessMock.mockResolvedValue(false);
     getParticipantMock.mockResolvedValue(null);
   });
 
-  it('resolves a live code to the diagram and the link’s own role', async () => {
-    // The role travels with the LINK, not the diagram: a view code must not
-    // resolve to edit just because the diagram is shareable.
+  it('resolves a live code to the document and the link’s own role', async () => {
+    // The role travels with the LINK, not the document: a view code must not
+    // resolve to edit just because the document is shareable.
     getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), role: 'view' });
     const { ctx } = resolveCtx();
     const res = await handleShare(ctx);
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ role: 'view', diagram: { id: 'd1' } });
+    expect(await res.json()).toMatchObject({ role: 'view', document: { id: 'd1' } });
   });
 
   it('blanks the owner id for everyone but the owner', async () => {
     // A guest's owner-id is a bearer value: an observer who learns it could
-    // once claim that guest's diagrams via /api/migrate. A visitor never
+    // once claim that guest's documents via /api/migrate. A visitor never
     // needs it — the client only compares it to decide isOwner.
     const { ctx } = resolveCtx({ visitor: 'someone-else' });
-    const body = (await (await handleShare(ctx)).json()) as { diagram: { ownerId: string } };
-    expect(body.diagram.ownerId).toBe('');
+    const body = (await (await handleShare(ctx)).json()) as { document: { ownerId: string } };
+    expect(body.document.ownerId).toBe('');
   });
 
   it('shows the owner their own id when they open their own link', async () => {
     const { ctx } = resolveCtx({ visitor: 'o1' });
-    const body = (await (await handleShare(ctx)).json()) as { diagram: { ownerId: string } };
-    expect(body.diagram.ownerId).toBe('o1');
+    const body = (await (await handleShare(ctx)).json()) as { document: { ownerId: string } };
+    expect(body.document.ownerId).toBe('o1');
     // ...and an owner opening their own link must not appear in their own
     // "Shared with you" list.
     expect(recordSharedAccessMock).not.toHaveBeenCalled();
@@ -405,20 +405,20 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
   // docs/specs/013-workspace/tab-scoped-share-links.md
   it('hands a tab-scoped visitor their tab, the rest out of scope, and records the scope', async () => {
     getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), tabId: 't2' });
-    getDiagramMock.mockResolvedValue({
-      ...diagram('d1'),
+    getDocumentMock.mockResolvedValue({
+      ...liveDoc('d1'),
       tabs: [
-        { id: 't1', diagramId: 'd1', name: 'Pricing', orderIndex: 0, updatedAt: 1 },
-        { id: 't2', diagramId: 'd1', name: 'Roadmap', orderIndex: 1, updatedAt: 1 },
+        { id: 't1', documentId: 'd1', name: 'Pricing', orderIndex: 0, updatedAt: 1 },
+        { id: 't2', documentId: 'd1', name: 'Roadmap', orderIndex: 1, updatedAt: 1 },
       ],
     });
     const { ctx } = resolveCtx({ visitor: 'visitor-1' });
     const body = (await (await handleShare(ctx)).json()) as {
       tabId: string | null;
-      diagram: { tabs: { name: string; outOfScope?: true }[] };
+      document: { tabs: { name: string; outOfScope?: true }[] };
     };
     expect(body.tabId).toBe('t2');
-    expect(body.diagram.tabs.map((t) => [t.name, t.outOfScope])).toEqual([
+    expect(body.document.tabs.map((t) => [t.name, t.outOfScope])).toEqual([
       ['', true],
       ['Roadmap', undefined],
     ]);
@@ -448,7 +448,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
     await handleShare(ctx);
     await settled();
-    expect(notifyDiagramJoinMock).toHaveBeenCalledWith(FAKE_ENV, expect.anything(), 'Ada');
+    expect(notifyDocumentJoinMock).toHaveBeenCalledWith(FAKE_ENV, expect.anything(), 'Ada');
   });
 
   it('stays quiet on a repeat visit', async () => {
@@ -457,20 +457,20 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
     await handleShare(ctx);
     await settled();
-    expect(notifyDiagramJoinMock).not.toHaveBeenCalled();
+    expect(notifyDocumentJoinMock).not.toHaveBeenCalled();
   });
 
-  it('counts Diagram·Joined once, on the first visit, at the link’s role (docs/specs/017-telemetry/telemetry.md)', async () => {
+  it('counts Document·Joined once, on the first visit, at the link’s role (docs/specs/017-telemetry/telemetry.md)', async () => {
     recordSharedAccessMock.mockResolvedValue(true);
     getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), role: 'edit' });
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
     await handleShare(ctx);
     await settled();
     expect(reportServerEventMock).toHaveBeenCalledTimes(1);
-    expect(reportServerEventMock).toHaveBeenCalledWith(FAKE_ENV, 'Diagram', 'Joined', 'Edit');
+    expect(reportServerEventMock).toHaveBeenCalledWith(FAKE_ENV, 'Document', 'Joined', 'Edit');
   });
 
-  it('does not count Diagram·Joined on a refresh or return visit (docs/specs/017-telemetry/telemetry.md)', async () => {
+  it('does not count Document·Joined on a refresh or return visit (docs/specs/017-telemetry/telemetry.md)', async () => {
     // The editor used to emit on every open of the share URL; a reload
     // inflated "Collaborators Joined" roughly twofold.
     recordSharedAccessMock.mockResolvedValue(false);
@@ -480,7 +480,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     expect(reportServerEventMock).not.toHaveBeenCalled();
   });
 
-  it('does not count Diagram·Joined for the owner or an unidentified visitor', async () => {
+  it('does not count Document·Joined for the owner or an unidentified visitor', async () => {
     recordSharedAccessMock.mockResolvedValue(true);
     for (const visitor of ['o1', null]) {
       const { ctx, settled } = resolveCtx({ visitor });
@@ -496,7 +496,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
     await handleShare(ctx);
     await settled();
-    expect(notifyDiagramJoinMock).toHaveBeenCalledWith(FAKE_ENV, expect.anything(), null);
+    expect(notifyDocumentJoinMock).toHaveBeenCalledWith(FAKE_ENV, expect.anything(), null);
   });
 
   it('resolves the code even when the tracking write fails', async () => {
@@ -506,12 +506,12 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
     expect((await handleShare(ctx)).status).toBe(200);
     await settled();
-    expect(notifyDiagramJoinMock).not.toHaveBeenCalled();
+    expect(notifyDocumentJoinMock).not.toHaveBeenCalled();
   });
 
   it('swallows a failing notification rather than surfacing it', async () => {
     recordSharedAccessMock.mockResolvedValue(true);
-    notifyDiagramJoinMock.mockRejectedValue(new Error('Resend down'));
+    notifyDocumentJoinMock.mockRejectedValue(new Error('Resend down'));
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
     expect((await handleShare(ctx)).status).toBe(200);
     await expect(settled()).resolves.toBeDefined();
@@ -527,7 +527,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     expect(recordSharedAccessMock).not.toHaveBeenCalled();
   });
 
-  it('403s a wrong password without resolving the diagram', async () => {
+  it('403s a wrong password without resolving the document', async () => {
     getSharePasswordMock.mockResolvedValue('hunter2');
     const { ctx } = resolveCtx({ visitor: 'visitor-1', password: 'wrong' });
     expect((await handleShare(ctx)).status).toBe(403);
@@ -536,14 +536,14 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
 
   it('404s a code with no live link — expired, revoked or never issued', async () => {
     // There is deliberately no `diagrams.shareable` fallback here: one used to
-    // resolve ANY code on a shareable diagram at a hardcoded 'edit', which was
+    // resolve ANY code on a shareable document at a hardcoded 'edit', which was
     // both an expiry bypass and a view→edit escalation.
     getShareLinkMock.mockResolvedValue(null);
     expect((await handleShare(resolveCtx().ctx)).status).toBe(404);
   });
 
-  it('404s when the link points at a diagram that is gone', async () => {
-    getDiagramMock.mockResolvedValue(null);
+  it('404s when the link points at a document that is gone', async () => {
+    getDocumentMock.mockResolvedValue(null);
     expect((await handleShare(resolveCtx().ctx)).status).toBe(404);
   });
 
@@ -552,7 +552,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
       ['POST', '/api/share/C'],
       ['GET', '/api/share'],
       ['GET', '/api/share/C/extra'],
-      ['GET', '/api/diagrams/d1'],
+      ['GET', '/api/documents/d1'],
     ] as const) {
       const url = new URL(`https://api.test${path}`);
       const res = await handleShare({

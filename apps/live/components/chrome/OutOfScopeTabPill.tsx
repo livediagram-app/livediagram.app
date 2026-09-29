@@ -4,7 +4,7 @@ import type { Participant } from '@/lib/identity';
 import { HoverCard } from '@livediagram/ui';
 
 // A tab outside a tab-scoped share session's scope (docs/specs/013-workspace/tab-scoped-share-links.md). It
-// keeps its place in the bar so the visitor knows the diagram has more, but
+// keeps its place in the bar so the visitor knows the document has more, but
 // shows no name (the server never sent one) and does nothing when pressed:
 // no switch, no menu, no drag. A dashed outline rather than a faded fill, so
 // the label keeps its contrast. Peers on that tab still stack their avatars

@@ -6,7 +6,7 @@ import {
   ES_LANE_HEIGHT,
   laneTop,
   type EsTimeline,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { getTheme, type ThemeId } from '@/lib/themes';
 import { useLanePreview } from '@/lib/lane-preview';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';

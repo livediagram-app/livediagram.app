@@ -8,7 +8,7 @@ import {
   SELF_PAINTING_SHAPES,
   SHAPE_KINDS,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // The comment pin (docs/specs/012-collaboration/comment-pin.md). The point of these is that the pin reuses the
 // ORDINARY comment field rather than growing a parallel one, so most of what

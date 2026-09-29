@@ -1,21 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/diagram';
-import type { OfflineDiagramRecord } from './offline-store';
+import type { Tab } from '@livediagram/document';
+import type { OfflineDocumentRecord } from './offline-store';
 import {
   __setOfflineBackend,
   applyMeta,
   isOfflineId,
-  offlineCreateDiagram,
-  offlineDeleteDiagram,
+  offlineCreateDocument,
+  offlineDeleteDocument,
   offlineDeleteTab,
-  offlineListDiagrams,
-  offlineLoadDiagram,
+  offlineListDocuments,
+  offlineLoadDocument,
   offlineLoadTab,
-  offlineSaveDiagramMeta,
+  offlineSaveDocumentMeta,
   offlineSaveTab,
-  offlineSetDiagramFolder,
+  offlineSetDocumentFolder,
   OFFLINE_OWNER_ID,
-  recordToDiagram,
+  recordToDocument,
   removeTab,
   tabToSummary,
   upsertTab,
@@ -25,8 +25,8 @@ import { memBackend, testRecord as rec, testTab as tab } from './offline-test-ut
 afterEach(() => __setOfflineBackend(null));
 
 describe('offline transforms', () => {
-  it('projects a record into a valid, unshared Diagram', () => {
-    const d = recordToDiagram(rec({ tabs: [tab('t1', { folder: 'A' })] }));
+  it('projects a record into a valid, unshared document', () => {
+    const d = recordToDocument(rec({ tabs: [tab('t1', { folder: 'A' })] }));
     expect(d).toMatchObject({
       id: 'd1',
       ownerId: OFFLINE_OWNER_ID,
@@ -36,14 +36,14 @@ describe('offline transforms', () => {
       source: null,
     });
     expect(d.tabs).toEqual([
-      { id: 't1', diagramId: 'd1', name: 't1', orderIndex: 0, updatedAt: 100, folder: 'A' },
+      { id: 't1', documentId: 'd1', name: 't1', orderIndex: 0, updatedAt: 100, folder: 'A' },
     ]);
   });
 
   it('tabToSummary omits folder when absent', () => {
     expect(tabToSummary(tab('t1'), 'd1', 2, 5)).toEqual({
       id: 't1',
-      diagramId: 'd1',
+      documentId: 'd1',
       name: 't1',
       orderIndex: 2,
       updatedAt: 5,
@@ -78,16 +78,16 @@ describe('offline transforms', () => {
 describe('offline store ops (in-memory backend)', () => {
   it('create → load → list → isOfflineId → delete round-trip', async () => {
     __setOfflineBackend(memBackend());
-    await offlineCreateDiagram({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
+    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
 
     expect(await isOfflineId('d1')).toBe(true);
     expect(await isOfflineId('other')).toBe(false);
-    expect((await offlineLoadDiagram('d1'))?.name).toBe('Doc');
-    expect((await offlineListDiagrams()).map((s) => s.id)).toEqual(['d1']);
+    expect((await offlineLoadDocument('d1'))?.name).toBe('Doc');
+    expect((await offlineListDocuments()).map((s) => s.id)).toEqual(['d1']);
 
-    await offlineDeleteDiagram('d1');
+    await offlineDeleteDocument('d1');
     expect(await isOfflineId('d1')).toBe(false);
-    expect(await offlineLoadDiagram('d1')).toBeNull();
+    expect(await offlineLoadDocument('d1')).toBeNull();
   });
 
   it('migrates a tab saved against a retired scheme on load (docs/specs/011-theme/retired-schemes.md)', async () => {
@@ -98,7 +98,7 @@ describe('offline store ops (in-memory backend)', () => {
       backgroundColor: '#2b2b33',
       patternColor: '#636373',
     });
-    await offlineCreateDiagram({ id: 'd1', name: 'Doc', tabs: [charcoal] }, 100);
+    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [charcoal] }, 100);
     expect(await offlineLoadTab('d1', 't1')).toMatchObject({
       theme: 'brand',
       backgroundColor: '#0d121a',
@@ -107,7 +107,7 @@ describe('offline store ops (in-memory backend)', () => {
 
   it('saves + loads + deletes individual tabs', async () => {
     __setOfflineBackend(memBackend());
-    await offlineCreateDiagram({ id: 'd1', name: 'Doc', tabs: [] }, 100);
+    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [] }, 100);
 
     await offlineSaveTab('d1', tab('t1', { name: 'First' }), 150);
     expect((await offlineLoadTab('d1', 't1'))?.name).toBe('First');
@@ -119,28 +119,28 @@ describe('offline store ops (in-memory backend)', () => {
     expect(await offlineLoadTab('d1', 't1')).toBeNull();
   });
 
-  it('setDiagramFolder updates the personal-tree placement', async () => {
+  it('setDocumentFolder updates the personal-tree placement', async () => {
     __setOfflineBackend(memBackend());
-    await offlineCreateDiagram({ id: 'd1', name: 'Doc', tabs: [] }, 100);
-    await offlineSetDiagramFolder('d1', 'f1', 200);
-    expect((await offlineListDiagrams())[0]?.folderId).toBe('f1');
-    await offlineSetDiagramFolder('d1', null, 300);
-    expect((await offlineListDiagrams())[0]?.folderId).toBeNull();
+    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [] }, 100);
+    await offlineSetDocumentFolder('d1', 'f1', 200);
+    expect((await offlineListDocuments())[0]?.folderId).toBe('f1');
+    await offlineSetDocumentFolder('d1', null, 300);
+    expect((await offlineListDocuments())[0]?.folderId).toBeNull();
   });
 
-  it('saveDiagramMeta renames without touching tabs', async () => {
+  it('saveDocumentMeta renames without touching tabs', async () => {
     __setOfflineBackend(memBackend());
-    await offlineCreateDiagram({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
-    await offlineSaveDiagramMeta('d1', { name: 'Renamed' }, 200);
-    expect((await offlineLoadDiagram('d1'))?.name).toBe('Renamed');
+    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
+    await offlineSaveDocumentMeta('d1', { name: 'Renamed' }, 200);
+    expect((await offlineLoadDocument('d1'))?.name).toBe('Renamed');
   });
 });
 
 // Both stores must agree on what a tab IS. An offline board that lost its
-// kind would come back from a Sync Diagram as an ordinary diagram — the
+// kind would come back from a Sync Document as an ordinary diagram — the
 // cloud copy would then be wrong too, and nothing could tell.
-describe('upsertTab — board kind', () => {
-  const rec = (): OfflineDiagramRecord =>
+describe('upsertTab — tab kind', () => {
+  const rec = (): OfflineDocumentRecord =>
     ({
       id: 'off:1',
       name: 'D',
@@ -148,7 +148,7 @@ describe('upsertTab — board kind', () => {
       createdAt: 1,
       savedAt: 1,
       tabs: [],
-    }) satisfies OfflineDiagramRecord;
+    }) satisfies OfflineDocumentRecord;
   const tab = (over: Partial<Tab> = {}): Tab =>
     ({ id: 't', name: 'T', elements: [], ...over }) as Tab;
 

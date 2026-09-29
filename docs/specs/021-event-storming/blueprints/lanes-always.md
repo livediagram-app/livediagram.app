@@ -8,36 +8,36 @@ adds engineering precision. Defaults applied where the spec is silent are ledger
 
 Scope, by file:
 
-| File                                                     | Role                                                                      |
-| -------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `packages/diagram/src/event-storming-lanes.ts`           | `laneSnapThreshold`, `nearestLaneTop`, `isOnLane`, `laneStepTop`          |
-| `packages/diagram/src/event-storming-lane-landing.ts`    | `settleNotesOnLanes`, `groupRows`, `rowsToLanes`, `landArrivals`          |
-| `packages/diagram/src/event-storming-photo-place.ts`     | `placeNewNotes`: columns, rows to lanes with the cascade, along-row slide |
-| `packages/diagram/src/event-storming-photo.ts`           | `reconcilePhoto` hands each addition its detector row                     |
-| `packages/diagram/src/index.ts`                          | `Tab.esLanesSettled`                                                      |
-| `packages/diagram/src/comments.ts` (`graftLiveTabState`) | The mark survives undo / redo / cancel                                    |
-| `packages/sticky-vision/src/detect.ts`                   | `toNormalised`: both axes in fractions of the photo's width               |
-| `packages/templates/src/templates.ts`                    | `templateCanvasOverrides('event-storming')` marks the board settled       |
-| `apps/live/hooks/canvas/boxed-drag-resolve.ts`           | `laneHeld` switches the y threshold                                       |
-| `apps/live/hooks/canvas/useEditorDrag.ts`                | Picks the lane anchor of a selection; passes `laneHeld`                   |
-| `apps/live/lib/palette-drag-snap.ts`                     | `laneHeld` switches the y threshold                                       |
-| `apps/live/lib/palette-drag-preview.ts`                  | `workshop` flag on the drag preview                                       |
-| `apps/live/components/palette/palette-tile-drag.ts`      | Publishes `workshop` for a kinded tile                                    |
-| `apps/live/lib/stamp-placement.ts`                       | A kinded stamp is held                                                    |
-| `apps/live/hooks/canvas/useNudgeSelection.ts`            | Up / down on a workshop note: a lane per press                            |
-| `apps/live/lib/paste-placement.ts`                       | `pasteTranslation`, `landPastedCopies`: pointer vs staggered              |
-| `apps/live/hooks/canvas/useClipboard.ts`                 | Paste reads the canvas pointer; the menu's Paste passes its own point     |
-| `apps/live/lib/canvas-pointer.ts`                        | `pastePointer`: a floating panel is not the canvas                        |
-| `apps/live/hooks/canvas/useElementDuplication.ts`        | Duplicate staggers along the lane                                         |
-| `apps/live/hooks/canvas/useLaneSettle.ts`                | The one-time settle of an older board                                     |
-| `apps/live/lib/import-merge.ts`                          | A file import onto an event-storming tab settles its notes                |
-| `apps/live/lib/next-note-add.ts`                         | The next note takes its source's lane                                     |
-| `apps/live/lib/insert-between.ts`                        | The slot's `atY` is a lane centre                                         |
-| `apps/mcp/src/tab-builders.ts`, `tools.ts`               | `landMcpArrivals` in `update_diagram`                                     |
-| `packages/sticky-vision/scripts/placement-check.ts`      | Private harness: photo placement over the labelled walls                  |
-| `apps/help/app/canvas/event-storming-boards/page.mdx`    | Help: lanes section                                                       |
-| `apps/help/app/canvas/snapping/page.mdx`                 | Help: Cmd/Ctrl is the way off a lane                                      |
-| `apps/help/app/palette/event-storming/page.mdx`          | Help: drop the retired lanes switch                                       |
+| File                                                      | Role                                                                      |
+| --------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `packages/document/src/event-storming-lanes.ts`           | `laneSnapThreshold`, `nearestLaneTop`, `isOnLane`, `laneStepTop`          |
+| `packages/document/src/event-storming-lane-landing.ts`    | `settleNotesOnLanes`, `groupRows`, `rowsToLanes`, `landArrivals`          |
+| `packages/document/src/event-storming-photo-place.ts`     | `placeNewNotes`: columns, rows to lanes with the cascade, along-row slide |
+| `packages/document/src/event-storming-photo.ts`           | `reconcilePhoto` hands each addition its detector row                     |
+| `packages/document/src/index.ts`                          | `Tab.esLanesSettled`                                                      |
+| `packages/document/src/comments.ts` (`graftLiveTabState`) | The mark survives undo / redo / cancel                                    |
+| `packages/sticky-vision/src/detect.ts`                    | `toNormalised`: both axes in fractions of the photo's width               |
+| `packages/templates/src/templates.ts`                     | `templateCanvasOverrides('event-storming')` marks the board settled       |
+| `apps/live/hooks/canvas/boxed-drag-resolve.ts`            | `laneHeld` switches the y threshold                                       |
+| `apps/live/hooks/canvas/useEditorDrag.ts`                 | Picks the lane anchor of a selection; passes `laneHeld`                   |
+| `apps/live/lib/palette-drag-snap.ts`                      | `laneHeld` switches the y threshold                                       |
+| `apps/live/lib/palette-drag-preview.ts`                   | `workshop` flag on the drag preview                                       |
+| `apps/live/components/palette/palette-tile-drag.ts`       | Publishes `workshop` for a kinded tile                                    |
+| `apps/live/lib/stamp-placement.ts`                        | A kinded stamp is held                                                    |
+| `apps/live/hooks/canvas/useNudgeSelection.ts`             | Up / down on a workshop note: a lane per press                            |
+| `apps/live/lib/paste-placement.ts`                        | `pasteTranslation`, `landPastedCopies`: pointer vs staggered              |
+| `apps/live/hooks/canvas/useClipboard.ts`                  | Paste reads the canvas pointer; the menu's Paste passes its own point     |
+| `apps/live/lib/canvas-pointer.ts`                         | `pastePointer`: a floating panel is not the canvas                        |
+| `apps/live/hooks/canvas/useElementDuplication.ts`         | Duplicate staggers along the lane                                         |
+| `apps/live/hooks/canvas/useLaneSettle.ts`                 | The one-time settle of an older board                                     |
+| `apps/live/lib/import-merge.ts`                           | A file import onto an event-storming tab settles its notes                |
+| `apps/live/lib/next-note-add.ts`                          | The next note takes its source's lane                                     |
+| `apps/live/lib/insert-between.ts`                         | The slot's `atY` is a lane centre                                         |
+| `apps/mcp/src/tab-builders.ts`, `tools.ts`                | `landMcpArrivals` in `update_document`                                    |
+| `packages/sticky-vision/scripts/placement-check.ts`       | Private harness: photo placement over the labelled walls                  |
+| `apps/help/app/canvas/event-storming-boards/page.mdx`     | Help: lanes section                                                       |
+| `apps/help/app/canvas/snapping/page.mdx`                  | Help: Cmd/Ctrl is the way off a lane                                      |
+| `apps/help/app/palette/event-storming/page.mdx`           | Help: drop the retired lanes switch                                       |
 
 ## Domain and naming
 
@@ -190,7 +190,7 @@ existing board notes.
 (nothing in common) takes the minimum over the notes only, so the photo's top row, not its
 top edge, lines up with the board's top.
 
-### MCP (`update_diagram`)
+### MCP (`update_document`)
 
 - `landMcpArrivals(before, after)`: when the loaded tab `isEventStormingTab`: arrivals are the
   workshop notes of `after` that are new (id not in `before`) or whose `x` / `y` differ from
@@ -307,7 +307,7 @@ only skips a settle the forger could have undone. MCP input is already validated
 
 - No layout shift: the settle moves canvas content only, inside the transformed canvas layer;
   the toast is the existing overlay toast. No new bundle: the helpers are in
-  `@livediagram/diagram`, already in the editor chunk.
+  `@livediagram/document`, already in the editor chunk.
 
 ## Observability
 

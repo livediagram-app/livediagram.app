@@ -6,7 +6,7 @@
 // Each is purely presentational: props in, JSX out, with every action a
 // callback. Siblings of context-menu-tiles.tsx / context-menu-icons.tsx.
 import { type ReactNode } from 'react';
-import { SHAPE_MARKERS, type ShapeMarker, type TextSize } from '@livediagram/diagram';
+import { SHAPE_MARKERS, type ShapeMarker, type TextSize } from '@livediagram/document';
 
 import { SizeButton } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@/components/primitives/hover-preview';

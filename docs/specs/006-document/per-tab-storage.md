@@ -1,0 +1,261 @@
+# Per-tab storage
+
+Move from the single-row `diagrams.data` JSON blob (which serialises every
+tab on every save) to a normalised `documents` + `tabs` split where each
+tab is its own row. The autosave path then only ships the tab that
+actually changed.
+
+Driven by the observation that today, every keystroke broadcasts a
+`tabs` op AND PUTs the whole document — including unchanged tabs — to
+D1. Cost grows linearly with the document's tab count.
+
+## Goals
+
+- One DB write per editorial commit, scoped to the changed tab.
+- Per-tab snapshot fetch (open one tab, hydrate one row) so the
+  initial view of a many-tab document is fast.
+- Foundation for "this tab is shared across documents" reuse — landed in [Tab ↔ document many-to-many](tab-document-many-to-many.md) (migration 0011 / item #13). The link table sits over the same tab body rows described here.
+
+## Non-goals (V1)
+
+- ~~Sharing a tab across documents~~ — landed in [Tab ↔ document many-to-many](tab-document-many-to-many.md) (migration 0011). The link table lives next to `tabs` and holds the per-document placement.
+- Per-element rows / CRDT. Each tab still serialises its `elements`
+  array as JSON within its row; the granularity stops at the tab.
+- Online migration. The cutover is one D1 migration; the live app
+  hydrates the new schema on the next save.
+
+## Data model
+
+```sql
+CREATE TABLE tabs (
+  id          TEXT    PRIMARY KEY,
+  name        TEXT    NOT NULL,
+  -- Same JSON shape as the Tab type minus { id, name } (which live
+  -- on the row). Holds elements + per-tab metadata: theme,
+  -- backgroundColor, backgroundPattern, backgroundOpacity,
+  -- patternColor, locked. `templateChosen` is intentionally ephemeral
+  -- client state (see migration 0009), stripped before persistence,
+  -- never stored here.
+  data        TEXT    NOT NULL,
+  updated_at  INTEGER NOT NULL
+);
+```
+
+A `tabs` row is the tab's body and nothing else. Which documents contain it, and its order and folder in each, live on the `document_tabs` link ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a document, so nothing cascades from `documents` into `tabs`: removing a tab from a document, deleting a document and deleting an account each drop a tab explicitly once no document links it. `change_log`, `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its history and index rows with it. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
+
+The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `document_id` + `order_index` columns and the `document_id` foreign key.
+
+`documents` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`. The `data` column was dropped in migration 0006 once the live app had been on the new schema for a release window.
+
+## API surface
+
+Owner / edit-role.
+
+- `GET    /api/documents/:id` — returns document metadata + tab list
+  (id, name, order; no `data`).
+- `GET    /api/documents/:id/tabs/:tabId` — full tab payload (data + everything).
+- `PUT    /api/documents/:id/tabs/:tabId` — upsert a single tab (active edit path).
+- `DELETE /api/documents/:id/tabs/:tabId` — remove a tab.
+- `PUT    /api/documents/:id` — document-level fields only (rename,
+  tab order, shareable). Body
+  carries `tabIds: string[]` in
+  the new order; the API
+  persists the order index
+  without touching tab content.
+
+The existing `GET /api/documents/:id` body grows a `tabs:
+TabSummary[]` field instead of `tabs: Tab[]`. The whole-document
+PUT goes away.
+
+Realtime room op stays element-level for the cursor / select / log
+broadcasts; the `tabs` op shrinks to `{ kind: 'tab', tabId, tab }`
+so peers only get the one that changed.
+
+## Live app
+
+1. On hydration: fetch the document + tab summaries. The active tab is
+   lazily fetched (single `GET /tabs/:id`); other tabs hydrate
+   on-demand when the user clicks them or when a peer's `tab` op
+   targets them.
+2. Autosave: debounced per tab, calls
+   `PUT /api/documents/:id/tabs/:activeTabId` with the changed tab.
+3. Tab rename / reorder go through the document-level PUT; element
+   edits go through the tab-level PUT.
+4. The room op shrinks accordingly.
+
+### Loading & failure UX for the lazy fetch
+
+A tab summary carries no `elements`, so before its `GET /tabs/:id`
+lands the tab is an empty placeholder. The canvas MUST NOT render its
+normal "Empty canvas" prompt over that placeholder — it reads as "your
+canvas is gone", and worse, if the user starts adding elements to the
+blank canvas the autosave persists the empty-plus-new tab and **wipes
+the real server row**. So while the active tab's content is outstanding:
+
+- **Loading**: an opaque, pointer-capturing overlay covers the canvas
+  (palette included) with a spinner. The header + TabBar stay live, so the
+  user can still switch tabs or navigate away.
+- **Error**: if the fetch _fails_ the same overlay shows a "couldn't load
+  this tab" card with a **Retry** that re-issues the fetch. Both network /
+  5xx **and a 404** take this path: a legitimately-empty tab returns 200
+  with `{ elements: [] }` (the row exists), and the tab being fetched is
+  the active tab, which is always in the hydrated summary — so a 404 means
+  the row is unexpectedly missing (a transient / mis-routed 404, a
+  share-code edge, a row deleted under a stale summary), NOT that the tab
+  is empty. Treating a 404 as authoritative-empty would mark the tab
+  loaded and arm the autosave to overwrite the real row; routing it to
+  Retry instead means a wrong 404 can never wipe content.
+
+The overlay is **pointer-only** — it cannot block `window` keydown or
+`document` paste, so the spinner alone is not the edit lock. The actual
+guard is that the active tab's load state feeds the editor's single
+`editsBlocked` gate (alongside locked-tab and view-only), so EVERY
+commit-based mutator — shape shortcuts, paste, AI apply, Markdown import,
+clear-canvas, drag — is refused until the tab is `ready`. The overlay and
+the edit lock derive from the same `deriveTabLoadState`, so they can't
+disagree.
+
+Only tabs that originate on the server take part in this. A tab created
+locally (add / duplicate / import) is treated as already-loaded — its
+content is authoritative in memory and there is nothing to fetch — so it
+never flashes a loader and drops straight into the per-tab template
+picker. A tab whose elements a realtime peer already delivered likewise
+renders immediately rather than showing a spinner over real content.
+
+### A refused save stops; a failed save doesn't
+
+The autosave used to treat every rejection as one thing: set the status to
+`error`, toast "Couldn't save your changes. Check your connection.", and try
+again on the next edit. That's right for a blip, a 5xx, or a dropped
+connection — the next attempt may well work (and it now comes without waiting for
+the next edit, see Retrying a failed save).
+
+It's wrong for a **403**. The server isn't failing, it's refusing: the share
+link was revoked, we were removed from the team, or the role changed under us.
+No retry can succeed. Yet every subsequent keystroke fired another doomed PUT,
+and the only feedback blamed a connection that was fine — so someone could
+edit for an hour against a document that would never take a single write. Live
+telemetry showed the shape of it: **297 `Http403` in one day** against a
+baseline in single digits, which is one long session failing over and over.
+
+So a 403 sets `writesForbiddenRef` and a distinct `forbidden` save status:
+
+- The debounced save and the `beforeunload` beacon both bail while it's set,
+  so the doomed retries stop.
+- The toast fires **once** and says what actually happened, naming the likely
+  cause and the way out (export a copy) rather than a connection to check.
+- The Activity panel badge reads **No access** instead of **Not saved**.
+- Opening a different document clears it — the block is about this one.
+
+The user still loses the unsaved work, and no client-side design can prevent
+that once the server has withdrawn write access. What it can do is say so
+immediately and clearly, instead of an hour later.
+
+### Retrying a failed save
+
+A failed save (a network error or a 5xx; never a 403 or a sign-in problem) is retried on its own,
+not only on the next edit: during an outage or a deploy, the last edit before someone stops typing
+would otherwise wait for an edit that may never come. The retry waits 5 seconds, then doubles (10,
+20, 40) up to a minute between attempts, and resets after a save succeeds. Each attempt re-sends
+whatever still differs from the last saved state, so nothing is sent twice
+(`apps/live/app/document/[id]/useAutosave.ts`, `saveRetryDelayMs`).
+
+### An unauthenticated save names the sign-in
+
+A **401**, or a signed-in client with no session token to send
+(`SessionTokenUnavailableError`, see [Auth + guest access](../014-identity/auth-and-guest-access.md)), is neither a
+connection problem nor a refusal: the server couldn't tie the save to the
+signed-in account. Production showed it as `Http401.SaveTab` bursts, each
+toasting "Check your connection" on a wired fibre line.
+
+So it gets its own `unauthenticated` save status (`saveFailureStatus` in
+`save-failure.ts` maps every failure to exactly one status):
+
+- The toast reads "Couldn't confirm you're signed in, so your changes aren't
+  saving. Sign in again to keep them."
+- The Activity panel badge reads **Signed out**.
+- The autosave keeps retrying on the next edit, unlike `forbidden`: the
+  session can come back, and when it does the next save lands.
+
+Every failed save also reaches error telemetry exactly once
+(`reportSaveFailure`): a failure the api client already reported
+(`Http*`, `Network.*`, `Auth.NoSessionToken`) isn't counted again, and
+anything else thrown on the save path reports as `SaveFailed.<Kind>`.
+
+### Autosave guard: never persist an unloaded tab
+
+The loading overlay above protects the **active** tab. A separate, subtler
+wipe path hits **background** tabs and the overlay does nothing for it:
+
+A many-tab document hydrates every non-active tab as an empty placeholder
+(no `elements` until opened). The autosave diff (`computeTabSaveDiff`) is
+identity-based — it persists any tab whose object reference changed since
+the last save. So a **non-content** operation that re-maps the tab array —
+filing tabs into a folder, reordering, a bulk tab edit — bumps the
+reference of tabs the user never opened, the diff flags those empty
+placeholders as "changed", and the per-tab `PUT` overwrites their real
+server rows with `{ elements: [] }`. (Observed in production: filing four
+tabs into a folder wiped the two that hadn't been opened that session.)
+
+Invariant: **a tab is eligible for a content write only when its content
+is authoritative in memory** — it is in the loaded set (`markTabLoaded`:
+hydration's active tab, a fetched tab, or a locally-created one) OR it
+already carries elements (peer-delivered). An unloaded, still-empty
+placeholder is never persisted, no matter what bumped its reference.
+Reorders and renames still flow through the document-level meta `PUT`
+(which never touches tab bodies), so organising background tabs stays
+safe. The guard lives in `computeTabSaveDiff`, the one autosave decision
+kernel both the debounced save and the `beforeunload` flush share.
+
+### Server backstop: refuse to blank a tab that has content
+
+The client guards above are necessary but live in the editor; a future
+client regression, or an older deployed client, could still `PUT` an
+empty body over a populated row. So `PUT /api/documents/:id/tabs/:tabId`
+enforces the invariant server-side too: if the incoming `elements` is
+empty AND the stored row currently has elements, the write is **rejected
+with 409** unless the request carries `X-Allow-Empty: 1`.
+
+A legitimate **reset-canvas / delete-all** is performed on the active tab,
+which is necessarily loaded (editing an unloaded tab is blocked), so the
+editor sets `X-Allow-Empty: 1` for any tab in the loaded set — those
+clears pass. The lazy-load wipe (a never-opened placeholder) is not in the
+loaded set, so it carries no header and the backstop preserves the stored
+row. An empty write over an already-empty / brand-new row, and any
+non-empty write, are unaffected. This is intentionally independent of the
+client guard — belt and suspenders against the most destructive failure.
+
+## Cutover (historical)
+
+How this rolled out, recorded here so future schema changes can repeat the pattern:
+
+1. Migration 0005 created the `tabs` table + a same-migration backfill SQL step that split every existing `diagrams.data` JSON into N rows of `tabs` (one per array element), assigning `order_index` from the array position.
+2. `diagrams.data` was kept in place for one release window so a deployed-but-not-yet-shipped client didn't 500.
+3. Migration 0006 dropped `diagrams.data`.
+
+## Audit log
+
+The `change_log` table is tab-scoped — its row carries a `tab_id` (every entry in practice; the column is nullable for historical reasons) and cascades on `tab_id` via the FK to `tabs(id)`. The legacy `document_id` column on `change_log` was dropped in migration 0012 (item #14 — see [Tab ↔ document many-to-many](tab-document-many-to-many.md)); per-document log reads derive the set of contributing tabs via `document_tabs`. The client's `deleteTab` flow still calls `DELETE /log/tab/:tabId` to drop the entries up front — see [12-activity-and-audit.md](../012-collaboration/activity-and-audit.md).
+
+## Risk
+
+- D1 doesn't currently support cross-row transactions cleanly, so the
+  backfill is per-document in its own statement set. If the backfill
+  step partially fails, the migration tracker re-runs it.
+- Tab reorder is a `UPDATE tabs SET order_index = ? WHERE id = ?` per
+  tab. Acceptable for the small tab counts (< 20) we see in practice.
+
+## What this does NOT change
+
+- The owner-only audit log gate (still applies).
+- Realtime presence (still room-level).
+- Sharing (per-document share codes; no per-tab sharing yet). Tab-level reuse across documents is a server-side relationship under [Tab ↔ document many-to-many](tab-document-many-to-many.md), not user-visible sharing.
+- The frontend `Tab` type shape (just where it's persisted).
+
+## Import carries identity, not just content
+
+When an exported tab lands in a receiving tab (`mergeImportedTab`), the **tab kind** and the **layers** travel with the elements and styling.
+
+Without the kind, an exported event-storming board came back as an ordinary diagram: every note present, but the palette, the stationery and the note menu gone, with nothing on screen to explain why ([Event storming](../021-event-storming/event-storming.md)). Without the layers, every imported element’s `layerId` dangles and the bands the author organised the tab into are lost ([Layers](layers.md)).
+
+The merge rule lives in its own module so it is testable as a rule: what the import brings, what the receiving tab keeps (its id and name), and what must travel or the round trip loses meaning.

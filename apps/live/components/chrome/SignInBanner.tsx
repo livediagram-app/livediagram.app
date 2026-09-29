@@ -71,7 +71,7 @@ export function SignInBanner({
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold sm:text-base">Sign in to keep your work safe</p>
             <p className="mt-0.5 text-xs text-white/85 sm:text-sm">
-              Free account. Your diagrams sync across devices, survive a cache clear or browser
+              Free account. Your documents sync across devices, survive a cache clear or browser
               restart, and carry your real name.
             </p>
           </div>

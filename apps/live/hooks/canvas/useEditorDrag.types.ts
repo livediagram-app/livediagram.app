@@ -7,7 +7,7 @@ import type {
   IconPosition,
   Tab,
   FrameHandle,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
 import type { InsertionGate } from '@/lib/insert-between';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
@@ -36,7 +36,7 @@ export type EditorDragDeps = {
   setMultiSelectedIds: (ids: Set<string>) => void;
   editingId: string | null;
   isReadOnly: boolean;
-  // Elements on a hidden or locked layer (docs/specs/006-diagram/layers.md): every gesture
+  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): every gesture
   // starter treats them as inert — no select, no drag, no new arrow.
   layerInertIds: Set<string>;
   // Modal interaction state. When format-painter is active, a click

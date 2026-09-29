@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement, Tab } from '@livediagram/diagram';
+import type { Element, StickyElement, Tab } from '@livediagram/document';
 import { useNudgeSelection } from './useNudgeSelection';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -93,7 +93,7 @@ describe('useNudgeSelection', () => {
     expect(h.at('s').y).toBe(57 + 240);
   });
 
-  it('nudges by pixels on an ordinary board, and a selection with no workshop note', () => {
+  it('nudges by pixels on an ordinary tab, and a selection with no workshop note', () => {
     const plain = harness({ elements: [workshop('w', 0, 240)], selected: 'w', laneBoard: false });
     plain.press(0, 1);
     expect(plain.at('w').y).toBe(241);

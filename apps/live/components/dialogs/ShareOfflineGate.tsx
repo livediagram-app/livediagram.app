@@ -10,10 +10,10 @@ import { syncFailureMessage } from '@/lib/offline/offline-convert';
 import { DialogHeader } from './DialogHeader';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
-// The Share dialog's offline gate (docs/specs/006-diagram/offline-mode.md). An offline diagram is stored only
+// The Share dialog's offline gate (docs/specs/006-document/offline-mode.md). An offline document is stored only
 // in this browser, so there are no links to mint until it's synced to the
 // owner's account. Rather than hide the Share button, we keep it and explain
-// the one-step conversion here: sync moves the diagram to the cloud, then the
+// the one-step conversion here: sync moves the document to the cloud, then the
 // page reloads into the normal share flow.
 export function ShareOfflineGate({
   onSyncToCloud,
@@ -39,10 +39,10 @@ export function ShareOfflineGate({
   };
 
   return (
-    <Dialog open onClose={onClose} ariaLabel="Share this diagram" size="md">
+    <Dialog open onClose={onClose} ariaLabel="Share this document" size="md">
       <DialogHeader
-        title="Share this diagram"
-        subtitle="This diagram is saved offline, in this browser only."
+        title="Share this document"
+        subtitle="This document is saved offline, in this browser only."
       >
         <HelpArticleLink article="offlineMode" size="md" />
         <DialogCloseButton onClick={onClose} />
@@ -60,13 +60,13 @@ export function ShareOfflineGate({
             Sync it to your account to share
           </p>
           <p className="mx-auto max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            Share links, real-time collaboration, and the live image all need the diagram to live on
-            our servers. Syncing uploads this diagram to your account and keeps working on it here.
-            You can take it offline again any time.
+            Share links, real-time collaboration, and the live image all need the document to live
+            on our servers. Syncing uploads this document to your account and keeps working on it
+            here. You can take it offline again any time.
           </p>
         </div>
         <Button onClick={() => void sync()} disabled={busy} className="mt-1 shadow-sm">
-          {busy ? 'Syncing…' : 'Sync Diagram'}
+          {busy ? 'Syncing…' : 'Sync Document'}
         </Button>
       </div>
 

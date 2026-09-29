@@ -5,7 +5,7 @@
 // shouldn't have it.
 
 import { useState } from 'react';
-import { QA_MAX_TEXT } from '@livediagram/diagram';
+import { QA_MAX_TEXT } from '@livediagram/document';
 import { tint } from '../collab-chrome';
 import { CollabComposer } from '../CollabComposer';
 import { MaskGlyph, QA_ACCENT, QA_ACCENT_INK, stopPointer } from './qa-parts';

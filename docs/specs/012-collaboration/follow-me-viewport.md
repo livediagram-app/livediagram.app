@@ -7,8 +7,8 @@ take the canvas back.
 
 ## Why
 
-"Look at this" is the most common sentence spoken over a shared board, and the
-board answers it worst. The tools that exist all point AT something from where
+"Look at this" is the most common sentence spoken over a shared canvas, and the
+canvas answers it worst. The tools that exist all point AT something from where
 the speaker already is — the laser ([Laser Panel](../008-canvas/laser-panel.md)), the spotlight ([Spotlight Panel](../008-canvas/spotlight-panel.md)), a
 walked-to avatar ([Avatar mode](../008-canvas/avatar-mode.md)) — and every one of them is useless to the person
 who is scrolled somewhere else entirely. Presentation mode ([Presentation mode](presentation-mode.md)) is still

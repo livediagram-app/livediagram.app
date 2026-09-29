@@ -1,5 +1,5 @@
 // The Explorer illustrations' own building blocks (docs/specs/018-help/help-app.md): a sidebar row and
-// its glyph, a diagram card and its thumbnail, a list row, and the assembled
+// its glyph, a document card and its thumbnail, a list row, and the assembled
 // sidebar the wider scenes drop in whole.
 //
 // Split out of explorer.tsx, which labelled these "Building blocks" and then
@@ -170,9 +170,9 @@ export function SidebarGlyph({
   }
 }
 
-/** A diagram card: a small canvas thumbnail above a title bar and meta line.
+/** A document card: a small canvas thumbnail above a title bar and meta line.
  *  Optional owner avatar badge for "shared" cards. */
-export function DiagramCard({
+export function DocumentCard({
   x,
   y,
   w = 96,
@@ -309,8 +309,8 @@ function CardThumb({
   );
 }
 
-/** A diagram list row: thumbnail dot, title, meta, and a kebab menu affordance. */
-export function DiagramRow({
+/** A document list row: thumbnail dot, title, meta, and a kebab menu affordance. */
+export function DocumentRow({
   x,
   y,
   w,

@@ -22,7 +22,7 @@
 // Pure like every other builder: takes a centre (cx, cy), returns a
 // fresh Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createShape, createText, type Element } from '@livediagram/diagram';
+import { createShape, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // One metre of floor, in canvas pixels. 80 keeps a 0.8 m toilet at a

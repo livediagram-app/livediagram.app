@@ -2,7 +2,7 @@ import { defineProject } from '@livediagram/vitest-config';
 
 // The identity, token and share-link modules are held at 100% — not as a
 // coverage vanity number, but because they are the only code in the repo that
-// answers "who is this caller" and "may they open this diagram" (and, with
+// answers "who is this caller" and "may they open this document" (and, with
 // the image reference index, "may this picture be deleted"). Everything
 // else in the worker fails visibly; these fail by serving the right response
 // to the wrong person, which no amount of production monitoring notices.
@@ -21,13 +21,13 @@ const GATE_KEEPERS = [
   'src/routes/share.ts',
   'src/routes/shared.ts',
   'src/routes/tokens.ts',
-  'src/routes/diagram-share-routes.ts',
+  'src/routes/document-share-routes.ts',
   // The image reference index and the sweep that trusts it: a gap here
   // deletes a picture someone placed (docs/specs/009-elements/images.md).
   'src/image-refs/**',
   'src/db/image-refs.ts',
   'src/db/image-retention.ts',
-  'src/db/diagram-removal.ts',
+  'src/db/document-removal.ts',
 ];
 
 export default defineProject({

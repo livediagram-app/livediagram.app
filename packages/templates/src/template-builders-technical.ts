@@ -19,7 +19,7 @@ import {
   createShape,
   type Anchor,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { isTechIconId } from '@livediagram/icons';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
@@ -338,7 +338,7 @@ export function buildSequenceDiagram(cx: number, cy: number): Element[] {
   const elements: Element[] = [];
 
   // Participant headers + their dashed lifelines: the stationary
-  // skeleton, so they ride the scaffold layer (docs/specs/006-diagram/layers.md) while the
+  // skeleton, so they ride the scaffold layer (docs/specs/006-document/layers.md) while the
   // messages users add and reorder live on the content layer above.
   participants.forEach((name, i) => {
     const centerX = centerXFor(i);

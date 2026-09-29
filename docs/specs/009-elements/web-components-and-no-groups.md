@@ -60,7 +60,7 @@ of the row while a stat row or process is selected.
 ## Resizing
 
 The point of making them single elements is that they can lay themselves out. Each layout is a
-pure function in `@livediagram/diagram` (`web-components.ts`) that both the canvas view and the
+pure function in `@livediagram/document` (`web-components.ts`) that both the canvas view and the
 headless SVG renderer call, so an export matches the editor.
 
 - **Banner / callout**: the text region is the box minus its padding. Title and body re-wrap to
@@ -94,7 +94,7 @@ hero.
 
 ## Existing diagrams
 
-- Components already on a board were built as loose primitives and **stay as they are**: once
+- Components already on a canvas were built as loose primitives and **stay as they are**: once
   groups are gone they are simply separate elements. We do not try to recognise and fuse them.
 - `groupId` on stored elements is **ignored** and stripped on load.
 - A legacy `pinned-group` arrow end is **frozen to a free endpoint** at the position it resolved

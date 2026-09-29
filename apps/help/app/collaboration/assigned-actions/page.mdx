@@ -5,15 +5,15 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Assigned Actions',
   description:
-    'Assign a piece of work on a diagram element to a teammate, optionally email them about it, and track every open action from the Collaborate panel.',
+    'Assign a piece of work on a canvas element to a teammate, optionally email them about it, and track every open action from the Collaborate panel.',
   path: '/help/collaboration/assigned-actions/',
 });
 
 <ArticleLayout title="Assigned Actions" description="Turn any element into a piece of work: assign it to a teammate, describe what needs doing, and track it until it is done." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("assigned-actions")}>
 
-An action attaches a named piece of work to an element and hands it to a teammate. Where a comment starts a conversation, an action assigns an outcome: it has a name, an optional description, an assignee, and a done state. Use them to turn a review into a to-do list that lives right on the diagram.
+An action attaches a named piece of work to an element and hands it to a teammate. Where a comment starts a conversation, an action assigns an outcome: it has a name, an optional description, an assignee, and a done state. Use them to turn a review into a to-do list that lives right on the document.
 
-Anyone can assign an action to **themselves** — signed in or not — so actions also work as personal to-dos on a diagram. Assigning to other people is built on teams: for a diagram in a [team's shared library](/help/collaboration/teams/team-shared-diagrams/), the picker offers that team's members — joined ones, and invited ones who haven't accepted yet (marked with an **Invited** badge; they'll get access to the diagram when they join, and the optional email goes to their invite address). A personal diagram is self-assign only — but the dialog offers the fix inline: pick one of your teams and the diagram moves into its shared library on the spot, so its members become assignable without leaving the canvas.
+Anyone can assign an action to **themselves** — signed in or not — so actions also work as personal to-dos on a document. Assigning to other people is built on teams: for a document in a [team's shared library](/help/collaboration/teams/team-shared-documents/), the picker offers that team's members — joined ones, and invited ones who haven't accepted yet (marked with an **Invited** badge; they'll get access to the document when they join, and the optional email goes to their invite address). A personal document is self-assign only — but the dialog offers the fix inline: pick one of your teams and the document moves into its shared library on the spot, so its members become assignable without leaving the canvas.
 
 ## Assigning an action
 
@@ -22,26 +22,26 @@ Anyone can assign an action to **themselves** — signed in or not — so action
 </Step>
 
 <Step n={2}>
-  Pick **Myself** or a member of the diagram's team, give the action a short name, and add a
+  Pick **Myself** or a member of the document's team, give the action a short name, and add a
   description if the work needs more context.
 </Step>
 
 <Step n={3}>
   Leave **Email them about this action** ticked if you want the assignee to get a notification with
-  a link back to the diagram, then assign it.
+  a link back to the document, then assign it.
 </Step>
 
-The element gains a small clipboard badge while the action is open. Anyone on the diagram can click the badge to read the action; editors can also work with it from there.
+The element gains a small clipboard badge while the action is open. Anyone on the document can click the badge to read the action; editors can also work with it from there.
 
 <Tip>
-  The picker only offers members of the team the diagram lives in, so the assignee can always open
+  The picker only offers members of the team the document lives in, so the assignee can always open
   it. If an older action's assignee has since left the team, they may no longer be able to —
   reassign it from the action's popover.
 </Tip>
 
 ## The Collaborate panel
 
-As soon as a tab has any actions or comment threads, a **Collaborate** button appears in the bottom-right row, right after the **Layers** button, with a small count of what is still open. Press it to open the panel as a pop-over above the button, in every layout; press it again or click the canvas to close it. The button disappears when the tab has nothing to collaborate on. At the top, **Open** and **Resolved** switch between what still needs doing (open actions and unresolved comment threads) and what is finished (completed actions and resolved threads), each with its count. When a tab has both comments and actions, the **All**, **Comments** and **Actions** chips underneath narrow the list to one kind. Actions assigned to you lead the Open list under **For You**. Each action row starts with a round check: tap it to mark the action done right there (or, under Resolved, to reopen it). Each comment row shows the element it is on and the latest reply, with the author's name in their colour. Click a row to jump to the element and open its thread or action. When the thread or action lives on a [comment panel](/help/palette/collaborate/comment-panels/) or an [action panel](/help/palette/collaborate/action-panels/) on the board, the row simply selects that card and brings it into view, since the card already shows it.
+As soon as a tab has any actions or comment threads, a **Collaborate** button appears in the bottom-right row, right after the **Layers** button, with a small count of what is still open. Press it to open the panel as a pop-over above the button, in every layout; press it again or click the canvas to close it. The button disappears when the tab has nothing to collaborate on. At the top, **Open** and **Resolved** switch between what still needs doing (open actions and unresolved comment threads) and what is finished (completed actions and resolved threads), each with its count. When a tab has both comments and actions, the **All**, **Comments** and **Actions** chips underneath narrow the list to one kind. Actions assigned to you lead the Open list under **For You**. Each action row starts with a round check: tap it to mark the action done right there (or, under Resolved, to reopen it). Each comment row shows the element it is on and the latest reply, with the author's name in their colour. Click a row to jump to the element and open its thread or action. When the thread or action lives on a [comment panel](/help/palette/collaborate/comment-panels/) or an [action panel](/help/palette/collaborate/action-panels/) on the canvas, the row simply selects that card and brings it into view, since the card already shows it.
 
 Completing an action (or resolving a thread) moves it to the Resolved filter and clears the element's badge, so Open only ever shows what still needs doing. Clearing the last action and comment removes the panel entirely.
 
@@ -57,7 +57,7 @@ Actions are deliberately not undoable: pressing undo after assigning, completing
 
 ## Email notifications
 
-When an action is assigned to you (and your deployment has email enabled), you get a short email naming the action, who assigned it, and which diagram it is on, with a link straight to the diagram. You can turn these off any time from your profile page under **Email notifications**, with the "Someone assigns me an action" toggle.
+When an action is assigned to you (and your deployment has email enabled), you get a short email naming the action, who assigned it, and which document it is on, with a link straight to the document. You can turn these off any time from your profile page under **Email notifications**, with the "Someone assigns me an action" toggle.
 
 <Tip>
   Keep action names short and outcome-shaped ("Confirm the retry budget", "Redraw the auth flow").
