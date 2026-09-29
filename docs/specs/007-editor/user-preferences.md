@@ -384,8 +384,11 @@ and the dialog stays as the one complete, browsable index of them.
     rail, the selected category's settings in the pane beside it. A category
     is always selected (Editor, unless it reopens where it was left) - the pane
     is never empty. The dialog
-    is capped at `42rem` tall; unbounded, a long category stretched it from
-    the top of the screen to the bottom and read as a page, not a modal.
+    is a fixed `42rem` tall (less on a short window), whichever category is
+    open: sized to content, the frame jumped between categories, and
+    unbounded, a long category stretched it from the top of the screen to
+    the bottom and read as a page, not a modal. A long category scrolls
+    inside the pane; a short one leaves space below it.
   - **Phone** (below the `sm:` breakpoint, via `useIsMobileViewport`) takes
     the iPhone push navigation: a root list of the same categories, each a
     tappable row, which pushes that category's pane with a back control in
