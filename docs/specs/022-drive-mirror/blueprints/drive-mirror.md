@@ -114,13 +114,13 @@ A `DRIVE_TOKEN_KEY` that does not decode to 32 bytes counts as unset and logs `d
 
 `DriveMirrorState`, published by the engine (and relayed to the other tabs):
 
-| State             | Means                                          | Panel shows                                   |
-| ----------------- | ---------------------------------------------- | --------------------------------------------- |
-| `starting`        | Auth or the first pass not settled             | "Checking Google Drive…"                      |
-| `disconnected`    | No connection row                              | **Connect Google Drive**                      |
-| `idle`, `syncing` | Row with status `connected` and a usable token | **Sync now**, **Last synced**, **Disconnect** |
-| `needs_reconnect` | Row with status `needs_reconnect`              | **Reconnect**, **Disconnect**                 |
-| `needs_resume`    | Browser-only mode, the token lapsed            | **Resume sync**, **Disconnect**               |
+| State             | Means                                          | Panel shows                                      |
+| ----------------- | ---------------------------------------------- | ------------------------------------------------ |
+| `starting`        | Auth or the first pass not settled             | "Checking Google Drive…"                         |
+| `disconnected`    | No connection row                              | **Connect Google Drive**                         |
+| `idle`, `syncing` | Row with status `connected` and a usable token | the status (Synced … / Syncing…), **Disconnect** |
+| `needs_reconnect` | Row with status `needs_reconnect`              | **Reconnect**, **Disconnect**                    |
+| `needs_resume`    | Browser-only mode, the token lapsed            | **Resume sync**, **Disconnect**                  |
 
 Transitions (`idle` / `syncing` read as connected): `disconnected` to `idle` by `/drive/connected` (broker) or the GIS grant (browser); `connected` to
 `needs_reconnect` when `POST /api/drive/token` answers `409 drive_needs_reconnect`; `needs_reconnect` to `connected`
@@ -170,7 +170,7 @@ Pass kinds and triggers:
 | `focus`   | `focus` or `visibilitychange` to visible, when the last inbound read is older than `DRIVE_FOCUS_POLL_MIN_GAP_MS` (30 s) |
 | `write`   | `DRIVE_WRITE_IDLE_MS` after the last api write signal (`subscribeApiWrites`, relayed across tabs)                       |
 | `flush`   | `visibilitychange` to hidden, `pagehide`, and `requestDriveFlush()` when the editor leaves a diagram                    |
-| `manual`  | **Sync now**                                                                                                            |
+| `manual`  | A request from another tab over the tab channel (a finished connection, a disconnect)                                   |
 
 Polls are scheduled only while the state is `idle`: a disconnected or needs-reconnecting engine waits for a trigger.
 A trigger during a pass queues one more pass (a `flush` outranks the rest) and resolves when that later pass ends.
@@ -686,9 +686,9 @@ opened in livediagram." with **Go to Explorer**.
 ## Accessibility
 
 The Cloud Sync row lives in the Settings dialog (focus trap, Escape); its buttons are native buttons with visible
-focus rings. The state pill pairs a glyph with a word, so colour is never the only signal. The progress bar is
-`role="progressbar"` with `aria-valuenow` / `aria-valuemax`. Status changes are announced with the shared
-announcer (polite). The banner is `role="status"`. The notice badge carries an `aria-label` with the notice text.
+focus rings. A warning status pairs a glyph with its words, so colour is never the only signal. The first copy's count is in the
+status and the text line. The text line is `aria-live="polite"`; the status, whose time changes every minute, is
+not announced. The banner is `role="status"`. The notice badge carries an `aria-label` with the notice text.
 Colours are the existing slate / brand tokens, which meet AA in both themes.
 
 ## Observability
