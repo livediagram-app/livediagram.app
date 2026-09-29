@@ -124,11 +124,11 @@ describe('name fields', () => {
 
   it('advertises the cap in the input JSON Schema', () => {
     for (const shape of [createDiagramShape, addTabShape, renameDiagramShape]) {
-      const json = z.toJSONSchema(z.object(shape), { io: 'input' }) as {
-        properties: { name: { type: string; description?: string } };
-      };
-      expect(json.properties.name.type).toBe('string');
-      expect(json.properties.name.description).toContain(`at most ${NAME_MAX_LENGTH} characters`);
+      const name = z.toJSONSchema(z.object(shape), { io: 'input' }).properties?.name;
+      expect(typeof name === 'object' && name.type).toBe('string');
+      expect(typeof name === 'object' && name.description).toContain(
+        `at most ${NAME_MAX_LENGTH} characters`,
+      );
     }
   });
 });
