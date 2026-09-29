@@ -71,16 +71,13 @@ async function signIn(page: import('@playwright/test').Page, user = USER) {
 }
 
 // Settings > Account > Cloud Sync (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"):
-// through the account menu's Account item, or the cloud badge once connected.
-async function openCloudSync(page: import('@playwright/test').Page, via: 'menu' | 'badge') {
-  if (via === 'menu') {
-    await page.getByRole('button', { name: 'Account menu' }).click();
-    // The account menu has no Drive entry; Settings does.
-    await expect(page.getByRole('menuitem', { name: /Google Drive/ })).toHaveCount(0);
-    await page.getByRole('menuitem', { name: 'Account' }).click();
-  } else {
-    await page.getByRole('button', { name: /Google Drive/ }).click();
-  }
+// through the account menu's Account item. The avatar carries no Drive state.
+async function openCloudSync(page: import('@playwright/test').Page) {
+  await expect(page.getByRole('button', { name: /Google Drive/ })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Account menu' }).click();
+  // The account menu has no Drive entry; Settings does.
+  await expect(page.getByRole('menuitem', { name: /Google Drive/ })).toHaveCount(0);
+  await page.getByRole('menuitem', { name: 'Account' }).click();
   const row = page.locator('[data-cloud-sync="googleDrive"]');
   await expect(row).toBeVisible();
   return row;
@@ -246,7 +243,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   });
 
   await page.goto('/explorer/recent');
-  let panel = await openCloudSync(page, 'menu');
+  let panel = await openCloudSync(page);
   await expect(pillOf(panel)).toHaveText('Not connected');
   await expect(textOf(panel)).toContainText('Keep a copy of your documents');
   await page.screenshot({ path: `${SHOTS}/01-connect.png` });
@@ -297,18 +294,8 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
     mimeType: 'image/png',
   });
 
-  // The cloud badge says so without opening anything, with its words on
-  // focus, and opens Cloud Sync with the section's heading focused.
-  const badge = page.getByRole('button', { name: /^Synced to Google Drive/ });
-  await expect(badge).toBeVisible();
-  await expect(page.getByRole('status').filter({ hasText: 'Synced to Google Drive' })).toHaveCount(
-    1,
-  );
-  await badge.focus();
-  await expect(page.getByRole('tooltip')).toContainText('Synced to Google Drive');
-  await page.screenshot({ path: `${SHOTS}/02b-badge.png` });
-  panel = await openCloudSync(page, 'badge');
-  await expect(page.getByRole('heading', { name: 'Cloud Sync' })).toBeFocused();
+  // Sync status lives in Cloud Sync only.
+  panel = await openCloudSync(page);
   await expect(textOf(panel)).toHaveText(`Copied to your Google Drive, in “${ROOT_NAME}”.`);
   await expect(detailOf(panel)).toContainText('Checks for changes every 2 minutes');
   await expect(panel.locator('[data-drive-since] [data-stable-option]:not(.invisible)')).toHaveText(
@@ -474,8 +461,10 @@ test('a change made in Drive reaches the open Explorer within two minutes, no re
   // views that follow it ("Other views follow"), driven by the page's clock.
   await page.clock.install();
   await signIn(page);
+  // The arrival pass has read Drive's page token before the rename.
+  const arrived = page.waitForEvent('console', (m) => m.text().includes('[drive-mirror] pass-end'));
   await page.goto('/explorer/recent');
-  await expect(page.getByRole('button', { name: /^Synced to Google Drive/ })).toBeVisible();
+  await arrived;
   const plan = google.fake.appFiles(USER).find((f) => f.appProperties.ldDiagramId === PLAN)!;
   google.fake.userRename(plan.id, 'Renamed in Drive.livediagram');
   await expect(page.getByText('Renamed in Drive', { exact: true })).toHaveCount(0);
@@ -487,50 +476,11 @@ test('a change made in Drive reaches the open Explorer within two minutes, no re
   expectNoPageErrors(pageErrors);
 });
 
-test('the Cloud Sync buttons never cover anything, at three widths', async ({
-  browser,
-  page,
-  pageErrors,
-}) => {
-  // Connected (USER) and not connected (a user of its own), wide, medium and
-  // the phone layout, the narrowest Settings has.
-  for (const user of [USER, `${USER}_widths`]) {
-    // Another user is another browser: tabs of one browser share the mirror.
-    const other =
-      user === USER
-        ? null
-        : await browser.newContext({
-            baseURL: test.info().project.use.baseURL,
-            colorScheme: 'dark',
-          });
-    const tab = other ? await other.newPage() : page;
-    await signIn(tab, user);
-    for (const width of [1280, 900, 390]) {
-      await tab.setViewportSize({ width, height: 800 });
-      await tab.goto('/explorer/recent?settings=account&section=cloud-sync');
-      const row = tab.locator('[data-cloud-sync="googleDrive"]');
-      await expect(pillOf(row)).toHaveText(user === USER ? /Synced|Syncing/ : 'Not connected', {
-        timeout: 15_000,
-      });
-      await row.scrollIntoViewIfNeeded();
-      await expectNoOverlap(row);
-      await tab.screenshot({
-        path: `${SHOTS}/08-${user === USER ? 'connected' : 'not-connected'}-${width}.png`,
-      });
-    }
-    await other?.close();
-  }
-  expectNoPageErrors(pageErrors);
-});
-
 test('disconnect revokes and leaves the Drive files in place', async ({ page, pageErrors }) => {
   await signIn(page);
   const before = google.fake.appFiles(USER).length;
   await page.goto('/explorer/recent');
-  const account = page.getByRole('button', { name: 'Account menu' });
-  await expect(page.getByRole('button', { name: /Google Drive/ })).toBeVisible();
-  const marked = await account.boundingBox();
-  const panel = await openCloudSync(page, 'badge');
+  const panel = await openCloudSync(page);
   await settled(page);
 
   // Google drops the grant: Needs reconnect, in the same shape.
@@ -551,9 +501,6 @@ test('disconnect revokes and leaves the Drive files in place', async ({ page, pa
   await page.getByRole('dialog').getByRole('button', { name: 'Disconnect' }).last().click();
   await expect(panel.getByRole('button', { name: 'Connect Google Drive' })).toBeVisible();
   await closeSettings(page);
-  // The badge is gone and the avatar did not move: it only ever overlaid it.
-  await expect(page.getByRole('button', { name: /Google Drive/ })).toHaveCount(0);
-  expect(await account.boundingBox()).toEqual(marked);
   expect(await api(page, 'GET', '/drive/connection')).toEqual({ connection: null });
   expect(google.fake.appFiles(USER).length).toBe(before);
 
@@ -582,7 +529,7 @@ test('leaving for Google comes back to Cloud Sync: a cancel, and Back', async ({
     },
     { times: 1 },
   );
-  panel = await openCloudSync(page, 'menu');
+  panel = await openCloudSync(page);
   await panel.getByRole('button', { name: 'Connect Google Drive' }).click();
   await page.waitForURL(/\/explorer\/recent\?settings=account&section=cloud-sync/);
   panel = page.locator('[data-cloud-sync="googleDrive"]');
@@ -638,7 +585,7 @@ test('a connection made in one tab starts syncing at once while another tab runs
     identity.token(user, EMAIL),
   );
   await page.goto('/explorer/recent');
-  const panel = await openCloudSync(page, 'menu');
+  const panel = await openCloudSync(page);
   await expect(pillOf(panel)).toHaveText('Not connected');
   await panel.getByRole('button', { name: 'Connect Google Drive' }).click();
   await page.waitForURL(/\/explorer\/recent\?settings=account&section=cloud-sync/);
@@ -653,5 +600,45 @@ test('a connection made in one tab starts syncing at once while another tab runs
     })
     .toBe(true);
   await other.close();
+  expectNoPageErrors(pageErrors);
+});
+
+test('the Cloud Sync buttons never cover anything, at three widths', async ({
+  browser,
+  page,
+  pageErrors,
+}) => {
+  // Connected (the user the test above connected) and not connected (a user
+  // of its own), wide, medium and the phone layout, the narrowest Settings has.
+  const connected = `${USER}_tabs`;
+  for (const user of [connected, `${USER}_widths`]) {
+    // Another user is another browser: tabs of one browser share the mirror.
+    const other =
+      user === connected
+        ? null
+        : await browser.newContext({
+            baseURL: test.info().project.use.baseURL,
+            colorScheme: 'dark',
+          });
+    const tab = other ? await other.newPage() : page;
+    await signIn(tab, user);
+    for (const width of [1280, 900, 390]) {
+      await tab.setViewportSize({ width, height: 800 });
+      await tab.goto('/explorer/recent?settings=account&section=cloud-sync');
+      const row = tab.locator('[data-cloud-sync="googleDrive"]');
+      await expect(pillOf(row)).toHaveText(
+        user === connected ? /Synced|Syncing/ : 'Not connected',
+        {
+          timeout: 15_000,
+        },
+      );
+      await row.scrollIntoViewIfNeeded();
+      await expectNoOverlap(row);
+      await tab.screenshot({
+        path: `${SHOTS}/08-${user === connected ? 'connected' : 'not-connected'}-${width}.png`,
+      });
+    }
+    await other?.close();
+  }
   expectNoPageErrors(pageErrors);
 });

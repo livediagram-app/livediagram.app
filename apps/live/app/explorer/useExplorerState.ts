@@ -143,7 +143,7 @@ export function useExplorerState() {
   // Category to open on, for the `?settings=` deep link. Distinct from
   // `settingsFocus`, which additionally rings one row.
   const [settingsCategory, setSettingsCategory] = useState<string | null>(null);
-  // Section of it, for `&section=<id>` (the cloud badge's Cloud Sync).
+  // Section of it, for `&section=<id>` (the Drive connect flow returns to Cloud Sync).
   const [settingsSection, setSettingsSection] = useState<string | null>(null);
   // `?settings=<category>` deep link. The Settings dialog replaced the
   // /explorer/profile page (docs/specs/014-identity/profile-and-email-notifications.md), and mail already in people's inboxes

@@ -373,7 +373,7 @@ and the dialog stays as the one complete, browsable index of them.
   dark-mode toggle. The "Keyboard shortcuts" command in search
   ([Command palette (⌘K)](command-palette.md)) opens it on the **Keyboard** category; that category replaced the standalone
   Shortcuts dialog and the footer's keyboard button. Settings can also open on a **section**
-  of a category (the Drive badge opens Account > Cloud Sync): the section
+  of a category (the Google Drive connect flow returns to Account > Cloud Sync): the section
   scrolls into view and its heading takes focus. The Explorer and the editor both take
   `?settings=<category>&section=<section>` in their URL: it opens Settings there on load, and
   stays in the URL while Settings is open (removed when it closes), so a page left for

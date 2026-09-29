@@ -113,26 +113,12 @@ this spec does not restate it.
   height. No blank space is reserved for anything that cannot appear in the
   current phase. The footer holds only buttons, and nothing overlaps at any
   width. Counts and times use tabular numerals.
-- **At a glance:** a **cloud badge** on the avatar (the account menu's
-  button) says how the mirror is doing without opening anything. It is a
-  **small corner badge**, a 12-pixel disc on the avatar's upper-right corner
-  with a ring in the page's background so it reads as separate from the
-  avatar. Its glyph, not colour alone, tells the states apart: a **cloud** when
-  **synced**, turning **arrows** while **syncing** (with a progress ring round
-  the avatar while the first mirror copies), an **exclamation mark** when it
-  **needs attention** (reconnect or resume needed, an error, or a notice). The
-  badge is a button of its own with a 24-pixel target, so it
-  never moves anything as it appears or changes; hovering or focusing it
-  shows a tooltip with the same words as its accessible name ("Synced to
-  Google Drive 1 minute ago", "Copying 3 of 12 to Google Drive", "Syncing
-  with Google Drive", "Google Drive needs attention"), and pressing it opens
-  Settings on Account > Cloud Sync. A polite status region announces changes
-  (no toasts); nothing animates under reduced motion. Nothing shows while
-  Drive is not connected. A syncing moment shorter than about half a second
-  (the cheap check below) does not flash the badge.
+- **Where the status lives:** only in Cloud Sync. The avatar carries no
+  sync mark, badge or tooltip; it renders exactly as without Drive.
 - **Targeting a section:** Settings opens on a category and, optionally, a
   **section** of it: the section scrolls into view and its heading takes
-  focus. Any section can be targeted this way.
+  focus. Any section can be targeted this way; the connect flow returns to
+  Account > Cloud Sync through it.
 - **Consent:** the authorisation-code flow in **redirect mode** (works on iOS
   and past popup blockers), requesting `drive.file` and `drive.install` with
   offline access. `prompt=consent` is used only when no usable refresh token
@@ -494,7 +480,7 @@ D1, owned by the api worker:
   `NEXT_PUBLIC_GOOGLE_API_KEY`. Documented in each `.env.example`. The api's
   `GOOGLE_CLIENT_ID` switches the feature on at all; without it every Drive
   route answers `503 drive_not_configured`.
-- **All three unset:** no Cloud Sync section in Settings and no badge.
+- **All three unset:** no Cloud Sync section in Settings.
 - **Client id only (no secret):** browser-only tokens via the Google Identity
   Services token model. Google cannot renew those without a click, so when a
   token lapses the Cloud Sync row shows **Resume sync** instead of syncing silently.

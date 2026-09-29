@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // every header action holds its glyph in the same 20px icon slot, so an avatar beside a 13px icon no
 // longer drops its label below its neighbour's.
 
-vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true, sessionsEnabled: true }));
+vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true }));
 vi.mock('@/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({
     authLoaded: true,
@@ -59,9 +59,7 @@ describe('EditorHeader stack row', () => {
     renderHeader();
     const slot = screen.getByRole('button', { name: 'Account menu' })
       .firstElementChild as HTMLElement;
-    // The disc sits in a positioning wrapper that carries the Drive sync mark
-    // (docs/specs/022-drive-mirror/drive-mirror.md, "At a glance").
-    const disc = slot.querySelector('[data-optical="disc"]') as HTMLElement;
+    const disc = slot.firstElementChild as HTMLElement;
     expect(disc.dataset.optical).toBe('disc');
     expect(disc.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
     expect(disc.querySelector('.text-optical-centre')?.textContent).toBe('W');
@@ -133,38 +131,5 @@ describe('EditorHeader rename requests', () => {
     rerender(header(1, true));
     rerender(header(1, false));
     expect(editing()).toBeNull();
-  });
-});
-
-// Google Drive lives in Settings > Account > Cloud Sync now
-// (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"); the avatar's cloud badge opens it.
-describe('EditorHeader and the Drive mirror', () => {
-  it('has no Google Drive item in the account menu, and the badge opens Cloud Sync', async () => {
-    const { DriveMirrorContext, DRIVE_MIRROR_OFF, DRIVE_STATUS_INITIAL } =
-      await import('@/components/drive/drive-mirror-context');
-    const onOpenAccount = vi.fn();
-    render(
-      <DriveMirrorContext.Provider
-        value={{
-          ...DRIVE_MIRROR_OFF,
-          mode: 'broker',
-          status: { ...DRIVE_STATUS_INITIAL, state: 'idle', lastSyncedAt: Date.now() },
-        }}
-      >
-        <EditorHeader
-          diagramName="d"
-          showShare={false}
-          shareable={false}
-          onMakeCopy={() => {}}
-          onOpenShare={() => {}}
-          onRename={() => {}}
-          onOpenAccount={onOpenAccount}
-        />
-      </DriveMirrorContext.Provider>,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Account menu' }));
-    expect(screen.queryByRole('menuitem', { name: /Google Drive/ })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /^Synced to Google Drive/ }));
-    expect(onOpenAccount).toHaveBeenCalledWith('cloud-sync');
   });
 });

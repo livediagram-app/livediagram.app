@@ -43,7 +43,7 @@ type SettingsDialogProps = {
   // that mail and the account menu use.
   initialCategoryId?: string | null;
   // Section of that category to scroll to and focus (settingsSectionId): the
-  // cloud badge opens Account > Cloud Sync.
+  // Drive connect flow returns to Account > Cloud Sync.
   initialSectionId?: string | null;
 };
 

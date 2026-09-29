@@ -126,9 +126,9 @@ function ShellChrome({ children }: { children: ReactNode }) {
           <ProductNav current="explorer" showOnMobile />
         </div>
         <AuthControls
-          onOpenAccount={(section) => {
+          onOpenAccount={() => {
             setSettingsCategory('account');
-            setSettingsSection(section ?? null);
+            setSettingsSection(null);
             setSettingsOpen(true);
           }}
         />

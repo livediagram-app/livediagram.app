@@ -7,8 +7,7 @@ import { test, expect } from './fixtures';
 import { routeGoogle, startFakeGoogle, TestIdentity } from './drive-support';
 
 // Screenshots of every Google Drive mirror state, in light and dark
-// (docs/specs/022-drive-mirror/drive-mirror.md): Settings > Account > Cloud Sync, the cloud
-// badge with its tooltip, Open with, and the Explorer following a change made in
+// (docs/specs/022-drive-mirror/drive-mirror.md): Settings > Account > Cloud Sync, Open with, and the Explorer following a change made in
 // Drive. Against the fake Google, with deterministic data and no personal data.
 // Opt-in: `pnpm --filter @livediagram/live test:e2e:drive-shots` (after the
 // drive build), writing to E2E_DRIVE_PR_SHOTS (default /tmp/ld-drive-pr-shots).
@@ -115,13 +114,9 @@ for (const theme of THEMES) {
       await routeGoogle(page, google.fake, USER);
     }
 
-    async function openCloudSync(page: Page, via: 'menu' | 'badge') {
-      if (via === 'menu') {
-        await page.getByRole('button', { name: 'Account menu' }).click();
-        await page.getByRole('menuitem', { name: 'Account' }).click();
-      } else {
-        await page.getByRole('button', { name: /Google Drive/ }).click();
-      }
+    async function openCloudSync(page: Page) {
+      await page.getByRole('button', { name: 'Account menu' }).click();
+      await page.getByRole('menuitem', { name: 'Account' }).click();
       const row = page.locator('[data-cloud-sync="googleDrive"]');
       await expect(row).toBeVisible();
       await row.scrollIntoViewIfNeeded();
@@ -133,18 +128,9 @@ for (const theme of THEMES) {
       await expect(page.getByRole('dialog', { name: 'Settings' })).toHaveCount(0);
     }
 
-    async function badgeShot(page: Page, name: RegExp, file: string, shows: string) {
-      const badge = page.getByRole('button', { name });
-      await expect(badge).toBeVisible();
-      await badge.focus();
-      await expect(page.getByRole('tooltip')).toBeVisible();
-      await shot(page, file, shows);
-      await badge.blur();
-    }
-
     const fileNamed = (name: string) => google.fake.appFiles(USER).find((f) => f.name === name);
 
-    test('Cloud Sync, the badge, Open with and the Explorer following Drive', async ({ page }) => {
+    test('Cloud Sync, Open with and the Explorer following Drive', async ({ page }) => {
       test.setTimeout(120_000);
       await setUp(page);
       await api(page, 'POST', '/folders', { id: `f-${PLAN}`, name: 'Work', parentId: null });
@@ -186,7 +172,7 @@ for (const theme of THEMES) {
       }
 
       await page.goto('/explorer/recent');
-      let row = await openCloudSync(page, 'menu');
+      let row = await openCloudSync(page);
       await expect(pillOf(row)).toHaveText('Not connected');
       await shot(
         page,
@@ -217,13 +203,7 @@ for (const theme of THEMES) {
         'Cloud Sync during the first copy, with its progress bar',
       );
       await closeSettings(page);
-      await badgeShot(
-        page,
-        /^Copying \d+ of \d+ to Google Drive/,
-        'badge-1-copying',
-        'The cloud badge during the first copy, tooltip shown on focus, progress ring round the avatar',
-      );
-      row = await openCloudSync(page, 'badge');
+      row = await openCloudSync(page);
       await releaseUploads();
       await expect(pillOf(row)).toHaveText('Synced', { timeout: 30_000 });
       await shot(
@@ -232,12 +212,6 @@ for (const theme of THEMES) {
         'Cloud Sync once synced: the time beside the pill, the folder name, the rhythm, Sync now',
       );
       await closeSettings(page);
-      await badgeShot(
-        page,
-        /^Synced to Google Drive/,
-        'badge-2-synced',
-        'The cloud badge when synced, tooltip shown on focus',
-      );
 
       // Syncing: the change check held back.
       const releaseCheck = await slow(
@@ -245,21 +219,13 @@ for (const theme of THEMES) {
         'https://www.googleapis.com/drive/v3/changes/startPageToken**',
         4000,
       );
-      row = await openCloudSync(page, 'badge');
+      row = await openCloudSync(page);
       await row.getByRole('button', { name: 'Sync now' }).click();
       await expect(pillOf(row)).toHaveText('Syncing');
       await shot(page, 'cloud-sync-5-syncing', 'Cloud Sync while a sync runs');
-      await closeSettings(page);
-      await badgeShot(
-        page,
-        /^Syncing with Google Drive/,
-        'badge-3-syncing',
-        'The cloud badge while syncing, tooltip shown on focus',
-      );
       await releaseCheck();
-      await expect(page.getByRole('button', { name: /^Synced to Google Drive/ })).toBeVisible({
-        timeout: 15_000,
-      });
+      await expect(pillOf(row)).toHaveText('Synced', { timeout: 15_000 });
+      await closeSettings(page);
 
       // The Explorer following a rename made in Drive.
       await shot(
@@ -271,7 +237,7 @@ for (const theme of THEMES) {
         fileNamed('Meeting notes.livediagram')!.id,
         'Standup notes.livediagram',
       );
-      row = await openCloudSync(page, 'badge');
+      row = await openCloudSync(page);
       await row.getByRole('button', { name: 'Sync now' }).click();
       await expect(pillOf(row)).toHaveText('Synced');
       await closeSettings(page);
@@ -291,7 +257,7 @@ for (const theme of THEMES) {
         fileNamed('livediagram (staging)')!.id,
       );
       google.fake.userMove(fileNamed('Quarterly plan.livediagram')!.id, hidden);
-      row = await openCloudSync(page, 'badge');
+      row = await openCloudSync(page);
       await row.getByRole('button', { name: 'Sync now' }).click();
       await expect(detailOf(row)).toContainText("can't see");
       await shot(
@@ -300,12 +266,6 @@ for (const theme of THEMES) {
         'Cloud Sync with a folder notice in place of the rhythm, and Show folder',
       );
       await closeSettings(page);
-      await badgeShot(
-        page,
-        /^Google Drive needs attention/,
-        'badge-4-needs-attention',
-        'The cloud badge needing attention, tooltip shown on focus',
-      );
 
       // Open with.
       const theirs = google.fake.otherUserFile({
@@ -358,11 +318,14 @@ for (const theme of THEMES) {
       );
 
       // Needs reconnect: Google drops the grant.
+      const settledPass = page.waitForEvent('console', (m) =>
+        m.text().includes('[drive-mirror] pass-end'),
+      );
       await page.goto('/explorer/recent');
-      await expect(page.getByRole('button', { name: /Google Drive/ })).toBeVisible();
+      await settledPass;
       google.fake.revokeGrant(USER);
       google.fake.expireAccessTokens();
-      row = await openCloudSync(page, 'badge');
+      row = await openCloudSync(page);
       await row
         .getByRole('button', { name: /Sync now|Show folder/ })
         .first()
@@ -376,12 +339,6 @@ for (const theme of THEMES) {
         'Cloud Sync after Google dropped the grant: Reconnect',
       );
       await closeSettings(page);
-      await badgeShot(
-        page,
-        /^Google Drive needs attention/,
-        'badge-5-needs-reconnect',
-        'The cloud badge when a reconnect is needed, with the paused banner',
-      );
     });
   });
 }

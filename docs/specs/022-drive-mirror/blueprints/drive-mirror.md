@@ -60,7 +60,6 @@ Scope, by file:
 | `apps/live/e2e/drive-support.ts`                                | Test JWKS, the fake Google over HTTP, routed Google traffic                 |
 | `scripts/e2e-stack.mjs`                                         | `E2E_DRIVE=1`: the api worker's test Drive and JWKS vars                    |
 | `apps/live/components/drive/GoogleDriveSyncRow.tsx`             | The Google Drive row of Settings > Account > Cloud Sync                     |
-| `apps/live/components/drive/DriveSyncBadge.tsx`                 | The cloud badge on the avatar, opening Cloud Sync                           |
 | `apps/live/lib/drive/cloud-sync-copy.ts`                        | The row's plain-language copy, and the rhythm derived from the cadence      |
 | `apps/live/lib/cloud-sync/providers.ts`                         | The Cloud Sync provider catalogue                                           |
 | `apps/live/components/drive/DriveReconnectBanner.tsx`           | The quiet Needs reconnecting / Resume sync banner                           |
@@ -587,28 +586,6 @@ dropped (`[::1]:3000` → `::1`, `localhost:3000` → `localhost`):
 
 ## Presentation and UX
 
-### The cloud badge
-
-`driveIndicator(status, mode, syncingLong, now)` (`components/drive/drive-indicator.ts`) →
-`{ kind, label, announce, progress }`:
-
-| Kind        | When                                                                                 | Badge glyph (white, in a disc)                                           | `label` (tooltip and accessible name)                                     | `announce` (status region)         |
-| ----------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------- | ---------------------------------- |
-| `none`      | mode `off`, `starting`, `disconnected`                                               | no badge                                                                 | (none)                                                                    | (none)                             |
-| `attention` | `needs_reconnect`, `needs_resume`, an `error` or a notice                            | exclamation mark, amber-600 disc                                         | "Google Drive needs attention"                                            | same                               |
-| `syncing`   | `syncing` for at least `DRIVE_SYNCING_MARK_DELAY_MS` (600 ms), or `progress` present | two arrows, brand-600 disc; progress ring round the avatar while copying | "Syncing with Google Drive" / "Copying {done} of {total} to Google Drive" | "Syncing with Google Drive" / same |
-| `synced`    | `idle`, no error, `lastSyncedAt` set                                                 | cloud, emerald-600 disc                                                  | "Synced to Google Drive {just now / 1 min ago / …}" (`relativeSince`)     | "Synced to Google Drive"           |
-
-`DriveSyncBadge` (`components/drive/DriveSyncBadge.tsx`) is a `<button>` of its own, a sibling of the account
-button inside AuthControls' `relative` wrapper, absolutely placed so its visual centre sits 8 px right of and 15 px above the avatar's centre, on its upper-right
-corner: a 24 × 24 px target holding a 12 px badge (`DRIVE_BADGE_PX`), an 11.25 px disc filled per state inside a
-1.5 px ring in the header's background (the button's text colour: white, slate-900 in dark), with a white glyph. It never takes layout space. `aria-label` =
-`label`; the shared `Tooltip` shows the same words after the hover delay and at once on keyboard focus. Pressing it
-calls AuthControls' `onOpenAccount('cloud-sync')` (or links to `/explorer?settings=account&section=cloud-sync`).
-A visually hidden `role="status"` `aria-live="polite"` region holds `announce` (no time, so it does not speak every
-minute). The syncing arrows spin only under `motion-safe`. The progress ring stays inside the account button,
-`aria-hidden`. The account button's name is "Account menu" again.
-
 ### Cloud Sync in Settings
 
 - `CLOUD_SYNC_PROVIDERS` (`apps/live/lib/cloud-sync/providers.ts`): `{ id: 'googleDrive', label: 'Google Drive',
@@ -713,8 +690,7 @@ opened in livediagram." with **Go to Explorer**.
 ## Accessibility
 
 The Cloud Sync row lives in the Settings dialog (focus trap, Escape); its buttons are native buttons with visible
-focus rings. The badge is a 24 × 24 px button with its own name and a tooltip on hover and focus; its state is a glyph,
-not colour alone; the discs (emerald-600, brand-600, amber-600) with white glyphs meet 3:1 for graphics in both themes. The progress bar is
+focus rings. The state pill pairs a glyph with a word, so colour is never the only signal. The progress bar is
 `role="progressbar"` with `aria-valuenow` / `aria-valuemax`. Status changes are announced with the shared
 announcer (polite). The banner is `role="status"`. The notice badge carries an `aria-label` with the notice text.
 Colours are the existing slate / brand tokens, which meet AA in both themes.

@@ -39,7 +39,3 @@ export const DRIVE_MULTIPART_MAX_BYTES = 5 * 1024 * 1024;
 export const DRIVE_THUMBNAIL_WIDTH_PX = 1600;
 export const DRIVE_THUMBNAIL_MIN_WIDTH_PX = 220;
 export const DRIVE_THUMBNAIL_MAX_BYTES = 2 * 1000 * 1000;
-
-// How long a pass must be running before the avatar's sync mark says
-// "syncing", so the cheap start-token check never flashes it.
-export const DRIVE_SYNCING_MARK_DELAY_MS = 600;

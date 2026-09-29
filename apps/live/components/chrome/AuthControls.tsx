@@ -24,15 +24,9 @@ import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { useClickOutside, SOLID_BRAND_DARK, Glyph, GlyphDisc } from '@livediagram/ui';
-import { sessionsEnabled } from '@/lib/clerk-config';
+import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import {
-  DriveProgressRing,
-  DriveSyncBadge,
-  useDriveIndicator,
-} from '@/components/drive/DriveSyncBadge';
-import { CLOUD_SYNC_SECTION_ID } from '@/lib/cloud-sync/providers';
 import {
   HEADER_ACTION_BTN,
   HEADER_ICON_SLOT_PX,
@@ -48,17 +42,16 @@ const HEADER_ACTION_TONE =
 // home rather than hanging off this dropdown too.
 
 type AuthControlsProps = {
-  // Opens this page's Settings dialog on its Account category, at `sectionId`
-  // when given (the cloud badge opens Cloud Sync). Both hosts (the editor and
-  // the Explorer) own a Settings dialog, so it opens in place rather than
-  // navigating away. Without one, the Explorer's `?settings=account` deep link.
-  onOpenAccount?: (sectionId?: string) => void;
+  // Opens this page's Settings dialog on its Account category. Both hosts
+  // (the editor and the Explorer) own a Settings dialog, so the Account item
+  // opens it in place rather than navigating away. Without one, the item
+  // falls back to the Explorer's `?settings=account` deep link.
+  onOpenAccount?: () => void;
 };
 
 function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
   const { authLoaded, isSignedIn, user, signOut } = useDeferredAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-  const driveMark = useDriveIndicator();
   const menuRef = useRef<HTMLDivElement>(null);
   // Return here after sign-in (must run before the early returns below).
   const { signInHref } = useAuthHrefs();
@@ -103,30 +96,15 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
         className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
         <HeaderGlyph>
-          {/* The first mirror's progress rings the disc, so the button never moves. */}
-          <span className="relative inline-flex">
-            <GlyphDisc
-              size={HEADER_ICON_SLOT_PX}
-              className={`bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
-            >
-              {initial}
-            </GlyphDisc>
-            <DriveProgressRing indicator={driveMark} />
-          </span>
+          <GlyphDisc
+            size={HEADER_ICON_SLOT_PX}
+            className={`bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+          >
+            {initial}
+          </GlyphDisc>
         </HeaderGlyph>
         <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>
       </button>
-      {/* The cloud badge (docs/specs/022-drive-mirror/drive-mirror.md, "At a glance"): a
-          button of its own over the avatar's corner, opening Cloud Sync. */}
-      <DriveSyncBadge
-        indicator={driveMark}
-        onOpen={() => {
-          setMenuOpen(false);
-          if (onOpenAccount) onOpenAccount(CLOUD_SYNC_SECTION_ID);
-          else
-            window.location.assign(`/explorer?settings=account&section=${CLOUD_SYNC_SECTION_ID}`);
-        }}
-      />
       {menuOpen ? (
         <div
           role="menu"
@@ -209,4 +187,4 @@ export function SignInIcon({ size = 13 }: { size?: number } = {}) {
   );
 }
 
-export const AuthControls = sessionsEnabled ? AuthControlsEnabled : AuthControlsDisabled;
+export const AuthControls = clerkEnabled ? AuthControlsEnabled : AuthControlsDisabled;

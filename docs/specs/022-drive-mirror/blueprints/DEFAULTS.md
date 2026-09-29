@@ -23,7 +23,4 @@ One row per default applied where the spec is silent or qualitative.
 | D17 | drive-mirror | Test ports for the opt-in e2e                           | JWKS on 8795, the fake Google on 8796, both overridable (`E2E_DRIVE_JWKS_PORT`, `E2E_DRIVE_GOOGLE_PORT`) |
 | D18 | drive-mirror | Telemetry pairs for the spec's events                   | Reuse `Linked`, `Unlinked`, `Changed`, `Created`, `Opened`; add only the `Drive` category and `Applied`  |
 | D21 | drive-mirror | "On focus" guard at the 2-minute pace                   | At most one focus check every 30 seconds                                                                 |
-| D22 | drive-mirror | Colours of the sync badge                               | Brand-600 disc syncing, emerald-600 synced, amber-600 needs attention                                    |
-| D23 | drive-mirror | How long "syncing" must last before the mark shows it   | 600 ms, so the cheap start-token check never flashes the mark                                            |
-| D24 | drive-mirror | Size and place of the avatar's cloud badge              | A 12 px disc (24 px target) on the avatar's upper-right corner, ringed in the header's background        |
 | D25 | drive-mirror | Look of Disconnect                                      | The shared `warning-outline` button (amber ring and text), and an amber confirm                          |
