@@ -3,10 +3,12 @@ import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import type { TelemetryCategory } from '@livediagram/api-schema';
 import {
   autoRebindArrowsEnabled,
+  panelEnabled,
   resolvePanelLayout,
   withPanelLayout,
   type MapSize,
   type PanelLayout,
+  type PanelSwitch,
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
@@ -39,10 +41,13 @@ import type { SettingsIllustrationId } from './settings-illustrations';
 // to. A guest flipping them would be writing preferences that can never
 // apply, so they are absent rather than dead.
 // Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
+// A panel's rows need its Enable switch on (`preferences`, the live values),
+// for the same reason: a setting for a panel that is off has nothing to act on.
 export type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
   powerUserMode?: boolean;
+  preferences?: UserPreferences;
 };
 
 type RowBase = {
@@ -196,6 +201,27 @@ export type SettingsCategorySpec = {
 // three of its rows are inert there and share this note.
 const MINIMAP_DESKTOP_ONLY =
   'The Map is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
+
+// The panel switches (docs/specs/007-editor/user-preferences.md), each on
+// unless stored `false`. One row per Panels sub-category, first in its pane,
+// with that panel's other rows nested beneath it and offered only while it
+// is on (`whilePanelOn`).
+function panelSwitch(
+  key: PanelSwitch,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'keywords' | 'description' | 'event'>,
+): SettingsToggleRowSpec {
+  return {
+    kind: 'toggle',
+    key,
+    ...row,
+    read: (p) => panelEnabled(p, key),
+    write: (p, v) => ({ ...p, [key]: v }),
+  };
+}
+
+function whilePanelOn(key: PanelSwitch | 'showMinimap') {
+  return (ctx: SettingsRowContext) => ctx.preferences?.[key] !== false;
+}
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
@@ -369,7 +395,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'transparency translucent fade see through alpha',
         label: 'Panel Opacity',
         description:
-          'Fades the floating panels so the canvas shows through behind them; they snap back to fully opaque while hovered or focused. The minimal button bar is unaffected.',
+          'Fades every panel, in every layout, so the canvas shows through behind it; a panel snaps back to fully opaque while hovered or focused. Buttons stay opaque.',
         helpArticle: 'panelOpacity',
         min: 0.3,
         max: 1,
@@ -386,9 +412,18 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Layers',
     parent: 'panels',
     rows: [
+      panelSwitch('layersPanelEnabled', {
+        label: 'Enable Layers Panel',
+        keywords: 'layers panel hide show turn off remove move to layer',
+        description:
+          'Shows the Layers panel, its button in the bottom-right corner and the “Move to layer” choices in the element menu. Turned off, layers keep working: their order, visibility and lock still apply.',
+        event: { category: 'UI', on: 'LayersPanelOn', off: 'LayersPanelOff' },
+      }),
       {
         kind: 'toggle',
         key: 'layersShowPreview',
+        parent: 'layersPanelEnabled',
+        available: whilePanelOn('layersPanelEnabled'),
         keywords: 'thumbnail preview layer picture',
         illustration: 'layerThumbnails',
         label: 'Layer Thumbnails',
@@ -401,6 +436,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'toggle',
         key: 'layersShowCount',
+        parent: 'layersPanelEnabled',
+        available: whilePanelOn('layersPanelEnabled'),
         keywords: 'number badge count layer',
         label: 'Layer Element Counts',
         description:
@@ -412,6 +449,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'toggle',
         key: 'layerHoverPreview',
+        parent: 'layersPanelEnabled',
+        available: whilePanelOn('layersPanelEnabled'),
         keywords: 'highlight hover layer preview',
         label: 'Preview Layer on Hover',
         description:
@@ -427,9 +466,18 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Activity',
     parent: 'panels',
     rows: [
+      panelSwitch('activityPanelEnabled', {
+        label: 'Enable Activity Panel',
+        keywords: 'activity history panel hide show turn off remove',
+        description:
+          'Shows the Activity panel, the tab’s history of changes, and its button beside Undo and Redo. Turned off, Undo and Redo stay.',
+        event: { category: 'UI', on: 'ActivityPanelOn', off: 'ActivityPanelOff' },
+      }),
       {
         kind: 'toggle',
         key: 'activityRevertHoverPreview',
+        parent: 'activityPanelEnabled',
+        available: whilePanelOn('activityPanelEnabled'),
         keywords: 'undo history revert preview hover activity',
         label: 'Preview Revert on Hover',
         description:
@@ -448,9 +496,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'toggle',
         key: 'showMinimap',
-        keywords: 'minimap overview thumbnail navigator birds eye',
         illustration: 'showMinimap',
-        label: 'Show Map',
+        label: 'Enable Map',
+        keywords: 'minimap overview thumbnail navigator birds eye hide show turn off',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
         description:
           'Shows the Map, a small overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Tap or drag it to jump around; scroll on it to zoom. Desktop only.',
@@ -461,6 +509,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'toggle',
         key: 'mapDimOutside',
+        parent: 'showMinimap',
+        available: whilePanelOn('showMinimap'),
         keywords: 'shade minimap viewport dim',
         illustration: 'mapDimOutside',
         label: 'Dim Outside the View',
@@ -474,6 +524,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'choice',
         key: 'mapSize',
+        parent: 'showMinimap',
+        available: whilePanelOn('showMinimap'),
         keywords: 'minimap height short medium tall',
         label: 'Map Size',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
@@ -487,6 +539,34 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, mapSize: v as MapSize }),
         event: { category: 'UI', changed: 'MapSize' },
       },
+    ],
+  },
+  {
+    id: 'collaborate',
+    label: 'Collaborate',
+    parent: 'panels',
+    rows: [
+      panelSwitch('collaboratePanelEnabled', {
+        label: 'Enable Collaborate Panel',
+        keywords: 'collaborate comments threads actions tasks panel hide show turn off',
+        description:
+          'Shows the Collaborate panel, a list of the tab’s comment threads and actions, and its button in the bottom-right corner. It only appears while the tab has a comment or an action. Turned off, comments and actions still work from the elements themselves.',
+        event: { category: 'UI', on: 'CollaboratePanelOn', off: 'CollaboratePanelOff' },
+      }),
+    ],
+  },
+  {
+    id: 'quickStyle',
+    label: 'Quick Style',
+    parent: 'panels',
+    rows: [
+      panelSwitch('quickStylePanelEnabled', {
+        label: 'Enable Quick Style Panel',
+        keywords: 'quick style colour color stroke fill width panel selection hide show turn off',
+        description:
+          'Shows the Quick Style panel beside a selected shape or arrow, with its most-used colours, widths and alignments. Turned off, every style is still in the element’s right-click menu.',
+        event: { category: 'UI', on: 'QuickStylePanelOn', off: 'QuickStylePanelOff' },
+      }),
     ],
   },
   {

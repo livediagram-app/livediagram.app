@@ -124,9 +124,9 @@ export function QuickStylePanel({
       data-quick-style-panel=""
       data-testid="quick-style-panel"
       data-layout={layout}
-      // Docked, it is one of the floating panels, so the panel-opacity
-      // preference (docs/specs/007-editor/user-preferences.md) applies to it as to the Palette above.
-      data-panel-translucent={docked ? '' : undefined}
+      // A panel in every layout, so the panel-opacity preference
+      // (docs/specs/007-editor/user-preferences.md) applies to it as to the Palette.
+      data-panel-translucent=""
       onPointerDown={stop}
       onDoubleClick={stop}
       onContextMenu={(e) => {

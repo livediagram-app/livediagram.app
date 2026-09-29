@@ -278,6 +278,12 @@ canvas pattern to Dots`, `Changed background opacity to 80%`. A
   standard Reset-position button.
 - Empty state: "No edits yet — start drawing."
 
+### Turning the panel off
+
+**Settings › Panels › Activity › Enable Activity Panel** (`activityPanelEnabled`, [User preferences](../007-editor/user-preferences.md))
+removes the Activity panel and the Tab Activity button. Undo and Redo stay in the bottom-right
+cluster in every layout, and the change log is still recorded.
+
 ## Performance
 
 - Append is fire-and-forget — UI doesn't await it.

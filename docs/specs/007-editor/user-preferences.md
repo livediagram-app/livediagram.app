@@ -149,15 +149,45 @@ type UserPreferences = {
   // from `minimalPanels`. Mobile is always docked whatever this says.
   panelLayout?: 'floating' | 'minimal' | 'toolbar';
 
-  // Opacity (0..1) of the FULL floating panels at rest, so the canvas
-  // shows through them; they snap back to fully opaque while hovered or
-  // focused so they stay readable in use. Applied via the
-  // `--lvd-panel-opacity` custom property (usePanelOpacity), which only
-  // the full panels read (the `data-panel-translucent` tag is on
-  // MovablePanel's floating branch, not the minimal dock) — so this is
-  // scoped to floating panels and never touches the minimal layout.
-  // Defaults to 1 (fully opaque). See docs/specs/008-canvas/canvas-and-palette.md's Palette settings.
+  // Opacity (0..1) of EVERY panel at rest, so the canvas shows through
+  // them; they snap back to fully opaque while hovered or focused so they
+  // stay readable in use. Applied via the `--lvd-panel-opacity` custom
+  // property (usePanelOpacity), read by every surface tagged
+  // `data-panel-translucent`: MovablePanel in both its floating and its
+  // popover branch (so the Minimal layout's and a phone's panels, and the
+  // Layers / Activity / Collaborate popovers, follow it too), the Map, the
+  // Quick style panel in every layout and the Toolbar layout's strip.
+  // Buttons are not panels: the minimal dock's button bar, the bottom-right
+  // cluster buttons and the zoom controls stay opaque.
+  // Defaults to 1 (fully opaque).
   panelOpacity?: number;
+
+  // Panel switches (the Panels sub-categories, see "Settings dialog"
+  // below). Each defaults ON via `!== false`, so an existing user's editor
+  // is unchanged; `false` is the only state that turns its panel off.
+  // Turning a panel off removes the panel and every piece of chrome that
+  // exists to reach or mirror it, but never the feature underneath:
+  //
+  // `layersPanelEnabled` false: no Layers panel, no Layers cluster button,
+  // no "Move to layer" tiles in the element menus, no "Hidden layers" row
+  // in the image export. Layers keep working: a tab's layers, their
+  // order, visibility, lock and opacity still shape the canvas, and new
+  // elements still land on the active layer.
+  layersPanelEnabled?: boolean;
+  // `activityPanelEnabled` false: no Activity panel and no Tab Activity
+  // button. Undo and Redo stay, as the cluster strip's only two buttons
+  // (shown in every layout, since the panel that otherwise carries them
+  // in Floating is gone). The change log is still recorded.
+  activityPanelEnabled?: boolean;
+  // `collaboratePanelEnabled` false: no Collaborate panel and no
+  // Collaborate cluster button, even while the tab has comment threads or
+  // actions (the only time either shows when on). Comments and actions
+  // keep working from the elements themselves.
+  collaboratePanelEnabled?: boolean;
+  // `quickStylePanelEnabled` false: the Quick style panel never appears
+  // beside a selection. Style memory (../008-canvas/quick-style-panel.md)
+  // still remembers what you pick in the context menu.
+  quickStylePanelEnabled?: boolean;
 
   // When false, the editor suppresses the faint alignment guide
   // lines drawn along the edges / centres a dragged or resized
@@ -272,13 +302,19 @@ Missing key === undefined === default behaviour. Concretely:
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.
-- `panelOpacity` undefined / 1 → floating panels fully opaque (the
-  default). A value below 1 makes the full floating panels translucent
-  at rest (snapping back to opaque on hover / focus) via the
-  `--lvd-panel-opacity` custom property; the minimal dock never reads
-  the var, so the minimal layout is unaffected. The popover slider is
-  hidden while `minimalPanels` is on. Emits `UI`/`Changed`/`PanelOpacity`
-  on release ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+- `panelOpacity` undefined / 1 → every panel fully opaque (the
+  default). A value below 1 makes every panel translucent at rest
+  (snapping back to opaque on hover / focus) via the
+  `--lvd-panel-opacity` custom property, in every layout: floating,
+  popover (Minimal, a phone, the cluster popovers), the Map, Quick style
+  and the Toolbar strip. Button bars and buttons stay opaque. Emits
+  `UI`/`Changed`/`PanelOpacity` on release ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+- `layersPanelEnabled` / `activityPanelEnabled` / `collaboratePanelEnabled` /
+  `quickStylePanelEnabled` undefined / true → the panel is on (the
+  default). `false` removes it and the chrome that reaches it, leaving the
+  feature working (see the data model). Emits `UI`/`Toggled`/
+  `LayersPanel{On,Off}`, `ActivityPanel{On,Off}`, `CollaboratePanel{On,Off}`
+  and `QuickStylePanel{On,Off}`.
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -434,7 +470,8 @@ and the dialog stays as the one complete, browsable index of them.
   Minimal chrome while the mode is on), **Appearance** (theme), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel layout, panel opacity; with the
-  sub-categories **Layers**, **Activity** and **Map**, one per panel),
+  sub-categories **Layers**, **Activity**, **Map**, **Collaborate** and
+  **Quick Style**, one per panel),
   **Notifications** (in-editor, plus the six email preferences),
   **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
   suggested prompts, API tokens), **Account** (identity, delete account, see
@@ -445,8 +482,15 @@ and the dialog stays as the one complete, browsable index of them.
   only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
-  spec): Panels holds Layers, Activity and Map, one per panel, each its own
-  pane. A parent's sub-categories follow it directly in the catalogue. In the
+  spec): Panels holds Layers, Activity, Map, Collaborate and Quick Style,
+  one per panel, each its own pane. Each opens with that panel's **Enable
+  switch** ("Enable Layers Panel", "Enable Activity Panel", "Enable Map",
+  "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
+  switches in the data model). The panel's other rows nest beneath the
+  switch (`parent`) and are offered only while it is on, the way power
+  user mode's rows follow that mode: a setting for a panel you have
+  turned off has nothing to act on. The Map's switch keeps its stored key
+  (`showMinimap`) and its telemetry tokens, only its label changed. A parent's sub-categories follow it directly in the catalogue. In the
   list the parent is an **accordion**: its sub-categories sit indented beneath
   it only while it is expanded, so they do not take up the list all the time.
   It starts collapsed. On desktop, clicking the parent opens its own pane and
@@ -466,8 +510,9 @@ and the dialog stays as the one complete, browsable index of them.
   right-pointing arrow read as the row's own "go" arrow, so the
   sub-categories behind it went unfound.) A
   sub-category carries a plain 16px glyph rather than a tile: its panel's own
-  mark in the editor (Lucide layers for Layers, the Activity panel's clock;
-  the Map, which has no toolbar button, takes Lucide map). Search matches a
+  mark in the editor (Lucide layers for Layers, the Activity panel's clock,
+  the Collaborate button's glyph; the Map and Quick Style, which have no
+  toolbar button, take Lucide map and Lucide palette). Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
   it by path ("in Panels › Layers").
 
@@ -526,7 +571,7 @@ and the dialog stays as the one complete, browsable index of them.
   note to show). On a phone-sized viewport the row stays visible, greyed,
   showing its stored value, but its control (and its illustration) takes no
   input, and the note says why; the stored value is untouched, so it still
-  applies on a desktop. The Map's rows (Show Map, Dim Outside the View,
+  applies on a desktop. The Map's rows (Enable Map, Dim Outside the View,
   Map Size) are desktop only: a phone never draws the Map
   ([Minimap](../008-canvas/minimap.md)), so flipping them there did nothing
   and read as broken.

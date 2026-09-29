@@ -80,7 +80,8 @@ place you dress what you drew sit together, and nothing new appears somewhere el
 In the Toolbar layout ([Toolbar layout](../007-editor/toolbar-layout.md)) the Palette is a strip
 across the top, so there is no panel to dock under. The quick style panel sits **on the right edge,
 vertically centred**, in its compact form (no header). Minimal does the same: its Palette is a
-popover that comes and goes, not a resting panel.
+popover that comes and goes, not a resting panel. The compact form is still a panel, so the
+panel-opacity preference ([User preferences](../007-editor/user-preferences.md)) fades it too.
 
 The compact form is **narrow** (184 px, against the Floating panel's Palette width), because on
 the right edge it stands alone over the canvas rather than inside a column of chrome, and a wide
@@ -110,6 +111,12 @@ Placement is recomputed when the chrome moves or resizes, never on a timer.
 - **It stands down** while an element or multi-selection context menu is open (two style surfaces at
   once repeat each other, and the menu may open at the right edge), in zen mode, in embeds, while
   presenting, and when edits are blocked (a view-only visitor or a locked tab).
+
+### Turning it off
+
+**Settings › Panels › Quick Style › Enable Quick Style Panel** (`quickStylePanelEnabled`,
+[User preferences](../007-editor/user-preferences.md)) stops the panel appearing. Style memory keeps
+working from the context menu.
 
 ## Sections
 

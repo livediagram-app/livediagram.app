@@ -46,7 +46,7 @@ import { isMinimalChrome } from '@/lib/power-user-mode';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStylePanel } from '@/components/canvas/QuickStylePanel';
-import { resolvePanelLayout } from '@/lib/user-preferences';
+import { panelEnabled, resolvePanelLayout } from '@/lib/user-preferences';
 
 // How long a guest edits before the sign-in nudge appears (docs/specs/014-identity/sign-in-encouragement.md).
 // Long enough that it never greets someone the instant they open a
@@ -436,7 +436,11 @@ export function EditorView() {
             <QuickStylePanel
               quickStyle={quickStyle}
               hidden={
-                zenMode || embedMode || (contextMenu !== null && contextMenu.mode !== 'canvas')
+                zenMode ||
+                embedMode ||
+                // Off in Settings (docs/specs/007-editor/user-preferences.md); style memory stays.
+                !panelEnabled(userPreferences, 'quickStylePanelEnabled') ||
+                (contextMenu !== null && contextMenu.mode !== 'canvas')
               }
               // Phones never show it, so the desktop layout is the one that counts.
               layout={resolvePanelLayout(userPreferences)}

@@ -148,6 +148,8 @@ describe('SettingsDialog', () => {
       'Layers',
       'Activity',
       'Map',
+      'Collaborate',
+      'Quick Style',
     ]);
 
     fireEvent.click(screen.getByRole('button', { name: 'Layers' }));

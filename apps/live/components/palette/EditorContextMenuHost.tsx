@@ -5,6 +5,7 @@ import { DEFAULT_MIND_FLOW, isMindNode, mindFlowOf, resolveLayerId } from '@live
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets } from '@/lib/themes';
+import { panelEnabled } from '@/lib/user-preferences';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
@@ -21,6 +22,7 @@ const EditorContextMenu = dynamic(
 export function EditorContextMenuHost() {
   const {
     contextMenu,
+    userPreferences,
     activeTab,
     isReadOnly,
     selectedId,
@@ -263,7 +265,11 @@ export function EditorContextMenuHost() {
       onStackBack={stackSelectedBack}
       layers={layers}
       selectionLayerId={selectionLayerId}
-      onMoveSelectionToLayer={moveSelectedToLayer}
+      // "Move to layer" goes with the Layers panel's Settings switch
+      // (docs/specs/007-editor/user-preferences.md); layers keep applying either way.
+      onMoveSelectionToLayer={
+        panelEnabled(userPreferences, 'layersPanelEnabled') ? moveSelectedToLayer : undefined
+      }
       onToggleAspectLock={toggleAspectLockSelected}
       onSetOpacity={setOpacitySelected}
       onSetTextColor={setTextColorSelected}

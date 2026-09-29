@@ -244,6 +244,11 @@ export function MovablePanel({
         ref={ref}
         data-floating-panel=""
         data-tour-id={dataTourId}
+        // Panel opacity reaches every panel (docs/specs/007-editor/user-preferences.md), the
+        // popovers of the Minimal layout, a phone and the cluster buttons
+        // included. The button bar that opens them is not a panel and stays
+        // opaque.
+        data-panel-translucent=""
         onPointerDown={(e) => e.stopPropagation()}
         onContextMenu={(e) => {
           e.preventDefault();
@@ -313,11 +318,9 @@ export function MovablePanel({
       ref={ref}
       data-floating-panel=""
       data-tour-id={dataTourId}
-      // Marks the FULL floating panel as opacity-controlled: globals.css
-      // applies the user's --lvd-panel-opacity here (docs/specs/007-editor/user-preferences.md) and restores
-      // it to opaque on hover / focus. The minimal dock branch above is
-      // deliberately not tagged, so panel opacity never touches the
-      // minimal layout.
+      // Marks the panel as opacity-controlled: globals.css applies the
+      // user's --lvd-panel-opacity here (docs/specs/007-editor/user-preferences.md) and restores it to
+      // opaque on hover / focus. The popover branch above carries it too.
       data-panel-translucent=""
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {

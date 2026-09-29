@@ -73,9 +73,16 @@ export function SettingsDialog({
   // Power-user-only rows appear the moment the mode's own row switches on
   // (docs/specs/007-editor/power-user-mode.md), so this reads the live settings, not a snapshot.
   const powerUserMode = isPowerUserMode(settings);
+  // Live settings too: a panel's rows follow its Enable switch the same way.
   const categories = useMemo(
-    () => visibleCategories(aiCapable === true, { emailEnabled, signedIn, powerUserMode }),
-    [aiCapable, emailEnabled, signedIn, powerUserMode],
+    () =>
+      visibleCategories(aiCapable === true, {
+        emailEnabled,
+        signedIn,
+        powerUserMode,
+        preferences: settings,
+      }),
+    [aiCapable, emailEnabled, signedIn, powerUserMode, settings],
   );
 
   // The category the reader chose; null is the phone's root list. Desktop

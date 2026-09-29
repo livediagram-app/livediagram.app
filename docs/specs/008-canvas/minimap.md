@@ -19,7 +19,7 @@ lets you jump the viewport anywhere with a tap or drag.
   free-floating map contradicts that intent, so it doesn't render there at all. It **stacks** with the Activity panel in the bottom-left rather than
   hiding behind it (the docking layout reflows them); the old "defer until
   Activity is minimised" rule is gone.
-- **Enable / disable + reset.** The map's preferences (**Show Map**, **Dim
+- **Enable / disable + reset.** The map's preferences (**Enable Map**, **Dim
   Outside the View**, **Map Size**) live in the **Settings** dialog
   ([User preferences](../007-editor/user-preferences.md)), under Panels › Map.
 - **Named "Map" everywhere a user reads it**: the panel title, the Settings

@@ -247,13 +247,15 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             </MenuTileGrid>
             {/* Move to a named layer (docs/specs/006-diagram/layers.md) — only once the tab has
               more than one layer (the row renders nothing otherwise). */}
-            <MoveToLayerRow
-              layers={props.layers}
-              elements={props.elements}
-              tabFont={props.tabFont}
-              currentLayerId={props.selectionLayerId}
-              onMove={props.onMoveSelectionToLayer}
-            />
+            {props.onMoveSelectionToLayer ? (
+              <MoveToLayerRow
+                layers={props.layers}
+                elements={props.elements}
+                tabFont={props.tabFont}
+                currentLayerId={props.selectionLayerId}
+                onMove={props.onMoveSelectionToLayer}
+              />
+            ) : null}
             <ContextMenuDivider />
             {/* Opacity slider — a non-closing row (dragging stays inside the
               menu, so the outside-click guard leaves it open). */}
