@@ -74,7 +74,7 @@ Scope, by file:
 | Status         | `DriveConnectionStatus`                           | `connected` \| `needs_reconnect`                                          |
 | Item           | `drive_items` row, `DriveItem`                    | One mirrored diagram or folder and the Drive state livediagram last wrote |
 | Item kind      | `DriveItemKind`: `diagram` \| `folder`            |                                                                           |
-| Root           | `root_folder_id`                                  | The `livediagram` folder; Unsorted                                        |
+| Root           | `root_folder_id`                                  | The mirror's root folder, named `driveRootName(host)`; Unsorted           |
 | Diagram file   | `.livediagram` file                               | A diagram's mirror                                                        |
 | Envelope       | `DiagramEnvelope`, `livediagram.diagram`          | The file's contents                                                       |
 | Drive state    | `fileState(file)`                                 | `{ name, parentId, trashed, md5, headRevisionId }` of one Drive file      |
@@ -134,7 +134,8 @@ by the **Resume sync** click; any state to `disconnected` by **Disconnect**.
 3. **Root.** When `rootFolderId` is null (first mirror, or after a reconnect): if `pageToken` is null, take
    `changes.getStartPageToken` first, so every later write is read back and recognised as an echo (D1). Then look
    for a folder with `appProperties has { key='ldRoot' and value='<host>' }` and `trashed=false`; reuse the first,
-   else create `livediagram` in My Drive with `ldRoot`. `PUT /api/drive/connection { rootFolderId, pageToken }`.
+   else create `driveRootName(host)` in My Drive with `ldRoot` (the name is given at creation only; a found root is
+   never renamed). `PUT /api/drive/connection { rootFolderId, pageToken }`.
    Then **adopt**: list every file with `appProperties has { key='ldOrigin' and value='<host>' }` and record an item
    for each whose `ldDiagramId` / `ldFolderId` names a personal diagram, trashed diagram or folder with no item yet,
    using the file's current Drive state (the `adopt` decisions of `planInbound`), then re-read the snapshot. On an
@@ -562,6 +563,17 @@ raises the same signal on receipt. The provider's own write relay ignores `drive
 one as `driveLog('inbound-not-ours', { fileId, hadAppProperties })`, so a copy that lost its properties
 (`hadAppProperties: false`) is told apart from a copy Drive never showed (no line at all).
 
+### Root folder name
+
+`driveRootName(host)` (`packages/api-schema/src/drive.ts`), `host` as `window.location.host`: lower-cased, the port
+dropped (`[::1]:3000` → `::1`, `localhost:3000` → `localhost`):
+
+| Host (after normalising)                                   | Name                        |
+| ---------------------------------------------------------- | --------------------------- |
+| `livediagram.app`, `www.livediagram.app`                   | `livediagram`               |
+| `staging.livediagram.app`, `localhost`, `127.0.0.1`, `::1` | `livediagram (staging)`     |
+| anything else                                              | `livediagram (self-hosted)` |
+
 ## Presentation and UX
 
 The sync mark: `driveIndicator(status, mode)` (`components/drive/drive-indicator.ts`) → `{ kind, label }`:
@@ -649,32 +661,32 @@ with `E2E_DRIVE=1`. A real build never sets the flag, so the bridge is compiled 
 
 ## Constants and configuration
 
-| Constant                                   | Value                              | Where                    | Provenance / safe range                                     |
-| ------------------------------------------ | ---------------------------------- | ------------------------ | ----------------------------------------------------------- |
-| `DRIVE_POLL_INTERVAL_MS`                   | 2 min                              | `lib/drive/cadence.ts`   | Operator decision (was the research's 20); 1..20 min, gated |
-| `DRIVE_POLL_INTERVAL_MAX_MS`               | 60 min                             | cadence                  | Research back-off cap                                       |
-| `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 30 s                               | cadence                  | D21; 10 s..5 min                                            |
-| `DRIVE_CHANGES_PAGE_SIZE`                  | 1000                               | cadence                  | Google maximum                                              |
-| `DRIVE_WRITE_IDLE_MS`                      | 60 s                               | cadence                  | Research; 10 s..5 min                                       |
-| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 min                              | cadence                  | Research; 1..30 min                                         |
-| `DRIVE_WRITE_MIN_INTERVAL_MAX_MS`          | 30 min                             | cadence                  | Research back-off cap                                       |
-| `DRIVE_BACKOFF_CALM_MS`                    | 60 min                             | cadence                  | Research                                                    |
-| `DRIVE_BACKOFF_MAX_LEVEL`                  | 5                                  | cadence                  | 2^5 x 2 min > the 60-minute cap                             |
-| `DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS` | 10 min                             | cadence                  | Research                                                    |
-| `DRIVE_TOKEN_RENEW_BEFORE_MS`              | 5 min                              | cadence                  | D4; 1..10 min of a 60-minute token                          |
-| `DRIVE_TOKEN_RATE_LIMITER`                 | 10 per 60 s                        | `apps/api/wrangler.toml` | Lead review; about one token an hour is healthy; 5..30      |
-| `DRIVE_LEASE_MS`                           | 15 min                             | api-schema `drive.ts`    | Spec; 5..30 min                                             |
-| `DRIVE_LEASE_RENEW_BEFORE_MS`              | 5 min                              | api-schema               | Spec                                                        |
-| `DRIVE_STATE_TTL_MS`                       | 10 min                             | api-schema               | Spec                                                        |
-| `DRIVE_ITEMS_PUT_MAX`                      | 100                                | api-schema               | One D1 batch; D1 allows 1000 statements                     |
-| `DRIVE_ITEMS_PUT_BATCH`                    | 25                                 | cadence                  | D5                                                          |
-| `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                              | cadence                  | Google multipart limit                                      |
-| `DRIVE_THUMBNAIL_WIDTH_PX`                 | 1600                               | cadence                  | Google's recommendation; min 220                            |
-| `DRIVE_THUMBNAIL_MAX_BYTES`                | 2 MB                               | cadence                  | Google limit                                                |
-| `DRIVE_FILE_MIME`                          | `application/vnd.livediagram+json` | api-schema               | Spec                                                        |
-| `DRIVE_FILE_EXTENSION`                     | `.livediagram`                     | api-schema               | Spec                                                        |
-| `DRIVE_ROOT_NAME`                          | `livediagram`                      | api-schema               | Spec                                                        |
-| `DRIVE_SCOPES`                             | `drive.file drive.install`         | api-schema               | Spec                                                        |
+| Constant                                   | Value                                                                 | Where                    | Provenance / safe range                                     |
+| ------------------------------------------ | --------------------------------------------------------------------- | ------------------------ | ----------------------------------------------------------- |
+| `DRIVE_POLL_INTERVAL_MS`                   | 2 min                                                                 | `lib/drive/cadence.ts`   | Operator decision (was the research's 20); 1..20 min, gated |
+| `DRIVE_POLL_INTERVAL_MAX_MS`               | 60 min                                                                | cadence                  | Research back-off cap                                       |
+| `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 30 s                                                                  | cadence                  | D21; 10 s..5 min                                            |
+| `DRIVE_CHANGES_PAGE_SIZE`                  | 1000                                                                  | cadence                  | Google maximum                                              |
+| `DRIVE_WRITE_IDLE_MS`                      | 60 s                                                                  | cadence                  | Research; 10 s..5 min                                       |
+| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 min                                                                 | cadence                  | Research; 1..30 min                                         |
+| `DRIVE_WRITE_MIN_INTERVAL_MAX_MS`          | 30 min                                                                | cadence                  | Research back-off cap                                       |
+| `DRIVE_BACKOFF_CALM_MS`                    | 60 min                                                                | cadence                  | Research                                                    |
+| `DRIVE_BACKOFF_MAX_LEVEL`                  | 5                                                                     | cadence                  | 2^5 x 2 min > the 60-minute cap                             |
+| `DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS` | 10 min                                                                | cadence                  | Research                                                    |
+| `DRIVE_TOKEN_RENEW_BEFORE_MS`              | 5 min                                                                 | cadence                  | D4; 1..10 min of a 60-minute token                          |
+| `DRIVE_TOKEN_RATE_LIMITER`                 | 10 per 60 s                                                           | `apps/api/wrangler.toml` | Lead review; about one token an hour is healthy; 5..30      |
+| `DRIVE_LEASE_MS`                           | 15 min                                                                | api-schema `drive.ts`    | Spec; 5..30 min                                             |
+| `DRIVE_LEASE_RENEW_BEFORE_MS`              | 5 min                                                                 | api-schema               | Spec                                                        |
+| `DRIVE_STATE_TTL_MS`                       | 10 min                                                                | api-schema               | Spec                                                        |
+| `DRIVE_ITEMS_PUT_MAX`                      | 100                                                                   | api-schema               | One D1 batch; D1 allows 1000 statements                     |
+| `DRIVE_ITEMS_PUT_BATCH`                    | 25                                                                    | cadence                  | D5                                                          |
+| `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                                                                 | cadence                  | Google multipart limit                                      |
+| `DRIVE_THUMBNAIL_WIDTH_PX`                 | 1600                                                                  | cadence                  | Google's recommendation; min 220                            |
+| `DRIVE_THUMBNAIL_MAX_BYTES`                | 2 MB                                                                  | cadence                  | Google limit                                                |
+| `DRIVE_FILE_MIME`                          | `application/vnd.livediagram+json`                                    | api-schema               | Spec                                                        |
+| `DRIVE_FILE_EXTENSION`                     | `.livediagram`                                                        | api-schema               | Spec                                                        |
+| `driveRootName(host)`                      | `livediagram` / `livediagram (staging)` / `livediagram (self-hosted)` | api-schema               | Spec, "The root folder's name"                              |
+| `DRIVE_SCOPES`                             | `drive.file drive.install`                                            | api-schema               | Spec                                                        |
 
 Env: api `GOOGLE_CLIENT_ID` (var), `GOOGLE_CLIENT_SECRET` (secret), `DRIVE_TOKEN_KEY` (secret, base64 of 32 bytes,
 `openssl rand -base64 32`), `GOOGLE_OAUTH_BASE_URL` (tests only); live `NEXT_PUBLIC_GOOGLE_CLIENT_ID`,
