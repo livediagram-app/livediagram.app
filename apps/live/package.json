@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next .next-dev out node_modules .turbo coverage",
     "icons:sheet": "vitest run --config scripts/icon-sheet/vitest.config.ts && node scripts/icon-sheet/shoot.mjs",
-    "test:e2e:drive": "NEXT_PUBLIC_E2E_AUTH=1 NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-e2e.apps.googleusercontent.com NEXT_PUBLIC_GOOGLE_API_KEY=e2e-picker-key next build && E2E_DRIVE=1 playwright test --project=drive"
+    "test:e2e:drive": "NEXT_PUBLIC_E2E_AUTH=1 NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-e2e.apps.googleusercontent.com NEXT_PUBLIC_GOOGLE_API_KEY=e2e-picker-key next build && E2E_DRIVE=1 playwright test --project=drive",
+    "test:e2e:drive-shots": "NEXT_PUBLIC_E2E_AUTH=1 NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-e2e.apps.googleusercontent.com NEXT_PUBLIC_GOOGLE_API_KEY=e2e-picker-key next build && E2E_DRIVE=1 playwright test --project=drive-shots"
   },
   "dependencies": {
     "@clerk/react": "^6.17.0",

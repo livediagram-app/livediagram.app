@@ -29,7 +29,7 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
       // Needs its own build and stack (E2E_DRIVE=1); see the drive project.
-      testIgnore: /drive-mirror\.spec\.ts/,
+      testIgnore: /drive-(mirror|shots)\.spec\.ts/,
     },
     // Opt-in (pnpm --filter @livediagram/live test:e2e:drive): the Google Drive
     // mirror against the fake Google, signed in through the test-only auth
@@ -41,6 +41,12 @@ export default defineConfig({
             name: 'drive',
             use: { ...devices['Desktop Chrome'], colorScheme: 'dark' as const },
             testMatch: /drive-mirror\.spec\.ts/,
+          },
+          // Every Drive state as a screenshot, light and dark (drive-shots.spec.ts).
+          {
+            name: 'drive-shots',
+            use: { ...devices['Desktop Chrome'] },
+            testMatch: /drive-shots\.spec\.ts/,
           },
         ]
       : []),

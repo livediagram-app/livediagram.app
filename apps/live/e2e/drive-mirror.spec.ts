@@ -69,6 +69,8 @@ async function signIn(page: import('@playwright/test').Page) {
 async function openCloudSync(page: import('@playwright/test').Page, via: 'menu' | 'badge') {
   if (via === 'menu') {
     await page.getByRole('button', { name: 'Account menu' }).click();
+    // The account menu has no Drive entry; Settings does.
+    await expect(page.getByRole('menuitem', { name: /Google Drive/ })).toHaveCount(0);
     await page.getByRole('menuitem', { name: 'Account' }).click();
   } else {
     await page.getByRole('button', { name: /Google Drive/ }).click();
@@ -129,10 +131,6 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   });
 
   await page.goto('/explorer/recent');
-  // The account menu has no Drive entry; Settings does.
-  await page.getByRole('button', { name: 'Account menu' }).click();
-  await expect(page.getByRole('menuitem', { name: /Google Drive/ })).toHaveCount(0);
-  await page.keyboard.press('Escape');
   let panel = await openCloudSync(page, 'menu');
   await expect(panel).toContainText('Not connected');
   await expect(panel).toContainText('Keep a copy of your documents');

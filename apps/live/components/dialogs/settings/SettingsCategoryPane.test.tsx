@@ -151,7 +151,7 @@ describe('SettingsCategoryPane telemetry', () => {
 });
 
 describe('SettingsCategoryPane: targeting a section', () => {
-  it('scrolls a targeted section into view and focuses its heading', () => {
+  it('scrolls a targeted section into view and focuses its heading', async () => {
     const scroll = vi.fn();
     Element.prototype.scrollIntoView = scroll;
     const account = SETTINGS_CATEGORIES.find((c) => c.id === 'account')!;
@@ -163,6 +163,7 @@ describe('SettingsCategoryPane: targeting a section', () => {
         focusSectionId="your-data"
       />,
     );
+    await new Promise((r) => requestAnimationFrame(r));
     const heading = screen.getByRole('heading', { name: 'Your Data' });
     expect(heading.id).toBe('settings-section-your-data');
     expect(document.activeElement).toBe(heading);

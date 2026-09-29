@@ -213,10 +213,17 @@ export function SettingsCategoryPane({
 function SectionHeading({ name, focused }: { name: string; focused: boolean }) {
   const ref = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    if (!focused || !ref.current) return;
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    ref.current.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
-    ref.current.focus({ preventScroll: true });
+    if (!focused) return;
+    // A frame later: the dialog's focus trap runs after this effect, focuses
+    // its first control and remembers what to hand focus back to on close.
+    const frame = requestAnimationFrame(() => {
+      const heading = ref.current;
+      if (!heading) return;
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+      heading.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+      heading.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
   }, [focused]);
   return (
     <h3
