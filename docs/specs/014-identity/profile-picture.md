@@ -108,6 +108,10 @@ is always rendered, and the picture is an overlay with explicit `width` and
 `height` inside the same box, shown only once it has loaded. Nothing around
 the avatar moves when the picture arrives or fails.
 
+The identity row's note says so: "Your name, email and picture come from your account and are
+changed there, not here." The help article Signing In (`apps/help/app/account-and-data/signing-in/`)
+explains the picture, its fallback and when a Google change shows.
+
 ## 6. Accessibility
 
 The whole avatar, initial and picture alike, is decorative and hidden from

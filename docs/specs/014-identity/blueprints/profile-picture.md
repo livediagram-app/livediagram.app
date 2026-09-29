@@ -3,18 +3,21 @@
 Derived from [Profile picture](../profile-picture.md). Defaults applied where the spec is silent
 are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
-| File                                                            | Role                                                                              |
-| --------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `apps/live/lib/account-avatar.ts`                               | Pure: `resolveProfilePicture`, `sizedPictureUrl`, `accountInitial`, `pictureHost` |
-| `apps/live/components/providers/deferred-auth.tsx`              | `DeferredAuthUser` gains `pictureUrl`                                             |
-| `apps/live/components/providers/ClerkBridge.tsx`                | Publishes `pictureUrl: resolveProfilePicture(user)`                               |
-| `apps/live/components/primitives/AccountAvatar.tsx`             | The disc: initial always, picture overlaid once loaded, initial again on failure  |
-| `apps/live/components/chrome/AuthControls.tsx`                  | Account menu trigger draws `AccountAvatar` at `HEADER_ICON_SLOT_PX`               |
-| `apps/live/components/dialogs/settings/SettingsAccountRows.tsx` | Identity card draws `AccountAvatar` at `IDENTITY_AVATAR_PX`                       |
-| `apps/live/e2e/clerk-stub/clerk-stub.ts`                        | Installs a fake `window.Clerk` with a chosen user before the page loads           |
-| `apps/live/e2e/clerk-stub/profile-picture.spec.ts`              | The end-to-end states against a Clerk-enabled build                               |
-| `apps/live/scripts/build-clerk-stub.mjs`                        | Builds the Clerk-enabled export the stub runs against (`.next/out-clerk-stub/`)   |
-| `apps/live/playwright.config.ts`, `scripts/e2e-stack.mjs`       | The `clerk-stub` project, its ports and its export directory                      |
+| File                                                                                        | Role                                                                                    |
+| ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `apps/live/lib/account-avatar.ts`                                                           | Pure: `resolveProfilePicture`, `sizedPictureUrl`, `accountInitial`, `pictureHost`       |
+| `apps/live/components/providers/deferred-auth.tsx`                                          | `DeferredAuthUser` gains `pictureUrl`                                                   |
+| `apps/live/components/providers/ClerkBridge.tsx`                                            | Publishes `pictureUrl: resolveProfilePicture(user)`                                     |
+| `apps/live/components/primitives/AccountAvatar.tsx`                                         | The disc: initial always, picture overlaid once loaded, initial again on failure        |
+| `apps/live/components/chrome/AuthControls.tsx`                                              | Account menu trigger draws `AccountAvatar` at `HEADER_ICON_SLOT_PX`                     |
+| `apps/live/components/dialogs/settings/SettingsAccountRows.tsx`                             | Identity card draws `AccountAvatar` at `IDENTITY_AVATAR_PX`                             |
+| `apps/live/components/dialogs/settings/settings-catalogue.ts`                               | Identity row copy and keywords name the picture                                         |
+| `apps/help/app/account-and-data/signing-in/page.mdx`, `packages/help-registry/src/index.ts` | "Your profile picture" section; article description and keywords                        |
+| `apps/live/e2e/clerk-stub/clerk-stub.ts`                                                    | Installs a fake `window.Clerk` with a chosen user before the page loads                 |
+| `apps/live/e2e/clerk-stub/profile-picture.spec.ts`                                          | The end-to-end states against a Clerk-enabled build                                     |
+| `apps/live/scripts/build-clerk-stub.mjs`                                                    | Builds the Clerk-enabled export the stub runs against (`.next/out-clerk-stub/`)         |
+| `apps/live/playwright.config.ts`, `scripts/e2e-stack.mjs`                                   | The `clerk-stub` project (`E2E_CLERK_STUB=1`), ports 3015 / 8788 / 3016, `E2E_LIVE_OUT` |
+| `.github/workflows/e2e.yml`                                                                 | Builds the stub export and runs the signed-in specs after the smoke suite               |
 
 ## Domain and naming
 
@@ -45,13 +48,13 @@ keeping any other parameter) and return `toString()`. Any other host returns the
 
 `AccountAvatar` state machine, keyed by `pictureUrl`:
 
-| From      | Event                                                 | To                                 |
-| --------- | ----------------------------------------------------- | ---------------------------------- |
-| (mount)   | `pictureUrl === null`                                 | `initial`                          |
-| (mount)   | `pictureUrl !== null`                                 | `loading`                          |
-| `loading` | `load`, or already `complete` with `naturalWidth > 0` | `picture`                          |
-| `loading` | `error`                                               | `initial` (logs, D3)               |
-| any       | `pictureUrl` changes                                  | `loading` (or `initial` when null) |
+| From      | Event                 | To                                 |
+| --------- | --------------------- | ---------------------------------- |
+| (mount)   | `pictureUrl === null` | `initial`                          |
+| (mount)   | `pictureUrl !== null` | `loading`                          |
+| `loading` | `load`                | `picture`                          |
+| `loading` | `error`               | `initial` (logs, D3)               |
+| any       | `pictureUrl` changes  | `loading` (or `initial` when null) |
 
 Held as two pieces of state, `loadedUrl` and `failedUrl`, each compared with the current
 `pictureUrl`, so a new URL starts fresh with no effect to reset them (D4). Invariant: in every
@@ -95,17 +98,17 @@ no migration.
 
 ## Errors and edge cases
 
-| Case                                                | Handling                                                                           |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `imageUrl` empty, malformed or `http:`              | `sizedPictureUrl` returns null; next source, else initial                          |
-| Google account present, image empty                 | Skipped; falls to `hasImage`                                                       |
-| Two Google accounts linked                          | The first in Clerk's order wins (D1)                                               |
-| `hasImage` false (Clerk default avatar)             | Never shown; initial                                                               |
-| Image 404 / network error / blocked by a future CSP | `error` fires: initial, one log line                                               |
-| Image cached and complete before React attaches     | The ref callback reads `complete` + `naturalWidth` and marks it loaded             |
-| Transparent PNG                                     | The initial is `invisible` once the picture shows, so it never bleeds through (D5) |
-| User signs out                                      | `user` is null; `AuthControls` shows "Sign in"; no avatar                          |
-| Clerk disabled                                      | `ClerkBridge` never loads; `pictureUrl` never exists                               |
+| Case                                                | Handling                                                                                                              |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `imageUrl` empty, malformed or `http:`              | `sizedPictureUrl` returns null; next source, else initial                                                             |
+| Google account present, image empty                 | Skipped; falls to `hasImage`                                                                                          |
+| Two Google accounts linked                          | The first in Clerk's order wins (D1)                                                                                  |
+| `hasImage` false (Clerk default avatar)             | Never shown; initial                                                                                                  |
+| Image 404 / network error / blocked by a future CSP | `error` fires: initial, one log line                                                                                  |
+| Image cached and complete before React attaches     | Cannot happen: the picture renders only on the client, after auth settles, so `onLoad` is attached before `src` loads |
+| Transparent PNG                                     | The initial is `invisible` once the picture shows, so it never bleeds through (D5)                                    |
+| User signs out                                      | `user` is null; `AuthControls` shows "Sign in"; no avatar                                                             |
+| Clerk disabled                                      | `ClerkBridge` never loads; `pictureUrl` never exists                                                                  |
 
 ## Security and trust
 
@@ -132,7 +135,9 @@ flip on load.
   `height` attributes = `size`, `alt=""`, `draggable={false}`; `opacity-0` until state
   `picture`, then `opacity-100` with no transition (D2).
 - Sizes: header trigger `HEADER_ICON_SLOT_PX` (20); identity card `IDENTITY_AVATAR_PX` (44).
-- Copy: none added.
+- Copy: the identity row's description reads "Your name, email and picture come from your
+  account and are changed there, not here." and its search keywords gain `picture photo google`
+  (`settings-catalogue.ts`).
 
 ## Accessibility
 
@@ -154,20 +159,30 @@ the picture is at most 44px and never the largest paint. INP: no handlers on the
 
 ## Testing
 
-| Spec rule                                | Test                                                                           |
-| ---------------------------------------- | ------------------------------------------------------------------------------ |
-| §2 Google first                          | `account-avatar.test.ts` › prefers the Google account's picture                |
-| §2 then `hasImage`                       | › falls back to the Clerk profile image when it is a real picture              |
-| §2 never the default avatar              | › ignores Clerk's generated avatar when hasImage is false                      |
-| §2 skips an empty Google image           | › skips a Google account without a picture                                     |
-| §2 https only                            | › rejects http and malformed URLs                                              |
-| §2 96px crop on Clerk's host only        | › sizes Clerk image URLs and leaves other hosts alone                          |
-| Initial                                  | › derives the initial from first name, username, then '?'                      |
-| Bridge publishes it                      | `ClerkBridge.test.tsx` › publishes the resolved profile picture                |
-| §5 states                                | `AccountAvatar.test.tsx` › initial / loading / picture / failure / URL change  |
-| §7 no referrer, decorative               | `AccountAvatar.test.tsx` › renders the picture decoratively without a referrer |
-| §7 log without the URL                   | `AccountAvatar.test.tsx` › logs the host, not the URL, when the picture fails  |
-| §4 both surfaces, §5 no shift, fallbacks | `e2e/clerk-stub/profile-picture.spec.ts` › with, without and failing picture   |
+| Spec rule                                | Test                                                                                                                    |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| §2 Google first                          | `account-avatar.test.ts` › prefers the Google account's picture                                                         |
+| §2 then `hasImage`                       | › falls back to the Clerk profile image when it is a real picture                                                       |
+| §2 never the default avatar              | › ignores Clerk's generated avatar when hasImage is false                                                               |
+| §2 skips an empty Google image           | › skips a Google account without a picture                                                                              |
+| §2 https only, per source                | › skips a Google picture that is not https, then tries the profile image                                                |
+| §2 none                                  | › returns null when no source yields a usable URL                                                                       |
+| §2 https only                            | › rejects http and malformed URLs                                                                                       |
+| §2 96px crop on Clerk's host only        | › sizes Clerk image URLs and leaves other hosts alone                                                                   |
+| Initial                                  | › derives the initial from first name, username, then '?'                                                               |
+| §9 log without the URL                   | › names the host only, never the path; `AccountAvatar.test.tsx` › logs the host, not the URL...                         |
+| Bridge publishes it                      | `ClerkBridge.test.tsx` › publishes the resolved profile picture                                                         |
+| §5 no picture                            | `AccountAvatar.test.tsx` › shows the initial alone when there is no picture                                             |
+| §5 loading                               | › keeps the initial visible and the picture transparent while loading                                                   |
+| §5 loaded                                | › shows the picture over a hidden initial once it loads                                                                 |
+| §5 failed                                | › falls back to the initial when the picture fails to load                                                              |
+| §5 URL changes                           | › starts again from loading when a new picture arrives after a failure                                                  |
+| §6, §7 decorative, no referrer, not lazy | › renders the picture decoratively without a referrer                                                                   |
+| §5 no layout shift                       | › holds the same fixed box in every state                                                                               |
+| Header slot holds the avatar             | `EditorHeader.test.tsx` › draws the account avatar, its initial as a glyph disc filling the slot                        |
+| §3, §4, §5, §7 end to end                | `e2e/clerk-stub/profile-picture.spec.ts` › draws the Google picture in the header and the identity card, without moving |
+| §5 none, no request                      | › keeps the initial when there is no picture, and asks for none                                                         |
+| §5 failure, no shift, §9 log             | › falls back to the initial when the picture fails, without moving                                                      |
 
 ## Constants and configuration
 
