@@ -370,13 +370,26 @@ Named constants in one cadence module of the mirror code, with the values and bu
   tab hides, so a device that walks away hands over at once.
 - **Arrival:** one `changes.list` catch-up, then re-upload of every diagram
   saved since its last mirrored revision.
-- **While visible:** check Drive every **2 minutes**, and on focus (at most
-  once every 30 seconds); never while hidden. Each check first asks for
+- **A visible tab is never left unsynced.** While any livediagram tab of the
+  browser is visible, Drive is checked every **2 minutes** and when the user
+  returns to a tab (at most once every 30 seconds), whichever tab is the one
+  that syncs: a visible tab that does not sync asks the one that does, over
+  the tabs' channel. If that tab does not answer within 10 seconds (it is
+  frozen or gone), the visible tab takes the sync over. Nothing is checked
+  while every tab is hidden. After sleep, the first moment a tab is visible
+  again brings a check.
+- **Opening Cloud Sync checks.** When the Cloud Sync row scrolls into view, a
+  check runs (unless one finished in the last 30 seconds): the status reads
+  "Checking…" while it runs, then "Synced just now".
+- **"Synced" means the last successful check**, including a check that found
+  nothing new. A visible tab whose last check is older than two check
+  intervals logs `drive: stale` (a bug to find, never a state shown quietly)
+  and asks for a check at once. Each check first asks for
   `changes.getStartPageToken` (5 units) and reads `changes.list` (about 100
   units) only when that token differs from the stored one. The gate never
   skips a real change: the start token names the position after the latest
   change, so an equal token means nothing new since the stored one; it only
-  saves cost. The arrival catch-up and **Sync now** use the same gate.
+  saves cost. The arrival catch-up and every requested check use the same gate.
 - **Diagnostic:** with `localStorage['livediagram:v2:drive-diagnostics'] = '1'`
   every check logs `drive: start-token moved=<bool> listed=<n>`, which is how
   the unverified point below (research E-A3) is settled against real Drive.

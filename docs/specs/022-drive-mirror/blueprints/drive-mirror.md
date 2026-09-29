@@ -655,6 +655,23 @@ and are removed when it closes, in the Explorer (`useExplorerState`) and the edi
 reports `connecting: true` while the status is `starting` or `disconnected`, until the first other status or
 `SETTING_UP_MAX_MS` (30 s). Connect and Disconnect end it.
 
+**Checks from any visible tab.** `DriveTabMessage` gains `{ type: 'check', kind: 'focus' | 'poll' | 'view' }`. The
+elected tab answers with `engine.requestCheck(kind)` (a gated pass: `focus`/`view` when the last inbound read is
+at least `DRIVE_FOCUS_POLL_MIN_GAP_MS` old, `poll` when it is at least the back-off poll interval old, else nothing)
+and always posts its current status afterwards, which is the answer. A visible tab that is not elected posts
+`check` `focus` on `focus` / `visibilitychange` to visible, and `check` `poll` every `DRIVE_POLL_INTERVAL_MS` while
+visible. With no status message within `DRIVE_CHECK_ANSWER_MS` (10 s) it logs `check-unanswered` and takes the
+Web Lock with `steal: true`; the tab it was taken from sees its lock request reject and stops its engine
+(`election-lost`), then queues for the lock again. Every visible tab runs a watchdog each minute: a connected status
+whose `lastSyncedAt` is older than `DRIVE_STALE_AFTER_MS` (2 × the poll interval + 30 s) logs
+`console.warn('drive: stale', { ageMs, elected })` and requests a check. `lastSyncedAt` is set at the end of every
+successful pass, a gated check that found nothing included.
+
+The Cloud Sync row observes itself (`IntersectionObserver`, any visibility) and calls `requestCheck()` from the
+context: skipped outside the connected phase, while a pass runs, or when `lastSyncedAt` is under 30 s old; else the
+context's `checking` is set (the status reads "Checking…") until a status with `state: 'idle'` and a newer
+`lastSyncedAt` arrives, or 10 s pass.
+
 **Per phase.** `StableLabel` (`@livediagram/ui`) lays every wording of one control in one grid cell, all but the
 current one `invisible` and `aria-hidden`. The status, the text line and the primary take only their
 phase's wordings, so nothing moves within a phase and no space is kept for another phase. The e2e compares the row's
