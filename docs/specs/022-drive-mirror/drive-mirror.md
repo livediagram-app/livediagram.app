@@ -72,7 +72,7 @@ this spec does not restate it.
   **syncing** (with a progress ring round the avatar while the first mirror
   copies), a tick for **synced**, an exclamation mark for **needs attention**
   (reconnect or resume needed, an error, or a notice). The badge is a button
-  of its own, laid over the avatar's corner with a 24-pixel target, so it
+  of its own, laid over the avatar's corner with a 28-pixel target, so it
   never moves anything as it appears or changes; hovering or focusing it
   shows a tooltip with the same words as its accessible name ("Synced to
   Google Drive 1 minute ago", "Copying 3 of 12 to Google Drive", "Syncing

@@ -599,8 +599,8 @@ dropped (`[::1]:3000` → `::1`, `localhost:3000` → `localhost`):
 | `synced`    | `idle`, no error, `lastSyncedAt` set                                                 | tick, emerald-600 disc                                                   | "Synced to Google Drive {just now / 1 min ago / …}" (`relativeSince`)     | "Synced to Google Drive"           |
 
 `DriveSyncBadge` (`components/drive/DriveSyncBadge.tsx`) is a `<button>` of its own, a sibling of the account
-button inside AuthControls' `relative` wrapper, absolutely placed over the avatar's upper-right corner (24 × 24 px
-target, an 18 px disc with a 2 px ring in the header's background). It never takes layout space. `aria-label` =
+button inside AuthControls' `relative` wrapper, absolutely placed over the avatar's upper-right corner (28 × 28 px
+target, a 26 px cloud, filled per state, with a 3 px halo in the header's background). It never takes layout space. `aria-label` =
 `label`; the shared `Tooltip` shows the same words after the hover delay and at once on keyboard focus. Pressing it
 calls AuthControls' `onOpenAccount('cloud-sync')` (or links to `/explorer?settings=account&section=cloud-sync`).
 A visually hidden `role="status"` `aria-live="polite"` region holds `announce` (no time, so it does not speak every
@@ -663,8 +663,8 @@ opened in livediagram." with **Go to Explorer**.
 ## Accessibility
 
 The Cloud Sync row lives in the Settings dialog (focus trap, Escape); its buttons are native buttons with visible
-focus rings. The badge is a 24 × 24 px button with its own name and a tooltip on hover and focus; its state is a glyph,
-not colour alone; the discs (emerald-600, brand-600, amber-600) with white glyphs meet 3:1 for graphics in both themes. The progress bar is
+focus rings. The badge is a 28 × 28 px button with its own name and a tooltip on hover and focus; its state is a glyph,
+not colour alone; the clouds (emerald-600, brand-600, amber-600) with white glyphs meet 3:1 for graphics in both themes. The progress bar is
 `role="progressbar"` with `aria-valuenow` / `aria-valuemax`. Status changes are announced with the shared
 announcer (polite). The banner is `role="status"`. The notice badge carries an `aria-label` with the notice text.
 Colours are the existing slate / brand tokens, which meet AA in both themes.
