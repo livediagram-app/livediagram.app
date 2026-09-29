@@ -766,9 +766,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'identity',
         section: 'You',
         label: 'Guest',
-        keywords: 'account profile identity name email signed in sign in avatar joined',
+        keywords:
+          'account profile identity name email signed in sign in avatar picture photo google joined',
         description:
-          'Your name and email come from your account and are changed there, not here. Signing in keeps your documents across browsers and devices; without it they belong to this browser alone.',
+          'Your name, email and picture come from your account and are changed there, not here. Signing in keeps your documents across browsers and devices; without it they belong to this browser alone.',
         helpArticle: 'guestVsAccount',
       },
       {
