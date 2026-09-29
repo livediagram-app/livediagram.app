@@ -6,6 +6,7 @@
 import {
   canvasSurface,
   contrastRatio,
+  MIN_TEXT_CONTRAST,
   hexToRgb,
   rgbToHex,
   unpaintedShapeInk,
@@ -46,8 +47,6 @@ const SATURATION_RANGE = [0.45, 0.85] as const;
 const LIGHTNESS_RANGE = { light: [0.36, 0.52], dark: [0.6, 0.74] } as const;
 // A derived stroke must read against its canvas (WCAG 1.4.11 non-text).
 export const QUICK_STROKE_MIN_CONTRAST = 3;
-// A derived text colour is read, not just seen, on its canvas (WCAG 1.4.3).
-export const QUICK_TEXT_MIN_CONTRAST = 4.5;
 // A derived background must keep the theme's label readable (WCAG 1.4.3).
 export const QUICK_FILL_MIN_TEXT_CONTRAST = 4.5;
 // How much of the hue a background carries: over white on light paper, so a
@@ -135,12 +134,10 @@ function tonedSix(
   const [lMin, lMax] = LIGHTNESS_RANGE[surface];
   const l = clamp(accent.l, lMin, lMax);
   return TONED_HUES.map(({ hue, name }) => {
-    if (role === 'text') {
-      const color = visibleOn(hue, s, l, theme.backgroundColor, surface, QUICK_TEXT_MIN_CONTRAST);
-      return { color, name };
-    }
-    const stroke = visibleOn(hue, s, l, theme.backgroundColor, surface);
-    if (role === 'stroke') return { color: stroke, name };
+    // Text is read, not just seen, so it gets the text contrast (WCAG 1.4.3).
+    const min = role === 'text' ? MIN_TEXT_CONTRAST : QUICK_STROKE_MIN_CONTRAST;
+    const stroke = visibleOn(hue, s, l, theme.backgroundColor, surface, min);
+    if (role !== 'fill') return { color: stroke, name };
     const base = surface === 'light' ? '#ffffff' : ink.fill;
     const wash = FILL_WASH[surface];
     return { color: readableWash(stroke, base, ink.text, wash), name };
@@ -171,9 +168,9 @@ function visibleOn(
 // reads on the canvas (D50).
 function readableOn(hex: string, background: string, surface: 'light' | 'dark'): string {
   const rgb = hexToRgb(hex);
-  if (!rgb || contrastRatio(hex, background) >= QUICK_TEXT_MIN_CONTRAST) return hex;
+  if (!rgb || contrastRatio(hex, background) >= MIN_TEXT_CONTRAST) return hex;
   const { h, s, l } = rgbToHsl(rgb);
-  return visibleOn(h, s, l, background, surface, QUICK_TEXT_MIN_CONTRAST);
+  return visibleOn(h, s, l, background, surface, MIN_TEXT_CONTRAST);
 }
 
 // A wash of the hue over the theme's fill, thinned until the label reads.

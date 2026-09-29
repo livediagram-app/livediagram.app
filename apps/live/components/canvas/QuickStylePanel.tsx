@@ -71,13 +71,38 @@ const swatchOptions = (swatches: ShownSwatch[]): QuickOption<number>[] =>
 
 // The swatch whose custom-colour popover is open.
 type Editing = { role: QuickSwatchRole; slot: QuickSwatchSlot; anchor: HTMLButtonElement };
-const ROW_NAME: Record<QuickSwatchRole, string> = {
-  stroke: 'Stroke',
-  fill: 'Background',
-  text: 'Text colour',
-};
-// The view section each colour row is drawn from.
-const SECTION_OF = { stroke: 'stroke', fill: 'background', text: 'textColour' } as const;
+// The colour rows, top to bottom: each row's swatch role, the view section it
+// is drawn from, its title, and the action a choice runs.
+const COLOUR_ROWS = [
+  {
+    role: 'stroke',
+    section: 'stroke',
+    title: 'Stroke',
+    testId: 'quick-style-stroke',
+    set: 'setStroke',
+  },
+  {
+    role: 'fill',
+    section: 'background',
+    title: 'Background',
+    testId: 'quick-style-background',
+    set: 'setBackground',
+  },
+  {
+    role: 'text',
+    section: 'textColour',
+    title: 'Text colour',
+    testId: 'quick-style-text-colour',
+    set: 'setTextColour',
+  },
+] as const satisfies readonly {
+  role: QuickSwatchRole;
+  section: keyof QuickStyleView['sections'];
+  title: string;
+  testId: string;
+  set: keyof QuickStyleApi;
+}[];
+const ROW_OF = (role: QuickSwatchRole) => COLOUR_ROWS.find((r) => r.role === role)!;
 
 // Pressing inside the panel must never reach the canvas: no marquee, no pan,
 // no deselect, no tab menu.
@@ -112,12 +137,12 @@ export function QuickStylePanel({
   // A popover outlives neither the panel nor its swatch.
   const editingGone =
     editing !== null &&
-    (!active || !editing.anchor.isConnected || !view?.sections[SECTION_OF[editing.role]]);
+    (!active || !editing.anchor.isConnected || !view?.sections[ROW_OF(editing.role).section]);
   if (editingGone) setEditing(null);
   if (!active) return null;
   const docked = layout === 'floating';
   const editedSwatch = editing
-    ? view.sections[SECTION_OF[editing.role]]?.swatches[editing.slot]
+    ? view.sections[ROW_OF(editing.role).section]?.swatches[editing.slot]
     : undefined;
 
   return (
@@ -201,7 +226,7 @@ export function QuickStylePanel({
         <SwatchOverridePopover
           key={`${editing.role}-${editing.slot}`}
           anchor={editing.anchor}
-          label={`Custom colour for ${editedSwatch.override?.themeName ?? editedSwatch.name}, ${ROW_NAME[editing.role]}`}
+          label={`Custom colour for ${editedSwatch.override?.themeName ?? editedSwatch.name}, ${ROW_OF(editing.role).title}`}
           colour={editedSwatch.color}
           overridden={editedSwatch.override !== undefined}
           themeNote={`Theme colour: ${editedSwatch.override?.themeName ?? editedSwatch.name}`}
@@ -231,45 +256,25 @@ function QuickStyleSections({
   const editFor = (role: QuickSwatchRole) => (slot: number, anchor: HTMLButtonElement) => {
     if (isQuickSwatchSlot(slot)) onEditSwatch(role, slot, anchor);
   };
-  const { stroke, background, textColour, width, style, textAlign, iconAlign } = view.sections;
+  const { width, style, textAlign, iconAlign } = view.sections;
   return (
     <>
-      {stroke ? (
-        <QuickRadioRow
-          title="Stroke"
-          testId="quick-style-stroke"
-          showTitle={showTitles}
-          options={swatchOptions(stroke.swatches)}
-          density={density}
-          onOptionContext={editFor('stroke')}
-          value={stroke.value}
-          onChoose={(slot) => quickStyle.setStroke(slot as QuickSwatchValue)}
-        />
-      ) : null}
-      {background ? (
-        <QuickRadioRow
-          title="Background"
-          testId="quick-style-background"
-          showTitle={showTitles}
-          options={swatchOptions(background.swatches)}
-          density={density}
-          onOptionContext={editFor('fill')}
-          value={background.value}
-          onChoose={(slot) => quickStyle.setBackground(slot as QuickSwatchValue)}
-        />
-      ) : null}
-      {textColour ? (
-        <QuickRadioRow
-          title="Text colour"
-          testId="quick-style-text-colour"
-          showTitle={showTitles}
-          options={swatchOptions(textColour.swatches)}
-          density={density}
-          onOptionContext={editFor('text')}
-          value={textColour.value}
-          onChoose={(slot) => quickStyle.setTextColour(slot as QuickSwatchValue)}
-        />
-      ) : null}
+      {COLOUR_ROWS.map((row) => {
+        const colours = view.sections[row.section];
+        return colours ? (
+          <QuickRadioRow
+            key={row.role}
+            title={row.title}
+            testId={row.testId}
+            showTitle={showTitles}
+            options={swatchOptions(colours.swatches)}
+            density={density}
+            onOptionContext={editFor(row.role)}
+            value={colours.value}
+            onChoose={(slot) => quickStyle[row.set](slot as QuickSwatchValue)}
+          />
+        ) : null;
+      })}
       {width ? (
         <QuickRadioRow
           title="Stroke width"

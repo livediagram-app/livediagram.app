@@ -114,7 +114,7 @@ export function storeWithoutOverride(
   const next: ThemeSwatchOverrides = { ...entry };
   if (Object.keys(rest).length === 0) delete next[key];
   else next[key] = rest;
-  const empty = !next.s && !next.f && !next.x;
+  const empty = ROLES.every((role) => !next[KEY[role]]);
   return store.flatMap((e) => (e.t !== themeId ? [e] : empty ? [] : [next]));
 }
 
@@ -147,20 +147,17 @@ export function parseSwatchOverrideStore(value: unknown): SwatchOverrideStore {
   const out: SwatchOverrideStore = [];
   for (const item of value) {
     if (!item || typeof item !== 'object') continue;
-    const { t, s, f, x } = item as Record<string, unknown>;
+    const raw = item as Record<string, unknown>;
+    const t = raw.t;
     if (typeof t !== 'string' || t.length === 0 || t.length > SWATCH_OVERRIDE_MAX_THEME_ID)
       continue;
     if (out.some((e) => e.t === t)) continue;
-    const stroke = parseRow(s);
-    const fill = parseRow(f);
-    const text = parseRow(x);
-    if (!stroke && !fill && !text) continue;
-    out.push({
-      t,
-      ...(stroke ? { s: stroke } : {}),
-      ...(fill ? { f: fill } : {}),
-      ...(text ? { x: text } : {}),
-    });
+    const entry: ThemeSwatchOverrides = { t };
+    for (const role of ROLES) {
+      const row = parseRow(raw[KEY[role]]);
+      if (row) entry[KEY[role]] = row;
+    }
+    if (ROLES.some((role) => entry[KEY[role]])) out.push(entry);
   }
   return capped(out);
 }

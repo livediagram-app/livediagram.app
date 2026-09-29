@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   QUICK_SWATCH_SLOTS,
-  QUICK_TEXT_MIN_CONTRAST,
   isQuickSwatchSlot,
   quickSwatchColor,
   quickSwatches,
   quickSwatchSlotOf,
 } from './quick-swatches';
-import { contrastRatio, unpaintedShapeInk } from './colors';
+import { MIN_TEXT_CONTRAST, contrastRatio, unpaintedShapeInk } from './colors';
 import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, THEMES } from './themes-data';
 import type { ThemeDefinition } from './themes';
 
@@ -145,7 +144,7 @@ describe('quickSwatches: the Text colour row', () => {
         expect(
           contrastRatio(s.color, t.backgroundColor),
           `${t.id} ${s.name}`,
-        ).toBeGreaterThanOrEqual(QUICK_TEXT_MIN_CONTRAST - 0.01);
+        ).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST - 0.01);
       }
     }
   });

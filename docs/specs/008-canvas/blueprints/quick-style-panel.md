@@ -67,14 +67,14 @@ Memorable fields:
 1. Ink: `themeInk(theme)` = `theme.elementX ?? unpaintedShapeInk(canvasSurface(theme.backgroundColor)).X`.
 2. Slot 0: `{ color: ink.stroke | ink.fill | ink.text, name: 'Theme default' }`.
 3. A theme with a `palette`: its first six entries, `stroke` or `fill` by role (text: `stroke`
-   stepped to `QUICK_TEXT_MIN_CONTRAST` as below, D50), named by `hueName(entry.stroke)`; padded from the toned set when shorter (D32); names disambiguated.
+   stepped to `MIN_TEXT_CONTRAST` as below, D50), named by `hueName(entry.stroke)`; padded from the toned set when shorter (D32); names disambiguated.
 4. Otherwise the toned set: accent HSL from `ink.stroke`; `s = clamp(s, 0.45, 0.85)`;
    `l = clamp(l, 0.36, 0.52)` on light paper, `clamp(l, 0.6, 0.74)` on dark. Hues and names: 0 Red,
    28 Orange, 46 Yellow, 140 Green, 215 Blue, 270 Violet.
    - Stroke: `hsl(h, s, l)`, stepped by `0.02` lightness away from the canvas until contrast against
      `theme.backgroundColor` is at least `QUICK_STROKE_MIN_CONTRAST = 3`.
    - Text: `hsl(h, s, l)` stepped the same way until contrast is at least
-     `QUICK_TEXT_MIN_CONTRAST = 4.5`.
+     `MIN_TEXT_CONTRAST = 4.5` (the shared text-contrast constant in `colors.ts`).
    - Fill: `mix(stroke, base, wash)` with `base = '#ffffff'`, `wash = 0.2` on light paper and
      `base = ink.fill`, `wash = 0.3` on dark; `wash` reduced by `0.02` until the contrast of
      `ink.text` on it is at least `QUICK_FILL_MIN_TEXT_CONTRAST = 4.5`.
@@ -444,7 +444,6 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | -------------------------------- | -------------------------- | ----------------------------------------------- | ----------- |
 | `QUICK_STROKE_MIN_CONTRAST`      | 3                          | WCAG 2.2 1.4.11                                 | 3 to 4.5    |
 | `QUICK_FILL_MIN_TEXT_CONTRAST`   | 4.5                        | WCAG 2.2 1.4.3                                  | 4.5 to 7    |
-| `QUICK_TEXT_MIN_CONTRAST`        | 4.5                        | WCAG 2.2 1.4.3                                  | 4.5 to 7    |
 | Saturation clamp                 | 0.45 to 0.85               | D38                                             | 0.3 to 1    |
 | Lightness clamp, light / dark    | 0.36 to 0.52 / 0.6 to 0.74 | D38                                             | 0.25 to 0.8 |
 | `FILL_WASH` light / dark         | 0.2 / 0.3                  | D38                                             | 0.1 to 0.4  |
