@@ -333,6 +333,10 @@ async function main() {
       // localhost editor. Blank it, as `pnpm dev` does (docs/specs/007-editor/ai-assistance.md).
       '--var',
       'AI_ALLOWED_ORIGINS:',
+      // Guest ids are signed as in production (docs/specs/014-identity/auth-and-guest-access.md), so
+      // the signed-id upgrade a fresh guest goes through runs here too. A test-only secret.
+      '--var',
+      'GUEST_ID_HMAC_SECRET:e2e-guest-signing-secret',
     ],
     {
       cwd: ROOT,

@@ -228,3 +228,32 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 }
+
+// A guest as production makes one: minted and signed by the api worker
+// (docs/specs/014-identity/auth-and-guest-access.md). The e2e stack signs guest ids, so a hand-made
+// unsigned id would be upgraded (and its data moved) the moment the app opens.
+const guestSigs = new Map<string, string>();
+
+export async function mintSignedGuest(
+  request: import('@playwright/test').APIRequestContext,
+): Promise<string> {
+  const res = await request.post(`${process.env.NEXT_PUBLIC_API_BASE ?? '/api'}/guest-id`, {
+    data: {},
+  });
+  expect(res.ok()).toBe(true);
+  const { ownerId, ownerSig } = (await res.json()) as { ownerId: string; ownerSig: string | null };
+  if (ownerSig) guestSigs.set(ownerId, ownerSig);
+  return ownerId;
+}
+
+export function guestSigFor(owner: string): string | null {
+  return guestSigs.get(owner) ?? null;
+}
+
+export function ownerHeaders(
+  owner: string,
+  extra: Record<string, string> = {},
+): Record<string, string> {
+  const sig = guestSigs.get(owner);
+  return { 'X-Owner-Id': owner, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
+}

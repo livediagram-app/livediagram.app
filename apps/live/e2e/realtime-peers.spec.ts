@@ -1,5 +1,5 @@
 import type { Browser, Page } from '@playwright/test';
-import { expect, test } from './fixtures';
+import { expect, test, guestSigFor, mintSignedGuest, ownerHeaders } from './fixtures';
 
 // Two people on one shared document (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
 // the other online, an edit reaches the other side live, the autosave keeps everyone's edits (a peer's is
@@ -16,16 +16,20 @@ async function openAs(
   owner: string | null,
 ): Promise<Page> {
   const ctx = await browser.newContext({ baseURL, viewport: { width: 1440, height: 860 } });
-  await ctx.addInitScript((o) => {
-    if (o) {
-      localStorage.setItem('livediagram:v2:self-id', o);
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
-    }
-    localStorage.setItem(
-      'livediagram:user-preferences:v1',
-      JSON.stringify({ panelLayout: 'toolbar' }),
-    );
-  }, owner);
+  await ctx.addInitScript(
+    ({ o, sig }) => {
+      if (o) {
+        localStorage.setItem('livediagram:v2:self-id', o);
+        if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+        localStorage.setItem('livediagram:v2:name-confirmed', '1');
+      }
+      localStorage.setItem(
+        'livediagram:user-preferences:v1',
+        JSON.stringify({ panelLayout: 'toolbar' }),
+      );
+    },
+    { o: owner, sig: owner ? guestSigFor(owner) : null },
+  );
   const page = await ctx.newPage();
   await page.goto(url);
   return page;
@@ -43,10 +47,10 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   browser,
   baseURL,
 }) => {
-  const owner = crypto.randomUUID();
+  const owner = await mintSignedGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const headers = { 'X-Owner-Id': owner, Origin: new URL(baseURL!).origin };
+  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
   const seeded = await page.request.post(`${apiBase}/documents`, {
     headers,
     data: {
