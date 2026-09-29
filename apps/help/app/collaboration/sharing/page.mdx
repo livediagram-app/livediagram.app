@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { ShareLinks, EmbeddedDiagram } from '@/components/illustrations/collaboration';
+import { ShareLinks, EmbeddedDocument } from '@/components/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Sharing and Embeds',
@@ -45,7 +45,7 @@ These are independent: you can use either, both, or neither. They are layered on
 An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a document inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: a **view** link embeds a read-only canvas with pan and zoom, while an **edit** link embeds a fully editable one. Either way it hides the editor chrome and updates as the document is edited. Each pass in the Share dialog has an **Embed** menu offering **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
 
 <Figure caption="A document embedded in another page, alongside the iframe snippet that places it.">
-  <EmbeddedDiagram />
+  <EmbeddedDocument />
 </Figure>
 
 <Tip>

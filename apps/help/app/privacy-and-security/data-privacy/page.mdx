@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { DiagramStorage, AccessControl } from '@/components/illustrations/privacy';
+import { DocumentStorage, AccessControl } from '@/components/illustrations/privacy';
 
 export const metadata = helpMetadata({
   title: 'Data Privacy',
@@ -26,7 +26,7 @@ Documents are saved through a single Cloudflare Worker API that holds the databa
 Nothing about your document content is handed to an outside vendor. The hosted version runs entirely on Cloudflare, and a self-hoster runs the same stack on their own account.
 
 <Figure caption="Your edits travel through one API to Cloudflare storage, never straight from the browser to the database.">
-  <DiagramStorage />
+  <DocumentStorage />
 </Figure>
 
 ## What is stored, and who can read it
