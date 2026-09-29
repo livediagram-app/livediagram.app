@@ -56,7 +56,11 @@ The editor is real:
 
 `sessionStorage` holds only the facilitator baton, per diagram, for the life of the browser tab ([Facilitator](../012-collaboration/facilitator.md)).
 
-## Still out of scope
+## Next
+
+Nothing is committed to next.
+
+## Later
 
 These are the meaningful gaps between today and "full product":
 
