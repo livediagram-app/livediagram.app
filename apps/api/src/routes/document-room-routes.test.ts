@@ -31,7 +31,7 @@ vi.mock('../auth/document-access', () => gates);
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 
-// A DIAGRAM_ROOM binding that records the Request it was handed, so a test can
+// A DOCUMENT_ROOM binding that records the Request it was handed, so a test can
 // inspect the forwarded headers.
 //
 // Answers 204, not the 101 the real room sends: these tests run on node, whose

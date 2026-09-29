@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 
 // Mock the api-client boundary so the test exercises only the pure
-// remapping logic inside duplicateDiagram, not the network.
+// remapping logic inside duplicateDocument, not the network.
 vi.mock('./api-client', () => ({
   apiLoadDocument: vi.fn(),
   apiLoadTab: vi.fn(),
@@ -16,7 +16,7 @@ const mLoadDocument = vi.mocked(apiLoadDocument);
 const mLoadTab = vi.mocked(apiLoadTab);
 const mCreate = vi.mocked(apiCreateDocument);
 
-// Minimal Diagram-ish stub: duplicateDiagram only reads id, name, tabs.
+// Minimal Diagram-ish stub: duplicateDocument only reads id, name, tabs.
 const sourceDocument = (tabs: { id: string }[]) =>
   ({ id: 'src', name: 'Flow', tabs }) as Awaited<ReturnType<typeof apiLoadDocument>>;
 

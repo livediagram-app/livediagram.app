@@ -5,7 +5,7 @@ import { rowToTab, rowToTabSummary, type TabRow } from './tab-row';
 // wire-format DTOs the editor consumes. Every tab read in the
 // product (open a diagram, switch tabs, copy a tab, share-link
 // resolve) flows through one or the other; a regression that
-// dropped a field, swapped id with diagramId, or let the JSON blob
+// dropped a field, swapped id with documentId, or let the JSON blob
 // override a real column would corrupt diagrams silently with no
 // other surface signal. Pinning the contract here so the next
 // reader can see what each invariant is.
@@ -149,7 +149,7 @@ describe('rowToTab', () => {
   it('lets row columns override forged id / name / documentId in the data blob', () => {
     // Spread order matters: data first, row columns second. So even if
     // an attacker (or stale write) stuffed conflicting id / name /
-    // diagramId / orderIndex / updatedAt fields into the JSON blob,
+    // documentId / orderIndex / updatedAt fields into the JSON blob,
     // the real row columns must win. This is the security-relevant
     // invariant of the mapper, separate from the round-trip contract.
     const forged = JSON.stringify({
@@ -169,7 +169,7 @@ describe('rowToTab', () => {
   });
 
   it('takes folder from the row column and lets it override a forged data-blob folder (docs/specs/006-document/tab-folders.md)', () => {
-    // folder is per-diagram link metadata read from the diagram_tabs
+    // folder is per-diagram link metadata read from the document_tabs
     // JOIN, never from tabs.data (the client strips it before saving).
     // A folder stuffed into the blob must not win.
     const dto = rowToTab(baseRow({ folder: 'Org', data: bodyJson({ folder: 'Forged' }) }));

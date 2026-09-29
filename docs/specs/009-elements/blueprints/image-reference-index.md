@@ -17,8 +17,8 @@ Scope, by file (all under `apps/api/`):
 | `src/db/image-retention.ts`            | The sweep and its tripwire                                                     |
 | `src/db/images.ts`                     | The usage map and the share-read check, reading the index                      |
 | `src/db/tabs.ts`                       | `upsertTab`, `seedTabs`, `swapTabData`, `deleteTabRow` carry index statements  |
-| `src/db/documents.ts`                  | `copyDiagram` carries index statements                                         |
-| `src/db/document-removal.ts`           | `diagramRemovalStatements` prunes the dropped tabs' references                 |
+| `src/db/documents.ts`                  | `copyDocument` carries index statements                                         |
+| `src/db/document-removal.ts`           | `documentRemovalStatements` prunes the dropped tabs' references                 |
 | `src/index.ts`                         | `scheduled()` hands the daily run to `runImageRetention`                       |
 | `src/image-refs/writer-census.test.ts` | Fails when SQL writing `tabs` appears outside the known writers                |
 
@@ -49,10 +49,10 @@ Each writer appends statements to the D1 batch that writes the body.
 | -------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `upsertTab`                | after the collab statements: `imageRefReplaceStatements(env, id, imageRefIds(tab.elements))`                 |
 | `seedTabs`                 | the same, per seeded tab                                                                                     |
-| `copyDiagram`              | per copied tab: `imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data))`                          |
+| `copyDocument`              | per copied tab: `imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data))`                          |
 | `swapTabData`              | batch `[UPDATE tabs … WHERE data = ?, ...imageRefAddStatements(nextData ids)]`; result 0's `changes` decides |
 | `deleteTabRow`             | when no link is left: batch `[imageRefPruneTabStatement, DELETE tabs, DELETE change_log]`                    |
-| `diagramRemovalStatements` | first: `DELETE FROM image_refs WHERE tab_id IN (doomed tabs)`; then the tabs and diagrams deletes            |
+| `documentRemovalStatements` | first: `DELETE FROM image_refs WHERE tab_id IN (doomed tabs)`; then the tabs and diagrams deletes            |
 
 `imageRefReplaceStatements(env, tabId, ids)`, with `ids` bound as one JSON array:
 
@@ -60,9 +60,9 @@ Each writer appends statements to the D1 batch that writes the body.
 2. `imageRefAddStatements`: when `ids` is non-empty,
    `INSERT OR IGNORE INTO image_refs (tab_id, image_id) SELECT ?1, value FROM json_each(?2)`
 
-A save whose image set is unchanged deletes nothing and inserts nothing. "Doomed tabs" in `diagramRemovalStatements`
+A save whose image set is unchanged deletes nothing and inserts nothing. "Doomed tabs" in `documentRemovalStatements`
 is the same predicate its `DELETE FROM tabs` uses (linked into a doomed diagram and into nothing else), evaluated first
-while the links still exist; the `DELETE FROM diagrams` stays last, its `meta.changes` the count callers read.
+while the links still exist; the `DELETE FROM documents` stays last, its `meta.changes` the count callers read.
 
 ### Extraction in SQL
 
@@ -77,8 +77,8 @@ body failing the statement whatever order SQLite evaluates the join in, and keep
 | Statement                       | `tabWhere`                                                                                                      |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `imageRefIndexPageStatement`    | `t.rowid > ?1 AND t.rowid <= ?2`                                                                                |
-| `imageRefIndexOwnerStatement`   | `t.id IN (SELECT dt.tab_id FROM diagram_tabs dt JOIN diagrams d ON d.id = dt.diagram_id WHERE d.owner_id = ?1)` |
-| `imageRefIndexDiagramStatement` | `t.id IN (SELECT tab_id FROM diagram_tabs WHERE diagram_id = ?1)`                                               |
+| `imageRefIndexOwnerStatement`   | `t.id IN (SELECT dt.tab_id FROM document_tabs dt JOIN documents d ON d.id = dt.document_id WHERE d.owner_id = ?1)` |
+| `imageRefIndexDocumentStatement` | `t.id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?1)`                                               |
 
 ### Backfill
 
@@ -123,12 +123,12 @@ the isolate's life (`D2`); `resetImageRefIndexMemo()` clears it for tests.
 `sweepTripped(old, unused) = unused > IMAGE_SWEEP_TRIPWIRE_MIN && unused / old > IMAGE_SWEEP_TRIPWIRE_RATIO`.
 
 **Usage** `imageUsageByOwner(env, ownerId)`: when not complete, run `imageRefIndexOwnerStatement` first. Then
-`SELECT DISTINCT r.image_id, d.id, d.name FROM diagrams d JOIN diagram_tabs dt ON dt.diagram_id = d.id JOIN image_refs r ON r.tab_id = dt.tab_id WHERE d.owner_id = ? ORDER BY d.name, d.id`
+`SELECT DISTINCT r.image_id, d.id, d.name FROM documents d JOIN document_tabs dt ON dt.document_id = d.id JOIN image_refs r ON r.tab_id = dt.tab_id WHERE d.owner_id = ? ORDER BY d.name, d.id`
 (`D3`), folded into `Record<imageId, { id, name }[]>`.
 
-**Share read** `diagramReferencesImage(env, diagramId, imageId, onlyTabId)`: when not complete, run
-`imageRefIndexDiagramStatement` first. Then
-`SELECT 1 FROM diagram_tabs dt JOIN image_refs r ON r.tab_id = dt.tab_id AND r.image_id = ? WHERE dt.diagram_id = ? [AND dt.tab_id = ?] LIMIT 1`.
+**Share read** `documentReferencesImage(env, documentId, imageId, onlyTabId)`: when not complete, run
+`imageRefIndexDocumentStatement` first. Then
+`SELECT 1 FROM document_tabs dt JOIN image_refs r ON r.tab_id = dt.tab_id AND r.image_id = ? WHERE dt.document_id = ? [AND dt.tab_id = ?] LIMIT 1`.
 
 ### Invariants
 
@@ -166,7 +166,7 @@ export function imageRefIndexPageStatement(
   toRowId: number,
 ): D1PreparedStatement;
 export function imageRefIndexOwnerStatement(env: Env, ownerId: string): D1PreparedStatement;
-export function imageRefIndexDiagramStatement(env: Env, diagramId: string): D1PreparedStatement;
+export function imageRefIndexDocumentStatement(env: Env, documentId: string): D1PreparedStatement;
 export type ImageRefsBackfillRow = {
   created_at: number;
   cursor: number;

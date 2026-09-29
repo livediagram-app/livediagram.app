@@ -1,7 +1,7 @@
 'use client';
 
 // The editor's deleted state (docs/specs/013-workspace/trash.md, "While a
-// diagram is in the Trash"). Set when the load answers diagram_trashed, when
+// diagram is in the Trash"). Set when the load answers document_trashed, when
 // the room says the diagram was trashed, or when a save is refused because
 // of it. Whether the reader may restore it is read from their own Trash: the
 // row is there exactly when they may (owner, or a joined team member), and

@@ -4,7 +4,7 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
-// GET /api/diagrams/:id/shared-tabs: what the delete and Take Offline
+// GET /api/documents/:id/shared-tabs: what the delete and Take Offline
 // confirmations say about tabs that stay behind
 // (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab notice").
 // Answered for exactly the callers who may delete the diagram.

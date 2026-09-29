@@ -119,7 +119,7 @@ owners are marked as already-sent (no email fires for them):
 ```sql
 INSERT OR IGNORE INTO email_lifecycle
   (owner_id, email, created_at, welcome_sent_at, week1_sent_at, week2_sent_at)
-SELECT DISTINCT owner_id, '', 0, 0, 0, 0 FROM diagrams WHERE owner_id LIKE 'user_%';
+SELECT DISTINCT owner_id, '', 0, 0, 0, 0 FROM documents WHERE owner_id LIKE 'user_%';
 ```
 
 (The `'user_%'` prefix targets Clerk ids, skipping guest UUID owners.)

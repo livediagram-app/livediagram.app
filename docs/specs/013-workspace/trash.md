@@ -111,9 +111,9 @@ rather than a generic error:
 - **The realtime room** refuses new joins, and ends every open session the
   moment the diagram is trashed, telling each one it was deleted. An editor that
   loaded just before the delete and joins just after is refused, not told, so
-  it asks the api why: the same load answers `diagram_trashed`, and the editor
+  it asks the api why: the same load answers `document_trashed`, and the editor
   shows the deleted card.
-- **Edits and saves** are rejected with a named error, `diagram_trashed`, so an
+- **Edits and saves** are rejected with a named error, `document_trashed`, so an
   editor left open on another device stops and says why instead of failing
   silently.
 - **Opening it by URL** shows the deleted state, a card saying the diagram was
@@ -141,7 +141,7 @@ diagram holds goes, a tab still linked elsewhere stays exactly where it is.
 
 The api worker's daily `0 3 * * *` cron purges every diagram that has been in
 the Trash for 30 days or more, through the same removal that deletes a diagram
-today (`diagramRemovalStatements`), plus its snapshot and its Timeline events.
+today (`documentRemovalStatements`), plus its snapshot and its Timeline events.
 The purge is set-based and capped per run, so a backlog drains over a few days
 rather than overrunning one invocation. It logs how many it purged.
 
@@ -162,8 +162,8 @@ keeps its trashed records until it is.
 
 ## The API
 
-`DELETE /api/diagrams/:id` moves the diagram to the Trash and answers `204`.
-`DELETE /api/diagrams/:id?permanent=true` deletes it for good. Both keep the
+`DELETE /api/documents/:id` moves the diagram to the Trash and answers `204`.
+`DELETE /api/documents/:id?permanent=true` deletes it for good. Both keep the
 delete authority they have today.
 
 The Trash has its own resource:
@@ -180,9 +180,9 @@ An API token reaches the Trash like it reaches everything else
 read-only token may list but not restore or purge.
 
 The MCP server ([MCP server](../015-api/mcp-server.md)) goes to the Trash only:
-`delete_diagram` moves a diagram there and has no permanent option, so an AI
+`delete_document` moves a diagram there and has no permanent option, so an AI
 tool can bin a diagram but never destroy one. `list_trash` and
-`restore_diagram` are the way back, with the REST Trash's authority. The
+`restore_document` are the way back, with the REST Trash's authority. The
 permanent delete stays with the person and the REST API.
 
 ## Designed for a mirror
@@ -190,8 +190,8 @@ permanent delete stays with the person and the REST API.
 A later Google Drive mirror will map Drive's bin onto this Trash: binning a
 diagram's file in Drive moves the diagram to the Trash, restoring it in Drive
 restores it, and emptying Drive's bin purges it. The three operations are plain
-calls with no HTTP concerns (`trashDiagram`, `restoreDiagram`,
-`purgeDiagrams`) in `apps/api/src/db/trash.ts`: trash takes an id and the time,
+calls with no HTTP concerns (`trashDocument`, `restoreDocument`,
+`purgeDocuments`) in `apps/api/src/db/trash.ts`: trash takes an id and the time,
 restore an id, purge a list of ids. Each keeps its own guard (only a live
 diagram is trashed, only a trashed one restored or purged), so the mirror calls
 them directly without re-checking state.
@@ -201,7 +201,7 @@ them directly without re-checking state.
 One category, `Trash` ([Telemetry](../017-telemetry/telemetry.md)): `Opened`
 (`Settings`), and `Restored` / `Deleted` (for good) / `Cleared` (Empty
 Trash), each typed by the Trash it happened in: `Personal`, `Team` or
-`Local`. The delete itself stays `Diagram·Deleted`. Whether anyone ever comes
+`Local`. The delete itself stays `Document·Deleted`. Whether anyone ever comes
 back for a deleted diagram is the question these answer; no names are sent.
 
 ## Decided trade-offs

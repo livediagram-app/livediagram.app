@@ -15,7 +15,7 @@
 //     `Http401.SaveTab` could have been any of three different rules.
 //   - a request that never got a response (fetch rejected: DNS, CORS, a
 //     dropped connection): `Network.<Method>.<Route>`
-//     (`Network.Put.Diagrams.Tabs`), since apiFetch sees the URL but not the
+//     (`Network.Put.Documents.Tabs`), since apiFetch sees the URL but not the
 //     caller's action. The route label keeps only the api's fixed route words,
 //     never an id or share code.
 //   - a signed-in owner with no session token, whose request is never sent

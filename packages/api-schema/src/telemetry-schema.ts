@@ -67,7 +67,7 @@ export const TELEMETRY_CATEGORIES = [
   // via the consent screen, which mints a token under the hood).
   'Token',
   // MCP server tool calls (apps/mcp, docs/specs/015-api/mcp-server.md): 'Used' with `type` the tool
-  // name (CreateDiagram, ReadDiagram, ...). Emitted by the MCP worker, the
+  // name (CreateDocument, ReadDocument, ...). Emitted by the MCP worker, the
   // third app that reports telemetry, so usage shows up distinctly from the
   // in-editor AI panel.
   'Mcp',
@@ -103,7 +103,7 @@ export const TELEMETRY_CATEGORIES = [
   // retried. Never an action name, comment text, or diagram name.
   'Activity',
   // Page views (docs/specs/017-telemetry/page-view-telemetry.md): 'View' with `type` the normalised page path
-  // ('/help/canvas/the-canvas', '/diagram'), reported by every
+  // ('/help/canvas/the-canvas', '/document'), reported by every
   // frontend on each path change. The one category whose `type` is a path,
   // so it validates against PAGE_VIEW_PATH_PATTERN instead of the token
   // pattern, and only ever pairs with 'View'.

@@ -166,7 +166,7 @@ function GalleryCard({
       <GalleryImageButton
         image={image}
         ownerId={ownerId}
-        // Owner-only context, no diagramId / shareCode needed: the
+        // Owner-only context, no documentId / shareCode needed: the
         // byte-read endpoint allows the image's owner unconditionally.
         documentId=""
         onClick={() => setOpen((o) => !o)}

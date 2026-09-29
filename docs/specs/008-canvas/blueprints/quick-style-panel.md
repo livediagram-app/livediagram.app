@@ -231,12 +231,12 @@ calls `forget` with the kind keys of every target it changed.
 - `forgetStyleKinds(memory, kinds)`: removes those entries.
 - `parseStyleMemory(raw)`: `safeJson`, keeps only known kind keys and memorable fields with the right
   primitive type (string / number); anything else is dropped (D36).
-- Storage: `localStorage` key `livediagram:v2:style-memory:<diagramId>`, written through
+- Storage: `localStorage` key `livediagram:v2:style-memory:<documentId>`, written through
   `writeLocalStorageSafe`, at most once per `STYLE_MEMORY_WRITE_DEBOUNCE_MS = 250` (D37), and flushed
   on unmount. Read once per diagram id.
 
-`useStyleMemory({ diagramId, theme })` returns `recordEdit(before, after)`, `styleNewElement(el)`,
-`forget(kindKeys)`. With `diagramId === null` (still loading) nothing is read or written and
+`useStyleMemory({ documentId, theme })` returns `recordEdit(before, after)`, `styleNewElement(el)`,
+`forget(kindKeys)`. With `documentId === null` (still loading) nothing is read or written and
 `styleNewElement` is the identity.
 
 Capture points (the panel **or** the context menu):
@@ -377,7 +377,7 @@ label", "Icon after label"; "Clear styles". The panel's region label: "Quick sty
 | Selection changes while a tooltip is open | Tooltip unmounts with its option                                           |
 | Element deleted by a peer mid-choice      | The commit maps the live elements; a missing id is simply not there        |
 | Locked element in the selection           | Not a target; never written                                                |
-| `diagramId` null                          | Memory inert                                                               |
+| `documentId` null                          | Memory inert                                                               |
 
 ## Security and trust
 

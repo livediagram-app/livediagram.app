@@ -66,7 +66,7 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   // request can't bulk-insert. Unknown categories/actions/types
   // are dropped, never stored.
   // Pairs the worker counts itself (Session·SignedUp / SignedIn,
-  // Diagram·Joined, Email·Sent) are dropped here too, so a stale editor
+  // Document·Joined, Email·Sent) are dropped here too, so a stale editor
   // bundle that still emits them can't double count (docs/specs/017-telemetry/telemetry.md).
   const valid = raw
     .filter(isValidTelemetryEvent)

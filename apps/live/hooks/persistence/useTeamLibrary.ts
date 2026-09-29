@@ -152,7 +152,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   );
 
   // Rename a team diagram in place. Any joined member may edit it
-  // (docs/specs/013-workspace/team-shared-documents.md), gated server-side by canEditDiagram.
+  // (docs/specs/013-workspace/team-shared-documents.md), gated server-side by canEditDocument.
   const renameDocument = useCallback(
     async (documentId: string, name: string) => {
       if (!ownerId) return;
@@ -167,7 +167,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   );
 
   // Duplicate a team diagram, keeping the copy IN the team alongside
-  // the original (same folder). duplicateDiagramApi mints a personal
+  // the original (same folder). duplicateDocumentApi mints a personal
   // copy first; we then file it into this team + folder (docs/specs/013-workspace/team-shared-documents.md).
   const duplicateDocument = useCallback(
     async (documentId: string) => {

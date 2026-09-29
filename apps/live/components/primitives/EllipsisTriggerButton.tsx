@@ -27,7 +27,7 @@ const SIZE_CLASS = {
 //   the button has keyboard focus. Always visible on touch, where there
 //   is no hover. An open menu (`expanded`) pins it visible, so the
 //   anchor doesn't vanish from under its own menu.
-// - `tuck`: the card variant's corner-tuck margins (DiagramCard /
+// - `tuck`: the card variant's corner-tuck margins (DocumentCard /
 //   FolderCard headers).
 // - `onPointerDown`: for triggers inside draggable / pressable rows,
 //   which stop the press from starting a drag.

@@ -84,7 +84,7 @@ export function collabIndexStatements(
 }
 
 // A duplicated diagram copies its tab rows in SQL without parsing them
-// (copyDiagram), so the index rows are copied the same way, under the
+// (copyDocument), so the index rows are copied the same way, under the
 // fresh tab id.
 export function collabIndexCopyStatements(
   env: Env,

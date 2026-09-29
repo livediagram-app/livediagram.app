@@ -12,7 +12,7 @@ Scope, by file:
 | `apps/live/lib/excalidraw-embedded.ts`               | `extractExcalidrawScene`: PNG / SVG / JSON input to scene text          |
 | `apps/live/lib/import-tab.ts`                        | `ImportOutcome` gains the report; `pickTabFile` also returns the `File` |
 | `apps/live/hooks/persistence/useTabImport.ts`        | Runs extraction, the converter, the pipeline, then one replace          |
-| `apps/live/hooks/persistence/useTabActions.ts`       | Passes `diagramId` through                                              |
+| `apps/live/hooks/persistence/useTabActions.ts`       | Passes `documentId` through                                              |
 | `apps/live/components/dialogs/TextImportPanel.tsx`   | Progress label; hands the outcome to the dialog                         |
 | `apps/live/components/dialogs/ImportTabDialog.tsx`   | Shows the report view when the outcome carries one                      |
 | `apps/live/components/dialogs/ImportImageReport.tsx` | The report view                                                         |
@@ -69,7 +69,7 @@ read."
 
 ### `useTabImport`
 
-- Deps gain `ownerId: string` and `diagramId: string | null`.
+- Deps gain `ownerId: string` and `documentId: string | null`.
 - `importTextIntoActiveTab(format, text, onProgress?)` and `importIntoActiveTab(format,
 onProgress?)`. The file path for `excalidraw` reads `new Uint8Array(await file.arrayBuffer())`;
   the text path passes the string. Both go to `importExcalidraw(input, onProgress)`:

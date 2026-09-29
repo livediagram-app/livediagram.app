@@ -28,7 +28,7 @@ Paths are relative to `https://livediagram.app/api`. For the exact request and r
 A diagram **list** returns metadata only, not the tab contents:
 
 ```bash
-curl https://livediagram.app/api/diagrams \
+curl https://livediagram.app/api/documents \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -43,14 +43,14 @@ curl https://livediagram.app/api/diagrams \
 Fetching one diagram returns its metadata and a list of **tab summaries**, but still not the elements on each tab:
 
 ```bash
-curl https://livediagram.app/api/diagrams/abc123 \
+curl https://livediagram.app/api/documents/abc123 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 To get the actual contents of a tab, request it by id. This keeps listing a big diagram cheap:
 
 ```bash
-curl https://livediagram.app/api/diagrams/abc123/tabs/tab-1 \
+curl https://livediagram.app/api/documents/abc123/tabs/tab-1 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -66,10 +66,10 @@ curl https://livediagram.app/api/diagrams/abc123/tabs/tab-1 \
 
 ## Create a diagram
 
-`POST /diagrams` creates a diagram. You supply the `id` (any unique string), a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes:
+`POST /documents` creates a diagram. You supply the `id` (any unique string), a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes:
 
 ```bash
-curl -X POST https://livediagram.app/api/diagrams \
+curl -X POST https://livediagram.app/api/documents \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -95,7 +95,7 @@ Arrows, text, images, and the rest of the element types follow the same pattern 
 To change what is on a tab, send the whole tab with `PUT`. It replaces that tab's contents, so include every element you want to keep:
 
 ```bash
-curl -X PUT https://livediagram.app/api/diagrams/svc-map/tabs/tab-1 \
+curl -X PUT https://livediagram.app/api/documents/svc-map/tabs/tab-1 \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{ "id": "tab-1", "name": "Overview", "elements": [ /* the full set */ ] }'
@@ -115,7 +115,7 @@ curl -X POST https://livediagram.app/api/folders \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "id": "infra", "name": "Infrastructure" }'
 
-curl -X PUT https://livediagram.app/api/diagrams/svc-map/folder \
+curl -X PUT https://livediagram.app/api/documents/svc-map/folder \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "folderId": "infra" }'
 ```
@@ -125,7 +125,7 @@ curl -X PUT https://livediagram.app/api/diagrams/svc-map/folder \
 Create a share link with a role of `view` or `edit`:
 
 ```bash
-curl -X POST https://livediagram.app/api/diagrams/svc-map/share \
+curl -X POST https://livediagram.app/api/documents/svc-map/share \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "role": "view" }'
 ```

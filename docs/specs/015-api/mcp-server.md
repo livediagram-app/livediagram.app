@@ -161,18 +161,18 @@ rather than instructions ([§4.15](#415-descriptions-state-facts-not-instruction
 and declares the shape of its result as an **output schema**
 ([§4.17](#417-structured-output-and-described-parameters)).
 
-Every diagram and tab **name** argument (`create_diagram`'s `name` and each
-tab's `name`, `add_tab`'s `name`, `rename_diagram`'s `name`) states the
+Every diagram and tab **name** argument (`create_document`'s `name` and each
+tab's `name`, `add_tab`'s `name`, `rename_document`'s `name`) states the
 60-character cap in its description and is shortened by the schema itself
 with the shared `truncateName`, so the name a tool sends and reports back is
 the one the api stores ([Tab and diagram name length](../006-document/name-length.md)).
 
-### 4.1 `find_diagrams`
+### 4.1 `find_documents`
 
 Search/list the caller's diagrams — the **personal library AND every joined
 team's shared library** ([Team shared diagrams](../013-workspace/team-shared-documents.md)). A diagram
 filed into a team leaves its owner's personal list entirely, so the personal
-`GET /api/diagrams` alone is not "the user's diagrams": the tool sweeps
+`GET /api/documents` alone is not "the user's diagrams": the tool sweeps
 `GET /api/teams` + `GET /api/teams/:id/library` alongside it (the api accepts
 the token identity on those reads — [Public API and API tokens §3.4](public-api-and-tokens.md)),
 merges, and ranks newest-saved first. The team sweep is best-effort: a teams
@@ -181,19 +181,19 @@ failure degrades to personal-only results, never an error. Input: optional
 `{ id, name, updatedAt, library, url }` where `library` is `personal` or the
 team's name and `url` is the `livediagram.app` deep link to open it. **No image
 here** — kept lightweight so the model can scan many results cheaply, then
-`read_diagram` the one it wants.
+`read_document` the one it wants.
 
-### 4.2 `read_diagram`
+### 4.2 `read_document`
 
 Fetch one diagram's full content **and render it** — this is the "visualise"
-capability. Input: `diagramId`, optional `tabId` (defaults to the first tab).
-Wraps `GET /api/diagrams/:id` + `GET /api/diagrams/:id/tabs/:tabId`. Returns the
+capability. Input: `documentId`, optional `tabId` (defaults to the first tab).
+Wraps `GET /api/documents/:id` + `GET /api/documents/:id/tabs/:tabId`. Returns the
 tab's `elements` as structured JSON (so the model can understand and, if asked,
 edit it) **plus an inline PNG** of the tab as MCP image content ([§5](#5-visualise--inline-image-render)),
-plus the deep-link `url`. So "show me my auth-flow diagram" → `find_diagrams` →
-`read_diagram` renders it inline.
+plus the deep-link `url`. So "show me my auth-flow diagram" → `find_documents` →
+`read_document` renders it inline.
 
-### 4.3 `create_diagram`
+### 4.3 `create_document`
 
 Create a new diagram from elements the model produced. Input: `name`, `tabs:
 [{ name, elements: Element[] }]` (one tab, or several to build a **multi-tab**
@@ -202,7 +202,7 @@ optional `layout`. Each tab may instead pass `template: TemplateKind` in place
 of `elements` — the server materialises the hand-tuned scaffold from
 `@livediagram/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout (`layout` is ignored for a template tab) and applying that template's
-canvas overrides; the model then personalises labels via `update_diagram`'s
+canvas overrides; the model then personalises labels via `update_document`'s
 `ops` mode. The MCP:
 
 1. **Validates** each tab's `elements` with `isValidTab` (reject `400`-style with
@@ -226,7 +226,7 @@ canvas overrides; the model then personalises labels via `update_diagram`'s
    their own afterwards (which moves it out of Generated). (Earlier this
    find-or-created a real "Generated" folder; the provenance tag replaces
    that so the folder is dynamic, like Unsorted.)
-4. **Persists** all tabs via `POST /api/diagrams` (which seeds a `tabs[]` array
+4. **Persists** all tabs via `POST /api/documents` (which seeds a `tabs[]` array
    and accepts `source`).
 5. **Returns** the new `id`, tab count + ids, the folder, the deep-link `url`,
    **and the rendered PNG of the first tab** so the user sees the result inline.
@@ -235,21 +235,21 @@ canvas overrides; the model then personalises labels via `update_diagram`'s
 
 Add a **new tab** (its own canvas) to an existing diagram — the motivating case:
 "make a tab going into more detail on one part of this architecture." Input:
-`diagramId`, `name`, `elements`, optional `layout` — or `template: TemplateKind`
-instead of `elements`, exactly like a `create_diagram` tab. Validates + lays out
-exactly like a `create_diagram` tab, then `PUT /api/diagrams/:id/tabs/:newTabId` — which
+`documentId`, `name`, `elements`, optional `layout` — or `template: TemplateKind`
+instead of `elements`, exactly like a `create_document` tab. Validates + lays out
+exactly like a `create_document` tab, then `PUT /api/documents/:id/tabs/:newTabId` — which
 is an upsert that also links the tab into the diagram and appends it, so a fresh
 tab id creates and orders the tab in one call. Returns the new `tabId`, `url`,
-and the rendered PNG. (Pair with `read_diagram`, which lists the diagram's
+and the rendered PNG. (Pair with `read_document`, which lists the diagram's
 existing tabs, to decide where a new one fits.)
 
-### 4.4 `update_diagram`
+### 4.4 `update_document`
 
 Edit an existing tab. **Two modes** (the user asked for both):
 
 - **`replace`** — for building or reworking a whole tab. Input: full new
   `elements: Element[]` (and the same optional `layout` control as
-  `create_diagram`). Validated + laid out exactly like `create_diagram`, then
+  `create_document`). Validated + laid out exactly like `create_document`, then
   `PUT …/tabs/:tabId`. Use when the change is large enough that re-emitting the
   tab is cleaner than patching.
 - **`ops`** — for small adjustments. Input: an ordered list of
@@ -270,11 +270,11 @@ Quick Start picker ships ([Canvas and palette](../008-canvas/canvas-and-palette.
 `@livediagram/templates` package so the worker and the editor can't drift.
 No input. Returns the categories plus one row per template:
 `{ kind, title, description, category }` — enough for the model to pick a
-`kind` and pass it as `template` on `create_diagram` / `add_tab`. Deliberately
+`kind` and pass it as `template` on `create_document` / `add_tab`. Deliberately
 metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit — or accidentally mangle — a curated layout.
 The recommended flow for "make me a kanban board"-style asks: `list_templates`
-→ create with `template` → `update_diagram` (`ops`) to fill in real content.
+→ create with `template` → `update_document` (`ops`) to fill in real content.
 
 ### 4.6 Schema resource (not a tool)
 
@@ -297,7 +297,7 @@ truth, no hand-maintained copy that can drift.
 Emitting raw `elements` with `x/y/width/height`, a shape vocabulary, and
 arrow-endpoint anchor objects is the biggest source of model error (it's why
 `coerceShapeKind`, the validation error paths, and auto-layout-on-replace all
-exist). So `create_diagram`, `add_tab`, and `update_diagram` (replace mode)
+exist). So `create_document`, `add_tab`, and `update_document` (replace mode)
 accept an alternative **`graph`** input — the connection graph and nothing else —
 or the same thing written as **`mermaid`**:
 
@@ -446,30 +446,30 @@ wrongly:
   its contents covered them. It also makes each lane the backmost box under its
   contents, which is what lets dragging it in the editor carry them.
 
-### 4.8 `share_diagram`
+### 4.8 `share_document`
 
 Create a shareable link so anyone with the URL can open a diagram without
 signing in — the verb that turns "the AI made a diagram" into "the AI made a
-diagram and here's a link to send the team." Wraps `POST /api/diagrams/<id>/share`
-([Share password](../013-workspace/share-password.md)): `{ diagramId, role?, expiry? }` → the public URL
-(`/diagram/shared?s=<code>`), the granted role, and the expiry. `role` defaults
+diagram and here's a link to send the team." Wraps `POST /api/documents/<id>/share`
+([Share password](../013-workspace/share-password.md)): `{ documentId, role?, expiry? }` → the public URL
+(`/document/shared?s=<code>`), the granted role, and the expiry. `role` defaults
 to **`view`** (least privilege for an automated share — showing your work
 shouldn't silently grant edit; the model passes `edit` to allow changes), and
 the api applies the same owner-only authorization every share route enforces, so
 a token can only share diagrams its account owns. `expiry` ([Share-link expiry](../013-workspace/share-link-expiry.md)) defaults to
 `never`.
 
-### 4.9 `rename_diagram` and `delete_diagram`
+### 4.9 `rename_document` and `delete_document`
 
 CRUD completeness — the verbs a user will reach for the moment they ask their
 assistant to "rename that" or "delete the old one":
 
-- **`rename_diagram`** — `{ diagramId, name, tabId? }`. Renames the diagram
-  (`PUT /api/diagrams/<id>` `{ name }`), or one tab when `tabId` is given (no
+- **`rename_document`** — `{ documentId, name, tabId? }`. Renames the diagram
+  (`PUT /api/documents/<id>` `{ name }`), or one tab when `tabId` is given (no
   tab-name-only route, so it reads the tab and writes it back with the new
   name). Non-destructive.
-- **`delete_diagram`** — `{ diagramId, tabId? }`. Moves the diagram to the
-  [Trash](../013-workspace/trash.md) (`DELETE /api/diagrams/<id>`), restorable
+- **`delete_document`** — `{ documentId, tabId? }`. Moves the diagram to the
+  [Trash](../013-workspace/trash.md) (`DELETE /api/documents/<id>`), restorable
   for 30 days, and says so in its result (`trashed: true`, `restorableForDays`).
   There is no permanent option: an AI tool can only ever bin a diagram, never
   destroy it. A permanent delete stays with the person (Settings › Trash) or
@@ -483,16 +483,16 @@ assistant to "rename that" or "delete the old one":
 Both inherit the ordinary owner/team authorization the routes already enforce
 ([Public API and API tokens §3.4](public-api-and-tokens.md)).
 
-### 4.9a `list_trash` and `restore_diagram`
+### 4.9a `list_trash` and `restore_document`
 
-The way back from `delete_diagram`, with exactly the REST Trash's authority
+The way back from `delete_document`, with exactly the REST Trash's authority
 (`GET /api/trash`, `POST /api/trash/<id>/restore`): the user's personal Trash
 and every team Trash they have joined.
 
 - **`list_trash`** — `{}`. Read-only. Each diagram the user may restore:
   `{ id, name, library, deletedAt, purgeAt }`, `library` being `personal` or
   the team's name, the two times ISO 8601.
-- **`restore_diagram`** — `{ diagramId }`. Restores it to its folder, or
+- **`restore_document`** — `{ documentId }`. Restores it to its folder, or
   Unsorted when that folder is gone, and returns `{ restored, id, name, url }`.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
   pointing at `list_trash`.
@@ -504,11 +504,11 @@ commands / quick actions, so a user finds what the server does without knowing
 the tool names. Pure text (no api calls, no auth to list); each steers the model
 to the right tools and the graph-first path:
 
-- **`diagram_this`** `{ description }` — create a diagram from a description via
+- **`document_this`** `{ description }` — create a diagram from a description via
   create_diagram + the graph input, and return a link.
 - **`flowchart_from_steps`** `{ steps }` — turn an ordered step list (with
   branches) into a flowchart (diamond decisions, labelled branch edges).
-- **`show_my_diagram`** `{ name }` — find a diagram by name and read_diagram it
+- **`show_my_document`** `{ name }` — find a diagram by name and read_diagram it
   inline.
 
 Registered in `apps/mcp/src/prompts.ts`, wired in `buildServer` beside the tools
@@ -535,8 +535,8 @@ Genuine tool failures reach the public **Exceptions** dashboard ([Telemetry + pu
 category), so we see WHERE the MCP breaks. `apiJson` reports a **5xx** from the
 api worker (`Error·Api·Http5xx.<Tool>`) and a **network fault** (the service
 binding threw — `Error·Api·Internal.<Tool>`), then rethrows; the
-`delete_diagram` raw-fetch path reports a 5xx too. `<Tool>` is the running
-tool's PascalCase name (`Http503.UpdateDiagram`), the same token as its
+`delete_document` raw-fetch path reports a 5xx too. `<Tool>` is the running
+tool's PascalCase name (`Http503.UpdateDocument`), the same token as its
 `Mcp·Used` event, carried by the `AsyncLocalStorage` scope `registerTool` wraps
 every handler in (`tool-scope.ts`), so the dashboard says which tool broke. A **4xx is deliberately NOT reported** — a bad id or
 malformed elements is expected, model-correctable input, not a fault, and
@@ -584,18 +584,18 @@ Three behaviours cover the eleven tools, and each is a preset in
 
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                             |
 | --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_diagrams`, `read_diagram`, `list_templates`, `list_trash`                   |
-| **write**       | `false`        | `false`           | `create_diagram`, `add_tab`, `share_diagram`, `rename_diagram`, `restore_diagram` |
-| **destructive** | `false`        | `true`            | `update_diagram`, `delete_diagram`                                                |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`                   |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`                                                |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
 client sees and the rule the api enforces can't drift apart.
 
-`update_diagram` is **destructive** rather than a plain write: its `replace`
+`update_document` is **destructive** rather than a plain write: its `replace`
 mode swaps a tab's whole element set, so an edit can overwrite work the user
 already had. (Its `ops` mode is surgical, but a hint describes the tool, not
-the argument, and the cautious reading is the right one.) `share_diagram`
+the argument, and the cautious reading is the right one.) `share_document`
 stays a plain write: it mints a new link and changes nothing that existed,
 and the link is revocable. `destructiveHint` is deliberately omitted where
 `readOnlyHint` is `true`: MCP ignores it there, and stating it would imply the
@@ -630,7 +630,7 @@ caller, so it was rewritten as a plain statement:
 > The full element format is documented inline on each tool's element
 > argument, so the tool definitions are the complete reference for it.
 
-Where a genuine safety confirmation belongs, as in `delete_diagram` asking the
+Where a genuine safety confirmation belongs, as in `delete_document` asking the
 user before an irreversible delete, it stays, and is now also carried
 structurally by `destructiveHint` (§4.14), which is the mechanism a client
 actually acts on.
@@ -663,24 +663,24 @@ returns on success. A successful result carries that object twice: as
 **`structuredContent`**, which a client can parse and validate without reading
 prose, and serialised as the first text block, for clients that only read
 `content` (the backwards-compatible form MCP recommends). The four tools that
-render a preview (`read_diagram`, `create_diagram`, `add_tab`,
-`update_diagram`) add the inline PNG after it ([§5](#5-visualise--inline-image-render)).
+render a preview (`read_document`, `create_document`, `add_tab`,
+`update_document`) add the inline PNG after it ([§5](#5-visualise--inline-image-render)).
 An error result (`isError: true`, a model-correctable message) carries text only
 and no `structuredContent`; MCP exempts errors from the output schema.
 
 | Tool              | Result object                                                                                             |
 | ----------------- | --------------------------------------------------------------------------------------------------------- |
-| `find_diagrams`   | `count`, `diagrams[]` of `{ id, name, updatedAt, library, url }`                                          |
-| `read_diagram`    | `id`, `name`, `tab { id, name, elements[] }`, `url`                                                       |
+| `find_documents`   | `count`, `diagrams[]` of `{ id, name, updatedAt, library, url }`                                          |
+| `read_document`    | `id`, `name`, `tab { id, name, elements[] }`, `url`                                                       |
 | `list_templates`  | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
-| `create_diagram`  | `id`, `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                     |
-| `add_tab`         | `diagramId`, `tabId`, `name`, `url`                                                                       |
-| `update_diagram`  | `id`, `tabId`, `url`                                                                                      |
-| `share_diagram`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `diagramUrl`                                    |
-| `rename_diagram`  | `renamed` (`diagram` or `tab`), `name`, then `id` + `url` for a diagram or `tabId` for a tab              |
-| `delete_diagram`  | `deleted` (`diagram` or `tab`), `diagramId`, then `trashed` + `restorableForDays` or `tabId`              |
+| `create_document`  | `id`, `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                     |
+| `add_tab`         | `documentId`, `tabId`, `name`, `url`                                                                       |
+| `update_document`  | `id`, `tabId`, `url`                                                                                      |
+| `share_document`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                    |
+| `rename_document`  | `renamed` (`diagram` or `tab`), `name`, then `id` + `url` for a diagram or `tabId` for a tab              |
+| `delete_document`  | `deleted` (`diagram` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`              |
 | `list_trash`      | `trash[]` of `{ id, name, library, deletedAt, purgeAt }` (ISO timestamps)                                 |
-| `restore_diagram` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
+| `restore_document` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
 
 **The schema and the result can't drift.** The schemas live in
 `apps/mcp/src/output-schema.ts`, one per tool, and the `registerTool` wrapper
@@ -698,7 +698,7 @@ values, and connector directories score servers on it. A test walks the
 advertised `tools/list` schemas and fails on any property without a
 description.
 
-**Tool names stay `snake_case` verbs** (`create_diagram`, `list_trash`). Some
+**Tool names stay `snake_case` verbs** (`create_document`, `list_trash`). Some
 directories prefer dot-notation trees (`diagram.create`); it is not adopted,
 because several clients restrict a tool name to `[a-zA-Z0-9_-]`, and a rename
 would break every existing connection and the cross-references between tool
@@ -706,7 +706,7 @@ descriptions.
 
 ## 5. Visualise — inline image render
 
-`read_diagram`, `create_diagram`, and `update_diagram` all return an **inline
+`read_document`, `create_document`, and `update_document` all return an **inline
 PNG** so the diagram shows in the chat. This needs headless rendering inside a
 Worker (no DOM, no React).
 
@@ -780,9 +780,9 @@ Worker (no DOM, no React).
 2. **Shared SVG renderer** — extract `packages/document/src/svg-render.ts` from
    `export-tab.ts`, repoint the in-app export to it (no behaviour change), add
    `@resvg/resvg-wasm` rasterisation in the worker.
-3. **Tools, read-first** — `find_diagrams`, `read_diagram` (+ schema resource).
+3. **Tools, read-first** — `find_documents`, `read_document` (+ schema resource).
    These are read-only and prove the schema + render path end to end.
-4. **Write tools** — `create_diagram`, `update_diagram` (both modes), reusing
+4. **Write tools** — `create_document`, `update_document` (both modes), reusing
    `validate.ts` + `auto-layout.ts`.
 5. **OAuth** — `/api/oauth/exchange` on the api worker (reusing the token-mint
    path, Clerk-gated like `/api/tokens`); `apps/live` consent page; the MCP
@@ -804,9 +804,9 @@ Worker (no DOM, no React).
 - **Folder / team management** via MCP — there are no tools to list, rename, or
   move folders (create_diagram only auto-files new diagrams under "Generated");
   more `/api` surface can be wrapped later if demand appears. (Share-link
-  creation IS in scope now — `share_diagram`, [§4.8](#48-share_diagram); managing
+  creation IS in scope now — `share_document`, [§4.8](#48-share_diagram); managing
   folders/teams themselves stays out.)
-  (Team **content** is in scope: `find_diagrams` sweeps team shared libraries
+  (Team **content** is in scope: `find_documents` sweeps team shared libraries
   and the other tools read/edit team diagrams through the ordinary access
   gates — [§4.1](#41-find_diagrams), [Public API and API tokens §3.4](public-api-and-tokens.md).
   Managing teams themselves stays out, and the api refuses it to tokens.)

@@ -35,7 +35,7 @@ function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', teamId: strin
   });
 }
 
-// A tab created in `diagramId` through the real autosave path, with one
+// A tab created in `documentId` through the real autosave path, with one
 // history entry and one collaboration-index row hanging off it.
 async function tab(db: SqliteD1, documentId: string, id: string): Promise<void> {
   await upsertTab(db.env, documentId, { id, name: id, elements: [] } as unknown as Tab, 0);

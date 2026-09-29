@@ -30,7 +30,7 @@ export { PaneHeader } from './PaneHeader';
 export { menuHandlers as folderMenuHandlers } from './folder-row';
 export { FolderRow };
 
-// Diagram rows render the api client's DiagramListItem directly
+// Diagram rows render the api client's DocumentListItem directly
 // (same rows the floating Explorer panel uses), so the two explorer
 // surfaces can't drift apart on what a list item carries. Recent rows
 // (docs/specs/013-workspace/team-shared-documents.md) may additionally carry:

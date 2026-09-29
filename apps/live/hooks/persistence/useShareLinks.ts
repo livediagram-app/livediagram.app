@@ -70,7 +70,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
 
   // Create a new share link for the current diagram with the given
   // role and lifetime (docs/specs/013-workspace/share-link-expiry.md; 'never' = works until revoked). The
-  // editor route always has a real diagramId by the time the Share
+  // editor route always has a real documentId by the time the Share
   // dialog is open — the welcome / mint-id flow now lives on
   // /live/new (docs/specs/007-editor/new-document-route.md) — so this just calls the API directly.
   //

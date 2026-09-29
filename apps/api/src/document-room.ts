@@ -133,7 +133,7 @@ type SessionAttachment = {
   //     promise that no real identity reaches the room.
   isOwner?: boolean;
   //   - `multiplayer`: this session belongs to a multiplayer session the
-  //     room has already counted (Diagram·Used·Multiplayer, docs/specs/017-telemetry/telemetry.md). See
+  //     room has already counted (Document·Used·Multiplayer, docs/specs/017-telemetry/telemetry.md). See
   //     room-multiplayer.ts for why the mark lives here.
   multiplayer?: boolean;
   //   - `tabScope`: the one tab this session is confined to
@@ -199,7 +199,7 @@ export class DocumentRoom implements DurableObject {
   poll: RoomLivePoll;
 
   // The worker env, for the one server-side telemetry emit the room owns
-  // (Diagram·Used·Multiplayer). Optional so unit tests can build a room
+  // (Document·Used·Multiplayer). Optional so unit tests can build a room
   // from a fake state alone; without it the emit is skipped.
   env: Env | undefined;
 
@@ -246,7 +246,7 @@ export class DocumentRoom implements DurableObject {
     // Internal fan-out endpoint, called by the api worker after a
     // privileged action that every connected client should learn
     // about immediately (e.g. share-link revocation). Not exposed
-    // publicly: the worker stubs the DO via `env.DIAGRAM_ROOM.get(...)
+    // publicly: the worker stubs the DO via `env.DOCUMENT_ROOM.get(...)
     // .fetch(...)`, which never traverses Cloudflare's edge, so the
     // path is implicitly internal. Body is `{ op: RoomOp }` and the
     // op gets broadcast with a synthetic `from: 'system'` so the
@@ -306,7 +306,7 @@ export class DocumentRoom implements DurableObject {
     const server = pair[1]!;
     // Server-resolved role (set by the api worker before forwarding the
     // upgrade). The DO trusts this header because only the worker can
-    // set it: clients reach the DO via env.DIAGRAM_ROOM.get(...).fetch,
+    // set it: clients reach the DO via env.DOCUMENT_ROOM.get(...).fetch,
     // never directly. Persisted into the session attachment so the
     // hello-handler can re-stamp role onto the broadcast presence even
     // after a hibernation cycle, defeating a crafted client that lies

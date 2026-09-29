@@ -27,14 +27,14 @@ The API lives under `/api` on your livediagram host. On the hosted service that 
 https://livediagram.app/api
 ```
 
-On a self-hosted instance it is `/api` on your own domain. Every path in these docs is relative to that base, so `GET /diagrams` means `GET https://livediagram.app/api/diagrams`.
+On a self-hosted instance it is `/api` on your own domain. Every path in these docs is relative to that base, so `GET /documents` means `GET https://livediagram.app/api/documents`.
 
 ## Authenticating in one line
 
 Send an API token as a bearer header on each request:
 
 ```bash
-curl https://livediagram.app/api/diagrams \
+curl https://livediagram.app/api/documents \
   -H "Authorization: Bearer lvd_your_token_here"
 ```
 

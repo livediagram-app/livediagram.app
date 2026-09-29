@@ -45,7 +45,7 @@ card were removed once this tour proved the better introduction.
 
 ## Handoff
 
-Create hard-navigates to `/diagram/<id>`, so the intent crosses pages via a
+Create hard-navigates to `/document/<id>`, so the intent crosses pages via a
 **sessionStorage flag** (`livediagram:v2:tour-pending`), set just before
 `window.location.assign`. The editor PEEKS at the flag and clears it only
 when the offer is **resolved** (completed, skipped, or declined) — never on

@@ -78,7 +78,7 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Invites ([Teams](teams.md)) | `/explorer/invites`                                         |
 | Image gallery               | `/explorer/images`                                          |
 
-`/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/diagram/<id>` placeholder-rewrite workaround ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent diagrams", "Image gallery"). Section headers, top to bottom: **"Quick find"** (Timeline, [Timeline](timeline.md); Activity, [Activity page](activity-page.md); Recent diagrams; Favourites; Shared with you), **"Personal Space"** (the personal tree — Unsorted + the root folders directly, no "All diagrams" parent row; contrasts with team libraries, [Team shared diagrams](team-shared-documents.md)), **"Teams"** ([Teams](teams.md)), and **"Library"**.
+`/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent diagrams", "Image gallery"). Section headers, top to bottom: **"Quick find"** (Timeline, [Timeline](timeline.md); Activity, [Activity page](activity-page.md); Recent diagrams; Favourites; Shared with you), **"Personal Space"** (the personal tree — Unsorted + the root folders directly, no "All diagrams" parent row; contrasts with team libraries, [Team shared diagrams](team-shared-documents.md)), **"Teams"** ([Teams](teams.md)), and **"Library"**.
 
 Out of scope (V1):
 
@@ -158,11 +158,11 @@ All endpoints continue the existing `X-Owner-Id` convention.
 | POST   | `/api/folders`             | `{ id, name, parentId? }`            | `{ folder: Folder }`    |
 | PUT    | `/api/folders/:id`         | `{ name?, parentId? }` (cycle check) | `{ folder: Folder }`    |
 | DELETE | `/api/folders/:id`         |                                      | 204                     |
-| PUT    | `/api/diagrams/:id/folder` | `{ folderId \| null }`               | 204                     |
+| PUT    | `/api/documents/:id/folder` | `{ folderId \| null }`               | 204                     |
 
 `Folder` = `{ id, name, parentId, createdAt, updatedAt }`.
 
-`GET /api/diagrams` is extended to include `folderId` on each row (camelCase DTO; null for Unsorted). No new endpoint needed for "diagrams in folder X": the Explorer already has the full list client-side.
+`GET /api/documents` is extended to include `folderId` on each row (camelCase DTO; null for Unsorted). No new endpoint needed for "diagrams in folder X": the Explorer already has the full list client-side.
 
 ## Explorer UI — two surfaces
 
@@ -229,12 +229,12 @@ link.
 - Diagram-row ellipsis menu gains a "Change Folder" sub-action that
   opens the shared placement browser (personal folders + Unsorted,
   and teams with their folders — see the move-picker note above).
-  Picking one calls `PUT /api/diagrams/:id/folder`.
+  Picking one calls `PUT /api/documents/:id/folder`.
 - **Drag-and-drop**: diagram rows are HTML5-draggable. Drop targets
   are folder headers (any nested depth) and the synthetic Unsorted
   header. Drag-over highlights the target with a brand-blue ring so
   the user sees where the diagram will land. Drop fires the same
-  `onMoveDiagramToFolder(diagramId, targetFolderId)` callback the
+  `onMoveDocumentToFolder(documentId, targetFolderId)` callback the
   picker uses, so the move travels through the same API path and
   optimistic update. Drag transfer uses a custom MIME type
   (`application/x-livediagram-id`) so dragging a diagram never

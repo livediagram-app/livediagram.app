@@ -11,29 +11,29 @@ Scope, by file:
 
 | File                                                                             | Role                                                                                     |
 | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/trash.ts`                                               | The clock and the wire: retention, days left, error code, close code, `TrashedDiagram`   |
-| `apps/api/migrations/0051_diagram_trash.sql`                                     | `diagrams.trashed_at` + the partial index                                                |
-| `apps/api/src/db/trash.ts`                                                       | `trashDiagram`, `restoreDiagram`, `purgeDiagrams`, `purgeExpiredTrash`, `listTrash`, ... |
-| `apps/api/src/db/document-removal.ts`                                            | `diagramRemovalStatements` takes `{ ids }` besides one id / one owner                    |
-| `apps/api/src/db/documents.ts`                                                   | `getDiagram`, `getDiagramMeta`, both lists: live rows only                               |
-| `apps/api/src/db/{shared,favourites,collab-index,tabs,timeline}.ts`              | The reads that leave trashed diagrams out; `diagramsTimelineSweepStatement`              |
+| `packages/api-schema/src/trash.ts`                                               | The clock and the wire: retention, days left, error code, close code, `TrashedDocument`   |
+| `apps/api/migrations/0051_document_trash.sql`                                     | `diagrams.trashed_at` + the partial index                                                |
+| `apps/api/src/db/trash.ts`                                                       | `trashDocument`, `restoreDocument`, `purgeDocuments`, `purgeExpiredTrash`, `listTrash`, ... |
+| `apps/api/src/db/document-removal.ts`                                            | `documentRemovalStatements` takes `{ ids }` besides one id / one owner                    |
+| `apps/api/src/db/documents.ts`                                                   | `getDocument`, `getDocumentMeta`, both lists: live rows only                               |
+| `apps/api/src/db/{shared,favourites,collab-index,tabs,timeline}.ts`              | The reads that leave trashed diagrams out; `documentsTimelineSweepStatement`              |
 | `apps/api/src/timeline/expiry-sweep.ts`                                          | No expiry warning for a trashed diagram's links                                          |
-| `apps/api/src/routes/context.ts`                                                 | `missingDiagram`: 410 or 404 on a miss; the guards use it                                |
-| `apps/api/src/routes/document-delete-route.ts`                                   | `DELETE /api/diagrams/:id`: trash, `?permanent=true`, Take Offline                       |
+| `apps/api/src/routes/context.ts`                                                 | `missingDocument`: 410 or 404 on a miss; the guards use it                                |
+| `apps/api/src/routes/document-delete-route.ts`                                   | `DELETE /api/documents/:id`: trash, `?permanent=true`, Take Offline                       |
 | `apps/api/src/routes/trash.ts`                                                   | `/api/trash` list, restore, purge one, empty                                             |
-| `apps/api/src/routes/{diagrams,share,diagram-room-routes,...}.ts`                | The doors: 410 through `missingDiagram`; the ws upgrade refuses                          |
-| `apps/api/src/room-client.ts`, `document-room.ts`, `room-scope.ts`               | `broadcastDiagramTrashed`; the room closes every socket with 4004                        |
+| `apps/api/src/routes/{diagrams,share,diagram-room-routes,...}.ts`                | The doors: 410 through `missingDocument`; the ws upgrade refuses                          |
+| `apps/api/src/room-client.ts`, `document-room.ts`, `room-scope.ts`               | `broadcastDocumentTrashed`; the room closes every socket with 4004                        |
 | `apps/api/src/index.ts`, `auth/guest-rest.ts`                                    | `trash` dispatch + guest-signature scope; the cron's `purgeExpiredTrash`                 |
-| `apps/api/src/openapi/manifest.ts`, `document.ts`, `scripts/gen-openapi-...`     | The Trash tag and routes; 410 on the diagram doors; `TrashedDiagram` schema              |
-| `apps/mcp/src/{tools,schema}.ts`                                                 | `delete_diagram` to the Trash only; `list_trash`, `restore_diagram`                      |
-| `apps/live/lib/api/trash.ts`                                                     | `apiListTrash`, `apiRestoreDiagram`, `apiPurgeDiagram`, `apiEmptyTrash`                  |
+| `apps/api/src/openapi/manifest.ts`, `document.ts`, `scripts/gen-openapi-...`     | The Trash tag and routes; 410 on the diagram doors; `TrashedDocument` schema              |
+| `apps/mcp/src/{tools,schema}.ts`                                                 | `delete_document` to the Trash only; `list_trash`, `restore_document`                      |
+| `apps/live/lib/api/trash.ts`                                                     | `apiListTrash`, `apiRestoreDocument`, `apiPurgeDocument`, `apiEmptyTrash`                  |
 | `apps/live/lib/offline/offline-trash.ts`, `offline-store.ts`                     | The local Trash on the IndexedDB record                                                  |
-| `apps/live/lib/document-trashed.ts`, `document-tombstones.ts`                    | `DiagramTrashedError`, `isDiagramTrashedError`; `unmarkDiagramDeleted`                   |
+| `apps/live/lib/document-trashed.ts`, `document-tombstones.ts`                    | `DocumentTrashedError`, `isDocumentTrashedError`; `unmarkDocumentDeleted`                   |
 | `apps/live/lib/trash-groups.ts`, `trash-copy.ts`                                 | Grouping and days-left copy; the confirmation line                                       |
 | `apps/live/hooks/persistence/useTrash.ts`, `components/panels/TrashPane.tsx`     | The Trash view                                                                           |
 | `apps/live/app/explorer/{TrashSection.tsx,trash/page.tsx,routes.ts,views.tsx}`   | The `/explorer/trash` route, no sidebar row                                              |
 | `apps/live/components/dialogs/settings/{settings-catalogue.ts,SettingsTrashRow}` | Settings › Account › Trash, the one way in                                               |
-| `apps/live/app/document/[id]/{useDiagramTrashed,useIdentityBootstrap,...}.ts`    | The deleted state: load, room, autosave                                                  |
+| `apps/live/app/document/[id]/{useDocumentTrashed,useIdentityBootstrap,...}.ts`    | The deleted state: load, room, autosave                                                  |
 | `apps/live/components/chrome/DocumentTrashedCard.tsx`, `editor-page.tsx`         | The deleted card, Restore when allowed                                                   |
 | `apps/help/app/account-and-data/trash/page.mdx`, help registry, article icon     | The help article                                                                         |
 | `apps/telemetry/app/catalogue/{content,connections}.ts`, explanations, vocab     | The Trash stack; the two MCP tool charts                                                 |
@@ -44,17 +44,17 @@ Scope, by file:
 | ------------------ | ----------------------------------------------------------- | --------------------------------------------------- |
 | Trash              | `trash` (route segment, telemetry category `Trash`)         | Where a deleted diagram waits                       |
 | Trashed            | `diagrams.trashed_at` (epoch ms), `trashedAt`               | In the Trash since that time; NULL / absent = live  |
-| Trash (verb)       | `trashDiagram`, `offlineTrashDiagram`                       | Move a live diagram in                              |
-| Restore            | `restoreDiagram`, `apiRestoreDiagram`, `restore_diagram`    | Bring it back to its place                          |
-| Purge              | `purgeDiagrams`, `apiPurgeDiagram`, `offlinePurgeDiagram`   | Remove for good, through `diagramRemovalStatements` |
+| Trash (verb)       | `trashDocument`, `offlineTrashDocument`                       | Move a live diagram in                              |
+| Restore            | `restoreDocument`, `apiRestoreDocument`, `restore_document`    | Bring it back to its place                          |
+| Purge              | `purgeDocuments`, `apiPurgeDocument`, `offlinePurgeDocument`   | Remove for good, through `documentRemovalStatements` |
 | Empty Trash        | `apiEmptyTrash(scope)`, `DELETE /api/trash[?team=]`         | Purge one group                                     |
 | Group / scope      | `TrashGroup`, `TrashScope` (`personal`, `team`, `local`)    | One Trash in the view; one Empty Trash              |
 | Local Trash        | `offline-trash.ts`                                          | This browser's, for Offline Mode records            |
 | Retention          | `TRASH_RETENTION_DAYS` / `TRASH_RETENTION_MS`               | 30 days                                             |
 | Days left          | `trashDaysLeft`, `daysLeftLabel`                            | Whole days to the purge, rounded up, floor 0        |
-| Deleted state      | `DIAGRAM_TRASHED_ERROR` (`diagram_trashed`), 410            | What a door answers an authorised caller            |
-| Deleted card       | `DiagramTrashedCard`                                        | The editor's surface for it                         |
-| Trashed op / close | `diagram-trashed` (system op), `DIAGRAM_TRASHED_CLOSE` 4004 | The room telling open sessions                      |
+| Deleted state      | `DOCUMENT_TRASHED_ERROR` (`document_trashed`), 410            | What a door answers an authorised caller            |
+| Deleted card       | `DocumentTrashedCard`                                        | The editor's surface for it                         |
+| Trashed op / close | `diagram-trashed` (system op), `DOCUMENT_TRASHED_CLOSE` 4004 | The room telling open sessions                      |
 | Permanent          | `?permanent=true`                                           | REST only: trash + purge in one call                |
 
 Banned: "recycle bin", "bin" (except in the help article's keywords), "soft delete" in copy, "undelete",
@@ -67,22 +67,22 @@ set), **gone** (no row). Offline records mirror it with `trashedAt` absent / set
 
 | From    | Event                                                 | To      | Guard                                                  |
 | ------- | ----------------------------------------------------- | ------- | ------------------------------------------------------ |
-| live    | `DELETE /api/diagrams/:id`                            | trashed | `mayDeleteDiagram`                                     |
-| live    | `DELETE ...?permanent=true`                           | gone    | `mayDeleteDiagram`; trash then purge                   |
-| live    | owner's `DELETE` with `X-Diagram-Conversion: offline` | gone    | caller is the owner; `deleteDiagram` (hard)            |
+| live    | `DELETE /api/documents/:id`                            | trashed | `mayDeleteDocument`                                     |
+| live    | `DELETE ...?permanent=true`                           | gone    | `mayDeleteDocument`; trash then purge                   |
+| live    | owner's `DELETE` with `X-Diagram-Conversion: offline` | gone    | caller is the owner; `deleteDocument` (hard)            |
 | live    | teammate's `DELETE` with the offline conversion       | trashed | the conversion is ignored for a non-owner              |
 | live    | account deletion                                      | gone    | `deleteAccount`, owner selector, trashed rows included |
-| trashed | `POST /api/trash/:id/restore`, `restore_diagram`      | live    | `mayDeleteDiagram` on the trashed row                  |
-| trashed | `DELETE /api/trash/:id`, `DELETE ...?permanent=true`  | gone    | `mayDeleteDiagram`                                     |
+| trashed | `POST /api/trash/:id/restore`, `restore_document`      | live    | `mayDeleteDocument` on the trashed row                  |
+| trashed | `DELETE /api/trash/:id`, `DELETE ...?permanent=true`  | gone    | `mayDeleteDocument`                                     |
 | trashed | `DELETE /api/trash[?team=]`                           | gone    | personal: owner; team: joined member (verified id)     |
 | trashed | daily cron, `trashed_at <= now - TRASH_RETENTION_MS`  | gone    | none                                                   |
-| trashed | `DELETE /api/diagrams/:id` (plain)                    | trashed | answers 410; the first `trashed_at` stands             |
+| trashed | `DELETE /api/documents/:id` (plain)                    | trashed | answers 410; the first `trashed_at` stands             |
 
 Invariants:
 
-- **I1** Every diagram read used by a door (`getDiagram`, `getDiagramMeta`) and every list sees live rows
+- **I1** Every diagram read used by a door (`getDocument`, `getDocumentMeta`) and every list sees live rows
   only. A trashed diagram is reachable solely through `db/trash.ts`.
-- **I2** `purgeDiagrams` only ever removes trashed rows (`trashedIdsIn` filters its input), so no caller can
+- **I2** `purgeDocuments` only ever removes trashed rows (`trashedIdsIn` filters its input), so no caller can
   skip the Trash by naming an id. The permanent path trashes first.
 - **I3** Trashing touches no child row: tabs, links, share links, stars, change log, collaboration index,
   Timeline events and image references all stay until the purge.
@@ -92,7 +92,7 @@ Invariants:
   and the client stops its autosave (`writesForbiddenRef`) on the first 410.
 - **I6** The local Trash follows the same clock: `isTrashExpired(trashedAt, now)`.
 
-Client state: `useDiagramTrashed` holds `trashed` (set by the load's 410 / `DiagramTrashedError`, the room's
+Client state: `useDocumentTrashed` holds `trashed` (set by the load's 410 / `DocumentTrashedError`, the room's
 `diagram-trashed` op from `system`, the 4004 close, or an autosave 410) and `restorable` (the reader's own
 Trash row for the id, read once `trashed` is set, never for a share-link session). The editor page renders
 the deleted card ahead of every other status while `trashed` is true.
@@ -103,40 +103,40 @@ REST (all `guest-or-clerk`, token-usable; a read-only token may only `GET`):
 
 | Method | Path                               | Success                                      | Failures                                                                        |
 | ------ | ---------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------- |
-| DELETE | `/api/diagrams/:id`                | 204                                          | 400 no caller; 404 missing / stranger; 403 no delete claim; 410 already trashed |
-| DELETE | `/api/diagrams/:id?permanent=true` | 204                                          | 400; 404; 403                                                                   |
-| GET    | `/api/trash`                       | 200 `{ trash: TrashedDiagram[] }`            | 400                                                                             |
+| DELETE | `/api/documents/:id`                | 204                                          | 400 no caller; 404 missing / stranger; 403 no delete claim; 410 already trashed |
+| DELETE | `/api/documents/:id?permanent=true` | 204                                          | 400; 404; 403                                                                   |
+| GET    | `/api/trash`                       | 200 `{ trash: TrashedDocument[] }`            | 400                                                                             |
 | POST   | `/api/trash/:id/restore`           | 200 `{ diagram }` (redacted for a non-owner) | 400; 404 (missing, live, or no claim)                                           |
 | DELETE | `/api/trash/:id`                   | 204                                          | 400; 404                                                                        |
 | DELETE | `/api/trash[?team=<id>]`           | 200 `{ purged: number }`                     | 400; 404 team not joined                                                        |
 
-Every `/api/diagrams/:id/*` door and `/api/share/:code` (+ `image.svg`): 410 `{ error: 'diagram_trashed' }`
+Every `/api/documents/:id/*` door and `/api/share/:code` (+ `image.svg`): 410 `{ error: 'document_trashed' }`
 when the id is trashed and the caller has a grant (`gateGrant`), else 404. `/api/share/:code` answers 410 to
-any holder of a live code (the code is the credential). `POST /api/diagrams` over a trashed id: 410 to its
+any holder of a live code (the code is the credential). `POST /api/documents` over a trashed id: 410 to its
 owner, 403 otherwise, and nothing written. The ws upgrade: 404.
 
-`TrashedDiagram = { id, name, teamId, teamName, trashedAt, purgeAt }`; `purgeAt = trashedAt + 30 days`.
+`TrashedDocument = { id, name, teamId, teamName, trashedAt, purgeAt }`; `purgeAt = trashedAt + 30 days`.
 
 Room: `POST /broadcast { op: { kind: 'diagram-trashed' } }`, sent only for a diagram with a room (shareable
 or in a team, D2). The room relays it (it is a `SYSTEM_OP_KINDS` member, refused from client sockets and
 delivered to tab-scoped sessions) and then closes every socket with `4004, 'diagram-trashed'`.
 
-MCP: `delete_diagram { diagramId, tabId? }` → `{ deleted: 'diagram', diagramId, trashed: true,
+MCP: `delete_document { documentId, tabId? }` → `{ deleted: 'diagram', diagramId, trashed: true,
 restorableForDays: 30 }`; `list_trash {}` → `{ trash: { id, name, library, deletedAt, purgeAt }[] }`;
-`restore_diagram { diagramId }` → `{ restored: 'diagram', id, name, url }`, a 404 as an `isError` result
+`restore_document { documentId }` → `{ restored: 'diagram', id, name, url }`, a 404 as an `isError` result
 pointing at `list_trash`. No permanent option.
 
-Client: `apiListTrash(ownerId, now?) → { cloud: TrashedDiagram[] | null, local: TrashedDiagram[] }`
-(`cloud: null` when unreachable); `apiRestoreDiagram` / `apiPurgeDiagram` dispatch on `isOfflineId`;
-`apiEmptyTrash(ownerId, TrashScope)`. `connectRoom` handlers gain `onDiagramTrashed`; after a 4004 close it
+Client: `apiListTrash(ownerId, now?) → { cloud: TrashedDocument[] | null, local: TrashedDocument[] }`
+(`cloud: null` when unreachable); `apiRestoreDocument` / `apiPurgeDocument` dispatch on `isOfflineId`;
+`apiEmptyTrash(ownerId, TrashScope)`. `connectRoom` handlers gain `onDocumentTrashed`; after a 4004 close it
 stops reconnecting.
 
 ## Data and persistence
 
 | Field                            | Class | Notes                                                        |
 | -------------------------------- | ----- | ------------------------------------------------------------ |
-| `diagrams.trashed_at`            | state | INTEGER NULL, epoch ms; partial index `diagrams_trashed_idx` |
-| `OfflineDiagramRecord.trashedAt` | state | optional number; absent on every record written before it    |
+| `diagrams.trashed_at`            | state | INTEGER NULL, epoch ms; partial index `documents_trashed_idx` |
+| `OfflineDocumentRecord.trashedAt` | state | optional number; absent on every record written before it    |
 
 Migration 0051 adds the column and index; every existing row is live (NULL). No backfill. 0050 belongs to
 the image reference index; the two are independent (D1). Snapshot and restore are the row itself: nothing
@@ -156,15 +156,15 @@ room`; open sessions still stop at their next save (I5).
 - **E7** A ticket minted before the delete: refused at the upgrade (I1).
 - **E8** A tab shared with another diagram: untouched by the trash, kept by the purge.
 - **E9** A purge backlog over one run's cap: oldest first, the rest the next day.
-- **E10** A page-session tombstone for a restored diagram: cleared by `unmarkDiagramDeleted`.
+- **E10** A page-session tombstone for a restored diagram: cleared by `unmarkDocumentDeleted`.
 - **E11** An owner re-creating (POST) a trashed id, e.g. a stale client: 410, nothing written.
 
 ## Security and trust
 
-- The restore / purge / list authority is exactly `mayDeleteDiagram`; team membership is read against the
+- The restore / purge / list authority is exactly `mayDeleteDocument`; team membership is read against the
   verified account id only (never `X-Owner-Id`). A share-link visitor never restores, purges or lists.
 - The deleted state leaks nothing: 410 only to a caller with a grant; strangers get the 404 of a missing id.
-- `POST /api/diagrams` over a trashed id cannot transfer ownership (the upsert would rewrite `owner_id`).
+- `POST /api/documents` over a trashed id cannot transfer ownership (the upsert would rewrite `owner_id`).
 - `trash` is an owner-scoped segment for the guest signature gate.
 - An AI tool cannot destroy a diagram: the MCP surface has no permanent delete.
 - A forged `diagram-trashed` from a client socket is dropped by the room.
@@ -226,7 +226,7 @@ room`; open sessions still stop at their next save (I5).
 | `[trash] purged local <n>`                                | editor, local sweep       |
 | `[trash] cloud list failed`                               | editor, warn              |
 | `[trash] open diagram is in the Trash`                    | editor                    |
-| `Http410.<Action>.DiagramTrashed`                         | editor error telemetry    |
+| `Http410.<Action>.DocumentTrashed`                         | editor error telemetry    |
 
 ## Testing
 
@@ -256,7 +256,7 @@ room`; open sessions still stop at their next save (I5).
 | `TRASH_RETENTION_DAYS`    | 30    | Operator decision                         | 7 to 90      |
 | `TRASH_PURGE_BATCH`       | 100   | ~4 KB bound per `json_each` list (D3)     | 10 to 500    |
 | `TRASH_PURGE_MAX_BATCHES` | 20    | Well inside one invocation's query budget | 1 to 200     |
-| `DIAGRAM_TRASHED_CLOSE`   | 4004  | Next free code beside 4003                | 4000 to 4999 |
+| `DOCUMENT_TRASHED_CLOSE`   | 4004  | Next free code beside 4003                | 4000 to 4999 |
 
 No new environment variable or binding; self-hosting needs only the migration.
 

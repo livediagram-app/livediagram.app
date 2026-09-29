@@ -1,7 +1,7 @@
 // A diagram in the Trash (docs/specs/013-workspace/trash.md). The api answers
-// 410 `diagram_trashed` (an ApiError carrying that code); the Offline Mode
-// store throws DiagramTrashedError for a trashed local record. Callers ask
-// isDiagramTrashedError and never care which store said it.
+// 410 `document_trashed` (an ApiError carrying that code); the Offline Mode
+// store throws DocumentTrashedError for a trashed local record. Callers ask
+// isDocumentTrashedError and never care which store said it.
 
 import { DOCUMENT_TRASHED_ERROR } from '@livediagram/api-schema';
 import { ApiError } from './api/core';

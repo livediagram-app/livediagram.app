@@ -1,4 +1,4 @@
-// /api/diagrams/<id>/room-ticket + /ws — realtime-room admission
+// /api/documents/<id>/room-ticket + /ws — realtime-room admission
 // (docs/specs/015-api/api.md), split out of documents.ts the same way the share family
 // owns document-share-routes.ts: the one-time WS ticket mint and the
 // Durable Object WebSocket upgrade with its role / password trust
@@ -12,7 +12,7 @@ import { gateGrant, missingDocument, type RouteContext } from './context';
 // Returns null when the request isn't a room route.
 export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, url, segments } = ctx;
-  // /api/diagrams/<id>/ws — Durable Object WebSocket. Resolve
+  // /api/documents/<id>/ws — Durable Object WebSocket. Resolve
   // the visitor's role server-side before handing the request
   // to the DO so peer avatars can show "Editor" / "Viewer"
   // badges that the client can't lie about: clients sending a
@@ -21,7 +21,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
   // when we can't resolve (e.g. owner request with no share
   // code and no auth) — the DO leaves role undefined and the
   // UI hides the badge for that peer.
-  // POST /api/diagrams/<id>/room-ticket — mint a one-time WS room ticket
+  // POST /api/documents/<id>/room-ticket — mint a one-time WS room ticket
   // (docs/specs/015-api/api.md). The WS upgrade can't carry the Bearer token, so identified
   // callers (team members above all: membership MUST be checked against
   // the VERIFIED Clerk id, docs/specs/013-workspace/team-shared-documents.md) prove their access here over normal
@@ -30,7 +30,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
   // as every REST read/write, including the share-password gate.
   if (segments.length === 4 && segments[3] === 'room-ticket' && request.method === 'POST') {
     const id = segments[2]!;
-    // Gate-only projection — 1 query instead of getDiagram's 3; this
+    // Gate-only projection — 1 query instead of getDocument's 3; this
     // runs on every room join.
     const liveDoc = await getDocumentMeta(env, id);
     if (!liveDoc) return missingDocument(ctx, id);

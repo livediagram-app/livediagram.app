@@ -7,7 +7,7 @@
 //
 // Two roles, two checks:
 //
-//   canEditDiagram: owner of the diagram, OR a Bearer / X-Owner-Id
+//   canEditDocument: owner of the diagram, OR a Bearer / X-Owner-Id
 //   identity that holds an edit-role share link for this diagram.
 //   The diagram-id match on the link prevents a stale code for a
 //   different diagram leaking write access through.
@@ -17,7 +17,7 @@
 //   checked against the verified caller identity. Invited (not yet
 //   accepted) members get nothing, consistent with docs/specs/013-workspace/teams.md.
 //
-//   canReadDiagram: owner, OR ANY valid share code (view or edit)
+//   canReadDocument: owner, OR ANY valid share code (view or edit)
 //   that maps to this diagram. Reads must be open to view-role
 //   visitors: a view-only share link exists precisely so
 //   stakeholders can see the diagram (docs/specs/014-identity/auth-and-guest-access.md), and tab content is

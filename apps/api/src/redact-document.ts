@@ -11,8 +11,8 @@
 //
 // This lived as a private `redactOwner` inside routes/share.ts, applied to the
 // share-code resolver — "the easiest observation vector". It was the only
-// caller, so it wasn't shared. But `GET /api/diagrams/<id>` reaches the same
-// DTO for the same audience (`canReadDiagram` admits any valid share code,
+// caller, so it wasn't shared. But `GET /api/documents/<id>` reaches the same
+// DTO for the same audience (`canReadDocument` admits any valid share code,
 // view or edit, because a view-only visitor has to be able to open the
 // diagram), and it returned `ownerId` intact — so the redaction guarded one
 // door of two. Hence a module: the rule now has one home, both doors, and a

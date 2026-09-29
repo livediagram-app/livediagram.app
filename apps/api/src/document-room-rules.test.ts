@@ -159,7 +159,7 @@ describe('admitFrame', () => {
   });
 
   it('starts a fresh window once a second has passed', () => {
-    // The branch the room's own test needs a second DiagramRoom to reach.
+    // The branch the room's own test needs a second DocumentRoom to reach.
     const full = { count: CAP, windowStart: 1000 };
     expect(admitFrame(full, 2000, CAP)).toEqual({
       admit: true,

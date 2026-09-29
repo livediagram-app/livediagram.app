@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 // `hasSuspenseBoundary = !opts.ssr || !!opts.loading`, and ssr defaults to true). Without one, the
 // first mount of the lazy piece suspends up to the NEAREST ancestor boundary and replaces everything
 // under it until the chunk lands. For a diagram opened in place from /new that ancestor is the editor's
-// own `dynamic(loadEditor, { loading: <DiagramLoading /> })`, so the first open of Settings or Search
+// own `dynamic(loadEditor, { loading: <DocumentLoading /> })`, so the first open of Settings or Search
 // flashed the opening screen over the whole editor; in the Explorer, a pane swapped the whole layout
 // for its null fallback. Every lazy piece here is client-state-gated in a static export, so
 // `ssr: false` (a boundary with a null fallback) costs nothing.

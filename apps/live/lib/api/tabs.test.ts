@@ -11,7 +11,7 @@ vi.mock('../offline/offline-store', async (importOriginal) => ({
   offlineSaveDocumentMeta: vi.fn(async () => {}),
 }));
 
-// flushDiagramSavesBeacon is the beforeunload flush (docs/specs/006-document/per-tab-storage.md), now a pure
+// flushDocumentSavesBeacon is the beforeunload flush (docs/specs/006-document/per-tab-storage.md), now a pure
 // function at the persistence boundary instead of inline raw fetch in
 // useAutosave. These lock the wire behaviour the extraction had to
 // preserve: keepalive on every write, X-Allow-Empty gated by loaded

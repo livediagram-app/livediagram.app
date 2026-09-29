@@ -14,7 +14,7 @@ import { handleFavourites } from './favourites';
 
 // Every door onto a diagram, once it is in the Trash
 // (docs/specs/013-workspace/trash.md, "While a diagram is in the Trash").
-// A caller who could have opened it hears 410 `diagram_trashed`; anyone else
+// A caller who could have opened it hears 410 `document_trashed`; anyone else
 // the 404 a never-existing id gets; the lists simply don't have it.
 
 const T0 = 1_700_000_000_000;

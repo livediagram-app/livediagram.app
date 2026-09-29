@@ -1,6 +1,6 @@
 // Handoff + relaunch signals for the interactive editor tour (docs/specs/007-editor/editor-tour.md).
 //
-// /new marks the tour pending just before hard-navigating to /diagram/<id>
+// /new marks the tour pending just before hard-navigating to /document/<id>
 // for a brand-new (zero-diagram) user; the editor shows the welcome offer
 // card while the flag is set. The flag is cleared only when the offer is
 // RESOLVED (taken to the end, skipped, or declined) — never on mere page

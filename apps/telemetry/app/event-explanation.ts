@@ -73,8 +73,8 @@ function pattern(category: string, action: string, type: string): string | null 
   }
 }
 
-// `Http403.SaveTab.Forbidden`, `Network.SendEmail`, `Internal.Put.Diagrams.Tabs`,
-// `Internal.FindDiagrams`, `Auth.NoSessionToken`, `SaveFailed.TypeError`: the
+// `Http403.SaveTab.Forbidden`, `Network.SendEmail`, `Internal.Put.Documents.Tabs`,
+// `Internal.FindDocuments`, `Auth.NoSessionToken`, `SaveFailed.TypeError`: the
 // error-telemetry shapes (packages/api-schema, apps/live/lib/api/error-report.ts).
 function apiError(type: string): string | null {
   const [kind = '', ...rest] = type.split('.');

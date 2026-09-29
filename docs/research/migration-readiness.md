@@ -158,7 +158,7 @@ per browser. Consent with `prompt=consent` only when D1 has no token.
 **Implication for the design:** store, per mirrored file, the last state we
 wrote (`name`, `parents`, `trashed`, `md5Checksum`, `headRevisionId`) and treat a
 change as foreign only when one of those differs. Do not rely on `version`.
-Put `ldDiagramId` in `appProperties` so a file maps back to a diagram even after
+Put `ldDocumentId` in `appProperties` so a file maps back to a diagram even after
 a rename or move. Request `fields=` explicitly on every call (the default
 subset omits these).
 

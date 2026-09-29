@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 
 // `output: 'export'` is required for the production build (Cloudflare
 // Static Assets fronts a fully static export — no Node runtime). In
-// dev we omit it so the dynamic-segment route at `/diagram/[id]` can
+// dev we omit it so the dynamic-segment route at `/document/[id]` can
 // resolve arbitrary user-minted ids without needing them enumerated
 // in `generateStaticParams`. The production build still ships a
 // single placeholder file backed by the live worker's path rewrite
@@ -30,7 +30,7 @@ const isTurbopack = Boolean(process.env.TURBOPACK);
 const nextConfig: NextConfig = {
   ...(isProdBuild ? { output: 'export' } : {}),
   distDir,
-  // Pages serve at clean root paths (/diagram, /explorer, /new, ...);
+  // Pages serve at clean root paths (/document, /explorer, /new, ...);
   // the router selects the live app by route (docs/specs/016-platform/router-app.md), so there's no
   // `/live` basePath in the URL any more. Only the bundled `_next`
   // assets keep a `/live` prefix so they don't collide with marketing's

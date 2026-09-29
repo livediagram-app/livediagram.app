@@ -51,7 +51,7 @@ export function TreeNodeHeader({
   // Shown in place of the name while it is being renamed. The name is a
   // <button>, and an input nested in one loses its focus to it.
   renameInput?: ReactNode;
-  // Drop-target handlers (useDiagramDropTarget), for nodes a diagram can
+  // Drop-target handlers (useDocumentDropTarget), for nodes a diagram can
   // be dragged into.
   drop?: ReturnType<typeof useDocumentDropTarget>;
   onContextMenu?: (e: MouseEvent) => void;

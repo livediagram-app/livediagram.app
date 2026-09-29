@@ -2,7 +2,7 @@
 // ordered list; a folder is a maximal *run of adjacent tabs* that
 // share a folder name, drawn under one collapsible chip. There is
 // no second ordering dimension and no folder entity — a folder is
-// just the name string carried per-tab (on the diagram_tabs link).
+// just the name string carried per-tab (on the document_tabs link).
 //
 // This module is the single home for three pure helpers shared by
 // the tab-bar renderer, the client save path, and the server route:
@@ -11,7 +11,7 @@
 //     true after any reorder or membership change)
 //   - groupTabsIntoRuns    — turns a normalized list into render
 //     groups (loose tab | folder + its tabs)
-//   - folderNamesInDiagram — distinct existing folder names
+//   - folderNamesInDocument — distinct existing folder names
 
 import type { Tab } from './index';
 

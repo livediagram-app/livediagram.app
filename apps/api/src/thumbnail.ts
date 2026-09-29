@@ -1,12 +1,12 @@
 // Diagram SVG snapshot render-cache (docs/specs/006-document/document-snapshots.md). One cached SVG per
-// diagram, stored in R2 (key `thumb/<diagramId>`), refreshed lazily on
+// diagram, stored in R2 (key `thumb/<documentId>`), refreshed lazily on
 // read: if the cache is fresh (rendered at or after the diagram's last
 // save) we stream the stored bytes; otherwise we render the first tab
 // with the shared DOM-free renderer, write it back, and stamp it fresh.
 //
 // Two delivery paths share this one artifact (the whole point of the
 // design): the owner-authed Explorer thumbnail (GET
-// /api/diagrams/:id/thumbnail) and the public, share-code-scoped live
+// /api/documents/:id/thumbnail) and the public, share-code-scoped live
 // image (GET /api/share/:code/image.svg). Rendering on read — rather
 // than on every save — means a diagram nobody looks at never costs a
 // render, and every write path (editor, collaborators, MCP, API token)
@@ -43,7 +43,7 @@ const IMAGE_EMBED_BUDGET_BYTES = 3 * 1024 * 1024;
 
 // The diagram fields a snapshot needs. `thumbRenderedAt` is optional: a
 // caller that already read it alongside the diagram row (the Explorer
-// thumbnail route, via getDiagramThumbMeta) passes it and saves a query;
+// thumbnail route, via getDocumentThumbMeta) passes it and saves a query;
 // one that didn't leaves it out and it is read here.
 export type ThumbnailSubject = Pick<DocumentDTO, 'id' | 'name' | 'savedAt'> & {
   thumbRenderedAt?: number | null;
@@ -109,7 +109,7 @@ export async function getDocumentThumbnailSvg(
 
 // Live image for a SPECIFIC tab (docs/specs/013-workspace/live-image-share.md's per-tab picker, now surfaced
 // in the Share dialog). Rendered on read and deliberately NOT written to
-// the R2 snapshot cache: `thumb/<diagramId>` is the first-tab artifact
+// the R2 snapshot cache: `thumb/<documentId>` is the first-tab artifact
 // shared with the Explorer thumbnail (docs/specs/006-document/document-snapshots.md) and carries a single
 // per-diagram freshness stamp, so it has no room for a second tab. A
 // non-default tab is a niche embed, and the endpoint's short

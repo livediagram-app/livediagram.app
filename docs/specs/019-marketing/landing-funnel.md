@@ -43,7 +43,7 @@ The editor's `/new` page reads it once on arrival and then:
   URL they share.
 - Sends `Cta·Opened·<source>` straight away.
 - Holds the source for the life of the page and sends `Cta·Created·<source>`
-  beside the usual `Diagram·Created` when the diagram is committed, whichever
+  beside the usual `Document·Created` when the diagram is committed, whichever
   path committed it (the wizard's Create, its Skip, or a Just Draw / template
   bypass).
 

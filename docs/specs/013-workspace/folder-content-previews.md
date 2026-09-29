@@ -34,7 +34,7 @@ the list view is recognition-by-sight, and folders were exempt from it.
 - **An empty folder keeps the plain folder glyph.** There is nothing to
   preview, and the glyph is the honest answer.
 
-Diagram tiles reuse `DiagramThumbnail` unchanged, so a folder tile is the
+Diagram tiles reuse `DocumentThumbnail` unchanged, so a folder tile is the
 same cached SVG snapshot as the diagram card's — same lazy
 `IntersectionObserver` fetch, same offline illustration ([Offline Mode](../006-document/offline-mode.md)), same
 generic glyph while loading or when a diagram has no snapshot. Nothing new
@@ -58,7 +58,7 @@ than the card claims to describe.
 - The **editor's floating Explorer panel** is unchanged for the same reason
   as [Folder location on Recent rows](recent-folder-chip.md): a ~256 px rail has no room for a mosaic.
 - The **team library** grid ([Team shared diagrams](team-shared-documents.md)) gets it for free — it renders the same
-  `CardView`, and its own `diagramsByFolder` / `childrenByParent` indexes
+  `CardView`, and its own `documentsByFolder` / `childrenByParent` indexes
   feed the same prop.
 
 ## Where it lives
@@ -72,7 +72,7 @@ than the card claims to describe.
   node and falls back to the folder glyph when it's absent, so it stays
   presentational and knows nothing about thumbnails.
 - The contents come from the indexes the explorer already builds client-side
-  (`childrenByParent`, `diagramsByFolder`) via a `folderContents` prop wired
+  (`childrenByParent`, `documentsByFolder`) via a `folderContents` prop wired
   in `ExplorerPane.tsx` and `TeamSharedDocuments.tsx`. No new API call and no
   per-folder fetch: the Explorer already loads every folder and diagram up
   front.

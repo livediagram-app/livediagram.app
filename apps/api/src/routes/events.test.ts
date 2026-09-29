@@ -126,7 +126,7 @@ describe('handleEvents page views (docs/specs/017-telemetry/page-view-telemetry.
 
 describe('handleEvents server-emitted pairs (docs/specs/017-telemetry/telemetry.md)', () => {
   it('drops the pairs the worker counts itself, keeping the rest of the batch', async () => {
-    // Session·SignedUp / SignedIn and Diagram·Joined moved server-side; an
+    // Session·SignedUp / SignedIn and Document·Joined moved server-side; an
     // old cached editor bundle still posting them must not double count.
     const ctx = makeTestRouteContext('POST', '/api/events', {
       body: {

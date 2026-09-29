@@ -1,6 +1,6 @@
 // List-level diagram + folder operations shared by every surface that
 // renders a diagram library: the floating Explorer panel (composed
-// into the editor via useDiagramActions), the /explorer page, and
+// into the editor via useDocumentActions), the /explorer page, and
 // /new. Each surface owns its own list STATE (the editor refreshes it
 // after autosave, the pages fetch on mount); this hook owns the
 // BEHAVIOUR: the optimistic update, the API call, the telemetry, and
@@ -48,15 +48,15 @@ type DocumentListActionsDeps = {
   // promoted to root, so diagrams inside them stay put).
   deleteFolderFromHook: (id: string) => void;
   // The diagram currently open in the editor, if the surface has
-  // one. deleteDiagram redirects to /live/explorer when deleting it
+  // one. deleteDocument redirects to /live/explorer when deleting it
   // (the editor would otherwise stare at a row that no longer
-  // exists) and openDiagram no-ops on it. The standalone pages have
+  // exists) and openDocument no-ops on it. The standalone pages have
   // no current diagram and omit it.
   currentDocument?: { id: string; name: string } | null;
   // What to do once a duplicate exists: the editor opens the copy,
   // the standalone pages stay put and refresh their list.
   afterDuplicate: (newId: string) => void | Promise<void>;
-  // Shared-with-you list state, for dismissSharedDiagram. Optional:
+  // Shared-with-you list state, for dismissSharedDocument. Optional:
   // surfaces without a Shared section omit both.
   sharedDocuments?: SharedWithItem[];
   setSharedDocuments?: Dispatch<SetStateAction<SharedWithItem[]>>;
@@ -80,7 +80,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
   // is already autosaved, so a hard navigation loses nothing; path
   // scheme per docs/specs/007-editor/new-diagram-route.md. Shared-list rows pass a share code so the
   // non-owner can actually load the target; without it the editor's
-  // hydration goes through the owner-only `/api/diagrams/:id` path
+  // hydration goes through the owner-only `/api/documents/:id` path
   // and 404s.
   const openDocument = (id: string, shareCode?: string) => {
     if (typeof window === 'undefined') return;

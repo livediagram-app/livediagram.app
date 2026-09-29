@@ -4,7 +4,7 @@
 //   DELETE /api/trash/<id>          purge one for good
 //   DELETE /api/trash[?team=<id>]   empty the personal Trash, or one team's
 //
-// The authority is exactly the delete authority (mayDeleteDiagram): the owner
+// The authority is exactly the delete authority (mayDeleteDocument): the owner
 // of a personal diagram, any joined member of a team diagram's team. Anything
 // else, like a diagram that isn't in the Trash, answers the 404 of a missing id.
 

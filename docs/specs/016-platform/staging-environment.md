@@ -74,7 +74,7 @@ prints the resolved binding table.
 
 Staging gets its own **D1 database**, **R2 bucket** and **KV namespace**. Durable Objects
 come free: a different script is a different DO namespace, so the staging
-`DIAGRAM_ROOM` is already separate.
+`DOCUMENT_ROOM` is already separate.
 
 Rate-limiter namespace ids are deliberately **left identical** to production's. They are
 scoped per script by Cloudflare, so the staging worker's `1001` is not production's

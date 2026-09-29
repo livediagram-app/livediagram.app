@@ -56,7 +56,7 @@ beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
   canReadDocument.mockReset();
   resolveDocumentGrant.mockReset();
-  // The byte-read gate asks for the grant; drive it from canReadDiagram so
+  // The byte-read gate asks for the grant; drive it from canReadDocument so
   // the allow / deny cases below keep reading as they did.
   resolveDocumentGrant.mockImplementation(async (...args: unknown[]) =>
     (await canReadDocument(...args)) ? { role: 'view', tabScope: null } : null,

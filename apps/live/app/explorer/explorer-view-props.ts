@@ -102,8 +102,8 @@ export type CardViewProps = ExplorerViewProps & {
 };
 
 /**
- * The per-diagram props both entry components take: `DiagramRow` in the list
- * view and `DiagramCard` in the card view.
+ * The per-diagram props both entry components take: `DocumentRow` in the list
+ * view and `DocumentCard` in the card view.
  *
  * The two render very differently and share nothing else, but they answer the
  * same question — what can you do with this diagram — so their call sites in

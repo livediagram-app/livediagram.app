@@ -300,7 +300,7 @@ export function useExplorerState() {
   };
 
   // Diagram-row + Shared-row mutations come from the shared
-  // useDiagramListActions hook (the same behaviours behind the
+  // useDocumentListActions hook (the same behaviours behind the
   // editor's Explorer panel and /new), so the optimistic updates,
   // API calls, telemetry, and confirm copy stay single-sourced. The
   // hook wraps the rename to also clear its inline-rename state.

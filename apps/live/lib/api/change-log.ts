@@ -20,7 +20,7 @@ import {
 } from './core';
 
 // Deduped on `${ownerId}|${id}|${shareCode ?? ''}`: fires on editor
-// mount alongside apiLoadDiagram; React Strict Mode doubles the
+// mount alongside apiLoadDocument; React Strict Mode doubles the
 // effect. A share-link visitor and the owner are different code
 // paths (different shareCode) so the key includes it to keep them
 // independent.

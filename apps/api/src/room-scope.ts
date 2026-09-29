@@ -61,7 +61,7 @@ export function scopedSenderMayRelay(op: unknown, tabScope: string | null): bool
 
 // diagram-meta carries every tab's name and folder. Other tabs keep their id
 // and position and are marked out of scope, exactly like the REST diagram
-// (redactDiagramForScope).
+// (redactDocumentForScope).
 function redactDocumentMeta(o: LooseOp, tabScope: string): unknown {
   if (!Array.isArray(o.tabs)) return null;
   return {

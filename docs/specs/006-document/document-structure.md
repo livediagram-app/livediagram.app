@@ -29,7 +29,7 @@ Any element on any canvas can **link to** something on another tab:
 - A link can target **a specific element on another tab** (open that tab and focus/scroll-to that element).
 - A link can target **another diagram** (`diagram` kind) or **an external URL** (`url` kind, opens in a new tab).
 
-Activating a tab/element/diagram link is a navigation action; a `url` link opens the external address. Each linked element renders a small "Follow link" badge whose hover card names the target ([Canvas and palette](../008-canvas/canvas-and-palette.md)).
+Activating a tab/element/document link is a navigation action; a `url` link opens the external address. Each linked element renders a small "Follow link" badge whose hover card names the target ([Canvas and palette](../008-canvas/canvas-and-palette.md)).
 
 ### Use cases
 
@@ -75,7 +75,7 @@ Treat the sketch below as a high-level outline; read the package for the full fi
 
 ```ts
 type Diagram = {
-  id: DiagramId;
+  id: DocumentId;
   name: string;
   shareable: boolean;
   folderId: string | null;
@@ -110,7 +110,7 @@ type Element =
 type ElementLink =
   | { kind: 'tab'; tabId: TabId }
   | { kind: 'element'; tabId: TabId; elementId: ElementId }
-  | { kind: 'diagram'; diagramId: string; name: string }
+  | { kind: 'diagram'; documentId: string; name: string }
   | { kind: 'url'; url: string }; // external address, opens in a new tab
 ```
 

@@ -545,7 +545,7 @@ export function registerTools(server: McpServer, env: Env): void {
   );
 
   // The Trash (docs/specs/013-workspace/trash.md, docs/specs/015-api/mcp-server.md §4.9):
-  // what delete_diagram put there, and the way back. Same authorisation as
+  // what delete_document put there, and the way back. Same authorisation as
   // GET /api/trash and POST /api/trash/<id>/restore: the user's personal Trash
   // and every team Trash they have joined.
   registerTool(

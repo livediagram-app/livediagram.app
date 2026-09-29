@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ShareLink } from '@livediagram/api-schema';
 import type { Env } from '../types';
 
-// `canEditDiagram` and `canReadDiagram` gate every request through
+// `canEditDocument` and `canReadDocument` gate every request through
 // the api worker's diagram routes. A regression in either silently
 // translates to "the wrong visitor sees / edits this diagram" with
 // no other surface signal: the route still 200s, the body just
@@ -82,7 +82,7 @@ describe('canEditDocument', () => {
   });
 
   it('returns false when the share code maps to a DIFFERENT diagram (link mismatch)', async () => {
-    // The link.diagramId guard is the second crucial check: a
+    // The link.documentId guard is the second crucial check: a
     // legit edit-role code for diag-2 must NOT grant access to
     // diag-1. Catches a regression that dropped the diagram-id
     // verification.
@@ -101,8 +101,8 @@ describe('canEditDocument', () => {
 
   it('returns false for a VIEW-role code (read access is not write access)', async () => {
     // The fix in commit 069b785 opened reads to view-role
-    // visitors via canReadDiagram. Writes must stay edit-only:
-    // a view code carrying the same diagramId still returns
+    // visitors via canReadDocument. Writes must stay edit-only:
+    // a view code carrying the same documentId still returns
     // false here.
     getShareLinkMock.mockResolvedValue({
       code: 'VIEW2345',
@@ -162,7 +162,7 @@ describe('canReadDocument', () => {
   });
 
   it('returns false when the share code maps to a DIFFERENT diagram', async () => {
-    // Same diagram-id guard as canEditDiagram. A read on diag-1
+    // Same diagram-id guard as canEditDocument. A read on diag-1
     // with a code for diag-2 must still 403.
     getShareLinkMock.mockResolvedValue({
       code: 'ABC23456',
@@ -179,9 +179,9 @@ describe('canReadDocument', () => {
 
   it('returns true for a VIEW-role code matching the diagram (the load-bearing case)', async () => {
     // The whole reason this helper exists. The fix in commit
-    // 069b785 found that GET /api/diagrams/:id/tabs/:tabId was
-    // gated on canEditDiagram, so view-only visitors got a 403
-    // and saw every tab blank. canReadDiagram opens reads to
+    // 069b785 found that GET /api/documents/:id/tabs/:tabId was
+    // gated on canEditDocument, so view-only visitors got a 403
+    // and saw every tab blank. canReadDocument opens reads to
     // view-role visitors; the test pins that view IS allowed.
     getShareLinkMock.mockResolvedValue({
       code: 'VIEW2345',
@@ -198,7 +198,7 @@ describe('canReadDocument', () => {
 
   it('returns true for an EDIT-role code matching the diagram (edit is read-and-write)', async () => {
     // Edit role is a superset of view: anyone with an edit code
-    // also has read access. The role check in canEditDiagram is
+    // also has read access. The role check in canEditDocument is
     // the only place where role: 'view' is treated differently.
     getShareLinkMock.mockResolvedValue({
       code: 'EDIT2345',

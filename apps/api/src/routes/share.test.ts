@@ -13,14 +13,14 @@ import type { Env } from '../types';
 // back to the prompt without an error message. These cases pin the
 // mapping.
 //
-// `getDiagramSharePassword` is the only db helper the gate reaches
+// `getDocumentSharePassword` is the only db helper the gate reaches
 // for, so the mock factory below stubs it and the test drives the
 // three branches by setting the stubbed return value per case.
 
 const getSharePasswordMock = vi.fn<(env: Env, id: string) => Promise<string | null>>();
 vi.mock('../db', () => ({
   // Real exports under '../db' that share.ts imports. Only
-  // getDiagramSharePassword is consulted by passwordGate; the rest
+  // getDocumentSharePassword is consulted by passwordGate; the rest
   // need stub entries so the share.ts module can finish evaluating
   // its top-level imports.
   getDocument: vi.fn(),
@@ -40,7 +40,7 @@ vi.mock('../email/notifications', () => ({
   notifyDocumentJoin: vi.fn(),
 }));
 
-// docs/specs/017-telemetry/telemetry.md's server-side Diagram·Joined count: a seam, the insert itself is
+// docs/specs/017-telemetry/telemetry.md's server-side Document·Joined count: a seam, the insert itself is
 // the shared server-telemetry helper.
 vi.mock('../server-telemetry', () => ({
   reportServerEvent: vi.fn(async () => {}),

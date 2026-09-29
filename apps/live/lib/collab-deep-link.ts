@@ -2,7 +2,7 @@
 // Activity row opens a diagram with, and the parser the editor reads it
 // back with.
 //
-//   /diagram/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
+//   /document/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
 //
 // `t` is the tab pin the editor already writes on every tab switch
 // (docs/specs/006-document/per-tab-storage.md, useTabEntryEffects); `el` and `open` ride beside it and are

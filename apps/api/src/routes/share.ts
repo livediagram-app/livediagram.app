@@ -17,7 +17,7 @@ import { redactDocumentForReader, redactDocumentForScope } from '../redact-docum
 import { sharePasswordOf, type RouteContext } from './context';
 
 // Resolve a share code to its diagram + role. Used by visitors
-// landing on /live/diagram/shared?s=<code>. Returns 404 if the
+// landing on /live/document/shared?s=<code>. Returns 404 if the
 // code doesn't exist OR was revoked.
 export async function handleShare(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, resolveOwner } = ctx;
@@ -70,7 +70,7 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
         // they've opted out. Resolve the joiner's display name (shown to
         // the owner already in presence) for a friendlier subject.
         if (firstVisit) {
-          // docs/specs/017-telemetry/telemetry.md: Diagram·Joined counts once per (visitor, diagram), here,
+          // docs/specs/017-telemetry/telemetry.md: Document·Joined counts once per (visitor, diagram), here,
           // because only the server knows a visit is the first. The editor
           // used to emit it on every open of the share URL, so refreshes and
           // return visits inflated the count.

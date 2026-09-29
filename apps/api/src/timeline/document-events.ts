@@ -63,7 +63,7 @@ export async function recordDocumentDuplicated(
   );
 }
 
-// There is deliberately no recordDiagramDeleted. A deleted diagram is
+// There is deliberately no recordDocumentDeleted. A deleted diagram is
 // swept from the feed (docs/specs/013-workspace/timeline.md §3.5) and nothing is written in its
 // place: from the Timeline's point of view it never existed.
 
@@ -90,7 +90,7 @@ export async function recordDocumentMoved(
 }
 
 // A diagram was published INTO a team library. The out direction is
-// recordTeamDiagramRemoved below — it needs a different title, a different
+// recordTeamDocumentRemoved below — it needs a different title, a different
 // audience and an owner change, so it could not share this one.
 export async function recordTeamDocumentAdded(
   env: Env,
@@ -115,13 +115,13 @@ export async function recordTeamDocumentAdded(
 }
 
 // A diagram was pulled back OUT of a team library into personal files
-// (docs/specs/013-workspace/team-shared-documents.md + docs/specs/013-workspace/timeline.md). Not the same event as `diagram_moved`, which is
+// (docs/specs/013-workspace/team-shared-documents.md + docs/specs/013-workspace/timeline.md). Not the same event as `document_moved`, which is
 // personal tidying: the team loses the diagram outright, and when the mover
 // isn't the owner they take ownership of it too — so the previous owner loses
 // it as well.
 //
 // The audience is passed IN rather than resolved here, because by the time this
-// fires the diagram is already personal and `audienceForDiagram` would return
+// fires the diagram is already personal and `audienceForDocument` would return
 // only its new owner. The caller resolves the OLD team's audience before the
 // move, exactly as the delete path does for the same reason.
 export async function recordTeamDocumentRemoved(
@@ -357,7 +357,7 @@ export async function recordDocumentOffline(
       dedupeKey: dedupeKeyOnce(),
       title: 'Taken Offline',
       description: liveDoc.name,
-      // No diagramId: the server copy is gone, so the row must not link
+      // No documentId: the server copy is gone, so the row must not link
       // anywhere. Same structural trick as the delete tombstone.
       snapshot: { documentName: liveDoc.name },
     },

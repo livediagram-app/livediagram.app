@@ -249,7 +249,7 @@ export const siteTrack: TelemetryEmitter['track'] = createLazyTrack({
 //
 // Window-level uncaught exceptions + unhandled promise rejections. The
 // type says WHERE and WHAT, from closed vocabularies only:
-// `<Kind>.<Page>.<ErrorName>`, e.g. `Uncaught.Diagram.TypeError`. The page
+// `<Kind>.<Page>.<ErrorName>`, e.g. `Uncaught.Document.TypeError`. The page
 // is the docs/specs/017-telemetry/page-view-telemetry.md page-view path's first segment (ids already stripped) and
 // the error name comes from a fixed list (`Other` / `NonError` otherwise):
 // never the message, stack, or URL. A stack's function names would say

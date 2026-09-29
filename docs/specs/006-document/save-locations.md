@@ -172,7 +172,7 @@ wizard, and each location's article (offline today) is where the substance is.
 - `apps/live/components/palette/template-picker-settings.tsx`: the Settings
   step swaps the toggle for the chooser; the warning and the folder step's
   presence key on `isOfflineLocation`.
-- `apps/live/components/palette/TemplatePicker.tsx`: `NewDiagramSettings.saveLocation`,
+- `apps/live/components/palette/TemplatePicker.tsx`: `NewDocumentSettings.saveLocation`,
   threaded into every `onPick`.
 - `apps/live/app/new/page.tsx`: derives the offline create branch from the
   location id.

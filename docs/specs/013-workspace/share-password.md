@@ -33,10 +33,10 @@ identity, share-code path) and [11-api](../015-api/api.md) (share links).
 
 ## API (apps/api)
 
-- `GET /api/diagrams/:id/share` (owner-only, existing): response gains
+- `GET /api/documents/:id/share` (owner-only, existing): response gains
   `password: string | null` alongside `links`. This is how the Share dialog
   reads the current value to show it.
-- `PUT /api/diagrams/:id/share-password` (owner-only, new). Body
+- `PUT /api/documents/:id/share-password` (owner-only, new). Body
   `{ password: string | null }`. A null / empty / whitespace-only value clears
   the password. Returns `{ password: string | null }` (the stored value).
 - `GET /api/share/:code` (viewer resolve): if the diagram has a password, return
@@ -44,20 +44,20 @@ identity, share-code path) and [11-api](../015-api/api.md) (share links).
   `X-Share-Password`, **403 `{ error: 'password_invalid' }`** when it carries
   the wrong one, and only record the visit + return the diagram on a match.
 - Every other share-code-authorised route is gated through
-  `canReadDiagram` / `canEditDiagram` (`src/auth/document-access.ts`). Both gain a
+  `canReadDocument` / `canEditDocument` (`src/auth/document-access.ts`). Both gain a
   `sharePassword` argument: after the link + role check, if the diagram has a
   password and the provided one doesn't match, access is denied. The header is
   `X-Share-Password`, read via `sharePasswordOf(request)` (`routes/context.ts`),
   threaded at every call site (the diagram read/write/log routes + the image
   route). Owner-id and Clerk paths short-circuit before the password check.
-- `GET /api/diagrams/:id/ws` (realtime upgrade): browsers can't set headers on a
+- `GET /api/documents/:id/ws` (realtime upgrade): browsers can't set headers on a
   WS upgrade, so the password rides as the `p` query param next to `s` / `o`. A
   password-protected diagram refuses the upgrade (403) unless `p` matches; the
   owner (`o` matches) bypasses.
 
 Helpers in `src/db/documents.ts` (the db.ts split moved them out of the
-old monolithic module): `getDiagramSharePassword(env, id)`,
-`setDiagramSharePassword(env, id, password | null)`.
+old monolithic module): `getDocumentSharePassword(env, id)`,
+`setDocumentSharePassword(env, id, password | null)`.
 
 ## Client (apps/live)
 
@@ -103,7 +103,7 @@ text (`readCachedSharePassword` / `writeCachedSharePassword` in
 
 ## Editor flow (apps/live, viewer)
 
-When a visitor opens `/diagram/shared?s=<code>` and `apiLoadShared` reports
+When a visitor opens `/document/shared?s=<code>` and `apiLoadShared` reports
 `passwordRequired`, the editor shows a **password gate** (`SharePasswordGate`, a
 full-screen card with a lock, a single password input, and an error line) rather
 than the canvas. On submit it calls `setSessionSharePassword(pw)` and re-runs

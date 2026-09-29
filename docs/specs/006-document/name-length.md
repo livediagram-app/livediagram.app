@@ -54,11 +54,11 @@ The worker **shortens, it does not reject**: a name over the cap is stored in
 its truncated form and the response carries the stored name, exactly as the
 editor would have shortened it. The write points are:
 
-- `POST /api/diagrams` — the diagram name and the name of every seeded tab.
-- `PUT /api/diagrams/<id>` — a diagram rename.
-- `PUT /api/diagrams/<id>/tabs/<tabId>` — a tab's name (a tab rename rides the
+- `POST /api/documents` — the diagram name and the name of every seeded tab.
+- `PUT /api/documents/<id>` — a diagram rename.
+- `PUT /api/documents/<id>/tabs/<tabId>` — a tab's name (a tab rename rides the
   ordinary tab save).
-- `POST /api/diagrams/<id>/copy` — the copy's name, whether the caller sent one
+- `POST /api/documents/<id>/copy` — the copy's name, whether the caller sent one
   or it defaulted to `Copy of <name>`, which can itself run past the cap.
 
 A name that collapses to nothing (only whitespace) is refused on a diagram
@@ -73,7 +73,7 @@ never rewrites it (see Out of scope). Only a new or changed name is shortened.
 The server logs `[names] capped <diagram|tab> name` with the original and
 stored lengths whenever it shortens one, so an over-long writer is visible.
 
-The MCP tool schemas (`create_diagram`, `add_tab`, `rename_diagram`) state the
+The MCP tool schemas (`create_document`, `add_tab`, `rename_document`) state the
 cap in each name field's description and shorten the name with the same
 `truncateName` before the call, so the name a tool reports back is the one
 stored. The REST reference ([API documentation](../015-api/api-documentation.md))
@@ -86,7 +86,7 @@ already the stored name without waiting on a round trip:
 
 - `useSelectionEditing` — the auto-name path (the case that prompted this).
 - `useTabActions.renameTab`.
-- `useDiagramListActions.renameDiagram` and `useTeamLibrary.renameDiagram`.
+- `useDocumentListActions.renameDocument` and `useTeamLibrary.renameDocument`.
 - `EditorView`'s header rename.
 - The `/new` wizard's diagram-name field.
 

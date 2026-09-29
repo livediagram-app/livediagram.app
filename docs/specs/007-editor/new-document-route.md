@@ -6,7 +6,7 @@ want to create a diagram" end-to-end.
 
 > **Routing note (later change, [Router app](../016-platform/router-app.md)):** the `/live` URL prefix was
 > removed — the live app serves at clean routes. So today the editor is
-> `/diagram/<id>` (not `/live/diagram/<id>`), `/new` is `/new`, and
+> `/document/<id>` (not `/live/document/<id>`), `/new` is `/new`, and
 > there is no bare `/live` entry point (`/` is the marketing home). The
 > historical `/live...` URLs below describe the pre-cleanup scheme; map
 > each to its `/live`-stripped form. The placeholder-rewrite mechanism
@@ -19,8 +19,8 @@ want to create a diagram" end-to-end.
 1. **Editor** — `/live?d=<id>` (owner) or `/live?s=<code>` (visitor).
    State: load diagram, autosave, room broadcast, activity log, etc.
 2. **Welcome / Create new** — `/live` with no params. State:
-   `templatePickerMode`, `welcomeOpen`, `loadedExistingDiagram`,
-   `nameConfirmed`, and the `commitDiagramId()` flow that mints a
+   `templatePickerMode`, `welcomeOpen`, `loadedExistingDocument`,
+   `nameConfirmed`, and the `commitDocumentId()` flow that mints a
    UUID + rewrites the URL via `history.replaceState`.
 
 The overlap is the source of recurring state bugs:
@@ -50,7 +50,7 @@ each one own a clean state model without conditional gates.
 ## Non-goals
 
 - Changing the visitor `?s=<code>` flow. Visitors still land on
-  `/diagram/shared?s=<code>` and confirm their name there —
+  `/document/shared?s=<code>` and confirm their name there —
   the `identityOnlyScreenOpen` mini-flow stays in the editor route
   because it's about the visitor's session, not about creating a
   new diagram.
@@ -59,30 +59,30 @@ each one own a clean state model without conditional gates.
   tab on an existing diagram). That stays in `/live` because the
   diagram is already loaded.
 - Changing what gets persisted at "Submit" time. The new route
-  still POSTs `/api/diagrams` with the chosen template tab seeded,
-  same as the current `commitDiagramId()` path.
+  still POSTs `/api/documents` with the chosen template tab seeded,
+  same as the current `commitDocumentId()` path.
 
 ## Route map
 
 | Route                  | Purpose                              | State                                                                                                                   |
 | ---------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `/live`                | Bare entry point                     | Redirect → `/new` (or `/diagram/shared?s=<code>` if a legacy visitor query is present). Renders nothing else.           |
-| `/diagram/<id>`        | Editor for an existing owned diagram | Static placeholder file fronts every id (see "Path scheme" below). Client reads the id from `window.location.pathname`. |
-| `/diagram/shared?s=<>` | Visitor view of a shared diagram     | Same placeholder file. Client reads the share code from the `s` query param.                                            |
-| `/new`                 | Welcome / create-new flow            | Identity, template, theme picker. POSTs the diagram + navigates to `/diagram/<id>`.                                     |
+| `/live`                | Bare entry point                     | Redirect → `/new` (or `/document/shared?s=<code>` if a legacy visitor query is present). Renders nothing else.           |
+| `/document/<id>`        | Editor for an existing owned diagram | Static placeholder file fronts every id (see "Path scheme" below). Client reads the id from `window.location.pathname`. |
+| `/document/shared?s=<>` | Visitor view of a shared diagram     | Same placeholder file. Client reads the share code from the `s` query param.                                            |
+| `/new`                 | Welcome / create-new flow            | Identity, template, theme picker. POSTs the diagram + navigates to `/document/<id>`.                                     |
 
 ## Path scheme
 
 Editor URLs use a path segment rather than a query string. `output:
 'export'` can't enumerate user-minted UUIDs at build time, so:
 
-1. Next.js builds a single placeholder at `out/diagram/placeholder/index.html`
+1. Next.js builds a single placeholder at `out/document/placeholder/index.html`
    via `generateStaticParams = [{ id: 'placeholder' }]` on the
    dynamic-segment server page. The page wraps a client `EditorPage`
    component that owns the editor logic.
 2. The live worker (`apps/live/src/worker.ts`) wraps the static-assets
-   binding and rewrites any `/diagram/<anything>` request to
-   `/diagram/placeholder/`. The browser URL stays `/diagram/<id>`.
+   binding and rewrites any `/document/<anything>` request to
+   `/document/placeholder/`. The browser URL stays `/document/<id>`.
 3. Client code reads `window.location.pathname` to extract the real
    id. The placeholder id is treated as "no id".
 4. In `next dev`, Next.js resolves the dynamic segment natively so the
@@ -115,7 +115,7 @@ exports `<EditorPage />` directly. When the client router fires
 editor mounts, reads the real id from `window.location.pathname`
 (unchanged throughout — no URL swap means no restoration to fight
 about), and loads the diagram via the API. The address bar stays
-on `/diagram/<uuid>`; nothing about the URL needs to lie.
+on `/document/<uuid>`; nothing about the URL needs to lie.
 
 Behaviour for genuinely-unknown routes (e.g. `/live/typo`) is
 benign: the editor mounts, tries to load a diagram with id `typo`,
@@ -149,21 +149,21 @@ knowing about when adding another.
 4. User picks name + template + theme and clicks **Create** (the welcome
    screen has no Skip button; the header **X** still dismisses to a blank
    canvas).
-5. Page mints a UUID, POSTs `/api/diagrams` with the seeded tab(s),
-   then `window.location.assign('/diagram/<id>')` to land on
+5. Page mints a UUID, POSTs `/api/documents` with the seeded tab(s),
+   then `window.location.assign('/document/<id>')` to land on
    the editor with the new diagram already on the server.
 6. On the editor route, hydration extracts the id from the pathname
    and fetches the diagram + tab content. No mint, no welcome gate.
 
 ### Owner opens an existing diagram
 
-1. Explorer list row click → `window.location.assign('/diagram/<id>')`.
+1. Explorer list row click → `window.location.assign('/document/<id>')`.
 2. Editor route hydrates as today. The welcome / templates / identity
    modes never load.
 
 ### Visitor follows a share link
 
-1. URL is `/diagram/shared?s=<code>`.
+1. URL is `/document/shared?s=<code>`.
 2. Editor route hydrates via the existing `apiLoadShared` branch.
 3. Visitor identity confirmation (the `identityOnlyScreenOpen` mini-flow)
    stays on the editor route — it's about the visitor, not the diagram.
@@ -177,7 +177,7 @@ knowing about when adding another.
 
 ### Diagram not found
 
-1. URL is `/diagram/<id>` but the API returns 404.
+1. URL is `/document/<id>` but the API returns 404.
 2. NotFound surface renders as today, but its "Create new diagram"
    CTA now navigates to `/new`.
 
@@ -188,7 +188,7 @@ Removed from the editor route:
 - `templatePickerMode = 'welcome'` and the `effectiveTemplatePickerMode`
   derivation.
 - `welcomeOpen` (the chrome-hide trigger for the New Diagram modal).
-- `commitDiagramId()` and every call site (`createShareLink`,
+- `commitDocumentId()` and every call site (`createShareLink`,
   `skipTemplatePicker`, `chooseTemplate`).
 - The "no URL params" branch of hydration. If the pathname's id
   segment resolves to the build-time placeholder and no `?s=` code
@@ -214,10 +214,10 @@ The new route owns:
 - The template + theme choice locally until the user commits.
 - The "name confirmed" persistence (same
   `livediagram:v2:name-confirmed` localStorage key).
-- On commit: mint a UUID, POST `/api/diagrams` with the
-  templated tab(s) inline, navigate to `/diagram/<id>`.
+- On commit: mint a UUID, POST `/api/documents` with the
+  templated tab(s) inline, navigate to `/document/<id>`.
 - On skip / X: mint a UUID, POST an empty-tab diagram, navigate to
-  `/diagram/<id>` so the user lands on the editor with a
+  `/document/<id>` so the user lands on the editor with a
   fresh diagram already persisted.
 
 ## Responsive layout
@@ -363,7 +363,7 @@ default diagram name) without walking the wizard:
   outside surfaces link to (the marketing header + hero "Just Draw"
   buttons, see [Marketing site](../019-marketing/marketing-site.md)).
   - The handoff replaces the `/new?blank=1` history entry with
-    `/diagram/<id>`, so Back from the editor returns to the page before
+    `/document/<id>`, so Back from the editor returns to the page before
     `/new` (usually the marketing site), never to a page that would mint
     another blank diagram. Should the browser still restore a bypass
     `/new` from the back/forward cache before the handoff happened, it
@@ -415,9 +415,9 @@ default diagram name) without walking the wizard:
 
 Every commit from `/new` (Create, Skip, Just Draw, and both bypass URLs)
 opens the editor **without a page load**. Once the diagram is persisted and
-placed, the page rewrites the address bar to `/diagram/<id>` with
+placed, the page rewrites the address bar to `/document/<id>` with
 `history.replaceState` and renders the editor component (`EditorPage`, the
-same component `/diagram/<id>` and the not-found slot render) in its own
+same component `/document/<id>` and the not-found slot render) in its own
 place. The editor reads the id from `window.location.pathname` on mount, so
 it cannot tell the difference from a direct visit.
 
@@ -440,7 +440,7 @@ it cannot tell the difference from a direct visit.
   landed. `lib/dynamic-has-boundary.test.ts` guards it.
 - **`replaceState`, not `pushState`:** `/new` is a one-shot creator, so the
   editor URL takes its history entry. Reload and Back behave exactly as they
-  do after a direct `/diagram/<id>` visit.
+  do after a direct `/document/<id>` visit.
 - **Nothing crosses the handoff but the URL and `sessionStorage`.** The
   tour's pending flag (`markTourPending`) is written before the swap and
   read by the editor on mount, as it was across the hard navigation.
@@ -449,7 +449,7 @@ it cannot tell the difference from a direct visit.
 ### The opening screen
 
 One screen covers the whole wait from the click to the editor: `/new`'s
-creating stage and the editor's own load (`DiagramLoading`) render the same
+creating stage and the editor's own load (`DocumentLoading`) render the same
 full-screen component, so the handoff above never visibly changes screens.
 Its label moves from **"Creating your diagram"** to **"Opening your
 diagram"**; everything else stays put.
@@ -496,7 +496,7 @@ right-click Tab Look & Feel dialog renders, so the two surfaces (and the
 create/edit flow) stay identical. The `/new` route mounts a `CustomThemeProvider`
 so the saved themes load here. The chosen theme (built-in or `custom:<uuid>`)
 flows through the unchanged create path; the theme-id types along it (`onPick`,
-`commitNewDiagram`, `buildTemplatedTab`) are `string` rather than `ThemeId` to
+`commitNewDocument`, `buildTemplatedTab`) are `string` rather than `ThemeId` to
 carry the custom id.
 
 Inside a category drill-in, each built-in theme card shows a short **description**
@@ -506,25 +506,25 @@ to carry one. Custom theme cards show just the saved name.
 
 ## API impact
 
-- No new endpoints. `POST /api/diagrams` already accepts an
+- No new endpoints. `POST /api/documents` already accepts an
   optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md) — the new route uses it.
 
 ## Tests / sanity-check checklist
 
 - `/live` with no params → redirects to `/new`, no flash.
 - `/new` → welcome card on first paint.
-- Pick template → Create → editor loads on `/diagram/<id>`.
-- Dismiss welcome via the header X → editor loads on `/diagram/<id>`
+- Pick template → Create → editor loads on `/document/<id>`.
+- Dismiss welcome via the header X → editor loads on `/document/<id>`
   with an empty starter tab (the welcome screen has no Skip button).
-- `/diagram/<id>` (existing) → editor hydrates as before.
-- `/diagram/shared?s=<code>` (visitor) → editor + identity-confirm modal.
+- `/document/<id>` (existing) → editor hydrates as before.
+- `/document/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA → goes to `/new`.
 - "New Diagram" from Explorer → goes to `/new`.
 - `/new?blank=1` → no wizard; blank diagram created and editor loads on
-  `/diagram/<id>`.
+  `/document/<id>`.
 - `/new?blank=1&folder=<id>` → the blank diagram files into that folder.
 - `/new?template=kanban` → no wizard; a Kanban diagram created and the
-  editor loads on `/diagram/<id>`.
+  editor loads on `/document/<id>`.
 - `/new?template=not-a-kind` → the plain wizard.
 - "Just Draw" on the wizard's step rail → blank diagram created
   immediately, same as Skip.

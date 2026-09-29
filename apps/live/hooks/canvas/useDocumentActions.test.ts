@@ -19,7 +19,7 @@ vi.mock('@/hooks/ui/useToast', () => ({
 
 const { useDocumentActions } = await import('./useDocumentActions');
 
-// The two hooks useDiagramActions calls are mocked above; one render gives its actions.
+// The two hooks useDocumentActions calls are mocked above; one render gives its actions.
 function actions() {
   return renderHook(() =>
     useDocumentActions({
@@ -43,8 +43,8 @@ function actions() {
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
-// docs/specs/017-telemetry/telemetry.md: Team·Added·Diagram counts a diagram ENTERING a team library,
-// whichever surface filed it; Team·Moved·Diagram is every other scope move.
+// docs/specs/017-telemetry/telemetry.md: Team·Added·Document counts a diagram ENTERING a team library,
+// whichever surface filed it; Team·Moved·Document is every other scope move.
 describe('moveDocumentTo telemetry', () => {
   beforeEach(() => {
     trackMock.mockReset();

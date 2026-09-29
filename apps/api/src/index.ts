@@ -336,7 +336,7 @@ const worker = {
       // Same TELEMETRY_ENABLED gate as the ingest; off the response's
       // critical path (waitUntil), and its own failure is swallowed —
       // the 500 must still go out. The type names the endpoint by its
-      // route words only (`Internal.Put.Diagrams.Tabs`), never an id.
+      // route words only (`Internal.Put.Documents.Tabs`), never an id.
       if (env.TELEMETRY_ENABLED === 'true') {
         const type = errorTypeToken('Internal', apiRouteLabel(request.method, url.pathname));
         const report = insertTelemetryEvents(

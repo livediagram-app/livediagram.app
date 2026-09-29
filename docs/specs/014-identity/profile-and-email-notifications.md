@@ -94,7 +94,7 @@ happen to share [User preferences](../007-editor/user-preferences.md)'s storage:
 
 ```ts
 // added to UserPreferences (docs/specs/007-editor/user-preferences.md)
-notifyDiagramJoin?: boolean;     // someone first opens one of my shared diagrams
+notifyDocumentJoin?: boolean;     // someone first opens one of my shared diagrams
 notifyInviteResponse?: boolean;  // someone accepts/declines a team invite I (an admin) sent
 notifyMentions?: boolean;        // a teammate @-mentions me in a comment (docs/specs/012-collaboration/comment-mentions.md)
 ```
@@ -104,7 +104,7 @@ toggle is an opt-**out**, mirroring [User preferences](../007-editor/user-prefer
 profile page reads/writes them through the existing
 `readUserPreferences` / `writeUserPreferences(prefs, ownerId)` round-trip, so
 a flip persists to D1 immediately and syncs across devices. Each flip emits
-`UI` / `Toggled` / `NotifyDiagramJoin{On,Off}` /
+`UI` / `Toggled` / `NotifyDocumentJoin{On,Off}` /
 `NotifyInviteResponse{On,Off}` telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) before persisting.
 
 ### Server-side read
@@ -125,20 +125,20 @@ addresses come only from trusted server state (the verified
 `email_lifecycle.email` written at first sighting, or the inviter-typed
 `team_members.email`), never from a client header.
 
-### a. Someone joins my diagram — `notifyDiagramJoin`
+### a. Someone joins my diagram — `notifyDocumentJoin`
 
 The signal is **a new person opening one of my shared diagrams for the first
 time**: the share-resolve path (`GET /api/share/<code>`) already records a
 visitor in `shared_with` via `recordSharedAccess`, but only when the visitor
 identifies and isn't the owner. `recordSharedAccess` now reports whether the
 row was **new** (first visit) vs a repeat. On a new visit the worker fires
-`notifyDiagramJoin(env, diagram, joinerName)` which:
+`notifyDocumentJoin(env, diagram, joinerName)` which:
 
 - no-ops unless `emailEnabled(env)`;
 - resolves the owner's email from `email_lifecycle` (so it only fires for a
   signed-in Clerk owner who has a stored verified address — a guest-owned
   diagram has no address and is silently skipped);
-- no-ops when the owner's `notifyDiagramJoin` pref is `false`;
+- no-ops when the owner's `notifyDocumentJoin` pref is `false`;
 - otherwise sends the **diagram-joined** email: "Someone just opened
   _{diagram name}_", with a CTA back to the diagram.
 

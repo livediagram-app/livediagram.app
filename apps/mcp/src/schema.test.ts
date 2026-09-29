@@ -58,7 +58,7 @@ describe('tool input shapes', () => {
 
   it('add_tab: requires documentId + name + elements', () => {
     const s = z.object(addTabShape);
-    expect(() => s.parse({ name: 't', elements: [] })).toThrow(); // missing diagramId
+    expect(() => s.parse({ name: 't', elements: [] })).toThrow(); // missing documentId
     const ok = s.parse({ documentId: 'd', name: 'Detail', elements: [], layout: 'preserve' });
     expect(ok.documentId).toBe('d');
   });

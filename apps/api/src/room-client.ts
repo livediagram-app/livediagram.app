@@ -141,7 +141,7 @@ export async function broadcastShareOp(
 // (docs/specs/013-workspace/trash.md): every open session hears the deleted
 // state, and the room closes every socket. Only for a diagram with a room.
 // Best-effort like the share-op broadcast: the D1 write is the change, and a
-// session the room misses still has every save refused with diagram_trashed.
+// session the room misses still has every save refused with document_trashed.
 export async function broadcastDocumentTrashed(
   env: Env,
   liveDoc: { id: string; shareable: boolean; teamId: string | null },

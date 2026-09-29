@@ -1,9 +1,9 @@
 // Diagram-level lifecycle + navigation for the EDITOR surface. The
 // list-level operations (open / rename / delete / move / duplicate /
-// folder delete / dismiss shared) live in useDiagramListActions,
+// folder delete / dismiss shared) live in useDocumentListActions,
 // shared with /explorer and /new; this hook wires them to the
 // editor's state (current diagram, Explorer list, shared list) and
-// adds the two editor-only actions: newDiagram (hand off to /live/new)
+// adds the two editor-only actions: newDocument (hand off to /live/new)
 // and makeCopy (visitor copies the open shared diagram).
 //
 // Navigation is deliberately a hard `window.location.assign` rather
@@ -103,13 +103,13 @@ export function useDocumentActions(deps: DocumentActionsDeps) {
   // personal tree (ownership transfers to the mover server-side). One API
   // call covers every case; afterwards both the team sweep and the
   // personal list refresh so the row surfaces wherever it landed.
-  // (Purely personal moves stay on moveDiagramToFolder above — it updates
+  // (Purely personal moves stay on moveDocumentToFolder above — it updates
   // the list optimistically.)
   //
   // Telemetry (docs/specs/017-telemetry/telemetry.md), on the success path only: a personal diagram
-  // filed into a team is Team·Added·Diagram, the same event the Explorer
+  // filed into a team is Team·Added·Document, the same event the Explorer
   // page's own move and the New Diagram wizard send; anything else (within
-  // a team, team -> team, team -> personal) is Team·Moved·Diagram. An
+  // a team, team -> team, team -> personal) is Team·Moved·Document. An
   // unknown source (a caller that doesn't pass `fromTeamId`, e.g. the team
   // library, whose rows are always team diagrams) reads as a team move.
   const moveDocumentTo = (

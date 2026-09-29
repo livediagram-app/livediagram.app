@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { fakeD1 } from '../test-d1';
 import { copyDocument, remapTabDataLinks } from './documents';
 
-// copyDiagram re-points a copied tab's internal links at the copy's own tabs.
+// copyDocument re-points a copied tab's internal links at the copy's own tabs.
 describe('remapTabDataLinks', () => {
   const map = new Map([['t1', 'T1']]);
 

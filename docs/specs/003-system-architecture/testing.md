@@ -167,7 +167,7 @@ v5 test runner with every check green: nothing invoked the broken path.
     UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
   - `apps/api`: auth guards (Clerk, guest signatures, diagram access, tokens),
     every defensive D1 row mapper, the D1 modules against real SQLite
-    (cascades, migrations), the `DiagramRoom` Durable Object's rules, ledger
+    (cascades, migrations), the `DocumentRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (diagrams, tabs, share, images,
     thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
     events, AI incl. the photo reader), the Timeline's writers and its catalogue

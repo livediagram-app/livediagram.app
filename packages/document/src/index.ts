@@ -315,7 +315,7 @@ export type Tab = {
   // Per-diagram folder name (docs/specs/006-document/tab-folders.md). Tabs sharing a name render
   // as a contiguous run under one collapsible chip in the tab bar.
   // This is link metadata, not body content: it's stripped from the
-  // persisted tab body and carried on the diagram_tabs row alongside
+  // persisted tab body and carried on the document_tabs row alongside
   // order_index, so a shared tab can be foldered in one diagram and
   // loose in another. Unset / empty = loose. See tab-folders.ts for
   // the normalize + grouping helpers.

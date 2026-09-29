@@ -101,7 +101,7 @@ function harness(api: 'ok' | 'down' = 'down') {
   return { registered, emitted };
 }
 
-// find_diagrams -> FindDiagrams. The tool name is snake_case on the wire (MCP
+// find_documents -> FindDocuments. The tool name is snake_case on the wire (MCP
 // convention) and the telemetry token is PascalCase (docs/specs/017-telemetry/telemetry.md bounds `type` to a
 // short token), so the two spellings have to be derived from each other rather
 // than typed twice.
@@ -317,7 +317,7 @@ describe('tool annotations', () => {
   });
 });
 
-// delete_diagram only ever moves a diagram to the Trash; restore_diagram and
+// delete_document only ever moves a diagram to the Trash; restore_document and
 // list_trash are the way back (docs/specs/015-api/mcp-server.md §4.9,
 // docs/specs/013-workspace/trash.md). A permanent delete is the REST API's.
 describe('the Trash tools', () => {

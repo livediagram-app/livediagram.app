@@ -40,7 +40,7 @@ import { joinRefusedBecauseTrashed } from './room-refusal';
 // and the onOp application (tab / diagram-meta / select / cursor /
 // laser / tab-focus / log / share-revoked) are unchanged. All the state
 // it drives lives in the page and is passed in; the deps array stays
-// [hydrated, diagramId, diagramShareable] (a name/colour change must not
+// [hydrated, documentId, documentShareable] (a name/colour change must not
 // reconnect), so the exhaustive-deps disable rides along.
 export function useRoomConnection(opts: {
   hydrated: boolean;
@@ -88,7 +88,7 @@ export function useRoomConnection(opts: {
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   // Live poll (docs/specs/012-collaboration/live-poll.md) inbound handlers, owned by useLivePoll. Stable
   // (useCallback with no changing deps) so they don't reopen the socket —
-  // the effect's dep list stays [hydrated, diagramId, diagramShareable].
+  // the effect's dep list stays [hydrated, documentId, documentShareable].
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): somebody pushed our character. Stable, like the
   // poll handlers below, so it can't reopen the socket.
   receiveAvatarPush: (dx: number, dy: number) => void;
@@ -126,7 +126,7 @@ export function useRoomConnection(opts: {
   receiveDocumentTrashed: () => void;
   // Re-hydrate tab content from D1 when the room can't replay our gap
   // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the poll handlers, so it can't reopen the
-  // socket — the effect's dep list stays [hydrated, diagramId, shareable].
+  // socket — the effect's dep list stays [hydrated, documentId, shareable].
   resyncFromServer: () => Promise<void>;
 }) {
   const {

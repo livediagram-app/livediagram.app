@@ -205,7 +205,7 @@ export function useEditorCommands(): {
     },
     createTab: addTab,
     renameDocument: requestRenameDocument,
-    // deleteDiagram confirms internally and (for the current diagram)
+    // deleteDocument confirms internally and (for the current diagram)
     // redirects to /explorer; it needs the diagram's own id.
     deleteDocument: () => {
       if (documentId) void deleteDocument(documentId);

@@ -1,4 +1,4 @@
-// DELETE /api/diagrams/<id> (docs/specs/013-workspace/trash.md): a delete moves
+// DELETE /api/documents/<id> (docs/specs/013-workspace/trash.md): a delete moves
 // the diagram to the Trash. `?permanent=true` deletes it for good, and the
 // owner's Take Offline bypasses the Trash (docs/specs/006-document/offline-mode.md):
 // it is a move into their browser, not a delete.
@@ -19,7 +19,7 @@ import { mayDeleteDocument, requireOwner, type RouteContext } from './context';
 
 export async function handleDocumentDelete(ctx: RouteContext, id: string): Promise<Response> {
   const { env, request, url } = ctx;
-  // Owner or joined teammate, never a share-link visitor (mayDeleteDiagram).
+  // Owner or joined teammate, never a share-link visitor (mayDeleteDocument).
   // Resolve the caller first (400 with no auth), then 404 on a missing
   // diagram (no existence leak), then 403 on a caller with no claim.
   const owner = requireOwner(ctx);

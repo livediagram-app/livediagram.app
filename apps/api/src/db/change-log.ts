@@ -6,9 +6,9 @@ import { CHANGE_LOG_LIST_LIMIT } from '@livediagram/api-schema';
 import { rowToChangeLog, type ChangeLogRow } from '../change-log-row';
 import type { ChangeLogEntryDTO, Env } from '../types';
 
-// Per-diagram log read: change_log.diagram_id was dropped in
+// Per-diagram log read: change_log.document_id was dropped in
 // migration 0012 (item #14), so the filter joins through
-// diagram_tabs to find every tab currently linked to the diagram
+// document_tabs to find every tab currently linked to the diagram
 // and pulls log entries for those tabs. A tab shared between
 // diagrams surfaces in both diagrams' logs — which is the right
 // answer once docs/specs/006-document/tab-document-many-to-many.md's many-to-many tabs land: the change exists
@@ -90,10 +90,10 @@ export async function insertChangeLogEntry(env: Env, entry: ChangeLogEntryDTO): 
 // Bulk-drop every log entry for a tab. Used by the live app when it
 // deletes a tab — the tab no longer exists, its history is dead with
 // it. See docs/specs/012-collaboration/activity-and-audit.md. The delete is SCOPED to the
-// caller's diagram (via diagram_tabs): migration 0012 dropped
-// change_log.diagram_id, so a bare `WHERE tab_id = ?` would let an
+// caller's diagram (via document_tabs): migration 0012 dropped
+// change_log.document_id, so a bare `WHERE tab_id = ?` would let an
 // owner of one diagram wipe a foreign diagram's tab log by id (IDOR).
-// Requiring the tab to be linked to `diagramId` (which the route has
+// Requiring the tab to be linked to `documentId` (which the route has
 // already authorised) closes that.
 export async function deleteChangeLogForTab(
   env: Env,

@@ -85,7 +85,7 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
 
   it('documents every HTTP method a dispatched segment handles', () => {
     // The check above is per SEGMENT, so it stays green when an existing
-    // segment grows a verb: adding PATCH to /diagrams passes, because
+    // segment grows a verb: adding PATCH to /documents passes, because
     // 'diagrams' is already documented. The published description is what
     // external callers build against (docs/specs/015-api/api-documentation.md, docs/specs/015-api/public-api-and-tokens.md), and an endpoint
     // missing from it is one nobody can discover.

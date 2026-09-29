@@ -1,4 +1,4 @@
-// POST /api/diagrams/<id>/tabs/<tabId>/qa — one action on a Q&A board
+// POST /api/documents/<id>/tabs/<tabId>/qa — one action on a Q&A board
 // (docs/specs/012-collaboration/qa-board.md).
 //
 // The board is the one element whose state the SERVER owns: every add, vote
@@ -75,7 +75,7 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
       : null;
 
   // Hand the write to the diagram's room, which runs board writes one at a
-  // time and broadcasts each result in order (DiagramRoom.handleQaWrite).
+  // time and broadcasts each result in order (DocumentRoom.handleQaWrite).
   const stub = env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(id));
   const res = await stub.fetch('https://room/qa', {
     method: 'POST',

@@ -137,7 +137,7 @@ export function useAutosave(opts: {
       );
       if (!hasChanges) return;
       // The raw keepalive writes live behind the api-client boundary now
-      // (flushDiagramSavesBeacon) so this hook holds no fetch of its own.
+      // (flushDocumentSavesBeacon) so this hook holds no fetch of its own.
       flushDocumentSavesBeacon({
         ownerId: selfId,
         documentId,
@@ -282,7 +282,7 @@ export function useAutosave(opts: {
           setSavedAt(now);
           // Bump the current diagram's row locally so the Explorer's
           // "Updated X ago" stays fresh — used to refetch the whole
-          // list here, which hit /api/diagrams on every autosave.
+          // list here, which hit /api/documents on every autosave.
           setDocumentList((prev) =>
             prev.map((d) => (d.id === documentId ? { ...d, savedAt: now, name: documentName } : d)),
           );

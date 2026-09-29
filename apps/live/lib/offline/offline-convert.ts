@@ -26,7 +26,7 @@ import {
 
 // Offline → Cloud ("Save to your account"). Creates the cloud copy first, then
 // removes the local one, so a network failure leaves the offline diagram
-// intact. Returns the (unchanged) diagram id. `apiCreateDiagram` does not
+// intact. Returns the (unchanged) diagram id. `apiCreateDocument` does not
 // dispatch on the offline index, so it always writes to the server even while
 // the id is still registered offline.
 export async function saveOfflineToCloud(offlineId: string, ownerId: string): Promise<string> {
@@ -126,7 +126,7 @@ export async function takeCloudOffline(
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching
-  // apiDeleteDiagram would target the local store instead of the server.
+  // apiDeleteDocument would target the local store instead of the server.
   try {
     // Declare the conversion: this DELETE is indistinguishable from a real
     // delete at the boundary, and undeclared the feed told the owner their

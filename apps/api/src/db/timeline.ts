@@ -201,7 +201,7 @@ export type ReadTimelineResult = {
 // boundary non-deterministic.
 // An event about a diagram in the Trash is hidden, not swept
 // (docs/specs/013-workspace/trash.md): a restore brings the history back, and
-// the purge sweeps it (diagramsTimelineSweepStatement). Matches the same two
+// the purge sweeps it (documentsTimelineSweepStatement). Matches the same two
 // references the sweep does, each a primary-key probe.
 // Renames are not timeline moments (docs/specs/013-workspace/timeline.md §4.2): entries show each
 // diagram's current name instead. Nothing records them any more; this keeps
@@ -394,7 +394,7 @@ export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Pr
 //
 // Two predicates, because "about a diagram" is wider than "keyed on the
 // diagram id". A comment event's source_id is the COMMENT's id, an
-// action's is the ACTION's, a share link's is `<diagramId>:<role>` —
+// action's is the ACTION's, a share link's is `<documentId>:<role>` —
 // they all describe a diagram without being keyed on one. Matching only
 // source_id left those behind, each rendering a bubble that linked to a
 // 404. The second clause reads the `<sourceType>Id` the emitters put in

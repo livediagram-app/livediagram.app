@@ -4,7 +4,7 @@ import type { SharedWithItem } from '@livediagram/api-schema';
 import type { Env, ShareRole } from '../types';
 
 // Record a visitor's access to a shared diagram. Idempotent on
-// (owner_id, diagram_id): repeat visits just bump last_seen + role.
+// (owner_id, document_id): repeat visits just bump last_seen + role.
 // Caller is expected to only invoke this when the visitor's resolved
 // owner differs from the diagram's owner (an owner opening their own
 // diagram via a share link shouldn't show up in their own
@@ -12,8 +12,8 @@ import type { Env, ShareRole } from '../types';
 //
 // Returns whether this was a FIRST visit (no prior row). The share route
 // uses it to fire the "someone joined your diagram" notification (docs/specs/014-identity/profile-and-email-notifications.md)
-// and the Diagram·Joined telemetry count (docs/specs/017-telemetry/telemetry.md) once per (visitor,
-// diagram) rather than per reload. Decided by an INSERT OR IGNORE's row
+// and the Document·Joined telemetry count (docs/specs/017-telemetry/telemetry.md) once per (visitor,
+// document) rather than per reload. Decided by an INSERT OR IGNORE's row
 // count, so two concurrent first opens can't both read as first; a repeat
 // visit then refreshes role + last_seen.
 export async function recordSharedAccess(
@@ -59,9 +59,9 @@ export async function hasSharedAccess(
 // List diagrams shared with this owner, newest interaction first.
 // Joins through `diagrams` for the name + owner-side savedAt; also
 // surfaces a still-live `shareCode` for each row so the client can
-// build a `/live/diagram/<id>?s=<code>` URL the visitor can actually
+// build a `/live/document/<id>?s=<code>` URL the visitor can actually
 // open. Without the code the Shared list link would land on the
-// owner-only `/api/diagrams/:id` path and 404 every time.
+// owner-only `/api/documents/:id` path and 404 every time.
 //
 // The shareCode is sourced via a correlated subquery against
 // share_links matching the same role the visitor was granted —

@@ -33,7 +33,7 @@ type DocumentRow = {
 type SummaryRow = DocumentRow;
 
 async function listTabSummariesFor(env: Env, documentId: string): Promise<TabSummaryDTO[]> {
-  // Read through the diagram_tabs link table (migration 0011 /
+  // Read through the document_tabs link table (migration 0011 /
   // docs/specs/006-document/tab-document-many-to-many.md) — order_index now lives on the link, not on the tab,
   // so two diagrams that share a tab can order it independently.
   const result = await env.DB.prepare(
@@ -94,13 +94,13 @@ const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id
 
 // Gate-only projection: the columns access checks need (owner + team +
 // name for notifications) in ONE query — no participant join, no tab
-// summaries, no share-code subquery. getDiagram costs 3 queries; the
+// summaries, no share-code subquery. getDocument costs 3 queries; the
 // room-ticket mint and WS upgrade run on every room join and use none
 // of the extra data.
 //
 // Both diagram reads see LIVE diagrams only: a trashed one reads as missing
 // (docs/specs/013-workspace/trash.md, "fail closed"). A door that owes an
-// authorised caller the deleted state asks getTrashedDiagramMeta on a miss.
+// authorised caller the deleted state asks getTrashedDocumentMeta on a miss.
 export async function getDocumentMeta(
   env: Env,
   id: string,
@@ -117,7 +117,7 @@ export async function getDocumentMeta(
 
 // Thumbnail projection (docs/specs/006-document/document-snapshots.md): what the
 // snapshot route needs to gate access AND decide cache freshness, in ONE
-// query. getDiagram (3 queries) plus a separate thumb_rendered_at read put
+// query. getDocument (3 queries) plus a separate thumb_rendered_at read put
 // four dependent D1 round trips in front of every Explorer preview, even a
 // fresh cache hit; this is one.
 export type DocumentThumbMeta = {
@@ -206,7 +206,7 @@ export async function listDocumentsByTeam(env: Env, teamId: string): Promise<Doc
 // Metadata upsert only — diagram name, sharing state, owner id, and
 // timestamps. Tabs live in their own table now (see upsertTab /
 // reorderTabs / deleteTab). Used both by the new metadata-only PUT
-// /diagrams/:id and by the create endpoint.
+// /documents/:id and by the create endpoint.
 // Write-side meta upsert. Read-derived fields (`tabs`, `ownerName`,
 // `ownerColor`) are pruned from the input shape since none of them
 // are stored on the diagrams row directly — tabs live in their own
@@ -223,7 +223,7 @@ export async function upsertDocumentMeta(
   // never rewritten by a later metadata upsert (rename / autosave / move).
   // `presentation` likewise: a create carries the deck an Offline Mode sync
   // built (docs/specs/006-document/offline-mode.md); after that only
-  // setDiagramPresentation writes it.
+  // setDocumentPresentation writes it.
   await env.DB.prepare(
     `INSERT INTO documents (id, owner_id, name, shareable, folder_id, source, presentation, saved_at, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -247,7 +247,7 @@ export async function upsertDocumentMeta(
 }
 
 // Slide deck write (docs/specs/012-collaboration/presentation-mode.md). Its OWN statement rather than a field on
-// upsertDiagramMeta, for the same reason folder / team placement has one: the
+// upsertDocumentMeta, for the same reason folder / team placement has one: the
 // meta upsert runs on every rename and autosave, and a deck must never be
 // rewritten by a caller that was not thinking about the deck. Passing null
 // clears it, which is what the client sends when the last slide is deleted.
@@ -262,7 +262,7 @@ export async function setDocumentPresentation(
 }
 
 // Placement write (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): folder and team scope move
-// together in one UPDATE so a diagram can never point at a folder in
+// together in one UPDATE so a document can never point at a folder in
 // a scope it isn't in. `newOwnerId` transfers ownership in the same
 // write: a joined member moving a team diagram out into their own
 // personal library becomes its owner (docs/specs/013-workspace/team-shared-documents.md), and folders are
@@ -301,7 +301,7 @@ export async function setDocumentShare(env: Env, id: string, shareable: boolean)
 // readable by the owner (the Share dialog shows it) and the threat
 // model is anti-URL-guessing, not cryptographic. NULL / empty means
 // the diagram has no password. Kept OUT of the diagram DTO columns
-// (DIAGRAM_COLS) so it never leaks to a viewer; only these owner-only
+// (DOCUMENT_COLS) so it never leaks to a viewer; only these owner-only
 // paths touch it.
 export async function getDocumentSharePassword(env: Env, id: string): Promise<string | null> {
   const row = await env.DB.prepare('SELECT share_password FROM documents WHERE id = ?')
@@ -326,7 +326,7 @@ export async function setDocumentSharePassword(
 
 // The immediate hard delete of one diagram, which only Take Offline uses now:
 // every other delete moves the diagram to the Trash, and its purge runs
-// purgeDiagrams (docs/specs/013-workspace/trash.md). A tab another diagram
+// purgeDocuments (docs/specs/013-workspace/trash.md). A tab another diagram
 // still holds survives either.
 export async function deleteDocument(env: Env, id: string): Promise<void> {
   await env.DB.batch(documentRemovalStatements(env, { column: 'id', value: id }));
@@ -338,7 +338,7 @@ export async function deleteDocument(env: Env, id: string): Promise<void> {
 }
 
 // R2 object key for a diagram's cached SVG snapshot (docs/specs/006-document/document-snapshots.md). Shared by
-// the render-cache (which writes it) and deleteDiagram (which clears it)
+// the render-cache (which writes it) and deleteDocument (which clears it)
 // so the key shape lives in exactly one place.
 export function thumbnailKey(documentId: string): string {
   return `thumb/${documentId}`;
@@ -468,7 +468,7 @@ export async function countDocumentsByOwner(env: Env, ownerId: string): Promise<
 }
 
 // docs/specs/014-identity/transactional-email.md (#1) throttle: claim the right to email the owner about a new comment
-// on this diagram, at most once per window. Atomic conditional UPDATE so a burst
+// on this document, at most once per window. Atomic conditional UPDATE so a burst
 // of concurrent comment saves can't each fire an email. `cutoff` = now - window;
 // returns false when we already emailed within the window.
 export async function claimCommentNotify(

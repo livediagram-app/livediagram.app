@@ -211,7 +211,7 @@ target:
   sets at once, so it MERGES the api list with the local one, and still returns
   the offline rows when the cloud fetch fails.
 - **Create is the one caller-decided branch**, because there is no registered id
-  to dispatch on yet: the New Diagram wizard calls `offlineCreateDiagram`
+  to dispatch on yet: the New Diagram wizard calls `offlineCreateDocument`
   directly when the author picked Local Browser, and that call is what registers
   the id every later operation routes on.
 - Only the diagram/tab CRUD path needs the local store; server-only endpoints

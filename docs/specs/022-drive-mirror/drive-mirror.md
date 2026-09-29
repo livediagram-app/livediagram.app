@@ -94,7 +94,7 @@ this spec does not restate it.
 - **Thumbnail:** a PNG of the first tab, rasterised in the browser from the
   existing SVG snapshot, sent as `contentHints.thumbnail` (PNG, at least 220 px
   wide, under 2 MB). There is no separate preview file.
-- **`appProperties`:** `ldDiagramId` (the diagram id) and `ldOrigin` (the
+- **`appProperties`:** `ldDocumentId` (the diagram id) and `ldOrigin` (the
   deployment's host), so a file maps back to its diagram after any rename or
   move, and a file from another deployment is recognised as foreign.
 
@@ -126,7 +126,7 @@ this spec does not restate it.
 ## Inbound: Drive to livediagram
 
 The browser reads `changes.list` from the stored page token and applies each
-change whose file it recognises (by `appProperties.ldDiagramId` or a recorded
+change whose file it recognises (by `appProperties.ldDocumentId` or a recorded
 folder id):
 
 | In Drive                                             | In livediagram                                                                                  |
@@ -210,7 +210,7 @@ Named constants in one cadence module of the mirror code, with the values and bu
     **Import a copy**, which creates a new Personal Space diagram from the
     file's contents.
   - **The file is from another deployment** (`ldOrigin` differs) or has no
-    `ldDiagramId`: offer **Import a copy** only.
+    `ldDocumentId`: offer **Import a copy** only.
   - **Not a livediagram file**, or unreadable: a clear error page.
 - A signed-out visitor is asked to sign in first, then continues.
 - Opening with "Open with" grants livediagram access to that one file, which is
@@ -224,7 +224,7 @@ Named constants in one cadence module of the mirror code, with the values and bu
 - **Disconnect** revokes the grant, deletes the stored token and mirror rows,
   and **leaves every Drive file in place**. Reconnecting later starts a fresh
   mirror into a new or re-chosen root, matching existing files by
-  `ldDiagramId` where it can.
+  `ldDocumentId` where it can.
 - **Account deletion** does the same revoke and delete as part of deleting the
   account. Drive files are the user's and stay.
 

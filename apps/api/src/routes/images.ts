@@ -246,7 +246,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
 
   // GET /api/images/:id: byte read. Auth: owner of the
   // image, OR caller has read access to the diagram named
-  // by `?d=<diagramId>` (owner or X-Share-Code) AND that
+  // by `?d=<documentId>` (owner or X-Share-Code) AND that
   // diagram references this image.
   if (segments.length === 3 && request.method === 'GET') {
     const imageId = segments[2]!;
@@ -266,7 +266,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
         // in v1), the share recipient can still load it.
         const liveDoc = await getDocument(env, d);
         if (liveDoc) {
-          // canReadDiagram (owner OR any valid share code
+          // canReadDocument (owner OR any valid share code
           // mapping to this diagram, see auth/document-access.ts)
           // is the same access policy spelled out inline here
           // before commit 069b785 / 5527329 extracted it.

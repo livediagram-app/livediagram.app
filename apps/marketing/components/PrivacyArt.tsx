@@ -72,7 +72,7 @@ export function NoTrackersArt() {
   );
 }
 
-/* Your data is yours: a folder/diagram label arcs from a generic
+/* Your data is yours: a folder/document label arcs from a generic
    server icon back into the user's avatar — the "comes home" beat. */
 export function DataIsYoursArt() {
   return (

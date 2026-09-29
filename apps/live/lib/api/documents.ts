@@ -35,7 +35,7 @@ import {
 // The diagram-list row every list surface renders: the Explorer
 // panel, the /explorer page, /new, and the editor's diagram-list
 // state. A Pick of the wire type so the UI rows can't drift from
-// what apiListDiagrams actually returns; surfaces needing more
+// what apiListDocuments actually returns; surfaces needing more
 // fields widen the Pick rather than re-declaring the shape.
 export type DocumentListItem = Pick<
   DocumentSummary,
@@ -253,7 +253,7 @@ export async function apiFetchDocumentThumbnailUrl(
 
 // The "Shared with you" row shape now lives in @livediagram/api-schema
 // (the api worker emits it via listSharedWith), imported above and
-// re-exported here so the existing `@/lib/api-client` / `./api/diagrams`
+// re-exported here so the existing `@/lib/api-client` / `./api/documents`
 // import paths keep resolving unchanged. See that package for the
 // per-field rationale.
 export type { SharedWithItem };
@@ -261,7 +261,7 @@ export type { SharedWithItem };
 // List diagrams that have been shared with this owner (i.e. the
 // owner previously opened a share link for them and was identified
 // to the api at the time). Returns newest-interaction-first.
-// Same dedupe rationale as apiListDiagrams: editor + /new +
+// Same dedupe rationale as apiListDocuments: editor + /new +
 // /explorer all mount surfaces that fire this on first paint.
 async function _apiListSharedWith(ownerId: string): Promise<SharedWithItem[]> {
   const res = await apiFetch(`${API_BASE}/shared`, { headers: await apiHeaders(ownerId) });

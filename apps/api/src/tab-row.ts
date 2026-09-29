@@ -15,7 +15,7 @@ export type TabRow = {
   order_index: number;
   data: string;
   updated_at: number;
-  // Per-diagram folder name from the diagram_tabs link (docs/specs/006-document/tab-folders.md).
+  // Per-diagram folder name from the document_tabs link (docs/specs/006-document/tab-folders.md).
   // NULL when the tab is loose. Read sites that don't join the link
   // for folder (none today) leave it undefined, which maps the same
   // as NULL.
@@ -29,14 +29,14 @@ export type TabRow = {
 //
 // Critical because every tab read in the editor passes through this:
 // a regression that dropped a field from the spread, swapped id with
-// diagramId, or mis-cased a column would corrupt diagrams silently on
+// documentId, or mis-cased a column would corrupt diagrams silently on
 // next load (no other surface signal, the data just looks wrong).
 //
 // The data column carries the entire Tab body except id + name (those
 // duplicate to real columns for SQL queries that don't need to parse
 // JSON), so `JSON.parse(row.data)` returns an `Omit<Tab, 'id' | 'name'>`.
 // Spread it first, then overwrite/extend with the row-column fields so
-// a forged `data` blob can't override id / name / diagramId / orderIndex
+// a forged `data` blob can't override id / name / documentId / orderIndex
 // / updatedAt with its own values.
 export function rowToTab(row: TabRow): TabDTO {
   // Every tab read passes through here, so this is where stored tabs are

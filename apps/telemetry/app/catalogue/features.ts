@@ -353,7 +353,7 @@ export const TABS_FILED: Metric = {
 export const DOCUMENTS_FILED: Metric = {
   category: 'Document',
   action: 'Moved',
-  // The Offline Mode conversions are Diagram·Moved too, charted in their own
+  // The Offline Mode conversions are Document·Moved too, charted in their own
   // stack (Taken Offline, Saved to Cloud).
   typeIn: (type) => type !== 'TakenOffline' && type !== 'SavedToCloud',
   title: 'Diagrams Filed',

@@ -53,7 +53,7 @@ Sections, top to bottom:
   - **Clerk enabled, signed out**: "Sign in to keep your content" with body "A free account keeps your diagrams and content across sessions and devices." and a primary CTA linking to `/sign-in/`.
   - **Clerk enabled, signed in**: renders nothing. The signed-in user already has the account that syncs everything; the nudge would just be noise.
 
-Diagram rows — in **Recent Diagrams** and inside folders — show a small chain-link glyph (the shared `SharedDiagramIcon`) beside the name when the diagram has an active share link (`shareCode` non-null, carried through from the `/api/diagrams` summary), with a "Has a share link" hover card, so an owner can tell at a glance which of their diagrams are shared. The glyph is suppressed on the row for the currently-open diagram, whose share state already shows in the Current Diagram section.
+Diagram rows — in **Recent Diagrams** and inside folders — show a small chain-link glyph (the shared `SharedDocumentIcon`) beside the name when the diagram has an active share link (`shareCode` non-null, carried through from the `/api/documents` summary), with a "Has a share link" hover card, so an owner can tell at a glance which of their diagrams are shared. The glyph is suppressed on the row for the currently-open diagram, whose share state already shows in the Current Diagram section.
 
 On desktop, collapsing the Explorer banner-collapses it in place via the shared `MovablePanel` `collapsible` prop (same as the Palette). On mobile the Explorer is instead opened from the top-right mobile dock ([Live app](../007-editor/live-app.md) "Mobile chrome"), so it is no longer hidden on phones; the old bottom-of-canvas dock button is retired. Activity still docks via its own minimise path, see that section.
 
@@ -762,8 +762,8 @@ A global search modal (`apps/live/components/panels/SearchPanel.tsx`; matching l
 Result sections, in order, each capped (8 per section, 12 for elements):
 
 1. **Diagrams** — the owner's diagram names. Picking one opens it.
-2. **Shared with you** — diagrams shared with the current owner, matched by name. Rows carry their still-live share code; picking one opens the visitor URL (`/diagram/<id>?s=<code>`), the only path a non-owner can open the diagram on.
-3. **Folders** — personal folder names, then **team-library folders** ([Team shared diagrams](../013-workspace/team-shared-diagrams.md)) shown with an "in `<team>`" suffix and matched by path or team name; each kind capped separately so neither crowds the other. Picking a personal folder selects it on `/explorer`; picking a team folder deep-links to `/explorer/team?id=<team>&folder=<id>` (the team page reads the param at mount). Team folders are swept lazily, one library fetch per team, the first time search opens (`useTeamFoldersForSearch`).
+2. **Shared with you** — diagrams shared with the current owner, matched by name. Rows carry their still-live share code; picking one opens the visitor URL (`/document/<id>?s=<code>`), the only path a non-owner can open the diagram on.
+3. **Folders** — personal folder names, then **team-library folders** ([Team shared diagrams](../013-workspace/team-shared-documents.md)) shown with an "in `<team>`" suffix and matched by path or team name; each kind capped separately so neither crowds the other. Picking a personal folder selects it on `/explorer`; picking a team folder deep-links to `/explorer/team?id=<team>&folder=<id>` (the team page reads the param at mount). Team folders are swept lazily, one library fetch per team, the first time search opens (`useTeamFoldersForSearch`).
 4. **Teams** — teams the signed-in user belongs to ([Teams](../013-workspace/teams.md)), matched by name. Picking one lands on `/explorer/team?id=<id>`. Guests have none; the editor fetches the list lazily the first time search opens so non-searching sessions never pay the request.
 5. **Tabs** — the open diagram's tab names (editor only; `/explorer` has no active diagram).
 6. **Elements** — the open diagram's element text (editor only). Matches element labels; **tables match by cell text** (tables have no single label), surfacing the matching cell as the row label. Blank-labelled elements are unmatchable. Opening the panel triggers a **load-all-tabs prefetch**: per-tab lazy loading ([Per-tab storage](../006-diagram/per-tab-storage.md)) means unvisited tabs are empty placeholders locally, so search pulls every remaining tab's content in one parallel best-effort sweep — without it, element search silently misses tabs the user hasn't opened this session.
@@ -852,7 +852,7 @@ Text + duplication:
 
 Relationships:
 
-- **Link Element** (or **Edit link**) — opens the shared `LinkPickerDialog` (Tab / Diagram / External URL modes, plus Remove). Picking writes `link: { kind: 'tab', tabId }`, `{ kind: 'diagram', diagramId, name }`, or `{ kind: 'url', url }` onto the element; the target opens on a follow-link click. See [Element links](#element-links).
+- **Link Element** (or **Edit link**) — opens the shared `LinkPickerDialog` (Tab / Diagram / External URL modes, plus Remove). Picking writes `link: { kind: 'tab', tabId }`, `{ kind: 'diagram', documentId, name }`, or `{ kind: 'url', url }` onto the element; the target opens on a follow-link click. See [Element links](#element-links).
 - **Comments** — opens the `CommentThreadPopover` for the element's comment thread. See [Comments](#comments).
 
 State + destructive:
@@ -1150,7 +1150,7 @@ The editor header carries three things:
 - The **diagram title** (centre). Defaults to `Untitled diagram`. Click to rename in place — the title becomes a text input with the current name pre-selected. **Enter** commits, **Escape** cancels, **blur** commits. Empty value reverts to the previous name. A small **Private** or **Shared** badge sits immediately to the right of the title and surfaces the current sharing state.
 - The **Share button** (right). Visible only to the diagram owner — visitors arriving via a share link can't toggle sharing on their host's diagram. Opens the share dialog (manage links, roles).
 
-The diagram title persists via the api worker (`apiSaveDiagramMeta`). Per-tab names live on each `Tab` and are edited from the tab bar (see [Tabs](#tabs)).
+The diagram title persists via the api worker (`apiSaveDocumentMeta`). Per-tab names live on each `Tab` and are edited from the tab bar (see [Tabs](#tabs)).
 
 Rename and Delete for the **current** diagram live in the Explorer panel's "Current Diagram" row, not in the header — the header stays a thin chrome strip. Other participants render as cursors + selection rings on the canvas itself (see [11-api.md → Durable Object room](../015-api/api.md)), not in the header.
 
@@ -1187,7 +1187,7 @@ The active tab carries a **`⋯` ellipsis button** to the right of its name. Cli
 - **Duplicate** — creates a copy of the tab (same elements, same pattern, name suffixed with " copy") inserted directly after the source, and switches to it.
 - **Clear content** — wipes every element from the tab in one undoable commit. Disabled when the tab is already empty or when the tab is locked.
 - **Lock / Unlock** — toggles `tab.locked`. While locked, every element on the tab is read-only (matches per-element lock semantics), the palette's Add buttons stop firing, theme / canvas changes are blocked, **the tab itself can't be deleted** (the Delete row is disabled — unlock first), and the tab pill shows the padlock icon (see above).
-- **Add to another diagram** — submenu listing every other diagram the participant owns. Picking one links the tab into that diagram via `POST /api/diagrams/:id/tabs/:tabId/link` (the source tab stays put; both diagrams now share the same `tabs.data` row so edits propagate, see [Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md)).
+- **Add to another diagram** — submenu listing every other diagram the participant owns. Picking one links the tab into that diagram via `POST /api/documents/:id/tabs/:tabId/link` (the source tab stays put; both diagrams now share the same `tabs.data` row so edits propagate, see [Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md)).
 - **Delete** — removes the tab and falls back to a neighbouring tab. Disabled when only one tab remains.
 
 The menu renders through a **portal** to `document.body` so it isn't clipped by the tab bar's horizontal scroll. It positions itself from the ellipsis button's bounding rect (tab surface) or at the cursor / footer-button point (canvas surface), clamping back on-screen at every viewport edge.

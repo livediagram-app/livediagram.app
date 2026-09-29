@@ -6,11 +6,11 @@ import type { DocumentDTO } from '../types';
 // Offline Mode conversions must be recorded as themselves (docs/specs/006-document/offline-mode.md + docs/specs/013-workspace/timeline.md).
 //
 // Both conversions reuse ordinary endpoints — "take offline" is a plain
-// DELETE /diagrams/:id, "sync" a plain POST /diagrams — so the worker cannot
+// DELETE /documents/:id, "sync" a plain POST /documents — so the worker cannot
 // tell them apart from a real delete or a real create unless the editor says
 // so. It didn't, so the feed reported that a diagram the owner had just moved
 // into this browser was DELETED (in danger red), and that one they had just
-// uploaded was newly CREATED. `diagram_offline` / `diagram_synced` existed the
+// uploaded was newly CREATED. `document_offline` / `document_synced` existed the
 // whole time, with tones, icons, renderers and a docs/specs/013-workspace/timeline.md table row; nothing
 // emitted them.
 //

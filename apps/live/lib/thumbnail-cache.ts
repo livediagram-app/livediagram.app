@@ -1,7 +1,7 @@
 import { apiFetchDocumentThumbnailUrl } from '@/lib/api-client';
 
 // In-memory cache of diagram snapshot thumbnails (docs/specs/006-document/document-snapshots.md), shared
-// by every DiagramThumbnail on the page.
+// by every DocumentThumbnail on the page.
 //
 // Without it each thumbnail owned its blob URL and revoked it on unmount,
 // so switching Explorer views, folders or routes threw every preview away

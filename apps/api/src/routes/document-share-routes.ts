@@ -1,4 +1,4 @@
-// /api/diagrams/<id>/share* — the share-link family (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/share-password.md
+// /api/documents/<id>/share* — the share-link family (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/share-password.md
 // + docs/specs/013-workspace/share-link-expiry.md), split out of document-subresource-routes.ts the same way
 // the placement route owns document-placement-route.ts: list / mint /
 // bulk-revoke, the share password, revoking one code (with the room
@@ -31,7 +31,7 @@ import { requireOwnedDocument, type RouteContext } from './context';
 // Returns null when the request isn't a share route.
 export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
-  // /api/diagrams/<id>/share — owner-only.
+  // /api/documents/<id>/share — owner-only.
   //   GET     — list every share link for this diagram.
   //   POST    — mint a new link. Body: { role: 'edit' | 'view' }
   //   DELETE  — revoke every link (back-compat with the
@@ -98,7 +98,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
     }
   }
 
-  // /api/diagrams/<id>/share-password — owner-only get/set of the
+  // /api/documents/<id>/share-password — owner-only get/set of the
   // diagram's optional share password (docs/specs/013-workspace/share-password.md). PUT body
   // { password: string | null }; null / empty clears it.
   if (segments.length === 4 && segments[3] === 'share-password') {
@@ -119,7 +119,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
     }
   }
 
-  // /api/diagrams/<id>/share/<code> — revoke one specific link.
+  // /api/documents/<id>/share/<code> — revoke one specific link.
   if (segments.length === 5 && segments[3] === 'share') {
     const id = segments[2]!;
     const code = segments[4]!;
@@ -161,7 +161,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
     }
   }
 
-  // /api/diagrams/<id>/share/<code>/extend — re-arm an expiring link
+  // /api/documents/<id>/share/<code>/extend — re-arm an expiring link
   // for another round of its creation-time duration (docs/specs/013-workspace/share-link-expiry.md).
   // Owner-only; works whether the link is currently active or expired
   // (extending an active link pushes the deadline out from now); 400

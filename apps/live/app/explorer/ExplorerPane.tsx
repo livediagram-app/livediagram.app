@@ -300,7 +300,7 @@ export function ExplorerPane() {
             onLeftTeam={() => go({ kind: 'timeline' })}
             onLoadResult={(found) => setNotFoundIn(found ? null : selected)}
             // The shared-diagrams move picker offers every space (docs/specs/013-workspace/team-shared-documents.md):
-            // the personal tree + each team, with `moveDiagramTo` routing a
+            // the personal tree + each team, with `moveDocumentTo` routing a
             // cross-scope pick from the diagram's current placement.
             moveDests={{ personalFolders: movePersonalFolders, teams: moveTeamDests }}
             onMoveDocumentTo={moveDocumentTo}

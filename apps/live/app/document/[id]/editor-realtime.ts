@@ -16,7 +16,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // hydration/bootstrap, autosave and room hooks read and write.
 export function useEditorRealtime() {
   // Single open room connection for the current diagram. Re-opens
-  // whenever diagramId changes.
+  // whenever documentId changes.
   const roomRef = useRef<ReturnType<typeof connectRoom> | null>(null);
   // Sharing state for the current diagram. Mirrors the API row's
   // `shareable` + `shareCode` columns; refreshed on hydration, and
@@ -33,7 +33,7 @@ export function useEditorRealtime() {
   // diagrams populate shareLinks instead.
   const [documentShareCode, setDocumentShareCode] = useState<string | null>(null);
   // True for the owner of the loaded diagram; false for visitors who
-  // arrived via /live/diagram/shared?s=<code>. Drives whether the
+  // arrived via /live/document/shared?s=<code>. Drives whether the
   // Share button shows.
   const [isOwner, setIsOwner] = useState(true);
   // The diagram's owner id (from the api fetch). Used to derive the
@@ -55,7 +55,7 @@ export function useEditorRealtime() {
   const [copying, setCopying] = useState(false);
   // Every active share link for the current diagram (owner-only). The
   // ShareDialog list renders straight off this array. shareable is
-  // derived: shareLinks.length > 0 OR diagramShareable from a freshly
+  // derived: shareLinks.length > 0 OR documentShareable from a freshly
   // loaded row.
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
   // The diagram's optional share password (docs/specs/013-workspace/share-password.md), owner-only. Null
@@ -77,7 +77,7 @@ export function useEditorRealtime() {
   // Owners arrive via ?d=<id> with no share code. The log endpoints
   // accept the code as a fallback authorisation so edit visitors can
   // persist their own entries; null means "owner — owner check
-  // suffices". Tracked separately from `diagramShareCode` (which is
+  // suffices". Tracked separately from `documentShareCode` (which is
   // the diagram's primary code surfaced for sharing) because a
   // diagram can have many active codes.
   const [sessionShareCode, setSessionShareCode] = useState<string | null>(null);

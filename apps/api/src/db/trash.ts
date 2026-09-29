@@ -1,8 +1,8 @@
 // The Trash (docs/specs/013-workspace/trash.md): a deleted diagram keeps its
 // row with `trashed_at` stamped (migration 0051), stays restorable for 30
-// days, then the daily cron purges it through diagramRemovalStatements.
+// days, then the daily cron purges it through documentRemovalStatements.
 //
-// trashDiagram / restoreDiagram / purgeDiagrams are plain calls with no HTTP
+// trashDocument / restoreDocument / purgeDocuments are plain calls with no HTTP
 // concerns, so a later mirror (Drive's bin) can drive them directly.
 
 import { TRASH_RETENTION_MS, trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
@@ -155,7 +155,7 @@ export async function trashIdsFor(
 }
 
 // Delete trashed diagrams for good: the diagram rows, the tabs no other
-// diagram holds (diagramRemovalStatements), their Timeline events and their
+// diagram holds (documentRemovalStatements), their Timeline events and their
 // cached snapshots. Only ever trashed ids: a live id in `ids` is skipped, so
 // no caller can purge past the Trash. Returns how many were purged.
 export async function purgeDocuments(env: Env, ids: string[]): Promise<number> {
@@ -168,7 +168,7 @@ export async function purgeDocuments(env: Env, ids: string[]): Promise<number> {
       ...documentRemovalStatements(env, { ids: doomed }),
     ]);
     purged += results[results.length - 1]?.meta.changes ?? 0;
-    // Best effort, like deleteDiagram's: a snapshot left behind is an orphan
+    // Best effort, like deleteDocument's: a snapshot left behind is an orphan
     // R2 object, never a reason to fail the purge that already landed.
     if (env.IMAGES) {
       await env.IMAGES.delete(doomed.map(thumbnailKey)).catch((err: unknown) => {

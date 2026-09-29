@@ -33,7 +33,7 @@ Scope, by file:
 | `apps/live/lib/import-merge.ts`                           | A file import onto an event-storming tab settles its notes                |
 | `apps/live/lib/next-note-add.ts`                          | The next note takes its source's lane                                     |
 | `apps/live/lib/insert-between.ts`                         | The slot's `atY` is a lane centre                                         |
-| `apps/mcp/src/tab-builders.ts`, `tools.ts`                | `landMcpArrivals` in `update_diagram`                                     |
+| `apps/mcp/src/tab-builders.ts`, `tools.ts`                | `landMcpArrivals` in `update_document`                                     |
 | `packages/sticky-vision/scripts/placement-check.ts`       | Private harness: photo placement over the labelled walls                  |
 | `apps/help/app/canvas/event-storming-boards/page.mdx`     | Help: lanes section                                                       |
 | `apps/help/app/canvas/snapping/page.mdx`                  | Help: Cmd/Ctrl is the way off a lane                                      |
@@ -190,7 +190,7 @@ existing board notes.
 (nothing in common) takes the minimum over the notes only, so the photo's top row, not its
 top edge, lines up with the board's top.
 
-### MCP (`update_diagram`)
+### MCP (`update_document`)
 
 - `landMcpArrivals(before, after)`: when the loaded tab `isEventStormingTab`: arrivals are the
   workshop notes of `after` that are new (id not in `before`) or whose `x` / `y` differ from

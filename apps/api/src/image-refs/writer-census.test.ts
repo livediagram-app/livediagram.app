@@ -20,9 +20,9 @@ const WRITES_TABS =
 const KNOWN_WRITERS: Record<string, number> = {
   // upsertTab, seedTabs, deleteTabRow, swapTabData
   'api/src/db/tabs.ts': 4,
-  // copyDiagram
+  // copyDocument
   'api/src/db/documents.ts': 1,
-  // diagramRemovalStatements
+  // documentRemovalStatements
   'api/src/db/document-removal.ts': 1,
 };
 
@@ -30,7 +30,7 @@ const KNOWN_WRITERS: Record<string, number> = {
 // index; anything after it must maintain `image_refs` and be listed here.
 const LAST_UNINDEXED_MIGRATION = '0050';
 const KNOWN_MIGRATION_WRITERS: string[] = [
-  // Rewrites element links to another document ({"kind":"diagram","diagramId":…} to
+  // Rewrites element links to another document ({"kind":"diagram","documentId":…} to
   // {"kind":"document","documentId":…}); no image reference changes, so the index stays exact.
   '0055_documents.sql',
 ];

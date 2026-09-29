@@ -100,7 +100,7 @@ export async function apiSaveTab(
 // so a fast edit -> reload doesn't lose changes. Lives here at the
 // persistence boundary rather than inline in useAutosave so the editor
 // hook holds no raw fetch — the debounced save already goes through
-// apiSaveTab/apiDeleteTab/apiSaveDiagramMeta; this is the same set of
+// apiSaveTab/apiDeleteTab/apiSaveDocumentMeta; this is the same set of
 // writes for the unload moment.
 //
 // Why it can't reuse those async helpers: a `beforeunload` handler can't

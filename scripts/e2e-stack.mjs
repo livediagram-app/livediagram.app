@@ -9,7 +9,7 @@
 //      migrations to a fresh local database, so persistence works.
 //   2. live — a static file server for `out/` that reproduces the three
 //      things production does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
-//      rewrite `/diagram/*` to the single placeholder, and proxy
+//      rewrite `/document/*` to the single placeholder, and proxy
 //      `/api/*` (WebSocket upgrades included) to the api worker so the app
 //      is same-origin.
 //
@@ -130,7 +130,7 @@ function resolveStatic(pathname) {
   // The build references assets as `/live/_next/*` (assetPrefix); the
   // files live at out/_next/*.
   let p = pathname.startsWith('/live/') ? pathname.slice('/live'.length) : pathname;
-  // /diagram and everything under it share one placeholder HTML.
+  // /document and everything under it share one placeholder HTML.
   if (p === '/document' || p.startsWith('/document/')) p = '/document/placeholder';
   if (p === '/') p = '/index';
   const candidates = [
@@ -182,7 +182,7 @@ function proxyApi(req, res) {
   req.pipe(proxyReq);
 }
 
-// The realtime room is a WebSocket on /api/diagrams/<id>/ws. Production routes
+// The realtime room is a WebSocket on /api/documents/<id>/ws. Production routes
 // the upgrade through the router like any other /api request; without this the
 // browser's socket was never answered here, so no e2e test could see a room op.
 // Relays the raw upgrade to the api worker and pipes both directions.

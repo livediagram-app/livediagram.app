@@ -50,7 +50,7 @@ export function TeamPane({
   // uses this to drop the team title on a 404 — there's no team to name.
   onLoadResult?: (found: boolean) => void;
   // Full move destinations + cross-scope router for the shared-diagrams
-  // move picker (docs/specs/013-workspace/team-shared-documents.md): passed straight through to TeamSharedDiagrams
+  // move picker (docs/specs/013-workspace/team-shared-documents.md): passed straight through to TeamSharedDocuments
   // so a team diagram can be re-homed to Personal Space / another team.
   moveDests?: ComponentProps<typeof TeamSharedDocuments>['moveDests'];
   onMoveDocumentTo?: ComponentProps<typeof TeamSharedDocuments>['onMoveDocumentTo'];

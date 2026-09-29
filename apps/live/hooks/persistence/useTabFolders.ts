@@ -8,7 +8,7 @@
 // commitTabs call so undo restores membership + order together.
 //
 // Folder is a name string carried per-tab and persisted on the
-// diagram_tabs link, NOT in the tab body (see stripUiTabFields). The
+// document_tabs link, NOT in the tab body (see stripUiTabFields). The
 // name is user content and is never sent as a telemetry `type`.
 
 import {

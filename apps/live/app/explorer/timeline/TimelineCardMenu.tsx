@@ -3,7 +3,7 @@
 // The ⋯ menu on a Timeline card (docs/specs/013-workspace/timeline.md §2.8, §2.9).
 //
 // Three shapes behind one trigger. A card about a diagram the Explorer
-// has loaded gets the same `DiagramActionsMenu` a Recent card uses, and
+// has loaded gets the same `DocumentActionsMenu` a Recent card uses, and
 // a card about a folder the Explorer has loaded gets the same
 // `FolderActionsMenu` a folder card uses — so whatever the Explorer
 // offers the thing, Timeline offers it too — each with "Remove from

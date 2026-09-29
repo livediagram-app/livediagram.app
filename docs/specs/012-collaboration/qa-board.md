@@ -101,7 +101,7 @@ who clears their browser storage is a new person.
 The board is the one element whose state the **server owns**. Every action,
 from every role, goes through one endpoint:
 
-`POST /api/diagrams/<id>/tabs/<tabId>/qa` with `{ elementId, action }`.
+`POST /api/documents/<id>/tabs/<tabId>/qa` with `{ elementId, action }`.
 
 - Participant actions (`add`, `vote`) pass `gateRead`; the rest need
   `gateEdit`. Same shape as the comment endpoint, which is the precedent for a
@@ -110,7 +110,7 @@ from every role, goes through one endpoint:
   author), then hands the write to **the diagram's room** (`POST
 https://room/qa` on the Durable Object).
 - The room runs board writes **one at a time**, through an in-memory promise
-  queue (`DiagramRoom.handleQaWrite`). A Durable Object only serialises the
+  queue (`DocumentRoom.handleQaWrite`). A Durable Object only serialises the
   synchronous part of a handler: while one write awaits D1, the runtime starts
   the next request, so without the queue two read-modify-writes of the same
   row would race. Worker requests run in parallel isolates, so the room is the

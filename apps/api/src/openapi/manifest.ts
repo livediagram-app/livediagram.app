@@ -32,7 +32,7 @@ interface QueryParam {
 
 export interface RouteSpec {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  /** Path template under the server base, e.g. `/diagrams/{id}/tabs/{tabId}`. */
+  /** Path template under the server base, e.g. `/documents/{id}/tabs/{tabId}`. */
   path: string;
   /** Top-level resource segment, matching index.ts's dispatch switch. Used by
    *  the drift test to assert manifest/handler parity. */

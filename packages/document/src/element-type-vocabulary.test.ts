@@ -12,10 +12,10 @@ import { ELEMENT_TYPES, isValidElement, isValidTab } from './validate';
 // A shape kind missing from SHAPE_KINDS is coerced to a square: wrong, visible,
 // recoverable. An element type missing from ELEMENT_TYPES makes
 // `isValidElement` reject it, and `isValidTab` rejects a tab if ANY element
-// fails — so `POST/PUT /api/diagrams/:id[/tabs/:tabId]` answers
+// fails — so `POST/PUT /api/documents/:id[/tabs/:tabId]` answers
 // `400 invalid tab` and the tab stops persisting entirely. Every save of a tab
-// holding one of those elements fails, and the MCP's create_diagram / add_tab /
-// update_diagram refuse it too. Add an element type, wire it through the
+// holding one of those elements fails, and the MCP's create_document / add_tab /
+// update_document refuse it too. Add an element type, wire it through the
 // editor, forget this one Set, and the feature works right up until the first
 // save.
 //

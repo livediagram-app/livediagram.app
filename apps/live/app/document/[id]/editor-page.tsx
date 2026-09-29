@@ -35,11 +35,11 @@ const LOAD_ERROR_MESSAGE =
 
 // `embed` mounts the read-only embed view (docs/specs/013-workspace/embeds.md): same state, same
 // EditorView, with the chrome / identity / edit gates flipped by the
-// flag. The /live/embed route passes it; the /diagram route doesn't.
+// flag. The /live/embed route passes it; the /document route doesn't.
 export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   const state = useEditorState({ embed });
   // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): one emit per rendered embed iframe
-  // document. Fires once on mount; the /diagram route never sets `embed`.
+  // document. Fires once on mount; the /document route never sets `embed`.
   useEffect(() => {
     if (embed) track('Session', 'Opened', 'Embed');
   }, [embed]);

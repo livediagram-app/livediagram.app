@@ -34,7 +34,7 @@ export type RoomHandlers = {
   onSelectionReleased?: (msg: { elementId: string; by: string }) => void;
   onClose?: () => void;
   // The diagram went to the Trash (docs/specs/013-workspace/trash.md): the room
-  // closed this socket with DIAGRAM_TRASHED_CLOSE and will refuse every
+  // closed this socket with DOCUMENT_TRASHED_CLOSE and will refuse every
   // reconnect, so the connector stops and says so, once.
   onDocumentTrashed?: () => void;
   // The room refused to open this connection (it closed before ever opening): the join was turned away

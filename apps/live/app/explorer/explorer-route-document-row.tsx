@@ -15,7 +15,7 @@ import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 // duplicate / delete + the drag source). Split out of views.tsx; rendered
 // by FolderRow + the unsorted list there. The badge + actions menu come
 // from diagram-row-shared so the card view (CardView) can't drift. The
-// team library (TeamSharedDiagrams) renders this same row.
+// team library (TeamSharedDocuments) renders this same row.
 export function DocumentRow(props: DocumentEntryProps) {
   const {
     document: liveDoc,

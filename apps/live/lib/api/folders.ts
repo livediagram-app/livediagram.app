@@ -14,7 +14,7 @@ import {
   apiFetch,
 } from './core';
 
-// Same dedupe rationale as apiListDiagrams. useFolders runs once
+// Same dedupe rationale as apiListDocuments. useFolders runs once
 // per page surface; concurrent mounts on multi-panel pages (e.g.
 // /new shows the floating Explorer AND the welcome flow, both
 // gated on the same ownerId) would otherwise fire duplicate

@@ -153,7 +153,7 @@ export function useExplorerPane({
       return { showUnsortedRow: false, folders: [], documents: offlineDocuments };
     }
     // The Dynamic parent (and the All list's single Dynamic row) carry no
-    // folders/diagrams of their own; ExplorerPane derives the synthetic
+    // folders/documents of their own; ExplorerPane derives the synthetic
     // rows to show from selected.kind.
     if (selected.kind === 'dynamic') {
       return { showUnsortedRow: false, folders: [], documents: [] };

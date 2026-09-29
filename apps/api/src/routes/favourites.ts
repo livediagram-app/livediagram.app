@@ -1,8 +1,8 @@
 // /api/favourites — per-user diagram stars (docs/specs/013-workspace/favourites.md).
 //
 // GET    /api/favourites            -> { ids: string[] }
-// PUT    /api/favourites/:diagramId -> 204, star it
-// DELETE /api/favourites/:diagramId -> 204, un-star it
+// PUT    /api/favourites/:documentId -> 204, star it
+// DELETE /api/favourites/:documentId -> 204, un-star it
 //
 // Hybrid identity like the rest of the api: the Clerk userId when signed
 // in, X-Owner-Id otherwise, so guests get durable favourites too.

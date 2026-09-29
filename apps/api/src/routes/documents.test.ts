@@ -2,7 +2,7 @@ import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentDTO } from '../types';
 
-// Characterisation tests for handleDiagrams' authorisation surface.
+// Characterisation tests for handleDocuments' authorisation surface.
 // documents.ts is the security-critical resource: every owner-only and
 // share-gated path resolves the caller, loads the diagram, and maps the
 // outcome onto one specific status code:
@@ -13,8 +13,8 @@ import type { DocumentDTO } from '../types';
 //     edit paths)
 //   - success with no body           -> 204
 // These cases pin that mapping across one representative route per
-// guard shape, so the requireOwner / requireOwnedDiagram /
-// requireDiagramGrant extraction can't silently swap a 403 for a 404
+// guard shape, so the requireOwner / requireOwnedDocument /
+// requireDocumentGrant extraction can't silently swap a 403 for a 404
 // (which would leak existence) or drop a missingAuth (which would let
 // an unauthenticated caller through).
 
@@ -110,7 +110,7 @@ const makeCtx = (
     owner: opts.owner === undefined ? 'owner-1' : opts.owner,
   });
 
-// Minimal DiagramDTO good enough for the authz branches under test.
+// Minimal DocumentDTO good enough for the authz branches under test.
 function fakeDocument(ownerId: string, teamId: string | null = null): DocumentDTO {
   return { id: 'd1', ownerId, teamId, name: 'Doc', tabs: [] } as unknown as DocumentDTO;
 }

@@ -188,8 +188,8 @@ export function useTabActions(deps: TabActionsDeps) {
   };
 
   // Link the active tab into another of the user's diagrams (docs/specs/006-document/tab-document-many-to-many.md).
-  // Goes through POST /api/diagrams/<target>/tabs/<tabId>/link so the
-  // server inserts one `diagram_tabs` row pointing at the existing
+  // Goes through POST /api/documents/<target>/tabs/<tabId>/link so the
+  // server inserts one `document_tabs` row pointing at the existing
   // tab body. The previous implementation cloned the tab into a fresh
   // row with a new id; that duplicated the content (edits on either
   // side stayed siloed) and the menu label promised the linking

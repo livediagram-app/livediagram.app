@@ -14,7 +14,7 @@ A small Cloudflare Worker that fronts the apex domain (`livediagram.app`) and ro
 | `/telemetry`, `/telemetry/*`                                                                                                                   | telemetry app (`apps/telemetry`) |
 | `/help`, `/help/*`                                                                                                                             | help app (`apps/help`), stripped |
 | `/live/*` (the live app's `_next` assets only)                                                                                                 | live app (`apps/live`), stripped |
-| live page routes: `/diagram/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/sso-callback`, `/icon.svg` | live app (`apps/live`), as-is    |
+| live page routes: `/document/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/sso-callback`, `/icon.svg` | live app (`apps/live`), as-is    |
 | a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                               | 308 redirect to `/help/<path>`   |
 | everything else                                                                                                                                | marketing app (`apps/marketing`) |
 

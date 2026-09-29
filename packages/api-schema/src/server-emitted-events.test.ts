@@ -13,7 +13,7 @@ describe('server-emitted telemetry pairs (docs/specs/017-telemetry/telemetry.md)
 
   it('leaves the client-owned neighbours alone', () => {
     // SignedOut / Deleted still come from the browser, and Team·Joined is a
-    // different event from Diagram·Joined.
+    // different event from Document·Joined.
     expect(isServerEmittedEvent({ category: 'Session', action: 'SignedOut' })).toBe(false);
     expect(isServerEmittedEvent({ category: 'Session', action: 'Deleted' })).toBe(false);
     expect(isServerEmittedEvent({ category: 'Team', action: 'Joined' })).toBe(false);

@@ -1,4 +1,4 @@
-// /api/diagrams — diagram metadata, per-tab content, copy, folder
+// /api/documents — diagram metadata, per-tab content, copy, folder
 // assignment, tab linking, comments, share links, the realtime WS
 // upgrade, and the change-log. The largest resource: every sub-path
 // under a diagram id lives here.
@@ -109,7 +109,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           }
         }
       }
-      // Ownership guard (security): upsertDiagramMeta is INSERT ... ON
+      // Ownership guard (security): upsertDocumentMeta is INSERT ... ON
       // CONFLICT(id) DO UPDATE owner_id = excluded.owner_id, so a POST with an
       // id that already exists under a DIFFERENT owner would silently transfer
       // ownership to the caller. Diagram ids are unguessable UUIDs but they
@@ -222,7 +222,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     }
   }
 
-  // /api/diagrams/<id>
+  // /api/documents/<id>
   if (segments.length === 3) {
     const id = segments[2]!;
     if (request.method === 'GET') {
@@ -270,12 +270,12 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // localStorage-sync model), which let any stray meta write mint a
       // permanent zero-tab ghost row, e.g. a client path that missed the
       // Offline Mode dispatch (docs/specs/006-document/offline-mode.md) writing an offline diagram's id to
-      // the server. Diagrams are only ever created via POST /diagrams now.
+      // the server. Diagrams are only ever created via POST /documents now.
       if (!existing) return missingDocument(ctx, id);
       const now = Date.now();
       const ownerId = existing.ownerId;
       // Anyone with the diagram id could previously rewrite it.
-      // We now gate on canEditDiagram so only the owner or an
+      // We now gate on canEditDocument so only the owner or an
       // edit-role share visitor can touch metadata.
       const allowed = await gateEdit(ctx, id, ownerId, existing.teamId);
       if (!allowed) return forbidden();
@@ -331,7 +331,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     }
   }
 
-  // /api/diagrams/<id>/copy — duplicate this diagram into the
+  // /api/documents/<id>/copy — duplicate this diagram into the
   // caller's own files. Accepted from (a) the owner — same as
   // any other "duplicate" path; (b) a visitor with an active
   // `shared_with` row for the source; (c) a visitor providing
@@ -348,7 +348,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // Authorisation: any of (a) owner, (b) holder of any
       // share code (view or edit) for this diagram, (c)
       // visitor with an active shared_with row for the source.
-      // The owner + share-code legs are exactly canReadDiagram
+      // The owner + share-code legs are exactly canReadDocument
       // (view-role visitors can fork their own copy, so this
       // is a read check, not an edit check). The third leg is
       // copy-specific so it stays inline.
@@ -397,22 +397,22 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     }
   }
 
-  // /api/diagrams/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md); the
+  // /api/documents/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md); the
   // scope-change policy lives in diagram-placement-route.ts.
   {
     const placementResp = await handleDocumentPlacement(ctx);
     if (placementResp) return placementResp;
   }
 
-  // /api/diagrams/<id>/shared-tabs — what a delete leaves behind in other
+  // /api/documents/<id>/shared-tabs — what a delete leaves behind in other
   // diagrams (docs/specs/006-document/tab-document-many-to-many.md).
   {
     const sharedTabsResp = await handleDocumentSharedTabs(ctx);
     if (sharedTabsResp) return sharedTabsResp;
   }
 
-  // /api/diagrams/<id>/thumbnail — cached SVG snapshot (docs/specs/006-document/document-snapshots.md). Read-
-  // gated exactly like GET /api/diagrams/<id>: the owner, a joined team
+  // /api/documents/<id>/thumbnail — cached SVG snapshot (docs/specs/006-document/document-snapshots.md). Read-
+  // gated exactly like GET /api/documents/<id>: the owner, a joined team
   // member, or a valid share-code visitor. A native <img> can't send
   // auth headers, so the live app fetches this with headers and wraps
   // the bytes in a blob URL; a miss (no diagram, no read access, no R2
@@ -456,7 +456,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   const roomResp = await handleDocumentRoomRoutes(ctx);
   if (roomResp) return roomResp;
 
-  // /api/diagrams/<id>/log — owner OR edit-role share-code holder.
+  // /api/documents/<id>/log — owner OR edit-role share-code holder.
   //   GET  → newest-first list of audit entries (capped at 200).
   //   POST → append a new entry. Body is a ChangeLogEntryDTO.
   // See docs/specs/012-collaboration/activity-and-audit.md.
@@ -503,7 +503,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (!entry) return badRequest('missing change_log fields');
       if (grant.tabScope !== null && entry.tabId !== grant.tabScope) return notFound();
       // The entry's tab must belong to THIS diagram. The log is listed by
-      // joining through diagram_tabs, so an unchecked tab id let an editor of
+      // joining through document_tabs, so an unchecked tab id let an editor of
       // one diagram write rows into another diagram's activity panel. It is
       // also what turned a brand-new tab's first edit (logged before the
       // debounced autosave created the tab row) into a foreign-key 500: that
@@ -515,7 +515,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // rather than trusting the body, so a client can't forge
       // participantId / participantName / participantColor and frame
       // another collaborator in the audit trail — the same defence the
-      // comment-write paths apply. requireDiagramGrant already proved
+      // comment-write paths apply. requireDocumentGrant already proved
       // the caller is identified, so resolveOwner() is non-null here.
       const caller = ctx.resolveOwner()!;
       const writer = await getParticipant(env, caller);
@@ -530,7 +530,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     }
   }
 
-  // /api/diagrams/<id>/log/<entryId> — owner OR edit-role share
+  // /api/documents/<id>/log/<entryId> — owner OR edit-role share
   // visitor. DELETE drops a single log entry; called by Revert
   // and by the symmetric Undo path so the entry vanishes on the
   // canvas of every connected client.
@@ -546,7 +546,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     }
   }
 
-  // /api/diagrams/<id>/log/tab/<tabId> — owner-only DELETE that
+  // /api/documents/<id>/log/tab/<tabId> — owner-only DELETE that
   // drops every log entry for a tab. Called by the live app when
   // it deletes a tab so the per-tab audit dies with the tab.
   if (segments.length === 6 && segments[3] === 'log' && segments[4] === 'tab') {

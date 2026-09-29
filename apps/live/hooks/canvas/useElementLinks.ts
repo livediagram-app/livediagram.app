@@ -123,7 +123,7 @@ export function useElementLinks(deps: ElementLinksDeps) {
     }
     if (link.kind === 'document') {
       // Navigate to a different diagram entirely. Same shape as
-      // openDiagram (which does a full-page load), so saves +
+      // openDocument (which does a full-page load), so saves +
       // realtime room handoff land through the normal hydration
       // path on the destination route.
       openDocument(link.documentId);

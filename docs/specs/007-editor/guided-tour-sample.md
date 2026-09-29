@@ -62,7 +62,7 @@ interaction changes, the tour copy changes in the same PR).
 
 - **A real template kind.** `'guided-tour'` joins `TemplateKind` with a
   builder (`template-builders-guided-tour.ts` in `packages/templates`), so
-  both commit paths — `/new`'s `commitNewDiagram` and the in-editor
+  both commit paths — `/new`'s `commitNewDocument` and the in-editor
   `chooseTemplate` — reuse the existing build → theme-recolour → commit
   pipeline unchanged.
 - **Hidden from listings.** `TemplateDescriptor` gains `hidden?: boolean`.

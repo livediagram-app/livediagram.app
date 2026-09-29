@@ -12,7 +12,7 @@ workspaces, transactional email, CRDT / conflict-free editing): that means no
 
 **Tier 1, core identity (use these first, almost everywhere)**
 
-`diagrams` · `diagramming` · `flowcharts` · `mindmaps` · `whiteboard` ·
+`diagrams` · `documentming` · `flowcharts` · `mindmaps` · `whiteboard` ·
 `collaboration` · `multiplayer` · `realtime`
 
 **Tier 2, strong supporting**
@@ -42,7 +42,7 @@ workspaces, transactional email, CRDT / conflict-free editing): that means no
 tags belong here):
 
 ```
-diagrams diagramming flowcharts mindmaps whiteboard collaboration
+diagrams documentming flowcharts mindmaps whiteboard collaboration
 multiplayer realtime canvas open-source self-hosted nextjs cloudflare
 typescript durable-objects
 ```
@@ -56,7 +56,7 @@ Design Tools · Productivity · Open Source · Developer Tools · SaaS
 **Generic directory keywords** (general audience; no tech jargon):
 
 ```
-diagrams diagramming flowcharts mindmaps whiteboard collaboration
+diagrams documentming flowcharts mindmaps whiteboard collaboration
 multiplayer realtime brainstorming visualization free open source
 self-hosted
 ```

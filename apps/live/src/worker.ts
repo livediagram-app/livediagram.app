@@ -1,5 +1,5 @@
 // Live app worker. Wraps the static-export assets binding with a
-// single path rewrite: any `/diagram/<anything>` request serves the
+// single path rewrite: any `/document/<anything>` request serves the
 // single placeholder HTML built by Next.js, and the client extracts
 // the real diagram id from `window.location.pathname`. See docs/specs/007-editor/new-document-route.md
 // for why we can't enumerate user-minted ids at build time.
@@ -74,9 +74,9 @@ export default {
     if (url.pathname === '/explorer' || url.pathname === '/explorer/') {
       return Response.redirect(`${url.origin}/explorer/timeline`, 302);
     }
-    // `/diagram` and everything under it shares one HTML file. We
+    // `/document` and everything under it shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL
-    // stays `/diagram/<id>` (that's the whole point of the path
+    // stays `/document/<id>` (that's the whole point of the path
     // scheme).
     if (url.pathname === '/document' || url.pathname.startsWith('/document/')) {
       // Skip if the request already points at the placeholder asset

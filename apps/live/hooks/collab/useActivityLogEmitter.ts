@@ -16,7 +16,7 @@ import { entryHistoryFill, type EntryHistory } from '@/lib/entry-history';
 // for theme / background / lock toggles, `appendLogEntry` as the
 // shared optimistic-append + API + room-broadcast + undo-stack
 // path they both feed into) and the deps (selfParticipant, the
-// roomRef, the entry-history ref, the share code, the diagramId)
+// roomRef, the entry-history ref, the share code, the documentId)
 // thread through together.
 //
 // `entryHistoryRef` stays owned by the page because the undo /
@@ -27,7 +27,7 @@ type RoomHandle = { send: (msg: RoomOutgoing) => void };
 
 type Deps = {
   // Diagram-scoped fields the entry envelope needs. When
-  // `diagramId` is null the emitters silently no-op (the page is
+  // `documentId` is null the emitters silently no-op (the page is
   // still bootstrapping; nothing to write against yet).
   documentId: string | null;
   selfParticipant: { id: string; name: string; color: string };
@@ -252,7 +252,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
   // Emit a tab-meta entry. The entry carries no before/after
   // payload (revert isn't supported for these in V1), so the
   // panel renders the row without a Revert button. Undo still
-  // works because the matching state lives in useDiagramHistory.
+  // works because the matching state lives in useDocumentHistory.
   const emitTabMeta: Api['emitTabMeta'] = (tabId, summary, opts) => {
     if (!deps.documentId) return;
     // Same-key repeats (three tweaks of the canvas colour in a row)

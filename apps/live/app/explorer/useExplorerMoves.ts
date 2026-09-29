@@ -54,7 +54,7 @@ export function useExplorerMoves({
   // or its descendants — the server cycle-checks but the picker
   // hides those rows up-front to make the rejection less surprising).
   // One modal serves every diagram, personal or team (docs/specs/013-workspace/team-shared-documents.md): it
-  // shows the full destination tree and `moveDiagramTo` routes the
+  // shows the full destination tree and `moveDocumentTo` routes the
   // pick from the subject's current placement.
   const [moveTarget, setMoveTarget] = useState<
     { kind: 'document'; id: string } | { kind: 'folder'; id: string } | null
@@ -94,7 +94,7 @@ export function useExplorerMoves({
     // the same; omitting it left the row invisible until a later bump).
     // On failure, roll the optimistic removal back and say so — the
     // silent path left the diagram in neither list, looking deleted
-    // (mirrors moveDiagramToFolder's rollback).
+    // (mirrors moveDocumentToFolder's rollback).
     void apiSetDocumentFolder(ownerId, id, folderId, teamId)
       .then(() => {
         refreshTeamLibraries();

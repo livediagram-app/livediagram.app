@@ -52,13 +52,13 @@ collaborator to the owner's id:
   connected participant's `id`, unredacted, to all room peers, and that id was
   the owner id. Any co-present collaborator, including a **view-only** share
   visitor, could read it off a presence frame.
-- **Change-log / Activity**: `GET /diagrams/<id>/log` returned each entry's
+- **Change-log / Activity**: `GET /documents/<id>/log` returned each entry's
   `participantId` unredacted to any **edit-access** collaborator (edit-share
   holders, joined team members). A static, reliable harvest.
 
 Because REST trusted `X-Owner-Id` with no signature, a collaborator who
 harvested an owner's id could call the API **as** that owner across ALL their
-content: `GET /api/diagrams` listed every diagram the id owned, each then
+content: `GET /api/documents` listed every diagram the id owned, each then
 readable / editable / deletable. **Sharing one diagram (or being in a team)
 could escalate to impersonating the owner account-wide.** It applied to
 signed-in owners too: their id is the Clerk `sub`, and the `X-Owner-Id`
@@ -77,7 +77,7 @@ closed the escalation. The fix is [§4](#4-x-owner-id-trust-change).
 - **Presence carries no owner id.** The room mints a random presence id per
   socket and builds each presence entry itself (`helloPresence`,
   `document-room-rules.ts`); a client never supplies or learns one.
-- **The change log is redacted.** `GET /diagrams/<id>/log` blanks
+- **The change log is redacted.** `GET /documents/<id>/log` blanks
   `participantId` for every caller but the diagram owner (`routes/documents.ts`).
 - **An account id is never a guest credential.** A Clerk-shaped `X-Owner-Id`
   is refused on every owner-scoped route with `401
@@ -176,7 +176,7 @@ token can read and edit the diagrams in the shared libraries of the teams its
 owner has joined ([Team shared diagrams](../013-workspace/team-shared-documents.md)), and can `GET` the
 teams surface (list its teams, team detail, a team's library). Without this, a
 diagram filed into a team was invisible to every external integration — the
-personal `GET /diagrams` excludes team diagrams by design.
+personal `GET /documents` excludes team diagrams by design.
 
 **Administration stays interactive-session-only.** Every teams MUTATION
 (create, invite, role change, join/accept/leave, invite links, team deletion)
@@ -187,8 +187,8 @@ deal, revocable + 6-month-capped), but it must not be able to escalate — mint
 further credentials, grant other people membership, or destroy the account.
 
 **Deleting goes to the Trash, with an explicit way past it.** A token's
-`DELETE /api/diagrams/<id>` moves the diagram to the [Trash](../013-workspace/trash.md)
-like every other delete; `DELETE /api/diagrams/<id>?permanent=true` deletes it
+`DELETE /api/documents/<id>` moves the diagram to the [Trash](../013-workspace/trash.md)
+like every other delete; `DELETE /api/documents/<id>?permanent=true` deletes it
 for good at once (and purges one already in the Trash). The Trash routes
 (`GET /api/trash`, `POST /api/trash/<id>/restore`, `DELETE /api/trash[/<id>]`)
 are token-usable with the same delete authority; a read-only token may list the
@@ -356,7 +356,7 @@ This matters most for **personal** diagrams, whose ownership legitimately
 resolves through the hybrid header path — that path is safe precisely because a
 personal owner id is an unguessable UUID, which an account id is not. The
 **team**-diagram half of the same escalation is closed structurally instead, by
-`ownsDiagram` ([Team shared diagrams §Access](../013-workspace/team-shared-documents.md)), so it holds
+`ownsDocument` ([Team shared diagrams §Access](../013-workspace/team-shared-documents.md)), so it holds
 whatever a deployment has configured.
 
 The signature gate keeps its grace flag and its job: proving possession of a

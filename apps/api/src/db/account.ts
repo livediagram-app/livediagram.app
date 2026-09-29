@@ -1,5 +1,5 @@
 // account — owner-wide deletion + guest->authed owner-id migration.
-// These touch every table keyed (directly or via diagram_id) on an
+// These touch every table keyed (directly or via document_id) on an
 // owner, so they live together rather than under any one resource.
 
 import { deleteTimelineForOwner, migrateTimelineOwner } from './timeline';
@@ -19,7 +19,7 @@ const R2_DELETE_CHUNK = 1000;
 // (docs/specs/009-elements/images.md). account-owner-columns.test.ts holds
 // both functions here to that list against the real schema. Called from
 // DELETE /api/account when the user opts in via the "Delete account"
-// dialog. The diagrams go through diagramRemovalStatements, which drops
+// dialog. The diagrams go through documentRemovalStatements, which drops
 // the tabs (and their history) no other owner's diagram still holds;
 // share links and the other per-diagram rows cascade from `diagrams.id`.
 // Folders carry their own owner_id and need their
@@ -59,7 +59,7 @@ export async function deleteAccount(
   const imagesRes = await env.DB.prepare('DELETE FROM images WHERE owner_id = ?')
     .bind(ownerId)
     .run();
-  // Diagram SVG snapshots (docs/specs/006-document/document-snapshots.md) live in R2 under thumb/<diagramId>,
+  // Diagram SVG snapshots (docs/specs/006-document/document-snapshots.md) live in R2 under thumb/<documentId>,
   // keyed off the diagram id rather than carried on a D1 row, so — like
   // the images above — the cascade can't reach them. Enumerate the
   // owner's diagram ids while the rows still exist, then bulk-delete
@@ -119,7 +119,7 @@ export async function deleteAccount(
   // user-facing affordance in this product, never a retention strategy.
   await deleteTimelineForOwner(env, ownerId);
   // Activity (docs/specs/013-workspace/activity-page.md): the alias rows + the backfill stamp. The index
-  // rows themselves went with the tabs diagramRemovalStatements dropped above.
+  // rows themselves went with the tabs documentRemovalStatements dropped above.
   await deleteCollabIndexForOwner(env, ownerId);
   return {
     documents: documentsRes.meta.changes ?? 0,
@@ -136,12 +136,12 @@ export async function deleteAccount(
 // the diagrams, folders, shared-with-them list, editor preferences,
 // AND uploaded images they built as a guest.
 //
-// shared_with's primary key is (owner_id, diagram_id), so a naive
+// shared_with's primary key is (owner_id, document_id), so a naive
 // UPDATE could PK-collide if the visitor accepted the same share
 // link both as a guest AND, later in the same session, as Clerk
 // (recordSharedAccess upserts a row each time). INSERT OR IGNORE
 // then DELETE handles both cases in one shot: copy guest rows to
-// the Clerk userId, skip rows where (clerkId, diagramId) already
+// the Clerk userId, skip rows where (clerkId, documentId) already
 // exists, then drop every leftover guest row. The skipped Clerk
 // rows keep the role + last_seen they already had (which is the
 // more recent of the two paths the user actually used).
@@ -158,7 +158,7 @@ export async function deleteAccount(
 // twin is identical bytes anyway).
 //
 // Other tables (`change_log`, `share_links`, `tabs`) don't carry
-// their own owner_id, they link via `diagram_id` which is
+// their own owner_id, they link via `document_id` which is
 // owner-bound, so updating the diagrams cascade-fixes them
 // implicitly.
 //
@@ -201,8 +201,8 @@ export async function migrateOwnerId(
     .run();
   await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(fromOwnerId).run();
   // favourites (docs/specs/013-workspace/favourites.md): the primary key is
-  // (owner_id, diagram_id), and both identities may have starred the same
-  // diagram, so INSERT OR IGNORE then DELETE like shared_with. A collision
+  // (owner_id, document_id), and both identities may have starred the same
+  // document, so INSERT OR IGNORE then DELETE like shared_with. A collision
   // keeps the account's star and its original created_at.
   await env.DB.prepare(
     `INSERT OR IGNORE INTO favourites (owner_id, document_id, created_at)

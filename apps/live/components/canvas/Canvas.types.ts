@@ -557,7 +557,7 @@ export type CanvasProps = {
     documentId: string,
     dest: { teamId: string | null; folderId: string | null },
     // Where the diagram is coming from (null = the personal tree), so a
-    // personal -> team move counts as Team·Added·Diagram (docs/specs/017-telemetry/telemetry.md).
+    // personal -> team move counts as Team·Added·Document (docs/specs/017-telemetry/telemetry.md).
     fromTeamId?: string | null,
   ) => void;
   onDeselect: () => void;

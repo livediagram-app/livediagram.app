@@ -132,7 +132,7 @@ function forward(
 // api's JSON included.
 //
 // A 101 is returned UNTOUCHED. The realtime room answers
-// `/api/diagrams/<id>/ws` with a WebSocket upgrade, and a Response carrying a
+// `/api/documents/<id>/ws` with a WebSocket upgrade, and a Response carrying a
 // `webSocket` cannot be reconstructed — `new Response(body, res)` drops the
 // socket and takes realtime collab down on staging alone, on one path, which
 // is precisely the sort of breakage that survives a smoke test. Crawlers do

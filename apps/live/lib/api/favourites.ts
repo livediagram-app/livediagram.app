@@ -49,7 +49,7 @@ export async function apiSetFavourite(
   favourite: boolean,
 ): Promise<void> {
   // An offline diagram has no row in `diagrams`, and the favourites table's
-  // diagram_id is a foreign key into it (migration 0040), so sending this
+  // document_id is a foreign key into it (migration 0040), so sending this
   // star to the server does not just go unused, it is REJECTED with
   // "FOREIGN KEY constraint failed". Keep it local, as docs/specs/006-document/offline-mode.md requires of
   // every offline row: no server fetch, "list, thumbnail, or otherwise".

@@ -23,7 +23,7 @@ export async function listFavouriteIds(env: Env, ownerId: string): Promise<strin
   return (res.results ?? []).map((r) => r.document_id);
 }
 
-// Star a diagram. Idempotent on (owner_id, diagram_id) — re-starring an
+// Star a diagram. Idempotent on (owner_id, document_id) — re-starring an
 // already-starred diagram keeps the ORIGINAL created_at rather than
 // bumping it, so "when I starred this" stays truthful.
 export async function addFavourite(env: Env, ownerId: string, documentId: string): Promise<void> {

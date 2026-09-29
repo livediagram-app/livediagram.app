@@ -41,9 +41,9 @@ CREATE TABLE tabs (
 );
 ```
 
-A `tabs` row is the tab's body and nothing else. Which diagrams contain it, and its order and folder in each, live on the `diagram_tabs` link ([Tab ↔ diagram many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a diagram, so nothing cascades from `diagrams` into `tabs`: removing a tab from a diagram, deleting a diagram and deleting an account each drop a tab explicitly once no diagram links it. `change_log`, `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its history and index rows with it. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
+A `tabs` row is the tab's body and nothing else. Which diagrams contain it, and its order and folder in each, live on the `document_tabs` link ([Tab ↔ diagram many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a diagram, so nothing cascades from `diagrams` into `tabs`: removing a tab from a diagram, deleting a diagram and deleting an account each drop a tab explicitly once no diagram links it. `change_log`, `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its history and index rows with it. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
 
-The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `diagram_id` + `order_index` columns and the `diagram_id` foreign key.
+The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `document_id` + `order_index` columns and the `document_id` foreign key.
 
 `diagrams` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`. The `data` column was dropped in migration 0006 once the live app had been on the new schema for a release window.
 
@@ -51,19 +51,19 @@ The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_
 
 Owner / edit-role.
 
-- `GET    /api/diagrams/:id` — returns diagram metadata + tab list
+- `GET    /api/documents/:id` — returns diagram metadata + tab list
   (id, name, order; no `data`).
-- `GET    /api/diagrams/:id/tabs/:tabId` — full tab payload (data + everything).
-- `PUT    /api/diagrams/:id/tabs/:tabId` — upsert a single tab (active edit path).
-- `DELETE /api/diagrams/:id/tabs/:tabId` — remove a tab.
-- `PUT    /api/diagrams/:id` — diagram-level fields only (rename,
+- `GET    /api/documents/:id/tabs/:tabId` — full tab payload (data + everything).
+- `PUT    /api/documents/:id/tabs/:tabId` — upsert a single tab (active edit path).
+- `DELETE /api/documents/:id/tabs/:tabId` — remove a tab.
+- `PUT    /api/documents/:id` — diagram-level fields only (rename,
   tab order, shareable). Body
   carries `tabIds: string[]` in
   the new order; the API
   persists the order index
   without touching tab content.
 
-The existing `GET /api/diagrams/:id` body grows a `tabs:
+The existing `GET /api/documents/:id` body grows a `tabs:
 TabSummary[]` field instead of `tabs: Tab[]`. The whole-diagram
 PUT goes away.
 
@@ -78,7 +78,7 @@ so peers only get the one that changed.
    on-demand when the user clicks them or when a peer's `tab` op
    targets them.
 2. Autosave: debounced per tab, calls
-   `PUT /api/diagrams/:id/tabs/:activeTabId` with the changed tab.
+   `PUT /api/documents/:id/tabs/:activeTabId` with the changed tab.
 3. Tab rename / reorder go through the diagram-level PUT; element
    edits go through the tab-level PUT.
 4. The room op shrinks accordingly.
@@ -201,7 +201,7 @@ kernel both the debounced save and the `beforeunload` flush share.
 
 The client guards above are necessary but live in the editor; a future
 client regression, or an older deployed client, could still `PUT` an
-empty body over a populated row. So `PUT /api/diagrams/:id/tabs/:tabId`
+empty body over a populated row. So `PUT /api/documents/:id/tabs/:tabId`
 enforces the invariant server-side too: if the incoming `elements` is
 empty AND the stored row currently has elements, the write is **rejected
 with 409** unless the request carries `X-Allow-Empty: 1`.
@@ -225,7 +225,7 @@ How this rolled out, recorded here so future schema changes can repeat the patte
 
 ## Audit log
 
-The `change_log` table is tab-scoped — its row carries a `tab_id` (every entry in practice; the column is nullable for historical reasons) and cascades on `tab_id` via the FK to `tabs(id)`. The legacy `diagram_id` column on `change_log` was dropped in migration 0012 (item #14 — see [Tab ↔ diagram many-to-many](tab-document-many-to-many.md)); per-diagram log reads derive the set of contributing tabs via `diagram_tabs`. The client's `deleteTab` flow still calls `DELETE /log/tab/:tabId` to drop the entries up front — see [12-activity-and-audit.md](../012-collaboration/activity-and-audit.md).
+The `change_log` table is tab-scoped — its row carries a `tab_id` (every entry in practice; the column is nullable for historical reasons) and cascades on `tab_id` via the FK to `tabs(id)`. The legacy `document_id` column on `change_log` was dropped in migration 0012 (item #14 — see [Tab ↔ diagram many-to-many](tab-document-many-to-many.md)); per-diagram log reads derive the set of contributing tabs via `document_tabs`. The client's `deleteTab` flow still calls `DELETE /log/tab/:tabId` to drop the entries up front — see [12-activity-and-audit.md](../012-collaboration/activity-and-audit.md).
 
 ## Risk
 

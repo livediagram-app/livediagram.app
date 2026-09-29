@@ -2,8 +2,8 @@
 // says WHERE it failed inside the one `type` token it has. Shared so the
 // editor, the help centre, the api worker and the MCP worker all build the
 // same shape: dot-separated PascalCase parts, `<What>.<Where>[.<Which>]`,
-// e.g. `Http403.SaveTab`, `Internal.Put.Diagrams.Tabs`,
-// `Uncaught.Diagram.TypeError`, `Render.Canvas.TypeError`.
+// e.g. `Http403.SaveTab`, `Internal.Put.Documents.Tabs`,
+// `Uncaught.Document.TypeError`, `Render.Canvas.TypeError`.
 //
 // Every part a caller passes must already be a preset (a request intent
 // authored in code, a route word from a closed list, a page from
@@ -18,8 +18,8 @@ import { TELEMETRY_TYPE_PATTERN } from './telemetry-schema';
 const MAX_TYPE_LENGTH = 40;
 
 /**
- * One word-ish string ('save tab', 'room-ticket', 'find_diagrams') as a
- * PascalCase token ('SaveTab', 'RoomTicket', 'FindDiagrams'). Anything that
+ * One word-ish string ('save tab', 'room-ticket', 'find_documents') as a
+ * PascalCase token ('SaveTab', 'RoomTicket', 'FindDocuments'). Anything that
  * isn't a letter or digit is a word break and is dropped, so a path, id
  * separator, or colon can't reach the wire.
  */
@@ -90,7 +90,7 @@ export function errorNameToken(thrown: unknown): string {
 /**
  * The page part of a client error: the first segment of a normalised page
  * path (docs/specs/017-telemetry/page-view-telemetry.md pageViewPath output, so ids are already gone), e.g.
- * '/diagram' -> 'Diagram', '/explorer/team' -> 'Explorer', '/' -> 'Home',
+ * '/document' -> 'Diagram', '/explorer/team' -> 'Explorer', '/' -> 'Home',
  * '/help/canvas' -> 'Help'. Null when the path couldn't be normalised.
  */
 export function errorPageToken(pagePath: string | null): string | null {
@@ -129,7 +129,7 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
 ]);
 
 // The fixed words that appear BELOW a resource in the api's routes
-// (`/diagrams/<id>/tabs/<tabId>/comments`). Only these survive into a route
+// (`/documents/<id>/tabs/<tabId>/comments`). Only these survive into a route
 // label; every other segment is an id, a share code, or a slug and is
 // skipped. Closed on purpose so a label can never carry an identifier.
 const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
@@ -165,7 +165,7 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
 
 /**
  * Which endpoint a request hit, as a label with no identifiers in it:
- * `PUT /api/diagrams/<id>/tabs/<tabId>` -> `Put.Diagrams.Tabs`. Takes any URL
+ * `PUT /api/documents/<id>/tabs/<tabId>` -> `Put.Documents.Tabs`. Takes any URL
  * or path containing an `/api/` segment (absolute or relative, query ignored).
  * An unknown resource reads `Unknown` rather than being echoed.
  */

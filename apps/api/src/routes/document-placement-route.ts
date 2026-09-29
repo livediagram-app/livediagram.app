@@ -1,4 +1,4 @@
-// /api/diagrams/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md), split out
+// /api/documents/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md), split out
 // of routes/documents.ts: the scope-change policy is the densest rule
 // block under the diagram resource, so it owns its own module the way
 // the tab / share sub-paths own diagram-subresource-routes.ts.
@@ -23,7 +23,7 @@ import { missingDocument, ownsDocument, requireOwner, type RouteContext } from '
 // Returns null when the request isn't the placement route.
 export async function handleDocumentPlacement(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
-  // /api/diagrams/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md). Body:
+  // /api/documents/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md). Body:
   // { folderId, teamId? }. A team diagram is managed by every joined
   // member (docs/specs/013-workspace/team-shared-documents.md), so the rules are by membership, not ownership:
   //   - INTO a team (or between teams): caller must be a joined
@@ -50,7 +50,7 @@ export async function handleDocumentPlacement(ctx: RouteContext): Promise<Respon
       const body = (await request.json()) as { folderId?: string | null; teamId?: string | null };
       const folderId = body.folderId ?? null;
       const teamId = body.teamId !== undefined ? body.teamId : existing.teamId;
-      // `ownsDiagram`, not a bare id compare: a TEAM diagram's owner id is a
+      // `ownsDocument`, not a bare id compare: a TEAM diagram's owner id is a
       // Clerk id every teammate can read, and `isOwner` below decides whether
       // the caller may change the diagram's SCOPE — including moving it out of
       // the team into their own library, which transfers ownership.
@@ -106,7 +106,7 @@ export async function handleDocumentPlacement(ctx: RouteContext): Promise<Respon
         if (teamId !== null && folder.teamId !== teamId) return notFound();
       }
       // Resolve the OUTGOING team's audience before the row changes hands: once
-      // the diagram is personal, audienceForDiagram returns only its new owner,
+      // the diagram is personal, audienceForDocument returns only its new owner,
       // so the team (and a displaced previous owner) would hear nothing. Same
       // reason the delete path resolves its audience first.
       const leavingAudience = movingOutToPersonal ? await audienceForDocument(env, existing) : null;
@@ -126,7 +126,7 @@ export async function handleDocumentPlacement(ctx: RouteContext): Promise<Respon
           }
         } else if (movingOutToPersonal && leavingAudience) {
           // Leaving a team is its own event. It used to fall through to the
-          // `diagram_moved` arm below and read "Moved to a Folder →
+          // `document_moved` arm below and read "Moved to a Folder →
           // Unsorted" — in the MOVER's feed only, because the audience
           // resolved against the now-personal diagram. So a diagram could
           // leave a shared library and change hands with the team and the

@@ -136,7 +136,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     // /api/shared per ~500ms of active editing.
   };
   // One-shot shared-list fetch, called from the hydration IIFE
-  // alongside refreshDiagramList. Silent failure: the section
+  // alongside refreshDocumentList. Silent failure: the section
   // hides when empty so a network glitch just leaves the
   // accordion absent for this session.
   const refreshSharedList = (ownerId: string) => {

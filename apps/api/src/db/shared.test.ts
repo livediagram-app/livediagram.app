@@ -30,7 +30,7 @@ describe('recordSharedAccess (docs/specs/014-identity/profile-and-email-notifica
   });
 
   it('reports a repeat visit while still refreshing role and last_seen', async () => {
-    // The email and the Diagram·Joined count fire once per person, but the
+    // The email and the Document·Joined count fire once per person, but the
     // row has to keep up with a link that was re-issued at a different role.
     const db = fakeD1(({ sql }) => (sql.includes('INSERT OR IGNORE') ? { changes: 0 } : {}));
     expect(await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'view', null)).toBe(false);

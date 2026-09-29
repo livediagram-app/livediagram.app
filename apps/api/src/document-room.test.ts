@@ -14,7 +14,7 @@ import type { Env } from './types';
 const isPresenceKind = (kind: string): boolean =>
   (PRESENCE_OP_KINDS as readonly string[]).includes(kind);
 
-// The DiagramRoom Durable Object is the realtime hub for one diagram.
+// The DocumentRoom Durable Object is the realtime hub for one diagram.
 // Most of its surface is straightforward fan-out, but two pieces carry
 // real security weight:
 //
@@ -65,7 +65,7 @@ type FakeState = {
   sockets: WebSocket[];
   acceptWebSocket: (ws: WebSocket) => void;
   getWebSockets: () => WebSocket[];
-  // Backs the persisted epoch/seq (docs/specs/012-collaboration/resync-without-reload.md). Shared across DiagramRoom
+  // Backs the persisted epoch/seq (docs/specs/012-collaboration/resync-without-reload.md). Shared across DocumentRoom
   // instances built from the same FakeState, which is exactly what a
   // hibernation wake looks like: same storage, fresh instance.
   store: Map<string, unknown>;
@@ -844,7 +844,7 @@ describe('DocumentRoom hibernation survival', () => {
   // the DO between messages and re-construct it on the next frame. All
   // per-session state (ephemeral id, verified role, presence incl. the
   // remembered tab) must come back off the socket attachments; only the
-  // rate window resets. Simulated here by building a SECOND DiagramRoom
+  // rate window resets. Simulated here by building a SECOND DocumentRoom
   // over the same state + sockets — exactly what a wake-from-hibernation
   // does — and asserting behaviour is unchanged.
   it('keeps identity, role, and tab across a simulated eviction', () => {

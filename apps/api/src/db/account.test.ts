@@ -4,7 +4,7 @@ import type { Env } from '../types';
 
 // deleteAccount wipes an owner's D1 rows AND the R2 objects the cascade
 // can't reach: image bytes (keyed by image id) and diagram SVG snapshots
-// (docs/specs/006-document/document-snapshots.md, keyed thumb/<diagramId>). A bulk `DELETE FROM diagrams` drops
+// (docs/specs/006-document/document-snapshots.md, keyed thumb/<documentId>). A bulk `DELETE FROM documents` drops
 // the ids, so the snapshot keys must be enumerated + deleted first or
 // they orphan in R2. These pin that cleanup with a fake D1 + R2.
 

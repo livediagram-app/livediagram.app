@@ -261,7 +261,7 @@ describe('response helpers (observed through api callers)', () => {
 
   describe('expectOkOrNull (via apiLoadDocument)', () => {
     it('returns the parsed diagram on 200', async () => {
-      // apiLoadDiagram is wrapped in dedupeInFlight keyed by
+      // apiLoadDocument is wrapped in dedupeInFlight keyed by
       // `${ownerId}|${id}`, so each test below uses a unique key
       // pair to avoid collecting a cached promise from a prior
       // case. Without unique keys, the second test in this block
@@ -282,7 +282,7 @@ describe('response helpers (observed through api callers)', () => {
     });
 
     it('returns null on 404 (the load-doesnt-exist path)', async () => {
-      // The 404 contract is what lets `/diagram/<unknown-id>`
+      // The 404 contract is what lets `/document/<unknown-id>`
       // surface the NotFound page instead of throwing into the
       // editor's load effect. A regression that re-threw 404
       // would tip every welcome flow + share-resolution into a
@@ -300,7 +300,7 @@ describe('response helpers (observed through api callers)', () => {
 
   describe('expectOkVoid (via apiSaveDocumentMeta)', () => {
     it('resolves quietly on 200 (no body to parse)', async () => {
-      // apiSaveDiagramMeta is a write with no response body. The
+      // apiSaveDocumentMeta is a write with no response body. The
       // helper must NOT call res.json() or it would throw on an
       // empty body. Asserting the promise resolves without value
       // pins both the no-throw + no-body contract.

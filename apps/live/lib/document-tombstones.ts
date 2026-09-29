@@ -1,6 +1,6 @@
 // Diagrams the user has just deleted in this page session, so the
 // autosave paths (the 600ms debounce AND the beforeunload keepalive
-// beacon) stop writing them back. See useAutosave + useDiagramListActions.
+// beacon) stop writing them back. See useAutosave + useDocumentListActions.
 //
 // The bug this guards: deleting the CURRENTLY-OPEN diagram navigates away
 // to /explorer, and that navigation fires the beforeunload flush — which,

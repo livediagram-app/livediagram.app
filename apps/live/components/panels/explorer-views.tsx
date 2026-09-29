@@ -6,19 +6,19 @@ import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 // (apps/live/components/panels/Explorer.tsx). Lifted here so the
 // Explorer component itself can focus on data flow + the panel
 // shell: the synthetic Unsorted / Offline nodes and the Shared row,
-// with FolderNode and DiagramRow re-exported beside them (each has
+// with FolderNode and DocumentRow re-exported beside them (each has
 // its own file). Same pattern as the route's
 // app/explorer/views.tsx split: stateless or near-stateless
 // renderers that take their data + callbacks via props.
 //
 // Mirror of (not duplicate with) app/explorer/views.tsx: the
-// route's full-page list view has its own DiagramRow / FolderRow
+// route's full-page list view has its own DocumentRow / FolderRow
 // shape (grid layout, dropdown menu, no drag), whereas this file
 // owns the floating-panel shape (pill rows, drag source / drop
 // target, recursive tree). The two coexist by design.
 
 // Row data shapes come straight from the api client (the same rows
-// apiListDiagrams / useFolders / apiListSharedWith return) so the
+// apiListDocuments / useFolders / apiListSharedWith return) so the
 // panel and the /explorer route can't drift apart on what a list
 // item carries.
 import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
@@ -160,7 +160,7 @@ export function SharedRow({
   item: SharedWithItem;
   active: boolean;
   // Viewer identity for the thumbnail fetch (the share code authorises
-  // the read; see DiagramThumbnail).
+  // the read; see DocumentThumbnail).
   ownerId: string | null;
   onOpen: () => void;
   onDismiss?: () => void;

@@ -59,7 +59,7 @@ function bodyToSchema(body: BodySchema): JsonSchema {
   return typeof body === 'string' ? { $ref: `#/components/schemas/${body}` } : body;
 }
 
-// `/diagrams/{id}` → ['id']. Drives the generated path-parameter list so the
+// `/documents/{id}` → ['id']. Drives the generated path-parameter list so the
 // manifest doesn't repeat them.
 function pathParams(path: string): string[] {
   return [...path.matchAll(/\{(\w+)\}/g)].flatMap((m) => (m[1] ? [m[1]] : []));

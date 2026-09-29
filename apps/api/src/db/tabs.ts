@@ -1,5 +1,5 @@
 // tabs — one row per tab, linked to diagrams through the
-// diagram_tabs many-to-many table (migration 0011 / docs/specs/006-document/tab-document-many-to-many.md).
+// document_tabs many-to-many table (migration 0011 / docs/specs/006-document/tab-document-many-to-many.md).
 
 import { capElementActions, type Tab } from '@livediagram/document';
 import { rowToTab, type TabRow } from '../tab-row';
@@ -14,7 +14,7 @@ import {
 } from './image-refs';
 
 export async function getTab(env: Env, documentId: string, tabId: string): Promise<TabDTO | null> {
-  // Resolve via the diagram_tabs link table (docs/specs/006-document/tab-document-many-to-many.md) so a
+  // Resolve via the document_tabs link table (docs/specs/006-document/tab-document-many-to-many.md) so a
   // linked tab surfaces from every diagram that contains it. The link
   // also carries the per-diagram order_index, so the returned summary's
   // position is correct for whichever diagram the caller asked about.
@@ -30,7 +30,7 @@ export async function getTab(env: Env, documentId: string, tabId: string): Promi
 }
 
 // The raw `tabs.data` JSON for a diagram's first tab (lowest
-// order_index in the diagram_tabs link), or null when the diagram has
+// order_index in the document_tabs link), or null when the diagram has
 // no tabs. Used by the SVG snapshot render-cache (docs/specs/006-document/document-snapshots.md), which needs
 // only the element body — never the full TabDTO hydration — so this
 // reads the single `data` column rather than going through getTab.
@@ -49,7 +49,7 @@ export async function getFirstTabData(env: Env, documentId: string): Promise<str
 }
 
 // The raw `tabs.data` JSON for a SPECIFIC tab in a diagram, or null when
-// that tab isn't part of the diagram. Resolved through the diagram_tabs
+// that tab isn't part of the diagram. Resolved through the document_tabs
 // link (like getTab) so a tab id only renders for a diagram that
 // actually contains it — a share code for diagram A can never coax out
 // a tab that lives only in diagram B. Backs the per-tab live image
@@ -87,7 +87,7 @@ export async function upsertTab(
   const { id, name, ...rest } = tab;
   const data = JSON.stringify(rest);
   const now = Date.now();
-  // The body goes to `tabs`, this diagram's position to its `diagram_tabs`
+  // The body goes to `tabs`, this diagram's position to its `document_tabs`
   // link (docs/specs/006-document/tab-document-many-to-many.md). The two writes
   // are independent — even if the link upsert no-ops (existing entry)
   // the tab body still gets updated.
@@ -162,7 +162,7 @@ export async function seedTabs(env: Env, documentId: string, tabs: Tab[]): Promi
   await env.DB.batch(stmts);
 }
 
-// Which of `tabIds` already name a tab that is NOT in `diagramId`: a create
+// Which of `tabIds` already name a tab that is NOT in `documentId`: a create
 // seeding one of those would write into a tab another diagram holds, so the
 // create re-mints it (docs/specs/006-document/offline-mode.md, "Shared tabs fork").
 // A tab already in this diagram is a retried create and keeps its id.
@@ -182,7 +182,7 @@ export async function tabIdsHeldElsewhere(
   return new Set((rows.results ?? []).map((r) => r.id));
 }
 
-// Remove the tab from this diagram (drops the `diagram_tabs` link
+// Remove the tab from this diagram (drops the `document_tabs` link
 // row). The underlying `tabs` row only goes away when no other
 // diagram still references it: linked tabs (per docs/specs/006-document/tab-document-many-to-many.md) survive
 // an unlink from one of their containing diagrams so the body
@@ -212,7 +212,7 @@ export async function deleteTabRow(env: Env, documentId: string, tabId: string):
 }
 
 // Link an existing tab into another diagram (docs/specs/006-document/tab-document-many-to-many.md). Inserts a
-// `diagram_tabs` row at the end of the target diagram's order,
+// `document_tabs` row at the end of the target diagram's order,
 // idempotent on conflict so re-linking the same pair returns 200
 // without double-counting. The `tabs` row itself is untouched: the
 // tab body lives in one place and edits propagate to every diagram
@@ -251,7 +251,7 @@ export async function linkTabToDocument(
 
 // The link endpoint's authorisation check in one query: is this tab
 // linked into at least one diagram owned by `ownerId`? Replaces the
-// old "list every containing diagram id, then getDiagram() each in a
+// old "list every containing diagram id, then getDocument() each in a
 // loop" pattern (N full diagram hydrations to read one column). The
 // JOIN + LIMIT 1 stops at the first owned match.
 export async function tabLinkedToOwnedDocument(

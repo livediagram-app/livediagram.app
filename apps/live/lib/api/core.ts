@@ -92,7 +92,7 @@ function isTimelinePath(url: string): boolean {
 
 // Envelope shapes the API wraps payloads in. The canonical inner
 // types come from `@livediagram/api-schema`, as do the envelopes the
-// MCP server reads too (DiagramResponse, TabResponse, ...); the ones
+// MCP server reads too (DocumentResponse, TabResponse, ...); the ones
 // below are the editor-only glue for `expectOk` to destructure.
 export type FolderResponse = { folder: Folder };
 export type FoldersResponse = { folders: Folder[] };
@@ -158,7 +158,7 @@ type TokenProvider = (opts?: { skipCache?: boolean }) => Promise<string | null>;
 let currentTokenProvider: TokenProvider | null = null;
 
 // The most recent token the provider returned, kept for the ONE caller
-// that can't await: the `beforeunload` save beacon (flushDiagramSavesBeacon).
+// that can't await: the `beforeunload` save beacon (flushDocumentSavesBeacon).
 // The provider is async (Clerk may refresh over the network), so during
 // page teardown it's unusable — but the editor autosaves every ~600ms
 // while editing, so this cache is at most seconds old exactly when the
@@ -431,10 +431,10 @@ export async function apiDelete(
 //   - `templateChosen` — UI-only (have we dismissed the per-tab
 //     template picker yet?); a pure frontend concern.
 //   - `folder` — per-diagram membership (docs/specs/006-document/tab-folders.md) that lives on the
-//     diagram_tabs link, carried via the meta/reorder path. Leaking it
+//     document_tabs link, carried via the meta/reorder path. Leaking it
 //     into the shared body would make a folder follow the tab into
 //     every diagram it's shared into, breaking per-diagram scope.
-// Shared by apiCreateDiagram + apiSaveTab.
+// Shared by apiCreateDocument + apiSaveTab.
 // The single normalisation every tab passes through on its way to the wire:
 // strip the UI-only fields, and stamp the board kind (docs/specs/021-event-storming/event-storming.md).
 //

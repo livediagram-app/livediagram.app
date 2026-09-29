@@ -38,7 +38,7 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // lifted out of editor-page.tsx verbatim. The most entangled effect in
 // the page: it reads/writes ~25 state slices, so the setters + the
 // last-saved/loaded refs are passed as grouped bundles. Auth resolution
-// goes through the tested resolveDiagramSession kernel. Deps array stays
+// goes through the tested resolveDocumentSession kernel. Deps array stays
 // [authLoaded, passwordRetry].
 export function useIdentityBootstrap(opts: {
   authLoaded: boolean;
@@ -181,10 +181,10 @@ export function useIdentityBootstrap(opts: {
     // the welcome modal is gated on `hydrated` so it doesn't flash the
     // Guest placeholder name into the input.
     //
-    // Path scheme (docs/specs/007-editor/new-document-route.md): `/diagram/<id>` is the owner URL.
+    // Path scheme (docs/specs/007-editor/new-document-route.md): `/document/<id>` is the owner URL.
     // The static export ships a single placeholder file at
-    // `out/diagram/placeholder/index.html`; the live worker rewrites
-    // `/diagram/<anything>` → that file so the browser receives the
+    // `out/document/placeholder/index.html`; the live worker rewrites
+    // `/document/<anything>` → that file so the browser receives the
     // editor HTML. The client router still fires notFound() for
     // every non-`placeholder` id, but `apps/live/app/not-found.tsx`
     // rescues that by rendering the editor in the not-found slot —
@@ -192,7 +192,7 @@ export function useIdentityBootstrap(opts: {
     // with the real id still in `window.location.pathname`, which
     // we parse out here.
     const initialUrl = new URL(window.location.href);
-    // Clean routing (docs/specs/016-platform/router-app.md): the editor lives at `/diagram/<id>`, no
+    // Clean routing (docs/specs/016-platform/router-app.md): the editor lives at `/document/<id>`, no
     // `/live` prefix. Match the id straight off the path.
     const pathMatch = initialUrl.pathname.match(/\/document\/([^/?#]+)/);
     const rawPathId = pathMatch ? pathMatch[1]! : null;
@@ -367,7 +367,7 @@ export function useIdentityBootstrap(opts: {
           setDocumentId(fetched.id);
           setIsOwner(session.isOwner);
           // Visitors inherit the role from their share code; owners are
-          // always 'edit' (see resolveDiagramSession).
+          // always 'edit' (see resolveDocumentSession).
           setSessionRole(session.sessionRole);
           // Visitor: stash the code they came in on so any log
           // writes can present it as authorisation. Owner accessing
@@ -495,7 +495,7 @@ export function useIdentityBootstrap(opts: {
         } else {
           setChangeLogLoading(false);
         }
-        // Owner branch (`?d=<id>` / `/diagram/<id>`): a signed-in
+        // Owner branch (`?d=<id>` / `/document/<id>`): a signed-in
         // user is by definition the owner here and their identity is
         // settled — skip the identity prompt entirely. Guests fall
         // back to the legacy localStorage gate so they still get the

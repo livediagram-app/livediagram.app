@@ -60,7 +60,7 @@ export const viewport: Viewport = PUBLIC_VIEWPORT;
 
 // JSON-LD structured data, see docs/specs/019-marketing/marketing-site.md "SEO and
 // metadata". Two schemas under one @graph: WebSite for brand-name
-// search results, SoftwareApplication for "diagramming tool"
+// search results, SoftwareApplication for "documentming tool"
 // category browse. Both restate facts already on the page; the
 // free-tier offer is truthful (the hosted product is currently
 // free to use).

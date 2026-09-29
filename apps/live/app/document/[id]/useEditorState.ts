@@ -160,7 +160,7 @@ import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 
 // Activity-log past/future stacks share the cap with the
-// state-snapshot stack: we can't undo past what useDiagramHistory
+// state-snapshot stack: we can't undo past what useDocumentHistory
 // remembers, so there's no point in tracking more log entries than
 // that. Imported from the hook directly so the two stacks can't
 // drift (was a literal mirror of `3` here, which is the kind of
@@ -388,7 +388,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // (deleted, never existed, or owned by someone else). Renders the
   // NotFound surface instead of the editor + welcome modal.
   const [documentNotFound, setDocumentNotFound] = useState(false);
-  // Distinct from diagramNotFound (a clean 404): the load call itself
+  // Distinct from documentNotFound (a clean 404): the load call itself
   // FAILED (network down / 5xx), which is retryable. Drives ApiErrorPage.
   const [loadError, setLoadError] = useState(false);
   // Loading screen is the default — every first paint shows the
@@ -571,7 +571,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Element link picker (open + anchor state) and the link read/write
   // handlers live in useElementLinks. Invoked further down, after
-  // `openDiagram` + the selection helpers exist.
+  // `openDocument` + the selection helpers exist.
 
   // Folders for the owner — state + the mutation triple
   // (create / rename / delete) come from the shared useFolders
@@ -638,11 +638,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // we append a point, but mutations stay cheap by always producing a
   // bounded array.
   // `localLaserTrail` now comes from useEditorBroadcast, declared
-  // further down once the WS gates (roomRef, diagramShareable...)
+  // further down once the WS gates (roomRef, documentShareable...)
   // are in scope. Editor-page still reads it for the laserTrailRows
   // aggregator that Canvas consumes.
-  // Dismissing a "shared with you" row lives in useDiagramListActions
-  // (via useDiagramActions below), shared with /explorer and /new.
+  // Dismissing a "shared with you" row lives in useDocumentListActions
+  // (via useDocumentActions below), shared with /explorer and /new.
   // Tab ids whose full payload has been fetched. Hydration loads the
   // active tab inline; the rest pop in lazily when the user switches
   // to them. Tracked in a ref because it's only ever read inside the
@@ -1980,7 +1980,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // move-to-folder / delete-folder, and the new / open / make-a-copy
   // full-page-load helpers). Operates on whole diagrams + the Explorer
   // list, distinct from per-tab lifecycle in useTabActions. See
-  // useDiagramActions.
+  // useDocumentActions.
   const {
     deleteDocument,
     deleteFolder,

@@ -11,7 +11,7 @@ import type { Folder } from '@livediagram/api-schema';
 // The bar above the team library (docs/specs/013-workspace/team-shared-documents.md): where you are, and the two things
 // you can do from anywhere in it — switch card / list view, and add something.
 //
-// Split out of TeamSharedDiagrams because it is the half of that component
+// Split out of TeamSharedDocuments because it is the half of that component
 // that has nothing to do with listing diagrams. Below it is a folder tree and
 // its rows; this is navigation and creation, and the two only meet through the
 // current spot.

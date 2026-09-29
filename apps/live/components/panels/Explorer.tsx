@@ -87,8 +87,8 @@ function ExplorerImpl({
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
   // When set, the diagram row whose Move dialog is open (`teamId` set =
   // it's a team-library diagram, so the picker opens on that team and a
-  // pick routes through the scope-aware onMoveDiagramTo). Stored here
-  // (vs. in DiagramRow) so the modal doesn't nest inside row portals.
+  // pick routes through the scope-aware onMoveDocumentTo). Stored here
+  // (vs. in DocumentRow) so the modal doesn't nest inside row portals.
   const [moveTarget, setMoveTarget] = useState<{ id: string; teamId: string | null } | null>(null);
   // Folder id newly created via the New folder button — used to drop
   // the row into rename mode immediately after the API returns.
@@ -109,12 +109,12 @@ function ExplorerImpl({
   // sits at the top of the canvas above the Palette.)
 
   // All derived collections below are useMemo'd against their real
-  // inputs (diagrams, folders, currentDiagramId): Explorer holds a
+  // inputs (diagrams, folders, currentDocumentId): Explorer holds a
   // pile of internal state (accordion open flags, expandedFolders,
-  // moveTargetDiagramId, exitingDiagramIds) that re-renders the component
+  // moveTargetDocumentId, exitingDocumentIds) that re-renders the component
   // frequently without changing the underlying lists. Without these
   // memos every accordion toggle rebuilt foldersByParent +
-  // diagramsByFolder + sorted both, and re-walked the folder tree
+  // documentsByFolder + sorted both, and re-walked the folder tree
   // just to render a different chevron.
   const {
     current,
@@ -254,7 +254,7 @@ function ExplorerImpl({
                     // Change Folder for a team diagram (docs/specs/013-workspace/team-shared-documents.md): opens the
                     // move picker on this team's tree, with Personal Space + the
                     // other teams one Back away. Routed through the
-                    // scope-aware onMoveDiagramTo.
+                    // scope-aware onMoveDocumentTo.
                     onMoveRequest={
                       onMoveDocumentTo
                         ? () => setMoveTarget({ id: currentTeam.id, teamId: currentTeam.team.id })
@@ -320,7 +320,7 @@ function ExplorerImpl({
           onDuplicateDocument={onDuplicateDocument}
           onMoveDocumentRequest={onMoveDocumentToFolder ? openMovePicker : undefined}
           // A team row's move opens the picker for that team; the pick then
-          // routes through the scope-aware onMoveDiagramTo (docs/specs/013-workspace/team-shared-documents.md).
+          // routes through the scope-aware onMoveDocumentTo (docs/specs/013-workspace/team-shared-documents.md).
           onMoveTeamDocumentRequest={
             onMoveDocumentTo ? (id, teamId) => setMoveTarget({ id, teamId }) : undefined
           }

@@ -7,7 +7,7 @@ import { TruthArmBoot } from './TruthArmBoot';
 // Arming the ground-truth export (docs/research/vision/sticky-detection.md). It has to
 // happen at APP LOAD, on whatever page the parameter was typed on: the editor
 // is reached from /new, and by the time a photo has been imported and the
-// review has boxes on it the URL is /diagram/<id>/ with no parameter on it at
+// review has boxes on it the URL is /document/<id>/ with no parameter on it at
 // all. Arming from the review surface therefore never fired, which is exactly
 // how this shipped broken the first time.
 describe('TruthArmBoot', () => {

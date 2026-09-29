@@ -19,7 +19,7 @@ export type ExplorerProps = {
   // current's state via the auto-save).
   documents: DocumentListItem[];
   // The VIEWER's resolved owner id (self/participant id), threaded down
-  // to each DiagramRow so its thumbnail fetch authenticates as the
+  // to each DocumentRow so its thumbnail fetch authenticates as the
   // viewer. Distinct from a diagram's own ownerId.
   ownerId: string | null;
   // Every folder for the owner. Empty array = no user folders, but
@@ -91,7 +91,7 @@ export type ExplorerProps = {
     documentId: string,
     dest: { teamId: string | null; folderId: string | null },
     // Where the diagram is coming from (null = the personal tree), so a
-    // personal -> team move counts as Team·Added·Diagram (docs/specs/017-telemetry/telemetry.md).
+    // personal -> team move counts as Team·Added·Document (docs/specs/017-telemetry/telemetry.md).
     fromTeamId?: string | null,
   ) => void;
   // The header ⋯ menu's verbs beyond new / open (docs/specs/013-workspace/folders.md). Each optional:

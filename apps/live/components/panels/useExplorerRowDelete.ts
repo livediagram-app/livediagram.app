@@ -17,7 +17,7 @@ export function useExplorerRowDelete({
   teamDocuments: NonNullable<ExplorerProps['teamDocuments']>;
 }) {
   // Diagrams currently mid slide-out animation. Adding the id to this
-  // set flips the row's DiagramRowShell from its enter class to its exit
+  // set flips the row's DocumentRowShell from its enter class to its exit
   // one for ~220ms, then we forward the real delete
   // to the parent so the row is removed from the underlying
   // `diagrams` prop. Without the delay the row disappears instantly

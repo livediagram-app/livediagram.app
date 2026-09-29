@@ -67,7 +67,7 @@ One thing that happened. Carries:
 - `sourceType` + `sourceId` — the domain object it is about
   (`diagram` + the diagram id, `team` + the team id). Synthesised for
   events with no single object (`account` + the owner id).
-- `eventType` — what happened (`diagram_created`, `comment_added`,
+- `eventType` — what happened (`document_created`, `comment_added`,
   `team_member_joined`). Distinct from `sourceType`: one diagram
   produces many event types over its life.
 - `title` / `description` — first-class columns, not snapshot fields.
@@ -155,7 +155,7 @@ A card has four regions, top to bottom:
 1. **Preview.** A fixed-height letterbox (the same `h-48` as a Recent
    card, so the two grids look like one product). A diagram event shows
    the diagram's cached SVG snapshot ([Diagram SVG snapshots](../006-document/document-snapshots.md)), reusing the Explorer's
-   `DiagramThumbnail` and inheriting its lazy intersection-observer
+   `DocumentThumbnail` and inheriting its lazy intersection-observer
    fetch, so a feed of fifty cards doesn't trigger fifty server renders
    for diagrams nobody scrolls to. An event with **no picture** (a team,
    a folder, a token, a theme, a comment on a deleted diagram) fills the
@@ -298,16 +298,16 @@ functions over the entry list, tested directly.
 ### 2.1a Created and updated on the same day
 
 A diagram made this morning and worked on this afternoon produces two
-events: `diagram_created` at 07:22 and the coalesced `diagram_edited`
+events: `document_created` at 07:22 and the coalesced `document_edited`
 whose `occurred_at` walks forward through the day (§4.2). Shown side by
 side under Today they are the same card twice, "Created" and "Updated"
 with the same thumbnail, and the second one tells the reader nothing the
 first didn't: of course a new diagram was edited on the day it was made.
 
-So **the feed hides a diagram's `diagram_edited` event on any local day
-that also holds its `diagram_created` event.** The rule:
+So **the feed hides a diagram's `document_edited` event on any local day
+that also holds its `document_created` event.** The rule:
 
-- Keyed on the diagram (`snapshot.diagramId`) and the reader's local
+- Keyed on the diagram (`snapshot.documentId`) and the reader's local
   `dateKey`, the same boundary the day groups use, so the two cards it
   is collapsing are exactly the two that would have sat together.
 - Applied **client-side, in `useTimelineControls`, to `visibleEvents`**,
@@ -684,7 +684,7 @@ navigation should not resurrect an old target.
 ### 2.8 The card menu
 
 A diagram card carries the **same ⋯ menu as a Recent card**, and it is
-the same component: `DiagramActionsMenu` from the Explorer, anchored to
+the same component: `DocumentActionsMenu` from the Explorer, anchored to
 the same `EllipsisTriggerButton`, opening on the trigger or on
 right-click. Rename, Duplicate, Change Folder, Favourite, History, Hide
 from Recent, Open Team, Sync Diagram / Take Offline, Delete: whatever
@@ -698,7 +698,7 @@ carries the diagram's id and name, not its folder, share code, team or
 owner, and the menu's items depend on all of those. So the live app
 resolves the id against the Explorer's already-loaded lists (personal,
 team, and shared-with-you), which is the same set Recent draws from, and
-hands the menu the `PaneDiagram` it finds. When nothing is found (the
+hands the menu the `PaneDocument` it finds. When nothing is found (the
 diagram has since been deleted, or a team diagram the sidebar hasn't
 loaded), the card gets **no menu**: a menu of guesses is worse than
 none, and the card still opens the diagram on click. Tombstones have no
@@ -820,7 +820,7 @@ CREATE TABLE timeline_events (
   actor_id     TEXT,                      -- owner id of who did it; NULL for system events
   source_type  TEXT NOT NULL,             -- 'diagram' | 'team' | 'account' | ...
   source_id    TEXT NOT NULL,
-  event_type   TEXT NOT NULL,             -- 'diagram_created' | 'comment_added' | ...
+  event_type   TEXT NOT NULL,             -- 'document_created' | 'comment_added' | ...
   dedupe_key   TEXT NOT NULL DEFAULT '',  -- '' for one-shot events; see §4.2
   title        TEXT NOT NULL,
   description  TEXT,
@@ -966,7 +966,7 @@ Favourites are not built. Everything here is additive.
   and `countUnseen` leave out every event whose source or snapshot names a
   trashed diagram (`NOT_IN_TRASH` in `db/timeline.ts`, a primary-key probe
   per event), so a restore brings its history back. The purge is what
-  cascades, as described next, through `diagramsTimelineSweepStatement`
+  cascades, as described next, through `documentsTimelineSweepStatement`
   (the set form of the helper below). Take Offline still sweeps at once.
 - **Removing a diagram for good cascades**, matching Manager Toolkit. The purge
   hard-removes every `timeline_events` row with
@@ -977,7 +977,7 @@ Favourites are not built. Everything here is additive.
   links to a 404.
   **And a deleted diagram leaves no tombstone.** From the Timeline's
   point of view it never existed: nothing is written in its place, and
-  there is no `diagram_deleted` event type. There was one — "Diagram
+  there is no `document_deleted` event type. There was one — "Diagram
   Deleted / Payments architecture", in danger red, surviving the sweep
   by being written after it — and it was noise the reader had asked to
   be rid of: the delete was their own act, and a red card for it told
@@ -1037,7 +1037,7 @@ loss, a failed save is not.
 One helper decides who sees a diagram event:
 
 ```ts
-audienceForDiagram(env, diagram): Promise<string[]>   // owner ids
+audienceForDocument(env, diagram): Promise<string[]>   // owner ids
 ```
 
 - Always the diagram's `owner_id`.
@@ -1054,29 +1054,29 @@ Team events use the analogous `audienceForTeam(env, teamId)`.
 **A diagram rename is not an event.** Every entry names its diagram as it is
 called **now**: the feed reads each diagram's current name when it is served
 (`readTimeline` joins `diagrams` on the event's diagram and overrides the
-snapshot's `diagramName`), so renaming a diagram updates every older entry
+snapshot's `documentName`), so renaming a diagram updates every older entry
 about it, and a separate "Renamed" card would only repeat what those now say.
-Nothing records `diagram_renamed` any more, and the rows written before this
+Nothing records `document_renamed` any more, and the rows written before this
 change are filtered out of every feed and the unread count. A diagram that no
 longer exists keeps the name it had. Team renames are still events: a team's
 name is not re-read onto older entries.
 
 | `eventType`                          | Fires when                                                                                                                                      | Title / description                                             |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `diagram_created`                    | `POST /api/diagrams`                                                                                                                            | "Diagram Created" / "Payments architecture"                     |
-| `diagram_duplicated`                 | duplicate route                                                                                                                                 | "Diagram Duplicated" / "Copy of Payments architecture"          |
-| `diagram_moved`                      | folder change                                                                                                                                   | "Moved to a Folder" / "Payments architecture → Architecture"    |
-| `diagram_edited`                     | tab save (coalesced)                                                                                                                            | "Diagram Updated" / "You worked on Payments architecture"       |
-| `diagram_opened_by_visitor`          | a share-code visitor reads a tab (`GET /api/diagrams/:id/tabs/:tabId`); owner only, coalesced per visitor per day ("Opened by a visitor" below) | "Opened by a Visitor" / "Payments architecture"                 |
-| `diagram_copied_by_visitor`          | a share-code visitor copies it (`POST /api/diagrams/:id/copy`); owner only                                                                      | "Copied by a Visitor" / "Payments architecture"                 |
-| `diagram_offline` / `diagram_synced` | Take Offline / Sync Diagram ([Offline Mode](../006-document/offline-mode.md))                                                                   | "Taken Offline" / "Synced to the Cloud"                         |
-| `diagram_renamed`                    | never: retired, no longer emitted (see above)                                                                                                   | Legacy rows are filtered out of every feed and the unread count |
+| `document_created`                    | `POST /api/documents`                                                                                                                            | "Diagram Created" / "Payments architecture"                     |
+| `document_duplicated`                 | duplicate route                                                                                                                                 | "Diagram Duplicated" / "Copy of Payments architecture"          |
+| `document_moved`                      | folder change                                                                                                                                   | "Moved to a Folder" / "Payments architecture → Architecture"    |
+| `document_edited`                     | tab save (coalesced)                                                                                                                            | "Diagram Updated" / "You worked on Payments architecture"       |
+| `document_opened_by_visitor`          | a share-code visitor reads a tab (`GET /api/documents/:id/tabs/:tabId`); owner only, coalesced per visitor per day ("Opened by a visitor" below) | "Opened by a Visitor" / "Payments architecture"                 |
+| `document_copied_by_visitor`          | a share-code visitor copies it (`POST /api/documents/:id/copy`); owner only                                                                      | "Copied by a Visitor" / "Payments architecture"                 |
+| `document_offline` / `document_synced` | Take Offline / Sync Diagram ([Offline Mode](../006-document/offline-mode.md))                                                                   | "Taken Offline" / "Synced to the Cloud"                         |
+| `document_renamed`                    | never: retired, no longer emitted (see above)                                                                                                   | Legacy rows are filtered out of every feed and the unread count |
 
 **The two Offline Mode conversions declare themselves**, because they reuse
 ordinary endpoints and are otherwise indistinguishable from them: "Take
-offline" is a plain `DELETE /diagrams/:id` (the server copy really does go)
-and "Sync diagram" a plain `POST /diagrams`. Undeclared, the worker treated
-them as a deletion and a `diagram_created` — so the feed lost a diagram the
+offline" is a plain `DELETE /documents/:id` (the server copy really does go)
+and "Sync diagram" a plain `POST /documents`. Undeclared, the worker treated
+them as a deletion and a `document_created` — so the feed lost a diagram the
 owner had just moved into this browser, and told them one they had just
 uploaded was brand **new**. The editor therefore
 sends `X-Diagram-Conversion: offline | sync` on the request that performs it,
@@ -1087,7 +1087,7 @@ unrecognised value falls back to the truthful default: the header is
 client-supplied.
 
 **Only the owner's conversion is honoured**, and that clause is load-bearing
-rather than defensive. `diagram_offline` is owner-scoped — an offline diagram
+rather than defensive. `document_offline` is owner-scoped — an offline diagram
 exists in exactly one browser, so no teammate has a stake in it — but the DELETE
 is also reachable by any joined member of the diagram's team ([Team shared diagrams](team-shared-documents.md)), and the
 Explorer offers Take Offline on a team-library row without checking who owns it.
@@ -1140,7 +1140,7 @@ not in a table — there is no comments table to hang a trigger off. The
 worker already has to reason about which comments are _new_ on every
 save, in `apps/api/src/comments.ts`:
 
-- `POST /api/diagrams/:id/tabs/:tabId/comments` — the explicit path a
+- `POST /api/documents/:id/tabs/:tabId/comments` — the explicit path a
   view-role visitor uses. Emit directly; the comment object is right
   there.
 - The ordinary tab `PUT`, where `rewriteCommentAuthors` already
@@ -1175,8 +1175,8 @@ calls it.
 | `team_member_left`          | member deletes own row                                                                 | The team                                   |
 | `team_member_removed`       | admin removes someone                                                                  | The team, and the removed person           |
 | `team_role_changed`         | `PUT .../members/:id`                                                                  | The team                                   |
-| `team_diagram_added`        | diagram published to a team library ([Team shared diagrams](team-shared-documents.md)) | The team                                   |
-| `team_diagram_removed`      | diagram pulled back out of a team library                                              | The team it left, resolved BEFORE the move |
+| `team_document_added`        | diagram published to a team library ([Team shared diagrams](team-shared-documents.md)) | The team                                   |
+| `team_document_removed`      | diagram pulled back out of a team library                                              | The team it left, resolved BEFORE the move |
 | `team_renamed`              | `PUT /api/teams/:id` with a new name: "Team Renamed" / "Design → Product design"       | The team                                   |
 | `team_deleted`              | `DELETE /api/teams/:id`: "Team Deleted" / the team's name, no team link                | The team, resolved BEFORE the delete       |
 | `team_invite_link_enabled`  | `POST /api/teams/:id/invite-link` (generate or rotate): "Invite Link Turned On"        | Team admins                                |
@@ -1254,23 +1254,23 @@ shared a link for — once per teammate per day, so a twelve-person library
 could put eleven false cards a day on one diagram. Duplicating a
 team-library diagram reported _"copied by a visitor"_, which is simply
 untrue. Both now require a share code to have been presented. The
-teammate's own `diagram_duplicated` event is unaffected: they really did
+teammate's own `document_duplicated` event is unaffected: they really did
 copy it.
 
 **Leaving a team library is its own event, and its audience is resolved
 before the move.** Publishing into a team and pulling back out of one are not
 one event with a direction: the out case takes the diagram away from everybody
 else, and when the mover isn't the owner [Team shared diagrams](team-shared-documents.md) hands them ownership, so the
-previous owner loses it too. It used to fall through to `diagram_moved` and
+previous owner loses it too. It used to fall through to `document_moved` and
 read "Moved to a Folder → Unsorted" — in the **mover's** feed only, because
-`recordDiagramMoved` resolves its audience from the diagram and by then the
+`recordDocumentMoved` resolves its audience from the diagram and by then the
 diagram is personal. A diagram could leave a shared library and change hands
 with nothing in the team's feed or the old owner's. And since a diagram at the
 library root already has `folderId === null`, moving it to personal Unsorted
 changed no folder, so that arm didn't fire either and **no event was written at
-all**. `team_diagram_removed` now covers it, carrying the new owner's name for
+all**. `team_document_removed` now covers it, carrying the new owner's name for
 the readers who no longer have the diagram, and the audience is read from the
-outgoing team before `setDiagramFolder` — the same ordering, for the same
+outgoing team before `setDocumentFolder` — the same ordering, for the same
 reason, as the delete tombstone.
 
 **Invite-link toggles go to admins only.** Whether a join credential is
@@ -1294,8 +1294,8 @@ diagrams is a broken-looking feature. On the first read of a scope
 (`timeline_scope_state.backfilled_at IS NULL`), the worker seeds it:
 
 - For the caller's 200 most recently updated diagrams: a
-  `diagram_created` event at `diagrams.created_at`, and a
-  `diagram_edited` event at `updated_at` with the matching
+  `document_created` event at `diagrams.created_at`, and a
+  `document_edited` event at `updated_at` with the matching
   `<actorId>:<date>` dedupe key.
 - For each team the caller has joined: a `team_member_joined` event at
   their `team_members.created_at`.
@@ -1344,7 +1344,7 @@ Response:
       "description": "Priya on Payments architecture",
       "occurredAt": 1754380800000,
       "actorId": "user_...",
-      "snapshot": { "diagramName": "Payments architecture", "text": "Should the retry budget…" }
+      "snapshot": { "documentName": "Payments architecture", "text": "Should the retry budget…" }
     }
   ],
   "nextCursor": "1754380800000:abc",
@@ -1443,7 +1443,7 @@ types.ts                 TimelineEvent, renderer contracts
 ```
 
 The **renderers** — the functions that turn a `TimelineEvent` into a
-card's parts (`subject`, `label`, `meta`, `preview`, `onClick`), and that know a diagram event links to `/diagram/<id>` and a
+card's parts (`subject`, `label`, `meta`, `preview`, `onClick`), and that know a diagram event links to `/document/<id>` and a
 team event to `/explorer/team?id=<id>` — live in
 **`apps/live/app/explorer/timeline/renderers.tsx`**, keyed by
 `sourceType`. The package takes a registry prop; it never imports a

@@ -72,12 +72,12 @@ export function sharePasswordOf(request: Request): string | null {
   return request.headers.get('X-Share-Password');
 }
 
-// Route-side wrappers around canReadDiagram / canEditDiagram. Most
+// Route-side wrappers around canReadDocument / canEditDocument. Most
 // handler call sites need the same six args to the auth helpers
-// (env, diagramId, caller, share code, diagram owner, share
+// (env, documentId, caller, share code, diagram owner, share
 // password); four of them (env, caller, share code, share password)
 // fall straight out of the RouteContext, so condensing them into a
-// (ctx, diagramId, diagramOwnerId) helper drops a stack of
+// (ctx, documentId, documentOwnerId) helper drops a stack of
 // repetitive 6-line invocations to 1-liners. Behaviour stays
 // identical: each helper just forwards the ctx-derived args.
 //
@@ -222,7 +222,7 @@ export async function mayDeleteDocument(
 }
 
 // The answer for a diagram id no LIVE row holds (docs/specs/013-workspace/trash.md):
-// 410 `diagram_trashed` when it is in the Trash and the caller could have
+// 410 `document_trashed` when it is in the Trash and the caller could have
 // opened it (owner, joined team member, share-code holder), else the 404 a
 // never-existing id gets, so the deleted state leaks nothing to a stranger.
 export async function missingDocument(ctx: RouteContext, documentId: string): Promise<Response> {

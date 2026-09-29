@@ -17,7 +17,7 @@
 // the arguments (idempotent GETs). Writes / mutations stay
 // un-deduped to keep their semantics obvious.
 //
-// Backed by api-client's apiLoadTab / apiListDiagrams /
+// Backed by api-client's apiLoadTab / apiListDocuments /
 // apiListSharedWith / apiListFolders. See lib/dedupe.test.ts for
 // the contract.
 export function dedupeInFlight<TArgs extends readonly unknown[], TResult>(

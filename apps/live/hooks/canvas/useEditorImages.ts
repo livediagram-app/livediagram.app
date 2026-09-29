@@ -89,7 +89,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
       .catch(() => setRecentImages([]));
   }, []);
 
-  // Loads once on diagramId mount; refreshed manually by
+  // Loads once on documentId mount; refreshed manually by
   // refreshRecentImages after a successful picker upload so a
   // newly-uploaded image surfaces without a diagram reload. View-
   // role visitors skip the fetch (the accordion is hidden for them

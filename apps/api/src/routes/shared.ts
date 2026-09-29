@@ -19,7 +19,7 @@ export async function handleShared(ctx: RouteContext): Promise<Response> {
       return json({ shared });
     }
   }
-  // /api/shared/<diagramId> — dismiss / un-link.
+  // /api/shared/<documentId> — dismiss / un-link.
   if (segments.length === 3) {
     const documentId = segments[2]!;
     if (request.method === 'DELETE') {

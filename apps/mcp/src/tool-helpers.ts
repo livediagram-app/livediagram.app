@@ -25,7 +25,7 @@ export type ToolResult = {
 
 export const deepLink = (id: string) => `https://livediagram.app/document/${id}`;
 
-// A share link's public URL (docs/specs/013-workspace/share-password.md): visitors land on /diagram/shared?s=<code>
+// A share link's public URL (docs/specs/013-workspace/share-password.md): visitors land on /document/shared?s=<code>
 // and the app resolves the code to the diagram + granted role.
 export const shareUrl = (code: string) =>
   `https://livediagram.app/document/shared?s=${encodeURIComponent(code)}`;

@@ -1,7 +1,7 @@
 // Created and updated on the same day (docs/specs/013-workspace/timeline.md §2.1a).
 //
 // A diagram made this morning and worked on this afternoon produces two
-// events: `diagram_created` and the coalesced `diagram_edited`. Shown
+// events: `document_created` and the coalesced `document_edited`. Shown
 // side by side under Today they are the same card twice, and the second
 // one tells the reader nothing the first didn't: of course a new diagram
 // was edited on the day it was made.
@@ -22,7 +22,7 @@ function documentIdOf(event: TimelineEvent): string | null {
 }
 
 export function collapseSameDayCreate(events: readonly TimelineEvent[]): TimelineEvent[] {
-  // `<diagramId>|<local day>` for every create in the list.
+  // `<documentId>|<local day>` for every create in the list.
   const created = new Set<string>();
   for (const event of events) {
     if (event.eventType !== 'document_created') continue;

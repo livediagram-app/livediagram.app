@@ -1,4 +1,4 @@
-// /api/diagrams — diagram metadata, per-tab content, copy, folder
+// /api/documents — diagram metadata, per-tab content, copy, folder
 // assignment, tab linking, comments, share links, the realtime WS
 // upgrade, and the change-log. The largest resource: every sub-path
 // under a diagram id lives here.
@@ -56,15 +56,15 @@ import {
   type RouteContext,
 } from './context';
 
-// Tab-content sub-resource routes for /api/diagrams/<id>/...,
+// Tab-content sub-resource routes for /api/documents/<id>/...,
 // split out of diagrams.ts. Returns a Response when it handles the path, or
 // null to let the main dispatcher fall through to the remaining routes.
 export async function handleDocumentSubresources(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
-  // /api/diagrams/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
+  // /api/documents/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
   const qa = await handleQaBoardRoute(ctx);
   if (qa) return qa;
-  // /api/diagrams/<id>/tabs/<tabId>
+  // /api/documents/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this diagram, so
   //            view-only visitors can load tab content (docs/specs/014-identity/auth-and-guest-access.md +
@@ -195,7 +195,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // thread (see the docs/specs/014-identity/auth-and-guest-access.md + docs/specs/012-collaboration/activity-and-audit.md security audit
       // thread). Existing comments preserve their original
       // authors (compared by id against the prior tab).
-      // getDiagram already joined the owner's participant row — reuse it
+      // getDocument already joined the owner's participant row — reuse it
       // when the writer IS the owner (the common autosave case) instead
       // of re-fetching the same row every 600ms.
       const writerParticipant =
@@ -279,7 +279,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     }
   }
 
-  // /api/diagrams/<id>/tabs/<tabId>/comments — append a comment
+  // /api/documents/<id>/tabs/<tabId>/comments — append a comment
   // to an element's thread. Read-role visitors are allowed here
   // (the only write path open to view-role) so view-only
   // collaborators can chime in on a thread without being
@@ -368,7 +368,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     return json({ comment });
   }
 
-  // DELETE /api/diagrams/<id>/tabs/<tabId>/comments/<commentId> —
+  // DELETE /api/documents/<id>/tabs/<tabId>/comments/<commentId> —
   // delete a SINGLE comment you authored. Read-role visitors are
   // allowed (gateRead, like the POST above) so a view-only collaborator
   // can remove their own comment without edit rights — but only their
@@ -413,13 +413,13 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     return noContent();
   }
 
-  // /api/diagrams/<id>/tabs/<tabId>/link — owner only.
+  // /api/documents/<id>/tabs/<tabId>/link — owner only.
   //   POST — add an existing tab to this diagram (docs/specs/006-document/tab-document-many-to-many.md).
   // Auth: the caller must own this diagram AND own at least
   // one diagram that already contains the tab. The second
   // half stops a stranger from grafting a tab they have no
   // read access to. The `existing.ownerId !== owner` guard
-  // above the dispatch (canEditDiagram on this diagram) only
+  // above the dispatch (canEditDocument on this diagram) only
   // covers the destination side.
   if (
     segments.length === 6 &&
@@ -433,7 +433,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     if (owner instanceof Response) return owner;
     const existing = await getDocument(env, id);
     if (!existing) return missingDocument(ctx, id);
-    // `ownsDiagram`, not a bare id compare: on a TEAM diagram the owner id is
+    // `ownsDocument`, not a bare id compare: on a TEAM diagram the owner id is
     // a Clerk id every teammate can read, so it must be proven with a verified
     // account id rather than the X-Owner-Id header (see routes/context.ts).
     // The second half of this route's auth doesn't help here — it re-uses the
@@ -441,7 +441,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     // own diagrams.
     if (!(await ownsDocument(ctx, existing))) return forbidden();
     // The tab must already live in at least one of the caller's
-    // owned diagrams. One JOIN answers that (LIMIT 1 on the first
+    // owned documents. One JOIN answers that (LIMIT 1 on the first
     // owned match). On the failure path we fall back to listing the
     // containing diagrams once, purely to tell "tab doesn't exist
     // anywhere" (404) apart from "exists but you don't own it" (403).
@@ -458,7 +458,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     return tab ? json({ tab }) : notFound();
   }
 
-  // /api/diagrams/<id>/share* — the share-link family lives in
+  // /api/documents/<id>/share* — the share-link family lives in
   // diagram-share-routes.ts.
   {
     const shareResp = await handleDocumentShareRoutes(ctx);

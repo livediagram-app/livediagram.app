@@ -10,8 +10,8 @@
 //
 // Naming convention: bare nouns (`Diagram`, `Folder`, `ShareLink`).
 // Each app re-exports under its own historical aliases — the api
-// worker continues to use `DiagramDTO` etc. internally, the live app
-// continues to use `StoredDiagram` — so this extraction is a
+// worker continues to use `DocumentDTO` etc. internally, the live app
+// continues to use `StoredDocument` — so this extraction is a
 // drop-in. New code should prefer the canonical names here.
 
 import type { BackgroundPattern, ShapeKind, Tab } from '@livediagram/document';
@@ -22,7 +22,7 @@ export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize
 // Diagrams
 // ---------------------------------------------------------------------
 
-// Full diagram payload returned by `GET /api/diagrams/:id`. After
+// Full diagram payload returned by `GET /api/documents/:id`. After
 // per-tab storage (docs/specs/006-document/per-tab-storage.md), `tabs` is a list of `TabSummary`
 // How a diagram came to exist (docs/specs/013-workspace/folders.md "Generated" folder, docs/specs/015-api/mcp-server.md).
 // null = authored by a person in the editor; 'mcp' = created by an
@@ -32,14 +32,14 @@ export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize
 export type DocumentSource = 'ai' | 'mcp';
 
 // (metadata only) — element content is fetched separately via
-// `GET /api/diagrams/:id/tabs/:tabId`.
+// `GET /api/documents/:id/tabs/:tabId`.
 export type LiveDoc = {
   id: string;
   ownerId: string;
   name: string;
   tabs: TabSummary[];
   // Sharing state. `shareable` is the on/off switch the owner toggles
-  // via POST/DELETE /api/diagrams/:id/share. `shareCode` is the short
+  // via POST/DELETE /api/documents/:id/share. `shareCode` is the short
   // code that goes into the share URL; null when never shared,
   // rotated when re-shared after a revoke.
   shareable: boolean;
@@ -53,11 +53,11 @@ export type LiveDoc = {
   // Unsorted). Joined members of the team get edit access.
   teamId: string | null;
   // Provenance (docs/specs/013-workspace/folders.md). null = made by a person; non-null = generated
-  // (see DiagramSource). Set on create, never rewritten by meta updates.
+  // (see DocumentSource). Set on create, never rewritten by meta updates.
   source: DocumentSource | null;
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised `StoredPresentation` JSON, or null when
   // the diagram has no deck (every diagram until somebody builds one).
-  // Deliberately absent from DiagramSummary: the Explorer lists diagrams and
+  // Deliberately absent from DocumentSummary: the Explorer lists diagrams and
   // has no use for their decks, and a deck is the one metadata field that can
   // grow with the diagram.
   presentation: string | null;
@@ -113,7 +113,7 @@ export type SharedWithItem = {
   // The role the visitor was granted on the share link they used.
   role: ShareRole;
   // Still-live share code for that same role, so the client can rebuild
-  // the openable `/diagram/<id>?s=<code>` URL — without it the link
+  // the openable `/document/<id>?s=<code>` URL — without it the link
   // lands on the owner-only path and 404s. The worker filters out rows
   // whose share was revoked (no code left), so this is never null here.
   shareCode: string;
@@ -131,7 +131,7 @@ export type SharedWithItem = {
 // Tabs
 // ---------------------------------------------------------------------
 
-// One row of `Diagram.tabs`. Stored in D1 with id + diagram_id + name
+// One row of `Diagram.tabs`. Stored in D1 with id + document_id + name
 // + order_index as columns and the rest of the payload as a JSON
 // `data` column. The summary projection is what list / diagram
 // responses ship; the full payload (below) is fetched per-tab on
@@ -142,7 +142,7 @@ export type TabSummary = {
   name: string;
   orderIndex: number;
   updatedAt: number;
-  // Per-diagram folder name (docs/specs/006-document/tab-folders.md), read from the diagram_tabs
+  // Per-diagram folder name (docs/specs/006-document/tab-folders.md), read from the document_tabs
   // link row. Optional / omitted = the tab is loose (no folder). The
   // TabBar groups contiguous same-folder tabs under one chip.
   folder?: string;
@@ -151,10 +151,10 @@ export type TabSummary = {
   outOfScope?: true;
 };
 
-// Full tab payload returned by `GET /api/diagrams/:id/tabs/:tabId`:
+// Full tab payload returned by `GET /api/documents/:id/tabs/:tabId`:
 // the editor's `Tab` (elements + comments + theme + canvas) plus the
 // row's audit metadata. `folder` here is the per-diagram membership
-// from the diagram_tabs link (docs/specs/006-document/tab-folders.md), distinct from anything in the
+// from the document_tabs link (docs/specs/006-document/tab-folders.md), distinct from anything in the
 // tab body — it is never stored in the `tabs.data` blob.
 export type TabRecord = Tab & {
   documentId: string;
@@ -430,7 +430,7 @@ export type ParticipantPresence = {
 // One row returned by `GET /api/images` (the gallery list) + the
 // inner shape of the `POST /api/images` response (`{ image, deduped }`).
 // The bytes themselves are fetched separately via
-// `GET /api/images/<id>?d=<diagramId>` (owner or share-code gated).
+// `GET /api/images/<id>?d=<documentId>` (owner or share-code gated).
 export type ImageSummary = {
   id: string;
   contentType: string;
@@ -455,8 +455,8 @@ export type ChangeLogEntry = {
   id: string;
   // Tab the change happened on. Nullable in the schema for legacy
   // diagram-scoped entries; new entries always carry a real id
-  // (since #14 dropped the diagram_id column the tab id is now the
-  // canonical pointer into the change_log → tabs → diagram_tabs
+  // (since #14 dropped the document_id column the tab id is now the
+  // canonical pointer into the change_log → tabs → document_tabs
   // chain — see docs/specs/006-document/tab-document-many-to-many.md).
   tabId: string | null;
   participantId: string;

@@ -14,7 +14,7 @@ import type { Env } from '../types';
 // or a set of ids (the Trash purge, docs/specs/013-workspace/trash.md).
 export type DocumentSelector = { column: 'id' | 'owner_id'; value: string } | { ids: string[] };
 
-// The WHERE clause over `diagrams` and its one bound value.
+// The WHERE clause over `documents` and its one bound value.
 function selectorWhere(selector: DocumentSelector): { where: string; value: string } {
   if ('ids' in selector) {
     return { where: 'id IN (SELECT value FROM json_each(?))', value: JSON.stringify(selector.ids) };

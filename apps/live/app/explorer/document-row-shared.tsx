@@ -287,7 +287,7 @@ export function DocumentActionsMenu({
   );
 }
 
-// DiagramActionsMenu bound to a list row's or card's entry props. Both
+// DocumentActionsMenu bound to a list row's or card's entry props. Both
 // entries hand the menu the same fourteen bindings; this is them once.
 export function DocumentEntryMenu({
   entry,

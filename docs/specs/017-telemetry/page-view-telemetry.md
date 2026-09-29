@@ -40,7 +40,7 @@ router stays pure routing.
 
 A page view is an ordinary [Telemetry + public transparency dashboard](telemetry.md) event: **`Page` · `View` · `<path>`**. The
 `type` is the normalised page path, e.g. `/`, `/alternatives/miro`,
-`/help/canvas/the-canvas`, `/explorer/recent`, `/diagram`.
+`/help/canvas/the-canvas`, `/explorer/recent`, `/document`.
 
 Carrying it as an event rather than a new table or endpoint means it rides the
 whole existing pipeline unchanged: the buffered emitter, the page-hide beacon,
@@ -55,7 +55,7 @@ it is reduced to _which page_, never _which thing on it_:
 
 - **Query string and hash dropped.** Never sent. This is where invites
   (`/join?token=`), share codes and folder ids live.
-- **Ids dropped, not replaced.** `/diagram/<anything>` becomes `/diagram`: the
+- **Ids dropped, not replaced.** `/document/<anything>` becomes `/document`: the
   dashboard shows hits to the diagram route, not to any one diagram. Any other
   segment that looks like an id (a UUID, or a long token containing a digit)
   is cut off along with everything after it, since what follows an id is about
@@ -88,7 +88,7 @@ A page that doesn't exist is still a page view, and is counted under whatever
 path was asked for, within the grammar above. That is useful (it shows broken
 links arriving), bounded by the same deny-by-default normaliser, and cannot
 carry anything the grammar rejects. The editor's not-found slot renders the
-editor ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md)), so every `/diagram/...` URL is counted as `/diagram`
+editor ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md)), so every `/document/...` URL is counted as `/document`
 whether or not the diagram exists.
 
 ### Counting

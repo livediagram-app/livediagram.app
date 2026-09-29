@@ -12,7 +12,7 @@ differ only in how they're authorised and cached.
 
 ## Why one artifact, not two
 
-The diagram list endpoint (`GET /api/diagrams`) deliberately ships no
+The diagram list endpoint (`GET /api/documents`) deliberately ships no
 element data ([Per-tab storage](per-tab-storage.md)) so listing 100 diagrams stays cheap. Rendering a
 preview per row from element data would re-load exactly what the list
 avoids. So previews come from a **pre-rendered SVG**, not from element
@@ -25,7 +25,7 @@ as a 36px list thumbnail and as a full-size embed — there is no separate
 ## Render-on-read, cached in R2
 
 The snapshot bytes live in R2 (the existing `IMAGES` bucket, key
-`thumb/<diagramId>`); a `diagrams.thumb_rendered_at` column records when
+`thumb/<documentId>`); a `diagrams.thumb_rendered_at` column records when
 they were last rendered.
 
 On a read of either delivery path:
@@ -65,16 +65,16 @@ diagram renders lazily.
 
 ## Delivery path 1 — Explorer thumbnail (owner-authed)
 
-`GET /api/diagrams/:id/thumbnail?v=<savedAt>`
+`GET /api/documents/:id/thumbnail?v=<savedAt>`
 
-- Read-gated exactly like `GET /api/diagrams/:id`: the owner, a joined
+- Read-gated exactly like `GET /api/documents/:id`: the owner, a joined
   team member, or a valid share-code visitor.
 - A native `<img>` can't send auth headers, so the live app fetches this
   through the authenticated client and wraps the bytes in a blob URL
   (the same pattern image elements use, [Image element + per-owner gallery](../009-elements/images.md)). `?v=<savedAt>` busts
   the browser cache when the diagram changes; the worker ignores it.
   `Cache-Control: private, max-age=86400`.
-- One D1 read gates it: `getDiagramThumbMeta` returns the owner, team,
+- One D1 read gates it: `getDocumentThumbMeta` returns the owner, team,
   name, `saved_at` and `thumb_rendered_at` in one query, so a fresh
   snapshot costs that query, the access gate and the R2 read. The full
   diagram (participant and tab summaries) is never loaded for a preview.
@@ -145,7 +145,7 @@ choice is diagram-wide, applying to every share link's image.
 The thumbnail shows on **every** Explorer surface that lists a diagram:
 the full-page `/explorer` rows (Recent / Personal Space / folders / Unsorted /
 Generated), the team library page, the "Shared with me" list, and the
-floating in-editor Explorer panel. A single shared `DiagramThumbnail`
+floating in-editor Explorer panel. A single shared `DocumentThumbnail`
 component (`components/panels/DocumentThumbnail.tsx`) backs them all, fed
 the **viewer's** owner id (never the diagram's) plus, for a shared row,
 its share code — so the authed fetch authorises the same way the diagram
@@ -211,7 +211,7 @@ diagram, so a per-card badge is noise — the team list omits it as well).
 ## Scope (v1)
 
 - **R2 cache is first-tab only.** The persisted snapshot
-  (`thumb/<diagramId>`, one per diagram, shared by the Explorer
+  (`thumb/<documentId>`, one per diagram, shared by the Explorer
   thumbnail and the default live image) always renders the **first**
   tab. The live image's `?tab=<id>` selector ([Live image share link](../013-workspace/live-image-share.md)) now ships in the
   Share dialog, but a non-default tab is rendered **on read and not

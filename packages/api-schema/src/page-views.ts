@@ -5,7 +5,7 @@
 // router can't disagree about who serves a path.
 
 // The live app's top-level page route segments. These serve at clean URLs
-// (`/diagram`, `/explorer`, ...), and the router forwards them to the live
+// (`/document`, `/explorer`, ...), and the router forwards them to the live
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'document',
@@ -46,7 +46,7 @@ function looksLikeId(segment: string): boolean {
 /**
  * Reduce a browser pathname to the page it is, for a `Page·View` event.
  * An id, and everything after it, is dropped: what follows an id is about
- * that one thing, not a different page. So every diagram is `/diagram`.
+ * that one thing, not a different page. So every diagram is `/document`.
  * Returns null when the path can't be expressed safely: deny-by-default, so
  * an odd path is lost rather than leaked. The query string and hash are never
  * part of a pathname, so they cannot reach here.
@@ -62,7 +62,7 @@ export function pageViewPath(pathname: string): string | null {
     .toLowerCase()
     .split('/')
     .filter((s) => s !== '');
-  // Every `/diagram/...` URL is the editor on one diagram (docs/specs/007-editor/new-document-route.md), and
+  // Every `/document/...` URL is the editor on one diagram (docs/specs/007-editor/new-document-route.md), and
   // whatever follows the segment is the diagram's id.
   if (segments[0] === 'document') segments = ['document'];
   const last = segments[segments.length - 1];

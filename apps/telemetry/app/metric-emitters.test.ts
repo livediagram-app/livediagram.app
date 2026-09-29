@@ -30,7 +30,7 @@ import { TOUR_STEP_TYPES } from './tour-steps';
 // event something in the repo can actually send. Two ways that went wrong:
 //
 //  - A card that asks for `type: null` counts ONLY the bare event. When an
-//    emitter started typing Diagram·Created `Cloud` / `Offline`, "Diagrams
+//    emitter started typing Document·Created `Cloud` / `Offline`, "Diagrams
 //    Created" silently read 0 for months. So an untyped card must have no
 //    emitter that can send a type (a card that wants them says `allTypes` or
 //    `typeIn`).

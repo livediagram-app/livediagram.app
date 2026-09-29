@@ -5,7 +5,7 @@ import { apiListFavourites, apiSetFavourite } from './favourites';
 
 // Starring an OFFLINE diagram (docs/specs/006-document/offline-mode.md) must stay in the browser.
 //
-// The favourites table carries `FOREIGN KEY (diagram_id) REFERENCES
+// The favourites table carries `FOREIGN KEY (document_id) REFERENCES
 // diagrams(id)` (migration 0040), and an offline diagram has no row in
 // `diagrams` by definition — it lives only in this browser's IndexedDB. So a
 // star sent to the server does not merely go unused, it is REJECTED:

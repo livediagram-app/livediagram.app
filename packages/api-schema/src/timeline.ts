@@ -56,7 +56,7 @@ export const TIMELINE_EVENT_TYPES = [
   'document_created',
   'document_renamed',
   'document_duplicated',
-  // No `diagram_deleted`: a deleted diagram is swept from the feed and
+  // No `document_deleted`: a deleted diagram is swept from the feed and
   // leaves nothing behind (docs/specs/013-workspace/timeline.md §3.5).
   'document_moved',
   'document_edited',
@@ -85,7 +85,7 @@ export const TIMELINE_EVENT_TYPES = [
   'team_document_added',
   // Pulled back OUT of a team library into somebody's personal files, which
   // also transfers ownership to the mover (docs/specs/013-workspace/team-shared-documents.md). Distinct from
-  // `diagram_moved`: the team loses the diagram, and if the mover was not the
+  // `document_moved`: the team loses the diagram, and if the mover was not the
   // owner the owner loses it too.
   'team_document_removed',
   'team_renamed',
@@ -177,10 +177,10 @@ export const TIMELINE_COMMENT_MAX = 240;
 //
 // It has to be declared because the two conversions reuse ordinary endpoints
 // and are indistinguishable from them at the boundary: "Take offline" is a
-// plain DELETE /diagrams/:id, and "Sync diagram" is a plain POST /diagrams. So
-// the worker recorded them as a deletion and `diagram_created` — a Timeline
+// plain DELETE /documents/:id, and "Sync diagram" is a plain POST /diagrams. So
+// the worker recorded them as a deletion and `document_created` — a Timeline
 // that told the owner a diagram they had just moved into this browser was
-// gone, and that one they had just uploaded was newly *created*. Both `diagram_offline` and `diagram_synced` already
+// gone, and that one they had just uploaded was newly *created*. Both `document_offline` and `document_synced` already
 // existed above, with tones, icons, renderers and a docs/specs/013-workspace/timeline.md table entry;
 // nothing had ever emitted them.
 //

@@ -6,13 +6,13 @@
 
 import type { LiveDoc, DocumentSummary, Folder, ShareLink, TabRecord, TeamListItem } from './index';
 
-// GET / PUT /api/diagrams/:id, POST /api/diagrams (+ copy).
+// GET / PUT /api/documents/:id, POST /api/documents (+ copy).
 export type DocumentResponse = { document: LiveDoc };
-// GET /api/diagrams/:id/tabs/:tabId.
+// GET /api/documents/:id/tabs/:tabId.
 export type TabResponse = { tab: TabRecord };
-// GET /api/diagrams: the caller's personal library.
+// GET /api/documents: the caller's personal library.
 export type DocumentListResponse = { documents: DocumentSummary[] };
-// POST /api/diagrams/:id/share (+ extend).
+// POST /api/documents/:id/share (+ extend).
 export type ShareLinkResponse = { link: ShareLink };
 // GET /api/teams: the teams the caller belongs to (docs/specs/013-workspace/teams.md).
 export type TeamsResponse = { teams: TeamListItem[] };

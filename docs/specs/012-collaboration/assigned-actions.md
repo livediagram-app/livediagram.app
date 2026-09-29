@@ -137,7 +137,7 @@ Clicking it opens the **Assign Action dialog** (its own component under
   Myself-only states, each with its own nudge: a **personal diagram**
   (no team library) offers the fix INLINE — "Move this diagram into a
   team library to assign teammates", with a button per joined team that
-  performs the [Team shared diagrams](../013-workspace/team-shared-documents.md) placement move (`PUT /api/diagrams/<id>/folder`
+  performs the [Team shared diagrams](../013-workspace/team-shared-documents.md) placement move (`PUT /api/documents/<id>/folder`
   with the team id, landing at the team root) right from the dialog and
   reloads the picker with that team's members, no Explorer round-trip; a
   signed-in user with no teams gets the create-a-team link instead; a
@@ -202,7 +202,7 @@ A new **signed-in-only** endpoint on the api worker (Clerk JWT required,
 
 ```
 POST /api/teams/<teamId>/notify-action
-body: { assigneeUserId?, assigneeMemberId?, diagramId, actionName, description? }
+body: { assigneeUserId?, assigneeMemberId?, documentId, actionName, description? }
 ```
 
 The server, not the client, establishes every fact that matters:
@@ -211,7 +211,7 @@ The server, not the client, establishes every fact that matters:
 - verifies the **assignee** (`assigneeUserId`, or `assigneeMemberId` for
   an invited member) is a joined OR invited member of `<teamId>` (404
   otherwise, so there is no probing which users exist);
-- verifies the caller can access `diagramId` (owner, team library, or
+- verifies the caller can access `documentId` (owner, team library, or
   shared-with), and reads the **diagram name from D1**, not the body;
 - resolves the assignee's address from trusted server state
   (`team_members.email` / `email_lifecycle`), never a client header
@@ -225,7 +225,7 @@ The server, not the client, establishes every fact that matters:
 
 Then it sends the **action-assigned** email (new template in
 `email/templates.ts`, dispatcher in `email/notifications.ts` following the
-`notifyDiagramJoin` shape, best-effort in `ctx.waitUntil`): "{assigner}
+`notifyDocumentJoin` shape, best-effort in `ctx.waitUntil`): "{assigner}
 assigned you an action on _{diagram name}_", the action name, the first
 ~200 characters of the description, and a CTA linking to the diagram. All
 user-influenced strings (action name, description, diagram name, assigner
@@ -243,7 +243,7 @@ claim already identified carry their real `userId` and match normally.
 **Access caveat:** assigning is allowed on any diagram the assigner can
 edit, including ones the assignee cannot open. The dialog does a REAL
 check rather than guessing: picking an assignee fires
-`GET /api/teams/<teamId>/access-check?assigneeUserId=&diagramId=`, which
+`GET /api/teams/<teamId>/access-check?assigneeUserId=&documentId=`, which
 applies the same gates as notify-action (caller + assignee joined members
 of the team, caller can access the diagram, 404s that never probe) and
 answers `{ canAccess }` from the three legs the server can actually see —

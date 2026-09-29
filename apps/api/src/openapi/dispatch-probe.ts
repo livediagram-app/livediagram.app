@@ -117,7 +117,7 @@ export function routeVocabulary(): RouteVocabulary {
   return out;
 }
 
-/** `/diagrams/{id}/copy` → `['diagrams', '{id}', 'copy']`. */
+/** `/documents/{id}/copy` → `['diagrams', '{id}', 'copy']`. */
 export function templateSegments(template: string): string[] {
   return template.replace(/^\//, '').split('/');
 }

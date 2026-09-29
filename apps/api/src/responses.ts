@@ -23,7 +23,7 @@ export const CORS_HEADERS = {
   // rejects the POST preflight if any header the client sends isn't
   // in this list, which surfaces as "Failed to fetch" with no other
   // signal, so each new header has to land here too. Take Offline and Sync
-  // Diagram declare themselves with DIAGRAM_CONVERSION_HEADER.
+  // Diagram declare themselves with DOCUMENT_CONVERSION_HEADER.
   'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DOCUMENT_CONVERSION_HEADER}`,
   'Access-Control-Max-Age': '86400',
 };

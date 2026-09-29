@@ -89,7 +89,7 @@ ceiling on a page nobody scrolls that far down, not a paging design.
 with a fragment the editor reads on load:
 
 ```
-/diagram/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
+/document/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
 ```
 
 `#t=` is the existing tab pin ([Per-tab storage](../006-document/per-tab-storage.md)); `el` and `open` are new. Once
@@ -157,7 +157,7 @@ CREATE TABLE collab_threads (
 
 - **Keyed by tab, not diagram.** A tab can belong to several diagrams
   ([Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md)); the diagram is resolved at read time through
-  `diagram_tabs`, which is also what makes deletion free: a tab's rows
+  `document_tabs`, which is also what makes deletion free: a tab's rows
   die with it (FK cascade), and a diagram's tabs die with the diagram.
 - **One row per action, one per thread.** An ordinary element carries at most
   one action and an Action panel a list ([The Action Panel](../012-collaboration/action-panel.md)), so `collab_actions` is keyed
@@ -189,9 +189,9 @@ by accident without also forgetting to write the tab:
 | tab autosave `PUT …/tabs/:tabId`                                                                           | `upsertTab`                | statements appended to the tab's batch       |
 | view-role comment `POST …/comments`                                                                        | `upsertTab`                | same                                         |
 | delete-own comment `DELETE …/comments/:id`                                                                 | `upsertTab`                | same                                         |
-| create (`POST /diagrams`, templates, import)                                                               | `seedTabs`                 | same, per tab                                |
-| duplicate / copy from a share link                                                                         | `copyDiagram`              | `INSERT … SELECT` from the source tab's rows |
-| MCP `update_diagram` / `add_tab` ([MCP server](../015-api/mcp-server.md))                                  | goes through the tab `PUT` | covered                                      |
+| create (`POST /documents`, templates, import)                                                               | `seedTabs`                 | same, per tab                                |
+| duplicate / copy from a share link                                                                         | `copyDocument`              | `INSERT … SELECT` from the source tab's rows |
+| MCP `update_document` / `add_tab` ([MCP server](../015-api/mcp-server.md))                                  | goes through the tab `PUT` | covered                                      |
 | tab / diagram delete, account delete                                                                       | FK cascade from `tabs`     | nothing to do                                |
 | tab link into another diagram ([Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md)) | rows are per tab           | nothing to do                                |
 
@@ -262,8 +262,8 @@ the OpenAPI manifest + schema roots ([API documentation (OpenAPI)](../015-api/ap
 
 ```ts
 type ActivityPlace = {
-  diagramId: string;
-  diagramName: string;
+  documentId: string;
+  documentName: string;
   teamId: string | null;
   // 'own' | 'team' | 'shared' — how the reader reaches the diagram;
   // shareCode is set only for 'shared', so the client can build the
@@ -291,7 +291,7 @@ type ActivityThread = ActivityPlace & {
   latest: { text: string; authorName: string; authorColor: string; at: number };
   firstAt: number;
   youCommented: boolean;
-  onYourDiagram: boolean;
+  onYourDocument: boolean;
   mentionsYou: boolean; // an entry of mentioned_ids ∈ me ∪ my team_members rows
 };
 ```

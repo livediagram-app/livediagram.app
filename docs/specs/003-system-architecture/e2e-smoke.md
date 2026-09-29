@@ -66,8 +66,8 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
    identically to prod):
    - strip the `/live` `assetPrefix` so `/live/_next/*` resolves to
      `out/_next/*`;
-   - rewrite every `/diagram/<id>` to the single placeholder
-     `out/diagram/[id].html` ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md): one HTML backs every diagram
+   - rewrite every `/document/<id>` to the single placeholder
+     `out/document/[id].html` ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md): one HTML backs every diagram
      URL);
    - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
      surprises, mirroring the router);
@@ -145,8 +145,8 @@ tests where it's cheap.
   `scripts/e2e-stack.mjs`, `reuseExistingServer` locally.
 - `apps/live/e2e/*.spec.ts`: the spec files above.
 - `apps/live/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
-  shared flows (`startBlankDiagram`, `startTemplateDiagram`, `startEventStormingRow`, `seedTab`,
-  `dismissQuickTour`, `openJustDraw`). `startTemplateDiagram` exists because the blank helper skips the
+  shared flows (`startBlankDocument`, `startTemplateDocument`, `startEventStormingRow`, `seedTab`,
+  `dismissQuickTour`, `openJustDraw`). `startTemplateDocument` exists because the blank helper skips the
   wizard's category step and so never exercises template creation.
 - `apps/live/e2e/fixtures/`: drawn wall photos for the photo import; `audit-screens.ts`, `contrast.ts`,
   `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.

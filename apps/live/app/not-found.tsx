@@ -1,7 +1,7 @@
 // Render the editor inside the not-found slot.
 //
 // `output: 'export'` forces dynamicParams=false, so the client
-// router fires `notFound()` for any /diagram/<id> where `<id>` isn't
+// router fires `notFound()` for any /document/<id> where `<id>` isn't
 // the `placeholder` enumerated by generateStaticParams — i.e. every
 // real diagram URL. Rather than fight that (multiple prior attempts:
 // route-level override, pre-hydration URL swap, captured-native

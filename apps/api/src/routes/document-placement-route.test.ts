@@ -4,9 +4,9 @@ import type { DocumentDTO } from '../types';
 
 // Leaving a team library is its own event (docs/specs/013-workspace/team-shared-documents.md + docs/specs/013-workspace/timeline.md §4).
 //
-// It used to fall through to the `diagram_moved` arm, so pulling a diagram out
+// It used to fall through to the `document_moved` arm, so pulling a diagram out
 // of a shared library read "Moved to a Folder — Payments architecture →
-// Unsorted", delivered to the MOVER only: `recordDiagramMoved` resolves its
+// Unsorted", delivered to the MOVER only: `recordDocumentMoved` resolves its
 // audience from the diagram, which by then is personal. And when the mover is
 // not the owner, docs/specs/013-workspace/team-shared-documents.md hands them ownership — so the previous owner and the
 // whole team could lose a diagram with nothing in either feed.

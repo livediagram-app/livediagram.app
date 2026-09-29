@@ -16,7 +16,7 @@ you carve out the handful that are yours to watch.
 
 Starring is personal. Starring a diagram in a shared team folder must not star
 it for the rest of the team, so a star is a row keyed by
-`(owner_id, diagram_id)` rather than a flag on the diagram.
+`(owner_id, document_id)` rather than a flag on the diagram.
 
 It gets a **D1 table** (migration `0040_favourites.sql`) rather than a key in
 the `user_preferences` blob, which is how [Hide a diagram from Recent](hide-from-recent.md) stores hidden-from-Recent
@@ -42,7 +42,7 @@ both owner-wide operations ([Owner-keyed data](../015-api/api.md#owner-keyed-dat
   the user's own diagrams, so the rest are deleted by owner id.
 - **Signing up carries a guest's stars into the account.** Both identities may
   have starred the same diagram, and the primary key is
-  `(owner_id, diagram_id)`, so the move is `INSERT OR IGNORE` then `DELETE`:
+  `(owner_id, document_id)`, so the move is `INSERT OR IGNORE` then `DELETE`:
   on a collision the account's star, and its original `created_at`, wins.
 
 ## No access check on write
@@ -59,7 +59,7 @@ star on a team you've since left doesn't inflate it.
 
 ## An offline diagram's star lives in the browser
 
-The table's `diagram_id` is a foreign key into `diagrams`, and an offline
+The table's `document_id` is a foreign key into `diagrams`, and an offline
 diagram ([Offline Mode](../006-document/offline-mode.md)) has no row there: it lives only in this browser's
 IndexedDB. Sending its star to the server is therefore not merely wasted, it
 is **rejected** with `FOREIGN KEY constraint failed`, and because the toggle

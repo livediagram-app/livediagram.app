@@ -1,6 +1,6 @@
 // Offline Mode (docs/specs/006-document/offline-mode.md): diagrams saved only in THIS browser, in IndexedDB,
 // never to the API. This module is the local counterpart of `lib/api/*` — it
-// produces the same wire shapes (Diagram / DiagramSummary / Tab) so the editor
+// produces the same wire shapes (Diagram / DocumentSummary / Tab) so the editor
 // and Explorer render an offline diagram exactly like a cloud one; the
 // persistence dispatch in `lib/api/*` routes to these when a diagram id is
 // registered offline (see `isOfflineId`).
@@ -44,7 +44,7 @@ export type OfflineDocumentRecord = {
   // written before the field existed stay valid.
   presentation?: string | null;
   // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars live in a D1 table whose
-  // diagram_id is a foreign key into `diagrams`, which an offline diagram has
+  // document_id is a foreign key into `diagrams`, which an offline diagram has
   // no row in, so its star has to live here instead. Optional so records
   // written before the field existed stay valid.
   favourite?: boolean;
@@ -114,7 +114,7 @@ function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
 }
 
 // Apply a diagram-meta change (rename + tab order/folder) to a record,
-// returning a new record. Mirrors `apiSaveDiagramMeta`: `tabs` (when given)
+// returning a new record. Mirrors `apiSaveDocumentMeta`: `tabs` (when given)
 // reorders the existing tab bodies by id and refreshes each tab's folder.
 export function applyMeta(
   rec: OfflineDocumentRecord,
@@ -404,7 +404,7 @@ export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise
     // the record; recreating it here would shadow the freshly-synced cloud
     // copy behind a 1-tab offline ghost (the local analog of the server's
     // old create-on-first-write bug). Records are only ever created by
-    // offlineCreateDiagram / offlinePutRecord.
+    // offlineCreateDocument / offlinePutRecord.
     const rec = await backend.get(id);
     if (!writable(rec)) return;
     await backend.put(upsertTab(rec, tab, now));

@@ -47,7 +47,7 @@ import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a diagram is created, this page
-// renders the editor itself under the rewritten /diagram/<id> URL instead of paying for a second page
+// renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
 // load. `loadEditor` is also called on mount to fetch the chunk ahead; if it still isn't in at
 // handoff, the opening screen holds at its "opening" stage.
 const loadEditor = () => import('@/app/document/[id]/editor-page');
@@ -66,7 +66,7 @@ const noBypass = () => null;
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-diagram-route.md.
 // Owns identity bootstrap, template + theme choice (a two-step wizard),
 // and the actual "commit a new diagram" handoff. Once the user picks (or
-// skips), we POST the seeded diagram and navigate to /diagram/<id> where
+// skips), we POST the seeded diagram and navigate to /document/<id> where
 // the editor route picks it up cleanly. The Explorer is NOT rendered here:
 // the wizard's "Open Existing Diagram" button sends users to /explorer
 // instead, keeping this screen focused on creating.
@@ -105,7 +105,7 @@ export default function NewDocumentPage() {
   const [openedId, setOpenedId] = useState<string | null>(null);
   const handedOff = useRef(false);
   // How many diagrams the user owns (null until known). Reported by
-  // RecentDiagramsCard's fetch; gates the interactive tour's welcome offer
+  // RecentDocumentsCard's fetch; gates the interactive tour's welcome offer
   // (docs/specs/007-editor/editor-tour.md), which is for brand-new (zero-diagram) users only.
   const [documentCount, setDocumentCount] = useState<number | null>(null);
   // Set when the create POST fails (network / 5xx). Shows a retryable
@@ -341,7 +341,7 @@ export default function NewDocumentPage() {
     // folder / team placement — skip it.
     if (!offline) {
       if (settings.teamId) {
-        // Created straight into a team library: the same Team·Added·Diagram
+        // Created straight into a team library: the same Team·Added·Document
         // an Explorer move into a team sends (docs/specs/017-telemetry/telemetry.md), and only once the
         // placement landed (a failed PUT leaves it personal).
         const placed = await accepted(
@@ -368,10 +368,10 @@ export default function NewDocumentPage() {
   };
 
   // Just-Draw fast path (docs/specs/007-editor/new-document-route.md): fire the Skip-defaults create on mount.
-  // commitNewDiagram waits out the identity bootstrap itself (resolveSelf),
+  // commitNewDocument waits out the identity bootstrap itself (resolveSelf),
   // so firing immediately is safe. The ref makes it once-only under Strict
   // Mode's double-invoked effects. Note the tour offer (docs/specs/007-editor/editor-tour.md) can't queue
-  // here: the create fires before RecentDiagramsCard reports a count — which
+  // here: the create fires before RecentDocumentsCard reports a count — which
   // is the behaviour we want for someone who asked to just draw.
   const bypassFired = useRef(false);
   const fireBypass = useEffectEvent((kind: TemplateKind) => {

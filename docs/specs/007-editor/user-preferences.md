@@ -215,7 +215,7 @@ type UserPreferences = {
   //
   // When false, suppress the "someone first opened one of my shared
   // diagrams" email. Defaults to true (notify).
-  notifyDiagramJoin?: boolean;
+  notifyDocumentJoin?: boolean;
   // When false, suppress the "someone accepted/declined a team invite I
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
@@ -330,11 +330,11 @@ Missing key === undefined === default behaviour. Concretely:
   itself bounded for everyone: chrome settles within 250ms and hovers
   within 150ms ([Motion](../004-interface-design/motion.md)); reduce
   motion is the stricter of the two and wins.
-- `notifyDiagramJoin` / `notifyInviteResponse` undefined / true → the
+- `notifyDocumentJoin` / `notifyInviteResponse` undefined / true → the
   matching email notification is on (the default; [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)). Setting
   either to `false` is the only state that suppresses its email. Read
   server-side by the api worker before sending; flipped from the
-  Settings dialog. Emit `UI`/`Toggled`/`NotifyDiagramJoin{On,Off}`
+  Settings dialog. Emit `UI`/`Toggled`/`NotifyDocumentJoin{On,Off}`
   and `NotifyInviteResponse{On,Off}` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 - `notificationsEnabled` undefined / true → notifications on (the
   default). Setting it to `false` suppresses the success + info toasts

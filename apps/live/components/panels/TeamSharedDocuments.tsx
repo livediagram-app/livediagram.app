@@ -55,8 +55,8 @@ export function TeamSharedDocuments({
     teams: { id: string; name: string; folders: MoveFolderNode[] }[];
   };
   // Routes a cross-scope pick (personal / another team) — the explorer's
-  // `moveDiagramTo`, which picks the right API call from the diagram's
-  // current placement. Same-team picks keep using lib.moveDiagram.
+  // `moveDocumentTo`, which picks the right API call from the diagram's
+  // current placement. Same-team picks keep using lib.moveDocument.
   onMoveDocumentTo?: (id: string, dest: MoveDestination) => void;
 }) {
   const lib = useTeamLibrary(ownerId, teamId);
@@ -221,8 +221,8 @@ export function TeamSharedDocuments({
         </div>
       ) : viewMode === 'card' ? (
         // Same folders + diagrams as the list, rendered as the Explorer's
-        // card grid (docs/specs/006-document/document-snapshots.md). Team diagrams (DiagramSummary) satisfy the
-        // grid's PaneDiagram contract; the visibility badge is hidden
+        // card grid (docs/specs/006-document/document-snapshots.md). Team diagrams (DocumentSummary) satisfy the
+        // grid's PaneDocument contract; the visibility badge is hidden
         // since every card here is a team diagram.
         <div className="p-3">
           <CardView

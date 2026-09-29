@@ -1,4 +1,4 @@
-// /api/diagrams/<id>/shared-tabs — the delete and Take Offline confirmations'
+// /api/documents/<id>/shared-tabs — the delete and Take Offline confirmations'
 // read (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab
 // notice"): how many of the diagram's tabs are also in other diagrams, and how
 // many diagrams, so the user hears that those tabs stay before they act.

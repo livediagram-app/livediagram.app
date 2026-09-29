@@ -31,14 +31,14 @@ A scoped link grants its role **on its tab only**. The worker enforces this in o
 | Door                                                         | Scoped visitor gets                                                                                                                                                          |
 | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GET /api/share/:code`                                       | `{ diagram, role, tabId }`, with the diagram redacted (see [Redaction](#redaction)).                                                                                         |
-| `GET /api/diagrams/:id`                                      | The same redacted diagram.                                                                                                                                                   |
-| `PUT /api/diagrams/:id` (rename, reorder, tab folders, deck) | 403. The diagram's structure isn't theirs to change.                                                                                                                         |
-| `GET/PUT/DELETE /api/diagrams/:id/tabs/:tabId`               | Their tab only, with the role's usual rules. Another tab id is a 404 (no existence leak). DELETE of their own tab is 403: a scoped link can't delete the tab it's scoped to. |
+| `GET /api/documents/:id`                                      | The same redacted diagram.                                                                                                                                                   |
+| `PUT /api/documents/:id` (rename, reorder, tab folders, deck) | 403. The diagram's structure isn't theirs to change.                                                                                                                         |
+| `GET/PUT/DELETE /api/documents/:id/tabs/:tabId`               | Their tab only, with the role's usual rules. Another tab id is a 404 (no existence leak). DELETE of their own tab is 403: a scoped link can't delete the tab it's scoped to. |
 | Comment `POST`/`DELETE`                                      | Their tab only; otherwise 404.                                                                                                                                               |
 | Change log `GET`                                             | Only entries on their tab. Edit role only, as for every visitor.                                                                                                             |
 | Change log `POST`/`DELETE`                                   | Only entries on their tab; otherwise 404.                                                                                                                                    |
-| `POST /api/diagrams/:id/copy`                                | A copy holding **only their tab**.                                                                                                                                           |
-| `GET /api/diagrams/:id/thumbnail`                            | Their tab's image, not the first-tab snapshot.                                                                                                                               |
+| `POST /api/documents/:id/copy`                                | A copy holding **only their tab**.                                                                                                                                           |
+| `GET /api/documents/:id/thumbnail`                            | Their tab's image, not the first-tab snapshot.                                                                                                                               |
 | `GET /api/images/:id?d=`                                     | Only images referenced by their tab.                                                                                                                                         |
 | Q&A board `POST .../tabs/:tabId/qa`                          | Their tab only.                                                                                                                                                              |
 | Diagram timeline feed                                        | Refused: it spans every tab.                                                                                                                                                 |
@@ -100,8 +100,8 @@ Changing a link's scope broadcasts a system op `share-rescoped { code }`. Sessio
 
 ## API
 
-- `POST /api/diagrams/:id/share` body gains optional `tabId: string | null`. An unknown tab, or one not in this diagram, is `400 invalid tab`.
-- `PUT /api/diagrams/:id/share/:code` (owner-only), body `{ tabId: string | null }`: rescope. `400 invalid tab` as above, `404` for an unknown code. Returns `{ link }` and broadcasts `share-rescoped`.
+- `POST /api/documents/:id/share` body gains optional `tabId: string | null`. An unknown tab, or one not in this diagram, is `400 invalid tab`.
+- `PUT /api/documents/:id/share/:code` (owner-only), body `{ tabId: string | null }`: rescope. `400 invalid tab` as above, `404` for an unknown code. Returns `{ link }` and broadcasts `share-rescoped`.
 - `GET /api/share/:code` returns `tabId` alongside `role`.
 
 ## Testing

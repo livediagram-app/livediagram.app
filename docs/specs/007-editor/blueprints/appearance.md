@@ -139,7 +139,7 @@ layout inlines the real string rather than a client-reference stub.
 ## Presentation and UX
 
 - The control shows the CURRENT setting (sun / moon / monitor); its tooltip and `aria-label` name where the next click goes.
-- Surfaces covered: body backdrop, TabBar, EditorHeader, TemplatePicker, the `/new` backdrop, `DiagramLoading`, and the
+- Surfaces covered: body backdrop, TabBar, EditorHeader, TemplatePicker, the `/new` backdrop, `DocumentLoading`, and the
   `MovablePanel` frame. Panel contents gain `dark:` variants one panel at a time.
 - Preview tiles re-light through `.preview-art-tile`; colour-scheme swatches are excluded.
 - The match nudge sits bottom-centre, yields to the sign-in banner, hides in zen and embed, and never shows for Default.
