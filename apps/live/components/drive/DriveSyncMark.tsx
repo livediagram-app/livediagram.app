@@ -46,7 +46,7 @@ export function DriveSyncMark({ indicator }: { indicator: DriveIndicator }) {
           data-drive-progress={String(fraction)}
           aria-hidden="true"
           viewBox="0 0 24 24"
-          className="pointer-events-none absolute -inset-[3px] -rotate-90 text-brand-500"
+          className="pointer-events-none absolute -inset-[3px] -rotate-90 text-brand-500 dark:text-brand-400"
         >
           <circle
             cx="12"
