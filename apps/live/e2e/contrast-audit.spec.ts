@@ -1,5 +1,5 @@
 import { auditContrast, type ContrastReport } from './contrast';
-import { CANVAS, darkVisitor, freshDarkPage, seedDiagram, shareLink } from './audit-screens';
+import { CANVAS, darkVisitor, freshDarkPage, seedDocument, shareLink } from './audit-screens';
 import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
@@ -43,7 +43,7 @@ test.describe('Contrast audit, dark mode', () => {
   test('the editor, its panels and dialogs', async ({ page, pageErrors, baseURL }) => {
     const owner = crypto.randomUUID();
     const origin = new URL(baseURL!).origin;
-    const id = await seedDiagram(page, owner, origin);
+    const id = await seedDocument(page, owner, origin);
     await darkVisitor(page, owner);
     await page.goto(`/diagram/${id}`);
     await page.locator(CANVAS).waitFor();
@@ -73,7 +73,7 @@ test.describe('Contrast audit, dark mode', () => {
   test('the Join dialog a share link opens', async ({ page, browser, baseURL }) => {
     const owner = crypto.randomUUID();
     const origin = new URL(baseURL!).origin;
-    const id = await seedDiagram(page, owner, origin);
+    const id = await seedDocument(page, owner, origin);
     const code = await shareLink(page, owner, origin, id);
     const visitor = await freshDarkPage(browser);
     await visitor.goto(`/diagram/shared?s=${code}`);
@@ -84,7 +84,7 @@ test.describe('Contrast audit, dark mode', () => {
 
   test('the Explorer', async ({ page, pageErrors, baseURL }) => {
     const owner = crypto.randomUUID();
-    await seedDiagram(page, owner, new URL(baseURL!).origin);
+    await seedDocument(page, owner, new URL(baseURL!).origin);
     await darkVisitor(page, owner);
     await page.goto('/explorer');
     await page.getByText('Contrast').first().waitFor();

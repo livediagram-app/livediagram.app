@@ -25,7 +25,7 @@ import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
-import { DiagramRoom } from './diagram-room';
+import { DocumentRoom } from './document-room';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { insertTelemetryEvents } from './db/telemetry';
 import { clientIp } from './client-ip';
@@ -38,7 +38,7 @@ import { handleOpenapi } from './routes/openapi';
 import { handleCustomThemes } from './routes/custom-themes';
 import { handleUnfurl } from './routes/unfurl';
 import type { RouteContext } from './routes/context';
-import { handleDiagrams } from './routes/diagrams';
+import { handleDocuments } from './routes/documents';
 import { handleEvents } from './routes/events';
 import { handleFolders } from './routes/folders';
 import { handleImages } from './routes/images';
@@ -56,7 +56,7 @@ import { handleTelemetry } from './routes/telemetry';
 import { handleTrash } from './routes/trash';
 import type { Env } from './types';
 
-export { DiagramRoom };
+export { DocumentRoom };
 
 // Per-owner write rate limit (security audit item). Returns true
 // when the caller is over the configured cap (wrangler.toml's
@@ -216,7 +216,7 @@ export default {
     // whole session's realtime (the connector has no reconnect loop).
     // Mint volume is one row per room join and the route does no
     // unbounded work, so it isn't a quota-exhaustion vector.
-    const isRoomTicketMint = segments[1] === 'diagrams' && segments[3] === 'room-ticket';
+    const isRoomTicketMint = segments[1] === 'documents' && segments[3] === 'room-ticket';
     if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint) {
       // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
       // runaway integration is throttled independently of the owner's
@@ -282,8 +282,8 @@ export default {
           return await handleShared(ctx);
         case 'images':
           return await handleImages(ctx);
-        case 'diagrams':
-          return await handleDiagrams(ctx);
+        case 'documents':
+          return await handleDocuments(ctx);
         case 'folders':
           return await handleFolders(ctx);
         case 'custom-themes':

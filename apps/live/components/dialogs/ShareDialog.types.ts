@@ -38,7 +38,7 @@ export type ShareDialogProps = {
   // the stored value on success (`null` = cleared) and `undefined` on
   // FAILURE, so the field never reflects a write that didn't land.
   onSetPassword: (password: string | null) => Promise<string | null | undefined> | void;
-  // Offline Mode (docs/specs/006-diagram/offline-mode.md): an offline diagram lives only in this browser, so
+  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline diagram lives only in this browser, so
   // it has nothing to share yet. When true the dialog shows a gate asking the
   // owner to sync it to their account first; `onSyncToCloud` performs that
   // conversion (offline -> cloud), after which the real share options apply.

@@ -21,9 +21,9 @@ const KNOWN_WRITERS: Record<string, number> = {
   // upsertTab, seedTabs, deleteTabRow, swapTabData
   'api/src/db/tabs.ts': 4,
   // copyDiagram
-  'api/src/db/diagrams.ts': 1,
+  'api/src/db/documents.ts': 1,
   // diagramRemovalStatements
-  'api/src/db/diagram-removal.ts': 1,
+  'api/src/db/document-removal.ts': 1,
 };
 
 // The last migration that wrote `tabs` without having to think about the

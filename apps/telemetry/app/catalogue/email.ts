@@ -74,7 +74,7 @@ export const INVITE_RESPONSE_EMAILS = email(
   "A team's admins told that an invitee accepted or declined.",
 );
 
-export const DIAGRAM_JOINED_EMAILS = email(
+export const DOCUMENT_JOINED_EMAILS = email(
   'DiagramJoined',
   'Diagram Joined Emails',
   'An owner told that someone opened one of their shared diagrams for the first time.',
@@ -122,7 +122,7 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   FIRST_SHARE_EMAILS,
   TEAM_INVITE_EMAILS,
   INVITE_RESPONSE_EMAILS,
-  DIAGRAM_JOINED_EMAILS,
+  DOCUMENT_JOINED_EMAILS,
   COMMENT_EMAILS,
   ACTION_EMAILS,
   MENTION_EMAILS,

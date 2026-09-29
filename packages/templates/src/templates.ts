@@ -1,4 +1,4 @@
-import type { BackgroundPattern, Tab } from '@livediagram/diagram';
+import type { BackgroundPattern, Tab } from '@livediagram/document';
 import { titleCase } from '@livediagram/api-schema';
 import { templateLayers } from './template-layers';
 
@@ -592,13 +592,13 @@ export function templateCategory(kind: TemplateKind): TemplateCategory {
 
 // True when `value` names a template in the catalogue. The guard for a kind
 // that arrives as a plain string from outside the type system: the MCP
-// `template` argument, the `/new?template=<kind>` query (docs/specs/007-editor/new-diagram-route.md).
+// `template` argument, the `/new?template=<kind>` query (docs/specs/007-editor/new-document-route.md).
 export function isTemplateKind(value: unknown): value is TemplateKind {
   return typeof value === 'string' && TEMPLATES.some((t) => t.kind === value);
 }
 
 // The editor URL that creates this template without the wizard and opens it
-// (docs/specs/007-editor/new-diagram-route.md): what an outside surface links to, such as the marketing site's
+// (docs/specs/007-editor/new-document-route.md): what an outside surface links to, such as the marketing site's
 // template gallery (docs/specs/019-marketing/marketing-site.md). The route is the editor's; the builder lives
 // here so every caller spells the query the same way `isTemplateKind` reads.
 export function templateCreateHref(kind: TemplateKind): string {
@@ -701,7 +701,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
 // of whatever theme is selected. Each template carries its preferred
 // backdrop pattern (see TEMPLATE_PATTERNS); Mind map and User journey
 // additionally soften the canvas opacity so the pattern recedes behind
-// the radiating branches / the stage row. Layered templates (docs/specs/006-diagram/layers.md)
+// the radiating branches / the stage row. Layered templates (docs/specs/006-document/layers.md)
 // also carry their `Tab.layers` here, matching the `layerId`s their
 // builder pre-stamps, so every application path lands scaffold and
 // layers in one commit.

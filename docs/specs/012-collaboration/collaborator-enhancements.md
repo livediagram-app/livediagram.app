@@ -21,7 +21,7 @@ result for a click whose obvious meaning is "tell me about this person".
 
 - **Clicking any avatar in a tab's presence stack opens the Collaborators
   modal**, including your own avatar, the "+N" overflow badge, and the stack on
-  a folder chip ([Tab folders](../006-diagram/tab-folders.md)). The "+N" popover that listed the
+  a folder chip ([Tab folders](../006-document/tab-folders.md)). The "+N" popover that listed the
   hidden participants is gone: the modal lists everyone, so it replaces it.
 - The modal lists **every person in the diagram, grouped by the tab they are
   on**, in tab-bar order. A tab nobody is on is left out. People on a tab that

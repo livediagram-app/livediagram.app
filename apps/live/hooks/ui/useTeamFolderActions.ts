@@ -6,7 +6,7 @@ import type { useConfirm } from '@/hooks/ui/useConfirm';
 import { track } from '@/lib/telemetry';
 
 // Team-library folder mutations for the Explorer panel's team tree
-// (docs/specs/013-workspace/team-shared-diagrams.md), lifted out of EditorCanvasHost. Straight api calls plus a
+// (docs/specs/013-workspace/team-shared-documents.md), lifted out of EditorCanvasHost. Straight api calls plus a
 // sweep refresh: the swept team libraries are the panel's source, so a
 // mutation re-reads them rather than patching a copy. Teams are Clerk-only,
 // so signed out = no handlers at all, which is what hides the verbs.

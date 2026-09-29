@@ -13,7 +13,7 @@
 //   page-load to another diagram, or open an external URL in a new tab.
 
 import { useState } from 'react';
-import { type Element, type ElementLink, type Tab } from '@livediagram/diagram';
+import { type Element, type ElementLink, type Tab } from '@livediagram/document';
 import { apiUnfurl } from '@/lib/api-client';
 import { isSafeFollowUrl } from '@/lib/url-safety';
 import { track } from '@/lib/telemetry';
@@ -31,7 +31,7 @@ type ElementLinksDeps = {
   setEditingId: (id: string | null) => void;
   setFormatSourceId: (id: string | null) => void;
   // Full page-load navigation to another diagram (for diagram links).
-  openDiagram: (id: string) => void;
+  openDocument: (id: string) => void;
 };
 
 export function useElementLinks(deps: ElementLinksDeps) {
@@ -43,7 +43,7 @@ export function useElementLinks(deps: ElementLinksDeps) {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    openDiagram,
+    openDocument,
   } = deps;
 
   // Link picker state. Lives at the page level (rather than inside
@@ -55,10 +55,10 @@ export function useElementLinks(deps: ElementLinksDeps) {
   // the context menu's split Link entries. null = let the dialog pick its own
   // default (the existing link's kind, else webpage).
   const [linkPickerInitialMode, setLinkPickerInitialMode] = useState<
-    'url' | 'tab' | 'diagram' | null
+    'url' | 'tab' | 'document' | null
   >(null);
   // Open the link picker for an element, optionally pre-selecting a mode.
-  const openLinkPicker = (elementId: string, mode?: 'url' | 'tab' | 'diagram') => {
+  const openLinkPicker = (elementId: string, mode?: 'url' | 'tab' | 'document') => {
     setLinkPickerInitialMode(mode ?? null);
     setLinkPickerOpenForId(elementId);
   };
@@ -121,12 +121,12 @@ export function useElementLinks(deps: ElementLinksDeps) {
       setFormatSourceId(null);
       return;
     }
-    if (link.kind === 'diagram') {
+    if (link.kind === 'document') {
       // Navigate to a different diagram entirely. Same shape as
       // openDiagram (which does a full-page load), so saves +
       // realtime room handoff land through the normal hydration
       // path on the destination route.
-      openDiagram(link.diagramId);
+      openDocument(link.documentId);
       return;
     }
     if (link.kind === 'url') {

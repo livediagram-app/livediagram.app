@@ -21,7 +21,7 @@ const ROWS: TelemetryCount[] = [
   row('Cta', 'Created', 'Feature.Closing', 1),
   // Rows the funnel must not read.
   row('Cta', 'Opened', 'Home.Nope', 99),
-  row('Diagram', 'Created', 'Cloud', 500),
+  row('Document', 'Created', 'Cloud', 500),
 ];
 
 describe('landingFunnel', () => {

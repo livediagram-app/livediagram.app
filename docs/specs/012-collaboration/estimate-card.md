@@ -98,7 +98,7 @@ rubber stamp after the reveal, and Reveal / Clear pills side by side.
   what it does.
 - **Empty**, a quiet line of face-down ghost cards over "No picks yet" and
   "Your pick stays hidden from everyone until the reveal."
-- The spread and the value order live in `@livediagram/diagram`
+- The spread and the value order live in `@livediagram/document`
   (`estimateSpread`, `estimateRank`), so the export draws the same card: the
   scale chooser while it has no scale; otherwise the scale's cards over the
   room's, face down before the reveal and face up after, sorted, with the spread

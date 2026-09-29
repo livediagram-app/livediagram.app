@@ -1,7 +1,7 @@
 // Share-link + share-password calls (docs/specs/013-workspace/share-password.md): resolve a share code to
 // a diagram, list/create/delete links, and set the diagram password.
 import type {
-  DiagramResponse,
+  DocumentResponse,
   ShareLink,
   ShareLinkExpiry,
   ShareLinkResponse,
@@ -14,7 +14,7 @@ import {
   apiHeaders,
   expectOk,
   expectOkOrNull,
-  type SharedDiagramResolution,
+  type SharedDocumentResolution,
   type ShareLinksResponse,
   type SharePasswordResponse,
   apiFetch,
@@ -32,7 +32,7 @@ import {
 async function _apiLoadShared(
   code: string,
   ownerId: string,
-): Promise<SharedDiagramResolution | null> {
+): Promise<SharedDocumentResolution | null> {
   const res = await apiFetch(`${API_BASE}/share/${code}`, {
     headers: await apiHeaders(ownerId, { share: null }),
   });
@@ -44,13 +44,13 @@ async function _apiLoadShared(
   if (res.status === 401 || res.status === 403) {
     return { passwordRequired: true, invalid: res.status === 403 };
   }
-  const body = await expectOkOrNull<DiagramResponse & { role?: ShareRole; tabId?: string | null }>(
+  const body = await expectOkOrNull<DocumentResponse & { role?: ShareRole; tabId?: string | null }>(
     res,
     'load shared',
   );
   if (!body) return null;
   return {
-    diagram: body.diagram,
+    document: body.document,
     role: body.role === 'view' ? 'view' : 'edit',
     tabId: typeof body.tabId === 'string' ? body.tabId : null,
   };

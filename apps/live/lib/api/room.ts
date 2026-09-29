@@ -6,7 +6,7 @@
 // below is the client-side callback shape only — not on the wire —
 // so it stays here next to the connect helper.
 import {
-  DIAGRAM_TRASHED_CLOSE,
+  DOCUMENT_TRASHED_CLOSE,
   isMutationOpKind,
   type ParticipantPresence,
   type FacilitatorReason,
@@ -14,7 +14,7 @@ import {
   type RoomOp,
   type RoomOutgoing,
 } from '@livediagram/api-schema';
-import { opForTheWire } from '@livediagram/diagram';
+import { opForTheWire } from '@livediagram/document';
 import { getSessionSharePassword, wsUrl } from './core';
 
 export type RoomHandlers = {
@@ -36,7 +36,7 @@ export type RoomHandlers = {
   // The diagram went to the Trash (docs/specs/013-workspace/trash.md): the room
   // closed this socket with DIAGRAM_TRASHED_CLOSE and will refuse every
   // reconnect, so the connector stops and says so, once.
-  onDiagramTrashed?: () => void;
+  onDocumentTrashed?: () => void;
   // The room refused to open this connection (it closed before ever opening): the join was turned away
   // at the upgrade, which the browser reports only as an abnormal close. The caller finds out why over
   // REST, which names a trashed diagram (docs/specs/013-workspace/trash.md). Retrying carries on as usual.
@@ -104,7 +104,7 @@ const RECONNECT_BASE_MS = 500;
 const RECONNECT_MAX_MS = 15_000;
 
 export function connectRoom(
-  diagramId: string,
+  documentId: string,
   // `key` is the document-write id (docs/specs/012-collaboration/participant-responses.md), relayed to peers verbatim so
   // an answer saved on the diagram can be joined back to the person in the
   // roster. The room OVERRIDES `id` with its own per-socket presence id
@@ -125,7 +125,7 @@ export function connectRoom(
   // share password is read from the same session state apiHeaders uses, so
   // the editor doesn't have to thread it through; owners never have it set.
   const qs = roomQueryString(options, getSessionSharePassword());
-  const url = wsUrl(`/diagrams/${diagramId}/ws${qs ? `?${qs}` : ''}`);
+  const url = wsUrl(`/diagrams/${documentId}/ws${qs ? `?${qs}` : ''}`);
 
   let ws: WebSocket;
   let closed = false; // the caller called close() — never reconnect after that
@@ -210,9 +210,9 @@ export function connectRoom(
     ws.addEventListener('close', (event: CloseEvent) => {
       handlers.onClose?.();
       if (closed) return;
-      if (event?.code === DIAGRAM_TRASHED_CLOSE) {
+      if (event?.code === DOCUMENT_TRASHED_CLOSE) {
         closed = true;
-        handlers.onDiagramTrashed?.();
+        handlers.onDocumentTrashed?.();
         return;
       }
       if (!socketOpened) handlers.onRefused?.();

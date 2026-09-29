@@ -1,5 +1,5 @@
 // The shared theme ENGINE (catalogue, types, recolour / switch / reset / preset
-// transforms) now lives in @livediagram/diagram so the MCP worker (docs/specs/015-api/mcp-server.md)
+// transforms) now lives in @livediagram/document so the MCP worker (docs/specs/015-api/mcp-server.md)
 // themes diagrams identically to the editor. This file re-exports it and adds
 // the LIVE-ONLY layer: custom-theme (per-owner, docs/specs/011-theme/custom-themes.md) resolution and the
 // new-element colour derivation that depends on it. The ~120 `@/lib/themes`
@@ -20,7 +20,7 @@ import {
   type BoxedElement,
   type Tab,
   type ThemeDefinition,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { getResolvedAppearance } from '@livediagram/ui';
 import { lookupCustomTheme } from './custom-theme-registry';
 
@@ -40,14 +40,14 @@ export {
   rederiveColorPresetForTheme,
   themePresetColors,
   themeChartPalette,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 export type {
   ThemeId,
   ThemeDefinition,
   ThemeCategory,
   ShapeColorPreset,
   TablePreset,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // Resolve an id to its real ThemeDefinition, or `undefined` when the id names
 // nothing we know — a deleted custom theme (docs/specs/011-theme/custom-themes.md), or a custom id whose owner

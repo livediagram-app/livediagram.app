@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { groupDiagramsByFolder } from '@/lib/folder-tree';
-import type { TeamDiagramRow } from '@/hooks/persistence/useTeamLibrariesSweep';
-import { sharedToPaneDiagram, type PaneDiagram, type SelectedNode } from './views';
+import { groupDocumentsByFolder } from '@/lib/folder-tree';
+import type { TeamDocumentRow } from '@/hooks/persistence/useTeamLibrariesSweep';
+import { sharedToPaneDocument, type PaneDocument, type SelectedNode } from './views';
 
 // "Recent" cap. Big enough for "what was I just working on",
 // small enough that it doesn't drown the list view.
@@ -18,8 +18,8 @@ const RECENT_LIMIT = 12;
 // Pure memos over the state the orchestration hook owns and passes in.
 export function useExplorerPane({
   selected,
-  diagrams,
-  teamDiagrams,
+  documents: liveDocs,
+  teamDocuments,
   shared,
   childrenByParent,
   folderById,
@@ -30,8 +30,8 @@ export function useExplorerPane({
   favouriteIds,
 }: {
   selected: SelectedNode;
-  diagrams: DiagramListItem[];
-  teamDiagrams: TeamDiagramRow[];
+  documents: DocumentListItem[];
+  teamDocuments: TeamDocumentRow[];
   shared: SharedWithItem[];
   childrenByParent: Map<string | null, Folder[]>;
   folderById: Map<string, Folder>;
@@ -45,22 +45,22 @@ export function useExplorerPane({
   // which is why the Favourites branch below reads both lists.
   favouriteIds: Set<string>;
 }) {
-  const diagramsByFolder = useMemo(() => groupDiagramsByFolder(diagrams), [diagrams]);
+  const documentsByFolder = useMemo(() => groupDocumentsByFolder(liveDocs), [liveDocs]);
 
   // Unsorted is a virtual folder backed by `folder_id IS NULL` —
   // not a row in the folders table, just a synthetic bucket so loose
   // diagrams have somewhere obvious to live (docs/specs/013-workspace/folders.md). Cached so the
   // sidebar + the "All diagrams" list row both reference the same
   // count without re-filtering.
-  const unsortedDiagrams = useMemo(
+  const unsortedDocuments = useMemo(
     () =>
-      diagrams
+      liveDocs
         // Generated diagrams (source != null) live in their own synthetic
-        // "Generated" folder, not Unsorted, and offline diagrams (docs/specs/006-diagram/offline-mode.md)
+        // "Generated" folder, not Unsorted, and offline diagrams (docs/specs/006-document/offline-mode.md)
         // in the synthetic "Offline" folder, so the buckets don't overlap.
         .filter((d) => d.folderId === null && !d.source && d.ownerId !== OFFLINE_OWNER_ID)
         .sort((a, b) => b.savedAt - a.savedAt),
-    [diagrams],
+    [liveDocs],
   );
 
   // Generated diagrams (docs/specs/013-workspace/folders.md): the synthetic folder for AI-made diagrams
@@ -68,22 +68,22 @@ export function useExplorerPane({
   // (folder_id null), so filing a generated diagram into a folder of your
   // own moves it out of Generated, just like Unsorted; the two synthetic
   // buckets stay mutually exclusive (Unsorted excludes source != null).
-  const generatedDiagrams = useMemo(
+  const generatedDocuments = useMemo(
     () =>
-      diagrams
+      liveDocs
         .filter((d) => d.source != null && d.folderId === null)
         .sort((a, b) => b.savedAt - a.savedAt),
-    [diagrams],
+    [liveDocs],
   );
 
-  // Offline diagrams (docs/specs/006-diagram/offline-mode.md): the synthetic folder for browser-only
+  // Offline diagrams (docs/specs/006-document/offline-mode.md): the synthetic folder for browser-only
   // diagrams. A dynamic view over EVERYTHING offline (regardless of any
   // folder placement stored in the local record), so the one place to find
   // every diagram that exists only in this browser.
-  const offlineDiagrams = useMemo(
+  const offlineDocuments = useMemo(
     () =>
-      diagrams.filter((d) => d.ownerId === OFFLINE_OWNER_ID).sort((a, b) => b.savedAt - a.savedAt),
-    [diagrams],
+      liveDocs.filter((d) => d.ownerId === OFFLINE_OWNER_ID).sort((a, b) => b.savedAt - a.savedAt),
+    [liveDocs],
   );
 
   // What to show in the right pane for the current selection.
@@ -99,21 +99,21 @@ export function useExplorerPane({
   const paneContent = useMemo<{
     showUnsortedRow: boolean;
     folders: Folder[];
-    diagrams: PaneDiagram[];
+    documents: PaneDocument[];
   }>(() => {
     if (selected.kind === 'recent') {
       // Recent spans the personal library, every joined team's shared
-      // diagrams (docs/specs/013-workspace/team-shared-diagrams.md), AND diagrams shared with you — interleaved
+      // diagrams (docs/specs/013-workspace/team-shared-documents.md), AND diagrams shared with you — interleaved
       // by recency. Team rows carry their team (badge + owner column);
       // shared rows carry the sharer + share code so the row links via
       // the share link and shows the "Shared" badge.
-      const sharedRows: PaneDiagram[] = shared.map(sharedToPaneDiagram);
-      const sorted = [...diagrams, ...teamDiagrams, ...sharedRows]
+      const sharedRows: PaneDocument[] = shared.map(sharedToPaneDocument);
+      const sorted = [...liveDocs, ...teamDocuments, ...sharedRows]
         // Hidden-from-Recent (docs/specs/013-workspace/hide-from-recent.md). Filtered BEFORE the cap so hiding
         // one diagram promotes the next one in rather than leaving a gap.
         .filter((d) => !excluded.has(d.id))
         .sort((a, b) => b.savedAt - a.savedAt);
-      return { showUnsortedRow: false, folders: [], diagrams: sorted.slice(0, RECENT_LIMIT) };
+      return { showUnsortedRow: false, folders: [], documents: sorted.slice(0, RECENT_LIMIT) };
     }
     if (
       selected.kind === 'timeline' ||
@@ -126,10 +126,10 @@ export function useExplorerPane({
       selected.kind === 'team' ||
       selected.kind === 'invites'
     ) {
-      return { showUnsortedRow: false, folders: [], diagrams: [] };
+      return { showUnsortedRow: false, folders: [], documents: [] };
     }
     if (selected.kind === 'unsorted') {
-      return { showUnsortedRow: false, folders: [], diagrams: unsortedDiagrams };
+      return { showUnsortedRow: false, folders: [], documents: unsortedDocuments };
     }
     if (selected.kind === 'favourites') {
       // Aggregates across personal AND team libraries: a star is about the
@@ -139,62 +139,62 @@ export function useExplorerPane({
       // Ordering matches every other pane (most recently updated first)
       // rather than "when I starred it", so there's nothing new to learn;
       // the source chip tells you which team each one came from.
-      const starred = [...diagrams, ...teamDiagrams].filter((d) => favouriteIds.has(d.id));
+      const starred = [...liveDocs, ...teamDocuments].filter((d) => favouriteIds.has(d.id));
       return {
         showUnsortedRow: false,
         folders: [],
-        diagrams: starred.sort((a, b) => b.savedAt - a.savedAt),
+        documents: starred.sort((a, b) => b.savedAt - a.savedAt),
       };
     }
     if (selected.kind === 'generated') {
-      return { showUnsortedRow: false, folders: [], diagrams: generatedDiagrams };
+      return { showUnsortedRow: false, folders: [], documents: generatedDocuments };
     }
     if (selected.kind === 'offline') {
-      return { showUnsortedRow: false, folders: [], diagrams: offlineDiagrams };
+      return { showUnsortedRow: false, folders: [], documents: offlineDocuments };
     }
     // The Dynamic parent (and the All list's single Dynamic row) carry no
     // folders/diagrams of their own; ExplorerPane derives the synthetic
     // rows to show from selected.kind.
     if (selected.kind === 'dynamic') {
-      return { showUnsortedRow: false, folders: [], diagrams: [] };
+      return { showUnsortedRow: false, folders: [], documents: [] };
     }
     if (selected.kind === 'all') {
       return {
         showUnsortedRow: false,
         folders: childrenByParent.get(null) ?? [],
-        diagrams: [],
+        documents: [],
       };
     }
     return {
       showUnsortedRow: false,
       folders: childrenByParent.get(selected.id) ?? [],
-      diagrams: diagramsByFolder.get(selected.id) ?? [],
+      documents: documentsByFolder.get(selected.id) ?? [],
     };
   }, [
     selected,
-    diagrams,
-    teamDiagrams,
+    liveDocs,
+    teamDocuments,
     shared,
     childrenByParent,
-    diagramsByFolder,
-    unsortedDiagrams,
-    generatedDiagrams,
-    offlineDiagrams,
+    documentsByFolder,
+    unsortedDocuments,
+    generatedDocuments,
+    offlineDocuments,
     excluded,
     favouriteIds,
   ]);
 
-  // Count for the sidebar "Recent diagrams" badge (docs/specs/013-workspace/team-shared-diagrams.md), mirroring
+  // Count for the sidebar "Recent diagrams" badge (docs/specs/013-workspace/team-shared-documents.md), mirroring
   // "Shared with me": how many items the Recent list holds, capped.
   const recentCount = useMemo(() => {
     // Counts what Recent will actually SHOW, so the badge can't promise
     // rows the pane then filters out (docs/specs/013-workspace/hide-from-recent.md).
     const visible =
-      diagrams.filter((d) => !excluded.has(d.id)).length +
-      teamDiagrams.filter((d) => !excluded.has(d.id)).length +
+      liveDocs.filter((d) => !excluded.has(d.id)).length +
+      teamDocuments.filter((d) => !excluded.has(d.id)).length +
       shared.filter((s) => !excluded.has(s.id)).length;
     return Math.min(RECENT_LIMIT, visible);
-  }, [diagrams, teamDiagrams, shared, excluded]);
+  }, [liveDocs, teamDocuments, shared, excluded]);
 
   const paneTitle = useMemo(() => {
     if (selected.kind === 'timeline') return 'Timeline';
@@ -256,10 +256,10 @@ export function useExplorerPane({
   }, [selected, paneTitle, breadcrumb, go]);
 
   return {
-    diagramsByFolder,
-    unsortedDiagrams,
-    generatedDiagrams,
-    offlineDiagrams,
+    documentsByFolder,
+    unsortedDocuments,
+    generatedDocuments,
+    offlineDocuments,
     paneContent,
     recentCount,
     paneTitle,

@@ -2,7 +2,7 @@
 // navigation-only isometric canvas tool. Kept out of Canvas.tsx so the
 // geometry is unit-testable and the canvas just consumes the values.
 
-import { shapePolygonVertices, type BoxedElement, type ShapeKind } from '@livediagram/diagram';
+import { shapePolygonVertices, type BoxedElement, type ShapeKind } from '@livediagram/document';
 
 // Whether a boxed element gets an extrusion column in isometric view
 // (docs/specs/008-canvas/isometric-view.md). One predicate shared by the live IsometricDepthLayer and both
@@ -32,7 +32,7 @@ export function isoExtrudes(el: BoxedElement): boolean {
 // circle / diamond / cylinder reads as a square block behind the shape (the
 // reported bug). Clipping every layer to the shape's own outline makes the
 // column follow the silhouette instead. The polygon points come from the
-// shared geometry table (@livediagram/diagram shape-geometry.ts), whose
+// shared geometry table (@livediagram/document shape-geometry.ts), whose
 // `0 0 100 100` viewBox equals CSS percentages, so the extrusion and the
 // painted shape share one geometry source. Shapes without an entry (square,
 // browser, document, cloud, devices, text / sticky / image / table …) fall

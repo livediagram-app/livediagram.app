@@ -11,15 +11,15 @@ export const TRASH_RETENTION_MS = TRASH_RETENTION_DAYS * DAY_MS;
 
 // The error every door answers for a diagram that is in the Trash, to a
 // caller who could have opened it (HTTP 410).
-export const DIAGRAM_TRASHED_ERROR = 'diagram_trashed';
+export const DOCUMENT_TRASHED_ERROR = 'document_trashed';
 
 // The WebSocket close code the realtime room ends a session with when its
 // diagram is trashed. In the 4000-4999 application range, beside 4003
 // (a share link changed).
-export const DIAGRAM_TRASHED_CLOSE = 4004;
+export const DOCUMENT_TRASHED_CLOSE = 4004;
 
 // One row of `GET /api/trash`: a diagram the caller may restore or purge.
-export type TrashedDiagram = {
+export type TrashedDocument = {
   id: string;
   name: string;
   // The team whose Trash holds it, or null for the caller's personal Trash.

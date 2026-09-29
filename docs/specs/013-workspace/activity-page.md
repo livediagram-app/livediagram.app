@@ -40,7 +40,7 @@ outstanding for me right now.**
 - Done actions and resolved threads are not listed. The page is an
   inbox of what is outstanding, not a history; the Timeline and the
   Collaborate Panel's Resolved side already cover the past.
-- Offline Mode diagrams ([Offline Mode](../006-diagram/offline-mode.md)) never reach the worker, so their
+- Offline Mode diagrams ([Offline Mode](../006-document/offline-mode.md)) never reach the worker, so their
   actions and threads never appear here, the same as on the Timeline.
 
 ## 1. What the user sees
@@ -92,7 +92,7 @@ with a fragment the editor reads on load:
 /diagram/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
 ```
 
-`#t=` is the existing tab pin ([Per-tab storage](../006-diagram/per-tab-storage.md)); `el` and `open` are new. Once
+`#t=` is the existing tab pin ([Per-tab storage](../006-document/per-tab-storage.md)); `el` and `open` are new. Once
 the pinned tab's elements have loaded the editor selects the element,
 scrolls it into view, and opens the named popover, exactly what a
 Collaborate Panel row click does in-editor. The fragment is captured by
@@ -156,7 +156,7 @@ CREATE TABLE collab_threads (
 ```
 
 - **Keyed by tab, not diagram.** A tab can belong to several diagrams
-  ([Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md)); the diagram is resolved at read time through
+  ([Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md)); the diagram is resolved at read time through
   `diagram_tabs`, which is also what makes deletion free: a tab's rows
   die with it (FK cascade), and a diagram's tabs die with the diagram.
 - **One row per action, one per thread.** An ordinary element carries at most
@@ -184,21 +184,21 @@ its own batch, all via one helper (`collabIndexStatements` in
 `apps/api/src/db/collab-index.ts`), so a fifth write path cannot forget
 by accident without also forgetting to write the tab:
 
-| Path                                                                                                     | Where                      | How                                          |
-| -------------------------------------------------------------------------------------------------------- | -------------------------- | -------------------------------------------- |
-| tab autosave `PUT …/tabs/:tabId`                                                                         | `upsertTab`                | statements appended to the tab's batch       |
-| view-role comment `POST …/comments`                                                                      | `upsertTab`                | same                                         |
-| delete-own comment `DELETE …/comments/:id`                                                               | `upsertTab`                | same                                         |
-| create (`POST /diagrams`, templates, import)                                                             | `seedTabs`                 | same, per tab                                |
-| duplicate / copy from a share link                                                                       | `copyDiagram`              | `INSERT … SELECT` from the source tab's rows |
-| MCP `update_diagram` / `add_tab` ([MCP server](../015-api/mcp-server.md))                                | goes through the tab `PUT` | covered                                      |
-| tab / diagram delete, account delete                                                                     | FK cascade from `tabs`     | nothing to do                                |
-| tab link into another diagram ([Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md)) | rows are per tab           | nothing to do                                |
+| Path                                                                                                       | Where                      | How                                          |
+| ---------------------------------------------------------------------------------------------------------- | -------------------------- | -------------------------------------------- |
+| tab autosave `PUT …/tabs/:tabId`                                                                           | `upsertTab`                | statements appended to the tab's batch       |
+| view-role comment `POST …/comments`                                                                        | `upsertTab`                | same                                         |
+| delete-own comment `DELETE …/comments/:id`                                                                 | `upsertTab`                | same                                         |
+| create (`POST /diagrams`, templates, import)                                                               | `seedTabs`                 | same, per tab                                |
+| duplicate / copy from a share link                                                                         | `copyDiagram`              | `INSERT … SELECT` from the source tab's rows |
+| MCP `update_diagram` / `add_tab` ([MCP server](../015-api/mcp-server.md))                                  | goes through the tab `PUT` | covered                                      |
+| tab / diagram delete, account delete                                                                       | FK cascade from `tabs`     | nothing to do                                |
+| tab link into another diagram ([Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md)) | rows are per tab           | nothing to do                                |
 
 The rows are derived by a pure function over the tab's elements
 (`collabIndexRowsFromElements`), which reuses the element-label rule
 the Collaborate Panel already applies (`elementDisplayLabel`, moved
-into `packages/diagram` so the panel and the index cannot disagree on
+into `packages/document` so the panel and the index cannot disagree on
 what a row is called).
 
 ### 2.2 Identity across sign-up: `owner_aliases`

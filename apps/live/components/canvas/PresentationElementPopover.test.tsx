@@ -5,7 +5,7 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createElementAction, createShape, type ShapeElement } from '@livediagram/diagram';
+import { createElementAction, createShape, type ShapeElement } from '@livediagram/document';
 import { hasReadableDetail, PresentationElementPopover } from './PresentationElementPopover';
 
 afterEach(cleanup);

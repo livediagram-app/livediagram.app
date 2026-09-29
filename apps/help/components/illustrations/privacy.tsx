@@ -28,7 +28,7 @@ function Shield({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
 
 /** Where diagrams live: the browser sends edits through one API to Cloudflare
  *  storage (D1, a Durable Object room, object storage), all behind a shield. */
-export function DiagramStorage() {
+export function DocumentStorage() {
   return (
     <Scene w={420} h={240}>
       {/* Browser */}

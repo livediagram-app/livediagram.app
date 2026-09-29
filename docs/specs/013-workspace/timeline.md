@@ -154,7 +154,7 @@ A card has four regions, top to bottom:
 
 1. **Preview.** A fixed-height letterbox (the same `h-48` as a Recent
    card, so the two grids look like one product). A diagram event shows
-   the diagram's cached SVG snapshot ([Diagram SVG snapshots](../006-diagram/diagram-snapshots.md)), reusing the Explorer's
+   the diagram's cached SVG snapshot ([Diagram SVG snapshots](../006-document/document-snapshots.md)), reusing the Explorer's
    `DiagramThumbnail` and inheriting its lazy intersection-observer
    fetch, so a feed of fifty cards doesn't trigger fifty server renders
    for diagrams nobody scrolls to. An event with **no picture** (a team,
@@ -1041,7 +1041,7 @@ audienceForDiagram(env, diagram): Promise<string[]>   // owner ids
 ```
 
 - Always the diagram's `owner_id`.
-- Plus, when `diagrams.team_id` is set ([Team shared diagrams](team-shared-diagrams.md)), every `team_members`
+- Plus, when `diagrams.team_id` is set ([Team shared diagrams](team-shared-documents.md)), every `team_members`
   row for that team with `status = 'joined'` and a non-null `user_id`.
 - The **actor is not excluded**. "You commented on X" is a legitimate
   entry in your own history; the renderer says "You" rather than your
@@ -1069,7 +1069,7 @@ name is not re-read onto older entries.
 | `diagram_edited`                     | tab save (coalesced)                                                                                                                            | "Diagram Updated" / "You worked on Payments architecture"       |
 | `diagram_opened_by_visitor`          | a share-code visitor reads a tab (`GET /api/diagrams/:id/tabs/:tabId`); owner only, coalesced per visitor per day ("Opened by a visitor" below) | "Opened by a Visitor" / "Payments architecture"                 |
 | `diagram_copied_by_visitor`          | a share-code visitor copies it (`POST /api/diagrams/:id/copy`); owner only                                                                      | "Copied by a Visitor" / "Payments architecture"                 |
-| `diagram_offline` / `diagram_synced` | Take Offline / Sync Diagram ([Offline Mode](../006-diagram/offline-mode.md))                                                                    | "Taken Offline" / "Synced to the Cloud"                         |
+| `diagram_offline` / `diagram_synced` | Take Offline / Sync Diagram ([Offline Mode](../006-document/offline-mode.md))                                                                   | "Taken Offline" / "Synced to the Cloud"                         |
 | `diagram_renamed`                    | never: retired, no longer emitted (see above)                                                                                                   | Legacy rows are filtered out of every feed and the unread count |
 
 **The two Offline Mode conversions declare themselves**, because they reuse
@@ -1089,7 +1089,7 @@ client-supplied.
 **Only the owner's conversion is honoured**, and that clause is load-bearing
 rather than defensive. `diagram_offline` is owner-scoped — an offline diagram
 exists in exactly one browser, so no teammate has a stake in it — but the DELETE
-is also reachable by any joined member of the diagram's team ([Team shared diagrams](team-shared-diagrams.md)), and the
+is also reachable by any joined member of the diagram's team ([Team shared diagrams](team-shared-documents.md)), and the
 Explorer offers Take Offline on a team-library row without checking who owns it.
 When a teammate does it the diagram lands in **their** browser and leaves the
 owner's account for good; from the owner's and the team's side that is a
@@ -1120,7 +1120,7 @@ everything else even with stacking.
   mutation could invalidate. If favourites ever land (§3.4), this
   event's mutation needs revisiting.
 
-Offline diagrams ([Offline Mode](../006-diagram/offline-mode.md)) live only in IndexedDB and never reach the
+Offline diagrams ([Offline Mode](../006-document/offline-mode.md)) live only in IndexedDB and never reach the
 worker, so they emit nothing. Their absence from the Timeline is
 correct and matches the rest of the product's server-side surfaces.
 
@@ -1135,7 +1135,7 @@ correct and matches the rest of the product's server-side surfaces.
 | `share_link_created` | share link minted                                           | Audience is the owner only                                                                           |
 
 **Comments have two write paths and both must emit.** Comments live
-inside element JSON on the tab (`packages/diagram/src/comments.ts`),
+inside element JSON on the tab (`packages/document/src/comments.ts`),
 not in a table — there is no comments table to hang a trigger off. The
 worker already has to reason about which comments are _new_ on every
 save, in `apps/api/src/comments.ts`:
@@ -1165,22 +1165,22 @@ calls it.
 
 ### 4.4 Teams and invites
 
-| `eventType`                 | Fires when                                                                            | Audience                                   |
-| --------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `team_created`              | `POST /api/teams`                                                                     | Creator                                    |
-| `team_invite_received`      | admin invites an address                                                              | The invitee, once their id is known        |
-| `team_invite_accepted`      | `.../accept`                                                                          | The team                                   |
-| `team_invite_declined`      | invite row deleted by invitee                                                         | Team admins                                |
-| `team_member_joined`        | accept, or invite-link join                                                           | The team                                   |
-| `team_member_left`          | member deletes own row                                                                | The team                                   |
-| `team_member_removed`       | admin removes someone                                                                 | The team, and the removed person           |
-| `team_role_changed`         | `PUT .../members/:id`                                                                 | The team                                   |
-| `team_diagram_added`        | diagram published to a team library ([Team shared diagrams](team-shared-diagrams.md)) | The team                                   |
-| `team_diagram_removed`      | diagram pulled back out of a team library                                             | The team it left, resolved BEFORE the move |
-| `team_renamed`              | `PUT /api/teams/:id` with a new name: "Team Renamed" / "Design → Product design"      | The team                                   |
-| `team_deleted`              | `DELETE /api/teams/:id`: "Team Deleted" / the team's name, no team link               | The team, resolved BEFORE the delete       |
-| `team_invite_link_enabled`  | `POST /api/teams/:id/invite-link` (generate or rotate): "Invite Link Turned On"       | Team admins                                |
-| `team_invite_link_disabled` | `DELETE /api/teams/:id/invite-link`: "Invite Link Turned Off"                         | Team admins                                |
+| `eventType`                 | Fires when                                                                             | Audience                                   |
+| --------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `team_created`              | `POST /api/teams`                                                                      | Creator                                    |
+| `team_invite_received`      | admin invites an address                                                               | The invitee, once their id is known        |
+| `team_invite_accepted`      | `.../accept`                                                                           | The team                                   |
+| `team_invite_declined`      | invite row deleted by invitee                                                          | Team admins                                |
+| `team_member_joined`        | accept, or invite-link join                                                            | The team                                   |
+| `team_member_left`          | member deletes own row                                                                 | The team                                   |
+| `team_member_removed`       | admin removes someone                                                                  | The team, and the removed person           |
+| `team_role_changed`         | `PUT .../members/:id`                                                                  | The team                                   |
+| `team_diagram_added`        | diagram published to a team library ([Team shared diagrams](team-shared-documents.md)) | The team                                   |
+| `team_diagram_removed`      | diagram pulled back out of a team library                                              | The team it left, resolved BEFORE the move |
+| `team_renamed`              | `PUT /api/teams/:id` with a new name: "Team Renamed" / "Design → Product design"       | The team                                   |
+| `team_deleted`              | `DELETE /api/teams/:id`: "Team Deleted" / the team's name, no team link                | The team, resolved BEFORE the delete       |
+| `team_invite_link_enabled`  | `POST /api/teams/:id/invite-link` (generate or rotate): "Invite Link Turned On"        | Team admins                                |
+| `team_invite_link_disabled` | `DELETE /api/teams/:id/invite-link`: "Invite Link Turned Off"                          | Team admins                                |
 
 **`team_invite_received` has an ordering problem worth naming.** An
 invite is created against an _email address_; the invitee's owner id is
@@ -1247,7 +1247,7 @@ refreshing.
 who isn't the owner. That distinction is the whole meaning of both
 visitor-facing events, and keying them on `owner !== ownerId` got it wrong:
 the read gate also admits every joined member of the diagram's team
-([Team shared diagrams](team-shared-diagrams.md)), and a teammate presents no code. So browsing your own team's
+([Team shared diagrams](team-shared-documents.md)), and a teammate presents no code. So browsing your own team's
 library told the diagram's owner _"opened by a visitor · Someone with the
 share link"_, under the **sharing** filter, for a diagram they had never
 shared a link for — once per teammate per day, so a twelve-person library
@@ -1260,7 +1260,7 @@ copy it.
 **Leaving a team library is its own event, and its audience is resolved
 before the move.** Publishing into a team and pulling back out of one are not
 one event with a direction: the out case takes the diagram away from everybody
-else, and when the mover isn't the owner [Team shared diagrams](team-shared-diagrams.md) hands them ownership, so the
+else, and when the mover isn't the owner [Team shared diagrams](team-shared-documents.md) hands them ownership, so the
 previous owner loses it too. It used to fall through to `diagram_moved` and
 read "Moved to a Folder → Unsorted" — in the **mover's** feed only, because
 `recordDiagramMoved` resolves its audience from the diagram and by then the

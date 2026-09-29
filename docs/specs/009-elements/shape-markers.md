@@ -41,7 +41,7 @@ Inside it: an illustrated tile per option (None + the five markers, each a glyph
 over its label) and, once a marker is chosen, a **Size** row (Scale / S / M / L)
 mirroring the Text-size control. Shapes only; not offered for arrows / text /
 images / tables, nor in the multi-selection menu. Nor on a shape kind where a
-marker would never show (`supportsMarkers` in `@livediagram/diagram`): the
+marker would never show (`supportsMarkers` in `@livediagram/document`): the
 self-drawing kinds, which have no label, and the kinds with their own face
 (the Behaviour and Collaborate elements such as the Temperature check, the Q&A
 board and the Idea box), whose label is a title the face draws. The same
@@ -50,7 +50,7 @@ reasoning, and the same list, as the Text alignment gate.
 ## Implementation notes
 
 - Data model: `ShapeElement.marker?: ShapeMarker` and
-  `ShapeElement.markerSize?: TextSize` (`packages/diagram/src/shape-marker.ts`
+  `ShapeElement.markerSize?: TextSize` (`packages/document/src/shape-marker.ts`
   defines the `ShapeMarker` union + `SHAPE_MARKERS` order).
 - The glyph is one component, `ShapeMarkerGlyph` (`apps/live/components/canvas/ShapeMarker.tsx`),
   shared by the canvas renderer and the context-menu tiles; the circles carry a

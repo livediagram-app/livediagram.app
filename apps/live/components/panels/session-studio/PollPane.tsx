@@ -20,7 +20,7 @@ import {
   type LivePoll,
   type PollStyle,
 } from '@livediagram/api-schema';
-import { POLL_STYLE_LABEL, pollStyleUsesRoster } from '@livediagram/diagram';
+import { POLL_STYLE_LABEL, pollStyleUsesRoster } from '@livediagram/document';
 import { pollCollaboratorOptions } from '@/lib/poll-collaborators';
 import { PollStyleTiles } from './PollStyleTiles';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';

@@ -179,14 +179,14 @@ export async function updateTeam(
 
 export async function deleteTeam(env: Env, id: string): Promise<void> {
   // Re-home the team's diagrams to their owners' personal Unsorted FIRST
-  // (docs/specs/013-workspace/team-shared-diagrams.md): deleting a team must never destroy members' work. Each
+  // (docs/specs/013-workspace/team-shared-documents.md): deleting a team must never destroy members' work. Each
   // team diagram already carries an owner_id (its creator, or whoever a
   // move-out transferred it to), so clearing team_id + folder_id returns
   // it to that owner's personal library. The team's folders are dropped
   // (a team's folder tree doesn't map onto a personal one). Explicit
   // deletes (not FK CASCADE — SQLite enforcement is opt-in via PRAGMA),
   // mirroring deleteFolder's re-home-then-delete rationale.
-  await env.DB.prepare('UPDATE diagrams SET team_id = NULL, folder_id = NULL WHERE team_id = ?')
+  await env.DB.prepare('UPDATE documents SET team_id = NULL, folder_id = NULL WHERE team_id = ?')
     .bind(id)
     .run();
   await env.DB.prepare('DELETE FROM folders WHERE team_id = ?').bind(id).run();
@@ -259,7 +259,7 @@ export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<st
 // owned by somebody who has gone stays open to them. The folders go too, so
 // no team row is left owned by a departed (or deleted) account.
 async function moveTeamWork(env: Env, teamId: string, fromUserId: string, toUserId: string) {
-  await env.DB.prepare('UPDATE diagrams SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
+  await env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
     .bind(toUserId, fromUserId, teamId)
     .run();
   await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
@@ -267,7 +267,7 @@ async function moveTeamWork(env: Env, teamId: string, fromUserId: string, toUser
     .run();
 }
 
-// A member leaving or being removed (docs/specs/013-workspace/teams.md + docs/specs/013-workspace/team-shared-diagrams.md): hand what they made
+// A member leaving or being removed (docs/specs/013-workspace/teams.md + docs/specs/013-workspace/team-shared-documents.md): hand what they made
 // in the team to the remaining joined member detachUserFromTeams would pick,
 // the earliest admin, else the earliest member. Call BEFORE the membership
 // row goes. A no-op when nobody else has joined.

@@ -25,7 +25,7 @@ import { Glyph } from '@livediagram/ui';
 // category alongside whatever is already open (nothing else folds; an
 // open category stays open for the visit), and a search shows every
 // matching category regardless. Every card is a link that creates that diagram straight away
-// and opens it in the editor (/new?template=<kind>, docs/specs/007-editor/new-diagram-route.md), so the
+// and opens it in the editor (/new?template=<kind>, docs/specs/007-editor/new-document-route.md), so the
 // landing page is one click from a drawn scaffold. The cards' artwork is
 // the editor picker's own preview (@livediagram/template-previews), so a
 // template looks the same here as it does in the app. Replaced the

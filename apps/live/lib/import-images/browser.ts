@@ -130,16 +130,16 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 }
 
 // One session per import: cloud diagrams upload to the owner's gallery,
-// Offline Mode diagrams embed (docs/specs/006-diagram/offline-mode.md).
+// Offline Mode diagrams embed (docs/specs/006-document/offline-mode.md).
 export function createBrowserImportImageSession({
   ownerId,
-  diagramId,
+  documentId,
 }: {
   ownerId: string;
-  diagramId: string | null;
+  documentId: string | null;
 }): ImportImageSession {
   return createImportImageSession({
-    offline: !!diagramId && isOfflineIdSync(diagramId),
+    offline: !!documentId && isOfflineIdSync(documentId),
     codec: browserImageCodec,
     toDataUrl: blobToDataUrl,
     upload: async (prepared, name) => {

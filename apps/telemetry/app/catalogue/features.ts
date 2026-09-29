@@ -210,7 +210,7 @@ export const PHOTO_IMPORT: MetricStack = {
   headline: PHOTOS_IMPORTED,
 };
 
-// Layers (docs/specs/006-diagram/layers.md): made, used, and looked at.
+// Layers (docs/specs/006-document/layers.md): made, used, and looked at.
 export const LAYERS_CREATED: Metric = {
   category: 'Layer',
   action: 'Added',
@@ -272,7 +272,7 @@ export const LAYERS_FEATURE: MetricStack = {
 };
 
 // ---- Editing tab -------------------------------------------------------------
-// Tools that organise the work rather than draw it. Tab folders (docs/specs/006-diagram/tab-folders.md) are
+// Tools that organise the work rather than draw it. Tab folders (docs/specs/006-document/tab-folders.md) are
 // typed rather than bare because the bare Tab/Folder events belong to
 // different subjects: see the type note in docs/specs/017-telemetry/telemetry.md's Folder entry.
 
@@ -350,8 +350,8 @@ export const TABS_FILED: Metric = {
     'A tab filed into a tab folder, by the ellipsis menu or by a drag (both report identically).',
 };
 
-export const DIAGRAMS_FILED: Metric = {
-  category: 'Diagram',
+export const DOCUMENTS_FILED: Metric = {
+  category: 'Document',
   action: 'Moved',
   // The Offline Mode conversions are Diagram·Moved too, charted in their own
   // stack (Taken Offline, Saved to Cloud).
@@ -394,7 +394,7 @@ export const ORGANISATION: MetricStack = {
     FOLDERS_RE_PARENTED,
     TAB_FOLDERS_CREATED,
     TABS_FILED,
-    DIAGRAMS_FILED,
+    DOCUMENTS_FILED,
     FOLDERS_DELETED,
     FOLDERS_RENAMED,
     TABS_UNFILED,

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { labelMeasure, wrapLabel } from '@livediagram/diagram';
+import { labelMeasure, wrapLabel } from '@livediagram/document';
 import { fitMultilineFontPx, FIT_MAX_PX, FIT_MIN_PX } from './fit-multiline-text';
 
 // Genuine auto-fit for multi-line labels (stickies, docs/specs/021-event-storming/event-storming.md): `scale` should

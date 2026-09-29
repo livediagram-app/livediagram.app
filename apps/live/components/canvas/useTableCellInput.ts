@@ -5,7 +5,7 @@ import {
   pasteIntoTable,
   setTableCell,
   type TableElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // The selected-cell INPUT layer for TableView (docs/specs/008-canvas/canvas-and-palette.md Table): the
 // spreadsheet-style keyboard handling while a cell is selected but not

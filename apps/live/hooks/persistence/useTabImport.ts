@@ -4,7 +4,7 @@
 // with its lazy-loaded parser cluster (JSON / Markdown / Mermaid /
 // Excalidraw, docs/specs/020-import-export/excalidraw-import-export.md).
 
-import { remapElementRefs, type Element, type Tab } from '@livediagram/diagram';
+import { remapElementRefs, type Element, type Tab } from '@livediagram/document';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { getTheme } from '@/lib/themes';
 import type { ImportOutcome } from '@/lib/import-tab';
@@ -44,7 +44,7 @@ type TabImportDeps = {
   // Who stores the imported images, and whether this diagram is an Offline
   // Mode one that embeds them instead (docs/specs/020-import-export/import-image-pipeline.md).
   ownerId: string;
-  diagramId: string | null;
+  documentId: string | null;
   activeId: string;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   setSelectedId: (id: string | null) => void;
@@ -59,7 +59,7 @@ type TabImportDeps = {
 export function useTabImport({
   tabs,
   ownerId,
-  diagramId,
+  documentId,
   activeId,
   commitTabs,
   setSelectedId,
@@ -112,7 +112,7 @@ export function useTabImport({
         import('@/lib/import-images'),
         import('@/lib/import-images/browser'),
       ]);
-      const session = createBrowserImportImageSession({ ownerId, diagramId });
+      const session = createBrowserImportImageSession({ ownerId, documentId });
       ({ elements, report: images } = await attachImportImages(
         elements,
         result.images,
@@ -153,7 +153,7 @@ export function useTabImport({
 
     if (format === 'mermaid') {
       const { parseMermaid, layoutClusteredGraph, rederiveColorPresetForTheme } =
-        await import('@livediagram/diagram');
+        await import('@livediagram/document');
       const parsed = parseMermaid(text);
       if (!parsed.ok) return { status: 'error', error: parsed.error };
       // Uncoloured elements inherit the tab's theme at render, so no

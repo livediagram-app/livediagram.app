@@ -8,8 +8,8 @@
 // already persisted through the tab write.
 
 import type { TeamMember } from '@livediagram/api-schema';
-import { MENTIONS_MAX } from '@livediagram/diagram';
-import { getDiagramMeta, getParticipant, listTeamMembers } from '../db';
+import { MENTIONS_MAX } from '@livediagram/document';
+import { getDocumentMeta, getParticipant, listTeamMembers } from '../db';
 import { notifyMentioned } from '../email/notifications';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import type { RouteContext } from './context';
@@ -31,15 +31,15 @@ export async function handleTeamMentionRoutes(
   if (me.status !== 'joined') return forbidden();
 
   const body = (await request.json().catch(() => null)) as {
-    diagramId?: unknown;
+    documentId?: unknown;
     commentText?: unknown;
     mentions?: unknown;
   } | null;
-  const diagramId = typeof body?.diagramId === 'string' ? body.diagramId : '';
+  const documentId = typeof body?.documentId === 'string' ? body.documentId : '';
   const commentText = typeof body?.commentText === 'string' ? body.commentText.trim() : '';
   const targets = Array.isArray(body?.mentions) ? (body.mentions as MentionTarget[]) : null;
-  if (!diagramId || !commentText || !targets) {
-    return badRequest('missing diagramId/commentText/mentions');
+  if (!documentId || !commentText || !targets) {
+    return badRequest('missing documentId/commentText/mentions');
   }
   if (commentText.length > MENTION_COMMENT_MAX) return badRequest('commentText too long');
   if (targets.length > MENTIONS_MAX) return badRequest('too many mentions');
@@ -48,8 +48,8 @@ export async function handleTeamMentionRoutes(
   // diagram's own team, and its members are exactly who can open it. The
   // caller is a joined member (checked above), so they can open it too. 404,
   // never 403, so the route can't probe which diagrams exist.
-  const diagram = await getDiagramMeta(env, diagramId);
-  if (!diagram || diagram.teamId !== teamId) return notFound();
+  const liveDoc = await getDocumentMeta(env, documentId);
+  if (!liveDoc || liveDoc.teamId !== teamId) return notFound();
 
   // Each target resolves to a member of this team other than the caller;
   // anything else is skipped silently. Once each.
@@ -73,7 +73,7 @@ export async function handleTeamMentionRoutes(
         recipientUserId: m.userId,
         recipientFallbackEmail: m.email,
         authorName,
-        diagram: { id: diagram.id, name: diagram.name },
+        document: { id: liveDoc.id, name: liveDoc.name },
         commentText,
       }).catch(() => {}),
     );

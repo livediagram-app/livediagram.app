@@ -25,7 +25,7 @@ vi.mock('../db/timeline', () => store);
 const { emit } = vi.hoisted(() => ({ emit: { backfillUserScope: vi.fn() } }));
 vi.mock('../timeline', () => emit);
 
-const { db } = vi.hoisted(() => ({ db: { getMembership: vi.fn(), getDiagram: vi.fn() } }));
+const { db } = vi.hoisted(() => ({ db: { getMembership: vi.fn(), getDocument: vi.fn() } }));
 vi.mock('../db', () => db);
 
 const { gate } = vi.hoisted(() => ({ gate: { gateRead: vi.fn() } }));
@@ -54,8 +54,8 @@ beforeEach(() => {
   emit.backfillUserScope.mockReset();
   db.getMembership.mockReset();
   db.getMembership.mockResolvedValue(null);
-  db.getDiagram.mockReset();
-  db.getDiagram.mockResolvedValue({ id: 'd-1', ownerId: 'owner-1', teamId: null });
+  db.getDocument.mockReset();
+  db.getDocument.mockResolvedValue({ id: 'd-1', ownerId: 'owner-1', teamId: null });
   gate.gateRead.mockReset();
   gate.gateRead.mockResolvedValue(false);
   store.readTimeline.mockResolvedValue({ items: [] });
@@ -117,7 +117,7 @@ describe('handleTimeline read', () => {
   // A refusal, not a 404: a guessed id must not be probeable for
   // existence through this endpoint any more than through the diagram's.
   it('403s a diagram scope for an id that does not exist', async () => {
-    db.getDiagram.mockResolvedValue(null);
+    db.getDocument.mockResolvedValue(null);
     const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=diagram:missing'));
     expect(res.status).toBe(403);
     expect(gate.gateRead).not.toHaveBeenCalled();
@@ -197,7 +197,7 @@ describe('handleTimeline read', () => {
         cursor: '100:abc',
         from: 50,
         to: 200,
-        sourceTypes: ['diagram', 'team'],
+        sourceTypes: ['document', 'team'],
       }),
     );
   });

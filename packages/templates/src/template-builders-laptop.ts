@@ -9,7 +9,7 @@ import {
   type Element,
   type ShapeElement,
   type ShapeKind,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // Laptop wireframe: a believable analytics dashboard where the screen is the

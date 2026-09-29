@@ -12,7 +12,7 @@ import type {
   Tab,
   TextAlignX,
   ThemeDefinition,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import {
   applyQuickFill,

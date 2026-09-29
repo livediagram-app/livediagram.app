@@ -1,6 +1,6 @@
-import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
-import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
+import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 
 // Folder mutations inside a team library, for the panel's team tree.
@@ -17,7 +17,7 @@ export type ExplorerProps = {
   // Every diagram known to the local store. Current diagram is marked
   // active; clicking any other navigates to it (preserving the
   // current's state via the auto-save).
-  diagrams: DiagramListItem[];
+  documents: DocumentListItem[];
   // The VIEWER's resolved owner id (self/participant id), threaded down
   // to each DiagramRow so its thumbnail fetch authenticates as the
   // viewer. Distinct from a diagram's own ownerId.
@@ -30,38 +30,38 @@ export type ExplorerProps = {
   // pure-private users don't see an empty accordion.
   shared?: SharedWithItem[];
   // Teams the signed-in user belongs to + their swept libraries
-  // (docs/specs/013-workspace/team-shared-diagrams.md). Drive the Teams accordion, team rows in Recent, and the
+  // (docs/specs/013-workspace/team-shared-documents.md). Drive the Teams accordion, team rows in Recent, and the
   // current-team-diagram row. Empty / omitted = no Teams section (the
   // common guest / no-teams case).
   teams?: { id: string; name: string }[];
   teamFolders?: TeamFolderRow[];
-  teamDiagrams?: TeamDiagramRow[];
+  teamDocuments?: TeamDocumentRow[];
   // The caller's resolved owner id. Team-diagram rows expose a hard
   // Dismiss a single Shared row — drops the shared_with reference
   // server-side so the row no longer surfaces. Optional so consumers
   // that haven't wired the api endpoint can omit it.
-  onDismissShared?: (diagramId: string) => void;
+  onDismissShared?: (documentId: string) => void;
   // Navigate to the standalone /live/explorer page. When set, the
   // panel header surfaces an "Expand" button next to the title.
   // True while the initial diagram-list fetch is in flight. Shows a
   // skeleton in place of the list so the panel doesn't read as "no
   // diagrams" before the API call resolves.
   loading: boolean;
-  currentDiagramId: string | null;
+  currentDocumentId: string | null;
   // Diagrams this user hid from Recent, and the toggle (docs/specs/013-workspace/hide-from-recent.md). Recent
   // is the only section that honours the list.
   recentExcludedIds: string[];
-  onToggleRecentExclusion: (diagramId: string) => void;
+  onToggleRecentExclusion: (documentId: string) => void;
   // Per-user stars (docs/specs/013-workspace/favourites.md).
   favouriteIds: Set<string>;
-  onToggleFavourite: (diagramId: string) => void;
+  onToggleFavourite: (documentId: string) => void;
   onMoveTo: (x: number, y: number) => void;
   onReset: () => void;
-  onOpenDiagram: (id: string, shareCode?: string) => void;
+  onOpenDocument: (id: string, shareCode?: string) => void;
   // Optional so consumers that have nowhere to mint a new diagram
   // (e.g. the welcome route, which IS the new-diagram flow) can hide
   // the button entirely. When omitted the row isn't rendered.
-  onNewDiagram?: () => void;
+  onNewDocument?: () => void;
   // Optional row-level actions. When provided, each row renders an
   // ellipsis menu that delegates to these handlers.
   onRenameCurrent?: (name: string) => void;
@@ -69,26 +69,26 @@ export type ExplorerProps = {
   // pulled from the list, so the caller (Explorer) can slide it out first.
   // `opts.skipConfirm` is passed by the panel because it confirms inline
   // via ConfirmPopover (the modal would double-prompt).
-  onDeleteDiagram?: (
+  onDeleteDocument?: (
     id: string,
     beforeRemove?: () => Promise<void> | void,
     opts?: { skipConfirm?: boolean },
   ) => void;
-  onDuplicateDiagram?: (id: string) => void;
+  onDuplicateDocument?: (id: string) => void;
   // Folder mutations. Optional so read-only surfaces can omit them.
   onCreateFolder?: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
-  // The same three for a TEAM's folders (docs/specs/013-workspace/team-shared-diagrams.md): the panel's team tree
+  // The same three for a TEAM's folders (docs/specs/013-workspace/team-shared-documents.md): the panel's team tree
   // offers rename / new subfolder / delete like the personal tree. Absent
   // = the team tree is browse-only.
   onTeamFolders?: TeamFolderHandlers;
-  onMoveDiagramToFolder?: (diagramId: string, folderId: string | null) => void;
-  // Scope-aware move (docs/specs/013-workspace/team-shared-diagrams.md): routes a pick that involves a team on
+  onMoveDocumentToFolder?: (documentId: string, folderId: string | null) => void;
+  // Scope-aware move (docs/specs/013-workspace/team-shared-documents.md): routes a pick that involves a team on
   // either side (re-folder within a team, personal -> team, team ->
   // personal). When wired, the move picker offers every space.
-  onMoveDiagramTo?: (
-    diagramId: string,
+  onMoveDocumentTo?: (
+    documentId: string,
     dest: { teamId: string | null; folderId: string | null },
     // Where the diagram is coming from (null = the personal tree), so a
     // personal -> team move counts as Team·Added·Diagram (docs/specs/017-telemetry/telemetry.md).

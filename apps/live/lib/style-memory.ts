@@ -9,7 +9,7 @@ import {
   rederiveQuickSwatches,
   type Element,
   type ThemeDefinition,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { safeJson } from './local-storage-safe';
 import { isQuickStyleTarget } from './quick-style';
 
@@ -55,7 +55,7 @@ const THEME_VALUE_OF: Readonly<Record<string, 'elementFill' | 'elementStroke' | 
 };
 
 const STORAGE_PREFIX = 'livediagram:v2:style-memory:';
-export const styleMemoryKey = (diagramId: string): string => `${STORAGE_PREFIX}${diagramId}`;
+export const styleMemoryKey = (documentId: string): string => `${STORAGE_PREFIX}${documentId}`;
 
 export function styleKindOf(el: Element): StyleKindKey | null {
   if (el.type === 'arrow') return 'arrow';

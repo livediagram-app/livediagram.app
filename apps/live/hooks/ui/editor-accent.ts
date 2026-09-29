@@ -2,7 +2,7 @@
 // as a pure function of the theme's accent. The rules are written `html:root` and `html.dark`,
 // one element-type step more specific than the dark palette's `.dark` tokens
 // (docs/specs/004-interface-design/color-scheme.md), so the tint wins by selector, not by load order.
-import { isLightColor, shade, tint } from '@livediagram/diagram';
+import { isLightColor, shade, tint } from '@livediagram/document';
 
 const BRAND_STOPS = [
   '50',

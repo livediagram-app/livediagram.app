@@ -11,13 +11,13 @@ import type { ChangeLogEntryDTO, Env } from '../types';
 // diagram_tabs to find every tab currently linked to the diagram
 // and pulls log entries for those tabs. A tab shared between
 // diagrams surfaces in both diagrams' logs — which is the right
-// answer once docs/specs/006-diagram/tab-diagram-many-to-many.md's many-to-many tabs land: the change exists
+// answer once docs/specs/006-document/tab-document-many-to-many.md's many-to-many tabs land: the change exists
 // in every diagram it shows up in.
 // `onlyTabId` narrows the list to one tab for a tab-scoped visitor
 // (docs/specs/013-workspace/tab-scoped-share-links.md), in SQL so the cap applies to that tab.
 export async function listChangeLog(
   env: Env,
-  diagramId: string,
+  documentId: string,
   onlyTabId: string | null = null,
 ): Promise<ChangeLogEntryDTO[]> {
   // LEFT JOIN through participants so rows whose author has been
@@ -30,16 +30,16 @@ export async function listChangeLog(
             p.color AS participant_color,
             cl.kind, cl.summary, cl.element_ids, cl.before_state, cl.after_state, cl.created_at
        FROM change_log cl
-       JOIN diagram_tabs dt ON dt.tab_id = cl.tab_id
+       JOIN document_tabs dt ON dt.tab_id = cl.tab_id
        LEFT JOIN participants p ON p.id = cl.participant_id
-      WHERE dt.diagram_id = ?${onlyTabId === null ? '' : ' AND cl.tab_id = ?'}
+      WHERE dt.document_id = ?${onlyTabId === null ? '' : ' AND cl.tab_id = ?'}
       ORDER BY cl.created_at DESC
       LIMIT ?`,
   )
     .bind(
       ...(onlyTabId === null
-        ? [diagramId, CHANGE_LOG_LIST_LIMIT]
-        : [diagramId, onlyTabId, CHANGE_LOG_LIST_LIMIT]),
+        ? [documentId, CHANGE_LOG_LIST_LIMIT]
+        : [documentId, onlyTabId, CHANGE_LOG_LIST_LIMIT]),
     )
     .all<ChangeLogRow>();
   return (result.results ?? []).map(rowToChangeLog);
@@ -97,15 +97,15 @@ export async function insertChangeLogEntry(env: Env, entry: ChangeLogEntryDTO): 
 // already authorised) closes that.
 export async function deleteChangeLogForTab(
   env: Env,
-  diagramId: string,
+  documentId: string,
   tabId: string,
 ): Promise<void> {
   await env.DB.prepare(
     `DELETE FROM change_log
       WHERE tab_id = ?
-        AND tab_id IN (SELECT tab_id FROM diagram_tabs WHERE diagram_id = ?)`,
+        AND tab_id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?)`,
   )
-    .bind(tabId, diagramId)
+    .bind(tabId, documentId)
     .run();
 }
 
@@ -117,7 +117,7 @@ export async function deleteChangeLogForTab(
 // confirm the entry's tab belongs to the authorised diagram.
 export async function deleteChangeLogEntry(
   env: Env,
-  diagramId: string,
+  documentId: string,
   entryId: string,
   // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) deletes on their tab only.
   onlyTabId: string | null = null,
@@ -125,9 +125,9 @@ export async function deleteChangeLogEntry(
   await env.DB.prepare(
     `DELETE FROM change_log
       WHERE id = ?
-        AND tab_id IN (SELECT tab_id FROM diagram_tabs WHERE diagram_id = ?)${onlyTabId === null ? '' : '\n        AND tab_id = ?'}`,
+        AND tab_id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?)${onlyTabId === null ? '' : '\n        AND tab_id = ?'}`,
   )
-    .bind(...(onlyTabId === null ? [entryId, diagramId] : [entryId, diagramId, onlyTabId]))
+    .bind(...(onlyTabId === null ? [entryId, documentId] : [entryId, documentId, onlyTabId]))
     .run();
 }
 

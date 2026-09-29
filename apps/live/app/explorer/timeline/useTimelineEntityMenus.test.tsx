@@ -148,9 +148,9 @@ describe('useTimelineEntityMenus', () => {
       labels(
         m(
           event({
-            sourceType: 'diagram',
-            eventType: 'diagram_renamed',
-            snapshot: { diagramId: 'd9' },
+            sourceType: 'document',
+            eventType: 'document_renamed',
+            snapshot: { documentId: 'd9' },
           }),
         ),
       ),

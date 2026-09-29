@@ -38,7 +38,7 @@ export const apiLoadSelf = dedupeInFlight(_apiLoadSelf, (id) => id);
 // on any non-2xx so the caller can decide whether to proceed with
 // the Clerk delete.
 export async function apiDeleteAccount(): Promise<{
-  diagrams: number;
+  documents: number;
   folders: number;
 } | null> {
   // ownerId arg is unused server-side for this endpoint (the
@@ -50,7 +50,7 @@ export async function apiDeleteAccount(): Promise<{
     headers: await apiHeaders(''),
   });
   if (!res.ok) return null;
-  const body = (await res.json()) as { deleted: { diagrams: number; folders: number } };
+  const body = (await res.json()) as { deleted: { documents: number; folders: number } };
   return body.deleted;
 }
 
@@ -69,7 +69,7 @@ export async function apiDeleteAccount(): Promise<{
 export async function apiMigrateGuestData(
   guestOwnerId: string,
   guestSignature: string | null,
-): Promise<{ diagrams: number; folders: number; shared: number; images: number } | null> {
+): Promise<{ documents: number; folders: number; shared: number; images: number } | null> {
   const res = await apiFetch(`${API_BASE}/migrate`, {
     method: 'POST',
     // `apiHeaders` reads the registered token provider; the Clerk
@@ -86,7 +86,7 @@ export async function apiMigrateGuestData(
   });
   if (!res.ok) return null;
   const body = (await res.json()) as {
-    migrated: { diagrams: number; folders: number; shared: number; images: number };
+    migrated: { documents: number; folders: number; shared: number; images: number };
   };
   return body.migrated;
 }

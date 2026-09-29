@@ -9,12 +9,12 @@ import type { ExplorerProps } from './Explorer.types';
 // both sets once the lists actually drop the deleted ids. The panel
 // renders the popover and rows from what this returns.
 export function useExplorerRowDelete({
-  diagrams,
-  teamDiagrams,
+  documents: liveDocs,
+  teamDocuments,
   ownerId,
-  onDeleteDiagram,
-}: Pick<ExplorerProps, 'diagrams' | 'ownerId' | 'onDeleteDiagram'> & {
-  teamDiagrams: NonNullable<ExplorerProps['teamDiagrams']>;
+  onDeleteDocument,
+}: Pick<ExplorerProps, 'documents' | 'ownerId' | 'onDeleteDocument'> & {
+  teamDocuments: NonNullable<ExplorerProps['teamDocuments']>;
 }) {
   // Diagrams currently mid slide-out animation. Adding the id to this
   // set flips the row's DiagramRowShell from its enter class to its exit
@@ -22,12 +22,12 @@ export function useExplorerRowDelete({
   // to the parent so the row is removed from the underlying
   // `diagrams` prop. Without the delay the row disappears instantly
   // and a fresh "5 with the same name" Explorer feels unresponsive.
-  const [exitingDiagramIds, setExitingDiagramIds] = useState<Set<string>>(new Set());
+  const [exitingDocumentIds, setExitingDocumentIds] = useState<Set<string>>(new Set());
   // Inline delete confirmation: the row's menu hands up the id + its menu
   // button as the anchor; we open a ConfirmPopover beside it. Confirming
   // runs the delete (skipping the modal — the popover IS the confirm) and
   // slides the row out first via the beforeRemove hook. `notice` is the
-  // shared-tab sentence (docs/specs/006-diagram/tab-diagram-many-to-many.md),
+  // shared-tab sentence (docs/specs/006-document/tab-document-many-to-many.md),
   // read before the popover opens so it never grows under the pointer.
   const [deleteConfirm, setDeleteConfirm] = useState<{
     id: string;
@@ -42,7 +42,7 @@ export function useExplorerRowDelete({
   // won't re-fetch in time. Track confirmed team deletes locally and hide
   // those rows optimistically; the set is pruned once the sweep catches up.
   const [deletedTeamIds, setDeletedTeamIds] = useState<Set<string>>(new Set());
-  const openDeleteConfirm = onDeleteDiagram
+  const openDeleteConfirm = onDeleteDocument
     ? async (id: string, anchor: HTMLElement | null) => {
         pendingDeleteRef.current = id;
         const notice = ownerId ? await fetchSharedTabsNotice(ownerId, id, 'delete') : null;
@@ -52,21 +52,21 @@ export function useExplorerRowDelete({
       }
     : undefined;
   const runDelete = (id: string) => {
-    if (!onDeleteDiagram) return;
+    if (!onDeleteDocument) return;
     // A team diagram lives in the swept library, not the personal list,
     // so hide it locally on confirm (the parent's delete can't).
-    if (teamDiagrams.some((d) => d.id === id)) {
+    if (teamDocuments.some((d) => d.id === id)) {
       setDeletedTeamIds((prev) => {
         const next = new Set(prev);
         next.add(id);
         return next;
       });
     }
-    void onDeleteDiagram(
+    void onDeleteDocument(
       id,
       () =>
         new Promise<void>((resolve) => {
-          setExitingDiagramIds((prev) => {
+          setExitingDocumentIds((prev) => {
             if (prev.has(id)) return prev;
             const next = new Set(prev);
             next.add(id);
@@ -84,10 +84,10 @@ export function useExplorerRowDelete({
   // and keeps the set from growing across repeated deletes. Adjusted during
   // render when the list changes; only then, since a team row's id slides out
   // through this set too without ever being in the personal list.
-  const [exitPrunedFor, setExitPrunedFor] = useState(diagrams);
-  if (diagrams !== exitPrunedFor) {
-    setExitPrunedFor(diagrams);
-    setExitingDiagramIds((prev) => keepPresent(prev, diagrams));
+  const [exitPrunedFor, setExitPrunedFor] = useState(liveDocs);
+  if (liveDocs !== exitPrunedFor) {
+    setExitPrunedFor(liveDocs);
+    setExitingDocumentIds((prev) => keepPresent(prev, liveDocs));
   }
 
   // Same pruning for team deletes: once the library sweep re-fetches
@@ -95,10 +95,10 @@ export function useExplorerRowDelete({
   // can't grow unbounded. A hidden id is always in the library when hidden, so
   // this prunes on content rather than list identity (the panel defaults the
   // library to a fresh [] per render).
-  const keptTeamIds = keepPresent(deletedTeamIds, teamDiagrams);
+  const keptTeamIds = keepPresent(deletedTeamIds, teamDocuments);
   if (keptTeamIds !== deletedTeamIds) setDeletedTeamIds(keptTeamIds);
   return {
-    exitingDiagramIds,
+    exitingDocumentIds,
     deleteConfirm,
     setDeleteConfirm,
     deletedTeamIds,

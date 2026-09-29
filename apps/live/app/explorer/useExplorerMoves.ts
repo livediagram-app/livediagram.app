@@ -3,17 +3,17 @@
 import { useMemo, useRef, useState } from 'react';
 import {
   apiCreateFolder,
-  apiSetDiagramFolder,
+  apiSetDocumentFolder,
   apiUpdateFolder,
-  type DiagramListItem,
+  type DocumentListItem,
   type Folder,
   type TeamListItem,
 } from '@/lib/api-client';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
-import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
+import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 
-// The unified move-picker slice (docs/specs/013-workspace/team-shared-diagrams.md), lifted out of
+// The unified move-picker slice (docs/specs/013-workspace/team-shared-documents.md), lifted out of
 // useExplorerState: the picker's open-target state, the per-placement
 // move handlers (personal folder / into a team / within a team / out
 // of a team), the one routing entry point the picker calls, and the
@@ -21,31 +21,31 @@ import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamL
 // of the lists themselves and passes the mutators in.
 export function useExplorerMoves({
   ownerId,
-  diagrams,
-  setDiagrams,
+  documents: liveDocs,
+  setDocuments,
   folders,
   teams,
   teamFolders,
-  teamDiagrams,
+  teamDocuments,
   descendantSet,
   refreshFolders,
   refreshTeamLibraries,
   refreshPersonal,
-  moveDiagramToFolder,
+  moveDocumentToFolder,
   toast,
 }: {
   ownerId: string | null;
-  diagrams: DiagramListItem[];
-  setDiagrams: React.Dispatch<React.SetStateAction<DiagramListItem[]>>;
+  documents: DocumentListItem[];
+  setDocuments: React.Dispatch<React.SetStateAction<DocumentListItem[]>>;
   folders: Folder[];
   teams: TeamListItem[];
   teamFolders: TeamFolderRow[];
-  teamDiagrams: TeamDiagramRow[];
+  teamDocuments: TeamDocumentRow[];
   descendantSet: (rootId: string) => Set<string>;
   refreshFolders: () => Promise<void>;
   refreshTeamLibraries: () => void;
   refreshPersonal: (ownerId: string) => Promise<void>;
-  moveDiagramToFolder: (id: string, folderId: string | null) => void;
+  moveDocumentToFolder: (id: string, folderId: string | null) => void;
   toast: { error: (message: string) => void };
 }) {
   // Move picker target. The picker uses moveAnchorRef for placement.
@@ -53,11 +53,11 @@ export function useExplorerMoves({
   // so the picker can filter (a folder can't be moved into itself
   // or its descendants — the server cycle-checks but the picker
   // hides those rows up-front to make the rejection less surprising).
-  // One modal serves every diagram, personal or team (docs/specs/013-workspace/team-shared-diagrams.md): it
+  // One modal serves every diagram, personal or team (docs/specs/013-workspace/team-shared-documents.md): it
   // shows the full destination tree and `moveDiagramTo` routes the
   // pick from the subject's current placement.
   const [moveTarget, setMoveTarget] = useState<
-    { kind: 'diagram'; id: string } | { kind: 'folder'; id: string } | null
+    { kind: 'document'; id: string } | { kind: 'folder'; id: string } | null
   >(null);
   const moveAnchorRef = useRef<HTMLElement | null>(null);
 
@@ -83,82 +83,82 @@ export function useExplorerMoves({
   };
 
   // Send one of the caller's own diagrams into a team's shared
-  // library (docs/specs/013-workspace/team-shared-diagrams.md) — straight into a team folder when the move
+  // library (docs/specs/013-workspace/team-shared-documents.md) — straight into a team folder when the move
   // picker chose one, else the team's Unsorted. Leaves the personal
   // lists either way, so the local row is dropped optimistically.
-  const moveDiagramToTeam = (id: string, teamId: string, folderId: string | null = null) => {
+  const moveDocumentToTeam = (id: string, teamId: string, folderId: string | null = null) => {
     if (!ownerId) return;
-    const row = diagrams.find((d) => d.id === id) ?? null;
+    const row = liveDocs.find((d) => d.id === id) ?? null;
     // Re-sweep on success so the diagram appears under the team in
     // Recent / the sidebar / the move picker (the sibling team moves do
     // the same; omitting it left the row invisible until a later bump).
     // On failure, roll the optimistic removal back and say so — the
     // silent path left the diagram in neither list, looking deleted
     // (mirrors moveDiagramToFolder's rollback).
-    void apiSetDiagramFolder(ownerId, id, folderId, teamId)
+    void apiSetDocumentFolder(ownerId, id, folderId, teamId)
       .then(() => {
         refreshTeamLibraries();
-        track('Team', 'Added', 'Diagram');
+        track('Team', 'Added', 'Document');
       })
       .catch(() => {
-        if (row) setDiagrams((prev) => (prev.some((d) => d.id === id) ? prev : [row, ...prev]));
+        if (row) setDocuments((prev) => (prev.some((d) => d.id === id) ? prev : [row, ...prev]));
         toast.error('Could not move the diagram to the team. Please try again.');
       });
-    setDiagrams((prev) => prev.filter((d) => d.id !== id));
+    setDocuments((prev) => prev.filter((d) => d.id !== id));
   };
 
   // Re-folder a team-library diagram WITHIN its team (folderId null =
   // the team's Unsorted), then re-sweep so Recent's rows repaint.
-  // Same call the team page's own move uses (docs/specs/013-workspace/team-shared-diagrams.md).
-  const moveTeamDiagramToFolder = (id: string, teamId: string, folderId: string | null) => {
+  // Same call the team page's own move uses (docs/specs/013-workspace/team-shared-documents.md).
+  const moveTeamDocumentToFolder = (id: string, teamId: string, folderId: string | null) => {
     if (!ownerId) return;
     // .then BEFORE .catch, deliberately: chained the other way round the
     // success handler also runs after a swallowed rejection, which is harmless
     // for a refresh but would keep counting moves that never happened.
-    void apiSetDiagramFolder(ownerId, id, folderId, teamId)
+    void apiSetDocumentFolder(ownerId, id, folderId, teamId)
       .then(() => {
         refreshTeamLibraries();
-        track('Team', 'Moved', 'Diagram');
+        track('Team', 'Moved', 'Document');
       })
       .catch(() => {});
   };
 
   // Move a team-library diagram OUT of its team — either to the
   // caller's personal library (toTeamId null; the server transfers
-  // ownership to the mover, docs/specs/013-workspace/team-shared-diagrams.md) or on to another team
+  // ownership to the mover, docs/specs/013-workspace/team-shared-documents.md) or on to another team
   // (toTeamId set). Refreshes both the team sweep (the row leaves /
   // moves) and the personal list (it lands there when going personal).
-  const moveTeamDiagramOut = (id: string, toTeamId: string | null, folderId: string | null) => {
+  const moveTeamDocumentOut = (id: string, toTeamId: string | null, folderId: string | null) => {
     if (!ownerId) return;
-    void apiSetDiagramFolder(ownerId, id, folderId, toTeamId)
+    void apiSetDocumentFolder(ownerId, id, folderId, toTeamId)
       .then(() => {
         refreshTeamLibraries();
         void refreshPersonal(ownerId);
-        track('Team', toTeamId === null ? 'Removed' : 'Moved', 'Diagram');
+        track('Team', toTeamId === null ? 'Removed' : 'Moved', 'Document');
       })
       .catch(() => {});
   };
 
-  // One entry point for the unified move picker (docs/specs/013-workspace/team-shared-diagrams.md): route a
+  // One entry point for the unified move picker (docs/specs/013-workspace/team-shared-documents.md): route a
   // pick to the right handler from the subject's CURRENT placement
   // (personal vs which team) and its destination.
-  const moveDiagramTo = (id: string, dest: { teamId: string | null; folderId: string | null }) => {
-    const fromTeamId = teamDiagrams.find((d) => d.id === id)?.team.id ?? null;
+  const moveDocumentTo = (id: string, dest: { teamId: string | null; folderId: string | null }) => {
+    const fromTeamId = teamDocuments.find((d) => d.id === id)?.team.id ?? null;
     if (fromTeamId === null) {
       // Currently personal: file into a folder, or hand off to a team.
-      if (dest.teamId === null) moveDiagramToFolder(id, dest.folderId);
-      else moveDiagramToTeam(id, dest.teamId, dest.folderId);
+      if (dest.teamId === null) moveDocumentToFolder(id, dest.folderId);
+      else moveDocumentToTeam(id, dest.teamId, dest.folderId);
       return;
     }
     // Currently in a team: re-folder within it, or move it out
     // (to personal, or on to another team).
-    if (dest.teamId === fromTeamId) moveTeamDiagramToFolder(id, fromTeamId, dest.folderId);
-    else moveTeamDiagramOut(id, dest.teamId, dest.folderId);
+    if (dest.teamId === fromTeamId) moveTeamDocumentToFolder(id, fromTeamId, dest.folderId);
+    else moveTeamDocumentOut(id, dest.teamId, dest.folderId);
   };
 
-  const openMovePickerForDiagram = (id: string, anchor: HTMLElement | null) => {
+  const openMovePickerForDocument = (id: string, anchor: HTMLElement | null) => {
     moveAnchorRef.current = anchor;
-    setMoveTarget({ kind: 'diagram', id });
+    setMoveTarget({ kind: 'document', id });
   };
 
   const openMovePickerForFolder = (id: string, anchor: HTMLElement | null) => {
@@ -180,12 +180,12 @@ export function useExplorerMoves({
   // Team destinations for the move picker (diagram moves only): each
   // team with its folder tree, so a diagram can land in a team folder
   // in one move. Folders carry parentId for the indented tree. An
-  // offline diagram (docs/specs/006-diagram/offline-mode.md) gets none — a team's shared library is
+  // offline diagram (docs/specs/006-document/offline-mode.md) gets none — a team's shared library is
   // server-side, so a team move could never land.
   const moveTeamDests = useMemo(() => {
     if (
-      moveTarget?.kind === 'diagram' &&
-      diagrams.find((d) => d.id === moveTarget.id)?.ownerId === OFFLINE_OWNER_ID
+      moveTarget?.kind === 'document' &&
+      liveDocs.find((d) => d.id === moveTarget.id)?.ownerId === OFFLINE_OWNER_ID
     ) {
       return [];
     }
@@ -196,7 +196,7 @@ export function useExplorerMoves({
         .filter((f) => f.teamId === t.id)
         .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
     }));
-  }, [teams, teamFolders, moveTarget, diagrams]);
+  }, [teams, teamFolders, moveTarget, liveDocs]);
 
   // Inline folder creation from the move picker's "New Folder" tile:
   // create in the picked scope (personal, or a team's library), refresh
@@ -230,11 +230,11 @@ export function useExplorerMoves({
     moveAnchorRef,
     moveFolderToParent,
     createMoveFolder,
-    moveDiagramToTeam,
-    moveTeamDiagramToFolder,
-    moveTeamDiagramOut,
-    moveDiagramTo,
-    openMovePickerForDiagram,
+    moveDocumentToTeam,
+    moveTeamDocumentToFolder,
+    moveTeamDocumentOut,
+    moveDocumentTo,
+    openMovePickerForDocument,
     openMovePickerForFolder,
     movePersonalFolders,
     moveTeamDests,

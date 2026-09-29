@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-// The "preview on its way" state of a DiagramThumbnail (docs/specs/006-diagram/diagram-snapshots.md):
+// The "preview on its way" state of a DiagramThumbnail (docs/specs/006-document/document-snapshots.md):
 // the same three-node sketch as the empty-diagram placeholder, drawing
 // itself. The first node traces, two connectors grow out of it, their
 // arrowheads land, the other two nodes trace, then a dot runs down each

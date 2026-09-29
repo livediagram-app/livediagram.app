@@ -13,15 +13,15 @@ import {
   type PlacementLayout,
 } from './PlacementCard';
 
-// The standardised folder-placement browser (docs/specs/006-diagram/offline-mode.md, extended by docs/specs/013-workspace/folders.md):
+// The standardised folder-placement browser (docs/specs/006-document/offline-mode.md, extended by docs/specs/013-workspace/folders.md):
 // a two-level tile-grid browse. Pick a SPACE first (Personal Space, or one of your
 // teams), then drill into its folder tree; every level shows a "here" card
 // (Unsorted / Team Library / the open folder itself) plus the folders
 // directly inside it, with an optional inline New Folder tile. One space
 // collapses the overview away and the browser opens straight inside it.
 //
-// Shared by the New Diagram wizard's folder step (docs/specs/006-diagram/offline-mode.md, docs/specs/006-diagram/save-locations.md) and the
-// Move-to-folder dialog on every move surface (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-diagrams.md), so the
+// Shared by the New Diagram wizard's folder step (docs/specs/006-document/offline-mode.md, docs/specs/006-document/save-locations.md) and the
+// Move-to-folder dialog on every move surface (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md), so the
 // product has exactly ONE way to choose where a diagram lives. Two layouts
 // of the same browse: `tiles` (icon over label, a grid) for the move dialog,
 // `list` (icon beside label, stacked rows, the file-explorer idiom) for the

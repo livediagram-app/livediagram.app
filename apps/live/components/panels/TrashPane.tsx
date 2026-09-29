@@ -11,7 +11,7 @@ import { Button, EmptyState, TrashIcon } from '@livediagram/ui';
 import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { InfoNote } from '@/components/primitives/InfoNote';
-import { DiagramIcon } from '@/components/primitives/explorer-icons';
+import { DocumentIcon } from '@/components/primitives/explorer-icons';
 import { daysLeftLabel, trashGroups, type TrashGroup } from '@/lib/trash-groups';
 import type { TrashController } from '@/hooks/persistence/useTrash';
 
@@ -79,7 +79,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
               {group.rows.map((row) => (
                 <li key={row.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300">
-                    <DiagramIcon size={14} />
+                    <DocumentIcon size={14} />
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">

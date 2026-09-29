@@ -12,7 +12,7 @@ A highlighter stroke **is a `FreehandElement`** with one new optional field:
 pen?: 'highlighter'; // absent = ordinary pencil sketch
 ```
 
-No new element type. The stroke reuses the freehand pipeline end to end: normalised `points`, RDP simplification, bbox, history, sync, layers, eraser, export. `closed` is always `false` for highlighter strokes (no auto-close, no fill). Wire validation (`packages/diagram/src/validate.ts`) accepts the optional literal.
+No new element type. The stroke reuses the freehand pipeline end to end: normalised `points`, RDP simplification, bbox, history, sync, layers, eraser, export. `closed` is always `false` for highlighter strokes (no auto-close, no fill). Wire validation (`packages/document/src/validate.ts`) accepts the optional literal.
 
 ## Visual treatment
 
@@ -53,7 +53,7 @@ This replaced a pair of popovers hanging off the mode banner. That was the right
 ## Palette
 
 - The `tools:highlighter` **draw tile is gone**. The Draw category now holds four tiles: Freehand, Shape Pen, Polygon, Arrow.
-- A **Highlighter Mode Button** joins the Selection Mode tiles in the Behaviour section (`tools:mode-highlighter`, [Selection Mode button](../009-elements/mode-button.md)): drop one on the canvas and whoever presses it is handed the marker. `'highlighter'` is a `SelectionMode` in `packages/diagram/src/selection-mode.ts` for exactly this, so a saved button can carry it.
+- A **Highlighter Mode Button** joins the Selection Mode tiles in the Behaviour section (`tools:mode-highlighter`, [Selection Mode button](../009-elements/mode-button.md)): drop one on the canvas and whoever presses it is handed the marker. `'highlighter'` is a `SelectionMode` in `packages/document/src/selection-mode.ts` for exactly this, so a saved button can carry it.
 - The **default Favourites** list ([Palette Favourites](../010-palette/palette-favourites.md)) swapped the Highlighter's slot for `tools:table` — there is no tile to favourite any more, and Table kept the grid at twelve rather than leaving a ragged row. Anyone who had favourited the old id loses it silently on read, which is the existing behaviour for a retired tile.
 
 ## Everything else is inherited

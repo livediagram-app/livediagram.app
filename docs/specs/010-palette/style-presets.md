@@ -135,7 +135,7 @@ multi-selection the preset applies to every selected arrow at once.
   (`recolourElementsForTheme` / `switchThemeElements`) call them so a
   preset-bound shape re-derives instead of being preserved as a manual
   override. The `colorPreset` binding lives on `ShapeElement` in
-  `packages/diagram`.
+  `packages/document`.
 - Arrow presets are a static preset table in the presets component
   (`apps/live/components/palette/StylePresets.tsx`); shape style presets are theme-derived
   (`shapeColorPresets`), each carrying its border treatment.
@@ -167,7 +167,7 @@ multi-selection the preset applies to every selected arrow at once.
 
 ## Sticky-note presets
 
-A sticky had no presets at all, so recolouring a note meant picking a fill and then hunting a readable ink to go on it: two decisions for what is really one. The Style band now opens a **Presets** grid for a sticky too, from `STICKY_PRESETS` in `packages/diagram/src/theme-presets.ts`.
+A sticky had no presets at all, so recolouring a note meant picking a fill and then hunting a readable ink to go on it: two decisions for what is really one. The Style band now opens a **Presets** grid for a sticky too, from `STICKY_PRESETS` in `packages/document/src/theme-presets.ts`.
 
 It is a fixed pad, deliberately **not** theme-derived: a sticky is exempt from theme recolouring ([Event storming](../021-event-storming/event-storming.md)) precisely because the colour of a note is the user's own shorthand rather than the board's palette. Twelve notes, in three runs of four: warm (Classic, Lemon, Peach, Rose), cool (Lilac, Sky, Mint, Teal) and neutral (Slate, Paper, Charcoal, Ink). Each pairs its paper with an ink that reads on it, and a test holds that pairing, since a preset with unreadable text is worse than no preset.
 

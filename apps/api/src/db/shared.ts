@@ -19,7 +19,7 @@ import type { Env, ShareRole } from '../types';
 export async function recordSharedAccess(
   env: Env,
   ownerId: string,
-  diagramId: string,
+  documentId: string,
   role: ShareRole,
   // The link's tab scope (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs. Last visit
   // wins, like role.
@@ -27,15 +27,15 @@ export async function recordSharedAccess(
 ): Promise<boolean> {
   const now = Date.now();
   const inserted = await env.DB.prepare(
-    'INSERT OR IGNORE INTO shared_with (owner_id, diagram_id, role, last_seen, tab_id) VALUES (?, ?, ?, ?, ?)',
+    'INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, last_seen, tab_id) VALUES (?, ?, ?, ?, ?)',
   )
-    .bind(ownerId, diagramId, role, now, tabId)
+    .bind(ownerId, documentId, role, now, tabId)
     .run();
   if (inserted.meta.changes === 1) return true;
   await env.DB.prepare(
-    'UPDATE shared_with SET role = ?, tab_id = ?, last_seen = ? WHERE owner_id = ? AND diagram_id = ?',
+    'UPDATE shared_with SET role = ?, tab_id = ?, last_seen = ? WHERE owner_id = ? AND document_id = ?',
   )
-    .bind(role, tabId, now, ownerId, diagramId)
+    .bind(role, tabId, now, ownerId, documentId)
     .run();
   return false;
 }
@@ -46,12 +46,12 @@ export async function recordSharedAccess(
 export async function hasSharedAccess(
   env: Env,
   ownerId: string,
-  diagramId: string,
+  documentId: string,
 ): Promise<boolean> {
   const row = await env.DB.prepare(
-    'SELECT 1 AS one FROM shared_with WHERE owner_id = ? AND diagram_id = ? LIMIT 1',
+    'SELECT 1 AS one FROM shared_with WHERE owner_id = ? AND document_id = ? LIMIT 1',
   )
-    .bind(ownerId, diagramId)
+    .bind(ownerId, documentId)
     .first<{ one: number }>();
   return row !== null;
 }
@@ -82,7 +82,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
     `SELECT d.id, d.name, d.saved_at, s.role, s.tab_id,
             (SELECT code
                FROM share_links
-              WHERE share_links.diagram_id = d.id
+              WHERE share_links.document_id = d.id
                 AND share_links.role = s.role
                 AND share_links.tab_id IS s.tab_id
                 AND (share_links.expires_at IS NULL OR share_links.expires_at > ?)
@@ -91,7 +91,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
             p.name  AS owner_name,
             p.color AS owner_color
        FROM shared_with s
-       JOIN diagrams d ON d.id = s.diagram_id
+       JOIN documents d ON d.id = s.document_id
        LEFT JOIN participants p ON p.id = d.owner_id
       WHERE s.owner_id = ?
         AND d.shareable = 1
@@ -131,9 +131,9 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
 export async function dropSharedAccess(
   env: Env,
   ownerId: string,
-  diagramId: string,
+  documentId: string,
 ): Promise<void> {
-  await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ? AND diagram_id = ?')
-    .bind(ownerId, diagramId)
+  await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ? AND document_id = ?')
+    .bind(ownerId, documentId)
     .run();
 }

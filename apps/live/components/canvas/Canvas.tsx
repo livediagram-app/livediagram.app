@@ -4,7 +4,7 @@ import {
   isAnimatedPattern,
   isBoxed,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
@@ -18,7 +18,7 @@ import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
-import { isEventStormingTab } from '@livediagram/diagram';
+import { isEventStormingTab } from '@livediagram/document';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { getTheme } from '@/lib/themes';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
@@ -58,11 +58,11 @@ import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 const AVATAR_BURST_PX = 120;
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { AVATAR_SPAWN_GAP, type AvatarPoint } from '@/lib/avatar-walk';
-import { CHAIR_SITTER_FACING, DEFAULT_CHAIR_FACING, chairSeatPoint } from '@livediagram/diagram';
+import { CHAIR_SITTER_FACING, DEFAULT_CHAIR_FACING, chairSeatPoint } from '@livediagram/document';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
-import type { Reaction } from '@livediagram/diagram';
+import type { Reaction } from '@livediagram/document';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { Portal } from '@/components/primitives/Portal';
@@ -867,7 +867,7 @@ export function Canvas(props: CanvasProps) {
         onIsoOrbit={isoCamera.startOrbit}
         onIsoReset={isoCamera.reset}
       />
-      {/* Lazy per-tab load (docs/specs/006-diagram/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
+      {/* Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
           canvas AND the floating palette, blocking any edit that would
           otherwise overwrite an unfetched tab's real content. */}
       {tabLoadState && tabLoadState !== 'ready' ? (

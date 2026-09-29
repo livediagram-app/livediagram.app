@@ -1,13 +1,13 @@
 // The share-side access rules every diagram gate is built from: who counts
 // as the owner, which share codes belong to a diagram, and the share-password
-// check (docs/specs/013-workspace/share-password.md). The REST gates (diagram-access.ts), the share-code resolve
-// (routes/share.ts), and the realtime-room upgrade (routes/diagram-room-routes.ts)
+// check (docs/specs/013-workspace/share-password.md). The REST gates (document-access.ts), the share-code resolve
+// (routes/share.ts), and the realtime-room upgrade (routes/document-room-routes.ts)
 // all compose these, so a rule change lands in one place rather than drifting
-// between three copies. Kept apart from diagram-access.ts so the room route
+// between three copies. Kept apart from document-access.ts so the room route
 // can reuse the rules while its tests stub the whole-request gates.
 
 import type { ShareLink } from '@livediagram/api-schema';
-import { getDiagramSharePassword, getShareLink } from '../db';
+import { getDocumentSharePassword, getShareLink } from '../db';
 import type { Env } from '../types';
 import { timingSafeEqual } from './timing-safe';
 
@@ -28,14 +28,14 @@ export function isPersonalOwner(
 // diagram: the diagram-id match stops a code for a different diagram leaking
 // access through. Null for a missing code, an unknown / revoked one, or a
 // mismatch.
-export async function shareLinkForDiagram(
+export async function shareLinkForDocument(
   env: Env,
   shareCode: string | null,
-  diagramId: string,
+  documentId: string,
 ): Promise<ShareLink | null> {
   if (!shareCode) return null;
   const link = await getShareLink(env, shareCode);
-  return link && link.diagramId === diagramId ? link : null;
+  return link && link.documentId === documentId ? link : null;
 }
 
 // Share-password check (docs/specs/013-workspace/share-password.md). `ok` when the diagram has no password or the
@@ -47,10 +47,10 @@ export type SharePasswordStatus = 'ok' | 'missing' | 'invalid';
 
 export async function sharePasswordStatus(
   env: Env,
-  diagramId: string,
+  documentId: string,
   provided: string | null,
 ): Promise<SharePasswordStatus> {
-  const required = await getDiagramSharePassword(env, diagramId);
+  const required = await getDocumentSharePassword(env, documentId);
   if (!required) return 'ok';
   if (provided == null) return 'missing';
   return (await timingSafeEqual(provided, required)) ? 'ok' : 'invalid';
@@ -58,8 +58,8 @@ export async function sharePasswordStatus(
 
 export async function sharePasswordOk(
   env: Env,
-  diagramId: string,
+  documentId: string,
   provided: string | null,
 ): Promise<boolean> {
-  return (await sharePasswordStatus(env, diagramId, provided)) === 'ok';
+  return (await sharePasswordStatus(env, documentId, provided)) === 'ok';
 }

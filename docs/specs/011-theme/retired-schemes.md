@@ -34,7 +34,7 @@ already a hand-picked canvas and is left alone.
 
 ## Where it runs
 
-One pure function in `@livediagram/diagram`, `migrateStoredTab`, composes every tab-level migration (this one and the
+One pure function in `@livediagram/document`, `migrateStoredTab`, composes every tab-level migration (this one and the
 element migrations: retired groups and docks). Every place a stored tab enters a reader runs it:
 
 - the api worker's tab read (`rowToTab`), which every editor, share-link and MCP read goes through;

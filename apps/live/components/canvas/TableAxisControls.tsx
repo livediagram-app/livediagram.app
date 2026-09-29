@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import type { TableElement } from '@livediagram/diagram';
+import type { TableElement } from '@livediagram/document';
 import { TableHeaderMenu, Trigger } from '@/components/canvas/table-menu-controls';
 import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
 

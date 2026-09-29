@@ -13,7 +13,7 @@ import { track } from '@/lib/telemetry';
 // Folder state + the three mutation handlers (create / rename /
 // delete). Three pages used to inline this triplet by hand:
 //
-//   - apps/live/app/diagram/[id]/editor-page.tsx
+//   - apps/live/app/document/[id]/editor-page.tsx
 //   - apps/live/app/new/page.tsx
 //   - apps/live/app/explorer/page.tsx
 //

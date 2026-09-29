@@ -9,7 +9,7 @@ import {
   timerDisplayMs,
   type ShapeElement,
   type TabTimer,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { useNow } from '@/hooks/ui/useNow';
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';

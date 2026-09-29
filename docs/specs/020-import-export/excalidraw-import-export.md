@@ -26,7 +26,7 @@ degradation table below — nothing degrades silently outside that table.
   `Tab -> string` serialiser plugged into the Export dialog's text-panel
   registry (`TEXT_PANELS`), like `tabToJsonText` / `tabToMarkdownText`.
 - Neither module is needed by the MCP worker or any other app, so they stay in
-  `apps/live/lib` (Mermaid lives in `packages/diagram` only because the MCP
+  `apps/live/lib` (Mermaid lives in `packages/document` only because the MCP
   server also renders it).
 
 ## The file envelope

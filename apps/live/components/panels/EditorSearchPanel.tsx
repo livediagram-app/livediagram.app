@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
@@ -24,15 +24,15 @@ const SearchPanel = dynamic(
 export function EditorSearchPanel() {
   const {
     searchOpen,
-    diagramList,
+    documentList,
     folders,
-    sharedDiagrams,
+    sharedDocuments,
     teams,
     teamFolders,
-    teamDiagrams,
+    teamDocuments,
     tabs,
     activeId,
-    openDiagram,
+    openDocument,
     setActiveId,
     setSelectedId,
     isReadOnly,
@@ -58,16 +58,16 @@ export function EditorSearchPanel() {
 
   return (
     <SearchPanel
-      diagrams={diagramList.map((d) => ({ id: d.id, name: d.name }))}
+      documents={documentList.map((d) => ({ id: d.id, name: d.name }))}
       folders={folders.map((f) => ({ id: f.id, name: f.name }))}
-      shared={sharedDiagrams.map((s) => ({
+      shared={sharedDocuments.map((s) => ({
         id: s.id,
         name: s.name,
         shareCode: s.shareCode,
       }))}
       teams={teams.map((t) => ({ id: t.id, name: t.name }))}
       teamFolders={teamFolders}
-      teamDiagrams={teamDiagrams.map((d) => ({
+      teamDocuments={teamDocuments.map((d) => ({
         id: d.id,
         name: d.name,
         teamId: d.team.id,
@@ -75,11 +75,11 @@ export function EditorSearchPanel() {
       }))}
       tabs={tabs}
       currentTabId={activeId}
-      onSelectDiagram={(id) => {
-        openDiagram(id);
+      onSelectDocument={(id) => {
+        openDocument(id);
       }}
       onSelectShared={(id, shareCode) => {
-        openDiagram(id, shareCode);
+        openDocument(id, shareCode);
       }}
       onSelectTeam={(id) => {
         window.location.assign(

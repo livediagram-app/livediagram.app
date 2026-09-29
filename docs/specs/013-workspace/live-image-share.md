@@ -1,17 +1,17 @@
 # Live image share link
 
-> **Status: implemented, as part of [Diagram SVG snapshots](../006-diagram/diagram-snapshots.md).** The
+> **Status: implemented, as part of [Diagram SVG snapshots](../006-document/document-snapshots.md).** The
 > endpoint and Share-dialog option below shipped, but two design points here are
-> now superseded by [Diagram SVG snapshots](../006-diagram/diagram-snapshots.md) — read it for the authoritative behaviour:
+> now superseded by [Diagram SVG snapshots](../006-document/document-snapshots.md) — read it for the authoritative behaviour:
 >
 > - **Not re-rendered per request.** The image serves a **cached SVG snapshot**
 >   from R2, refreshed render-on-read when the diagram has been saved since
 >   (`thumb_rendered_at`). Cheaper, and "live" within the cache window + last
->   save. The cache is shared with the Explorer thumbnail ([Diagram SVG snapshots](../006-diagram/diagram-snapshots.md)) — one
+>   save. The cache is shared with the Explorer thumbnail ([Diagram SVG snapshots](../006-document/document-snapshots.md)) — one
 >   artifact, two delivery paths.
 > - **Renderer already shared.** The "main work" below (extracting the renderer
 >   into a new package) is moot: `renderElementsToSvg` already lives DOM-free in
->   `@livediagram/diagram` (`packages/diagram/src/svg-render.ts`) and powers the
+>   `@livediagram/document` (`packages/document/src/svg-render.ts`) and powers the
 >   MCP worker ([MCP server](../015-api/mcp-server.md)), so the worker imports it directly. No `@livediagram/render`
 >   package was created.
 >
@@ -92,6 +92,6 @@ a menu off the `.../image.svg` URL to copy the raw URL, a Markdown
 the Embed control uses). The menu also carries a **per-tab picker** (a
 `<select>`, shown when the diagram has more than one tab) that threads
 `?tab=<id>` into the copied URL / snippets; see
-[Diagram SVG snapshots](../006-diagram/diagram-snapshots.md#share-dialog) for the caching detail
+[Diagram SVG snapshots](../006-document/document-snapshots.md#share-dialog) for the caching detail
 (a non-default tab renders on read, uncached). Out of scope for v1: a
 PNG variant (Worker rasterization) and themed cache invalidation.

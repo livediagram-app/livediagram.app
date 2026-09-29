@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type Element, type StickyElement } from '@livediagram/diagram';
+import { type Element, type StickyElement } from '@livediagram/document';
 import type { ShapeBounds } from '@/lib/canvas';
 import { isSingleNoteDrag, landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
 

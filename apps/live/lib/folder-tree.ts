@@ -107,11 +107,11 @@ export function groupBy<R, K>(rows: readonly R[], keyOf: (r: R) => K): Map<K, R[
 // in every bucket: the order every Explorer list shows a folder's contents
 // in. `exclude` drops rows before bucketing, for the panel, which keeps
 // offline diagrams out of Unsorted because they get their own node.
-export function groupDiagramsByFolder<D extends { folderId: string | null; savedAt: number }>(
-  diagrams: readonly D[],
+export function groupDocumentsByFolder<D extends { folderId: string | null; savedAt: number }>(
+  liveDocs: readonly D[],
   opts: { exclude?: (d: D) => boolean } = {},
 ): Map<string | null, D[]> {
-  const kept = opts.exclude ? diagrams.filter((d) => !opts.exclude!(d)) : diagrams;
+  const kept = opts.exclude ? liveDocs.filter((d) => !opts.exclude!(d)) : liveDocs;
   const map = groupBy(kept, (d) => d.folderId);
   for (const bucket of map.values()) bucket.sort((a, b) => b.savedAt - a.savedAt);
   return map;

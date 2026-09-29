@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { trashDiagram } from '../db/trash';
+import { trashDocument } from '../db/trash';
 import { makeTestRouteContext } from './test-route-context';
 import { handleTrash } from './trash';
 
@@ -18,8 +18,8 @@ function insert(sql: DatabaseSync, table: string, row: Record<string, string | n
     .run(...Object.values(row));
 }
 
-function diagram(sql: DatabaseSync, id: string, owner: string, team: string | null = null) {
-  insert(sql, 'diagrams', {
+function liveDoc(sql: DatabaseSync, id: string, owner: string, team: string | null = null) {
+  insert(sql, 'documents', {
     id,
     owner_id: owner,
     name: `Diagram ${id}`,
@@ -46,10 +46,10 @@ async function world(): Promise<SqliteD1> {
       updated_at: T0,
     });
   }
-  diagram(db.sql, 'mine', 'user_me');
-  diagram(db.sql, 'ours', 'user_bob', 'crew');
-  diagram(db.sql, 'bobs', 'user_bob');
-  for (const id of ['mine', 'ours', 'bobs']) await trashDiagram(db.env, id, T0);
+  liveDoc(db.sql, 'mine', 'user_me');
+  liveDoc(db.sql, 'ours', 'user_bob', 'crew');
+  liveDoc(db.sql, 'bobs', 'user_bob');
+  for (const id of ['mine', 'ours', 'bobs']) await trashDocument(db.env, id, T0);
   return db;
 }
 
@@ -66,13 +66,13 @@ function call(
 
 function ids(db: SqliteD1): string[] {
   return db.sql
-    .prepare('SELECT id FROM diagrams ORDER BY id')
+    .prepare('SELECT id FROM documents ORDER BY id')
     .all()
     .map((r) => r.id as string);
 }
 
 function trashedAt(db: SqliteD1, id: string): unknown {
-  return db.sql.prepare('SELECT trashed_at FROM diagrams WHERE id = ?').get(id)?.trashed_at;
+  return db.sql.prepare('SELECT trashed_at FROM documents WHERE id = ?').get(id)?.trashed_at;
 }
 
 describe('GET /api/trash', () => {
@@ -98,7 +98,7 @@ describe('POST /api/trash/:id/restore', () => {
     const db = await world();
     const res = await call(db, 'POST', '/api/trash/mine/restore', me);
     expect(res.status).toBe(200);
-    expect(((await res.json()) as { diagram: { id: string } }).diagram.id).toBe('mine');
+    expect(((await res.json()) as { document: { id: string } }).document.id).toBe('mine');
     expect(trashedAt(db, 'mine')).toBeNull();
   });
 
@@ -124,7 +124,7 @@ describe('POST /api/trash/:id/restore', () => {
 
   it('answers 404 for a live or unknown id', async () => {
     const db = await world();
-    diagram(db.sql, 'live', 'user_me');
+    liveDoc(db.sql, 'live', 'user_me');
     expect((await call(db, 'POST', '/api/trash/live/restore', me)).status).toBe(404);
     expect((await call(db, 'POST', '/api/trash/nope/restore', me)).status).toBe(404);
   });
@@ -172,7 +172,7 @@ describe('DELETE /api/trash', () => {
 
   it('leaves live diagrams alone', async () => {
     const db = await world();
-    diagram(db.sql, 'live', 'user_me');
+    liveDoc(db.sql, 'live', 'user_me');
     await call(db, 'DELETE', '/api/trash', me);
     expect(ids(db)).toContain('live');
   });

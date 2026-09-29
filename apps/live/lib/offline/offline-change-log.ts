@@ -1,4 +1,4 @@
-// Offline Mode (docs/specs/006-diagram/offline-mode.md): an offline diagram's activity / change log is
+// Offline Mode (docs/specs/006-document/offline-mode.md): an offline diagram's activity / change log is
 // local-only, kept inside its IndexedDB record — there is no server history,
 // so the /log endpoints must never be hit for one. This is the local
 // counterpart of `lib/api/change-log.ts`, which dispatches here when the
@@ -9,7 +9,7 @@ import {
   offlineGetRecord,
   offlinePutRecord,
   serializeOfflineWrite,
-  type OfflineDiagramRecord,
+  type OfflineDocumentRecord,
 } from './offline-store';
 
 // ---------------------------------------------------------------------------
@@ -20,15 +20,18 @@ import {
 // hydrates (docs/specs/012-collaboration/activity-and-audit.md): the Activity Panel only ever shows the most recent N,
 // and unlike D1 there's no audit table behind it — retaining more would just
 // bloat a record that gets rewritten whole on every save.
-export function appendLog(rec: OfflineDiagramRecord, entry: ChangeLogEntry): OfflineDiagramRecord {
+export function appendLog(
+  rec: OfflineDocumentRecord,
+  entry: ChangeLogEntry,
+): OfflineDocumentRecord {
   return { ...rec, log: [entry, ...(rec.log ?? [])].slice(0, CHANGE_LOG_LIST_LIMIT) };
 }
 
-export function removeLogEntry(rec: OfflineDiagramRecord, entryId: string): OfflineDiagramRecord {
+export function removeLogEntry(rec: OfflineDocumentRecord, entryId: string): OfflineDocumentRecord {
   return { ...rec, log: (rec.log ?? []).filter((e) => e.id !== entryId) };
 }
 
-export function removeLogForTab(rec: OfflineDiagramRecord, tabId: string): OfflineDiagramRecord {
+export function removeLogForTab(rec: OfflineDocumentRecord, tabId: string): OfflineDocumentRecord {
   return { ...rec, log: (rec.log ?? []).filter((e) => e.tabId !== tabId) };
 }
 
@@ -38,7 +41,7 @@ export function removeLogForTab(rec: OfflineDiagramRecord, tabId: string): Offli
 
 async function mutateLog(
   id: string,
-  fn: (rec: OfflineDiagramRecord) => OfflineDiagramRecord,
+  fn: (rec: OfflineDocumentRecord) => OfflineDocumentRecord,
 ): Promise<void> {
   await serializeOfflineWrite(async () => {
     const rec = await offlineGetRecord(id);

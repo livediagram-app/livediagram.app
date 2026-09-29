@@ -9,7 +9,7 @@
 // without re-creating themselves on every parent render.
 
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
-import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/diagram';
+import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
 import { computeFitToScreen, computeViewportCenter } from '@/lib/viewport';
 import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@/hooks/ui/useLatest';

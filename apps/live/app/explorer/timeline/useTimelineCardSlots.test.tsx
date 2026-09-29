@@ -19,10 +19,10 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 function explorer(over: Partial<ExplorerStateValue> = {}): ExplorerStateValue {
   return {
     ownerId: 'me',
-    diagrams: [
+    documents: [
       { id: 'd1', name: 'Payments v2', folderId: null, savedAt: 1, shareCode: null, ownerId: 'me' },
     ],
-    teamDiagrams: [],
+    teamDocuments: [],
     shared: [
       {
         id: 's1',
@@ -34,12 +34,12 @@ function explorer(over: Partial<ExplorerStateValue> = {}): ExplorerStateValue {
         ownerColor: null,
       },
     ],
-    renamingDiagramId: null,
-    setRenamingDiagramId: vi.fn(),
-    renameDiagram: vi.fn(),
-    deleteDiagram: vi.fn(),
-    duplicateDiagram: vi.fn(),
-    openMovePickerForDiagram: vi.fn(),
+    renamingDocumentId: null,
+    setRenamingDocumentId: vi.fn(),
+    renameDocument: vi.fn(),
+    deleteDocument: vi.fn(),
+    duplicateDocument: vi.fn(),
+    openMovePickerForDocument: vi.fn(),
     dismissShared: vi.fn(),
     favouriteIds: new Set<string>(),
     toggleFavourite: vi.fn(),
@@ -62,14 +62,14 @@ function explorer(over: Partial<ExplorerStateValue> = {}): ExplorerStateValue {
 function event(over: Partial<TimelineEvent>): TimelineEvent {
   return {
     id: 'e',
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: 'd1',
-    eventType: 'diagram_created',
+    eventType: 'document_created',
     title: 'Diagram Created',
     description: null,
     occurredAt: 1,
     actorId: 'me',
-    snapshot: { diagramId: 'd1', diagramName: 'Payments' },
+    snapshot: { documentId: 'd1', documentName: 'Payments' },
     ...over,
   } as TimelineEvent;
 }
@@ -105,8 +105,8 @@ describe('useTimelineCardSlots', () => {
   it('gives a tombstone and an unloaded diagram the entity menu, with no rename slot', () => {
     const slots = slotsFor(explorer());
     for (const e of [
-      event({ snapshot: { diagramName: 'Gone' } }),
-      event({ snapshot: { diagramId: 'unknown', diagramName: 'X' } }),
+      event({ snapshot: { documentName: 'Gone' } }),
+      event({ snapshot: { documentId: 'unknown', documentName: 'X' } }),
     ]) {
       const s = slots(e);
       expect(s?.menu).toBeTruthy();
@@ -163,21 +163,21 @@ describe('useTimelineCardSlots', () => {
       }),
     );
     expect(slots?.menu).toBeTruthy();
-    const menu = slots!.menu as { props: { folder?: unknown; diagram?: unknown } };
+    const menu = slots!.menu as { props: { folder?: unknown; document?: unknown } };
     expect(menu.props.folder).toBeUndefined();
-    expect(menu.props.diagram).toBeUndefined();
+    expect(menu.props.document).toBeUndefined();
   });
 
   it('resolves a shared-with-you diagram too', () => {
     const slots = slotsFor(explorer())(
-      event({ snapshot: { diagramId: 's1', diagramName: 'Theirs' } }),
+      event({ snapshot: { documentId: 's1', documentName: 'Theirs' } }),
     );
     expect(slots?.menu).toBeTruthy();
     expect(slots?.subject).toBe('Theirs');
   });
 
   it('puts a rename input in the title slot while that diagram is being renamed', () => {
-    const slots = slotsFor(explorer({ renamingDiagramId: 'd1' }))(event({}));
+    const slots = slotsFor(explorer({ renamingDocumentId: 'd1' }))(event({}));
     expect(slots?.title).toBeTruthy();
     // Right-click is off while renaming: the card's own gesture would
     // fight the input's.

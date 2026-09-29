@@ -95,7 +95,7 @@ stays viable.
 type UserPreferences = {
   // When false, the live editor skips the auto-rebind that moves a
   // pinned arrow end to the side facing the other end once its drawn
-  // path runs through a shape after a move (packages/diagram's
+  // path runs through a shape after a move (packages/document's
   // `rebindArrowAnchorsAfterMove`, see ../008-canvas/arrow-anchors.md).
   // Defaults to ON.
   autoRebindArrows?: boolean;

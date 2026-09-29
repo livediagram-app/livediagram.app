@@ -6,7 +6,7 @@ livediagram folders, kept in step both ways while a livediagram tab is open.
 Double-clicking such a file in Drive opens it in livediagram.
 
 The mirror is a **copy**, never the diagram's home
-([Save Locations](../006-diagram/save-locations.md#google-drive-is-a-mirror-not-a-location)).
+([Save Locations](../006-document/save-locations.md#google-drive-is-a-mirror-not-a-location)).
 livediagram's database stays the source of truth, so realtime collaboration,
 share links and the change log are untouched by it.
 
@@ -304,7 +304,7 @@ mirror finished, an inbound change applied (by type: `Rename`, `Move`,
 
 ## References
 
-[Save Locations](../006-diagram/save-locations.md),
+[Save Locations](../006-document/save-locations.md),
 [Trash](../013-workspace/trash.md),
 [Folders](../013-workspace/folders.md),
 [Auth + guest access](../014-identity/auth-and-guest-access.md),

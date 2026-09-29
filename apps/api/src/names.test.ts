@@ -1,4 +1,4 @@
-import { NAME_MAX_LENGTH } from '@livediagram/diagram';
+import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { capStoredName } from './names';
 
@@ -8,7 +8,7 @@ describe('capStoredName', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('shortens a new name past the cap at a word boundary', () => {
-    const stored = capStoredName(long, null, 'diagram');
+    const stored = capStoredName(long, null, 'document');
     expect([...stored].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
     expect(stored.endsWith('…')).toBe(true);
     expect(long.startsWith(stored.slice(0, -1))).toBe(true);
@@ -24,12 +24,12 @@ describe('capStoredName', () => {
   });
 
   it('collapses whitespace in a name within the cap', () => {
-    expect(capStoredName('  Q3\n  plan  ', null, 'diagram')).toBe('Q3 plan');
+    expect(capStoredName('  Q3\n  plan  ', null, 'document')).toBe('Q3 plan');
   });
 
   it('returns a fitting name as-is and logs nothing', () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
-    expect(capStoredName('Checkout flow', null, 'diagram')).toBe('Checkout flow');
+    expect(capStoredName('Checkout flow', null, 'document')).toBe('Checkout flow');
     expect(info).not.toHaveBeenCalled();
   });
 

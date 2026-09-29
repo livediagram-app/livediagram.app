@@ -25,19 +25,19 @@ import type { Participant } from '@/lib/identity';
 type ShareLinksDeps = {
   // The current diagram id. All link actions no-op until it exists
   // (the editor route always has a real id by the time the dialog is
-  // open — the mint-id flow lives on /live/new, docs/specs/007-editor/new-diagram-route.md).
-  diagramId: string | null;
+  // open — the mint-id flow lives on /live/new, docs/specs/007-editor/new-document-route.md).
+  documentId: string | null;
   selfParticipant: Participant;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   setShareLinks: Dispatch<SetStateAction<ShareLink[]>>;
   // The diagram's share password (docs/specs/013-workspace/share-password.md). setSharePassword reconciles
   // page state after a save / clear.
   setSharePassword: Dispatch<SetStateAction<string | null>>;
-  setDiagramShareable: Dispatch<SetStateAction<boolean>>;
-  setDiagramShareCode: Dispatch<SetStateAction<string | null>>;
+  setDocumentShareable: Dispatch<SetStateAction<boolean>>;
+  setDocumentShareCode: Dispatch<SetStateAction<string | null>>;
   // The diagram's primary share code; revoke promotes the next link to
   // primary when the current primary is the one being revoked.
-  diagramShareCode: string | null;
+  documentShareCode: string | null;
   // Marks the participant's name confirmed (share is an implicit
   // confirmation gesture).
   confirmName: () => void;
@@ -45,14 +45,14 @@ type ShareLinksDeps = {
 
 export function useShareLinks(deps: ShareLinksDeps) {
   const {
-    diagramId,
+    documentId,
     selfParticipant,
     setSelfParticipant,
     setShareLinks,
     setSharePassword,
-    setDiagramShareable,
-    setDiagramShareCode,
-    diagramShareCode,
+    setDocumentShareable,
+    setDocumentShareCode,
+    documentShareCode,
     confirmName,
   } = deps;
   const toast = useToast();
@@ -72,7 +72,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
   // role and lifetime (docs/specs/013-workspace/share-link-expiry.md; 'never' = works until revoked). The
   // editor route always has a real diagramId by the time the Share
   // dialog is open — the welcome / mint-id flow now lives on
-  // /live/new (docs/specs/007-editor/new-diagram-route.md) — so this just calls the API directly.
+  // /live/new (docs/specs/007-editor/new-document-route.md) — so this just calls the API directly.
   //
   // `tabId` scopes the link to one tab (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
   const createShareLink = async (
@@ -80,26 +80,26 @@ export function useShareLinks(deps: ShareLinksDeps) {
     expiry: ShareLinkExpiry = 'never',
     tabId: string | null = null,
   ): Promise<ShareLink | undefined> => {
-    if (!diagramId) return undefined;
+    if (!documentId) return undefined;
     confirmName();
     try {
-      const link = await apiCreateShareLink(selfParticipant.id, diagramId, role, expiry, tabId);
+      const link = await apiCreateShareLink(selfParticipant.id, documentId, role, expiry, tabId);
       setShareLinks((prev) => [...prev, link]);
-      setDiagramShareable(true);
-      setDiagramShareCode((prev) => prev ?? link.code);
+      setDocumentShareable(true);
+      setDocumentShareCode((prev) => prev ?? link.code);
       // Telemetry (docs/specs/017-telemetry/telemetry.md): a share link was created. `type` is the
       // role (Edit / View) — a preset, never user content. A chosen
       // lifetime emits a second preset alongside (docs/specs/013-workspace/share-link-expiry.md).
-      track('Diagram', 'Shared', role === 'edit' ? 'Edit' : 'View');
+      track('Document', 'Shared', role === 'edit' ? 'Edit' : 'View');
       if (expiry !== 'never') {
         const expiryType = {
           week: 'ExpiryWeek',
           month: 'ExpiryMonth',
           sixMonths: 'ExpirySixMonths',
         }[expiry];
-        track('Diagram', 'Shared', expiryType);
+        track('Document', 'Shared', expiryType);
       }
-      if (tabId) track('Diagram', 'Shared', 'TabScoped');
+      if (tabId) track('Document', 'Shared', 'TabScoped');
       // Returned so the Share dialog can copy the new pass straight away.
       return link;
     } catch {
@@ -113,11 +113,11 @@ export function useShareLinks(deps: ShareLinksDeps) {
   // deadline; the returned link replaces the stale row in state so the
   // dialog's Active / Inactive split updates immediately.
   const extendShareLink = async (code: string) => {
-    if (!diagramId) return;
+    if (!documentId) return;
     try {
-      const link = await apiExtendShareLink(selfParticipant.id, diagramId, code);
+      const link = await apiExtendShareLink(selfParticipant.id, documentId, code);
       setShareLinks((prev) => prev.map((l) => (l.code === code ? link : l)));
-      track('Diagram', 'Shared', 'Extended');
+      track('Document', 'Shared', 'Extended');
     } catch {
       toast.error('Could not extend the link. Try again.');
     }
@@ -126,20 +126,20 @@ export function useShareLinks(deps: ShareLinksDeps) {
   // Change which tabs a link opens (docs/specs/013-workspace/tab-scoped-share-links.md). The server tells the
   // link's holders to reload; the returned link replaces the row in place.
   const rescopeShareLink = async (code: string, tabId: string | null) => {
-    if (!diagramId) return;
+    if (!documentId) return;
     try {
-      const link = await apiRescopeShareLink(selfParticipant.id, diagramId, code, tabId);
+      const link = await apiRescopeShareLink(selfParticipant.id, documentId, code, tabId);
       setShareLinks((prev) => prev.map((l) => (l.code === code ? link : l)));
-      track('Diagram', 'Shared', 'Rescoped');
+      track('Document', 'Shared', 'Rescoped');
     } catch {
       toast.error('Could not change which tabs the link opens. Try again.');
     }
   };
 
   const revokeShareLink = async (code: string) => {
-    if (!diagramId) return;
+    if (!documentId) return;
     try {
-      await apiDeleteShareLink(selfParticipant.id, diagramId, code);
+      await apiDeleteShareLink(selfParticipant.id, documentId, code);
     } catch {
       // Don't optimistically drop the row when the revoke didn't land: the link
       // still works, so leave it on screen and tell the user.
@@ -147,14 +147,14 @@ export function useShareLinks(deps: ShareLinksDeps) {
       return;
     }
     // Counterpart to the Diagram/Shared emit when a link is created.
-    track('Diagram', 'Removed', 'ShareLink');
+    track('Document', 'Removed', 'ShareLink');
     setShareLinks((prev) => {
       const next = prev.filter((l) => l.code !== code);
       if (next.length === 0) {
-        setDiagramShareable(false);
-        setDiagramShareCode(null);
-      } else if (diagramShareCode === code) {
-        setDiagramShareCode(next[0]!.code);
+        setDocumentShareable(false);
+        setDocumentShareCode(null);
+      } else if (documentShareCode === code) {
+        setDocumentShareCode(next[0]!.code);
       }
       return next;
     });
@@ -167,16 +167,16 @@ export function useShareLinks(deps: ShareLinksDeps) {
   // access — `null` means "no password stored" (a successful clear);
   // FAILURE returns `undefined`, distinct from `null`, so the dialog
   // never renders "Saved" / "No password" over a write that didn't land.
-  const setDiagramSharePassword = async (
+  const setDocumentSharePassword = async (
     password: string | null,
   ): Promise<string | null | undefined> => {
-    if (!diagramId) return undefined;
+    if (!documentId) return undefined;
     const trimmed = password && password.trim() ? password : null;
     try {
-      const stored = await apiSetSharePassword(selfParticipant.id, diagramId, trimmed);
+      const stored = await apiSetSharePassword(selfParticipant.id, documentId, trimmed);
       setSharePassword(stored);
       // Telemetry (docs/specs/017-telemetry/telemetry.md): the `type` is a preset, never the password.
-      track('Diagram', 'Shared', stored ? 'PasswordSet' : 'PasswordCleared');
+      track('Document', 'Shared', stored ? 'PasswordSet' : 'PasswordCleared');
       return stored;
     } catch {
       toast.error('Could not update the share password. Try again.');
@@ -197,7 +197,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
     extendShareLink,
     rescopeShareLink,
     revokeShareLink,
-    setDiagramSharePassword,
+    setDocumentSharePassword,
     shareUrlFor,
   };
 }

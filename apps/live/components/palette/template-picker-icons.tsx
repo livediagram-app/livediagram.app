@@ -29,7 +29,7 @@ export function Spinner() {
   );
 }
 
-// Pencil for the step rail's "Just Draw" shortcut (docs/specs/007-editor/new-diagram-route.md).
+// Pencil for the step rail's "Just Draw" shortcut (docs/specs/007-editor/new-document-route.md).
 export function PencilIcon() {
   return (
     <Glyph size={13} units={16}>

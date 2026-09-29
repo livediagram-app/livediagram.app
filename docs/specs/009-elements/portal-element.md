@@ -65,7 +65,7 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 - **`apps/live/components/palette/PortalMenuSection.tsx`** — name, candidates, create.
 - **`apps/live/hooks/canvas/usePortalSetters.ts`** — the setters, off the style hook because they commit across tabs.
 - **`Canvas.tsx`** owns `enterPortal` (it has the viewport, the tabs, and the avatar hook) and hands the same action to both the portal's click and the walk-in, so the two can never drift. The walk hook gains `teleportTo` and an on-arrival portal callback; the two meet through a ref, because each needs the other.
-- Wiring: the `portal` kind in `packages/diagram` (union, `SHAPE_KINDS`, default size, factory, `portalTarget` validation), the self-painted render path, the palette tile in **Behaviour**, and the telemetry token.
+- Wiring: the `portal` kind in `packages/document` (union, `SHAPE_KINDS`, default size, factory, `portalTarget` validation), the self-painted render path, the palette tile in **Behaviour**, and the telemetry token.
 
 ## Out of scope
 

@@ -1,4 +1,4 @@
-// The page-wide thumbnail cache (docs/specs/006-diagram/diagram-snapshots.md): bounded, least recently
+// The page-wide thumbnail cache (docs/specs/006-document/document-snapshots.md): bounded, least recently
 // used out first, and an evicted picture's blob URL is released.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -11,13 +11,13 @@ import {
 } from './thumbnail-cache';
 
 vi.mock('@/lib/api-client', () => ({
-  apiFetchDiagramThumbnailUrl: async (_owner: string, id: string) => ({
+  apiFetchDocumentThumbnailUrl: async (_owner: string, id: string) => ({
     url: `blob:${id}`,
     backgroundColor: null,
   }),
 }));
 
-const req = (diagramId: string) => ({ ownerId: 'me', diagramId, version: 1, shareCode: null });
+const req = (documentId: string) => ({ ownerId: 'me', documentId, version: 1, shareCode: null });
 
 beforeEach(() => {
   URL.revokeObjectURL = vi.fn();

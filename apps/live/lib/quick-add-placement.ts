@@ -1,4 +1,4 @@
-import { isBoxed, type Element } from '@livediagram/diagram';
+import { isBoxed, type Element } from '@livediagram/document';
 import type { QuickConnectDirection } from '@/lib/canvas';
 
 type Bounds = { x: number; y: number; width: number; height: number };

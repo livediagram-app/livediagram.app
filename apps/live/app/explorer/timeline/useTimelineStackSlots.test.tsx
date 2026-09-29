@@ -13,20 +13,20 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 function event(id: string): TimelineEvent {
   return {
     id,
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: id,
-    eventType: 'diagram_renamed',
+    eventType: 'document_renamed',
     title: 'Diagram Renamed',
     description: null,
     occurredAt: 1,
     actorId: 'me',
-    snapshot: { diagramId: id, diagramName: id },
+    snapshot: { documentId: id, documentName: id },
   } as TimelineEvent;
 }
 
 const stack: TimelineStack = {
   key: 'a',
-  bucket: 'diagram::diagram_renamed',
+  bucket: 'diagram::document_renamed',
   events: [event('a'), event('b'), event('c')],
 };
 

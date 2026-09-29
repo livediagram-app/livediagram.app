@@ -7,7 +7,7 @@
 // picker for the CustomThemeBuilder with a Cancel back to browsing.
 //
 // Shared by the right-click Tab Look & Feel dialog (docs/specs/011-theme/canvas-and-theme-dialog.md) and the
-// New-diagram / template picker (docs/specs/007-editor/new-diagram-route.md) so the two surfaces, and the
+// New-diagram / template picker (docs/specs/007-editor/new-document-route.md) so the two surfaces, and the
 // custom-theme create/edit flow, can't drift. Selection is reported via
 // onSelect / onCommit; the host decides what that means: apply live (the
 // dialog) or stage the choice until Create (the new-diagram wizard).

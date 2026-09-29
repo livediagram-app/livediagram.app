@@ -7,7 +7,7 @@ import { Scene, Shape, Arrow, Panel, Dialog, Tabs, Tile, Label, Avatar } from '.
 
 /** The new-diagram welcome flow: a Blank card and a couple of template cards,
  *  the entry point to every diagram. */
-export function NewDiagramWelcome() {
+export function NewDocumentWelcome() {
   return (
     <Scene w={420} h={236} bg="plain">
       <Dialog

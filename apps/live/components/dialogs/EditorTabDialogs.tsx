@@ -2,8 +2,8 @@
 
 import dynamic from 'next/dynamic';
 
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
-import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { resolveTabBackdrop } from '@/lib/themes';
 import { panelEnabled } from '@/lib/user-preferences';
@@ -34,7 +34,7 @@ export function EditorTabDialogs() {
     activeTab,
     tabs,
     multiSelectedIds,
-    diagramName,
+    documentName,
     imageContext,
     setExportOpen,
     importOpen,
@@ -48,23 +48,23 @@ export function EditorTabDialogs() {
     shareUrlFor,
     clerkUserId,
     clerkDisplayName,
-    diagramId,
+    documentId,
     updateParticipantName,
     createShareLink,
     revokeShareLink,
     extendShareLink,
     rescopeShareLink,
-    setDiagramSharePassword,
+    setDocumentSharePassword,
     setShareDialogOpen,
   } = useEditorContext();
 
-  // Offline diagrams (docs/specs/006-diagram/offline-mode.md) can't be shared until they're synced to the
+  // Offline diagrams (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
   // owner's account; the Share dialog shows a gate that runs this conversion,
   // then reloads so the editor re-hydrates as a normal cloud diagram.
-  const isOffline = useIsOfflineDiagram(diagramId);
+  const isOffline = useIsOfflineDocument(documentId);
   const syncToCloud = async () => {
-    if (!diagramId) return;
-    await saveOfflineToCloud(diagramId, selfParticipant.id);
+    if (!documentId) return;
+    await saveOfflineToCloud(documentId, selfParticipant.id);
     window.location.reload();
   };
 
@@ -84,7 +84,7 @@ export function EditorTabDialogs() {
               : {}),
           }}
           scope={exportScope}
-          diagramName={diagramName}
+          documentName={documentName}
           imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}
@@ -114,7 +114,7 @@ export function EditorTabDialogs() {
           onRevokeLink={revokeShareLink}
           onRescopeLink={rescopeShareLink}
           onExtendLink={extendShareLink}
-          onSetPassword={setDiagramSharePassword}
+          onSetPassword={setDocumentSharePassword}
           offline={isOffline}
           onSyncToCloud={syncToCloud}
           onClose={() => setShareDialogOpen(false)}

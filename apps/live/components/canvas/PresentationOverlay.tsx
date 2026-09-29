@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { announce } from '@/lib/announcer';
 
-import { slideName, type BoxedElement, type Slide, type Tab } from '@livediagram/diagram';
+import { slideName, type BoxedElement, type Slide, type Tab } from '@livediagram/document';
 
 import {
   PresentationElementPopover,

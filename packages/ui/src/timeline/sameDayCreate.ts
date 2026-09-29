@@ -14,10 +14,10 @@
 import type { TimelineEvent } from './types';
 import { dateKey } from './useTimelineGrouping';
 
-function diagramIdOf(event: TimelineEvent): string | null {
+function documentIdOf(event: TimelineEvent): string | null {
   // Optional chaining: a fixture or an older wire row can arrive with no
   // snapshot at all, and a missing id just means "not this rule".
-  const id = event.snapshot?.['diagramId'];
+  const id = event.snapshot?.['documentId'];
   return typeof id === 'string' && id.length > 0 ? id : null;
 }
 
@@ -25,15 +25,15 @@ export function collapseSameDayCreate(events: readonly TimelineEvent[]): Timelin
   // `<diagramId>|<local day>` for every create in the list.
   const created = new Set<string>();
   for (const event of events) {
-    if (event.eventType !== 'diagram_created') continue;
-    const id = diagramIdOf(event);
+    if (event.eventType !== 'document_created') continue;
+    const id = documentIdOf(event);
     if (id) created.add(`${id}|${dateKey(event.occurredAt)}`);
   }
   if (created.size === 0) return [...events];
 
   return events.filter((event) => {
-    if (event.eventType !== 'diagram_edited') return true;
-    const id = diagramIdOf(event);
+    if (event.eventType !== 'document_edited') return true;
+    const id = documentIdOf(event);
     return !id || !created.has(`${id}|${dateKey(event.occurredAt)}`);
   });
 }

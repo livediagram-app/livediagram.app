@@ -171,7 +171,7 @@ function SearchOverlay({
 // --- Reusable result icons ---------------------------------------------------
 
 /** A diagram / board glyph: a small framed canvas with two nodes. */
-function DiagramIcon() {
+function DocumentIcon() {
   return (
     <g>
       <rect
@@ -251,8 +251,8 @@ export function SearchOverview() {
       query="check"
       groups={[
         {
-          title: 'Diagrams',
-          rows: [{ icon: <DiagramIcon />, label: 'Checkout flow', active: true }],
+          title: 'Documents',
+          rows: [{ icon: <DocumentIcon />, label: 'Checkout flow', active: true }],
         },
         {
           title: 'Tabs',
@@ -271,14 +271,14 @@ export function SearchOverview() {
 }
 
 /** Results limited to diagrams, folders, and shared diagrams. */
-export function SearchDiagrams() {
+export function SearchDocuments() {
   return (
     <SearchOverlay
       query="onboarding"
       groups={[
         {
-          title: 'Diagrams',
-          rows: [{ icon: <DiagramIcon />, label: 'Onboarding flow', active: true }],
+          title: 'Documents',
+          rows: [{ icon: <DocumentIcon />, label: 'Onboarding flow', active: true }],
         },
         {
           title: 'Personal Space',
@@ -286,7 +286,7 @@ export function SearchDiagrams() {
         },
         {
           title: 'Shared with you',
-          rows: [{ icon: <DiagramIcon />, label: 'Onboarding v2', meta: 'shared' }],
+          rows: [{ icon: <DocumentIcon />, label: 'Onboarding v2', meta: 'shared' }],
         },
       ]}
     />
@@ -304,7 +304,7 @@ export function SearchTeams() {
           rows: [
             { icon: <TeamIcon />, label: 'Platform team', active: true },
             { icon: <FolderIcon accent />, label: 'Architecture', meta: 'in Platform' },
-            { icon: <DiagramIcon />, label: 'Platform overview', meta: 'in Platform' },
+            { icon: <DocumentIcon />, label: 'Platform overview', meta: 'in Platform' },
           ],
         },
       ]}
@@ -341,8 +341,8 @@ export function SearchAddToCanvas() {
       query="cylinder"
       groups={[
         {
-          title: 'Diagrams',
-          rows: [{ icon: <DiagramIcon />, label: 'Storage cylinder demo' }],
+          title: 'Documents',
+          rows: [{ icon: <DocumentIcon />, label: 'Storage cylinder demo' }],
         },
         {
           title: 'Add to canvas',

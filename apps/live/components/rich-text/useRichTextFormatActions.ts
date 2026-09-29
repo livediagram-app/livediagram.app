@@ -11,7 +11,7 @@ import {
   type RunHeading,
   type RunPatch,
   type TextRun,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { domSelectionToOffsets } from '@/components/rich-text/rich-text-dom';
 import { wordRangeAt, type RunDefaults } from '@/components/rich-text/rich-text-format';
 

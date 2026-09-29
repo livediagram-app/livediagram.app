@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import type { CommentMention, ShapeElement } from '@livediagram/diagram';
+import type { CommentMention, ShapeElement } from '@livediagram/document';
 
 import { useRelativeNow } from '@/lib/relative-time';
 import { CollabPanel, tint } from '@/components/canvas/collab/collab-chrome';
@@ -41,7 +41,7 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 // CollabPanel frame (reflowing, like the Q&A board: resizing makes room for
 // more of the thread, not bigger type), and the shared composer.
 
-// Same cap the api enforces on a comment (packages/diagram element-deltas).
+// Same cap the api enforces on a comment (packages/document element-deltas).
 const COMMENT_MAX_TEXT = 5000;
 
 export function CommentPanelFace({

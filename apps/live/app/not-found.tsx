@@ -5,7 +5,7 @@
 // the `placeholder` enumerated by generateStaticParams — i.e. every
 // real diagram URL. Rather than fight that (multiple prior attempts:
 // route-level override, pre-hydration URL swap, captured-native
-// replaceState — see docs/specs/007-editor/new-diagram-route.md), embrace it: the not-found slot
+// replaceState — see docs/specs/007-editor/new-document-route.md), embrace it: the not-found slot
 // renders the editor, so a URL mismatch produces the editor instead
 // of a 404 page. The editor reads the real id from
 // `window.location.pathname` on mount and loads the diagram via the
@@ -15,7 +15,7 @@
 // API-404 surface, which is good enough until we have a proper
 // routing story for unknown paths.
 
-import EditorPage from './diagram/[id]/editor-page';
+import EditorPage from './document/[id]/editor-page';
 
 export default function NotFound() {
   return <EditorPage />;

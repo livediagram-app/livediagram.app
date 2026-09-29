@@ -1,4 +1,4 @@
-import { SHAPE_MARKERS, type ShapeMarker } from '@livediagram/diagram';
+import { SHAPE_MARKERS, type ShapeMarker } from '@livediagram/document';
 import type { CommandContext, CommandHandlers, EditorCommand } from './editor-commands';
 
 // COMMANDS THAT ACT ON WHAT IS SELECTED (docs/specs/007-editor/command-palette.md's search palette).

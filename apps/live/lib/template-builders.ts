@@ -8,7 +8,7 @@
 // /live/new imports it statically since it's the template-creation
 // page by definition.
 
-import { type Tab } from '@livediagram/diagram';
+import { type Tab } from '@livediagram/document';
 import { buildTemplate, templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
 import { getTheme, recolourElementsForTheme } from './themes';
 

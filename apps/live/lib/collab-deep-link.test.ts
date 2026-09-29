@@ -7,8 +7,8 @@ import { collabDeepLinkHref, parseCollabDeepLink } from './collab-deep-link';
 // parameter names cannot drift. The round trip is the contract.
 
 const place: ActivityPlace = {
-  diagramId: 'd 1',
-  diagramName: 'Payments',
+  documentId: 'd 1',
+  documentName: 'Payments',
   teamId: null,
   via: 'own',
   shareCode: null,

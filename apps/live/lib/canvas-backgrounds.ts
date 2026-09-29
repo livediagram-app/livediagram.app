@@ -1,4 +1,4 @@
-import type { BackgroundPattern } from '@livediagram/diagram';
+import type { BackgroundPattern } from '@livediagram/document';
 
 // Canvas pattern + backdrop builders lifted out of Canvas.tsx. Pure
 // functions: given a tab's chosen `BackgroundPattern`, the current

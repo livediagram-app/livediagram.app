@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { TableCellStyle, TableElement, TextSize } from '@livediagram/diagram';
+import type { TableCellStyle, TableElement, TextSize } from '@livediagram/document';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {

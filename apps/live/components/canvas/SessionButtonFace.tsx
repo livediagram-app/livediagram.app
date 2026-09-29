@@ -13,7 +13,7 @@ import {
   sessionButtonPlan,
   type SessionButtonConfig,
   type SessionPlan,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { SessionSettingsMenu } from '@/components/canvas/SessionSettingsMenu';
 import { PollIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';

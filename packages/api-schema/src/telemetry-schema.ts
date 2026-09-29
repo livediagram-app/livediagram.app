@@ -19,7 +19,7 @@ import { isCtaSource } from './cta-sources';
 import { isValidPageViewPath } from './page-views';
 
 export const TELEMETRY_CATEGORIES = [
-  'Diagram',
+  'Document',
   'Element',
   'Tab',
   'Theme',
@@ -35,7 +35,7 @@ export const TELEMETRY_CATEGORIES = [
   'Search',
   'UI',
   'Folder',
-  // Layers (docs/specs/006-diagram/layers.md): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
+  // Layers (docs/specs/006-document/layers.md): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
   // 'Reordered' for the layer rows, 'Toggled' with `type`
   // 'Hidden'/'Shown'/'Locked'/'Unlocked' for the eye + padlock,
   // 'Selected' for an active-layer switch, 'Moved' for move-selection-

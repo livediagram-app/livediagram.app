@@ -1,23 +1,23 @@
 'use client';
 
-import { truncateName } from '@livediagram/diagram';
+import { truncateName } from '@livediagram/document';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { DiagramSummary, Folder } from '@livediagram/api-schema';
+import type { DocumentSummary, Folder } from '@livediagram/api-schema';
 import {
   apiCreateFolder,
-  apiDeleteDiagram,
+  apiDeleteDocument,
   apiDeleteFolder,
   apiGetTeamLibrary,
-  apiSaveDiagramMeta,
-  apiSetDiagramFolder,
+  apiSaveDocumentMeta,
+  apiSetDocumentFolder,
   apiUpdateFolder,
 } from '@/lib/api-client';
-import { duplicateDiagram as duplicateDiagramApi } from '@/lib/duplicate-diagram';
+import { duplicateDocument as duplicateDocumentApi } from '@/lib/duplicate-document';
 import { accepted } from '@/lib/accepted';
 import { track } from '@/lib/telemetry';
-import { indexFolders, folderBreadcrumb, groupDiagramsByFolder } from '@/lib/folder-tree';
+import { indexFolders, folderBreadcrumb, groupDocumentsByFolder } from '@/lib/folder-tree';
 
-// One team's shared library (docs/specs/013-workspace/team-shared-diagrams.md): the folder tree + diagrams the
+// One team's shared library (docs/specs/013-workspace/team-shared-documents.md): the folder tree + diagrams the
 // "Shared diagrams" section on the team page renders, plus the
 // mutations every joined member may perform. Mirrors useFolders +
 // useExplorerState's derived shapes, scoped to a single team. All
@@ -26,7 +26,7 @@ import { indexFolders, folderBreadcrumb, groupDiagramsByFolder } from '@/lib/fol
 
 export function useTeamLibrary(ownerId: string | null, teamId: string) {
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [diagrams, setDiagrams] = useState<DiagramSummary[]>([]);
+  const [liveDocs, setDocuments] = useState<DocumentSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Sets state only from the response callbacks, so the load effect below
@@ -37,7 +37,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
       .then(
         (lib) => {
           setFolders(lib.folders);
-          setDiagrams(lib.diagrams);
+          setDocuments(lib.documents);
         },
         () => {
           // Transient failure: keep whatever is on screen, next refresh
@@ -54,7 +54,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   if (libraryKey !== loadedKey) {
     setLoadedKey(libraryKey);
     setFolders([]);
-    setDiagrams([]);
+    setDocuments([]);
     setLoading(true);
   }
 
@@ -66,7 +66,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
     return indexFolders(folders);
   }, [folders]);
 
-  const diagramsByFolder = useMemo(() => groupDiagramsByFolder(diagrams), [diagrams]);
+  const documentsByFolder = useMemo(() => groupDocumentsByFolder(liveDocs), [liveDocs]);
 
   // Breadcrumb chain root → folderId, tolerant of dangling parents
   // mid-refresh (same shape as the personal explorer's).
@@ -130,37 +130,37 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
 
   // Re-folder a diagram WITHIN the team (folderId null = the team's
   // Unsorted).
-  const moveDiagram = useCallback(
-    async (diagramId: string, folderId: string | null) => {
+  const moveDocument = useCallback(
+    async (documentId: string, folderId: string | null) => {
       if (!ownerId) return;
-      if (await accepted(apiSetDiagramFolder(ownerId, diagramId, folderId, teamId)))
-        track('Team', 'Moved', 'Diagram');
+      if (await accepted(apiSetDocumentFolder(ownerId, documentId, folderId, teamId)))
+        track('Team', 'Moved', 'Document');
       await refresh();
     },
     [ownerId, teamId, refresh],
   );
 
   // Hard-delete a team diagram. Any joined member may delete it
-  // (docs/specs/013-workspace/team-shared-diagrams.md), gated server-side by the team-member delete check.
-  const deleteDiagram = useCallback(
-    async (diagramId: string) => {
+  // (docs/specs/013-workspace/team-shared-documents.md), gated server-side by the team-member delete check.
+  const deleteDocument = useCallback(
+    async (documentId: string) => {
       if (!ownerId) return;
-      if (await accepted(apiDeleteDiagram(ownerId, diagramId))) track('Diagram', 'Deleted');
+      if (await accepted(apiDeleteDocument(ownerId, documentId))) track('Document', 'Deleted');
       await refresh();
     },
     [ownerId, refresh],
   );
 
   // Rename a team diagram in place. Any joined member may edit it
-  // (docs/specs/013-workspace/team-shared-diagrams.md), gated server-side by canEditDiagram.
-  const renameDiagram = useCallback(
-    async (diagramId: string, name: string) => {
+  // (docs/specs/013-workspace/team-shared-documents.md), gated server-side by canEditDiagram.
+  const renameDocument = useCallback(
+    async (documentId: string, name: string) => {
       if (!ownerId) return;
-      // docs/specs/006-diagram/name-length.md.
+      // docs/specs/006-document/name-length.md.
       const trimmed = truncateName(name);
       if (!trimmed) return;
-      if (await accepted(apiSaveDiagramMeta(ownerId, { id: diagramId, name: trimmed })))
-        track('Diagram', 'Renamed');
+      if (await accepted(apiSaveDocumentMeta(ownerId, { id: documentId, name: trimmed })))
+        track('Document', 'Renamed');
       await refresh();
     },
     [ownerId, refresh],
@@ -168,37 +168,37 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
 
   // Duplicate a team diagram, keeping the copy IN the team alongside
   // the original (same folder). duplicateDiagramApi mints a personal
-  // copy first; we then file it into this team + folder (docs/specs/013-workspace/team-shared-diagrams.md).
-  const duplicateDiagram = useCallback(
-    async (diagramId: string) => {
+  // copy first; we then file it into this team + folder (docs/specs/013-workspace/team-shared-documents.md).
+  const duplicateDocument = useCallback(
+    async (documentId: string) => {
       if (!ownerId) return;
-      const sourceFolderId = diagrams.find((d) => d.id === diagramId)?.folderId ?? null;
-      const newId = await duplicateDiagramApi(ownerId, diagramId);
+      const sourceFolderId = liveDocs.find((d) => d.id === documentId)?.folderId ?? null;
+      const newId = await duplicateDocumentApi(ownerId, documentId);
       if (!newId) return;
-      await apiSetDiagramFolder(ownerId, newId, sourceFolderId, teamId).catch(() => {});
-      track('Diagram', 'Duplicated');
+      await apiSetDocumentFolder(ownerId, newId, sourceFolderId, teamId).catch(() => {});
+      track('Document', 'Duplicated');
       await refresh();
     },
-    [ownerId, teamId, diagrams, refresh],
+    [ownerId, teamId, liveDocs, refresh],
   );
 
   return {
     folders,
-    diagrams,
+    documents: liveDocs,
     loading,
     refresh,
     folderById,
     childrenByParent,
     rootFolders,
-    diagramsByFolder,
+    documentsByFolder,
     breadcrumb,
     createFolder,
     renameFolder,
     moveFolder,
     deleteFolder,
-    moveDiagram,
-    deleteDiagram,
-    renameDiagram,
-    duplicateDiagram,
+    moveDocument,
+    deleteDocument,
+    renameDocument,
+    duplicateDocument,
   };
 }

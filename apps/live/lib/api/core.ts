@@ -7,13 +7,13 @@ import type {
   ApiToken,
   ChangeLogEntry,
   CustomTheme,
-  Diagram,
+  LiveDoc,
   Folder,
   ShareLink,
   ShareRole,
 } from '@livediagram/api-schema';
 import { isClerkIdShape } from '@livediagram/api-schema';
-import { stampTabKind, type Tab } from '@livediagram/diagram';
+import { stampTabKind, type Tab } from '@livediagram/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { getGuestSelfSig } from '../local-identity';
 import { notifyApiWrite } from './write-signal';
@@ -46,7 +46,7 @@ export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // we give up and show whatever we have. Both mount paths that load the
 // list (the editor and the new-diagram screen) arm this same safety
 // timeout, so it lives here next to the list-load calls.
-export const DIAGRAM_LIST_LOAD_SAFETY_MS = 10_000;
+export const DOCUMENT_LIST_LOAD_SAFETY_MS = 10_000;
 
 // WebSocket counterpart of API_BASE. Converts http(s):// to ws(s):// for
 // absolute bases; for the same-origin default it builds from
@@ -122,9 +122,9 @@ export type ParticipantResponse = {
 // returns `passwordRequired` instead of the diagram until the visitor
 // supplies the matching password; `invalid` is true only when a wrong
 // password was submitted (vs none yet), so the gate can show an error.
-export type SharedDiagramResolution =
+export type SharedDocumentResolution =
   // `tabId`: the tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
-  | { diagram: Diagram; role: ShareRole; tabId: string | null }
+  | { document: LiveDoc; role: ShareRole; tabId: string | null }
   | { passwordRequired: true; invalid: boolean };
 
 // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). When a token provider has been
@@ -430,7 +430,7 @@ export async function apiDelete(
 // but must never enter the persisted tab body (`tabs.data`):
 //   - `templateChosen` — UI-only (have we dismissed the per-tab
 //     template picker yet?); a pure frontend concern.
-//   - `folder` — per-diagram membership (docs/specs/006-diagram/tab-folders.md) that lives on the
+//   - `folder` — per-diagram membership (docs/specs/006-document/tab-folders.md) that lives on the
 //     diagram_tabs link, carried via the meta/reorder path. Leaking it
 //     into the shared body would make a folder follow the tab into
 //     every diagram it's shared into, breaking per-diagram scope.

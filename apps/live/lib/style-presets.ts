@@ -35,10 +35,10 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { ShapeColorPreset } from './themes';
 import { isTechIconId } from './tech-icons';
-import type { TablePreset } from '@livediagram/diagram';
+import type { TablePreset } from '@livediagram/document';
 
 // Apply a theme-derived style preset to a shape: its colours (fill + stroke +
 // text) AND its border weight / pattern together — a preset is one complete

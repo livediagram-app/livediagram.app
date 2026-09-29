@@ -3,7 +3,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { useShapeDrawing } from './useShapeDrawing';
 

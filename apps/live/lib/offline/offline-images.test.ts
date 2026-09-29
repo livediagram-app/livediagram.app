@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { dataUrlToFile, isDataImageId, rewriteImageIds } from './offline-images';
 
 // 1x1 transparent PNG.

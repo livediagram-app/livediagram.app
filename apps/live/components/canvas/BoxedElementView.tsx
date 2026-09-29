@@ -18,7 +18,7 @@ import {
   isSelfDrawingShape,
   type ShapeMarker,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { LaneGutter } from '@/components/canvas/LaneGutter';
@@ -259,7 +259,9 @@ function BoxedElementViewImpl({
   const linked =
     element.type !== 'link-card' &&
     element.link !== undefined &&
-    (element.link.kind === 'tab' || element.link.kind === 'diagram' || element.link.kind === 'url');
+    (element.link.kind === 'tab' ||
+      element.link.kind === 'document' ||
+      element.link.kind === 'url');
 
   // An inline icon sits beside the label on a regular shape (the
   // dedicated 'icon' shape kind has its own glyph-above-caption render

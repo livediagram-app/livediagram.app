@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
-import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livediagram/diagram';
+import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livediagram/document';
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { StampPlacement } from '@/lib/stamp-placement';

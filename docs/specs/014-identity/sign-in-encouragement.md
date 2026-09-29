@@ -36,7 +36,7 @@ Common gate (all must hold):
 The pane reserves extra bottom padding while it's up so the last row
 never hides behind it.
 
-**Editor** (`app/diagram/[id]/EditorView.tsx`): shown only **after a
+**Editor** (`app/document/[id]/EditorView.tsx`): shown only **after a
 ~5 minute delay** into the session (`SIGNIN_BANNER_DELAY_MS`), so it
 never greets someone the instant they open a diagram. It sits above
 the tab bar and over the canvas chrome, and is additionally hidden:
@@ -74,7 +74,7 @@ Lists the benefits, each with an icon, headline, and a sentence:
 2. **Open them anywhere.** Your work syncs to your account, so the
    same diagrams are there on your laptop, desktop, and phone.
 3. **Work as a team.** Create teams, invite teammates by email, and
-   share a team library everyone can manage ([Teams](../013-workspace/teams.md), [Team shared diagrams](../013-workspace/team-shared-diagrams.md)).
+   share a team library everyone can manage ([Teams](../013-workspace/teams.md), [Team shared diagrams](../013-workspace/team-shared-documents.md)).
 4. **Use your real name.** Shared diagrams and live cursors show your
    account name instead of a random guest identity, so collaborators
    know who did what.

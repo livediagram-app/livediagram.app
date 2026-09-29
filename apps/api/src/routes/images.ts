@@ -4,9 +4,9 @@
 import { sha256Hex } from '@livediagram/api-schema';
 import {
   deleteImage,
-  diagramReferencesImage,
+  documentReferencesImage,
   findImageBySha,
-  getDiagram,
+  getDocument,
   getImage,
   imageTotalsByOwner,
   imageUsageByOwner,
@@ -264,10 +264,10 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
         // owner: if a diagram references an image owned by
         // a different owner (only happens via Copy-Diagram
         // in v1), the share recipient can still load it.
-        const diagram = await getDiagram(env, d);
-        if (diagram) {
+        const liveDoc = await getDocument(env, d);
+        if (liveDoc) {
           // canReadDiagram (owner OR any valid share code
-          // mapping to this diagram, see auth/diagram-access.ts)
+          // mapping to this diagram, see auth/document-access.ts)
           // is the same access policy spelled out inline here
           // before commit 069b785 / 5527329 extracted it.
           // Reusing the helper keeps the image-read auth in
@@ -277,9 +277,9 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
           // both routes follow.
           // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) reads the images their
           // own tab uses, not every image in the diagram.
-          const grant = await gateGrant(ctx, d, diagram.ownerId, diagram.teamId);
+          const grant = await gateGrant(ctx, d, liveDoc.ownerId, liveDoc.teamId);
           if (grant) {
-            allowed = await diagramReferencesImage(env, d, imageId, grant.tabScope);
+            allowed = await documentReferencesImage(env, d, imageId, grant.tabScope);
           }
         }
       }

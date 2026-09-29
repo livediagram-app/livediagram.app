@@ -93,7 +93,7 @@ const CARDS: {
   // Presenting (docs/specs/012-collaboration/presentation-mode.md): the panels give way to the presenting HUD, and
   // the canvas shows the deck's slides instead of the whole diagram.
   presenting?: boolean;
-  // Dock the Layers panel (docs/specs/006-diagram/layers.md) on this window's canvas, and minimise
+  // Dock the Layers panel (docs/specs/006-document/layers.md) on this window's canvas, and minimise
   // the palette to its header bar (as the editor does), so the wide
   // timeline has the canvas to itself.
   layers?: boolean;
@@ -178,7 +178,7 @@ const TAB_PILL =
   'flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium text-(--tab) dark:text-[color-mix(in_srgb,var(--tab)_40%,white)]';
 
 // The theme cards the Look & Feel dialog mock offers, each its scheme's canvas ringed
-// in its stroke (packages/diagram themes-data.ts). Default is what the flowchart
+// in its stroke (packages/document themes-data.ts). Default is what the flowchart
 // wears until the pick. In light the pick is Forest; in dark the dialog shows the
 // Dark category (darkCategorySchemes in apps/live), the Default scheme's dark half
 // first, and the pick is Pine.
@@ -283,7 +283,7 @@ export function HeroIllustration() {
         >
           {CARDS.map((c, i) => {
             const playing = i === active;
-            const diagram =
+            const liveDoc =
               c.key === 'mindmap' ? (
                 <MindMapDiagram playing={playing} />
               ) : c.key === 'slides' ? (
@@ -317,7 +317,7 @@ export function HeroIllustration() {
                   presenting={c.presenting ?? false}
                   tool={c.tool}
                   playing={playing}
-                  diagram={diagram}
+                  document={liveDoc}
                 />
               </button>
             );
@@ -360,7 +360,7 @@ export function HeroIllustration() {
 function EditorWindow({
   title,
   tabs,
-  diagram,
+  document: liveDoc,
   playing,
   shared,
   theming,
@@ -371,7 +371,7 @@ function EditorWindow({
 }: {
   title: string;
   tabs: TabDef[];
-  diagram: ReactNode;
+  document: ReactNode;
   playing: boolean;
   shared: boolean;
   theming: boolean;
@@ -545,7 +545,7 @@ function EditorWindow({
             </div>
           </div>
 
-          {/* The Layers panel (docs/specs/006-diagram/layers.md), docked on the timeline window: one
+          {/* The Layers panel (docs/specs/006-document/layers.md), docked on the timeline window: one
               row per layer with its eye toggle, the hidden one dimmed. */}
           {layers ? (
             <div className="absolute left-2 top-2 hidden w-32 flex-col rounded-lg border border-slate-200 bg-white shadow-md sm:flex dark:border-slate-800 dark:bg-slate-900">
@@ -611,7 +611,7 @@ function EditorWindow({
               preserveAspectRatio="xMidYMid meet"
             >
               <g key={playing ? 'play' : 'idle'} className={playing ? undefined : 'hero-static'}>
-                {diagram}
+                {liveDoc}
               </g>
             </svg>
           </div>

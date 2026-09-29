@@ -16,7 +16,7 @@ import { forAppearance } from './appearance-colours';
 // here until it gets a description (the lookup still tolerates stray
 // strings via the `?? fallback` at the call site).
 export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
-  Diagram:
+  Document:
     'Whole-diagram lifecycle: opening, creating, sharing, joining, exporting, undo/redo, moving between folders.',
   Element:
     'Things on the canvas: shapes, text, stickies, arrows, images. Add, delete, group, link, layer order.',
@@ -66,7 +66,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
 // `categoryColor` accessor keeps a slate fallback for stray strings. In dark
 // it hands back the hue lifted to read on the dark card (appearance-colours).
 const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
-  Diagram: '#0ea5e9',
+  Document: '#0ea5e9',
   Element: '#10b981',
   Tab: '#f59e0b',
   Theme: '#8b5cf6',

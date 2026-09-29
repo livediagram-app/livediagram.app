@@ -16,7 +16,7 @@ describe('pascalToken', () => {
   it('PascalCases words split on anything non-alphanumeric', () => {
     expect(pascalToken('save tab')).toBe('SaveTab');
     expect(pascalToken('room-ticket')).toBe('RoomTicket');
-    expect(pascalToken('find_diagrams')).toBe('FindDiagrams');
+    expect(pascalToken('find_documents')).toBe('FindDocuments');
     expect(pascalToken('PUT')).toBe('PUT');
   });
 
@@ -47,7 +47,7 @@ describe('errorTypeToken', () => {
 
   it('always passes the ingest validator', () => {
     for (const t of [
-      errorTypeToken('Internal', 'Put', 'Diagrams', 'Tabs', 'Comments'),
+      errorTypeToken('Internal', 'Put', 'Documents', 'Tabs', 'Comments'),
       errorTypeToken('Render', 'ContextMenu', 'ChunkLoadError'),
       errorTypeToken('Network', 'dismiss timeline events'),
     ]) {
@@ -79,7 +79,7 @@ describe('errorNameToken', () => {
 
 describe('errorPageToken', () => {
   it('names the page by its first segment', () => {
-    expect(errorPageToken('/diagram')).toBe('Diagram');
+    expect(errorPageToken('/diagram')).toBe('Document');
     expect(errorPageToken('/explorer/team')).toBe('Explorer');
     expect(errorPageToken('/sso-callback')).toBe('SsoCallback');
     expect(errorPageToken('/help/canvas/the-canvas')).toBe('Help');

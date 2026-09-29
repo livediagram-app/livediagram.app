@@ -70,7 +70,7 @@ groups all three (they're all in `isSelfDrawingShape` too).
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.
 - All three share `pieAnim?` / `pieAnimSpeed?` / `pieAnimRepeat?` / `chartLegend?` / `chartLegendPosition?`.
   The types + constants + `isPieShape` / `isBarShape` / `isLineShape` /
-  `isChartShape` live in `@livediagram/diagram` (`src/data-shapes.ts`).
+  `isChartShape` live in `@livediagram/document` (`src/data-shapes.ts`).
 - Rendered by `PieChartView` / `BarChartView` / `LineChartView`: SVG marks in the
   default palette or a per-mark colour, with a `ChartLegend`; the mark group
   carries the `lvd-pie-*` animation (CSS in `globals.css`, reduced-motion-safe),
@@ -99,7 +99,7 @@ else the categorical ramp derived from the tab theme. That left no way to say
 "this chart is greys" short of opening the data editor and setting a colour on
 every row by hand, and a row added later still came out in the theme's colours.
 
-`chartPalette` (a `ChartPaletteId` from `packages/diagram/src/chart-palettes.ts`)
+`chartPalette` (a `ChartPaletteId` from `packages/document/src/chart-palettes.ts`)
 slots in as the middle rung: **per-datum colour > the chart's palette > the tab
 theme's > the built-in ramp**. Stored as an id, so it keeps applying as the data
 grows, and it never touches the data, so a slice somebody coloured on purpose

@@ -7,8 +7,8 @@
 // the worker-only `Env` binding shape that has nowhere else to live.
 
 export type {
-  Diagram as DiagramDTO,
-  DiagramSummary,
+  LiveDoc as DocumentDTO,
+  DocumentSummary,
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
@@ -29,7 +29,7 @@ export type {
 // wire format (purely a server-side capability handle).
 export type Env = {
   DB: D1Database;
-  DIAGRAM_ROOM: DurableObjectNamespace;
+  DOCUMENT_ROOM: DurableObjectNamespace;
   // Clerk JWKS URL: when set, the request handler verifies Bearer
   // tokens against it via `src/auth/clerk.ts` and prefers the
   // resulting userId over `X-Owner-Id`. When unset, the worker stays

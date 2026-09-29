@@ -1,6 +1,6 @@
 'use client';
 
-import { DiagramIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
+import { DocumentIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useState } from 'react';
 import { Button, Glyph } from '@livediagram/ui';
 import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
@@ -8,7 +8,7 @@ import { ViewToggle } from '@/app/explorer/ViewToggle';
 import type { ExplorerViewMode } from '@/app/explorer/useExplorerViewMode';
 import type { Folder } from '@livediagram/api-schema';
 
-// The bar above the team library (docs/specs/013-workspace/team-shared-diagrams.md): where you are, and the two things
+// The bar above the team library (docs/specs/013-workspace/team-shared-documents.md): where you are, and the two things
 // you can do from anywhere in it — switch card / list view, and add something.
 //
 // Split out of TeamSharedDiagrams because it is the half of that component
@@ -108,12 +108,12 @@ export function TeamLibraryHeader({
             >
               <MenuTileGrid cols={2}>
                 {/* New diagram lands directly in the team library, scoped
-                to the folder currently open (docs/specs/013-workspace/team-shared-diagrams.md): /live/new
+                to the folder currently open (docs/specs/013-workspace/team-shared-documents.md): /live/new
                 applies the team + folder placement after the create. */}
                 <MenuTile
                   icon={
                     <span className="[&_svg]:h-5 [&_svg]:w-5">
-                      <DiagramIcon />
+                      <DocumentIcon />
                     </span>
                   }
                   label="New diagram"

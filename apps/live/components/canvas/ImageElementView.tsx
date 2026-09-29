@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { BORDER_RADIUS_PX, type ImageElement } from '@livediagram/diagram';
+import { BORDER_RADIUS_PX, type ImageElement } from '@livediagram/document';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 import { Glyph } from '@livediagram/ui';
 
@@ -28,7 +28,7 @@ type ImageElementViewProps = {
   ownerId: string;
   // Diagram the element lives on; required for share-code reads so
   // the API can verify the diagram references this image.
-  diagramId: string;
+  documentId: string;
   // Share code carried by the visitor, when any. Null for the owner
   // session. Drives the X-Share-Code header on the fetch.
   shareCode: string | null;
@@ -45,12 +45,12 @@ type ImageElementViewProps = {
 function ImageElementViewImpl({
   element,
   ownerId,
-  diagramId,
+  documentId,
   shareCode,
   canOpenPicker,
 }: ImageElementViewProps) {
   const { imageId } = element;
-  const state = useImageBlobUrl(ownerId, imageId, { diagramId, shareCode });
+  const state = useImageBlobUrl(ownerId, imageId, { documentId, shareCode });
 
   // Corner radius follows the element's borderRadius so a circular avatar
   // ('full' → clamped to 50%) and a rounded hero ('lg') clip correctly;

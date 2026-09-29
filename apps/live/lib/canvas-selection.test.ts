@@ -1,4 +1,4 @@
-import { type Element, type ShapeElement } from '@livediagram/diagram';
+import { type Element, type ShapeElement } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { deriveCanvasSelection } from './canvas-selection';
 

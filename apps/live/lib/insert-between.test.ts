@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type ArrowElement, type Element, type StickyElement } from '@livediagram/diagram';
+import { type ArrowElement, type Element, type StickyElement } from '@livediagram/document';
 import {
   DEFAULT_INSERTION_GAP,
   applyInsertionShift,

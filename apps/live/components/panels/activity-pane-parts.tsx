@@ -101,7 +101,7 @@ export function ActivityThreadRow({
       hint={
         thread.mentionsYou
           ? 'Mentioned You'
-          : thread.onYourDiagram && !thread.youCommented
+          : thread.onYourDocument && !thread.youCommented
             ? 'Your diagram'
             : null
       }
@@ -205,7 +205,7 @@ function PlaceChip({ place }: { place: ActivityPlace }) {
           <TeamIcon />
         </span>
       ) : null}
-      <span className="truncate">{place.diagramName}</span>
+      <span className="truncate">{place.documentName}</span>
     </span>
   );
 }

@@ -148,7 +148,7 @@ whitespace around the mark, but the tile itself stays the same size — an
 architecture diagram's brand marks read as a uniform set of chips, not blobs
 that grow with their boxes. The size comes from an optional `iconSize` preset
 on the element (`IconSize = 'sm' | 'md' | 'lg' | 'xl'` → 32 / 48 / 64 / 96 px,
-`ICON_SIZE_PX` in `packages/diagram/src/icon-size.ts`), defaulting to `md`
+`ICON_SIZE_PX` in `packages/document/src/icon-size.ts`), defaulting to `md`
 (48 px); the tile clamps to the element box when the box is smaller than the
 preset. Layout: with a label the mark centres inside the band **opposite the
 caption's alignment**, so moving the text never stacks it over the mark. A
@@ -159,7 +159,7 @@ right-aligned caption flips it horizontally instead** — left caption → mark
 in the right half, right caption → left half — and the mark stays on the
 caption's row (top / middle / bottom) so the pair reads as one line. Without
 a label the mark centres in the whole box. `iconBandBounds` / `techIconMarkBounds`
-(`packages/diagram/src/icon-size.ts`) are the single source of this geometry;
+(`packages/document/src/icon-size.ts`) are the single source of this geometry;
 the editor overlay's CSS bands (`iconBandClass`) mirror their numbers.
 **Line-art icons share the same inverse band**: the glyph keeps scaling with
 its box (no fixed pixel preset), but a captioned glyph scales into the band
@@ -170,7 +170,7 @@ The exports / headless renders (`svgIconShape` in the shared renderer) apply
 the same band geometry so a captioned icon exports exactly as drawn.
 
 **The caption is confined to its own band too** (`iconCaptionBand` in
-`packages/diagram/src/icon-size.ts`, mirrored by the editor's
+`packages/document/src/icon-size.ts`, mirrored by the editor's
 `captionBandClass`). The caption used to align over the WHOLE element box
 while only the glyph moved bands, which broke several alignment combos: a
 centre/middle caption sat at 50% height — inside the glyph's bottom band, on
@@ -196,7 +196,7 @@ all read this one geometry, so a captioned icon exports exactly as drawn.
 be much larger than the visible chip, arrow anchors on a Technology icon are
 computed on the mark's rectangle (`techIconMarkBounds`, the same geometry the
 renderers use): pinned endpoints touch the chip's edge, and the side choice
-(`exitSideTowards` / `anchorAimPoint` in `packages/diagram/src/anchor-choice.ts`,
+(`exitSideTowards` / `anchorAimPoint` in `packages/document/src/anchor-choice.ts`,
 [Arrow anchors and auto-rebind](../008-canvas/arrow-anchors.md)) answers for the chip — so an arrow to an
 element below leaves the mark's bottom centre instead of a box edge floating
 in whitespace. **Exception: the caption's side.** The caption sits between
@@ -224,7 +224,7 @@ label convention), the active preset highlighted. Picking one writes
 'IconSize')`).
 
 **Exports and headless renders draw the same art.** The shared SVG renderer
-(`packages/diagram/src/svg-render.ts`) takes an injected `resolveIconArt`
+(`packages/document/src/svg-render.ts`) takes an injected `resolveIconArt`
 resolver; with it, a `shape: 'icon'` element exports its real glyph — a
 Technology mark as its self-coloured tile (its glyph stroke set from the size
 preset by `techGlyphStrokeUnits`, exactly as on the canvas), a line-art icon stroke-tinted, each

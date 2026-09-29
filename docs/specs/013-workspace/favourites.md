@@ -60,7 +60,7 @@ star on a team you've since left doesn't inflate it.
 ## An offline diagram's star lives in the browser
 
 The table's `diagram_id` is a foreign key into `diagrams`, and an offline
-diagram ([Offline Mode](../006-diagram/offline-mode.md)) has no row there: it lives only in this browser's
+diagram ([Offline Mode](../006-document/offline-mode.md)) has no row there: it lives only in this browser's
 IndexedDB. Sending its star to the server is therefore not merely wasted, it
 is **rejected** with `FOREIGN KEY constraint failed`, and because the toggle
 is optimistic and the write is swallowed, the star would appear on click and
@@ -68,7 +68,7 @@ be gone on the next reload.
 
 So a star on an offline diagram is kept on the offline record itself, and
 `apiSetFavourite` dispatches on `isOfflineId` exactly as load / save / delete
-already do. This is also what [Offline Mode](../006-diagram/offline-mode.md) requires of every offline row: no
+already do. This is also what [Offline Mode](../006-document/offline-mode.md) requires of every offline row: no
 server fetch, "list, thumbnail, or otherwise".
 
 Listing is the exception that isn't a dispatch, for the same reason the

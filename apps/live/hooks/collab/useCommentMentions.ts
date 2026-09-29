@@ -7,7 +7,7 @@
 // open the diagram). A personal diagram or a guest has none.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { assignHandles, type CommentMention } from '@livediagram/diagram';
+import { assignHandles, type CommentMention } from '@livediagram/document';
 import { apiGetTeam, apiNotifyMention, type TeamListItem } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { teamMemberRows } from './team-member-rows';
@@ -19,18 +19,18 @@ const NONE: MentionCandidate[] = [];
 export function useCommentMentions({
   ownerId,
   teams,
-  diagramTeamId,
-  diagramId,
+  documentTeamId,
+  documentId,
 }: {
   // The signed-in account; null for a guest (no teams, no mentions).
   ownerId: string | null;
   teams: TeamListItem[];
-  diagramTeamId: string | null;
-  diagramId: string | null;
+  documentTeamId: string | null;
+  documentId: string | null;
 }) {
   const team = useMemo(
-    () => (ownerId ? (teams.find((t) => t.id === diagramTeamId) ?? null) : null),
-    [ownerId, teams, diagramTeamId],
+    () => (ownerId ? (teams.find((t) => t.id === documentTeamId) ?? null) : null),
+    [ownerId, teams, documentTeamId],
   );
   const key = team && ownerId ? `${ownerId}:${team.id}` : null;
   const [loaded, setLoaded] = useState<{ key: string; list: MentionCandidate[] } | null>(null);
@@ -71,9 +71,9 @@ export function useCommentMentions({
     (text: string, mentions: readonly CommentMention[]) => {
       if (mentions.length === 0) return;
       track('Comment', 'Mentioned');
-      if (!ownerId || !team || !diagramId) return;
+      if (!ownerId || !team || !documentId) return;
       void apiNotifyMention(ownerId, team.id, {
-        diagramId,
+        documentId,
         commentText: text,
         mentions: mentions.map((m) => ({
           userId: m.userId,
@@ -81,7 +81,7 @@ export function useCommentMentions({
         })),
       }).catch(() => {});
     },
-    [ownerId, team, diagramId],
+    [ownerId, team, documentId],
   );
 
   return { candidates, available: team !== null, notifyMentioned };

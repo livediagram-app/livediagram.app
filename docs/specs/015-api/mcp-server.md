@@ -29,7 +29,7 @@ model of its own and makes no LLM calls.
 
 **Keep the surface small.** Nine tools and one schema resource (see
 [§4](#4-tools)). Each tool is a thin wrapper over an existing `/api` route plus
-shared helpers from `packages/diagram`; the MCP adds no business logic that
+shared helpers from `packages/document`; the MCP adds no business logic that
 isn't reusable.
 
 This must not weaken the friction-free guest model
@@ -56,7 +56,7 @@ stays a pure REST/WS surface.
   The api worker already accepts `lvd_` tokens on every route
   ([Public API and API tokens §3.3](public-api-and-tokens.md)), so **no api authorization
   changes are needed** for the tools themselves.
-- **Reuses `packages/diagram`** headless: element factories, `validate.ts`
+- **Reuses `packages/document`** headless: element factories, `validate.ts`
   (`isValidTab`/`isValidElement`), `auto-layout.ts` (`autoLayoutElements`,
   `isLayoutCandidate`), and a new pure SVG renderer ([§5](#5-visualise--inline-image-render)).
   This is the reuse-over-duplication rule: the MCP must not re-implement layout,
@@ -165,12 +165,12 @@ Every diagram and tab **name** argument (`create_diagram`'s `name` and each
 tab's `name`, `add_tab`'s `name`, `rename_diagram`'s `name`) states the
 60-character cap in its description and is shortened by the schema itself
 with the shared `truncateName`, so the name a tool sends and reports back is
-the one the api stores ([Tab and diagram name length](../006-diagram/name-length.md)).
+the one the api stores ([Tab and diagram name length](../006-document/name-length.md)).
 
 ### 4.1 `find_diagrams`
 
 Search/list the caller's diagrams — the **personal library AND every joined
-team's shared library** ([Team shared diagrams](../013-workspace/team-shared-diagrams.md)). A diagram
+team's shared library** ([Team shared diagrams](../013-workspace/team-shared-documents.md)). A diagram
 filed into a team leaves its owner's personal list entirely, so the personal
 `GET /api/diagrams` alone is not "the user's diagrams": the tool sweeps
 `GET /api/teams` + `GET /api/teams/:id/library` alongside it (the api accepts
@@ -289,7 +289,7 @@ model produces high-quality diagrams**: the schema is presented once, declarativ
 rather than baked verbatim into every tool description. The same essentials are
 also summarised in the MCP server `instructions` and in the `create`/`update`
 input-schema field descriptions, so a client that ignores resources still gets
-enough. The schema text derives from `packages/diagram` types — single source of
+enough. The schema text derives from `packages/document` types — single source of
 truth, no hand-maintained copy that can drift.
 
 ### 4.7 Graph-first authoring (the low-burden path)
@@ -379,7 +379,7 @@ takes the same path, label cap included. A dialect it cannot read comes back as
 an error naming what is supported.
 
 The translation (`graphToElements`, the sizing, the clustered layout) is pure
-code in `packages/diagram` beside the layout it feeds, so the public API can
+code in `packages/document` beside the layout it feeds, so the public API can
 adopt it later; the MCP side (`graph-input.ts`: the label cap, choosing the
 layout, the lines, Mermaid) lives in `apps/mcp/src` and is unit-tested there.
 The cap is the MCP's alone: the editor's Mermaid import never truncates what a
@@ -712,13 +712,13 @@ Worker (no DOM, no React).
 
 - **Reuse what's already pure.** The existing export
   (`apps/live/lib/export-tab.ts`) has a **purely procedural SVG path**
-  (`renderTabToSvg`) that already calls headless helpers in `packages/diagram`:
+  (`renderTabToSvg`) that already calls headless helpers in `packages/document`:
   `arrow-path.ts` (path `d` strings, label anchors), `geometry.ts` (endpoint /
   anchor / bounds), `colors.ts` (`defaultFillColor` / `defaultStrokeColor` /
   `defaultTextColor` theme resolution). The PNG/PDF paths are Canvas/DOM-bound
   and are **not** reusable.
 - **Extract a shared renderer.** Move the SVG-building logic into a new pure
-  `packages/diagram/src/svg-render.ts` (`renderElementsToSvg(tab): string`),
+  `packages/document/src/svg-render.ts` (`renderElementsToSvg(tab): string`),
   consumed by **both** the existing in-app export (dedup — the editor stops
   carrying its own copy) and the MCP worker. This is the reuse rule applied: one
   renderer, two callers.
@@ -747,7 +747,7 @@ Worker (no DOM, no React).
   back to the placeholder rectangle (the structured elements still carry the id).
   A tab with no images does no extra work. The fetch-and-inline core is
   `embedTabImages` in `@livediagram/api-schema`, shared with the api worker's
-  snapshot render ([Diagram SVG snapshots](../006-diagram/diagram-snapshots.md)), which passes its own byte source (R2) and a total
+  snapshot render ([Diagram SVG snapshots](../006-document/document-snapshots.md)), which passes its own byte source (R2) and a total
   budget instead of this per-image cap. The data URL takes the image's stored
   type; one stored without an image type (`application/octet-stream`) is
   labelled by sniffing its bytes, and bytes that match no accepted format keep
@@ -777,7 +777,7 @@ Worker (no DOM, no React).
 
 1. **`apps/mcp` skeleton** — worker, Hono, MCP SDK, service binding to api,
    `/health`, deploy wiring + `mcp.livediagram.app` host. `.env.example`.
-2. **Shared SVG renderer** — extract `packages/diagram/src/svg-render.ts` from
+2. **Shared SVG renderer** — extract `packages/document/src/svg-render.ts` from
    `export-tab.ts`, repoint the in-app export to it (no behaviour change), add
    `@resvg/resvg-wasm` rasterisation in the worker.
 3. **Tools, read-first** — `find_diagrams`, `read_diagram` (+ schema resource).

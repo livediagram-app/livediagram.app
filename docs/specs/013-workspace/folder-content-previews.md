@@ -4,12 +4,12 @@ Status: shipped
 
 ## What
 
-A folder card in the Explorer's card grid ([Diagram SVG snapshots](../006-diagram/diagram-snapshots.md)) previews what is inside
+A folder card in the Explorer's card grid ([Diagram SVG snapshots](../006-document/document-snapshots.md)) previews what is inside
 it: a small mosaic of up to four tiles — the diagram snapshots the folder
 holds, plus its subfolders — instead of one generic blue folder glyph.
 
 Every folder card looked identical before this. Diagram cards had carried a
-real SVG snapshot since [Diagram SVG snapshots](../006-diagram/diagram-snapshots.md), so a grid mixing the two showed the diagrams
+real SVG snapshot since [Diagram SVG snapshots](../006-document/document-snapshots.md), so a grid mixing the two showed the diagrams
 and hid the folders: the only thing distinguishing "Testing" from "Testing
 Two" was the name and a count badge. The whole point of the card view over
 the list view is recognition-by-sight, and folders were exempt from it.
@@ -36,7 +36,7 @@ the list view is recognition-by-sight, and folders were exempt from it.
 
 Diagram tiles reuse `DiagramThumbnail` unchanged, so a folder tile is the
 same cached SVG snapshot as the diagram card's — same lazy
-`IntersectionObserver` fetch, same offline illustration ([Offline Mode](../006-diagram/offline-mode.md)), same
+`IntersectionObserver` fetch, same offline illustration ([Offline Mode](../006-document/offline-mode.md)), same
 generic glyph while loading or when a diagram has no snapshot. Nothing new
 is fetched until the folder card is near the viewport, and the api worker's
 R2 render cache is shared with the diagram cards, so opening a folder you
@@ -57,7 +57,7 @@ than the card claims to describe.
   row, and the list view exists for density.
 - The **editor's floating Explorer panel** is unchanged for the same reason
   as [Folder location on Recent rows](recent-folder-chip.md): a ~256 px rail has no room for a mosaic.
-- The **team library** grid ([Team shared diagrams](team-shared-diagrams.md)) gets it for free — it renders the same
+- The **team library** grid ([Team shared diagrams](team-shared-documents.md)) gets it for free — it renders the same
   `CardView`, and its own `diagramsByFolder` / `childrenByParent` indexes
   feed the same prop.
 
@@ -73,6 +73,6 @@ than the card claims to describe.
   presentational and knows nothing about thumbnails.
 - The contents come from the indexes the explorer already builds client-side
   (`childrenByParent`, `diagramsByFolder`) via a `folderContents` prop wired
-  in `ExplorerPane.tsx` and `TeamSharedDiagrams.tsx`. No new API call and no
+  in `ExplorerPane.tsx` and `TeamSharedDocuments.tsx`. No new API call and no
   per-folder fetch: the Explorer already loads every folder and diagram up
   front.

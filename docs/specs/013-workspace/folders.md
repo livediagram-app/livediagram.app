@@ -34,10 +34,10 @@ In scope:
 - A per-diagram-row "Move to folder…" menu item. The picker is a
   centred modal (`MoveToFolderDialog`) around the **shared placement
   browser** — the same two-level space -> folder tile-grid browse as
-  the New Diagram wizard's Save In step ([Offline Mode](../006-diagram/offline-mode.md),
+  the New Diagram wizard's Save In step ([Offline Mode](../006-document/offline-mode.md),
   `components/placement/PlacementBrowser`), so the product has exactly
   one way to choose where a diagram lives. Spaces first (Personal Space +
-  each team, [Team shared diagrams](team-shared-diagrams.md), on an overview that is shown even when Personal
+  each team, [Team shared diagrams](team-shared-documents.md), on an overview that is shown even when Personal
   Space is the only space, so the choice is deliberate and the screen has
   room for a create-team option; only team-scoped surfaces skip it and
   open straight inside their team), then the folder drill-down with a
@@ -57,7 +57,7 @@ In scope:
   destination card commits the move in one gesture. Shared by the
   /explorer page, the floating Explorer panel, and the team library —
   and every diagram-move surface offers every space (Personal Space + each
-  team, [Team shared diagrams](team-shared-diagrams.md)), so a diagram is never trapped in a scope; only folder
+  team, [Team shared diagrams](team-shared-documents.md)), so a diagram is never trapped in a scope; only folder
   moves stay scoped to their own tree. It replaced the earlier
   filterable indented-tree modal, which itself outgrew an anchored
   popover.
@@ -78,7 +78,7 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Invites ([Teams](teams.md)) | `/explorer/invites`                                         |
 | Image gallery               | `/explorer/images`                                          |
 
-`/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/diagram/<id>` placeholder-rewrite workaround ([Dedicated route for new-diagram creation](../007-editor/new-diagram-route.md)) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent diagrams", "Image gallery"). Section headers, top to bottom: **"Quick find"** (Timeline, [Timeline](timeline.md); Activity, [Activity page](activity-page.md); Recent diagrams; Favourites; Shared with you), **"Personal Space"** (the personal tree — Unsorted + the root folders directly, no "All diagrams" parent row; contrasts with team libraries, [Team shared diagrams](team-shared-diagrams.md)), **"Teams"** ([Teams](teams.md)), and **"Library"**.
+`/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/diagram/<id>` placeholder-rewrite workaround ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent diagrams", "Image gallery"). Section headers, top to bottom: **"Quick find"** (Timeline, [Timeline](timeline.md); Activity, [Activity page](activity-page.md); Recent diagrams; Favourites; Shared with you), **"Personal Space"** (the personal tree — Unsorted + the root folders directly, no "All diagrams" parent row; contrasts with team libraries, [Team shared diagrams](team-shared-documents.md)), **"Teams"** ([Teams](teams.md)), and **"Library"**.
 
 Out of scope (V1):
 

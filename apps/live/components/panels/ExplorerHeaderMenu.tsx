@@ -24,11 +24,11 @@ import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 // behind an error screen (no diagram, so no share / export) still reads
 // cleanly. Rows, not tiles: a ⋯ menu that IS the list (docs/specs/013-workspace/folders.md).
 export function ExplorerHeaderMenu({
-  onNewDiagram,
+  onNewDocument,
   actions = {},
   helpArticle,
 }: {
-  onNewDiagram?: () => void;
+  onNewDocument?: () => void;
   actions?: ExplorerMenuActions;
   // The panel's article. Minimal chrome hides the header's `?`, so Help moves
   // here (docs/specs/007-editor/power-user-mode.md).
@@ -44,15 +44,15 @@ export function ExplorerHeaderMenu({
 
   const bands: { key: string; rows: ReactNode[] }[] = [
     {
-      key: 'diagrams',
+      key: 'documents',
       rows: [
-        onNewDiagram ? (
+        onNewDocument ? (
           <MenuActionRow
             key="new"
             plain
             icon={<PlusIcon />}
             label="New Diagram"
-            onClick={run(onNewDiagram)}
+            onClick={run(onNewDocument)}
           />
         ) : null,
         <MenuActionRow
@@ -67,7 +67,7 @@ export function ExplorerHeaderMenu({
       ],
     },
     {
-      key: 'diagram',
+      key: 'document',
       rows: [
         actions.onShare ? (
           <MenuActionRow

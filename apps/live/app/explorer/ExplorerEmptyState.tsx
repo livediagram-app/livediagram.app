@@ -8,7 +8,7 @@
 // and pauses under prefers-reduced-motion.
 import {
   ClockIcon,
-  DiagramIcon,
+  DocumentIcon,
   FolderSolidIcon,
   OfflineFolderIcon,
   PlusIcon,
@@ -75,7 +75,7 @@ const CONTENT: Record<
     cta: 'New diagram',
   },
   default: {
-    icon: <DiagramIcon />,
+    icon: <DocumentIcon />,
     title: 'No diagrams yet',
     description: 'Create your first diagram and it will appear here.',
     cta: 'New diagram',

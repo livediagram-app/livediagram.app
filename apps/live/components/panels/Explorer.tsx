@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useState } from 'react';
-import { DiagramRowShell } from './DiagramRowShell';
+import { DocumentRowShell } from './DocumentRowShell';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
@@ -11,7 +11,7 @@ import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
-import { DiagramRow } from '@/components/panels/explorer-views';
+import { DocumentRow } from '@/components/panels/explorer-views';
 import { ExplorerSections } from '@/components/panels/ExplorerSections';
 
 import type { ExplorerProps } from './Explorer.types';
@@ -28,29 +28,29 @@ import { TEAM_TRASH_RESTORE_HINT, TRASH_RESTORE_HINT } from '@/lib/trash-copy';
 // props, so shallow prop equality holds while a shape is being dragged.
 function ExplorerImpl({
   position,
-  diagrams,
+  documents: liveDocs,
   ownerId,
   folders,
   loading,
-  currentDiagramId,
+  currentDocumentId,
   onMoveTo,
   onReset,
-  onOpenDiagram,
-  onNewDiagram,
+  onOpenDocument,
+  onNewDocument,
   menuActions,
   onRenameCurrent,
-  onDeleteDiagram,
-  onDuplicateDiagram,
+  onDeleteDocument,
+  onDuplicateDocument,
   onCreateFolder,
   onRenameFolder,
   onDeleteFolder,
   onTeamFolders,
-  onMoveDiagramToFolder,
-  onMoveDiagramTo,
+  onMoveDocumentToFolder,
+  onMoveDocumentTo,
   shared = [],
   teams = [],
   teamFolders = [],
-  teamDiagrams = [],
+  teamDocuments = [],
   onDismissShared,
   onSize,
   dock,
@@ -96,13 +96,13 @@ function ExplorerImpl({
   // Row delete lifecycle (confirm popover, exit animation, optimistic
   // team-row hide + pruning) lives in useExplorerRowDelete.
   const {
-    exitingDiagramIds,
+    exitingDocumentIds,
     deleteConfirm,
     setDeleteConfirm,
     deletedTeamIds,
     openDeleteConfirm,
     runDelete,
-  } = useExplorerRowDelete({ diagrams, teamDiagrams, ownerId, onDeleteDiagram });
+  } = useExplorerRowDelete({ documents: liveDocs, teamDocuments, ownerId, onDeleteDocument });
 
   // (Previously: `if (hideOnMobile) return null;` — Explorer now
   // renders on mobile too, banner-collapsed by default. The panel
@@ -122,17 +122,17 @@ function ExplorerImpl({
     currentShared,
     recents,
     foldersByTeam,
-    diagramsByTeam,
+    documentsByTeam,
     foldersByParent,
-    diagramsByFolder,
-    offlineDiagrams,
+    documentsByFolder,
+    offlineDocuments,
   } = useExplorerViewModel({
-    diagrams,
+    documents: liveDocs,
     folders,
-    currentDiagramId,
+    currentDocumentId,
     shared,
     teamFolders,
-    teamDiagrams,
+    teamDocuments,
     deletedTeamIds,
     recentExcludedIds,
   });
@@ -161,8 +161,8 @@ function ExplorerImpl({
   // The anchor argument survives in the row-callback signature (the
   // delete flow's ConfirmPopover still anchors), but the move flow is
   // a centred modal now (docs/specs/013-workspace/folders.md) and ignores it.
-  const openMovePicker = (diagramId: string) => {
-    setMoveTarget({ id: diagramId, teamId: null });
+  const openMovePicker = (documentId: string) => {
+    setMoveTarget({ id: documentId, teamId: null });
   };
 
   return (
@@ -184,7 +184,7 @@ function ExplorerImpl({
       // only the first two.
       headerActions={
         <ExplorerHeaderMenu
-          onNewDiagram={onNewDiagram}
+          onNewDocument={onNewDocument}
           actions={menuActions}
           helpArticle="explorerPanel"
         />
@@ -215,13 +215,13 @@ function ExplorerImpl({
             </p>
             <ul className="flex flex-col gap-0.5 overflow-hidden">
               {current ? (
-                <DiagramRowShell exiting={exitingDiagramIds.has(current.id)}>
-                  <DiagramRow
+                <DocumentRowShell exiting={exitingDocumentIds.has(current.id)}>
+                  <DocumentRow
                     item={current}
                     ownerId={ownerId}
                     active
-                    draggable={!!onMoveDiagramToFolder}
-                    onOpen={() => onOpenDiagram(current.id)}
+                    draggable={!!onMoveDocumentToFolder}
+                    onOpen={() => onOpenDocument(current.id)}
                     onRename={onRenameCurrent}
                     onDelete={
                       openDeleteConfirm
@@ -229,34 +229,34 @@ function ExplorerImpl({
                         : undefined
                     }
                     onDuplicate={
-                      onDuplicateDiagram ? () => onDuplicateDiagram(current.id) : undefined
+                      onDuplicateDocument ? () => onDuplicateDocument(current.id) : undefined
                     }
                     onMoveRequest={
-                      onMoveDiagramToFolder ? () => openMovePicker(current.id) : undefined
+                      onMoveDocumentToFolder ? () => openMovePicker(current.id) : undefined
                     }
                   />
-                </DiagramRowShell>
+                </DocumentRowShell>
               ) : currentTeam ? (
                 <li className="animate-slide-row-in overflow-hidden">
-                  <DiagramRow
+                  <DocumentRow
                     item={currentTeam}
                     ownerId={ownerId}
                     active
-                    onOpen={() => onOpenDiagram(currentTeam.id)}
+                    onOpen={() => onOpenDocument(currentTeam.id)}
                     onRename={onRenameCurrent}
                     // Any joined member may delete a team diagram
-                    // (docs/specs/013-workspace/team-shared-diagrams.md); the api enforces team membership.
+                    // (docs/specs/013-workspace/team-shared-documents.md); the api enforces team membership.
                     onDelete={
                       openDeleteConfirm
                         ? (anchor) => openDeleteConfirm(currentTeam.id, anchor)
                         : undefined
                     }
-                    // Change Folder for a team diagram (docs/specs/013-workspace/team-shared-diagrams.md): opens the
+                    // Change Folder for a team diagram (docs/specs/013-workspace/team-shared-documents.md): opens the
                     // move picker on this team's tree, with Personal Space + the
                     // other teams one Back away. Routed through the
                     // scope-aware onMoveDiagramTo.
                     onMoveRequest={
-                      onMoveDiagramTo
+                      onMoveDocumentTo
                         ? () => setMoveTarget({ id: currentTeam.id, teamId: currentTeam.team.id })
                         : undefined
                     }
@@ -264,15 +264,15 @@ function ExplorerImpl({
                 </li>
               ) : currentShared ? (
                 <li className="animate-slide-row-in overflow-hidden">
-                  <DiagramRow
+                  <DocumentRow
                     item={{ ...currentShared, folderId: null, shareCode: null, ownerId: '' }}
                     ownerId={ownerId}
                     // item.shareCode is nulled (no "has a share link"
                     // badge for a shared-with-me row), so authorise the
-                    // thumbnail via the share code separately (docs/specs/006-diagram/diagram-snapshots.md).
+                    // thumbnail via the share code separately (docs/specs/006-document/document-snapshots.md).
                     thumbnailShareCode={currentShared.shareCode}
                     active
-                    onOpen={() => onOpenDiagram(currentShared.id, currentShared.shareCode)}
+                    onOpen={() => onOpenDocument(currentShared.id, currentShared.shareCode)}
                   />
                 </li>
               ) : null}
@@ -284,7 +284,7 @@ function ExplorerImpl({
             stacked accordions) so only one list takes vertical space.
             Shared-with-you diagrams interleave into Recent (matching the
             /explorer page); Personal Space holds the folder tree + Unsorted
-            (docs/specs/013-workspace/folders.md); Teams mirrors it per team (docs/specs/013-workspace/team-shared-diagrams.md). The card owns
+            (docs/specs/013-workspace/folders.md); Teams mirrors it per team (docs/specs/013-workspace/team-shared-documents.md). The card owns
             its own tab state and hides itself when no section has
             anything to show — see ExplorerSections. */}
         <ExplorerSections
@@ -294,37 +294,37 @@ function ExplorerImpl({
           onToggleRecentExclusion={onToggleRecentExclusion}
           favouriteIds={favouriteIds}
           onToggleFavourite={onToggleFavourite}
-          currentDiagramId={currentDiagramId}
-          diagrams={diagrams}
+          currentDocumentId={currentDocumentId}
+          documents={liveDocs}
           folders={folders}
           teams={teams}
           recents={recents}
           foldersByParent={foldersByParent}
-          diagramsByFolder={diagramsByFolder}
-          offlineDiagrams={offlineDiagrams}
+          documentsByFolder={documentsByFolder}
+          offlineDocuments={offlineDocuments}
           foldersByTeam={foldersByTeam}
-          diagramsByTeam={diagramsByTeam}
+          documentsByTeam={documentsByTeam}
           expandedFolders={expandedFolders}
           onToggleFolder={toggleFolder}
           pendingRenameFolderId={pendingRenameFolderId}
           onRenameFolderCommitted={() => setPendingRenameFolderId(null)}
-          exitingDiagramIds={exitingDiagramIds}
-          onOpenDiagram={onOpenDiagram}
+          exitingDocumentIds={exitingDocumentIds}
+          onOpenDocument={onOpenDocument}
           onDismissShared={onDismissShared}
           onRenameFolder={onRenameFolder}
           onDeleteFolder={onDeleteFolder}
           onCreateChild={handleCreateChild}
           onTeamFolders={onTeamFolders}
           onCreateTeamChild={handleCreateTeamChild}
-          onDeleteDiagram={openDeleteConfirm}
-          onDuplicateDiagram={onDuplicateDiagram}
-          onMoveDiagramRequest={onMoveDiagramToFolder ? openMovePicker : undefined}
+          onDeleteDocument={openDeleteConfirm}
+          onDuplicateDocument={onDuplicateDocument}
+          onMoveDocumentRequest={onMoveDocumentToFolder ? openMovePicker : undefined}
           // A team row's move opens the picker for that team; the pick then
-          // routes through the scope-aware onMoveDiagramTo (docs/specs/013-workspace/team-shared-diagrams.md).
-          onMoveTeamDiagramRequest={
-            onMoveDiagramTo ? (id, teamId) => setMoveTarget({ id, teamId }) : undefined
+          // routes through the scope-aware onMoveDiagramTo (docs/specs/013-workspace/team-shared-documents.md).
+          onMoveTeamDocumentRequest={
+            onMoveDocumentTo ? (id, teamId) => setMoveTarget({ id, teamId }) : undefined
           }
-          onMoveDiagramToFolder={onMoveDiagramToFolder}
+          onMoveDocumentToFolder={onMoveDocumentToFolder}
         />
 
         {/* Sign-in prompt for signed-out guests; an onboarding notice, so
@@ -339,13 +339,13 @@ function ExplorerImpl({
           can be re-homed to the personal tree (and vice versa) right from
           the editor. Purely personal picks keep the optimistic
           onMoveDiagramToFolder path. */}
-      {moveTarget && (onMoveDiagramToFolder || onMoveDiagramTo)
+      {moveTarget && (onMoveDocumentToFolder || onMoveDocumentTo)
         ? (() => {
             const teamRow = moveTarget.teamId
-              ? teamDiagrams.find((d) => d.id === moveTarget.id)
+              ? teamDocuments.find((d) => d.id === moveTarget.id)
               : undefined;
-            const personalRow = diagrams.find((d) => d.id === moveTarget.id);
-            const teamDests = onMoveDiagramTo
+            const personalRow = liveDocs.find((d) => d.id === moveTarget.id);
+            const teamDests = onMoveDocumentTo
               ? teams.map((t) => ({
                   id: t.id,
                   name: t.name,
@@ -357,7 +357,7 @@ function ExplorerImpl({
             return (
               <MoveToFolderDialog
                 subjectName={teamRow?.name || personalRow?.name || 'Untitled'}
-                subjectKind="diagram"
+                subjectKind="document"
                 personalFolders={folders.map((f) => ({
                   id: f.id,
                   name: f.name,
@@ -395,9 +395,9 @@ function ExplorerImpl({
                 }}
                 onPick={(dest) => {
                   if (dest.teamId === null && moveTarget.teamId === null) {
-                    onMoveDiagramToFolder?.(moveTarget.id, dest.folderId);
+                    onMoveDocumentToFolder?.(moveTarget.id, dest.folderId);
                   } else {
-                    onMoveDiagramTo?.(moveTarget.id, dest, moveTarget.teamId);
+                    onMoveDocumentTo?.(moveTarget.id, dest, moveTarget.teamId);
                   }
                 }}
                 onClose={() => setMoveTarget(null)}
@@ -410,13 +410,13 @@ function ExplorerImpl({
         <ConfirmPopover
           anchor={deleteConfirm.anchor}
           message={`Delete "${
-            diagrams.find((d) => d.id === deleteConfirm.id)?.name ||
-            teamDiagrams.find((d) => d.id === deleteConfirm.id)?.name ||
+            liveDocs.find((d) => d.id === deleteConfirm.id)?.name ||
+            teamDocuments.find((d) => d.id === deleteConfirm.id)?.name ||
             'this diagram'
           }"? Its share links stop working.${
             deleteConfirm.notice ? ` ${deleteConfirm.notice}` : ''
           } ${
-            teamDiagrams.some((d) => d.id === deleteConfirm.id)
+            teamDocuments.some((d) => d.id === deleteConfirm.id)
               ? TEAM_TRASH_RESTORE_HINT
               : TRASH_RESTORE_HINT
           }`}

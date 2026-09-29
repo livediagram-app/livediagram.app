@@ -17,7 +17,7 @@ export async function darkVisitor(page: Page, owner?: string): Promise<void> {
 
 // A diagram shaped like a real one: an actor, boxes, and solid and dashed labelled arrows, on the
 // Default scheme, so the canvas ink is the palette's own.
-export async function seedDiagram(page: Page, owner: string, origin: string): Promise<string> {
+export async function seedDocument(page: Page, owner: string, origin: string): Promise<string> {
   const id = crypto.randomUUID();
   const box = (bid: string, label: string, x: number, y: number) => ({
     id: bid,

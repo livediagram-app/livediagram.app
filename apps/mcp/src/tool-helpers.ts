@@ -6,7 +6,7 @@
 // tab-builders.ts, for the same reason. tools.ts keeps the registrations.
 
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import type { Diagram, DiagramResponse, TabRecord, TabResponse } from '@livediagram/api-schema';
+import type { LiveDoc, DocumentResponse, TabRecord, TabResponse } from '@livediagram/api-schema';
 import { apiJson } from './api';
 import type { Env } from './env';
 
@@ -54,12 +54,16 @@ export function errorResult(message: string): ToolResult {
 export async function loadTab(
   env: Env,
   token: string,
-  diagramId: string,
+  documentId: string,
   tabId?: string,
-): Promise<{ diagram: Diagram; tab: TabRecord } | null> {
-  const { diagram } = await apiJson<DiagramResponse>(env, token, `/diagrams/${diagramId}`);
-  const id = tabId ?? diagram.tabs[0]?.id;
+): Promise<{ document: LiveDoc; tab: TabRecord } | null> {
+  const { document: liveDoc } = await apiJson<DocumentResponse>(
+    env,
+    token,
+    `/diagrams/${documentId}`,
+  );
+  const id = tabId ?? liveDoc.tabs[0]?.id;
   if (!id) return null;
-  const { tab } = await apiJson<TabResponse>(env, token, `/diagrams/${diagramId}/tabs/${id}`);
-  return { diagram, tab };
+  const { tab } = await apiJson<TabResponse>(env, token, `/diagrams/${documentId}/tabs/${id}`);
+  return { document: liveDoc, tab };
 }

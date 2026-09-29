@@ -6,7 +6,7 @@ Tracked as [issue #8](https://github.com/livediagram-app/livediagram.app/issues/
 
 `/embed?s=<share-code>`.
 
-The issue sketched a path segment (`/embed/<code>`), but the static export ([Dedicated route for new-diagram creation](../007-editor/new-diagram-route.md)) would need a second worker rewrite rule to serve it, and the existing share view already uses the query form (`/diagram/shared?s=<code>`). The embed route follows the share view: one statically exported page (`apps/live/app/embed/page.tsx`), the code read client-side from `?s=`. No new infrastructure.
+The issue sketched a path segment (`/embed/<code>`), but the static export ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md)) would need a second worker rewrite rule to serve it, and the existing share view already uses the query form (`/diagram/shared?s=<code>`). The embed route follows the share view: one statically exported page (`apps/live/app/embed/page.tsx`), the code read client-side from `?s=`. No new infrastructure.
 
 ## What renders
 

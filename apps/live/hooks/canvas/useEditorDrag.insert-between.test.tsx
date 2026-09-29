@@ -2,7 +2,7 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { Element, StickyElement, Tab } from '@livediagram/diagram';
+import type { Element, StickyElement, Tab } from '@livediagram/document';
 import { getInsertionSlot, setInsertionSlot } from '@/lib/insertion-preview';
 import { track } from '@/lib/telemetry';
 import { useEditorDrag } from './useEditorDrag';

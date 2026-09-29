@@ -9,7 +9,7 @@
 
 import { CountBadge } from '@/components/primitives/CountBadge';
 import { useState } from 'react';
-import { IDEA_MAX_TEXT, type ShapeElement } from '@livediagram/diagram';
+import { IDEA_MAX_TEXT, type ShapeElement } from '@livediagram/document';
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { CollabComposer } from './CollabComposer';

@@ -39,10 +39,10 @@ type RemoteSelector = { id: string; name: string; color: string };
 // a peer with several keeps only their most recently active connection,
 // which is the tab they are actually looking at.
 export function buildParticipantsByTab(input: {
-  diagramShareable: boolean;
-  // A team diagram (docs/specs/013-workspace/team-shared-diagrams.md) is collaborative for its members even
+  documentShareable: boolean;
+  // A team diagram (docs/specs/013-workspace/team-shared-documents.md) is collaborative for its members even
   // with no share link, so tab presence shows there too.
-  diagramTeamId: string | null;
+  documentTeamId: string | null;
   activeId: string;
   selfParticipant: Participant;
   tabs: { id: string }[];
@@ -53,8 +53,8 @@ export function buildParticipantsByTab(input: {
   now: number;
 }): Map<string, Participant[]> {
   const {
-    diagramShareable,
-    diagramTeamId,
+    documentShareable,
+    documentTeamId,
     activeId,
     selfParticipant,
     tabs,
@@ -65,7 +65,7 @@ export function buildParticipantsByTab(input: {
     now,
   } = input;
   const map = new Map<string, Participant[]>();
-  if (!diagramShareable && !diagramTeamId) return map;
+  if (!documentShareable && !documentTeamId) return map;
   map.set(activeId, [{ ...selfParticipant, status: 'online', lastActiveAt: now }]);
   const defaultTabId = tabs[0]?.id ?? activeId;
   const tabFocus = new Map<string, string>(remoteTabFocus);
@@ -206,17 +206,17 @@ export function resolveOwnerBadge(input: {
   isOwner: boolean;
   selfParticipant: Participant;
   livePresence: Participant[];
-  diagramOwnerId: string | null;
-  diagramOwnerName: string | null;
-  diagramOwnerColor: string | null;
+  documentOwnerId: string | null;
+  documentOwnerName: string | null;
+  documentOwnerColor: string | null;
 }): Participant | null {
   const {
     isOwner,
     selfParticipant,
     livePresence,
-    diagramOwnerId,
-    diagramOwnerName,
-    diagramOwnerColor,
+    documentOwnerId,
+    documentOwnerName,
+    documentOwnerColor,
   } = input;
   if (isOwner) return selfParticipant;
   // The share endpoint redacts ownerId to '' for visitors (so an
@@ -227,18 +227,18 @@ export function resolveOwnerBadge(input: {
   // which is the same identity the fetch already trusts. Without
   // this, an online owner always resolved to the offline branch
   // below and showed a red (offline) dot to viewers.
-  const live = diagramOwnerId
-    ? livePresence.find((p) => p.id === diagramOwnerId)
-    : livePresence.find((p) => p.name === diagramOwnerName && p.color === diagramOwnerColor);
+  const live = documentOwnerId
+    ? livePresence.find((p) => p.id === documentOwnerId)
+    : livePresence.find((p) => p.name === documentOwnerName && p.color === documentOwnerColor);
   if (live) return live;
   // Owner not in the room: key the badge off the NAME, not the
   // (blanked) id, or viewers never get the badge at all. The id
   // here is display-only, so a synthetic fallback is fine.
-  if (diagramOwnerName) {
+  if (documentOwnerName) {
     return {
-      id: diagramOwnerId || 'owner',
-      name: diagramOwnerName,
-      color: diagramOwnerColor ?? '#94a3b8',
+      id: documentOwnerId || 'owner',
+      name: documentOwnerName,
+      color: documentOwnerColor ?? '#94a3b8',
       status: 'offline' as const,
     };
   }

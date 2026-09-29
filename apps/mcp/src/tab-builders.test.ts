@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isValidTab, type Element } from '@livediagram/diagram';
+import { isValidTab, type Element } from '@livediagram/document';
 import { applyLayout, buildGraphTab, buildTab, landMcpArrivals } from './tab-builders';
 
 // Graph-first authoring end-to-end (docs/specs/015-api/mcp-server.md §4.7): a node/edge graph must

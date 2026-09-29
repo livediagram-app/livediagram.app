@@ -282,7 +282,7 @@ export function DragDuplicateArt() {
 
 // Three stacked layer planes (bottom -> top), each popping in with its
 // content, then an eye chip: the Layers panel's pitch in one glance —
-// bands you can stack and hide (docs/specs/006-diagram/layers.md).
+// bands you can stack and hide (docs/specs/006-document/layers.md).
 export function LayersArt() {
   return (
     <Frame canvas>
@@ -481,7 +481,7 @@ export function AccountSyncArt() {
 // the real SearchPanel (diagram / folder / tab / element scopes).
 export function SearchArt() {
   const rows = [
-    { kind: 'diagram', name: 'Q3 Architecture', active: true, meta: '' },
+    { kind: 'document', name: 'Q3 Architecture', active: true, meta: '' },
     { kind: 'tab', name: 'Auth flow', active: false, meta: 'tab' },
     { kind: 'element', name: 'Auth service', active: false, meta: 'on Backend' },
   ];

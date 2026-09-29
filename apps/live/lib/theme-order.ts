@@ -3,7 +3,7 @@ import {
   DEFAULT_SCHEME_ID,
   type ThemeDefinition,
   type ThemeId,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { shufflePinned } from './shuffle';
 import { themeCategory } from './themes-taxonomy';
 

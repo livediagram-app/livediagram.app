@@ -13,9 +13,9 @@ function event(occurredAt: number): TimelineEvent {
   seq += 1;
   return {
     id: `e${seq}`,
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: `s${seq}`,
-    eventType: 'diagram_edited',
+    eventType: 'document_edited',
     title: 'Diagram Updated',
     description: null,
     occurredAt,

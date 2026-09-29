@@ -21,7 +21,7 @@ export type WsAdmission = { role: ShareRole; tabScope: string | null; shareCode:
 
 export async function createWsTicket(
   env: Env,
-  diagramId: string,
+  documentId: string,
   admission: WsAdmission,
   now = Date.now(),
 ): Promise<string> {
@@ -30,11 +30,11 @@ export async function createWsTicket(
   await env.DB.prepare('DELETE FROM ws_tickets WHERE expires_at <= ?').bind(now).run();
   const ticket = crypto.randomUUID();
   await env.DB.prepare(
-    'INSERT INTO ws_tickets (ticket, diagram_id, role, expires_at, tab_scope, share_code) VALUES (?, ?, ?, ?, ?, ?)',
+    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code) VALUES (?, ?, ?, ?, ?, ?)',
   )
     .bind(
       ticket,
-      diagramId,
+      documentId,
       admission.role,
       now + WS_TICKET_TTL_MS,
       admission.tabScope,
@@ -51,13 +51,13 @@ export async function createWsTicket(
 export async function consumeWsTicket(
   env: Env,
   ticket: string,
-  diagramId: string,
+  documentId: string,
   now = Date.now(),
 ): Promise<WsAdmission | null> {
   const row = await env.DB.prepare(
-    'DELETE FROM ws_tickets WHERE ticket = ? AND diagram_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code',
+    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code',
   )
-    .bind(ticket, diagramId, now)
+    .bind(ticket, documentId, now)
     .first<{ role: string; tab_scope?: string | null; share_code?: string | null }>();
   if (row?.role !== 'edit' && row?.role !== 'view') return null;
   return { role: row.role, tabScope: row.tab_scope ?? null, shareCode: row.share_code ?? null };

@@ -1,4 +1,4 @@
-// Offline Mode conversions (docs/specs/006-diagram/offline-mode.md): move a diagram between the browser-only
+// Offline Mode conversions (docs/specs/006-document/offline-mode.md): move a diagram between the browser-only
 // IndexedDB store and the cloud API, in both directions.
 //
 // Ordering is chosen so a failure never loses the diagram: the destination is
@@ -7,21 +7,21 @@
 // every other device), so the UI gates it behind a confirmation.
 
 import {
-  apiCreateDiagram,
+  apiCreateDocument,
   apiListFavourites,
-  apiLoadDiagram,
+  apiLoadDocument,
   apiLoadTab,
   apiSetFavourite,
 } from '@/lib/api-client';
-import { DIAGRAM_CONVERSION_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, uploadEmbeddedImages } from './offline-images';
 import {
-  offlineCreateDiagram,
-  offlineDeleteDiagram,
+  offlineCreateDocument,
+  offlineDeleteDocument,
   offlineGetRecord,
   offlinePutRecord,
-  type OfflineDiagramRecord,
+  type OfflineDocumentRecord,
 } from './offline-store';
 
 // Offline → Cloud ("Save to your account"). Creates the cloud copy first, then
@@ -37,10 +37,10 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
   // per image; a kept data URI still renders.
   const tabs = await uploadEmbeddedImages(ownerId, rec.tabs);
   // Declare the conversion so the feed says "Synced to the Cloud" rather than
-  // reporting a brand-new diagram (docs/specs/006-diagram/offline-mode.md + docs/specs/013-workspace/timeline.md).
+  // reporting a brand-new diagram (docs/specs/006-document/offline-mode.md + docs/specs/013-workspace/timeline.md).
   // Everything the record holds besides tabs travels too: the local copy is
   // deleted next, so a deck or placement left behind is gone for good.
-  await apiCreateDiagram(
+  await apiCreateDocument(
     ownerId,
     {
       id: rec.id,
@@ -52,7 +52,7 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
     },
     { conversion: 'sync' },
   );
-  await offlineDeleteDiagram(rec.id);
+  await offlineDeleteDocument(rec.id);
   // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went. Re-star
   // on the server AFTER the delete: while the id is still registered offline,
   // apiSetFavourite would route the star straight back to the local store.
@@ -66,15 +66,15 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
 // rather than nothing. The server delete goes through the raw `apiDelete` so it
 // isn't re-routed to the local store once the id is registered offline.
 export async function takeCloudOffline(
-  diagramId: string,
+  documentId: string,
   ownerId: string,
   shareCode: string | null = null,
 ): Promise<void> {
-  const diagram = await apiLoadDiagram(ownerId, diagramId);
-  if (!diagram) throw new Error('diagram not found');
+  const liveDoc = await apiLoadDocument(ownerId, documentId);
+  if (!liveDoc) throw new Error('diagram not found');
   const fetchedTabs = (
     await Promise.all(
-      diagram.tabs.map((s) => apiLoadTab(ownerId, diagramId, s.id, shareCode).catch(() => null)),
+      liveDoc.tabs.map((s) => apiLoadTab(ownerId, documentId, s.id, shareCode).catch(() => null)),
     )
   ).filter((t): t is NonNullable<typeof t> => t !== null);
   // EVERY tab, or nothing. A tab can come back null from two directions — a
@@ -85,18 +85,18 @@ export async function takeCloudOffline(
   // the tab's elements would exist nowhere, and the user would be told the
   // conversion worked.
   //
-  // The best-effort filter is borrowed from duplicate-diagram.ts, where it's
+  // The best-effort filter is borrowed from duplicate-document.ts, where it's
   // correct because duplication leaves the source intact. Here the source is
   // destroyed, which inverts the trade. Abort exactly as the image-embed guard
   // below does, and for a stronger reason: that one protects bytes a reaper
   // might collect in 30 days, this one protects content that would be gone
   // immediately.
-  if (fetchedTabs.length !== diagram.tabs.length) throw new Error('tab load incomplete');
+  if (fetchedTabs.length !== liveDoc.tabs.length) throw new Error('tab load incomplete');
   // Embed referenced R2 images as data URIs BEFORE the server delete below:
   // once the diagram row is gone, its images count as unused and the api's
   // 30-day retention reaper would delete the bytes the offline diagram still
   // points at (docs/specs/009-elements/images.md + /76).
-  const tabs = await embedTabImages(fetchedTabs, { ownerId, diagramId, shareCode });
+  const tabs = await embedTabImages(fetchedTabs, { ownerId, documentId, shareCode });
   // Embedding is best-effort per image, but the DELETE below is not: if any
   // image failed to embed, aborting here keeps the server copy (and its
   // images) alive instead of quietly signing the stragglers up for the
@@ -109,19 +109,19 @@ export async function takeCloudOffline(
   // The cloud star is a row keyed on the diagram, so the server delete below
   // takes it too; carry it onto the offline record (docs/specs/013-workspace/favourites.md). Best-effort:
   // apiListFavourites answers [] rather than throwing when the fetch fails.
-  const starred = (await apiListFavourites(ownerId)).includes(diagram.id);
+  const starred = (await apiListFavourites(ownerId)).includes(liveDoc.id);
   const now = Date.now();
-  const rec: OfflineDiagramRecord = {
-    id: diagram.id,
-    name: diagram.name,
+  const rec: OfflineDocumentRecord = {
+    id: liveDoc.id,
+    name: liveDoc.name,
     // Keep its place and its deck: the server row, the only other copy, is
     // deleted below. A team folder isn't a place in the personal tree the
     // offline record lives in, so a team diagram lands in Unsorted.
-    folderId: diagram.teamId ? null : (diagram.folderId ?? null),
-    createdAt: diagram.createdAt ?? now,
+    folderId: liveDoc.teamId ? null : (liveDoc.folderId ?? null),
+    createdAt: liveDoc.createdAt ?? now,
     savedAt: now,
     tabs,
-    ...(diagram.presentation ? { presentation: diagram.presentation } : {}),
+    ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
     ...(starred ? { favourite: true } : {}),
   };
   await offlinePutRecord(rec);
@@ -130,17 +130,17 @@ export async function takeCloudOffline(
   try {
     // Declare the conversion: this DELETE is indistinguishable from a real
     // delete at the boundary, and undeclared the feed told the owner their
-    // diagram had been deleted (docs/specs/006-diagram/offline-mode.md + docs/specs/013-workspace/timeline.md).
-    await apiDelete(`${API_BASE}/diagrams/${diagramId}`, ownerId, {
+    // diagram had been deleted (docs/specs/006-document/offline-mode.md + docs/specs/013-workspace/timeline.md).
+    await apiDelete(`${API_BASE}/diagrams/${documentId}`, ownerId, {
       action: 'take offline',
-      extra: { [DIAGRAM_CONVERSION_HEADER]: 'offline' },
+      extra: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
     });
   } catch (e) {
     // The server copy survived, so ROLL BACK the local copy: leaving both
     // registered under one id would shadow the live cloud diagram behind a
     // stale offline fork (and duplicate the Explorer row). Data-safe: the
     // server still holds everything.
-    await offlineDeleteDiagram(rec.id).catch(() => {});
+    await offlineDeleteDocument(rec.id).catch(() => {});
     throw e;
   }
 }
@@ -158,4 +158,4 @@ export function syncFailureMessage(e: unknown): string {
 
 // Re-exported for callers that only need to create an offline diagram from
 // scratch (kept here so conversion + creation share one import site).
-export { offlineCreateDiagram };
+export { offlineCreateDocument };

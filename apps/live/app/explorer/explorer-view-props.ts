@@ -1,6 +1,6 @@
 import type { Folder } from '@/lib/api-client';
 import type { FolderPreviewContents } from '@/app/explorer/folder-preview-tiles';
-import type { PaneDiagram } from '@/app/explorer/views';
+import type { PaneDocument } from '@/app/explorer/views';
 
 // The props an Explorer pane view takes, shared by ListView and CardView.
 //
@@ -25,8 +25,8 @@ export type FolderActions = (f: Folder, anchor: HTMLElement | null) => FolderAct
 
 export type ExplorerViewProps = {
   folders: Folder[];
-  diagrams: PaneDiagram[];
-  // Viewer identity, threaded to each row's thumbnail fetch (docs/specs/006-diagram/diagram-snapshots.md).
+  documents: PaneDocument[];
+  // Viewer identity, threaded to each row's thumbnail fetch (docs/specs/006-document/document-snapshots.md).
   // Null while a guest id is still resolving.
   ownerId: string | null;
   // Adds the desktop Owner column (Recent: "You" vs the team name).
@@ -44,7 +44,7 @@ export type ExplorerViewProps = {
   showGeneratedRow?: boolean;
   generatedCount?: number;
   onOpenGenerated?: () => void;
-  // The Offline synthetic folder row (docs/specs/006-diagram/offline-mode.md): diagrams saved only in this
+  // The Offline synthetic folder row (docs/specs/006-document/offline-mode.md): diagrams saved only in this
   // browser. Shown on the Personal Space (/all) list beside Generated.
   showOfflineRow?: boolean;
   offlineCount?: number;
@@ -58,15 +58,15 @@ export type ExplorerViewProps = {
   onCommitRenameFolder: (id: string, name: string) => void;
   onCancelRenameFolder: () => void;
   renamingFolderId: string | null;
-  renamingDiagramId: string | null;
-  onCommitRenameDiagram: (id: string, name: string) => void;
-  onCancelRenameDiagram: () => void;
+  renamingDocumentId: string | null;
+  onCommitRenameDocument: (id: string, name: string) => void;
+  onCancelRenameDocument: () => void;
   folderActions: FolderActions;
-  onStartRenameDiagram: (id: string) => void;
-  onDuplicateDiagram: (id: string) => void;
-  onDeleteDiagram: (id: string) => void;
-  onMoveDiagram: (id: string, anchor: HTMLElement | null) => void;
-  // Shared-row action (docs/specs/013-workspace/team-shared-diagrams.md), used by Recent's "shared with me" rows.
+  onStartRenameDocument: (id: string) => void;
+  onDuplicateDocument: (id: string) => void;
+  onDeleteDocument: (id: string) => void;
+  onMoveDocument: (id: string, anchor: HTMLElement | null) => void;
+  // Shared-row action (docs/specs/013-workspace/team-shared-documents.md), used by Recent's "shared with me" rows.
   onDismissShared?: (id: string) => void;
   // Hide / show in Recent (docs/specs/013-workspace/hide-from-recent.md).
   recentExcludedIds?: string[];
@@ -75,12 +75,12 @@ export type ExplorerViewProps = {
   onToggleFavourite?: (id: string) => void;
   // Resolves a row's folder chip (docs/specs/013-workspace/recent-folder-chip.md). Null / omitted = no chip,
   // which is every pane except Recent.
-  folderChipFor?: (d: PaneDiagram) => { label: string; onOpen: () => void } | null;
+  folderChipFor?: (d: PaneDocument) => { label: string; onOpen: () => void } | null;
   onToggleRecentExclusion?: (id: string) => void;
   // Opens the diagram's own Timeline (docs/specs/013-workspace/timeline.md §3.4).
   onShowHistory?: (id: string) => void;
   childrenCount: (id: string) => number;
-  diagramsCount: (id: string) => number;
+  documentsCount: (id: string) => number;
   // What a folder directly contains, for its card's content preview
   // (docs/specs/013-workspace/folder-content-previews.md). Omitted = no preview, just the folder glyph.
   //
@@ -93,7 +93,7 @@ export type ExplorerViewProps = {
 // CardView's two extras. Both are genuinely card-shaped, so they stay off the
 // shared type rather than being declared-and-ignored by the list.
 export type CardViewProps = ExplorerViewProps & {
-  // Team library cards (docs/specs/013-workspace/team-shared-diagrams.md) hide the visibility badge: every diagram
+  // Team library cards (docs/specs/013-workspace/team-shared-documents.md) hide the visibility badge: every diagram
   // in that grid is a team diagram, so a per-card "Team"/"Private" badge is
   // noise — its list view omits it too. Defaults on for the Explorer.
   showVisibilityBadge?: boolean;
@@ -115,9 +115,9 @@ export type CardViewProps = ExplorerViewProps & {
  * and still makes the compiler ask the question, because a new required prop
  * fails at both call sites at once.
  */
-export type DiagramEntryProps = {
-  diagram: PaneDiagram;
-  // Viewer identity for the thumbnail fetch (docs/specs/006-diagram/diagram-snapshots.md). Null while a guest id
+export type DocumentEntryProps = {
+  document: PaneDocument;
+  // Viewer identity for the thumbnail fetch (docs/specs/006-document/document-snapshots.md). Null while a guest id
   // is still resolving; the thumbnail holds its placeholder.
   ownerId: string | null;
   renaming: boolean;
@@ -127,7 +127,7 @@ export type DiagramEntryProps = {
   onDuplicate: () => void;
   onDelete: () => void;
   onMove: (anchor: HTMLElement | null) => void;
-  // Shared-row menu action (docs/specs/013-workspace/team-shared-diagrams.md): drop it from "Shared with me".
+  // Shared-row menu action (docs/specs/013-workspace/team-shared-documents.md): drop it from "Shared with me".
   onDismiss?: () => void;
   // Per-user star (docs/specs/013-workspace/favourites.md).
   favourite?: boolean;

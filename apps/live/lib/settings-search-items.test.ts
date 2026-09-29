@@ -39,7 +39,7 @@ describe('SETTINGS_SEARCH_ITEMS', () => {
   it('surfaces a Settings group from the shared search builder', () => {
     const groups = buildSearchResults({
       query: 'dark mode',
-      diagrams: [],
+      documents: [],
       folders: [],
       settingItems: SETTINGS_SEARCH_ITEMS,
     });
@@ -52,7 +52,7 @@ describe('SETTINGS_SEARCH_ITEMS', () => {
   it('finds a setting by a synonym the UI never prints', () => {
     const groups = buildSearchResults({
       query: 'hotkeys',
-      diagrams: [],
+      documents: [],
       folders: [],
       settingItems: SETTINGS_SEARCH_ITEMS,
     });
@@ -66,7 +66,7 @@ describe('SETTINGS_SEARCH_ITEMS', () => {
     // Both surfaces that mount the Settings dialog pass it (the editor and
     // the Explorer). A caller that cannot open Settings must simply get no
     // Settings group rather than an empty heading.
-    const groups = buildSearchResults({ query: 'dark mode', diagrams: [], folders: [] });
+    const groups = buildSearchResults({ query: 'dark mode', documents: [], folders: [] });
     expect(groups.find((g) => g.key === 'settings')).toBeUndefined();
   });
 });

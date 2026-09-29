@@ -1,4 +1,4 @@
-// Lazy sweep of every joined team's shared library (docs/specs/013-workspace/team-shared-diagrams.md), one
+// Lazy sweep of every joined team's shared library (docs/specs/013-workspace/team-shared-documents.md), one
 // fetch per team, consumed by four surfaces:
 //   - the explorer sidebar's team subtrees (a team renders as a
 //     collapsible folder tree on every route — it needs each team's
@@ -15,7 +15,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Folder } from '@livediagram/api-schema';
-import { apiGetTeamLibrary, type DiagramListItem } from '@/lib/api-client';
+import { apiGetTeamLibrary, type DocumentListItem } from '@/lib/api-client';
 
 // `path` stays for the search panel's flat "Marketing / Q3" labels;
 // `name` + `parentId` let tree consumers (the sidebar + move modal)
@@ -28,7 +28,7 @@ export type TeamFolderRow = {
   teamId: string;
   teamName: string;
 };
-export type TeamDiagramRow = DiagramListItem & { team: { id: string; name: string } };
+export type TeamDocumentRow = DocumentListItem & { team: { id: string; name: string } };
 
 // Breadcrumb path per folder ("Marketing / Q3") from the flat
 // parentId list. Cycle-guarded the same way the explorer's
@@ -54,10 +54,10 @@ export function useTeamLibrariesSweep(
   ownerId: string | null,
   teams: { id: string; name: string }[],
   opts: { enabled: boolean },
-): { teamFolders: TeamFolderRow[]; teamDiagrams: TeamDiagramRow[]; refresh: () => void } {
+): { teamFolders: TeamFolderRow[]; teamDocuments: TeamDocumentRow[]; refresh: () => void } {
   const { enabled } = opts;
   const [teamFolders, setTeamFolders] = useState<TeamFolderRow[]>([]);
-  const [teamDiagrams, setTeamDiagrams] = useState<TeamDiagramRow[]>([]);
+  const [teamDocuments, setTeamDocuments] = useState<TeamDocumentRow[]>([]);
   // One sweep per (owner, team-id set, nonce) while enabled; re-arms
   // when the team list changes so a freshly joined team's library
   // appears, and when `refresh` bumps the nonce after a mutation
@@ -88,7 +88,7 @@ export function useTeamLibrariesSweep(
               teamId: team.id,
               teamName: team.name,
             })),
-            diagrams: lib.diagrams.map((d) => ({
+            documents: lib.documents.map((d) => ({
               id: d.id,
               name: d.name,
               folderId: d.folderId,
@@ -99,7 +99,7 @@ export function useTeamLibrariesSweep(
             })),
           };
         } catch {
-          return { folders: [] as TeamFolderRow[], diagrams: [] as TeamDiagramRow[] };
+          return { folders: [] as TeamFolderRow[], documents: [] as TeamDocumentRow[] };
         }
       }),
     ).then((perTeam) => {
@@ -111,12 +111,12 @@ export function useTeamLibrariesSweep(
       // empty until an unrelated nonce bump.
       sweptKeyRef.current = key;
       setTeamFolders(perTeam.flatMap((t) => t.folders));
-      setTeamDiagrams(perTeam.flatMap((t) => t.diagrams));
+      setTeamDocuments(perTeam.flatMap((t) => t.documents));
     });
     return () => {
       cancelled = true;
     };
   }, [enabled, ownerId, teams, sweepNonce]);
 
-  return { teamFolders, teamDiagrams, refresh };
+  return { teamFolders, teamDocuments, refresh };
 }

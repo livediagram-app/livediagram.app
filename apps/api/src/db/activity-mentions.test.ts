@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { readActivity } from './collab-index';
 import { upsertTab } from './tabs';
@@ -37,7 +37,7 @@ async function seed(mentions: unknown[], opts: { team?: string | null } = {}) {
   member(db.sql, 'm-owner', 'owner');
   member(db.sql, 'm-reader', 'reader');
   member(db.sql, 'm-other', 'other');
-  insert(db.sql, 'diagrams', {
+  insert(db.sql, 'documents', {
     id: 'D',
     owner_id: 'owner',
     name: 'Payments',
@@ -90,7 +90,7 @@ describe('Activity: comment mentions', () => {
     expect(threads[0]).toMatchObject({
       mentionsYou: true,
       youCommented: false,
-      onYourDiagram: false,
+      onYourDocument: false,
     });
   });
 
@@ -131,7 +131,7 @@ describe('Activity: comment mentions', () => {
 describe('Activity: an Action panel with several actions', () => {
   it('lists each action on the card as its own row', async () => {
     const db = sqliteD1();
-    insert(db.sql, 'diagrams', {
+    insert(db.sql, 'documents', {
       id: 'D',
       owner_id: 'owner',
       name: 'Payments',
@@ -179,7 +179,7 @@ describe('Activity: an Action panel with several actions', () => {
 describe('an Action panel list past the cap', () => {
   it('is trimmed to 50 in the stored tab and the index', async () => {
     const db = sqliteD1();
-    insert(db.sql, 'diagrams', {
+    insert(db.sql, 'documents', {
       id: 'D',
       owner_id: 'owner',
       name: 'Big',

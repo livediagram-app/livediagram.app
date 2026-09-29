@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element, type ShapeKind } from '@livediagram/diagram';
+import { createShape, type Element, type ShapeKind } from '@livediagram/document';
 
 const trackMock = vi.fn();
 vi.mock('@/lib/telemetry', () => ({ track: (...args: unknown[]) => trackMock(...args) }));

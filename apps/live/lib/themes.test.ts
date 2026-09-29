@@ -6,9 +6,9 @@ import type {
   StickyElement,
   TableElement,
   TextElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape } from '@livediagram/diagram';
+import { createPinnedArrow, createShape } from '@livediagram/document';
 import {
   THEMES,
   deriveNewBoxedColours,

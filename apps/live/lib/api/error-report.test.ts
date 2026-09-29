@@ -18,7 +18,7 @@ import { apiFetch, apiHeaders, ApiError, expectOkVoid, setTokenProvider } from '
 describe('apiErrorType', () => {
   it('appends the action as one PascalCase token', () => {
     expect(apiErrorType(403, 'save tab')).toBe('Http403.SaveTab');
-    expect(apiErrorType(500, 'create diagram')).toBe('Http500.CreateDiagram');
+    expect(apiErrorType(500, 'create diagram')).toBe('Http500.CreateDocument');
     expect(apiErrorType(429, 'resolve team invite link')).toBe('Http429.ResolveTeamInviteLink');
   });
 
@@ -45,7 +45,7 @@ describe('apiErrorType', () => {
   // guarantees a future action string can't smuggle in a path or an id.
   it('keeps only letters and digits, so a path or id cannot leak', () => {
     expect(apiErrorType(404, 'load /diagrams/8f3e-9a21/tabs')).toBe(
-      'Http404.LoadDiagrams8f3e9a21Tabs',
+      'Http404.LoadDocuments8f3e9a21Tabs',
     );
     expect(apiErrorType(403, 'share?code=SEKRIT')).toMatch(TELEMETRY_TYPE_PATTERN);
   });

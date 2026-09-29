@@ -77,7 +77,7 @@ export const HELP_ARTICLES = {
   imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
   activity: 'explorer/activity',
-  recentDiagrams: 'explorer/recent',
+  recentDocuments: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
   unsorted: 'explorer/unsorted',
@@ -275,7 +275,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Activity',
     description: 'Open actions assigned to you or by you, and comment threads you are in.',
   },
-  recentDiagrams: {
+  recentDocuments: {
     title: 'Learn about Recent',
     description: 'Your most recently opened diagrams, personal and team, in one list.',
   },

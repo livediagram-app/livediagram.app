@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import {
   accountDeletedEmail,
-  diagramJoinedEmail,
+  documentJoinedEmail,
   inviteResponseEmail,
   teamInviteEmail,
   week1Email,
@@ -49,7 +49,7 @@ describe('email templates', () => {
 
   // docs/specs/014-identity/profile-and-email-notifications.md — someone joined my diagram
   it('diagram-joined names the diagram + joiner and CTAs to the explorer', () => {
-    const e = diagramJoinedEmail(env, 'Roadmap', 'Anna');
+    const e = documentJoinedEmail(env, 'Roadmap', 'Anna');
     expect(e.subject).toMatch(/Anna/);
     expect(e.html).toContain('Roadmap');
     expect(e.html).toContain('Anna');
@@ -57,13 +57,13 @@ describe('email templates', () => {
   });
 
   it('diagram-joined falls back to "Someone" / "your diagram" when unknown', () => {
-    const e = diagramJoinedEmail(env, '', null);
+    const e = documentJoinedEmail(env, '', null);
     expect(e.subject).toMatch(/Someone/);
     expect(e.html).toContain('your diagram');
   });
 
   it('diagram-joined escapes a malicious diagram name', () => {
-    const e = diagramJoinedEmail(env, '<img src=x onerror=1>', null);
+    const e = documentJoinedEmail(env, '<img src=x onerror=1>', null);
     expect(e.html).not.toContain('<img src=x');
     expect(e.html).toContain('&lt;img');
   });

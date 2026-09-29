@@ -5,8 +5,8 @@
 
 import { Scene, Avatar, Label, Button } from './primitives';
 import {
-  DiagramCard,
-  DiagramRow,
+  DocumentCard,
+  DocumentRow,
   ExplorerSidebar,
   SidebarGlyph,
   SidebarRow,
@@ -37,10 +37,10 @@ export function ExplorerOverview() {
       <Button x={336} y={22} w={56} h={20} label="New" variant="primary" />
       <line x1={178} y1={48} x2={404} y2={48} className="stroke-slate-200" strokeWidth={1.5} />
       {/* Card grid */}
-      <DiagramCard x={192} y={60} title="Onboarding" thumb="flow" />
-      <DiagramCard x={296} y={60} title="Data model" thumb="grid" />
-      <DiagramCard x={192} y={144} title="Org chart" thumb="tree" />
-      <DiagramCard x={296} y={144} title="API flow" thumb="flow" />
+      <DocumentCard x={192} y={60} title="Onboarding" thumb="flow" />
+      <DocumentCard x={296} y={60} title="Data model" thumb="grid" />
+      <DocumentCard x={192} y={144} title="Org chart" thumb="tree" />
+      <DocumentCard x={296} y={144} title="API flow" thumb="flow" />
     </Scene>
   );
 }
@@ -83,8 +83,8 @@ export function ExplorerPanel() {
       </Label>
       <line x1={28} y1={54} x2={216} y2={54} className="stroke-slate-200" strokeWidth={1.5} />
       <SidebarRow x={28} y={66} w={188} label="Recent" count={8} active glyph="recent" />
-      <DiagramRow x={40} y={92} w={164} title="Onboarding flow" meta="edited 2m ago" active />
-      <DiagramRow x={40} y={126} w={164} title="Data model" meta="edited today" />
+      <DocumentRow x={40} y={92} w={164} title="Onboarding flow" meta="edited 2m ago" active />
+      <DocumentRow x={40} y={126} w={164} title="Data model" meta="edited today" />
       <SidebarRow x={28} y={162} w={188} label="Personal Space" glyph="folder" />
       <SidebarRow x={28} y={184} w={188} label="Shared with you" count={3} glyph="shared" />
     </Scene>
@@ -117,10 +117,10 @@ export function RecentList() {
         </Label>
       </g>
       <line x1={24} y1={48} x2={396} y2={48} className="stroke-slate-200" strokeWidth={1.5} />
-      <DiagramRow x={40} y={58} w={340} title="Onboarding flow" meta="opened just now" active />
-      <DiagramRow x={40} y={94} w={340} title="Q3 roadmap" meta="opened 12m ago" />
-      <DiagramRow x={40} y={130} w={340} title="Auth sequence" meta="opened yesterday" />
-      <DiagramRow x={40} y={166} w={340} title="Data model" meta="opened 2 days ago" />
+      <DocumentRow x={40} y={58} w={340} title="Onboarding flow" meta="opened just now" active />
+      <DocumentRow x={40} y={94} w={340} title="Q3 roadmap" meta="opened 12m ago" />
+      <DocumentRow x={40} y={130} w={340} title="Auth sequence" meta="opened yesterday" />
+      <DocumentRow x={40} y={166} w={340} title="Data model" meta="opened 2 days ago" />
     </Scene>
   );
 }
@@ -145,7 +145,7 @@ export function SharedWithYou() {
         Shared with you
       </Label>
       <line x1={24} y1={46} x2={396} y2={46} className="stroke-slate-200" strokeWidth={1.5} />
-      <DiagramCard
+      <DocumentCard
         x={44}
         y={58}
         title="Sprint board"
@@ -153,7 +153,7 @@ export function SharedWithYou() {
         shared
         owner={{ initial: 'M', colour: 'violet' }}
       />
-      <DiagramCard
+      <DocumentCard
         x={162}
         y={58}
         title="System map"
@@ -161,7 +161,7 @@ export function SharedWithYou() {
         shared
         owner={{ initial: 'A', colour: 'emerald' }}
       />
-      <DiagramCard
+      <DocumentCard
         x={280}
         y={58}
         title="Hiring plan"

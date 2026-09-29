@@ -1,7 +1,7 @@
 # Presentation mode
 
 > **Status: implemented.** The deck model and its pure helpers live in
-> `packages/diagram/src/slide-deck.ts`, persistence in migration 0041
+> `packages/document/src/slide-deck.ts`, persistence in migration 0041
 > (`diagrams.presentation`), and the editor surface in `useSlideDeck.ts`,
 > `SlideDeckPanel.tsx`, `PresentationHost.tsx`, `PresentationOverlay.tsx`,
 > `PresentationHud.tsx` and `PresentationElementPopover.tsx`. The two open
@@ -24,15 +24,15 @@ A finished diagram shows everything at once, which is great for reference and ba
 
 ### Why not layers
 
-Layers ([Layers](../006-diagram/layers.md)) were the obvious candidate and were considered in detail: they are already an ordered list of element groups with a management panel, drag-reorder, per-band preview thumbnails, and a local render override (hover-solo) that is exactly the "show these bands only, without touching persisted state" mechanism a presentation needs. Reusing them would have been cheap.
+Layers ([Layers](../006-document/layers.md)) were the obvious candidate and were considered in detail: they are already an ordered list of element groups with a management panel, drag-reorder, per-band preview thumbnails, and a local render override (hover-solo) that is exactly the "show these bands only, without touching persisted state" mechanism a presentation needs. Reusing them would have been cheap.
 
 They were rejected because a layer means something else, and the collisions were not superficial:
 
 - **Layers are z-order bands**, so slide order would have been stacking order: reordering the deck would restack the drawing.
-- **Bring to Front / Send to Back create and prune layers** ([Layers](../006-diagram/layers.md)). Casually clicking "bring to front" would mint a slide, and emptying a layer would silently delete one.
+- **Bring to Front / Send to Back create and prune layers** ([Layers](../006-document/layers.md)). Casually clicking "bring to front" would mint a slide, and emptying a layer would silently delete one.
 - **An element belongs to exactly one layer.** A title on every slide would have been unexpressible, and so would any element appearing on more than one.
 
-Slides are their own concept for the same reason layers were: overloading one structure with two meanings costs more in surprise than it saves in code. **Layers stay purely diagram structure.** Nothing in [Layers](../006-diagram/layers.md) changes.
+Slides are their own concept for the same reason layers were: overloading one structure with two meanings costs more in surprise than it saves in code. **Layers stay purely diagram structure.** Nothing in [Layers](../006-document/layers.md) changes.
 
 ## Data model
 
@@ -69,7 +69,7 @@ type Deck = { slides: Slide[] };
 type StoredPresentation = { decks: Deck[] };
 ```
 
-- **Dangling ids resolve at read time.** An element deleted after being added to a slide is skipped, exactly as [Layers](../006-diagram/layers.md) resolves an unknown `layerId` rather than rewriting element data on delete. No cleanup pass, no delete-path coupling, and undo restores the element back onto its slides for free. A slide whose whole TAB is deleted is skipped the same way.
+- **Dangling ids resolve at read time.** An element deleted after being added to a slide is skipped, exactly as [Layers](../006-document/layers.md) resolves an unknown `layerId` rather than rewriting element data on delete. No cleanup pass, no delete-path coupling, and undo restores the element back onto its slides for free. A slide whose whole TAB is deleted is skipped the same way.
 - A slide whose ids all dangle renders empty rather than being auto-removed: silently deleting someone's slide because they deleted its contents is worse than an empty slide they can see and fix.
 - **Arrows come along.** An arrow whose endpoints are both on the slide is included automatically even when it was not added explicitly, so building a slide from a selection of boxes does not need the connectors hand-picked. An arrow added explicitly always shows.
 
@@ -100,7 +100,7 @@ The **Slide Deck panel** is the seventh tool panel, on exactly the contract the 
 - **Every verb lives in the row's `…` menu**, built from the shared menu furniture the Explorer's rows and the tab context menu use, in the same shape: a quick-action icon **toolbar** (rename, notes, duplicate, with delete pinned right), then labelled accordion categories — **Selection** (add / remove what you have selected, with a line above the buttons saying what they act on) and **Visibility** (hide this slide from the run, or show it again). A menu that looks like this one and like nothing else in the app is a menu people have to learn twice.
 - **Deleting a slide asks first**, in a ConfirmPopover anchored to the row's own menu button. The elements survive, but the arrangement does not, and the arrangement is what you spent the time on.
 - **Hidden slides** are skipped by `presentableSlides`, which is the ONE place the run is decided — so the count on the Present button, the `7 / 23` in the HUD, and what advancing lands on can never disagree about the deck's length. The row shows a struck-through name and an eye marker, so a hidden slide is visible in the panel and invisible in the show. A row itself does ONE thing — press it to open that slide — because a panel the width of the palette cannot carry five controls per row and stay legible.
-- **Reorder** by dragging rows. The order does NOT change while you drag: a caret shows where the row will land and the move commits on release, the way the tab bar reorders ([Tab folders](../006-diagram/tab-folders.md)). Reordering live reshuffled the list under the pointer, which moved the very row you were aiming at. Pointer events rather than HTML5 dnd, so it works on touch.
+- **Reorder** by dragging rows. The order does NOT change while you drag: a caret shows where the row will land and the move commits on release, the way the tab bar reorders ([Tab folders](../006-document/tab-folders.md)). Reordering live reshuffled the list under the pointer, which moved the very row you were aiming at. Pointer events rather than HTML5 dnd, so it works on touch.
 - **Rename** inline, **delete**, and **duplicate** a slide.
 - **Presenter notes** opened from the row's `…` menu, written in a text area under the list, with the slide's optional **time budget** beside them — the two things you decide about a slide while writing the talk rather than while giving it (see Pacing). Here rather than on the canvas, because a note is about the slide rather than about anything on it, and behind the menu rather than always-on so the panel never grows a text area you did not ask for.
 - Selecting a row **switches to that slide's tab and highlights its members on the canvas**. This is how you check a slide without presenting, and it is why a slide names its tab rather than inferring one.
@@ -118,7 +118,7 @@ Reorder tabs. It was asked for while a slide belonged to a tab and the deck was 
 - **Framing:** fit to the content bounds of the slide's elements (`contentBounds` + `computeFitToScreen`), with padding. **If a slide contains exactly one frame element, its bounds are used instead** — that gives precise, authored framing using an element the product already has, with nothing new to learn.
 - **Nothing on a slide can be CHANGED.** No editing, moving, resizing or deleting; and none of the session verbs either: no voting, no starting or pausing a timer, no ticking a Done check, no firing a reaction pad. You are on a projector in front of a room, and a stray click that alters the diagram is not a feature.
   - Live DATA still displays. A timer somebody started before the presentation goes on counting down on the slide, and a poll shows the results it has. That is the slide reporting the diagram, not the audience changing it, and freezing a running clock mid-sentence would read as a bug.
-- **Everything on a slide can be READ.** Clicking an element opens a **read-only popover** carrying what that element has to say: its **note** ([Diagram structure](../006-diagram/diagram-structure.md), rendered rich per [Rich-text notes](../009-elements/rich-text-notes.md)), its **comment thread** ([Canvas and palette](../008-canvas/canvas-and-palette.md)), and its **assigned actions** ([Assigned actions](assigned-actions.md)) with assignee and status. Nothing in the popover is editable, and there is no composer: you can show the room the objection somebody left on this box, and you cannot answer it from here.
+- **Everything on a slide can be READ.** Clicking an element opens a **read-only popover** carrying what that element has to say: its **note** ([Diagram structure](../006-document/document-structure.md), rendered rich per [Rich-text notes](../009-elements/rich-text-notes.md)), its **comment thread** ([Canvas and palette](../008-canvas/canvas-and-palette.md)), and its **assigned actions** ([Assigned actions](assigned-actions.md)) with assignee and status. Nothing in the popover is editable, and there is no composer: you can show the room the objection somebody left on this box, and you cannot answer it from here.
   - This is the line the whole mode runs on, and it is worth stating as one sentence: **read anything, change nothing.** Inspecting is not editing, and a presenter being unable to show the note attached to the thing they are pointing at would be a strange kind of presentation.
   - The element popover is a different thing from the HUD's notes popover, and they do not overlap. The HUD's carries the SLIDE's presenter note, what you mean to say. This one carries the ELEMENT's, what the diagram records about that box.
 - **A click on empty space advances the slide; a click on an element opens its popover.** The disambiguation matters, because click-to-advance and click-to-inspect are the same gesture on different targets. Clicking outside an open popover closes it rather than advancing, so dismissing never skips a slide.
@@ -220,13 +220,13 @@ Exiting restores the previous tab, viewport and chrome. The viewport matters mor
 
 ### Cross-tab loading
 
-Tabs load lazily ([Per-tab storage](../006-diagram/per-tab-storage.md)), so a deck whose slides reach into a tab nobody has visited would stall mid-presentation. `loadAllTabs()` already exists in `usePerTabLoad.ts` — a one-shot parallel fetch of every unloaded tab, built for cross-tab element search — and Start awaits it. A slide whose tab still cannot be resolved is skipped rather than blocking the deck.
+Tabs load lazily ([Per-tab storage](../006-document/per-tab-storage.md)), so a deck whose slides reach into a tab nobody has visited would stall mid-presentation. `loadAllTabs()` already exists in `usePerTabLoad.ts` — a one-shot parallel fetch of every unloaded tab, built for cross-tab element search — and Start awaits it. A slide whose tab still cannot be resolved is skipped rather than blocking the deck.
 
 ## Presenter notes
 
 **Each slide carries its own notes**, written and edited in the Slide Deck panel: pick a slide, type what you mean to say over it. They are the slide's, stored on the slide.
 
-They are deliberately NOT the elements' existing `note?` field ([Diagram structure](../006-diagram/diagram-structure.md), rich text per [Rich-text notes](../009-elements/rich-text-notes.md)), which the previous draft reused. That field is a note about a _thing_ — "this queue is the one that backs up" — and it belongs to the element wherever it appears. What a presenter needs is a note about a _moment_ in a talk, and the same element on two slides usually wants two different things said about it. Deriving slide notes by gathering up element notes gives you neither: a caption assembled from three elements' annotations, in element order, saying nothing you chose to say.
+They are deliberately NOT the elements' existing `note?` field ([Diagram structure](../006-document/document-structure.md), rich text per [Rich-text notes](../009-elements/rich-text-notes.md)), which the previous draft reused. That field is a note about a _thing_ — "this queue is the one that backs up" — and it belongs to the element wherever it appears. What a presenter needs is a note about a _moment_ in a talk, and the same element on two slides usually wants two different things said about it. Deriving slide notes by gathering up element notes gives you neither: a caption assembled from three elements' annotations, in element order, saying nothing you chose to say.
 
 - Plain text in v1, not rich text. It is a script you read off, and the rich-text editor is a surface to maintain for something nobody will bold.
 - During a presentation they live behind the HUD's notes button, opened on demand. See The HUD above.
@@ -247,7 +247,7 @@ The deck itself IS shared: a teammate opening the diagram sees your slides and c
 
 ## Implementation shape
 
-Per the no-god-files rule: `useSlideDeck.ts` (deck state, current index, keyboard, camera targets), `SlideDeckPanel.tsx` (the seventh tool panel, built like `EraserPanel` / `HighlighterPanel`), and `PresentationOverlay.tsx` (the full-screen surface Start puts you into: the slide surface and its transitions, the auto-hiding HUD, the notes, the end state). The element popover reuses the existing read surfaces rather than growing a third rendering of a comment thread: the same components the canvas popover and the Collaborate panel already draw, with their composers and action buttons not passed. `CommentPanelFace` already takes its handlers optionally for exactly this reason (a surface with no comment session renders the thread readable but inert), so presenting is a caller that omits them. Deck helpers stay pure and live in `packages/diagram` beside the element helpers: resolving a slide to its elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
+Per the no-god-files rule: `useSlideDeck.ts` (deck state, current index, keyboard, camera targets), `SlideDeckPanel.tsx` (the seventh tool panel, built like `EraserPanel` / `HighlighterPanel`), and `PresentationOverlay.tsx` (the full-screen surface Start puts you into: the slide surface and its transitions, the auto-hiding HUD, the notes, the end state). The element popover reuses the existing read surfaces rather than growing a third rendering of a comment thread: the same components the canvas popover and the Collaborate panel already draw, with their composers and action buttons not passed. `CommentPanelFace` already takes its handlers optionally for exactly this reason (a surface with no comment session renders the thread readable but inert), so presenting is a caller that omits them. Deck helpers stay pure and live in `packages/document` beside the element helpers: resolving a slide to its elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
 
 The additions above land on that same shape rather than growing the overlay. The jump popover and the pacing readout are HUD components fed by `useSlideDeck`; the wake lock and the elapsed clock are effects it owns, both released on exit beside the viewport restore that already happens there. The presenter settings gain two booleans in `lib/presentation-config.ts`, which is device-local and already carries the other four. Laser and Spotlight need nothing new at all — they are canvas tools the overlay stops suppressing. The deck export is a third value on the existing `exportScope` union plus a loop over slides in the export path, and the per-slide bounds it needs is the pure helper above, which is the reason it costs so little.
 

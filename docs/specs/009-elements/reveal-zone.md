@@ -54,7 +54,7 @@ A locally-revealed cover that is then revealed for everyone stays revealed; a lo
 ## What it is not
 
 - **Not a permission.** Anything underneath is in the document, so it is in the export, in the API response, and visible to anyone who moves the cover aside. A reveal zone hides content from a reader's eye, not from a determined reader; the help article says as much, and this spec is the honest record of it. Real secrets do not belong on a shared canvas.
-- Not a layer. Layers ([Layers](../006-diagram/layers.md)) hide content for the person who toggles them, permanently and for editing too; a cover is about timing, not workspace.
+- Not a layer. Layers ([Layers](../006-document/layers.md)) hide content for the person who toggles them, permanently and for editing too; a cover is about timing, not workspace.
 
 ## Telemetry
 

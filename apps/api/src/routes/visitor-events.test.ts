@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeTestRouteContext } from './test-route-context';
-import type { DiagramDTO } from '../types';
+import type { DocumentDTO } from '../types';
 
 // A "visitor" is somebody who arrived through a SHARE LINK (docs/specs/013-workspace/timeline.md §4.3).
 //
 // Both visitor-facing events keyed on `owner !== diagram.ownerId`, which is not
 // that. The read gate also admits any joined member of the diagram's team
-// (docs/specs/013-workspace/team-shared-diagrams.md), and a teammate presents no share code — so browsing your own
+// (docs/specs/013-workspace/team-shared-documents.md), and a teammate presents no share code — so browsing your own
 // team's library told the diagram's owner "opened by a visitor · Someone with
 // the share link", filed under the sharing filter, for a diagram they had never
 // shared a link for. Once per teammate per day, so up to eleven false bubbles a
@@ -15,11 +15,11 @@ import type { DiagramDTO } from '../types';
 //
 // The honest test is whether a share code was presented at all.
 const timeline = vi.hoisted(() => ({
-  audienceForDiagram: vi.fn(async () => [] as unknown[]),
-  recordDiagramCreated: vi.fn(async () => {}),
-  recordDiagramDuplicated: vi.fn(async () => {}),
-  recordDiagramOffline: vi.fn(async () => {}),
-  recordDiagramSynced: vi.fn(async () => {}),
+  audienceForDocument: vi.fn(async () => [] as unknown[]),
+  recordDocumentCreated: vi.fn(async () => {}),
+  recordDocumentDuplicated: vi.fn(async () => {}),
+  recordDocumentOffline: vi.fn(async () => {}),
+  recordDocumentSynced: vi.fn(async () => {}),
   recordVisitorCopied: vi.fn(async () => {}),
   recordVisitorOpened: vi.fn(async () => {}),
   recordTabSave: vi.fn(async () => {}),
@@ -28,38 +28,38 @@ const timeline = vi.hoisted(() => ({
 vi.mock('../timeline', () => timeline);
 
 const db = vi.hoisted(() => ({
-  getDiagram: vi.fn(),
+  getDocument: vi.fn(),
   getTab: vi.fn(),
   getParticipant: vi.fn(async () => null),
   getMembership: vi.fn(),
-  copyDiagram: vi.fn(),
+  copyDocument: vi.fn(),
   listSharedWith: vi.fn(async () => [] as unknown[]),
   upsertTab: vi.fn(async () => {}),
   deleteTabRow: vi.fn(),
-  diagramsContainingTab: vi.fn(),
-  linkTabToDiagram: vi.fn(),
-  tabLinkedToOwnedDiagram: vi.fn(),
+  documentsContainingTab: vi.fn(),
+  linkTabToDocument: vi.fn(),
+  tabLinkedToOwnedDocument: vi.fn(),
 }));
 vi.mock('../db', () => db);
 vi.mock('../db/timeline', () => ({ markTimelineEventsDeletedBySource: vi.fn(async () => {}) }));
 
 const access = vi.hoisted(() => ({
-  canReadDiagram: vi.fn(async () => true),
-  canEditDiagram: vi.fn(async () => true),
-  resolveDiagramGrant: vi.fn(async () => ({ role: 'edit' as const, tabScope: null })),
+  canReadDocument: vi.fn(async () => true),
+  canEditDocument: vi.fn(async () => true),
+  resolveDocumentGrant: vi.fn(async () => ({ role: 'edit' as const, tabScope: null })),
 }));
-vi.mock('../auth/diagram-access', () => access);
+vi.mock('../auth/document-access', () => access);
 
-import { handleDiagramSubresources } from './diagram-subresource-routes';
-import { handleDiagrams } from './diagrams';
+import { handleDocumentSubresources } from './document-subresource-routes';
+import { handleDocuments } from './documents';
 
-const TEAM_DIAGRAM = {
+const TEAM_DOCUMENT = {
   id: 'd1',
   ownerId: 'alice',
   teamId: 'team-1',
   name: 'Payments architecture',
   tabs: [],
-} as unknown as DiagramDTO;
+} as unknown as DocumentDTO;
 
 const SHARE = { headers: { 'X-Share-Code': 'CODE2345' } };
 
@@ -76,7 +76,7 @@ function ctxWith(method: string, path: string, opts: Record<string, unknown> = {
 
 beforeEach(() => {
   for (const fn of Object.values(timeline)) fn.mockClear();
-  db.getDiagram.mockResolvedValue(TEAM_DIAGRAM);
+  db.getDocument.mockResolvedValue(TEAM_DOCUMENT);
   db.getTab.mockResolvedValue({ id: 't1', name: 'Tab', orderIndex: 0, elements: [] });
 });
 
@@ -85,14 +85,14 @@ describe('GET /diagrams/:id/tabs/:tabId — who counts as a visitor', () => {
 
   it('records nothing for a joined teammate reading a team diagram', async () => {
     const { ctx, settle } = ctxWith('GET', path, { owner: 'bob', clerkUserId: 'bob' });
-    expect((await handleDiagramSubresources(ctx))?.status).toBe(200);
+    expect((await handleDocumentSubresources(ctx))?.status).toBe(200);
     await settle();
     expect(timeline.recordVisitorOpened).not.toHaveBeenCalled();
   });
 
   it('records the open when a share code was presented', async () => {
     const { ctx, settle } = ctxWith('GET', path, { owner: 'stranger', ...SHARE });
-    expect((await handleDiagramSubresources(ctx))?.status).toBe(200);
+    expect((await handleDocumentSubresources(ctx))?.status).toBe(200);
     await settle();
     expect(timeline.recordVisitorOpened).toHaveBeenCalledTimes(1);
   });
@@ -102,7 +102,7 @@ describe('GET /diagrams/:id/tabs/:tabId — who counts as a visitor', () => {
     for (const extra of [{}, SHARE]) {
       timeline.recordVisitorOpened.mockClear();
       const { ctx, settle } = ctxWith('GET', path, { owner: 'alice', ...extra });
-      await handleDiagramSubresources(ctx);
+      await handleDocumentSubresources(ctx);
       await settle();
       expect(timeline.recordVisitorOpened).not.toHaveBeenCalled();
     }
@@ -113,21 +113,21 @@ describe('POST /diagrams/:id/copy — who counts as a visitor', () => {
   const path = '/api/diagrams/d1/copy';
 
   beforeEach(() => {
-    db.copyDiagram.mockResolvedValue({ ...TEAM_DIAGRAM, id: 'd2', ownerId: 'bob' });
+    db.copyDocument.mockResolvedValue({ ...TEAM_DOCUMENT, id: 'd2', ownerId: 'bob' });
   });
 
   it('records no visitor copy when a joined teammate duplicates a team diagram', async () => {
     const { ctx, settle } = ctxWith('POST', path, { owner: 'bob', clerkUserId: 'bob', body: {} });
-    await handleDiagrams(ctx);
+    await handleDocuments(ctx);
     await settle();
     expect(timeline.recordVisitorCopied).not.toHaveBeenCalled();
     // Their own "Diagram Duplicated" event is unaffected — they did copy it.
-    expect(timeline.recordDiagramDuplicated).toHaveBeenCalledTimes(1);
+    expect(timeline.recordDocumentDuplicated).toHaveBeenCalledTimes(1);
   });
 
   it('records a visitor copy when a share-code holder forks it', async () => {
     const { ctx, settle } = ctxWith('POST', path, { owner: 'stranger', body: {}, ...SHARE });
-    await handleDiagrams(ctx);
+    await handleDocuments(ctx);
     await settle();
     expect(timeline.recordVisitorCopied).toHaveBeenCalledTimes(1);
   });

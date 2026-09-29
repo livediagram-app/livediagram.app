@@ -10,7 +10,7 @@ import { expect, test, dismissQuickTour, expectNoPageErrors } from './fixtures';
 
 const CANVAS = '[data-canvas-a11y-root]';
 
-// The wizard's Skip path (docs/specs/007-editor/new-diagram-route.md): a blank diagram on the Default colour
+// The wizard's Skip path (docs/specs/007-editor/new-document-route.md): a blank diagram on the Default colour
 // scheme, in one click. What this suite needs is a default tab, not the wizard.
 async function justDraw(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('/new');

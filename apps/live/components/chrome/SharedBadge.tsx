@@ -6,7 +6,7 @@ import { Chip, PrivateDotIcon, SharedDotIcon } from '@livediagram/ui';
 // The visibility pill rendered beside the diagram title, split out of
 // EditorHeader. Share links win: a shared team diagram reads "Shared" as
 // normal; "Team" covers the team-but-unshared case where "Private" would be a
-// lie (every joined member can open it); "Offline" (docs/specs/006-diagram/offline-mode.md) supersedes
+// lie (every joined member can open it); "Offline" (docs/specs/006-document/offline-mode.md) supersedes
 // "Private" for browser-only diagrams. Hovering (or focusing) the pill opens a
 // legend popover explaining every badge, with the current one highlighted, so
 // the four states can be compared in place instead of hunting each hover card.
@@ -41,7 +41,7 @@ const SHARE_STATE_META: Record<
       'bg-brand-50 px-2 text-[10px] font-semibold text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30',
     dot: 'text-brand-500 dark:text-brand-400',
   },
-  // Offline Mode (docs/specs/006-diagram/offline-mode.md): saved only in this browser, never on the server.
+  // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser, never on the server.
   // Amber so it reads as a distinct, deliberate state rather than a neutral
   // default.
   offline: {
@@ -114,7 +114,7 @@ export function SharedBadge({
         tabIndex={0}
         aria-label={`${meta.label}: ${meta.description}`}
       />
-      {/* The badge legend (docs/specs/006-diagram/offline-mode.md follow-up): every visibility state with its
+      {/* The badge legend (docs/specs/006-document/offline-mode.md follow-up): every visibility state with its
           meaning, current row highlighted. Anchored below the pill; the header
           creates its own stacking context and doesn't clip overflow (the
           AuthControls menu relies on the same), so no portal is needed. */}

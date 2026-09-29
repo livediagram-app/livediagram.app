@@ -175,4 +175,4 @@ export reads with depth, not as a flat tilted plane.
 
 See also [Canvas and palette](canvas-and-palette.md) (the tool row +
 shortcuts), [Zen mode](../007-editor/zen-mode.md) (view-only, non-synced view state), and
-[Diagram structure](../006-diagram/diagram-structure.md) (the 2D element model this projects).
+[Diagram structure](../006-document/document-structure.md) (the 2D element model this projects).

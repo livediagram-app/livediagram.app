@@ -1,4 +1,4 @@
-import type { ElementDelta, ElementOp, QaNote, Tab } from '@livediagram/diagram';
+import type { ElementDelta, ElementOp, QaNote, Tab } from '@livediagram/document';
 import type { ChangeLogEntry, ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
@@ -338,7 +338,7 @@ export type RoomOp =
   // A single element on a tab changed (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0): add / update /
   // remove / reorder, applied by id so a peer editing a DIFFERENT element
   // on the same tab merges instead of overwriting the whole tab. `op`
-  // carries the element payload (see @livediagram/diagram ElementOp).
+  // carries the element payload (see @livediagram/document ElementOp).
   | { kind: 'el'; tabId: string; op: ElementOp }
   // A tab's non-element metadata changed (name, background, font, …) —
   // the element array is untouched, so this rides alongside `el` ops
@@ -394,7 +394,7 @@ export type RoomOp =
   | {
       kind: 'diagram-meta';
       name: string;
-      // `folder` (docs/specs/006-diagram/tab-folders.md) is the per-diagram folder name, optional so
+      // `folder` (docs/specs/006-document/tab-folders.md) is the per-diagram folder name, optional so
       // an older peer that omits it is treated as loose — no parse break.
       // `outOfScope` marks a tab outside a tab-scoped session's scope
       // (docs/specs/013-workspace/tab-scoped-share-links.md): its name is blanked by the room.

@@ -19,7 +19,7 @@
 
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
-import { REVEAL_COVER_BASE } from '@livediagram/diagram';
+import { REVEAL_COVER_BASE } from '@livediagram/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { tint } from '@/lib/element-tint';
 import { LockGlyph } from '@/components/canvas/collab/qa/qa-parts';

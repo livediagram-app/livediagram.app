@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { auditContrast } from './contrast';
-import { dismissQuickTour, expect, expectNoPageErrors, startBlankDiagram, test } from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
 
 // Tooltips and hover cards (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md), in a real
 // browser: the 1 s tooltip delay, instant keyboard focus, the instant hover
@@ -18,7 +18,7 @@ const squareTile = (page: Page) => page.getByRole('button', { name: 'Add square'
 // A blank diagram with the quick tour out of the way: its dialog would cover
 // the palette mid-hover.
 async function openEditor(page: Page) {
-  await startBlankDiagram(page);
+  await startBlankDocument(page);
   await dismissQuickTour(page);
 }
 

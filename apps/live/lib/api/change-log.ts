@@ -29,7 +29,7 @@ async function _apiListChangeLog(
   id: string,
   shareCode?: string | null,
 ): Promise<ChangeLogEntry[]> {
-  // Offline Mode (docs/specs/006-diagram/offline-mode.md): the log lives in the diagram's IndexedDB record.
+  // Offline Mode (docs/specs/006-document/offline-mode.md): the log lives in the diagram's IndexedDB record.
   if (await isOfflineId(id)) return offlineListChangeLog(id);
   const res = await apiFetch(`${API_BASE}/diagrams/${id}/log`, {
     headers: await apiHeaders(ownerId, { share: shareCode ?? null }),
@@ -44,13 +44,13 @@ export const apiListChangeLog = dedupeInFlight(
 
 export async function apiAppendChangeLogEntry(
   ownerId: string,
-  diagramId: string,
+  documentId: string,
   entry: ChangeLogEntry,
   shareCode: string | null = null,
 ): Promise<ChangeLogEntry> {
-  if (await isOfflineId(diagramId)) return offlineAppendChangeLogEntry(diagramId, entry);
+  if (await isOfflineId(documentId)) return offlineAppendChangeLogEntry(documentId, entry);
   const post = async () =>
-    apiFetch(`${API_BASE}/diagrams/${diagramId}/log`, {
+    apiFetch(`${API_BASE}/diagrams/${documentId}/log`, {
       method: 'POST',
       headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
       body: JSON.stringify(entry),
@@ -78,12 +78,12 @@ async function isTabNotSaved(res: Response): Promise<boolean> {
 
 export async function apiDeleteChangeLogForTab(
   ownerId: string,
-  diagramId: string,
+  documentId: string,
   tabId: string,
   shareCode: string | null = null,
 ): Promise<void> {
-  if (await isOfflineId(diagramId)) return offlineDeleteChangeLogForTab(diagramId, tabId);
-  return apiDelete(`${API_BASE}/diagrams/${diagramId}/log/tab/${tabId}`, ownerId, {
+  if (await isOfflineId(documentId)) return offlineDeleteChangeLogForTab(documentId, tabId);
+  return apiDelete(`${API_BASE}/diagrams/${documentId}/log/tab/${tabId}`, ownerId, {
     action: 'delete change log',
     share: shareCode,
   });
@@ -91,12 +91,12 @@ export async function apiDeleteChangeLogForTab(
 
 export async function apiDeleteChangeLogEntry(
   ownerId: string,
-  diagramId: string,
+  documentId: string,
   entryId: string,
   shareCode: string | null = null,
 ): Promise<void> {
-  if (await isOfflineId(diagramId)) return offlineDeleteChangeLogEntry(diagramId, entryId);
-  return apiDelete(`${API_BASE}/diagrams/${diagramId}/log/${entryId}`, ownerId, {
+  if (await isOfflineId(documentId)) return offlineDeleteChangeLogEntry(documentId, entryId);
+  return apiDelete(`${API_BASE}/diagrams/${documentId}/log/${entryId}`, ownerId, {
     action: 'delete change log entry',
     share: shareCode,
   });

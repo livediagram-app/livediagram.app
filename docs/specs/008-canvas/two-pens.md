@@ -40,7 +40,7 @@ used to be.
 `useCanvasDrawGesture` reads the armed intent on release —
 `pendingDraw?.variant === 'shape-pen'` — rather than a lifted preference, and
 passes that to `onCommitFreehand`. The recognition code itself
-(`packages/diagram/src/recognise-shape.ts`) is untouched; only what decides to
+(`packages/document/src/recognise-shape.ts`) is untouched; only what decides to
 call it changed.
 
 Each pen gets its own cursor and banner. The shape pen's cursor is the nib

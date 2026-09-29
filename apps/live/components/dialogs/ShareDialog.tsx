@@ -141,7 +141,7 @@ export function ShareDialog({
   // prerender (the dialog isn't shown then) doesn't touch window.
   const origin = typeof window === 'undefined' ? '' : window.location.origin;
 
-  // Offline diagrams (docs/specs/006-diagram/offline-mode.md) have nothing to share yet, so swap the whole
+  // Offline diagrams (docs/specs/006-document/offline-mode.md) have nothing to share yet, so swap the whole
   // dialog for the sync gate until the owner moves it to the cloud.
   if (offline && onSyncToCloud) {
     return <ShareOfflineGate onSyncToCloud={onSyncToCloud} onClose={onClose} />;

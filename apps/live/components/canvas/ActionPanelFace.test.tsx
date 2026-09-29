@@ -14,7 +14,7 @@ import {
   isOpenAction,
   isVotable,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 import { ActionPanelFace } from './ActionPanelFace';
 

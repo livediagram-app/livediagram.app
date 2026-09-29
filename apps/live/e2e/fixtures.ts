@@ -67,7 +67,7 @@ export function expectNoPageErrors(pageErrors: string[]): void {
 // screen), so template creation — builders, layers, per-template canvas
 // overrides, the board kind — is a genuinely different path through the
 // wizard and needs its own way in.
-export async function startTemplateDiagram(
+export async function startTemplateDocument(
   page: Page,
   category: RegExp,
   template: RegExp,
@@ -92,7 +92,7 @@ export async function startTemplateDiagram(
 // a row around that note through the api and reloads. The three are copies of
 // the seeded note (so they carry exactly its stationery), one rhythm step apart.
 export async function startEventStormingRow(page: Page): Promise<void> {
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  await startTemplateDocument(page, /Browse Technical templates/, /^Event storming/i);
   const notes = page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ });
   await notes.first().waitFor();
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
@@ -105,8 +105,8 @@ export async function startEventStormingRow(page: Page): Promise<void> {
     let tab: { elements: { width: number; x: number }[] } | null = null;
     let tabId = '';
     for (let i = 0; i < 50 && !tab; i += 1) {
-      const diagram = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
-      tabId = diagram.diagram?.tabs?.[0]?.id ?? '';
+      const liveDoc = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
+      tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
       if (tabId) {
         const got = await (await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, { headers })).json();
         if (got.tab?.elements?.length === 1) tab = got.tab;
@@ -167,11 +167,11 @@ export async function openJustDraw(page: Page): Promise<void> {
   await dismissQuickTour(page);
 }
 
-export async function startBlankDiagram(page: Page): Promise<void> {
+export async function startBlankDocument(page: Page): Promise<void> {
   await page.goto('/new');
   await page.getByText('New Diagram', { exact: false }).waitFor();
   // Step 1: pick the Blank template. Single-click advances to the theme
-  // step (docs/specs/006-diagram/offline-mode.md), so no explicit Next is needed here.
+  // step (docs/specs/006-document/offline-mode.md), so no explicit Next is needed here.
   await page.getByText('Blank diagram', { exact: false }).click();
   // Step 2 (theme) -> step 3 (settings). ANCHORED name: a bare /next/i
   // also matches the Next.js DevTools button on dev servers.
@@ -202,8 +202,8 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
       let tab: Record<string, unknown> | null = null;
       let tabId = '';
       for (let i = 0; i < 50 && !tab; i += 1) {
-        const diagram = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
-        tabId = diagram.diagram?.tabs?.[0]?.id ?? '';
+        const liveDoc = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
+        tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
         if (tabId) {
           const got = await (
             await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, { headers })

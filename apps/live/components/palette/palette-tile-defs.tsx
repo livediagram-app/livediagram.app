@@ -1,5 +1,5 @@
-import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
-import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livediagram/diagram';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
+import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livediagram/document';
 
 import type {
   ComponentKind,
@@ -8,7 +8,7 @@ import type {
   SelectionMode,
   SessionTool,
   ShapeKind,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import {
   AgendaIcon,
   AvatarModeIcon,
@@ -1754,7 +1754,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind, derived
-  // from the EVENT_STORMING_NOTES catalogue in @livediagram/diagram so the
+  // from the EVENT_STORMING_NOTES catalogue in @livediagram/document so the
   // palette can never drift from the colours the template builder (and any
   // future consumer) uses. Each tile arms the ordinary sticky gesture with
   // the kind's canonical fill + kind riding the intent (the kind routes the

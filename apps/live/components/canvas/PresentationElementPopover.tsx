@@ -22,7 +22,7 @@ import {
   isBoxed,
   type BoxedElement,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { CloseIcon } from '@livediagram/ui';
 
 import { CommentBubbles } from '@/components/canvas/collab/comment/CommentBubbles';

@@ -21,13 +21,13 @@ const GATE_KEEPERS = [
   'src/routes/share.ts',
   'src/routes/shared.ts',
   'src/routes/tokens.ts',
-  'src/routes/diagram-share-routes.ts',
+  'src/routes/document-share-routes.ts',
   // The image reference index and the sweep that trusts it: a gap here
   // deletes a picture someone placed (docs/specs/009-elements/images.md).
   'src/image-refs/**',
   'src/db/image-refs.ts',
   'src/db/image-retention.ts',
-  'src/db/diagram-removal.ts',
+  'src/db/document-removal.ts',
 ];
 
 export default defineProject({

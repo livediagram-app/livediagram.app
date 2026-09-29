@@ -32,7 +32,7 @@ import {
   rebindArrowAnchorsAfterMove,
   type Element,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 
 type NudgeDeps = {

@@ -28,7 +28,7 @@
 // contract.
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react';
-import { createImage, isBoxed, type Element } from '@livediagram/diagram';
+import { createImage, isBoxed, type Element } from '@livediagram/document';
 import { apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/api-client';
 import { isDataImageId } from '@/lib/offline/offline-images';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
@@ -66,7 +66,7 @@ type EditorImagesDeps = {
   setSelectedId: (id: string | null) => void;
   // The current diagram id (null before hydration). The picker +
   // recent-images list only operate once it's known.
-  diagramId: string | null;
+  documentId: string | null;
   // The local participant id — the owner the images belong to.
   ownerId: string;
   // The session's share code (edit-link visitors), forwarded to the
@@ -76,7 +76,7 @@ type EditorImagesDeps = {
 
 export function useEditorImages(deps: EditorImagesDeps) {
   const { editsBlocked, isReadOnly, embedMode, getViewportCenter, commit, setSelectedId } = deps;
-  const { diagramId, ownerId, sessionShareCode } = deps;
+  const { documentId, ownerId, sessionShareCode } = deps;
 
   const [imagePickerOpenFor, setImagePickerOpenFor] = useState<{
     forElementId: string | null;
@@ -98,9 +98,9 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // set on mount and stable for the session).
   const loadRecentImages = useEffectEvent(() => refreshRecentImages(ownerId));
   useEffect(() => {
-    if (!diagramId || isReadOnly || embedMode) return;
+    if (!documentId || isReadOnly || embedMode) return;
     loadRecentImages();
-  }, [diagramId, isReadOnly, embedMode]);
+  }, [documentId, isReadOnly, embedMode]);
 
   // Placing a NEW image lives in useElementCreation.addImage: it arms the
   // tap-or-drag draw gesture (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/images.md) rather than dropping a
@@ -136,15 +136,15 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // tab whenever any unrelated state moved.
   const imageContext = useMemo(
     () =>
-      diagramId
+      documentId
         ? {
             ownerId,
-            diagramId,
+            documentId,
             shareCode: sessionShareCode,
             onOpenPicker: isReadOnly || embedMode ? undefined : openImagePickerFor,
           }
         : undefined,
-    [diagramId, ownerId, sessionShareCode, isReadOnly, embedMode, openImagePickerFor],
+    [documentId, ownerId, sessionShareCode, isReadOnly, embedMode, openImagePickerFor],
   );
 
   // Apply the picker's selection: set imageId + natural dimensions on
@@ -199,11 +199,11 @@ export function useEditorImages(deps: EditorImagesDeps) {
     // embedMode also blocks the clipboard's paste-image upload, which
     // funnels through this handler after uploading.
     if (editsBlocked || embedMode) return;
-    // Offline diagrams must stay self-contained (docs/specs/006-diagram/offline-mode.md): a bare gallery
+    // Offline diagrams must stay self-contained (docs/specs/006-document/offline-mode.md): a bare gallery
     // id would break once the server's unused-image cleanup reaps it, so
     // fetch the bytes and place a data-URI embed instead. Re-entry with
     // the data URI as the id lands in the placement branch below.
-    if (diagramId && isOfflineIdSync(diagramId) && !isDataImageId(image.id)) {
+    if (documentId && isOfflineIdSync(documentId) && !isDataImageId(image.id)) {
       void apiFetchImageDataUrl(ownerId, image.id)
         .catch(() => null)
         .then((href) => {

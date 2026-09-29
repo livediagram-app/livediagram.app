@@ -19,7 +19,7 @@ import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-actio
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated' | 'forbidden';
 
 type EditorHeaderProps = {
-  diagramName: string;
+  documentName: string;
   // Hides the centred diagram title while the first-run welcome modal
   // is up (no diagram exists yet, naming it makes no sense). Brand and
   // Share button stay.
@@ -28,10 +28,10 @@ type EditorHeaderProps = {
   // via a share URL can't toggle sharing on their host's diagram.
   showShare: boolean;
   shareable: boolean;
-  // The diagram lives in a team's shared library (docs/specs/013-workspace/team-shared-diagrams.md). Flips the
+  // The diagram lives in a team's shared library (docs/specs/013-workspace/team-shared-documents.md). Flips the
   // title badge to "Team" when the diagram has no share links.
-  teamDiagram?: boolean;
-  // Offline Mode (docs/specs/006-diagram/offline-mode.md): saved only in this browser. Flips the title badge
+  teamDocument?: boolean;
+  // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser. Flips the title badge
   // to "Offline" (superseding "Private"); the caller also hides Share.
   offline?: boolean;
   // Counterpart to showShare for visitors: when present we render a
@@ -62,11 +62,11 @@ type EditorHeaderProps = {
 };
 
 export function EditorHeader({
-  diagramName,
+  documentName,
   hideTitle = false,
   showShare,
   shareable,
-  teamDiagram = false,
+  teamDocument = false,
   offline = false,
   onMakeCopy,
   copying = false,
@@ -104,9 +104,9 @@ export function EditorHeader({
       <div className="flex flex-1 items-center justify-start sm:justify-center">
         {hideTitle ? null : editing && !readOnly ? (
           <NameEditor
-            initial={diagramName}
+            initial={documentName}
             onCommit={(v) => {
-              onRename(v.trim() || diagramName);
+              onRename(v.trim() || documentName);
               setEditing(false);
             }}
             onCancel={() => setEditing(false)}
@@ -116,7 +116,7 @@ export function EditorHeader({
           <div className="flex items-center gap-1">
             {readOnly ? (
               <span className="truncate px-2 py-0.5 text-sm text-slate-600 dark:text-slate-200">
-                {diagramName}
+                {documentName}
               </span>
             ) : (
               <HoverCard title="Rename diagram" description="Click to edit the name.">
@@ -125,12 +125,12 @@ export function EditorHeader({
                   onClick={() => setEditing(true)}
                   className="truncate rounded px-2 py-0.5 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
                 >
-                  {diagramName}
+                  {documentName}
                 </button>
               </HoverCard>
             )}
             <span className="hidden sm:contents">
-              <SharedBadge shareable={shareable} team={teamDiagram} offline={offline} />
+              <SharedBadge shareable={shareable} team={teamDocument} offline={offline} />
               {rolePill ? <span className="ml-1 inline-flex">{rolePill}</span> : null}
             </span>
           </div>

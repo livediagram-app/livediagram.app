@@ -11,7 +11,7 @@ import {
   type ShapeElement,
   type StatItem,
   type WebRows,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 

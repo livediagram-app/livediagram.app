@@ -18,7 +18,7 @@
 // `schemaVersion` so a future breaking change can be refused with a clear
 // message instead of pasting nonsense.
 
-import { isValidElement, type Element } from '@livediagram/diagram';
+import { isValidElement, type Element } from '@livediagram/document';
 
 export const CLIPBOARD_SCHEMA_VERSION = 1;
 export const CLIPBOARD_KIND = 'livediagram.elements';

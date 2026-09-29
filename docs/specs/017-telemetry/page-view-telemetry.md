@@ -88,7 +88,7 @@ A page that doesn't exist is still a page view, and is counted under whatever
 path was asked for, within the grammar above. That is useful (it shows broken
 links arriving), bounded by the same deny-by-default normaliser, and cannot
 carry anything the grammar rejects. The editor's not-found slot renders the
-editor ([Dedicated route for new-diagram creation](../007-editor/new-diagram-route.md)), so every `/diagram/...` URL is counted as `/diagram`
+editor ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md)), so every `/diagram/...` URL is counted as `/diagram`
 whether or not the diagram exists.
 
 ### Counting

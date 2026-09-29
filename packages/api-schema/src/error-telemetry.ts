@@ -111,7 +111,7 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'share',
   'shared',
   'images',
-  'diagrams',
+  'documents',
   'folders',
   'custom-themes',
   'teams',

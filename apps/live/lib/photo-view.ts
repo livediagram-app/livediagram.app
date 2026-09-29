@@ -9,7 +9,7 @@
 //
 // Pure, so the maths is tested without a browser.
 
-import { clamp } from '@livediagram/diagram';
+import { clamp } from '@livediagram/document';
 
 export type PhotoView = { zoom: number; x: number; y: number };
 

@@ -11,7 +11,7 @@ afterEach(() => window.sessionStorage.clear());
 
 function setup() {
   const deps: Deps = {
-    diagramId: 'd1',
+    documentId: 'd1',
     send: vi.fn(),
     onNotice: vi.fn(),
     nameOf: (id) => `name-${id}`,
@@ -44,7 +44,7 @@ describe('useFacilitator', () => {
     act(() =>
       hook.result.current.receiveFacilitator({ holder: 'p1', reason: 'state', token: 'tk' }),
     );
-    hook.rerender({ ...deps, diagramId: 'd2' });
+    hook.rerender({ ...deps, documentId: 'd2' });
     expect(hook.result.current.facilitatorId).toBeNull();
     expect(hook.result.current.isFacilitator).toBe(false);
     expect(hook.result.current.readFacilitatorToken()).toBeNull();

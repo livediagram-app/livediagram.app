@@ -9,7 +9,7 @@
 // editor, which owns the runs and the selection.
 
 import { useEffect, useRef, useState } from 'react';
-import type { ListStyle, RunBoolKey, RunHeading } from '@livediagram/diagram';
+import type { ListStyle, RunBoolKey, RunHeading } from '@livediagram/document';
 import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
 import { noFocusSteal } from '@/components/rich-text/ToolbarDropdown';
 import {

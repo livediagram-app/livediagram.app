@@ -1,4 +1,4 @@
-import type { ElementLink } from '@livediagram/diagram';
+import type { ElementLink } from '@livediagram/document';
 
 // Human-readable destination for a link, shown in the hover card on a
 // link badge so a user can see WHERE a link goes before clicking it.
@@ -9,7 +9,7 @@ export function describeLink(link: ElementLink, tabs?: { id: string; name: strin
   switch (link.kind) {
     case 'url':
       return link.url;
-    case 'diagram':
+    case 'document':
       return `Diagram: ${link.name}`;
     case 'tab':
     case 'element': {

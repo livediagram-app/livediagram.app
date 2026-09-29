@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, ShapeElement } from '@livediagram/diagram';
+import type { Element, ShapeElement } from '@livediagram/document';
 
 import {
   CLIPBOARD_KIND,

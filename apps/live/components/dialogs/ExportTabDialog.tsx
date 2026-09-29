@@ -5,7 +5,7 @@ import { FormatCard } from './FormatCard';
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from './TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
-import { isLayerVisible, tabLayers, mermaidFromTab, type Tab } from '@livediagram/diagram';
+import { isLayerVisible, tabLayers, mermaidFromTab, type Tab } from '@livediagram/document';
 import {
   downloadBlob,
   exportTabAsPng,
@@ -36,7 +36,7 @@ const EXPORT_LABEL: Record<Format, string> = {
 
 type ExportTabDialogProps = {
   tab: Tab;
-  diagramName: string;
+  documentName: string;
   onClose: () => void;
   // 'tab' (default) exports the whole active tab; 'selection' exports a
   // derived tab whose `elements` are just the multi-selection. The caller
@@ -48,7 +48,7 @@ type ExportTabDialogProps = {
   // PDF embed image + avatar elements (the bitmaps live behind an
   // authenticated endpoint). Absent (e.g. no diagram id) → images export as
   // their placeholder, same as before.
-  imageContext?: { ownerId: string; diagramId: string; shareCode: string | null };
+  imageContext?: { ownerId: string; documentId: string; shareCode: string | null };
   // False while the Layers panel is off in Settings (docs/specs/007-editor/user-preferences.md): the
   // image options then leave out "Hidden layers", and hidden layers stay out
   // of the export as they stay off the canvas.
@@ -152,7 +152,7 @@ const TEXT_PANELS: Record<
 // options bleed onto it.
 export function ExportTabDialog({
   tab,
-  diagramName,
+  documentName,
   onClose,
   scope = 'tab',
   imageContext,
@@ -173,7 +173,9 @@ export function ExportTabDialog({
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
-  const baseName = sanitizeFilename(`${diagramName || 'diagram'} - ${tab.name || 'tab'}${suffix}`);
+  const baseName = sanitizeFilename(
+    `${documentName || 'document'} - ${tab.name || 'tab'}${suffix}`,
+  );
 
   // A new image load (format picked, tab or image context changed) is not ready until it lands;
   // adjusted during render so the panel never shows the previous load as ready.
@@ -238,7 +240,7 @@ export function ExportTabDialog({
       } else {
         downloadBlob(await exportTabAsPdf(tab, renderOpts), `${baseName}.pdf`);
       }
-      track('Diagram', 'Exported', EXPORT_LABEL[format]);
+      track('Document', 'Exported', EXPORT_LABEL[format]);
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Export failed.');
@@ -277,9 +279,9 @@ export function ExportTabDialog({
             onDownload={(text) => {
               const cfg = TEXT_PANELS[active];
               downloadBlob(new Blob([text], { type: cfg.mime }), `${baseName}.${cfg.ext}`);
-              track('Diagram', 'Exported', EXPORT_LABEL[active]);
+              track('Document', 'Exported', EXPORT_LABEL[active]);
             }}
-            onCopied={() => track('Diagram', 'Exported', EXPORT_LABEL[active])}
+            onCopied={() => track('Document', 'Exported', EXPORT_LABEL[active])}
             onBack={() => setActive(null)}
           />
         ) : active ? (

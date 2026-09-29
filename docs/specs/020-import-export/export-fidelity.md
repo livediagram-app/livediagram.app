@@ -17,7 +17,7 @@ returns ([MCP server](../015-api/mcp-server.md)).
 ## Why it kept breaking
 
 There are **three** renderers for the same content: the canvas (React, DOM +
-CSS + SVG), the SVG emitters in `packages/diagram/src/svg-render*.ts`, and the
+CSS + SVG), the SVG emitters in `packages/document/src/svg-render*.ts`, and the
 PNG / PDF canvas-2D drawers in `apps/live/lib/export-tab-canvas-draw.ts`. Each
 was internally consistent, so each looked right in its own tests, and the
 differences between them were invisible until someone laid two pictures side by
@@ -39,7 +39,7 @@ side. They were not small:
 
 ## How it is held
 
-**One definition per decision, in `@livediagram/diagram`,** imported by both
+**One definition per decision, in `@livediagram/document`,** imported by both
 sides rather than reimplemented. That is the only mechanism that works: a rule
 written down in two places is a rule that drifts. What moved there for this:
 
@@ -141,7 +141,7 @@ known gap is the Callout body's indent, a few pixels off the canvas's.
 
 ## Checking it
 
-`packages/diagram/src/export-consistency.test.ts` holds the wiring rather than
+`packages/document/src/export-consistency.test.ts` holds the wiring rather than
 pixels: that the exporter reads the canvas font table, that every kind with a
 body draws more than a box, that a face's title is not also printed as a centred
 label, and that every kind whose body the SVG draws is one the PNG rasterises.

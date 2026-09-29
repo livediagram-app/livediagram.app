@@ -15,7 +15,7 @@ import {
   THEMES,
 } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 
 // The default theme a tab reverts to when its custom theme is deleted —

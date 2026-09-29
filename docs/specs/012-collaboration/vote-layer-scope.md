@@ -5,7 +5,7 @@ Status: shipped
 ## What
 
 When starting a dot-vote ([Session tools (timer + voting)](session-tools.md)), the facilitator can pick which **layer**
-([Layers](../006-diagram/layers.md)) is votable. Only elements on that layer take dots; everything else
+([Layers](../006-document/layers.md)) is votable. Only elements on that layer take dots; everything else
 stays on the canvas but recedes, and the votable set is ringed.
 
 The case it solves: a tab where the ideas being voted on share the board with
@@ -66,7 +66,7 @@ dot either, and pretending otherwise would be a lie.
 ## Legacy elements
 
 `isVotableInVote` resolves an element's layer through `resolveLayerId` rather
-than comparing `element.layerId` directly. Everything authored before [Layers](../006-diagram/layers.md)
+than comparing `element.layerId` directly. Everything authored before [Layers](../006-document/layers.md)
 carries **no** `layerId` and belongs to the base layer — a raw comparison would
 make every one of those elements unvotable the instant a scope was set.
 

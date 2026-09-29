@@ -18,7 +18,7 @@ import {
   type PieAnim,
   type ProgressAnim,
   type RatingAnim,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { MenuToggleRow } from './context-menu-input-rows';
 
 // The "None" tile glyph — a dashed empty circle, sized to match a marker glyph.

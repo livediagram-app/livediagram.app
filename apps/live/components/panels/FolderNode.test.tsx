@@ -14,7 +14,7 @@ const folder: PanelFolder = { id: 'f1', name: 'Specs', parentId: null };
 function tree(over: Partial<PanelFolderTree> = {}): PanelFolderTree {
   return {
     foldersByParent: new Map(),
-    diagramsByFolder: new Map(),
+    documentsByFolder: new Map(),
     expanded: {},
     onToggleExpanded: vi.fn(),
     onRenameFolder: vi.fn(),

@@ -24,7 +24,7 @@ import type {
   TimelineRendererRegistry,
 } from '@livediagram/ui';
 import { SourceTypeIcon } from '@livediagram/ui';
-import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { EVENT_ICONS } from './icons';
 
 function str(snapshot: Record<string, unknown>, key: string): string | null {
@@ -58,12 +58,12 @@ function byActor(event: TimelineEvent, ctx: TimelineRendererContext): string {
 // stable placeholder: a feed of fifty cards doesn't fire fifty renders
 // for diagrams the reader never scrolls to.
 function preview(event: TimelineEvent, ctx: TimelineRendererContext) {
-  const diagramId = str(event.snapshot, 'diagramId');
-  if (!diagramId) return undefined;
+  const documentId = str(event.snapshot, 'documentId');
+  if (!documentId) return undefined;
   return (
-    <DiagramThumbnail
+    <DocumentThumbnail
       ownerId={ctx.viewerId}
-      diagramId={diagramId}
+      documentId={documentId}
       // The event's own timestamp as the cache-bust key. The coalesced
       // edit event's timestamp walks forward through a day, so an
       // actively-edited diagram re-fetches; a months-old card keeps
@@ -74,14 +74,14 @@ function preview(event: TimelineEvent, ctx: TimelineRendererContext) {
   );
 }
 
-const diagramRenderer: TimelineRenderer = (event, ctx) => {
-  const name = str(event.snapshot, 'diagramName') ?? 'A diagram';
-  const diagramId = str(event.snapshot, 'diagramId');
+const documentRenderer: TimelineRenderer = (event, ctx) => {
+  const name = str(event.snapshot, 'documentName') ?? 'A diagram';
+  const documentId = str(event.snapshot, 'documentId');
   // No id, no link: a row from an older worker (or one whose snapshot
   // lost its id) must not point the reader at nothing. The card dims
   // itself when there's no handler.
-  const open = diagramId
-    ? () => window.location.assign(`/diagram/${encodeURIComponent(diagramId)}`)
+  const open = documentId
+    ? () => window.location.assign(`/diagram/${encodeURIComponent(documentId)}`)
     : undefined;
   // `description: null` clears the stored line: the reason line already
   // says what happened and the title already names the diagram, so
@@ -95,19 +95,19 @@ const diagramRenderer: TimelineRenderer = (event, ctx) => {
   };
 
   switch (event.eventType) {
-    case 'diagram_edited':
+    case 'document_edited':
       return { ...base, meta: byActor(event, ctx) };
-    case 'diagram_duplicated': {
+    case 'document_duplicated': {
       const source = str(event.snapshot, 'sourceName');
       return { ...base, meta: source ? `Copy of ${source}` : undefined };
     }
-    case 'diagram_moved':
+    case 'document_moved':
       return { ...base, meta: `To ${str(event.snapshot, 'destination') ?? 'a folder'}` };
-    case 'team_diagram_added':
+    case 'team_document_added':
       return { ...base, meta: str(event.snapshot, 'teamName') ?? undefined };
-    case 'team_diagram_removed': {
+    case 'team_document_removed': {
       // Who has it now. A non-owner pulling a team diagram out takes
-      // ownership of it (docs/specs/013-workspace/team-shared-diagrams.md), so this is the part a reader of the
+      // ownership of it (docs/specs/013-workspace/team-shared-documents.md), so this is the part a reader of the
       // TEAM's copy of this event actually needs.
       const owner = str(event.snapshot, 'newOwnerName');
       return {
@@ -140,10 +140,10 @@ const diagramRenderer: TimelineRenderer = (event, ctx) => {
         description: str(event.snapshot, 'actionName') ?? null,
         meta: byActor(event, ctx),
       };
-    case 'diagram_offline':
+    case 'document_offline':
       return { ...base, meta: 'Kept only in this browser' };
-    case 'diagram_opened_by_visitor':
-    case 'diagram_copied_by_visitor':
+    case 'document_opened_by_visitor':
+    case 'document_copied_by_visitor':
       return {
         ...base,
         meta: str(event.snapshot, 'visitorName') ?? 'Someone with the share link',
@@ -245,7 +245,7 @@ const accountRenderer: TimelineRenderer = (event) => {
 };
 
 export const TIMELINE_RENDERERS: TimelineRendererRegistry = {
-  diagram: diagramRenderer,
+  document: documentRenderer,
   team: teamRenderer,
   account: accountRenderer,
 };

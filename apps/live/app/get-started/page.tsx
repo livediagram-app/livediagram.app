@@ -8,7 +8,7 @@
 //   Phase 2 — verify: 6-digit email code → redirect to editor
 //
 // Post-verification we hand off to /live/ (which resolves to /live/new
-// via the welcome flow, docs/specs/007-editor/new-diagram-route.md). The guest → authed migration of any
+// via the welcome flow, docs/specs/007-editor/new-document-route.md). The guest → authed migration of any
 // pre-existing diagrams lives in Stage 4 — out of scope for this page
 // for now.
 

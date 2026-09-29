@@ -10,7 +10,7 @@ import {
   planArrowBend,
   type ArrowElement,
   type FrameHandle,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { pointerToCanvas, type ArrowEnd, type DragState } from '@/lib/canvas';
 import type { EditorDragDeps } from './useEditorDrag.types';

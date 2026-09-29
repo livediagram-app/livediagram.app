@@ -29,11 +29,11 @@ import {
   MenuHeader,
   PortalMenu,
 } from '@/components/primitives/PortalMenu';
-import { DiagramActionsMenu } from '../diagram-row-shared';
+import { DocumentActionsMenu } from '../document-row-shared';
 import { FolderActionsMenu } from '../folder-actions-menu';
-import type { PaneDiagram } from '../views';
+import type { PaneDocument } from '../views';
 
-export type TimelineDiagramMenuHandlers = {
+export type TimelineDocumentMenuHandlers = {
   ownerId: string | null;
   onStartRename: () => void;
   onDuplicate: () => void;
@@ -77,18 +77,18 @@ type Shared = {
 
 type Shape =
   | {
-      diagram: PaneDiagram;
-      handlers: TimelineDiagramMenuHandlers;
+      document: PaneDocument;
+      handlers: TimelineDocumentMenuHandlers;
       folder?: undefined;
       items?: undefined;
     }
   | {
       folder: { id: string; name: string };
       folderHandlers: TimelineFolderMenuHandlers;
-      diagram?: undefined;
+      document?: undefined;
       items?: undefined;
     }
-  | { items?: TimelineMenuItem[]; diagram?: undefined; folder?: undefined };
+  | { items?: TimelineMenuItem[]; document?: undefined; folder?: undefined };
 
 export function TimelineCardMenu(props: Shared & Shape) {
   const { subject, open, onOpenChange, onRemove } = props;
@@ -108,9 +108,9 @@ export function TimelineCardMenu(props: Shared & Shape) {
         expanded={open}
         onClick={() => onOpenChange(!open)}
       />
-      {!open ? null : props.diagram ? (
-        <DiagramActionsMenu
-          diagram={props.diagram}
+      {!open ? null : props.document ? (
+        <DocumentActionsMenu
+          document={props.document}
           anchor={trigger}
           onClose={close}
           onRemoveFromTimeline={onRemove}

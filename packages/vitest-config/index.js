@@ -22,7 +22,7 @@ export const baseConfig = defineConfig({
       reportsDirectory: './coverage',
       // Count first-party source only — never tests or type decls. NB we
       // deliberately do NOT exclude index.ts: in this repo a package's
-      // index.ts is its implementation (e.g. @livediagram/diagram), not a
+      // index.ts is its implementation (e.g. @livediagram/document), not a
       // barrel of re-exports, so excluding it would hide all of its source.
       include: ['src/**', 'lib/**'],
       exclude: ['**/*.{test,spec}.*', '**/*.d.ts'],

@@ -1,4 +1,4 @@
-import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
@@ -100,12 +100,12 @@ export function usePaletteCatalogue({
     onMobileClose?.();
   };
   const addShape = (
-    kind: import('@livediagram/diagram').ShapeKind,
+    kind: import('@livediagram/document').ShapeKind,
     opts?: {
-      session?: import('@livediagram/diagram').SessionTool;
-      reaction?: import('@livediagram/diagram').Reaction;
-      mode?: import('@livediagram/diagram').SelectionMode;
-      estimateScale?: import('@livediagram/diagram').EstimateScale;
+      session?: import('@livediagram/document').SessionTool;
+      reaction?: import('@livediagram/document').Reaction;
+      mode?: import('@livediagram/document').SelectionMode;
+      estimateScale?: import('@livediagram/document').EstimateScale;
     },
   ) => armed(() => onAddShape(kind, opts))();
   // Icons arm the draw gesture too (they ride the shape intent carrying the
@@ -139,7 +139,7 @@ export function usePaletteCatalogue({
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
-  const addComponent = (kind: import('@livediagram/diagram').ComponentKind) => {
+  const addComponent = (kind: import('@livediagram/document').ComponentKind) => {
     const byKind = {
       avatar: onAddAvatar,
       banner: onAddBanner,

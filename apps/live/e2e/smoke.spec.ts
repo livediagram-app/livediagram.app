@@ -3,9 +3,9 @@ import {
   expect,
   dismissQuickTour,
   expectNoPageErrors,
-  startBlankDiagram,
+  startBlankDocument,
   startEventStormingRow,
-  startTemplateDiagram,
+  startTemplateDocument,
 } from './fixtures';
 
 // End-to-end smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Small by design: it answers "does
@@ -35,7 +35,7 @@ test('create a blank diagram, add a shape, and it survives a reload', async ({
   page,
   pageErrors,
 }) => {
-  await startBlankDiagram(page);
+  await startBlankDocument(page);
   // The wizard created a real diagram and routed to it.
   await expect(page).toHaveURL(/\/diagram\/[0-9a-f-]{36}/);
 
@@ -66,7 +66,7 @@ test('create a blank diagram, add a shape, and it survives a reload', async ({
 // walks that whole path in a browser, then reloads to prove the board is
 // still a board after a round trip through the api.
 test('an event-storming board stays a board across a reload', async ({ page, pageErrors }) => {
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  await startTemplateDocument(page, /Browse Technical templates/, /^Event storming/i);
   await expect(page).toHaveURL(/\/diagram\/[0-9a-f-]{36}/);
 
   // The notation palette is the board presenting itself: on any other tab
@@ -301,7 +301,7 @@ test.describe('mobile', () => {
     page,
     pageErrors,
   }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     // A fresh guest gets the tour offer over a scrim that eats taps.
     const declineTour = page.getByRole('button', { name: /^no thanks$/i });
     if (await declineTour.count()) await declineTour.tap();

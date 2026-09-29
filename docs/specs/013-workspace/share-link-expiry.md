@@ -30,7 +30,7 @@ Pre-existing rows have NULL in both → never expire. The `ShareLink` DTO gains 
 
 ## Enforcement
 
-`getShareLink(env, code)` (the db lookup behind both access gates in `auth/diagram-access.ts`, the WebSocket-upgrade role resolution, and `GET /api/share/:code`) only returns links whose `expires_at` is NULL or in the future. One choke point, so an expired link simultaneously:
+`getShareLink(env, code)` (the db lookup behind both access gates in `auth/document-access.ts`, the WebSocket-upgrade role resolution, and `GET /api/share/:code`) only returns links whose `expires_at` is NULL or in the future. One choke point, so an expired link simultaneously:
 
 - stops resolving for visitors (the share URL and the embed view show the same not-found surface as a revoked link),
 - stops authorising reads/writes carried by `X-Share-Code`,

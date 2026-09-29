@@ -80,11 +80,11 @@ export function TeamTimeline({ ownerId, teamId }: { ownerId: string; teamId: str
   );
 }
 
-export function DiagramTimeline({ ownerId, diagramId }: { ownerId: string; diagramId: string }) {
+export function DocumentTimeline({ ownerId, documentId }: { ownerId: string; documentId: string }) {
   return (
     <ScopedTimeline
       ownerId={ownerId}
-      scope={{ scopeType: 'diagram', scopeId: diagramId }}
+      scope={{ scopeType: 'document', scopeId: documentId }}
       title="History"
       emptyMessage="Nothing has happened to this diagram yet."
     />

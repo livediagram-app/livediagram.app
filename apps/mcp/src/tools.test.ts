@@ -10,7 +10,7 @@ vi.mock('./image-result', () => ({
 }));
 
 import { registerTools } from './tools';
-import { deleteDiagramShape } from './schema';
+import { deleteDocumentShape } from './schema';
 import { TOOL_ANNOTATIONS, type ToolBehaviour } from './tool-annotations';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
@@ -46,7 +46,7 @@ type Registered = {
 type Emitted = { category: string; action: string; type: string };
 
 const TAB = { id: 't_1', name: 'Tab 1', elements: [] };
-const DIAGRAM = { id: 'd_1', name: 'A diagram', tabs: [{ id: 't_1', name: 'Tab 1' }] };
+const LIVE_DOC = { id: 'd_1', name: 'A diagram', tabs: [{ id: 't_1', name: 'Tab 1' }] };
 
 // A plausible api: enough of each route's response shape for every tool to
 // run to its success result.
@@ -54,15 +54,15 @@ function okResponse(request: Request): Response {
   const path = new URL(request.url).pathname.replace(/^\/api/, '');
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
-  if (path === '/diagrams' && request.method === 'GET') return json({ diagrams: [] });
+  if (path === '/diagrams' && request.method === 'GET') return json({ documents: [] });
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') return json({ trash: [] });
-  if (path.endsWith('/restore')) return json({ diagram: DIAGRAM });
+  if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share')) {
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   }
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
-  if (/^\/diagrams\/[^/]+$/.test(path)) return json({ diagram: DIAGRAM });
+  if (/^\/diagrams\/[^/]+$/.test(path)) return json({ document: LIVE_DOC });
   return json({});
 }
 
@@ -110,7 +110,7 @@ function expectedToken(toolName: string): string {
 // enough for each tool to run to its success result against the 'ok' api.
 const ARGS = {
   query: 'anything',
-  diagramId: 'd_1',
+  documentId: 'd_1',
   tabId: 't_1',
   name: 'A diagram',
   elements: [],
@@ -134,16 +134,16 @@ describe('registerTools', () => {
     const { registered } = harness();
     expect(registered.map((r) => r.name).sort()).toEqual([
       'add_tab',
-      'create_diagram',
-      'delete_diagram',
-      'find_diagrams',
+      'create_document',
+      'delete_document',
+      'find_documents',
       'list_templates',
       'list_trash',
-      'read_diagram',
-      'rename_diagram',
-      'restore_diagram',
-      'share_diagram',
-      'update_diagram',
+      'read_document',
+      'rename_document',
+      'restore_document',
+      'share_document',
+      'update_document',
     ]);
     // The description is what the calling model reads to pick a tool, so an
     // undescribed tool is effectively unreachable.
@@ -190,13 +190,13 @@ describe('registerTools', () => {
     expect(emitted).toContainEqual({
       category: 'Error',
       action: 'Api',
-      type: 'Internal.ReadDiagram',
+      type: 'Internal.ReadDocument',
     });
   });
 
   it('counts no use for an isError result (input the model has to correct)', async () => {
     const { registered, emitted } = harness('ok');
-    const create = registered.find((r) => r.name === 'create_diagram')!;
+    const create = registered.find((r) => r.name === 'create_document')!;
     const result = (await create.handler({ name: 'x', tabs: [] }, AUTHED)) as {
       isError?: boolean;
     };
@@ -233,17 +233,17 @@ describe('registerTools', () => {
 // an annotations block, which types can't catch.
 describe('tool annotations', () => {
   const BEHAVIOURS: Record<string, ToolBehaviour> = {
-    find_diagrams: 'read',
-    read_diagram: 'read',
+    find_documents: 'read',
+    read_document: 'read',
     list_templates: 'read',
-    create_diagram: 'write',
+    create_document: 'write',
     add_tab: 'write',
-    share_diagram: 'write',
-    rename_diagram: 'write',
+    share_document: 'write',
+    rename_document: 'write',
     list_trash: 'read',
-    restore_diagram: 'write',
-    update_diagram: 'destructive',
-    delete_diagram: 'destructive',
+    restore_document: 'write',
+    update_document: 'destructive',
+    delete_document: 'destructive',
   };
 
   it('gives every tool one of the three documented presets', () => {
@@ -281,7 +281,7 @@ describe('tool annotations', () => {
       .filter((r) => r.config.annotations?.readOnlyHint === true)
       .map((r) => r.name)
       .sort();
-    expect(readOnly).toEqual(['find_diagrams', 'list_templates', 'list_trash', 'read_diagram']);
+    expect(readOnly).toEqual(['find_documents', 'list_templates', 'list_trash', 'read_document']);
 
     // Destructive is only meaningful on a writer, and MCP defaults it to TRUE
     // when unset, so every writer has to state it, including the additive ones.
@@ -297,7 +297,7 @@ describe('tool annotations', () => {
       .filter((r) => r.config.annotations?.destructiveHint === true)
       .map((r) => r.name)
       .sort();
-    expect(destructive).toEqual(['delete_diagram', 'update_diagram']);
+    expect(destructive).toEqual(['delete_document', 'update_document']);
   });
 });
 
@@ -336,29 +336,29 @@ describe('the Trash tools', () => {
   const text = (result: unknown) =>
     JSON.parse((result as { content: { text: string }[] }).content[0]!.text) as unknown;
 
-  it('delete_diagram moves the diagram to the Trash', async () => {
+  it('delete_document moves the diagram to the Trash', async () => {
     const { calls, tool } = trashHarness();
-    const result = await tool('delete_diagram').handler({ diagramId: 'd_1' }, AUTHED);
+    const result = await tool('delete_document').handler({ documentId: 'd_1' }, AUTHED);
     expect(calls).toEqual(['DELETE /api/diagrams/d_1']);
     expect(text(result)).toEqual({
-      deleted: 'diagram',
-      diagramId: 'd_1',
+      deleted: 'document',
+      documentId: 'd_1',
       trashed: true,
       restorableForDays: 30,
     });
   });
 
-  it('delete_diagram has no permanent option, and ignores one sent anyway', async () => {
+  it('delete_document has no permanent option, and ignores one sent anyway', async () => {
     const { calls, tool } = trashHarness();
-    expect(Object.keys(deleteDiagramShape)).toEqual(['diagramId', 'tabId']);
-    await tool('delete_diagram').handler({ diagramId: 'd_1', permanent: true }, AUTHED);
+    expect(Object.keys(deleteDocumentShape)).toEqual(['documentId', 'tabId']);
+    await tool('delete_document').handler({ documentId: 'd_1', permanent: true }, AUTHED);
     expect(calls).toEqual(['DELETE /api/diagrams/d_1']);
-    expect(tool('delete_diagram').config.description).toContain('restore_diagram');
+    expect(tool('delete_document').config.description).toContain('restore_document');
   });
 
-  it('delete_diagram still deletes one tab outright', async () => {
+  it('delete_document still deletes one tab outright', async () => {
     const { calls, tool } = trashHarness();
-    await tool('delete_diagram').handler({ diagramId: 'd_1', tabId: 't_1' }, AUTHED);
+    await tool('delete_document').handler({ documentId: 'd_1', tabId: 't_1' }, AUTHED);
     expect(calls).toEqual(['DELETE /api/diagrams/d_1/tabs/t_1']);
   });
 
@@ -408,23 +408,23 @@ describe('the Trash tools', () => {
     });
   });
 
-  it('restore_diagram restores through the api and links to it', async () => {
+  it('restore_document restores through the api and links to it', async () => {
     const { calls, tool } = trashHarness(() =>
-      Response.json({ diagram: { id: 'd_1', name: 'Plan' } }),
+      Response.json({ document: { id: 'd_1', name: 'Plan' } }),
     );
-    const result = await tool('restore_diagram').handler({ diagramId: 'd_1' }, AUTHED);
+    const result = await tool('restore_document').handler({ documentId: 'd_1' }, AUTHED);
     expect(calls).toEqual(['POST /api/trash/d_1/restore']);
     expect(text(result)).toEqual({
-      restored: 'diagram',
+      restored: 'document',
       id: 'd_1',
       name: 'Plan',
       url: 'https://livediagram.app/diagram/d_1',
     });
   });
 
-  it('restore_diagram explains a diagram that is not in the Trash', async () => {
+  it('restore_document explains a diagram that is not in the Trash', async () => {
     const { tool } = trashHarness(() => Response.json({ error: 'not_found' }, { status: 404 }));
-    const result = (await tool('restore_diagram').handler({ diagramId: 'x' }, AUTHED)) as {
+    const result = (await tool('restore_document').handler({ documentId: 'x' }, AUTHED)) as {
       isError: boolean;
       content: { text: string }[];
     };
@@ -433,7 +433,7 @@ describe('the Trash tools', () => {
   });
 });
 
-describe('delete_diagram on a diagram already in the Trash', () => {
+describe('delete_document on a diagram already in the Trash', () => {
   it('says so, and how to delete it for good', async () => {
     const registered: Registered[] = [];
     const server = {
@@ -450,12 +450,12 @@ describe('delete_diagram on a diagram already in the Trash', () => {
         fetch: async (request: Request) =>
           new URL(request.url).pathname.endsWith('/events')
             ? new Response(null, { status: 204 })
-            : Response.json({ error: 'diagram_trashed' }, { status: 410 }),
+            : Response.json({ error: 'document_trashed' }, { status: 410 }),
       },
     } as unknown as Env;
     registerTools(server, env);
-    const tool = registered.find((r) => r.name === 'delete_diagram')!;
-    const result = (await tool.handler({ diagramId: 'd_1' }, AUTHED)) as {
+    const tool = registered.find((r) => r.name === 'delete_document')!;
+    const result = (await tool.handler({ documentId: 'd_1' }, AUTHED)) as {
       isError: boolean;
       content: { text: string }[];
     };

@@ -11,7 +11,7 @@ import {
   type TextAlignY,
   type TextRun,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import {
   ALIGN_ITEMS,
   effectiveRunStyle,

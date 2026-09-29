@@ -7,9 +7,9 @@ function event(overrides: Partial<TimelineEvent> = {}): TimelineEvent {
   seq += 1;
   return {
     id: `e${seq}`,
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: `s${seq}`,
-    eventType: 'diagram_edited',
+    eventType: 'document_edited',
     title: 'Diagram Updated',
     description: null,
     occurredAt: 1_754_380_800_000,
@@ -27,7 +27,7 @@ describe('buildStacks', () => {
   });
 
   it('keeps different kinds in separate stacks', () => {
-    const stacks = buildStacks([event(), event({ eventType: 'diagram_renamed' })]);
+    const stacks = buildStacks([event(), event({ eventType: 'document_renamed' })]);
     expect(stacks).toHaveLength(2);
   });
 
@@ -36,7 +36,7 @@ describe('buildStacks', () => {
   it('groups by kind regardless of adjacency', () => {
     const stacks = buildStacks([
       event(),
-      event({ eventType: 'diagram_renamed' }),
+      event({ eventType: 'document_renamed' }),
       event(),
       event(),
     ]);
@@ -48,7 +48,7 @@ describe('buildStacks', () => {
   it('places a stack at its most recent member, given newest-first input', () => {
     const newest = event({ id: 'newest', occurredAt: 3 });
     const stacks = buildStacks([
-      event({ eventType: 'diagram_renamed', occurredAt: 4 }),
+      event({ eventType: 'document_renamed', occurredAt: 4 }),
       newest,
       event({ occurredAt: 1 }),
     ]);
@@ -82,7 +82,7 @@ describe('buildStacks', () => {
 
 describe('bucketFor', () => {
   it('namespaces by source type so two products cannot collide', () => {
-    expect(bucketFor(event({ sourceType: 'diagram', eventType: 'x' }))).toBe('diagram::x');
+    expect(bucketFor(event({ sourceType: 'document', eventType: 'x' }))).toBe('diagram::x');
     expect(bucketFor(event({ sourceType: 'team', eventType: 'x' }))).toBe('team::x');
   });
 });

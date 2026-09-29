@@ -26,10 +26,10 @@ const OUTPUT = resolve(here, '../src/openapi/schemas.generated.ts');
 // that references a type missing here fails the drift test's reference check;
 // add the type below and regenerate.
 export const ROOT_TYPES = [
-  'Diagram',
+  'Document',
   'DiagramSummary',
   'SharedTabsSummary',
-  'TrashedDiagram',
+  'TrashedDocument',
   'DiagramSource',
   'TabSummary',
   'Tab',

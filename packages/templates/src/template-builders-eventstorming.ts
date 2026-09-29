@@ -21,7 +21,7 @@ import {
   ES_BOARD_LAYER_ID,
   eventStormingNote,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // The canonical event-storming orange (big-picture domain events), from the
 // shared note-kind catalogue so the template and the palette tiles can't

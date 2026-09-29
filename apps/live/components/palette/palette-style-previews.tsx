@@ -3,7 +3,7 @@
 // they keep their own strokes rather than the house icon weight
 // (docs/specs/004-interface-design/iconography.md, "Art").
 
-import { BORDER_STROKE_PX } from '@livediagram/diagram';
+import { BORDER_STROKE_PX } from '@livediagram/document';
 import type {
   ArrowEnds,
   ArrowheadShape,
@@ -11,7 +11,7 @@ import type {
   BorderRadius,
   BorderStroke,
   BorderStyle,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { Glyph } from '@livediagram/ui';
 
 export function BorderStrokeIcon({ value }: { value: BorderStroke }) {

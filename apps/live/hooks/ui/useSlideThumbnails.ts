@@ -11,7 +11,7 @@ import {
   svgBoxed,
   type Deck,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 

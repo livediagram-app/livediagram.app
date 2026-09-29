@@ -18,7 +18,7 @@ import {
   type Element,
   type Tab,
   stampTabKind,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { layoutGraph, type GraphInput } from './graph-input';
 import {
   TEMPLATES,

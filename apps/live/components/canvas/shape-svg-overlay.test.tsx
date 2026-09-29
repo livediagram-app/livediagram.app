@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The canvas side of the shared shape geometry table (@livediagram/diagram
+// The canvas side of the shared shape geometry table (@livediagram/document
 // shape-geometry.ts). The export side is pinned in the package
 // (shape-geometry.test.ts); this pins the overlay to the same data, so a
 // silhouette edited here instead of in the table fails rather than drifting.
@@ -15,7 +15,7 @@ import {
   shapeGeometry,
   type ShapeElement,
   type ShapeKind,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { BrowserChrome } from './boxed-element-overlays';
 import { ChairView } from './collab/ChairView';
 import { ShapeSvgOverlay } from './shape-svg-overlay';

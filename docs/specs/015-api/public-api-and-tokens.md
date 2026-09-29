@@ -48,7 +48,7 @@ non-owners (the shared diagram DTO, `redactOwner`; comment author ids on tab
 read, `redactCommentAuthorIds`), but two surfaces still exposed a
 collaborator to the owner's id:
 
-- **Realtime presence**: `broadcastPresence` (`diagram-room.ts`) sent every
+- **Realtime presence**: `broadcastPresence` (`document-room.ts`) sent every
   connected participant's `id`, unredacted, to all room peers, and that id was
   the owner id. Any co-present collaborator, including a **view-only** share
   visitor, could read it off a presence frame.
@@ -73,12 +73,12 @@ closed the escalation. The fix is [§4](#4-x-owner-id-trust-change).
 - **The WS upgrade no longer takes `?g=`.** It admits a caller by a one-time
   room ticket minted over authenticated REST, a personal diagram's owner id, or
   a share code, with the share password where one is set (`t` / `o` / `s` /
-  `p`, `routes/diagram-room-routes.ts`; [API app](api.md)).
+  `p`, `routes/document-room-routes.ts`; [API app](api.md)).
 - **Presence carries no owner id.** The room mints a random presence id per
   socket and builds each presence entry itself (`helloPresence`,
-  `diagram-room-rules.ts`); a client never supplies or learns one.
+  `document-room-rules.ts`); a client never supplies or learns one.
 - **The change log is redacted.** `GET /diagrams/<id>/log` blanks
-  `participantId` for every caller but the diagram owner (`routes/diagrams.ts`).
+  `participantId` for every caller but the diagram owner (`routes/documents.ts`).
 - **An account id is never a guest credential.** A Clerk-shaped `X-Owner-Id`
   is refused on every owner-scoped route with `401
 account_id_not_a_guest_credential`, unconditionally ([§4.1](#41-a-clerk-account-id-in-x-owner-id-is-refused-unconditionally)).
@@ -173,7 +173,7 @@ token — are server-verified, so the token identity feeds the same
 team-membership checks the session does (`RouteContext.verifiedUserId`, used by
 `gateRead`/`gateEdit` and the team-scoped diagram/folder verbs). Concretely: a
 token can read and edit the diagrams in the shared libraries of the teams its
-owner has joined ([Team shared diagrams](../013-workspace/team-shared-diagrams.md)), and can `GET` the
+owner has joined ([Team shared diagrams](../013-workspace/team-shared-documents.md)), and can `GET` the
 teams surface (list its teams, team detail, a team's library). Without this, a
 diagram filed into a team was invisible to every external integration — the
 personal `GET /diagrams` excludes team diagrams by design.
@@ -356,7 +356,7 @@ This matters most for **personal** diagrams, whose ownership legitimately
 resolves through the hybrid header path — that path is safe precisely because a
 personal owner id is an unguessable UUID, which an account id is not. The
 **team**-diagram half of the same escalation is closed structurally instead, by
-`ownsDiagram` ([Team shared diagrams §Access](../013-workspace/team-shared-diagrams.md)), so it holds
+`ownsDiagram` ([Team shared diagrams §Access](../013-workspace/team-shared-documents.md)), so it holds
 whatever a deployment has configured.
 
 The signature gate keeps its grace flag and its job: proving possession of a
@@ -368,7 +368,7 @@ Opening the API magnifies the cost of weak input handling, so the validation
 hardening landed first:
 
 - **Structural schema validation** — `isValidElement` / `isValidTab`
-  (`packages/diagram/src/validate.ts`) vet the element/tab discriminant,
+  (`packages/document/src/validate.ts`) vet the element/tab discriminant,
   required fields, endpoints, array bounds + unique ids. The diagram routes run
   incoming tabs (create-seed + tab PUT) through `isValidTab` and reject
   malformed trees with `400`.
@@ -376,7 +376,7 @@ hardening landed first:
   name / theme-definition / participant / share-password caps
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Diagram
   and tab names are shortened to the 60-character name cap rather than
-  rejected (`apps/api/src/names.ts`, [Tab and diagram name length](../006-diagram/name-length.md)).
+  rejected (`apps/api/src/names.ts`, [Tab and diagram name length](../006-document/name-length.md)).
 - **Already solid** (pre-existing): D1 is fully parameterized; Clerk JWT
   verification; share-link expiry + constant-time password compare + per-IP
   brute-force limiter; WS-upgrade auth; realtime role re-stamping + op-rate cap.

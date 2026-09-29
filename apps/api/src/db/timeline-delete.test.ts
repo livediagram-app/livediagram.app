@@ -20,14 +20,14 @@ function fakeDb() {
 describe('markTimelineEventsDeletedBySource', () => {
   it('matches events keyed on the id AND events that merely reference it', async () => {
     const { env, prepare, bind } = fakeDb();
-    await markTimelineEventsDeletedBySource(env, 'diagram', 'd-1');
+    await markTimelineEventsDeletedBySource(env, 'document', 'd-1');
 
     const sql = prepare.mock.calls[0]![0] as string;
     expect(sql).toContain('source_id = ?2');
     // Without this clause a comment on the deleted diagram survives:
     // its source_id is the COMMENT's id, not the diagram's.
     expect(sql).toContain('json_extract');
-    expect(bind).toHaveBeenCalledWith('diagram', 'd-1', 'diagramId');
+    expect(bind).toHaveBeenCalledWith('document', 'd-1', 'documentId');
   });
 
   // The helper is generic so a future per-team cascade doesn't have to
@@ -40,7 +40,7 @@ describe('markTimelineEventsDeletedBySource', () => {
 
   it('scopes the delete to one source type, never the whole table', async () => {
     const { env, prepare } = fakeDb();
-    await markTimelineEventsDeletedBySource(env, 'diagram', 'd-1');
+    await markTimelineEventsDeletedBySource(env, 'document', 'd-1');
     expect(prepare.mock.calls[0]![0] as string).toContain('source_type = ?1');
   });
 });

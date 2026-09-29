@@ -4,7 +4,7 @@
 // reads it. Built in the behaviour elements' current look ("The face").
 
 import { useState } from 'react';
-import type { RollCallEntry, ShapeElement } from '@livediagram/diagram';
+import type { RollCallEntry, ShapeElement } from '@livediagram/document';
 import { GlyphDisc, Glyph } from '@livediagram/ui';
 import { initialsOf } from '@/lib/identity';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';

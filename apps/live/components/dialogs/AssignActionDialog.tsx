@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button, CloseIcon, TextInput } from '@livediagram/ui';
-import type { ElementAction } from '@livediagram/diagram';
+import type { ElementAction } from '@livediagram/document';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { TeamListItem } from '@/lib/api-client';
@@ -57,8 +57,8 @@ type AssignActionDialogProps = {
   // The diagram's id + team-library team (null team for a personal
   // diagram). Drive the access check: picking a teammate asks the server
   // whether they can actually open this diagram (docs/specs/012-collaboration/assigned-actions.md §4).
-  diagramId: string | null;
-  diagramTeamId: string | null;
+  documentId: string | null;
+  documentTeamId: string | null;
   // capabilities.emailEnabled — hides the email offer on a self-host
   // without Resend (never advertise a send we can't perform).
   emailEnabled: boolean;
@@ -83,8 +83,8 @@ export function AssignActionDialog({
   ownerId,
   selfUserId,
   selfName,
-  diagramId,
-  diagramTeamId,
+  documentId,
+  documentTeamId,
   emailEnabled,
   onSubmit,
   onDelete,
@@ -106,15 +106,15 @@ export function AssignActionDialog({
   // The assignee dataset (Myself row, team members incl. invited, the
   // preselect-on-edit, the per-pick access check, and the by-team
   // grouping) lives in useAssigneeOptions.
-  const { selfRow, members, grouped, memberOfDiagramTeam, assigneeAccess } = useAssigneeOptions({
+  const { selfRow, members, grouped, memberOfDocumentTeam, assigneeAccess } = useAssigneeOptions({
     open,
     existing,
     teams,
     ownerId,
     selfUserId,
     selfName,
-    diagramId,
-    diagramTeamId,
+    documentId,
+    documentTeamId,
     assignee,
     setAssignee,
   });
@@ -179,7 +179,7 @@ export function AssignActionDialog({
     !(assignee.userId !== null && assignee.userId === selfUserId) &&
     (assigneeAccess === 'no' ||
       assigneeAccess === 'invited' ||
-      (assigneeAccess === 'error' && assignee.teamId !== diagramTeamId));
+      (assigneeAccess === 'error' && assignee.teamId !== documentTeamId));
 
   const canSubmit = name.trim().length > 0 && assignee !== null;
   const submit = () => {
@@ -268,8 +268,8 @@ export function AssignActionDialog({
             selfRow={selfRow}
             grouped={grouped}
             members={members}
-            memberOfDiagramTeam={memberOfDiagramTeam}
-            diagramTeamId={diagramTeamId}
+            memberOfDocumentTeam={memberOfDocumentTeam}
+            documentTeamId={documentTeamId}
             assignee={assignee}
             onPick={setAssignee}
             signInHref={signInHref}

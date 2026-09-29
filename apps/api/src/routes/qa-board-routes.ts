@@ -16,11 +16,16 @@
 // editors' tab autosave) and broadcasts each result as a sequenced system op,
 // so every peer, and the sender, converges on exactly what D1 holds.
 
-import { isParticipantQaAction, parseQaAction, qaVoterId, type QaNote } from '@livediagram/diagram';
-import { getDiagram, getParticipant } from '../db';
+import {
+  isParticipantQaAction,
+  parseQaAction,
+  qaVoterId,
+  type QaNote,
+} from '@livediagram/document';
+import { getDocument, getParticipant } from '../db';
 import type { QaWriteRequest } from '../qa-board-write';
 import { badRequest, conflict, forbidden, json, notFound } from '../responses';
-import { gateEdit, gateRead, missingDiagram, requireOwner, type RouteContext } from './context';
+import { gateEdit, gateRead, missingDocument, requireOwner, type RouteContext } from './context';
 
 export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
@@ -36,8 +41,8 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
   const tabId = segments[4]!;
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  const existing = await getDiagram(env, id);
-  if (!existing) return missingDiagram(ctx, id);
+  const existing = await getDocument(env, id);
+  if (!existing) return missingDocument(ctx, id);
 
   let body: { elementId?: unknown; action?: unknown };
   try {
@@ -71,12 +76,12 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
 
   // Hand the write to the diagram's room, which runs board writes one at a
   // time and broadcasts each result in order (DiagramRoom.handleQaWrite).
-  const stub = env.DIAGRAM_ROOM.get(env.DIAGRAM_ROOM.idFromName(id));
+  const stub = env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(id));
   const res = await stub.fetch('https://room/qa', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      diagramId: id,
+      documentId: id,
       tabId,
       elementId,
       action,

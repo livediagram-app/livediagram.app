@@ -18,7 +18,7 @@ new user pokes at a real diagram that teaches itself.
 
 - **Welcome wizard only.** The template step of the welcome flow (both the
   first-run `/new` page and the in-editor welcome picker, see
-  [Dedicated route for new-diagram creation](new-diagram-route.md)) shows a **Take the guided tour** card
+  [Dedicated route for new-diagram creation](new-document-route.md)) shows a **Take the guided tour** card
   next to the **Blank** quick-pick card. It does not appear in the in-editor
   "Browse templates" mode — it's an onboarding affordance, not a template you
   reach for later.

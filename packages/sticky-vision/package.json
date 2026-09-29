@@ -18,7 +18,7 @@
     "truth:add": "tsx scripts/truth-add.ts"
   },
   "dependencies": {
-    "@livediagram/diagram": "workspace:*"
+    "@livediagram/document": "workspace:*"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",

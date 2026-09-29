@@ -1,4 +1,4 @@
-import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@livediagram/diagram';
+import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@livediagram/document';
 import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 import type { PollCandidate } from '@/lib/poll-collaborators';
 

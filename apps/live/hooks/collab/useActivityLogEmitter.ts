@@ -6,7 +6,7 @@ import {
   type ChangeLogEntry,
   type RoomOutgoing,
 } from '@livediagram/api-schema';
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import { apiAppendChangeLogEntry, apiDeleteChangeLogEntry } from '@/lib/api-client';
 import { coalesceDiff, diffElements } from '@/lib/change-log';
 import { entryHistoryFill, type EntryHistory } from '@/lib/entry-history';
@@ -29,7 +29,7 @@ type Deps = {
   // Diagram-scoped fields the entry envelope needs. When
   // `diagramId` is null the emitters silently no-op (the page is
   // still bootstrapping; nothing to write against yet).
-  diagramId: string | null;
+  documentId: string | null;
   selfParticipant: { id: string; name: string; color: string };
   // Local activity-panel list. The hook prepends each new entry
   // and caps at 30 (the panel's scroll window). Setter is the
@@ -131,14 +131,14 @@ export function useActivityLogEmitter(deps: Deps): Api {
   // and the room (remove + add, in order, so peers converge).
   const replaceLogEntry = (merged: ChangeLogEntry, key: string) => {
     deps.setChangeLog((prev) => prev.map((e) => (e.id === merged.id ? merged : e)));
-    if (deps.diagramId) {
+    if (deps.documentId) {
       const { id: pid } = deps.selfParticipant;
-      const diagramId = deps.diagramId;
+      const documentId = deps.documentId;
       enqueueD1(() =>
-        apiDeleteChangeLogEntry(pid, diagramId, merged.id, deps.sessionShareCode)
+        apiDeleteChangeLogEntry(pid, documentId, merged.id, deps.sessionShareCode)
           .catch(() => {})
           .then(() =>
-            apiAppendChangeLogEntry(pid, diagramId, merged, deps.sessionShareCode).catch(() => {}),
+            apiAppendChangeLogEntry(pid, documentId, merged, deps.sessionShareCode).catch(() => {}),
           )
           .then(() => undefined),
       );
@@ -154,11 +154,11 @@ export function useActivityLogEmitter(deps: Deps): Api {
   // harmless: its undo-delete just no-ops.
   const removeLogEntry = (entryId: string) => {
     deps.setChangeLog((prev) => prev.filter((e) => e.id !== entryId));
-    if (deps.diagramId) {
+    if (deps.documentId) {
       const { id: pid } = deps.selfParticipant;
-      const diagramId = deps.diagramId;
+      const documentId = deps.documentId;
       enqueueD1(() =>
-        apiDeleteChangeLogEntry(pid, diagramId, entryId, deps.sessionShareCode)
+        apiDeleteChangeLogEntry(pid, documentId, entryId, deps.sessionShareCode)
           .catch(() => {})
           .then(() => undefined),
       );
@@ -179,10 +179,10 @@ export function useActivityLogEmitter(deps: Deps): Api {
     if (opts?.undoable !== false) {
       entryHistoryRef.current = entryHistoryFill(entryHistoryRef.current, entry, opts?.fillToken);
     }
-    if (deps.diagramId) {
+    if (deps.documentId) {
       apiAppendChangeLogEntry(
         deps.selfParticipant.id,
-        deps.diagramId,
+        deps.documentId,
         entry,
         deps.sessionShareCode,
       ).catch(() => {});
@@ -192,7 +192,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
   };
 
   const emitChange: Api['emitChange'] = (tabId, beforeElements, afterElements, override, opts) => {
-    if (!deps.diagramId) return;
+    if (!deps.documentId) return;
     const diff = diffElements(beforeElements, afterElements);
     if (!diff) return;
     // Repeat edits to the same element set fold into the previous
@@ -254,7 +254,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
   // panel renders the row without a Revert button. Undo still
   // works because the matching state lives in useDiagramHistory.
   const emitTabMeta: Api['emitTabMeta'] = (tabId, summary, opts) => {
-    if (!deps.diagramId) return;
+    if (!deps.documentId) return;
     // Same-key repeats (three tweaks of the canvas colour in a row)
     // collapse into one entry carrying the latest summary.
     const key =

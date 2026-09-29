@@ -10,7 +10,7 @@ not prevent them.
 
 ## The problem it fixed
 
-The realtime room (`apps/api/src/diagram-room.ts`) was a **stateless relay**: it
+The realtime room (`apps/api/src/document-room.ts`) was a **stateless relay**: it
 broadcast ops between peers and tracked presence, but held no diagram state and
 merged nothing. The conflict unit was a **whole tab** — editing anything on a tab
 broadcast the tab's entire element array and receivers **replaced** their copy.
@@ -34,7 +34,7 @@ relays them; it does not merge them.
 - Wire (`packages/api-schema/src/room-messages.ts`): `{ kind: 'el'; tabId;
 op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   `tab` op (back-compat fallback). `ElementOp` (add / update / remove / reorder)
-  lives in `@livediagram/diagram` so it's shared and unit-tested off-socket.
+  lives in `@livediagram/document` so it's shared and unit-tested off-socket.
 - Derivation is free: the editor already diffs before/after on every commit for
   the change log; `diffToElementOps(before, after)` reuses that same diff. Apply
   is `applyElementOp(elements, op)` by id — an op for an already-removed id is a
@@ -169,18 +169,18 @@ verified end-to-end and turned on properly, not carried as dormant code.
 
 ## Implementation map
 
-- `packages/diagram` — `element-ops.ts`: `ElementOp`, `diffToElementOps`,
+- `packages/document` — `element-ops.ts`: `ElementOp`, `diffToElementOps`,
   `applyElementOp` (pure, unit-tested).
 - `packages/api-schema/src/room-messages.ts` — `el` / `tab-meta` ops; `seq` /
   `epoch` on the op frame; the `sync` + `catchup` frames.
 - `packages/api-schema/src/room-messages.ts` — `PRESENCE_OP_KINDS` /
   `MUTATION_OP_KINDS` / `SYSTEM_OP_KINDS`, the one classification of every op.
-- `packages/diagram` — `element-deltas.ts` (`applyElementDelta`,
+- `packages/document` — `element-deltas.ts` (`applyElementDelta`,
   `mergeIncomingElement`), `collab-ledger.ts` (the ledger's entries and the
   save merge), `comments.ts` (`opForTheWire`, `stampCommentAuthor`).
-- `apps/api/src/diagram-room.ts` — the role / class gate, seq + epoch
+- `apps/api/src/document-room.ts` — the role / class gate, seq + epoch
   (persisted as `order-state`), the bounded in-memory op log and the
-  `sync` → `catchup` handler (`resolveCatchup` in `diagram-room-rules.ts`). It
+  `sync` → `catchup` handler (`resolveCatchup` in `document-room-rules.ts`). It
   rewrites comment authors in every mutation it relays and keeps collaboration
   state in Durable Object storage: the per-element ledger
   (`room-ledger-store.ts`), the live poll (`room-live-poll.ts`) and the

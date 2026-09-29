@@ -4,7 +4,7 @@ import { track } from '@/lib/telemetry';
 import type { ExplorerViewMode } from './useExplorerViewMode';
 import { HoverCard, Glyph } from '@livediagram/ui';
 
-// The List / Card segmented toggle in the Explorer header (docs/specs/006-diagram/diagram-snapshots.md).
+// The List / Card segmented toggle in the Explorer header (docs/specs/006-document/document-snapshots.md).
 // Lets you switch how the browse views render the same folders +
 // diagrams: dense rows, or cards with a large SVG snapshot.
 export function ViewToggle({

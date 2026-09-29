@@ -4,7 +4,7 @@
 // quick-pick + a card per colour-temperament category, plus an optional
 // Custom category) that drills into a category's themes with a Back
 // affordance. Lifted out of TemplatePicker so the exact same browse
-// renders in both the New-diagram picker (docs/specs/007-editor/new-diagram-route.md) and the Theme tab of
+// renders in both the New-diagram picker (docs/specs/007-editor/new-document-route.md) and the Theme tab of
 // the right-click CanvasThemeDialog (docs/specs/011-theme/canvas-and-theme-dialog.md), so the two can't drift.
 //
 // Custom themes (docs/specs/011-theme/custom-themes.md) appear as a "Custom" category when the custom

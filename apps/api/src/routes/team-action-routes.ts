@@ -5,7 +5,7 @@
 // the scope in.
 
 import type { TeamMember } from '@livediagram/api-schema';
-import { getDiagramMeta, getMembership, getParticipant, hasSharedAccess } from '../db';
+import { getDocumentMeta, getMembership, getParticipant, hasSharedAccess } from '../db';
 import { listTeamMembers } from '../db';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import { notifyActionAssigned } from '../email/notifications';
@@ -35,25 +35,25 @@ export async function handleTeamActionRoutes(
     if (request.method !== 'GET') return notFound();
     if (me.status !== 'joined') return forbidden();
     const assigneeUserId = url.searchParams.get('assigneeUserId') ?? '';
-    const diagramId = url.searchParams.get('diagramId') ?? '';
-    if (!assigneeUserId || !diagramId) return badRequest('missing assigneeUserId/diagramId');
+    const documentId = url.searchParams.get('documentId') ?? '';
+    if (!assigneeUserId || !documentId) return badRequest('missing assigneeUserId/documentId');
     const assignee = await getMembership(env, teamId, assigneeUserId);
     if (!assignee || assignee.status !== 'joined') return notFound();
-    const diagram = await getDiagramMeta(env, diagramId);
-    if (!diagram) return notFound();
-    const callerIsOwner = diagram.ownerId === userId;
-    const callerViaTeam = diagram.teamId
-      ? (await getMembership(env, diagram.teamId, userId))?.status === 'joined'
+    const liveDoc = await getDocumentMeta(env, documentId);
+    if (!liveDoc) return notFound();
+    const callerIsOwner = liveDoc.ownerId === userId;
+    const callerViaTeam = liveDoc.teamId
+      ? (await getMembership(env, liveDoc.teamId, userId))?.status === 'joined'
       : false;
     const callerViaShare =
-      callerIsOwner || callerViaTeam ? false : await hasSharedAccess(env, userId, diagramId);
+      callerIsOwner || callerViaTeam ? false : await hasSharedAccess(env, userId, documentId);
     if (!callerIsOwner && !callerViaTeam && !callerViaShare) return notFound();
     const canAccess =
-      diagram.ownerId === assigneeUserId ||
-      (diagram.teamId
-        ? (await getMembership(env, diagram.teamId, assigneeUserId))?.status === 'joined'
+      liveDoc.ownerId === assigneeUserId ||
+      (liveDoc.teamId
+        ? (await getMembership(env, liveDoc.teamId, assigneeUserId))?.status === 'joined'
         : false) ||
-      (await hasSharedAccess(env, assigneeUserId, diagramId));
+      (await hasSharedAccess(env, assigneeUserId, documentId));
     return json({ canAccess });
   }
 
@@ -73,18 +73,18 @@ export async function handleTeamActionRoutes(
       // The membership row id — the key for an INVITED member the lazy
       // claim hasn't identified with an account yet (docs/specs/012-collaboration/assigned-actions.md).
       assigneeMemberId?: string;
-      diagramId?: string;
+      documentId?: string;
       actionName?: string;
       description?: string;
     } | null;
     const assigneeUserId = typeof body?.assigneeUserId === 'string' ? body.assigneeUserId : '';
     const assigneeMemberId =
       typeof body?.assigneeMemberId === 'string' ? body.assigneeMemberId : '';
-    const diagramId = typeof body?.diagramId === 'string' ? body.diagramId : '';
+    const documentId = typeof body?.documentId === 'string' ? body.documentId : '';
     const actionName = typeof body?.actionName === 'string' ? body.actionName.trim() : '';
     const description = typeof body?.description === 'string' ? body.description : null;
-    if ((!assigneeUserId && !assigneeMemberId) || !diagramId || !actionName) {
-      return badRequest('missing assigneeUserId/diagramId/actionName');
+    if ((!assigneeUserId && !assigneeMemberId) || !documentId || !actionName) {
+      return badRequest('missing assigneeUserId/documentId/actionName');
     }
     if (actionName.length > ACTION_NAME_MAX) return badRequest('actionName too long');
     if (description && description.length > ACTION_DESCRIPTION_MAX) {
@@ -101,13 +101,13 @@ export async function handleTeamActionRoutes(
     // The caller must be able to access the diagram: their own, in a team
     // library they've joined, or one they've opened through a share link.
     // The diagram NAME comes from this row, never the request body.
-    const diagram = await getDiagramMeta(env, diagramId);
-    if (!diagram) return notFound();
-    const isOwner = diagram.ownerId === userId;
-    const viaTeam = diagram.teamId
-      ? (await getMembership(env, diagram.teamId, userId))?.status === 'joined'
+    const liveDoc = await getDocumentMeta(env, documentId);
+    if (!liveDoc) return notFound();
+    const isOwner = liveDoc.ownerId === userId;
+    const viaTeam = liveDoc.teamId
+      ? (await getMembership(env, liveDoc.teamId, userId))?.status === 'joined'
       : false;
-    const viaShare = isOwner || viaTeam ? false : await hasSharedAccess(env, userId, diagramId);
+    const viaShare = isOwner || viaTeam ? false : await hasSharedAccess(env, userId, documentId);
     if (!isOwner && !viaTeam && !viaShare) return notFound();
     // The assigner's display name comes from the caller's own verified
     // identity (participant profile, then their email), so a spoofed
@@ -118,7 +118,7 @@ export async function handleTeamActionRoutes(
         assigneeUserId: assignee.userId,
         assigneeFallbackEmail: assignee.email,
         assignerName,
-        diagram: { id: diagram.id, name: diagram.name },
+        document: { id: liveDoc.id, name: liveDoc.name },
         actionName,
         description,
       }).catch(() => {}),

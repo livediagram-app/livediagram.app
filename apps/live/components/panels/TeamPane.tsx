@@ -12,7 +12,7 @@ import { LinkIcon, TeamMemberRow } from './team-pane-parts';
 import { useTeamPaneActions } from './useTeamPaneActions';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { TeamInviteLinkDialog } from '@/components/dialogs/TeamInviteLinkDialog';
-import { TeamSharedDiagrams } from '@/components/panels/TeamSharedDiagrams';
+import { TeamSharedDocuments } from '@/components/panels/TeamSharedDocuments';
 import { TeamTimeline } from './ScopedTimeline';
 import { useLatest } from '@/hooks/ui/useLatest';
 
@@ -33,7 +33,7 @@ export function TeamPane({
   onLeftTeam,
   onLoadResult,
   moveDests,
-  onMoveDiagramTo,
+  onMoveDocumentTo,
 }: {
   ownerId: string;
   teamId: string;
@@ -50,10 +50,10 @@ export function TeamPane({
   // uses this to drop the team title on a 404 — there's no team to name.
   onLoadResult?: (found: boolean) => void;
   // Full move destinations + cross-scope router for the shared-diagrams
-  // move picker (docs/specs/013-workspace/team-shared-diagrams.md): passed straight through to TeamSharedDiagrams
+  // move picker (docs/specs/013-workspace/team-shared-documents.md): passed straight through to TeamSharedDiagrams
   // so a team diagram can be re-homed to Personal Space / another team.
-  moveDests?: ComponentProps<typeof TeamSharedDiagrams>['moveDests'];
-  onMoveDiagramTo?: ComponentProps<typeof TeamSharedDiagrams>['onMoveDiagramTo'];
+  moveDests?: ComponentProps<typeof TeamSharedDocuments>['moveDests'];
+  onMoveDocumentTo?: ComponentProps<typeof TeamSharedDocuments>['onMoveDocumentTo'];
 }) {
   const [detail, setDetail] = useState<TeamDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -325,18 +325,18 @@ export function TeamPane({
         ) : null}
       </div>
 
-      {/* ---------- Shared diagrams (docs/specs/013-workspace/team-shared-diagrams.md): the team's folder
+      {/* ---------- Shared diagrams (docs/specs/013-workspace/team-shared-documents.md): the team's folder
           tree + diagrams, managed by every joined member. ---------- */}
       {/* key on teamId so switching teams remounts the library and
           resets its open-folder `spot` — otherwise a subfolder open in
           team A leaks into team B as a stale, empty folder view. */}
-      <TeamSharedDiagrams
+      <TeamSharedDocuments
         key={teamId}
         ownerId={ownerId}
         teamId={teamId}
         teamName={team.name}
         moveDests={moveDests}
-        onMoveDiagramTo={onMoveDiagramTo}
+        onMoveDocumentTo={onMoveDocumentTo}
       />
 
       <TeamFormModal

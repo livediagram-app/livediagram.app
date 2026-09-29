@@ -61,10 +61,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "description": {
         "type": "string"
       },
-      "diagramId": {
+      "documentId": {
         "type": "string"
       },
-      "diagramName": {
+      "documentName": {
         "type": "string"
       },
       "elementId": {
@@ -116,8 +116,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt",
       "createdByMe",
       "description",
-      "diagramId",
-      "diagramName",
+      "documentId",
+      "documentName",
       "elementId",
       "elementLabel",
       "id",
@@ -137,10 +137,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentCount": {
         "type": "number"
       },
-      "diagramId": {
+      "documentId": {
         "type": "string"
       },
-      "diagramName": {
+      "documentName": {
         "type": "string"
       },
       "elementId": {
@@ -179,7 +179,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "mentionsYou": {
         "type": "boolean"
       },
-      "onYourDiagram": {
+      "onYourDocument": {
         "type": "boolean"
       },
       "shareCode": {
@@ -214,14 +214,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "commentCount",
-      "diagramId",
-      "diagramName",
+      "documentId",
+      "documentName",
       "elementId",
       "elementLabel",
       "firstAt",
       "latest",
       "mentionsYou",
-      "onYourDiagram",
+      "onYourDocument",
       "shareCode",
       "tabId",
       "tabName",
@@ -2437,7 +2437,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         "additionalProperties": false,
         "properties": {
-          "diagramId": {
+          "documentId": {
             "type": "string"
           },
           "kind": {
@@ -2450,7 +2450,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "required": [
           "kind",
-          "diagramId",
+          "documentId",
           "name"
         ],
         "type": "object"
@@ -3062,15 +3062,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnownTimelineEventType": {
     "enum": [
-      "diagram_created",
-      "diagram_renamed",
-      "diagram_duplicated",
-      "diagram_moved",
-      "diagram_edited",
-      "diagram_offline",
-      "diagram_synced",
-      "diagram_opened_by_visitor",
-      "diagram_copied_by_visitor",
+      "document_created",
+      "document_renamed",
+      "document_duplicated",
+      "document_moved",
+      "document_edited",
+      "document_offline",
+      "document_synced",
+      "document_opened_by_visitor",
+      "document_copied_by_visitor",
       "folder_created",
       "folder_deleted",
       "comment_added",
@@ -3087,8 +3087,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "team_member_left",
       "team_member_removed",
       "team_role_changed",
-      "team_diagram_added",
-      "team_diagram_removed",
+      "team_document_added",
+      "team_document_removed",
       "team_renamed",
       "team_deleted",
       "team_invite_link_enabled",
@@ -4184,7 +4184,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt": {
         "type": "number"
       },
-      "diagramId": {
+      "documentId": {
         "type": "string"
       },
       "expiresAt": {
@@ -4208,7 +4208,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "code",
-      "diagramId",
+      "documentId",
       "role",
       "createdAt",
       "expiry",
@@ -4540,7 +4540,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabSummary": {
     "additionalProperties": false,
     "properties": {
-      "diagramId": {
+      "documentId": {
         "type": "string"
       },
       "folder": {
@@ -4565,7 +4565,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "id",
-      "diagramId",
+      "documentId",
       "name",
       "orderIndex",
       "updatedAt"
@@ -5588,7 +5588,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "TrashedDiagram": {
+  "TrashedDocument": {
     "additionalProperties": false,
     "properties": {
       "id": {

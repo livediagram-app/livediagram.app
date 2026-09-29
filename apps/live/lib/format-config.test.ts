@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createArrow, createShape } from '@livediagram/diagram';
+import { createArrow, createShape } from '@livediagram/document';
 import { paintableArrowFields, paintableBoxedFields } from './format-painter';
 import {
   DEFAULT_FORMAT_CONFIG,

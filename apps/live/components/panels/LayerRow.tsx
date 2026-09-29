@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { isLayerLocked, isLayerVisible, type Layer } from '@livediagram/diagram';
+import { isLayerLocked, isLayerVisible, type Layer } from '@livediagram/document';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import {

@@ -8,8 +8,8 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   apiEmptyTrash,
   apiListTrash,
-  apiPurgeDiagram,
-  apiRestoreDiagram,
+  apiPurgeDocument,
+  apiRestoreDocument,
   type TrashListing,
 } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
@@ -68,7 +68,7 @@ export function useTrash(
     async (id: string, group: TrashGroup) => {
       if (!ownerId) return;
       try {
-        await apiRestoreDiagram(ownerId, id);
+        await apiRestoreDocument(ownerId, id);
         drop([id]);
         track('Trash', 'Restored', group.telemetryType);
         toast.success('Diagram restored');
@@ -85,7 +85,7 @@ export function useTrash(
     async (id: string, group: TrashGroup) => {
       if (!ownerId) return;
       try {
-        await apiPurgeDiagram(ownerId, id);
+        await apiPurgeDocument(ownerId, id);
         drop([id]);
         track('Trash', 'Deleted', group.telemetryType);
       } catch {

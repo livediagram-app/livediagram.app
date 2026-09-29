@@ -1,9 +1,9 @@
 # Trash: blueprint
 
 Derived from [Trash](../trash.md), with the delete authority of
-[Team shared diagrams](../team-shared-diagrams.md), the removal of
-[Tab ↔ diagram many-to-many](../../006-diagram/tab-diagram-many-to-many.md), the local store of
-[Offline Mode](../../006-diagram/offline-mode.md) and the room of [API](../../015-api/api.md). The spec
+[Team shared diagrams](../team-shared-documents.md), the removal of
+[Tab ↔ diagram many-to-many](../../006-document/tab-document-many-to-many.md), the local store of
+[Offline Mode](../../006-document/offline-mode.md) and the room of [API](../../015-api/api.md). The spec
 decides; this file only adds engineering precision. Defaults applied where the spec is silent are ledgered
 in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
@@ -14,27 +14,27 @@ Scope, by file:
 | `packages/api-schema/src/trash.ts`                                               | The clock and the wire: retention, days left, error code, close code, `TrashedDiagram`   |
 | `apps/api/migrations/0051_diagram_trash.sql`                                     | `diagrams.trashed_at` + the partial index                                                |
 | `apps/api/src/db/trash.ts`                                                       | `trashDiagram`, `restoreDiagram`, `purgeDiagrams`, `purgeExpiredTrash`, `listTrash`, ... |
-| `apps/api/src/db/diagram-removal.ts`                                             | `diagramRemovalStatements` takes `{ ids }` besides one id / one owner                    |
-| `apps/api/src/db/diagrams.ts`                                                    | `getDiagram`, `getDiagramMeta`, both lists: live rows only                               |
+| `apps/api/src/db/document-removal.ts`                                            | `diagramRemovalStatements` takes `{ ids }` besides one id / one owner                    |
+| `apps/api/src/db/documents.ts`                                                   | `getDiagram`, `getDiagramMeta`, both lists: live rows only                               |
 | `apps/api/src/db/{shared,favourites,collab-index,tabs,timeline}.ts`              | The reads that leave trashed diagrams out; `diagramsTimelineSweepStatement`              |
 | `apps/api/src/timeline/expiry-sweep.ts`                                          | No expiry warning for a trashed diagram's links                                          |
 | `apps/api/src/routes/context.ts`                                                 | `missingDiagram`: 410 or 404 on a miss; the guards use it                                |
-| `apps/api/src/routes/diagram-delete-route.ts`                                    | `DELETE /api/diagrams/:id`: trash, `?permanent=true`, Take Offline                       |
+| `apps/api/src/routes/document-delete-route.ts`                                   | `DELETE /api/diagrams/:id`: trash, `?permanent=true`, Take Offline                       |
 | `apps/api/src/routes/trash.ts`                                                   | `/api/trash` list, restore, purge one, empty                                             |
 | `apps/api/src/routes/{diagrams,share,diagram-room-routes,...}.ts`                | The doors: 410 through `missingDiagram`; the ws upgrade refuses                          |
-| `apps/api/src/room-client.ts`, `diagram-room.ts`, `room-scope.ts`                | `broadcastDiagramTrashed`; the room closes every socket with 4004                        |
+| `apps/api/src/room-client.ts`, `document-room.ts`, `room-scope.ts`               | `broadcastDiagramTrashed`; the room closes every socket with 4004                        |
 | `apps/api/src/index.ts`, `auth/guest-rest.ts`                                    | `trash` dispatch + guest-signature scope; the cron's `purgeExpiredTrash`                 |
 | `apps/api/src/openapi/manifest.ts`, `document.ts`, `scripts/gen-openapi-...`     | The Trash tag and routes; 410 on the diagram doors; `TrashedDiagram` schema              |
 | `apps/mcp/src/{tools,schema}.ts`                                                 | `delete_diagram` to the Trash only; `list_trash`, `restore_diagram`                      |
 | `apps/live/lib/api/trash.ts`                                                     | `apiListTrash`, `apiRestoreDiagram`, `apiPurgeDiagram`, `apiEmptyTrash`                  |
 | `apps/live/lib/offline/offline-trash.ts`, `offline-store.ts`                     | The local Trash on the IndexedDB record                                                  |
-| `apps/live/lib/diagram-trashed.ts`, `diagram-tombstones.ts`                      | `DiagramTrashedError`, `isDiagramTrashedError`; `unmarkDiagramDeleted`                   |
+| `apps/live/lib/document-trashed.ts`, `document-tombstones.ts`                    | `DiagramTrashedError`, `isDiagramTrashedError`; `unmarkDiagramDeleted`                   |
 | `apps/live/lib/trash-groups.ts`, `trash-copy.ts`                                 | Grouping and days-left copy; the confirmation line                                       |
 | `apps/live/hooks/persistence/useTrash.ts`, `components/panels/TrashPane.tsx`     | The Trash view                                                                           |
 | `apps/live/app/explorer/{TrashSection.tsx,trash/page.tsx,routes.ts,views.tsx}`   | The `/explorer/trash` route, no sidebar row                                              |
 | `apps/live/components/dialogs/settings/{settings-catalogue.ts,SettingsTrashRow}` | Settings › Account › Trash, the one way in                                               |
-| `apps/live/app/diagram/[id]/{useDiagramTrashed,useIdentityBootstrap,...}.ts`     | The deleted state: load, room, autosave                                                  |
-| `apps/live/components/chrome/DiagramTrashedCard.tsx`, `editor-page.tsx`          | The deleted card, Restore when allowed                                                   |
+| `apps/live/app/document/[id]/{useDiagramTrashed,useIdentityBootstrap,...}.ts`    | The deleted state: load, room, autosave                                                  |
+| `apps/live/components/chrome/DocumentTrashedCard.tsx`, `editor-page.tsx`         | The deleted card, Restore when allowed                                                   |
 | `apps/help/app/account-and-data/trash/page.mdx`, help registry, article icon     | The help article                                                                         |
 | `apps/telemetry/app/catalogue/{content,connections}.ts`, explanations, vocab     | The Trash stack; the two MCP tool charts                                                 |
 
@@ -230,24 +230,24 @@ room`; open sessions still stop at their next save (I5).
 
 ## Testing
 
-| Rule                                                    | Test                                                      |
-| ------------------------------------------------------- | --------------------------------------------------------- |
-| Clock, days left, expiry                                | `packages/api-schema/src/trash.test.ts`                   |
-| Migration, trash / restore / purge / list / cron sweep  | `apps/api/src/db/trash.test.ts` (real SQLite)             |
-| Timeline hidden and back, Activity, tab link, expiry    | `apps/api/src/db/trash-surfaces.test.ts`                  |
-| Every door: 410 / 404 / lists / DELETE semantics / room | `apps/api/src/routes/trash-doors.test.ts`                 |
-| `/api/trash` authority                                  | `apps/api/src/routes/trash.test.ts`                       |
-| Cron wiring and log                                     | `apps/api/src/scheduled-trash.test.ts`                    |
-| Room closes with 4004; never relays a client's op       | `apps/api/src/diagram-room.test.ts`, `room-scope.test.ts` |
-| Permanent removal keeps shared tabs                     | `apps/api/src/db/diagram-delete.test.ts`                  |
-| OpenAPI parity                                          | `apps/api/src/openapi/*.test.ts`                          |
-| MCP tools                                               | `apps/mcp/src/tools.test.ts`                              |
-| Local Trash                                             | `apps/live/lib/offline/offline-trash.test.ts`             |
-| Client calls, dispatch, 410                             | `apps/live/lib/api/trash.test.ts`                         |
-| Room client stops on 4004                               | `apps/live/lib/api/room.test.ts`                          |
-| Grouping and copy                                       | `apps/live/lib/trash-groups.test.ts`                      |
-| End to end                                              | `apps/live/e2e/trash.spec.ts`                             |
-| Telemetry coverage and charts                           | `apps/live` telemetry tests, `apps/telemetry` suites      |
+| Rule                                                    | Test                                                       |
+| ------------------------------------------------------- | ---------------------------------------------------------- |
+| Clock, days left, expiry                                | `packages/api-schema/src/trash.test.ts`                    |
+| Migration, trash / restore / purge / list / cron sweep  | `apps/api/src/db/trash.test.ts` (real SQLite)              |
+| Timeline hidden and back, Activity, tab link, expiry    | `apps/api/src/db/trash-surfaces.test.ts`                   |
+| Every door: 410 / 404 / lists / DELETE semantics / room | `apps/api/src/routes/trash-doors.test.ts`                  |
+| `/api/trash` authority                                  | `apps/api/src/routes/trash.test.ts`                        |
+| Cron wiring and log                                     | `apps/api/src/scheduled-trash.test.ts`                     |
+| Room closes with 4004; never relays a client's op       | `apps/api/src/document-room.test.ts`, `room-scope.test.ts` |
+| Permanent removal keeps shared tabs                     | `apps/api/src/db/document-delete.test.ts`                  |
+| OpenAPI parity                                          | `apps/api/src/openapi/*.test.ts`                           |
+| MCP tools                                               | `apps/mcp/src/tools.test.ts`                               |
+| Local Trash                                             | `apps/live/lib/offline/offline-trash.test.ts`              |
+| Client calls, dispatch, 410                             | `apps/live/lib/api/trash.test.ts`                          |
+| Room client stops on 4004                               | `apps/live/lib/api/room.test.ts`                           |
+| Grouping and copy                                       | `apps/live/lib/trash-groups.test.ts`                       |
+| End to end                                              | `apps/live/e2e/trash.spec.ts`                              |
+| Telemetry coverage and charts                           | `apps/live` telemetry tests, `apps/telemetry` suites       |
 
 ## Constants and configuration
 

@@ -17,8 +17,8 @@ Scope, by file (all under `apps/api/`):
 | `src/db/image-retention.ts`            | The sweep and its tripwire                                                     |
 | `src/db/images.ts`                     | The usage map and the share-read check, reading the index                      |
 | `src/db/tabs.ts`                       | `upsertTab`, `seedTabs`, `swapTabData`, `deleteTabRow` carry index statements  |
-| `src/db/diagrams.ts`                   | `copyDiagram` carries index statements                                         |
-| `src/db/diagram-removal.ts`            | `diagramRemovalStatements` prunes the dropped tabs' references                 |
+| `src/db/documents.ts`                  | `copyDiagram` carries index statements                                         |
+| `src/db/document-removal.ts`           | `diagramRemovalStatements` prunes the dropped tabs' references                 |
 | `src/index.ts`                         | `scheduled()` hands the daily run to `runImageRetention`                       |
 | `src/image-refs/writer-census.test.ts` | Fails when SQL writing `tabs` appears outside the known writers                |
 

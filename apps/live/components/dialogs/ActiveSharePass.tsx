@@ -204,7 +204,7 @@ export function ActiveSharePass({
             },
           ]}
         />
-        {/* Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md):
+        {/* Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md):
             an <img>-able SVG URL. Hidden while a password is set: an <img>
             can't supply one, so the server refuses an image for gated shares
             and offering it here would mislead. */}

@@ -113,7 +113,7 @@ describe('createTelemetryEmitter', () => {
 
   it('flushes on pagehide too (the beacon iteration-9 conversions rely on)', () => {
     const emitter = makeEmitter();
-    emitter.track('Diagram', 'Moved', 'SavedToCloud');
+    emitter.track('Document', 'Moved', 'SavedToCloud');
     windowTarget.fire('pagehide');
     expect(sendBeacon).toHaveBeenCalledTimes(1);
   });

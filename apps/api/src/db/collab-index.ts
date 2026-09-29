@@ -9,7 +9,7 @@
 // keeps the index in the same transaction as the blob it mirrors. The
 // read is the Activity page's one query per kind.
 
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import type { ActivityAction, ActivityReadResult, ActivityThread } from '@livediagram/api-schema';
 import { collabIndexRowsFromElements } from '../collab-index/rows';
 import type { Env } from '../types';
@@ -147,14 +147,14 @@ const SCOPE_CTES = `
                 ELSE 'shared' END AS via,
            CASE WHEN d.owner_id = ?1 OR d.team_id IN (SELECT team_id FROM my_teams) THEN NULL
                 ELSE (SELECT sl.code FROM share_links sl
-                       WHERE sl.diagram_id = d.id AND sl.role = s.role
+                       WHERE sl.document_id = d.id AND sl.role = s.role
                          AND sl.tab_id IS s.tab_id
                          AND (sl.expires_at IS NULL OR sl.expires_at > ?2)
                        ORDER BY sl.created_at ASC LIMIT 1) END AS share_code,
            CASE WHEN d.owner_id = ?1 OR d.team_id IN (SELECT team_id FROM my_teams) THEN NULL
                 ELSE s.tab_id END AS scope_tab_id
-      FROM diagrams d
-      LEFT JOIN shared_with s ON s.diagram_id = d.id AND s.owner_id = ?1
+      FROM documents d
+      LEFT JOIN shared_with s ON s.document_id = d.id AND s.owner_id = ?1
      WHERE d.trashed_at IS NULL
        AND (d.owner_id = ?1
             OR d.team_id IN (SELECT team_id FROM my_teams)
@@ -165,9 +165,9 @@ type PlaceRow = {
   tab_id: string;
   element_id: string;
   element_label: string;
-  diagram_id: string;
-  diagram_name: string;
-  diagram_team_id: string | null;
+  document_id: string;
+  document_name: string;
+  document_team_id: string | null;
   via: 'own' | 'team' | 'shared';
   share_code: string | null;
   tab_name: string;
@@ -195,7 +195,7 @@ type ThreadRow = PlaceRow & {
   first_at: number;
   latest_at: number;
   you_commented: number;
-  on_your_diagram: number;
+  on_your_document: number;
   mentions_you: number;
 };
 
@@ -203,14 +203,14 @@ const ACTIONS_SQL = `${SCOPE_CTES}
   SELECT ca.tab_id, ca.element_id, ca.element_label, ca.action_id, ca.name, ca.description,
          ca.assignee_user_id, ca.assignee_name, ca.assigner_id, ca.assigner_name,
          ca.created_at, ca.updated_at,
-         v.id AS diagram_id, v.name AS diagram_name, v.team_id AS diagram_team_id,
+         v.id AS document_id, v.name AS document_name, v.team_id AS document_team_id,
          v.via, v.share_code, t.name AS tab_name,
          CASE WHEN ca.assignee_user_id IN (SELECT id FROM me)
                 OR ca.assignee_member_id IN (SELECT id FROM my_members) THEN 1 ELSE 0 END AS assigned_to_me,
          CASE WHEN ca.assigner_id IN (SELECT id FROM me) THEN 1 ELSE 0 END AS created_by_me
     FROM collab_actions ca
-    JOIN diagram_tabs dt ON dt.tab_id = ca.tab_id
-    JOIN visible v ON v.id = dt.diagram_id
+    JOIN document_tabs dt ON dt.tab_id = ca.tab_id
+    JOIN visible v ON v.id = dt.document_id
     JOIN tabs t ON t.id = ca.tab_id
    WHERE ca.status = 'open'
      AND (v.scope_tab_id IS NULL OR v.scope_tab_id = ca.tab_id)
@@ -223,18 +223,18 @@ const ACTIONS_SQL = `${SCOPE_CTES}
 const THREADS_SQL = `${SCOPE_CTES}
   SELECT ct.tab_id, ct.element_id, ct.element_label, ct.comment_count,
          ct.latest_text, ct.latest_author_name, ct.latest_author_color, ct.first_at, ct.latest_at,
-         v.id AS diagram_id, v.name AS diagram_name, v.team_id AS diagram_team_id,
+         v.id AS document_id, v.name AS document_name, v.team_id AS document_team_id,
          v.via, v.share_code, t.name AS tab_name,
          CASE WHEN EXISTS (SELECT 1 FROM json_each(ct.participant_ids) je
                             WHERE je.value IN (SELECT id FROM me)) THEN 1 ELSE 0 END AS you_commented,
-         CASE WHEN v.owner_id = ?1 THEN 1 ELSE 0 END AS on_your_diagram,
+         CASE WHEN v.owner_id = ?1 THEN 1 ELSE 0 END AS on_your_document,
          CASE WHEN EXISTS (SELECT 1 FROM json_each(ct.mentioned_ids) jm
                             WHERE jm.value IN (SELECT id FROM me)
                                OR jm.value IN (SELECT id FROM my_members)) THEN 1 ELSE 0 END
            AS mentions_you
     FROM collab_threads ct
-    JOIN diagram_tabs dt ON dt.tab_id = ct.tab_id
-    JOIN visible v ON v.id = dt.diagram_id
+    JOIN document_tabs dt ON dt.tab_id = ct.tab_id
+    JOIN visible v ON v.id = dt.document_id
     JOIN tabs t ON t.id = ct.tab_id
    WHERE ct.resolved = 0
      AND (v.scope_tab_id IS NULL OR v.scope_tab_id = ct.tab_id)
@@ -247,7 +247,7 @@ const THREADS_SQL = `${SCOPE_CTES}
    ORDER BY ct.latest_at DESC
    LIMIT ?3`;
 
-// A tab linked into two visible diagrams (docs/specs/006-diagram/tab-diagram-many-to-many.md) lists once per
+// A tab linked into two visible diagrams (docs/specs/006-document/tab-document-many-to-many.md) lists once per
 // diagram; keep the one the reader reaches most directly. A 'shared'
 // row whose link has lapsed has nowhere to go and is dropped, the way
 // Shared with You drops it.
@@ -268,9 +268,9 @@ function dedupePlaces<R extends PlaceRow>(rows: R[]): R[] {
 
 function placeOf(row: PlaceRow) {
   return {
-    diagramId: row.diagram_id,
-    diagramName: row.diagram_name,
-    teamId: row.diagram_team_id,
+    documentId: row.document_id,
+    documentName: row.document_name,
+    teamId: row.document_team_id,
     via: row.via,
     shareCode: row.via === 'shared' ? row.share_code : null,
     tabId: row.tab_id,
@@ -316,7 +316,7 @@ export async function readActivity(
       },
       firstAt: r.first_at,
       youCommented: r.you_commented === 1,
-      onYourDiagram: r.on_your_diagram === 1,
+      onYourDocument: r.on_your_document === 1,
       mentionsYou: r.mentions_you === 1,
     }),
   );
@@ -358,9 +358,9 @@ export async function listCollabTabsToBackfill(
   const res = await env.DB.prepare(
     `SELECT DISTINCT t.id, t.data, t.updated_at
        FROM tabs t
-       JOIN diagram_tabs dt ON dt.tab_id = t.id
-       JOIN diagrams d ON d.id = dt.diagram_id
-       LEFT JOIN shared_with s ON s.diagram_id = d.id AND s.owner_id = ?1
+       JOIN document_tabs dt ON dt.tab_id = t.id
+       JOIN documents d ON d.id = dt.document_id
+       LEFT JOIN shared_with s ON s.document_id = d.id AND s.owner_id = ?1
       WHERE (d.owner_id = ?1
              OR d.team_id IN (SELECT team_id FROM team_members WHERE user_id = ?1 AND status = 'joined')
              OR s.owner_id IS NOT NULL)

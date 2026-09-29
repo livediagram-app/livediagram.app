@@ -5,7 +5,7 @@ import {
   laneCentre,
   runsPlainText,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { TemplateKind } from '@livediagram/templates';
 import { primsBounds } from '@livediagram/icons';
 import { ICON_CATALOG_1 } from '@livediagram/icons/icon-catalog-1';
@@ -142,7 +142,7 @@ describe('buildTemplate translation invariance', () => {
   const DX = 137;
   const DY = -421;
 
-  // 'blank' is intentionally empty (no seeded element, docs/specs/007-editor/new-diagram-route.md), so it has no
+  // 'blank' is intentionally empty (no seeded element, docs/specs/007-editor/new-document-route.md), so it has no
   // coordinates to shift — excluded from this invariance check (it stays in
   // ALL_KINDS above for the exhaustiveness assertion).
   it.each(ALL_KINDS.filter((k) => k !== 'blank'))(

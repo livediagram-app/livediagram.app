@@ -4,7 +4,7 @@
 // error-body envelope, CORS preflight header set) have a single
 // canonical home that the next route can grep for.
 
-import { DIAGRAM_CONVERSION_HEADER, DIAGRAM_TRASHED_ERROR } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER, DOCUMENT_TRASHED_ERROR } from '@livediagram/api-schema';
 
 // CORS for the browser. Live app runs at the same hostname as the
 // API (router worker stitches them together) so this is mostly a
@@ -24,7 +24,7 @@ export const CORS_HEADERS = {
   // in this list, which surfaces as "Failed to fetch" with no other
   // signal, so each new header has to land here too. Take Offline and Sync
   // Diagram declare themselves with DIAGRAM_CONVERSION_HEADER.
-  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DIAGRAM_CONVERSION_HEADER}`,
+  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DOCUMENT_CONVERSION_HEADER}`,
   'Access-Control-Max-Age': '86400',
 };
 
@@ -39,7 +39,7 @@ export function notFound(): Response {
   return json({ error: 'not_found' }, { status: 404 });
 }
 
-// An SVG image body (docs/specs/006-diagram/diagram-snapshots.md diagram snapshots). Same CORS treatment as
+// An SVG image body (docs/specs/006-document/document-snapshots.md diagram snapshots). Same CORS treatment as
 // `json` so the live app's blob-URL fetch works cross-origin in dev; the
 // caller picks the `Cache-Control` (private + long for the owner
 // thumbnail, public + short for the live share image).
@@ -113,8 +113,8 @@ export function signInRequired(): Response {
 
 // A diagram in the Trash (docs/specs/013-workspace/trash.md), answered only to a
 // caller who could have opened it: the deleted state, not a not-found.
-export function diagramTrashed(): Response {
-  return json({ error: DIAGRAM_TRASHED_ERROR }, { status: 410 });
+export function documentTrashed(): Response {
+  return json({ error: DOCUMENT_TRASHED_ERROR }, { status: 410 });
 }
 
 // A write that collides with existing state (duplicate invite email,

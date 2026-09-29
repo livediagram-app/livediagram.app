@@ -6,7 +6,7 @@ beside diagram tabs in the same diagram, and it is where imported Microsoft
 Whiteboard boards open ([Microsoft Whiteboard import](../020-import-export/whiteboard-import.md)).
 
 A whiteboard is an ordinary tab carrying `kind: 'whiteboard'` (`TabKind`,
-`packages/diagram/src/tab-kind.ts`), in the same way an event-storming board
+`packages/document/src/tab-kind.ts`), in the same way an event-storming board
 carries `kind: 'event-storming'` ([Event storming](../021-event-storming/event-storming.md)).
 The kind tunes **presentation**; it does not fork the document model. Strokes
 are `freehand` elements, notes are stickies, text is `text`, shapes are shapes.

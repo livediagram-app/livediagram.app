@@ -1,4 +1,4 @@
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // getGuestSelfSig is the only ../local-identity symbol core.ts uses; mock
@@ -195,11 +195,11 @@ describe('apiFetch / apiDelete write signal', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })));
     await apiDelete(`${API_BASE}/diagrams/d1`, 'g', {
       action: 'delete diagram',
-      purge: { sourceType: 'diagram', sourceId: 'd1' },
+      purge: { sourceType: 'document', sourceId: 'd1' },
     });
     expect(heard.mock.calls.map(([s]) => s)).toEqual([
       {},
-      { purge: { sourceType: 'diagram', sourceId: 'd1' } },
+      { purge: { sourceType: 'document', sourceId: 'd1' } },
     ]);
     vi.unstubAllGlobals();
   });
@@ -210,7 +210,7 @@ describe('apiFetch / apiDelete write signal', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 404 })));
     await apiDelete(`${API_BASE}/diagrams/d1`, 'g', {
       action: 'delete diagram',
-      purge: { sourceType: 'diagram', sourceId: 'd1' },
+      purge: { sourceType: 'document', sourceId: 'd1' },
     });
     expect(heard).not.toHaveBeenCalled();
     vi.unstubAllGlobals();

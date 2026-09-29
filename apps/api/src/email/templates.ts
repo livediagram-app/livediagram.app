@@ -227,14 +227,15 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
 // content coming back to them (not a docs/specs/014-identity/transactional-email.md §7 leak). `joinerName` is the
 // visitor's display name when known (already visible to the owner in live
 // presence / the Shared list); null falls back to "Someone".
-export function diagramJoinedEmail(
+export function documentJoinedEmail(
   env: Env,
-  diagramName: string,
+  documentName: string,
   joinerName: string | null,
 ): RenderedEmail {
   const base = appBaseUrl(env);
   const who = joinerName && joinerName.trim() ? escapeHtml(joinerName.trim()) : 'Someone';
-  const named = diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'your diagram';
+  const named =
+    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'your diagram';
   const whoText = joinerName && joinerName.trim() ? escapeText(joinerName.trim()) : 'Someone';
   return {
     kind: 'DiagramJoined',
@@ -300,8 +301,8 @@ const ACTION_DESCRIPTION_PREVIEW_CHARS = 200;
 export function actionAssignedEmail(
   env: Env,
   assignerName: string | null,
-  diagramName: string,
-  diagramId: string,
+  documentName: string,
+  documentId: string,
   actionName: string,
   description: string | null,
 ): RenderedEmail {
@@ -309,8 +310,8 @@ export function actionAssignedEmail(
   const who = assignerName && assignerName.trim() ? escapeHtml(assignerName.trim()) : 'A teammate';
   const whoText =
     assignerName && assignerName.trim() ? escapeText(assignerName.trim()) : 'A teammate';
-  const diagram =
-    diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'a shared diagram';
+  const liveDoc =
+    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'a shared diagram';
   const action = escapeHtml(actionName.trim());
   const detail = description?.trim()
     ? escapeHtml(
@@ -324,10 +325,10 @@ export function actionAssignedEmail(
     subject: `${whoText} assigned you an action`,
     html: shell({
       heading: 'You have a new action',
-      intro: `<strong>${who}</strong> assigned you an action on <strong>${diagram}</strong>: <strong>${action}</strong>.`,
+      intro: `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`,
       ...(detail ? { outro: detail } : {}),
       ctaText: 'Open the diagram',
-      ctaHref: `${base}/diagram/${encodeURIComponent(diagramId)}`,
+      ctaHref: `${base}/diagram/${encodeURIComponent(documentId)}`,
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate assigned you an action.',
@@ -353,26 +354,26 @@ export function mentionQuote(text: string): string {
 export function mentionedEmail(
   env: Env,
   authorName: string | null,
-  diagramName: string,
-  diagramId: string,
+  documentName: string,
+  documentId: string,
   commentText: string,
 ): RenderedEmail {
   const base = appBaseUrl(env);
   const who = authorName && authorName.trim() ? escapeHtml(authorName.trim()) : 'A teammate';
   const whoText = authorName && authorName.trim() ? escapeText(authorName.trim()) : 'A teammate';
-  const diagram =
-    diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'a shared diagram';
-  const diagramText =
-    diagramName && diagramName.trim() ? escapeText(diagramName.trim()) : 'a diagram';
+  const liveDoc =
+    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'a shared diagram';
+  const documentText =
+    documentName && documentName.trim() ? escapeText(documentName.trim()) : 'a diagram';
   return {
     kind: 'Mentioned',
-    subject: `${whoText} mentioned you in ${diagramText}`,
+    subject: `${whoText} mentioned you in ${documentText}`,
     html: shell({
       heading: 'You were mentioned',
-      intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${diagram}</strong>:`,
+      intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${liveDoc}</strong>:`,
       outro: `“${escapeHtml(mentionQuote(commentText))}”`,
       ctaText: 'Open the diagram',
-      ctaHref: `${base}/diagram/${encodeURIComponent(diagramId)}`,
+      ctaHref: `${base}/diagram/${encodeURIComponent(documentId)}`,
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate mentioned you in a comment.',
@@ -465,17 +466,18 @@ export function activationEmail(env: Env): RenderedEmail {
 // (privacy): just who, which diagram, and a link to open it.
 export function commentNotificationEmail(
   env: Env,
-  diagramName: string,
-  diagramId: string,
+  documentName: string,
+  documentId: string,
   commenterName: string | null,
 ): RenderedEmail {
   const base = appBaseUrl(env);
   const whoText =
     commenterName && commenterName.trim() ? escapeText(commenterName.trim()) : 'Someone';
   const nameText =
-    diagramName && diagramName.trim() ? escapeText(diagramName.trim()) : 'your diagram';
+    documentName && documentName.trim() ? escapeText(documentName.trim()) : 'your diagram';
   const who = commenterName && commenterName.trim() ? escapeHtml(commenterName.trim()) : 'Someone';
-  const name = diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'your diagram';
+  const name =
+    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'your diagram';
   return {
     kind: 'CommentNotification',
     subject: `${whoText} commented on ${nameText}`,
@@ -483,7 +485,7 @@ export function commentNotificationEmail(
       heading: 'New comment on your diagram',
       intro: `<strong>${who}</strong> left a comment on <strong>${name}</strong>. Open the diagram to read it and reply.`,
       ctaText: 'Open the diagram',
-      ctaHref: `${base}/diagram/${encodeURIComponent(diagramId)}`,
+      ctaHref: `${base}/diagram/${encodeURIComponent(documentId)}`,
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because someone commented on a diagram you own.',

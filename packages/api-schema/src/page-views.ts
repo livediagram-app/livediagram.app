@@ -8,7 +8,7 @@
 // (`/diagram`, `/explorer`, ...), and the router forwards them to the live
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
-  'diagram',
+  'document',
   'embed',
   'explorer',
   'get-started',
@@ -62,9 +62,9 @@ export function pageViewPath(pathname: string): string | null {
     .toLowerCase()
     .split('/')
     .filter((s) => s !== '');
-  // Every `/diagram/...` URL is the editor on one diagram (docs/specs/007-editor/new-diagram-route.md), and
+  // Every `/diagram/...` URL is the editor on one diagram (docs/specs/007-editor/new-document-route.md), and
   // whatever follows the segment is the diagram's id.
-  if (segments[0] === 'diagram') segments = ['diagram'];
+  if (segments[0] === 'document') segments = ['document'];
   const last = segments[segments.length - 1];
   if (last === 'index.html') segments.pop();
   else if (last?.endsWith('.html')) segments[segments.length - 1] = last.slice(0, -5);

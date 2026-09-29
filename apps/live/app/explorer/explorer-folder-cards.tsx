@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer card grid's folder cards (docs/specs/006-diagram/diagram-snapshots.md), split out of
+// The Explorer card grid's folder cards (docs/specs/006-document/document-snapshots.md), split out of
 // CardView: the real FolderCard (rename / menu / child count) and the
 // synthetic Unsorted / Generated card. The card shell + preview classes
 // every card shares live in @livediagram/ui, where the Timeline's cards

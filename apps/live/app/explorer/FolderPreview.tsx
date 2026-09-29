@@ -10,7 +10,7 @@
 // nothing to preview, and the glyph is the honest answer.
 
 import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
-import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { FolderCardGlyph } from './explorer-folder-cards';
 import { folderPreviewTiles, type FolderPreviewContents } from './folder-preview-tiles';
@@ -35,14 +35,14 @@ export function FolderPreview({
   return (
     <span className="flex h-full w-full flex-wrap content-center items-center justify-center gap-2 p-3">
       {tiles.map((tile) =>
-        tile.kind === 'diagram' ? (
-          <span key={`d:${tile.diagram.id}`} className={tileBox}>
-            <DiagramThumbnail
+        tile.kind === 'document' ? (
+          <span key={`d:${tile.document.id}`} className={tileBox}>
+            <DocumentThumbnail
               ownerId={ownerId}
-              diagramId={tile.diagram.id}
-              version={tile.diagram.savedAt}
-              shareCode={tile.diagram.shared?.shareCode}
-              offline={tile.diagram.ownerId === OFFLINE_OWNER_ID}
+              documentId={tile.document.id}
+              version={tile.document.savedAt}
+              shareCode={tile.document.shared?.shareCode}
+              offline={tile.document.ownerId === OFFLINE_OWNER_ID}
               className="h-full w-full"
             />
           </span>

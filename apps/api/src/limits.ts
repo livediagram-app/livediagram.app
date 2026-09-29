@@ -2,7 +2,7 @@
 // worker against hostile or accidental oversized payloads (important ahead of
 // opening the API to external token callers). One place so the caps stay
 // consistent and tunable. Structural validity of tabs/elements lives in
-// @livediagram/diagram (isValidTab); these are the SIZE bounds a structurally
+// @livediagram/document (isValidTab); these are the SIZE bounds a structurally
 // valid payload must also respect.
 
 // Outer bound on any request body, gated on Content-Length before dispatch so
@@ -30,7 +30,7 @@ export const MAX_TAB_BYTES = 4 * 1024 * 1024;
 
 // Human-facing names outside the diagram / tab name cap: folder / theme / API
 // token / OAuth client. Diagram and tab names are shortened to the far tighter
-// NAME_MAX_LENGTH instead (names.ts, docs/specs/006-diagram/name-length.md).
+// NAME_MAX_LENGTH instead (names.ts, docs/specs/006-document/name-length.md).
 export const MAX_NAME_LEN = 500;
 
 // A diagram's slide deck (docs/specs/012-collaboration/presentation-mode.md). Slides hold element REFERENCES, never

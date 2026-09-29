@@ -21,14 +21,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { slideName, type Slide } from '@livediagram/diagram';
+import { slideName, type Slide } from '@livediagram/document';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
 import { SlideDeckSettingsPopover } from '@/components/panels/SlideDeckSettingsPopover';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import type { SlideDeckState } from '@/app/diagram/[id]/useSlideDeck';
+import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
 import { isDragTravel } from '@/lib/press-gestures';
 import { HoverCard, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
@@ -269,7 +269,7 @@ export function SlideDeckPanel({
   // Row drag. The order does NOT change while you drag: a caret shows where the
   // row will land and the move commits on release. Reordering live meant the
   // list reshuffled under the pointer, which moved the very row you were aiming
-  // at — the tab bar settled this question already (docs/specs/006-diagram/tab-folders.md) and this follows
+  // at — the tab bar settled this question already (docs/specs/006-document/tab-folders.md) and this follows
   // it, with pointer events instead of HTML5 dnd so it works on touch.
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [moving, setMoving] = useState(false);

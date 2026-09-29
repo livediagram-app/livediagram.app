@@ -56,7 +56,7 @@ export const LINKS_ADDED = chart(
   'Linked',
   'Links Added',
   'A link put on an element or a table cell: a web address, another diagram, or another tab.',
-  { types: ['Url', 'Diagram', 'Tab'] },
+  { types: ['Url', 'Document', 'Tab'] },
 );
 
 export const LINKS_REMOVED = chart(
@@ -91,8 +91,8 @@ export const TABS_LOCKED = chart(
 );
 
 // Diagram lifecycle.
-export const DIAGRAMS_LOADED: Metric = {
-  category: 'Diagram',
+export const DOCUMENTS_LOADED: Metric = {
+  category: 'Document',
   action: 'Loaded',
   type: null,
   title: 'Diagrams Loaded',
@@ -100,8 +100,8 @@ export const DIAGRAMS_LOADED: Metric = {
     'A diagram was opened, counted on every open (including a page refresh), not just the first time. Includes the first open of every new diagram, straight after it is created.',
 };
 
-export const DIAGRAMS_CREATED: Metric = {
-  category: 'Diagram',
+export const DOCUMENTS_CREATED: Metric = {
+  category: 'Document',
   action: 'Created',
   allTypes: true,
   title: 'Diagrams Created',
@@ -109,35 +109,35 @@ export const DIAGRAMS_CREATED: Metric = {
     'New diagrams from the New Diagram wizard, stored in the cloud or offline in this browser.',
 };
 
-export const DIAGRAMS_RENAMED: Metric = {
-  category: 'Diagram',
+export const DOCUMENTS_RENAMED: Metric = {
+  category: 'Document',
   action: 'Renamed',
   type: null,
   title: 'Diagrams Renamed',
 };
 
-export const DIAGRAMS_DELETED: Metric = {
+export const DOCUMENTS_DELETED: Metric = {
   rising: 'neutral',
-  category: 'Diagram',
+  category: 'Document',
   action: 'Deleted',
   type: null,
   title: 'Diagrams Deleted',
 };
 
-export const DIAGRAMS_DUPLICATED: Metric = {
-  category: 'Diagram',
+export const DOCUMENTS_DUPLICATED: Metric = {
+  category: 'Document',
   action: 'Duplicated',
   allTypes: true,
   title: 'Diagrams Duplicated',
   blurb: 'A diagram copied from the Explorer, or a shared diagram cloned into your own account.',
 };
 
-// Offline Mode (docs/specs/006-diagram/offline-mode.md): a diagram kept only in this browser, and the two
+// Offline Mode (docs/specs/006-document/offline-mode.md): a diagram kept only in this browser, and the two
 // conversions between the stores. Created Offline is a subset of Diagrams
 // Created, so it sits in Diagram Actions outside the headline as well as
 // heading its own stack.
 export const CREATED_OFFLINE = chart(
-  'Diagram',
+  'Document',
   'Created',
   'Created Offline',
   'A new diagram kept only in this browser (Offline Mode), never sent to the server. Part of Diagrams Created.',
@@ -145,7 +145,7 @@ export const CREATED_OFFLINE = chart(
 );
 
 export const TAKEN_OFFLINE = chart(
-  'Diagram',
+  'Document',
   'Moved',
   'Taken Offline',
   'A cloud diagram converted to Offline Mode with Take Offline, so it now lives only in this browser.',
@@ -153,7 +153,7 @@ export const TAKEN_OFFLINE = chart(
 );
 
 export const SAVED_TO_CLOUD = chart(
-  'Diagram',
+  'Document',
   'Moved',
   'Saved to Cloud',
   'An offline diagram synced up to the server with Sync Diagram, so it can be shared.',
@@ -210,7 +210,7 @@ export const TABS_DUPLICATED: Metric = {
 // Exports sit in the Export & Import stack below.
 
 export const EXPORTS: Metric = {
-  category: 'Diagram',
+  category: 'Document',
   action: 'Exported',
   allTypes: true,
   title: 'Exports',
@@ -223,22 +223,22 @@ export const EXPORTS: Metric = {
 // read against the once-per-object Created beside it. It is a different unit
 // from the changes, and counts every new diagram a second time, so neither
 // head adds it in: each totals the changes made.
-export const DIAGRAM_ACTIONS: MetricStack = {
+export const DOCUMENT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Diagram Actions',
   blurb:
     'Diagrams opened, made, renamed, deleted and duplicated, and how new ones were started: Just Draw, a template link, or offline. Those three are part of Diagrams Created.',
   members: [
-    DIAGRAMS_LOADED,
-    DIAGRAMS_CREATED,
-    DIAGRAMS_RENAMED,
-    DIAGRAMS_DELETED,
-    DIAGRAMS_DUPLICATED,
+    DOCUMENTS_LOADED,
+    DOCUMENTS_CREATED,
+    DOCUMENTS_RENAMED,
+    DOCUMENTS_DELETED,
+    DOCUMENTS_DUPLICATED,
     JUST_DRAW,
     TEMPLATE_LINKS,
     CREATED_OFFLINE,
   ],
-  headline: [DIAGRAMS_CREATED, DIAGRAMS_RENAMED, DIAGRAMS_DELETED, DIAGRAMS_DUPLICATED],
+  headline: [DOCUMENTS_CREATED, DOCUMENTS_RENAMED, DOCUMENTS_DELETED, DOCUMENTS_DUPLICATED],
 };
 
 // The Trash (docs/specs/013-workspace/trash.md): the backstop behind every
@@ -252,14 +252,14 @@ export const TRASH_OPENED = chart(
   'The Trash opened from Settings.',
 );
 
-export const DIAGRAMS_RESTORED = chart(
+export const DOCUMENTS_RESTORED = chart(
   'Trash',
   'Restored',
   'Diagrams Restored',
   'A deleted diagram brought back from the Trash, from the Trash itself or from its deleted page.',
 );
 
-export const DIAGRAMS_DELETED_FOR_GOOD = chart(
+export const DOCUMENTS_DELETED_FOR_GOOD = chart(
   'Trash',
   'Deleted',
   'Deleted for Good',
@@ -281,7 +281,7 @@ export const TRASH: MetricStack = {
   title: 'Trash',
   blurb:
     'Deleted diagrams wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
-  members: [DIAGRAMS_RESTORED, TRASH_OPENED, DIAGRAMS_DELETED_FOR_GOOD, TRASH_EMPTIED],
+  members: [DOCUMENTS_RESTORED, TRASH_OPENED, DOCUMENTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
 };
 
 const TAB_CHANGES = [
@@ -568,12 +568,14 @@ export const TABLES: MetricStack = {
 };
 
 // Undo, redo and revert.
-export const UNDOS = chart('Diagram', 'Undone', 'Undos', 'A change undone.', { rising: 'neutral' });
+export const UNDOS = chart('Document', 'Undone', 'Undos', 'A change undone.', {
+  rising: 'neutral',
+});
 
-export const REDOS = chart('Diagram', 'Redone', 'Redos', 'An undo redone.', { rising: 'neutral' });
+export const REDOS = chart('Document', 'Redone', 'Redos', 'An undo redone.', { rising: 'neutral' });
 
 export const REVERTS = chart(
-  'Diagram',
+  'Document',
   'Reverted',
   'Reverts',
   'A diagram rolled back to an earlier point from the Activity panel.',

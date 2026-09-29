@@ -45,20 +45,20 @@ export async function apiListFavourites(ownerId: string): Promise<string[]> {
 // for a failed bookmark sync would be more annoying than useful.
 export async function apiSetFavourite(
   ownerId: string,
-  diagramId: string,
+  documentId: string,
   favourite: boolean,
 ): Promise<void> {
   // An offline diagram has no row in `diagrams`, and the favourites table's
   // diagram_id is a foreign key into it (migration 0040), so sending this
   // star to the server does not just go unused, it is REJECTED with
-  // "FOREIGN KEY constraint failed". Keep it local, as docs/specs/006-diagram/offline-mode.md requires of
+  // "FOREIGN KEY constraint failed". Keep it local, as docs/specs/006-document/offline-mode.md requires of
   // every offline row: no server fetch, "list, thumbnail, or otherwise".
-  if (await isOfflineId(diagramId)) {
-    await offlineSetFavourite(diagramId, favourite).catch(() => {});
+  if (await isOfflineId(documentId)) {
+    await offlineSetFavourite(documentId, favourite).catch(() => {});
     return;
   }
   try {
-    await apiFetch(`${API_BASE}/favourites/${encodeURIComponent(diagramId)}`, {
+    await apiFetch(`${API_BASE}/favourites/${encodeURIComponent(documentId)}`, {
       method: favourite ? 'PUT' : 'DELETE',
       headers: await apiHeaders(ownerId),
     });

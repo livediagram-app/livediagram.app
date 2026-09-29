@@ -10,7 +10,7 @@ import {
   type ShapeMarker,
   type Tab,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { getTheme, type ShapeColorPreset } from '@/lib/themes';
 import {
   applyRotationToEl,

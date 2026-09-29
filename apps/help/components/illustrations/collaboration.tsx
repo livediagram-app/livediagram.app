@@ -327,7 +327,7 @@ export function OneTabShare() {
 
 /** A read-only embedded diagram inside another page, with an embed-code
  *  snippet beneath it. */
-export function EmbeddedDiagram() {
+export function EmbeddedDocument() {
   return (
     <Scene w={420} h={240} bg="plain">
       {/* Host page card */}

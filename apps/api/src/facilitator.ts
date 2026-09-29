@@ -1,7 +1,7 @@
 // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who holds it, and who may move it.
 //
 // Pure decisions, no sockets and no storage, so every rule can be read (and
-// tested) in one place while `diagram-room.ts` keeps the plumbing. The room is
+// tested) in one place while `document-room.ts` keeps the plumbing. The room is
 // the only thing that can arbitrate this: it alone sees every socket, and it
 // alone can mint a secret that reaches exactly one of them.
 //

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { elementActions, elementDisplayLabel, type BoxedElement } from '@livediagram/diagram';
+import { elementActions, elementDisplayLabel, type BoxedElement } from '@livediagram/document';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 import { CountBadge } from '@/components/primitives/CountBadge';

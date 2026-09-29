@@ -35,12 +35,12 @@ const BY_EVENT: Record<KnownTimelineEventType, TimelineCategory> = {
   comment_added: 'comments',
   comment_resolved: 'comments',
 
-  diagram_created: 'new',
-  diagram_duplicated: 'new',
+  document_created: 'new',
+  document_duplicated: 'new',
 
-  diagram_edited: 'edits',
+  document_edited: 'edits',
 
-  diagram_renamed: 'renames',
+  document_renamed: 'renames',
   team_renamed: 'renames',
 
   // Grouped by consequence, not by which table the row was in: losing a
@@ -56,10 +56,10 @@ const BY_EVENT: Record<KnownTimelineEventType, TimelineCategory> = {
   // that say somebody actually did.
   share_link_created: 'sharing',
   share_link_expiring: 'sharing',
-  diagram_opened_by_visitor: 'sharing',
-  diagram_copied_by_visitor: 'sharing',
-  team_diagram_added: 'sharing',
-  team_diagram_removed: 'sharing',
+  document_opened_by_visitor: 'sharing',
+  document_copied_by_visitor: 'sharing',
+  team_document_added: 'sharing',
+  team_document_removed: 'sharing',
 
   action_assigned: 'actions',
   action_completed: 'actions',
@@ -76,9 +76,9 @@ const BY_EVENT: Record<KnownTimelineEventType, TimelineCategory> = {
   team_invite_link_disabled: 'teams',
 
   // Where a diagram lives, including which side of the network it's on.
-  diagram_moved: 'filing',
-  diagram_offline: 'filing',
-  diagram_synced: 'filing',
+  document_moved: 'filing',
+  document_offline: 'filing',
+  document_synced: 'filing',
   folder_created: 'filing',
 
   token_created: 'account',

@@ -1,4 +1,4 @@
-import { canvasSurface } from '@livediagram/diagram';
+import { canvasSurface } from '@livediagram/document';
 
 // Is the tab's canvas a DARK wall? The sticky paper-peel (docs/specs/008-canvas/canvas-and-palette.md) is a fixed
 // slate ink tuned against light paper; on a dark backdrop that ink all but

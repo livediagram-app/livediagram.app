@@ -87,7 +87,7 @@ export async function dueForActivation(
     `SELECT el.owner_id, el.email FROM email_lifecycle el
      WHERE el.created_at <= ? AND el.activation_sent_at IS NULL AND el.week1_sent_at IS NULL
        AND el.email <> ''
-       AND NOT EXISTS (SELECT 1 FROM diagrams d WHERE d.owner_id = el.owner_id)
+       AND NOT EXISTS (SELECT 1 FROM documents d WHERE d.owner_id = el.owner_id)
      ORDER BY el.created_at ASC LIMIT ?`,
   )
     .bind(cutoff, limit)
@@ -113,7 +113,7 @@ export async function dueForWinback(
   const { results } = await env.DB.prepare(
     `SELECT el.owner_id, el.email FROM email_lifecycle el
      WHERE el.winback_sent_at IS NULL AND el.email <> ''
-       AND (SELECT MAX(d.updated_at) FROM diagrams d WHERE d.owner_id = el.owner_id) <= ?
+       AND (SELECT MAX(d.updated_at) FROM documents d WHERE d.owner_id = el.owner_id) <= ?
      ORDER BY el.created_at ASC LIMIT ?`,
   )
     .bind(cutoff, limit)

@@ -4,7 +4,7 @@
 // keeps it on screen, and what it is standing on. No React, no DOM, so
 // the walk behaviour is unit-testable without a canvas.
 
-import { isBoxed, type Element } from '@livediagram/diagram';
+import { isBoxed, type Element } from '@livediagram/document';
 
 // Walk speed in CANVAS px per second. Constant on purpose: an eased
 // glide reads as a camera move, a constant walk reads as a character.

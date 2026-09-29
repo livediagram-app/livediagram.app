@@ -7,7 +7,7 @@ import {
   type ShapeKind,
   type ShapePart,
   type ShapePartRole,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { SVGAttributes } from 'react';
 import { useShapeSvgAnimation, type ShapeSvgAnimation } from './useShapeSvgAnimation';
 
@@ -130,7 +130,7 @@ export function ShapeSvgOverlay({
     animation,
     fill,
   );
-  // The geometry lives in the shared table (@livediagram/diagram
+  // The geometry lives in the shared table (@livediagram/document
   // shape-geometry.ts), the same data the headless export draws from, so
   // the canvas and an exported image can't disagree about a silhouette.
   // Browser is NOT in it: it is a CSS-rendered rounded rectangle (see

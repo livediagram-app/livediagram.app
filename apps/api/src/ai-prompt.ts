@@ -8,7 +8,7 @@ import type { AiMode } from '@livediagram/api-schema';
 
 // ---------------------------------------------------------------------------
 // Schema — single source of truth for what the model can produce.
-// Keep ShapeKind in sync with packages/diagram/src/index.ts.
+// Keep ShapeKind in sync with packages/document/src/index.ts.
 // ---------------------------------------------------------------------------
 const SCHEMA = `
 ELEMENT TYPES (output only these):
@@ -206,7 +206,7 @@ export function buildSystemPrompt(
       ? `\nSELECTION: The user has selected element IDs [${focusIds.join(', ')}]. Focus your changes on those elements. Treat all others as read-only context unless arrow connections require adjustment.`
       : '';
 
-  const base = `${SECURITY_GUARD}\n\nDiagram tab: "${tab}"\n\n${SCHEMA}${focusClause}\n\n`;
+  const base = `${SECURITY_GUARD}\n\nDocument tab: "${tab}"\n\n${SCHEMA}${focusClause}\n\n`;
 
   switch (mode) {
     case 'clean': {
@@ -219,6 +219,6 @@ export function buildSystemPrompt(
       );
     }
     case 'ask':
-      return `${SECURITY_GUARD}\n\nDiagram tab: "${tab}"${focusClause}. Answer the user's question about the diagram directly and concisely. Base your answer only on the provided diagram elements. If the question cannot be answered from the diagram alone, say so briefly. Plain text only, no JSON, no preamble.`;
+      return `${SECURITY_GUARD}\n\nDocument tab: "${tab}"${focusClause}. Answer the user's question about the diagram directly and concisely. Base your answer only on the provided diagram elements. If the question cannot be answered from the diagram alone, say so briefly. Plain text only, no JSON, no preamble.`;
   }
 }

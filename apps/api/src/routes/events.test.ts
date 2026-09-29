@@ -17,7 +17,7 @@ vi.mock('../db', () => db);
 import type { Env } from '../types';
 import { handleEvents } from './events';
 
-const EVENT = { category: 'Mcp', action: 'Used', type: 'ReadDiagram' };
+const EVENT = { category: 'Mcp', action: 'Used', type: 'ReadDocument' };
 
 const makeCtx = (opts: { env?: Partial<Env>; headers?: Record<string, string> } = {}) =>
   makeTestRouteContext('POST', '/api/events', {
@@ -133,7 +133,7 @@ describe('handleEvents server-emitted pairs (docs/specs/017-telemetry/telemetry.
         events: [
           { category: 'Session', action: 'SignedUp' },
           { category: 'Session', action: 'SignedIn' },
-          { category: 'Diagram', action: 'Joined', type: 'Edit' },
+          { category: 'Document', action: 'Joined', type: 'Edit' },
           { category: 'Email', action: 'Sent', type: 'Welcome' },
           { category: 'Session', action: 'SignedOut' },
         ],

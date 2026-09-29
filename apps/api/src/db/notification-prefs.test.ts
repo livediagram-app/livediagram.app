@@ -19,7 +19,7 @@ function envWithPrefsRow(prefs: string | null): Env {
 describe('getNotificationPrefs (docs/specs/014-identity/profile-and-email-notifications.md)', () => {
   it('defaults both flags to true when there is no row', async () => {
     expect(await getNotificationPrefs(envWithPrefsRow(null), 'user_x')).toEqual({
-      notifyDiagramJoin: true,
+      notifyDocumentJoin: true,
       notifyInviteResponse: true,
       notifyComments: true,
       notifyTips: true,
@@ -32,7 +32,7 @@ describe('getNotificationPrefs (docs/specs/014-identity/profile-and-email-notifi
   it('defaults to true when the key is absent from the blob', async () => {
     const prefs = await getNotificationPrefs(envWithPrefsRow('{"telemetryEnabled":false}'), 'u');
     expect(prefs).toEqual({
-      notifyDiagramJoin: true,
+      notifyDocumentJoin: true,
       notifyInviteResponse: true,
       notifyComments: true,
       notifyTips: true,
@@ -44,11 +44,11 @@ describe('getNotificationPrefs (docs/specs/014-identity/profile-and-email-notifi
 
   it('only an explicit false opts out', async () => {
     const prefs = await getNotificationPrefs(
-      envWithPrefsRow('{"notifyDiagramJoin":false,"notifyInviteResponse":true}'),
+      envWithPrefsRow('{"notifyDocumentJoin":false,"notifyInviteResponse":true}'),
       'u',
     );
     expect(prefs).toEqual({
-      notifyDiagramJoin: false,
+      notifyDocumentJoin: false,
       notifyInviteResponse: true,
       notifyComments: true,
       notifyTips: true,
@@ -61,7 +61,7 @@ describe('getNotificationPrefs (docs/specs/014-identity/profile-and-email-notifi
   it('falls back to defaults on a corrupt blob', async () => {
     const prefs = await getNotificationPrefs(envWithPrefsRow('not json'), 'u');
     expect(prefs).toEqual({
-      notifyDiagramJoin: true,
+      notifyDocumentJoin: true,
       notifyInviteResponse: true,
       notifyComments: true,
       notifyTips: true,
@@ -78,7 +78,7 @@ describe('getNotificationPrefs (docs/specs/014-identity/profile-and-email-notifi
   });
 
   it('treats a non-boolean value as notify (defends against a misbehaving client)', async () => {
-    const prefs = await getNotificationPrefs(envWithPrefsRow('{"notifyDiagramJoin":"no"}'), 'u');
-    expect(prefs.notifyDiagramJoin).toBe(true);
+    const prefs = await getNotificationPrefs(envWithPrefsRow('{"notifyDocumentJoin":"no"}'), 'u');
+    expect(prefs.notifyDocumentJoin).toBe(true);
   });
 });

@@ -4,8 +4,8 @@
 
 import { deleteTimelineForOwner, migrateTimelineOwner } from './timeline';
 import { deleteCollabIndexForOwner, recordOwnerAlias } from './collab-index';
-import { thumbnailKey } from './diagrams';
-import { diagramRemovalStatements } from './diagram-removal';
+import { thumbnailKey } from './documents';
+import { documentRemovalStatements } from './document-removal';
 import { detachUserFromTeams } from './teams';
 import type { Env } from '../types';
 
@@ -35,7 +35,7 @@ const R2_DELETE_CHUNK = 1000;
 export async function deleteAccount(
   env: Env,
   ownerId: string,
-): Promise<{ diagrams: number; folders: number; images: number }> {
+): Promise<{ documents: number; folders: number; images: number }> {
   // Teams first (docs/specs/013-workspace/teams.md/35): transfer the user's team-library diagrams
   // to a remaining member, drop their memberships (promoting a new
   // admin when they were the last one), and delete teams they were the
@@ -59,26 +59,26 @@ export async function deleteAccount(
   const imagesRes = await env.DB.prepare('DELETE FROM images WHERE owner_id = ?')
     .bind(ownerId)
     .run();
-  // Diagram SVG snapshots (docs/specs/006-diagram/diagram-snapshots.md) live in R2 under thumb/<diagramId>,
+  // Diagram SVG snapshots (docs/specs/006-document/document-snapshots.md) live in R2 under thumb/<diagramId>,
   // keyed off the diagram id rather than carried on a D1 row, so — like
   // the images above — the cascade can't reach them. Enumerate the
   // owner's diagram ids while the rows still exist, then bulk-delete
   // their snapshot objects before the diagrams DELETE drops the ids.
   if (env.IMAGES) {
-    const diagramRows = await env.DB.prepare('SELECT id FROM diagrams WHERE owner_id = ?')
+    const documentRows = await env.DB.prepare('SELECT id FROM documents WHERE owner_id = ?')
       .bind(ownerId)
       .all<{ id: string }>();
-    const thumbKeys = (diagramRows.results ?? []).map((r) => thumbnailKey(r.id));
+    const thumbKeys = (documentRows.results ?? []).map((r) => thumbnailKey(r.id));
     for (let i = 0; i < thumbKeys.length; i += R2_DELETE_CHUNK) {
       await env.IMAGES.delete(thumbKeys.slice(i, i + R2_DELETE_CHUNK));
     }
   }
-  // Link-aware (docs/specs/006-diagram/tab-diagram-many-to-many.md): a tab
+  // Link-aware (docs/specs/006-document/tab-document-many-to-many.md): a tab
   // shared into a diagram someone else owns stays there.
   const removal = await env.DB.batch(
-    diagramRemovalStatements(env, { column: 'owner_id', value: ownerId }),
+    documentRemovalStatements(env, { column: 'owner_id', value: ownerId }),
   );
-  const diagramsRes = removal[removal.length - 1]!;
+  const documentsRes = removal[removal.length - 1]!;
   // Personal folders only. A team folder carries its creator's owner_id but
   // belongs to the team (access is by membership), and teammates' diagrams
   // sit in it: deleting it dropped them out of the team library behind a
@@ -122,7 +122,7 @@ export async function deleteAccount(
   // rows themselves went with the tabs diagramRemovalStatements dropped above.
   await deleteCollabIndexForOwner(env, ownerId);
   return {
-    diagrams: diagramsRes.meta.changes ?? 0,
+    documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
     images: imagesRes.meta.changes ?? 0,
   };
@@ -169,16 +169,16 @@ export async function migrateOwnerId(
   env: Env,
   fromOwnerId: string,
   toOwnerId: string,
-): Promise<{ diagrams: number; folders: number; shared: number; images: number }> {
-  const diagramsRes = await env.DB.prepare('UPDATE diagrams SET owner_id = ? WHERE owner_id = ?')
+): Promise<{ documents: number; folders: number; shared: number; images: number }> {
+  const documentsRes = await env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
   const foldersRes = await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
   const sharedInsertRes = await env.DB.prepare(
-    `INSERT OR IGNORE INTO shared_with (owner_id, diagram_id, role, last_seen)
-     SELECT ?, diagram_id, role, last_seen
+    `INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, last_seen)
+     SELECT ?, document_id, role, last_seen
      FROM shared_with
      WHERE owner_id = ?`,
   )
@@ -205,8 +205,8 @@ export async function migrateOwnerId(
   // diagram, so INSERT OR IGNORE then DELETE like shared_with. A collision
   // keeps the account's star and its original created_at.
   await env.DB.prepare(
-    `INSERT OR IGNORE INTO favourites (owner_id, diagram_id, created_at)
-     SELECT ?, diagram_id, created_at
+    `INSERT OR IGNORE INTO favourites (owner_id, document_id, created_at)
+     SELECT ?, document_id, created_at
      FROM favourites
      WHERE owner_id = ?`,
   )
@@ -254,7 +254,7 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   return {
-    diagrams: diagramsRes.meta.changes ?? 0,
+    documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
     shared: sharedInsertRes.meta.changes ?? 0,
     images: imagesRes.meta.changes ?? 0,

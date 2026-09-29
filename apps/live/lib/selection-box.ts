@@ -1,4 +1,4 @@
-import type { CanvasSurface } from '@livediagram/diagram';
+import type { CanvasSurface } from '@livediagram/document';
 
 // The colours of the two "selection box" rectangles the editor draws: the
 // drag-select marquee on the canvas and the Map's current-view window

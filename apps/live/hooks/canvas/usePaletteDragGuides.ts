@@ -6,7 +6,7 @@ import {
   type DistributionGuide,
   type Element,
   type EsTimeline,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
 import {

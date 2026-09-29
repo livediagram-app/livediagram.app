@@ -28,7 +28,7 @@ import {
   type BorderStyle,
   type BoxedElement,
   type ElementShadow,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { BorderGlyph, PaletteMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
 import { isTechIconId } from '@/lib/tech-icons';

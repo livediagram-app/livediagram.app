@@ -30,12 +30,12 @@
 // internal.
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { duplicateElements, type Element, type Tab } from '@livediagram/diagram';
+import { duplicateElements, type Element, type Tab } from '@livediagram/document';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import { parseElementsPayload, serialiseElements, stripIdentity } from '@/lib/clipboard-payload';
 import { landPastedCopies, pasteTranslation } from '@/lib/paste-placement';
-import { addImageFileForDiagram } from '@/lib/upload-image';
+import { addImageFileForDocument } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -70,8 +70,8 @@ type ClipboardDeps = {
   // The local participant id — owner of uploaded paste images.
   ownerId: string;
   // The current diagram id (null before hydration). Offline diagrams embed
-  // pasted images locally instead of uploading (docs/specs/006-diagram/offline-mode.md).
-  diagramId: string | null;
+  // pasted images locally instead of uploading (docs/specs/006-document/offline-mode.md).
+  documentId: string | null;
   toast: ReturnType<typeof useToast>;
   // Read a pasted PHOTO as a piece of wall instead of placing it as an image
   // (docs/specs/021-event-storming/event-storming.md Phase 8). Supplied only on an event-storming board with the
@@ -98,7 +98,7 @@ export function useClipboard(deps: ClipboardDeps) {
     setMultiSelectedIds,
     addImageFromGallery,
     ownerId,
-    diagramId,
+    documentId,
     toast,
     onPastePhoto,
     canvasPointerRef,
@@ -211,8 +211,8 @@ export function useClipboard(deps: ClipboardDeps) {
           });
     try {
       // Cloud diagrams upload; offline diagrams embed the paste locally
-      // as a data URI (docs/specs/006-diagram/offline-mode.md) so no server copy is created.
-      const { image } = await addImageFileForDiagram(ownerId, diagramId, named);
+      // as a data URI (docs/specs/006-document/offline-mode.md) so no server copy is created.
+      const { image } = await addImageFileForDocument(ownerId, documentId, named);
       addImageFromGallery({
         id: image.id,
         width: image.width,

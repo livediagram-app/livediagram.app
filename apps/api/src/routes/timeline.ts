@@ -31,7 +31,7 @@ import {
   markScopeSeen,
   readTimeline,
 } from '../db/timeline';
-import { getDiagram, getMembership } from '../db';
+import { getDocument, getMembership } from '../db';
 import { backfillUserScope } from '../timeline';
 import { badRequest, forbidden, json, missingAuth, noContent, notFound } from '../responses';
 import { gateRead, type RouteContext } from './context';
@@ -208,14 +208,14 @@ async function canReadScope(
   ownerId: string,
 ): Promise<boolean> {
   if (scope.scopeType === 'user') return scope.scopeId === ownerId;
-  if (scope.scopeType === 'diagram') {
+  if (scope.scopeType === 'document') {
     // Exactly the diagram's own read gate: its owner, a joined member of
     // its team, or a valid share-code visitor. A missing diagram is a
     // refusal rather than a 404, so a guessed id can't be probed for
     // existence through this endpoint either.
-    const diagram = await getDiagram(ctx.env, scope.scopeId);
-    if (!diagram) return false;
-    return gateRead(ctx, scope.scopeId, diagram.ownerId, diagram.teamId);
+    const liveDoc = await getDocument(ctx.env, scope.scopeId);
+    if (!liveDoc) return false;
+    return gateRead(ctx, scope.scopeId, liveDoc.ownerId, liveDoc.teamId);
   }
   if (scope.scopeType === 'team') {
     // Joined members only — an `invited` row grants no access to the

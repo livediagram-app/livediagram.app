@@ -20,7 +20,7 @@ function bodyJson(extra: Record<string, unknown> = {}): string {
 
 const baseRow = (override: Partial<TabRow> = {}): TabRow => ({
   id: 'tab-1',
-  diagram_id: 'diag-1',
+  document_id: 'diag-1',
   name: 'Untitled',
   order_index: 0,
   data: bodyJson(),
@@ -108,7 +108,7 @@ describe('rowToTab', () => {
     const dto = rowToTab(baseRow());
     expect(dto).toEqual({
       id: 'tab-1',
-      diagramId: 'diag-1',
+      documentId: 'diag-1',
       name: 'Untitled',
       orderIndex: 0,
       updatedAt: 1_700_000_000_000,
@@ -146,7 +146,7 @@ describe('rowToTab', () => {
     expect(dto.elements).toEqual(els);
   });
 
-  it('lets row columns override forged id / name / diagramId in the data blob', () => {
+  it('lets row columns override forged id / name / documentId in the data blob', () => {
     // Spread order matters: data first, row columns second. So even if
     // an attacker (or stale write) stuffed conflicting id / name /
     // diagramId / orderIndex / updatedAt fields into the JSON blob,
@@ -156,19 +156,19 @@ describe('rowToTab', () => {
       elements: [],
       id: 'attacker-id',
       name: 'attacker name',
-      diagramId: 'other-diagram',
+      documentId: 'other-diagram',
       orderIndex: 999,
       updatedAt: 0,
     });
     const dto = rowToTab(baseRow({ data: forged }));
     expect(dto.id).toBe('tab-1');
     expect(dto.name).toBe('Untitled');
-    expect(dto.diagramId).toBe('diag-1');
+    expect(dto.documentId).toBe('diag-1');
     expect(dto.orderIndex).toBe(0);
     expect(dto.updatedAt).toBe(1_700_000_000_000);
   });
 
-  it('takes folder from the row column and lets it override a forged data-blob folder (docs/specs/006-diagram/tab-folders.md)', () => {
+  it('takes folder from the row column and lets it override a forged data-blob folder (docs/specs/006-document/tab-folders.md)', () => {
     // folder is per-diagram link metadata read from the diagram_tabs
     // JOIN, never from tabs.data (the client strips it before saving).
     // A folder stuffed into the blob must not win.
@@ -199,7 +199,7 @@ describe('rowToTabSummary', () => {
     const dto = rowToTabSummary(baseRow({ data: 'this is not json and that is fine' }));
     expect(dto).toEqual({
       id: 'tab-1',
-      diagramId: 'diag-1',
+      documentId: 'diag-1',
       name: 'Untitled',
       orderIndex: 0,
       updatedAt: 1_700_000_000_000,
@@ -214,7 +214,7 @@ describe('rowToTabSummary', () => {
     expect(rowToTabSummary(baseRow({ order_index: 0 })).orderIndex).toBe(0);
   });
 
-  it('carries the per-diagram folder name, mapping NULL to undefined (docs/specs/006-diagram/tab-folders.md)', () => {
+  it('carries the per-diagram folder name, mapping NULL to undefined (docs/specs/006-document/tab-folders.md)', () => {
     expect(rowToTabSummary(baseRow({ folder: 'Org' })).folder).toBe('Org');
     expect(rowToTabSummary(baseRow({ folder: null })).folder).toBeUndefined();
   });

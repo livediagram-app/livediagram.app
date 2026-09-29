@@ -3,14 +3,14 @@
 // thread. The state machine is just an open-id (`noteOpenId`, null when no
 // popover is open); the content lives on the element as `note?` (the
 // plain-text mirror) plus `noteRich?` (its formatting runs, docs/specs/009-elements/rich-text-notes.md) — see
-// packages/diagram BoxedElement.
+// packages/document BoxedElement.
 //
 // Unlike comments (which bypass history on purpose), note edits run
 // through the page's `commit` so they snapshot history + emit the
 // activity log like any other element field.
 
 import { useState } from 'react';
-import { isBoxed, type Element, type TextRun } from '@livediagram/diagram';
+import { isBoxed, type Element, type TextRun } from '@livediagram/document';
 import { canonicalNote } from '@/lib/note-value';
 import { track } from '@/lib/telemetry';
 

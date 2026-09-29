@@ -121,7 +121,7 @@ The Explorer ([Folders](../013-workspace/folders.md)) gains a **Themes** entry u
 
 ## New-diagram / template picker
 
-The New-diagram theme picker ([Dedicated route for new-diagram creation](../007-editor/new-diagram-route.md)) shows the same
+The New-diagram theme picker ([Dedicated route for new-diagram creation](../007-editor/new-document-route.md)) shows the same
 **Custom** category and **+ New theme** builder as the Tab Look & Feel dialog's Theme tab,
 so a user can apply (or author) one of their saved themes at the moment they
 start a diagram. Both surfaces render one shared `CustomThemePicker` (which owns
@@ -145,6 +145,6 @@ New `type`s on the existing `Theme` category ([Telemetry + public transparency d
 
 ## Out of scope (for now)
 
-- Team-shared custom themes (a `team_id` column) — single-owner only for v1, like folders were before [Team shared diagrams](../013-workspace/team-shared-diagrams.md).
+- Team-shared custom themes (a `team_id` column) — single-owner only for v1, like folders were before [Team shared diagrams](../013-workspace/team-shared-documents.md).
 - Importing / exporting a theme as a file.
 - Editing a built-in theme (you can **duplicate-then-edit** by starting a new theme from the same colours, but the shipped catalogue is read-only).

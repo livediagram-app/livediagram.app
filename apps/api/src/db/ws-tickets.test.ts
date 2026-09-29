@@ -79,7 +79,7 @@ describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => 
     await consumeWsTicket(db.env, 'tkt', 'diag-1', 5);
     const stmt = db.one('ws_tickets');
     expect(stmt.bindings).toEqual(['tkt', 'diag-1', 5]);
-    expect(stmt.sql).toContain('diagram_id = ?');
+    expect(stmt.sql).toContain('document_id = ?');
     expect(stmt.sql).toContain('expires_at > ?');
   });
 

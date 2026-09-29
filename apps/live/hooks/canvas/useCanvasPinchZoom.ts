@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type RefObject } from 'react';
-import { clamp } from '@livediagram/diagram';
+import { clamp } from '@livediagram/document';
 import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
 import { useLatest } from '@/hooks/ui/useLatest';
 

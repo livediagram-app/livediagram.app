@@ -23,7 +23,7 @@ import {
   type PickerSource,
   type SessionButtonConfig,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { SessionElementSettings } from '@/components/canvas/SessionElementSettings';

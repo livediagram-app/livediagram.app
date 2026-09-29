@@ -1,4 +1,4 @@
-import type { Element, ShapeElement, Tab } from '@livediagram/diagram';
+import type { Element, ShapeElement, Tab } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { buildSearchResults, matches } from './search';
 
@@ -34,7 +34,7 @@ describe('matches', () => {
 });
 
 describe('buildSearchResults', () => {
-  const diagrams = [
+  const liveDocs = [
     { id: 'd1', name: 'Flowchart' },
     { id: 'd2', name: 'Mind map' },
     { id: 'd3', name: '' }, // untitled, falls back to "Untitled diagram"
@@ -47,17 +47,17 @@ describe('buildSearchResults', () => {
   it('orders groups: diagrams, folders, tabs, elements', () => {
     const out = buildSearchResults({
       query: '',
-      diagrams,
+      documents: liveDocs,
       folders,
       tabs: [tab('t1', 'Tab one', [shape('e1', 'thing')])],
     });
-    expect(out.map((g) => g.key)).toEqual(['diagrams', 'folders', 'tabs', 'elements']);
+    expect(out.map((g) => g.key)).toEqual(['documents', 'folders', 'tabs', 'elements']);
   });
 
   it('skips groups whose matches are empty rather than rendering empty section headers', () => {
     const out = buildSearchResults({
       query: 'thereisnomatchanywhere',
-      diagrams,
+      documents: liveDocs,
       folders,
       tabs: [tab('t1', 'Tab one', [shape('e1', 'thing')])],
     });
@@ -67,13 +67,13 @@ describe('buildSearchResults', () => {
   it('falls back to "Untitled diagram" for diagrams with empty names', () => {
     const out = buildSearchResults({
       query: 'untitled',
-      diagrams,
+      documents: liveDocs,
       folders: [],
     });
-    const diagramGroup = out.find((g) => g.key === 'diagrams')!;
-    expect(diagramGroup.items).toHaveLength(1);
-    expect(diagramGroup.items[0]).toMatchObject({
-      kind: 'diagram',
+    const documentGroup = out.find((g) => g.key === 'documents')!;
+    expect(documentGroup.items).toHaveLength(1);
+    expect(documentGroup.items[0]).toMatchObject({
+      kind: 'document',
       id: 'd3',
       name: 'Untitled diagram',
     });
@@ -82,7 +82,7 @@ describe('buildSearchResults', () => {
   it('marks the current tab in the tabs section so the user knows where they are', () => {
     const out = buildSearchResults({
       query: '',
-      diagrams: [],
+      documents: [],
       folders: [],
       tabs: [tab('t1', 'Tab one'), tab('t2', 'Tab two')],
       currentTabId: 't2',
@@ -103,12 +103,12 @@ describe('buildSearchResults', () => {
     const manyTabs = Array.from({ length: 25 }, (_, i) => tab(`t${i}`, `Tab ${i}`));
     const out = buildSearchResults({
       query: '',
-      diagrams: many,
+      documents: many,
       folders: manyFolders,
       tabs: manyTabs,
     });
     const counts = Object.fromEntries(out.map((g) => [g.key, g.items.length]));
-    expect(counts.diagrams).toBe(8);
+    expect(counts.documents).toBe(8);
     expect(counts.folders).toBe(8);
     expect(counts.tabs).toBe(8);
   });
@@ -123,14 +123,14 @@ describe('buildSearchResults', () => {
         [0, 1, 2, 3, 4].map((ei) => shape(`t${ti}-e${ei}`, `Label ${ti}-${ei}`)),
       ),
     );
-    const out = buildSearchResults({ query: 'label', diagrams: [], folders: [], tabs });
+    const out = buildSearchResults({ query: 'label', documents: [], folders: [], tabs });
     const elementGroup = out.find((g) => g.key === 'elements');
     expect(elementGroup?.items).toHaveLength(12);
   });
 
   it('drops elements whose label is empty or whitespace (no matchable content)', () => {
     const t = tab('t1', 'Tab', [shape('e1', ''), shape('e2', '   '), shape('e3', 'real label')]);
-    const out = buildSearchResults({ query: '', diagrams: [], folders: [], tabs: [t] });
+    const out = buildSearchResults({ query: '', documents: [], folders: [], tabs: [t] });
     const elementGroup = out.find((g) => g.key === 'elements')!;
     expect(elementGroup.items).toHaveLength(1);
     expect(elementGroup.items[0]).toMatchObject({ elementId: 'e3', label: 'real label' });
@@ -139,17 +139,17 @@ describe('buildSearchResults', () => {
   it('omits the tabs + elements scope entirely when no tabs are supplied (explorer dashboard case)', () => {
     const out = buildSearchResults({
       query: '',
-      diagrams,
+      documents: liveDocs,
       folders,
       // tabs deliberately undefined
     });
-    expect(out.map((g) => g.key)).toEqual(['diagrams', 'folders']);
+    expect(out.map((g) => g.key)).toEqual(['documents', 'folders']);
   });
 
   it('reports the source tab name on element hits so users see "label on Tab name"', () => {
     const out = buildSearchResults({
       query: 'specific',
-      diagrams: [],
+      documents: [],
       folders: [],
       tabs: [tab('t1', 'Architecture', [shape('e1', 'specific component')])],
     });
@@ -176,7 +176,7 @@ describe('buildSearchResults — table cells (docs/specs/008-canvas/canvas-and-p
         ['Sasha', 'Blocked on review'],
       ]),
     ]);
-    const out = buildSearchResults({ query: 'blocked', diagrams: [], folders: [], tabs: [t] });
+    const out = buildSearchResults({ query: 'blocked', documents: [], folders: [], tabs: [t] });
     const elementGroup = out.find((g) => g.key === 'elements')!;
     expect(elementGroup.items[0]).toMatchObject({
       kind: 'element',
@@ -193,13 +193,13 @@ describe('buildSearchResults — table cells (docs/specs/008-canvas/canvas-and-p
         ['', ''],
       ]),
     ]);
-    const out = buildSearchResults({ query: '', diagrams: [], folders: [], tabs: [t] });
+    const out = buildSearchResults({ query: '', documents: [], folders: [], tabs: [t] });
     expect(out.find((g) => g.key === 'elements')).toBeUndefined();
   });
 
   it('surfaces a table on the empty query via its first non-empty cell, like labelled elements', () => {
     const t = tab('t1', 'Tab', [table('tbl', [['', 'First cell with text']])]);
-    const out = buildSearchResults({ query: '', diagrams: [], folders: [], tabs: [t] });
+    const out = buildSearchResults({ query: '', documents: [], folders: [], tabs: [t] });
     const elementGroup = out.find((g) => g.key === 'elements')!;
     expect(elementGroup.items[0]).toMatchObject({
       elementId: 'tbl',
@@ -212,7 +212,7 @@ describe('buildSearchResults — shared diagrams + teams (docs/specs/008-canvas/
   it('matches "Shared with you" rows by name and carries the share code for navigation', () => {
     const out = buildSearchResults({
       query: 'road',
-      diagrams: [],
+      documents: [],
       folders: [],
       shared: [
         { id: 'd1', name: 'Roadmap 2026', shareCode: 'CODE1' },
@@ -232,7 +232,7 @@ describe('buildSearchResults — shared diagrams + teams (docs/specs/008-canvas/
   it('matches teams by name', () => {
     const out = buildSearchResults({
       query: 'platform',
-      diagrams: [],
+      documents: [],
       folders: [],
       teams: [
         { id: 'team1', name: 'Platform' },
@@ -247,14 +247,14 @@ describe('buildSearchResults — shared diagrams + teams (docs/specs/008-canvas/
   it('keeps the section order: diagrams, shared, folders, teams, tabs, elements', () => {
     const out = buildSearchResults({
       query: '',
-      diagrams: [{ id: 'd1', name: 'A' }],
+      documents: [{ id: 'd1', name: 'A' }],
       folders: [{ id: 'f1', name: 'B' }],
       shared: [{ id: 's1', name: 'C', shareCode: 'X' }],
       teams: [{ id: 't1', name: 'D' }],
       tabs: [tab('tab1', 'E', [shape('e1', 'F')])],
     });
     expect(out.map((g) => g.key)).toEqual([
-      'diagrams',
+      'documents',
       'shared',
       'folders',
       'teams',
@@ -264,22 +264,26 @@ describe('buildSearchResults — shared diagrams + teams (docs/specs/008-canvas/
   });
 
   it('omits shared + teams groups entirely when the inputs are absent (guest case)', () => {
-    const out = buildSearchResults({ query: '', diagrams: [], folders: [{ id: 'f1', name: 'F' }] });
+    const out = buildSearchResults({
+      query: '',
+      documents: [],
+      folders: [{ id: 'f1', name: 'F' }],
+    });
     expect(out.map((g) => g.key)).toEqual(['folders']);
   });
 });
 
-describe('buildSearchResults — team library (docs/specs/013-workspace/team-shared-diagrams.md)', () => {
+describe('buildSearchResults — team library (docs/specs/013-workspace/team-shared-documents.md)', () => {
   it('keeps personal folders in "Personal Space" and team folders/diagrams in "Teams"', () => {
     const out = buildSearchResults({
       query: 'q3',
-      diagrams: [],
+      documents: [],
       folders: [{ id: 'pf', name: 'Q3 planning' }],
       teamFolders: [
         { id: 'tf', path: 'Marketing / Q3', teamId: 'team1', teamName: 'Platform' },
         { id: 'tf2', path: 'Hiring', teamId: 'team1', teamName: 'Platform' },
       ],
-      teamDiagrams: [{ id: 'td', name: 'Q3 roadmap', teamId: 'team1', teamName: 'Platform' }],
+      teamDocuments: [{ id: 'td', name: 'Q3 roadmap', teamId: 'team1', teamName: 'Platform' }],
     });
     // Personal Space (personal folder) + Teams (team folder + team diagram).
     expect(out.map((g) => g.key)).toEqual(['folders', 'teams']);
@@ -289,22 +293,22 @@ describe('buildSearchResults — team library (docs/specs/013-workspace/team-sha
     const teamsGroup = out.find((g) => g.key === 'teams')!;
     expect(teamsGroup.items).toEqual([
       { kind: 'folder', id: 'tf', name: 'Marketing / Q3', team: { id: 'team1', name: 'Platform' } },
-      { kind: 'diagram', id: 'td', name: 'Q3 roadmap', team: { id: 'team1', name: 'Platform' } },
+      { kind: 'document', id: 'td', name: 'Q3 roadmap', team: { id: 'team1', name: 'Platform' } },
     ]);
   });
 
   it('matches team folders + diagrams by team name too, so "platform" finds the library', () => {
     const out = buildSearchResults({
       query: 'platform',
-      diagrams: [],
+      documents: [],
       folders: [],
       teamFolders: [{ id: 'tf', path: 'Hiring', teamId: 'team1', teamName: 'Platform' }],
-      teamDiagrams: [{ id: 'td', name: 'Roadmap', teamId: 'team1', teamName: 'Platform' }],
+      teamDocuments: [{ id: 'td', name: 'Roadmap', teamId: 'team1', teamName: 'Platform' }],
     });
     const teamsGroup = out.find((g) => g.key === 'teams')!;
     expect(teamsGroup.items).toEqual([
       { kind: 'folder', id: 'tf', name: 'Hiring', team: { id: 'team1', name: 'Platform' } },
-      { kind: 'diagram', id: 'td', name: 'Roadmap', team: { id: 'team1', name: 'Platform' } },
+      { kind: 'document', id: 'td', name: 'Roadmap', team: { id: 'team1', name: 'Platform' } },
     ]);
   });
 
@@ -323,7 +327,7 @@ describe('buildSearchResults — team library (docs/specs/013-workspace/team-sha
         add: { type: 'tech' as const, iconId: 'aws-s3' },
       },
     ];
-    const out = buildSearchResults({ query: 'storage', diagrams: [], folders: [], paletteItems });
+    const out = buildSearchResults({ query: 'storage', documents: [], folders: [], paletteItems });
     const palette = out.find((g) => g.key === 'palette')!;
     expect(palette.items.map((i) => (i.kind === 'palette' ? i.id : null))).toEqual([
       'shape:cylinder',
@@ -344,7 +348,7 @@ describe('buildSearchResults — team library (docs/specs/013-workspace/team-sha
       item('table', 'Table', 'grid rows'),
       item('coffee', 'Coffee table', 'furniture'),
     ];
-    const out = buildSearchResults({ query: 'table', diagrams: [], folders: [], paletteItems });
+    const out = buildSearchResults({ query: 'table', documents: [], folders: [], paletteItems });
     const palette = out.find((g) => g.key === 'palette')!;
     expect(palette.items.map((i) => (i.kind === 'palette' ? i.id : null))).toEqual([
       'table',
@@ -363,7 +367,7 @@ describe('buildSearchResults — team library (docs/specs/013-workspace/team-sha
         add: { type: 'shape' as const, shapeKind: 'square' as const },
       },
     ];
-    const out = buildSearchResults({ query: '', diagrams: [], folders: [], paletteItems });
+    const out = buildSearchResults({ query: '', documents: [], folders: [], paletteItems });
     expect(out.find((g) => g.key === 'palette')).toBeUndefined();
   });
 });
@@ -375,7 +379,7 @@ describe('buildSearchResults — commands (action palette)', () => {
     { id: 'lock', name: 'Lock', keywords: 'unlock freeze' },
   ];
   const withCommands = (query: string) =>
-    buildSearchResults({ query, diagrams: [], folders: [], commandItems });
+    buildSearchResults({ query, documents: [], folders: [], commandItems });
 
   it('surfaces matching commands as an "Actions" group, matched on name', () => {
     const out = withCommands('lock');
@@ -398,14 +402,14 @@ describe('buildSearchResults — commands (action palette)', () => {
   });
 
   it('is absent when the editor passes no command catalogue', () => {
-    const out = buildSearchResults({ query: 'delete', diagrams: [], folders: [] });
+    const out = buildSearchResults({ query: 'delete', documents: [], folders: [] });
     expect(out.find((g) => g.key === 'commands')).toBeUndefined();
   });
 
   it('ranks below a matching tab so navigation keeps the default Enter', () => {
     const out = buildSearchResults({
       query: 'tab',
-      diagrams: [],
+      documents: [],
       folders: [],
       tabs: [tab('t1', 'Tab notes')],
       commandItems,
@@ -434,7 +438,7 @@ describe('buildSearchResults — help articles (docs/specs/018-help/help-app.md 
   ];
 
   it('surfaces help articles as a "Help" group, matched on title', () => {
-    const out = buildSearchResults({ query: 'keyboard', diagrams: [], folders: [], helpItems });
+    const out = buildSearchResults({ query: 'keyboard', documents: [], folders: [], helpItems });
     const help = out.find((g) => g.key === 'help')!;
     expect(help.items.map((i) => (i.kind === 'help' ? i.href : null))).toEqual([
       '/help/tips-and-tricks/keyboard-shortcuts/',
@@ -442,26 +446,26 @@ describe('buildSearchResults — help articles (docs/specs/018-help/help-app.md 
   });
 
   it('matches on keyword synonyms beyond the title', () => {
-    const out = buildSearchResults({ query: 'hotkey', diagrams: [], folders: [], helpItems });
+    const out = buildSearchResults({ query: 'hotkey', documents: [], folders: [], helpItems });
     const help = out.find((g) => g.key === 'help')!;
     expect(help.items).toHaveLength(1);
     expect(help.items[0]!.kind === 'help' && help.items[0]!.leaf).toBe('keyboard-shortcuts');
   });
 
   it('does not surface help on an empty query (no catalogue dump)', () => {
-    const out = buildSearchResults({ query: '', diagrams: [], folders: [], helpItems });
+    const out = buildSearchResults({ query: '', documents: [], folders: [], helpItems });
     expect(out.find((g) => g.key === 'help')).toBeUndefined();
   });
 
   it('ranks the help group last so navigation + edit results keep the default Enter', () => {
     const out = buildSearchResults({
       query: 'share',
-      diagrams: [{ id: 'd1', name: 'Share plan' }],
+      documents: [{ id: 'd1', name: 'Share plan' }],
       folders: [],
       helpItems,
     });
     const keys = out.map((g) => g.key);
     expect(keys.indexOf('help')).toBe(keys.length - 1);
-    expect(keys.indexOf('diagrams')).toBeLessThan(keys.indexOf('help'));
+    expect(keys.indexOf('documents')).toBeLessThan(keys.indexOf('help'));
   });
 });

@@ -1,16 +1,16 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { NewDiagramSettingsStep } from './template-picker-settings';
+import { NewDocumentSettingsStep } from './template-picker-settings';
 
-// The Settings step (docs/specs/006-diagram/save-locations.md): the Save location tiles, the folder step
+// The Settings step (docs/specs/006-document/save-locations.md): the Save location tiles, the folder step
 // headed by the chosen location, and what Local Browser does to the step.
 
 function show(saveLocation: 'livediagram' | 'browser', onSaveLocation = vi.fn()) {
   render(
-    <NewDiagramSettingsStep
-      diagramName=""
-      onDiagramName={() => {}}
+    <NewDocumentSettingsStep
+      documentName=""
+      onDocumentName={() => {}}
       placeholder="Untitled diagram"
       placement="unsorted"
       onPlacement={() => {}}
@@ -66,8 +66,8 @@ describe('the folder step', () => {
 describe('the folder step', () => {
   it('offers New Team on the space overview only when the host can create teams', () => {
     const base = {
-      diagramName: '',
-      onDiagramName: () => {},
+      documentName: '',
+      onDocumentName: () => {},
       placeholder: 'Untitled diagram',
       placement: 'unsorted',
       onPlacement: () => {},
@@ -76,10 +76,10 @@ describe('the folder step', () => {
       saveLocation: 'livediagram' as const,
       onSaveLocation: () => {},
     };
-    const { unmount } = render(<NewDiagramSettingsStep {...base} />);
+    const { unmount } = render(<NewDocumentSettingsStep {...base} />);
     expect(screen.queryByRole('button', { name: /New Team/ })).toBeNull();
     unmount();
-    render(<NewDiagramSettingsStep {...base} onCreateTeam={async () => null} />);
+    render(<NewDocumentSettingsStep {...base} onCreateTeam={async () => null} />);
     expect(screen.getByRole('button', { name: /New Team/ })).toBeTruthy();
   });
 });

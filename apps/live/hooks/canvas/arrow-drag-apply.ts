@@ -27,7 +27,7 @@ import {
   type AlignmentGuide,
   type DistributionGuide,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 import { resolveArrowControlFrame, resolveArrowLabelFrame } from './arrow-control-resolve';
 

@@ -1,7 +1,7 @@
 // What changed on a tab, for timeline emission (docs/specs/013-workspace/timeline.md §4.3).
 //
 // Comments and assigned actions live INSIDE element JSON
-// (packages/diagram), not in tables — there is no comments table to
+// (packages/document), not in tables — there is no comments table to
 // hang a trigger off, and no actions table either. So the only place
 // that can tell "a comment was added" is the save that added it, by
 // diffing the incoming elements against the stored ones.
@@ -21,7 +21,7 @@ import {
   type Comment,
   type Element,
   type ElementAction,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 function threadOf(el: Element): { comments?: Comment[]; resolved?: boolean } | undefined {
   return (el as { commentThread?: { comments?: Comment[]; resolved?: boolean } }).commentThread;

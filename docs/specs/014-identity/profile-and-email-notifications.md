@@ -69,7 +69,7 @@ account's memberships are removed so no ghost member (or dead sole admin)
 lingers. If the user was the **last joined member**, the team is deleted
 outright. Otherwise their **team-library diagrams transfer to an heir** — the
 longest-standing remaining joined member, admins first — so shared team work
-survives the account (mirrors [Team shared diagrams](../013-workspace/team-shared-diagrams.md)'s "deleting a team must never destroy
+survives the account (mirrors [Team shared diagrams](../013-workspace/team-shared-documents.md)'s "deleting a team must never destroy
 members' work"), and the heir is **promoted to admin** when the deleted user
 was the only one. The user's own `shared_with` references (rows for OTHER
 people's diagrams they visited) are wiped too.

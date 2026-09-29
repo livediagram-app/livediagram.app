@@ -19,7 +19,7 @@
 
 import type { Env } from '../types';
 import { recordTokenExpiring } from './account-events';
-import { recordShareLinkExpiring } from './diagram-events';
+import { recordShareLinkExpiring } from './document-events';
 
 const WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 // Bounded per run. The feed is a courtesy, not a ledger: a deployment
@@ -55,7 +55,7 @@ export async function runTimelineExpirySweep(env: Env, now = Date.now()): Promis
   const links = await env.DB.prepare(
     `SELECT d.id, d.name, d.owner_id, d.team_id, s.expires_at
        FROM share_links s
-       JOIN diagrams d ON d.id = s.diagram_id
+       JOIN documents d ON d.id = s.document_id
       WHERE s.expires_at IS NOT NULL AND s.expires_at > ?1 AND s.expires_at <= ?2
         AND d.trashed_at IS NULL
       ORDER BY s.expires_at ASC LIMIT ?3`,

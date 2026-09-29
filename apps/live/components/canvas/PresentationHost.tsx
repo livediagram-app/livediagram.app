@@ -12,7 +12,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { PresentationOverlay } from '@/components/canvas/PresentationOverlay';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
 

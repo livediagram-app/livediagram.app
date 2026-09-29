@@ -50,7 +50,7 @@ test('delete, find it in Settings › Trash, restore it', async ({ page, baseURL
       const list = await page.request.get(`${apiBase}/diagrams`, {
         headers: { 'X-Owner-Id': owner },
       });
-      return ((await list.json()) as { diagrams: { id: string }[] }).diagrams.map((d) => d.id);
+      return ((await list.json()) as { documents: { id: string }[] }).documents.map((d) => d.id);
     })
     .not.toContain(id);
 

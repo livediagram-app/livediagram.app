@@ -9,7 +9,7 @@ import {
   endpointPosition,
   type ArrowElement,
   type ElementIndex,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // The pure per-render frame of an arrow view, lifted out of ArrowView
 // (following the boxed-drag-resolve / arrow-*-resolve pattern):

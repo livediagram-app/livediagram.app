@@ -48,9 +48,9 @@ function periodCallsFor(scopeId: string) {
 function event(id: string, occurredAt: number, over: Partial<TimelineEvent> = {}): TimelineEvent {
   return {
     id,
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: `d-${id}`,
-    eventType: 'diagram_updated',
+    eventType: 'document_updated',
     title: id,
     occurredAt,
     ...over,
@@ -266,7 +266,7 @@ describe('useTimelineFeed after the readers own write', () => {
     const { result } = renderHook(() => useTimelineFeed('me', true));
     await waitFor(() => expect(result.current.events).toHaveLength(3));
 
-    act(() => notifyApiWrite({ purge: { sourceType: 'diagram', sourceId: 'd-b' } }));
+    act(() => notifyApiWrite({ purge: { sourceType: 'document', sourceId: 'd-b' } }));
     expect(result.current.events.map((e) => e.id)).toEqual(['a']);
 
     apiListTimeline.mockResolvedValue({

@@ -6,7 +6,7 @@
 // that genuinely needs a rasteriser lives here.
 
 import { embedTabImages } from '@livediagram/api-schema';
-import { renderElementsToSvg, type Tab } from '@livediagram/diagram';
+import { renderElementsToSvg, type Tab } from '@livediagram/document';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
 import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';

@@ -79,11 +79,11 @@ describe('apiJson error telemetry (docs/specs/015-api/mcp-server.md §4.12)', ()
         : new Response('boom', { status: 503 }),
     );
     await expect(
-      runInTool('update_diagram', () => apiJson(env, 't', '/diagrams/x/tabs/y')),
+      runInTool('update_document', () => apiJson(env, 't', '/diagrams/x/tabs/y')),
     ).rejects.toBeInstanceOf(ApiError);
     const event = calls.find((r) => new URL(r.url).pathname === '/api/events')!;
     const body = (await event.json()) as { events: Array<{ type: string }> };
-    expect(body.events[0]!.type).toBe('Http503.UpdateDiagram');
+    expect(body.events[0]!.type).toBe('Http503.UpdateDocument');
   });
 
   it('reports a network failure (binding threw) as Internal, then rethrows', async () => {

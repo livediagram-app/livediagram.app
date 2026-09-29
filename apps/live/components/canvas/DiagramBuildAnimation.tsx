@@ -8,7 +8,7 @@ import { useLayoutEffect, useRef } from 'react';
 // then runs along every connector before the diagram dissolves and the
 // loop restarts. It echoes the editor's core gesture (add a shape, wire it
 // up) and its live cursors. Shared by the opening screen (DiagramLoading,
-// docs/specs/007-editor/new-diagram-route.md), the OAuth completing-sign-in
+// docs/specs/007-editor/new-document-route.md), the OAuth completing-sign-in
 // card (/sso-callback) and the MCP consent card. A bare illustration with no
 // surface of its own, so each host composes it into its own card or screen.
 //

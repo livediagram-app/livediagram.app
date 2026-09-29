@@ -26,7 +26,7 @@ import {
   actionAssignedEmail,
   mentionedEmail,
   commentNotificationEmail,
-  diagramJoinedEmail,
+  documentJoinedEmail,
   inviteResponseEmail,
   firstShareEmail,
   milestoneEmail,
@@ -47,7 +47,7 @@ export async function notifyActionAssigned(
     assigneeUserId: string | null;
     assigneeFallbackEmail: string | null;
     assignerName: string | null;
-    diagram: { id: string; name: string };
+    document: { id: string; name: string };
     actionName: string;
     description: string | null;
   },
@@ -66,8 +66,8 @@ export async function notifyActionAssigned(
     ...actionAssignedEmail(
       env,
       input.assignerName,
-      input.diagram.name,
-      input.diagram.id,
+      input.document.name,
+      input.document.id,
       input.actionName,
       input.description,
     ),
@@ -84,7 +84,7 @@ export async function notifyMentioned(
     recipientUserId: string | null;
     recipientFallbackEmail: string | null;
     authorName: string | null;
-    diagram: { id: string; name: string };
+    document: { id: string; name: string };
     commentText: string;
   },
 ): Promise<void> {
@@ -102,8 +102,8 @@ export async function notifyMentioned(
     ...mentionedEmail(
       env,
       input.authorName,
-      input.diagram.name,
-      input.diagram.id,
+      input.document.name,
+      input.document.id,
       input.commentText,
     ),
   });
@@ -113,17 +113,17 @@ export async function notifyMentioned(
 // (recordSharedAccess reported a new row). No-op unless email is on, the owner
 // has a stored verified address (a Clerk owner — guests have none), and the
 // owner hasn't opted out.
-export async function notifyDiagramJoin(
+export async function notifyDocumentJoin(
   env: Env,
-  diagram: { ownerId: string; name: string },
+  liveDoc: { ownerId: string; name: string },
   joinerName: string | null,
 ): Promise<void> {
   if (!emailEnabled(env)) return;
-  const to = await getOwnerEmail(env, diagram.ownerId);
+  const to = await getOwnerEmail(env, liveDoc.ownerId);
   if (!to) return;
-  const prefs = await getNotificationPrefs(env, diagram.ownerId);
-  if (!prefs.notifyDiagramJoin) return;
-  await sendEmail(env, { to, ...diagramJoinedEmail(env, diagram.name, joinerName) });
+  const prefs = await getNotificationPrefs(env, liveDoc.ownerId);
+  if (!prefs.notifyDocumentJoin) return;
+  await sendEmail(env, { to, ...documentJoinedEmail(env, liveDoc.name, joinerName) });
 }
 
 // An invitee accepted / declined a team invite. Tells each JOINED admin of the
@@ -160,26 +160,26 @@ export async function notifyInviteResponse(
 // the comment write. The comment text is deliberately NOT included.
 export async function notifyNewComment(
   env: Env,
-  diagram: { id: string; ownerId: string; name: string },
+  liveDoc: { id: string; ownerId: string; name: string },
   commenterName: string | null,
 ): Promise<void> {
   if (!emailEnabled(env)) return;
-  const to = await getOwnerEmail(env, diagram.ownerId);
+  const to = await getOwnerEmail(env, liveDoc.ownerId);
   if (!to) return;
-  const prefs = await getNotificationPrefs(env, diagram.ownerId);
+  const prefs = await getNotificationPrefs(env, liveDoc.ownerId);
   if (!prefs.notifyComments) return;
   // Throttle so a burst of comments is one email, not one per comment.
   const now = Date.now();
-  if (!(await claimCommentNotify(env, diagram.id, now, now - COMMENT_NOTIFY_THROTTLE_MS))) return;
+  if (!(await claimCommentNotify(env, liveDoc.id, now, now - COMMENT_NOTIFY_THROTTLE_MS))) return;
   await sendEmail(env, {
     to,
-    ...commentNotificationEmail(env, diagram.name, diagram.id, commenterName),
+    ...commentNotificationEmail(env, liveDoc.name, liveDoc.id, commenterName),
   });
 }
 
 // docs/specs/014-identity/transactional-email.md (#6): the diagram counts that trigger a milestone email. Just the
 // tenth for now; the single milestone_sent_at column fires once per owner.
-const MILESTONE_DIAGRAM_COUNTS = [10];
+const MILESTONE_DOCUMENT_COUNTS = [10];
 
 // Celebrate when an owner reaches a diagram-count milestone (docs/specs/014-identity/transactional-email.md #6).
 // Opt-out (notifyMilestones). The atomic claim means a burst of saves at the
@@ -187,16 +187,16 @@ const MILESTONE_DIAGRAM_COUNTS = [10];
 export async function notifyMilestone(
   env: Env,
   ownerId: string,
-  diagramCount: number,
+  documentCount: number,
 ): Promise<void> {
   if (!emailEnabled(env)) return;
-  if (!MILESTONE_DIAGRAM_COUNTS.includes(diagramCount)) return;
+  if (!MILESTONE_DOCUMENT_COUNTS.includes(documentCount)) return;
   const to = await getOwnerEmail(env, ownerId);
   if (!to) return;
   const prefs = await getNotificationPrefs(env, ownerId);
   if (!prefs.notifyMilestones) return;
   if (!(await claimMilestone(env, ownerId))) return;
-  await sendEmail(env, { to, ...milestoneEmail(env, diagramCount) });
+  await sendEmail(env, { to, ...milestoneEmail(env, documentCount) });
 }
 
 // First-ever share link is a milestone (docs/specs/014-identity/transactional-email.md #6). Opt-out (notifyMilestones).

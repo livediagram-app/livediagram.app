@@ -11,7 +11,7 @@ vi.mock('./image-result', () => ({
 
 import { connectTestClient } from './mcp-test-client';
 
-// The name cap end to end through the real MCP SDK (docs/specs/006-diagram/name-length.md):
+// The name cap end to end through the real MCP SDK (docs/specs/006-document/name-length.md):
 // a client lists the tools and calls them over a transport, so the SDK's own
 // input validation runs the schema's truncateName before a tool body sees the
 // name, and the api receives the stored form.
@@ -29,7 +29,7 @@ async function connect() {
       return Response.json({ tab: { id: 't1', name: 'Tab', elements: [] } });
     }
     if (/\/tabs\/[^/]+$/.test(path)) return Response.json({ tab: { id: 't1' } });
-    return Response.json({ diagram: { id: 'd1', name: CAPPED, tabs: [{ id: 't1' }] } });
+    return Response.json({ document: { id: 'd1', name: CAPPED, tabs: [{ id: 't1' }] } });
   });
   return { client, sent };
 }
@@ -38,17 +38,17 @@ describe('diagram and tab names through the MCP SDK', () => {
   it('advertises the cap on every name argument', async () => {
     const { client } = await connect();
     const { tools } = await client.listTools();
-    for (const name of ['create_diagram', 'add_tab', 'rename_diagram']) {
+    for (const name of ['create_document', 'add_tab', 'rename_document']) {
       const tool = tools.find((t) => t.name === name)!;
       const prop = (tool.inputSchema.properties as Record<string, { description?: string }>).name;
       expect(prop?.description).toContain('at most 60 characters');
     }
   });
 
-  it('create_diagram sends the api the shortened diagram and tab names', async () => {
+  it('create_document sends the api the shortened diagram and tab names', async () => {
     const { client, sent } = await connect();
     await client.callTool({
-      name: 'create_diagram',
+      name: 'create_document',
       arguments: { name: LONG, tabs: [{ name: LONG, elements: [] }] },
     });
     const create = sent.find((s) => s.method === 'POST' && s.path === '/diagrams')!;
@@ -60,14 +60,14 @@ describe('diagram and tab names through the MCP SDK', () => {
     const { client, sent } = await connect();
     await client.callTool({
       name: 'add_tab',
-      arguments: { diagramId: 'd1', name: LONG, elements: [], theme: 'brand' },
+      arguments: { documentId: 'd1', name: LONG, elements: [], theme: 'brand' },
     });
     const put = sent.find((s) => s.method === 'PUT' && s.path.startsWith('/diagrams/d1/tabs/'))!;
     expect(put.body?.name).toBe(CAPPED);
 
     const result = await client.callTool({
-      name: 'rename_diagram',
-      arguments: { diagramId: 'd1', tabId: 't1', name: LONG },
+      name: 'rename_document',
+      arguments: { documentId: 'd1', tabId: 't1', name: LONG },
     });
     const renamed = sent.filter((s) => s.method === 'PUT' && s.path === '/diagrams/d1/tabs/t1');
     expect(renamed.at(-1)?.body?.name).toBe(CAPPED);
@@ -75,9 +75,9 @@ describe('diagram and tab names through the MCP SDK', () => {
     expect(JSON.parse(text).name).toBe(CAPPED);
   });
 
-  it('rename_diagram sends the shortened diagram name', async () => {
+  it('rename_document sends the shortened diagram name', async () => {
     const { client, sent } = await connect();
-    await client.callTool({ name: 'rename_diagram', arguments: { diagramId: 'd1', name: LONG } });
+    await client.callTool({ name: 'rename_document', arguments: { documentId: 'd1', name: LONG } });
     const put = sent.find((s) => s.method === 'PUT' && s.path === '/diagrams/d1')!;
     expect(put.body).toEqual({ name: CAPPED });
   });

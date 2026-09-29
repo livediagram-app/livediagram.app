@@ -11,7 +11,7 @@ import {
   apiListImages,
   type ImageSummary,
 } from '@/lib/api-client';
-import { addImageFileForDiagram, ImageUploadError } from '@/lib/upload-image';
+import { addImageFileForDocument, ImageUploadError } from '@/lib/upload-image';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
@@ -30,7 +30,7 @@ import { ImageDropZone } from '@/components/canvas/ImageDropZone';
 
 type ImagePickerProps = {
   ownerId: string;
-  diagramId: string;
+  documentId: string;
   // When set, the picker is selecting an image for this specific
   // element id: the parent applies the chosen imageId + dimensions
   // to that element. When null, the picker is opening for a fresh
@@ -49,7 +49,7 @@ type ImagePickerProps = {
 
 export function ImagePicker({
   ownerId,
-  diagramId,
+  documentId,
   forElementId: _forElementId,
   currentImageId,
   onRemove,
@@ -81,8 +81,8 @@ export function ImagePicker({
     setUploading(true);
     try {
       // Cloud diagrams upload to the gallery; offline diagrams embed the
-      // file locally as a data URI (docs/specs/006-diagram/offline-mode.md) so no server copy is created.
-      const { image } = await addImageFileForDiagram(ownerId, diagramId, file);
+      // file locally as a data URI (docs/specs/006-document/offline-mode.md) so no server copy is created.
+      const { image } = await addImageFileForDocument(ownerId, documentId, file);
       onSelect(image);
     } catch (e) {
       setUploadError(e instanceof ImageUploadError ? e.message : 'Upload failed.');
@@ -123,13 +123,13 @@ export function ImagePicker({
     return () => document.removeEventListener('paste', onPaste);
   }, []);
 
-  // Gallery picks re-home for offline diagrams (docs/specs/006-diagram/offline-mode.md): a bare gallery id
+  // Gallery picks re-home for offline diagrams (docs/specs/006-document/offline-mode.md): a bare gallery id
   // inside an offline diagram would break once the server's 30-day unused-
   // image cleanup reaps it (nothing server-side references it), so the bytes
   // are fetched and embedded as a data URI instead, exactly like Take
   // Offline does for existing references.
   const selectFromGallery = async (image: ImageSummary) => {
-    if (!isOfflineIdSync(diagramId)) {
+    if (!isOfflineIdSync(documentId)) {
       onSelect(image);
       return;
     }
@@ -191,7 +191,7 @@ export function ImagePicker({
         ) : (
           <GalleryGrid
             ownerId={ownerId}
-            diagramId={diagramId}
+            documentId={documentId}
             gallery={gallery}
             error={galleryError}
             onSelect={(image) => void selectFromGallery(image)}
@@ -219,14 +219,14 @@ export function ImagePicker({
 
 function GalleryGrid({
   ownerId,
-  diagramId,
+  documentId,
   gallery,
   error,
   onSelect,
   onDelete,
 }: {
   ownerId: string;
-  diagramId: string;
+  documentId: string;
   gallery: ImageSummary[] | null;
   error: string | null;
   onSelect: (image: ImageSummary) => void;
@@ -255,7 +255,7 @@ function GalleryGrid({
         <GalleryTile
           key={image.id}
           ownerId={ownerId}
-          diagramId={diagramId}
+          documentId={documentId}
           image={image}
           onSelect={() => onSelect(image)}
           onDelete={() => onDelete(image)}
@@ -267,13 +267,13 @@ function GalleryGrid({
 
 function GalleryTile({
   ownerId,
-  diagramId,
+  documentId,
   image,
   onSelect,
   onDelete,
 }: {
   ownerId: string;
-  diagramId: string;
+  documentId: string;
   image: ImageSummary;
   onSelect: () => void;
   onDelete: () => void;
@@ -283,7 +283,7 @@ function GalleryTile({
       <GalleryImageButton
         image={image}
         ownerId={ownerId}
-        diagramId={diagramId}
+        documentId={documentId}
         onClick={onSelect}
         ariaLabel={`Use ${image.originalName ?? 'image'}`}
       />

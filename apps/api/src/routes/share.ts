@@ -1,19 +1,19 @@
 // /api/share/<code> — resolve a share code to its diagram + role.
 
 import {
-  getDiagram,
-  getDiagramSharePassword,
+  getDocument,
+  getDocumentSharePassword,
   getParticipant,
   getShareLink,
-  getTrashedDiagramMeta,
+  getTrashedDocumentMeta,
   recordSharedAccess,
 } from '../db';
-import { notifyDiagramJoin } from '../email/notifications';
-import { diagramTrashed, forbidden, json, notFound, svgImage } from '../responses';
+import { notifyDocumentJoin } from '../email/notifications';
+import { documentTrashed, forbidden, json, notFound, svgImage } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
 import { sharePasswordStatus } from '../auth/share-access';
-import { getDiagramTabImageSvg, getDiagramThumbnailSvg } from '../thumbnail';
-import { redactDiagramForReader, redactDiagramForScope } from '../redact-diagram';
+import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
+import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
 import { sharePasswordOf, type RouteContext } from './context';
 
 // Resolve a share code to its diagram + role. Used by visitors
@@ -22,7 +22,7 @@ import { sharePasswordOf, type RouteContext } from './context';
 export async function handleShare(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, resolveOwner } = ctx;
   if (segments[1] !== 'share') return notFound();
-  // /api/share/<code>/image.svg — live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md): the
+  // /api/share/<code>/image.svg — live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md): the
   // diagram's cached SVG snapshot, served public-by-share-code so a bare
   // <img> in a README / wiki / Notion can embed it with no auth header.
   if (segments.length === 4 && segments[3] === 'image.svg' && request.method === 'GET') {
@@ -36,10 +36,10 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
     // visitor. A null result = expired / revoked / unknown → 404 below.
     const link = await getShareLink(env, code);
     if (link) {
-      const d = await getDiagram(env, link.diagramId);
+      const d = await getDocument(env, link.documentId);
       // The code is the credential: its holder hears the diagram was deleted
       // (docs/specs/013-workspace/trash.md), and the link works again on restore.
-      if (!d) return missingSharedDiagram(env, link.diagramId);
+      if (!d) return missingSharedDocument(env, link.documentId);
       // Password gate (docs/specs/013-workspace/share-password.md): a protected diagram won't resolve
       // until the visitor supplies the matching X-Share-Password.
       // 401 = none supplied (show the prompt), 403 = wrong one (show
@@ -75,19 +75,19 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
           // used to emit it on every open of the share URL, so refreshes and
           // return visits inflated the count.
           ctx.waitUntil?.(
-            reportServerEvent(env, 'Diagram', 'Joined', link.role === 'edit' ? 'Edit' : 'View'),
+            reportServerEvent(env, 'Document', 'Joined', link.role === 'edit' ? 'Edit' : 'View'),
           );
           ctx.waitUntil?.(
             getParticipant(env, visitor)
               .catch(() => null)
-              .then((p) => notifyDiagramJoin(env, d, p?.name ?? null))
+              .then((p) => notifyDocumentJoin(env, d, p?.name ?? null))
               .catch(() => {}),
           );
         }
       }
       // A tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md) sees its tab; the rest are locked.
-      const diagram = redactDiagramForScope(redactDiagramForReader(d, visitor), link.tabId);
-      return json({ diagram, role: link.role, tabId: link.tabId });
+      const liveDoc = redactDocumentForScope(redactDocumentForReader(d, visitor), link.tabId);
+      return json({ document: liveDoc, role: link.role, tabId: link.tabId });
     }
     // No active link resolves this code: expired, revoked, or never
     // existed. `getShareLink` (above) is the single authority — it
@@ -101,7 +101,7 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
   return notFound();
 }
 
-// Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md): resolve the share code to its diagram
+// Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md): resolve the share code to its diagram
 // and stream the cached SVG snapshot. Public — the share code in the URL
 // is the only credential, matching a share link's "anyone with the URL"
 // semantics, since an <img> can't carry a password or auth header.
@@ -118,9 +118,9 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   const { env, request } = ctx;
   const link = await getShareLink(env, code);
   if (!link) return notFound();
-  const d = await getDiagram(env, link.diagramId);
-  if (!d) return missingSharedDiagram(env, link.diagramId);
-  if (await getDiagramSharePassword(env, d.id)) return notFound();
+  const d = await getDocument(env, link.documentId);
+  if (!d) return missingSharedDocument(env, link.documentId);
+  if (await getDocumentSharePassword(env, d.id)) return notFound();
   // `?tab=<id>` (docs/specs/013-workspace/live-image-share.md) picks a specific tab; without it we serve the
   // cached first-tab snapshot (the default, shared with the Explorer
   // thumbnail). An unknown tab id resolves to null below → 404, same as
@@ -132,8 +132,8 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   if (link.tabId !== null && asked !== null && asked !== link.tabId) return notFound();
   const tabId = link.tabId ?? asked;
   const svg = tabId
-    ? await getDiagramTabImageSvg(env, d, tabId)
-    : await getDiagramThumbnailSvg(env, d);
+    ? await getDocumentTabImageSvg(env, d, tabId)
+    : await getDocumentThumbnailSvg(env, d);
   return svg == null ? notFound() : svgImage(svg, 'public, max-age=30, stale-while-revalidate=300');
 }
 
@@ -146,10 +146,10 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
 // break the gate UI silently.
 export async function passwordGate(
   env: RouteContext['env'],
-  diagramId: string,
+  documentId: string,
   provided: string | null,
 ): Promise<Response | null> {
-  const status = await sharePasswordStatus(env, diagramId, provided);
+  const status = await sharePasswordStatus(env, documentId, provided);
   if (status === 'missing') return json({ error: 'password_required' }, { status: 401 });
   if (status === 'invalid') return forbidden('password_invalid');
   return null;
@@ -157,9 +157,9 @@ export async function passwordGate(
 
 // A live share code whose diagram no live row holds: in the Trash, the
 // deleted state; otherwise the not-found of any dead code.
-async function missingSharedDiagram(
+async function missingSharedDocument(
   env: RouteContext['env'],
-  diagramId: string,
+  documentId: string,
 ): Promise<Response> {
-  return (await getTrashedDiagramMeta(env, diagramId)) ? diagramTrashed() : notFound();
+  return (await getTrashedDocumentMeta(env, documentId)) ? documentTrashed() : notFound();
 }

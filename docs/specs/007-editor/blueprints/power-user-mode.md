@@ -16,11 +16,11 @@ Scope, by file:
 | `apps/live/hooks/ui/usePowerUserOffer.ts`                                                    | Records sessions and shortcuts, shows the offer, applies the answer              |
 | `apps/live/components/providers/minimal-chrome.tsx`                                          | `MinimalChromeProvider`, `useMinimalChrome()`: the one flag                      |
 | `apps/live/components/chrome/RoleIndicator.tsx`                                              | `RolePill` (title bar) and `RoleStatusIcon` (status bar)                         |
-| `apps/live/app/diagram/[id]/useViewPreview.ts`                                               | `viewPreview`, `canToggleRole`, `toggleViewPreview`                              |
-| `apps/live/app/diagram/[id]/useRoleIndicator.ts`                                             | Role in force, owner name and toggle, for the pill and the icon                  |
-| `apps/live/app/diagram/[id]/useEditorState.ts`                                               | `isReadOnly` includes the preview; wires the offer and the shortcut count        |
+| `apps/live/app/document/[id]/useViewPreview.ts`                                              | `viewPreview`, `canToggleRole`, `toggleViewPreview`                              |
+| `apps/live/app/document/[id]/useRoleIndicator.ts`                                            | Role in force, owner name and toggle, for the pill and the icon                  |
+| `apps/live/app/document/[id]/useEditorState.ts`                                              | `isReadOnly` includes the preview; wires the offer and the shortcut count        |
 | `apps/live/hooks/persistence/useEditorPreferences.ts`                                        | `prefsSettled`: the server copy merged, or failed to arrive                      |
-| `apps/live/app/diagram/[id]/EditorView.tsx`                                                  | Provides the flag; places the pill / icon; gates the notices                     |
+| `apps/live/app/document/[id]/EditorView.tsx`                                                 | Provides the flag; places the pill / icon; gates the notices                     |
 | `apps/live/components/chrome/EditorHeader.tsx`                                               | `rolePill` slot after the visibility badge                                       |
 | `apps/live/components/chrome/TopCenterChrome.tsx`                                            | The visitor owner / role badge is removed                                        |
 | `apps/live/components/chrome/TabBar.tsx`                                                     | `roleIcon` slot first; "Tabs" label and control labels under the flag            |
@@ -337,7 +337,7 @@ boolean`, computed by `SettingsDialog` from `isPowerUserMode(settings)` (so the 
 | Settings: Minimal chrome row absent while off             | `settings-catalogue.test.ts`                                   |
 | Settings: mode row writes the preset                      | same                                                           |
 | Delete and Backspace delete the selection; count shortcut | `hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx` (jsdom) |
-| Toggle for owner and edit link, none for view link        | `app/diagram/[id]/useViewPreview.test.tsx` (jsdom)             |
+| Toggle for owner and edit link, none for view link        | `app/document/[id]/useViewPreview.test.tsx` (jsdom)            |
 | Role pill: toggle vs static, names, Tooltip label         | `components/chrome/RoleIndicator.test.tsx` (jsdom)             |
 | Toolbars: More touch-only, bin rule, caption, name        | `components/canvas/SelectionPopover.test.tsx` (jsdom)          |
 | Toast offer: actions, no timeout                          | `hooks/ui/useToast.test.tsx` (jsdom)                           |

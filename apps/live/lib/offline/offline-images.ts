@@ -1,4 +1,4 @@
-// Image re-homing for the Offline Mode conversions (docs/specs/006-diagram/offline-mode.md + docs/specs/009-elements/images.md).
+// Image re-homing for the Offline Mode conversions (docs/specs/006-document/offline-mode.md + docs/specs/009-elements/images.md).
 //
 // A cloud diagram's images live in R2 and elements carry an opaque
 // `imageId`; an offline diagram must be self-contained, so its images are
@@ -19,7 +19,7 @@
 // element's current reference rather than aborting the whole conversion (a
 // kept R2 id still renders while online; a kept data URI renders anywhere).
 
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { apiFetchImageDataUrl } from '../api/images';
 import { uploadImageFile } from '../upload-image';
 
@@ -72,7 +72,7 @@ export function dataUrlToFile(dataUrl: string, name = 'offline-image'): File | n
 // server copy goes away) and embed it as a data URI.
 export async function embedTabImages(
   tabs: Tab[],
-  ctx: { ownerId: string; diagramId: string; shareCode: string | null },
+  ctx: { ownerId: string; documentId: string; shareCode: string | null },
 ): Promise<Tab[]> {
   const ids = collectImageIds(tabs, (id) => !isDataImageId(id));
   if (ids.length === 0) return tabs;
@@ -80,7 +80,7 @@ export async function embedTabImages(
   await Promise.all(
     ids.map(async (id) => {
       const href = await apiFetchImageDataUrl(ctx.ownerId, id, {
-        diagramId: ctx.diagramId,
+        documentId: ctx.documentId,
         shareCode: ctx.shareCode,
       }).catch(() => null);
       if (href) mapping.set(id, href);

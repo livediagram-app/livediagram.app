@@ -19,7 +19,7 @@ const ROWS = [
   row('Page', 'View', '/alternatives/miro', 7),
   // Not page views, so never counted, whatever the type looks like.
   row('Help', 'View', 'the-canvas', 500),
-  row('Diagram', 'Loaded', null, 200),
+  row('Document', 'Loaded', null, 200),
 ];
 
 const paths = (rows: TelemetryCount[]) => rows.map((r) => r.type);

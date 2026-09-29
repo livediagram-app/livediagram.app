@@ -58,7 +58,7 @@ Session Studio uses. It used to have its own `SESSION_POLL_MAX_OPTIONS = 6`,
 and the two drifted the instant the poll cap went to 10: the Studio offered ten
 answers while this menu silently stopped at six, with no hint which number was
 real. Two constants for one idea will always produce that, so there is one now,
-declared beside `PollStyle` in `@livediagram/diagram` for the same reason that
+declared beside `PollStyle` in `@livediagram/document` for the same reason that
 union lives there — a `SessionButtonConfig` is a `Tab` field, and api-schema
 depends on diagram rather than the reverse.
 
@@ -91,7 +91,7 @@ already in it and plainly meant them to be the answers — so the fallback is th
 style that reads them, and every existing poll button starts behaving the way
 its author configured it.
 
-The union itself lives in `@livediagram/diagram` (`poll-style.ts`) rather than
+The union itself lives in `@livediagram/document` (`poll-style.ts`) rather than
 beside `LivePoll` in `@livediagram/api-schema`: the style is now a `Tab` field,
 api-schema depends on diagram and not the reverse, and re-exporting `PollStyle`
 from api-schema keeps every existing import resolving against one list.

@@ -11,7 +11,7 @@ code?: string; // the snippet, capped at 4000 chars in validate.ts
 codeLanguage?: CodeLanguage; // closed set below, defaults to 'plain'
 ```
 
-`CodeLanguage = 'plain' | 'ts' | 'js' | 'python' | 'json' | 'bash' | 'sql' | 'html' | 'css' | 'yaml'` (exported from `packages/diagram`). Everything else is inherited from the shape path: palette tap-to-drop AND draw-to-size, selection, resize, rotation, lock, groups, layers, duplicate, copy/paste, history, realtime sync, eraser. `code-block` joins the self-drawing set (`isSelfDrawingShape`) so it has no centred label editing.
+`CodeLanguage = 'plain' | 'ts' | 'js' | 'python' | 'json' | 'bash' | 'sql' | 'html' | 'css' | 'yaml'` (exported from `packages/document`). Everything else is inherited from the shape path: palette tap-to-drop AND draw-to-size, selection, resize, rotation, lock, groups, layers, duplicate, copy/paste, history, realtime sync, eraser. `code-block` joins the self-drawing set (`isSelfDrawingShape`) so it has no centred label editing.
 
 ## Visual treatment
 
@@ -19,7 +19,7 @@ A code block keeps a **fixed identity** regardless of theme, the way sticky note
 
 ### Colour schemes
 
-The card paints from a **scheme**, not from the element's colours: `codeTheme` (a `CodeThemeId` from `packages/diagram/src/code-themes.ts`), absent meaning `midnight`, the single dark card the element shipped with. Eight ship: Midnight, Graphite, Ocean, Forest, Plum, Contrast, then the two light ones, Paper and Parchment. Each entry holds every colour of a card, surface / border / text / muted plus the four token colours, so the canvas view, the headless render and the preset tiles cannot drift.
+The card paints from a **scheme**, not from the element's colours: `codeTheme` (a `CodeThemeId` from `packages/document/src/code-themes.ts`), absent meaning `midnight`, the single dark card the element shipped with. Eight ship: Midnight, Graphite, Ocean, Forest, Plum, Contrast, then the two light ones, Paper and Parchment. Each entry holds every colour of a card, surface / border / text / muted plus the four token colours, so the canvas view, the headless render and the preset tiles cannot drift.
 
 `supportsColours` returns **false** for a code block, so the Colours and Border categories don't appear on one: the card ignored fill and stroke from the day it shipped, and every swatch in that category was inert while still writing to the element, autosaving, logging a change and broadcasting an op. The Style band opens for a code block carrying a **Presets** grid of the schemes instead, on the same hover-preview / click-commit flow as every other preset ([Style presets](../010-palette/style-presets.md)).
 

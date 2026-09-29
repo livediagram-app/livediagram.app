@@ -100,13 +100,13 @@ describe('the emitter scan', () => {
     // Guards the scan itself: a path or parser slip would pass every card below.
     const has = (c: string, a: string, t: string | null) =>
       KNOWN.some((e) => e.category === c && e.action === a && e.type === t);
-    expect(has('Diagram', 'Exported', COMPUTED as never) || has('Diagram', 'Exported', 'PNG')).toBe(
-      true,
-    );
+    expect(
+      has('Document', 'Exported', COMPUTED as never) || has('Document', 'Exported', 'PNG'),
+    ).toBe(true);
     expect(has('AI', 'Toggled', 'AiOn')).toBe(true); // Settings catalogue row
     expect(has('Tab', 'Moved', 'Folder')).toBe(true); // ternary action
     expect(has('Tab', 'Removed', 'Folder')).toBe(true);
-    expect(has('Diagram', 'Created', 'Offline')).toBe(true); // ternary type
+    expect(has('Document', 'Created', 'Offline')).toBe(true); // ternary type
     expect(has('Canvas', 'Changed', 'BackgroundColor')).toBe(true); // returned closure
     // A callback's parameter, bound through the calls createVoteTally makes.
     expect(has('Help', 'Helpful', COMPUTED as never)).toBe(true);

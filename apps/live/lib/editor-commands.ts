@@ -13,7 +13,7 @@ import {
   AUTO_LAYOUT_STYLE_IDS,
   type AutoLayoutChoice,
 } from './auto-layout-choices';
-import type { ShapeMarker } from '@livediagram/diagram';
+import type { ShapeMarker } from '@livediagram/document';
 import type { CommandSearchItem } from './search';
 import { selectionCommands } from './editor-commands-selection';
 
@@ -48,7 +48,7 @@ export type CommandContext = {
   // Owner-only: the Share command is hidden for non-owners (a visitor with
   // an edit link gets "Make a copy" instead, which isn't a palette command).
   isOwner: boolean;
-  // Offline diagram (docs/specs/006-diagram/offline-mode.md): nothing on the server to share, so the Share
+  // Offline diagram (docs/specs/006-document/offline-mode.md): nothing on the server to share, so the Share
   // command is withheld even though the session counts as the owner's.
   isOffline: boolean;
   // The canvas tool in force, so the command for the CURRENT tool is dropped
@@ -85,8 +85,8 @@ export type CommandHandlers = {
   addComment: () => void;
   editNote: () => void;
   createTab: () => void;
-  renameDiagram: () => void;
-  deleteDiagram: () => void;
+  renameDocument: () => void;
+  deleteDocument: () => void;
   renameTab: () => void;
   openTheme: () => void;
   openCanvasOptions: () => void;
@@ -303,13 +303,13 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     id: 'rename-diagram',
     name: 'Rename diagram',
     keywords: 'rename diagram title name relabel',
-    run: h.renameDiagram,
+    run: h.renameDocument,
   });
   out.push({
     id: 'delete-diagram',
     name: 'Delete diagram',
     keywords: 'delete diagram remove trash destroy',
-    run: h.deleteDiagram,
+    run: h.deleteDocument,
   });
   out.push({
     id: 'open-theme',

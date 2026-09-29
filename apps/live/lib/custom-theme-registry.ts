@@ -8,7 +8,7 @@
 // correctly once the fetch lands and the provider re-renders.
 //
 // The ThemeDefinition import is type-only (erased at runtime), so the
-import { THEMES } from '@livediagram/diagram';
+import { THEMES } from '@livediagram/document';
 // themes.ts -> registry runtime dependency stays one-way (no import
 // cycle): themes.ts calls lookupCustomTheme(); this file only borrows
 // the type.

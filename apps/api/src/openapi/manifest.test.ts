@@ -266,7 +266,7 @@ describe('buildOpenApiDocument', () => {
   });
 });
 
-// The diagram name cap (docs/specs/006-diagram/name-length.md) is part of the
+// The diagram name cap (docs/specs/006-document/name-length.md) is part of the
 // public contract: a token caller reads it from the reference, not by trial.
 describe('diagram name fields', () => {
   const nameOf = (method: string, path: string) => {

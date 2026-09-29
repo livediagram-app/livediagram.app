@@ -16,8 +16,8 @@ function handlers(): CommandHandlers {
     addComment: vi.fn(),
     editNote: vi.fn(),
     createTab: vi.fn(),
-    renameDiagram: vi.fn(),
-    deleteDiagram: vi.fn(),
+    renameDocument: vi.fn(),
+    deleteDocument: vi.fn(),
     renameTab: vi.fn(),
     openTheme: vi.fn(),
     openCanvasOptions: vi.fn(),
@@ -81,7 +81,7 @@ describe('buildEditorCommands — diagram/tab commands', () => {
     expect(ids({ ...base, isOwner: false })).not.toContain('share');
   });
 
-  it('hides Share for offline diagrams (docs/specs/006-diagram/offline-mode.md)', () => {
+  it('hides Share for offline diagrams (docs/specs/006-document/offline-mode.md)', () => {
     expect(ids({ ...base, isOffline: true })).not.toContain('share');
   });
 

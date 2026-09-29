@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement, Tab } from '@livediagram/diagram';
+import type { Element, StickyElement, Tab } from '@livediagram/document';
 import { useNudgeSelection } from './useNudgeSelection';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

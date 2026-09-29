@@ -172,7 +172,7 @@ export function SidebarGlyph({
 
 /** A diagram card: a small canvas thumbnail above a title bar and meta line.
  *  Optional owner avatar badge for "shared" cards. */
-export function DiagramCard({
+export function DocumentCard({
   x,
   y,
   w = 96,
@@ -310,7 +310,7 @@ function CardThumb({
 }
 
 /** A diagram list row: thumbnail dot, title, meta, and a kebab menu affordance. */
-export function DiagramRow({
+export function DocumentRow({
   x,
   y,
   w,

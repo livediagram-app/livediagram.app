@@ -6,7 +6,7 @@
 // turns those two snapshots into a ChangeLogEntry's payload (kind,
 // summary, element ids, before / after maps).
 
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import { summarizeChange, type EditedPair } from './change-summaries';
 import type { ChangeLogKind } from './api-client';
 

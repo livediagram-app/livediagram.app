@@ -19,7 +19,7 @@ const TABS = [
 
 const link = (over: Partial<ShareLink> = {}): ShareLink => ({
   code: 'CODE2345',
-  diagramId: 'd1',
+  documentId: 'd1',
   role: 'view',
   createdAt: 1,
   expiry: 'never',

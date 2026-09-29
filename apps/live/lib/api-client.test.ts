@@ -1,7 +1,7 @@
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  apiCreateDiagram,
+  apiCreateDocument,
   apiCreateShareLink,
   apiRescopeShareLink,
   apiDeleteImage,
@@ -10,10 +10,10 @@ import {
   apiDismissSharedWith,
   apiFetchImageBlobUrl,
   apiListImages,
-  apiLoadDiagram,
+  apiLoadDocument,
   apiLoadShared,
   apiLoadTab,
-  apiSaveDiagramMeta,
+  apiSaveDocumentMeta,
   apiSaveTab,
   apiSharedTabs,
   apiUploadImage,
@@ -158,13 +158,13 @@ describe('apiLoadShared password gate (docs/specs/013-workspace/share-password.m
   });
 
   it('resolves the diagram + role on 200', async () => {
-    stubFetch(200, { diagram: { id: 'd1' }, role: 'view' });
+    stubFetch(200, { document: { id: 'd1' }, role: 'view' });
     const res = await apiLoadShared('CODE2345', 'guest-4');
-    expect(res).toMatchObject({ role: 'view', diagram: { id: 'd1' }, tabId: null });
+    expect(res).toMatchObject({ role: 'view', document: { id: 'd1' }, tabId: null });
   });
 
   it("carries a tab-scoped link's tab (docs/specs/013-workspace/tab-scoped-share-links.md)", async () => {
-    stubFetch(200, { diagram: { id: 'd1' }, role: 'edit', tabId: 'tab-2' });
+    stubFetch(200, { document: { id: 'd1' }, role: 'edit', tabId: 'tab-2' });
     const res = await apiLoadShared('CODE2345', 'guest-5');
     expect(res).toMatchObject({ role: 'edit', tabId: 'tab-2' });
   });
@@ -239,7 +239,7 @@ describe('response helpers (observed through api callers)', () => {
         code: 'ABCD2345',
         role: 'edit' as const,
         createdAt: 0,
-        diagramId: 'diag-1',
+        documentId: 'diag-1',
       };
       stubFetch(200, { link });
       const got = await apiCreateShareLink('owner-1', 'diag-1', 'edit');
@@ -259,7 +259,7 @@ describe('response helpers (observed through api callers)', () => {
     });
   });
 
-  describe('expectOkOrNull (via apiLoadDiagram)', () => {
+  describe('expectOkOrNull (via apiLoadDocument)', () => {
     it('returns the parsed diagram on 200', async () => {
       // apiLoadDiagram is wrapped in dedupeInFlight keyed by
       // `${ownerId}|${id}`, so each test below uses a unique key
@@ -267,7 +267,7 @@ describe('response helpers (observed through api callers)', () => {
       // case. Without unique keys, the second test in this block
       // would observe the first test's resolved value and the
       // fetch mock would never be consulted.
-      const diagram = {
+      const liveDoc = {
         id: 'd-200',
         name: 'Hello',
         createdAt: 0,
@@ -276,9 +276,9 @@ describe('response helpers (observed through api callers)', () => {
         ownerId: 'o-200',
         tabs: [],
       };
-      stubFetch(200, { diagram });
-      const got = await apiLoadDiagram('o-200', 'd-200');
-      expect(got).toEqual(diagram);
+      stubFetch(200, { document: liveDoc });
+      const got = await apiLoadDocument('o-200', 'd-200');
+      expect(got).toEqual(liveDoc);
     });
 
     it('returns null on 404 (the load-doesnt-exist path)', async () => {
@@ -288,17 +288,17 @@ describe('response helpers (observed through api callers)', () => {
       // would tip every welcome flow + share-resolution into a
       // crash boundary.
       stubFetch(404, {});
-      const got = await apiLoadDiagram('o-404', 'd-404');
+      const got = await apiLoadDocument('o-404', 'd-404');
       expect(got).toBeNull();
     });
 
     it('throws "load failed: <status>" on 500', async () => {
       stubFetch(500);
-      await expect(apiLoadDiagram('o-500', 'd-500')).rejects.toThrow('load failed: 500');
+      await expect(apiLoadDocument('o-500', 'd-500')).rejects.toThrow('load failed: 500');
     });
   });
 
-  describe('expectOkVoid (via apiSaveDiagramMeta)', () => {
+  describe('expectOkVoid (via apiSaveDocumentMeta)', () => {
     it('resolves quietly on 200 (no body to parse)', async () => {
       // apiSaveDiagramMeta is a write with no response body. The
       // helper must NOT call res.json() or it would throw on an
@@ -306,13 +306,13 @@ describe('response helpers (observed through api callers)', () => {
       // pins both the no-throw + no-body contract.
       stubFetch(200);
       await expect(
-        apiSaveDiagramMeta('owner', { id: 'd-1', name: 'New' }),
+        apiSaveDocumentMeta('owner', { id: 'd-1', name: 'New' }),
       ).resolves.toBeUndefined();
     });
 
     it('throws "save diagram meta failed: <status>" on 500', async () => {
       stubFetch(500);
-      await expect(apiSaveDiagramMeta('owner', { id: 'd-1', name: 'New' })).rejects.toThrow(
+      await expect(apiSaveDocumentMeta('owner', { id: 'd-1', name: 'New' })).rejects.toThrow(
         'save diagram meta failed: 500',
       );
     });
@@ -454,19 +454,19 @@ describe('apiDelete (internal, via public DELETE callers)', () => {
   });
 });
 
-describe('apiCreateDiagram persisted body (docs/specs/006-diagram/tab-folders.md)', () => {
+describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('strips UI-only tab fields (templateChosen, folder) before POSTing', async () => {
     const fetchSpy = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ diagram: { id: 'd1' } }), {
+      new Response(JSON.stringify({ document: { id: 'd1' } }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       }),
     );
     vi.stubGlobal('fetch', fetchSpy);
     // A tab carrying the editor-only fields that must NOT reach tabs.data:
-    // templateChosen (UI state) + folder (per-diagram link, docs/specs/006-diagram/tab-folders.md).
+    // templateChosen (UI state) + folder (per-diagram link, docs/specs/006-document/tab-folders.md).
     const tab = {
       id: 't1',
       name: 'Tab',
@@ -475,7 +475,7 @@ describe('apiCreateDiagram persisted body (docs/specs/006-diagram/tab-folders.md
       folder: 'f1',
     } as unknown as Tab;
 
-    const out = await apiCreateDiagram('owner', { id: 'd1', name: 'N', tabs: [tab] });
+    const out = await apiCreateDocument('owner', { id: 'd1', name: 'N', tabs: [tab] });
 
     const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(String(url)).toMatch(/\/diagrams$/);
@@ -488,14 +488,14 @@ describe('apiCreateDiagram persisted body (docs/specs/006-diagram/tab-folders.md
   });
 });
 
-describe('apiSharedTabs (docs/specs/006-diagram/tab-diagram-many-to-many.md)', () => {
+describe('apiSharedTabs (docs/specs/006-document/tab-document-many-to-many.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('reads the counts for the delete confirmation', async () => {
     const fetchSpy = vi
       .fn()
       .mockResolvedValue(
-        new Response(JSON.stringify({ sharedTabs: { tabs: 2, diagrams: 3 } }), { status: 200 }),
+        new Response(JSON.stringify({ sharedTabs: { tabs: 2, documents: 3 } }), { status: 200 }),
       );
     vi.stubGlobal('fetch', fetchSpy);
     const signal = new AbortController().signal;
@@ -505,7 +505,7 @@ describe('apiSharedTabs (docs/specs/006-diagram/tab-diagram-many-to-many.md)', (
     const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(String(url)).toMatch(/\/diagrams\/d1\/shared-tabs$/);
     expect(init.signal).toBe(signal);
-    expect(out).toEqual({ tabs: 2, diagrams: 3 });
+    expect(out).toEqual({ tabs: 2, documents: 3 });
   });
 
   it('throws on a refused read, so the caller can open without the notice', async () => {
@@ -515,7 +515,7 @@ describe('apiSharedTabs (docs/specs/006-diagram/tab-diagram-many-to-many.md)', (
   });
 });
 
-describe('apiSaveTab persisted body + allow-empty (docs/specs/006-diagram/tab-folders.md)', () => {
+describe('apiSaveTab persisted body + allow-empty (docs/specs/006-document/tab-folders.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   const stubOk = () => {
@@ -568,13 +568,13 @@ describe('apiLoadTab load boundary', () => {
     expect(await apiLoadTab('owner', 'd1', 't-404', null)).toBeNull();
   });
 
-  it('strips server-only fields (diagramId / orderIndex / updatedAt) from the tab', async () => {
+  it('strips server-only fields (documentId / orderIndex / updatedAt) from the tab', async () => {
     stubFetch(200, {
-      tab: { id: 't1', name: 'T', elements: [], diagramId: 'd1', orderIndex: 3, updatedAt: 123 },
+      tab: { id: 't1', name: 'T', elements: [], documentId: 'd1', orderIndex: 3, updatedAt: 123 },
     });
     const tab = await apiLoadTab('owner', 'd1', 't-strip', null);
     expect(tab).not.toBeNull();
-    expect(tab).not.toHaveProperty('diagramId');
+    expect(tab).not.toHaveProperty('documentId');
     expect(tab).not.toHaveProperty('orderIndex');
     expect(tab).not.toHaveProperty('updatedAt');
     expect(tab).toMatchObject({ id: 't1', name: 'T' });
@@ -677,7 +677,7 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
   it('adds the diagram query param + share code, returns null on a non-ok read', async () => {
     const spy = stub404();
     const out = await apiFetchImageBlobUrl('owner', 'img 1', {
-      diagramId: 'd1',
+      documentId: 'd1',
       shareCode: 'CODE2345',
     });
     expect(out).toBeNull();

@@ -8,26 +8,26 @@ import type { Env } from '../types';
 // access policy (image owner OR a share-readable diagram that references
 // the image). Pins behaviour ahead of the requireOwner extraction.
 
-const { db, canReadDiagram, resolveDiagramGrant } = vi.hoisted(() => ({
+const { db, canReadDocument, resolveDocumentGrant } = vi.hoisted(() => ({
   db: {
     deleteImage: vi.fn(),
-    diagramReferencesImage: vi.fn(),
+    documentReferencesImage: vi.fn(),
     findImageBySha: vi.fn(),
-    getDiagram: vi.fn(),
+    getDocument: vi.fn(),
     getImage: vi.fn(),
     imageTotalsByOwner: vi.fn(),
     imageUsageByOwner: vi.fn(),
     insertImage: vi.fn(),
     listImagesByOwner: vi.fn(),
   },
-  canReadDiagram: vi.fn(),
-  resolveDiagramGrant: vi.fn(),
+  canReadDocument: vi.fn(),
+  resolveDocumentGrant: vi.fn(),
 }));
 vi.mock('../db', () => db);
-vi.mock('../auth/diagram-access', () => ({
-  canReadDiagram,
-  canEditDiagram: vi.fn(),
-  resolveDiagramGrant,
+vi.mock('../auth/document-access', () => ({
+  canReadDocument,
+  canEditDocument: vi.fn(),
+  resolveDocumentGrant,
 }));
 
 import type { RouteContext } from './context';
@@ -54,12 +54,12 @@ const makeCtx = (
 
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
-  canReadDiagram.mockReset();
-  resolveDiagramGrant.mockReset();
+  canReadDocument.mockReset();
+  resolveDocumentGrant.mockReset();
   // The byte-read gate asks for the grant; drive it from canReadDiagram so
   // the allow / deny cases below keep reading as they did.
-  resolveDiagramGrant.mockImplementation(async (...args: unknown[]) =>
-    (await canReadDiagram(...args)) ? { role: 'view', tabScope: null } : null,
+  resolveDocumentGrant.mockImplementation(async (...args: unknown[]) =>
+    (await canReadDocument(...args)) ? { role: 'view', tabScope: null } : null,
   );
 });
 
@@ -132,9 +132,9 @@ describe('handleImages', () => {
 
   it('byte-read 200 for a non-owner via a share-readable diagram that references the image', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
-    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
-    canReadDiagram.mockResolvedValue(true);
-    db.diagramReferencesImage.mockResolvedValue(true);
+    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
+    canReadDocument.mockResolvedValue(true);
+    db.documentReferencesImage.mockResolvedValue(true);
     const ctx = makeCtx('GET', '/api/images/i1?d=d1');
     (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
       body: 'bytes',
@@ -147,12 +147,12 @@ describe('handleImages', () => {
   // docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor reads images their tab uses.
   it('asks whether the scoped tab, not the whole diagram, uses the image', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
-    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
-    resolveDiagramGrant.mockResolvedValue({ role: 'view', tabScope: 't2' });
-    db.diagramReferencesImage.mockResolvedValue(false);
+    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
+    resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: 't2' });
+    db.documentReferencesImage.mockResolvedValue(false);
     const res = await handleImages(makeCtx('GET', '/api/images/i1?d=d1'));
     expect(res.status).toBe(404);
-    expect(db.diagramReferencesImage).toHaveBeenCalledWith(expect.anything(), 'd1', 'i1', 't2');
+    expect(db.documentReferencesImage).toHaveBeenCalledWith(expect.anything(), 'd1', 'i1', 't2');
   });
 });
 

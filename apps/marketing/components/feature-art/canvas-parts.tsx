@@ -45,7 +45,7 @@ export function FolderIcon({ muted = false }: { muted?: boolean }) {
   );
 }
 
-export function DiagramIcon() {
+export function DocumentIcon() {
   return (
     <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#94a3b8" strokeWidth="1.4">
       <rect x="2" y="2" width="12" height="12" rx="2" />

@@ -63,7 +63,7 @@ describe('GET /api/shared', () => {
   });
 });
 
-describe('DELETE /api/shared/:diagramId', () => {
+describe('DELETE /api/shared/:documentId', () => {
   it('drops only this owner’s reference to the diagram', async () => {
     // The row is (owner, diagram): dismissing a shared diagram must not touch
     // anyone else's copy of the same reference, nor the diagram itself.

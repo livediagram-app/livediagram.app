@@ -122,7 +122,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   // The MCP worker.
   'apps/mcp/src/tool-annotations.ts Mcp·Used': { values: MCP_TOOLS },
   'apps/mcp/src/api.ts Error·Api': {
-    values: ['Http503.CreateDiagram', 'Internal.ReadDiagram'],
+    values: ['Http503.CreateDocument', 'Internal.ReadDocument'],
     open: 'a status or Internal, plus the tool that failed',
   },
 
@@ -142,16 +142,16 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
 
   // The editor.
-  'apps/live/app/diagram/[id]/useElementCreation.ts Element·Added': {
+  'apps/live/app/document/[id]/useElementCreation.ts Element·Added': {
     values: ELEMENT_KINDS,
     open: ELEMENT_WHY,
   },
-  'apps/live/app/diagram/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
-  'apps/live/app/diagram/[id]/useTemplateFlow.ts Template·Used': {
+  'apps/live/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
+  'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
   },
-  'apps/live/app/diagram/[id]/useTemplateFlow.ts Theme·Changed': {
+  'apps/live/app/document/[id]/useTemplateFlow.ts Theme·Changed': {
     values: THEMES,
     open: THEME_WHY,
   },
@@ -175,7 +175,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
-  'apps/live/app/diagram/[id]/useDiagramTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/live/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
@@ -200,7 +200,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
-    values: ['Diagram', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
+    values: ['Document', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
   },
   'apps/live/components/panels/useTeamPaneActions.ts Team·Removed': {
     values: ['Invite', 'Member', 'Self'],

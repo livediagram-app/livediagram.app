@@ -21,7 +21,7 @@
 // happy accident for a dot-vote, and the turnout numbers below answer the
 // question the host actually has ("is everyone done?") without it.
 
-import { votesSpentBy, type Element, type TabVote } from '@livediagram/diagram';
+import { votesSpentBy, type Element, type TabVote } from '@livediagram/document';
 import { describeOne } from '@/lib/element-names';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';

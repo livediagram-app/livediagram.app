@@ -4,7 +4,7 @@ import {
   type ElementDelta,
   type Tab,
   type TabLedger,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { Env } from './types';
 
 // The worker's calls into a diagram's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
@@ -14,10 +14,10 @@ import type { Env } from './types';
 // writer, and asking would wake a Durable Object for nothing. Null then.
 function roomStubFor(
   env: Env,
-  diagram: { id: string; shareable: boolean; teamId: string | null },
+  liveDoc: { id: string; shareable: boolean; teamId: string | null },
 ): DurableObjectStub | null {
-  if (!diagram.shareable && !diagram.teamId) return null;
-  return env.DIAGRAM_ROOM.get(env.DIAGRAM_ROOM.idFromName(diagram.id));
+  if (!liveDoc.shareable && !liveDoc.teamId) return null;
+  return env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(liveDoc.id));
 }
 
 // Merge the room's collaboration ledger into a tab a client is saving
@@ -47,12 +47,12 @@ export type RoomMerge = {
 
 export async function mergeRoomLedger(
   env: Env,
-  diagram: { id: string; shareable: boolean; teamId: string | null },
+  liveDoc: { id: string; shareable: boolean; teamId: string | null },
   tab: Tab,
   cursorHeader: string | null,
 ): Promise<RoomMerge> {
   const unmerged: RoomMerge = { tab, commentAuthors: new Map() };
-  const stub = roomStubFor(env, diagram);
+  const stub = roomStubFor(env, liveDoc);
   const cursor = parseRoomCursor(cursorHeader);
   if (!stub || !cursor) return unmerged;
   try {
@@ -95,12 +95,12 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
 // broadcast: the D1 write is the record, this is the live copy.
 export async function relayElementDelta(
   env: Env,
-  diagram: { id: string; shareable: boolean; teamId: string | null },
+  liveDoc: { id: string; shareable: boolean; teamId: string | null },
   tabId: string,
   elementId: string,
   delta: ElementDelta,
 ): Promise<void> {
-  const stub = roomStubFor(env, diagram);
+  const stub = roomStubFor(env, liveDoc);
   if (!stub) return;
   try {
     await stub.fetch('https://room/mutation', {
@@ -120,11 +120,11 @@ export async function relayElementDelta(
 // reached is logged rather than failing the request.
 export async function broadcastShareOp(
   env: Env,
-  diagramId: string,
+  documentId: string,
   op: { kind: 'share-revoked' | 'share-rescoped'; code: string },
 ): Promise<void> {
   try {
-    await env.DIAGRAM_ROOM.get(env.DIAGRAM_ROOM.idFromName(diagramId)).fetch(
+    await env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(documentId)).fetch(
       'https://room/broadcast',
       {
         method: 'POST',
@@ -133,7 +133,7 @@ export async function broadcastShareOp(
       },
     );
   } catch (err) {
-    console.warn(`[room-broadcast] ${op.kind} did not reach the room`, diagramId, err);
+    console.warn(`[room-broadcast] ${op.kind} did not reach the room`, documentId, err);
   }
 }
 
@@ -142,12 +142,12 @@ export async function broadcastShareOp(
 // state, and the room closes every socket. Only for a diagram with a room.
 // Best-effort like the share-op broadcast: the D1 write is the change, and a
 // session the room misses still has every save refused with diagram_trashed.
-export async function broadcastDiagramTrashed(
+export async function broadcastDocumentTrashed(
   env: Env,
-  diagram: { id: string; shareable: boolean; teamId: string | null },
+  liveDoc: { id: string; shareable: boolean; teamId: string | null },
 ): Promise<void> {
   try {
-    const stub = roomStubFor(env, diagram);
+    const stub = roomStubFor(env, liveDoc);
     if (!stub) return;
     await stub.fetch('https://room/broadcast', {
       method: 'POST',
@@ -155,6 +155,6 @@ export async function broadcastDiagramTrashed(
       body: JSON.stringify({ op: { kind: 'diagram-trashed' } }),
     });
   } catch (err) {
-    console.warn('[room-broadcast] diagram-trashed did not reach the room', diagram.id, err);
+    console.warn('[room-broadcast] diagram-trashed did not reach the room', liveDoc.id, err);
   }
 }

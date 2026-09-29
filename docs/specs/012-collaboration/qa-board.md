@@ -17,7 +17,7 @@ wrong shape in three ways:
   read top-down continuously, while people are still voting. Stickies don't
   sort themselves.
 - **The audience isn't editing.** The people asking questions are usually on a
-  view link ([Per-tab storage](../006-diagram/per-tab-storage.md)). Every other document write needs edit rights.
+  view link ([Per-tab storage](../006-document/per-tab-storage.md)). Every other document write needs edit rights.
 - **It has a lifecycle.** A note goes from asked, to being discussed, to done,
   and a done note should get out of the way without being deleted: the record
   of what the room covered is part of the output.
@@ -87,7 +87,7 @@ authenticated caller (`X-Owner-Id` or the Clerk `sub`). So:
   nor correlated across two boards.
 - **The client can still tell which notes it voted for.** It knows its own
   owner id, so it computes the same hash locally (`qaVoterId`, shared by both
-  sides in `@livediagram/diagram`).
+  sides in `@livediagram/document`).
 
 Votes are **set, not toggled**, on the wire (`{ type: 'vote', on: true }`) so a
 retried request can't flip a vote back off. Pressing your own upvote again
@@ -120,7 +120,7 @@ https://room/qa` on the Durable Object).
   on the stored JSON (`UPDATE … WHERE data = <what we read>`,
   `qa-board-write.ts`). The CAS is the second line of defence, against the
   row's other writers: an editor's tab autosave, and a tab linked into a second
-  diagram ([Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md)), whose room queues separately. A lost race re-reads.
+  diagram ([Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md)), whose room queues separately. A lost race re-reads.
 - Still inside the step, the room broadcasts
   `{ kind: 'qa', tabId, elementId, notes, rev }` as a **system op**, so no
   client can forge one, and peers receive states in rev order. Unlike
@@ -142,7 +142,7 @@ closes each route that could do that:
 - **Stale whole-element copies can't roll the board back** (`qaRev`, below),
   on peers or in D1.
 
-`diagram-room-qa.test.ts` fires 40 simultaneous votes at a fake D1 that
+`document-room-qa.test.ts` fires 40 simultaneous votes at a fake D1 that
 yields on every read and write, the worst interleaving there is, and asserts
 all 40 land with revs 1 to 40 broadcast in order. It fails if the queue is
 removed.
@@ -153,7 +153,7 @@ re-applied on top of every authoritative state that arrives, so two quick
 votes don't flicker while the first round-trip is in flight. A failed request
 drops its pending action and the board falls back to the server's state.
 
-An **offline diagram** ([Offline Mode](../006-diagram/offline-mode.md)) has no server, so the reducer runs locally and
+An **offline diagram** ([Offline Mode](../006-document/offline-mode.md)) has no server, so the reducer runs locally and
 the ordinary tab save persists it. The voter id is computed the same way.
 
 ### Consistency

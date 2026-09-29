@@ -17,7 +17,7 @@ describe('the 03:00 cron', () => {
     ] as const) {
       sql
         .prepare(
-          `INSERT INTO diagrams (id, owner_id, name, shareable, saved_at, created_at, trashed_at)
+          `INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at, trashed_at)
            VALUES (?, 'owner', ?, 0, 0, 0, ?)`,
         )
         .run(id, id, trashedAt);
@@ -35,7 +35,7 @@ describe('the 03:00 cron', () => {
 
     expect(
       sql
-        .prepare('SELECT id FROM diagrams ORDER BY id')
+        .prepare('SELECT id FROM documents ORDER BY id')
         .all()
         .map((r) => r.id),
     ).toEqual(['live', 'waiting']);

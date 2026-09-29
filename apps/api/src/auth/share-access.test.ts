@@ -9,18 +9,18 @@ const getShareLinkMock = vi.fn<(env: Env, code: string) => Promise<ShareLink | n
 const getSharePasswordMock = vi.fn<(env: Env, id: string) => Promise<string | null>>();
 vi.mock('../db', () => ({
   getShareLink: (env: Env, code: string) => getShareLinkMock(env, code),
-  getDiagramSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
+  getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
 }));
 
 import {
   isPersonalOwner,
-  shareLinkForDiagram,
+  shareLinkForDocument,
   sharePasswordOk,
   sharePasswordStatus,
 } from './share-access';
 
 const ENV = {} as Env;
-const link = (diagramId: string, role: 'edit' | 'view') => ({ diagramId, role }) as ShareLink;
+const link = (documentId: string, role: 'edit' | 'view') => ({ documentId, role }) as ShareLink;
 
 beforeEach(() => {
   getShareLinkMock.mockReset();
@@ -41,18 +41,18 @@ describe('isPersonalOwner', () => {
   });
 });
 
-describe('shareLinkForDiagram', () => {
+describe('shareLinkForDocument', () => {
   it('returns the link when it belongs to the diagram', async () => {
     getShareLinkMock.mockResolvedValue(link('d1', 'view'));
-    expect(await shareLinkForDiagram(ENV, 'code', 'd1')).toEqual(link('d1', 'view'));
+    expect(await shareLinkForDocument(ENV, 'code', 'd1')).toEqual(link('d1', 'view'));
   });
   it('refuses a code for a different diagram', async () => {
     getShareLinkMock.mockResolvedValue(link('d2', 'edit'));
-    expect(await shareLinkForDiagram(ENV, 'code', 'd1')).toBeNull();
+    expect(await shareLinkForDocument(ENV, 'code', 'd1')).toBeNull();
   });
   it('skips the lookup for a missing or empty code', async () => {
-    expect(await shareLinkForDiagram(ENV, null, 'd1')).toBeNull();
-    expect(await shareLinkForDiagram(ENV, '', 'd1')).toBeNull();
+    expect(await shareLinkForDocument(ENV, null, 'd1')).toBeNull();
+    expect(await shareLinkForDocument(ENV, '', 'd1')).toBeNull();
     expect(getShareLinkMock).not.toHaveBeenCalled();
   });
 });

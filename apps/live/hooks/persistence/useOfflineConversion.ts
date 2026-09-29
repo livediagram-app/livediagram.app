@@ -11,14 +11,14 @@ import {
   takeCloudOffline,
 } from '@/lib/offline/offline-convert';
 
-// Shared Offline Mode conversion handlers (docs/specs/006-diagram/offline-mode.md) for the Explorer's row and
+// Shared Offline Mode conversion handlers (docs/specs/006-document/offline-mode.md) for the Explorer's row and
 // card menus, which otherwise duplicated this logic. `syncToCloud` uploads an
 // offline diagram to the account; `takeOffline` pulls a cloud diagram down and
 // deletes the server copy (gated by a confirm). Both reload afterwards so the
 // list reflects the move, and `converting` guards against a double-trigger.
 // `close` runs first to dismiss the caller's menu.
 export function useOfflineConversion(
-  diagram: { id: string; name: string; shareCode?: string | null },
+  liveDoc: { id: string; name: string; shareCode?: string | null },
   ownerId: string | null,
   close: () => void,
 ) {
@@ -31,10 +31,10 @@ export function useOfflineConversion(
     close();
     setConverting(true);
     try {
-      await saveOfflineToCloud(diagram.id, ownerId);
+      await saveOfflineToCloud(liveDoc.id, ownerId);
       // Before the reload on purpose: the telemetry engine's pagehide
       // beacon carries the buffered event through the navigation.
-      track('Diagram', 'Moved', 'SavedToCloud');
+      track('Document', 'Moved', 'SavedToCloud');
       window.location.reload();
     } catch (e) {
       setConverting(false); // stays offline
@@ -45,10 +45,10 @@ export function useOfflineConversion(
   const takeOffline = async () => {
     if (!ownerId || converting) return;
     close();
-    // A shared tab stays in its other diagrams and forks here (docs/specs/006-diagram/offline-mode.md).
-    const notice = await fetchSharedTabsNotice(ownerId, diagram.id, 'offline');
+    // A shared tab stays in its other diagrams and forks here (docs/specs/006-document/offline-mode.md).
+    const notice = await fetchSharedTabsNotice(ownerId, liveDoc.id, 'offline');
     const ok = await confirm({
-      title: `Take “${diagram.name}” offline?`,
+      title: `Take “${liveDoc.name}” offline?`,
       message: [
         'This removes it from your account and every other device. It will exist only in this browser, with no backup.',
         notice,
@@ -61,8 +61,8 @@ export function useOfflineConversion(
     if (!ok) return;
     setConverting(true);
     try {
-      await takeCloudOffline(diagram.id, ownerId, diagram.shareCode ?? null);
-      track('Diagram', 'Moved', 'TakenOffline');
+      await takeCloudOffline(liveDoc.id, ownerId, liveDoc.shareCode ?? null);
+      track('Document', 'Moved', 'TakenOffline');
       window.location.reload();
     } catch {
       setConverting(false); // stays on server (aborts roll the local copy back)

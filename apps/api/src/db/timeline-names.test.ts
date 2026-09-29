@@ -18,8 +18,8 @@ function insert(sql: DatabaseSync, table: string, row: Record<string, string | n
     .run(...Object.values(row));
 }
 
-function diagram(sql: DatabaseSync, id: string, name: string) {
-  insert(sql, 'diagrams', {
+function liveDoc(sql: DatabaseSync, id: string, name: string) {
+  insert(sql, 'documents', {
     id,
     owner_id: 'owner',
     name,
@@ -35,12 +35,12 @@ function event(
   type: string,
   snapshot: Record<string, string>,
   at: number,
-  sourceId = snapshot.diagramId ?? 'x',
+  sourceId = snapshot.documentId ?? 'x',
 ) {
   insert(sql, 'timeline_events', {
     id,
     actor_id: 'someone',
-    source_type: 'diagram',
+    source_type: 'document',
     source_id: sourceId,
     event_type: type,
     title: type,
@@ -59,34 +59,46 @@ function event(
 describe('Timeline names', () => {
   it('shows a diagram by its current name on entries from before a rename', async () => {
     const { env, sql } = sqliteD1();
-    diagram(sql, 'd1', 'Payments v2');
-    event(sql, 'created', 'diagram_created', { diagramId: 'd1', diagramName: 'Payments' }, T0 + 1);
+    liveDoc(sql, 'd1', 'Payments v2');
+    event(
+      sql,
+      'created',
+      'document_created',
+      { documentId: 'd1', documentName: 'Payments' },
+      T0 + 1,
+    );
     // A comment's source is its thread; the diagram is found through the snapshot.
     event(
       sql,
       'comment',
       'comment_added',
-      { diagramId: 'd1', diagramName: 'Payments' },
+      { documentId: 'd1', documentName: 'Payments' },
       T0 + 2,
       'thread-1',
     );
 
     const page = await readTimeline(env, { scope, limit: 10 });
-    expect(page.items.map((e) => e.snapshot.diagramName)).toEqual(['Payments v2', 'Payments v2']);
+    expect(page.items.map((e) => e.snapshot.documentName)).toEqual(['Payments v2', 'Payments v2']);
   });
 
   it('keeps the saved name for a diagram that no longer exists', async () => {
     const { env, sql } = sqliteD1();
-    event(sql, 'gone', 'diagram_deleted', { diagramName: 'Old board' }, T0 + 1, 'deleted-id');
+    event(sql, 'gone', 'document_deleted', { documentName: 'Old board' }, T0 + 1, 'deleted-id');
     const page = await readTimeline(env, { scope, limit: 10 });
-    expect(page.items[0]?.snapshot.diagramName).toBe('Old board');
+    expect(page.items[0]?.snapshot.documentName).toBe('Old board');
   });
 
   it('leaves rename events out of the feed and the unread count', async () => {
     const { env, sql } = sqliteD1();
-    diagram(sql, 'd1', 'Payments v2');
-    event(sql, 'created', 'diagram_created', { diagramId: 'd1' }, T0 + 1);
-    event(sql, 'renamed', 'diagram_renamed', { diagramId: 'd1', previousName: 'Payments' }, T0 + 2);
+    liveDoc(sql, 'd1', 'Payments v2');
+    event(sql, 'created', 'document_created', { documentId: 'd1' }, T0 + 1);
+    event(
+      sql,
+      'renamed',
+      'document_renamed',
+      { documentId: 'd1', previousName: 'Payments' },
+      T0 + 2,
+    );
 
     const page = await readTimeline(env, { scope, limit: 10 });
     expect(page.items.map((e) => e.id)).toEqual(['created']);

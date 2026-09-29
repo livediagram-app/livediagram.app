@@ -16,7 +16,7 @@ import {
   voteHidesCursors,
   voteHidesTallies,
   type TabVote,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { votePhase, voteTurnout, type VotePhase } from './session-studio';

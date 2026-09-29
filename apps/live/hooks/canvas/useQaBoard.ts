@@ -24,7 +24,7 @@ import {
   type QaNote,
   type ShapeElement,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { apiQaAction } from '@/lib/api-client';
 import type { Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
@@ -35,7 +35,7 @@ type Base = { notes: QaNote[]; rev: number };
 const keyOf = (tabId: string, elementId: string) => `${tabId}\u0000${elementId}`;
 
 export function useQaBoard({
-  diagramId,
+  documentId,
   activeId,
   selfParticipant,
   sessionShareCode,
@@ -44,12 +44,12 @@ export function useQaBoard({
   lastSavedTabsRef,
   onError,
 }: {
-  diagramId: string | null;
+  documentId: string | null;
   activeId: string;
   selfParticipant: Participant;
   sessionShareCode: string | null;
   applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
-  // The persisting write, used only for an offline diagram (docs/specs/006-diagram/offline-mode.md), where
+  // The persisting write, used only for an offline diagram (docs/specs/006-document/offline-mode.md), where
   // there is no server and the ordinary tab save is the store.
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => unknown;
   // The autosave's baseline (docs/specs/012-collaboration/collab-race-hardening.md). The board is the server's, so its
@@ -157,11 +157,11 @@ export function useQaBoard({
       settle();
       rebuild(tabId, element.id, true);
     };
-    if (!diagramId) return applyLocally();
+    if (!documentId) return applyLocally();
     try {
       const state = await apiQaAction(
         self.id,
-        diagramId,
+        documentId,
         tabId,
         element.id,
         action,

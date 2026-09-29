@@ -3,7 +3,7 @@
 // stored mentions becomes a chip; any other `@word` stays plain text.
 
 import type { CSSProperties } from 'react';
-import { mentionSegments, type CommentMention } from '@livediagram/diagram';
+import { mentionSegments, type CommentMention } from '@livediagram/document';
 
 export function MentionText({
   text,

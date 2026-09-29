@@ -12,7 +12,7 @@ standard people already have.
 
 We support the diagram types that are **node/edge graphs at heart**, because
 they map onto livediagram's model losslessly: `graphToElements`
-(packages/diagram, [MCP server](../015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
+(packages/document, [MCP server](../015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
 arrows.
 
 - **Flowcharts** (`graph TD`, `flowchart LR`, …) — full import **and**
@@ -129,7 +129,7 @@ LR` line sets the layout direction (TB default).
 'cross'`); one-to-one relationships render headless. Non-identifying
   (dotted `..`) relationships render dashed.
 
-## The engine lives in `packages/diagram`
+## The engine lives in `packages/document`
 
 Pure, tested, reusable (import UI today; the MCP or public API could adopt it):
 
@@ -200,8 +200,8 @@ existing import/export type lists, replacing the removed `Text` type.
 
 ## Removed: the `.lvd` text DSL (the removed text-DSL spec)
 
-The text DSL is deleted — `packages/diagram/src/text-dsl/`, its
-`@livediagram/diagram/text-dsl` subpath export, `export-tab-text`'s DSL branch,
+The text DSL is deleted — `packages/document/src/text-dsl/`, its
+`@livediagram/document/text-dsl` subpath export, `export-tab-text`'s DSL branch,
 the Text cards in both dialogs, and the removed text-DSL spec. It was a bespoke format nobody
 outside livediagram speaks; Mermaid does the same job (human-editable,
 connection-preserving, round-trip) with a format the world already uses.

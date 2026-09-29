@@ -1,4 +1,4 @@
-import type { ListStyle, RunHeading } from '@livediagram/diagram';
+import type { ListStyle, RunHeading } from '@livediagram/document';
 
 // The block type of the current lines, as one closed vocabulary (docs/specs/009-elements/block-type-picker.md).
 //

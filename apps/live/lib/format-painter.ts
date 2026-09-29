@@ -36,7 +36,7 @@ import {
   type IconWeight,
   type RunBoolKey,
   type TextRun,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 type BoxedKind = BoxedElement['type'];
 

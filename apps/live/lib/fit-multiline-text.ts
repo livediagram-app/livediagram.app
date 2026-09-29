@@ -1,4 +1,4 @@
-import { labelMeasure, wrapLabel } from '@livediagram/diagram';
+import { labelMeasure, wrapLabel } from '@livediagram/document';
 
 // Auto-fit for MULTI-LINE labels (docs/specs/021-event-storming/event-storming.md): the font size at which the
 // wrapped text just fills its box. `scale` on a sticky used to mean a fixed

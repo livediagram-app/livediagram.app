@@ -285,7 +285,7 @@ export const CTA_ARRIVALS = chart(
   'Somebody followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Diagram page.',
 );
 
-export const CTA_DIAGRAMS = chart(
+export const CTA_DOCUMENTS = chart(
   'Cta',
   'Created',
   'Diagrams from CTAs',
@@ -297,7 +297,7 @@ export const CALLS_TO_ACTION: MetricStack = {
   title: 'Calls to Action',
   blurb:
     'How the public pages turn visitors into diagrams: arrivals from a call to action, and the diagrams they created.',
-  members: [CTA_ARRIVALS, CTA_DIAGRAMS],
-  headline: CTA_DIAGRAMS,
+  members: [CTA_ARRIVALS, CTA_DOCUMENTS],
+  headline: CTA_DOCUMENTS,
   seeAlso: { view: 'pages', label: 'See the Landing Funnel on the Pages Tab' },
 };

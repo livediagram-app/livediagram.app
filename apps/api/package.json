@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
-    "@livediagram/diagram": "workspace:*",
+    "@livediagram/document": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "jose": "^6.2.12"
   },

@@ -57,9 +57,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livediagram/diagram':
+      '@livediagram/document':
         specifier: workspace:*
-        version: link:../../packages/diagram
+        version: link:../../packages/document
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
@@ -200,9 +200,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livediagram/diagram':
+      '@livediagram/document':
         specifier: workspace:*
-        version: link:../../packages/diagram
+        version: link:../../packages/document
       '@livediagram/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
@@ -328,9 +328,9 @@ importers:
         specifier: ^19.3.0
         version: 19.3.0(react@19.3.0)
     devDependencies:
-      '@livediagram/diagram':
+      '@livediagram/document':
         specifier: workspace:*
-        version: link:../../packages/diagram
+        version: link:../../packages/document
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -385,9 +385,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livediagram/diagram':
+      '@livediagram/document':
         specifier: workspace:*
-        version: link:../../packages/diagram
+        version: link:../../packages/document
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
@@ -534,9 +534,9 @@ importers:
 
   packages/api-schema:
     dependencies:
-      '@livediagram/diagram':
+      '@livediagram/document':
         specifier: workspace:*
-        version: link:../diagram
+        version: link:../document
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*
@@ -557,7 +557,7 @@ importers:
         specifier: ^5.0.1
         version: 5.0.2(@types/node@26.6.2)(@vitest/coverage-v8@5.0.2)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.2)(jiti@2.7.0)(lightningcss@1.32.0))
 
-  packages/diagram:
+  packages/document:
     dependencies:
       '@livediagram/icons':
         specifier: workspace:*
@@ -730,9 +730,9 @@ importers:
 
   packages/sticky-vision:
     dependencies:
-      '@livediagram/diagram':
+      '@livediagram/document':
         specifier: workspace:*
-        version: link:../diagram
+        version: link:../document
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*
@@ -853,9 +853,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../api-schema
-      '@livediagram/diagram':
+      '@livediagram/document':
         specifier: workspace:*
-        version: link:../diagram
+        version: link:../document
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../icons

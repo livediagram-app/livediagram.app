@@ -74,7 +74,7 @@ The dot-vote pattern for every field many people write at once. A new room
 op, `{ kind: 'el-delta', tabId, elementId, delta }` (a MUTATION: sequenced,
 logged for catch-up, refused from a view-role sender), carries ONE change,
 applied by the sender and every receiver through the same pure
-`applyElementDelta` (`packages/diagram/src/element-deltas.ts`):
+`applyElementDelta` (`packages/document/src/element-deltas.ts`):
 
 - `response`: one participant's answer set, or withdrawn with `null`, keyed
   by `participantKey` (done check, estimate, temperature).
@@ -127,7 +127,7 @@ reload showed fewer marks than the room had seen.
 
 **The room keeps a ledger.** For every `el-delta` and `vote` op it
 sequences, the Durable Object records the change in a small per-element
-ledger in its own storage (`packages/diagram/src/collab-ledger.ts`, pure;
+ledger in its own storage (`packages/document/src/collab-ledger.ts`, pure;
 the DO only stores it):
 
 - answers: each participant's LATEST cast or withdraw in the element's

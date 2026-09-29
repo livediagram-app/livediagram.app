@@ -6,14 +6,14 @@ import type {
   IconPosition,
   TextRun,
   WebRows,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { DragMode } from '@/lib/canvas';
 
 export type BoxedElementViewProps = {
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): set it off, plus the burst it is currently
   // playing and the way to retire that burst when its animation ends.
-  onFireReaction?: (element: import('@livediagram/diagram').ShapeElement) => void;
-  reactionBurst?: { reaction: import('@livediagram/diagram').Reaction; seed: number };
+  onFireReaction?: (element: import('@livediagram/document').ShapeElement) => void;
+  reactionBurst?: { reaction: import('@livediagram/document').Reaction; seed: number };
   onReactionBurstDone?: (elementId: string) => void;
   element: BoxedElement;
   isSelected: boolean;
@@ -40,7 +40,7 @@ export type BoxedElementViewProps = {
   // Shift-click on an element fires this with the element id so the
   // page can toggle membership in the marquee multi-selection.
   onShiftSelect?: (id: string) => void;
-  // Whole-layer opacity (docs/specs/006-diagram/layers.md), multiplied over the element's own
+  // Whole-layer opacity (docs/specs/006-document/layers.md), multiplied over the element's own
   // `opacity`. Undefined = 1 (kept undefined at full opacity so the
   // memoised view's props stay stable).
   layerOpacity?: number;
@@ -64,8 +64,8 @@ export type BoxedElementViewProps = {
   // edit toolbar (docs/specs/008-canvas/canvas-and-palette.md). They operate on the current selection (= the
   // editing element). Optional so read-only paths can omit them.
   onSetTextAlign?: (
-    x: import('@livediagram/diagram').TextAlignX,
-    y: import('@livediagram/diagram').TextAlignY,
+    x: import('@livediagram/document').TextAlignX,
+    y: import('@livediagram/document').TextAlignY,
   ) => void;
   // A lane's title gutter, resized by dragging its seam (docs/specs/009-elements/lane.md). One
   // commit per gesture, so a drag is one undo step.
@@ -85,7 +85,7 @@ export type BoxedElementViewProps = {
     id: string,
     patch: Partial<
       Pick<
-        import('@livediagram/diagram').TableElement,
+        import('@livediagram/document').TableElement,
         'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
       >
     >,
@@ -95,20 +95,20 @@ export type BoxedElementViewProps = {
   // Theme-derived default slice colours for pie charts (docs/specs/009-elements/pie-chart.md).
   chartPalette?: readonly string[];
   onCancelEdit: () => void;
-  onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
+  onFollowLink: (link: import('@livediagram/document').ElementLink) => void;
   // Press a Mode Button element (docs/specs/009-elements/mode-button.md): switches the LOCAL participant into
   // the mode the element carries. Optional — a surface that can't change tools
   // (the read-only embed) leaves the face inert.
-  onPressModeButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  onPressModeButton?: (element: import('@livediagram/document').ShapeElement) => void;
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else in the room to come and look at
   // this element. Absent on a surface with nobody to ask (an export, a solo
   // board), which renders the face inert.
-  onPressFocusButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  onPressFocusButton?: (element: import('@livediagram/document').ShapeElement) => void;
   // Session button (docs/specs/012-collaboration/session-button.md): press it to start the tool it carries. Absent
   // on a surface with no session to run; `sessionStartBlocked` is the softer
   // case — there IS a session, but this viewer may not start things (view
   // role), so the face renders inert and explains rather than lying.
-  onPressSessionButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  onPressSessionButton?: (element: import('@livediagram/document').ShapeElement) => void;
   sessionStartBlocked?: boolean;
   // What the tab's timer is doing, so a timer button can say "Pause" /
   // "Continue" instead of always promising a fresh countdown.
@@ -116,13 +116,13 @@ export type BoxedElementViewProps = {
   // The tab's live timer, so a Timer session element can BE the timer rather
   // than a button that starts one elsewhere (docs/specs/012-collaboration/session-button.md). Null when none is
   // running; absent on a surface with no session behind it.
-  tabTimer?: import('@livediagram/diagram').TabTimer | null;
+  tabTimer?: import('@livediagram/document').TabTimer | null;
   // Comment panel (docs/specs/012-collaboration/comment-pin.md): who I am, and the thread mutators for THIS
   // element. All keyed by element id already, so the panel drives the same
   // comment machinery the anchored popover does.
   commentSelfId?: string;
   commentActions?: {
-    add?: (text: string, mentions: import('@livediagram/diagram').CommentMention[]) => void;
+    add?: (text: string, mentions: import('@livediagram/document').CommentMention[]) => void;
     remove?: (commentId: string) => void;
     resolve?: () => void;
     unresolve?: () => void;
@@ -140,8 +140,8 @@ export type BoxedElementViewProps = {
   };
   // Per-element session settings from the element's own `…` menu (docs/specs/012-collaboration/session-button.md).
   onSetSessionConfig?: (
-    element: import('@livediagram/diagram').ShapeElement,
-    config: import('@livediagram/diagram').SessionButtonConfig,
+    element: import('@livediagram/document').ShapeElement,
+    config: import('@livediagram/document').SessionButtonConfig,
   ) => void;
   // The `…` on a Behaviours element's face opens that element's own context
   // menu beside it (docs/specs/008-canvas/canvas-and-palette.md), rather than a second copy of its settings form.
@@ -164,7 +164,7 @@ export type BoxedElementViewProps = {
   // one, returning the result to animate towards. `shared` says whether this
   // viewer's roll is written back, so the face can tell its own landing apart
   // from one that arrived from a peer.
-  onRollPicker?: (element: import('@livediagram/diagram').ShapeElement) => {
+  onRollPicker?: (element: import('@livediagram/document').ShapeElement) => {
     candidates: import('@/lib/picker').PickerCandidate[];
     shared: boolean;
     roll: () => import('@/lib/picker').PickerCandidate | null;
@@ -183,11 +183,11 @@ export type BoxedElementViewProps = {
   ) => import('@/components/canvas/collab/ChairView').ChairSitter[];
   // The viewer's current mode, so a Selection Mode button offering it renders
   // disabled (docs/specs/009-elements/mode-button.md).
-  activeMode?: import('@livediagram/diagram').SelectionMode;
+  activeMode?: import('@livediagram/document').SelectionMode;
   // Portal (docs/specs/009-elements/portal-element.md): resolves a portal's pairing for the face — the paired portal's
   // name for the hover card, and the travel action (undefined when unpaired, so the
   // face renders inert and says why).
-  onEnterPortal?: (element: import('@livediagram/diagram').ShapeElement) => {
+  onEnterPortal?: (element: import('@livediagram/document').ShapeElement) => {
     targetName: string | null;
     travel?: () => void;
   };
@@ -204,7 +204,7 @@ export type BoxedElementViewProps = {
   // see images; they just can't upload new ones via the picker.
   imageContext?: {
     ownerId: string;
-    diagramId: string;
+    documentId: string;
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
   };
@@ -246,7 +246,7 @@ export type BoxedElementViewProps = {
   // dots"); `voteMax` is the highest dot count on the tab (for the
   // winner highlight once revealed). cast/retract are omitted for
   // read-only viewers, who watch but can't vote.
-  vote?: import('@livediagram/diagram').TabVote;
+  vote?: import('@livediagram/document').TabVote;
   // Whether THIS element can take a dot in the running vote: the kind
   // rule AND the vote's layer scope (docs/specs/012-collaboration/vote-layer-scope.md). Resolved by the caller,
   // which has the tab's layers; false also drives the dimming.

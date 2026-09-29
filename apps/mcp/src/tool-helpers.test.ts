@@ -18,7 +18,7 @@ import {
 //
 // imageResult and its image resolver are deliberately not covered here: they
 // need a WASM rasteriser and a fetch double, and what they add over
-// renderElementsToSvg (already tested in packages/diagram) is I/O rather than
+// renderElementsToSvg (already tested in packages/document) is I/O rather than
 // logic. Testing them here would mostly assert the mocks.
 
 // `token === undefined` means no authInfo at all; a passed '' really does
@@ -127,7 +127,7 @@ describe('loadTab', () => {
           paths.push(path);
           const tab = path.match(/\/tabs\/([^/]+)$/)?.[1];
           return Response.json(
-            tab ? { tab: { id: tab, name: tab, elements: [] } } : { diagram: { id: 'd1', tabs } },
+            tab ? { tab: { id: tab, name: tab, elements: [] } } : { document: { id: 'd1', tabs } },
           );
         },
       },
@@ -145,7 +145,7 @@ describe('loadTab', () => {
   it('loads the named tab', async () => {
     const { env, paths } = apiEnv([{ id: 't1' }, { id: 't2' }]);
     const loaded = await loadTab(env, 'tok', 'd1', 't2');
-    expect(loaded?.diagram.id).toBe('d1');
+    expect(loaded?.document.id).toBe('d1');
     expect(loaded?.tab.id).toBe('t2');
     expect(paths.at(-1)).toBe('/api/diagrams/d1/tabs/t2');
   });

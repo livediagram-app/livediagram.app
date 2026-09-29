@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DIAGRAM_CONVERSION_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 
-// Offline Mode conversions (docs/specs/006-diagram/offline-mode.md). "Take offline" DELETES the server copy,
+// Offline Mode conversions (docs/specs/006-document/offline-mode.md). "Take offline" DELETES the server copy,
 // so the ordering here is the difference between a failed conversion and a lost
 // diagram. The module's header states the rules; nothing checked them.
 //
@@ -13,10 +13,10 @@ import { DIAGRAM_CONVERSION_HEADER } from '@livediagram/api-schema';
 const calls: string[] = [];
 
 vi.mock('@/lib/api-client', () => ({
-  apiCreateDiagram: vi.fn(async () => {
-    calls.push('apiCreateDiagram');
+  apiCreateDocument: vi.fn(async () => {
+    calls.push('apiCreateDocument');
   }),
-  apiLoadDiagram: vi.fn(async () => ({ id: 'd1', name: 'Roadmap', tabs: [{ id: 't1' }] })),
+  apiLoadDocument: vi.fn(async () => ({ id: 'd1', name: 'Roadmap', tabs: [{ id: 't1' }] })),
   apiLoadTab: vi.fn(async () => ({ id: 't1', name: 'Tab 1', elements: [] })),
   apiListFavourites: vi.fn(async () => [] as string[]),
   apiSetFavourite: vi.fn(async () => {
@@ -52,9 +52,9 @@ vi.mock('./offline-images', () => ({
 }));
 
 vi.mock('./offline-store', () => ({
-  offlineCreateDiagram: vi.fn(),
-  offlineDeleteDiagram: vi.fn(async () => {
-    calls.push('offlineDeleteDiagram');
+  offlineCreateDocument: vi.fn(),
+  offlineDeleteDocument: vi.fn(async () => {
+    calls.push('offlineDeleteDocument');
   }),
   offlineGetRecord: vi.fn(async () => ({ id: 'd1', name: 'Roadmap', tabs: [] })),
   offlinePutRecord: vi.fn(async () => {
@@ -79,14 +79,14 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     // A network failure part-way must leave the offline diagram intact, so the
     // destination has to exist before the source goes.
     return saveOfflineToCloud('d1', 'owner').then(() => {
-      expect(calls).toEqual(['apiCreateDiagram', 'offlineDeleteDiagram']);
+      expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument']);
     });
   });
 
   it('keeps the local copy when the cloud write fails', async () => {
-    vi.mocked(apiClient.apiCreateDiagram).mockRejectedValueOnce(new Error('offline'));
+    vi.mocked(apiClient.apiCreateDocument).mockRejectedValueOnce(new Error('offline'));
     await expect(saveOfflineToCloud('d1', 'owner')).rejects.toThrow();
-    expect(store.offlineDeleteDiagram).not.toHaveBeenCalled();
+    expect(store.offlineDeleteDocument).not.toHaveBeenCalled();
   });
 
   it('carries the star to the server once the local copy is gone', async () => {
@@ -98,7 +98,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       favourite: true,
     } as never);
     await saveOfflineToCloud('d1', 'owner');
-    expect(calls).toEqual(['apiCreateDiagram', 'offlineDeleteDiagram', 'apiSetFavourite']);
+    expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument', 'apiSetFavourite']);
     expect(apiClient.apiSetFavourite).toHaveBeenCalledWith('owner', 'd1', true);
   });
 
@@ -114,7 +114,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       presentation: '{"decks":[]}',
     } as never);
     await saveOfflineToCloud('d1', 'owner');
-    expect(vi.mocked(apiClient.apiCreateDiagram).mock.calls[0]![1]).toMatchObject({
+    expect(vi.mocked(apiClient.apiCreateDocument).mock.calls[0]![1]).toMatchObject({
       folderId: 'f1',
       createdAt: 123,
       presentation: '{"decks":[]}',
@@ -129,13 +129,13 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
   it('refuses a diagram that is not in the local store', async () => {
     vi.mocked(store.offlineGetRecord).mockResolvedValueOnce(undefined as never);
     await expect(saveOfflineToCloud('missing', 'owner')).rejects.toThrow(/not found/i);
-    expect(apiClient.apiCreateDiagram).not.toHaveBeenCalled();
+    expect(apiClient.apiCreateDocument).not.toHaveBeenCalled();
   });
 });
 
 describe('takeCloudOffline (cloud -> offline)', () => {
   it('keeps the deck and personal folder on the offline record', async () => {
-    vi.mocked(apiClient.apiLoadDiagram).mockResolvedValueOnce({
+    vi.mocked(apiClient.apiLoadDocument).mockResolvedValueOnce({
       id: 'd1',
       name: 'Roadmap',
       tabs: [{ id: 't1' }],
@@ -186,19 +186,19 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     // behind a stale offline fork. Data-safe: the server still holds it all.
     vi.mocked(core.apiDelete).mockRejectedValueOnce(new Error('500'));
     await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow();
-    expect(store.offlineDeleteDiagram).toHaveBeenCalledWith('d1');
+    expect(store.offlineDeleteDocument).toHaveBeenCalledWith('d1');
   });
 
   it('still surfaces the delete failure even if the rollback also fails', async () => {
     // The rollback is best-effort; the caller must not be told the conversion
     // succeeded because the cleanup threw on the way out.
     vi.mocked(core.apiDelete).mockRejectedValueOnce(new Error('500'));
-    vi.mocked(store.offlineDeleteDiagram).mockRejectedValueOnce(new Error('idb gone'));
+    vi.mocked(store.offlineDeleteDocument).mockRejectedValueOnce(new Error('idb gone'));
     await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow('500');
   });
 
   it('refuses a diagram the server does not have', async () => {
-    vi.mocked(apiClient.apiLoadDiagram).mockResolvedValueOnce(null as never);
+    vi.mocked(apiClient.apiLoadDocument).mockResolvedValueOnce(null as never);
     await expect(takeCloudOffline('nope', 'owner')).rejects.toThrow(/not found/i);
     expect(store.offlinePutRecord).not.toHaveBeenCalled();
   });
@@ -230,19 +230,19 @@ describe('conversions declare themselves to the worker', () => {
   // Both conversions reuse ordinary endpoints, so the worker cannot tell them
   // from a real delete / a real create unless the request says so — and
   // undeclared it recorded exactly that, telling the owner in danger red that a
-  // diagram they had just moved into this browser was deleted (docs/specs/006-diagram/offline-mode.md +
+  // diagram they had just moved into this browser was deleted (docs/specs/006-document/offline-mode.md +
   // docs/specs/013-workspace/timeline.md §4.2).
   it('marks the take-offline DELETE as an offline conversion', async () => {
     await takeCloudOffline('d1', 'owner');
     const [, , opts] = vi.mocked(core.apiDelete).mock.calls[0]!;
     expect((opts as { extra?: Record<string, string> }).extra).toEqual({
-      [DIAGRAM_CONVERSION_HEADER]: 'offline',
+      [DOCUMENT_CONVERSION_HEADER]: 'offline',
     });
   });
 
   it('marks the sync POST as a sync conversion', async () => {
     await saveOfflineToCloud('off-1', 'owner');
-    const call = vi.mocked(apiClient.apiCreateDiagram).mock.calls[0]!;
+    const call = vi.mocked(apiClient.apiCreateDocument).mock.calls[0]!;
     expect(call[2]).toEqual({ conversion: 'sync' });
   });
 });

@@ -11,15 +11,15 @@
 // without mounting the header (docs/specs/003-system-architecture/testing.md).
 
 export type PaneCreateMode =
-  { kind: 'none' } | { kind: 'menu' } | { kind: 'single'; action: 'diagram' | 'folder' };
+  { kind: 'none' } | { kind: 'menu' } | { kind: 'single'; action: 'document' | 'folder' };
 
 export function paneCreateMode(opts: {
-  hasCreateDiagram: boolean;
+  hasCreateDocument: boolean;
   hasCreateFolder: boolean;
 }): PaneCreateMode {
-  const { hasCreateDiagram, hasCreateFolder } = opts;
-  if (hasCreateDiagram && hasCreateFolder) return { kind: 'menu' };
-  if (hasCreateDiagram) return { kind: 'single', action: 'diagram' };
+  const { hasCreateDocument, hasCreateFolder } = opts;
+  if (hasCreateDocument && hasCreateFolder) return { kind: 'menu' };
+  if (hasCreateDocument) return { kind: 'single', action: 'document' };
   if (hasCreateFolder) return { kind: 'single', action: 'folder' };
   return { kind: 'none' };
 }

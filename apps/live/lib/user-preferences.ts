@@ -25,7 +25,7 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-saf
 export type UserPreferences = {
   // When `false`, the editor skips the auto-rebind on move
   // (docs/specs/008-canvas/arrow-anchors.md, `rebindArrowAnchorsAfterMove`
-  // in packages/diagram). Missing / undefined / true === on.
+  // in packages/document). Missing / undefined / true === on.
   // Consumers derive the effective value via
   // `autoRebindArrowsEnabled` below so the default lives here once.
   autoRebindArrows?: boolean;
@@ -50,7 +50,7 @@ export type UserPreferences = {
   // How tall the map is. A big diagram is unreadable in a 144px strip; a
   // small one doesn't need more.
   mapSize?: MapSize;
-  // Layers panel options (docs/specs/006-diagram/layers.md). Both default ON via `!== false`.
+  // Layers panel options (docs/specs/006-document/layers.md). Both default ON via `!== false`.
   //
   // The row thumbnail is the quickest way to tell two similarly-named layers
   // apart, but it is also the tallest thing in a row — turning it off gives a
@@ -144,7 +144,7 @@ export type UserPreferences = {
   // the tab has a few elements, the Activity panel is minimised, and on
   // desktop). The minimap's own close button writes an explicit `false`.
   showMinimap?: boolean;
-  // Layers panel hover-solo (docs/specs/006-diagram/layers.md). When `false`, resting the pointer
+  // Layers panel hover-solo (docs/specs/006-document/layers.md). When `false`, resting the pointer
   // on a Layers-panel row no longer solos that layer on the canvas.
   // Missing / undefined / true === on, the default. Flipped from the
   // panel's settings gear (desktop-only chrome, like the hover itself).
@@ -164,7 +164,7 @@ export type UserPreferences = {
   // suppresses that email.
   //
   // "Someone first opened one of my shared diagrams."
-  notifyDiagramJoin?: boolean;
+  notifyDocumentJoin?: boolean;
   // "Someone accepted / declined a team invite I sent" (to the team's admins).
   notifyInviteResponse?: boolean;
   notifyComments?: boolean;
@@ -225,17 +225,17 @@ export type UserPreferences = {
 export const RECENT_EXCLUDED_LIMIT = 60;
 
 // Is this diagram hidden from Recent?
-export function isRecentExcluded(prefs: UserPreferences, diagramId: string): boolean {
-  return prefs.recentExcludedIds?.includes(diagramId) === true;
+export function isRecentExcluded(prefs: UserPreferences, documentId: string): boolean {
+  return prefs.recentExcludedIds?.includes(documentId) === true;
 }
 
 // Flip a diagram's Recent exclusion, returning the NEXT id list. Newest
 // exclusions are kept at the front so the cap drops the oldest choice
 // rather than the one just made.
-export function toggleRecentExcluded(prefs: UserPreferences, diagramId: string): string[] {
+export function toggleRecentExcluded(prefs: UserPreferences, documentId: string): string[] {
   const current = prefs.recentExcludedIds ?? [];
-  if (current.includes(diagramId)) return current.filter((id) => id !== diagramId);
-  return [diagramId, ...current].slice(0, RECENT_EXCLUDED_LIMIT);
+  if (current.includes(documentId)) return current.filter((id) => id !== documentId);
+  return [documentId, ...current].slice(0, RECENT_EXCLUDED_LIMIT);
 }
 
 // Re-exported under this module's own name because everything here reads it

@@ -13,12 +13,12 @@ import {
   svgBoxed,
   type Element,
   type Layer,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
-// Per-layer preview markup (docs/specs/006-diagram/layers.md), shared by the Layers panel rows and
+// Per-layer preview markup (docs/specs/006-document/layers.md), shared by the Layers panel rows and
 // the context menu's Move-to-layer tiles: the SAME headless renderer the
 // Map / exports use, split into one markup string per layer. Every
 // preview shares the whole tab's content bounds as its viewBox, so each

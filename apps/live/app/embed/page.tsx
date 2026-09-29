@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import EditorPage from '../diagram/[id]/editor-page';
+import EditorPage from '../document/[id]/editor-page';
 
 // Read-only embed view (docs/specs/013-workspace/embeds.md): the same editor page in embed mode,
 // served from a plain static route. The share code arrives client-side

@@ -3,7 +3,7 @@
 import type { MouseEvent, ReactNode } from 'react';
 import { TreeChevronIcon } from '@/components/primitives/explorer-icons';
 import { CountBadge } from '@/components/primitives/CountBadge';
-import type { useDiagramDropTarget } from './useDiagramDropTarget';
+import type { useDocumentDropTarget } from './useDocumentDropTarget';
 
 // The header row of every expandable node in the floating Explorer panel's
 // tree: real folders (personal and team), the teams themselves, and the
@@ -53,7 +53,7 @@ export function TreeNodeHeader({
   renameInput?: ReactNode;
   // Drop-target handlers (useDiagramDropTarget), for nodes a diagram can
   // be dragged into.
-  drop?: ReturnType<typeof useDiagramDropTarget>;
+  drop?: ReturnType<typeof useDocumentDropTarget>;
   onContextMenu?: (e: MouseEvent) => void;
   trailing?: ReactNode;
 }) {

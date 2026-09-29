@@ -12,14 +12,14 @@ import type { TimelineEvent } from './types';
 function event(over: Partial<TimelineEvent> = {}): TimelineEvent {
   return {
     id: 'e1',
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: 'd1',
-    eventType: 'diagram_created',
+    eventType: 'document_created',
     title: 'Diagram Created',
     description: null,
     occurredAt: new Date(2026, 8, 21, 7, 22).getTime(),
     actorId: 'me',
-    snapshot: { diagramId: 'd1', diagramName: 'Payments' },
+    snapshot: { documentId: 'd1', documentName: 'Payments' },
     ...over,
   } as TimelineEvent;
 }

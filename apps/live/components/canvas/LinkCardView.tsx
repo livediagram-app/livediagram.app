@@ -2,7 +2,7 @@
 
 import { lucideFile, lucideLink, lucidePanelsTopLeft } from '@livediagram/icons/lucide';
 import { useState } from 'react';
-import { defaultTextColor, type LinkCardElement } from '@livediagram/diagram';
+import { defaultTextColor, type LinkCardElement } from '@livediagram/document';
 import { Glyph, Prims } from '@livediagram/ui';
 
 // Inner content of a link-card element (docs/specs/009-elements/link-cards.md): a favicon / glyph + title +
@@ -32,8 +32,8 @@ function describeCard(
   switch (link.kind) {
     case 'url':
       return { title: meta?.title ?? hostOf(link.url), destination: link.url };
-    case 'diagram':
-      return { title: 'Diagram', destination: link.name };
+    case 'document':
+      return { title: 'Document', destination: link.name };
     case 'tab':
     case 'element': {
       const name = tabs?.find((t) => t.id === link.tabId)?.name?.trim();
@@ -167,7 +167,7 @@ export function LinkCardView({
 function LinkGlyph({ kind }: { kind: NonNullable<LinkCardElement['link']>['kind'] }) {
   // A diagram is a document, a tab or element jump a panel, anything else a URL.
   const prims =
-    kind === 'diagram'
+    kind === 'document'
       ? lucideFile
       : kind === 'tab' || kind === 'element'
         ? lucidePanelsTopLeft

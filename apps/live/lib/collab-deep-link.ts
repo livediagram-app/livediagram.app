@@ -5,7 +5,7 @@
 //   /diagram/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
 //
 // `t` is the tab pin the editor already writes on every tab switch
-// (docs/specs/006-diagram/per-tab-storage.md, useTabEntryEffects); `el` and `open` ride beside it and are
+// (docs/specs/006-document/per-tab-storage.md, useTabEntryEffects); `el` and `open` ride beside it and are
 // consumed once on load. Pure functions, shared by the Explorer (which
 // builds the link) and the editor (which reads it), so the two halves
 // cannot drift on the parameter names.
@@ -24,7 +24,7 @@ export function collabDeepLinkHref(place: ActivityPlace, open: CollabPopover): s
   const query =
     place.via === 'shared' && place.shareCode ? `?s=${encodeURIComponent(place.shareCode)}` : '';
   const hash = `#t=${encodeURIComponent(place.tabId)}&el=${encodeURIComponent(place.elementId)}&open=${open}`;
-  return `/diagram/${encodeURIComponent(place.diagramId)}${query}${hash}`;
+  return `/diagram/${encodeURIComponent(place.documentId)}${query}${hash}`;
 }
 
 // Null unless the fragment names BOTH a tab and an element: a plain

@@ -8,7 +8,7 @@
 // deterministic + reduced-motion-safe like the other element animations. The
 // first of the chart family, so the anim set is its own.
 
-import { legendFontPx, type ShapeElement } from '@livediagram/diagram';
+import { legendFontPx, type ShapeElement } from '@livediagram/document';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';

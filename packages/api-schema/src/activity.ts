@@ -15,8 +15,8 @@
 // shared with them); `shareCode` is set only for 'shared', so the client
 // can build the visitor URL (docs/specs/013-workspace/embeds.md) the way Shared with You does.
 export type ActivityPlace = {
-  diagramId: string;
-  diagramName: string;
+  documentId: string;
+  documentName: string;
   teamId: string | null;
   via: 'own' | 'team' | 'shared';
   shareCode: string | null;
@@ -24,7 +24,7 @@ export type ActivityPlace = {
   tabName: string;
   elementId: string;
   // The element's list name (its label, a table's first cell, or
-  // "Untitled"), per `elementDisplayLabel` in @livediagram/diagram.
+  // "Untitled"), per `elementDisplayLabel` in @livediagram/document.
   elementLabel: string;
 };
 
@@ -52,7 +52,7 @@ export type ActivityThread = ActivityPlace & {
   latest: { text: string; authorName: string; authorColor: string; at: number };
   firstAt: number;
   youCommented: boolean;
-  onYourDiagram: boolean;
+  onYourDocument: boolean;
   // The reader is @-mentioned in the thread (docs/specs/012-collaboration/comment-mentions.md).
   mentionsYou: boolean;
 };

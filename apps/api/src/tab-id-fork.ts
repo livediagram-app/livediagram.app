@@ -1,5 +1,5 @@
 // Re-minting seeded tab ids a create must not write into
-// (docs/specs/006-diagram/offline-mode.md, "Shared tabs fork").
+// (docs/specs/006-document/offline-mode.md, "Shared tabs fork").
 //
 // A tab id is global, so a seeded tab whose id another diagram already holds
 // would upsert over that tab. The create keeps the content under a fresh id
@@ -11,7 +11,7 @@ import {
   remapPresentationTabs,
   remapTabLinks,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 export function forkTakenTabIds(
   tabs: Tab[],

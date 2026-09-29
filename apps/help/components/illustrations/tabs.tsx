@@ -322,7 +322,7 @@ export function CrossTabLink() {
 
 /** The tab ellipsis menu with the Add to Diagram option and a target-diagram
  *  picker submenu. */
-export function AddToDiagramMenu() {
+export function AddToDocumentMenu() {
   const barY = 158;
   return (
     <Scene w={420} h={210}>

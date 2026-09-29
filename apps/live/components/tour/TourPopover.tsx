@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { clamp } from '@livediagram/diagram';
+import { clamp } from '@livediagram/document';
 import { Button } from '@livediagram/ui';
 import { placeTourPopover } from './tour-position';
 import { TourHelpArt } from './TourHelpArt';

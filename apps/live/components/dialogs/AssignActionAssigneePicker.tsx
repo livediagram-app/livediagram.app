@@ -30,8 +30,8 @@ export function AssigneePicker({
   selfRow,
   grouped,
   members,
-  memberOfDiagramTeam,
-  diagramTeamId,
+  memberOfDocumentTeam,
+  documentTeamId,
   assignee,
   onPick,
   signInHref,
@@ -44,8 +44,8 @@ export function AssigneePicker({
   selfRow: PickableMember | null;
   grouped: [string, { teamName: string; members: PickableMember[] }][];
   members: PickableMember[] | null;
-  memberOfDiagramTeam: boolean;
-  diagramTeamId: string | null;
+  memberOfDocumentTeam: boolean;
+  documentTeamId: string | null;
   assignee: PickableMember | null;
   onPick: (m: PickableMember) => void;
   signInHref: string;
@@ -118,7 +118,7 @@ export function AssigneePicker({
             {group.members.map((m) => row(m, false))}
           </div>
         ))}
-        {signedIn && memberOfDiagramTeam && members === null ? (
+        {signedIn && memberOfDocumentTeam && members === null ? (
           <p className="px-3 py-2 text-center text-xs text-slate-400 dark:text-slate-400">
             Loading teammates…
           </p>
@@ -133,7 +133,7 @@ export function AssigneePicker({
           </a>{' '}
           and join a team to assign actions to teammates.
         </p>
-      ) : signedIn && diagramTeamId === null ? (
+      ) : signedIn && documentTeamId === null ? (
         // Personal diagram: teammates couldn't open it to complete the
         // action. With teams to offer, fix it INLINE — one click files
         // the diagram into that team's library root and the members
@@ -174,7 +174,7 @@ export function AssigneePicker({
             </p>
           )}
         </div>
-      ) : signedIn && !memberOfDiagramTeam ? (
+      ) : signedIn && !memberOfDocumentTeam ? (
         // Share-link editor on someone else's team diagram: they can
         // edit, but only the team's members are assignable.
         <p className="px-1 text-xs text-slate-400">

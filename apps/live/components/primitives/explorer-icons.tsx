@@ -118,7 +118,7 @@ export function UnsortedIcon({ size = 13 }: IconProps) {
   );
 }
 
-// Cloud-with-slash for the synthetic Offline folder (docs/specs/006-diagram/offline-mode.md): diagrams
+// Cloud-with-slash for the synthetic Offline folder (docs/specs/006-document/offline-mode.md): diagrams
 // saved only in this browser, never on the server.
 export const OfflineFolderIcon = lucideGlyph(lucideCloudOff, 13);
 
@@ -129,7 +129,7 @@ export function SparkleIcon({ size = 13 }: IconProps) {
 
 // ---------- Sections -------------------------------------------------
 
-export function DiagramIcon({ size = 13 }: IconProps) {
+export function DocumentIcon({ size = 13 }: IconProps) {
   return (
     <G16 size={size}>
       <rect x="2" y="2" width="12" height="12" rx="2" />
@@ -225,7 +225,7 @@ export function TrashIcon({ size = 13 }: IconProps) {
 
 export const OpenIcon = lucideGlyph(lucideExternalLink, 13);
 
-// Offline Mode conversions (docs/specs/006-diagram/offline-mode.md), from the diagram menu: a cloud with
+// Offline Mode conversions (docs/specs/006-document/offline-mode.md), from the diagram menu: a cloud with
 // an arrow going up into it, and a tray with an arrow coming down.
 export const SyncIcon = lucideGlyph(lucideCloudUpload, 14);
 export const TakeOfflineIcon = lucideGlyph(lucideDownload, 14);

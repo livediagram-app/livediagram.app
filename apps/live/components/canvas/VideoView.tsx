@@ -9,7 +9,7 @@ import {
   type EmbedProvider,
   type EmbedTarget,
   type VideoElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { useFrameBlocked } from '@/components/canvas/use-frame-blocked';
 

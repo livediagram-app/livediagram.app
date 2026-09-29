@@ -36,7 +36,7 @@ the **Activity Panel**.
 
 New D1 table, migration `0004_change_log.sql`. Two follow-up migrations narrowed the shape:
 
-- **`0012`** — dropped `diagram_id` (item #14 / [Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md)). Every entry is tab-scoped; per-diagram reads join through `diagram_tabs`.
+- **`0012`** — dropped `diagram_id` (item #14 / [Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md)). Every entry is tab-scoped; per-diagram reads join through `diagram_tabs`.
 - **`0013`** — dropped the denormalised `participant_name` + `participant_color` (item #15). Reads `LEFT JOIN participants` on `participant_id`; rows whose author has been deleted fall back to "Unknown" / slate-400 client-side.
 
 A diagram in the [Trash](../013-workspace/trash.md) keeps its change log (its tabs are untouched), unreadable while it waits and back on restore; the purge removes it with the tabs no other diagram holds.
@@ -74,11 +74,11 @@ commit**. A later rename doesn't retroactively rewrite the log.
 
 ## Cascade on tab delete
 
-Tabs got their own table in migration 0005 (see [13-per-tab-storage.md](../006-diagram/per-tab-storage.md)). Migration 0012 added `FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE` to `change_log`, so deleting a `tabs` row drops the matching log entries automatically: no per-tab cascade call from the client is needed (the historical `useTabActions.deleteTab` cascade has been removed).
+Tabs got their own table in migration 0005 (see [13-per-tab-storage.md](../006-document/per-tab-storage.md)). Migration 0012 added `FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE` to `change_log`, so deleting a `tabs` row drops the matching log entries automatically: no per-tab cascade call from the client is needed (the historical `useTabActions.deleteTab` cascade has been removed).
 
 - `DELETE /api/diagrams/:id/log/tab/:tabId` still exists: the editor's Activity Panel surfaces it as the per-tab "Clear" button so a user can wipe one tab's audit trail intentionally without deleting the tab itself.
 
-Diagram delete reaches `change_log` only through tabs: there is no `diagram_id` column to hang a cascade off, only `tab_id`. Deleting a diagram drops every tab no other diagram links, and each dropped tab takes its log entries with it; a tab still linked into another diagram keeps its whole history there, because the log lives on the tab ([Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md), "Delete a diagram").
+Diagram delete reaches `change_log` only through tabs: there is no `diagram_id` column to hang a cascade off, only `tab_id`. Deleting a diagram drops every tab no other diagram links, and each dropped tab takes its log entries with it; a tab still linked into another diagram keeps its whole history there, because the log lives on the tab ([Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md), "Delete a diagram").
 
 ## API surface
 
@@ -244,7 +244,7 @@ canvas pattern to Dots`, `Changed background opacity to 80%`. A
   Redo, in every layout (`ActivityClusterStrip`). In desktop Floating the
   panel minimises into it and the button expands it. In every other
   layout (Minimal, Toolbar, any phone) the button opens the panel as a
-  popover hanging above it, like Layers ([Layers](../006-diagram/layers.md), [Live app](../007-editor/live-app.md)).
+  popover hanging above it, like Layers ([Layers](../006-document/layers.md), [Live app](../007-editor/live-app.md)).
 - **Scoped to the active tab.** The panel only renders entries whose
   `tab_id` matches the currently visible tab; switching tabs swaps
   the log. The server still stores every entry under the diagram

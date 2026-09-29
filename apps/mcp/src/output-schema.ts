@@ -6,15 +6,15 @@
 import { z } from 'zod';
 
 const url = z.string().describe('Link that opens the diagram in the livediagram editor.');
-const diagramId = z.string().describe('The diagram id.');
+const documentId = z.string().describe('The diagram id.');
 const tabId = z.string().describe('The tab id.');
 
-export const findDiagramsOutput = {
+export const findDocumentsOutput = {
   count: z.number().int().describe('How many diagrams matched.'),
-  diagrams: z
+  documents: z
     .array(
       z.object({
-        id: diagramId,
+        id: documentId,
         name: z.string().describe('The diagram name.'),
         updatedAt: z.number().describe('When it was last saved, as a ms epoch.'),
         library: z
@@ -26,8 +26,8 @@ export const findDiagramsOutput = {
     .describe('The matches, most relevant first.'),
 };
 
-export const readDiagramOutput = {
-  id: diagramId,
+export const readDocumentOutput = {
+  id: documentId,
   name: z.string().describe('The diagram name.'),
   tab: z
     .object({
@@ -54,7 +54,7 @@ export const listTemplatesOutput = {
   templates: z
     .array(
       z.object({
-        kind: z.string().describe('Pass as "template" on create_diagram / add_tab.'),
+        kind: z.string().describe('Pass as "template" on create_document / add_tab.'),
         title: z.string().describe('The template display name.'),
         description: z.string().describe('What the template scaffolds.'),
         category: z.string().describe('The id of the category it belongs to.'),
@@ -63,8 +63,8 @@ export const listTemplatesOutput = {
     .describe('Every template in the library.'),
 };
 
-export const createDiagramOutput = {
-  id: diagramId,
+export const createDocumentOutput = {
+  id: documentId,
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
   tabCount: z.number().int().describe('How many tabs were created.'),
   tabIds: z.array(z.string()).describe('The new tab ids, in order.'),
@@ -73,57 +73,57 @@ export const createDiagramOutput = {
 };
 
 export const addTabOutput = {
-  diagramId,
+  documentId,
   tabId: tabId.describe('The new tab id.'),
   name: z.string().describe('The stored tab name (shortened if it was over the cap).'),
   url,
 };
 
-export const updateDiagramOutput = {
-  id: diagramId,
+export const updateDocumentOutput = {
+  id: documentId,
   tabId: tabId.describe('The tab that was edited.'),
   url,
 };
 
-export const shareDiagramOutput = {
+export const shareDocumentOutput = {
   url: z.string().describe('The share link. Opening it needs no sign-in.'),
   role: z.enum(['view', 'edit']).describe('What the link grants.'),
   expiresAt: z
     .number()
     .nullable()
     .describe('When the link stops working, as a ms epoch; null when it never expires.'),
-  diagramUrl: url,
+  documentUrl: url,
 };
 
-export const renameDiagramOutput = {
+export const renameDocumentOutput = {
   renamed: z
-    .enum(['diagram', 'tab'])
+    .enum(['document', 'tab'])
     .describe('Whether the diagram or one of its tabs was renamed.'),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
-  id: diagramId.optional().describe('The renamed diagram id (diagram renames).'),
+  id: documentId.optional().describe('The renamed diagram id (diagram renames).'),
   tabId: tabId.optional().describe('The renamed tab id (tab renames).'),
   url: url.optional().describe('Link that opens the diagram (diagram renames).'),
 };
 
-export const deleteDiagramOutput = {
+export const deleteDocumentOutput = {
   deleted: z
-    .enum(['diagram', 'tab'])
+    .enum(['document', 'tab'])
     .describe('Whether the diagram or one of its tabs was deleted.'),
-  diagramId,
+  documentId,
   tabId: tabId.optional().describe('The deleted tab id (tab deletes).'),
   trashed: z.boolean().optional().describe('True when the diagram went to the Trash.'),
   restorableForDays: z
     .number()
     .int()
     .optional()
-    .describe('Days the diagram can be restored with restore_diagram before it is purged.'),
+    .describe('Days the diagram can be restored with restore_document before it is purged.'),
 };
 
 export const listTrashOutput = {
   trash: z
     .array(
       z.object({
-        id: diagramId,
+        id: documentId,
         name: z.string().describe('The diagram name.'),
         library: z
           .string()
@@ -135,9 +135,9 @@ export const listTrashOutput = {
     .describe('The diagrams that can still be restored.'),
 };
 
-export const restoreDiagramOutput = {
-  restored: z.literal('diagram').describe('Always "diagram": tabs have no Trash.'),
-  id: diagramId,
+export const restoreDocumentOutput = {
+  restored: z.literal('document').describe('Always "diagram": tabs have no Trash.'),
+  id: documentId,
   name: z.string().nullable().describe('The restored diagram name, or null if unknown.'),
   url,
 };

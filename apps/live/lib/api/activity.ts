@@ -2,7 +2,7 @@
 // reader across every diagram they can open.
 //
 // Read-only: every row links into the editor, where completing /
-// resolving already live. Offline Mode (docs/specs/006-diagram/offline-mode.md) is a deliberate no-op
+// resolving already live. Offline Mode (docs/specs/006-document/offline-mode.md) is a deliberate no-op
 // here for the same reason as the Timeline: this endpoint is scoped to
 // an owner, not a diagram id, and a browser-only diagram never reaches
 // the worker, so it has no rows to show.

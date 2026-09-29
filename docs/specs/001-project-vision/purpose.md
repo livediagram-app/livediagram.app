@@ -52,7 +52,7 @@ never arrives.
   ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)).
 - **Mindmaps** ([The mind node](../009-elements/mind-node.md)): hierarchical node/branch
   structures with keyboard-driven expansion.
-- **Structure**: tabs, tab folders, per-tab layers ([Layers](../006-diagram/layers.md)),
+- **Structure**: tabs, tab folders, per-tab layers ([Layers](../006-document/layers.md)),
   themes and templates.
 - **Running the session**: timers and dot votes
   ([Session tools (timer + voting)](../012-collaboration/session-tools.md)), live polls ([Live poll (ephemeral pulse-check)](../012-collaboration/live-poll.md)),
@@ -70,7 +70,7 @@ never arrives.
   ([Mermaid import & export](../020-import-export/mermaid.md)), Markdown and Excalidraw
   ([Excalidraw import & export](../020-import-export/excalidraw-import-export.md)); image export
   ([Export fidelity](../020-import-export/export-fidelity.md)); read-only embeds.
-- **Teams** ([Teams](../013-workspace/teams.md), [Team shared diagrams](../013-workspace/team-shared-diagrams.md)): a
+- **Teams** ([Teams](../013-workspace/teams.md), [Team shared diagrams](../013-workspace/team-shared-documents.md)): a
   named group with Admin/Member roles and a shared library of diagrams and
   folders. A diagram lives in exactly one place: someone's personal tree, or one
   team's library. Personal is the default; a team is opt-in.
@@ -108,7 +108,7 @@ here in the same change, with the spec that moved it.
   and the product is better for it, because the session that built the diagram
   usually ends by showing it.
 - **"Not an offline-first desktop app"**: narrowed by
-  [Offline Mode](../006-diagram/offline-mode.md). Still not a desktop app, and cloud is still the
+  [Offline Mode](../006-document/offline-mode.md). Still not a desktop app, and cloud is still the
   default, but a diagram can now be kept only in this browser's IndexedDB and
   converted back and forth. Offline is a supported mode, not merely an
   unsupported state.

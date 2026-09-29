@@ -4,7 +4,7 @@ import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import { Glyph } from '@livediagram/ui';
 
 // Blocking overlay shown over the canvas while the ACTIVE tab's content
-// is still being fetched (docs/specs/006-diagram/per-tab-storage.md lazy per-tab load), or after that
+// is still being fetched (docs/specs/006-document/per-tab-storage.md lazy per-tab load), or after that
 // fetch failed. It must BLOCK interaction rather than just decorate, for
 // two reasons:
 //   1. Until the GET lands, local state holds an empty-elements

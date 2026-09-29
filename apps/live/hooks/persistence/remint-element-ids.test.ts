@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, ShapeElement } from '@livediagram/diagram';
+import type { Element, ShapeElement } from '@livediagram/document';
 import { remintElementIds } from './useTabImport';
 
 // Duplicate Tab, the cross-diagram tab link and JSON import all re-mint ids.

@@ -5,7 +5,7 @@
 // synced and never in the diagram. The logic is pure, in lib/style-memory.
 
 import { useEffect, useRef } from 'react';
-import type { Element, ThemeDefinition } from '@livediagram/diagram';
+import type { Element, ThemeDefinition } from '@livediagram/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 import {
   applyStyleMemory,
@@ -29,10 +29,10 @@ export type StyleMemoryApi = {
 };
 
 export function useStyleMemory({
-  diagramId,
+  documentId,
   theme,
 }: {
-  diagramId: string | null;
+  documentId: string | null;
   theme: ThemeDefinition;
 }): StyleMemoryApi {
   const memoryRef = useRef<StyleMemory>({});
@@ -43,14 +43,14 @@ export function useStyleMemory({
   // Read synchronously on the first call for a diagram, so an element drawn in
   // the same tick as the load already sees it.
   const ensureLoaded = (): boolean => {
-    if (!diagramId) return false;
-    if (loadedFor.current !== diagramId) {
-      const raw = readLocalStorageSafe(styleMemoryKey(diagramId));
+    if (!documentId) return false;
+    if (loadedFor.current !== documentId) {
+      const raw = readLocalStorageSafe(styleMemoryKey(documentId));
       memoryRef.current = parseStyleMemory(raw);
       if (raw !== null && Object.keys(memoryRef.current).length === 0 && raw !== '{}') {
-        console.warn('[style-memory] unreadable', styleMemoryKey(diagramId));
+        console.warn('[style-memory] unreadable', styleMemoryKey(documentId));
       }
-      loadedFor.current = diagramId;
+      loadedFor.current = documentId;
     }
     return true;
   };
@@ -76,7 +76,7 @@ export function useStyleMemory({
   };
 
   // A diagram switch or unmount writes what is pending for the old one.
-  useEffect(() => () => flush(), [diagramId]);
+  useEffect(() => () => flush(), [documentId]);
 
   const commit = (next: StyleMemory, log: string, detail: unknown) => {
     if (next === memoryRef.current) return;

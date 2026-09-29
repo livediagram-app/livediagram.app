@@ -21,7 +21,7 @@ export const VOTE_REVIEWS_ENDED = chart(
   { types: ['VoteReview'] },
 );
 
-export const TEAM_DIAGRAMS_MOVED = chart(
+export const TEAM_DOCUMENTS_MOVED = chart(
   'Team',
   'Moved',
   'Team Diagrams Moved',
@@ -37,7 +37,7 @@ export const SHARE_LINKS_COPIED = chart(
 );
 
 export const SHARE_SETTINGS = chart(
-  'Diagram',
+  'Document',
   'Shared',
   'Share Link Settings',
   'A password or an expiry set on a share link.',
@@ -45,7 +45,7 @@ export const SHARE_SETTINGS = chart(
 );
 
 export const SHARE_LINKS_REMOVED = chart(
-  'Diagram',
+  'Document',
   'Removed',
   'Share Links Removed',
   'A share link switched off.',
@@ -192,7 +192,7 @@ export const LIVE_IMAGE_TABS = chart(
 // started vs revealed, dots cast vs retracted, timers started vs finished.
 
 export const MULTIPLAYER_SESSIONS: Metric = {
-  category: 'Diagram',
+  category: 'Document',
   action: 'Used',
   type: 'Multiplayer',
   title: 'Multiplayer Sessions',
@@ -210,21 +210,21 @@ export const VIEWPORTS_FOLLOWED: Metric = {
 };
 
 export const EDIT_LINKS_SHARED: Metric = {
-  category: 'Diagram',
+  category: 'Document',
   action: 'Shared',
   type: 'Edit',
   title: 'Edit Links Shared',
 };
 
 export const VIEW_LINKS_SHARED: Metric = {
-  category: 'Diagram',
+  category: 'Document',
   action: 'Shared',
   type: 'View',
   title: 'View Links Shared',
 };
 
 export const COLLABORATORS_JOINED: Metric = {
-  category: 'Diagram',
+  category: 'Document',
   action: 'Joined',
   type: 'Edit',
   title: 'Collaborators Joined',
@@ -233,7 +233,7 @@ export const COLLABORATORS_JOINED: Metric = {
 };
 
 export const VIEWERS_JOINED: Metric = {
-  category: 'Diagram',
+  category: 'Document',
   action: 'Joined',
   type: 'View',
   title: 'Viewers Joined',
@@ -306,10 +306,10 @@ export const INVITES_DECLINED: Metric = {
   blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
 };
 
-export const DIAGRAMS_SHARED_TO_A_TEAM: Metric = {
+export const DOCUMENTS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
   action: 'Added',
-  type: 'Diagram',
+  type: 'Document',
   title: 'Diagrams Shared to a Team',
   blurb: "A diagram was moved into a team's shared library for everyone on the team.",
 };
@@ -517,8 +517,8 @@ export const TEAM_ACTIVITY: MetricStack = {
     INVITES_SENT,
     INVITES_ACCEPTED,
     INVITES_DECLINED,
-    DIAGRAMS_SHARED_TO_A_TEAM,
-    TEAM_DIAGRAMS_MOVED,
+    DOCUMENTS_SHARED_TO_A_TEAM,
+    TEAM_DOCUMENTS_MOVED,
     INVITE_LINKS_SHARED,
     TEAM_CHANGES,
     TEAM_REMOVALS,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { THEMES } from '@livediagram/diagram';
+import { THEMES } from '@livediagram/document';
 import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
 import { themeTelemetryLabel } from './custom-theme-registry';
 

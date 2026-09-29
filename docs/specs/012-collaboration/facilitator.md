@@ -30,7 +30,7 @@ the board on Monday and asks a colleague to run the session on Tuesday.
 **The room does not know who anybody is, deliberately.** At the WebSocket
 upgrade the api resolves the visitor's role and forwards only
 `X-Verified-Role: edit | view`
-([`diagram-room-routes.ts`](../../../apps/api/src/routes/diagram-room-routes.ts)):
+([`document-room-routes.ts`](../../../apps/api/src/routes/document-room-routes.ts)):
 
 > Presence identity is no longer forwarded: the DO assigns each session a fresh
 > ephemeral id for its broadcast presence / cursor ([Public API and API tokens](../015-api/public-api-and-tokens.md) §6), so the real
@@ -73,7 +73,7 @@ non-owner path: browsers can't put headers on a WebSocket upgrade, but
 `X-Verified-Owner: 1` and be seated as the owner — enough to seize the baton off
 its holder and end someone else's turn. Both trust headers are now written
 unconditionally (`X-Verified-Owner: '1' | '0'`), which is also why the room reads
-`=== '1'`. `diagram-room-routes.test.ts` asserts the forwarded headers rather
+`=== '1'`. `document-room-routes.test.ts` asserts the forwarded headers rather
 than the route's intent, with a hostile pre-set pair as the input.
 
 ### Who may take it
@@ -347,7 +347,7 @@ board, and it names the person to ask.
 
 ## Edges
 
-- **Offline diagrams** ([Offline Mode](../006-diagram/offline-mode.md)) have no room, so no baton and no badge.
+- **Offline diagrams** ([Offline Mode](../006-document/offline-mode.md)) have no room, so no baton and no badge.
 - **Two browser tabs, one person**: each is a separate socket, but the token is
   in `sessionStorage`, so the tab that was granted it keeps it. Their other tab
   is an ordinary participant.

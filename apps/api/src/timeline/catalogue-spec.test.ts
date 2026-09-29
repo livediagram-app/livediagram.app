@@ -51,8 +51,8 @@ describe('the timeline event catalogue in the spec', () => {
     expect([...catalogueTypes()].filter((t) => !known.has(t))).toEqual([]);
   });
 
-  it('only retires diagram_renamed: every other type is still emitted', () => {
+  it('only retires document_renamed: every other type is still emitted', () => {
     const emitted = emittedTypes();
-    expect(TIMELINE_EVENT_TYPES.filter((t) => !emitted.has(t))).toEqual(['diagram_renamed']);
+    expect(TIMELINE_EVENT_TYPES.filter((t) => !emitted.has(t))).toEqual(['document_renamed']);
   });
 });

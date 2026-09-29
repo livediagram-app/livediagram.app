@@ -1,4 +1,4 @@
-import type { WebComponentShape } from '@livediagram/diagram';
+import type { WebComponentShape } from '@livediagram/document';
 import { BannerFace } from '@/components/canvas/web/BannerFace';
 import { CalloutFace } from '@/components/canvas/web/CalloutFace';
 import { ProcessFace } from '@/components/canvas/web/ProcessFace';
@@ -7,7 +7,7 @@ import { StatRowFace } from '@/components/canvas/web/StatRowFace';
 import type { WebFaceProps } from '@/components/canvas/web/web-face-props';
 
 // The web components' faces (docs/specs/009-elements/web-components-and-no-groups.md), one per kind. Each lays itself out
-// from the element's size via the shared layouts in @livediagram/diagram, so
+// from the element's size via the shared layouts in @livediagram/document, so
 // a resize re-flows the content rather than zooming it.
 export function WebComponentFace({ kind, ...props }: WebFaceProps & { kind: WebComponentShape }) {
   switch (kind) {

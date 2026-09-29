@@ -6,7 +6,7 @@ import type { NextConfig } from 'next';
 // resolve arbitrary user-minted ids without needing them enumerated
 // in `generateStaticParams`. The production build still ships a
 // single placeholder file backed by the live worker's path rewrite
-// (docs/specs/007-editor/new-diagram-route.md).
+// (docs/specs/007-editor/new-document-route.md).
 const isProdBuild = process.env.NODE_ENV === 'production';
 
 // distDir split keeps `next dev` from racing `next build` on
@@ -46,7 +46,7 @@ const nextConfig: NextConfig = {
   ...(isTurbopack
     ? { reactCompiler: true, experimental: { turbopackRustReactCompiler: true } }
     : {}),
-  transpilePackages: ['@livediagram/ui', '@livediagram/diagram', '@livediagram/api-schema'],
+  transpilePackages: ['@livediagram/ui', '@livediagram/document', '@livediagram/api-schema'],
 };
 
 export default nextConfig;

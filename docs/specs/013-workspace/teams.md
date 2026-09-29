@@ -116,7 +116,7 @@ The pane title row reads "Recent Diagrams" for the recent section (renamed from 
 
 **Creating a team from a placement picker.** The New Diagram wizard's
 Location step and the Explorer's Move dialog both open on the space
-overview ([Save Locations](../006-diagram/save-locations.md)), and that overview carries a **New Team** tile after
+overview ([Save Locations](../006-document/save-locations.md)), and that overview carries a **New Team** tile after
 the team cards for signed-in users: an inline name field that creates the
 team and enters it, so "put this diagram in a new team" is one flow rather
 than a detour through the sidebar's New team form. The sidebar form stays

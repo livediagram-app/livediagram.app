@@ -11,7 +11,7 @@ import {
   untitledNameForTemplate,
   type TemplateKind,
 } from '@livediagram/templates';
-import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/diagram';
+import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/document';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome
@@ -130,7 +130,7 @@ describe('TEMPLATES catalogue', () => {
   it('every kind builds without throwing (the buildTemplate switch handles every union member)', () => {
     for (const kind of ALL_KINDS) {
       const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
-      // 'blank' is intentionally empty (docs/specs/007-editor/new-diagram-route.md); every other kind seeds
+      // 'blank' is intentionally empty (docs/specs/007-editor/new-document-route.md); every other kind seeds
       // content. Either way the switch must handle the union member.
       expect(tab.elements.length).toBeGreaterThan(kind === 'blank' ? -1 : 0);
     }
@@ -160,7 +160,7 @@ describe('templateCanvasOverrides', () => {
   it('gives alignment-heavy scaffolds a square graph paper backdrop', () => {
     expect(templateCanvasOverrides('flowchart')).toEqual({ backgroundPattern: 'graph' });
     expect(templateCanvasOverrides('orgchart')).toEqual({ backgroundPattern: 'graph' });
-    // Layered templates (docs/specs/006-diagram/layers.md) additionally carry their Tab.layers.
+    // Layered templates (docs/specs/006-document/layers.md) additionally carry their Tab.layers.
     expect(templateCanvasOverrides('swot')).toEqual({
       backgroundPattern: 'graph',
       layers: templateLayers('swot'),
@@ -204,7 +204,7 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('blank')).toEqual({});
   });
 
-  it('ships the kanban board with its Board / Cards layers (docs/specs/006-diagram/layers.md)', () => {
+  it('ships the kanban board with its Board / Cards layers (docs/specs/006-document/layers.md)', () => {
     expect(templateCanvasOverrides('kanban')).toEqual({
       backgroundPattern: 'graph',
       layers: [
@@ -215,12 +215,12 @@ describe('templateCanvasOverrides', () => {
   });
 });
 
-// Layered templates (docs/specs/006-diagram/layers.md "Layered templates"): a layered template's
+// Layered templates (docs/specs/006-document/layers.md "Layered templates"): a layered template's
 // builder pre-stamps `layerId` on every element, and the matching
 // `Tab.layers` rides templateCanvasOverrides, so the two can't be
 // allowed to drift apart — an element stamped with an id the layers
 // array doesn't know would silently fall back to the default layer.
-describe('layered templates (docs/specs/006-diagram/layers.md)', () => {
+describe('layered templates (docs/specs/006-document/layers.md)', () => {
   it('keeps every builder in lockstep with templateLayers across the catalogue', () => {
     for (const kind of TEMPLATES.map((t) => t.kind)) {
       const layers = templateLayers(kind);
@@ -244,7 +244,7 @@ describe('layered templates (docs/specs/006-diagram/layers.md)', () => {
   it('kanban splits the stationary board from the tickets, cards on top', () => {
     const layers = templateLayers('kanban')!;
     // Cards LAST (top): the default active layer, so new elements land
-    // with the content, never under the scaffold (docs/specs/006-diagram/layers.md).
+    // with the content, never under the scaffold (docs/specs/006-document/layers.md).
     expect(layers.map((l) => l.name)).toEqual(['Board', 'Cards']);
     const elements = buildTemplate('kanban', 0, 0);
     const board = elements.filter((el) => el.layerId === TEMPLATE_SCAFFOLD_LAYER_ID);
@@ -324,7 +324,7 @@ describe('layered templates (docs/specs/006-diagram/layers.md)', () => {
     ][]) {
       const layers = templateLayers(kind)!;
       // Scaffold at the bottom, content LAST (top): the default active
-      // layer, so new elements land with the content (docs/specs/006-diagram/layers.md). Scaffold
+      // layer, so new elements land with the content (docs/specs/006-document/layers.md). Scaffold
       // ships unlocked and visible: locking is one click away.
       expect(
         layers.map((l) => l.name),
@@ -394,7 +394,7 @@ describe('buildTemplatedTab', () => {
 
   it('recolours shape elements with the chosen theme palette', () => {
     // `flowchart` seeds plain shapes (the blank template is now empty,
-    // docs/specs/007-editor/new-diagram-route.md), so its first preset-free shape pins the recolouring
+    // docs/specs/007-editor/new-document-route.md), so its first preset-free shape pins the recolouring
     // contract: a single-colour theme writes the same fill / stroke / text
     // triple onto it. (Some flowchart shapes now carry a `colorPreset`
     // (docs/specs/010-palette/style-presets.md) whose colours are re-derived from the theme instead, so we

@@ -3,7 +3,7 @@ import {
   type Comment,
   type CommentMention,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { ParticipantDTO } from './types';
 
 // Rewrite newly-added comments so the author fields come from the

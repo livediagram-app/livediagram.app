@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { elementActions, type ShapeElement } from '@livediagram/diagram';
+import { elementActions, type ShapeElement } from '@livediagram/document';
 
 import { CollabPanel } from '@/components/canvas/collab/collab-chrome';
 import { CollabDoneChip } from '@/components/canvas/collab/CollabDoneChip';

@@ -28,14 +28,14 @@ export async function handleFavourites(ctx: RouteContext): Promise<Response> {
     return json({ ids: await listFavouriteIds(env, ownerId) });
   }
 
-  const diagramId = segments[2];
-  if (segments.length === 3 && diagramId) {
+  const documentId = segments[2];
+  if (segments.length === 3 && documentId) {
     if (request.method === 'PUT') {
-      await addFavourite(env, ownerId, diagramId);
+      await addFavourite(env, ownerId, documentId);
       return noContent();
     }
     if (request.method === 'DELETE') {
-      await removeFavourite(env, ownerId, diagramId);
+      await removeFavourite(env, ownerId, documentId);
       return noContent();
     }
   }

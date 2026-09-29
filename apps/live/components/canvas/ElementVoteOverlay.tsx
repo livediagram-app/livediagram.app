@@ -3,7 +3,7 @@ import {
   voteHidesTallies,
   type BoxedElement,
   type TabVote,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
 
 // The dot-vote overlay (docs/specs/012-collaboration/session-tools.md), lifted out of BoxedElementView: the

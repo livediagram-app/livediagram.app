@@ -19,7 +19,7 @@ const CONCISE =
 
 export function registerPrompts(server: McpServer): void {
   server.registerPrompt(
-    'diagram_this',
+    'document_this',
     {
       title: 'Diagram this',
       description: 'Turn a description into a new livediagram diagram.',
@@ -38,7 +38,7 @@ export function registerPrompts(server: McpServer): void {
             text:
               `Create a livediagram diagram of the following, then give me a link to open it:\n\n` +
               `${description}\n\n` +
-              `Use the create_diagram tool. Prefer the "graph" input (nodes + edges by id, or ` +
+              `Use the create_document tool. Prefer the "graph" input (nodes + edges by id, or ` +
               `the same as "mermaid") so the server lays it out: you only need to express ` +
               `which nodes exist and what connects to what. ${CONCISE}`,
           },
@@ -65,7 +65,7 @@ export function registerPrompts(server: McpServer): void {
             text:
               `Build a flowchart in livediagram from these steps and give me a link:\n\n` +
               `${steps}\n\n` +
-              `Use create_diagram with the "graph" input: one node per step (use shape ` +
+              `Use create_document with the "graph" input: one node per step (use shape ` +
               `"diamond" for a decision, "stadium" for start/end, "square" otherwise) and ` +
               `an edge for each transition, labelling branch edges (e.g. "yes"/"no"). ${CONCISE}`,
           },
@@ -75,7 +75,7 @@ export function registerPrompts(server: McpServer): void {
   );
 
   server.registerPrompt(
-    'show_my_diagram',
+    'show_my_document',
     {
       title: 'Show my diagram',
       description: 'Find one of your diagrams by name and display it inline.',
@@ -90,8 +90,8 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text',
             text:
-              `Find my livediagram diagram matching "${name}" with find_diagrams, then ` +
-              `read_diagram it to show me the image and a link. If several match, list them ` +
+              `Find my livediagram diagram matching "${name}" with find_documents, then ` +
+              `read_document it to show me the image and a link. If several match, list them ` +
               `and ask which one.`,
           },
         },

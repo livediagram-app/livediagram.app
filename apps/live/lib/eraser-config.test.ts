@@ -5,7 +5,7 @@ import {
   createShape,
   createText,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import {
   DEFAULT_ERASER_CONFIG,
   eraserAllows,

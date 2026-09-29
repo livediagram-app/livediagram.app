@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 
-import type { DiagramListItem, SharedWithItem } from '@/lib/api-client';
-import { groupBy, groupDiagramsByFolder, indexFolders } from '@/lib/folder-tree';
+import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
+import { groupBy, groupDocumentsByFolder, indexFolders } from '@/lib/folder-tree';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { ExplorerProps } from './Explorer.types';
 
 type ExplorerViewModelDeps = Pick<
   ExplorerProps,
-  'diagrams' | 'folders' | 'currentDiagramId' | 'shared' | 'teamFolders' | 'teamDiagrams'
+  'documents' | 'folders' | 'currentDocumentId' | 'shared' | 'teamFolders' | 'teamDocuments'
 > & {
   deletedTeamIds: Set<string>;
   // Diagrams this user hid from Recent (docs/specs/013-workspace/hide-from-recent.md). Recent only — every
@@ -21,50 +21,50 @@ type ExplorerViewModelDeps = Pick<
 // groupings the accordion renders. Pure memoised derivation, split out of
 // Explorer so the component is left with wiring + render.
 export function useExplorerViewModel({
-  diagrams,
+  documents: liveDocs,
   folders,
-  currentDiagramId,
+  currentDocumentId,
   shared = [],
   teamFolders = [],
-  teamDiagrams = [],
+  teamDocuments = [],
   deletedTeamIds,
   recentExcludedIds,
 }: ExplorerViewModelDeps) {
   const current = useMemo(
-    () => (currentDiagramId ? (diagrams.find((d) => d.id === currentDiagramId) ?? null) : null),
-    [diagrams, currentDiagramId],
+    () => (currentDocumentId ? (liveDocs.find((d) => d.id === currentDocumentId) ?? null) : null),
+    [liveDocs, currentDocumentId],
   );
   // Team rows minus any the viewer just deleted (see deletedTeamIds).
-  const visibleTeamDiagrams = useMemo(
+  const visibleTeamDocuments = useMemo(
     () =>
       deletedTeamIds.size === 0
-        ? teamDiagrams
-        : teamDiagrams.filter((d) => !deletedTeamIds.has(d.id)),
-    [teamDiagrams, deletedTeamIds],
+        ? teamDocuments
+        : teamDocuments.filter((d) => !deletedTeamIds.has(d.id)),
+    [teamDocuments, deletedTeamIds],
   );
   // When the open diagram lives in a team library it won't be in
   // `diagrams` (those are personal only). Fall back to the swept team
   // diagrams so the Current Diagram section renders for team diagrams.
   const currentTeam = useMemo(
     () =>
-      !current && currentDiagramId
-        ? (visibleTeamDiagrams.find((d) => d.id === currentDiagramId) ?? null)
+      !current && currentDocumentId
+        ? (visibleTeamDocuments.find((d) => d.id === currentDocumentId) ?? null)
         : null,
-    [current, visibleTeamDiagrams, currentDiagramId],
+    [current, visibleTeamDocuments, currentDocumentId],
   );
   // When the open diagram is shared (not owned / not team), it won't
   // appear in `diagrams` either. Fall back to the shared list so the
   // Current Diagram section still renders for visitors.
   const currentShared = useMemo(
     () =>
-      !current && !currentTeam && currentDiagramId
-        ? (shared.find((s) => s.id === currentDiagramId) ?? null)
+      !current && !currentTeam && currentDocumentId
+        ? (shared.find((s) => s.id === currentDocumentId) ?? null)
         : null,
-    [current, currentTeam, shared, currentDiagramId],
+    [current, currentTeam, shared, currentDocumentId],
   );
   // Cap the recents list at 5 so the accordion stays compact.
   const RECENT_LIMIT = 5;
-  // Recent mirrors the /explorer page (docs/specs/013-workspace/team-shared-diagrams.md): personal + team +
+  // Recent mirrors the /explorer page (docs/specs/013-workspace/team-shared-documents.md): personal + team +
   // shared diagrams, interleaved by recency, the current one excluded.
   // Tagged so the render picks the right row component per source.
   const recentExcluded = useMemo(() => new Set(recentExcludedIds), [recentExcludedIds]);
@@ -73,16 +73,16 @@ export function useExplorerViewModel({
       | {
           kind: 'own' | 'team';
           savedAt: number;
-          d: DiagramListItem & { team?: { id: string; name: string } };
+          d: DocumentListItem & { team?: { id: string; name: string } };
         }
       | { kind: 'shared'; savedAt: number; s: SharedWithItem };
     // Hidden-from-Recent (docs/specs/013-workspace/hide-from-recent.md) drops out alongside the currently-open
     // diagram, and BEFORE the cap, so hiding one promotes the next in.
-    const keep = (id: string) => id !== currentDiagramId && !recentExcluded.has(id);
-    const own: RecentEntry[] = diagrams
+    const keep = (id: string) => id !== currentDocumentId && !recentExcluded.has(id);
+    const own: RecentEntry[] = liveDocs
       .filter((d) => keep(d.id))
       .map((d) => ({ kind: 'own', savedAt: d.savedAt, d }));
-    const team: RecentEntry[] = visibleTeamDiagrams
+    const team: RecentEntry[] = visibleTeamDocuments
       .filter((d) => keep(d.id))
       .map((d) => ({ kind: 'team', savedAt: d.savedAt, d }));
     const sharedEntries: RecentEntry[] = shared
@@ -91,36 +91,36 @@ export function useExplorerViewModel({
     return [...own, ...team, ...sharedEntries]
       .sort((a, b) => b.savedAt - a.savedAt)
       .slice(0, RECENT_LIMIT);
-  }, [diagrams, visibleTeamDiagrams, shared, currentDiagramId, recentExcluded]);
+  }, [liveDocs, visibleTeamDocuments, shared, currentDocumentId, recentExcluded]);
   // This team's folder rows and diagrams, indexed by team, for the Teams
-  // accordion, which shows the diagrams inside each team folder (docs/specs/013-workspace/team-shared-diagrams.md).
+  // accordion, which shows the diagrams inside each team folder (docs/specs/013-workspace/team-shared-documents.md).
   const foldersByTeam = useMemo(() => groupBy(teamFolders, (f) => f.teamId), [teamFolders]);
-  const diagramsByTeam = useMemo(
-    () => groupBy(visibleTeamDiagrams, (d) => d.team.id),
-    [visibleTeamDiagrams],
+  const documentsByTeam = useMemo(
+    () => groupBy(visibleTeamDocuments, (d) => d.team.id),
+    [visibleTeamDocuments],
   );
 
   // Folder tree: index folders by parentId so the recursive renderer
   // can ask for children by id without rescanning the full list.
   const foldersByParent = useMemo(() => indexFolders(folders).childrenByParent, [folders]);
 
-  // Offline diagrams (docs/specs/006-diagram/offline-mode.md) stay out of the root Unsorted bucket: they
+  // Offline diagrams (docs/specs/006-document/offline-mode.md) stay out of the root Unsorted bucket: they
   // render under the panel's synthetic Offline node instead.
-  const diagramsByFolder = useMemo(
+  const documentsByFolder = useMemo(
     () =>
-      groupDiagramsByFolder(diagrams, {
+      groupDocumentsByFolder(liveDocs, {
         exclude: (d) => d.folderId === null && d.ownerId === OFFLINE_OWNER_ID,
       }),
-    [diagrams],
+    [liveDocs],
   );
 
-  // Offline diagrams (docs/specs/006-diagram/offline-mode.md): everything saved only in this browser,
+  // Offline diagrams (docs/specs/006-document/offline-mode.md): everything saved only in this browser,
   // regardless of any folder placement in the local record, for the panel's
   // always-shown synthetic Offline node (mirrors the /explorer route).
-  const offlineDiagrams = useMemo(
+  const offlineDocuments = useMemo(
     () =>
-      diagrams.filter((d) => d.ownerId === OFFLINE_OWNER_ID).sort((a, b) => b.savedAt - a.savedAt),
-    [diagrams],
+      liveDocs.filter((d) => d.ownerId === OFFLINE_OWNER_ID).sort((a, b) => b.savedAt - a.savedAt),
+    [liveDocs],
   );
 
   return {
@@ -129,9 +129,9 @@ export function useExplorerViewModel({
     currentShared,
     recents,
     foldersByTeam,
-    diagramsByTeam,
+    documentsByTeam,
     foldersByParent,
-    diagramsByFolder,
-    offlineDiagrams,
+    documentsByFolder,
+    offlineDocuments,
   };
 }

@@ -3,7 +3,7 @@
 // figure has to agree on, so it lives in one file rather than being threaded
 // between them or duplicated per view.
 
-import { shade as shadeHex } from '@livediagram/diagram';
+import { shade as shadeHex } from '@livediagram/document';
 
 // Sprite palette. Warm skin + brown hair, with one darker tone per material
 // for the shaded edge that gives pixel art its volume. The shirt is the

@@ -75,7 +75,7 @@ semantic colour:
 | `hotspot`         | `#fca5a5` | a conflict, question, or risk       |
 
 - **Single source of truth:** `EVENT_STORMING_NOTES` in
-  `@livediagram/diagram` (`src/event-storming.ts`) — kind, label, blurb,
+  `@livediagram/document` (`src/event-storming.ts`) — kind, label, blurb,
   fill. The palette tiles derive from it (a `map`, not hand-copies) and
   the template builder reads its orange from it, so the surfaces cannot
   drift (pinned by `event-storming.test.ts` + `palette-tile-defs.test.tsx`).
@@ -136,7 +136,7 @@ semantic colour:
   wall of them reads as one hand: capitals stay legible from across the
   room, hold an even block of colour on the paper, and stop a board looking
   like eight people's sentence-case handwriting. The rule is
-  PRESENTATION-only (`eventStormingLabelText` in `@livediagram/diagram`, a
+  PRESENTATION-only (`eventStormingLabelText` in `@livediagram/document`, a
   CSS `text-transform` on the canvas): the typed label is stored exactly as
   written, so search, the JSON export and the day a note stops being a note
   all keep the author's casing. It applies wherever a note PAINTS — display
@@ -188,7 +188,7 @@ layer**, `layer:es:board` (`eventStormingLayers()`), and no view bar.
   is distraction-free capture, and it earned its place only by driving
   the layers it has now lost.
 - **Identity is a FIRST-CLASS field**: `Tab.kind = 'event-storming'`
-  (`TabKind` in `@livediagram/diagram`). It used to be inferred from layer
+  (`TabKind` in `@livediagram/document`). It used to be inferred from layer
   ids, and that broke twice — first as a checklist (all three stage
   layers, so deleting one stripped the board), then as a single layer a
   facilitator can delete from the Layers panel — each time taking the
@@ -199,7 +199,7 @@ layer**, `layer:es:board` (`eventStormingLayers()`), and no view bar.
   the picker, /new and the MCP worker all land it in one commit.
   `isEventStormingTab(tab)` reads the kind first and falls back to the
   board layer or any legacy stage-layer id, so boards authored before the
-  field keep working; their bands remain ordinary [Layers](../006-diagram/layers.md) layers.
+  field keep working; their bands remain ordinary [Layers](../006-document/layers.md) layers.
 - **The kind set is TOTAL**: `TabKind = 'diagram' | 'event-storming'`.
   “Ordinary board” is a thing the model can SAY, so code switches over a
   complete union and a third kind can’t be silently forgotten in a branch.
@@ -492,7 +492,7 @@ stretch and the rhythm resumes after it; the empty places after that are sized
 by the note being PLACED. Across lanes it aligns on its left edge, and its brick
 is centred on the gap, so its own width decides where its left edge falls. All
 of it lives in `rhythmSlots` and `gutterCentres` in
-`packages/diagram/src/event-storming-lanes.ts`, so a ruling is a small change.
+`packages/document/src/event-storming-lanes.ts`, so a ruling is a small change.
 
 ### Always on a lane
 
@@ -762,11 +762,11 @@ radius 50 (`PHOTO_COLUMN_RADIUS`, a quarter note), x capture radius 100
 (`ES_CANDIDATE_RADIUS_X`, half a standard note), reach 2 lanes
 (`ES_CANDIDATE_REACH_LANES`). They sit in one constants block at the top of the
 geometry module, because they are a single model and get corrected together. The
-geometry is `packages/diagram/src/event-storming-lanes.ts` (including
+geometry is `packages/document/src/event-storming-lanes.ts` (including
 `ES_LANES`, the one fixed stack); the lit lane is the module store `lib/lane-preview.ts` rendered by
 `components/canvas/TimelineLanesOverlay.tsx`; the two drag paths resolve it in
 `hooks/canvas/boxed-drag-resolve.ts` and `lib/palette-drag-snap.ts`. Everything
-that lands notes without a drag is `packages/diagram/src/event-storming-lane-landing.ts`
+that lands notes without a drag is `packages/document/src/event-storming-lane-landing.ts`
 (`landArrivals`, `settleNotesOnLanes`, rows to lanes) and, for a photograph,
 `event-storming-photo-place.ts`; the editor wires them in `lib/paste-placement.ts`,
 `lib/canvas-pointer.ts`, `hooks/canvas/useLaneSettle.ts`, `useNudgeSelection` and
@@ -830,7 +830,7 @@ then just two notes: the board keeps no relation between them.
   second and third choices where there are several).
 
 **Where it lives.** The catalogue and the geometry are
-`packages/diagram/src/event-storming-next.ts` (`ES_NEXT_NOTES`,
+`packages/document/src/event-storming-next.ts` (`ES_NEXT_NOTES`,
 `nextNoteSides`, `nextNoteKind`, `nextNoteBounds`); the placement decision is
 `apps/live/lib/next-note-add.ts`; the act is `hooks/canvas/useNoteActions.ts`;
 the tabs and their preview are `components/canvas/NextNoteButtons.tsx`.

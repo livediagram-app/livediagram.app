@@ -7,7 +7,7 @@ import {
   type AlignmentGuide,
   type ArrowElement,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
 
 // The arrow control-handle frame resolvers (docs/specs/008-canvas/canvas-and-palette.md arrows), lifted out

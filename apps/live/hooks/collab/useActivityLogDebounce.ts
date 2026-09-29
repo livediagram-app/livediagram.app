@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import type { Element, Tab } from '@livediagram/diagram';
+import type { Element, Tab } from '@livediagram/document';
 
 // Activity-log entries from continuous interactions (a slider drag,
 // a colour-picker eyedropper sweep) used to fire on every tick:

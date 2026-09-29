@@ -96,7 +96,7 @@ differ, and the second copy is stored once more.
 - **Cloud diagrams** upload through `POST /api/images` with the SHA-256 and dimensions, the same
   call the image picker makes, so the gallery's dedupe, per-file cap and per-owner cap apply
   unchanged. The owner is whoever is importing: a guest's own gallery, or a signed-in account's.
-- **Offline Mode diagrams** ([Offline Mode](../006-diagram/offline-mode.md)) never reach the
+- **Offline Mode diagrams** ([Offline Mode](../006-document/offline-mode.md)) never reach the
   server. The resized image is embedded in the element as a `data:` URL, the same shape a picked
   image takes in an offline diagram and the shape Sync Diagram re-homes into the gallery later.
   Embedding is bounded by an **offline import budget of 8 MB** of `data:` URL text per import:

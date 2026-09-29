@@ -10,7 +10,7 @@
 // endpoint stays part of the documented public API for external
 // callers who want to force a seed; the app just doesn't need it.)
 //
-// Offline Mode (docs/specs/006-diagram/offline-mode.md) is a deliberate no-op here rather than a
+// Offline Mode (docs/specs/006-document/offline-mode.md) is a deliberate no-op here rather than a
 // dispatch. `isOfflineId` keys on a DIAGRAM id, and this endpoint is
 // scoped to an owner — there is no id to dispatch on, and a
 // browser-only diagram never reaches the worker, so it has no server

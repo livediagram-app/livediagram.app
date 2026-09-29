@@ -242,17 +242,17 @@ describe('connectRoom when the diagram is trashed', () => {
   });
 
   it('reports it once and never reconnects', () => {
-    const onDiagramTrashed = vi.fn();
+    const onDocumentTrashed = vi.fn();
     connectRoom(
       'd1',
       { id: 'me', name: 'Me', color: '#000' },
-      { onPresence() {}, onOp() {}, onDiagramTrashed },
+      { onPresence() {}, onOp() {}, onDocumentTrashed },
     );
     ClosingSocket.all[0]!.fire('open');
     ClosingSocket.all[0]!.fire('close', { code: 4004 });
     vi.runAllTimers();
 
-    expect(onDiagramTrashed).toHaveBeenCalledTimes(1);
+    expect(onDocumentTrashed).toHaveBeenCalledTimes(1);
     expect(ClosingSocket.all).toHaveLength(1);
   });
 
@@ -284,16 +284,16 @@ describe('connectRoom when the diagram is trashed', () => {
   });
 
   it('still reconnects after an ordinary drop', () => {
-    const onDiagramTrashed = vi.fn();
+    const onDocumentTrashed = vi.fn();
     connectRoom(
       'd1',
       { id: 'me', name: 'Me', color: '#000' },
-      { onPresence() {}, onOp() {}, onDiagramTrashed },
+      { onPresence() {}, onOp() {}, onDocumentTrashed },
     );
     ClosingSocket.all[0]!.fire('close', { code: 1006 });
     vi.runOnlyPendingTimers();
 
-    expect(onDiagramTrashed).not.toHaveBeenCalled();
+    expect(onDocumentTrashed).not.toHaveBeenCalled();
     expect(ClosingSocket.all).toHaveLength(2);
   });
 });

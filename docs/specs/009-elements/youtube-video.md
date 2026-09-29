@@ -32,7 +32,7 @@ message the user has not read. It runs on the **normalised** URL, so a bare
 `youtu.be/...` is judged as the `https://youtu.be/...` that would be stored.
 
 The video id is **parsed at render time** from that link by a pure helper
-(`youtubeVideoId` in `packages/diagram/src/youtube.ts`), never stored. Link
+(`youtubeVideoId` in `packages/document/src/youtube.ts`), never stored. Link
 cards cache their preview in `meta` because unfurling costs a network round
 trip; parsing an id costs nothing, so caching it would only create a second
 copy of the truth that can drift from the link.

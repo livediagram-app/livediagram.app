@@ -7,14 +7,14 @@
 // doesn't recognise (preserving the original fall-through-to-404).
 
 import {
-  canEditDiagram,
-  canReadDiagram,
-  resolveDiagramGrant,
-  type DiagramGrant,
-} from '../auth/diagram-access';
-import { getDiagram, getMembership, getTrashedDiagramMeta } from '../db';
-import { diagramTrashed, forbidden, missingAuth, notFound } from '../responses';
-import type { DiagramDTO, Env } from '../types';
+  canEditDocument,
+  canReadDocument,
+  resolveDocumentGrant,
+  type DocumentGrant,
+} from '../auth/document-access';
+import { getDocument, getMembership, getTrashedDocumentMeta } from '../db';
+import { documentTrashed, forbidden, missingAuth, notFound } from '../responses';
+import type { DocumentDTO, Env } from '../types';
 
 export type RouteContext = {
   request: Request;
@@ -58,7 +58,7 @@ export type RouteContext = {
 // Exported because its PRESENCE is the only honest signal that a caller
 // arrived through a share link. "Isn't the owner" is not that signal: a
 // joined team member reads every diagram in their team's library without a
-// code (docs/specs/013-workspace/team-shared-diagrams.md), so the visitor-facing timeline events keyed on
+// code (docs/specs/013-workspace/team-shared-documents.md), so the visitor-facing timeline events keyed on
 // `owner !== ownerId` were reporting teammates as strangers with a link.
 export function shareCodeOf(request: Request): string | null {
   return request.headers.get('X-Share-Code');
@@ -86,22 +86,22 @@ export function sharePasswordOf(request: Request): string | null {
 // docs/specs/013-workspace/tab-scoped-share-links.md).
 export function gateRead(
   ctx: RouteContext,
-  diagramId: string,
-  diagramOwnerId: string,
-  diagramTeamId: string | null = null,
+  documentId: string,
+  documentOwnerId: string,
+  documentTeamId: string | null = null,
   tabId?: string,
 ): Promise<boolean> {
-  return canReadDiagram(
+  return canReadDocument(
     ctx.env,
-    diagramId,
+    documentId,
     ctx.resolveOwner(),
     shareCodeOf(ctx.request),
-    diagramOwnerId,
+    documentOwnerId,
     sharePasswordOf(ctx.request),
-    diagramTeamId,
+    documentTeamId,
     // Server-verified account id (Clerk session or API token) for the
     // team-membership check — never the unsigned X-Owner-Id header
-    // (docs/specs/013-workspace/team-shared-diagrams.md access trust boundary).
+    // (docs/specs/013-workspace/team-shared-documents.md access trust boundary).
     ctx.verifiedUserId,
     tabId,
   );
@@ -109,22 +109,22 @@ export function gateRead(
 
 export function gateEdit(
   ctx: RouteContext,
-  diagramId: string,
-  diagramOwnerId: string,
-  diagramTeamId: string | null = null,
+  documentId: string,
+  documentOwnerId: string,
+  documentTeamId: string | null = null,
   tabId?: string,
 ): Promise<boolean> {
-  return canEditDiagram(
+  return canEditDocument(
     ctx.env,
-    diagramId,
+    documentId,
     ctx.resolveOwner(),
     shareCodeOf(ctx.request),
-    diagramOwnerId,
+    documentOwnerId,
     sharePasswordOf(ctx.request),
-    diagramTeamId,
+    documentTeamId,
     // Server-verified account id (Clerk session or API token) for the
     // team-membership check — never the unsigned X-Owner-Id header
-    // (docs/specs/013-workspace/team-shared-diagrams.md access trust boundary).
+    // (docs/specs/013-workspace/team-shared-documents.md access trust boundary).
     ctx.verifiedUserId,
     tabId,
   );
@@ -135,18 +135,18 @@ export function gateEdit(
 // (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access.
 export function gateGrant(
   ctx: RouteContext,
-  diagramId: string,
-  diagramOwnerId: string,
-  diagramTeamId: string | null = null,
-): Promise<DiagramGrant | null> {
-  return resolveDiagramGrant(
+  documentId: string,
+  documentOwnerId: string,
+  documentTeamId: string | null = null,
+): Promise<DocumentGrant | null> {
+  return resolveDocumentGrant(
     ctx.env,
-    diagramId,
+    documentId,
     ctx.resolveOwner(),
     shareCodeOf(ctx.request),
-    diagramOwnerId,
+    documentOwnerId,
     sharePasswordOf(ctx.request),
-    diagramTeamId,
+    documentTeamId,
     ctx.verifiedUserId,
   );
 }
@@ -160,7 +160,7 @@ export function gateGrant(
 //
 // which collapses the `const owner = resolveOwner(); if (!owner) return
 // missingAuth();` pair (and its load-and-check cousins) that every
-// owner-scoped path in diagrams.ts repeated by hand. Centralising them
+// owner-scoped path in documents.ts repeated by hand. Centralising them
 // means the authz status-code mapping (400 / 404 / 403) lives in one
 // place a reviewer can check, instead of N copies that can drift.
 
@@ -186,7 +186,7 @@ export function requireOwner(ctx: RouteContext): string | Response {
 // deleting the diagram. So a team diagram's ownership must be proven with a
 // server-VERIFIED account id (Clerk session or API token), never the header.
 //
-// This is the same trust boundary auth/diagram-access.ts draws for the
+// This is the same trust boundary auth/document-access.ts draws for the
 // read/edit gates; it belongs here too rather than only there.
 //
 // And the owner of a team diagram must still BE in the team. A member who
@@ -194,30 +194,30 @@ export function requireOwner(ctx: RouteContext): string | Response {
 // but rows from before that existed are still owned by people who have gone,
 // and ownership is what the share-link, password, delete and move-out routes
 // check first.
-export async function ownsDiagram(
+export async function ownsDocument(
   ctx: RouteContext,
-  diagram: Pick<DiagramDTO, 'ownerId' | 'teamId'>,
+  liveDoc: Pick<DocumentDTO, 'ownerId' | 'teamId'>,
 ): Promise<boolean> {
-  if (diagram.teamId) {
-    if (ctx.verifiedUserId == null || ctx.verifiedUserId !== diagram.ownerId) return false;
-    const membership = await getMembership(ctx.env, diagram.teamId, ctx.verifiedUserId);
+  if (liveDoc.teamId) {
+    if (ctx.verifiedUserId == null || ctx.verifiedUserId !== liveDoc.ownerId) return false;
+    const membership = await getMembership(ctx.env, liveDoc.teamId, ctx.verifiedUserId);
     return membership?.status === 'joined';
   }
-  return ctx.resolveOwner() === diagram.ownerId;
+  return ctx.resolveOwner() === liveDoc.ownerId;
 }
 
 // May `ctx` delete this diagram? Its owner, OR a joined member of its team
-// (docs/specs/013-workspace/team-shared-diagrams.md: members fully manage team
+// (docs/specs/013-workspace/team-shared-documents.md: members fully manage team
 // diagrams, delete included). NOT a share-link visitor: editing content via a
 // link is one thing, destroying the diagram is owner/team-only. Also gates
 // what the delete confirmation reads first (the shared-tabs notice).
-export async function mayDeleteDiagram(
+export async function mayDeleteDocument(
   ctx: RouteContext,
-  diagram: Pick<DiagramDTO, 'ownerId' | 'teamId'>,
+  liveDoc: Pick<DocumentDTO, 'ownerId' | 'teamId'>,
 ): Promise<boolean> {
-  if (await ownsDiagram(ctx, diagram)) return true;
-  if (!diagram.teamId || !ctx.verifiedUserId) return false;
-  const membership = await getMembership(ctx.env, diagram.teamId, ctx.verifiedUserId);
+  if (await ownsDocument(ctx, liveDoc)) return true;
+  if (!liveDoc.teamId || !ctx.verifiedUserId) return false;
+  const membership = await getMembership(ctx.env, liveDoc.teamId, ctx.verifiedUserId);
   return membership?.status === 'joined';
 }
 
@@ -225,11 +225,11 @@ export async function mayDeleteDiagram(
 // 410 `diagram_trashed` when it is in the Trash and the caller could have
 // opened it (owner, joined team member, share-code holder), else the 404 a
 // never-existing id gets, so the deleted state leaks nothing to a stranger.
-export async function missingDiagram(ctx: RouteContext, diagramId: string): Promise<Response> {
-  const trashed = await getTrashedDiagramMeta(ctx.env, diagramId);
+export async function missingDocument(ctx: RouteContext, documentId: string): Promise<Response> {
+  const trashed = await getTrashedDocumentMeta(ctx.env, documentId);
   if (!trashed) return notFound();
-  const grant = await gateGrant(ctx, diagramId, trashed.ownerId, trashed.teamId);
-  return grant ? diagramTrashed() : notFound();
+  const grant = await gateGrant(ctx, documentId, trashed.ownerId, trashed.teamId);
+  return grant ? documentTrashed() : notFound();
 }
 
 // Owner-only resource: resolve the caller, load the diagram, and confirm
@@ -237,17 +237,17 @@ export async function missingDiagram(ctx: RouteContext, diagramId: string): Prom
 // (missing) / 403 (foreign). 404-before-403 means a foreign id can't be
 // distinguished from a missing one until ownership is proven, but once
 // the row exists a non-owner gets 403 — matching every owner-only branch
-// diagrams.ts hand-rolled (DELETE :id, /folder, /share, /share-password,
+// documents.ts hand-rolled (DELETE :id, /folder, /share, /share-password,
 // /share/:code, /log/tab).
-export async function requireOwnedDiagram(
+export async function requireOwnedDocument(
   ctx: RouteContext,
-  diagramId: string,
-): Promise<DiagramDTO | Response> {
+  documentId: string,
+): Promise<DocumentDTO | Response> {
   const owner = ctx.resolveOwner();
   if (!owner) return missingAuth();
-  const existing = await getDiagram(ctx.env, diagramId);
-  if (!existing) return missingDiagram(ctx, diagramId);
-  if (!(await ownsDiagram(ctx, existing))) return forbidden();
+  const existing = await getDocument(ctx.env, documentId);
+  if (!existing) return missingDocument(ctx, documentId);
+  if (!(await ownsDocument(ctx, existing))) return forbidden();
   return existing;
 }
 
@@ -257,16 +257,16 @@ export async function requireOwnedDiagram(
 // `tabScope` the route applies (docs/specs/013-workspace/tab-scoped-share-links.md), or 400 / 404 / 403.
 // Used by the change-log paths, where a non-owner share visitor is a
 // legitimate caller.
-export async function requireDiagramGrant(
+export async function requireDocumentGrant(
   ctx: RouteContext,
-  diagramId: string,
+  documentId: string,
   mode: 'read' | 'edit',
-): Promise<{ diagram: DiagramDTO; grant: DiagramGrant } | Response> {
+): Promise<{ document: DocumentDTO; grant: DocumentGrant } | Response> {
   const owner = ctx.resolveOwner();
   if (!owner) return missingAuth();
-  const diagram = await getDiagram(ctx.env, diagramId);
-  if (!diagram) return missingDiagram(ctx, diagramId);
-  const grant = await gateGrant(ctx, diagramId, diagram.ownerId, diagram.teamId);
+  const liveDoc = await getDocument(ctx.env, documentId);
+  if (!liveDoc) return missingDocument(ctx, documentId);
+  const grant = await gateGrant(ctx, documentId, liveDoc.ownerId, liveDoc.teamId);
   if (!grant || (mode === 'edit' && grant.role !== 'edit')) return forbidden();
-  return { diagram, grant };
+  return { document: liveDoc, grant };
 }

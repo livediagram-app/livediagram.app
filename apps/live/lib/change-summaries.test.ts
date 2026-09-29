@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, ShapeElement } from '@livediagram/diagram';
+import type { ArrowElement, Element, ShapeElement } from '@livediagram/document';
 import { summarizeChange, summarizeEdits } from './change-summaries';
 
 // The activity panel's one-line vocabulary (docs/specs/012-collaboration/activity-and-audit.md): each field group

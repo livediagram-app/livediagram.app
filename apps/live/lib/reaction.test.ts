@@ -11,7 +11,7 @@ import {
   REACTIONS,
   SHAPE_KINDS,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // The reaction pad's model (docs/specs/009-elements/reaction-pad.md).
 

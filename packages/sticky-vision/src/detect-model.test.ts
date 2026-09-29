@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { eventStormingNote } from '@livediagram/diagram';
+import { eventStormingNote } from '@livediagram/document';
 import { hexToRgb, type ImageBuffer } from './colour';
 import { detectStickies, type DetectDropReason } from './detect';
 import type { ModelCues } from './model-cues';

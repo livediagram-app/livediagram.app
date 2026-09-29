@@ -9,25 +9,25 @@ import type { TimelineEvent } from './types';
 function event(id: string, name: string): TimelineEvent {
   return {
     id,
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: id,
-    eventType: 'diagram_renamed',
+    eventType: 'document_renamed',
     title: 'Diagram Renamed',
     description: null,
     occurredAt: 1_700_000_000_000,
     actorId: 'me',
-    snapshot: { diagramId: id, diagramName: name },
+    snapshot: { documentId: id, documentName: name },
   } as TimelineEvent;
 }
 
 const stack: TimelineStack = {
   key: 'a',
-  bucket: 'diagram::diagram_renamed',
+  bucket: 'diagram::document_renamed',
   events: [event('a', 'Payments'), event('b', 'Search'), event('c', 'Inventory')],
 };
 
 const registry = {
-  diagram: (e: TimelineEvent) => ({ icon: <svg />, subject: String(e.snapshot['diagramName']) }),
+  document: (e: TimelineEvent) => ({ icon: <svg />, subject: String(e.snapshot['documentName']) }),
 };
 
 describe('StackedCard', () => {

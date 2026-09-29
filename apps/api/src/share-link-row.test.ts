@@ -14,7 +14,7 @@ import { rowToShareLink, type ShareLinkRow } from './share-link-row';
 function row(over: Partial<ShareLinkRow> = {}): ShareLinkRow {
   return {
     code: 'ABCD2345',
-    diagram_id: 'diag-1',
+    document_id: 'diag-1',
     role: 'edit',
     created_at: 1717000000000,
     expiry: null,
@@ -28,7 +28,7 @@ describe('rowToShareLink', () => {
   it('maps every column to its DTO field shape', () => {
     const dto = rowToShareLink(row());
     expect(dto.code).toBe('ABCD2345');
-    expect(dto.diagramId).toBe('diag-1');
+    expect(dto.documentId).toBe('diag-1');
     expect(dto.role).toBe('edit');
     expect(dto.createdAt).toBe(1717000000000);
     expect(dto.expiry).toBe('never');

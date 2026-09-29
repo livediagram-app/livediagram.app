@@ -29,7 +29,7 @@ import {
   type QuickSwatchRole,
   type QuickSwatchSlot,
   type TextAlignX,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
 import {

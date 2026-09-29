@@ -39,21 +39,21 @@ describe('eventCategory', () => {
   });
 
   it('counts someone reaching your work as sharing, not as a diagram event', () => {
-    expect(eventCategory('diagram_opened_by_visitor')).toBe('sharing');
-    expect(eventCategory('diagram_copied_by_visitor')).toBe('sharing');
-    expect(eventCategory('team_diagram_added')).toBe('sharing');
-    expect(eventCategory('team_diagram_removed')).toBe('sharing');
+    expect(eventCategory('document_opened_by_visitor')).toBe('sharing');
+    expect(eventCategory('document_copied_by_visitor')).toBe('sharing');
+    expect(eventCategory('team_document_added')).toBe('sharing');
+    expect(eventCategory('team_document_removed')).toBe('sharing');
   });
 
   it('separates where a diagram lives from what changed inside it', () => {
-    expect(eventCategory('diagram_moved')).toBe('filing');
-    expect(eventCategory('diagram_offline')).toBe('filing');
-    expect(eventCategory('diagram_synced')).toBe('filing');
-    expect(eventCategory('diagram_edited')).toBe('edits');
+    expect(eventCategory('document_moved')).toBe('filing');
+    expect(eventCategory('document_offline')).toBe('filing');
+    expect(eventCategory('document_synced')).toBe('filing');
+    expect(eventCategory('document_edited')).toBe('edits');
   });
 
   it('keeps renames in one chip across diagrams and teams', () => {
-    expect(eventCategory('diagram_renamed')).toBe('renames');
+    expect(eventCategory('document_renamed')).toBe('renames');
     expect(eventCategory('team_renamed')).toBe('renames');
   });
 });

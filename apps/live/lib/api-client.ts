@@ -34,7 +34,7 @@ export { ApiError, SessionTokenUnavailableError } from './api/core';
 export { reportSaveFailure, setApiErrorReporter } from './api/error-report';
 export {
   API_BASE,
-  DIAGRAM_LIST_LOAD_SAFETY_MS,
+  DOCUMENT_LIST_LOAD_SAFETY_MS,
   setTokenProvider,
   setSessionSharePassword,
   getSessionSharePassword,
@@ -42,7 +42,7 @@ export {
   writeCachedSharePassword,
 } from './api/core';
 
-export * from './api/diagrams';
+export * from './api/documents';
 export * from './api/tabs';
 export * from './api/qa-board';
 export * from './api/share';

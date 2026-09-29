@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livediagram/diagram';
-import { DIAGRAM_CONVERSION_HEADER } from '@livediagram/api-schema';
+import type { Tab } from '@livediagram/document';
+import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { upsertTab } from '../db/tabs';
-import { trashDiagram } from '../db/trash';
+import { trashDocument } from '../db/trash';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDiagrams } from './diagrams';
+import { handleDocuments } from './documents';
 import { handleShare } from './share';
 import { handleShared } from './shared';
 import { handleFavourites } from './favourites';
@@ -31,7 +31,7 @@ type Room = { broadcasts: unknown[] };
 function world(): SqliteD1 & Room {
   const room: Room = { broadcasts: [] };
   const db = sqliteD1({
-    DIAGRAM_ROOM: {
+    DOCUMENT_ROOM: {
       idFromName: (name: string) => `id:${name}`,
       get: () => ({
         fetch: async (url: string, init?: RequestInit) => {
@@ -43,7 +43,7 @@ function world(): SqliteD1 & Room {
       }),
     },
   } as unknown as Partial<Env>);
-  insert(db.sql, 'diagrams', {
+  insert(db.sql, 'documents', {
     id: 'A',
     owner_id: 'owner',
     name: 'A',
@@ -52,14 +52,14 @@ function world(): SqliteD1 & Room {
     saved_at: T0,
     created_at: T0,
   });
-  insert(db.sql, 'share_links', { code: 'code-A', diagram_id: 'A', role: 'edit', created_at: T0 });
+  insert(db.sql, 'share_links', { code: 'code-A', document_id: 'A', role: 'edit', created_at: T0 });
   insert(db.sql, 'shared_with', {
     owner_id: 'visitor',
-    diagram_id: 'A',
+    document_id: 'A',
     role: 'edit',
     last_seen: T0,
   });
-  insert(db.sql, 'favourites', { owner_id: 'owner', diagram_id: 'A', created_at: T0 });
+  insert(db.sql, 'favourites', { owner_id: 'owner', document_id: 'A', created_at: T0 });
   return Object.assign(db, room);
 }
 
@@ -78,7 +78,7 @@ function call(
   if (segment === 'share') return handleShare(ctx);
   if (segment === 'shared') return handleShared(ctx);
   if (segment === 'favourites') return handleFavourites(ctx);
-  return handleDiagrams(ctx);
+  return handleDocuments(ctx);
 }
 
 async function status(res: Promise<Response> | Response | undefined) {
@@ -88,12 +88,12 @@ async function status(res: Promise<Response> | Response | undefined) {
     : null;
 }
 
-const TRASHED = { status: 410, body: { error: 'diagram_trashed' } };
+const TRASHED = { status: 410, body: { error: 'document_trashed' } };
 
 async function trashed() {
   const db = world();
   await seedTab(db);
-  await trashDiagram(db.env, 'A', T0);
+  await trashDocument(db.env, 'A', T0);
   return db;
 }
 
@@ -128,12 +128,12 @@ describe('a trashed diagram, to someone who could open it', () => {
     ['POST', '/api/diagrams/A/room-ticket'],
   ];
 
-  it.each(doors)('%s %s answers diagram_trashed to its owner', async (method, path, opts) => {
+  it.each(doors)('%s %s answers document_trashed to its owner', async (method, path, opts) => {
     const db = await trashed();
     expect(await status(call(db, method, path, { owner: 'owner', ...opts }))).toEqual(TRASHED);
   });
 
-  it('answers diagram_trashed to a share-link holder', async () => {
+  it('answers document_trashed to a share-link holder', async () => {
     const db = await trashed();
     const res = call(db, 'GET', '/api/diagrams/A/tabs/t1', {
       owner: 'visitor',
@@ -157,7 +157,7 @@ describe('a trashed diagram, to someone who could open it', () => {
       body: { id: 'A', name: 'again', tabs: [] },
     });
     expect(await status(res)).toEqual(TRASHED);
-    expect(db.sql.prepare("SELECT name FROM diagrams WHERE id = 'A'").get()?.name).toBe('A');
+    expect(db.sql.prepare("SELECT name FROM documents WHERE id = 'A'").get()?.name).toBe('A');
   });
 });
 
@@ -177,7 +177,7 @@ describe('a trashed diagram, to anyone else', () => {
       body: { id: 'A', name: 'mine now', tabs: [] },
     });
     expect((await res)!.status).toBe(403);
-    expect(db.sql.prepare("SELECT owner_id FROM diagrams WHERE id = 'A'").get()?.owner_id).toBe(
+    expect(db.sql.prepare("SELECT owner_id FROM documents WHERE id = 'A'").get()?.owner_id).toBe(
       'owner',
     );
   });
@@ -204,7 +204,7 @@ describe('the lists, while it is in the Trash', () => {
     const list = await (await call(db, 'GET', '/api/diagrams', { owner: 'owner' }))!.json();
     const shared = await (await call(db, 'GET', '/api/shared', { owner: 'visitor' }))!.json();
     const stars = await (await call(db, 'GET', '/api/favourites', { owner: 'owner' }))!.json();
-    expect(list).toEqual({ diagrams: [] });
+    expect(list).toEqual({ documents: [] });
     expect(shared).toEqual({ shared: [] });
     expect(stars).toEqual({ ids: [] });
   });
@@ -219,7 +219,7 @@ describe('DELETE /api/diagrams/:id', () => {
 
     expect(res!.status).toBe(204);
     expect(
-      db.sql.prepare("SELECT trashed_at FROM diagrams WHERE id = 'A'").get()?.trashed_at,
+      db.sql.prepare("SELECT trashed_at FROM documents WHERE id = 'A'").get()?.trashed_at,
     ).toEqual(expect.any(Number));
     expect(db.sql.prepare("SELECT COUNT(*) AS n FROM tabs WHERE id = 't1'").get()?.n).toBe(1);
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM share_links').get()?.n).toBe(1);
@@ -238,7 +238,7 @@ describe('DELETE /api/diagrams/:id', () => {
     const res = await call(db, 'DELETE', '/api/diagrams/A?permanent=true', { owner: 'owner' });
 
     expect(res!.status).toBe(204);
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM diagrams').get()?.n).toBe(0);
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM tabs').get()?.n).toBe(0);
   });
 
@@ -246,10 +246,10 @@ describe('DELETE /api/diagrams/:id', () => {
     const db = await trashed();
     const res = await call(db, 'DELETE', '/api/diagrams/A?permanent=true', { owner: 'owner' });
     expect(res!.status).toBe(204);
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM diagrams').get()?.n).toBe(0);
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
   });
 
-  it('answers diagram_trashed for a diagram already in the Trash', async () => {
+  it('answers document_trashed for a diagram already in the Trash', async () => {
     const db = await trashed();
     expect(await status(call(db, 'DELETE', '/api/diagrams/A', { owner: 'owner' }))).toEqual(
       TRASHED,
@@ -260,10 +260,10 @@ describe('DELETE /api/diagrams/:id', () => {
     const db = world();
     const res = await call(db, 'DELETE', '/api/diagrams/A', {
       owner: 'owner',
-      headers: { [DIAGRAM_CONVERSION_HEADER]: 'offline' },
+      headers: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
     });
     expect(res!.status).toBe(204);
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM diagrams').get()?.n).toBe(0);
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
   });
 
   it('sends a teammate’s Take Offline of a team diagram to the team Trash', async () => {
@@ -280,17 +280,17 @@ describe('DELETE /api/diagrams/:id', () => {
       created_at: T0,
       updated_at: T0,
     });
-    db.sql.prepare("UPDATE diagrams SET team_id = 'team', owner_id = 'user_alice'").run();
+    db.sql.prepare("UPDATE documents SET team_id = 'team', owner_id = 'user_alice'").run();
 
     const res = await call(db, 'DELETE', '/api/diagrams/A', {
       owner: 'user_bob',
       clerkUserId: 'user_bob',
-      headers: { [DIAGRAM_CONVERSION_HEADER]: 'offline' },
+      headers: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
     });
 
     expect(res!.status).toBe(204);
     expect(
-      db.sql.prepare("SELECT trashed_at FROM diagrams WHERE id = 'A'").get()?.trashed_at,
+      db.sql.prepare("SELECT trashed_at FROM documents WHERE id = 'A'").get()?.trashed_at,
     ).toEqual(expect.any(Number));
   });
 
@@ -301,8 +301,8 @@ describe('DELETE /api/diagrams/:id', () => {
       headers: { 'X-Share-Code': 'code-A' },
     });
     expect(res!.status).toBe(403);
-    expect(db.sql.prepare("SELECT trashed_at FROM diagrams WHERE id = 'A'").get()?.trashed_at).toBe(
-      null,
-    );
+    expect(
+      db.sql.prepare("SELECT trashed_at FROM documents WHERE id = 'A'").get()?.trashed_at,
+    ).toBe(null);
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ShapeElement, Tab, TabLedger } from '@livediagram/diagram';
+import type { ShapeElement, Tab, TabLedger } from '@livediagram/document';
 import type { Env } from './types';
 import { broadcastShareOp, mergeRoomLedger, parseRoomCursor } from './room-client';
 
@@ -22,7 +22,7 @@ const ledger: TabLedger = {
 function envWith(fetch: (url: string) => Promise<Response>) {
   const stubFetch = vi.fn(fetch);
   const env = {
-    DIAGRAM_ROOM: {
+    DOCUMENT_ROOM: {
       idFromName: (name: string) => name,
       get: () => ({ fetch: stubFetch }),
     },

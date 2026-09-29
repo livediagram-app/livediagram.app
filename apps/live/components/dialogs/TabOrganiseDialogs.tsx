@@ -1,8 +1,8 @@
 'use client';
 
 // The tab bar's two organise pickers as proper centred modals: "Add to
-// Folder" (docs/specs/006-diagram/tab-folders.md — file the tab into a one-level tab-bar folder) and
-// "Add to Diagram" (docs/specs/006-diagram/tab-diagram-many-to-many.md — link the tab into another diagram; the tab is
+// Folder" (docs/specs/006-document/tab-folders.md — file the tab into a one-level tab-bar folder) and
+// "Add to Diagram" (docs/specs/006-document/tab-document-many-to-many.md — link the tab into another diagram; the tab is
 // shared, not copied). They used to be cramped sub-views squeezed inside the
 // tab portal menu; the modal gives them the same tile-grid language as the
 // shared placement browser (docs/specs/013-workspace/folders.md), with room to breathe and a filter for
@@ -17,7 +17,7 @@ import {
   NewFolderTile,
   PlacementCard,
 } from '@/components/placement/PlacementCard';
-import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { lucideGlyph, useEscape } from '@livediagram/ui';
 import { matches } from '@/lib/search';
 
@@ -64,7 +64,7 @@ function OrganiseDialogFrame({
 // The No Folder tile: a folder struck out.
 const NoFolderIcon = lucideGlyph(lucideFolderX, 20);
 
-// Add to Folder (docs/specs/006-diagram/tab-folders.md): a tile per existing tab folder, a No Folder tile
+// Add to Folder (docs/specs/006-document/tab-folders.md): a tile per existing tab folder, a No Folder tile
 // (the loose end of the bar), and the create-in-place New Folder tile.
 // Picking commits immediately and closes — one-level folders need no browse.
 export function AddTabToFolderDialog({
@@ -113,7 +113,7 @@ export function AddTabToFolderDialog({
         <NewFolderTile
           onCreate={(name) => {
             // Typing an existing name just moves the tab into it (same
-            // name = same folder, docs/specs/006-diagram/tab-folders.md) — exactly what the move does.
+            // name = same folder, docs/specs/006-document/tab-folders.md) — exactly what the move does.
             onMoveToFolder(name);
             onClose();
             return Promise.resolve(true);
@@ -124,18 +124,18 @@ export function AddTabToFolderDialog({
   );
 }
 
-// A destination-diagram tile: the diagram's snapshot preview (docs/specs/006-diagram/diagram-snapshots.md) over
+// A destination-diagram tile: the diagram's snapshot preview (docs/specs/006-document/document-snapshots.md) over
 // its name, so the user picks by recognising the canvas rather than parsing
 // a list of near-identical "Untitled diagram" names. Styled to match the
 // PlacementCard tile grid, but its own component: the preview area is a
 // full-width box, not the icon-glyph slot the shared card centres.
-function DiagramPickCard({
+function DocumentPickCard({
   ownerId,
-  diagram,
+  document: liveDoc,
   onPick,
 }: {
   ownerId: string | null;
-  diagram: { id: string; name: string; savedAt?: number };
+  document: { id: string; name: string; savedAt?: number };
   onPick: () => void;
 }) {
   return (
@@ -144,36 +144,36 @@ function DiagramPickCard({
       onClick={onPick}
       className="flex flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-center transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-700/60"
     >
-      <DiagramThumbnail
+      <DocumentThumbnail
         ownerId={ownerId}
-        diagramId={diagram.id}
-        version={diagram.savedAt ?? 0}
+        documentId={liveDoc.id}
+        version={liveDoc.savedAt ?? 0}
         className="h-16 w-full rounded border border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40"
       />
       <span className="w-full truncate text-xs font-medium text-slate-700 dark:text-slate-200">
-        {diagram.name || 'Untitled diagram'}
+        {liveDoc.name || 'Untitled diagram'}
       </span>
     </button>
   );
 }
 
-// Add to Diagram (docs/specs/006-diagram/tab-diagram-many-to-many.md): pick the destination diagram the tab is LINKED
+// Add to Diagram (docs/specs/006-document/tab-document-many-to-many.md): pick the destination diagram the tab is LINKED
 // into (shared, not copied — one tab, live in both). A filter keeps long
 // libraries manageable; picking commits immediately and closes.
-export function AddTabToDiagramDialog({
+export function AddTabToDocumentDialog({
   ownerId,
-  otherDiagrams,
+  otherDocuments,
   onPick,
   onClose,
 }: {
   // Viewer identity for the authenticated thumbnail fetches.
   ownerId: string | null;
-  otherDiagrams: { id: string; name: string; savedAt?: number }[];
-  onPick: (targetDiagramId: string) => void;
+  otherDocuments: { id: string; name: string; savedAt?: number }[];
+  onPick: (targetDocumentId: string) => void;
   onClose: () => void;
 }) {
   const [query, setQuery] = useState('');
-  const visible = otherDiagrams.filter(
+  const visible = otherDocuments.filter(
     (d) => !query.trim() || matches(query, d.name || 'Untitled diagram'),
   );
   return (
@@ -197,10 +197,10 @@ export function AddTabToDiagramDialog({
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {visible.map((d) => (
-            <DiagramPickCard
+            <DocumentPickCard
               key={d.id}
               ownerId={ownerId}
-              diagram={d}
+              document={d}
               onPick={() => {
                 onPick(d.id);
                 onClose();

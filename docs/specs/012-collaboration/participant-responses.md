@@ -37,7 +37,7 @@ and the id of who cast it (see below — it is NOT the owner id).
   `pieSlices`, so it bounds in `validate.ts` with the same array clamp as the
   rest and round-trips through JSON export with no key-order surprise.
 
-Helpers live in `packages/diagram/src/responses.ts` — a leaf module (types
+Helpers live in `packages/document/src/responses.ts` — a leaf module (types
 only), for the same module-cycle reason `data-shapes.ts` is one.
 
 ## `participantId` is the COLLAB KEY, not the owner id

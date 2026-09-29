@@ -14,7 +14,7 @@ vi.mock('../db/timeline', async (importOriginal) => {
   return { ...actual, emitTimelineEvent: emit.emitTimelineEvent };
 });
 vi.mock('./audience', () => ({
-  audienceForDiagram: vi.fn(async () => [{ scopeType: 'user', scopeId: 'me' }]),
+  audienceForDocument: vi.fn(async () => [{ scopeType: 'user', scopeId: 'me' }]),
   audienceForTeam: vi.fn(async () => [{ scopeType: 'user', scopeId: 'me' }]),
   adminsForTeam: vi.fn(async () => []),
   mergeScopes: vi.fn((...lists: unknown[][]) => lists.flat()),

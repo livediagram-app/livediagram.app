@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@livediagram/diagram';
+import type { Element, Tab } from '@livediagram/document';
 import { settleToast, useLaneSettle } from './useLaneSettle';
 
 const track = vi.fn();

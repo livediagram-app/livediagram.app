@@ -4,7 +4,7 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { normaliseUrl } from '@/lib/url-safety';
-import type { ElementLink } from '@livediagram/diagram';
+import type { ElementLink } from '@livediagram/document';
 import { DialogHeader } from './DialogHeader';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
@@ -30,11 +30,11 @@ type LinkPickerDialogProps = {
   tabs: LinkTarget[];
   currentTabId: string;
   // The caller's other diagrams (newest first), for the Diagram mode.
-  recentDiagrams: LinkTarget[];
+  recentDocuments: LinkTarget[];
   // Pre-select a mode (the context menu's split Link entries open the modal
   // straight onto webpage / tab / diagram). Falls back to the current link's
   // kind, then 'url', when unset.
-  initialMode?: 'tab' | 'diagram' | 'url';
+  initialMode?: 'tab' | 'document' | 'url';
   // Restricts the dialog to the URL mode, with caller-supplied copy and
   // validation. For an element whose link IS its content — a video's YouTube
   // URL (docs/specs/009-elements/youtube-video.md) — the tab and diagram modes are not a narrower choice, they
@@ -57,12 +57,12 @@ export type UrlOnlyConfig = {
   validate: (url: string) => string | null;
 };
 
-type Mode = 'tab' | 'diagram' | 'url';
+type Mode = 'tab' | 'document' | 'url';
 
 const MODES: { id: Mode; label: string }[] = [
   { id: 'url', label: 'External URL' },
   { id: 'tab', label: 'Tab' },
-  { id: 'diagram', label: 'Diagram' },
+  { id: 'document', label: 'Document' },
 ];
 
 export function LinkPickerDialog({
@@ -70,7 +70,7 @@ export function LinkPickerDialog({
   currentLink,
   tabs,
   currentTabId,
-  recentDiagrams,
+  recentDocuments,
   initialMode,
   urlOnly,
   onCommit,
@@ -81,8 +81,8 @@ export function LinkPickerDialog({
   const [mode, setMode] = useState<Mode>(
     (urlOnly ? 'url' : undefined) ??
       initialMode ??
-      (currentLink?.kind === 'diagram'
-        ? 'diagram'
+      (currentLink?.kind === 'document'
+        ? 'document'
         : currentLink?.kind === 'tab' || currentLink?.kind === 'element'
           ? 'tab'
           : 'url'),
@@ -109,7 +109,7 @@ export function LinkPickerDialog({
 
   const linkedTabId =
     currentLink?.kind === 'tab' || currentLink?.kind === 'element' ? currentLink.tabId : null;
-  const linkedDiagramId = currentLink?.kind === 'diagram' ? currentLink.diagramId : null;
+  const linkedDocumentId = currentLink?.kind === 'document' ? currentLink.documentId : null;
 
   return (
     <Dialog open onClose={onClose} ariaLabel={title} size="lg" className="max-h-[90vh]">
@@ -175,20 +175,20 @@ export function LinkPickerDialog({
               </li>
             ))}
           </ul>
-        ) : mode === 'diagram' ? (
-          recentDiagrams.length === 0 ? (
+        ) : mode === 'document' ? (
+          recentDocuments.length === 0 ? (
             <div className="flex flex-col items-center gap-1 py-10 text-center">
-              <DiagramGlyph muted />
+              <DocumentGlyph muted />
               <p className="text-xs text-slate-400 dark:text-slate-400">No other diagrams yet.</p>
             </div>
           ) : (
             <ul className="flex flex-col gap-1">
-              {recentDiagrams.map((d) => (
+              {recentDocuments.map((d) => (
                 <li key={d.id}>
                   <RowButton
-                    active={linkedDiagramId === d.id}
-                    icon={<DiagramGlyph />}
-                    onClick={() => commit({ kind: 'diagram', diagramId: d.id, name: d.name })}
+                    active={linkedDocumentId === d.id}
+                    icon={<DocumentGlyph />}
+                    onClick={() => commit({ kind: 'document', documentId: d.id, name: d.name })}
                   >
                     <span className="truncate">{d.name}</span>
                   </RowButton>
@@ -303,7 +303,7 @@ function TabGlyph() {
   );
 }
 
-function DiagramGlyph({ muted }: { muted?: boolean }) {
+function DocumentGlyph({ muted }: { muted?: boolean }) {
   return (
     <Glyph
       size={muted ? 28 : 14}

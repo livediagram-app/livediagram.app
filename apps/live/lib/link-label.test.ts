@@ -1,4 +1,4 @@
-import type { ElementLink } from '@livediagram/diagram';
+import type { ElementLink } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { describeLink } from './link-label';
 
@@ -12,7 +12,7 @@ describe('describeLink', () => {
   });
 
   it('names a diagram link', () => {
-    expect(describeLink({ kind: 'diagram', diagramId: 'd1', name: 'Roadmap' })).toBe(
+    expect(describeLink({ kind: 'document', documentId: 'd1', name: 'Roadmap' })).toBe(
       'Diagram: Roadmap',
     );
   });
@@ -46,7 +46,7 @@ describe('describeLink', () => {
   });
 
   it('covers every ElementLink kind', () => {
-    const kinds: ElementLink['kind'][] = ['url', 'diagram', 'tab', 'element'];
+    const kinds: ElementLink['kind'][] = ['url', 'document', 'tab', 'element'];
     expect(kinds).toHaveLength(4);
   });
 });

@@ -6,7 +6,7 @@
 // its history bookkeeping + telemetry. AiPanel keeps the render.
 
 import { useEffect, useRef, useState } from 'react';
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import { apiAiStream, type AiMode, type AiConversationTurn } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 

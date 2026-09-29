@@ -142,7 +142,7 @@ type TimelineRow = {
   occurred_at: number;
   snapshot: string;
   // The diagram's name NOW, when the event is about one that still exists.
-  current_diagram_name?: string | null;
+  current_document_name?: string | null;
 };
 
 function rowToEvent(row: TimelineRow): TimelineEvent {
@@ -161,7 +161,8 @@ function rowToEvent(row: TimelineRow): TimelineEvent {
   // when the event happened: a rename is not a timeline moment, so older
   // entries follow it instead (docs/specs/013-workspace/timeline.md §4.2). A diagram that is
   // gone keeps the name it had.
-  if (row.current_diagram_name) snapshot = { ...snapshot, diagramName: row.current_diagram_name };
+  if (row.current_document_name)
+    snapshot = { ...snapshot, documentName: row.current_document_name };
   return {
     id: row.id,
     sourceType: row.source_type,
@@ -205,11 +206,11 @@ export type ReadTimelineResult = {
 // Renames are not timeline moments (docs/specs/013-workspace/timeline.md §4.2): entries show each
 // diagram's current name instead. Nothing records them any more; this keeps
 // the ones written before that out of every feed and count.
-const NOT_A_RENAME = `e.event_type <> 'diagram_renamed'`;
+const NOT_A_RENAME = `e.event_type <> 'document_renamed'`;
 
-const NOT_IN_TRASH = `NOT (e.source_type = 'diagram' AND EXISTS (
-  SELECT 1 FROM diagrams td
-   WHERE td.id IN (e.source_id, json_extract(e.snapshot, '$.diagramId'))
+const NOT_IN_TRASH = `NOT (e.source_type = 'document' AND EXISTS (
+  SELECT 1 FROM documents td
+   WHERE td.id IN (e.source_id, json_extract(e.snapshot, '$.documentId'))
      AND td.trashed_at IS NOT NULL))`;
 
 export async function readTimeline(
@@ -250,12 +251,12 @@ export async function readTimeline(
   const res = await env.DB.prepare(
     `SELECT e.id, e.actor_id, e.source_type, e.source_id, e.event_type,
             e.title, e.description, e.occurred_at, e.snapshot,
-            cd.name AS current_diagram_name
+            cd.name AS current_document_name
        FROM timeline_event_scopes s
        JOIN timeline_events e ON e.id = s.event_id
-       LEFT JOIN diagrams cd
-         ON cd.id = COALESCE(json_extract(e.snapshot, '$.diagramId'),
-                             CASE WHEN e.source_type = 'diagram' THEN e.source_id END)
+       LEFT JOIN documents cd
+         ON cd.id = COALESCE(json_extract(e.snapshot, '$.documentId'),
+                             CASE WHEN e.source_type = 'document' THEN e.source_id END)
       WHERE ${where}
       ORDER BY e.occurred_at DESC, e.id DESC
       LIMIT ?${binds.length}`,
@@ -453,12 +454,12 @@ export async function markTimelineEventsDeletedBySource(
 // markTimelineEventsDeletedBySource for a set of diagrams at once, as one
 // statement for the Trash purge's batch (docs/specs/013-workspace/trash.md):
 // the events of a purged diagram go with it, the way a hard delete sweeps them.
-export function diagramsTimelineSweepStatement(env: Env, ids: string[]): D1PreparedStatement {
+export function documentsTimelineSweepStatement(env: Env, ids: string[]): D1PreparedStatement {
   return env.DB.prepare(
     `DELETE FROM timeline_events
-      WHERE source_type = 'diagram'
+      WHERE source_type = 'document'
         AND (source_id IN (SELECT value FROM json_each(?1))
-             OR json_extract(snapshot, '$.diagramId') IN (SELECT value FROM json_each(?1)))`,
+             OR json_extract(snapshot, '$.documentId') IN (SELECT value FROM json_each(?1)))`,
   ).bind(JSON.stringify(ids));
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { mergeImportedTab } from './import-merge';
 
 const tab = (over: Partial<Tab> = {}): Tab =>

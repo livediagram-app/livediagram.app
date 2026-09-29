@@ -168,8 +168,8 @@ export function nextFreeColor(taken: Set<string>, preferred?: string): string {
 }
 
 // Up to two characters for the avatar: shared with the headless export, so
-// it lives in @livediagram/diagram (names.ts).
-export { initialsOf } from '@livediagram/diagram';
+// it lives in @livediagram/document (names.ts).
+export { initialsOf } from '@livediagram/document';
 
 // Status ring colour for the header avatar. Greens / oranges / reds are
 // the conventional presence vocabulary.

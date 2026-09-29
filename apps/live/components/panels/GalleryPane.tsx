@@ -168,7 +168,7 @@ function GalleryCard({
         ownerId={ownerId}
         // Owner-only context, no diagramId / shareCode needed: the
         // byte-read endpoint allows the image's owner unconditionally.
-        diagramId=""
+        documentId=""
         onClick={() => setOpen((o) => !o)}
         ariaLabel={image.originalName ?? 'image'}
       />
@@ -202,7 +202,7 @@ function GalleryCard({
             className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 transition hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25"
             aria-expanded={open}
           >
-            Used in {usage.length} {usage.length === 1 ? 'diagram' : 'diagrams'}
+            Used in {usage.length} {usage.length === 1 ? 'document' : 'documents'}
           </button>
         )}
       </div>

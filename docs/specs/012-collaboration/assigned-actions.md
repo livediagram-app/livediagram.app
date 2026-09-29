@@ -27,7 +27,7 @@ panel** ([The Action Panel](action-panel.md)), a card whose job is to hold a lis
 `elementActions(el)`, which returns that list or the single `action` as a
 one-item list, so the Collaborate panel, the Activity page, the timeline and
 the email treat both the same. A new optional field on boxed elements in
-`packages/diagram`:
+`packages/document`:
 
 ```ts
 interface ElementAction {
@@ -137,7 +137,7 @@ Clicking it opens the **Assign Action dialog** (its own component under
   Myself-only states, each with its own nudge: a **personal diagram**
   (no team library) offers the fix INLINE — "Move this diagram into a
   team library to assign teammates", with a button per joined team that
-  performs the [Team shared diagrams](../013-workspace/team-shared-diagrams.md) placement move (`PUT /api/diagrams/<id>/folder`
+  performs the [Team shared diagrams](../013-workspace/team-shared-documents.md) placement move (`PUT /api/diagrams/<id>/folder`
   with the team id, landing at the team root) right from the dialog and
   reloads the picker with that team's members, no Explorer round-trip; a
   signed-in user with no teams gets the create-a-team link instead; a
@@ -271,7 +271,7 @@ which crowded the same corner:
   `MovablePanel`, lazily imported and mounted from `useCanvasChromePanels.tsx`.
 - **It lives behind a button in the bottom-right cluster.** A
   **Collaborate** button (speech-bubble glyph) sits **right after the Layers
-  button**, in every layout ([Layers](../006-diagram/layers.md) is the model). It shows the tab's
+  button**, in every layout ([Layers](../006-document/layers.md) is the model). It shows the tab's
   **open count** as a badge (the shared `CountBadge`, brand tone, hidden at
   zero). Pressing it opens the panel as a **popover hanging above it**
   (`computeDockAnchor(..., 'above')`) in **every** layout, desktop Floating

@@ -94,7 +94,7 @@ describe('error predicates', () => {
     expect(isServerCrash('Http500.SaveTab')).toBe(false);
     expect(isServerCrash('Network.Put.Diagrams.Tabs')).toBe(false);
     // The MCP worker's call to the api never completed: seen by the caller.
-    expect(isServerCrash('Internal.FindDiagrams')).toBe(false);
+    expect(isServerCrash('Internal.FindDocuments')).toBe(false);
     expect(isServerCrash(null)).toBe(false);
   });
 

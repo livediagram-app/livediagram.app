@@ -21,11 +21,11 @@ export async function handleShared(ctx: RouteContext): Promise<Response> {
   }
   // /api/shared/<diagramId> — dismiss / un-link.
   if (segments.length === 3) {
-    const diagramId = segments[2]!;
+    const documentId = segments[2]!;
     if (request.method === 'DELETE') {
       const owner = resolveOwner();
       if (!owner) return missingAuth();
-      await dropSharedAccess(env, owner, diagramId);
+      await dropSharedAccess(env, owner, documentId);
       return json({ ok: true });
     }
   }

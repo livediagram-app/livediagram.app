@@ -11,7 +11,7 @@ import {
   elementActions,
   type ElementAction,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 

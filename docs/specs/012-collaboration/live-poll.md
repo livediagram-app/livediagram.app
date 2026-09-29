@@ -109,7 +109,7 @@ shows the truncation before it is asked rather than after.
 Precedent: the Picker ([Picker](picker.md)) already draws candidates from
 `participants`, and this is the same idea pointed at a poll.
 
-The union lives in **`@livediagram/diagram`** (`poll-style.ts`), not beside
+The union lives in **`@livediagram/document`** (`poll-style.ts`), not beside
 `LivePoll` here, because a Session button ([Session button](session-button.md))
 STORES a style on the element and so needs it in a `Tab` field — and
 api-schema depends on diagram, never the reverse. `PollStyle` is re-exported

@@ -28,7 +28,7 @@ afterEach(cleanup);
 function renderHeader() {
   return render(
     <EditorHeader
-      diagramName="Untitled diagram"
+      documentName="Untitled diagram"
       showShare
       shareable={false}
       onMakeCopy={() => {}}
@@ -73,7 +73,7 @@ describe('EditorHeader account menu', () => {
     const onOpenAccount = vi.fn();
     render(
       <EditorHeader
-        diagramName="d"
+        documentName="d"
         showShare={false}
         shareable={false}
         onOpenShare={() => {}}
@@ -102,7 +102,7 @@ describe('EditorHeader account menu', () => {
 describe('EditorHeader rename requests', () => {
   const header = (renameNonce: number, hideTitle = false) => (
     <EditorHeader
-      diagramName="Untitled diagram"
+      documentName="Untitled diagram"
       showShare={false}
       shareable={false}
       onOpenShare={() => {}}

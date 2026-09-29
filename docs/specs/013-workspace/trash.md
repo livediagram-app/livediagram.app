@@ -22,7 +22,7 @@ is unchanged.
 
 Three things bypass it:
 
-- **Take Offline** ([Offline Mode](../006-diagram/offline-mode.md)) is a move,
+- **Take Offline** ([Offline Mode](../006-document/offline-mode.md)) is a move,
   not a delete: the diagram leaves the server because it now lives in this
   browser, so there is nothing to restore.
 - **Account deletion** is a full, immediate hard delete of everything the
@@ -41,7 +41,7 @@ Three things bypass it:
 
 The authority to restore or purge is exactly the authority to delete today:
 the owner, or a joined member of the diagram's team
-([Team shared diagrams](team-shared-diagrams.md)). A share-link visitor can
+([Team shared diagrams](team-shared-documents.md)). A share-link visitor can
 never delete, so never sees a Trash entry for it.
 
 ## The Trash view
@@ -85,7 +85,7 @@ to it works again.
 
 A team that was deleted while one of its diagrams was in its Trash returned the
 diagram to its owner, the same way deleting a team returns every live team
-diagram ([Team shared diagrams](team-shared-diagrams.md)): the trashed diagram
+diagram ([Team shared diagrams](team-shared-documents.md)): the trashed diagram
 lands in the owner's personal Trash.
 
 ## While a diagram is in the Trash
@@ -131,7 +131,7 @@ so the state leaks nothing.
 ## Tabs shared with other diagrams
 
 A tab can sit in several diagrams
-([Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md)).
+([Tab ↔ diagram many-to-many](../006-document/tab-document-many-to-many.md)).
 Trashing a diagram does not touch its tabs, so a tab it shares with another
 diagram carries on there, editable as before. When the trashed diagram is
 purged, its tabs go the way every diagram delete takes them: a tab no other

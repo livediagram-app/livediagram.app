@@ -44,8 +44,8 @@ async function boardTab(page: Page, settle = 1500): Promise<BoardTab> {
     const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
     const id = location.pathname.split('/').filter(Boolean).pop()!;
     const headers = { 'X-Owner-Id': owner };
-    const diagram = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
-    const tabId = diagram.diagram.tabs[0].id;
+    const liveDoc = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
+    const tabId = liveDoc.document.tabs[0].id;
     return (await (await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, { headers })).json()).tab;
   }, API);
 }
@@ -175,8 +175,8 @@ test('paste lands at the pointer over the canvas, and staggers when it is elsewh
       const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
       const id = location.pathname.split('/').filter(Boolean).pop()!;
       const headers = { 'X-Owner-Id': owner, 'Content-Type': 'application/json' };
-      const diagram = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
-      const tabId = diagram.diagram.tabs[0].id;
+      const liveDoc = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
+      const tabId = liveDoc.document.tabs[0].id;
       const tab = (await (await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, { headers })).json())
         .tab;
       await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, {
@@ -256,8 +256,8 @@ test('an older board is lined up on the lanes once, and undo keeps the choice', 
     const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
     const id = location.pathname.split('/').filter(Boolean).pop()!;
     const headers = { 'X-Owner-Id': owner, 'Content-Type': 'application/json' };
-    const diagram = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
-    const tabId = diagram.diagram.tabs[0].id;
+    const liveDoc = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
+    const tabId = liveDoc.document.tabs[0].id;
     const tab = (await (await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, { headers })).json())
       .tab;
     const { esLanesSettled: _gone, ...older } = tab;

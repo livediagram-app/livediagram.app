@@ -5,9 +5,9 @@ import { mergeEvents, purgeEventsForSource, reconcileEvents } from './merge-even
 function event(id: string, occurredAt: number, over: Partial<TimelineEvent> = {}): TimelineEvent {
   return {
     id,
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: `d-${id}`,
-    eventType: 'diagram_updated',
+    eventType: 'document_updated',
     title: id,
     description: null,
     occurredAt,
@@ -112,19 +112,19 @@ describe('purgeEventsForSource', () => {
     const loaded = [
       event('created', 30, { sourceId: 'd-9' }),
       // A comment: its own id as the source, the diagram in the snapshot.
-      event('comment', 20, { sourceId: 'c-1', snapshot: { diagramId: 'd-9' } }),
-      event('other', 10, { sourceId: 'd-2', snapshot: { diagramId: 'd-2' } }),
+      event('comment', 20, { sourceId: 'c-1', snapshot: { documentId: 'd-9' } }),
+      event('other', 10, { sourceId: 'd-2', snapshot: { documentId: 'd-2' } }),
     ];
-    expect(purgeEventsForSource(loaded, 'diagram', 'd-9').map((e) => e.id)).toEqual(['other']);
+    expect(purgeEventsForSource(loaded, 'document', 'd-9').map((e) => e.id)).toEqual(['other']);
   });
 
   it('scopes the purge to one source type', () => {
     const loaded = [event('team', 30, { sourceType: 'team', sourceId: 'd-9' })];
-    expect(purgeEventsForSource(loaded, 'diagram', 'd-9')).toBe(loaded);
+    expect(purgeEventsForSource(loaded, 'document', 'd-9')).toBe(loaded);
   });
 
   it('returns the same array when nothing matched', () => {
     const loaded = [event('a', 30)];
-    expect(purgeEventsForSource(loaded, 'diagram', 'nope')).toBe(loaded);
+    expect(purgeEventsForSource(loaded, 'document', 'nope')).toBe(loaded);
   });
 });

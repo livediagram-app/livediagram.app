@@ -184,8 +184,8 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'NotifyDiagramJoinOn',
-      'NotifyDiagramJoinOff',
+      'NotifyDocumentJoinOn',
+      'NotifyDocumentJoinOff',
       'Someone Joins My Diagram',
       'The diagram-joined email.',
     ),

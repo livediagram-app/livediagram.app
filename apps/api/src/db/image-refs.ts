@@ -88,8 +88,8 @@ export function imageRefIndexPageStatement(
 export function imageRefIndexOwnerStatement(env: Env, ownerId: string): D1PreparedStatement {
   return env.DB.prepare(
     indexTabsSql(
-      `t.id IN (SELECT dt.tab_id FROM diagram_tabs dt
-                  JOIN diagrams d ON d.id = dt.diagram_id
+      `t.id IN (SELECT dt.tab_id FROM document_tabs dt
+                  JOIN documents d ON d.id = dt.document_id
                  WHERE d.owner_id = ?1)`,
     ),
   ).bind(ownerId);
@@ -97,10 +97,10 @@ export function imageRefIndexOwnerStatement(env: Env, ownerId: string): D1Prepar
 
 // Every tab of one diagram: the share read's lazy index while the backfill is
 // incomplete.
-export function imageRefIndexDiagramStatement(env: Env, diagramId: string): D1PreparedStatement {
+export function imageRefIndexDocumentStatement(env: Env, documentId: string): D1PreparedStatement {
   return env.DB.prepare(
-    indexTabsSql('t.id IN (SELECT tab_id FROM diagram_tabs WHERE diagram_id = ?1)'),
-  ).bind(diagramId);
+    indexTabsSql('t.id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?1)'),
+  ).bind(documentId);
 }
 
 // ---------- Backfill state --------------------------------------------

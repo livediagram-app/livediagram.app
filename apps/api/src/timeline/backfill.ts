@@ -17,9 +17,9 @@ import { record } from './record';
 // How far back the seed reaches. A cap rather than the whole library
 // because this runs in one request: a user with a thousand diagrams
 // would otherwise pay for a thousand upserts on their first page load.
-export const BACKFILL_DIAGRAM_LIMIT = 200;
+export const BACKFILL_DOCUMENT_LIMIT = 200;
 
-type DiagramSeedRow = {
+type DocumentSeedRow = {
   id: string;
   name: string;
   created_at: number;
@@ -35,20 +35,20 @@ type TeamSeedRow = {
 export async function backfillUserScope(env: Env, ownerId: string): Promise<void> {
   const scope = [userScope(ownerId)];
 
-  const diagrams = await env.DB.prepare(
-    `SELECT id, name, created_at, saved_at FROM diagrams
+  const liveDocs = await env.DB.prepare(
+    `SELECT id, name, created_at, saved_at FROM documents
       WHERE owner_id = ?1
       ORDER BY saved_at DESC
       LIMIT ?2`,
   )
-    .bind(ownerId, BACKFILL_DIAGRAM_LIMIT)
-    .all<DiagramSeedRow>();
+    .bind(ownerId, BACKFILL_DOCUMENT_LIMIT)
+    .all<DocumentSeedRow>();
 
-  const rows = diagrams.results ?? [];
+  const rows = liveDocs.results ?? [];
   // Log rather than silently truncate: a user with 400 diagrams should
   // not be told their history starts in March when it doesn't.
-  if (rows.length === BACKFILL_DIAGRAM_LIMIT) {
-    console.info('timeline backfill capped', ownerId, BACKFILL_DIAGRAM_LIMIT);
+  if (rows.length === BACKFILL_DOCUMENT_LIMIT) {
+    console.info('timeline backfill capped', ownerId, BACKFILL_DOCUMENT_LIMIT);
   }
 
   for (const row of rows) {
@@ -56,13 +56,13 @@ export async function backfillUserScope(env: Env, ownerId: string): Promise<void
       env,
       {
         actorId: ownerId,
-        sourceType: 'diagram',
+        sourceType: 'document',
         sourceId: row.id,
-        eventType: 'diagram_created',
+        eventType: 'document_created',
         title: 'Diagram Created',
         description: row.name,
         occurredAt: row.created_at,
-        snapshot: { diagramId: row.id, diagramName: row.name },
+        snapshot: { documentId: row.id, documentName: row.name },
       },
       scope,
     );
@@ -74,14 +74,14 @@ export async function backfillUserScope(env: Env, ownerId: string): Promise<void
         env,
         {
           actorId: ownerId,
-          sourceType: 'diagram',
+          sourceType: 'document',
           sourceId: row.id,
-          eventType: 'diagram_edited',
+          eventType: 'document_edited',
           dedupeKey: dedupeKeyForDay(ownerId, row.saved_at),
           title: 'Diagram Updated',
           description: row.name,
           occurredAt: row.saved_at,
-          snapshot: { diagramId: row.id, diagramName: row.name },
+          snapshot: { documentId: row.id, documentName: row.name },
         },
         scope,
       );

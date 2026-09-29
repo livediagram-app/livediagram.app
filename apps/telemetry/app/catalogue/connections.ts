@@ -52,17 +52,21 @@ const mcpTool = (type: string, title: string, blurb: string): Metric => ({
 });
 
 export const MCP_TOOL_METRICS: readonly Metric[] = [
-  mcpTool('FindDiagrams', 'Find Diagrams', 'Searching the user’s diagrams by name.'),
-  mcpTool('ReadDiagram', 'Read Diagram', 'Reading one diagram’s tabs and elements.'),
+  mcpTool('FindDocuments', 'Find Diagrams', 'Searching the user’s diagrams by name.'),
+  mcpTool('ReadDocument', 'Read Diagram', 'Reading one diagram’s tabs and elements.'),
   mcpTool('ListTemplates', 'List Templates', 'Listing the templates a diagram can start from.'),
-  mcpTool('CreateDiagram', 'Create Diagram', 'Making a new diagram.'),
+  mcpTool('CreateDocument', 'Create Diagram', 'Making a new diagram.'),
   mcpTool('AddTab', 'Add Tab', 'Adding a tab to an existing diagram.'),
-  mcpTool('UpdateDiagram', 'Update Diagram', 'Editing a diagram’s elements.'),
-  mcpTool('ShareDiagram', 'Share Diagram', 'Creating a share link for a diagram.'),
-  mcpTool('RenameDiagram', 'Rename Diagram', 'Renaming a diagram.'),
-  mcpTool('DeleteDiagram', 'Delete Diagram', 'Moving a diagram to the Trash, or deleting one tab.'),
+  mcpTool('UpdateDocument', 'Update Diagram', 'Editing a diagram’s elements.'),
+  mcpTool('ShareDocument', 'Share Diagram', 'Creating a share link for a diagram.'),
+  mcpTool('RenameDocument', 'Rename Diagram', 'Renaming a diagram.'),
+  mcpTool(
+    'DeleteDocument',
+    'Delete Diagram',
+    'Moving a diagram to the Trash, or deleting one tab.',
+  ),
   mcpTool('ListTrash', 'List Trash', 'Listing the diagrams in the Trash.'),
-  mcpTool('RestoreDiagram', 'Restore Diagram', 'Bringing a diagram back from the Trash.'),
+  mcpTool('RestoreDocument', 'Restore Diagram', 'Bringing a diagram back from the Trash.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

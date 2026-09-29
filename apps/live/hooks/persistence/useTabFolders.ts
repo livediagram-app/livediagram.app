@@ -1,4 +1,4 @@
-// Tab-folder membership actions (docs/specs/006-diagram/tab-folders.md): move a tab into a folder,
+// Tab-folder membership actions (docs/specs/006-document/tab-folders.md): move a tab into a folder,
 // remove it, and rename a folder. Kept out of the already-busy
 // useTabActions so the folder concern has its own focused home.
 //
@@ -12,11 +12,11 @@
 // name is user content and is never sent as a telemetry `type`.
 
 import {
-  folderNamesInDiagram,
+  folderNamesInDocument,
   normalizeFolderOrder,
   tabFolderName,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { tabFolderTransitionSummary, trackTabFolderTransition } from './tab-folder-reporting';
 
@@ -42,7 +42,7 @@ export function useTabFolders(deps: TabFoldersDeps) {
     if (!name) return;
     const target = tabs.find((t) => t.id === tabId);
     if (!target || tabFolderName(target) === name) return;
-    const isNewFolder = !folderNamesInDiagram(tabs).includes(name);
+    const isNewFolder = !folderNamesInDocument(tabs).includes(name);
     commitTabs((ts) =>
       normalizeFolderOrder(ts.map((t) => (t.id === tabId ? { ...t, folder: name } : t))),
     );

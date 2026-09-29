@@ -175,7 +175,7 @@ function operationFor(route: RouteSpec): Record<string, unknown> {
 }
 
 const TAGS = [
-  { name: 'Diagrams', description: 'Create, read, update, and delete diagrams and their tabs.' },
+  { name: 'Documents', description: 'Create, read, update, and delete diagrams and their tabs.' },
   { name: 'Sharing', description: 'Share links, passwords, and the diagrams shared with you.' },
   { name: 'Folders', description: 'Organise diagrams into a personal or team folder tree.' },
   {

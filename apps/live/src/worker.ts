@@ -1,7 +1,7 @@
 // Live app worker. Wraps the static-export assets binding with a
 // single path rewrite: any `/diagram/<anything>` request serves the
 // single placeholder HTML built by Next.js, and the client extracts
-// the real diagram id from `window.location.pathname`. See docs/specs/007-editor/new-diagram-route.md
+// the real diagram id from `window.location.pathname`. See docs/specs/007-editor/new-document-route.md
 // for why we can't enumerate user-minted ids at build time.
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };

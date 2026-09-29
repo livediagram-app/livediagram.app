@@ -26,7 +26,7 @@
 // the direct setters in useElementStyle use).
 
 import { useRef, type MutableRefObject } from 'react';
-import { isBoxed } from '@livediagram/diagram';
+import { isBoxed } from '@livediagram/document';
 import type {
   ArrowFlow,
   ArrowThickness,
@@ -50,7 +50,7 @@ import type {
   TextAlignX,
   TextAlignY,
   TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import {
   applyArrowPresetToEl,
   applyBorderRadiusToEl,

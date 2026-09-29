@@ -107,7 +107,7 @@ Request body:
 }
 ```
 
-`elements` is the full active-tab `Element[]` from `@livediagram/diagram`. `focusIds` is the optional list of selected element IDs; the system prompt steers the model toward editing those while preserving everything else. `history` is the optional prior-turn list (capped server-side at the last 6 turns); both fields default to `[]`.
+`elements` is the full active-tab `Element[]` from `@livediagram/document`. `focusIds` is the optional list of selected element IDs; the system prompt steers the model toward editing those while preserving everything else. `history` is the optional prior-turn list (capped server-side at the last 6 turns); both fields default to `[]`.
 
 Response for **both modes**: `Content-Type: text/event-stream`, OpenAI SSE format piped through with CORS headers added. The JSON-mode payload (Clean) is collected by the client into a single `{ elements: [...] }` block on stream completion:
 
@@ -121,7 +121,7 @@ Response for **both modes**: `Content-Type: text/event-stream`, OpenAI SSE forma
 `Clean` never re-flows: it preserves the layout the user arranged and only tidies sizes,
 labels, and styles in place. With **Generate** removed, the AI assistant no longer produces
 fresh graphs, so it runs no auto-layout pass. The deterministic layout engine itself —
-`autoLayoutElements` (`packages/diagram/src/auto-layout.ts`, pure + unit-tested) — still
+`autoLayoutElements` (`packages/document/src/auto-layout.ts`, pure + unit-tested) — still
 exists and is now driven by the MCP server ([MCP server](../015-api/mcp-server.md)), where the calling model produces the
 graph and the server lays it out on request. (`mergeAiElements` in `editor-page-helpers.ts`
 retains a general clean/replace merge; the Clean path spreads the AI patch over each
@@ -146,7 +146,7 @@ what drifted: `checklist` was requested by name, with its `checklistItems` schem
 squared on arrival.
 
 Past that normalisation (kind coerced, a missing size defaulted), a streamed element is held
-to the same structural guard every save is: `isValidElement` from `@livediagram/diagram`,
+to the same structural guard every save is: `isValidElement` from `@livediagram/document`,
 limited to the four types the assistant may add (shape, text, sticky, arrow). A looser local
 check used to live in the client and let through what the api then refused on save (an
 arrow with a junk endpoint, a non-finite coordinate). Renamed additions carry every

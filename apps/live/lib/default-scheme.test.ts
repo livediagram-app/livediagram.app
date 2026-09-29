@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { createShape, type Tab } from '@livediagram/diagram';
+import { createShape, type Tab } from '@livediagram/document';
 import { resetAppearanceForTests, setAppearance } from '@livediagram/ui';
 import { deriveNewBoxedColours, getTheme, resolveTabBackdrop, switchThemeBackdrop } from './themes';
 

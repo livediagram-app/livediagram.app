@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { SearchIcon, useEscape } from '@livediagram/ui';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import {
   buildSearchResults,
   type CommandSearchItem,
@@ -27,15 +27,15 @@ import { SearchResultIcon } from './search-panel-icons';
 // switch tabs / select the element / jump to the team). Esc +
 // outside-click close; Enter on the first match picks it.
 
-type SearchPanelDiagram = { id: string; name: string };
+type SearchPanelDocument = { id: string; name: string };
 type SearchPanelFolder = { id: string; name: string };
 type SearchPanelShared = { id: string; name: string; shareCode: string };
 type SearchPanelTeam = { id: string; name: string };
 type SearchPanelTeamFolder = { id: string; path: string; teamId: string; teamName: string };
-type SearchPanelTeamDiagram = { id: string; name: string; teamId: string; teamName: string };
+type SearchPanelTeamDocument = { id: string; name: string; teamId: string; teamName: string };
 
 type SearchPanelProps = {
-  diagrams: SearchPanelDiagram[];
+  documents: SearchPanelDocument[];
   folders: SearchPanelFolder[];
   // Diagrams shared with the current owner. Optional so surfaces
   // without the list (or guests with an empty one) can omit it.
@@ -43,12 +43,12 @@ type SearchPanelProps = {
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md). Optional: guests
   // have none.
   teams?: SearchPanelTeam[];
-  // Team-library folders (docs/specs/013-workspace/team-shared-diagrams.md), rendered in the Teams group with
+  // Team-library folders (docs/specs/013-workspace/team-shared-documents.md), rendered in the Teams group with
   // an "in <team>" suffix. Optional: guests have none.
   teamFolders?: SearchPanelTeamFolder[];
-  // Team-library diagrams (docs/specs/013-workspace/team-shared-diagrams.md), also in the Teams group with an
+  // Team-library diagrams (docs/specs/013-workspace/team-shared-documents.md), also in the Teams group with an
   // "in <team>" suffix. Optional: guests have none.
-  teamDiagrams?: SearchPanelTeamDiagram[];
+  teamDocuments?: SearchPanelTeamDocument[];
   // When the user is inside a diagram editor these provide the
   // tab + element scope. Omitted on routes (e.g. the dashboard)
   // where only diagrams + folders should match.
@@ -57,7 +57,7 @@ type SearchPanelProps = {
   // (the current tab — so the user knows whether a hit is on
   // their current view).
   currentTabId?: string;
-  onSelectDiagram: (id: string) => void;
+  onSelectDocument: (id: string) => void;
   // Receives the diagram id AND its share code: a non-owner can only
   // open the diagram on the visitor URL the code builds.
   onSelectShared?: (id: string, shareCode: string) => void;
@@ -98,15 +98,15 @@ type SearchPanelProps = {
 // `lib/search.ts`; the panel just renders.
 
 export function SearchPanel({
-  diagrams,
+  documents: liveDocs,
   folders,
   shared,
   teams,
   teamFolders,
-  teamDiagrams,
+  teamDocuments,
   tabs,
   currentTabId,
-  onSelectDiagram,
+  onSelectDocument,
   onSelectShared,
   onSelectFolder,
   onSelectTeam,
@@ -157,12 +157,12 @@ export function SearchPanel({
     () =>
       buildSearchResults({
         query,
-        diagrams,
+        documents: liveDocs,
         folders,
         shared,
         teams,
         teamFolders,
-        teamDiagrams,
+        teamDocuments,
         tabs,
         currentTabId,
         paletteItems,
@@ -172,12 +172,12 @@ export function SearchPanel({
       }),
     [
       query,
-      diagrams,
+      liveDocs,
       folders,
       shared,
       teams,
       teamFolders,
-      teamDiagrams,
+      teamDocuments,
       tabs,
       currentTabId,
       paletteItems,
@@ -213,7 +213,7 @@ export function SearchPanel({
       onClose();
       return;
     }
-    if (item.kind === 'diagram') onSelectDiagram(item.id);
+    if (item.kind === 'document') onSelectDocument(item.id);
     else if (item.kind === 'shared' && onSelectShared) onSelectShared(item.id, item.shareCode);
     else if (item.kind === 'folder' && item.team && onSelectTeamFolder)
       onSelectTeamFolder(item.team.id, item.id);
@@ -331,7 +331,7 @@ export function SearchPanel({
                             in {item.categoryLabel}
                           </span>
                         ) : null}
-                        {(item.kind === 'folder' || item.kind === 'diagram') && item.team ? (
+                        {(item.kind === 'folder' || item.kind === 'document') && item.team ? (
                           <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
                             in {item.team.name}
                           </span>

@@ -8,7 +8,7 @@
 
 import { CountBadge } from '@/components/primitives/CountBadge';
 import { useEffect, useState } from 'react';
-import { qaView, qaVoterId, type QaNote, type ShapeElement } from '@livediagram/diagram';
+import { qaView, qaVoterId, type QaNote, type ShapeElement } from '@livediagram/document';
 import { CollabPanel } from '../collab-chrome';
 import {
   ElementEllipsisMenu,

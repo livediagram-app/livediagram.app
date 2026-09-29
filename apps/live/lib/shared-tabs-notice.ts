@@ -1,4 +1,4 @@
-// The shared-tab notice (docs/specs/006-diagram/tab-diagram-many-to-many.md,
+// The shared-tab notice (docs/specs/006-document/tab-document-many-to-many.md,
 // "Shared-tab notice"): the sentence the delete and Take Offline confirmations
 // add when some of the diagram's tabs are also in other diagrams, so the user
 // knows those tabs stay before they act.
@@ -13,13 +13,13 @@ export type SharedTabsAction = 'delete' | 'offline';
 export const SHARED_TABS_NOTICE_TIMEOUT_MS = 1500;
 
 export function sharedTabsNotice(
-  { tabs, diagrams }: SharedTabsSummary,
+  { tabs, documents: liveDocs }: SharedTabsSummary,
   action: SharedTabsAction,
 ): string | null {
   if (tabs === 0) return null;
   const one = tabs === 1;
   // A non-breaking space keeps the count on the line with its noun.
-  const where = `${tabs}\u00a0of its tabs ${one ? 'is' : 'are'} also used in ${diagrams} other diagram${diagrams === 1 ? '' : 's'}`;
+  const where = `${tabs}\u00a0of its tabs ${one ? 'is' : 'are'} also used in ${liveDocs} other diagram${liveDocs === 1 ? '' : 's'}`;
   const stays = one ? 'it stays there' : 'they stay there';
   if (action === 'delete') return `${where}; ${stays}.`;
   const parting = one
@@ -34,13 +34,13 @@ export function sharedTabsNotice(
 // server keeps shared tabs whether or not the notice was shown.
 export async function fetchSharedTabsNotice(
   ownerId: string,
-  diagramId: string,
+  documentId: string,
   action: SharedTabsAction,
 ): Promise<string | null> {
   try {
     const summary = await apiSharedTabs(
       ownerId,
-      diagramId,
+      documentId,
       AbortSignal.timeout(SHARED_TABS_NOTICE_TIMEOUT_MS),
     );
     return summary ? sharedTabsNotice(summary, action) : null;

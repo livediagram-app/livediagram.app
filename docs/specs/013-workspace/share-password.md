@@ -44,7 +44,7 @@ identity, share-code path) and [11-api](../015-api/api.md) (share links).
   `X-Share-Password`, **403 `{ error: 'password_invalid' }`** when it carries
   the wrong one, and only record the visit + return the diagram on a match.
 - Every other share-code-authorised route is gated through
-  `canReadDiagram` / `canEditDiagram` (`src/auth/diagram-access.ts`). Both gain a
+  `canReadDiagram` / `canEditDiagram` (`src/auth/document-access.ts`). Both gain a
   `sharePassword` argument: after the link + role check, if the diagram has a
   password and the provided one doesn't match, access is denied. The header is
   `X-Share-Password`, read via `sharePasswordOf(request)` (`routes/context.ts`),
@@ -55,7 +55,7 @@ identity, share-code path) and [11-api](../015-api/api.md) (share links).
   password-protected diagram refuses the upgrade (403) unless `p` matches; the
   owner (`o` matches) bypasses.
 
-Helpers in `src/db/diagrams.ts` (the db.ts split moved them out of the
+Helpers in `src/db/documents.ts` (the db.ts split moved them out of the
 old monolithic module): `getDiagramSharePassword(env, id)`,
 `setDiagramSharePassword(env, id, password | null)`.
 

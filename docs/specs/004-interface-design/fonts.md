@@ -6,7 +6,7 @@ a per-tab default — from a curated set of eleven Google Fonts.
 ## The eleven fonts
 
 A wide spread of voices so a diagram can read as crisp, friendly, formal,
-hand-drawn, or bold. Defined once in `packages/diagram/src/fonts.ts` (id + label
+hand-drawn, or bold. Defined once in `packages/document/src/fonts.ts` (id + label
 
 - CSS stack + Google family spec):
 
@@ -77,7 +77,7 @@ font, so they take the tab default).
 ## Storage & behaviour
 
 - The model stores the stable **id** (`Element.font` / `Tab.font` in
-  `packages/diagram`), not a CSS stack, so saved diagrams round-trip even
+  `packages/document`), not a CSS stack, so saved diagrams round-trip even
   if the catalogue's exact stacks change. Both fields are optional;
   unset = inherit (element → tab → default).
 - Font changes go through the normal history/commit path, so undo/redo
@@ -127,11 +127,11 @@ whose marker face IS its notation).
 - The PNG drawer awaits `document.fonts.ready` before painting: rasterising
   mid-swap would bake the fallback into the file.
 
-Implementation: `packages/diagram/src/fonts.ts` (catalogue + resolver),
+Implementation: `packages/document/src/fonts.ts` (catalogue + resolver),
 `components/palette/FontSelect.tsx` (the per-tab font grid; element fonts use the
 rich-text toolbar's own font grid in `RichTextToolbar.tsx`),
 the label renderers (`element-labels.tsx`), `TableView`, and `ArrowView`
 apply the resolved stack; `useElementStyle.setFontSelected` and
 `useTabCanvas.setTabFont` are the mutators. See also
-[Diagram structure](../006-diagram/diagram-structure.md) and
+[Diagram structure](../006-document/document-structure.md) and
 [Canvas and palette](../008-canvas/canvas-and-palette.md).

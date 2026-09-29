@@ -3,7 +3,7 @@ import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
-  startTemplateDiagram,
+  startTemplateDocument,
   test,
 } from './fixtures';
 import { openPhotoBoard } from './fixtures/photo-board';
@@ -281,7 +281,7 @@ test('the photo import needs no model key', async ({ page, pageErrors }) => {
   await page.route('**/api/capabilities', (route) =>
     route.fulfill({ json: { aiEnabled: false, emailEnabled: false } }),
   );
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  await startTemplateDocument(page, /Browse Technical templates/, /^Event storming/i);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
   await expect(page.getByRole('button', { name: /add from photo/i })).toBeVisible();

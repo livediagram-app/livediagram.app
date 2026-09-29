@@ -6,7 +6,7 @@ import {
   laneIndexAt,
   type Element,
   type ElementId,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // Inserting a note BETWEEN two notes (docs/specs/021-event-storming/event-storming.md). An event-storming wall is a
 // left-to-right timeline, so "this happened before that" is the whole
@@ -54,7 +54,7 @@ export type InsertionGate = {
   esBoard: boolean;
   readOnly: boolean;
   tabLocked: boolean;
-  // The whole creation gate (docs/specs/006-diagram/layers.md): includes a hidden or locked active
+  // The whole creation gate (docs/specs/006-document/layers.md): includes a hidden or locked active
   // layer, which blocks creation without locking anything else.
   createBlocked: boolean;
 };
@@ -81,7 +81,7 @@ type FindArgs = {
   // Footprint of the note being dragged in (canvas units).
   incomingWidth: number;
   elements: Element[];
-  // Elements on a hidden or locked layer (docs/specs/006-diagram/layers.md). They cannot define the
+  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md). They cannot define the
   // row — you can't aim at a note you can't see — but they still SHIFT, so
   // the board stays consistent the moment their layer comes back.
   inertIds?: ReadonlySet<ElementId>;

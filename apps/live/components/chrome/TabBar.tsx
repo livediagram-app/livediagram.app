@@ -2,11 +2,11 @@ import dynamic from 'next/dynamic';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useState, type ReactNode } from 'react';
 import {
-  folderNamesInDiagram,
+  folderNamesInDocument,
   groupTabsIntoRuns,
   tabFolderName,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import type { CleanupKind } from '@/lib/tab-cleanup';
@@ -69,7 +69,7 @@ type TabBarProps = {
   roleIcon?: ReactNode;
   tabs: Tab[];
   activeId: string;
-  // Folder membership actions (docs/specs/006-diagram/tab-folders.md), menu-only. Move the active tab
+  // Folder membership actions (docs/specs/006-document/tab-folders.md), menu-only. Move the active tab
   // into a folder by name (new or existing), make it loose again, or
   // rename a folder (rewrites every member).
   onMoveTabToFolder: (tabId: string, folderName: string) => void;
@@ -95,12 +95,12 @@ type TabBarProps = {
   onExportTab: () => void;
   // The user's other diagrams (excluding the current one). Drives the
   // "Add to Diagram" submenu in the tab ellipsis; savedAt versions the
-  // destination-picker thumbnails (docs/specs/006-diagram/diagram-snapshots.md).
-  otherDiagrams: { id: string; name: string; savedAt?: number }[];
+  // destination-picker thumbnails (docs/specs/006-document/document-snapshots.md).
+  otherDocuments: { id: string; name: string; savedAt?: number }[];
   // Copy the active tab into another diagram. Callee handles the
   // round-trip to the API. Returns a promise so the menu can dismiss
   // after the operation completes.
-  onCopyTabTo: (targetDiagramId: string) => Promise<void> | void;
+  onCopyTabTo: (targetDocumentId: string) => Promise<void> | void;
   // Flip tab.locked. Disables every mutator until toggled back on.
   // The lock icon appears on the tab itself + on every element.
   onToggleLockTab: () => void;
@@ -179,7 +179,7 @@ export function TabBar({
   pollCollaborators,
   voteLayers,
   activeLayerId,
-  otherDiagrams,
+  otherDocuments,
   onCopyTabTo,
   onToggleLockTab,
   onReorder,
@@ -221,8 +221,8 @@ export function TabBar({
   const isDark = appearance === 'dark';
 
   // Distinct folder names in this diagram, for the "Add to Folder"
-  // menu's pick list (docs/specs/006-diagram/tab-folders.md).
-  const folderNames = folderNamesInDiagram(tabs);
+  // menu's pick list (docs/specs/006-document/tab-folders.md).
+  const folderNames = folderNamesInDocument(tabs);
 
   // The tab-menu callbacks for a given tab, shared by the per-tab ellipsis
   // menu and the canvas right-click menu so both drive the exact same
@@ -235,7 +235,7 @@ export function TabBar({
     locked: tab.locked === true,
     selfId,
     voteSelfId,
-    otherDiagrams,
+    otherDocuments,
     folderNames,
     currentFolder: tabFolderName(tab),
     onMoveToFolder: (name: string) => {

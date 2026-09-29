@@ -15,8 +15,8 @@ vi.mock('@/hooks/ui/useReturnToTab', () => ({ useReturnToTab: vi.fn() }));
 import { useActivityFeed } from './useActivityFeed';
 
 const place = {
-  diagramId: 'd1',
-  diagramName: 'Payments',
+  documentId: 'd1',
+  documentName: 'Payments',
   teamId: null,
   via: 'own' as const,
   shareCode: null,
@@ -50,7 +50,7 @@ const thread: ActivityThread = {
   latest: { text: 'hi', authorName: 'A', authorColor: '#a', at: 3 },
   firstAt: 3,
   youCommented: true,
-  onYourDiagram: false,
+  onYourDocument: false,
   mentionsYou: false,
 };
 

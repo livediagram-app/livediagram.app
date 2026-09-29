@@ -10,7 +10,7 @@ import {
   createSticky,
   createText,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 const MUTED = '#64748b';

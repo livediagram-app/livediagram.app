@@ -5,11 +5,11 @@
 // trashDiagram / restoreDiagram / purgeDiagrams are plain calls with no HTTP
 // concerns, so a later mirror (Drive's bin) can drive them directly.
 
-import { TRASH_RETENTION_MS, trashPurgeDueAt, type TrashedDiagram } from '@livediagram/api-schema';
+import { TRASH_RETENTION_MS, trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
 import type { Env } from '../types';
-import { diagramRemovalStatements } from './diagram-removal';
-import { thumbnailKey } from './diagrams';
-import { diagramsTimelineSweepStatement } from './timeline';
+import { documentRemovalStatements } from './document-removal';
+import { thumbnailKey } from './documents';
+import { documentsTimelineSweepStatement } from './timeline';
 
 // Ids per purge batch: one json_each list bound into three statements, so the
 // statement count is flat however many diagrams go. 100 ids is ~4 KB bound.
@@ -19,7 +19,7 @@ export const TRASH_PURGE_BATCH = 100;
 // backlog drains over the following days, oldest first.
 export const TRASH_PURGE_MAX_BATCHES = 20;
 
-export type TrashedDiagramMeta = {
+export type TrashedDocumentMeta = {
   id: string;
   ownerId: string;
   teamId: string | null;
@@ -29,9 +29,9 @@ export type TrashedDiagramMeta = {
 
 // Move a live diagram to the Trash. False when there is no live diagram with
 // this id (missing, or already trashed: the first deletion time stands).
-export async function trashDiagram(env: Env, id: string, now: number): Promise<boolean> {
+export async function trashDocument(env: Env, id: string, now: number): Promise<boolean> {
   const res = await env.DB.prepare(
-    'UPDATE diagrams SET trashed_at = ? WHERE id = ? AND trashed_at IS NULL',
+    'UPDATE documents SET trashed_at = ? WHERE id = ? AND trashed_at IS NULL',
   )
     .bind(now, id)
     .run();
@@ -41,16 +41,16 @@ export async function trashDiagram(env: Env, id: string, now: number): Promise<b
 // Bring a trashed diagram back. It returns to its folder when that folder
 // still exists in the diagram's scope (its owner's personal tree, or its
 // team's), else to Unsorted. False when it isn't in the Trash.
-export async function restoreDiagram(env: Env, id: string): Promise<boolean> {
+export async function restoreDocument(env: Env, id: string): Promise<boolean> {
   const res = await env.DB.prepare(
-    `UPDATE diagrams
+    `UPDATE documents
         SET trashed_at = NULL,
             folder_id = CASE
               WHEN EXISTS (SELECT 1 FROM folders f
-                            WHERE f.id = diagrams.folder_id
-                              AND ((diagrams.team_id IS NULL AND f.team_id IS NULL
-                                    AND f.owner_id = diagrams.owner_id)
-                                   OR f.team_id = diagrams.team_id))
+                            WHERE f.id = documents.folder_id
+                              AND ((documents.team_id IS NULL AND f.team_id IS NULL
+                                    AND f.owner_id = documents.owner_id)
+                                   OR f.team_id = documents.team_id))
               THEN folder_id ELSE NULL END
       WHERE id = ? AND trashed_at IS NOT NULL`,
   )
@@ -62,12 +62,12 @@ export async function restoreDiagram(env: Env, id: string): Promise<boolean> {
 // The gate-only projection of a TRASHED diagram, for the doors that owe an
 // authorised caller the deleted state rather than a not-found. Null for a
 // live or missing id.
-export async function getTrashedDiagramMeta(
+export async function getTrashedDocumentMeta(
   env: Env,
   id: string,
-): Promise<TrashedDiagramMeta | null> {
+): Promise<TrashedDocumentMeta | null> {
   const row = await env.DB.prepare(
-    `SELECT id, owner_id, team_id, name, trashed_at FROM diagrams
+    `SELECT id, owner_id, team_id, name, trashed_at FROM documents
       WHERE id = ? AND trashed_at IS NOT NULL`,
   )
     .bind(id)
@@ -93,7 +93,7 @@ export async function getTrashedDiagramMeta(
 export async function trashedIdsIn(env: Env, ids: string[]): Promise<Set<string>> {
   if (ids.length === 0) return new Set();
   const res = await env.DB.prepare(
-    `SELECT id FROM diagrams
+    `SELECT id FROM documents
       WHERE id IN (SELECT value FROM json_each(?)) AND trashed_at IS NOT NULL`,
   )
     .bind(JSON.stringify(ids))
@@ -104,14 +104,14 @@ export async function trashedIdsIn(env: Env, ids: string[]): Promise<Set<string>
 // Everything the caller may restore: their personal Trash (owner, not in a
 // team), plus the Trash of every team they have joined. Team membership is
 // read against the server-verified account id only, never the guest header
-// (docs/specs/013-workspace/team-shared-diagrams.md trust boundary). Newest first.
+// (docs/specs/013-workspace/team-shared-documents.md trust boundary). Newest first.
 export async function listTrash(
   env: Env,
   caller: { owner: string; verifiedUserId: string | null },
-): Promise<TrashedDiagram[]> {
+): Promise<TrashedDocument[]> {
   const res = await env.DB.prepare(
     `SELECT d.id, d.name, d.team_id, t.name AS team_name, d.trashed_at
-       FROM diagrams d
+       FROM documents d
        LEFT JOIN teams t ON t.id = d.team_id
       WHERE d.trashed_at IS NOT NULL
         AND ((d.owner_id = ?1 AND d.team_id IS NULL)
@@ -144,11 +144,11 @@ export async function trashIdsFor(
 ): Promise<string[]> {
   const stmt =
     'teamId' in scope
-      ? env.DB.prepare('SELECT id FROM diagrams WHERE team_id = ? AND trashed_at IS NOT NULL').bind(
-          scope.teamId,
-        )
+      ? env.DB.prepare(
+          'SELECT id FROM documents WHERE team_id = ? AND trashed_at IS NOT NULL',
+        ).bind(scope.teamId)
       : env.DB.prepare(
-          'SELECT id FROM diagrams WHERE owner_id = ? AND team_id IS NULL AND trashed_at IS NOT NULL',
+          'SELECT id FROM documents WHERE owner_id = ? AND team_id IS NULL AND trashed_at IS NOT NULL',
         ).bind(scope.owner);
   const res = await stmt.all<{ id: string }>();
   return (res.results ?? []).map((r) => r.id);
@@ -158,14 +158,14 @@ export async function trashIdsFor(
 // diagram holds (diagramRemovalStatements), their Timeline events and their
 // cached snapshots. Only ever trashed ids: a live id in `ids` is skipped, so
 // no caller can purge past the Trash. Returns how many were purged.
-export async function purgeDiagrams(env: Env, ids: string[]): Promise<number> {
+export async function purgeDocuments(env: Env, ids: string[]): Promise<number> {
   let purged = 0;
   for (let i = 0; i < ids.length; i += TRASH_PURGE_BATCH) {
     const doomed = [...(await trashedIdsIn(env, ids.slice(i, i + TRASH_PURGE_BATCH)))];
     if (doomed.length === 0) continue;
     const results = await env.DB.batch([
-      diagramsTimelineSweepStatement(env, doomed),
-      ...diagramRemovalStatements(env, { ids: doomed }),
+      documentsTimelineSweepStatement(env, doomed),
+      ...documentRemovalStatements(env, { ids: doomed }),
     ]);
     purged += results[results.length - 1]?.meta.changes ?? 0;
     // Best effort, like deleteDiagram's: a snapshot left behind is an orphan
@@ -192,7 +192,7 @@ export async function purgeExpiredTrash(
   let purged = 0;
   for (let round = 0; round < maxBatches; round++) {
     const res = await env.DB.prepare(
-      `SELECT id FROM diagrams
+      `SELECT id FROM documents
         WHERE trashed_at IS NOT NULL AND trashed_at <= ?
         ORDER BY trashed_at ASC, id ASC LIMIT ?`,
     )
@@ -200,7 +200,7 @@ export async function purgeExpiredTrash(
       .all<{ id: string }>();
     const ids = (res.results ?? []).map((r) => r.id);
     if (ids.length === 0) break;
-    purged += await purgeDiagrams(env, ids);
+    purged += await purgeDocuments(env, ids);
     if (ids.length < batch) break;
   }
   return purged;

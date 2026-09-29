@@ -32,9 +32,9 @@ import {
 } from './notifications';
 
 const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as Env;
-const diagram = { id: 'd1', ownerId: 'u1', name: 'Roadmap' };
+const liveDoc = { id: 'd1', ownerId: 'u1', name: 'Roadmap' };
 const allowAll = {
-  notifyDiagramJoin: true,
+  notifyDocumentJoin: true,
   notifyInviteResponse: true,
   notifyComments: true,
   notifyTips: true,
@@ -65,7 +65,7 @@ describe('commentNotificationEmail', () => {
 
 describe('notifyNewComment', () => {
   it('does nothing when email is off', async () => {
-    await notifyNewComment({} as Env, diagram, 'Anna');
+    await notifyNewComment({} as Env, liveDoc, 'Anna');
     expect(getOwnerEmail).not.toHaveBeenCalled();
   });
 
@@ -74,7 +74,7 @@ describe('notifyNewComment', () => {
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
     vi.mocked(claimCommentNotify).mockResolvedValue(true);
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    await notifyNewComment(env, diagram, 'Anna');
+    await notifyNewComment(env, liveDoc, 'Anna');
     expect(sendEmail).toHaveBeenCalledOnce();
   });
 
@@ -82,20 +82,20 @@ describe('notifyNewComment', () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
     vi.mocked(claimCommentNotify).mockResolvedValue(false);
-    await notifyNewComment(env, diagram, 'Anna');
+    await notifyNewComment(env, liveDoc, 'Anna');
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('skips when the owner opted out of comment notifications', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyComments: false });
-    await notifyNewComment(env, diagram, 'Anna');
+    await notifyNewComment(env, liveDoc, 'Anna');
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('skips when the owner has no stored address (e.g. a guest)', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue(null);
-    await notifyNewComment(env, diagram, 'Anna');
+    await notifyNewComment(env, liveDoc, 'Anna');
     expect(getNotificationPrefs).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
@@ -133,7 +133,7 @@ describe('notifyActionAssigned (docs/specs/012-collaboration/assigned-actions.md
     assigneeUserId: 'u2',
     assigneeFallbackEmail: 'invited@x.com',
     assignerName: 'Sam',
-    diagram: { id: 'd1', name: 'Roadmap' },
+    document: { id: 'd1', name: 'Roadmap' },
     actionName: 'Review the copy',
     description: null,
   };
@@ -184,7 +184,7 @@ describe('notifyMentioned (docs/specs/012-collaboration/comment-mentions.md)', (
     recipientUserId: 'u2',
     recipientFallbackEmail: 'invited@x.com',
     authorName: 'Sam',
-    diagram: { id: 'd1', name: 'Roadmap' },
+    document: { id: 'd1', name: 'Roadmap' },
     commentText: 'Can you check this, @priya?',
   };
 

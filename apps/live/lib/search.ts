@@ -10,9 +10,9 @@
 // suite can import it directly without the 'use client' boundary
 // + the dynamic-import wrapping.
 
-import type { ShapeKind, Tab } from '@livediagram/diagram';
+import type { ShapeKind, Tab } from '@livediagram/document';
 
-const DIAGRAM_LIMIT = 8;
+const DOCUMENT_LIMIT = 8;
 const SHARED_LIMIT = 8;
 const FOLDER_LIMIT = 8;
 const TEAM_LIMIT = 8;
@@ -26,7 +26,7 @@ const SETTINGS_LIMIT = 6;
 // Internal-only input shapes for the by-name match inputs. Several
 // share the same {id, name} shape but stay distinct so a future
 // schema change to one doesn't silently propagate to the others.
-type SearchInputDiagram = { id: string; name: string };
+type SearchInputDocument = { id: string; name: string };
 type SearchInputFolder = { id: string; name: string };
 // "Shared with You" rows carry their still-live share code so picking
 // one can navigate to the visitor URL (the only path a non-owner can
@@ -34,16 +34,16 @@ type SearchInputFolder = { id: string; name: string };
 type SearchInputShared = { id: string; name: string; shareCode: string };
 type SearchInputTeam = { id: string; name: string };
 
-// `team` set = a diagram in a team's library (docs/specs/013-workspace/team-shared-diagrams.md): the panel
+// `team` set = a diagram in a team's library (docs/specs/013-workspace/team-shared-documents.md): the panel
 // renders an "in <team>" suffix, like team folders. Personal diagrams
 // leave it unset. Either way picking it opens the diagram by id.
-type DiagramItem = {
-  kind: 'diagram';
+type DocumentItem = {
+  kind: 'document';
   id: string;
   name: string;
   team?: { id: string; name: string };
 };
-// `team` set = a team-library folder (docs/specs/013-workspace/team-shared-diagrams.md): the panel renders an
+// `team` set = a team-library folder (docs/specs/013-workspace/team-shared-documents.md): the panel renders an
 // "in <team>" suffix and picking it lands on the team page with that
 // folder open. Personal folders leave it unset.
 type FolderItem = {
@@ -91,10 +91,10 @@ export type PaletteAdd =
   | {
       type: 'shape';
       shapeKind: ShapeKind;
-      session?: import('@livediagram/diagram').SessionTool;
-      reaction?: import('@livediagram/diagram').Reaction;
-      mode?: import('@livediagram/diagram').SelectionMode;
-      estimateScale?: import('@livediagram/diagram').EstimateScale;
+      session?: import('@livediagram/document').SessionTool;
+      reaction?: import('@livediagram/document').Reaction;
+      mode?: import('@livediagram/document').SelectionMode;
+      estimateScale?: import('@livediagram/document').EstimateScale;
     }
   | { type: 'icon'; iconId: string }
   | { type: 'tech'; iconId: string }
@@ -136,7 +136,7 @@ type SettingItem = {
 };
 
 export type SearchResultItem =
-  | DiagramItem
+  | DocumentItem
   | SharedItem
   | FolderItem
   | TeamItem
@@ -149,7 +149,7 @@ export type SearchResultItem =
 
 export type SearchGroup = {
   key:
-    | 'diagrams'
+    | 'documents'
     | 'shared'
     | 'folders'
     | 'teams'
@@ -204,18 +204,18 @@ export type HelpSearchItem = {
 // from the function signature without needing the named type.
 type SearchInput = {
   query: string;
-  diagrams: SearchInputDiagram[];
+  documents: SearchInputDocument[];
   folders: SearchInputFolder[];
   // Diagrams shared with the current owner ("Shared with You").
   // Optional: surfaces without the list omit it.
   shared?: SearchInputShared[];
-  // Team-library folders (docs/specs/013-workspace/team-shared-diagrams.md), breadcrumb-pathed + tagged with
+  // Team-library folders (docs/specs/013-workspace/team-shared-documents.md), breadcrumb-pathed + tagged with
   // their team. Surfaced in the Teams group (not "Personal Space", which is
   // personal-only), with their own cap. Optional: guests have none.
   teamFolders?: { id: string; path: string; teamId: string; teamName: string }[];
-  // Team-library diagrams (docs/specs/013-workspace/team-shared-diagrams.md), tagged with their team. Also
+  // Team-library diagrams (docs/specs/013-workspace/team-shared-documents.md), tagged with their team. Also
   // surfaced in the Teams group. Optional: guests have none.
-  teamDiagrams?: { id: string; name: string; teamId: string; teamName: string }[];
+  teamDocuments?: { id: string; name: string; teamId: string; teamName: string }[];
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md). Optional: guests
   // have none and surfaces fetch the list lazily.
   teams?: SearchInputTeam[];
@@ -261,20 +261,29 @@ function paletteRank(q: string, item: PaletteSearchItem): number {
 }
 
 export function buildSearchResults(input: SearchInput): SearchGroup[] {
-  const { query, diagrams, folders, shared, teamFolders, teamDiagrams, teams, tabs, currentTabId } =
-    input;
+  const {
+    query,
+    documents: liveDocs,
+    folders,
+    shared,
+    teamFolders,
+    teamDocuments,
+    teams,
+    tabs,
+    currentTabId,
+  } = input;
   const q = query.trim();
   const groups: SearchGroup[] = [];
 
-  const diagramMatches = diagrams
+  const documentMatches = liveDocs
     .filter((d) => matches(q, d.name || 'Untitled diagram'))
-    .slice(0, DIAGRAM_LIMIT);
-  if (diagramMatches.length > 0) {
+    .slice(0, DOCUMENT_LIMIT);
+  if (documentMatches.length > 0) {
     groups.push({
-      key: 'diagrams',
-      label: 'Diagrams',
-      items: diagramMatches.map((d) => ({
-        kind: 'diagram',
+      key: 'documents',
+      label: 'Documents',
+      items: documentMatches.map((d) => ({
+        kind: 'document',
         id: d.id,
         name: d.name || 'Untitled diagram',
       })),
@@ -313,16 +322,16 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   }
 
   // "Teams": the teams themselves, then their folders + diagrams
-  // (docs/specs/013-workspace/team-shared-diagrams.md) — everything team-scoped in one place, each list capped
+  // (docs/specs/013-workspace/team-shared-documents.md) — everything team-scoped in one place, each list capped
   // separately so one kind can't crowd out the others.
   const teamMatches = (teams ?? []).filter((t) => matches(q, t.name)).slice(0, TEAM_LIMIT);
   const teamFolderMatches = (teamFolders ?? [])
     .filter((f) => matches(q, f.path) || matches(q, f.teamName))
     .slice(0, FOLDER_LIMIT);
-  const teamDiagramMatches = (teamDiagrams ?? [])
+  const teamDocumentMatches = (teamDocuments ?? [])
     .filter((d) => matches(q, d.name || 'Untitled diagram') || matches(q, d.teamName))
-    .slice(0, DIAGRAM_LIMIT);
-  if (teamMatches.length + teamFolderMatches.length + teamDiagramMatches.length > 0) {
+    .slice(0, DOCUMENT_LIMIT);
+  if (teamMatches.length + teamFolderMatches.length + teamDocumentMatches.length > 0) {
     groups.push({
       key: 'teams',
       label: 'Teams',
@@ -334,8 +343,8 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
           name: f.path,
           team: { id: f.teamId, name: f.teamName },
         })),
-        ...teamDiagramMatches.map((d): DiagramItem => ({
-          kind: 'diagram',
+        ...teamDocumentMatches.map((d): DocumentItem => ({
+          kind: 'document',
           id: d.id,
           name: d.name || 'Untitled diagram',
           team: { id: d.teamId, name: d.teamName },

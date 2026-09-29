@@ -25,7 +25,7 @@ import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { SessionStudio } from '@/components/panels/session-studio/SessionStudio';
 import { TabCanvasMenuSections } from './TabCanvasMenuSections';
 import {
-  AddTabToDiagramDialog,
+  AddTabToDocumentDialog,
   AddTabToFolderDialog,
 } from '@/components/dialogs/TabOrganiseDialogs';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
@@ -50,7 +50,7 @@ export function PortalMenu({
   locked,
   selfId,
   voteSelfId,
-  otherDiagrams,
+  otherDocuments,
   folderNames,
   currentFolder,
   onMoveToFolder,
@@ -74,7 +74,7 @@ export function PortalMenu({
   onClearContent: () => void;
   onImport: () => void;
   onExport: () => void;
-  onCopyTo: (targetDiagramId: string) => void;
+  onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   locked: boolean;
   // Viewer identity for the Add to Diagram dialog's thumbnail fetches.
@@ -82,7 +82,7 @@ export function PortalMenu({
   // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): the collab key, never the owner
   // id. Falls back to `selfId` for a caller that doesn't run a vote.
   voteSelfId?: string;
-  otherDiagrams: { id: string; name: string; savedAt?: number }[];
+  otherDocuments: { id: string; name: string; savedAt?: number }[];
   folderNames: string[];
   currentFolder: string | null;
   onMoveToFolder: (folderName: string) => void;
@@ -92,8 +92,8 @@ export function PortalMenu({
   canClearContent: boolean;
 } & SessionToolsProps) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
-  // organise pickers — "copyTo" (docs/specs/006-diagram/tab-diagram-many-to-many.md, link the tab into another
-  // diagram) and "folder" (docs/specs/006-diagram/tab-folders.md, file the tab into a tab-bar folder) —
+  // organise pickers — "copyTo" (docs/specs/006-document/tab-document-many-to-many.md, link the tab into another
+  // diagram) and "folder" (docs/specs/006-document/tab-folders.md, file the tab into a tab-bar folder) —
   // open as proper centred MODALS in place of the anchored box, so they
   // get room instead of squeezing into the menu. While a modal is up the
   // anchored box unmounts (`ref` goes null), which conveniently disarms
@@ -239,9 +239,9 @@ export function PortalMenu({
   // above); dismissing them dismisses the menu.
   if (view === 'copyTo') {
     return (
-      <AddTabToDiagramDialog
+      <AddTabToDocumentDialog
         ownerId={selfId}
-        otherDiagrams={otherDiagrams}
+        otherDocuments={otherDocuments}
         onPick={onCopyTo}
         onClose={onClose}
       />
@@ -393,7 +393,7 @@ export function PortalMenu({
                   icon={<MoveIcon />}
                   label="Add to Diagram"
                   onClick={() => setView('copyTo')}
-                  disabled={otherDiagrams.length === 0}
+                  disabled={otherDocuments.length === 0}
                 />
               </MenuTileGrid>
             </MenuAccordionSection>

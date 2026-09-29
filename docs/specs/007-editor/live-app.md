@@ -12,17 +12,17 @@ A guest can open `/new`, create a diagram, and use the full canvas without an ac
 
 ## Routes
 
-- `/new` — welcome / template-picker flow for creating a new diagram (the app's entry point). See [14-new-diagram-route.md](new-diagram-route.md).
+- `/new` — welcome / template-picker flow for creating a new diagram (the app's entry point). See [14-new-diagram-route.md](new-document-route.md).
 - `/diagram/<id>` — the editor itself, scoped to one diagram id. Static-exports a single `/diagram/placeholder` page; the live worker rewrites all `/diagram/<id>` paths to it at the edge, and the client reads the real id from the path.
 - `/explorer/*`, `/sign-in`, `/get-started`, `/sso-callback`, `/embed` — the library, auth, and read-only embed surfaces.
 
 ## Persistence
 
-The editor talks to the Cloudflare Worker API documented in [11-api.md](../015-api/api.md). `apps/live/lib/api-client.ts` is the single boundary — the editor never reads or writes diagram state to `localStorage`. D1 holds the durable snapshot; per-tab content is split into its own rows (see [13-per-tab-storage.md](../006-diagram/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
+The editor talks to the Cloudflare Worker API documented in [11-api.md](../015-api/api.md). `apps/live/lib/api-client.ts` is the single boundary — the editor never reads or writes diagram state to `localStorage`. D1 holds the durable snapshot; per-tab content is split into its own rows (see [13-per-tab-storage.md](../006-document/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
 
 `localStorage` is still used for **identity bootstrap only** — a `crypto.randomUUID()` participant id under `livediagram:v2:self-id`, plus a `livediagram:v2:name-confirmed` flag once the user has named themselves. Everything else flows through the API.
 
-The diagram shape follows [05-diagram-structure.md](../006-diagram/diagram-structure.md) — a diagram has tabs, and elements can link across tabs.
+The diagram shape follows [05-diagram-structure.md](../006-document/document-structure.md) — a diagram has tabs, and elements can link across tabs.
 
 ## Layout
 
@@ -42,7 +42,7 @@ Three regions stacked vertically, filling the viewport:
 └────────────────────────────────────────────────────┘
 ```
 
-- **Header:** brand wordmark, diagram-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the diagram lives in a team library and has no share links, [Team shared diagrams](../013-workspace/team-shared-diagrams.md)), followed by the [role pill](#role-pill). (The full-page `/explorer` library is reached from the AuthControls menu, the mobile dock, and the **Explorer** link in the marketing site header — not from the editor header itself.)
+- **Header:** brand wordmark, diagram-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the diagram lives in a team library and has no share links, [Team shared diagrams](../013-workspace/team-shared-documents.md)), followed by the [role pill](#role-pill). (The full-page `/explorer` library is reached from the AuthControls menu, the mobile dock, and the **Explorer** link in the marketing site header — not from the editor header itself.)
 - **Canvas:** owns most of the viewport. See [09-canvas-and-palette.md](../008-canvas/canvas-and-palette.md) for the full surface — shapes, arrows, marquee, multi-select, floating palettes, plus the activity / context panels.
 - **Tab bar (status bar):** horizontal row of tabs with `+` to add. Click to switch, double-click to rename, drag to reorder. Its right-hand cluster (`ChromeControls`, shared with the Explorer's bottom bar) holds **Search**, **Settings**, and the appearance toggle. In the editor each shows a text label beside its icon from `sm` up ("Search", "Settings", and the appearance in force: "Light" / "Dark" / "System") and is icon-only on a phone; the Explorer's bar stays icon-only. There is no keyboard-shortcuts button: the shortcut reference and the per-device on/off switch live in Settings' **Keyboard** category ([User preferences](user-preferences.md)), which the "Keyboard shortcuts" search command opens directly.
 
@@ -197,14 +197,14 @@ The editor's floating panels (Palette, Explorer, Editor/Context, Activity) were 
 - **EditorHeader** drops the `livediagram` wordmark on mobile via the Brand component's new `wordmarkClassName` prop (set to `hidden sm:inline`). The mark stays for orientation. The header's reserved width shrinks accordingly so the diagram title centres correctly.
 - **TabBar** hides the leading `Tabs` label below `sm` and drops the right-hand cluster's text labels to icons only. Tabs themselves, the +-add, Search, Settings and the dark-mode toggle stay. (There is no shortcuts button to hide: the shortcut reference lives in Settings' Keyboard category, [User preferences](user-preferences.md).)
 
-These don't change desktop layout. The mobile dock above is what resolves the old "panels overlap when all four open" case: at most one panel is open at a time, as a popover. The mobile picker ([Dedicated route for new-diagram creation](new-diagram-route.md) responsive section) covers the template / identity surface the same way.
+These don't change desktop layout. The mobile dock above is what resolves the old "panels overlap when all four open" case: at most one panel is open at a time, as a popover. The mobile picker ([Dedicated route for new-diagram creation](new-document-route.md) responsive section) covers the template / identity surface the same way.
 
 The root layout (`apps/live/app/layout.tsx`) exports a `viewport` config that pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
 
 ## Out of scope (next iterations)
 
 - **Comments inbox / mentions** — comment threads exist per-element but there's no aggregated view yet. A cross-diagram inbox is sketched for assigned actions in [Assigned actions](../012-collaboration/assigned-actions.md) and not built either.
-- **Per-user grants** — a diagram is private, shared via a per-link role, or in a team's shared library. Teams shipped ([Teams](../013-workspace/teams.md) + [Team shared diagrams](../013-workspace/team-shared-diagrams.md)), but every member can edit every team diagram; there are no per-diagram per-user grants.
+- **Per-user grants** — a diagram is private, shared via a per-link role, or in a team's shared library. Teams shipped ([Teams](../013-workspace/teams.md) + [Team shared diagrams](../013-workspace/team-shared-documents.md)), but every member can edit every team diagram; there are no per-diagram per-user grants.
 
 (Four earlier bullets here have shipped. Auth UI landed per [Auth + guest access](../014-identity/auth-and-guest-access.md); the active tab exports as JSON / Markdown / PNG / SVG / PDF via `ExportTabDialog`; transactional + lifecycle email ships through the api worker per [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md); and realtime is no longer whole-tab LWW: [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) merges concurrent edits to different elements. A field-level CRDT for two people editing the SAME element was scoped and deliberately dropped; the advisory selection lock above makes that case rare, and when it happens it stays last-writer-wins.)
 

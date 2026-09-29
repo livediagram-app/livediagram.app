@@ -25,7 +25,7 @@ import {
   DEFAULT_ANIMATION_SPEED,
   type AnimationSpeed,
   type IconAnimation,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 import type { IconDef, IconPrim } from './icon-types';
 import { getIconLoaded, getLoadedIconCatalog } from './icon-registry';

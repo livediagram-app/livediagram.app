@@ -1,5 +1,5 @@
 // /api/folders — folder tree CRUD. Personal folders are owner-scoped
-// (docs/specs/013-workspace/folders.md); team folders (docs/specs/013-workspace/team-shared-diagrams.md) carry a team_id and authorise by
+// (docs/specs/013-workspace/folders.md); team folders (docs/specs/013-workspace/team-shared-documents.md) carry a team_id and authorise by
 // JOINED membership instead: any joined member may create / rename /
 // move / delete them. The two scopes never mix — a team folder's
 // parent must be a folder of the same team, a personal folder's
@@ -48,7 +48,7 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
   if (segments.length === 2) {
     if (request.method === 'GET') {
       // Personal tree only; team folders ship via GET
-      // /api/teams/:id/library (docs/specs/013-workspace/team-shared-diagrams.md).
+      // /api/teams/:id/library (docs/specs/013-workspace/team-shared-documents.md).
       const folders = await listFoldersByOwner(env, owner);
       return json({ folders });
     }

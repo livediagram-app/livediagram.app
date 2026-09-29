@@ -14,7 +14,7 @@ import {
   clampPercent,
   PROGRESS_LOOPING_ANIMS,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { animSpeedVars } from '@/lib/icons';
 
 // The speed + iteration custom properties the `lvd-prog-*` keyframes read.

@@ -1,6 +1,6 @@
-import { apiFetchDiagramThumbnailUrl } from '@/lib/api-client';
+import { apiFetchDocumentThumbnailUrl } from '@/lib/api-client';
 
-// In-memory cache of diagram snapshot thumbnails (docs/specs/006-diagram/diagram-snapshots.md), shared
+// In-memory cache of diagram snapshot thumbnails (docs/specs/006-document/document-snapshots.md), shared
 // by every DiagramThumbnail on the page.
 //
 // Without it each thumbnail owned its blob URL and revoked it on unmount,
@@ -20,7 +20,7 @@ export type ThumbnailEntry =
 
 export type ThumbnailRequest = {
   ownerId: string;
-  diagramId: string;
+  documentId: string;
   version: number;
   shareCode: string | null;
 };
@@ -34,7 +34,7 @@ const entries = new Map<string, ThumbnailEntry>();
 const inflight = new Map<string, Promise<ThumbnailEntry>>();
 
 export function thumbnailKey(req: ThumbnailRequest): string {
-  return JSON.stringify([req.ownerId, req.diagramId, req.version, req.shareCode]);
+  return JSON.stringify([req.ownerId, req.documentId, req.version, req.shareCode]);
 }
 
 // A settled entry, if there is one. Pure (no recency bump), so a render
@@ -54,7 +54,7 @@ export function loadThumbnail(req: ThumbnailRequest): Promise<ThumbnailEntry> {
   }
   const pending = inflight.get(key);
   if (pending) return pending;
-  const request = apiFetchDiagramThumbnailUrl(req.ownerId, req.diagramId, {
+  const request = apiFetchDocumentThumbnailUrl(req.ownerId, req.documentId, {
     version: req.version,
     shareCode: req.shareCode,
   })

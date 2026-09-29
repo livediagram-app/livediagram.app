@@ -12,7 +12,7 @@
 // point of the scope model is that a later per-diagram or per-team feed
 // is a new value plus a renderer — no schema change, no migration
 // (docs/specs/013-workspace/timeline.md §3.4). The union members still autocomplete.
-export type TimelineScopeType = 'user' | 'diagram' | 'team' | (string & {});
+export type TimelineScopeType = 'user' | 'document' | 'team' | (string & {});
 
 export type TimelineScopeRef = {
   scopeType: TimelineScopeType;
@@ -36,7 +36,7 @@ export function parseScope(raw: string): TimelineScopeRef | null {
 
 // What kind of thing an event is ABOUT. Drives the bubble's icon,
 // colour, and which filter chip hides it.
-export type TimelineSourceType = 'diagram' | 'team' | 'account' | (string & {});
+export type TimelineSourceType = 'document' | 'team' | 'account' | (string & {});
 
 // What HAPPENED. Distinct from the source type: one diagram produces
 // many of these over its life.
@@ -53,17 +53,17 @@ export type TimelineSourceType = 'diagram' | 'team' | 'account' | (string & {});
 // wrong thing about what happened.
 export const TIMELINE_EVENT_TYPES = [
   // Diagram lifecycle + the coalesced editing event (docs/specs/013-workspace/timeline.md §4.2)
-  'diagram_created',
-  'diagram_renamed',
-  'diagram_duplicated',
+  'document_created',
+  'document_renamed',
+  'document_duplicated',
   // No `diagram_deleted`: a deleted diagram is swept from the feed and
   // leaves nothing behind (docs/specs/013-workspace/timeline.md §3.5).
-  'diagram_moved',
-  'diagram_edited',
-  'diagram_offline',
-  'diagram_synced',
-  'diagram_opened_by_visitor',
-  'diagram_copied_by_visitor',
+  'document_moved',
+  'document_edited',
+  'document_offline',
+  'document_synced',
+  'document_opened_by_visitor',
+  'document_copied_by_visitor',
   'folder_created',
   'folder_deleted',
   // Collaboration (§4.3)
@@ -82,12 +82,12 @@ export const TIMELINE_EVENT_TYPES = [
   'team_member_left',
   'team_member_removed',
   'team_role_changed',
-  'team_diagram_added',
+  'team_document_added',
   // Pulled back OUT of a team library into somebody's personal files, which
-  // also transfers ownership to the mover (docs/specs/013-workspace/team-shared-diagrams.md). Distinct from
+  // also transfers ownership to the mover (docs/specs/013-workspace/team-shared-documents.md). Distinct from
   // `diagram_moved`: the team loses the diagram, and if the mover was not the
   // owner the owner loses it too.
-  'team_diagram_removed',
+  'team_document_removed',
   'team_renamed',
   'team_deleted',
   'team_invite_link_enabled',
@@ -172,7 +172,7 @@ export const TIMELINE_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
 // the Timeline sits behind the same gate as the diagram itself.
 export const TIMELINE_COMMENT_MAX = 240;
 
-// An Offline Mode conversion (docs/specs/006-diagram/offline-mode.md), declared by the editor on the request
+// An Offline Mode conversion (docs/specs/006-document/offline-mode.md), declared by the editor on the request
 // that performs it, so the feed can say what actually happened.
 //
 // It has to be declared because the two conversions reuse ordinary endpoints
@@ -187,11 +187,11 @@ export const TIMELINE_COMMENT_MAX = 240;
 // Header name + values live here, next to the event types they select, because
 // this is a two-sided contract and the alternative is the client and the worker
 // each holding a copy of the string.
-export const DIAGRAM_CONVERSION_HEADER = 'X-Diagram-Conversion';
+export const DOCUMENT_CONVERSION_HEADER = 'X-Diagram-Conversion';
 
-export type DiagramConversion = 'offline' | 'sync';
+export type DocumentConversion = 'offline' | 'sync';
 
 /** Reads the conversion a request declares, or null when it declares none. */
-export function readDiagramConversion(value: string | null): DiagramConversion | null {
+export function readDocumentConversion(value: string | null): DocumentConversion | null {
   return value === 'offline' || value === 'sync' ? value : null;
 }

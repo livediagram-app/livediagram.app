@@ -9,7 +9,7 @@ import {
   type Element,
   type IconPosition,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // Which side of a boxed element a screen point sits nearest, normalised by
 // half-extent so a wide-but-short box still reads top / bottom correctly.

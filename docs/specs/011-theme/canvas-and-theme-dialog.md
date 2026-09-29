@@ -4,7 +4,7 @@ A focused modal for changing the active tab's **canvas style** and **theme**, re
 
 ## Why
 
-The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid sit inside narrow side-panel accordions. They work, but they're cramped (a 3-wide theme grid, a flat list) and easy to miss. Right-clicking the canvas already offered **Change Canvas** / **Change Theme**, but those merely popped the matching accordion open in the side panel. This spec turns those two menu items into a proper modal so the controls get the room they deserve, and the theme picker can use the same category browse as the [New-diagram](../007-editor/new-diagram-route.md) "Pick a template" screen.
+The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid sit inside narrow side-panel accordions. They work, but they're cramped (a 3-wide theme grid, a flat list) and easy to miss. Right-clicking the canvas already offered **Change Canvas** / **Change Theme**, but those merely popped the matching accordion open in the side panel. This spec turns those two menu items into a proper modal so the controls get the room they deserve, and the theme picker can use the same category browse as the [New-diagram](../007-editor/new-document-route.md) "Pick a template" screen.
 
 ## Behaviour
 
@@ -36,9 +36,9 @@ The canvas-style controls, identical to the palette's **Canvas** accordion (and 
 
 ### Theme tab
 
-The two-level **category browse** lifted from the New-diagram theme picker (`ThemeCategoryBrowser`, shared with [Dedicated route for new-diagram creation](../007-editor/new-diagram-route.md) so the two stay identical):
+The two-level **category browse** lifted from the New-diagram theme picker (`ThemeCategoryBrowser`, shared with [Dedicated route for new-diagram creation](../007-editor/new-document-route.md) so the two stay identical):
 
-- Overview shows a **Default** quick-pick plus a card per [`THEME_CATEGORIES`](../007-editor/new-diagram-route.md) bucket (Cool / Warm / Dark / Multi-colour / Formal), plus a **Custom** category for the owner's saved themes ([Custom themes](custom-themes.md)). Clicking a category drills into its themes with an "All themes" back affordance.
+- Overview shows a **Default** quick-pick plus a card per [`THEME_CATEGORIES`](../007-editor/new-document-route.md) bucket (Cool / Warm / Dark / Multi-colour / Formal), plus a **Custom** category for the owner's saved themes ([Custom themes](custom-themes.md)). Clicking a category drills into its themes with an "All themes" back affordance.
 - Clicking a theme applies it live; double-clicking applies and closes the dialog.
 - A **Reset elements to theme** action (same as the accordion) recolours every element on the tab to the active theme's defaults. A shape carrying a **preset binding** ([Style presets](../010-palette/style-presets.md)) keeps it: reset re-derives the preset's colours + border under the active theme ("this theme's Bold") instead of blanking to the plain look; only a binding the theme can't express (a branch variant under a single-accent theme) drops. Arrows keep their pattern / thickness / flow — reset only re-points the colour fields.
 

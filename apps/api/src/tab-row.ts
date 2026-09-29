@@ -1,4 +1,4 @@
-import { migrateStoredTab, type Tab } from '@livediagram/diagram';
+import { migrateStoredTab, type Tab } from '@livediagram/document';
 import type { TabDTO, TabSummaryDTO } from './types';
 
 // tabs row shape as read from D1. The `data` column is the
@@ -10,12 +10,12 @@ import type { TabDTO, TabSummaryDTO } from './types';
 
 export type TabRow = {
   id: string;
-  diagram_id: string;
+  document_id: string;
   name: string;
   order_index: number;
   data: string;
   updated_at: number;
-  // Per-diagram folder name from the diagram_tabs link (docs/specs/006-diagram/tab-folders.md).
+  // Per-diagram folder name from the diagram_tabs link (docs/specs/006-document/tab-folders.md).
   // NULL when the tab is loose. Read sites that don't join the link
   // for folder (none today) leave it undefined, which maps the same
   // as NULL.
@@ -47,7 +47,7 @@ export function rowToTab(row: TabRow): TabDTO {
     ...data,
     id: row.id,
     name: row.name,
-    diagramId: row.diagram_id,
+    documentId: row.document_id,
     orderIndex: row.order_index,
     updatedAt: row.updated_at,
     // Folder is link metadata, not body content — it overrides any
@@ -63,7 +63,7 @@ export function rowToTab(row: TabRow): TabDTO {
 export function rowToTabSummary(row: TabRow): TabSummaryDTO {
   return {
     id: row.id,
-    diagramId: row.diagram_id,
+    documentId: row.document_id,
     name: row.name,
     orderIndex: row.order_index,
     updatedAt: row.updated_at,

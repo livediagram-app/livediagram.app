@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/diagram';
+import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/document';
 import {
   DEFAULT_BUTTON_MODE,
   PADDING_PX,
@@ -19,7 +19,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
@@ -371,7 +371,7 @@ export function ElementFaceRouter({
           <ImageElementView
             element={element}
             ownerId={imageContext.ownerId}
-            diagramId={imageContext.diagramId}
+            documentId={imageContext.documentId}
             shareCode={imageContext.shareCode}
             canOpenPicker={!!imageContext.onOpenPicker}
           />

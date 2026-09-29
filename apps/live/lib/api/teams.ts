@@ -67,7 +67,7 @@ export async function apiAcceptTeamInvite(
   return member;
 }
 
-// The team's shared library (docs/specs/013-workspace/team-shared-diagrams.md): folder tree + diagrams in one
+// The team's shared library (docs/specs/013-workspace/team-shared-documents.md): folder tree + diagrams in one
 // call, joined members only.
 export async function apiGetTeamLibrary(
   ownerId: string,
@@ -180,12 +180,12 @@ export async function apiRemoveTeamMember(
 export async function apiCheckAssigneeAccess(
   ownerId: string,
   teamId: string,
-  input: { assigneeUserId: string; diagramId: string },
+  input: { assigneeUserId: string; documentId: string },
 ): Promise<boolean | null> {
   try {
     const params = new URLSearchParams({
       assigneeUserId: input.assigneeUserId,
-      diagramId: input.diagramId,
+      documentId: input.documentId,
     });
     const res = await apiFetch(`${API_BASE}/teams/${teamId}/access-check?${params}`, {
       headers: await apiHeaders(ownerId),
@@ -211,7 +211,7 @@ export async function apiNotifyActionAssigned(
     // membership row id) for invited members with no account yet.
     assigneeUserId: string | null;
     assigneeMemberId?: string;
-    diagramId: string;
+    documentId: string;
     actionName: string;
     description?: string;
   },
@@ -232,7 +232,7 @@ export async function apiNotifyMention(
   ownerId: string,
   teamId: string,
   input: {
-    diagramId: string;
+    documentId: string;
     commentText: string;
     mentions: { userId: string | null; memberId?: string }[];
   },

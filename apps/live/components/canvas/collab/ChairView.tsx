@@ -6,7 +6,7 @@ import {
   chairSeatFill,
   DEFAULT_CHAIR_FACING,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // A chair (docs/specs/009-elements/chair.md): furniture an Avatar-mode character sits down in.
@@ -23,7 +23,7 @@ export type ChairSitter = { name: string; color: string };
 
 // The drawing (and the rotation for each facing, 'n' being the drawn one:
 // back at the top, sitter facing down the board toward the reader) comes
-// from the shared CHAIR_GEOMETRY table (@livediagram/diagram
+// from the shared CHAIR_GEOMETRY table (@livediagram/document
 // shape-geometry.ts), which the headless export draws too.
 
 export function ChairView({

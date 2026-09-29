@@ -3,7 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./live-app.md - when working on Live app: The diagram editor app (clean routes, no `/live` prefix)
-- ./new-diagram-route.md - when working on Dedicated route for new-diagram creation: The welcome / create-new flow at `/new`, split from the editor
+- ./new-document-route.md - when working on Dedicated route for new-diagram creation: The welcome / create-new flow at `/new`, split from the editor
 - ./user-preferences.md - when working on User preferences: Per-user editor preference flags (footer settings dialog)
 - ./ai-assistance.md - when working on AI Assistance: Optional AI assistant (Build / Clean / Ask / Review) on the canvas
 - ./zen-mode.md - when working on Zen mode: Distraction-free focus mode: hide all chrome, keep canvas + zoom

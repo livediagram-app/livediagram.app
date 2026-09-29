@@ -1,16 +1,16 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { qaVoterId, type QaNote } from '@livediagram/diagram';
+import { qaVoterId, type QaNote } from '@livediagram/document';
 import type { QaWriteRequest } from '../qa-board-write';
 
 // The Q&A board endpoint (docs/specs/012-collaboration/qa-board.md). What the ROUTE has to get right: the role
 // split (audience verbs on read access, board-running verbs on edit access),
 // an actor derived from the authenticated caller rather than the request, and
 // handing the write to the diagram's room. The write and its serialisation are
-// the room's, covered in diagram-room-qa.test.ts and qa-board-write.test.ts.
+// the room's, covered in document-room-qa.test.ts and qa-board-write.test.ts.
 
 const { db, gates } = vi.hoisted(() => ({
-  db: { getDiagram: vi.fn(), getParticipant: vi.fn() },
+  db: { getDocument: vi.fn(), getParticipant: vi.fn() },
   gates: { gateRead: vi.fn(), gateEdit: vi.fn() },
 }));
 vi.mock('../db', () => db);
@@ -28,7 +28,7 @@ function setup(reply: () => Response = () => Response.json({ notes: [], rev: 1 }
   const sent: { url: string; body: QaWriteRequest; room: string }[] = [];
   let room = '';
   const env = {
-    DIAGRAM_ROOM: {
+    DOCUMENT_ROOM: {
       idFromName: (n: string) => n,
       get: (id: string) => {
         room = id;
@@ -48,7 +48,7 @@ function setup(reply: () => Response = () => Response.json({ notes: [], rev: 1 }
 
 beforeEach(() => {
   for (const fn of [...Object.values(db), ...Object.values(gates)]) fn.mockReset();
-  db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'owner-0', teamId: null, tabs: [] });
+  db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'owner-0', teamId: null, tabs: [] });
   db.getParticipant.mockResolvedValue({ name: 'Priya', color: '#0af' });
   gates.gateRead.mockResolvedValue(true);
   gates.gateEdit.mockResolvedValue(false);
@@ -73,7 +73,7 @@ describe('handleQaBoardRoute', () => {
     // The diagram's own room, so every write for it queues in one place.
     expect(sent[0]!.room).toBe('d1');
     expect(sent[0]!.body).toMatchObject({
-      diagramId: 'd1',
+      documentId: 'd1',
       tabId: 't1',
       elementId: 'b1',
       action: { type: 'add', id: 'n1', text: 'Why?', anonymous: false },

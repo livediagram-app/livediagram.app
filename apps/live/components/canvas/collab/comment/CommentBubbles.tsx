@@ -3,7 +3,7 @@
 // else's on the left. Consecutive comments by one author group under one
 // name, the way a chat does, so a three-part remark reads as one voice.
 
-import type { Comment } from '@livediagram/diagram';
+import type { Comment } from '@livediagram/document';
 import { Glyph, GlyphDisc } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import { relativeSince } from '@/lib/relative-time';

@@ -21,7 +21,7 @@ import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 import { useExplorer } from '../ExplorerContext';
-import { folderMenuHandlers, sharedToPaneDiagram, type PaneDiagram } from '../views';
+import { folderMenuHandlers, sharedToPaneDocument, type PaneDocument } from '../views';
 import { TimelineCardMenu } from './TimelineCardMenu';
 import type { TimelineEntityMenuFor } from './useTimelineEntityMenus';
 
@@ -36,7 +36,7 @@ const RENAME_INPUT_CLASS =
 // The card's subject as the menu header should name it. Renderers
 // build the on-card subject from the same snapshot keys; this is the
 // plain-string reading of it, for a menu that can't take a node.
-const SUBJECT_KEYS = ['diagramName', 'teamName', 'folderName', 'themeName', 'tokenName'];
+const SUBJECT_KEYS = ['documentName', 'teamName', 'folderName', 'themeName', 'tokenName'];
 function subjectOf(event: TimelineEvent): string {
   for (const key of SUBJECT_KEYS) {
     const v = event.snapshot?.[key];
@@ -58,15 +58,15 @@ export function useTimelineCardSlots({
 }): TimelineCardSlotsFor {
   const {
     ownerId,
-    diagrams,
-    teamDiagrams,
+    documents: liveDocs,
+    teamDocuments,
     shared,
-    renamingDiagramId,
-    setRenamingDiagramId,
-    renameDiagram,
-    deleteDiagram,
-    duplicateDiagram,
-    openMovePickerForDiagram,
+    renamingDocumentId,
+    setRenamingDocumentId,
+    renameDocument,
+    deleteDocument,
+    duplicateDocument,
+    openMovePickerForDocument,
     dismissShared,
     favouriteIds,
     toggleFavourite,
@@ -80,12 +80,12 @@ export function useTimelineCardSlots({
   } = useExplorer();
 
   const byId = useMemo(() => {
-    const map = new Map<string, PaneDiagram>();
-    for (const d of diagrams) map.set(d.id, d);
-    for (const d of teamDiagrams) map.set(d.id, d);
-    for (const s of shared) map.set(s.id, sharedToPaneDiagram(s));
+    const map = new Map<string, PaneDocument>();
+    for (const d of liveDocs) map.set(d.id, d);
+    for (const d of teamDocuments) map.set(d.id, d);
+    for (const s of shared) map.set(s.id, sharedToPaneDocument(s));
     return map;
-  }, [diagrams, teamDiagrams, shared]);
+  }, [liveDocs, teamDocuments, shared]);
 
   // Memoised: a fresh `?? []` each render would make the slot callback
   // below a new function every render.
@@ -146,9 +146,9 @@ export function useTimelineCardSlots({
         };
       }
 
-      const id = event.sourceType === 'diagram' ? idOf(event.snapshot, 'diagramId') : null;
-      const diagram = id ? byId.get(id) : undefined;
-      if (!id || !diagram) {
+      const id = event.sourceType === 'document' ? idOf(event.snapshot, 'documentId') : null;
+      const liveDoc = id ? byId.get(id) : undefined;
+      if (!id || !liveDoc) {
         // Everything else: the verbs the Explorer offers that kind of
         // thing (revoke this token, accept this invite, edit this
         // theme…), or just the remove verb when it offers none.
@@ -167,12 +167,12 @@ export function useTimelineCardSlots({
       }
 
       const title =
-        renamingDiagramId === id ? (
+        renamingDocumentId === id ? (
           <InlineRenameInput
-            initial={diagram.name}
-            ariaLabel={`Rename ${diagram.name}`}
-            onCommit={(name) => renameDiagram(id, name)}
-            onCancel={() => setRenamingDiagramId(null)}
+            initial={liveDoc.name}
+            ariaLabel={`Rename ${liveDoc.name}`}
+            onCommit={(name) => renameDocument(id, name)}
+            onCancel={() => setRenamingDocumentId(null)}
             className={RENAME_INPUT_CLASS}
           />
         ) : undefined;
@@ -181,36 +181,36 @@ export function useTimelineCardSlots({
         // The name as the Explorer knows it now. A card for the create of
         // a diagram renamed since still shows its current name, the same
         // way its preview shows the current picture.
-        subject: diagram.name,
+        subject: liveDoc.name,
         title,
         // Right-click is off while renaming: the card's own gesture would
         // fight the input's.
         onContextMenu: title ? undefined : onContextMenu,
         menu: (
           <TimelineCardMenu
-            subject={diagram.name}
-            diagram={diagram}
+            subject={liveDoc.name}
+            document={liveDoc}
             {...menuProps}
             handlers={{
               ownerId,
-              onStartRename: () => setRenamingDiagramId(id),
-              onDuplicate: () => void duplicateDiagram(id),
-              onMove: (anchor) => openMovePickerForDiagram(id, anchor),
-              onDelete: () => void deleteDiagram(id),
-              onDismiss: diagram.shared ? () => dismissShared(id) : undefined,
+              onStartRename: () => setRenamingDocumentId(id),
+              onDuplicate: () => void duplicateDocument(id),
+              onMove: (anchor) => openMovePickerForDocument(id, anchor),
+              onDelete: () => void deleteDocument(id),
+              onDismiss: liveDoc.shared ? () => dismissShared(id) : undefined,
               favourite: favouriteIds.has(id),
               onToggleFavourite: () => toggleFavourite(id),
               recentExcluded: recentExcluded.includes(id),
               onToggleRecentExclusion: () => toggleRecentExclusion(id),
               // Offline diagrams never reach the worker, so they have no
-              // server history to show (docs/specs/006-diagram/offline-mode.md).
+              // server history to show (docs/specs/006-document/offline-mode.md).
               onShowHistory: isOfflineIdSync(id)
                 ? undefined
-                : () => onShowHistory(id, diagram.name),
+                : () => onShowHistory(id, liveDoc.name),
               // Straight to the Share dialog (the editor honours
               // `?share=1`): the natural next step from a share-link
               // card, and no worse from any other. Offline diagrams have
-              // nothing to share (docs/specs/006-diagram/offline-mode.md).
+              // nothing to share (docs/specs/006-document/offline-mode.md).
               onShare: isOfflineIdSync(id)
                 ? undefined
                 : () => window.location.assign(`/diagram/${encodeURIComponent(id)}?share=1`),
@@ -224,12 +224,12 @@ export function useTimelineCardSlots({
       menuFor,
       openMenu,
       ownerId,
-      renamingDiagramId,
-      setRenamingDiagramId,
-      renameDiagram,
-      deleteDiagram,
-      duplicateDiagram,
-      openMovePickerForDiagram,
+      renamingDocumentId,
+      setRenamingDocumentId,
+      renameDocument,
+      deleteDocument,
+      duplicateDocument,
+      openMovePickerForDocument,
       dismissShared,
       favouriteIds,
       toggleFavourite,

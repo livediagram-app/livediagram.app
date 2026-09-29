@@ -6,7 +6,7 @@
 // (BoxedElementView) and the context-menu Markers tiles so both draw the same
 // glyph; the image export draws its own primitives (canvas/SVG strings).
 
-import type { ShapeMarker } from '@livediagram/diagram';
+import type { ShapeMarker } from '@livediagram/document';
 
 // Fixed fill for the traffic-light dots; checkboxes tint with the passed
 // colour (the element's text colour on canvas, currentColor in menu tiles).

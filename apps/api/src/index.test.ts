@@ -6,7 +6,7 @@ vi.mock('./auth/clerk', () => ({ getClerkIdentity: async () => null }));
 const { resolveApiTokenMock } = vi.hoisted(() => ({ resolveApiTokenMock: vi.fn() }));
 vi.mock('./db', () => ({
   resolveApiToken: resolveApiTokenMock,
-  listDiagramsByOwner: async () => [],
+  listDocumentsByOwner: async () => [],
   deleteOldChangeLogEntries: async () => {},
   deleteOldEvents: async () => {},
 }));

@@ -4,7 +4,7 @@
 // selection bounds, and every "should this chrome show?" predicate the
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
-import { isFixedSizeElement } from '@livediagram/diagram';
+import { isFixedSizeElement } from '@livediagram/document';
 import {
   elementBounds,
   isBoxed,
@@ -12,7 +12,7 @@ import {
   unionRects,
   type Element,
   type ElementId,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 

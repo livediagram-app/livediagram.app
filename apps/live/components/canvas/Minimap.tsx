@@ -11,7 +11,7 @@ import {
   svgBoxed,
   type Element,
   type Point,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';

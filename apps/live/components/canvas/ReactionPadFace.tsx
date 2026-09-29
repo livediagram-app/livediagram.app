@@ -1,7 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { REACTION_EMOJI, REACTION_HUES, REACTION_LABEL, type Reaction } from '@livediagram/diagram';
+import {
+  REACTION_EMOJI,
+  REACTION_HUES,
+  REACTION_LABEL,
+  type Reaction,
+} from '@livediagram/document';
 
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '@/lib/element-tint';

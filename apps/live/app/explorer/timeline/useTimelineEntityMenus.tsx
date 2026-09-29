@@ -26,7 +26,7 @@
 import { CloseIcon } from '@livediagram/ui';
 import {
   CheckIcon,
-  DiagramIcon,
+  DocumentIcon,
   ImageIcon,
   InviteIcon,
   KeyIcon,
@@ -223,17 +223,17 @@ export function useTimelineEntityMenus(): {
     (event) => {
       const { sourceType, eventType, snapshot } = event;
 
-      if (sourceType === 'diagram') {
+      if (sourceType === 'document') {
         // Only reached for a diagram the Explorer could NOT resolve (the
         // slots hook builds the full menu otherwise). The card click
         // opens it; the menu says so explicitly.
-        const id = str(snapshot, 'diagramId');
+        const id = str(snapshot, 'documentId');
         if (!id) return null;
         return {
           items: [
             {
               label: 'Open Diagram',
-              icon: <DiagramIcon />,
+              icon: <DocumentIcon />,
               onClick: () => window.location.assign(`/diagram/${encodeURIComponent(id)}`),
             },
           ],

@@ -11,7 +11,7 @@
 // new palette glyph belongs here unless it's shared across panels
 // (in which case it goes into a sibling icon module).
 
-import type { TextAlignX, TextAlignY } from '@livediagram/diagram';
+import type { TextAlignX, TextAlignY } from '@livediagram/document';
 import {
   lucideArmchair,
   lucideChartNoAxesColumnIncreasing,

@@ -4,7 +4,7 @@ compatibility_date = "2026-05-29"
 
 # The worker fronts the static-export `./out` directory via an assets
 # binding so it can rewrite `/diagram/<id>` paths onto the single
-# placeholder build artefact (docs/specs/007-editor/new-diagram-route.md). Static export can't enumerate
+# placeholder build artefact (docs/specs/007-editor/new-document-route.md). Static export can't enumerate
 # user-minted diagram ids at build time, so one HTML file backs every
 # `/diagram/*` URL and the client reads the id from the pathname.
 [assets]

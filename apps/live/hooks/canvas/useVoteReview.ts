@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useMemo, useRef } from 'react';
-import { isBoxed, isVotable, isVoteHost, type Tab } from '@livediagram/diagram';
+import { isBoxed, isVotable, isVoteHost, type Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 
 // Vote-results review (docs/specs/012-collaboration/session-tools.md). Once a vote's results are revealed, the

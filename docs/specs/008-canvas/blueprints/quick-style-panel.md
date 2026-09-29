@@ -8,12 +8,12 @@ Scope, by file:
 
 | File                                                                        | Role                                                                                                             |
 | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `packages/diagram/src/quick-swatches.ts`                                    | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
-| `packages/diagram/src/colors.ts`                                            | `unpaintedShapeInk(surface)`: the theme default on the Default scheme; `supportsColours` admits `text`           |
-| `packages/diagram/src/element-types.ts`, `arrow-types.ts`                   | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
-| `packages/diagram/src/validate.ts`                                          | Rejects a swatch field that is not a slot                                                                        |
-| `packages/diagram/src/quick-swatch-rederive.ts`                             | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
-| `packages/diagram/src/theme-graph.ts`                                       | The four theme walks call the re-derive last                                                                     |
+| `packages/document/src/quick-swatches.ts`                                   | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
+| `packages/document/src/colors.ts`                                           | `unpaintedShapeInk(surface)`: the theme default on the Default scheme; `supportsColours` admits `text`           |
+| `packages/document/src/element-types.ts`, `arrow-types.ts`                  | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
+| `packages/document/src/validate.ts`                                         | Rejects a swatch field that is not a slot                                                                        |
+| `packages/document/src/quick-swatch-rederive.ts`                            | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
+| `packages/document/src/theme-graph.ts`                                      | The four theme walks call the re-derive last                                                                     |
 | `apps/live/lib/style-presets.ts`                                            | Hand-set colour and presets clear the matching binding                                                           |
 | `apps/live/hooks/canvas/useColorStyleSetters.ts`, `useShapeStyleSetters.ts` | Resets clear both bindings                                                                                       |
 | `apps/live/lib/format-painter.ts`, `format-config.ts`                       | The painter carries a binding only together with its colour                                                      |
@@ -30,8 +30,8 @@ Scope, by file:
 | `apps/live/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences                                    |
 | `apps/live/components/primitives/CustomThemeProvider.tsx`                   | Calls the prune on delete and when the custom-theme list loads                                                   |
 | `apps/live/components/canvas/SwatchOverridePopover.tsx`                     | The right-click popover: picker, hex field, Clear override                                                       |
-| `apps/live/app/diagram/[id]/useEditorState.ts`                              | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
-| `apps/live/app/diagram/[id]/EditorView.tsx`                                 | Mounts the panel                                                                                                 |
+| `apps/live/app/document/[id]/useEditorState.ts`                             | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
+| `apps/live/app/document/[id]/EditorView.tsx`                                | Mounts the panel                                                                                                 |
 
 ## Domain and naming
 

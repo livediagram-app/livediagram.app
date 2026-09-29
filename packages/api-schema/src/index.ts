@@ -14,7 +14,7 @@
 // continues to use `StoredDiagram` — so this extraction is a
 // drop-in. New code should prefer the canonical names here.
 
-import type { BackgroundPattern, ShapeKind, Tab } from '@livediagram/diagram';
+import type { BackgroundPattern, ShapeKind, Tab } from '@livediagram/document';
 
 export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
 
@@ -23,17 +23,17 @@ export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize
 // ---------------------------------------------------------------------
 
 // Full diagram payload returned by `GET /api/diagrams/:id`. After
-// per-tab storage (docs/specs/006-diagram/per-tab-storage.md), `tabs` is a list of `TabSummary`
+// per-tab storage (docs/specs/006-document/per-tab-storage.md), `tabs` is a list of `TabSummary`
 // How a diagram came to exist (docs/specs/013-workspace/folders.md "Generated" folder, docs/specs/015-api/mcp-server.md).
 // null = authored by a person in the editor; 'mcp' = created by an
 // external AI tool via the MCP server; 'ai' = created by the in-editor
 // AI assistant (reserved — no producer today). Drives the synthetic
 // "Generated" Explorer folder (source != null).
-export type DiagramSource = 'ai' | 'mcp';
+export type DocumentSource = 'ai' | 'mcp';
 
 // (metadata only) — element content is fetched separately via
 // `GET /api/diagrams/:id/tabs/:tabId`.
-export type Diagram = {
+export type LiveDoc = {
   id: string;
   ownerId: string;
   name: string;
@@ -47,14 +47,14 @@ export type Diagram = {
   // Folder placement. null means the diagram is in the conceptual
   // Unsorted bucket. See docs/specs/013-workspace/folders.md.
   folderId: string | null;
-  // Team library placement (docs/specs/013-workspace/team-shared-diagrams.md). null = the owner's personal
+  // Team library placement (docs/specs/013-workspace/team-shared-documents.md). null = the owner's personal
   // tree; non-null = this team's shared library (where folderId then
   // refers to one of THAT team's folders, or null for the team's
   // Unsorted). Joined members of the team get edit access.
   teamId: string | null;
   // Provenance (docs/specs/013-workspace/folders.md). null = made by a person; non-null = generated
   // (see DiagramSource). Set on create, never rewritten by meta updates.
-  source: DiagramSource | null;
+  source: DocumentSource | null;
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised `StoredPresentation` JSON, or null when
   // the diagram has no deck (every diagram until somebody builds one).
   // Deliberately absent from DiagramSummary: the Explorer lists diagrams and
@@ -75,17 +75,17 @@ export type Diagram = {
 
 // Lightweight list projection — drops `tabs` so listing 100 diagrams
 // doesn't ship 100 tab arrays.
-export type DiagramSummary = {
+export type DocumentSummary = {
   id: string;
   ownerId: string;
   name: string;
   shareable: boolean;
   shareCode: string | null;
   folderId: string | null;
-  // Team library placement (docs/specs/013-workspace/team-shared-diagrams.md) — see Diagram.teamId.
+  // Team library placement (docs/specs/013-workspace/team-shared-documents.md) — see Diagram.teamId.
   teamId: string | null;
   // Provenance (docs/specs/013-workspace/folders.md) — see Diagram.source.
-  source: DiagramSource | null;
+  source: DocumentSource | null;
   savedAt: number;
   createdAt: number;
 };
@@ -93,10 +93,10 @@ export type DiagramSummary = {
 // A diagram's shared tabs: how many of its tabs are also linked into another
 // diagram, and how many other diagrams hold them. What the delete and Take
 // Offline confirmations say stays behind
-// (docs/specs/006-diagram/tab-diagram-many-to-many.md, "Shared-tab notice").
+// (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab notice").
 export type SharedTabsSummary = {
   tabs: number;
-  diagrams: number;
+  documents: number;
 };
 
 // One row of the "Shared with you" list (shared_with, migration 0010):
@@ -138,11 +138,11 @@ export type SharedWithItem = {
 // demand so the editor only ever holds the tabs the user opens.
 export type TabSummary = {
   id: string;
-  diagramId: string;
+  documentId: string;
   name: string;
   orderIndex: number;
   updatedAt: number;
-  // Per-diagram folder name (docs/specs/006-diagram/tab-folders.md), read from the diagram_tabs
+  // Per-diagram folder name (docs/specs/006-document/tab-folders.md), read from the diagram_tabs
   // link row. Optional / omitted = the tab is loose (no folder). The
   // TabBar groups contiguous same-folder tabs under one chip.
   folder?: string;
@@ -154,10 +154,10 @@ export type TabSummary = {
 // Full tab payload returned by `GET /api/diagrams/:id/tabs/:tabId`:
 // the editor's `Tab` (elements + comments + theme + canvas) plus the
 // row's audit metadata. `folder` here is the per-diagram membership
-// from the diagram_tabs link (docs/specs/006-diagram/tab-folders.md), distinct from anything in the
+// from the diagram_tabs link (docs/specs/006-document/tab-folders.md), distinct from anything in the
 // tab body — it is never stored in the `tabs.data` blob.
 export type TabRecord = Tab & {
-  diagramId: string;
+  documentId: string;
   orderIndex: number;
   updatedAt: number;
 };
@@ -167,7 +167,7 @@ export type TabRecord = Tab & {
 // ---------------------------------------------------------------------
 
 // A folder row. `parentId === null` means the folder lives at the
-// tree root. `teamId` (docs/specs/013-workspace/team-shared-diagrams.md): null = a personal folder gated on
+// tree root. `teamId` (docs/specs/013-workspace/team-shared-documents.md): null = a personal folder gated on
 // `ownerId`; non-null = a folder in that team's shared library,
 // gated on joined membership (ownerId then records the creator for
 // audit only).
@@ -350,7 +350,7 @@ export const SHARE_LINK_EXPIRY_MS: Record<Exclude<ShareLinkExpiry, 'never'>, num
 
 export type ShareLink = {
   code: string;
-  diagramId: string;
+  documentId: string;
   role: ShareRole;
   createdAt: number;
   // Expiry (docs/specs/013-workspace/share-link-expiry.md). `expiry` is the duration chosen at creation —
@@ -457,7 +457,7 @@ export type ChangeLogEntry = {
   // diagram-scoped entries; new entries always carry a real id
   // (since #14 dropped the diagram_id column the tab id is now the
   // canonical pointer into the change_log → tabs → diagram_tabs
-  // chain — see docs/specs/006-diagram/tab-diagram-many-to-many.md).
+  // chain — see docs/specs/006-document/tab-document-many-to-many.md).
   tabId: string | null;
   participantId: string;
   participantName: string;

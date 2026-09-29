@@ -17,7 +17,7 @@ import {
   type Tab,
   type TabVote,
   type TimerMode,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { Participant } from '@/lib/identity';
 import { pickerCandidates, rollPicker } from '@/lib/picker';
 import { track } from '@/lib/telemetry';

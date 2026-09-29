@@ -15,7 +15,7 @@
 
 import { useRef, useState } from 'react';
 import { MenuIcon, useClickOutside, useEscape, Glyph } from '@livediagram/ui';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 
 function OpenExternalIcon() {
   return (

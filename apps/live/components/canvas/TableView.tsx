@@ -8,7 +8,7 @@ import {
   type ElementLink,
   type TableCellStyle,
   type TableElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { nearestCssBorderStyle } from '@/components/canvas/border-css';
 import {

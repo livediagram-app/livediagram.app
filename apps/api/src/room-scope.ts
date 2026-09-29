@@ -42,7 +42,7 @@ export function opForScope(op: unknown, tabScope: string | null): unknown {
   if (tabScope === null) return op;
   const o = asOp(op);
   if (!o) return null;
-  if (o.kind === 'diagram-meta') return redactDiagramMeta(o, tabScope);
+  if (o.kind === 'diagram-meta') return redactDocumentMeta(o, tabScope);
   const mine = onScope(o, tabScope);
   if (mine !== undefined) return mine ? op : null;
   return typeof o.kind === 'string' && TAB_LESS_DELIVERED.has(o.kind) ? op : null;
@@ -62,7 +62,7 @@ export function scopedSenderMayRelay(op: unknown, tabScope: string | null): bool
 // diagram-meta carries every tab's name and folder. Other tabs keep their id
 // and position and are marked out of scope, exactly like the REST diagram
 // (redactDiagramForScope).
-function redactDiagramMeta(o: LooseOp, tabScope: string): unknown {
+function redactDocumentMeta(o: LooseOp, tabScope: string): unknown {
   if (!Array.isArray(o.tabs)) return null;
   return {
     ...o,

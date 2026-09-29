@@ -12,7 +12,7 @@
 //
 // Each builder is pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import { createShape, createText, type Element } from '@livediagram/diagram';
+import { createShape, createText, type Element } from '@livediagram/document';
 
 // The brand palette. Fills that carry the identity set `themeLockFill` so a
 // theme switch can't flatten them into the theme's single element fill.

@@ -5,7 +5,7 @@ import { ActionIcon, GlyphDisc } from '@livediagram/ui';
 import {
   ClockIcon,
   Cursor,
-  DiagramIcon,
+  DocumentIcon,
   FolderIcon,
   LinkIcon,
   PixelWalker,
@@ -443,11 +443,11 @@ export function FoldersArt() {
           <span>Product</span>
         </div>
         <div className="fa-reveal ml-4 flex items-center gap-1" style={{ animationDelay: '0s' }}>
-          <DiagramIcon />
+          <DocumentIcon />
           <span className="text-slate-500 dark:text-slate-400">Architecture</span>
         </div>
         <div className="fa-reveal ml-4 flex items-center gap-1" style={{ animationDelay: '0.15s' }}>
-          <DiagramIcon />
+          <DocumentIcon />
           <span className="text-slate-500 dark:text-slate-400">Onboarding flow</span>
         </div>
         <div className="ml-0 flex items-center gap-1 text-slate-400">
@@ -459,7 +459,7 @@ export function FoldersArt() {
   );
 }
 
-// Tab folders (docs/specs/006-diagram/tab-folders.md): grouping a diagram's TABS along the tab bar,
+// Tab folders (docs/specs/006-document/tab-folders.md): grouping a diagram's TABS along the tab bar,
 // distinct from FoldersArt above (filing whole diagrams in the explorer).
 export function TabFoldersArt() {
   const members = [

@@ -17,12 +17,12 @@ import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 /** Where a diagram's baton token lives while the tab is open. */
-const tokenKey = (diagramId: string) => `livediagram:facilitator:${diagramId}`;
+const tokenKey = (documentId: string) => `livediagram:facilitator:${documentId}`;
 
-function readToken(diagramId: string | null): string | null {
-  if (!diagramId || typeof window === 'undefined') return null;
+function readToken(documentId: string | null): string | null {
+  if (!documentId || typeof window === 'undefined') return null;
   try {
-    return window.sessionStorage.getItem(tokenKey(diagramId));
+    return window.sessionStorage.getItem(tokenKey(documentId));
   } catch {
     // Private windows and blocked site data both throw here. A lost token
     // costs the holder their baton on the next refresh, nothing worse.
@@ -30,11 +30,11 @@ function readToken(diagramId: string | null): string | null {
   }
 }
 
-function writeToken(diagramId: string | null, token: string | null): void {
-  if (!diagramId || typeof window === 'undefined') return;
+function writeToken(documentId: string | null, token: string | null): void {
+  if (!documentId || typeof window === 'undefined') return;
   try {
-    if (token) window.sessionStorage.setItem(tokenKey(diagramId), token);
-    else window.sessionStorage.removeItem(tokenKey(diagramId));
+    if (token) window.sessionStorage.setItem(tokenKey(documentId), token);
+    else window.sessionStorage.removeItem(tokenKey(documentId));
   } catch {
     /* see readToken */
   }
@@ -81,7 +81,7 @@ export type FacilitatorApi = {
 };
 
 export function useFacilitator(deps: {
-  diagramId: string | null;
+  documentId: string | null;
   /** Send one frame to the room. No-op before the socket is up. */
   send: (
     msg:
@@ -94,7 +94,7 @@ export function useFacilitator(deps: {
   /** Resolve a presence id to a name for those announcements. */
   nameOf: (presenceId: string) => string;
 }): FacilitatorApi {
-  const { diagramId } = deps;
+  const { documentId } = deps;
   const [facilitatorId, setFacilitatorId] = useState<string | null>(null);
   // Whether the baton is OURS is not something we can work out by comparing
   // ids: the room mints a presence id per socket and never tells you which one
@@ -107,14 +107,14 @@ export function useFacilitator(deps: {
   const ref = useLatest(deps);
 
   // A different diagram is a different session, reset during render.
-  const [sessionDiagramId, setSessionDiagramId] = useState(diagramId);
-  if (diagramId !== sessionDiagramId) {
-    setSessionDiagramId(diagramId);
+  const [sessionDocumentId, setSessionDocumentId] = useState(documentId);
+  if (documentId !== sessionDocumentId) {
+    setSessionDocumentId(documentId);
     setFacilitatorId(null);
     setIsFacilitator(false);
   }
 
-  const readFacilitatorToken = useCallback(() => readToken(ref.current.diagramId), [ref]);
+  const readFacilitatorToken = useCallback(() => readToken(ref.current.documentId), [ref]);
 
   const receiveFacilitator = useCallback(
     (msg: { holder: string | null; by?: string; reason: FacilitatorReason; token?: string }) => {
@@ -122,8 +122,8 @@ export function useFacilitator(deps: {
       const mine = msg.token !== undefined;
       setFacilitatorId(msg.holder);
       setIsFacilitator(mine);
-      if (mine) writeToken(ref.current.diagramId, msg.token!);
-      else writeToken(ref.current.diagramId, null);
+      if (mine) writeToken(ref.current.documentId, msg.token!);
+      else writeToken(ref.current.documentId, null);
       // 'state' is the room catching a joiner up. Nothing happened, so nothing
       // is announced: a toast on arrival would report somebody else's standing
       // news as if it were an event.

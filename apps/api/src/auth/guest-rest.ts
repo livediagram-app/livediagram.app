@@ -33,7 +33,7 @@ export function guestSignatureEnforced(env: SigEnv, now: number): boolean {
 // signature), `events` / `telemetry` / `capabilities` / `unfurl` (no owner),
 // and the Clerk-only `account` / `teams` / `tokens`.
 export const OWNER_SCOPED_SEGMENTS = new Set([
-  'diagrams',
+  'documents',
   'folders',
   'images',
   'custom-themes',

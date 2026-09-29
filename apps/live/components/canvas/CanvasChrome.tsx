@@ -1,4 +1,4 @@
-import { ES_LANES } from '@livediagram/diagram';
+import { ES_LANES } from '@livediagram/document';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
@@ -100,7 +100,7 @@ type ChromeExtras = {
   onRandomiseAvatar: () => void;
   onAvatarReaction: (kind: import('@/lib/avatar-reactions').AvatarReactionKind) => void;
   // Throw one of the Reaction Pad's bursts (docs/specs/009-elements/reaction-pad.md) around the character.
-  onAvatarBurst?: (reaction: import('@livediagram/diagram').Reaction) => void;
+  onAvatarBurst?: (reaction: import('@livediagram/document').Reaction) => void;
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen, owned by useLaserConfig in Canvas (it
   // persists per browser, like the avatar's costume) and edited down here.
   laserConfig?: import('@/lib/laser-config').LaserConfig;
@@ -143,7 +143,7 @@ type ChromeExtras = {
   slideDeckPanelPosition?: { x: number; y: number } | null;
   onMoveSlideDeckPanel?: (x: number, y: number) => void;
   onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/diagram/[id]/useSlideDeck').SlideDeckState;
+  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@/lib/format-config').FormatConfig;
@@ -199,7 +199,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     canRedo,
     canUndo,
     canvasTool,
-    diagramName,
+    documentName,
     dockButtonRefs,
     drawDrag,
     drawHover,
@@ -405,7 +405,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           mode={templatePickerMode}
           participant={selfParticipant}
           currentThemeId={tabThemeId}
-          diagramName={diagramName}
+          documentName={documentName}
           lockedName={templatePickerLockedName}
           onPick={onChooseTemplate}
           onSkip={onSkipTemplatePicker}
@@ -583,7 +583,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canRedo={canRedo}
               />
             ) : null}
-            {/* Layers (docs/specs/006-diagram/layers.md): see LayersClusterButton. */}
+            {/* Layers (docs/specs/006-document/layers.md): see LayersClusterButton. */}
             {!zenMode && !readOnly && panelsOn.layers && (clusterPopovers || layersMinimized) ? (
               <LayersClusterButton
                 popoverOpen={clusterPopovers && activeMobilePanel === 'layers'}

@@ -23,7 +23,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { ImportImageRequest } from './import-images';
 
 // The slice of an Excalidraw element we read. Everything is optional —

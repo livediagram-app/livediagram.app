@@ -16,7 +16,7 @@ import {
   type LivePoll,
   type RoomOutgoing,
 } from '@livediagram/api-schema';
-import { pollStyleUsesRoster } from '@livediagram/diagram';
+import { pollStyleUsesRoster } from '@livediagram/document';
 import { pollCollaboratorOptions, type PollCandidate } from '@/lib/poll-collaborators';
 import { track } from '@/lib/telemetry';
 
