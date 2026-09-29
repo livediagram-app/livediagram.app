@@ -374,7 +374,9 @@ hardening landed first:
   malformed trees with `400`.
 - **Size caps** — a global Content-Length body cap, per-tab byte cap, and
   name / theme-definition / participant / share-password caps
-  (`apps/api/src/limits.ts`); a per-frame cap in the realtime room.
+  (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Diagram
+  and tab names are shortened to the 60-character name cap rather than
+  rejected (`apps/api/src/names.ts`, [Tab and diagram name length](../006-diagram/name-length.md)).
 - **Already solid** (pre-existing): D1 is fully parameterized; Clerk JWT
   verification; share-link expiry + constant-time password compare + per-IP
   brute-force limiter; WS-upgrade auth; realtime role re-stamping + op-rate cap.

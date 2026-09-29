@@ -1338,7 +1338,14 @@ Decisions from the operator:
   no box has (a small one only among boxes of its own size), drop a box with no note in it that the model calls background.
   The kinds stay the colour's. The detector itself carries no ML dependency;
   the model is optional, runs locally, and is loaded only for the photo
-  import: opening the photo picker starts a Web Worker loading TensorFlow.js
+  import. It lives in `@livediagram/sticky-model`: the package's browser-safe
+  half (`src/index.ts`: the network's framing in `stride.ts`, the
+  flat-image test in `flatness.ts`, output decoding in `decode.ts` and the
+  cues the hybrid reads in `cues.ts`) is what the editor imports, while the
+  synthetic wall generator, the U-Net and its training and scoring scripts
+  stay in the package and never ship. The editor runs the network itself in
+  `apps/live/lib/photo-model/boundary.worker.ts` and hands the cues to
+  `sticky-vision`'s hybrid rules. Opening the photo picker starts a Web Worker loading TensorFlow.js
   and ONE backend (WebGPU where the browser has an adapter, else WASM on one
   thread) and the 83 KB weights, all served by the app itself; none of it is in
   the editor's own chunks. The photo waits for the model at most 8 seconds;

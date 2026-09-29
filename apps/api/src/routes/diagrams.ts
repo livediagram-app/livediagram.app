@@ -5,10 +5,10 @@
 
 import type { Tab } from '@livediagram/diagram';
 import { isValidTab } from '@livediagram/diagram';
+import { capStoredName } from '../names';
 import {
   MAX_CHANGE_LOG_ENTRY_BYTES,
   MAX_DECK_LEN,
-  MAX_NAME_LEN,
   MAX_TAB_BYTES,
   byteLength,
   bodyExceedsCap,
@@ -90,14 +90,13 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       return json({ diagrams });
     }
     if (request.method === 'POST') {
-      const body = (await request.json()) as Partial<DiagramDTO> & { tabs?: Tab[] };
+      const body = (await request.json()) as Omit<Partial<DiagramDTO>, 'tabs'> & {
+        tabs?: Tab[];
+      };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
-      if (!body.id || !body.name) {
+      if (!body.id || typeof body.name !== 'string') {
         return badRequest('missing id/name');
-      }
-      if (body.name.length > MAX_NAME_LEN) {
-        return badRequest('name too long');
       }
       // Validate any seeded tabs up front (structure + per-tab byte cap) so a
       // create can't smuggle a malformed / oversized tab past the tab gate.
@@ -118,6 +117,21 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // through PUT, which gates on edit access).
       const clash = await getDiagram(env, body.id);
       if (clash && clash.ownerId !== owner) return forbidden();
+      // The name cap (docs/specs/006-diagram/name-length.md): shortened here,
+      // whoever the caller. A re-commit of the caller's own id compares against
+      // what it already stores, so an unchanged pre-cap name is kept.
+      const name = capStoredName(body.name, clash?.name ?? null, 'diagram');
+      if (!name) return badRequest('missing id/name');
+      const incomingTabs: Tab[] | null = Array.isArray(body.tabs)
+        ? body.tabs.map((tab) => ({
+            ...tab,
+            name: capStoredName(
+              tab.name,
+              clash?.tabs.find((t) => t.id === tab.id)?.name ?? null,
+              'tab',
+            ),
+          }))
+        : null;
       // An id in the Trash is taken just the same (docs/specs/013-workspace/trash.md):
       // its owner hears the deleted state, anyone else the same refusal.
       const binned = clash ? null : await getTrashedDiagramMeta(env, body.id);
@@ -139,14 +153,14 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // id, never upserted over it: that is how a synced-back offline copy of a
       // shared tab forks (docs/specs/006-diagram/offline-mode.md), and why a
       // create can't rewrite someone else's tab by naming its id.
-      const seeded = Array.isArray(body.tabs)
+      const seeded = incomingTabs
         ? forkTakenTabIds(
-            body.tabs,
+            incomingTabs,
             typeof body.presentation === 'string' ? body.presentation : null,
             await tabIdsHeldElsewhere(
               env,
               body.id,
-              body.tabs.map((t) => t.id),
+              incomingTabs.map((t) => t.id),
             ),
           )
         : null;
@@ -155,7 +169,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       await upsertDiagramMeta(env, {
         id: body.id,
         ownerId: owner,
-        name: body.name,
+        name,
         shareable: body.shareable ?? false,
         shareCode: body.shareCode ?? null,
         folderId,
@@ -250,9 +264,6 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
-      if (typeof body.name === 'string' && body.name.length > MAX_NAME_LEN) {
-        return badRequest('name too long');
-      }
       const existing = await getDiagram(env, id);
       // Unknown id: 404. This PUT used to create-on-first-write (the legacy
       // localStorage-sync model), which let any stray meta write mint a
@@ -267,10 +278,17 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // edit-role share visitor can touch metadata.
       const allowed = await gateEdit(ctx, id, ownerId, existing.teamId);
       if (!allowed) return forbidden();
+      // A rename meets the name cap (docs/specs/006-diagram/name-length.md); a
+      // name echoed back unchanged (a reorder) is kept even if it predates it.
+      const name =
+        typeof body.name === 'string'
+          ? capStoredName(body.name, existing.name, 'diagram')
+          : existing.name;
+      if (!name) return badRequest('missing name');
       await upsertDiagramMeta(env, {
         id,
         ownerId,
-        name: body.name ?? existing.name,
+        name,
         shareable: existing.shareable,
         shareCode: existing.shareCode ?? null,
         folderId: existing.folderId ?? null,
@@ -348,11 +366,15 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         if (sharedRow) scope = { tabScope: sharedRow.tabId };
       }
       if (!scope) return forbidden();
-      const body = (await request.json().catch(() => ({}) as { name?: string })) as {
-        name?: string;
+      const body = (await request.json().catch(() => ({}) as { name?: unknown })) as {
+        name?: unknown;
       };
       const newId = crypto.randomUUID();
-      const newName = (body.name?.trim() || `Copy of ${source.name}`).slice(0, 200);
+      // The copy's name meets the name cap (docs/specs/006-diagram/name-length.md),
+      // including the default, which a long source name pushes past it.
+      const requested =
+        typeof body.name === 'string' ? capStoredName(body.name, null, 'diagram') : '';
+      const newName = requested || capStoredName(`Copy of ${source.name}`, null, 'diagram');
       const copy = await copyDiagram(env, id, newId, owner, newName, scope.tabScope);
       if (!copy) return notFound();
       ctx.waitUntil?.(recordDiagramDuplicated(env, copy, source.name, owner));

@@ -12,6 +12,7 @@ import {
 } from '@livediagram/diagram';
 import { broadcastShareOp, mergeRoomLedger, relayElementDelta } from '../room-client';
 import { MAX_TAB_BYTES, bodyExceedsCap } from '../limits';
+import { capStoredName } from '../names';
 import {
   findCommentHost,
   hasNewComments,
@@ -157,6 +158,10 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
         ),
         getTab(env, id, tabId),
       ]);
+      // The name cap (docs/specs/006-diagram/name-length.md): a tab rename rides
+      // this save, so a new or changed name is shortened here; an autosave
+      // echoing the stored name unchanged keeps it.
+      body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');
       // (existingTab, read above) gives the order index; append if new.
       // Data-loss backstop (docs/specs/006-diagram/per-tab-storage.md). Refuse to blank a tab that
       // currently holds content unless the client explicitly marks the

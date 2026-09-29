@@ -158,6 +158,12 @@ Every one of them declares its behaviour as **annotations**
 ([§4.14](#414-tool-annotations-behaviour-hints)) and describes itself in facts
 rather than instructions ([§4.15](#415-descriptions-state-facts-not-instructions)).
 
+Every diagram and tab **name** argument (`create_diagram`'s `name` and each
+tab's `name`, `add_tab`'s `name`, `rename_diagram`'s `name`) states the
+60-character cap in its description and is shortened by the schema itself
+with the shared `truncateName`, so the name a tool sends and reports back is
+the one the api stores ([Tab and diagram name length](../006-diagram/name-length.md)).
+
 ### 4.1 `find_diagrams`
 
 Search/list the caller's diagrams — the **personal library AND every joined

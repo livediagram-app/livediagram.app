@@ -28,7 +28,9 @@ export { MAX_IMAGE_BYTES } from '@livediagram/api-schema';
 // above bounds one request; this bounds one tab specifically.
 export const MAX_TAB_BYTES = 4 * 1024 * 1024;
 
-// Human-facing names: diagram / folder / theme / tab.
+// Human-facing names outside the diagram / tab name cap: folder / theme / API
+// token / OAuth client. Diagram and tab names are shortened to the far tighter
+// NAME_MAX_LENGTH instead (names.ts, docs/specs/006-diagram/name-length.md).
 export const MAX_NAME_LEN = 500;
 
 // A diagram's slide deck (docs/specs/012-collaboration/presentation-mode.md). Slides hold element REFERENCES, never

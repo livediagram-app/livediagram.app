@@ -265,3 +265,21 @@ describe('buildOpenApiDocument', () => {
     expect(Object.keys(json.content ?? {})).toEqual(['application/json']);
   });
 });
+
+// The diagram name cap (docs/specs/006-diagram/name-length.md) is part of the
+// public contract: a token caller reads it from the reference, not by trial.
+describe('diagram name fields', () => {
+  const nameOf = (method: string, path: string) => {
+    const route = ROUTE_MANIFEST.find((r) => r.method === method && r.path === path);
+    const schema = route?.requestSchema as JsonSchema | undefined;
+    return (schema?.properties as Record<string, JsonSchema> | undefined)?.name;
+  };
+
+  it.each([
+    ['POST', '/diagrams'],
+    ['PUT', '/diagrams/{id}'],
+    ['POST', '/diagrams/{id}/copy'],
+  ])('%s %s states the cap on its name', (method, path) => {
+    expect(nameOf(method, path)?.description).toMatch(/At most 60 characters/);
+  });
+});
