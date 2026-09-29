@@ -148,8 +148,9 @@ export function useExplorerState() {
   // `?settings=<category>` deep link. The Settings dialog replaced the
   // /explorer/profile page (docs/specs/014-identity/profile-and-email-notifications.md), and mail already in people's inboxes
   // links at their notification preferences, so any surface can name the pane
-  // it means. Opened during render, once per link; the param is then stripped,
-  // so a refresh or a back does not keep reopening the dialog.
+  // it means. Opened during render, once per link. The params stay while
+  // Settings is open, so a page left for Google and reached again with Back
+  // reopens it (docs/specs/007-editor/user-preferences.md), and go when it closes.
   const settingsLink = searchParams?.get('settings') ?? null;
   const sectionLink = searchParams?.get('section') ?? null;
   const [settingsLinkSeen, setSettingsLinkSeen] = useState<string | null>(null);
@@ -161,13 +162,6 @@ export function useExplorerState() {
       setSettingsOpen(true);
     }
   }
-  useEffect(() => {
-    if (!settingsLink) return;
-    const url = new URL(window.location.href);
-    url.searchParams.delete('settings');
-    url.searchParams.delete('section');
-    window.history.replaceState({}, '', url.toString());
-  }, [settingsLink]);
   // Which folder branches (and which teams) are open in the sidebar.
   // Local state only; a fresh visit starts everything collapsed. Team
   // ids live in the same set so a team's folder subtree expands the

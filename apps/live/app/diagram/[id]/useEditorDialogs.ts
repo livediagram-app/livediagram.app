@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { dropSettingsLink, readSettingsLink } from '@/lib/settings-link';
 import type { CanvasThemeTab } from '@/components/dialogs/CanvasThemeDialog';
 import { track } from '@/lib/telemetry';
 
@@ -9,7 +10,12 @@ import { track } from '@/lib/telemetry';
 // view-model.
 export function useEditorDialogs() {
   const [searchOpen, setSearchOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  // The `?settings=<category>&section=<id>` deep link opens Settings on load
+  // (docs/specs/007-editor/user-preferences.md); it stays in the URL until Settings closes.
+  const [settingsLink] = useState(() =>
+    typeof window === 'undefined' ? null : readSettingsLink(window.location.search),
+  );
+  const [settingsOpen, setSettingsOpen] = useState(settingsLink !== null);
   // Where Settings should land when it is opened from a search result
   // (docs/specs/007-editor/user-preferences.md): the setting itself, not the dialog's front door. Cleared on
   // close so the next plain open starts on the default category.
@@ -24,9 +30,13 @@ export function useEditorDialogs() {
   // Category to open on WITHOUT ringing a row: the `?` key lands on the
   // Keyboard category, where the shortcut list lives now that it has no
   // window of its own.
-  const [settingsCategory, setSettingsCategory] = useState<string | null>(null);
+  const [settingsCategory, setSettingsCategory] = useState<string | null>(
+    settingsLink?.category ?? null,
+  );
   // Section of it to scroll to and focus (the cloud badge opens Account > Cloud Sync).
-  const [settingsSection, setSettingsSection] = useState<string | null>(null);
+  const [settingsSection, setSettingsSection] = useState<string | null>(
+    settingsLink?.section ?? null,
+  );
   const openSettingsOn = useCallback((categoryId: string, sectionId?: string) => {
     setSettingsCategory(categoryId);
     setSettingsSection(sectionId ?? null);
@@ -37,6 +47,7 @@ export function useEditorDialogs() {
     setSettingsFocus(null);
     setSettingsCategory(null);
     setSettingsSection(null);
+    dropSettingsLink();
   }, []);
   // `?share=1` deep-link (the Explorer's "Manage Sharing…" row opens the
   // diagram with this param): land with the Share dialog already open.

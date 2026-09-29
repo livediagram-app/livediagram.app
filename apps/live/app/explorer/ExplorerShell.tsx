@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { dropSettingsLink } from '@/lib/settings-link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Brand, CloseIcon, ProductNav } from '@livediagram/ui';
@@ -330,6 +331,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
             setSettingsFocus(null);
             setSettingsCategory(null);
             setSettingsSection(null);
+            dropSettingsLink();
           }}
           focus={settingsFocus}
           initialCategoryId={settingsCategory}

@@ -218,8 +218,9 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
             <span className="min-w-0 whitespace-nowrap text-xs text-slate-600 dark:text-slate-300">
               {connected || paused ? lastSyncedText(status.lastSyncedAt, now) : null}
             </span>
-            <span className="flex shrink-0 items-center gap-2">
+            <span data-drive-actions className="flex shrink-0 items-center gap-2">
               <span
+                data-drive-disconnect
                 aria-hidden={connected || paused ? undefined : true}
                 className={connected || paused ? undefined : 'invisible'}
               >
@@ -234,6 +235,7 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
                 </Button>
               </span>
               <span
+                data-drive-primary
                 aria-hidden={primary ? undefined : true}
                 className={primary ? undefined : 'invisible'}
               >
