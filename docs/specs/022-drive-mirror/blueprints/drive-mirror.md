@@ -56,6 +56,7 @@ Scope, by file:
 | `apps/live/components/chrome/LandingCard.tsx`                   | The centred landing card `/join` and the Drive routes share                 |
 | `apps/live/components/providers/E2EAuthBridge.tsx`              | Test builds only: a signed-in session from a test-minted JWT                |
 | `apps/live/e2e/drive-mirror.spec.ts`                            | The opt-in browser e2e against the fake Google                              |
+| `apps/live/e2e/drive-shots.spec.ts`                             | Every Drive state screenshotted, light and dark (`test:e2e:drive-shots`)    |
 | `apps/live/e2e/drive-support.ts`                                | Test JWKS, the fake Google over HTTP, routed Google traffic                 |
 | `scripts/e2e-stack.mjs`                                         | `E2E_DRIVE=1`: the api worker's test Drive and JWKS vars                    |
 | `apps/live/components/drive/GoogleDriveSyncRow.tsx`             | The Google Drive row of Settings > Account > Cloud Sync                     |
