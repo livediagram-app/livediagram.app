@@ -304,83 +304,124 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'empathy-map':
-      // Says / Thinks / Does / Feels quadrants around the persona circle.
+      // A persona card over Says / Thinks / Does / Feels, with the Pains /
+      // Gains strip underneath; each block's notes take its own hue.
       return (
         <svg width="72" height="44" viewBox="0 0 80 50" aria-hidden>
           <rect
             x="6"
-            y="4"
-            width="33"
-            height="20"
-            rx="2"
-            fill="rgb(219 234 254)"
-            stroke="rgb(147 197 253)"
-            strokeWidth="0.9"
-          />
-          <rect
-            x="41"
-            y="4"
-            width="33"
-            height="20"
-            rx="2"
-            fill="rgb(237 233 254)"
-            stroke="rgb(196 181 253)"
-            strokeWidth="0.9"
-          />
-          <rect
-            x="6"
-            y="26"
-            width="33"
-            height="20"
-            rx="2"
-            fill="rgb(220 252 231)"
-            stroke="rgb(134 239 172)"
-            strokeWidth="0.9"
-          />
-          <rect
-            x="41"
-            y="26"
-            width="33"
-            height="20"
-            rx="2"
-            fill="rgb(255 228 230)"
-            stroke="rgb(253 164 175)"
-            strokeWidth="0.9"
+            y="2"
+            width="68"
+            height="8"
+            rx="1.5"
+            fill="rgb(248 250 252)"
+            stroke="rgb(203 213 225)"
+            strokeWidth="0.7"
           />
           <circle
-            cx="40"
-            cy="25"
-            r="7.5"
+            cx="10.5"
+            cy="6"
+            r="2.6"
             fill="rgb(186 230 253)"
             stroke="rgb(14 165 233)"
-            strokeWidth="1.2"
+            strokeWidth="0.6"
           />
-          {/* Head-and-shoulders glyph inside the persona circle. */}
-          <circle cx="40" cy="22.6" r="2.2" fill="rgb(14 165 233)" />
-          <path d="M 35.8 29.2 Q 40 24.8 44.2 29.2" fill="rgb(14 165 233)" />
-          {/* Hover story: an observation comes out of the persona into each
+          <line x1="15" y1="4.8" x2="40" y2="4.8" stroke="rgb(51 65 85)" strokeWidth="1.1" />
+          <line x1="15" y1="7.6" x2="55" y2="7.6" stroke="rgb(148 163 184)" strokeWidth="0.6" />
+          {[
+            {
+              x: 6,
+              y: 12,
+              fill: 'rgb(219 234 254)',
+              stroke: 'rgb(147 197 253)',
+              note: 'rgb(186 230 253)',
+            },
+            {
+              x: 41,
+              y: 12,
+              fill: 'rgb(237 233 254)',
+              stroke: 'rgb(196 181 253)',
+              note: 'rgb(233 213 255)',
+            },
+            {
+              x: 6,
+              y: 24,
+              fill: 'rgb(220 252 231)',
+              stroke: 'rgb(134 239 172)',
+              note: 'rgb(187 247 208)',
+            },
+            {
+              x: 41,
+              y: 24,
+              fill: 'rgb(255 228 230)',
+              stroke: 'rgb(253 164 175)',
+              note: 'rgb(254 205 211)',
+            },
+          ].map((q) => (
+            <g key={`${q.x}-${q.y}`}>
+              <rect
+                x={q.x}
+                y={q.y}
+                width="33"
+                height="10.5"
+                rx="1.5"
+                fill={q.fill}
+                stroke={q.stroke}
+                strokeWidth="0.7"
+              />
+              <rect x={q.x + 2} y={q.y + 4.5} width="13.5" height="4.5" rx="0.3" fill={q.note} />
+            </g>
+          ))}
+          {[
+            {
+              x: 6,
+              fill: 'rgb(255 237 213)',
+              stroke: 'rgb(253 186 116)',
+              note: 'rgb(254 215 170)',
+            },
+            {
+              x: 41,
+              fill: 'rgb(204 251 241)',
+              stroke: 'rgb(94 234 212)',
+              note: 'rgb(153 246 228)',
+            },
+          ].map((b) => (
+            <g key={b.x}>
+              <rect
+                x={b.x}
+                y="37.5"
+                width="33"
+                height="10"
+                rx="1.5"
+                fill={b.fill}
+                stroke={b.stroke}
+                strokeWidth="0.7"
+              />
+              <rect x={b.x + 2} y="41.5" width="13.5" height="4.5" rx="0.3" fill={b.note} />
+              <rect x={b.x + 17.5} y="41.5" width="13.5" height="4.5" rx="0.3" fill={b.note} />
+            </g>
+          ))}
+          {/* Hover story: an observation comes from the persona into each
               quadrant in turn: says, thinks, does, feels. */}
           {[
-            [12, 10, 1000],
-            [59, 10, 1300],
-            [12, 34, 1600],
-            [59, 34, 1900],
-          ].map(([x, y, at]) => (
+            [23, 16.5, 1000, 'rgb(186 230 253)'],
+            [58, 16.5, 1300, 'rgb(233 213 255)'],
+            [23, 28.5, 1600, 'rgb(187 247 208)'],
+            [58, 28.5, 1900, 'rgb(254 205 211)'],
+          ].map(([x, y, at, fill]) => (
             <rect
               key={at}
               className="pv-arrive"
               opacity="0"
               x={x}
               y={y}
-              width="9"
-              height="6"
-              rx="0.8"
-              fill="white"
-              stroke="rgb(100 116 139)"
-              strokeWidth="0.6"
+              width="13.5"
+              height="4.5"
+              rx="0.3"
+              fill={fill as string}
               style={pv({
-                '--pv-from-x': `${35.5 - x!}px`,
-                '--pv-from-y': `${22 - y!}px`,
+                '--pv-from-x': `${10.5 - (x as number)}px`,
+                '--pv-from-y': `${6 - (y as number)}px`,
                 '--pv-at': `${at}ms`,
               })}
             />

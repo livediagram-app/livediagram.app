@@ -4,6 +4,7 @@
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
 import type {
+  CommentMention,
   EmbedProvider,
   EsSide,
   EventStormingNoteKind,
@@ -124,7 +125,7 @@ export type CanvasProps = {
   // the anchored popover already drives them.
   commentSelfId?: string;
   commentPanelActions?: {
-    add: (elementId: string, text: string) => void;
+    add: (elementId: string, text: string, mentions?: CommentMention[]) => void;
     remove: (elementId: string, commentId: string) => void;
     resolve: (elementId: string) => void;
     unresolve: (elementId: string) => void;
@@ -134,9 +135,10 @@ export type CanvasProps = {
   // drives an action. Absent on a read-only surface: the card renders inert.
   actionSelfId?: string | null;
   actionPanelActions?: {
-    configure: (elementId: string) => void;
-    complete: (elementId: string) => void;
-    reopen: (elementId: string) => void;
+    // Opens the Assign Action dialog: to add (no action id) or edit one.
+    configure: (elementId: string, actionId?: string | null) => void;
+    complete: (elementId: string, actionId?: string | null) => void;
+    reopen: (elementId: string, actionId?: string | null) => void;
   };
   onSetSessionConfig?: (
     element: import('@livediagram/diagram').ShapeElement,
@@ -518,6 +520,9 @@ export type CanvasProps = {
   actionRows: import('@/components/panels/CollaboratePanel').ActionRow[];
   // Row click: editor selects the element + opens its action popover.
   onOpenActionForElement: (elementId: string) => void;
+  // The Collaborate panel row's round check (docs/specs/012-collaboration/assigned-actions.md §5): complete
+  // (done) or reopen the action in place. Absent for a read-only visitor.
+  onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
   onRevertChange: (entry: ChangeLogEntry) => void;
   // Hover-to-preview for a row's Revert (docs/specs/012-collaboration/activity-and-audit.md): enter shows the
   // revert result live on the canvas, leave restores. Nothing commits.
@@ -614,6 +619,8 @@ export type CanvasProps = {
   // fields, so they commit through here rather than the label editor.
   // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
+  // Escape on the empty node a Tab made one time too many removes it.
+  onAbandonMindNode: (id: string) => boolean;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a row edited in place, one more row from
   // the quick-connect ring, and a hero's caption line. Omitted in read-only.

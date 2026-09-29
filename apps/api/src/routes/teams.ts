@@ -70,6 +70,7 @@ import {
 } from '../timeline';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
 import { handleTeamActionRoutes } from './team-action-routes';
+import { handleTeamMentionRoutes } from './team-mention-routes';
 import type { RouteContext } from './context';
 
 // Light shape check, not RFC 5322: something@something.tld. The real
@@ -198,7 +199,8 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
         segments[3] === 'invite-link' ||
         segments[3] === 'members' ||
         segments[3] === 'access-check' ||
-        segments[3] === 'notify-action')) ||
+        segments[3] === 'notify-action' ||
+        segments[3] === 'notify-mention')) ||
     (segments.length === 5 && segments[3] === 'members') ||
     (segments.length === 6 && segments[3] === 'members' && segments[5] === 'accept');
   if (!teamScoped) return notFound();
@@ -310,6 +312,9 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   // /notify-action — see team-action-routes.ts.
   const actionResp = await handleTeamActionRoutes(ctx, { teamId, me, userId });
   if (actionResp) return actionResp;
+  // Comment mentions (docs/specs/012-collaboration/comment-mentions.md): /notify-mention.
+  const mentionResp = await handleTeamMentionRoutes(ctx, { teamId, me, userId });
+  if (mentionResp) return mentionResp;
 
   // /api/teams/<id>/members — invite
   if (segments.length === 4 && segments[3] === 'members') {

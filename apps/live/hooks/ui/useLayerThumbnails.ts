@@ -16,6 +16,7 @@ import {
 } from '@livediagram/diagram';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // Per-layer preview markup (docs/specs/006-diagram/layers.md), shared by the Layers panel rows and
 // the context menu's Move-to-layer tiles: the SAME headless renderer the
@@ -33,6 +34,9 @@ export function useLayerThumbnails(
 ): { thumbMarkup: Map<string, string>; thumbViewBox: string | null } {
   // Re-render once the async icon catalogues land so icon glyphs pop in.
   const iconsLoaded = useIconCatalogs();
+  // The canvas paper (docs/specs/008-canvas/minimap.md "Fidelity"), so a
+  // preview on a dark board shows the dark cards the canvas shows.
+  const surface = useCanvasSurface();
   return useMemo(() => {
     // The resolvers find nothing until the catalogues land; gating them on the
     // flag makes the rebuild on landing a real input of this memo.
@@ -54,6 +58,7 @@ export function useLayerThumbnails(
             svgBoxed(el, {
               ...art,
               tabFont,
+              surface,
             }),
           );
         }
@@ -65,7 +70,7 @@ export function useLayerThumbnails(
             svgArrow(
               el,
               elements,
-              'light',
+              surface,
               tabFont,
               labels,
               `lvd-layer-${band.layer.id}-ko-`,
@@ -85,5 +90,5 @@ export function useLayerThumbnails(
       thumbMarkup: markup,
       thumbViewBox: `${r2(b.x - pad)} ${r2(b.y - pad)} ${r2(b.w + pad * 2)} ${r2(b.h + pad * 2)}`,
     };
-  }, [elements, layers, tabFont, iconsLoaded]);
+  }, [elements, layers, tabFont, iconsLoaded, surface]);
 }

@@ -137,7 +137,7 @@ CREATE TABLE collab_actions (
   assigner_id TEXT NOT NULL, assigner_name TEXT,
   team_id TEXT,
   created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,
-  PRIMARY KEY (tab_id, element_id),
+  PRIMARY KEY (tab_id, element_id, action_id),
   FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE
 );
 
@@ -147,6 +147,7 @@ CREATE TABLE collab_threads (
   resolved INTEGER NOT NULL,
   comment_count INTEGER NOT NULL,
   participant_ids TEXT NOT NULL,        -- JSON array of comment authorIds
+  mentioned_ids TEXT NOT NULL DEFAULT '[]', -- JSON array of @-mentioned user ids + member ids
   latest_text TEXT NOT NULL, latest_author_name TEXT NOT NULL, latest_author_color TEXT NOT NULL,
   first_at INTEGER NOT NULL, latest_at INTEGER NOT NULL,
   PRIMARY KEY (tab_id, element_id),
@@ -158,8 +159,10 @@ CREATE TABLE collab_threads (
   ([Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md)); the diagram is resolved at read time through
   `diagram_tabs`, which is also what makes deletion free: a tab's rows
   die with it (FK cascade), and a diagram's tabs die with the diagram.
-- **One row per element per kind** ([Assigned actions](../012-collaboration/assigned-actions.md): at most one action per
-  element; one thread per element), so a save is a full replace of the
+- **One row per action, one per thread.** An ordinary element carries at most
+  one action and an Action panel a list ([The Action Panel](../012-collaboration/action-panel.md)), so `collab_actions` is keyed
+  `(tab_id, element_id, action_id)` (migration 0053); an element has one
+  thread. Either way a save is a full replace of the
   tab's rows: `DELETE … WHERE tab_id = ?` for each table, then one
   `INSERT` per element that carries the thing. Idempotent, and it
   handles an action being deleted, moved, completed, or reassigned
@@ -168,6 +171,8 @@ CREATE TABLE collab_threads (
 - **No email, no comment history.** The thread row keeps the latest
   comment (what the row shows) and the set of author ids (who is in
   it). Every other comment stays in the blob.
+- `mentioned_ids` ([Comment mentions](../012-collaboration/comment-mentions.md)) holds every user id and team member id
+  @-mentioned anywhere in the thread, from the comments' `mentions`.
 - `participant_ids` is a JSON array queried with `json_each`. Not
   indexable, and it does not need to be: the read (§4) is bounded by
   the reader's own library before it ever looks at participants.
@@ -287,6 +292,7 @@ type ActivityThread = ActivityPlace & {
   firstAt: number;
   youCommented: boolean;
   onYourDiagram: boolean;
+  mentionsYou: boolean; // an entry of mentioned_ids ∈ me ∪ my team_members rows
 };
 ```
 
@@ -302,14 +308,19 @@ live. Only then is the involvement test applied:
   `assigner_id` ∈ me, or its `assignee_member_id` is one of their
   `team_members` rows (this is how an action assigned to an
   _invited_ address finds its owner once they join, [Assigned actions](../012-collaboration/assigned-actions.md) §1);
-- a thread is theirs when they own the diagram or an author id ∈ me.
+- a thread is theirs when they own the diagram, an author id ∈ me, or
+  they are @-mentioned in it: a `mentioned_ids` entry ∈ me or is one of
+  their `team_members` rows ([Comment mentions](../012-collaboration/comment-mentions.md)). The row carries
+  `mentionsYou`, and its hint reads **Mentioned You** (it wins over "Your
+  diagram").
 
 That order is the security boundary: a name can never leak a row from
 a diagram the reader has lost access to, and it is what keeps the
 `json_each` participant scan bounded to one person's library.
 
 A tab linked into two visible diagrams would list twice; the read
-dedupes on (tab, element), preferring the diagram the reader owns,
+dedupes on (tab, element) for a thread and (tab, element, action) for an
+action, preferring the diagram the reader owns,
 then a team's, then a shared one.
 
 ## 5. Explorer integration

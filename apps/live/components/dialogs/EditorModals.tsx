@@ -5,11 +5,13 @@ import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livediagram/di
 
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 
-const SettingsDialog = dynamic(() =>
-  import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
+const SettingsDialog = dynamic(
+  () => import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
+  { ssr: false },
 );
-const CanvasThemeDialog = dynamic(() =>
-  import('@/components/dialogs/CanvasThemeDialog').then((m) => m.CanvasThemeDialog),
+const CanvasThemeDialog = dynamic(
+  () => import('@/components/dialogs/CanvasThemeDialog').then((m) => m.CanvasThemeDialog),
+  { ssr: false },
 );
 
 // The editor's global modal dialogs (settings, canvas theme). Each is gated on its own open flag and reads everything it needs

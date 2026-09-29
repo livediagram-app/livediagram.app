@@ -53,13 +53,12 @@ import {
 import {
   buildApprovalWorkflow,
   buildBlank,
-  buildBubbleMap,
-  buildDataFlow,
   buildDecisionTree,
-  buildMindMapTree,
   buildSwimlane,
 } from './template-builders-flows';
-import { buildFlowchart, buildMindMap, buildOrgChart } from './template-builders-trees';
+import { buildDataFlow } from './template-builders-dataflow';
+import { buildFlowchart, buildOrgChart } from './template-builders-trees';
+import { buildBubbleMap, buildMindMap, buildMindMapTree } from './template-builders-mindmaps';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.

@@ -50,8 +50,8 @@ describe('SettingsDialog', () => {
     setViewport(false);
     Element.prototype.scrollIntoView = vi.fn();
     renderDialog(setPowerUserMode({}, true).prefs);
-    fireEvent.click(screen.getByRole('button', { name: 'Change Panel Layout in Appearance' }));
-    // Appearance is open, with the Panel Layout row ringed.
+    fireEvent.click(screen.getByRole('button', { name: 'Change Panel Layout in Panels' }));
+    // Panels is open, with the Panel Layout row ringed.
     expect(screen.getByRole('radiogroup', { name: 'Panel Layout' })).toBeTruthy();
     const ringed = document.querySelector('[data-settings-row="panelLayout"]');
     expect(ringed?.className).toContain('ring-2');
@@ -80,6 +80,17 @@ describe('SettingsDialog', () => {
     expect(screen.getByText(FIRST_CATEGORY.rows[0]!.label)).toBeTruthy();
     // Nothing to go back to: the rail never left.
     expect(screen.queryByRole('button', { name: /^Settings$/ })).toBeNull();
+  });
+
+  it('holds one fixed desktop height whichever category is picked', () => {
+    // jsdom has no layout, so this pins the contract rather than pixels: a
+    // HEIGHT, not only a max-height, so a short category cannot shrink it.
+    setViewport(false);
+    renderDialog();
+    const dialog = screen.getByRole('dialog', { name: 'Settings' });
+    expect(dialog.className).toContain('sm:h-[min(42rem,calc(100%-6rem))]');
+    fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
+    expect(dialog.className).toContain('sm:h-[min(42rem,calc(100%-6rem))]');
   });
 
   it('swaps the pane when another category is picked, keeping the rail', () => {

@@ -1,0 +1,36 @@
+name: Publish MCP server to registry
+
+# Lists the hosted MCP server (mcp.livediagram.app) in the official MCP
+# Registry (registry.modelcontextprotocol.io) from the root server.json.
+# PulseMCP and other directories ingest from that registry.
+#
+# Runs when server.json changes on main, or by hand. The registry refuses a
+# version it has already seen, so bump "version" in server.json to republish.
+
+on:
+  push:
+    branches: [main]
+    paths: [server.json]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # GitHub OIDC login for the io.github.livediagram-app namespace
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install mcp-publisher
+        run: |
+          curl -sSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+
+      - name: Log in to the MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server.json
+        run: ./mcp-publisher publish

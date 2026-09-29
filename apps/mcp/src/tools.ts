@@ -39,6 +39,19 @@ import {
 } from './tab-builders';
 import { registerTool } from './tool-annotations';
 import {
+  addTabOutput,
+  createDiagramOutput,
+  deleteDiagramOutput,
+  findDiagramsOutput,
+  listTemplatesOutput,
+  listTrashOutput,
+  readDiagramOutput,
+  renameDiagramOutput,
+  restoreDiagramOutput,
+  shareDiagramOutput,
+  updateDiagramOutput,
+} from './output-schema';
+import {
   addTabShape,
   createDiagramShape,
   findDiagramsShape,
@@ -65,6 +78,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'updated time, which library it lives in, and a link to open it). Lightweight ' +
         'and image-free so you can scan many results, then read_diagram the one you want.',
       inputSchema: findDiagramsShape,
+      outputSchema: findDiagramsOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
@@ -92,6 +106,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'Fetch one diagram tab’s elements as structured JSON AND an inline PNG of the ' +
         'tab, plus a link to open it. Use after find_diagrams to view or before editing.',
       inputSchema: readDiagramShape,
+      outputSchema: readDiagramOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
@@ -125,6 +140,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'on create_diagram / add_tab to start from it, then personalise the labels with ' +
         'update_diagram.',
       inputSchema: {},
+      outputSchema: listTemplatesOutput,
     },
     async (_args, extra) => {
       requireToken(extra as Extra);
@@ -159,6 +175,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'out each tab per the layout arg, tags it as AI-generated so it shows in your ' +
         '"Generated" folder, and returns the link + an inline PNG of the first tab.',
       inputSchema: createDiagramShape,
+      outputSchema: createDiagramOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
@@ -243,6 +260,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'server validates, lays out per the layout arg, appends the tab, and returns an ' +
         'inline PNG. Run read_diagram first to see the diagram and its existing tabs.',
       inputSchema: addTabShape,
+      outputSchema: addTabOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
@@ -313,6 +331,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'event-storming notes you add or move land on the board’s horizontal lanes (240px apart, ' +
         'lane 0 centred at y=100). Returns an inline PNG.',
       inputSchema: updateDiagramShape,
+      outputSchema: updateDiagramOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
@@ -407,6 +426,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'sign-in required. Choose "view" (read-only, the default) or "edit". Returns the ' +
         'link URL. Use after creating or finding a diagram to hand it to teammates.',
       inputSchema: shareDiagramShape,
+      outputSchema: shareDiagramOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
@@ -440,6 +460,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'Rename a diagram, or (with tabId) one of its tabs. Non-destructive; returns the ' +
         'updated name.',
       inputSchema: renameDiagramShape,
+      outputSchema: renameDiagramOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
@@ -485,6 +506,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'it is purged. With tabId, delete just one of its tabs, outright: tabs have no ' +
         'Trash. Confirm with the user first. A diagram must keep at least one tab.',
       inputSchema: deleteDiagramShape,
+      outputSchema: deleteDiagramOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
@@ -538,6 +560,7 @@ export function registerTools(server: McpServer, env: Env): void {
         `each restorable with restore_diagram until it is purged ${TRASH_RETENTION_DAYS} days ` +
         'after deletion. Returns id, name, library, when it was deleted, and when it goes.',
       inputSchema: listTrashShape,
+      outputSchema: listTrashOutput,
     },
     async (_args, extra) => {
       const token = requireToken(extra as Extra);
@@ -565,6 +588,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'Bring a deleted diagram back from the Trash, to the folder it was in (or Unsorted ' +
         'if that folder is gone), with its tabs and share links. Find it with list_trash.',
       inputSchema: restoreDiagramShape,
+      outputSchema: restoreDiagramOutput,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);

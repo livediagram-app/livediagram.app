@@ -494,7 +494,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             commentActions={
               commentPanelActions
                 ? {
-                    add: (text) => commentPanelActions.add(element.id, text),
+                    add: (text, mentions) => commentPanelActions.add(element.id, text, mentions),
                     remove: (id) => commentPanelActions.remove(element.id, id),
                     resolve: () => commentPanelActions.resolve(element.id),
                     unresolve: () => commentPanelActions.unresolve(element.id),
@@ -505,9 +505,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             actionActions={
               actionPanelActions
                 ? {
-                    configure: () => actionPanelActions.configure(element.id),
-                    complete: () => actionPanelActions.complete(element.id),
-                    reopen: () => actionPanelActions.reopen(element.id),
+                    add: () => actionPanelActions.configure(element.id, null),
+                    edit: (id) => actionPanelActions.configure(element.id, id),
+                    complete: (id) => actionPanelActions.complete(element.id, id),
+                    reopen: (id) => actionPanelActions.reopen(element.id, id),
                   }
                 : undefined
             }
@@ -655,7 +656,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               // there is a grower (not the share view, embed, or exports).
               onGrowMind={
                 selectedIsMind && growMind
-                  ? (relation) => growMind(selectedElement.id, relation)
+                  ? (relation) => growMind.grow(selectedElement.id, relation)
                   : undefined
               }
             />

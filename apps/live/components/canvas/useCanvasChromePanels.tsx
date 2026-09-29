@@ -23,17 +23,22 @@ import { useCanvasToolPanels } from './useCanvasToolPanels';
 // top-right panel). Most diagrams never accumulate comments, so deferring
 // the 164-line panel + its relative-time formatting
 // dependencies keeps the editor's initial chunk lean.
-const CollaboratePanel = dynamic(() =>
-  import('@/components/panels/CollaboratePanel').then((m) => m.CollaboratePanel),
+const CollaboratePanel = dynamic(
+  () => import('@/components/panels/CollaboratePanel').then((m) => m.CollaboratePanel),
+  { ssr: false },
 );
 
 // Lazy for the same reason, and more so: the poll panel (docs/specs/012-collaboration/live-poll.md) only
 // mounts while a poll is actually running, which is rare and brief.
-const PollPanel = dynamic(() => import('@/components/panels/PollPanel').then((m) => m.PollPanel));
+const PollPanel = dynamic(() => import('@/components/panels/PollPanel').then((m) => m.PollPanel), {
+  ssr: false,
+});
 
 // Same again for the vote panel (docs/specs/012-collaboration/session-tools.md): only on screen while a
 // dot-vote is running.
-const VotePanel = dynamic(() => import('@/components/panels/VotePanel').then((m) => m.VotePanel));
+const VotePanel = dynamic(() => import('@/components/panels/VotePanel').then((m) => m.VotePanel), {
+  ssr: false,
+});
 
 // Lazy for the same reason: the Actions panel (docs/specs/012-collaboration/assigned-actions.md) only mounts when
 // the active tab has at least one element with an OPEN assigned action.
@@ -71,6 +76,7 @@ export function useCanvasChromePanels({
   // Activity + Layers in the Toolbar layout: popovers over their cluster
   // buttons, rendered outside the corner layer (then their panelEls are null).
   toolbarClusterEls: ReactNode;
+  collaborateEl: ReactNode;
   // True when Layers + Activity open as popovers over their cluster buttons
   // (every layout but desktop Floating).
   clusterPopovers: boolean;
@@ -159,6 +165,7 @@ export function useCanvasChromePanels({
     onNewDiagram,
     explorerMenuActions,
     onOpenActionForElement,
+    onToggleActionDone,
     onOpenCommentsForElement,
     onOpenDiagram,
     onRedo,
@@ -362,21 +369,39 @@ export function useCanvasChromePanels({
     />
   );
 
+  // Layers + Activity open as popovers over their bottom-right cluster
+  // buttons in the dock layouts (minimal, a phone outside Toolbar) and in
+  // Toolbar (docs/specs/007-editor/toolbar-layout.md); only the desktop Floating layout docks them as
+  // corner panels that minimise into those buttons.
+  const clusterPopovers = !dockingActive || toolbarActive;
+
+  // Collaborate panel (docs/specs/012-collaboration/assigned-actions.md §5): a popover hanging above its
+  // cluster button after Layers, in every layout (the button opens it through
+  // the dock's one-open-at-a-time slot; mobileOpenOverride gates the render).
+  // Mounted only while the tab has a thread or an action, the button's gate.
   const collaborateEl =
     !chromeHidden && (commentRows.length > 0 || actionRows.length > 0) ? (
       <CollaboratePanel
         position={collaborateWiring.position}
         commentRows={commentRows}
         actionRows={actionRows}
-        stackBelowY={stackBelowY}
         onMoveTo={onMoveCommentsPanel}
         onReset={collaborateWiring.onReset}
-        dock={collaborateWiring.dock}
-        onCommentRowClick={onOpenCommentsForElement}
-        onActionRowClick={onOpenActionForElement}
+        // It steps aside once a row takes you somewhere, or on a phone it
+        // would cover the card you just went to.
+        onCommentRowClick={(id) => {
+          onOpenCommentsForElement(id);
+          closeMobilePanel();
+        }}
+        onActionRowClick={(id) => {
+          onOpenActionForElement(id);
+          closeMobilePanel();
+        }}
+        onToggleActionDone={onToggleActionDone}
         mobileOpenOverride={activeMobilePanel === 'collaborate'}
         mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
+        forceDockMode
+        dismissOnOutside
         onMobileClose={closeMobilePanel}
       />
     ) : null;
@@ -395,12 +420,6 @@ export function useCanvasChromePanels({
         onMobileClose={closeMobilePanel}
       />
     ) : null;
-
-  // Layers + Activity open as popovers over their bottom-right cluster
-  // buttons in the dock layouts (minimal, a phone outside Toolbar) and in
-  // Toolbar (docs/specs/007-editor/toolbar-layout.md); only the desktop Floating layout docks them as
-  // corner panels that minimise into those buttons.
-  const clusterPopovers = !dockingActive || toolbarActive;
 
   const activityEl = chromeHidden ? null : (
     <ActivityPanel
@@ -518,7 +537,7 @@ export function useCanvasChromePanels({
   // stacking handles their coexistence). Desktop-only, gated on the map
   // setting + a few elements; hidden in zen / welcome (chromeHidden).
   const mapEnabled = settings?.showMinimap !== false;
-  const mapAccent = paletteTheme.elementStroke ?? '#0ea5e9';
+  const mapAccent = paletteTheme.elementStroke;
   const minimapWiring = panelWiringFor('minimap', props.mapPosition, props.onResetMap);
   // Hidden layers (docs/specs/006-diagram/layers.md) drop out of the miniature too, so the map
   // matches the canvas. Not rendered at all in the minimal panel layout
@@ -533,7 +552,8 @@ export function useCanvasChromePanels({
         viewportZoom={viewportZoom}
         setViewportOffset={props.setViewportOffset}
         setViewportZoom={props.setViewportZoom}
-        mainRef={props.mainRef}
+        mainSize={props.mainSize}
+        paperColor={props.tabBackgroundColor}
         accentColor={mapAccent}
         position={minimapWiring.position}
         onMove={props.onMoveMap}
@@ -600,7 +620,8 @@ export function useCanvasChromePanels({
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     explorer: toolbarActive ? null : explorerEl,
     palette: paletteEl,
-    collaborate: collaborateEl,
+    // Collaborate renders outside the corner layer (collaborateEl, below).
+    collaborate: null,
     ai: aiEl,
     activity: toolbarActive ? null : activityEl,
     minimap: minimapEl,
@@ -620,6 +641,7 @@ export function useCanvasChromePanels({
     toolbarExplorerEl: toolbarActive ? explorerEl : null,
     // Toolbar's cluster popovers, rendered beside the corner layer rather than
     // in it (see panelEls).
+    collaborateEl,
     toolbarClusterEls: toolbarActive ? (
       <>
         {activityEl}

@@ -57,6 +57,7 @@ export type { DockAnchor };
 function trackDockPanelOpened(id: MobilePanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
   else if (id === 'activity') track('UI', 'Opened', 'Activity');
+  else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
 }
 
 export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {

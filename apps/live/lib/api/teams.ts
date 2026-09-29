@@ -224,6 +224,27 @@ export async function apiNotifyActionAssigned(
   await expectOk<{ ok: boolean }>(res, 'notify assigned action');
 }
 
+// Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md "The email").
+// Best-effort like notify-action: the comment has already persisted, so
+// callers fire-and-forget. The server re-verifies the team, the diagram and
+// every recipient, and resolves every name and address itself.
+export async function apiNotifyMention(
+  ownerId: string,
+  teamId: string,
+  input: {
+    diagramId: string;
+    commentText: string;
+    mentions: { userId: string | null; memberId?: string }[];
+  },
+): Promise<void> {
+  const res = await apiFetch(`${API_BASE}/teams/${teamId}/notify-mention`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId, { body: true }),
+    body: JSON.stringify(input),
+  });
+  await expectOk<{ ok: boolean }>(res, 'notify mention');
+}
+
 // --- Shareable invite link (docs/specs/013-workspace/teams.md) ----------------------------------
 
 // Admin: turn the link on (or rotate it), getting back the fresh token

@@ -17,7 +17,7 @@ import type { PaletteDropdownOption } from '@/components/palette/PaletteDropdown
 // Highlighter / Laser / Spotlight / Avatar / Isometric / Zen), grouped (group index drives
 // the menu dividers): editing tools, then presenter tools, then the view modes.
 // Eraser and everything after act on existing content, so they disable on an
-// empty canvas; Spotlight is desktop-only. Zen is an ACTION, not a persistent
+// empty canvas; Spotlight and Slide Deck are desktop-only. Zen is an ACTION, not a persistent
 // tool: picking it fires the toggle and leaves the current tool selected (the
 // picker's onChange special-cases the id); `includeZen` is set only when the
 // host wired a toggle. Built off the gating flags so the palette wiring stays
@@ -99,14 +99,19 @@ export function buildCanvasToolOptions({
     // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). In the Present band with the Laser and Spotlight:
     // like them it is a tool for showing a diagram to somebody rather than
     // for changing it. Needs content for the same reason they do — there is
-    // nothing to put on a slide on an empty canvas.
-    {
-      id: 'slide-deck',
-      label: 'Slide Deck',
-      icon: <SlideDeckIcon />,
-      group: 1,
-      disabled: canvasEmpty,
-    },
+    // nothing to put on a slide on an empty canvas. Desktop-only like
+    // Spotlight: the deck workbench has no room beside the canvas on a phone.
+    ...(isMobile
+      ? []
+      : [
+          {
+            id: 'slide-deck',
+            label: 'Slide Deck',
+            icon: <SlideDeckIcon />,
+            group: 1,
+            disabled: canvasEmpty,
+          },
+        ]),
     {
       id: 'isometric',
       label: 'Isometric',

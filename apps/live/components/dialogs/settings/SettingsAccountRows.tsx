@@ -13,8 +13,9 @@ import type { SettingsDeleteAccountRowSpec, SettingsIdentityRowSpec } from './se
 //
 // Lazy: the confirmation modal pulls in Clerk's reverification surface and
 // almost nobody deletes, so it only loads on first click.
-const DeleteAccountDialog = dynamic(() =>
-  import('@/components/dialogs/DeleteAccountDialog').then((m) => m.DeleteAccountDialog),
+const DeleteAccountDialog = dynamic(
+  () => import('@/components/dialogs/DeleteAccountDialog').then((m) => m.DeleteAccountDialog),
+  { ssr: false },
 );
 
 // Identity, read from Clerk. Never written here: names and emails are managed

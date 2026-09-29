@@ -22,6 +22,11 @@ const isProdBuild = process.env.NODE_ENV === 'production';
 // always lands in `.next-dev/`; everything else defaults to `.next/`.
 const distDir = process.env.NEXT_DISTDIR ?? '.next';
 
+// The React Compiler runs as its native Rust port inside Turbopack
+// (docs/specs/003-system-architecture/react-state-and-effects.md). That port throws under webpack, so
+// the `dev:webpack` escape hatch runs without the compiler. Next sets `TURBOPACK` before loading config.
+const isTurbopack = Boolean(process.env.TURBOPACK);
+
 const nextConfig: NextConfig = {
   ...(isProdBuild ? { output: 'export' } : {}),
   distDir,
@@ -38,6 +43,9 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  ...(isTurbopack
+    ? { reactCompiler: true, experimental: { turbopackRustReactCompiler: true } }
+    : {}),
   transpilePackages: ['@livediagram/ui', '@livediagram/diagram', '@livediagram/api-schema'],
 };
 

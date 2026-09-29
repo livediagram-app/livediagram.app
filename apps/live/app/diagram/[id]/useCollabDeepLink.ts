@@ -60,11 +60,15 @@ export function useCollabDeepLink({
   // identity would only re-evaluate an already-consumed link.
   const arriveAt = useEffectEvent(
     (
-      el: { id: string; x: number; y: number; width: number; height: number },
+      el: { id: string; x: number; y: number; width: number; height: number; shape?: string },
       open: string | null | undefined,
     ) => {
       select(el.id);
       scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
+      // A Comment or Action panel shows its thread / actions on its own face
+      // (docs/specs/012-collaboration/comment-pin.md, action-panel.md): arriving at it is the whole answer,
+      // and a popover beside it would repeat the card.
+      if (el.shape === 'comment-pin' || el.shape === 'action-card') return;
       if (open === 'action') openActionPopover(el.id);
       else if (open === 'comments') openComments(el.id);
     },

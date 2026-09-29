@@ -331,6 +331,29 @@ describe('buildSearchResults — team library (docs/specs/013-workspace/team-sha
     ]);
   });
 
+  it('ranks the element whose name matches above keyword-only matches', () => {
+    const item = (id: string, name: string, keywords: string) => ({
+      id,
+      name,
+      keywords,
+      add: { type: 'tile' as const, tileId: id },
+    });
+    const paletteItems = [
+      item('entity', 'Entity', 'record table uml'),
+      item('tablet', 'Tablet', 'ipad slate'),
+      item('table', 'Table', 'grid rows'),
+      item('coffee', 'Coffee table', 'furniture'),
+    ];
+    const out = buildSearchResults({ query: 'table', diagrams: [], folders: [], paletteItems });
+    const palette = out.find((g) => g.key === 'palette')!;
+    expect(palette.items.map((i) => (i.kind === 'palette' ? i.id : null))).toEqual([
+      'table',
+      'tablet',
+      'coffee',
+      'entity',
+    ]);
+  });
+
   it('does not surface palette items on an empty query (no catalogue dump)', () => {
     const paletteItems = [
       {

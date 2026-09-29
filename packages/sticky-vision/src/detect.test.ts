@@ -4,6 +4,7 @@ import { classifyRgb, PAPER_CLASSES } from './classify';
 import { greyWorldBalance, hexToRgb, rgbToHsv, type ImageBuffer } from './colour';
 import { standsOut } from './standout';
 import { detectStickies, cropRects, toNormalised } from './detect';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 
 // Finding stickies in a photograph (docs/specs/021-event-storming/event-storming.md Phase 8). Every image here is
 // DRAWN by the test, which is the point of doing this with classical CV: the
@@ -605,11 +606,13 @@ describe('detectStickies', () => {
     for (let y = 40; y < 900; y += 220) {
       for (let x = 40; x < 900; x += 220) rect(image, x, y, 160, 160, orange);
     }
-    const started = performance.now();
-    const found = detectStickies(image);
-    const took = performance.now() - started;
+    let found: ReturnType<typeof detectStickies> = [];
+    const took = cpuMsOf(() => {
+      found = detectStickies(image);
+    });
     expect(found).toHaveLength(16);
-    // A loose bound: the point is "not seconds", not a benchmark CI can flake on.
+    // A loose bound on CPU time (cpuMsOf): the point is "not seconds", not a
+    // benchmark, and CPU time does not balloon when other suites share the box.
     expect(took).toBeLessThan(1500);
   });
 });

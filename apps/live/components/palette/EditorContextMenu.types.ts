@@ -190,6 +190,8 @@ export type EditorContextMenuProps = {
   // tree's ROOT, which the menu has no way to walk to.
   mindFlow: MindFlow;
   onSetMindFlow: (flow: MindFlow) => void;
+  // Lay the selected node's whole map out tidily in its flow (docs/specs/009-elements/mind-node.md "Tidy Map").
+  onTidyMindMap: () => void;
   // Checklist (docs/specs/009-elements/checklist.md): replace the selected checklist's rows.
   onSetChecklistItems: (items: ChecklistItem[]) => void;
   // Tick one row, as the on-canvas checkbox does: a delta the room merges,

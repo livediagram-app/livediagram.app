@@ -21,8 +21,13 @@ unassign someone's work.
 ## 1. Data model
 
 At most **one action per element** (mirrors note + link, keeps the panel,
-badge, and popover 1:1 with elements). A new optional field on boxed
-elements in `packages/diagram`:
+badge, and popover 1:1 with elements). The one exception is the **Action
+panel** ([The Action Panel](action-panel.md)), a card whose job is to hold a list: it carries
+`actions: ElementAction[]`. Everything that reads actions goes through
+`elementActions(el)`, which returns that list or the single `action` as a
+one-item list, so the Collaborate panel, the Activity page, the timeline and
+the email treat both the same. A new optional field on boxed elements in
+`packages/diagram`:
 
 ```ts
 interface ElementAction {
@@ -261,41 +266,74 @@ which crowded the same corner:
 - `PanelId` `'collaborate'` in `lib/panel-layout.ts` (replacing the old
   `'comments'` + `'actions'` ids; stored layouts naming those are
   dropped by the normaliser and the merged panel takes its default
-  corner), default corner `top-right` stacked under the Palette;
-  `CollaboratePanel.tsx` under `components/panels/` on `MovablePanel`,
-  collapsible, default-collapsed, lazily imported and mounted from
-  `useCanvasChromePanels.tsx`.
-- **Mounted whenever the active tab has at least one comment thread OR
-  one action** (open or not) — nothing to collaborate on, no panel.
-  The same gate adds a **Collaborate** button to the mobile /
-  minimal-layout dock ([Live app](../007-editor/live-app.md) "Mobile chrome"), opening the panel as
-  a popover — the panel is not desktop-only. An
-  **Open / Resolved segmented filter** (with a count on each side)
-  switches the list: **Open** = open actions + unresolved comment
-  threads; **Resolved** = completed actions + RESOLVED comment threads,
-  which now surface here instead of hiding entirely (the thread still
-  reopens from its element badge). It lands on Open, or Resolved when
-  nothing is open, and each side has a quiet empty state. To the LEFT of
-  the segmented control sits a compact **kind filter** button cycling
-  All → Comments → Actions (funnel glyph for All; the kind glyph,
-  brand-tinted, while narrowed) — the Open/Resolved counts and empty
-  states follow the active kind.
-- Rows (the `actionRowsFromElements` + `commentRowsFromElements`
-  derivations, both in `CollaboratePanel.tsx`; comment rows carry a
-  `resolved` flag) share ONE anatomy: a **kind glyph** far left (the
-  action clipboard / comment bubble, so the mixed list scans by type),
-  the **name + one-line description** in the middle (action name over
-  its element label, struck through once done; element label over the
-  latest comment preview, dimmed once resolved), and the **person** far
-  right — an avatar bubble (brand-tinted when the action is **yours**,
-  whose rows sort first; the comment author's colour otherwise) sitting
-  above the relative time, with the name (and the thread's comment
-  count) on the avatar's hover card rather than spent inline.
-  Everything interleaves newest-first on its own timestamp (an action's
-  createdAt, a thread's latest comment).
-- **Row click selects the element and opens its matching popover**
-  (comment thread / action). The panel header shows the OPEN count in
-  the brand-coloured pill (hidden at zero).
+  corner), default corner `bottom-right` (only its reset target: it always
+  renders as a popover); `CollaboratePanel.tsx` under `components/panels/` on
+  `MovablePanel`, lazily imported and mounted from `useCanvasChromePanels.tsx`.
+- **It lives behind a button in the bottom-right cluster.** A
+  **Collaborate** button (speech-bubble glyph) sits **right after the Layers
+  button**, in every layout ([Layers](../006-diagram/layers.md) is the model). It shows the tab's
+  **open count** as a badge (the shared `CountBadge`, brand tone, hidden at
+  zero). Pressing it opens the panel as a **popover hanging above it**
+  (`computeDockAnchor(..., 'above')`) in **every** layout, desktop Floating
+  included; a second press or a press outside closes it, and it shares the
+  dock's one-open-at-a-time slot with Layers, Activity and the Explorer.
+  Floating does not dock it in a corner the way it docks Layers: a panel
+  this tall, docked bottom-right, ran up under the Palette on a short window,
+  and a popover never meets another corner. It renders outside the corner
+  layer for the same reason Toolbar's cluster popovers do.
+- **The button shows only when it is relevant: the active tab has at least
+  one comment thread OR one action**, open or resolved. Nothing to
+  collaborate on, no button and no panel. Unlike Layers it is there for a
+  **view-role** visitor too (they read threads and answer them); it hides in
+  zen and during the welcome flow like the rest of the cluster. It is no
+  longer a button in the mobile / minimal dock row ([Live app](../007-editor/live-app.md) "Mobile chrome"):
+  the cluster button replaces it.
+
+### The look
+
+The panel follows the refreshed Collaborate cards ([Participant responses](participant-responses.md), [Q&A board](qa-board.md) "The look"): soft tinted rows rather than a ruled list, a friendly empty state with its glyph in a soft brand disc, round brand controls, count chips, and short motion that collapses under Reduce motion. It is editor chrome, not a card on a themed tab, so its accent is the **brand** colour rather than a tab theme's.
+
+- **Header.** The title with the **open count** in a brand chip sitting directly beside it (`MovablePanel`'s `titleAdornment`), hidden at zero. It no longer floats in the middle of the header.
+- **Open / Resolved.** A segmented control on the shared sliding pill (`SegmentSlider`), each side carrying its count. **Open** = open actions + unresolved comment threads; **Resolved** = completed actions + resolved comment threads (the thread still reopens from its element badge). It lands on Open, or Resolved when nothing is open.
+- **Kind chips.** Under the segmented control, three small chips: **All**, **Comments** (bubble glyph) and **Actions** (clipboard glyph), each with its count for the current side; the active one takes a soft brand fill. They show only when the tab has BOTH kinds; with one kind there is nothing to narrow. (They replace an unlabelled funnel button that cycled through three hidden states.)
+- **Sections.** In the Open view, rows assigned to you lead under a **For You** label, and everything else follows under **Everything Else**. The labels show only when both groups have rows; a single group needs no heading.
+- **Action rows** lead with a **round check**. Pressing it completes the action (or, in Resolved, reopens it) in place, through the same `completeAction` / `reopenAction` the card and popover use, with a brief pop; the row then moves to the other side. Read-only visitors see the check as a static status disc. The body is the action name (up to two lines, struck through once done) over a quiet meta line: the element label and the relative time. The assignee sits on the right: a **You** chip in brand for your own, otherwise an initials avatar with the name on its hover card.
+- **Comment rows** lead with a bubble disc tinted in the latest author's colour, carrying the thread's comment count. The body is the element label over the latest comment, prefixed with its author's first name ("Priya: Agreed, let's queue it"), clamped to two lines, and the relative time sits top-right.
+- **Rows** are rounded, tinted on hover, fully keyboard reachable (the row is a button; the check is its own button with a label naming the action), and slide in on a short stagger (`stagger-enter`).
+- **Row click goes to the conversation.** For an ordinary element it
+  selects the element and opens its matching popover (comment thread /
+  action). For an element that **is** the conversation, a
+  [Comment panel](comment-pin.md) (`comment-pin`) or an [Action panel](action-panel.md) (`action-card`),
+  it selects the card and **scrolls the canvas to centre it** instead: the
+  card already shows the thread or the action, so a popover beside it would
+  only repeat it. As a popover the panel closes once a row is clicked, so it
+  never covers where the click took you.
+- **Density.** Rows breathe: 12px horizontal and 10px vertical padding, a
+  6px gap between rows and 12px between sections, the body at a relaxed
+  line height (the title 13px over a 11px meta line with 3px between), and
+  the controls sit 10px apart. The rows scroll inside the panel past
+  `min(26rem, 50vh)` so it never grows up into the Palette's corner, while
+  the switch and chips stay put. It is an 18rem side panel (16rem before, which
+  the looser rows would have squeezed).
+
+### Empty states
+
+A glyph in a soft brand disc, a Title Case heading, and one line:
+
+| View                 | Heading              | Line                                                             |
+| -------------------- | -------------------- | ---------------------------------------------------------------- |
+| Open, everything     | All Caught Up        | Nothing open on this tab. New comments and actions show up here. |
+| Open, comments       | No Open Comments     | Every thread on this tab is resolved.                            |
+| Open, actions        | No Open Actions      | Every action on this tab is done.                                |
+| Resolved, everything | Nothing Resolved Yet | Finished actions and resolved threads collect here.              |
+| Resolved, comments   | No Resolved Comments | Resolved threads collect here.                                   |
+| Resolved, actions    | No Completed Actions | Finished actions collect here.                                   |
+
+The panel has no loading or error state of its own: its rows derive synchronously from the tab's elements, and it does not mount until there is something to list.
+
+### Derivation
+
+Rows come from the `actionRowsFromElements` + `commentRowsFromElements` derivations in `CollaboratePanel.tsx` (comment rows carry a `resolved` flag). Everything interleaves newest-first on its own timestamp (an action's createdAt, a thread's latest comment), with your own actions first.
 
 ## 6. Preference + profile toggle
 
@@ -360,8 +398,8 @@ enum-ish tokens, not user content.
   **Activity** page ([Activity page](../013-workspace/activity-page.md)), exactly the way this bullet predicted:
   a D1 projection (`collab_actions`) written beside every tab save,
   with the per-element blob still the source of truth.
-- Due dates, priorities, more than one action per element, and multiple
-  assignees.
+- Due dates, priorities, more than one action on an ordinary element (an
+  Action panel is the place for a list), and multiple assignees.
 - Auto-sharing the diagram with the assignee on assign (§4 caveat).
 - View-role mutation endpoints (complete-without-edit-access).
 - Reminder / nag emails; exactly one send per assignment or reassignment

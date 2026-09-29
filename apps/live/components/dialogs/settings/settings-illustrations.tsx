@@ -235,7 +235,7 @@ const ILLUSTRATIONS: Record<ToggleIllustrationId, Drawing> = {
     off: NoMapArt,
     on: MapArt,
     label:
-      'The editor without the minimap, and with a small canvas overview in the bottom-left corner.',
+      'The editor without the Map, and with a small canvas overview in the bottom-left corner.',
   },
   alignmentGuides: {
     off: NoGuidesArt,
@@ -252,7 +252,7 @@ const ILLUSTRATIONS: Record<ToggleIllustrationId, Drawing> = {
     off: <MiniMapArt dim={false} />,
     on: <MiniMapArt dim />,
     label:
-      'The minimap with the viewport rectangle alone, and with everything outside that rectangle shaded.',
+      'The Map with the viewport rectangle alone, and with everything outside that rectangle shaded.',
   },
 };
 

@@ -19,7 +19,9 @@ import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 // Lazy: the tab context menu (and the 18 kB icon module it drags in)
 // only loads on the first right-click — it was the largest single
 // eager block left in the editor chunk after the dialogs went dynamic.
-const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalMenu));
+const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalMenu), {
+  ssr: false,
+});
 import { TabPill, type TabPillCtx } from './TabPill';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 

@@ -112,7 +112,7 @@ export function IdeaBoxFace({
               ariaLabel="Add an anonymous idea"
               sendLabel="Submit idea"
               maxLength={IDEA_MAX_TEXT}
-              onSubmit={onAddIdea}
+              onSubmit={(text) => onAddIdea(text)}
               meta={<AnonymousBadge />}
             />
           ) : undefined

@@ -51,30 +51,40 @@ const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
 
 // Lazy-load the heavier panes — each is only mounted on its own
 // route, so none of them sit in the shared explorer chunk.
-const GalleryPane = dynamic(() =>
-  import('@/components/panels/GalleryPane').then((m) => m.GalleryPane),
+const GalleryPane = dynamic(
+  () => import('@/components/panels/GalleryPane').then((m) => m.GalleryPane),
+  { ssr: false },
 );
-const TokensPane = dynamic(() =>
-  import('@/components/panels/TokensPane').then((m) => m.TokensPane),
+const TokensPane = dynamic(
+  () => import('@/components/panels/TokensPane').then((m) => m.TokensPane),
+  { ssr: false },
 );
-const TrashSection = dynamic(() => import('./TrashSection').then((m) => m.TrashSection));
-const ThemesPane = dynamic(() =>
-  import('@/components/panels/ThemesPane').then((m) => m.ThemesPane),
+const TrashSection = dynamic(() => import('./TrashSection').then((m) => m.TrashSection), {
+  ssr: false,
+});
+const ThemesPane = dynamic(
+  () => import('@/components/panels/ThemesPane').then((m) => m.ThemesPane),
+  { ssr: false },
 );
-const TeamPane = dynamic(() => import('@/components/panels/TeamPane').then((m) => m.TeamPane));
-const TeamInvitesPane = dynamic(() =>
-  import('@/components/panels/TeamInvitesPane').then((m) => m.TeamInvitesPane),
+const TeamPane = dynamic(() => import('@/components/panels/TeamPane').then((m) => m.TeamPane), {
+  ssr: false,
+});
+const TeamInvitesPane = dynamic(
+  () => import('@/components/panels/TeamInvitesPane').then((m) => m.TeamInvitesPane),
+  { ssr: false },
 );
 // The Timeline is the landing route, so it's the one lazy pane most
 // visitors DO load. Split anyway: the calendar grid + filter popover
 // are only reached by someone who switches modes, and holding them out
 // of the shared explorer chunk keeps the other sections' first paint
 // unaffected by a feature they don't use.
-const TimelinePane = dynamic(() =>
-  import('@/components/panels/TimelinePane').then((m) => m.TimelinePane),
+const TimelinePane = dynamic(
+  () => import('@/components/panels/TimelinePane').then((m) => m.TimelinePane),
+  { ssr: false },
 );
-const ActivityPane = dynamic(() =>
-  import('@/components/panels/ActivityPane').then((m) => m.ActivityPane),
+const ActivityPane = dynamic(
+  () => import('@/components/panels/ActivityPane').then((m) => m.ActivityPane),
+  { ssr: false },
 );
 
 // The right pane for whichever /explorer/<section> route is active:

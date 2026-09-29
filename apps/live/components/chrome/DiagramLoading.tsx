@@ -1,50 +1,116 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { RefreshIcon } from '@livediagram/ui';
+import { Button, RefreshIcon } from '@livediagram/ui';
 import { DiagramBuildAnimation } from '@/components/canvas/DiagramBuildAnimation';
 
-// Full-screen "loading your diagram…" placeholder. Stand-in for the
-// editor chrome while the post-mount fetch resolves a ?d= or ?s= URL.
-// Reassures the user that data isn't lost: previously they'd briefly
-// see the empty-canvas welcome card and assume it had been wiped.
-// If the fetch hasn't returned within 10 seconds, surfaces a "taking
-// too long" message and a Refresh button so the user has an out.
+// The opening screen (docs/specs/007-editor/new-diagram-route.md): the one
+// full-height screen between a click and the editor. /new renders it at the
+// "creating" stage while the diagram is persisted, the editor renders it at
+// the "opening" stage while the diagram loads, and because /new hands off to
+// the editor in place the two read as one continuous screen: only the label
+// changes, and DiagramBuildAnimation keeps its phase across the remount.
 //
-// Lifted out of editor-page.tsx (which is the only consumer) just to
-// give that file its 60 lines back.
-export function DiagramLoading() {
+// Dark-aware on purpose: it is a whole SCREEN, not a panel, so it honours
+// the appearance like every other route (docs/specs/007-editor/live-app.md).
+// If the wait passes 10 seconds, it offers a Refresh as a way out.
+
+export type DiagramLoadingStage = 'creating' | 'opening';
+
+const COPY: Record<DiagramLoadingStage, { title: string; detail: string }> = {
+  creating: { title: 'Creating your diagram', detail: 'Setting up a fresh canvas' },
+  opening: { title: 'Opening your diagram', detail: 'Getting everything in place' },
+};
+
+const SLOW_AFTER_MS = 10_000;
+
+// Glow drift, the progress sweep and the label's entrance. Motion only when
+// the user allows it; reduced motion keeps the screen still.
+const CSS = `
+@media (prefers-reduced-motion: no-preference) {
+  .ldl-glow-a { animation: ldl-drift-a 14s ease-in-out infinite alternate; }
+  .ldl-glow-b { animation: ldl-drift-b 18s ease-in-out infinite alternate; }
+  .ldl-sweep { animation: ldl-sweep 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+  .ldl-enter { animation: ldl-enter 250ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+}
+.ldl-sweep { transform: translateX(-100%); }
+@keyframes ldl-drift-a {
+  from { transform: translate(-12%, -8%) scale(1); }
+  to { transform: translate(10%, 6%) scale(1.15); }
+}
+@keyframes ldl-drift-b {
+  from { transform: translate(10%, 10%) scale(1.1); }
+  to { transform: translate(-8%, -6%) scale(0.95); }
+}
+@keyframes ldl-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}
+@keyframes ldl-enter {
+  from { opacity: 0; transform: translateY(6px); filter: blur(2px); }
+  to { opacity: 1; transform: none; filter: none; }
+}`;
+
+export function DiagramLoading({ stage = 'opening' }: { stage?: DiagramLoadingStage }) {
   const [slow, setSlow] = useState(false);
   useEffect(() => {
-    const id = window.setTimeout(() => setSlow(true), 10000);
+    const id = window.setTimeout(() => setSlow(true), SLOW_AFTER_MS);
     return () => window.clearTimeout(id);
   }, []);
+  const copy = COPY[stage];
 
   return (
-    // This is a whole SCREEN, not a panel: it is the only thing between the
-    // click and the editor, so it has to honour the appearance like every
-    // other route does (docs/specs/007-editor/live-app.md). It was light-only, which meant a dark-chrome
-    // user got a white flash on every diagram open.
-    <div className="flex flex-1 items-center justify-center bg-slate-50 dark:bg-slate-950">
-      <div className="flex flex-col items-center gap-3">
-        <DiagramBuildAnimation />
-        <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-          Loading your diagram…
-        </p>
+    <div className="relative flex h-dvh flex-col items-center justify-center overflow-hidden bg-slate-50 px-6 dark:bg-slate-950">
+      {/* Backdrop: two soft brand-tinted glows behind the centre and the
+          editor's dot grid, fading out towards the edges. Decorative. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="ldl-glow-a absolute top-1/2 left-1/2 -mt-72 -ml-80 size-[36rem] rounded-full bg-brand-300/30 blur-3xl dark:bg-brand-500/15" />
+        <div className="ldl-glow-b absolute top-1/2 left-1/2 -mt-40 -ml-24 size-[30rem] rounded-full bg-violet-300/25 blur-3xl dark:bg-violet-500/12" />
+        <div
+          className="absolute inset-0 text-slate-300 dark:text-slate-800"
+          style={{
+            backgroundImage: 'radial-gradient(currentColor 1.2px, transparent 1.2px)',
+            backgroundSize: '22px 22px',
+            maskImage: 'radial-gradient(ellipse 60% 55% at 50% 50%, black 20%, transparent 100%)',
+            WebkitMaskImage:
+              'radial-gradient(ellipse 60% 55% at 50% 50%, black 20%, transparent 100%)',
+          }}
+        />
+      </div>
+
+      <div className="relative flex w-full max-w-sm flex-col items-center">
+        <DiagramBuildAnimation className="max-w-[360px]" />
+
+        <div role="status" aria-live="polite" className="mt-8 flex flex-col items-center">
+          {/* Keyed on the stage so the label re-enters when "Creating"
+              gives way to "Opening". */}
+          <div key={stage} className="ldl-enter flex flex-col items-center gap-1 text-center">
+            <p className="text-base font-semibold tracking-tight text-slate-800 dark:text-slate-100">
+              {copy.title}
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{copy.detail}</p>
+          </div>
+          <div
+            aria-hidden="true"
+            className="mt-5 h-1 w-40 overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800"
+          >
+            <div className="ldl-sweep h-full w-1/3 rounded-full bg-gradient-to-r from-brand-400 via-violet-400 to-emerald-400" />
+          </div>
+        </div>
+
         {slow ? (
-          <div className="mt-2 flex flex-col items-center gap-2">
-            <p className="text-xs text-slate-500 dark:text-slate-400">It&apos;s taking too long.</p>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-slate-800 dark:hover:text-brand-200"
-            >
+          <div className="ldl-enter mt-6 flex flex-col items-center gap-2">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              This is taking longer than usual.
+            </p>
+            <Button variant="secondary" size="xs" onClick={() => window.location.reload()}>
               <RefreshIcon size={13} />
               Refresh
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>
+      <style>{CSS}</style>
     </div>
   );
 }

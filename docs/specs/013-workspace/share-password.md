@@ -73,6 +73,34 @@ old monolithic module): `getDiagramSharePassword(env, id)`,
 - `apiSetSharePassword(ownerId, id, password | null)` → the PUT above.
   `apiListShareLinks` returns `{ links, password }`.
 
+### Password cache
+
+A visitor who got past the gate is not asked again on their next visit. The
+accepted password is kept in `localStorage` under
+`livediagram:share-password:<code>`, **one entry per share code**, in plain
+text (`readCachedSharePassword` / `writeCachedSharePassword` in
+`lib/api/core.ts`).
+
+- **Keyed by share code**, not diagram id: the diagram id only resolves after
+  the gate is passed, and the code is what the URL carries on arrival.
+- **Read** at the start of a share-link bootstrap and set as the session share
+  password, so the first `GET /api/share/:code` already carries it.
+- **Written** after every successful resolve with whichever password the
+  session used, the cached one or the one just typed.
+- **Cleared** when the server refuses a cached password (a `401` or `403` from
+  the resolve, which the owner rotating or removing the password causes): the
+  entry is emptied, the session password dropped, and the gate shown afresh, so
+  a stale value never loops.
+- **Lifetime** is otherwise unbounded: the entry stays until it is refused or
+  the visitor clears their site data. A revoked link never reaches the cache
+  read (the resolve answers `404` first), so its entry is inert.
+- **Plain text** matches the threat model above: the password is an
+  anti-URL-guessing secret the api already stores in clear, not protected user
+  data, and anyone able to read this browser's storage can already open the
+  diagram in it.
+- In an **embed**, browsers partition third-party iframe storage, so the cache
+  is per embedding site ([Read-only embeds (`/embed`)](embeds.md)).
+
 ## Editor flow (apps/live, viewer)
 
 When a visitor opens `/diagram/shared?s=<code>` and `apiLoadShared` reports
@@ -123,4 +151,7 @@ The visitor-join event is unchanged (`Diagram` / `Joined` / `Edit|View`).
 
 - Per-link passwords (one diagram-level password is the requirement).
 - Hashing / encryption at rest (plain text is intentional, see Model).
-- Rate-limiting password attempts and active mid-session eviction on change.
+- Active mid-session eviction when the password changes.
+- A per-IP throttle on the password check at the share-code doors other than
+  the resolve read: `GET /api/share/:code` is limited by `SHARE_RATE_LIMITER`
+  (see Model), which is where a visitor without the diagram id has to guess.

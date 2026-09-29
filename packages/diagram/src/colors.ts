@@ -11,6 +11,7 @@ import {
 } from './index';
 import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
 import { MODE_BUTTON_SKIN } from './selection-mode';
+import { hasOwnFace } from './collab-shapes';
 
 // Per-type default padding bucket (was beside the Padding type).
 export function defaultPadding(element: BoxedElement): Padding {
@@ -154,6 +155,20 @@ export function canvasSurface(backgroundColor: string | undefined | null): Canva
   return isLightColor(backgroundColor) ? 'light' : 'dark';
 }
 
+// The ink that reads on a SOLID fill of `color`: white on a dark fill, the
+// app's near-black on a light one. The Collaborate cards' accent buttons use
+// it on the canvas (CollabAccentScope) and in the export
+// (svg-render-panel-faces), so a pale theme accent never carries white text in
+// either.
+export function inkOn(color: string): string {
+  return canvasSurface(color) === 'dark' ? '#ffffff' : '#0f172a';
+}
+
+// The green that means FINISHED on the Collaborate cards: a resolved comment
+// thread, a done action (docs/specs/012-collaboration/comment-pin.md, action-panel.md). One value, so the
+// canvas and the export agree on what done looks like.
+export const COLLAB_DONE_COLOR = '#16a34a';
+
 // The ink for dark paper: the blue-slate set of the Default scheme's dark half
 // (docs/specs/008-canvas/canvas-and-palette.md) — fill a step above the backdrop, a slate-500 stroke
 // at 3:1 or better on both, white text. Sticky notes, images, link cards
@@ -176,6 +191,16 @@ const DARK_INK = {
 // never the shape default, so they read as pressable before anyone styles
 // them. The reveal cover and the chair paint themselves; only their outline
 // and label ink follow the paper.
+// The Reveal cover's opaque base, from the PAPER under it rather than the
+// app's appearance, so a dark theme in light mode still gets a dark cover
+// (docs/specs/009-elements/reveal-zone.md "The look"). Shared by the canvas
+// face and the headless renderer (exports, the minimap), so the two cannot
+// drift: the renderer once hard-coded the light base and drew a white cover
+// on a dark board's map.
+export const REVEAL_COVER_BASE: Record<CanvasSurface, string> = {
+  light: '#f1f5f9',
+  dark: '#172131',
+};
 const CONTROL_SKIN_DARK = { fill: '#1e293b', stroke: '#475569', text: '#f1f5f9' } as const;
 const OUTLINE_SKIN_LIGHT = { stroke: '#94a3b8', text: '#0f172a' } as const;
 
@@ -518,9 +543,15 @@ export function supportsBorderControls(element: Element): boolean {
 // Of the web components (docs/specs/009-elements/web-components-and-no-groups.md), the header takes the icon as its logo
 // and the callout as its badge glyph; the banner, stat row and process have
 // nowhere to put one, so an icon dropped on them stands alone.
+//
+// Nor do the Behaviour and Collaborate elements that draw their own face
+// (hasOwnFace: the collaboration cards, the buttons, the picker, the reveal
+// cover, the chair...): their face never renders an inline icon, so one folded
+// in would be invisible. Dropped on them, it stands alone too.
 export function acceptsInlineIcon(element: Element): element is ShapeElement {
   return (
     element.type === 'shape' &&
+    !hasOwnFace(element.shape) &&
     element.shape !== 'icon' &&
     element.shape !== 'sticker' &&
     element.shape !== 'frame' &&

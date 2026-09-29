@@ -92,6 +92,12 @@ export const ACTION_EMAILS = email(
   'A teammate was emailed about work assigned to them.',
 );
 
+export const MENTION_EMAILS = email(
+  'Mentioned',
+  'Mention Notifications',
+  'A teammate was emailed because someone @-mentioned them in a comment.',
+);
+
 export const TOKEN_EXPIRING_EMAILS = email(
   'TokenExpiring',
   'Token Expiry Warnings',
@@ -119,6 +125,7 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   DIAGRAM_JOINED_EMAILS,
   COMMENT_EMAILS,
   ACTION_EMAILS,
+  MENTION_EMAILS,
   TOKEN_EXPIRING_EMAILS,
   ACCOUNT_DELETED_EMAILS,
 ];

@@ -12,16 +12,22 @@ import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
+import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
 
-const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound));
-const ApiErrorPage = dynamic(() =>
-  import('@/components/chrome/ApiErrorPage').then((m) => m.ApiErrorPage),
+const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
+  ssr: false,
+});
+const ApiErrorPage = dynamic(
+  () => import('@/components/chrome/ApiErrorPage').then((m) => m.ApiErrorPage),
+  { ssr: false },
 );
-const DiagramTrashedCard = dynamic(() =>
-  import('@/components/chrome/DiagramTrashedCard').then((m) => m.DiagramTrashedCard),
+const DiagramTrashedCard = dynamic(
+  () => import('@/components/chrome/DiagramTrashedCard').then((m) => m.DiagramTrashedCard),
+  { ssr: false },
 );
-const SharePasswordGate = dynamic(() =>
-  import('@/components/dialogs/SharePasswordGate').then((m) => m.SharePasswordGate),
+const SharePasswordGate = dynamic(
+  () => import('@/components/dialogs/SharePasswordGate').then((m) => m.SharePasswordGate),
+  { ssr: false },
 );
 
 const LOAD_ERROR_MESSAGE =
@@ -188,11 +194,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   }
 
   if (loadingDiagram) {
-    return (
-      <div className="flex h-dvh flex-col">
-        <DiagramLoading />
-      </div>
-    );
+    return <DiagramLoading stage="opening" />;
   }
 
   return (
@@ -205,7 +207,10 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
         ownerId={state.selfParticipant?.id ?? null}
         onThemeDeleted={state.resetTabsUsingTheme}
       >
-        <EditorView />
+        {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
+        <MentionContext.Provider value={state.commentMentions}>
+          <EditorView />
+        </MentionContext.Provider>
       </CustomThemeProvider>
     </EditorContext.Provider>
   );

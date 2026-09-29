@@ -68,6 +68,9 @@ type AssignActionDialogProps = {
   // retry-able error line).
   onMoveToTeam?: (teamId: string) => Promise<boolean>;
   onSubmit: (input: SaveActionInput) => void;
+  // Editing one of an Action panel's actions (docs/specs/012-collaboration/action-panel.md): the card has no
+  // popover, so its two-step delete lives here. Absent everywhere else.
+  onDelete?: () => void;
   onClose: () => void;
 };
 
@@ -84,12 +87,14 @@ export function AssignActionDialog({
   diagramTeamId,
   emailEnabled,
   onSubmit,
+  onDelete,
   onClose,
 }: AssignActionDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [assignee, setAssignee] = useState<PickableMember | null>(null);
   const [notifyEmail, setNotifyEmail] = useState(true);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   // The team id mid inline move (docs/specs/012-collaboration/assigned-actions.md §2 personal-diagram fix), and
   // whether the last attempt failed.
   const [movingToTeamId, setMovingToTeamId] = useState<string | null>(null);
@@ -131,6 +136,7 @@ export function AssignActionDialog({
       seededFor.elementLabel !== elementLabel)
   ) {
     setSeededFor({ existing, elementLabel });
+    setConfirmingDelete(false);
     setName(existing?.name ?? elementLabel ?? '');
     setDescription(existing?.description ?? '');
     setAssignee(existing ? null : selfRow);
@@ -324,6 +330,16 @@ export function AssignActionDialog({
         </div>
 
         <DialogFooter>
+          {onDelete && editing ? (
+            <Button
+              type="button"
+              variant={confirmingDelete ? 'danger' : 'secondary'}
+              onClick={() => (confirmingDelete ? onDelete() : setConfirmingDelete(true))}
+              className="mr-auto"
+            >
+              {confirmingDelete ? 'Confirm Delete' : 'Delete Action'}
+            </Button>
+          ) : null}
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>

@@ -21,8 +21,9 @@ import { useAuthHrefs } from '@/components/chrome/auth-shared';
 // Explorer load, but the modal only matters once Learn more is
 // clicked, so its content (and icon set) stays out of the eager
 // Explorer chunk. Same pattern as AuthControls' DeleteAccountDialog.
-const SignInReasonsModal = dynamic(() =>
-  import('@/components/dialogs/SignInReasonsModal').then((m) => m.SignInReasonsModal),
+const SignInReasonsModal = dynamic(
+  () => import('@/components/dialogs/SignInReasonsModal').then((m) => m.SignInReasonsModal),
+  { ssr: false },
 );
 
 // Per-device dismissal key, shared by every surface that mounts the

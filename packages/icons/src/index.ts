@@ -13,7 +13,7 @@
 //   - `@livediagram/icons/resolve` — a static-import resolver for the
 //     Workers, where bundle size is not user-facing.
 
-export type { IconDef, IconPrim, TechIconDef, TechProvider } from './types';
+export type { IconDef, IconPrim, PrimStyle, StyledPrim, TechIconDef, TechProvider } from './types';
 export { xmlEscape } from './xml';
 export {
   inkInsets,

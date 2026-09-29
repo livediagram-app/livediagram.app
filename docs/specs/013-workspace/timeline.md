@@ -1061,14 +1061,16 @@ change are filtered out of every feed and the unread count. A diagram that no
 longer exists keeps the name it had. Team renames are still events: a team's
 name is not re-read onto older entries.
 
-| `eventType`                          | Fires when                                                                    | Title / description                                          |
-| ------------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `diagram_created`                    | `POST /api/diagrams`                                                          | "Diagram Created" / "Payments architecture"                  |
-| `diagram_duplicated`                 | duplicate route                                                               | "Diagram Duplicated" / "Copy of Payments architecture"       |
-| `diagram_moved`                      | folder change                                                                 | "Moved to a Folder" / "Payments architecture → Architecture" |
-| `diagram_edited`                     | tab save (coalesced)                                                          | "Diagram Updated" / "You worked on Payments architecture"    |
-| `diagram_snapshot`                   | snapshot taken ([Diagram SVG snapshots](../006-diagram/diagram-snapshots.md)) | "Snapshot Taken" / "Payments architecture"                   |
-| `diagram_offline` / `diagram_synced` | Take Offline / Sync Diagram ([Offline Mode](../006-diagram/offline-mode.md))  | "Taken Offline" / "Synced to the Cloud"                      |
+| `eventType`                          | Fires when                                                                                                                                      | Title / description                                             |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `diagram_created`                    | `POST /api/diagrams`                                                                                                                            | "Diagram Created" / "Payments architecture"                     |
+| `diagram_duplicated`                 | duplicate route                                                                                                                                 | "Diagram Duplicated" / "Copy of Payments architecture"          |
+| `diagram_moved`                      | folder change                                                                                                                                   | "Moved to a Folder" / "Payments architecture → Architecture"    |
+| `diagram_edited`                     | tab save (coalesced)                                                                                                                            | "Diagram Updated" / "You worked on Payments architecture"       |
+| `diagram_opened_by_visitor`          | a share-code visitor reads a tab (`GET /api/diagrams/:id/tabs/:tabId`); owner only, coalesced per visitor per day ("Opened by a visitor" below) | "Opened by a Visitor" / "Payments architecture"                 |
+| `diagram_copied_by_visitor`          | a share-code visitor copies it (`POST /api/diagrams/:id/copy`); owner only                                                                      | "Copied by a Visitor" / "Payments architecture"                 |
+| `diagram_offline` / `diagram_synced` | Take Offline / Sync Diagram ([Offline Mode](../006-diagram/offline-mode.md))                                                                    | "Taken Offline" / "Synced to the Cloud"                         |
+| `diagram_renamed`                    | never: retired, no longer emitted (see above)                                                                                                   | Legacy rows are filtered out of every feed and the unread count |
 
 **The two Offline Mode conversions declare themselves**, because they reuse
 ordinary endpoints and are otherwise indistinguishable from them: "Take
@@ -1163,18 +1165,22 @@ calls it.
 
 ### 4.4 Teams and invites
 
-| `eventType`            | Fires when                                                                            | Audience                                   |
-| ---------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `team_created`         | `POST /api/teams`                                                                     | Creator                                    |
-| `team_invite_received` | admin invites an address                                                              | The invitee, once their id is known        |
-| `team_invite_accepted` | `.../accept`                                                                          | The team                                   |
-| `team_invite_declined` | invite row deleted by invitee                                                         | Team admins                                |
-| `team_member_joined`   | accept, or invite-link join                                                           | The team                                   |
-| `team_member_left`     | member deletes own row                                                                | The team                                   |
-| `team_member_removed`  | admin removes someone                                                                 | The team, and the removed person           |
-| `team_role_changed`    | `PUT .../members/:id`                                                                 | The team                                   |
-| `team_diagram_added`   | diagram published to a team library ([Team shared diagrams](team-shared-diagrams.md)) | The team                                   |
-| `team_diagram_removed` | diagram pulled back out of a team library                                             | The team it left, resolved BEFORE the move |
+| `eventType`                 | Fires when                                                                            | Audience                                   |
+| --------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `team_created`              | `POST /api/teams`                                                                     | Creator                                    |
+| `team_invite_received`      | admin invites an address                                                              | The invitee, once their id is known        |
+| `team_invite_accepted`      | `.../accept`                                                                          | The team                                   |
+| `team_invite_declined`      | invite row deleted by invitee                                                         | Team admins                                |
+| `team_member_joined`        | accept, or invite-link join                                                           | The team                                   |
+| `team_member_left`          | member deletes own row                                                                | The team                                   |
+| `team_member_removed`       | admin removes someone                                                                 | The team, and the removed person           |
+| `team_role_changed`         | `PUT .../members/:id`                                                                 | The team                                   |
+| `team_diagram_added`        | diagram published to a team library ([Team shared diagrams](team-shared-diagrams.md)) | The team                                   |
+| `team_diagram_removed`      | diagram pulled back out of a team library                                             | The team it left, resolved BEFORE the move |
+| `team_renamed`              | `PUT /api/teams/:id` with a new name: "Team Renamed" / "Design → Product design"      | The team                                   |
+| `team_deleted`              | `DELETE /api/teams/:id`: "Team Deleted" / the team's name, no team link               | The team, resolved BEFORE the delete       |
+| `team_invite_link_enabled`  | `POST /api/teams/:id/invite-link` (generate or rotate): "Invite Link Turned On"       | Team admins                                |
+| `team_invite_link_disabled` | `DELETE /api/teams/:id/invite-link`: "Invite Link Turned Off"                         | Team admins                                |
 
 **`team_invite_received` has an ordering problem worth naming.** An
 invite is created against an _email address_; the invitee's owner id is
@@ -1189,13 +1195,17 @@ Teams are Clerk-only, so none of these events ever reach a guest scope.
 
 ### 4.5 Account and housekeeping
 
-| `eventType`           | Fires when                                                                            | Notes                                                  |
-| --------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `token_created`       | `POST /api/tokens` ([Public API and API tokens](../015-api/public-api-and-tokens.md)) |                                                        |
-| `token_expiring`      | the existing daily expiry-warning cron                                                | **Future-dated**: `occurred_at` is the expiry, not now |
-| `share_link_expiring` | the share-expiry cron ([Share-link expiry](share-link-expiry.md))                     | Future-dated                                           |
-| `theme_saved`         | custom theme created ([Custom themes](../011-theme/custom-themes.md))                 |                                                        |
-| `image_uploaded`      | image upload ([Image element + per-owner gallery](../009-elements/images.md))         | Coalesced per day like editing                         |
+| `eventType`           | Fires when                                                                            | Notes                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `token_created`       | `POST /api/tokens` ([Public API and API tokens](../015-api/public-api-and-tokens.md)) |                                                                                   |
+| `token_revoked`       | `DELETE /api/tokens/:id`: "API Token Revoked" / the token's name                      | Withdraws the token's `token_expiring` warning first                              |
+| `token_expiring`      | the existing daily expiry-warning cron                                                | **Future-dated**: `occurred_at` is the expiry, not now                            |
+| `share_link_expiring` | the share-expiry cron ([Share-link expiry](share-link-expiry.md))                     | Future-dated                                                                      |
+| `theme_saved`         | custom theme created ([Custom themes](../011-theme/custom-themes.md))                 |                                                                                   |
+| `theme_deleted`       | `DELETE /api/custom-themes/:id`: "Theme Deleted" / the theme's name                   | Tombstone: the theme's `theme_saved` rows go first ("reads its name first" below) |
+| `folder_created`      | `POST /api/folders`, personal or team: "Folder Created" / the folder's name           | The person who made it only                                                       |
+| `folder_deleted`      | `DELETE /api/folders/:id`: "Folder Deleted" / the folder's name                       | The person who deleted it only; tombstone like `theme_deleted`                    |
+| `image_uploaded`      | image upload ([Image element + per-owner gallery](../009-elements/images.md))         | Coalesced per day like editing                                                    |
 
 **A warning that stops being true is withdrawn, not corrected.** The two
 future-dated rows above are the only events the feed states before they

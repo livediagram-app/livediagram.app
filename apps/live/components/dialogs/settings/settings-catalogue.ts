@@ -1,5 +1,5 @@
 import type { HelpArticleKey } from '@/lib/help-articles';
-import type { SettingsCategoryId } from './settings-icons';
+import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import type { TelemetryCategory } from '@livediagram/api-schema';
 import {
   autoRebindArrowsEnabled,
@@ -182,6 +182,11 @@ export type SettingsRowSpec =
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
   label: string;
+  // The top-level category this is a sub-category of (Panels holds Layers,
+  // Activity and Map). The list nests it, untiled and indented, beneath its
+  // parent; it is still its own pane. A parent's sub-categories follow it
+  // directly, like a section's rows.
+  parent?: SettingsIconId;
   // Only rendered when the api worker advertises AI capability (docs/specs/007-editor/ai-assistance.md).
   requiresAi?: boolean;
   rows: SettingsRowSpec[];
@@ -190,7 +195,7 @@ export type SettingsCategorySpec = {
 // A phone never draws the minimap (docs/specs/008-canvas/minimap.md), so all
 // three of its rows are inert there and share this note.
 const MINIMAP_DESKTOP_ONLY =
-  'The minimap is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
+  'The Map is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
@@ -235,6 +240,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: autoRebindArrowsEnabled,
         write: (p, v) => ({ ...p, autoRebindArrows: v }),
         event: { category: 'UI', on: 'AutoRebindOn', off: 'AutoRebindOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'middleMousePan',
+        keywords: 'scroll wheel drag pan navigate mouse',
+        label: 'Middle-Mouse Pan',
+        description:
+          'Hold the middle mouse button and drag to pan the canvas in any direction, from anywhere, over empty space or over elements, whatever tool is active. Turn off to leave the middle button to your browser.',
+        read: (p) => p.middleMousePan !== false,
+        write: (p, v) => ({ ...p, middleMousePan: v }),
+        event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
       },
       {
         // A preset, not a flag (docs/specs/007-editor/power-user-mode.md): switching on writes the
@@ -287,83 +303,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'appearance',
         key: 'appearance',
         keywords: 'dark mode light theme colour color night scheme',
-        section: 'Theme',
         label: 'Theme',
         description:
           "Sets whether the editor chrome is light or dark. System follows your device. A tab's own canvas theme is a separate setting, except for Default, which follows this one. Stored on this device only, so it does not sync with your other settings.",
         alsoIn: 'the editor’s footer bar',
         illustration: 'appearance',
-      },
-      {
-        // Three layouts, one choice (docs/specs/007-editor/toolbar-layout.md). Replaced the Minimal Panel
-        // Layout toggle when the Toolbar layout arrived; the key is new so
-        // the telemetry token is too, and the old On/Off tokens simply stop.
-        kind: 'choice',
-        key: 'panelLayout',
-        keywords:
-          'minimal compact dock button bar hide panels layout tidy toolbar strip top bar excalidraw floating',
-        section: 'Layout',
-        label: 'Panel Layout',
-        description:
-          'Floating shows the Explorer, Palette and other panels over the canvas. Minimal collapses them into a compact button bar that opens each as a popover. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating becomes Toolbar.',
-        helpArticle: 'toolbarLayout',
-        illustration: 'panelLayout',
-        options: [
-          { id: 'floating', label: 'Floating', desktopOnly: true },
-          { id: 'minimal', label: 'Minimal' },
-          { id: 'toolbar', label: 'Toolbar' },
-        ],
-        read: (p, view) => resolvePanelLayout(p, view),
-        write: (p, v) => withPanelLayout(p, v as PanelLayout),
-        event: { category: 'UI', changed: 'PanelLayout' },
-      },
-      {
-        kind: 'toggle',
-        key: 'showMinimap',
-        keywords: 'map overview thumbnail navigator birds eye',
-        section: 'Layout',
-        illustration: 'showMinimap',
-        label: 'Show Minimap',
-        desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description:
-          'Shows a small overview of the whole canvas in the bottom-left corner once a tab has a few elements and the Activity panel is minimised. Tap or drag it to jump around; scroll on it to zoom. Desktop only.',
-        read: (p) => p.showMinimap !== false,
-        write: (p, v) => ({ ...p, showMinimap: v }),
-        event: { category: 'UI', on: 'MinimapOn', off: 'MinimapOff' },
-      },
-      {
-        kind: 'slider',
-        key: 'panelOpacity',
-        keywords: 'transparency translucent fade see through alpha',
-        section: 'Layout',
-        label: 'Panel Opacity',
-        description:
-          'Fades the floating panels so the canvas shows through behind them; they snap back to fully opaque while hovered or focused. The minimal button bar is unaffected.',
-        helpArticle: 'panelOpacity',
-        min: 0.3,
-        max: 1,
-        step: 0.05,
-        format: (v) => `${Math.round(v * 100)}%`,
-        read: (p) => p.panelOpacity ?? 1,
-        write: (p, v) => ({ ...p, panelOpacity: v }),
-        event: { category: 'UI', changed: 'PanelOpacity' },
-      },
-    ],
-  },
-  {
-    id: 'controls',
-    label: 'Controls',
-    rows: [
-      {
-        kind: 'toggle',
-        key: 'middleMousePan',
-        keywords: 'scroll wheel drag pan navigate mouse',
-        label: 'Middle-Mouse Pan',
-        description:
-          'Hold the middle mouse button and drag to pan the canvas in any direction, from anywhere, over empty space or over elements, whatever tool is active. Turn off to leave the middle button to your browser.',
-        read: (p) => p.middleMousePan !== false,
-        write: (p, v) => ({ ...p, middleMousePan: v }),
-        event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
       },
     ],
   },
@@ -398,10 +342,54 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Panels',
     rows: [
       {
+        // Three layouts, one choice (docs/specs/007-editor/toolbar-layout.md). Replaced the Minimal Panel
+        // Layout toggle when the Toolbar layout arrived; the key is new so
+        // the telemetry token is too, and the old On/Off tokens simply stop.
+        kind: 'choice',
+        key: 'panelLayout',
+        keywords:
+          'minimal compact dock button bar hide panels layout tidy toolbar strip top bar excalidraw floating',
+        label: 'Panel Layout',
+        description:
+          'Floating shows the Explorer, Palette and other panels over the canvas. Minimal collapses them into a compact button bar that opens each as a popover. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating becomes Toolbar.',
+        helpArticle: 'toolbarLayout',
+        illustration: 'panelLayout',
+        options: [
+          { id: 'floating', label: 'Floating', desktopOnly: true },
+          { id: 'minimal', label: 'Minimal' },
+          { id: 'toolbar', label: 'Toolbar' },
+        ],
+        read: (p, view) => resolvePanelLayout(p, view),
+        write: (p, v) => withPanelLayout(p, v as PanelLayout),
+        event: { category: 'UI', changed: 'PanelLayout' },
+      },
+      {
+        kind: 'slider',
+        key: 'panelOpacity',
+        keywords: 'transparency translucent fade see through alpha',
+        label: 'Panel Opacity',
+        description:
+          'Fades the floating panels so the canvas shows through behind them; they snap back to fully opaque while hovered or focused. The minimal button bar is unaffected.',
+        helpArticle: 'panelOpacity',
+        min: 0.3,
+        max: 1,
+        step: 0.05,
+        format: (v) => `${Math.round(v * 100)}%`,
+        read: (p) => p.panelOpacity ?? 1,
+        write: (p, v) => ({ ...p, panelOpacity: v }),
+        event: { category: 'UI', changed: 'PanelOpacity' },
+      },
+    ],
+  },
+  {
+    id: 'layers',
+    label: 'Layers',
+    parent: 'panels',
+    rows: [
+      {
         kind: 'toggle',
         key: 'layersShowPreview',
         keywords: 'thumbnail preview layer picture',
-        section: 'Layers',
         illustration: 'layerThumbnails',
         label: 'Layer Thumbnails',
         description:
@@ -414,7 +402,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'layersShowCount',
         keywords: 'number badge count layer',
-        section: 'Layers',
         label: 'Layer Element Counts',
         description:
           'Shows how many elements each layer holds, beside its name in the Layers panel.',
@@ -426,7 +413,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'layerHoverPreview',
         keywords: 'highlight hover layer preview',
-        section: 'Layers',
         label: 'Preview Layer on Hover',
         description:
           'Highlights a layer’s elements on the canvas while you hover its row, so you can find what a layer holds without selecting it.',
@@ -434,11 +420,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, layerHoverPreview: v }),
         event: { category: 'UI', on: 'LayerHoverPreviewOn', off: 'LayerHoverPreviewOff' },
       },
+    ],
+  },
+  {
+    id: 'activity',
+    label: 'Activity',
+    parent: 'panels',
+    rows: [
       {
         kind: 'toggle',
         key: 'activityRevertHoverPreview',
         keywords: 'undo history revert preview hover activity',
-        section: 'Activity',
         label: 'Preview Revert on Hover',
         description:
           'Shows what the canvas would look like after a revert while you hover that entry in the Activity panel, so you can check before committing to it.',
@@ -446,16 +438,35 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, activityRevertHoverPreview: v }),
         event: { category: 'UI', on: 'ActivityRevertPreviewOn', off: 'ActivityRevertPreviewOff' },
       },
+    ],
+  },
+  {
+    id: 'map',
+    label: 'Map',
+    parent: 'panels',
+    rows: [
+      {
+        kind: 'toggle',
+        key: 'showMinimap',
+        keywords: 'minimap overview thumbnail navigator birds eye',
+        illustration: 'showMinimap',
+        label: 'Show Map',
+        desktopOnly: MINIMAP_DESKTOP_ONLY,
+        description:
+          'Shows the Map, a small overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Tap or drag it to jump around; scroll on it to zoom. Desktop only.',
+        read: (p) => p.showMinimap !== false,
+        write: (p, v) => ({ ...p, showMinimap: v }),
+        event: { category: 'UI', on: 'MinimapOn', off: 'MinimapOff' },
+      },
       {
         kind: 'toggle',
         key: 'mapDimOutside',
-        keywords: 'shade minimap viewport dim map',
-        section: 'Minimap',
+        keywords: 'shade minimap viewport dim',
         illustration: 'mapDimOutside',
         label: 'Dim Outside the View',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
         description:
-          'Shades the part of the minimap that falls outside what you are currently looking at, so the viewport rectangle stands out.',
+          'Shades the part of the Map that falls outside what you are currently looking at, so the viewport rectangle stands out.',
         read: (p) => p.mapDimOutside !== false,
         write: (p, v) => ({ ...p, mapDimOutside: v }),
         event: { category: 'UI', on: 'MapDimOn', off: 'MapDimOff' },
@@ -463,11 +474,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'choice',
         key: 'mapSize',
-        keywords: 'minimap height short medium tall map size',
-        section: 'Minimap',
-        label: 'Minimap Size',
+        keywords: 'minimap height short medium tall',
+        label: 'Map Size',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description: 'How much of the bottom-left corner the minimap takes up.',
+        description: 'How much of the bottom-left corner the Map takes up.',
         options: [
           { id: 'short', label: 'Short' },
           { id: 'medium', label: 'Medium' },
@@ -558,6 +568,18 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.notifyActionAssigned !== false,
         write: (p, v) => ({ ...p, notifyActionAssigned: v }),
         event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'notifyMentions',
+        keywords: 'email mention tag at comment',
+        section: 'Email',
+        label: 'Someone Mentions Me in a Comment',
+        description: 'When a teammate @mentions you in a comment.',
+        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
+        read: (p) => p.notifyMentions !== false,
+        write: (p, v) => ({ ...p, notifyMentions: v }),
+        event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
       },
       {
         kind: 'toggle',
@@ -731,6 +753,14 @@ export function visibleCategories(
   return SETTINGS_CATEGORIES.filter((c) => !c.requiresAi || aiCapable)
     .map((c) => ({ ...c, rows: c.rows.filter((r) => !r.available || r.available(ctx)) }))
     .filter((c) => c.rows.length > 0);
+}
+
+// A category's name as a path from the top level: "Panels › Layers" for a
+// sub-category, just the label otherwise. Where the name is shown away from
+// the list that nests it (the canvas search's "in …").
+export function settingsCategoryPath(category: SettingsCategorySpec): string {
+  const parent = category.parent && SETTINGS_CATEGORIES.find((c) => c.id === category.parent);
+  return parent ? `${parent.label} › ${category.label}` : category.label;
 }
 
 // A choice row by key, for a surface outside Settings that offers the same

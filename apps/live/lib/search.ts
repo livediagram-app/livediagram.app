@@ -100,7 +100,11 @@ export type PaletteAdd =
   | { type: 'tech'; iconId: string }
   // A sticker (docs/specs/010-palette/stickers.md) is its own element kind, so it adds through its own
   // handler rather than the icon one.
-  | { type: 'sticker'; stickerId: string };
+  | { type: 'sticker'; stickerId: string }
+  // Every other palette tile (text, arrow, table, image, embeds, web
+  // components, event-storming notes, ...): the editor runs the tile's own
+  // handler (tileHandler), so a search add behaves exactly like the tile.
+  | { type: 'tile'; tileId: string };
 type PaletteItem = { kind: 'palette'; id: string; name: string; add: PaletteAdd };
 // A synthetic command result — performing it changes the diagram / a
 // selection rather than navigating somewhere. Modelled like a palette item
@@ -244,6 +248,16 @@ type SearchInput = {
 export function matches(needle: string, hay: string): boolean {
   if (!needle) return true;
   return hay.toLowerCase().includes(needle.toLowerCase());
+}
+
+// 0 exact name, 1 name prefix, 2 name substring, 3 keyword only, 4 no match.
+function paletteRank(q: string, item: PaletteSearchItem): number {
+  const needle = q.toLowerCase();
+  const name = item.name.toLowerCase();
+  if (name === needle) return 0;
+  if (name.startsWith(needle)) return 1;
+  if (name.includes(needle)) return 2;
+  return matches(q, item.keywords) ? 3 : 4;
 }
 
 export function buildSearchResults(input: SearchInput): SearchGroup[] {
@@ -401,12 +415,18 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     }
   }
 
-  // Palette: shapes / icons / tech icons to add. Only on a non-empty query
-  // (an empty one would dump the whole catalogue), matched on name + keywords.
+  // Palette: every tile, icon, sticker and tech icon to add. Only on a
+  // non-empty query (an empty one would dump the whole catalogue), matched on
+  // name + keywords, and ranked so the element you NAMED comes first: exact
+  // name, then name prefix, then name substring, then keyword-only. Without
+  // it "table" listed Entity (whose keywords say table) and Tablet above Table.
   if (q && input.paletteItems && input.paletteItems.length > 0) {
     const paletteMatches = input.paletteItems
-      .filter((p) => matches(q, p.name) || matches(q, p.keywords))
-      .slice(0, PALETTE_LIMIT);
+      .map((p, i) => ({ p, i, rank: paletteRank(q, p) }))
+      .filter((m) => m.rank < 4)
+      .sort((a, b) => a.rank - b.rank || a.i - b.i)
+      .slice(0, PALETTE_LIMIT)
+      .map((m) => m.p);
     if (paletteMatches.length > 0) {
       groups.push({
         key: 'palette',

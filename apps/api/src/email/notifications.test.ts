@@ -25,6 +25,7 @@ import { sendEmail } from './client';
 import { actionAssignedEmail, commentNotificationEmail } from './templates';
 import {
   notifyActionAssigned,
+  notifyMentioned,
   notifyFirstShare,
   notifyMilestone,
   notifyNewComment,
@@ -39,6 +40,7 @@ const allowAll = {
   notifyTips: true,
   notifyMilestones: true,
   notifyActionAssigned: true,
+  notifyMentions: true,
 };
 
 afterEach(() => vi.clearAllMocks());
@@ -173,6 +175,46 @@ describe('notifyActionAssigned (docs/specs/012-collaboration/assigned-actions.md
     vi.mocked(getOwnerEmail).mockResolvedValue(null);
     await notifyActionAssigned(env, { ...input, assigneeFallbackEmail: null });
     expect(getNotificationPrefs).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+});
+
+describe('notifyMentioned (docs/specs/012-collaboration/comment-mentions.md)', () => {
+  const input = {
+    recipientUserId: 'u2',
+    recipientFallbackEmail: 'invited@x.com',
+    authorName: 'Sam',
+    diagram: { id: 'd1', name: 'Roadmap' },
+    commentText: 'Can you check this, @priya?',
+  };
+
+  it('does nothing when email is off', async () => {
+    await notifyMentioned({} as Env, input);
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('sends the quote to the recipient’s verified address when opted in', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue('priya@x.com');
+    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    await notifyMentioned(env, input);
+    const sent = vi.mocked(sendEmail).mock.calls[0]![1];
+    expect(sent.to).toBe('priya@x.com');
+    expect(sent.subject).toBe('Sam mentioned you in Roadmap');
+    expect(sent.html).toContain('Can you check this, @priya?');
+  });
+
+  it('writes to an invited member at their invite address, with no prefs to read', async () => {
+    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    await notifyMentioned(env, { ...input, recipientUserId: null });
+    expect(getNotificationPrefs).not.toHaveBeenCalled();
+    expect(vi.mocked(sendEmail).mock.calls[0]![1].to).toBe('invited@x.com');
+  });
+
+  it('skips when the recipient opted out of mention emails', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue('priya@x.com');
+    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyMentions: false });
+    await notifyMentioned(env, input);
     expect(sendEmail).not.toHaveBeenCalled();
   });
 });

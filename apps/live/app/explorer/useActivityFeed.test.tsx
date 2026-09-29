@@ -51,6 +51,7 @@ const thread: ActivityThread = {
   firstAt: 3,
   youCommented: true,
   onYourDiagram: false,
+  mentionsYou: false,
 };
 
 beforeEach(() => {

@@ -110,7 +110,20 @@ describe('collabIndexStatements', () => {
       2,
     ]);
     expect(stmts[3]!.sql).toMatch(/INSERT INTO collab_threads/);
-    expect(stmts[3]!.args).toEqual(['tab-1', 's1', 's1', 0, 1, '["u1"]', 'hi', 'A', '#a', 5, 5]);
+    expect(stmts[3]!.args).toEqual([
+      'tab-1',
+      's1',
+      's1',
+      0,
+      1,
+      '["u1"]',
+      '[]',
+      'hi',
+      'A',
+      '#a',
+      5,
+      5,
+    ]);
   });
 });
 
@@ -248,6 +261,7 @@ describe('readActivity', () => {
           latest_at: 9,
           you_commented: 1,
           on_your_diagram: 0,
+          mentions_you: 0,
         },
       ],
     ]);
@@ -268,6 +282,7 @@ describe('readActivity', () => {
         firstAt: 1,
         youCommented: true,
         onYourDiagram: false,
+        mentionsYou: false,
       },
     ]);
   });

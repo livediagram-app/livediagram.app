@@ -82,6 +82,7 @@ export function CollabPanel({
   aside,
   titleLines = 1,
   titleSize = 13,
+  titleStruck = false,
   children,
   footer,
   className,
@@ -103,6 +104,8 @@ export function CollabPanel({
   titleLines?: number;
   // The title's size in px; a Decision record sets its statement larger.
   titleSize?: number;
+  // Struck through and muted: an Action panel whose action is done.
+  titleStruck?: boolean;
   textColor: string;
   // Small right-aligned status beside the title ("4 of 6 in", "1h 5m").
   aside?: React.ReactNode;
@@ -169,6 +172,8 @@ export function CollabPanel({
                 style={{
                   color: textColor,
                   fontSize: titleSize,
+                  textDecoration: titleStruck ? 'line-through' : undefined,
+                  opacity: titleStruck ? 0.55 : undefined,
                   // A clamp rather than a truncate: the overflow has to be bounded
                   // (the header is shrink-0, so an unbounded title would push the
                   // body out of the card) but a one-line decision statement is

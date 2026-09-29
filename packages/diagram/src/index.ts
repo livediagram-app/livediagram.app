@@ -399,6 +399,8 @@ export * from './arrow-avoidance';
 export * from './nearest-towards';
 export * from './mind-flow';
 export * from './mind-map';
+export * from './mind-layout';
+export * from './mind-grow';
 export * from './youtube';
 export * from './arrow-path';
 export * from './arrow-label';
@@ -420,6 +422,7 @@ export * from './behaviour-skin';
 // stored config below and by @livediagram/api-schema's wire `LivePoll`.
 export * from './poll-style';
 export * from './comments';
+export * from './comment-mentions';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
 export * from './data-shapes';

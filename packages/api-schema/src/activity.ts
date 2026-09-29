@@ -53,6 +53,8 @@ export type ActivityThread = ActivityPlace & {
   firstAt: number;
   youCommented: boolean;
   onYourDiagram: boolean;
+  // The reader is @-mentioned in the thread (docs/specs/012-collaboration/comment-mentions.md).
+  mentionsYou: boolean;
 };
 
 export type ActivityReadResult = {

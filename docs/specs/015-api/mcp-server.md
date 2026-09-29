@@ -149,14 +149,23 @@ the MCP simply don't deploy `apps/mcp`; nothing else references it.
 
 ## 4. Tools
 
-Nine tools. The search/view capability is two tools (find, then read); create,
+Eleven tools. The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates));
-share, rename, and delete complete the CRUD verbs
+share, rename, and delete complete the CRUD verbs, with list_trash and
+restore_diagram as the way back from a delete
 ([§4.8](#48-share_diagram), [§4.9](#49-rename_diagram-and-delete_diagram), [§4.9a](#49a-list_trash-and-restore_diagram)).
 Every one of them declares its behaviour as **annotations**
-([§4.14](#414-tool-annotations-behaviour-hints)) and describes itself in facts
-rather than instructions ([§4.15](#415-descriptions-state-facts-not-instructions)).
+([§4.14](#414-tool-annotations-behaviour-hints)), describes itself in facts
+rather than instructions ([§4.15](#415-descriptions-state-facts-not-instructions)),
+and declares the shape of its result as an **output schema**
+([§4.17](#417-structured-output-and-described-parameters)).
+
+Every diagram and tab **name** argument (`create_diagram`'s `name` and each
+tab's `name`, `add_tab`'s `name`, `rename_diagram`'s `name`) states the
+60-character cap in its description and is shortened by the schema itself
+with the shared `truncateName`, so the name a tool sends and reports back is
+the one the api stores ([Tab and diagram name length](../006-diagram/name-length.md)).
 
 ### 4.1 `find_diagrams`
 
@@ -627,6 +636,73 @@ structurally by `destructiveHint` (§4.14), which is the mechanism a client
 actually acts on.
 Pointing at a tool is fine too ("check list_templates first"): the flag is
 discouraging tool use, not encouraging it.
+
+### 4.16 Registry listing
+
+The hosted server is listed in the official **MCP Registry**
+(`registry.modelcontextprotocol.io`), which other directories (PulseMCP among
+them) ingest from, so one listing reaches several catalogues.
+
+- **Descriptor.** `server.json` at the repo root, under the registry's
+  `2025-12-11` schema. Name `io.github.livediagram-app/livediagram`: the
+  `io.github.<org>` namespace is proven by the repo's own GitHub OIDC token, so
+  publishing needs no DNS record and no secret. One `remotes` entry,
+  `streamable-http` at `https://mcp.livediagram.app/mcp`, with no `headers`:
+  OAuth (§3) is discovered from the server's metadata, not configured by the
+  client. The icon is the 512px mark in `marketing/media/icons`.
+- **Publishing.** `.github/workflows/mcp-registry.yml` runs `mcp-publisher
+login github-oidc` then `mcp-publisher publish` when `server.json` changes on
+  `main`, or on manual dispatch. The registry rejects a version it already
+  holds, so republishing means bumping `version` in `server.json`.
+- **Self-hosts** are not listed: the descriptor names the hosted origin only.
+
+### 4.17 Structured output and described parameters
+
+Every tool declares an MCP **`outputSchema`**: the JSON Schema of the object it
+returns on success. A successful result carries that object twice: as
+**`structuredContent`**, which a client can parse and validate without reading
+prose, and serialised as the first text block, for clients that only read
+`content` (the backwards-compatible form MCP recommends). The four tools that
+render a preview (`read_diagram`, `create_diagram`, `add_tab`,
+`update_diagram`) add the inline PNG after it ([§5](#5-visualise--inline-image-render)).
+An error result (`isError: true`, a model-correctable message) carries text only
+and no `structuredContent`; MCP exempts errors from the output schema.
+
+| Tool              | Result object                                                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------------------- |
+| `find_diagrams`   | `count`, `diagrams[]` of `{ id, name, updatedAt, library, url }`                                          |
+| `read_diagram`    | `id`, `name`, `tab { id, name, elements[] }`, `url`                                                       |
+| `list_templates`  | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
+| `create_diagram`  | `id`, `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                     |
+| `add_tab`         | `diagramId`, `tabId`, `name`, `url`                                                                       |
+| `update_diagram`  | `id`, `tabId`, `url`                                                                                      |
+| `share_diagram`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `diagramUrl`                                    |
+| `rename_diagram`  | `renamed` (`diagram` or `tab`), `name`, then `id` + `url` for a diagram or `tabId` for a tab              |
+| `delete_diagram`  | `deleted` (`diagram` or `tab`), `diagramId`, then `trashed` + `restorableForDays` or `tabId`              |
+| `list_trash`      | `trash[]` of `{ id, name, library, deletedAt, purgeAt }` (ISO timestamps)                                 |
+| `restore_diagram` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
+
+**The schema and the result can't drift.** The schemas live in
+`apps/mcp/src/output-schema.ts`, one per tool, and the `registerTool` wrapper
+(§4.14) makes `outputSchema` a **required** field beside `behaviour`, so a new
+tool without one is a type error. The MCP SDK validates every successful
+result against its tool's schema on the way out, so a result that stopped
+matching fails the call loudly rather than shipping a wrong contract. A test
+drives every tool through a real SDK client and server, which validates
+`structuredContent` on both ends.
+
+**Every input parameter is described**, nested fields included (each graph
+node field, each `ops[]` entry's `op`, `element` and `elementId`). A parameter
+with only a name and a type leaves the model guessing at intent and valid
+values, and connector directories score servers on it. A test walks the
+advertised `tools/list` schemas and fails on any property without a
+description.
+
+**Tool names stay `snake_case` verbs** (`create_diagram`, `list_trash`). Some
+directories prefer dot-notation trees (`diagram.create`); it is not adopted,
+because several clients restrict a tool name to `[a-zA-Z0-9_-]`, and a rename
+would break every existing connection and the cross-references between tool
+descriptions.
 
 ## 5. Visualise — inline image render
 

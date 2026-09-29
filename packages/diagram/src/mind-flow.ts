@@ -16,7 +16,8 @@
 // collision should push along. Deliberately knows nothing about the element
 // model beyond boxes, so mind-map.ts keeps the tree walking.
 
-import type { ShapeElement } from './index';
+import { bestAnchorTowards } from './anchor-choice';
+import type { Anchor, ShapeElement } from './index';
 
 export type MindFlow = 'tree' | 'balanced' | 'downward' | 'bubble';
 
@@ -41,10 +42,21 @@ export const MIND_FLOW_HINT: Record<MindFlow, string> = {
   bubble: 'Branches fanned around the parent',
 };
 
+/**
+ * The connector look a mind map is drawn with when nothing in the map says
+ * otherwise (docs/specs/009-elements/mind-node.md "Connectors"): no arrowheads, because a mind map shows
+ * belonging, not direction; curved, so a fanned column of children stays
+ * legible. The templates draw with it and growth falls back to it, so the two
+ * read the same.
+ */
+export const MIND_CONNECTOR_LOOK = { arrowEnds: 'none', arrowStyle: 'curved' } as const;
+
 /** Gap between a parent and its child, along the flow's direction. */
 export const MIND_CHILD_GAP_X = 64;
 /** Gap between stacked siblings. */
 export const MIND_SIBLING_GAP_Y = 18;
+/** Gap between a parent and its children in the downward flow, where the levels stack vertically. */
+export const MIND_CHILD_GAP_Y = MIND_SIBLING_GAP_Y + MIND_CHILD_GAP_X / 2;
 
 export function isMindFlow(value: string | undefined): value is MindFlow {
   return value !== undefined && (MIND_FLOWS as readonly string[]).includes(value);
@@ -119,7 +131,7 @@ function downwardPlacement(
   size: Size,
   subtree: readonly ShapeElement[],
 ): MindPlacement {
-  const y = parent.y + parent.height + MIND_SIBLING_GAP_Y + MIND_CHILD_GAP_X / 2;
+  const y = parent.y + parent.height + MIND_CHILD_GAP_Y;
   const x =
     subtree.length === 0
       ? parent.x + parent.width / 2 - size.width / 2
@@ -190,4 +202,22 @@ export function outwardAngle(from: ShapeElement, to: ShapeElement): number {
   const a = centre(from);
   const b = centre(to);
   return Math.atan2(b.y - a.y, b.x - a.x);
+}
+
+/**
+ * The faces a parent-to-child connector joins, by flow (docs/specs/009-elements/mind-node.md "Connectors"): a
+ * tree or balanced map runs east-west by the side the child is on, a downward
+ * map north-south, and only the bubble flow, which fans every way, asks the
+ * nearest-pair chooser.
+ */
+export function mindConnectorAnchors(
+  flow: MindFlow,
+  parent: ShapeElement,
+  child: ShapeElement,
+): [Anchor, Anchor] {
+  const p = centre(parent);
+  const c = centre(child);
+  if (flow === 'downward') return c.y >= p.y ? ['s', 'n'] : ['n', 's'];
+  if (flow === 'bubble') return [bestAnchorTowards(parent, c), bestAnchorTowards(child, p)];
+  return c.x >= p.x ? ['e', 'w'] : ['w', 'e'];
 }

@@ -25,6 +25,7 @@ describe('getNotificationPrefs (docs/specs/014-identity/profile-and-email-notifi
       notifyTips: true,
       notifyMilestones: true,
       notifyActionAssigned: true,
+      notifyMentions: true,
     });
   });
 
@@ -37,6 +38,7 @@ describe('getNotificationPrefs (docs/specs/014-identity/profile-and-email-notifi
       notifyTips: true,
       notifyMilestones: true,
       notifyActionAssigned: true,
+      notifyMentions: true,
     });
   });
 
@@ -52,6 +54,7 @@ describe('getNotificationPrefs (docs/specs/014-identity/profile-and-email-notifi
       notifyTips: true,
       notifyMilestones: true,
       notifyActionAssigned: true,
+      notifyMentions: true,
     });
   });
 
@@ -64,7 +67,14 @@ describe('getNotificationPrefs (docs/specs/014-identity/profile-and-email-notifi
       notifyTips: true,
       notifyMilestones: true,
       notifyActionAssigned: true,
+      notifyMentions: true,
     });
+  });
+
+  it('reads an explicit mention opt-out (docs/specs/012-collaboration/comment-mentions.md)', async () => {
+    const prefs = await getNotificationPrefs(envWithPrefsRow('{"notifyMentions":false}'), 'u');
+    expect(prefs.notifyMentions).toBe(false);
+    expect(prefs.notifyActionAssigned).toBe(true);
   });
 
   it('treats a non-boolean value as notify (defends against a misbehaving client)', async () => {

@@ -13,17 +13,21 @@ import {
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 
-const LinkPickerDialog = dynamic(() =>
-  import('@/components/dialogs/LinkPickerDialog').then((m) => m.LinkPickerDialog),
+const LinkPickerDialog = dynamic(
+  () => import('@/components/dialogs/LinkPickerDialog').then((m) => m.LinkPickerDialog),
+  { ssr: false },
 );
-const LineDataDialog = dynamic(() =>
-  import('@/components/dialogs/LineDataDialog').then((m) => m.LineDataDialog),
+const LineDataDialog = dynamic(
+  () => import('@/components/dialogs/LineDataDialog').then((m) => m.LineDataDialog),
+  { ssr: false },
 );
-const CodeEditDialog = dynamic(() =>
-  import('@/components/dialogs/CodeEditDialog').then((m) => m.CodeEditDialog),
+const CodeEditDialog = dynamic(
+  () => import('@/components/dialogs/CodeEditDialog').then((m) => m.CodeEditDialog),
+  { ssr: false },
 );
-const ImagePicker = dynamic(() =>
-  import('@/components/panels/ImagePicker').then((m) => m.ImagePicker),
+const ImagePicker = dynamic(
+  () => import('@/components/panels/ImagePicker').then((m) => m.ImagePicker),
+  { ssr: false },
 );
 
 // Dialogs that edit a single element's data: its link (element + table

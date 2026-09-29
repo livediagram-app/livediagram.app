@@ -13,6 +13,7 @@
 // parameters are derived from the `{param}` placeholders in `path` by
 // document.ts, so they aren't repeated here.
 
+import { NAME_MAX_LENGTH } from '@livediagram/diagram';
 import type { BodySchema } from './types';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
@@ -63,6 +64,14 @@ const listOf = (key: string, name: string): BodySchema => ({
   properties: { [key]: { type: 'array', items: ref(name) } },
   required: [key],
 });
+// A diagram name field: the worker shortens it to the name cap rather than
+// rejecting it (docs/specs/006-diagram/name-length.md).
+const nameField = {
+  type: 'string',
+  description:
+    `At most ${NAME_MAX_LENGTH} characters; a longer name is stored shortened at a word boundary ` +
+    'with an ellipsis, and whitespace runs collapse to one space.',
+};
 const wrap = (key: string, name: string): BodySchema => ({
   type: 'object',
   properties: { [key]: ref(name) },
@@ -116,7 +125,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       type: 'object',
       properties: {
         id: { type: 'string' },
-        name: { type: 'string' },
+        name: nameField,
         tabs: { type: 'array', items: ref('Tab') },
         folderId: { type: ['string', 'null'] },
         teamId: { type: ['string', 'null'] },
@@ -148,7 +157,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string' },
+        name: nameField,
         tabIds: { type: 'array', items: { type: 'string' } },
       },
     },
@@ -193,7 +202,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: "Duplicate a diagram into the caller's files.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    requestSchema: { type: 'object', properties: { name: { type: 'string' } } },
+    requestSchema: { type: 'object', properties: { name: nameField } },
     responseSchema: wrap('diagram', 'Diagram'),
     statuses: [201, 401, 403, 404, 410],
   },
@@ -230,7 +239,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/diagrams/{id}/tabs/{tabId}',
     segment: 'diagrams',
     tag: 'Diagrams',
-    summary: 'Create or replace one tab and its elements.',
+    summary: `Create or replace one tab and its elements. A new or changed tab name is stored shortened to ${NAME_MAX_LENGTH} characters.`,
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: 'Tab',
@@ -1198,6 +1207,31 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         description: { type: 'string' },
       },
       required: ['assigneeUserId', 'diagramId', 'actionName'],
+    },
+    statuses: [202, 400, 401, 403, 404],
+  },
+  {
+    method: 'POST',
+    path: '/teams/{id}/notify-mention',
+    segment: 'teams',
+    tag: 'Teams',
+    summary:
+      "Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md). The diagram must be in this team's library; each mention must be a member of the team. Best-effort; a recipient may have opted out.",
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        diagramId: { type: 'string' },
+        commentText: { type: 'string' },
+        mentions: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { userId: { type: 'string' }, memberId: { type: 'string' } },
+          },
+        },
+      },
+      required: ['diagramId', 'commentText', 'mentions'],
     },
     statuses: [202, 400, 401, 403, 404],
   },

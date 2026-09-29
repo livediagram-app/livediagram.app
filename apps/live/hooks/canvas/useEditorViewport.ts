@@ -89,7 +89,11 @@ type EditorViewportApi = {
     by: number,
     bw: number,
     bh: number,
-    opts?: { center?: boolean },
+    // `sideMargin` (screen px) widens the side band to clear the floating
+    // panels, for reveals that should land in the open canvas (a grown mind
+    // node, docs/specs/009-elements/mind-node.md "Following the growth"). Capped at a quarter of the
+    // canvas so a narrow window still has a band to reveal into.
+    opts?: { center?: boolean; sideMargin?: number },
   ) => void;
   // Centre a canvas point at somebody else's zoom (docs/specs/012-collaboration/bring-focus.md).
   centreOn: (at: { x: number; y: number }, zoom: number) => void;
@@ -137,14 +141,21 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // scroll below. `center: true` skips the minimal-pan shortcut and
   // always centres the bounds in the band.
   const scrollIntoView = useCallback(
-    (bx: number, by: number, bw: number, bh: number, opts?: { center?: boolean }) => {
+    (
+      bx: number,
+      by: number,
+      bw: number,
+      bh: number,
+      opts?: { center?: boolean; sideMargin?: number },
+    ) => {
       const rect = canvasMainRef.current?.getBoundingClientRect();
       if (!rect) return;
       const z0 = zoomRef.current;
       const off0 = viewportOffsetRef.current;
+      const side = Math.min(opts?.sideMargin ?? VIEW_MARGIN_SIDE, rect.width / 4);
       // Visible band (screen px) we keep the element within.
-      const visLeft = rect.left + VIEW_MARGIN_SIDE;
-      const visRight = rect.right - VIEW_MARGIN_SIDE;
+      const visLeft = rect.left + side;
+      const visRight = rect.right - side;
       const visTop = rect.top + VIEW_MARGIN_TOP;
       const visBottom = rect.bottom - VIEW_MARGIN_BOTTOM;
       const visW = Math.max(1, visRight - visLeft);

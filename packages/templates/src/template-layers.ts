@@ -59,6 +59,9 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
       return layered('Quadrants', 'Notes');
     case 'sequence-diagram':
       return layered('Lifelines', 'Messages');
+    // Tier lanes stay put while components and their wiring move.
+    case 'system-architecture':
+      return layered('Tiers', 'Components');
     // Frame-and-content design templates.
     case 'mobile-wireframe':
     case 'laptop-wireframe':

@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+import { NAME_MAX_LENGTH } from '@livediagram/diagram';
 import {
   addTabShape,
   createDiagramShape,
   elementSchemaDoc,
   findDiagramsShape,
+  renameDiagramShape,
   updateDiagramShape,
 } from './schema';
 
@@ -84,5 +86,49 @@ describe('tool input shapes', () => {
     expect(u.parse({ diagramId: 'd', mode: 'replace', elements: [], layout: 'auto' }).layout).toBe(
       'auto',
     );
+  });
+});
+
+// The name cap (docs/specs/006-diagram/name-length.md): the tools shorten a
+// name with the shared truncateName, so what they report back is what the api
+// stores, and the advertised JSON Schema states the cap.
+describe('name fields', () => {
+  const long = 'Quarterly platform migration plan for the payments team and friends';
+  const capped = 'Quarterly platform migration plan for the payments team…';
+
+  it('create shortens the diagram name and every tab name', () => {
+    const parsed = z.object(createDiagramShape).parse({
+      name: long,
+      tabs: [{ name: long, elements: [] }],
+      tab: { name: long, elements: [] },
+    });
+    expect(parsed.name).toBe(capped);
+    expect(parsed.tabs?.[0]?.name).toBe(capped);
+    expect(parsed.tab?.name).toBe(capped);
+  });
+
+  it('add_tab and rename shorten the name', () => {
+    expect(z.object(addTabShape).parse({ diagramId: 'd', name: long }).name).toBe(capped);
+    expect(z.object(renameDiagramShape).parse({ diagramId: 'd', name: long }).name).toBe(capped);
+  });
+
+  it('leaves a fitting name as it is, whitespace collapsed', () => {
+    expect(z.object(addTabShape).parse({ diagramId: 'd', name: ' Q3\n plan ' }).name).toBe(
+      'Q3 plan',
+    );
+  });
+
+  it('rename still refuses an empty name', () => {
+    expect(() => z.object(renameDiagramShape).parse({ diagramId: 'd', name: '' })).toThrow();
+  });
+
+  it('advertises the cap in the input JSON Schema', () => {
+    for (const shape of [createDiagramShape, addTabShape, renameDiagramShape]) {
+      const name = z.toJSONSchema(z.object(shape), { io: 'input' }).properties?.name;
+      expect(typeof name === 'object' && name.type).toBe('string');
+      expect(typeof name === 'object' && name.description).toContain(
+        `at most ${NAME_MAX_LENGTH} characters`,
+      );
+    }
   });
 });

@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { CommentPanelCard } from '@/components/illustrations/palette-collaborate';
+import { CommentPanelCard } from '@/components/illustrations/palette-collab-panels';
 
 export const metadata = helpMetadata({
   title: 'Comment Panels',
@@ -19,7 +19,9 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'comment-panels')}
 >
 
-A comment panel is a card on the board that shows a whole comment thread: the count in its header, the comments themselves, a composer, and resolve or reopen. You read it where it sits, without opening anything.
+A comment panel is a card on the board that shows a whole comment thread as a conversation: each comment is a bubble under its author, with your own on the right. You read it where it sits, without opening anything.
+
+Type in the box at the foot and press Enter to reply. Once there is a thread, **Resolve** sits in the panel's top-right corner; a resolved thread fades back and offers **Reopen Thread** instead. Resize the panel to see more of a long thread.
 
 ## Adding one
 

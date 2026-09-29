@@ -1,6 +1,5 @@
-// Board templates lifted out of template-builders.ts: retrospective
-// (Mad / Sad / Glad columns), kanban (four Todo-to-Done lanes), and
-// SWOT (2x2 quadrants). All three share the same shape: a tinted
+// Board templates lifted out of template-builders.ts: kanban (four
+// Todo-to-Done lanes) and SWOT (2x2 quadrants). Both share the same shape: a tinted
 // container holds a header label + a stack of sticky-note rows. The
 // grouping mirrors the picker's own "Boards / 2x2 layouts" rhythm.
 //
@@ -14,7 +13,6 @@
 import {
   createArrow,
   createShape,
-  createSticky,
   createText,
   runsPlainText,
   type Element,
@@ -22,114 +20,9 @@ import {
 } from '@livediagram/diagram';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
-// Classic "Mad / Sad / Glad" retro. Each column lives inside its own
-// tinted container shape (red / blue / green) so the framework's
-// emotional groupings read at a glance. Header text + three sticky
-// notes sit on top of the container; the container is the first
-// element pushed per column so subsequent label + sticky elements
-// render above it.
-export function buildRetrospective(cx: number, cy: number): Element[] {
-  const containerW = 460;
-  const containerSpacing = 500;
-  const colW = 400;
-  const headerH = 80;
-  const stickyH = 150;
-  const stickyGap = 28;
-  const topPadding = 24;
-  const headerGap = 24;
-  const bottomPadding = 24;
-  const stickiesPerColumn = 3;
-  const containerH =
-    topPadding +
-    headerH +
-    headerGap +
-    stickiesPerColumn * stickyH +
-    (stickiesPerColumn - 1) * stickyGap +
-    bottomPadding;
-
-  // Each column seeds three believable starter cards so the board reads as a
-  // real retro rather than three empty colour blocks. Authors overwrite them.
-  const columns: { label: string; fill: string; stroke: string; notes: string[] }[] = [
-    {
-      label: 'Mad',
-      fill: '#fee2e2',
-      stroke: '#fca5a5',
-      notes: [
-        'Deploys still need a manual approval step',
-        'Flaky tests blocked two PRs this sprint',
-        'On-call paged three times for the same alert',
-      ],
-    },
-    {
-      label: 'Sad',
-      fill: '#dbeafe',
-      stroke: '#93c5fd',
-      notes: [
-        'Docs for the new API are out of date',
-        'Standup ran long most mornings',
-        'Design handoff slipped a few days',
-      ],
-    },
-    {
-      label: 'Glad',
-      fill: '#dcfce7',
-      stroke: '#86efac',
-      notes: [
-        'Onboarding flow shipped on time',
-        'Pairing sessions cleared the review backlog',
-        'New dashboard got great user feedback',
-      ],
-    },
-  ];
-
-  const firstColCenterX = cx - containerSpacing;
-  // The columns are the whole composition (headers live inside them), so
-  // plain half-height centring is correct — a stray +40 used to drift the
-  // board below the canvas point.
-  const containerY = cy - containerH / 2;
-
-  const elements: Element[] = [];
-  columns.forEach((col, i) => {
-    const centerX = firstColCenterX + i * containerSpacing;
-    const containerX = centerX - containerW / 2;
-
-    elements.push({
-      ...createShape('square', containerX, containerY),
-      width: containerW,
-      height: containerH,
-      fillColor: col.fill,
-      strokeColor: col.stroke,
-      textSize: 'md',
-      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-    });
-
-    const innerX = centerX - colW / 2;
-    const headerY = containerY + topPadding;
-    elements.push({
-      ...createText(innerX, headerY),
-      width: colW,
-      height: headerH,
-      label: col.label,
-      textSize: 'lg',
-      textAlignX: 'center',
-      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-    });
-
-    for (let j = 0; j < stickiesPerColumn; j++) {
-      const stickyY = headerY + headerH + headerGap + j * (stickyH + stickyGap);
-      elements.push({
-        ...createSticky(innerX, stickyY),
-        width: colW,
-        height: stickyH,
-        label: col.notes[j] ?? '',
-        textSize: 'sm',
-        layerId: TEMPLATE_CONTENT_LAYER_ID,
-      });
-    }
-  });
-
-  return elements;
-}
+// The retrospective lives in its own module; re-exported so build-template
+// keeps importing every board from here.
+export { buildRetrospective } from './template-builders-retrospective';
 
 // Four-column Kanban board (Todo List / In Progress / Under Review /
 // Done) under a bold sprint title. Each lane is a tall container with a

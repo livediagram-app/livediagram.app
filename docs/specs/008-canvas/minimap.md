@@ -19,9 +19,14 @@ lets you jump the viewport anywhere with a tap or drag.
   free-floating map contradicts that intent, so it doesn't render there at all. It **stacks** with the Activity panel in the bottom-left rather than
   hiding behind it (the docking layout reflows them); the old "defer until
   Activity is minimised" rule is gone.
-- **Enable / disable + reset.** The map's preferences (**Show Minimap**, **Dim
-  Outside the View**, **Minimap Size**) live in the **Settings** dialog
-  ([User preferences](../007-editor/user-preferences.md)), Appearance for the first, Panels > Minimap for the other two.
+- **Enable / disable + reset.** The map's preferences (**Show Map**, **Dim
+  Outside the View**, **Map Size**) live in the **Settings** dialog
+  ([User preferences](../007-editor/user-preferences.md)), under Panels › Map.
+- **Named "Map" everywhere a user reads it**: the panel title, the Settings
+  rows and sub-category, and the help centre. "Minimap" survives only in code
+  identifiers, stored preference keys (`showMinimap`), telemetry tokens, the
+  help article's URL, and search keywords, so existing links, data and
+  dashboards keep working and a reader typing "minimap" still finds it.
   The panel header keeps only the standard **Reset position** button, shown
   once the map has left its default corner. It used to carry a settings gear
   of its own; that popover was removed when every preference was centralised,
@@ -34,7 +39,23 @@ lets you jump the viewport anywhere with a tap or drag.
   every arrow with its true curved / elbow path — not a grey wireframe. The
   area **outside the current view is dimmed**, leaving a lit window (outlined
   in the tab theme's accent, matching the on-canvas selection) that reads at
-  a glance as where you are.
+  a glance as where you are. The window is coloured exactly like the canvas
+  marquee, softened on dark paper ([Marquee select](canvas-and-palette.md)),
+  both from one helper (`selectionBoxColors`, `apps/live/lib/selection-box.ts`).
+- **Fidelity: the map paints the canvas's paper.** An element with no colour
+  of its own takes its colours from the paper it sits on (`CanvasSurface`,
+  light or dark, derived from the tab's resolved backdrop), so the map reads
+  the SAME surface the canvas elements read (`useCanvasSurface`) and hands it
+  to `svgBoxed` / `svgArrow`. A Behaviour or Collaborate card that is a dark
+  card on a dark board is a dark card on the map, never the light skin. The
+  map's own background is the tab's resolved paper colour
+  (`tabBackgroundColor`), not a fixed grey, and the dim outside the current
+  view darkens rather than greys on dark paper. A kind whose look depends on
+  the paper keeps that dependency in ONE shared value both renderers read
+  (for example `REVEAL_COVER_BASE` for the Reveal cover), and a drift test
+  (`svg-render-surface.test.ts`) fails if any kind without a stored fill
+  paints a light base on dark paper. The Layers panel's previews follow the
+  same rule.
 - **Navigation.** Tap a point to re-centre the canvas there; press-and-drag
   inside the map to pan continuously; **scroll** on it to zoom the canvas in/out
   centred on that spot. The viewport rectangle tracks live as you move. (Drags
@@ -59,6 +80,11 @@ letterboxing handled for free.
 - `components/canvas/Minimap.tsx` — the SVG overview inside a `MovablePanel`
   (move / minimise / reset come from the shared panel). The element wireframe is
   memoised on `elements` so panning only re-renders the viewport rectangle.
+  The `<main>` size (`W`,`H` above) comes in as a prop, measured by `Canvas`,
+  which owns `<main>`. The map must not observe `<main>` itself: it renders
+  inside `<main>`, and a child's layout effect runs before its parent's ref
+  attaches, so a map mounted with the canvas never measures and loses the
+  viewport rectangle.
 - `hooks/ui/useIsMobileViewport.ts` — a reactive (`useSyncExternalStore`)
   version of `isMobileViewportSync` so the panel mounts / unmounts when the
   viewport crosses the `sm` breakpoint.

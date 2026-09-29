@@ -21,19 +21,21 @@ describe('panel-layout', () => {
     // Vote (docs/specs/012-collaboration/session-tools.md) and Poll (docs/specs/012-collaboration/live-poll.md) sit directly under the Palette.
     // They're the two panels that aren't always present — each exists
     // only while its session is running — so most of the time this corner
-    // renders as just palette + collaborate + ai.
-    expect(layout.corners['top-right']).toEqual(['palette', 'vote', 'poll', 'collaborate', 'ai']);
+    // renders as just palette + ai.
+    expect(layout.corners['top-right']).toEqual(['palette', 'vote', 'poll', 'ai']);
     expect(layout.corners['bottom-left']).toEqual(['activity', 'minimap']);
-    expect(layout.corners['bottom-right']).toEqual(['layers']);
+    // Collaborate (docs/specs/012-collaboration/assigned-actions.md §5) sits with Layers, above the cluster
+    // buttons they both minimise into.
+    expect(layout.corners['bottom-right']).toEqual(['layers', 'collaborate']);
     expect(layout.free).toEqual({});
   });
 
   it('docks a panel to the bottom of a corner stack, removing it from its old spot', () => {
     const next = dockPanel(defaultPanelLayout(), 'palette', 'bottom-right');
     // Left its old corner...
-    expect(next.corners['top-right']).toEqual(['vote', 'poll', 'collaborate', 'ai']);
+    expect(next.corners['top-right']).toEqual(['vote', 'poll', 'ai']);
     // ...and joined below whatever is in the target corner.
-    expect(next.corners['bottom-right']).toEqual(['layers', 'palette']);
+    expect(next.corners['bottom-right']).toEqual(['layers', 'collaborate', 'palette']);
   });
 
   it('a panel lives in exactly one place (free clears its corner)', () => {
@@ -59,7 +61,7 @@ describe('panel-layout', () => {
   it('reflow: removing a stacked panel shifts the rest up', () => {
     // Move the top-right Palette away; vote should now lead the stack.
     const next = dockPanel(defaultPanelLayout(), 'palette', 'top-left');
-    expect(next.corners['top-right']).toEqual(['vote', 'poll', 'collaborate', 'ai']);
+    expect(next.corners['top-right']).toEqual(['vote', 'poll', 'ai']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {

@@ -384,8 +384,11 @@ and the dialog stays as the one complete, browsable index of them.
     rail, the selected category's settings in the pane beside it. A category
     is always selected (Editor, unless it reopens where it was left) - the pane
     is never empty. The dialog
-    is capped at `42rem` tall; unbounded, a long category stretched it from
-    the top of the screen to the bottom and read as a page, not a modal.
+    is a fixed `42rem` tall (less on a short window), whichever category is
+    open: sized to content, the frame jumped between categories, and
+    unbounded, a long category stretched it from the top of the screen to
+    the bottom and read as a page, not a modal. A long category scrolls
+    inside the pane; a short one leaves space below it.
   - **Phone** (below the `sm:` breakpoint, via `useIsMobileViewport`) takes
     the iPhone push navigation: a root list of the same categories, each a
     tappable row, which pushes that category's pane with a back control in
@@ -426,13 +429,13 @@ and the dialog stays as the one complete, browsable index of them.
     you flip things whose effect is on the canvas behind it.
 
   **It is the central place to find every preference.** Categories:
-  **Editor** (quick-add on hover, alignment guides, auto-attach arrows, then a
-  **Power User** section: power user mode, and Minimal chrome while the mode is on),
-  **Appearance** (theme; minimal panel layout, minimap, panel opacity),
-  **Controls** (middle-mouse pan), **Keyboard** (the Keyboard Shortcuts
-  on/off switch, then the full shortcut catalogue as collapsible groups),
-  **Panels** (Layers, Activity and minimap
-  settings), **Notifications** (in-editor, plus the six email preferences),
+  **Editor** (quick-add on hover, alignment guides, auto-attach arrows,
+  middle-mouse pan, then a **Power User** section: power user mode, and
+  Minimal chrome while the mode is on), **Appearance** (theme), **Keyboard**
+  (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
+  collapsible groups), **Panels** (panel layout, panel opacity; with the
+  sub-categories **Layers**, **Activity** and **Map**, one per panel),
+  **Notifications** (in-editor, plus the six email preferences),
   **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
   suggested prompts, API tokens), **Account** (identity, delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)), **Privacy** (telemetry). Editor leads because it is what most
@@ -441,10 +444,29 @@ and the dialog stays as the one complete, browsable index of them.
   day-to-day home used to be a panel's own gear popover live here now, and
   only here - see **UI placement** below.
 
+  A category can hold **sub-categories** (`parent` on the sub-category's
+  spec): Panels holds Layers, Activity and Map, one per panel, each its own
+  pane. A parent's sub-categories follow it directly in the catalogue. In the
+  list the parent is an **accordion**: its sub-categories sit indented beneath
+  it only while it is expanded, so they do not take up the list all the time.
+  It starts collapsed. On desktop, clicking the parent opens its own pane and
+  expands it, and clicking it again folds it away, handing the selection back
+  to the parent if a sub-category held it, so the open pane is never one the
+  list has just hidden. A disclosure chevron inside the parent's row (the
+  row's highlight takes it in) toggles it without changing the pane, and is
+  how a phone expands it, since tapping the row there pushes the parent's
+  pane. It is held open while one of its sub-categories is the current pane
+  (a search result, a link, a remembered view) or holds a search hit. A
+  sub-category carries a plain 16px glyph rather than a tile: its panel's own
+  mark in the editor (Lucide layers for Layers, the Activity panel's clock;
+  the Map, which has no toolbar button, takes Lucide map). Search matches a
+  sub-category's rows on its parent's name too, and the canvas search names
+  it by path ("in Panels › Layers").
+
   Within a category, rows carry an optional **`section`** so a category
-  holding several clusters (Panels covers Layers, Activity and the minimap)
-  gets a sub-heading per cluster. Sections group CONSECUTIVE runs, so one
-  cannot be split and silently re-headed further down.
+  holding several clusters (Editor's Power User rows) gets a sub-heading per
+  cluster. Sections group CONSECUTIVE runs, so one cannot be split and
+  silently re-headed further down.
 
   Each category row carries a **coloured, rounded icon tile**, iOS-style -
   the thing the eye navigates by once the labels blur together. Colour is a
@@ -496,8 +518,8 @@ and the dialog stays as the one complete, browsable index of them.
   note to show). On a phone-sized viewport the row stays visible, greyed,
   showing its stored value, but its control (and its illustration) takes no
   input, and the note says why; the stored value is untouched, so it still
-  applies on a desktop. The minimap's rows (Show Minimap, Dim Outside the
-  View, Minimap Size) are desktop only: a phone never draws the minimap
+  applies on a desktop. The Map's rows (Show Map, Dim Outside the View,
+  Map Size) are desktop only: a phone never draws the Map
   ([Minimap](../008-canvas/minimap.md)), so flipping them there did nothing
   and read as broken.
 
@@ -533,7 +555,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   (Element add is a single always-on tap-or-drag gesture with no setting, see
   [Canvas and palette](../008-canvas/canvas-and-palette.md).) The
-  **Controls** group holds `middleMousePan` (default on): holding the
+  **Editor** group holds `middleMousePan` (default on): holding the
   middle mouse button drags the canvas in both axes from anywhere, over
   empty space or elements, whatever tool is active — off leaves the middle
   button to the browser. The

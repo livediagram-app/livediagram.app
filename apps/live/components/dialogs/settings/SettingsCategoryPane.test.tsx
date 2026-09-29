@@ -22,12 +22,12 @@ afterEach(() => {
   track.mockClear();
 });
 
-const APPEARANCE = SETTINGS_CATEGORIES.find((c) => c.id === 'appearance')!;
+const PANELS = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
 
-function show(onChange = vi.fn()) {
+function show(onChange = vi.fn(), category = PANELS) {
   render(
     <SettingsCategoryPane
-      category={APPEARANCE}
+      category={category}
       settings={{ panelLayout: 'minimal' }}
       onChange={onChange}
     />,
@@ -95,36 +95,36 @@ describe('SettingsCategoryPane on a phone', () => {
 // a phone never draws the minimap, so its rows are greyed and inert there,
 // with a note, rather than flipping to no visible effect.
 describe('SettingsCategoryPane desktop-only rows', () => {
-  const PANELS = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
-  const minimapSwitch = () => screen.getByRole('switch', { name: /Show Minimap/ });
+  const MAP = SETTINGS_CATEGORIES.find((c) => c.id === 'map')!;
+  const mapSwitch = () => screen.getByRole('switch', { name: /Show Map/ });
 
-  it('greys out Show Minimap on a phone, says why, and ignores a tap', () => {
+  it('greys out Show Map on a phone, says why, and ignores a tap', () => {
     mobile.value = true;
-    const onChange = show();
-    expect((minimapSwitch() as HTMLButtonElement).disabled).toBe(true);
-    expect(minimapSwitch().getAttribute('aria-checked')).toBe('true');
+    const onChange = show(vi.fn(), MAP);
+    expect((mapSwitch() as HTMLButtonElement).disabled).toBe(true);
+    expect(mapSwitch().getAttribute('aria-checked')).toBe('true');
     expect(
-      screen.getAllByRole('note').some((n) => /minimap is desktop only/.test(n.textContent ?? '')),
+      screen.getAllByRole('note').some((n) => /Map is desktop only/.test(n.textContent ?? '')),
     ).toBe(true);
-    fireEvent.click(minimapSwitch());
+    fireEvent.click(mapSwitch());
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('locks the other minimap rows on a phone too', () => {
+  it('locks the other Map rows on a phone too', () => {
     mobile.value = true;
-    render(<SettingsCategoryPane category={PANELS} settings={{}} onChange={vi.fn()} />);
+    render(<SettingsCategoryPane category={MAP} settings={{}} onChange={vi.fn()} />);
     const dim = screen.getByRole('switch', { name: /Dim Outside the View/ }) as HTMLButtonElement;
     expect(dim.disabled).toBe(true);
     const sizes = screen
-      .getByRole('radiogroup', { name: 'Minimap Size' })
+      .getByRole('radiogroup', { name: 'Map Size' })
       .querySelectorAll<HTMLButtonElement>('[role="radio"]');
     expect([...sizes].every((b) => b.disabled)).toBe(true);
   });
 
-  it('leaves Show Minimap working on desktop, with no note', () => {
-    const onChange = show();
-    expect((minimapSwitch() as HTMLButtonElement).disabled).toBe(false);
-    fireEvent.click(minimapSwitch());
+  it('leaves Show Map working on desktop, with no note', () => {
+    const onChange = show(vi.fn(), MAP);
+    expect((mapSwitch() as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(mapSwitch());
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ showMinimap: false }));
   });
 });
