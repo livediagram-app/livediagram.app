@@ -311,7 +311,7 @@ export function TemplatePicker({
   return (
     <div
       onPointerDown={(e) => e.stopPropagation()}
-      className="pointer-events-none absolute inset-0 z-[var(--z-modal)] flex items-center justify-center"
+      className="pointer-events-none absolute inset-0 z-[var(--z-canvas-modal)] flex items-center justify-center"
     >
       <div
         role="dialog"
