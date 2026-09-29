@@ -415,3 +415,33 @@ describe('userCopy', () => {
     expect((await call('GET', `/drive/v3/files/${hidden}`)).status).toBe(404);
   });
 });
+
+describe('a root the user moves and renames', () => {
+  it('stays visible to the app by id and by its appProperties, with children in place', async () => {
+    const { fake, call } = setup();
+    const root = (
+      await call('POST', `/drive/v3/files?fields=${FILE_FIELDS}`, {
+        name: 'livediagram',
+        mimeType: FOLDER_MIME,
+        parents: ['root'],
+        appProperties: { ldRoot: 'host' },
+      })
+    ).body as { id: string };
+    const child = await createFolder(call, 'child', root.id);
+    const mine = fake.userCreateFolder('me', 'Mine');
+    fake.userRename(root.id, 'Renamed');
+    fake.userMove(root.id, mine);
+    expect(
+      (await call('GET', `/drive/v3/files/${root.id}?fields=${FILE_FIELDS}`)).body,
+    ).toMatchObject({
+      name: 'Renamed',
+      parents: [mine],
+    });
+    const found = await call(
+      'GET',
+      `/drive/v3/files?q=${encodeURIComponent("appProperties has { key='ldRoot' and value='host' } and trashed = false")}&fields=files(id)`,
+    );
+    expect(found.body!.files).toEqual([{ id: root.id }]);
+    expect(fake.get(child.id)!.parents).toEqual([root.id]);
+  });
+});

@@ -7,7 +7,7 @@ import {
   DRIVE_LEASE_RENEW_BEFORE_MS,
   DRIVE_PROP_ORIGIN,
   DRIVE_PROP_ROOT,
-  DRIVE_ROOT_NAME,
+  driveRootName,
   type DriveConnection,
   type DriveItemKind,
 } from '@livediagram/api-schema';
@@ -364,7 +364,7 @@ export class DriveMirrorEngine {
     else {
       rootId = (
         await deps.drive.createFolder({
-          name: DRIVE_ROOT_NAME,
+          name: driveRootName(deps.host),
           parentId: 'root',
           appProperties: { [DRIVE_PROP_ROOT]: deps.host },
         })

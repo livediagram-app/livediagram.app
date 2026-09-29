@@ -19,6 +19,9 @@ const PLAN = `e2e-plan-${RUN}`;
 const NOTES = `e2e-notes-${RUN}`;
 const EMAIL = 'drive-e2e@example.com';
 const apiBase = '/api';
+// The e2e runs on a loopback host, which names the root like staging
+// (docs/specs/022-drive-mirror/drive-mirror.md, "The root folder's name").
+const ROOT_NAME = 'livediagram (staging)';
 const SHOTS = process.env.E2E_DRIVE_SHOTS ?? '/tmp/livediagram-drive-e2e';
 
 let identity: TestIdentity;
@@ -120,7 +123,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
 
   // Google's consent (the fake agrees), /drive/connected, back to the Explorer.
   await page.waitForURL('**/explorer/recent');
-  await expect.poll(() => fileNamed('livediagram')?.appProperties.ldRoot).toBeTruthy();
+  await expect.poll(() => fileNamed(ROOT_NAME)?.appProperties.ldRoot).toBeTruthy();
   await expect
     .poll(() => fileNamed('Quarterly plan.livediagram')?.parents[0])
     .toBe(fileNamed('Work')?.id);
@@ -140,7 +143,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   // A rename made in Drive reaches livediagram on Sync now.
   google.fake.userRename(fileNamed('Meeting notes.livediagram')!.id, 'Standup notes.livediagram');
   // Into a folder livediagram cannot see: Unsorted, and a notice.
-  const hidden = google.fake.userCreateFolder(USER, 'Clients', fileNamed('livediagram')!.id);
+  const hidden = google.fake.userCreateFolder(USER, 'Clients', fileNamed(ROOT_NAME)!.id);
   google.fake.userMove(fileNamed('Quarterly plan.livediagram')!.id, hidden);
   await panel.getByRole('button', { name: 'Sync now' }).click();
   await expect(panel).toContainText(

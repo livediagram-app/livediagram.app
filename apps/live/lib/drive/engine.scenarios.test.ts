@@ -434,3 +434,26 @@ describe('not-ours logging', () => {
     }
   });
 });
+
+describe('the root folder (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting")', () => {
+  it('keeps syncing after the user moves and renames it, and never renames it back', async () => {
+    const w = world();
+    w.ld.createDiagram('d1', 'Plan');
+    const { engine } = makeEngine(w);
+    await engine.start();
+    const root = w.ld.connection!.rootFolderId!;
+    const mine = w.google.userCreateFolder(OWNER, 'My projects');
+    w.google.userRename(root, 'Diagrams');
+    w.google.userMove(root, mine);
+    w.clock.tick(MIN);
+    w.ld.createDiagram('d2', 'Later');
+    await engine.syncNow();
+    // A fresh arrival too, the check that could have re-made the root.
+    const next = makeEngine({ ...w, deviceId: 'device-b' });
+    await next.engine.start();
+    expect(w.ld.connection!.rootFolderId).toBe(root);
+    expect(w.google.get(root)).toMatchObject({ name: 'Diagrams', parents: [mine] });
+    expect(fileOf(w.google, w.ld, 'diagram', 'd2')!.parents).toEqual([root]);
+    expect(w.google.appFiles(OWNER).filter((f) => f.appProperties.ldRoot)).toHaveLength(1);
+  });
+});

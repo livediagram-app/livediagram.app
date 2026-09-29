@@ -25,7 +25,11 @@ describe('first mirror', () => {
     await w.engine.start();
 
     const root = w.google.get(w.ld.connection!.rootFolderId!)!;
-    expect(root).toMatchObject({ name: 'livediagram', appProperties: { ldRoot: HOST } });
+    // The test host is neither livediagram.app nor staging nor loopback.
+    expect(root).toMatchObject({
+      name: 'livediagram (self-hosted)',
+      appProperties: { ldRoot: HOST },
+    });
     const f1 = fileOf(w.google, w.ld, 'folder', 'f1')!;
     const f2 = fileOf(w.google, w.ld, 'folder', 'f2')!;
     expect(f1.parents).toEqual([root.id]);

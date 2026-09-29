@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DRIVE_FILE_EXTENSION,
+  driveRootName,
   driveFileName,
   isDriveFileId,
   isDriveLeaseHolder,
@@ -56,5 +57,31 @@ describe('id validators', () => {
     expect(isDriveLeaseHolder('')).toBe(false);
     expect(isDriveLeaseHolder('a'.repeat(65))).toBe(false);
     expect(isDriveLeaseHolder('bad holder')).toBe(false);
+  });
+});
+
+describe('driveRootName (docs/specs/022-drive-mirror/drive-mirror.md, "The root folder\'s name")', () => {
+  it.each([
+    ['livediagram.app', 'livediagram'],
+    ['www.livediagram.app', 'livediagram'],
+    ['WWW.LiveDiagram.App', 'livediagram'],
+    ['staging.livediagram.app', 'livediagram (staging)'],
+    ['Staging.LIVEDIAGRAM.app', 'livediagram (staging)'],
+    ['localhost', 'livediagram (staging)'],
+    ['localhost:3000', 'livediagram (staging)'],
+    ['LOCALHOST:3002', 'livediagram (staging)'],
+    ['127.0.0.1', 'livediagram (staging)'],
+    ['127.0.0.1:3771', 'livediagram (staging)'],
+    ['[::1]', 'livediagram (staging)'],
+    ['[::1]:3000', 'livediagram (staging)'],
+    ['::1', 'livediagram (staging)'],
+    ['diagrams.example.org', 'livediagram (self-hosted)'],
+    ['diagrams.example.org:8443', 'livediagram (self-hosted)'],
+    ['192.168.1.20:3000', 'livediagram (self-hosted)'],
+    ['[2001:db8::1]:3000', 'livediagram (self-hosted)'],
+    ['livediagram.app.evil.example', 'livediagram (self-hosted)'],
+    ['staging.livediagram.app.example', 'livediagram (self-hosted)'],
+  ])('%s → %s', (host, name) => {
+    expect(driveRootName(host)).toBe(name);
   });
 });

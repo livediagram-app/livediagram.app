@@ -259,6 +259,8 @@ pnpm --filter @livediagram/api exec wrangler secret put DRIVE_TOKEN_KEY   # open
 
 If your site redirects one host to another (livediagram.app sends the apex to `www`), register both as JavaScript origins with `/drive/connected` redirect URIs: the consent flow uses whichever host the app actually runs on.
 
+The mirror's root folder in each user's Drive is named **`livediagram (self-hosted)`** on your deployment (livediagram.app's own is `livediagram`, its staging and local development `livediagram (staging)`), so a user of both never gets two folders of the same name. There is no setting: the name comes from the host, is given only when the folder is created, and users may rename or move it freely.
+
 `DRIVE_TOKEN_KEY` seals the stored refresh tokens; changing it turns every connection into **Needs reconnecting**. Files a different deployment's Google project created are foreign to yours and import as copies. Your privacy policy must describe the Google user data you handle; livediagram.app's is in the help centre under Policies.
 
 ## Per-owner image gallery caps
