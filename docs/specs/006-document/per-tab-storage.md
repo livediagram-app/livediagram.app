@@ -127,7 +127,8 @@ renders immediately rather than showing a spinner over real content.
 The autosave used to treat every rejection as one thing: set the status to
 `error`, toast "Couldn't save your changes. Check your connection.", and try
 again on the next edit. That's right for a blip, a 5xx, or a dropped
-connection — the next attempt may well work.
+connection — the next attempt may well work (and it now comes without waiting for
+the next edit, see Retrying a failed save).
 
 It's wrong for a **403**. The server isn't failing, it's refusing: the share
 link was revoked, we were removed from the team, or the role changed under us.
@@ -149,6 +150,15 @@ So a 403 sets `writesForbiddenRef` and a distinct `forbidden` save status:
 The user still loses the unsaved work, and no client-side design can prevent
 that once the server has withdrawn write access. What it can do is say so
 immediately and clearly, instead of an hour later.
+
+### Retrying a failed save
+
+A failed save (a network error or a 5xx; never a 403 or a sign-in problem) is retried on its own,
+not only on the next edit: during an outage or a deploy, the last edit before someone stops typing
+would otherwise wait for an edit that may never come. The retry waits 5 seconds, then doubles (10,
+20, 40) up to a minute between attempts, and resets after a save succeeds. Each attempt re-sends
+whatever still differs from the last saved state, so nothing is sent twice
+(`apps/live/app/document/[id]/useAutosave.ts`, `saveRetryDelayMs`).
 
 ### An unauthenticated save names the sign-in
 

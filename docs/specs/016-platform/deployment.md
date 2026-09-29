@@ -66,16 +66,36 @@ Jobs:
 3. **deploy-live** — downloads `live-out`, runs `pnpm exec wrangler deploy` from `apps/live/`.
 4. **deploy-api** — runs:
    - `pnpm exec wrangler whoami` (diagnostic — prints which Cloudflare account the token authenticates against so a `7403 account not authorized` error is debuggable from the log).
-   - `pnpm exec wrangler d1 migrations apply DB --remote` applies any pending migrations BEFORE the worker deploy so the new code never briefly runs against an older schema. If this step fails the job halts and surfaces a precise error pointing at the missing token scopes. (Wrangler 4 dropped the `--yes` flag; the command is non-interactive by default in CI.)
+   - `pnpm exec wrangler d1 migrations apply DB --remote` applies any pending migrations BEFORE the worker deploy (after the secret syncs, straight before it) so the new code never briefly runs against an older schema; see Renaming migrations below for the non-additive case. If this step fails the job halts and surfaces a precise error pointing at the missing token scopes. (Wrangler 4 dropped the `--yes` flag; the command is non-interactive by default in CI.)
    - `pnpm exec wrangler deploy` from `apps/api/`, plus the hosted profile's `--var` flags on livediagram.app's own repository (see "Hosted profile" below), then `node scripts/hosted-vars.mjs verify` against the live version.
 5. **deploy-telemetry** — downloads `telemetry-out`, runs `pnpm exec wrangler deploy` from `apps/telemetry/` (in parallel with marketing/live/api).
 6. **deploy-help** — downloads `help-out`, runs `pnpm exec wrangler deploy` from `apps/help/` (in parallel with the others).
 7. **deploy-mcp** — depends on **deploy-api** (the MCP worker has a service binding to the api worker, [MCP server](../015-api/mcp-server.md), so api must exist first). Runs `pnpm exec wrangler deploy` from `apps/mcp/` — no static artifact to download, the worker bundles from source. NOT a `deploy-router` dependency: `mcp.livediagram.app` is its own host, not a path under the main hostname.
 8. **deploy-router** — depends on **deploy-marketing**, **deploy-live**, **deploy-api**, **deploy-telemetry**, and **deploy-help**. Runs `pnpm exec wrangler deploy` from `apps/router/`. The router's service bindings target the five workers above, so it must deploy after they exist. This is the one job carrying a GitHub `environment`, so a run files a single deployment record with the public URL rather than seven.
 
-`deploy-marketing`, `deploy-live`, `deploy-api`, `deploy-telemetry`, and `deploy-help` run in parallel off `build`; `deploy-mcp` runs once `deploy-api` is up (parallel to the rest); `deploy-router` waits for the five it binds (not mcp, which is a separate host).
+`deploy-marketing`, `deploy-api`, `deploy-telemetry`, and `deploy-help` run in parallel off `build`, and `deploy-live` follows `deploy-api`; `deploy-mcp` runs once `deploy-api` is up (parallel to the rest); `deploy-router` waits for the five it binds (not mcp, which is a separate host).
 
 All seven deploy jobs use raw `pnpm exec wrangler` rather than `cloudflare/wrangler-action` — wrangler 4 ships sensible defaults and the explicit invocation makes the workflow log read 1:1 against a local run.
+
+### Renaming migrations
+
+Most migrations only add, so the new worker running briefly on the newer schema is harmless. A
+migration that **renames** (`0055_documents.sql`, [Document](../006-document/document.md#renaming-from-diagram))
+is different: from the moment it applies until the new api worker is live, the old worker's queries
+name tables that no longer exist, and the other apps' workers deploy separately, so old and new
+versions briefly serve side by side. The deploy keeps that window short and recoverable:
+
+- **deploy-api** syncs its secrets first and applies the migration straight before `wrangler deploy`,
+  so the window is the deploy itself.
+- **deploy-live** waits for **deploy-api**, so a new editor never calls an api that lacks its routes;
+  **deploy-router** still waits for the five it binds.
+- The editor serves its old address during the overlap ([Router app](router-app.md#legacy-editor-route)),
+  and a save that fails in the window is retried on its own
+  ([Per-tab storage](../006-document/per-tab-storage.md#retrying-a-failed-save)).
+- Deploy a renaming migration to **staging first**, and to production at a quiet hour: for a minute or
+  so, api calls from open editors can fail and are retried.
+
+There is no down migration; a problem after a renaming migration is fixed forward.
 
 ## Hosted profile
 

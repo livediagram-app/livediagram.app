@@ -16,9 +16,10 @@ which fixes how that tab is drawn on and presented.
 | **event-storming board** | The tab kind for event storming ([Event storming](../021-event-storming/event-storming.md)). |
 | **whiteboard**           | The tab kind for freehand whiteboarding ([Whiteboard](../023-whiteboard/whiteboard.md)).     |
 
-- "Diagram" names only the tab kind, never the container.
+- As a term, "diagram" names the tab kind, never the container. Prose may still say diagram
+  where the text is about drawing ([Choosing the word in prose](#choosing-the-word-in-prose)).
 - "Board" on its own is not a term; say event-storming board or whiteboard.
-- Specs, UI copy and code name the container a document everywhere.
+- Specs, UI copy and code name the container a document.
 
 ## Choosing the word in prose
 
