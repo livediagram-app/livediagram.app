@@ -58,7 +58,10 @@ Scope, by file:
 | `apps/live/e2e/drive-mirror.spec.ts`                            | The opt-in browser e2e against the fake Google                              |
 | `apps/live/e2e/drive-support.ts`                                | Test JWKS, the fake Google over HTTP, routed Google traffic                 |
 | `scripts/e2e-stack.mjs`                                         | `E2E_DRIVE=1`: the api worker's test Drive and JWKS vars                    |
-| `apps/live/components/drive/DriveDialog.tsx`                    | The account menu's Google Drive panel                                       |
+| `apps/live/components/drive/GoogleDriveSyncRow.tsx`             | The Google Drive row of Settings > Account > Cloud Sync                     |
+| `apps/live/components/drive/DriveSyncBadge.tsx`                 | The cloud badge on the avatar, opening Cloud Sync                           |
+| `apps/live/lib/drive/cloud-sync-copy.ts`                        | The row's plain-language copy, and the rhythm derived from the cadence      |
+| `apps/live/lib/cloud-sync/providers.ts`                         | The Cloud Sync provider catalogue                                           |
 | `apps/live/components/drive/DriveReconnectBanner.tsx`           | The quiet Needs reconnecting / Resume sync banner                           |
 | `apps/live/components/drive/DriveNoticeMarker.tsx`              | The unseen-folder mark on an Explorer row                                   |
 | `apps/live/app/drive/connected/page.tsx`                        | The OAuth redirect target                                                   |
@@ -583,45 +586,85 @@ dropped (`[::1]:3000` → `::1`, `localhost:3000` → `localhost`):
 
 ## Presentation and UX
 
-The sync mark: `driveIndicator(status, mode)` (`components/drive/drive-indicator.ts`) → `{ kind, label }`:
+### The cloud badge
 
-| Kind        | When                                                                                 | Mark                                     | Label ("Google Drive …")                |
-| ----------- | ------------------------------------------------------------------------------------ | ---------------------------------------- | --------------------------------------- |
-| `none`      | mode `off`, `starting`, `disconnected`                                               | nothing                                  | (none)                                  |
-| `attention` | `needs_reconnect`, `needs_resume`, an `error` or a notice                            | amber dot                                | "needs attention"                       |
-| `syncing`   | `syncing` for at least `DRIVE_SYNCING_MARK_DELAY_MS` (600 ms), or `progress` present | brand dot, a progress ring while copying | "syncing" / "copying {done} of {total}" |
-| `synced`    | `idle`, no error, `lastSyncedAt` set                                                 | green dot                                | "synced"                                |
+`driveIndicator(status, mode, syncingLong, now)` (`components/drive/drive-indicator.ts`) →
+`{ kind, label, announce, progress }`:
 
-`DriveSyncMark` sits absolutely inside the avatar's glyph box (`pointer-events-none`), so it never moves the button.
-The button's `aria-label` becomes "Account menu, Google Drive {label}"; a visually hidden `role="status"`
-(`aria-live="polite"`) holds the same words. The syncing dot pulses only without reduced motion
-(`motion-safe:animate-pulse`).
+| Kind        | When                                                                                 | Badge glyph (in a cloud)                                                 | `label` (tooltip and accessible name)                                     | `announce` (status region)         |
+| ----------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------- | ---------------------------------- |
+| `none`      | mode `off`, `starting`, `disconnected`                                               | no badge                                                                 | (none)                                                                    | (none)                             |
+| `attention` | `needs_reconnect`, `needs_resume`, an `error` or a notice                            | exclamation mark, amber-600 disc                                         | "Google Drive needs attention"                                            | same                               |
+| `syncing`   | `syncing` for at least `DRIVE_SYNCING_MARK_DELAY_MS` (600 ms), or `progress` present | two arrows, brand-600 disc; progress ring round the avatar while copying | "Syncing with Google Drive" / "Copying {done} of {total} to Google Drive" | "Syncing with Google Drive" / same |
+| `synced`    | `idle`, no error, `lastSyncedAt` set                                                 | tick, emerald-600 disc                                                   | "Synced to Google Drive {just now / 1 min ago / …}" (`relativeSince`)     | "Synced to Google Drive"           |
 
-Account menu item **Google Drive** (signed in, `driveUiMode !== 'off'`), opening `DriveDialog`:
+`DriveSyncBadge` (`components/drive/DriveSyncBadge.tsx`) is a `<button>` of its own, a sibling of the account
+button inside AuthControls' `relative` wrapper, absolutely placed over the avatar's upper-right corner (24 × 24 px
+target, an 18 px disc with a 2 px ring in the header's background). It never takes layout space. `aria-label` =
+`label`; the shared `Tooltip` shows the same words after the hover delay and at once on keyboard focus. Pressing it
+calls AuthControls' `onOpenAccount('cloud-sync')` (or links to `/explorer?settings=account&section=cloud-sync`).
+A visually hidden `role="status"` `aria-live="polite"` region holds `announce` (no time, so it does not speak every
+minute). The syncing arrows spin only under `motion-safe`. The progress ring stays inside the account button,
+`aria-hidden`. The account button's name is "Account menu" again.
 
-| State              | Copy                                                                                                                                                         |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `disconnected`     | "Keep a copy of your Personal Space in your own Google Drive, updated while livediagram is open." Button **Connect Google Drive**                            |
-| `idle`             | "Mirroring to the **livediagram** folder in your Google Drive." **Last synced** "Just now" / relative time / "Not yet". Buttons **Sync now**, **Disconnect** |
-| first mirror       | "Copying your diagrams to Drive: {done} of {total}" with a progress bar                                                                                      |
-| `needs_reconnect`  | "Google Drive stopped accepting livediagram's access. Nothing was deleted." **Reconnect**                                                                    |
-| `needs_resume`     | "Drive access has lapsed. Resume to carry on syncing." **Resume sync**                                                                                       |
-| lease elsewhere    | "Another device is writing to Drive right now; this one keeps reading changes."                                                                              |
-| `rate_limited`     | "Google asked livediagram to slow down. Syncing continues less often for a while."                                                                           |
-| `offline`/`failed` | "Couldn't reach Google Drive. livediagram tries again when you come back."                                                                                   |
-| notice             | "{name}: Moved in Drive to a folder livediagram can't see." **Show this folder to livediagram** (only with a Picker key)                                     |
+### Cloud Sync in Settings
+
+- `CLOUD_SYNC_PROVIDERS` (`apps/live/lib/cloud-sync/providers.ts`): `{ id: 'googleDrive', label: 'Google Drive',
+keywords: 'drive google sync backup mirror cloud', description, helpArticle: 'googleDrive' }[]`. The Account
+  category's rows spread one `{ kind: 'cloudSync', key: 'cloudSync-<id>', provider, section: 'Cloud Sync' }` row per
+  provider, after **Your Data** and before **Danger Zone**, `available: ctx.cloudProviders.includes(id)`.
+- `SettingsRowContext.cloudProviders`: `['googleDrive']` when `useDriveMirror().mode !== 'off'`, else `[]`.
+- `SettingsCloudSyncRow` dispatches on `row.provider` to that provider's row component (`GoogleDriveSyncRow`,
+  `components/drive/GoogleDriveSyncRow.tsx`). A new provider adds a catalogue entry and a component, nothing else.
+- `DriveDialog` and the account menu's **Google Drive** item are removed.
+
+`driveSyncCopy(status, rootName, busy)` (`apps/live/lib/drive/cloud-sync-copy.ts`) → `{ badge, text, action }`:
+
+| State                | Badge            | Text                                                                                                                      | Action                                                  |
+| -------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `starting`           | Checking         | "Checking your Google Drive connection…"                                                                                  | none                                                    |
+| `disconnected`       | Not connected    | "Keep a copy of your documents in your own Google Drive, in folders that match yours, updated while livediagram is open." | **Connect Google Drive** (**Connecting…** while busy)   |
+| `idle` / `syncing`   | Synced / Syncing | "Your documents are copied to Google Drive, in the folder **{rootName}**." (no folder name while unknown)                 | **Sync now** (**Syncing…**)                             |
+| first mirror         | Copying          | "Copying {done} of {total} to Google Drive" and a progress bar                                                            | none                                                    |
+| `needs_reconnect`    | Needs attention  | "Google Drive stopped accepting livediagram's access, so syncing is paused. Nothing was deleted. Reconnect to carry on."  | **Reconnect**                                           |
+| `needs_resume`       | Needs attention  | "Drive access has lapsed in this browser. Resume to carry on syncing."                                                    | **Resume sync**                                         |
+| `rate_limited`       | Needs attention  | "Google asked livediagram to slow down. Syncing carries on less often for a while; there is nothing to do."               | none                                                    |
+| `offline` / `failed` | Needs attention  | "Couldn't reach Google Drive. livediagram tries again by itself; check your connection, or press Sync now."               | **Sync now**                                            |
+| lease elsewhere      | Synced           | "Another tab or device is copying to Google Drive right now; this one keeps checking for changes."                        | **Sync now**                                            |
+| notice               | Needs attention  | "{name}: Moved in Drive to a folder livediagram can't see. Show it this folder, or move the file back in Drive."          | **Show this folder to livediagram** (with a Picker key) |
+
+`driveRhythmText()` is built from `DRIVE_POLL_INTERVAL_MS`, `DRIVE_WRITE_IDLE_MS` and `DRIVE_WRITE_MIN_INTERVAL_MS`
+through `durationWords(ms)` ("30 seconds", "a minute", "2 minutes"): "Checks for changes every 2 minutes while
+livediagram is open. Edits are copied a minute after you stop, at most once every 5 minutes per diagram." Shown while
+connected. `lastSyncedText(at, now)`: "Last synced just now" / "Last synced 1 min ago" / "Not synced yet". Connected
+rows also carry **Disconnect** (secondary).
+
+`status.rootName`: the root's Drive name, set when the root is created (`driveRootName(host)`), found, checked on
+arrival, or renamed (an inbound change for the root's file id), `null` until known.
+
+### Targeting a Settings section
+
+`settingsSectionId(name)` (`settings-catalogue.ts`): lower-case, spaces to `-` (`Cloud Sync` → `cloud-sync`).
+`SettingsDialog` takes `initialSectionId`; the pane's section wrapper carries `data-settings-section={id}` and its
+`<h3>` `id="settings-section-{id}"`, `tabIndex={-1}`. When the targeted category is shown, the heading scrolls into
+view (`block: 'start'`, smooth unless reduced motion) and takes focus (`preventScroll`). The editor's
+`openSettingsOn(categoryId, sectionId?)` and the Explorer's `?settings=<category>&section=<id>` deep link set it.
 
 Disconnect confirms: "Disconnect Google Drive? Your files stay in Drive; livediagram stops updating them."
 
 Banner (`needs_reconnect` / `needs_resume`), bottom-left, dismissible for the session: "Google Drive sync is paused."
 with **Reconnect** / **Resume sync**. `/drive/connected`: "Connecting Google Drive…", then back to the page the user
 started from; on `error=access_denied`: "Google Drive wasn't connected." with **Back**. `/drive/open`: "Opening from
-Google Drive…"; import: "This diagram isn't in your livediagram." **Import a copy**; error: "This file can't be
+Google Drive…"; import: "This diagram isn't in your livediagram." **Import a copy**; a copy of a mirrored file:
+"This is a copy made in Google Drive. Import it as a new document to open it here; the original stays as it is."
+**Import as new document**; error: "This file can't be
 opened in livediagram." with **Go to Explorer**.
 
 ## Accessibility
 
-The dialog uses the shared dialog primitive (focus trap, `aria-labelledby`, Escape). The progress bar is
+The Cloud Sync row lives in the Settings dialog (focus trap, Escape); its buttons are native buttons with visible
+focus rings. The badge is a 24 × 24 px button with its own name and a tooltip on hover and focus; its state is a glyph,
+not colour alone; the discs (emerald-600, brand-600, amber-600) with white glyphs meet 3:1 for graphics in both themes. The progress bar is
 `role="progressbar"` with `aria-valuenow` / `aria-valuemax`. Status changes are announced with the shared
 announcer (polite). The banner is `role="status"`. The notice badge carries an `aria-label` with the notice text.
 Colours are the existing slate / brand tokens, which meet AA in both themes.
