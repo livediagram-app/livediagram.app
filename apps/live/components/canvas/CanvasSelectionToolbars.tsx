@@ -1,4 +1,9 @@
-import { elementHasText, elementKindLabel, elementSupportsText } from '@livediagram/diagram';
+import {
+  elementHasText,
+  elementKindLabel,
+  elementSupportsText,
+  isMindNode,
+} from '@livediagram/diagram';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import type { deriveCanvasSelection } from '@/lib/canvas-selection';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -105,6 +110,14 @@ export function CanvasSelectionToolbars({
                 : undefined
             }
             hasText={selected ? elementHasText(selected) : false}
+            // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, the toolbar home
+            // for Tab / Enter. Not on a locked node: growing re-lays the map.
+            {...(!readOnly && !selectedLocked && selected && isMindNode(selected)
+              ? {
+                  onAddMindChild: () => props.onGrowMindNode(selected.id, 'child'),
+                  onAddMindSibling: () => props.onGrowMindNode(selected.id, 'sibling'),
+                }
+              : {})}
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
             // Intra-layer z-order (docs/specs/006-diagram/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these

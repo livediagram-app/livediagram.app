@@ -10,6 +10,7 @@ import {
   SendToBackIcon,
   TextIcon,
 } from '@/components/canvas/selection-popover-icons';
+import { MIND_CHILD_OPTION, MIND_SIBLING_OPTION } from '@/components/canvas/quick-connect-options';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
@@ -31,6 +32,11 @@ type SelectionPopoverProps = {
   // True when the element already has text: the button reads "Edit text";
   // false = "Add text". Defaults to edit for older callers.
   hasText?: boolean;
+  // Mind map growth (docs/specs/009-elements/mind-node.md): Add child / Add sibling on a mind node.
+  // The same actions as Tab / Enter and the "+" ring, given a one-click home
+  // on the toolbar. Passed only for an editable, unlocked mind node.
+  onAddMindChild?: () => void;
+  onAddMindSibling?: () => void;
   // Duplicate the selected element, a one-click toolbar action (it used to
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
@@ -77,6 +83,8 @@ export function SelectionPopover({
   onDelete,
   onEditText,
   hasText = true,
+  onAddMindChild,
+  onAddMindSibling,
   onDuplicate,
   onBringToFront,
   onSendToBack,
@@ -146,6 +154,26 @@ export function SelectionPopover({
             onClick={onEditText}
           >
             <TextIcon />
+          </PopoverButton>
+          <Divider />
+        </>
+      ) : null}
+
+      {onAddMindChild && onAddMindSibling ? (
+        <>
+          <PopoverButton
+            label={MIND_CHILD_OPTION.label}
+            description={MIND_CHILD_OPTION.description}
+            onClick={onAddMindChild}
+          >
+            {MIND_CHILD_OPTION.icon}
+          </PopoverButton>
+          <PopoverButton
+            label={MIND_SIBLING_OPTION.label}
+            description={MIND_SIBLING_OPTION.description}
+            onClick={onAddMindSibling}
+          >
+            {MIND_SIBLING_OPTION.icon}
           </PopoverButton>
           <Divider />
         </>

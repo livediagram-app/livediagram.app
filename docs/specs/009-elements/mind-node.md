@@ -10,6 +10,12 @@ from the keyboard.
 - **Tab** on a selected node adds a **child**.
 - **Enter** adds a **sibling** directly after it.
 
+The same two actions are one click away, for anyone who doesn't know the keys:
+**Add child** and **Add sibling** buttons on the node's selection toolbar (after
+Edit text), and the same two options on its quick-connect "+" ring. Each names
+its shortcut in its hover card. The toolbar buttons are not offered on a locked
+node (growing re-lays the map) or to a view-role visitor.
+
 Each new node is placed in the map, connected to its parent with a pinned
 arrow, selected, and put straight into label editing — so a whole branch is
 typed without touching the mouse.
