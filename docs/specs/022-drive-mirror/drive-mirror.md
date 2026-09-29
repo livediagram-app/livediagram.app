@@ -50,15 +50,23 @@ this spec does not restate it.
   account menu has no Drive entry. Search finds the row by drive, google,
   sync, backup, mirror and cloud; it links to the help article.
 - **What the row says,** in plain words:
-  - **Not connected:** what the mirror is, and **Connect Google Drive**
-    (**Connecting…** while the consent flow starts).
+  - **Not connected:** what the mirror is, and **Connect Google Drive**.
+    Pressing it turns the row to **Connecting…** at once, and it stays so
+    while the consent state is fetched and the browser leaves for Google, so
+    there is never a moment where nothing seems to happen. If that fails (the
+    request errors or is blocked), the row is **Not connected** again and says
+    "Couldn't start connecting to Google Drive. Check your connection and try
+    again." Coming back from Google with the Back button also returns it to
+    Not connected.
   - **Connected:** "Your documents are copied to Google Drive, in the folder
     <root folder name>" (the root's actual name, as the user may have renamed
     it); the rhythm, **derived from the cadence** so it cannot drift: "Checks
     for changes every 2 minutes while livediagram is open. Edits are copied a
     minute after you stop, at most once every 5 minutes per diagram."; **Last
     synced** ("Just now", "1 minute ago") with **Sync now** beside it;
-    **Disconnect**.
+    **Disconnect**, styled as a **warning** (amber), not a danger: it is
+    reversible and leaves the Drive files where they are. Its confirmation is
+    amber too.
   - **First copy:** "Copying 3 of 12" with a progress bar.
   - **Every attention state says what to do:** reconnect (**Reconnect**),
     resume (**Resume sync**), rate-limited (nothing to do; it carries on less
@@ -66,13 +74,18 @@ this spec does not restate it.
     connection or press **Sync now**), another tab or device writing (nothing
     to do), and each folder notice (**Show this folder to livediagram**, or
     move it back in Drive).
+- **Nothing reflows as the state changes:** the state pill and each button
+  keep one width whatever they say (the width of their longest wording), so
+  "Synced" becoming "Syncing" or "Sync now" becoming "Syncing…" moves nothing.
 - **At a glance:** a **cloud badge** on the avatar (the account menu's
-  button) says how the mirror is doing without opening anything. A glyph in
-  the cloud, not colour alone, tells the states apart: arrows for
-  **syncing** (with a progress ring round the avatar while the first mirror
-  copies), a tick for **synced**, an exclamation mark for **needs attention**
-  (reconnect or resume needed, an error, or a notice). The badge is a button
-  of its own, laid over the avatar's corner with a 28-pixel target, so it
+  button) says how the mirror is doing without opening anything. It is a
+  **small corner badge**, a 12-pixel disc on the avatar's upper-right corner
+  with a ring in the page's background so it reads as separate from the
+  avatar. Its glyph, not colour alone, tells the states apart: a **cloud** when
+  **synced**, turning **arrows** while **syncing** (with a progress ring round
+  the avatar while the first mirror copies), an **exclamation mark** when it
+  **needs attention** (reconnect or resume needed, an error, or a notice). The
+  badge is a button of its own with a 24-pixel target, so it
   never moves anything as it appears or changes; hovering or focusing it
   shows a tooltip with the same words as its accessible name ("Synced to
   Google Drive 1 minute ago", "Copying 3 of 12 to Google Drive", "Syncing
