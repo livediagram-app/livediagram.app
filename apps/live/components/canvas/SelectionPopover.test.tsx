@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { SelectionPopover } from './SelectionPopover';
 import { MultiSelectionToolbar } from './MultiSelectionToolbar';
 import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
@@ -115,5 +115,34 @@ describe('MultiSelectionToolbar', () => {
     setTouch(true);
     renderMulti(true);
     expect(screen.getByRole('button', { name: 'Delete selected elements' })).toBeTruthy();
+  });
+});
+
+// Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling ride the toolbar of a mind node.
+describe('SelectionPopover mind-node growth', () => {
+  it('offers Add child and Add sibling, each firing its own grower', () => {
+    setTouch(false);
+    const child = vi.fn();
+    const sibling = vi.fn();
+    render(
+      <SelectionPopover
+        bounds={BOUNDS}
+        canvasOffset={{ x: 0, y: 0 }}
+        zoom={1}
+        onAddMindChild={child}
+        onAddMindSibling={sibling}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Add child' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add sibling' }));
+    expect(child).toHaveBeenCalledOnce();
+    expect(sibling).toHaveBeenCalledOnce();
+  });
+
+  it('shows neither on an element that is not a mind node', () => {
+    setTouch(false);
+    renderSingle();
+    expect(screen.queryByRole('button', { name: 'Add child' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add sibling' })).toBeNull();
   });
 });
