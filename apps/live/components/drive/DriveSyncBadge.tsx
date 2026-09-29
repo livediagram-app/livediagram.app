@@ -46,14 +46,16 @@ function CloudGlyph({ kind }: { kind: Exclude<DriveIndicator['kind'], 'none'> })
   );
   return (
     // Square like every Glyph: the 22 × 16 cloud sits 3 units down.
-    <Glyph size={22} units={22} weight={1.8} className="overflow-visible">
+    <Glyph size={26} units={22} weight={2} className="overflow-visible">
       <g transform="translate(0 3)">
         {/* A halo in the header's own colour (the button's text colour) parts the
             cloud from the avatar. */}
         <g fill="currentColor" stroke="currentColor" strokeWidth="3">
           {cloud}
         </g>
-        <g className={FILL[kind]}>{cloud}</g>
+        <g className={FILL[kind]} stroke="none">
+          {cloud}
+        </g>
         <g
           fill="none"
           stroke="white"
@@ -104,9 +106,9 @@ export function DriveSyncBadge({
             data-drive-badge={indicator.kind}
             aria-label={indicator.label}
             onClick={onOpen}
-            // Over the avatar's upper-right corner: the account button's glyph
-            // is centred, 20 px, with its label beneath (HEADER_ACTION_BTN).
-            className="absolute left-1/2 top-1/2 z-10 flex h-6 w-6 translate-x-0.5 -translate-y-6 cursor-pointer items-center justify-center rounded-md text-white outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-900 dark:focus-visible:ring-brand-400"
+            // Over the avatar's upper-right corner (a 28 px target): the account
+            // button's glyph is centred, 20 px, with its label beneath (HEADER_ACTION_BTN).
+            className="absolute left-1/2 top-1/2 z-10 flex h-7 w-7 translate-x-0.5 -translate-y-[27px] cursor-pointer items-center justify-center rounded-md text-white outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-900 dark:focus-visible:ring-brand-400"
           >
             <CloudGlyph kind={indicator.kind} />
           </button>
