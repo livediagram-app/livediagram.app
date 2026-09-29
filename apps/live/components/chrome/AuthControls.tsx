@@ -3,7 +3,7 @@
 // Header sign-in / sign-out pill. Shows:
 //
 //   - signed out → "Sign in" link to /live/sign-in/
-//   - signed in  → initial-bubble + dropdown with "Profile" + "Sign out"
+//   - signed in  → account avatar (profile picture or initial) + dropdown with "Profile" + "Sign out"
 //
 // Mounted in EditorHeader (and any future header chrome that wants
 // auth controls). Pure presentational — Clerk's `useUser` / `useAuth`
@@ -23,10 +23,12 @@
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { useClickOutside, SOLID_BRAND_DARK, Glyph, GlyphDisc } from '@livediagram/ui';
+import { useClickOutside, SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
+import { AccountAvatar } from '@/components/primitives/AccountAvatar';
+import { accountInitial } from '@/lib/account-avatar';
 import {
   HEADER_ACTION_BTN,
   HEADER_ICON_SLOT_PX,
@@ -73,7 +75,6 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
     );
   }
 
-  const initial = (user?.firstName ?? user?.username ?? '?').slice(0, 1).toUpperCase();
   const displayName = user?.fullName ?? user?.username ?? user?.email ?? '';
   // Pill label: first name only (or the username fallback). Last
   // names get truncated in account UIs because most users don't
@@ -96,12 +97,13 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
         className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
         <HeaderGlyph>
-          <GlyphDisc
+          {/* The profile picture when there is one (docs/specs/014-identity/profile-picture.md). */}
+          <AccountAvatar
+            initial={accountInitial(user)}
+            pictureUrl={user?.pictureUrl ?? null}
             size={HEADER_ICON_SLOT_PX}
             className={`bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
-          >
-            {initial}
-          </GlyphDisc>
+          />
         </HeaderGlyph>
         <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>
       </button>
