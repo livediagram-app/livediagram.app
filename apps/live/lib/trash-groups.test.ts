@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TRASH_RETENTION_MS, type TrashedDiagram } from '@livediagram/api-schema';
-import { daysLeftLabel, trashGroups, trashedOnLabel } from './trash-groups';
+import { daysLeftLabel, trashGroups, trashedCardLead, trashedOnLabel } from './trash-groups';
 
 // How the Trash view groups what it lists (docs/specs/013-workspace/trash.md,
 // "The Trash view"): the personal Trash, one group per team, then this
@@ -70,6 +70,17 @@ describe('trashedOnLabel', () => {
     expect(trashedOnLabel({ trashedAt: T0, reason: 'deleted' })).toMatch(/^Deleted \S.*$/);
     expect(trashedOnLabel({ trashedAt: T0, reason: 'empty' })).toMatch(
       /^Moved here \S.* because it was empty$/,
+    );
+  });
+});
+
+describe('trashedCardLead', () => {
+  it('tells someone who may restore it why it is there and how long is left', () => {
+    expect(trashedCardLead({ trashedAt: T0, reason: 'deleted' }, T0)).toBe(
+      'It is in the Trash (30 days left).',
+    );
+    expect(trashedCardLead({ trashedAt: T0, reason: 'empty' }, T0 + 29 * DAY + 1)).toBe(
+      'It was empty for 30 days, so it moved to the Trash (1 day left).',
     );
   });
 });

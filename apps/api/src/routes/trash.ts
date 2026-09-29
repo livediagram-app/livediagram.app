@@ -52,7 +52,7 @@ export async function handleTrash(ctx: RouteContext): Promise<Response> {
   if (!allowed) return notFound();
 
   if (restore) {
-    await restoreDiagram(env, id);
+    await restoreDiagram(env, id, Date.now());
     const diagram = await getDiagram(env, id);
     console.info('[trash] restored', id);
     return json({ diagram: diagram ? redactDiagramForReader(diagram, owner) : null });

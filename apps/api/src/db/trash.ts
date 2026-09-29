@@ -46,7 +46,7 @@ export async function trashDiagram(env: Env, id: string, now: number): Promise<b
 // days start again and the next sweep does not move it straight back
 // (docs/specs/013-workspace/empty-diagram-cleanup.md). One a person deleted
 // keeps its last-saved time.
-export async function restoreDiagram(env: Env, id: string, now = Date.now()): Promise<boolean> {
+export async function restoreDiagram(env: Env, id: string, now: number): Promise<boolean> {
   const res = await env.DB.prepare(
     `UPDATE diagrams
         SET trashed_at = NULL,

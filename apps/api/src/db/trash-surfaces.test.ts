@@ -77,7 +77,7 @@ describe('Timeline, while a diagram is in the Trash', () => {
     const scope = { scopeType: 'user' as const, scopeId: 'owner' };
     await trashDiagram(env, 'A', T0);
 
-    await restoreDiagram(env, 'A');
+    await restoreDiagram(env, 'A', T0 + DAY);
 
     expect((await readTimeline(env, { scope, limit: 10 })).items.map((e) => e.id)).toEqual(['own']);
   });

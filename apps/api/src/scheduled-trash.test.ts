@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EMPTY_DIAGRAM_STALE_MS, TRASH_RETENTION_MS } from '@livediagram/api-schema';
 import { sqliteD1 } from './test-sqlite-d1';
 import worker from './index';
@@ -19,8 +19,12 @@ async function runCron(env: Parameters<typeof worker.scheduled>[1], now: number)
     { waitUntil: (p: Promise<unknown>) => pending.push(p) } as unknown as ExecutionContext,
   );
   await Promise.all(pending);
-  vi.useRealTimers();
 }
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
 
 describe('the 03:00 cron', () => {
   it('purges diagrams 30 days in the Trash and logs the count', async () => {
@@ -51,8 +55,6 @@ describe('the 03:00 cron', () => {
     ).toEqual(['live', 'waiting']);
     expect(log).toHaveBeenCalledWith('trash sweep: purged 1 diagrams');
     expect(error).not.toHaveBeenCalledWith('trash sweep failed', expect.anything());
-    log.mockRestore();
-    error.mockRestore();
   });
 
   it('moves an empty diagram to the Trash and never purges it in the same run', async () => {
@@ -82,6 +84,5 @@ describe('the 03:00 cron', () => {
     expect(sql.prepare(`SELECT COUNT(*) AS n FROM diagrams`).get()).toEqual({ n: 1 });
     await runCron(env, now + TRASH_RETENTION_MS);
     expect(sql.prepare(`SELECT COUNT(*) AS n FROM diagrams`).get()).toEqual({ n: 0 });
-    log.mockRestore();
   });
 });

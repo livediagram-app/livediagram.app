@@ -7,19 +7,19 @@ file only adds engineering precision. Defaults applied where the spec is silent 
 
 Scope, by file:
 
-| File                                                                      | Role                                                                        |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `packages/api-schema/src/trash.ts`                                        | `TrashReason`, `TrashedDiagram.reason`, `EMPTY_DIAGRAM_STALE_DAYS` / `_MS`  |
-| `apps/api/migrations/0054_diagram_trash_reason.sql`                       | `diagrams.trash_reason`                                                     |
-| `apps/api/src/db/empty-diagram-sweep.ts`                                  | `trashEmptyDiagrams`: the set-based move, capped                            |
-| `apps/api/src/db/trash.ts`                                                | `listTrash` reads the reason; `restoreDiagram` clears it and restarts stale |
-| `apps/api/src/index.ts`                                                   | The 03:00 cron calls the sweep beside the purge                             |
-| `apps/api/src/openapi/schemas.generated.ts`                               | Regenerated: `TrashedDiagram.reason`                                        |
-| `apps/mcp/src/{tools,output-schema}.ts`                                   | `list_trash` rows carry `reason`                                            |
-| `apps/live/lib/offline/offline-trash.ts`                                  | Local rows are `reason: 'deleted'`                                          |
-| `apps/live/lib/trash-groups.ts`                                           | `trashedOnLabel(row)`: the row's "Deleted" / "Moved here ... empty" lead    |
-| `apps/live/components/{panels/TrashPane,chrome/DiagramTrashedCard}.tsx`   | The row and the deleted card copy                                           |
-| `apps/help/app/account-and-data/trash/page.mdx`, `packages/help-registry` | The help article's section and keywords                                     |
+| File                                                                      | Role                                                                              |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `packages/api-schema/src/trash.ts`                                        | `TrashReason`, `TrashedDiagram.reason`, `EMPTY_DIAGRAM_STALE_DAYS` / `_MS`        |
+| `apps/api/migrations/0054_diagram_trash_reason.sql`                       | `diagrams.trash_reason`                                                           |
+| `apps/api/src/db/empty-diagram-sweep.ts`                                  | `trashEmptyDiagrams`: the set-based move, capped                                  |
+| `apps/api/src/db/trash.ts`                                                | `listTrash` reads the reason; `restoreDiagram` clears it and restarts stale       |
+| `apps/api/src/index.ts`                                                   | The 03:00 cron calls the sweep beside the purge                                   |
+| `apps/api/src/openapi/schemas.generated.ts`                               | Regenerated: `TrashedDiagram.reason`                                              |
+| `apps/mcp/src/{tools,output-schema}.ts`                                   | `list_trash` rows carry `reason`                                                  |
+| `apps/live/lib/offline/offline-trash.ts`                                  | Local rows are `reason: 'deleted'`                                                |
+| `apps/live/lib/trash-groups.ts`                                           | `trashedOnLabel(row)`, `trashedCardLead(row, now)`: the reason copy, in one place |
+| `apps/live/components/{panels/TrashPane,chrome/DiagramTrashedCard}.tsx`   | The row and the deleted card copy                                                 |
+| `apps/help/app/account-and-data/trash/page.mdx`, `packages/help-registry` | The help article's section and keywords                                           |
 
 ## Domain and naming
 
@@ -75,7 +75,7 @@ export function trashEmptyDiagrams(env: Env, now: number,
   opts?: { batch?: number; maxBatches?: number }): Promise<number>; // rows moved
 
 // apps/api/src/db/trash.ts
-export function restoreDiagram(env: Env, id: string, now?: number): Promise<boolean>; // now defaults to Date.now()
+export function restoreDiagram(env: Env, id: string, now: number): Promise<boolean>; // the route passes Date.now()
 ```
 
 The statement, bound `(now, cutoff, batch)` with `cutoff = now - EMPTY_DIAGRAM_STALE_MS`:
@@ -107,8 +107,8 @@ No new route, no new error.
 | `TrashedDiagram.reason` | wire  | `'deleted' \| 'empty'`, derived                            |
 
 Migration 0054 adds the nullable column with no backfill: every row already in the Trash was deleted by a
-person, which NULL means (D7). No index: the sweep reads live rows by `saved_at` over the whole table, and
-the table is small (Performance). Account deletion and purges remove the row with the rest; guest-to-account
+person, which NULL means (D7). No index: nothing filters on it. The sweep scans live rows; an index ordering them by `saved_at` would
+cost every autosave a write to save a once-a-day scan (Performance). Account deletion and purges remove the row with the rest; guest-to-account
 migration moves `owner_id` only. Restore clears the column, so a live row's value is always NULL.
 
 ## Errors and edge cases
@@ -176,7 +176,7 @@ limits; the cap bounds the writes at 2,000 per run, the same order as the Trash 
 | Cron: moves, logs, never purges what it moved (C1)           | `apps/api/src/scheduled-trash.test.ts`        |
 | MCP `list_trash` carries `reason`                            | `apps/mcp/src/tools.test.ts`                  |
 | Local rows are `deleted`                                     | `apps/live/lib/offline/offline-trash.test.ts` |
-| Row lead copy                                                | `apps/live/lib/trash-groups.test.ts`          |
+| Row lead and card lead copy                                  | `apps/live/lib/trash-groups.test.ts`          |
 | OpenAPI parity                                               | `apps/api/src/openapi/*.test.ts`              |
 | Help registry keywords                                       | `apps/help` registry tests                    |
 

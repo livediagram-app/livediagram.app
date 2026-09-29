@@ -3,6 +3,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livediagram/diagram';
 import { TRASH_RETENTION_MS } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { DAY, T0, diagram, insert, team } from './test-trash-fixtures';
 import type { Env } from '../types';
 import { deleteAccount } from './account';
 import { getDiagram, getDiagramMeta, listDiagramsByOwner, listDiagramsByTeam } from './diagrams';
@@ -23,33 +24,6 @@ import {
 // restoring puts it back where it was, and the purge removes it the way a
 // delete always has, shared tabs spared.
 
-const T0 = 1_700_000_000_000;
-const DAY = 24 * 60 * 60 * 1000;
-
-function insert(sql: DatabaseSync, table: string, row: Record<string, string | number | null>) {
-  const cols = Object.keys(row);
-  sql
-    .prepare(`INSERT INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`)
-    .run(...Object.values(row));
-}
-
-function diagram(
-  sql: DatabaseSync,
-  id: string,
-  opts: { owner?: string; team?: string | null; folder?: string | null } = {},
-) {
-  insert(sql, 'diagrams', {
-    id,
-    owner_id: opts.owner ?? 'owner',
-    name: `Diagram ${id}`,
-    shareable: 0,
-    team_id: opts.team ?? null,
-    folder_id: opts.folder ?? null,
-    saved_at: T0,
-    created_at: T0,
-  });
-}
-
 function folder(sql: DatabaseSync, id: string, owner = 'owner', team: string | null = null) {
   insert(sql, 'folders', {
     id,
@@ -59,21 +33,6 @@ function folder(sql: DatabaseSync, id: string, owner = 'owner', team: string | n
     created_at: T0,
     updated_at: T0,
   });
-}
-
-function team(sql: DatabaseSync, id: string, members: [string, 'joined' | 'pending'][]) {
-  insert(sql, 'teams', { id, name: `Team ${id}`, created_at: T0, updated_at: T0 });
-  for (const [user, status] of members) {
-    insert(sql, 'team_members', {
-      id: `m-${id}-${user}`,
-      team_id: id,
-      user_id: user,
-      role: 'member',
-      status,
-      created_at: T0,
-      updated_at: T0,
-    });
-  }
 }
 
 async function tab(db: SqliteD1, diagramId: string, id: string) {
@@ -198,7 +157,7 @@ describe('restoreDiagram', () => {
     diagram(sql, 'A', { folder: 'F' });
     await trashDiagram(env, 'A', T0);
 
-    expect(await restoreDiagram(env, 'A')).toBe(true);
+    expect(await restoreDiagram(env, 'A', T0 + DAY)).toBe(true);
 
     expect(column(sql, 'A', 'trashed_at')).toBeNull();
     expect((await getDiagram(env, 'A'))?.folderId).toBe('F');
@@ -211,7 +170,7 @@ describe('restoreDiagram', () => {
     await trashDiagram(env, 'A', T0);
     await deleteFolder(env, 'F');
 
-    await restoreDiagram(env, 'A');
+    await restoreDiagram(env, 'A', T0 + DAY);
 
     expect((await getDiagram(env, 'A'))?.folderId).toBeNull();
   });
@@ -227,8 +186,8 @@ describe('restoreDiagram', () => {
     await trashDiagram(env, 'A', T0);
     await trashDiagram(env, 'T', T0);
 
-    await restoreDiagram(env, 'A');
-    await restoreDiagram(env, 'T');
+    await restoreDiagram(env, 'A', T0 + DAY);
+    await restoreDiagram(env, 'T', T0 + DAY);
 
     expect((await getDiagram(env, 'A'))?.folderId).toBeNull();
     expect((await getDiagram(env, 'T'))?.folderId).toBeNull();
@@ -241,7 +200,7 @@ describe('restoreDiagram', () => {
     diagram(sql, 'T', { team: 'team', folder: 'TF' });
     await trashDiagram(env, 'T', T0);
 
-    await restoreDiagram(env, 'T');
+    await restoreDiagram(env, 'T', T0 + DAY);
 
     expect((await listDiagramsByTeam(env, 'team')).map((d) => [d.id, d.folderId])).toEqual([
       ['T', 'TF'],
@@ -251,8 +210,8 @@ describe('restoreDiagram', () => {
   it('does nothing to a live or missing diagram', async () => {
     const { env, sql } = sqliteD1();
     diagram(sql, 'A');
-    expect(await restoreDiagram(env, 'A')).toBe(false);
-    expect(await restoreDiagram(env, 'nope')).toBe(false);
+    expect(await restoreDiagram(env, 'A', T0 + DAY)).toBe(false);
+    expect(await restoreDiagram(env, 'nope', T0 + DAY)).toBe(false);
   });
 });
 

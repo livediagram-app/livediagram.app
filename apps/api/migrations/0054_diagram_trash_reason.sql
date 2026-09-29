@@ -4,7 +4,8 @@
 -- restore, so a live row is always NULL.
 --
 -- No backfill: every row already in the Trash was deleted by a person. No
--- index: the sweep reads live rows by saved_at, and restore/list read it off
--- rows they already have.
+-- index: nothing filters on it. The daily sweep scans live rows (no index
+-- orders them by saved_at, and one would cost every autosave a write to save
+-- a once-a-day ~10 ms scan).
 
 ALTER TABLE diagrams ADD COLUMN trash_reason TEXT NULL;
