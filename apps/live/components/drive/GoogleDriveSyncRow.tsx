@@ -176,22 +176,18 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
                   <p className="text-slate-500 dark:text-slate-400">{DRIVE_RHYTHM}</p>
                 </Variant>
                 <Variant shown={!!notice}>
-                  <p className="text-amber-800 dark:text-amber-200">
+                  {/* Short, like the rhythm it replaces, so little is reserved below
+                      it; Show folder is in the footer. */}
+                  <p
+                    className="truncate text-amber-800 dark:text-amber-200"
+                    title={
+                      notice
+                        ? `${notice.name}${more > 0 ? ` and ${more} more` : ''}: ${DRIVE_NOTICE_TEXT}`
+                        : undefined
+                    }
+                  >
                     <span className="font-semibold">{notice?.name ?? 'A document'}</span>
-                    {more > 0 ? ` and ${more} more` : ''}: {DRIVE_NOTICE_TEXT}{' '}
-                    {drive.canAdopt ? (
-                      <>
-                        <span aria-hidden="true">· </span>
-                        <button
-                          type="button"
-                          disabled={busy !== null || !notice}
-                          onClick={run('adopt', () => (notice ? drive.adopt(notice) : undefined))}
-                          className="font-semibold underline underline-offset-2 hover:text-amber-950 disabled:opacity-50 dark:hover:text-amber-100"
-                        >
-                          Show folder
-                        </button>
-                      </>
-                    ) : null}
+                    {more > 0 ? ` and ${more} more` : ''}: {DRIVE_NOTICE_TEXT}
                   </p>
                 </Variant>
               </Slot>
@@ -200,6 +196,16 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
 
           {/* Buttons only: nothing else sits beside them, so nothing is covered. */}
           <div data-drive-actions className="mt-1 flex flex-wrap items-center justify-end gap-2">
+            {notice && drive.canAdopt ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={busy !== null}
+                onClick={run('adopt', () => drive.adopt(notice))}
+              >
+                Show folder
+              </Button>
+            ) : null}
             {phase === 'not-connected' ? null : (
               <span data-drive-disconnect>
                 <Button

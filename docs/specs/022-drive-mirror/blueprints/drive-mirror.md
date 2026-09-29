@@ -626,7 +626,7 @@ glyph when `warn`; its options are every wording of the phase, the times at thei
 `DRIVE_SYNCING_SHOW_DELAY_MS` (600 ms) of one pass, so the 2-minute check never flickers it. Body: the text line
 (`aria-live="polite"`); in `connected` a detail slot holding `DRIVE_RHYTHM` ("Syncs happen continuously while
 livediagram is open.") or, with notices, "{name}: Moved to a Drive folder livediagram can't see." (with "and {n}
-more") and **Show folder** (adopts the first notice). No divider, no progress bar. Footer: buttons only,
+more"), with **Show folder** (secondary, adopts the first notice) in the footer before **Disconnect**. No divider, no progress bar. Footer: buttons only,
 right-aligned, wrapping. There is no Sync now: the engine's own `syncNow` stays for arrival, focus and the tab
 channel. **Disconnect** is `Button` variant `secondary`; its confirmation is `ConfirmDialog` variant `neutral`.
 

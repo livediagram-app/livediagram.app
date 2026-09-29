@@ -91,8 +91,8 @@ this spec does not restate it.
     **Disconnect**, the neutral grey secondary button: it is reversible and
     leaves the Drive files where they are. Its confirmation is neutral too.
   - **Folder notices** take the "Syncs happen continuously" line's place as
-    one line, "<name>: Moved to a Drive folder livediagram can't see." with
-    **Show folder** (and "and n more" for several; the next shows once one
+    one line, "<name>: Moved to a Drive folder livediagram can't see.", and
+    **Show folder** joins Disconnect among the buttons (and "and n more" for several; the next shows once one
     is resolved).
   - **Needs attention**: "Google Drive needs reconnecting. Your files are
     safe." with **Reconnect**, or "Syncing paused in this browser. Resume to
