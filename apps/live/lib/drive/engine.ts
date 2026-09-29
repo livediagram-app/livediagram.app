@@ -80,6 +80,11 @@ export type DriveEngineDeps = {
   firstMirror: { done(connectedAt: number): boolean; mark(connectedAt: number): void };
   isVisible: () => boolean;
   onStatus: (status: DriveMirrorStatus) => void;
+  // After a pass applied a change from Drive: open views re-read
+  // (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow").
+  onInboundApplied?: () => void;
+  // The E-A3 diagnostic: log each gated check (`drive: start-token ...`).
+  diagnostics?: () => boolean;
 };
 
 const INITIAL: DriveMirrorStatus = {
@@ -263,11 +268,13 @@ export class DriveMirrorEngine {
         snapshot = await this.loadSnapshot(connection.rootFolderId!);
       }
 
+      let applied = false;
       if (kind !== 'write' && kind !== 'flush') {
-        if (await this.inbound(snapshot))
-          snapshot = await this.loadSnapshot(connection.rootFolderId!);
+        applied = await this.inbound(snapshot);
+        if (applied) snapshot = await this.loadSnapshot(connection.rootFolderId!);
       }
       await this.outbound(snapshot, kind);
+      if (applied) deps.onInboundApplied?.();
       await this.persistPageToken(kind);
       deps.seen.write(deps.ownerId, seenRowsOf(snapshot.items.values()));
       this.maybeReportFirstMirror(snapshot, connection);
@@ -416,7 +423,17 @@ export class DriveMirrorEngine {
 
   private async inbound(snapshot: MirrorSnapshot): Promise<boolean> {
     const { drive } = this.deps;
-    let token = this.pageToken ?? (await drive.getStartPageToken());
+    // The gate (docs/specs/022-drive-mirror/drive-mirror.md, "Cadence"): the start
+    // token names the position after the latest change, so one equal to the
+    // stored token means nothing new since; only then is changes.list skipped.
+    const start = await drive.getStartPageToken();
+    const moved = this.pageToken === null || start !== this.pageToken;
+    if (!moved) {
+      this.lastInboundAt = this.deps.now();
+      this.diagnose(false, 0);
+      return false;
+    }
+    let token = this.pageToken ?? start;
     const changes: DriveChange[] = [];
     for (;;) {
       let page;
@@ -441,10 +458,18 @@ export class DriveMirrorEngine {
       }
     }
     this.lastInboundAt = this.deps.now();
+    this.diagnose(true, changes.length);
     const changed =
       changes.length > 0 ? await applyInbound(this.context(snapshot), changes) : false;
     this.pageToken = token;
     return changed;
+  }
+
+  // Settles research E-A3 against real Drive: does the start token move for
+  // changes livediagram cannot see? Opt-in, one quiet line per check.
+  private diagnose(moved: boolean, listed: number): void {
+    if (this.deps.diagnostics?.())
+      console.info(`drive: start-token moved=${moved} listed=${listed}`);
   }
 
   private async outbound(snapshot: MirrorSnapshot, kind: PassKind): Promise<void> {

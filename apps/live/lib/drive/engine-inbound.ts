@@ -182,8 +182,17 @@ async function applyDecision(
     case 'echo':
       return false;
     case 'ignore':
-      if (decision.reason !== 'not-ours')
+      // Every ignore is logged. `not-ours` separately, saying whether the file
+      // carried any appProperties: a Drive copy that lost them reads
+      // `hadAppProperties: false`, one Drive never showed leaves no line at all.
+      if (decision.reason === 'not-ours') {
+        driveLog('inbound-not-ours', {
+          fileId: change.fileId,
+          hadAppProperties: decision.hadAppProperties ?? false,
+        });
+      } else {
         driveLog('inbound-ignored', { fileId: change.fileId, reason: decision.reason });
+      }
       return false;
     case 'forget':
       driveLog('inbound-forget', {

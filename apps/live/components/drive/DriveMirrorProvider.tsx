@@ -14,7 +14,7 @@ import {
   apiGetCapabilities,
   apiPutDriveConnection,
 } from '@/lib/api-client';
-import { subscribeApiWrites } from '@/lib/api/write-signal';
+import { notifyApiWrite, subscribeApiWrites } from '@/lib/api/write-signal';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { useConfirm } from '@/hooks/ui/useConfirm';
@@ -93,6 +93,11 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
         if (!engine) setStatus(message.status);
         return;
       }
+      // A change from Drive landed in the elected tab: this tab's views re-read.
+      if (message.type === 'drive-applied') {
+        notifyApiWrite({ drive: true });
+        return;
+      }
       if (!engine) return;
       if (message.type === 'hello') channel.post({ type: 'status', status: engine.current });
       else if (message.type === 'write') engine.noteWrite();
@@ -112,13 +117,19 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
         ownerId: clerkUserId,
         tokens: tokens.source,
         onStatus: publish,
+        onInboundApplied: () => {
+          notifyApiWrite({ drive: true });
+          channel.post({ type: 'drive-applied' });
+        },
       });
       if (runtime.current) runtime.current.engine = engine;
       void engine.start();
     });
     channel.post({ type: 'hello' });
 
-    const unsubscribeWrites = subscribeApiWrites(() => {
+    const unsubscribeWrites = subscribeApiWrites((signal) => {
+      // A change from Drive is not an edit to write back.
+      if (signal.drive) return;
       const engine = runtime.current?.engine;
       if (engine) engine.noteWrite();
       else channel.post({ type: 'write' });

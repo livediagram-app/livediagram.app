@@ -21,6 +21,7 @@ import {
 import { trackDailyReturn } from '@/lib/daily-return';
 import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useFolders } from '@/hooks/persistence/useFolders';
+import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/persistence/useTeams';
 import { useTokens } from '@/hooks/persistence/useTokens';
@@ -249,6 +250,12 @@ export function useExplorerState() {
   useEffect(() => {
     if (loadOwner) void load(loadOwner);
   }, [loadOwner, load]);
+  // A change made in Google Drive reaches this page without a reload
+  // (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow"). Quietly:
+  // no skeleton, the lists just settle.
+  useAfterDriveChange(() => {
+    if (loadOwner) void load(loadOwner);
+  }, !!loadOwner);
 
   // ---- Derived tree shape ---------------------------------------
   // Index folders by parentId so the recursive renderer can walk

@@ -18,6 +18,7 @@ import {
 
 const DEVICE_KEY = 'livediagram:v2:drive-device';
 const FIRST_MIRROR_KEY = 'livediagram:v2:drive-first-mirror';
+export const DIAGNOSTICS_KEY = 'livediagram:v2:drive-diagnostics';
 
 // A random per-browser id: the lease holder (D13).
 export function driveDeviceId(
@@ -49,6 +50,7 @@ export function createBrowserEngine(input: {
   ownerId: string;
   tokens: TokenSource;
   onStatus: (status: DriveMirrorStatus) => void;
+  onInboundApplied: () => void;
 }): DriveMirrorEngine {
   return new DriveMirrorEngine({
     ownerId: input.ownerId,
@@ -78,5 +80,8 @@ export function createBrowserEngine(input: {
     },
     isVisible: () => document.visibilityState === 'visible',
     onStatus: input.onStatus,
+    onInboundApplied: input.onInboundApplied,
+    // The E-A3 diagnostic (docs/specs/022-drive-mirror/drive-mirror.md, "Cadence"): opt-in.
+    diagnostics: () => localStorage.getItem(DIAGNOSTICS_KEY) === '1',
   });
 }

@@ -56,7 +56,7 @@ export type InboundEffect =
     };
 
 export type InboundDecision =
-  | { kind: 'ignore'; reason: string }
+  | { kind: 'ignore'; reason: string; hadAppProperties?: boolean }
   | { kind: 'echo' }
   | { kind: 'forget'; item: DriveItem; reason: string }
   | { kind: 'adopt'; item: DriveItem }
@@ -128,7 +128,11 @@ function planUnrecorded(change: DriveChange, snapshot: MirrorSnapshot): InboundD
   const file = change.file;
   if (!file || change.removed) return { kind: 'ignore', reason: 'unknown-removed' };
   if (file.appProperties[DRIVE_PROP_ORIGIN] !== snapshot.host) {
-    return { kind: 'ignore', reason: 'not-ours' };
+    return {
+      kind: 'ignore',
+      reason: 'not-ours',
+      hadAppProperties: Object.keys(file.appProperties).length > 0,
+    };
   }
   const folderId = file.appProperties[DRIVE_PROP_FOLDER_ID];
   if (folderId) {

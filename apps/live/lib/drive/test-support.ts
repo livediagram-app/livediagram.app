@@ -327,6 +327,8 @@ export function makeEngine(opts: {
   deviceId?: string;
   tokens?: TokenSource;
   visible?: () => boolean;
+  diagnostics?: () => boolean;
+  onInboundApplied?: () => void;
 }) {
   const statuses: DriveMirrorStatus[] = [];
   const events: string[] = [];
@@ -350,6 +352,8 @@ export function makeEngine(opts: {
     firstMirror: { done: (at) => firstMirror.has(at), mark: (at) => void firstMirror.add(at) },
     isVisible: opts.visible ?? (() => true),
     onStatus: (s) => statuses.push(s),
+    ...(opts.diagnostics ? { diagnostics: opts.diagnostics } : {}),
+    ...(opts.onInboundApplied ? { onInboundApplied: opts.onInboundApplied } : {}),
   });
   return { engine, statuses, events };
 }

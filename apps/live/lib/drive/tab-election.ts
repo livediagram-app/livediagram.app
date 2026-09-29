@@ -13,6 +13,8 @@ export type DriveTabMessage =
   | { type: 'status'; status: DriveMirrorStatus }
   | { type: 'hello' }
   | { type: 'write' }
+  // The elected tab applied a change from Drive: every tab's views re-read.
+  | { type: 'drive-applied' }
   | { type: 'flush' }
   | { type: 'sync-now' }
   | { type: 'adopt'; kind: DriveItemKind; ldId: string; folderFileId: string }

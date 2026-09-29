@@ -7,7 +7,8 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { notifyApiWrite, resetApiWriteListeners } from '@/lib/api/write-signal';
-import { useAfterApiWrite } from './useAfterApiWrite';
+import { AFTER_WRITE_DELAY_MS, useAfterApiWrite } from './useAfterApiWrite';
+import { useAfterDriveChange } from './useAfterDriveChange';
 
 beforeEach(() => {
   resetApiWriteListeners();
@@ -65,5 +66,26 @@ describe('useAfterApiWrite', () => {
     vi.advanceTimersByTime(10_000);
     expect(run).not.toHaveBeenCalled();
     unmount();
+  });
+});
+
+describe('useAfterDriveChange (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow")', () => {
+  it('re-reads only for changes applied from Google Drive, not for ordinary writes', () => {
+    const run = vi.fn();
+    renderHook(() => useAfterDriveChange(run));
+    notifyApiWrite();
+    vi.advanceTimersByTime(10_000);
+    expect(run).not.toHaveBeenCalled();
+    notifyApiWrite({ drive: true });
+    vi.advanceTimersByTime(AFTER_WRITE_DELAY_MS);
+    expect(run).toHaveBeenCalledTimes(1);
+  });
+
+  it('does nothing while disabled', () => {
+    const run = vi.fn();
+    renderHook(() => useAfterDriveChange(run, false));
+    notifyApiWrite({ drive: true });
+    vi.advanceTimersByTime(10_000);
+    expect(run).not.toHaveBeenCalled();
   });
 });

@@ -128,6 +128,7 @@ import { useEditorActions } from '@/hooks/collab/useEditorActions';
 import { createTab, deriveTabLoadState, mergeAiElements, patchTab } from './editor-page-helpers';
 import { useAutosave } from './useAutosave';
 import { useDiagramTrashed } from './useDiagramTrashed';
+import { useDriveFollow } from './useDriveFollow';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
 import { usePerTabLoad } from './usePerTabLoad';
@@ -703,6 +704,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     ownerId: selfParticipant.id,
     diagramId,
     viaShareLink: sessionShareCode !== null,
+  });
+  // A change made in Google Drive reaches the open editor (docs/specs/022-drive-mirror/drive-mirror.md,
+  // "Other views follow"). Only the owner's own session mirrors, never a share link.
+  useDriveFollow({
+    ownerId: selfParticipant.id === 'self' ? null : selfParticipant.id,
+    diagramId,
+    enabled: sessionShareCode === null && !embedMode,
+    refreshDiagramList,
+    setDiagramName,
+    setDiagramTrashed: diagramTrashed.setDiagramTrashed,
   });
   // Sharing / session / owner / share-link state + the room refs all now
   // live in useEditorRealtime, destructured above. Embeds honour the share

@@ -75,14 +75,16 @@ describe('arrival catch-up', () => {
 });
 
 describe('cadence', () => {
-  it('polls every 20 minutes while visible, never while hidden, and on focus after 5 minutes', async () => {
+  it('checks on the poll while visible, never while hidden, and on focus after the gap', async () => {
     const w = world();
     let visible = true;
     const { engine } = makeEngine({ ...w, visible: () => visible });
     await engine.start();
     expect(w.timers.pending()).toEqual([DRIVE_POLL_INTERVAL_MS]);
 
-    const listed = () => w.google.requests.filter((r) => r.path === '/drive/v3/changes').length;
+    // Every check starts with the gate's start-token read.
+    const listed = () =>
+      w.google.requests.filter((r) => r.path === '/drive/v3/changes/startPageToken').length;
     const before = listed();
     w.timers.advance(DRIVE_POLL_INTERVAL_MS);
     await engine.syncNow();
@@ -306,5 +308,129 @@ describe('the api token limiter', () => {
     limited = false;
     await engine.syncNow();
     expect(statuses.at(-1)).toMatchObject({ state: 'idle', error: null });
+  });
+});
+
+describe('the 2-minute gated pace (docs/specs/022-drive-mirror/drive-mirror.md, "Cadence")', () => {
+  const listCalls = (w: ReturnType<typeof world>) =>
+    w.google.requests.filter((r) => r.path === '/drive/v3/changes').length;
+
+  it('polls every 2 minutes while visible', async () => {
+    const w = world();
+    const { engine } = makeEngine(w);
+    await engine.start();
+    expect(w.timers.pending()).toEqual([2 * MIN]);
+  });
+
+  it('asks only for the start token when nothing changed, and lists when it moved', async () => {
+    const w = world();
+    w.ld.createDiagram('d1', 'Plan');
+    const { engine } = makeEngine(w);
+    await engine.start();
+    await engine.syncNow();
+    const before = listCalls(w);
+    await engine.syncNow();
+    expect(listCalls(w)).toBe(before);
+    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, 'Moved.livediagram');
+    await engine.syncNow();
+    expect(listCalls(w)).toBe(before + 1);
+    expect(w.ld.diagram('d1')!.name).toBe('Moved');
+  });
+
+  it('never skips a real change, even when the token also moves for files it cannot see', async () => {
+    const w = world();
+    w.ld.createDiagram('d1', 'Plan');
+    const { engine } = makeEngine(w);
+    await engine.start();
+    // Invisible activity elsewhere in the user's Drive moves the token too.
+    w.google.userCreateFolder(OWNER, 'Elsewhere');
+    await engine.syncNow();
+    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, 'Seen.livediagram');
+    await engine.syncNow();
+    expect(w.ld.diagram('d1')!.name).toBe('Seen');
+  });
+
+  it('logs the E-A3 diagnostic only when asked to', async () => {
+    const w = world();
+    const lines: string[] = [];
+    const info = console.info;
+    console.info = (...args: unknown[]) => void lines.push(args.map(String).join(' '));
+    try {
+      const { engine } = makeEngine({ ...w, diagnostics: () => false });
+      await engine.start();
+      await engine.syncNow();
+      expect(lines.filter((l) => l.startsWith('drive: start-token'))).toEqual([]);
+      const d = makeEngine({ ...w, deviceId: 'device-b', diagnostics: () => true });
+      await d.engine.start();
+      await d.engine.syncNow();
+      expect(lines.some((l) => /^drive: start-token moved=(true|false) listed=\d+$/.test(l))).toBe(
+        true,
+      );
+      lines.length = 0;
+      // Activity livediagram cannot see: whether the real token moves for it is
+      // exactly what the diagnostic is for (E-A3); the fake says it does.
+      w.google.userCreateFolder(OWNER, 'Elsewhere');
+      await d.engine.syncNow();
+      await d.engine.syncNow();
+      expect(lines.filter((l) => l.startsWith('drive: start-token'))).toEqual([
+        'drive: start-token moved=true listed=0',
+        'drive: start-token moved=false listed=0',
+      ]);
+    } finally {
+      console.info = info;
+    }
+  });
+
+  it('checks on focus at most every 30 seconds', async () => {
+    const w = world();
+    const { engine } = makeEngine(w);
+    await engine.start();
+    const startTokens = () =>
+      w.google.requests.filter((r) => r.path.endsWith('/startPageToken')).length;
+    const before = startTokens();
+    w.clock.tick(DRIVE_FOCUS_POLL_MIN_GAP_MS - 1);
+    await engine.onVisible();
+    expect(startTokens()).toBe(before);
+    w.clock.tick(2);
+    await engine.onVisible();
+    expect(startTokens()).toBe(before + 1);
+    expect(DRIVE_FOCUS_POLL_MIN_GAP_MS).toBe(30_000);
+  });
+});
+
+describe('views follow (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow")', () => {
+  it('announces a pass that applied a change from Drive, and only those', async () => {
+    const w = world();
+    w.ld.createDiagram('d1', 'Plan');
+    let applied = 0;
+    const { engine } = makeEngine({ ...w, onInboundApplied: () => void (applied += 1) });
+    await engine.start();
+    await engine.syncNow();
+    expect(applied).toBe(0);
+    w.google.userRename(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, 'Renamed.livediagram');
+    await engine.syncNow();
+    expect(applied).toBe(1);
+  });
+});
+
+describe('not-ours logging', () => {
+  it('logs a file it does not take as its own, saying whether it had any appProperties', async () => {
+    const w = world();
+    w.ld.createDiagram('d1', 'Plan');
+    const lines: unknown[][] = [];
+    const info = console.info;
+    console.info = (...args: unknown[]) => void lines.push(args);
+    try {
+      const { engine } = makeEngine(w);
+      await engine.start();
+      w.google.userCopy(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, { keepAppProperties: false });
+      await engine.syncNow();
+      expect(lines).toContainEqual([
+        '[drive-mirror] inbound-not-ours',
+        expect.objectContaining({ hadAppProperties: false }),
+      ]);
+    } finally {
+      console.info = info;
+    }
   });
 });
