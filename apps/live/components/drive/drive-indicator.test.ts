@@ -60,7 +60,6 @@ describe('driveIndicator', () => {
         lastSyncedAt: 1,
         notices: [{ kind: 'diagram', ldId: 'd', name: 'n', parentId: 'p' }],
       }),
-      status({ state: 'idle', lastSyncedAt: 1, skipped: [{ name: 'n', reason: 'unreadable' }] }),
     ]) {
       expect(driveIndicator(s, 'broker', false)).toMatchObject({
         kind: 'attention',

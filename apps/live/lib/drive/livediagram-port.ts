@@ -38,7 +38,6 @@ import {
 } from '../api-client';
 import { apiFetch, apiHeaders, expectOk } from '../api/core';
 import type { DiagramListResponse } from '@livediagram/api-schema';
-import { duplicateDiagram } from '../duplicate-diagram';
 import {
   diagramToEnvelopeText,
   type DiagramEnvelope,
@@ -81,10 +80,8 @@ export interface LivediagramPort {
   moveFolder(id: string, parentId: string | null): Promise<void>;
   deleteFolder(id: string): Promise<void>;
   // A new Personal Space diagram from an envelope; returns its id. `target`
-  // pins the id, name and folder (a copy made in Drive).
+  // pins the id, name and folder (a copy opened with livediagram).
   importDiagramCopy(envelope: DiagramEnvelope, target?: CopyTarget): Promise<string>;
-  // Duplicate, exactly as the Duplicate command does, into `target`.
-  duplicateDiagram(sourceId: string, target: CopyTarget): Promise<void>;
 
   getConnection(): Promise<DriveConnection | null>;
   putConnection(patch: {
@@ -207,10 +204,6 @@ export function createApiLivediagramPort(ownerId: string): LivediagramPort {
       await apiUpdateFolder(ownerId, id, { parentId });
     },
     deleteFolder: (id) => apiDeleteFolder(ownerId, id),
-    async duplicateDiagram(sourceId, target) {
-      const id = await duplicateDiagram(ownerId, sourceId, target);
-      if (!id) throw new Error(`duplicate of ${sourceId} failed`);
-    },
     async importDiagramCopy(envelope, target) {
       const id = target?.id ?? crypto.randomUUID();
       const { tabs, presentation } = copyEnvelope(envelope);

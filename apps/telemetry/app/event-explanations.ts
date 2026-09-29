@@ -984,7 +984,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Drive|Created':
     'A newly connected Personal Space finished copying every diagram into Google Drive for the first time.',
   'Drive|Applied':
-    'A change someone made in Google Drive reached livediagram: a copy (which becomes a new diagram), a rename, a move (or a move into a folder livediagram cannot see), a bin, a restore, or a permanent delete.',
+    'A change someone made in Google Drive reached livediagram: a rename, a move (or a move into a folder livediagram cannot see), a bin, a restore, or a permanent delete.',
   'Drive|Opened':
     'Someone opened a livediagram file from Google Drive with Open with. The type is what happened: it opened, a copy was offered, or it could not be read.',
   'Trash|Opened': 'Someone opened the Trash, where deleted diagrams wait for 30 days.',

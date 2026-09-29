@@ -382,7 +382,7 @@ describe('failures', () => {
 });
 
 describe('userCopy', () => {
-  it('makes a new file beside the original, keeping contents and appProperties, visible to the app', async () => {
+  it('makes a new file beside the original, keeping contents and appProperties, seen once opened with the app', async () => {
     const { fake, call } = setup();
     const folder = await createFolder(call, 'f');
     const up = multipart(
@@ -398,6 +398,9 @@ describe('userCopy', () => {
       )
     ).body!;
     const copyId = fake.userCopy(file.id!);
+    // Invisible to the app under drive.file until Open with grants it.
+    expect((await call('GET', `/drive/v3/files/${copyId}`)).status).toBe(404);
+    fake.openWithState('me', copyId);
     const copy = (await call('GET', `/drive/v3/files/${copyId}?fields=${FILE_FIELDS}`)).body!;
     expect(copy).toMatchObject({
       name: 'Copy of Plan.livediagram',
@@ -407,12 +410,12 @@ describe('userCopy', () => {
     });
   });
 
-  it('can make a copy without appProperties, or one the app never sees', async () => {
+  it('can make a copy without appProperties, or one the app sees at once', async () => {
     const { fake, call } = setup();
     const f = await createFolder(call, 'f');
     expect(fake.get(fake.userCopy(f.id, { keepAppProperties: false }))!.appProperties).toEqual({});
-    const hidden = fake.userCopy(f.id, { visibleToApp: false });
-    expect((await call('GET', `/drive/v3/files/${hidden}`)).status).toBe(404);
+    const shown = fake.userCopy(f.id, { visibleToApp: true });
+    expect((await call('GET', `/drive/v3/files/${shown}`)).status).toBe(200);
   });
 });
 

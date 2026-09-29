@@ -26,8 +26,7 @@ export function driveIndicator(
     status.state === 'needs_reconnect' ||
     status.state === 'needs_resume' ||
     status.error !== null ||
-    status.notices.length > 0 ||
-    status.skipped.length > 0;
+    status.notices.length > 0;
   if (attention)
     return { kind: 'attention', label: 'Google Drive needs attention', progress: null };
   if (status.progress) {

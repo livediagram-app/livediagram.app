@@ -23,9 +23,9 @@ import { applyInbound, folderAppProperties } from './engine-inbound';
 import { runOutbound } from './engine-outbound';
 import type { LivediagramPort } from './livediagram-port';
 import { driveLog, driveWarn } from './log';
-import { PassContext, type DriveSkipped } from './pass-context';
+import { PassContext } from './pass-context';
 import { planOutbound } from './plan-outbound';
-import { LD_NAME_MAX, planInbound } from './plan-inbound';
+import { LD_NAME_MAX, planAdoption } from './plan-inbound';
 import { buildSnapshot, itemKey, ldFolderForParent, type MirrorSnapshot } from './snapshot';
 import type { Rasteriser } from './thumbnail';
 import { seenRowsOf, type SeenStore } from './tombstones';
@@ -50,8 +50,6 @@ export type DriveMirrorStatus = {
   error: 'offline' | 'rate_limited' | 'failed' | null;
   leaseHeldElsewhere: boolean;
   notices: DriveMirrorNotice[];
-  // What livediagram recognised in Drive but could not act on, this session.
-  skipped: DriveSkipped[];
 };
 
 export type DriveEngineTelemetry = (
@@ -94,7 +92,6 @@ const INITIAL: DriveMirrorStatus = {
   error: null,
   leaseHeldElsewhere: false,
   notices: [],
-  skipped: [],
 };
 
 export class DriveMirrorEngine {
@@ -381,16 +378,11 @@ export class DriveMirrorEngine {
       `appProperties has { key='${DRIVE_PROP_ORIGIN}' and value='${this.deps.host}' }`,
     );
     const ctx = this.context(snapshot);
-    const time = new Date(this.deps.now()).toISOString();
-    let adopted = 0;
-    for (const file of files) {
-      const decision = planInbound({ fileId: file.id, removed: false, time, file }, snapshot);
-      if (decision.kind !== 'adopt') continue;
-      await ctx.record(decision.item);
-      adopted += 1;
-    }
+    const { adopt, ambiguous } = planAdoption(files, snapshot);
+    for (const item of adopt) await ctx.record(item);
     await ctx.flushItems();
-    driveLog('adopted', { files: files.length, adopted });
+    if (ambiguous.length > 0) driveWarn('adopt-ambiguous', { diagrams: ambiguous.length });
+    driveLog('adopted', { files: files.length, adopted: adopt.length });
   }
 
   private async loadSnapshot(rootFolderId: string): Promise<MirrorSnapshot> {
@@ -412,12 +404,6 @@ export class DriveMirrorEngine {
       rasterise: this.deps.rasterise,
       track: (action, type) => this.deps.track(action, type),
       now: this.deps.now,
-      skip: (entry) => {
-        const known = this.status.skipped.some(
-          (s) => s.name === entry.name && s.reason === entry.reason,
-        );
-        if (!known) this.publish({ skipped: [...this.status.skipped, entry].slice(-10) });
-      },
     });
   }
 

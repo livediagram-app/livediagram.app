@@ -30,7 +30,6 @@ export const DRIVE_STATUS_INITIAL: DriveMirrorStatus = {
   error: null,
   leaseHeldElsewhere: false,
   notices: [],
-  skipped: [],
 };
 
 const noop = async () => {};

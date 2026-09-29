@@ -240,21 +240,6 @@ export class FakeLivediagram {
           });
           return id;
         }),
-      duplicateDiagram: (sourceId: string, target: CopyTarget) =>
-        write(() => {
-          const src = this.live(sourceId);
-          this.diagrams.set(target.id, {
-            id: target.id,
-            name: target.name,
-            folderId: target.folderId,
-            teamId: null,
-            savedAt: this.clock.now,
-            createdAt: this.clock.now,
-            trashedAt: null,
-            tabs: src.tabs.map((t) => ({ ...t, id: `${t.id}-${target.id}` })),
-            presentation: src.presentation,
-          });
-        }),
       getConnection: async () => (this.connection ? { ...this.connection } : null),
       putConnection: (patch) =>
         write(() => {

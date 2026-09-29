@@ -423,7 +423,10 @@ describe('not-ours logging', () => {
     try {
       const { engine } = makeEngine(w);
       await engine.start();
-      w.google.userCopy(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, { keepAppProperties: false });
+      w.google.userCopy(fileOf(w.google, w.ld, 'diagram', 'd1')!.id, {
+        keepAppProperties: false,
+        visibleToApp: true,
+      });
       await engine.syncNow();
       expect(lines).toContainEqual([
         '[drive-mirror] inbound-not-ours',

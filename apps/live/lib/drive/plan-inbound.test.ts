@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DriveItem } from '@livediagram/api-schema';
 import type { DriveChange, DriveFile } from './drive-client';
-import { driveCopyDiagramId, orderChanges, planInbound } from './plan-inbound';
+import { orderChanges, planAdoption, planInbound } from './plan-inbound';
 import { buildSnapshot } from './snapshot';
 
 // Each row of the spec's Inbound table as a pure decision
@@ -246,8 +246,8 @@ describe('planInbound: folders', () => {
 });
 
 describe('planInbound: unrecorded files', () => {
-  it('ignores files from other deployments, and makes a diagram of one no diagram owns', () => {
-    const empty = buildSnapshot({
+  const empty = () =>
+    buildSnapshot({
       host: HOST,
       rootFolderId: 'root',
       diagrams: [],
@@ -255,64 +255,90 @@ describe('planInbound: unrecorded files', () => {
       trash: [],
       items: [],
     });
+
+  it('ignores files from other deployments, saying whether they carried appProperties', () => {
     expect(
       planInbound(
         change(file({ appProperties: { ldDiagramId: 'd1', ldOrigin: 'other.host' } })),
-        empty,
+        empty(),
       ),
-    ).toMatchObject({ kind: 'ignore', reason: 'not-ours' });
-    // A livediagram file whose diagram is gone becomes a diagram of its own.
-    expect(planInbound(change(file()), empty)).toMatchObject({
-      kind: 'apply',
-      effects: [{ kind: 'copy-diagram', sourceId: null, newId: driveCopyDiagramId('file-d1') }],
-      types: ['Copy'],
-    });
-    expect(planInbound(change(file({ trashed: true })), empty)).toMatchObject({
+    ).toEqual({ kind: 'ignore', reason: 'not-ours', hadAppProperties: true });
+    expect(planInbound(change(file({ appProperties: {} })), empty())).toEqual({
       kind: 'ignore',
-      reason: 'binned-copy',
+      reason: 'not-ours',
+      hadAppProperties: false,
     });
   });
 
-  it('reads a new file carrying a mirrored diagram id as a copy of it', () => {
-    const d = planInbound(
-      change(file({ id: 'file-copy', name: 'Copy of Plan.livediagram', parents: ['file-f1'] }), {
-        fileId: 'file-copy',
-      }),
-      snap(),
+  it('never makes a diagram from a file no diagram owns', () => {
+    expect(planInbound(change(file()), empty())).toEqual({
+      kind: 'ignore',
+      reason: 'unrecorded-diagram',
+    });
+  });
+
+  it('leaves a copy of a mirrored diagram alone: another file carrying its id', () => {
+    // docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive": never applied,
+    // re-tagged or adopted.
+    const copy = file({ id: 'file-copy', name: 'Copy of Plan.livediagram', parents: ['file-f1'] });
+    expect(planInbound(change(copy, { fileId: 'file-copy' }), snap())).toEqual({
+      kind: 'ignore',
+      reason: 'foreign-copy',
+    });
+    expect(
+      planInbound(change({ ...copy, trashed: true }, { fileId: 'file-copy' }), snap()),
+    ).toEqual({ kind: 'ignore', reason: 'foreign-copy' });
+  });
+
+  it('leaves an unrecorded file of a known diagram to the reconnect listing', () => {
+    expect(planInbound(change(file({ id: 'other-file' })), snap({ items: [] }))).toEqual({
+      kind: 'ignore',
+      reason: 'unrecorded-diagram',
+    });
+  });
+});
+
+describe('planAdoption (a reconnect)', () => {
+  it('adopts the one file of a known diagram, and known folders', () => {
+    const folderFile = file({
+      id: 'file-f1',
+      name: 'Work',
+      mimeType: 'application/vnd.google-apps.folder',
+      appProperties: { ldFolderId: 'f1', ldOrigin: HOST },
+      md5Checksum: null,
+      headRevisionId: null,
+    });
+    const { adopt, ambiguous } = planAdoption(
+      [file({ id: 'other-file' }), folderFile],
+      snap({ items: [] }),
     );
-    expect(d).toMatchObject({
-      kind: 'apply',
-      effects: [
-        {
-          kind: 'copy-diagram',
-          fileId: 'file-copy',
-          newId: driveCopyDiagramId('file-copy'),
-          sourceId: 'd1',
-          name: 'Copy of Plan',
-          folderId: 'f1',
-        },
-      ],
-      record: {
-        kind: 'diagram',
-        ldId: driveCopyDiagramId('file-copy'),
-        driveFileId: 'file-copy',
-        mirroredSavedAt: null,
-      },
-    });
+    expect(adopt.map((i) => [i.kind, i.ldId, i.driveFileId])).toEqual([
+      ['folder', 'f1', 'file-f1'],
+      ['diagram', 'd1', 'other-file'],
+    ]);
+    expect(ambiguous).toEqual([]);
   });
 
-  it('derives the copy diagram id from its file id, the same every time', () => {
-    expect(driveCopyDiagramId('abc')).toBe(driveCopyDiagramId('abc'));
-    expect(driveCopyDiagramId('abc')).not.toBe(driveCopyDiagramId('abd'));
-    expect(driveCopyDiagramId('abc')).toMatch(/^dc-[0-9a-f]{16}$/);
+  it('adopts neither of two files claiming one diagram: a copy is never the original', () => {
+    const { adopt, ambiguous } = planAdoption(
+      [file(), file({ id: 'file-copy', name: 'Copy of Plan.livediagram' })],
+      snap({ items: [] }),
+    );
+    expect(adopt).toEqual([]);
+    expect(ambiguous).toEqual(['d1']);
   });
 
-  it('adopts a file of a known diagram with no row (a reconnect)', () => {
-    const noItems = snap({ items: [] });
-    expect(planInbound(change(file({ id: 'other-file' })), noItems)).toMatchObject({
-      kind: 'adopt',
-      item: { ldId: 'd1', driveFileId: 'other-file' },
-    });
+  it('skips files of diagrams already recorded, unknown diagrams and other deployments', () => {
+    expect(
+      planAdoption(
+        [
+          file({ id: 'file-copy' }),
+          file({ id: 'x', appProperties: { ldDiagramId: 'gone', ldOrigin: HOST } }),
+          file({ id: 'y', appProperties: { ldDiagramId: 'd1', ldOrigin: 'other.host' } }),
+        ],
+        snap(),
+      ),
+    ).toEqual({ adopt: [], ambiguous: [] });
   });
 });
 

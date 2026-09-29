@@ -176,11 +176,12 @@ export class FakeGoogle {
     this.store.writeContent(this.file(id), content);
   }
 
-  // Drive's "Make a copy" in its own UI. Modelled as what real Drive most
-  // likely does (unverified, docs/specs/022-drive-mirror/drive-mirror.md,
-  // "Copies made in Drive"): a new file id, "Copy of <name>" in the same
-  // folder, the same contents, the appProperties kept, and the app still able
-  // to see it. `keepAppProperties` / `visibleToApp` switch off the other branch.
+  // Drive's "Make a copy" in its own UI, as real Drive does it (verified,
+  // docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive"): a new
+  // file id, "Copy of <name>" in the same folder, the same contents and
+  // appProperties, and invisible to the app under drive.file until the user
+  // opens it with the app (`openWithState`). `visibleToApp` and
+  // `keepAppProperties` model other shapes for tests of the logging.
   userCopy(
     id: string,
     options: { keepAppProperties?: boolean; visibleToApp?: boolean; content?: string } = {},
@@ -193,7 +194,7 @@ export class FakeGoogle {
       parents: [...source.parents],
       appProperties: options.keepAppProperties === false ? {} : { ...source.appProperties },
       content: options.content ?? source.content,
-      viaApp: options.visibleToApp !== false,
+      viaApp: options.visibleToApp === true,
     });
     return copy.id;
   }

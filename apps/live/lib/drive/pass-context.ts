@@ -13,10 +13,6 @@ import type { Rasteriser } from './thumbnail';
 
 export type DriveTelemetry = (action: 'Applied', type: string) => void;
 
-// Something Drive holds that livediagram recognised but could not act on
-// (a copy it could not read), shown in the Drive panel.
-export type DriveSkipped = { name: string; reason: 'unreadable' };
-
 export class PassContext {
   private pending = new Map<string, DriveItem>();
   readonly snapshot: MirrorSnapshot;
@@ -25,7 +21,6 @@ export class PassContext {
   readonly rasterise: Rasteriser;
   readonly track: DriveTelemetry;
   readonly now: () => number;
-  readonly skip: (entry: DriveSkipped) => void;
 
   constructor(deps: {
     snapshot: MirrorSnapshot;
@@ -34,7 +29,6 @@ export class PassContext {
     rasterise: Rasteriser;
     track: DriveTelemetry;
     now: () => number;
-    skip?: (entry: DriveSkipped) => void;
   }) {
     this.snapshot = deps.snapshot;
     this.port = deps.port;
@@ -42,7 +36,6 @@ export class PassContext {
     this.rasterise = deps.rasterise;
     this.track = deps.track;
     this.now = deps.now;
-    this.skip = deps.skip ?? (() => {});
   }
 
   // Record an item: in the snapshot at once, in D1 with the next batch.

@@ -30,8 +30,7 @@ import {
 export const LD_NAME_MAX = 200;
 
 // Telemetry types (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry").
-export type InboundType =
-  'Copy' | 'Rename' | 'Move' | 'Trash' | 'Restore' | 'Purge' | 'UnknownFolder';
+export type InboundType = 'Rename' | 'Move' | 'Trash' | 'Restore' | 'Purge' | 'UnknownFolder';
 
 export type InboundEffect =
   | { kind: 'rename-diagram'; id: string; name: string }
@@ -42,18 +41,7 @@ export type InboundEffect =
   | { kind: 'rename-folder'; id: string; name: string }
   | { kind: 'move-folder'; id: string; parentId: string | null }
   | { kind: 'bin-folder'; id: string }
-  | { kind: 'recreate-folder'; id: string; name: string; parentId: string | null; fileId: string }
-  // A copy made in Drive (docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive"):
-  // a new diagram `newId`, duplicated from `sourceId` when that is live, else
-  // imported from the copy's own contents.
-  | {
-      kind: 'copy-diagram';
-      fileId: string;
-      newId: string;
-      sourceId: string | null;
-      name: string;
-      folderId: string | null;
-    };
+  | { kind: 'recreate-folder'; id: string; name: string; parentId: string | null; fileId: string };
 
 export type InboundDecision =
   | { kind: 'ignore'; reason: string; hadAppProperties?: boolean }
@@ -81,52 +69,7 @@ function blankItem(
 }
 
 // A file livediagram made but holds no row for: a folder deleted here and
-// restored in Drive, or anything met again after a reconnect.
-// The id of the diagram a copy made in Drive becomes: derived from the copy's
-// file id, so a pass that stops before re-tagging the copy finds the same
-// diagram next time (D19); a hash, so no Drive id appears in a diagram URL.
-export function driveCopyDiagramId(fileId: string): string {
-  let hash = 0xcbf29ce484222325n;
-  for (const byte of new TextEncoder().encode(fileId)) {
-    hash ^= BigInt(byte);
-    hash = (hash * 0x100000001b3n) & 0xffffffffffffffffn;
-  }
-  return `dc-${hash.toString(16).padStart(16, '0')}`;
-}
-
-function planCopy(file: DriveFile, diagramId: string, snapshot: MirrorSnapshot): InboundDecision {
-  if (file.trashed) return { kind: 'ignore', reason: 'binned-copy' };
-  // Someone else's file the user opened with livediagram: Import a copy is
-  // the way in for that, never a silent import.
-  if (!file.ownedByMe) return { kind: 'ignore', reason: 'not-owned-copy' };
-  const newId = driveCopyDiagramId(file.id);
-  const live = snapshot.diagrams.get(diagramId);
-  const original = live ?? snapshot.trash.get(diagramId);
-  const name = stripDriveName(file.name, LD_NAME_MAX) ?? original?.name ?? 'Diagram';
-  const parentId = file.parents[0] ?? null;
-  const folderId = ldFolderForParent(snapshot, parentId);
-  const record = blankItem('diagram', newId, file, name);
-  if (folderId === undefined) {
-    record.notice = 'unseen_folder';
-    record.noticeParentId = parentId;
-  }
-  return {
-    kind: 'apply',
-    effects: [
-      {
-        kind: 'copy-diagram',
-        fileId: file.id,
-        newId,
-        sourceId: live ? live.id : null,
-        name,
-        folderId: folderId ?? null,
-      },
-    ],
-    record,
-    types: ['Copy'],
-  };
-}
-
+// restored in Drive, or a diagram's file seen before its row exists.
 function planUnrecorded(change: DriveChange, snapshot: MirrorSnapshot): InboundDecision {
   const file = change.file;
   if (!file || change.removed) return { kind: 'ignore', reason: 'unknown-removed' };
@@ -159,17 +102,14 @@ function planUnrecorded(change: DriveChange, snapshot: MirrorSnapshot): InboundD
   }
   const diagramId = file.appProperties[DRIVE_PROP_DIAGRAM_ID];
   if (diagramId) {
-    // Another file already mirrors that diagram: this one is a copy.
+    // Another file mirrors that diagram: this one is a copy the user opened
+    // with livediagram (docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive").
+    // Never applied, re-tagged or adopted; Open with offers Import as new document.
     if (snapshot.items.has(itemKey('diagram', diagramId)))
-      return planCopy(file, diagramId, snapshot);
-    const known = snapshot.diagrams.get(diagramId) ?? snapshot.trash.get(diagramId);
-    if (known) {
-      const ldName = stripDriveName(file.name, LD_NAME_MAX) ?? known.name;
-      return { kind: 'adopt', item: blankItem('diagram', diagramId, file, ldName) };
-    }
-    // A livediagram file no diagram owns any more (a copy of a diagram since
-    // purged): it becomes a diagram of its own, from its contents.
-    return planCopy(file, diagramId, snapshot);
+      return { kind: 'ignore', reason: 'foreign-copy' };
+    // Only the reconnect listing adopts a diagram's file (planAdoption), where
+    // every file claiming the diagram is seen at once.
+    return { kind: 'ignore', reason: 'unrecorded-diagram' };
   }
   return { kind: 'ignore', reason: 'unrecorded' };
 }
@@ -351,4 +291,45 @@ export function orderChanges(changes: DriveChange[], snapshot: MirrorSnapshot): 
   return [...latest.values()].sort(
     (a, b) => Number(isFolder(b)) - Number(isFolder(a)) || Date.parse(a.time) - Date.parse(b.time),
   );
+}
+
+// After a (re)connect, the files livediagram made earlier, all at once: the
+// rows to record instead of making second files. A diagram claimed by more than
+// one file (its file and a copy the user opened with livediagram) is left to
+// neither, so a copy is never taken for the original; the next write makes a
+// fresh file for it.
+export function planAdoption(
+  files: DriveFile[],
+  snapshot: MirrorSnapshot,
+): { adopt: DriveItem[]; ambiguous: string[] } {
+  const claims = new Map<string, DriveFile[]>();
+  const adopt: DriveItem[] = [];
+  for (const file of files) {
+    if (file.appProperties[DRIVE_PROP_ORIGIN] !== snapshot.host) continue;
+    if (file.appProperties[DRIVE_PROP_FOLDER_ID]) {
+      const decision = planUnrecorded(
+        { fileId: file.id, removed: false, time: '', file },
+        snapshot,
+      );
+      if (decision.kind === 'adopt') adopt.push(decision.item);
+      continue;
+    }
+    const diagramId = file.appProperties[DRIVE_PROP_DIAGRAM_ID];
+    if (!diagramId || snapshot.items.has(itemKey('diagram', diagramId))) continue;
+    claims.set(diagramId, [...(claims.get(diagramId) ?? []), file]);
+  }
+  const ambiguous: string[] = [];
+  for (const [diagramId, claimants] of claims) {
+    const known = snapshot.diagrams.get(diagramId) ?? snapshot.trash.get(diagramId);
+    if (!known) continue;
+    if (claimants.length > 1) {
+      ambiguous.push(diagramId);
+      continue;
+    }
+    const file = claimants[0]!;
+    adopt.push(
+      blankItem('diagram', diagramId, file, stripDriveName(file.name, LD_NAME_MAX) ?? known.name),
+    );
+  }
+  return { adopt, ambiguous };
 }
