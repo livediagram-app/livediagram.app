@@ -70,29 +70,35 @@ this spec does not restate it.
     mirror reports, and the mirror syncs at once, even when another tab of the
     same browser is the one running it. A cancel is not an error: the row says, calmly, "Connection
     cancelled. Connect whenever you're ready."
-  - **Connected:** the pill says **Synced**, **Syncing**, **Copying** or
-    **Needs attention**, with the time since the last sync beside it
-    ("Synced · 1 min ago", or "Not synced yet"). One short line says where
-    things stand: "Copied to your Google Drive, in “<root folder name>”." (the
-    root's actual name, as the user may have renamed it; "Copied to your
-    Google Drive." while unknown), "Copying 3 of 12 documents…" while the
-    first copy runs (the line under the row fills as a progress bar),
-    "Syncing a little slower for now, at Google's request.", "Can't reach
-    Google Drive. Trying again automatically.", or "Another tab is syncing.
-    This one stays up to date." Under it, the rhythm, **derived from the
-    cadence** so it cannot drift: "Checks for changes every 2 minutes while
-    livediagram is open. Your edits are copied a minute after you stop." The
-    buttons: **Sync now** and **Disconnect**, a quiet amber **outline** (a
-    warning, not a danger, and never louder than Sync now: it is reversible
-    and leaves the Drive files where they are). Its confirmation is amber too.
-  - **Folder notices** take the rhythm's place as one line, "<name>: Moved to
-    a Drive folder livediagram can't see." with **Show folder** (and "and n
-    more" for several; the next shows once one is resolved).
+  - **The status** is plain, small, muted text at the top right of the card,
+    on the same line as "Google Drive", with no pill: "Checking…", "Not
+    connected", "Connecting…", "Synced just now", "Synced 3 mins ago",
+    "Syncing…" (only once a sync has run for a moment, so a routine check
+    never flickers it), "Copying 3 of 12…". When something needs the user it
+    turns to the warning colour **with a small warning glyph**, so colour is
+    never the only signal: "Needs reconnecting", "Paused", "Needs attention"
+    (a folder notice) or "Offline".
+  - **Connected:** one line, "Your documents are synced to “<root folder
+    name>” in Google Drive." (the root's actual name, as the user may have
+    renamed it; "Your documents are synced to Google Drive." while unknown),
+    or instead, while it applies, "Copying 3 of 12 documents…", "Syncing a
+    little slower for now, at Google's request.", "Can't reach Google Drive.
+    Trying again automatically." or "Another tab is syncing. This one stays
+    up to date." Under it: "Syncs happen continuously while livediagram is
+    open." (the exact rhythm is in the help article). **Syncing is
+    automatic** (after edits, every 2 minutes and on returning to the tab,
+    retrying by itself), so there is no Sync now button. The one button is
+    **Disconnect**, the neutral grey secondary button: it is reversible and
+    leaves the Drive files where they are. Its confirmation is neutral too.
+  - **Folder notices** take the "Syncs happen continuously" line's place as
+    one line, "<name>: Moved to a Drive folder livediagram can't see." with
+    **Show folder** (and "and n more" for several; the next shows once one
+    is resolved).
   - **Needs attention**: "Google Drive needs reconnecting. Your files are
     safe." with **Reconnect**, or "Syncing paused in this browser. Resume to
-    continue." with **Resume sync**, beside **Disconnect**. The why (rate
-    limits, reconnecting, the per-document limit, copies made in Drive) is in
-    the help article.
+    continue." with **Resume**, beside **Disconnect**. The why (rate limits,
+    reconnecting, the rhythm and its per-document limit, copies made in
+    Drive) is in the help article.
   - **Terminology:** "documents", not diagrams; "Google Drive", then "Drive"
     once named; "sync" for the ongoing work, "copy" only for the first copy.
   - **Below the card:** "Your Personal Space, copied to your Google Drive in
@@ -104,15 +110,15 @@ this spec does not restate it.
   connected, connecting, a connect that failed, a cancel), **connected**
   (synced, syncing, the first copy, another tab writing, offline,
   rate-limited, folder notices) and **needs attention** (reconnect, resume).
-  Within a phase every part keeps its size: the pill holds that phase's
-  words, the time holds its widest realistic value, the line holds that
-  phase's sentences (all short, one line where the width allows), the
-  buttons are sized for that phase's labels only ("Sync now" / "Syncing…";
-  "Connect Google Drive" / "Connecting…"). A change of phase that follows the
-  user's own action (Connect, Disconnect, Reconnect) may change the row's
-  height. No blank space is reserved for anything that cannot appear in the
-  current phase. The footer holds only buttons, and nothing overlaps at any
-  width. Counts and times use tabular numerals.
+  Within a phase every part keeps its size: the status holds that phase's
+  wordings at their widest realistic value, the line that phase's sentences
+  (short, one line where the width allows), and the buttons that phase's
+  labels only ("Connect Google Drive" / "Connecting…"). A change of phase
+  that follows the user's own action (Connect, Disconnect, Reconnect) may
+  change the row's height. No blank space, no divider and no empty block is
+  kept for anything that cannot appear in the current phase. The footer
+  holds only buttons, and nothing overlaps at any width. Counts and times use
+  tabular numerals.
 - **Where the status lives:** only in Cloud Sync. The avatar carries no
   sync mark, badge or tooltip; it renders exactly as without Drive.
 - **Targeting a section:** Settings opens on a category and, optionally, a
