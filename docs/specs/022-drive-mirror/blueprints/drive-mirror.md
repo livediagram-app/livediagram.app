@@ -650,6 +650,24 @@ themes); its confirmation uses `ConfirmDialog` variant `warning` (the same amber
 the row's text slot in place of the description, with the pill **Not connected**; it clears on the next Connect.
 Logged `connect-failed` (warn). The pill reads **Connecting** while `connecting`.
 
+**Returning from Google.** `connect()` (broker) first rewrites the current entry's URL with
+`withSettingsTarget(path, 'account', 'cloud-sync')` (`history.replaceState`), then `rememberConsent(sessionStorage,
+state, thatPath)`, then `location.assign(google)`, so Back from Google reloads the entry with Cloud Sync open.
+`/drive/connected` `location.replace`s itself with the remembered path on success and on `error` (a cancel), and on a
+cancel first sets the one-shot `livediagram:v2:drive-connect-outcome` = `cancelled` in `sessionStorage`; the provider
+reads and clears it on mount into `connectNote: 'cancelled'`, shown in the row's text slot as
+`DRIVE_CONNECT_CANCELLED` in the ordinary colour, the pill **Not connected**. `safeReturnPath(path)` accepts only a
+path that starts with one `/`, holds no backslash and no control character, and resolves to the page's own origin;
+anything else is `/explorer`. Settings deep links (`?settings`, `?section`) stay in the URL while Settings is open
+and are removed when it closes, in the Explorer (`useExplorerState`) and the editor (`useEditorDialogs`).
+
+**One shape.** The row is five fixed parts: the header (label and state pill), the text slot, the detail slot, and
+the footer (last-synced text on the left, **Disconnect** and the primary button on the right). The text slot holds
+every text the row can show for the current root name and progress (`driveSyncTexts`); the detail slot holds the
+rhythm, the progress line and bar, and the first folder notice (with "and n more"), one visible; the primary button
+holds every primary wording (`DRIVE_PRIMARY_LABELS`); **Disconnect** is `invisible` while there is nothing to
+disconnect. Counts and times are `tabular-nums`.
+
 **Stable widths.** `StableLabel` (`@livediagram/ui`) renders every wording a control can show in one grid cell,
 all but the current one `invisible` and `aria-hidden`, so the control is always as wide as its longest wording. The
 state pill takes every `DriveSyncCopy.badge`; **Sync now** / **Syncing…**, **Connect Google Drive** /
