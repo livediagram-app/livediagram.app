@@ -372,7 +372,9 @@ and the dialog stays as the one complete, browsable index of them.
   gear-icon button in the TabBar footer, sitting between Search and the
   dark-mode toggle. The "Keyboard shortcuts" command in search
   ([Command palette (⌘K)](command-palette.md)) opens it on the **Keyboard** category; that category replaced the standalone
-  Shortcuts dialog and the footer's keyboard button. Visible in every role: view-role visitors can still
+  Shortcuts dialog and the footer's keyboard button. Settings can also open on a **section**
+  of a category (the Drive badge opens Account > Cloud Sync): the section
+  scrolls into view and its heading takes focus. Visible in every role: view-role visitors can still
   flip their own telemetry preference and (harmlessly) their own
   auto-rebind preference, even though they can't edit elements.
   **Shaped like the iOS Settings app**, in both of that app's forms, because
@@ -434,7 +436,8 @@ and the dialog stays as the one complete, browsable index of them.
   sub-categories **Layers**, **Activity** and **Map**, one per panel),
   **Notifications** (in-editor, plus the six email preferences),
   **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
-  suggested prompts, API tokens), **Account** (identity, delete account, see
+  suggested prompts, API tokens), **Account** (identity, the Trash, **Cloud Sync** (the cloud providers the
+  deployment offers, [Google Drive mirror](../022-drive-mirror/drive-mirror.md)), delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)), **Privacy** (telemetry). Editor leads because it is what most
   people came to change; Account and Privacy sit at the end, where the
   account-shaped things belong. Preferences whose

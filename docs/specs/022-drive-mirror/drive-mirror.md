@@ -42,18 +42,48 @@ this spec does not restate it.
 
 ## Connecting
 
-- **Where:** the account menu's **Google Drive** entry opens a small panel:
-  connection state, **Connect Google Drive**, and once connected, **Sync now**,
-  **Last synced**, and **Disconnect**.
-- **At a glance:** a small mark on the avatar (the account menu's button) says
-  how the mirror is doing without opening anything: **syncing** (with the
-  first mirror's progress while it copies), **synced**, or **needs attention**
-  (reconnect or resume needed, an error, or a notice). The details stay in the panel. The mark overlays the avatar, so it
-  never moves the button as it appears or changes; the button's accessible
-  name carries the state, a polite status region announces changes (no
-  toasts), and it does not animate under reduced motion. Nothing shows while
+- **Where:** Settings > Account > **Cloud Sync**, a section beside **You**,
+  **Your Data** and **Danger Zone**. Cloud Sync is a **catalogue of cloud
+  providers**, one row each; Google Drive is its first row, and another
+  provider (Dropbox, OneDrive) is another row in the same section with no new
+  UI. The section is there only where the deployment offers a provider. The
+  account menu has no Drive entry. Search finds the row by drive, google,
+  sync, backup, mirror and cloud; it links to the help article.
+- **What the row says,** in plain words:
+  - **Not connected:** what the mirror is, and **Connect Google Drive**
+    (**Connecting…** while the consent flow starts).
+  - **Connected:** "Your documents are copied to Google Drive, in the folder
+    <root folder name>" (the root's actual name, as the user may have renamed
+    it); the rhythm, **derived from the cadence** so it cannot drift: "Checks
+    for changes every 2 minutes while livediagram is open. Edits are copied a
+    minute after you stop, at most once every 5 minutes per diagram."; **Last
+    synced** ("Just now", "1 minute ago") with **Sync now** beside it;
+    **Disconnect**.
+  - **First copy:** "Copying 3 of 12" with a progress bar.
+  - **Every attention state says what to do:** reconnect (**Reconnect**),
+    resume (**Resume sync**), rate-limited (nothing to do; it carries on less
+    often for a while), offline or failed (it retries by itself; check the
+    connection or press **Sync now**), another tab or device writing (nothing
+    to do), and each folder notice (**Show this folder to livediagram**, or
+    move it back in Drive).
+- **At a glance:** a **cloud badge** on the avatar (the account menu's
+  button) says how the mirror is doing without opening anything. A glyph in
+  the cloud, not colour alone, tells the states apart: arrows for
+  **syncing** (with a progress ring round the avatar while the first mirror
+  copies), a tick for **synced**, an exclamation mark for **needs attention**
+  (reconnect or resume needed, an error, or a notice). The badge is a button
+  of its own, laid over the avatar's corner with a 24-pixel target, so it
+  never moves anything as it appears or changes; hovering or focusing it
+  shows a tooltip with the same words as its accessible name ("Synced to
+  Google Drive 1 minute ago", "Copying 3 of 12 to Google Drive", "Syncing
+  with Google Drive", "Google Drive needs attention"), and pressing it opens
+  Settings on Account > Cloud Sync. A polite status region announces changes
+  (no toasts); nothing animates under reduced motion. Nothing shows while
   Drive is not connected. A syncing moment shorter than about half a second
-  (the cheap check below) does not flash the mark.
+  (the cheap check below) does not flash the badge.
+- **Targeting a section:** Settings opens on a category and, optionally, a
+  **section** of it: the section scrolls into view and its heading takes
+  focus. Any section can be targeted this way.
 - **Consent:** the authorisation-code flow in **redirect mode** (works on iOS
   and past popup blockers), requesting `drive.file` and `drive.install` with
   offline access. `prompt=consent` is used only when no usable refresh token
@@ -72,7 +102,7 @@ this spec does not restate it.
 - **First mirror:** the browser creates the root folder in My Drive (or
   reuses the one recorded for this user), creates the folder tree,
   then uploads every Personal Space diagram, oldest first, with progress in
-  the panel. It is resumable: a closed tab continues where it stopped on the
+  the Cloud Sync row. It is resumable: a closed tab continues where it stopped on the
   next visit.
 - **The root folder's name** comes from the deployment's address, with no
   setting, so the roots of different environments never share a name in one
@@ -124,7 +154,7 @@ this spec does not restate it.
 - One refresh token per user, shared by all their devices, keeps well inside
   Google's limit of 100 live tokens per account per client.
 - **Revoked or expired grant** (`invalid_grant`, or six months unused): the
-  connection turns **Needs reconnecting**; the panel and a quiet banner offer
+  connection turns **Needs reconnecting**; the Cloud Sync row and a quiet banner offer
   **Reconnect**. Nothing is deleted.
 
 ## The file
@@ -264,12 +294,12 @@ livediagram: moving a diagram's file into it shows up only as "moved to an
 unknown folder". The user's goal is to shape the tree from either side with
 the same result, so the mirror handles this openly, never silently:
 
-- The diagram moves to **Unsorted**, and a notice in the Drive panel (and on
+- The diagram moves to **Unsorted**, and a notice in the Cloud Sync row (and on
   the diagram's Explorer row) says so: "Moved in Drive to a folder livediagram
   can't see." The notice is kept on the item row, so every device shows it; it
   clears when the diagram is moved again from either side, or when the folder
   is adopted. Until then the file stays where the user put it in Drive. A folder moved into one is placed at
-  the top level with the same notice in the panel.
+  the top level with the same notice in the Cloud Sync row.
 - **Adopting a folder:** the notice offers **Show this folder to livediagram**,
   which opens the Google Picker with folder selection. Picking the folder
   grants livediagram access to it; livediagram then creates the matching
@@ -394,13 +424,13 @@ D1, owned by the api worker:
 ## Errors and edge cases
 
 - **Offline or Google unreachable:** the sync pauses and resumes on the next
-  arrival or focus; the panel shows **Last synced** honestly.
+  arrival or focus; the Cloud Sync row shows **Last synced** honestly.
 - **A mirrored file or folder deleted outside livediagram's knowledge**
   (`404` on write): the item is re-created in its expected place.
 - **Diagram JSON over 5 MB:** uploaded with a resumable upload instead of
   multipart.
 - **Quota or rate errors:** back-off as above; a persistent failure shows in
-  the panel, never silently.
+  the Cloud Sync row, never silently.
 - **Two devices at once:** the D1 lease decides which one writes; the other
   still reads changes.
 - Every decision point logs a fingerprinted line in the browser console
@@ -415,10 +445,10 @@ D1, owned by the api worker:
   `NEXT_PUBLIC_GOOGLE_API_KEY`. Documented in each `.env.example`. The api's
   `GOOGLE_CLIENT_ID` switches the feature on at all; without it every Drive
   route answers `503 drive_not_configured`.
-- **All three unset:** no Drive entry in the account menu.
+- **All three unset:** no Cloud Sync section in Settings and no badge.
 - **Client id only (no secret):** browser-only tokens via the Google Identity
   Services token model. Google cannot renew those without a click, so when a
-  token lapses the panel shows **Resume sync** instead of syncing silently.
+  token lapses the Cloud Sync row shows **Resume sync** instead of syncing silently.
 - A mirror is per Google project: files created by one deployment are foreign
   to another (`ldOrigin`), and are imported as copies.
 - `GOOGLE_OAUTH_BASE_URL` on the api worker points the token exchange and
@@ -515,7 +545,9 @@ Preset-enum events only, category `Drive`: connected and disconnected
 (`Changed` `NeedsReconnect`), first mirror finished (`Created` `FirstMirror`,
 once per connection per browser), an inbound change applied (`Applied`, by
 type: `Rename`, `Move`, `Trash`, `Restore`, `Purge`, `UnknownFolder`), an Open
-with (`Opened`, by outcome: `Opened`, `ImportOffered`, `Error`).
+with (`Opened`, by outcome: `Opened`, `ImportOffered`, `Error`). `Linked` fires when a
+connection completes, not where it started, so moving Connect into Settings
+leaves the pair as it is.
 
 ## Non-goals
 
