@@ -57,9 +57,11 @@ describe('GoogleDriveSyncRow', () => {
   });
 
   it('says Connecting while the provider connects, the button held', () => {
-    show({ state: 'disconnected' }, { connecting: true });
+    const value = show({ state: 'disconnected' }, { connecting: true });
     const button = screen.getByRole('button', { name: 'Connecting…' });
-    expect(button).toHaveProperty('disabled', true);
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(button);
+    expect(value.connect).not.toHaveBeenCalled();
     expect(
       screen.getByText('Connecting', { selector: '[data-stable-option]:not(.invisible)' }),
     ).toBeTruthy();
@@ -112,7 +114,10 @@ describe('GoogleDriveSyncRow', () => {
     show({ state: 'syncing', progress: { done: 3, total: 12 } });
     expect(screen.getByText('Copying 3 of 12 to Google Drive.')).toBeTruthy();
     expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('3');
-    expect(screen.getByRole('button', { name: 'Syncing…' })).toHaveProperty('disabled', true);
+    const syncing = screen.getByRole('button', { name: 'Syncing…' });
+    // Held, but focusable: a pressed Sync now keeps focus.
+    expect(syncing.getAttribute('aria-disabled')).toBe('true');
+    expect(syncing).toHaveProperty('disabled', false);
   });
 
   it('offers Reconnect and Resume sync when paused', () => {

@@ -85,6 +85,40 @@ async function closeSettings(page: import('@playwright/test').Page) {
   await expect(page.getByRole('dialog', { name: 'Settings' })).toHaveCount(0);
 }
 
+// The visible wording of the state pill (StableLabel keeps every wording laid out).
+const pillOf = (panel: import('@playwright/test').Locator) =>
+  panel.locator('[data-drive-state] [data-stable-option]:not(.invisible)');
+
+// Holds matching requests back for `ms`, then lets the usual handler answer.
+async function slow(page: import('@playwright/test').Page, url: string, ms: number) {
+  const handler = async (route: import('@playwright/test').Route) => {
+    await new Promise((r) => setTimeout(r, ms));
+    await route.fallback();
+  };
+  await page.route(url, handler);
+  return () => page.unroute(url, handler);
+}
+
+// Waits out the Settings dialog's entrance, so boxes are measured at rest.
+async function settled(page: import('@playwright/test').Page) {
+  await page
+    .getByRole('dialog', { name: 'Settings' })
+    .evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
+  // And the section's smooth scroll into view.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(async () => {
+          const pane = document.querySelector('[data-settings-pane]')!;
+          const before = pane.scrollTop;
+          await new Promise((r) => setTimeout(r, 150));
+          return pane.scrollTop === before;
+        }),
+      { timeout: 5000 },
+    )
+    .toBe(true);
+}
+
 const fileNamed = (name: string) => google.fake.appFiles(USER).find((f) => f.name === name);
 
 test('connect, first mirror, then changes in Drive come back', async ({ page, pageErrors }) => {
@@ -135,7 +169,23 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await expect(panel).toContainText('Not connected');
   await expect(panel).toContainText('Keep a copy of your documents');
   await page.screenshot({ path: `${SHOTS}/01-connect.png` });
+  await settled(page);
+  const card = await panel.boundingBox();
+
+  // A Connect that cannot start says so, back at Not connected, and moves nothing.
+  await page.route('**/api/drive/state', (route) => route.abort(), { times: 1 });
   await panel.getByRole('button', { name: 'Connect Google Drive' }).click();
+  await expect(panel).toContainText("Couldn't start connecting to Google Drive.");
+  await expect(pillOf(panel)).toHaveText('Not connected');
+  expect(await panel.boundingBox()).toEqual(card);
+
+  // Connecting shows at once, and holds while the state is fetched and the
+  // page leaves for Google.
+  await slow(page, '**/api/drive/state', 1500);
+  await panel.getByRole('button', { name: 'Connect Google Drive' }).click();
+  await expect(panel.getByRole('button', { name: 'Connecting…' })).toBeVisible({ timeout: 300 });
+  await expect(pillOf(panel)).toHaveText('Connecting');
+  expect(await panel.boundingBox()).toEqual(card);
 
   // Google's consent (the fake agrees), /drive/connected, back to the Explorer.
   await page.waitForURL('**/explorer/recent');
@@ -143,6 +193,8 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await expect
     .poll(() => fileNamed('Quarterly plan.livediagram')?.parents[0])
     .toBe(fileNamed('Work')?.id);
+  // The first mirror uploads one file at a time, oldest first.
+  await expect.poll(() => fileNamed('Meeting notes.livediagram')?.mimeType).toBe(DRIVE_FILE_MIME);
   expect(fileNamed('Meeting notes.livediagram')).toMatchObject({
     mimeType: DRIVE_FILE_MIME,
     trashed: false,
@@ -169,6 +221,29 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await expect(panel).toContainText('Checks for changes every 2 minutes');
   await expect(panel).toContainText('Last synced');
   await page.screenshot({ path: `${SHOTS}/02-connected.png` });
+
+  // Synced to Syncing and back moves nothing: the pill, Sync now and the card
+  // keep their boxes.
+  const boxes = async () =>
+    Promise.all([
+      panel.locator('[data-drive-state]').boundingBox(),
+      panel.getByRole('button', { name: /Sync now|Syncing…/ }).boundingBox(),
+      panel.boundingBox(),
+    ]);
+  await expect(pillOf(panel)).toHaveText('Synced');
+  await settled(page);
+  const synced = await boxes();
+  const release = await slow(
+    page,
+    'https://www.googleapis.com/drive/v3/changes/startPageToken**',
+    1500,
+  );
+  await panel.getByRole('button', { name: 'Sync now' }).click();
+  await expect(pillOf(panel)).toHaveText('Syncing');
+  expect(await boxes()).toEqual(synced);
+  await release();
+  await expect(pillOf(panel)).toHaveText('Synced', { timeout: 15_000 });
+  expect(await boxes()).toEqual(synced);
 
   // A rename made in Drive reaches livediagram on Sync now.
   google.fake.userRename(fileNamed('Meeting notes.livediagram')!.id, 'Standup notes.livediagram');

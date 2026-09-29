@@ -19,7 +19,7 @@ export type ButtonVariant = 'primary' | 'danger' | 'warning' | 'secondary';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'cta-sm' | 'cta';
 
 const BASE =
-  'optical-edges inline-flex items-center justify-center gap-2 rounded-md font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+  'optical-edges inline-flex items-center justify-center gap-2 rounded-md font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50';
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: `bg-brand-500 text-white hover:bg-brand-600 focus-visible:outline-brand-500 ${SOLID_BRAND_DARK_CONTROL}`,

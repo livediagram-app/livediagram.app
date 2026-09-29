@@ -201,8 +201,12 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
                 <Button
                   variant="primary"
                   size="sm"
-                  disabled={busy !== null || connecting}
-                  onClick={() => void drive.connect()}
+                  disabled={busy !== null}
+                  // aria-disabled, not disabled: the pressed button keeps focus.
+                  aria-disabled={connecting}
+                  onClick={() => {
+                    if (!connecting) void drive.connect();
+                  }}
                 >
                   <StableLabel
                     options={CONNECT_LABELS}
@@ -215,8 +219,11 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
                 <Button
                   variant="primary"
                   size="sm"
-                  disabled={busy !== null || connecting}
-                  onClick={() => void drive.connect()}
+                  disabled={busy !== null}
+                  aria-disabled={connecting}
+                  onClick={() => {
+                    if (!connecting) void drive.connect();
+                  }}
                 >
                   <StableLabel
                     options={RECONNECT_LABELS}
@@ -239,8 +246,13 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
                 <Button
                   variant="primary"
                   size="sm"
-                  disabled={busy !== null || syncing}
-                  onClick={() => drive.syncNow()}
+                  disabled={busy !== null}
+                  // aria-disabled, not disabled: a pressed Sync now keeps focus,
+                  // so the pane never jumps to another control.
+                  aria-disabled={syncing}
+                  onClick={() => {
+                    if (!syncing) drive.syncNow();
+                  }}
                 >
                   <StableLabel
                     options={SYNC_LABELS}
