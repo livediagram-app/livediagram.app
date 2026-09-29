@@ -23,9 +23,9 @@ which fixes how that tab is drawn on and presented.
 ## Choosing the word in prose
 
 Code is strict: the container is always a document. Compound names use
-"document" (`documentId`, `DocumentDTO`); the bare name is `liveDocument` /
-`LiveDocument` (plural `liveDocuments`), so it never shadows the browser's
-`document` and `Document`.
+"document" (`documentId`, `DocumentDTO`); the bare name is `doc` / `Doc` (plural
+`docs` / `Docs`), so it never shadows the browser's `document` and
+`Document`.
 
 Prose follows the context:
 
