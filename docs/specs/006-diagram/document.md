@@ -18,6 +18,7 @@ which fixes how that tab is drawn on and presented.
 
 - "Diagram" names only the tab kind, never the container.
 - "Board" on its own is not a term; say event-storming board or whiteboard.
+- Specs, UI copy and code name the container a document everywhere.
 - A new tab kind joins the table above; the container keeps its name.
 
 ## What keeps its name
@@ -26,11 +27,3 @@ which fixes how that tab is drawn on and presented.
 - A document mirrored to Google Drive is a `.livediagram` file of MIME type
   `application/vnd.livediagram+json` ([Google Drive mirror](../022-drive-mirror/drive-mirror.md)):
   both name the app that opens the file, not what is inside it.
-
-## Where the old usage remains
-
-Specs, UI copy and code written before this term existed still call the
-container a diagram (the `diagrams` table, `/api/diagrams`, the New Diagram
-wizard, this category's folder name). New specs and new UI copy use
-"document". Renaming the existing usage, and the external contracts among it
-(the public API, the MCP tools), is a separate change with its own spec.
