@@ -122,7 +122,7 @@ export async function apiSaveDocumentMeta(
       presentation: d.presentation,
     }),
   });
-  await expectOkVoid(res, 'save diagram meta');
+  await expectOkVoid(res, 'save document meta');
 }
 
 // Create a brand-new diagram with an optional initial set of tabs.
@@ -161,7 +161,7 @@ export async function apiCreateDocument(
       ...(d.presentation ? { presentation: d.presentation } : {}),
     }),
   });
-  const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'create diagram');
+  const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'create document');
   return liveDoc;
 }
 
@@ -174,7 +174,7 @@ export async function apiDeleteDocument(ownerId: string, id: string): Promise<vo
   // the Clerk Bearer when a token provider is registered, falls
   // through to X-Owner-Id otherwise (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md).
   return apiDelete(`${API_BASE}/documents/${id}`, ownerId, {
-    action: 'delete diagram',
+    action: 'delete document',
     purge: { sourceType: 'document', sourceId: id },
   });
 }
@@ -327,6 +327,6 @@ export async function apiCopyDocument(
     headers: await apiHeaders(ownerId, { body: true, share: opts.shareCode ?? null }),
     body: JSON.stringify({ name: opts.name }),
   });
-  const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'copy diagram');
+  const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'copy document');
   return liveDoc;
 }

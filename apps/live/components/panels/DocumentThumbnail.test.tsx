@@ -44,7 +44,7 @@ const thumb = (version: number) => (
 const img = () => document.querySelector('img');
 const loader = () => document.querySelector('[data-testid="thumbnail-loader"]');
 
-describe('DiagramThumbnail', () => {
+describe('DocumentThumbnail', () => {
   it('shows the snapshot once it lands', async () => {
     render(thumb(1));
     expect(img()).toBeNull();

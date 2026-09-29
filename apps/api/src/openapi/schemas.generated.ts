@@ -2115,7 +2115,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "Diagram": {
+  "Document": {
     "additionalProperties": false,
     "properties": {
       "createdAt": {
@@ -2169,7 +2169,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "source": {
         "anyOf": [
           {
-            "$ref": "#/components/schemas/DiagramSource"
+            "$ref": "#/components/schemas/DocumentSource"
           },
           {
             "type": "null"
@@ -2207,14 +2207,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "DiagramSource": {
+  "DocumentSource": {
     "enum": [
       "ai",
       "mcp"
     ],
     "type": "string"
   },
-  "DiagramSummary": {
+  "DocumentSummary": {
     "additionalProperties": false,
     "properties": {
       "createdAt": {
@@ -2250,7 +2250,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "source": {
         "anyOf": [
           {
-            "$ref": "#/components/schemas/DiagramSource"
+            "$ref": "#/components/schemas/DocumentSource"
           },
           {
             "type": "null"
@@ -2441,7 +2441,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "string"
           },
           "kind": {
-            "const": "diagram",
+            "const": "document",
             "type": "string"
           },
           "name": {
@@ -4236,7 +4236,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "SharedTabsSummary": {
     "additionalProperties": false,
     "properties": {
-      "diagrams": {
+      "documents": {
         "type": "number"
       },
       "tabs": {
@@ -4245,7 +4245,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "tabs",
-      "diagrams"
+      "documents"
     ],
     "type": "object"
   },
@@ -5117,7 +5117,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "TelemetryCategory": {
     "enum": [
-      "Diagram",
+      "Document",
       "Element",
       "Tab",
       "Theme",
@@ -5573,7 +5573,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "enum": [
-          "diagram",
+          "document",
           "team",
           "account"
         ],

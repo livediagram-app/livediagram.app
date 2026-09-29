@@ -92,13 +92,13 @@ export function buildStacks(events: readonly TimelineEvent[]): TimelineStack[] {
 // back to the shared title, which is already a generic category by the
 // copy rules (docs/specs/013-workspace/timeline.md §2).
 const STACK_LABELS: Record<string, string> = {
-  'diagram::document_edited': 'Diagrams Updated',
-  'diagram::document_created': 'Diagrams Created',
-  'diagram::document_renamed': 'Diagrams Renamed',
-  'diagram::document_duplicated': 'Diagrams Duplicated',
-  'diagram::comment_resolved': 'Comments Resolved',
-  'diagram::action_assigned': 'Actions Assigned',
-  'diagram::action_completed': 'Actions Completed',
+  'document::document_edited': 'Diagrams Updated',
+  'document::document_created': 'Diagrams Created',
+  'document::document_renamed': 'Diagrams Renamed',
+  'document::document_duplicated': 'Diagrams Duplicated',
+  'document::comment_resolved': 'Comments Resolved',
+  'document::action_assigned': 'Actions Assigned',
+  'document::action_completed': 'Actions Completed',
   'team::team_role_changed': 'Roles Changed',
   'team::team_invite_accepted': 'Invites Accepted',
   'team::team_invite_declined': 'Invites Declined',

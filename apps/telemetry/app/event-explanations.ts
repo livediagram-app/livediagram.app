@@ -34,7 +34,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Action|Created|EmailOn':
     'Someone assigned an action to a teammate on an element and chose to email them about it.',
   'Action|Deleted|': 'Someone removed an assigned action from an element.',
-  'Action|Moved|DiagramToTeam':
+  'Action|Moved|DocumentToTeam':
     "While assigning an action to someone, the diagram was moved into that person's team so they'd have access to it.",
   'Action|Opened|': 'Someone opened the popover for an action already assigned to an element.',
   'Action|Resolved|': 'Someone marked an assigned action as done.',
@@ -310,7 +310,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed a Reaction Pad element and played its burst for everyone.',
   'Element|Used|Video': 'Someone pressed play on a video element.',
   'Element|Voted|': 'Someone cast a dot in a dot vote.',
-  'Email|Sent|DiagramJoined':
+  'Email|Sent|DocumentJoined':
     "An email went out to a diagram's owner after someone opened it for the first time through a share link.",
   'Email|Sent|FirstShare': "An email went out marking someone's first time sharing a diagram.",
   'Email|Sent|Milestone':

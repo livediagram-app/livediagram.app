@@ -40,7 +40,7 @@ export type EmailKind =
   | 'FirstShare'
   | 'TeamInvite'
   | 'InviteResponse'
-  | 'DiagramJoined'
+  | 'DocumentJoined'
   | 'CommentNotification'
   | 'ActionAssigned'
   | 'Mentioned'
@@ -238,7 +238,7 @@ export function documentJoinedEmail(
     documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'your diagram';
   const whoText = joinerName && joinerName.trim() ? escapeText(joinerName.trim()) : 'Someone';
   return {
-    kind: 'DiagramJoined',
+    kind: 'DocumentJoined',
     subject: `${whoText} opened one of your diagrams`,
     html: shell({
       heading: 'Someone joined your diagram',

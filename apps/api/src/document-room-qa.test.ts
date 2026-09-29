@@ -105,7 +105,7 @@ beforeEach(() => {
   store.maxInFlight = 0;
 });
 
-describe('DiagramRoom Q&A write queue', () => {
+describe('DocumentRoom Q&A write queue', () => {
   it('loses no vote when a room votes in the same instant', async () => {
     const { room, sent } = newRoom();
     const voters = Array.from({ length: 40 }, (_, i) => `voter-${i}`);

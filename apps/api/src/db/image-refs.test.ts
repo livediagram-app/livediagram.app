@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { applyMigration, sqliteD1 } from '../test-sqlite-d1';
+import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
 import { imageRefIdsFromData } from '../image-refs/extract';
 import {
   imageRefIndexDocumentStatement,
@@ -138,7 +138,7 @@ describe('migration 0050', () => {
   it('starts incomplete, with nothing indexed, on a database with tabs', async () => {
     const { env, sql } = sqliteD1({}, { before: '0050' });
     tabRow(sql, 't1', JSON.stringify({ elements: [img('a')] }));
-    applyMigration(sql, '0050');
+    migrateFrom(sql, '0050');
     expect(await readImageRefsBackfill(env)).toMatchObject({ cursor: 0, completed_at: null });
     expect(await isImageRefIndexComplete(env)).toBe(false);
     expect(refsByTab(sql)).toEqual({});

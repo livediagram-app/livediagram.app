@@ -164,7 +164,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('DiagramRoom /broadcast endpoint', () => {
+describe('DocumentRoom /broadcast endpoint', () => {
   it('fans the op out to every connected session with from: "system"', async () => {
     const { room, state } = newRoom();
     const a = makeSocket();
@@ -257,7 +257,7 @@ describe('DiagramRoom /broadcast endpoint', () => {
   });
 });
 
-describe('DiagramRoom presence broadcast', () => {
+describe('DocumentRoom presence broadcast', () => {
   // Each client must NOT receive its own entry: the broadcast presence id is a
   // fresh server-random (docs/specs/015-api/public-api-and-tokens.md §6), so a client can't recognise its own entry
   // by id to filter it — including it makes the user show up as a participant
@@ -315,7 +315,7 @@ describe('DiagramRoom presence broadcast', () => {
   });
 });
 
-describe('DiagramRoom non-WebSocket upgrades', () => {
+describe('DocumentRoom non-WebSocket upgrades', () => {
   it('rejects plain HTTP requests on the WS path with 426', async () => {
     const { room } = newRoom();
     const res = await room.fetch(new Request('https://room/ws'));
@@ -323,7 +323,7 @@ describe('DiagramRoom non-WebSocket upgrades', () => {
   });
 });
 
-describe('DiagramRoom hello frame role forcing', () => {
+describe('DocumentRoom hello frame role forcing', () => {
   it('overrides whatever role the client claims with the server-resolved role', () => {
     const { room } = newRoom();
     const ws = makeSocket();
@@ -459,7 +459,7 @@ describe('DiagramRoom hello frame role forcing', () => {
   });
 });
 
-describe('DiagramRoom op-role enforcement', () => {
+describe('DocumentRoom op-role enforcement', () => {
   // Drive a fully-connected session (hello sent) at a given verified
   // role, returning a `sendOp` that pushes an op frame from it.
   function connect(room: DocumentRoom, id: string, role?: 'edit' | 'view') {
@@ -809,7 +809,7 @@ describe('DiagramRoom op-role enforcement', () => {
   });
 });
 
-describe('DiagramRoom tab-focus presence echo', () => {
+describe('DocumentRoom tab-focus presence echo', () => {
   // A late joiner only gets the presence list, never the tab-focus ops
   // that fired before they connected. So the room must remember each
   // session's current tab and echo it in presence, or joiners default
@@ -839,7 +839,7 @@ describe('DiagramRoom tab-focus presence echo', () => {
   });
 });
 
-describe('DiagramRoom hibernation survival', () => {
+describe('DocumentRoom hibernation survival', () => {
   // The whole point of the hibernation migration: the runtime may evict
   // the DO between messages and re-construct it on the next frame. All
   // per-session state (ephemeral id, verified role, presence incl. the
@@ -890,7 +890,7 @@ describe('DiagramRoom hibernation survival', () => {
   });
 });
 
-describe('DiagramRoom op ordering + reconnect catch-up (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1)', () => {
+describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1)', () => {
   // Drive an established edit-role session and expose helpers to push ops
   // and read the frames a peer receives.
   function editorAndPeer(room: DocumentRoom) {
@@ -1120,7 +1120,7 @@ describe('DiagramRoom op ordering + reconnect catch-up (docs/specs/012-collabora
 const frames = (ws: FakeSocket) => ws.sent.map((s) => JSON.parse(s) as Record<string, unknown>);
 const facFrames = (ws: FakeSocket) => frames(ws).filter((f) => f.kind === 'facilitator');
 
-describe('DiagramRoom facilitator', () => {
+describe('DocumentRoom facilitator', () => {
   it('hands the baton to an editor who claims it, and the token to them alone', () => {
     const { room, state } = newRoom();
     const a = makeSocket();
@@ -1358,7 +1358,7 @@ describe('DiagramRoom facilitator', () => {
   });
 });
 
-describe('DiagramRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
+describe('DocumentRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
   // A fake D1 that records every telemetry row the room writes.
   function envWithRows(): { env: Env; rows: unknown[][] } {
     const rows: unknown[][] = [];
@@ -1420,7 +1420,7 @@ describe('DiagramRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.
   });
 });
 
-describe('DiagramRoom freeing a selection lock (docs/specs/007-editor/live-app.md + docs/specs/012-collaboration/facilitator.md)', () => {
+describe('DocumentRoom freeing a selection lock (docs/specs/007-editor/live-app.md + docs/specs/012-collaboration/facilitator.md)', () => {
   // Sent frames as the fake socket recorded them.
   const framesOf = (ws: FakeSocket) => ws.sent.map((raw) => JSON.parse(raw) as { kind: string });
   const released = (ws: FakeSocket) => framesOf(ws).filter((f) => f.kind === 'selection-released');
@@ -1511,7 +1511,7 @@ describe('DiagramRoom freeing a selection lock (docs/specs/007-editor/live-app.m
   });
 });
 
-describe('DiagramRoom collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
+describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
   function editor(room: DocumentRoom) {
     const ws = makeSocket();
     room.acceptSession(asWs(ws), 'edit');
@@ -1558,7 +1558,7 @@ describe('DiagramRoom collaboration ledger (docs/specs/012-collaboration/collab-
   });
 });
 
-describe('DiagramRoom live poll (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
+describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   const pollOp = (id: string, startedAt = 1) => ({
     kind: 'op',
     op: {
@@ -1619,7 +1619,7 @@ describe('DiagramRoom live poll (docs/specs/012-collaboration/collab-race-harden
   });
 });
 
-describe('DiagramRoom worker mutations (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
+describe('DocumentRoom worker mutations (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   it('sequences a worker-made comment into the stream for everybody', async () => {
     const { room } = newRoom();
     const peer = makeSocket();
@@ -1652,7 +1652,7 @@ describe('DiagramRoom worker mutations (docs/specs/012-collaboration/collab-race
   });
 });
 
-describe('DiagramRoom comment author ids (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
+describe('DocumentRoom comment author ids (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   it('strips them from every op it relays, whatever a client sent', () => {
     const { room } = newRoom();
     const editor = makeSocket();
@@ -1708,7 +1708,7 @@ describe('DiagramRoom comment author ids (docs/specs/012-collaboration/collab-ra
 // docs/specs/013-workspace/tab-scoped-share-links.md, Realtime. A session admitted on a link scoped to tab
 // t2 receives nothing about t1, can't change t1, and is shut out when its
 // link is revoked or rescoped.
-describe('DiagramRoom tab-scoped sessions', () => {
+describe('DocumentRoom tab-scoped sessions', () => {
   function scopedSession(
     state: FakeState,
     ws: FakeSocket & { closed?: [number, string] },

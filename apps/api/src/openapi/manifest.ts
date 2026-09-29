@@ -110,7 +110,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: "List the caller's diagrams (metadata only, no tab contents).",
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    responseSchema: listOf('documents', 'DiagramSummary'),
+    responseSchema: listOf('documents', 'DocumentSummary'),
     statuses: [200, 401],
   },
   {
@@ -1276,7 +1276,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       type: 'object',
       properties: {
         folders: { type: 'array', items: ref('Folder') },
-        documents: { type: 'array', items: ref('DiagramSummary') },
+        documents: { type: 'array', items: ref('DocumentSummary') },
       },
     },
     statuses: [200, 401, 403, 404],

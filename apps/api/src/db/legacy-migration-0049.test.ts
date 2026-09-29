@@ -20,7 +20,7 @@ function insert(sql: DatabaseSync, table: string, row: Record<string, string | n
 // orphan tab no diagram links, history (one entry with no tab), and index rows.
 function seedLegacy(sql: DatabaseSync) {
   for (const id of ['A', 'B']) {
-    insert(sql, 'documents', {
+    insert(sql, 'diagrams', {
       id,
       owner_id: 'owner',
       name: id,
@@ -37,27 +37,22 @@ function seedLegacy(sql: DatabaseSync) {
   for (const [id, home, order] of tabs) {
     insert(sql, 'tabs', {
       id,
-      document_id: home,
+      diagram_id: home,
       name: `Tab ${id}`,
       order_index: order,
       data: `{"elements":[],"n":"${id}"}`,
       updated_at: T0 + order,
     });
   }
-  insert(sql, 'document_tabs', {
-    document_id: 'A',
-    tab_id: 'shared',
-    order_index: 0,
-    added_at: T0,
-  });
-  insert(sql, 'document_tabs', {
-    document_id: 'B',
+  insert(sql, 'diagram_tabs', { diagram_id: 'A', tab_id: 'shared', order_index: 0, added_at: T0 });
+  insert(sql, 'diagram_tabs', {
+    diagram_id: 'B',
     tab_id: 'shared',
     order_index: 1,
     added_at: T0 + 5,
     folder: 'Ref',
   });
-  insert(sql, 'document_tabs', { document_id: 'B', tab_id: 'solo', order_index: 0, added_at: T0 });
+  insert(sql, 'diagram_tabs', { diagram_id: 'B', tab_id: 'solo', order_index: 0, added_at: T0 });
   for (const [id, tabId] of [
     ['l1', 'shared'],
     ['l2', 'solo'],
@@ -110,14 +105,14 @@ function snapshot(sql: DatabaseSync) {
       .map((r) => ({ ...r }));
   return {
     tabs: all('SELECT id, name, data, updated_at FROM tabs ORDER BY id'),
-    links: all('SELECT * FROM document_tabs ORDER BY document_id, tab_id'),
+    links: all('SELECT * FROM diagram_tabs ORDER BY diagram_id, tab_id'),
     history: all('SELECT * FROM change_log ORDER BY id'),
     actions: all('SELECT * FROM collab_actions ORDER BY tab_id'),
     threads: all('SELECT * FROM collab_threads ORDER BY tab_id'),
   };
 }
 
-describe('migration 0049 (drop tabs.document_id + tabs.order_index)', () => {
+describe('migration 0049 (drop tabs.diagram_id + tabs.order_index)', () => {
   it('drops both legacy columns and their index', () => {
     const { sql } = sqliteD1();
 
@@ -127,7 +122,7 @@ describe('migration 0049 (drop tabs.document_id + tabs.order_index)', () => {
       .map((c) => c.name);
     expect(columns).toEqual(['id', 'name', 'data', 'updated_at']);
     expect(
-      sql.prepare("SELECT name FROM sqlite_master WHERE name = 'tabs_document_idx'").get(),
+      sql.prepare("SELECT name FROM sqlite_master WHERE name = 'tabs_diagram_idx'").get(),
     ).toBe(undefined);
   });
 
@@ -160,7 +155,7 @@ describe('migration 0049 (drop tabs.document_id + tabs.order_index)', () => {
     seedLegacy(sql);
     applyMigration(sql, '0049');
 
-    sql.prepare("DELETE FROM documents WHERE id = 'A'").run();
+    sql.prepare("DELETE FROM diagrams WHERE id = 'A'").run();
 
     expect(snapshot(sql).tabs.map((t) => t.id)).toEqual(['orphan', 'shared', 'solo']);
   });

@@ -107,7 +107,7 @@ describe('getShareLink (the access gate, docs/specs/013-workspace/share-link-exp
     const db = fakeD1(() => ({ first: null }));
     await getShareLink(db.env, 'ABCD2345');
     expect(db.one('FROM share_links').sql).toMatch(
-      /tab_id IS NULL OR EXISTS \(SELECT 1 FROM diagram_tabs dt WHERE dt\.diagram_id = share_links\.diagram_id AND dt\.tab_id = share_links\.tab_id\)/,
+      /tab_id IS NULL OR EXISTS \(SELECT 1 FROM document_tabs dt WHERE dt\.document_id = share_links\.document_id AND dt\.tab_id = share_links\.tab_id\)/,
     );
   });
 

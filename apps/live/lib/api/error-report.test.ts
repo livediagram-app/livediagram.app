@@ -18,7 +18,7 @@ import { apiFetch, apiHeaders, ApiError, expectOkVoid, setTokenProvider } from '
 describe('apiErrorType', () => {
   it('appends the action as one PascalCase token', () => {
     expect(apiErrorType(403, 'save tab')).toBe('Http403.SaveTab');
-    expect(apiErrorType(500, 'create diagram')).toBe('Http500.CreateDocument');
+    expect(apiErrorType(500, 'create document')).toBe('Http500.CreateDocument');
     expect(apiErrorType(429, 'resolve team invite link')).toBe('Http429.ResolveTeamInviteLink');
   });
 
@@ -28,7 +28,7 @@ describe('apiErrorType', () => {
   it('produces a token the ingest validator accepts', () => {
     const actions = [
       'save tab',
-      'save diagram meta',
+      'save document meta',
       'resolve team invite link',
       'notify assigned action',
       'oauth exchange',
@@ -96,7 +96,7 @@ describe('network failures', () => {
 
   it('labels the route without ids', () => {
     expect(networkErrorType('PUT', 'http://localhost:8787/api/documents/abc-123/tabs/t9')).toBe(
-      'Network.Put.Diagrams.Tabs',
+      'Network.Put.Documents.Tabs',
     );
     expect(networkErrorType('GET', '/api/share/SEKRIT')).toBe('Network.Get.Share');
   });

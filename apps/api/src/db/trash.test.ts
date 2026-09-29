@@ -103,7 +103,7 @@ describe('migration 0051 (diagrams.trashed_at)', () => {
   it('adds a nullable trashed_at with a partial index', () => {
     const { sql } = sqliteD1();
     const col = sql
-      .prepare('PRAGMA table_info(diagrams)')
+      .prepare('PRAGMA table_info(documents)')
       .all()
       .find((c) => c.name === 'trashed_at');
     expect(col).toMatchObject({ type: 'INTEGER', notnull: 0, dflt_value: null });

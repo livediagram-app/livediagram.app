@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { applyMigration, sqliteD1 } from '../test-sqlite-d1';
+import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
 import { resetImageRefIndexMemo } from './image-refs';
 import { deleteOldUnusedImages, IMAGE_SWEEP_PAGE, sweepTripped } from './image-retention';
 import { deleteDocument } from './documents';
@@ -47,7 +47,7 @@ describe('deleteOldUnusedImages', () => {
   it('deletes nothing while the index backfill is incomplete', async () => {
     const db = setup({ before0050: true });
     db.sql.exec("INSERT INTO tabs (id, name, data, updated_at) VALUES ('t', 't', '{}', 0)");
-    applyMigration(db.sql, '0050');
+    migrateFrom(db.sql, '0050');
     images(db.sql, OLD, 'old');
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
     expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(0);

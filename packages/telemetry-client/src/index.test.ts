@@ -266,8 +266,8 @@ describe('installClientErrorTracking', () => {
     windowTarget.fire('error', { error: new TypeError('x is undefined') });
     windowTarget.fire('unhandledrejection', { reason: new RangeError('bad') });
     expect(track.mock.calls).toEqual([
-      ['Error', 'Client', 'Uncaught.Diagram.TypeError'],
-      ['Error', 'Client', 'UnhandledRejection.Diagram.RangeError'],
+      ['Error', 'Client', 'Uncaught.Document.TypeError'],
+      ['Error', 'Client', 'UnhandledRejection.Document.RangeError'],
     ]);
   });
 

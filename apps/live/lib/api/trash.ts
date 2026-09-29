@@ -48,7 +48,7 @@ export async function apiRestoreDocument(ownerId: string, id: string): Promise<L
     method: 'POST',
     headers: await apiHeaders(ownerId),
   });
-  const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'restore diagram');
+  const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'restore document');
   unmarkDocumentDeleted(id);
   return liveDoc;
 }
@@ -60,7 +60,7 @@ export async function apiPurgeDocument(ownerId: string, id: string): Promise<voi
     return;
   }
   await apiDelete(`${API_BASE}/trash/${encodeURIComponent(id)}`, ownerId, {
-    action: 'purge diagram',
+    action: 'purge document',
     allow404: false,
   });
 }

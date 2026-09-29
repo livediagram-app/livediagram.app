@@ -101,7 +101,7 @@ describe('handleTimeline read', () => {
   // re-deriving one.
   it('serves a diagram scope to anyone the diagram gate allows', async () => {
     gate.gateRead.mockResolvedValue(true);
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=diagram:d-1'));
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1'));
     expect(res.status).toBe(200);
     // Called with the whole RouteContext (it needs the share-code
     // headers), so assert the diagram identity rather than the ctx.
@@ -109,7 +109,7 @@ describe('handleTimeline read', () => {
   });
 
   it('403s a diagram scope the gate refuses', async () => {
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=diagram:d-1'));
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1'));
     expect(res.status).toBe(403);
     expect(store.readTimeline).not.toHaveBeenCalled();
   });
@@ -118,7 +118,7 @@ describe('handleTimeline read', () => {
   // existence through this endpoint any more than through the diagram's.
   it('403s a diagram scope for an id that does not exist', async () => {
     db.getDocument.mockResolvedValue(null);
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=diagram:missing'));
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:missing'));
     expect(res.status).toBe(403);
     expect(gate.gateRead).not.toHaveBeenCalled();
   });
@@ -188,7 +188,7 @@ describe('handleTimeline read', () => {
     await handleTimeline(
       makeCtx(
         'GET',
-        '/api/timeline?cursor=100:abc&from=50&to=200&sourceType=diagram&sourceType=team',
+        '/api/timeline?cursor=100:abc&from=50&to=200&sourceType=document&sourceType=team',
       ),
     );
     expect(store.readTimeline).toHaveBeenCalledWith(

@@ -26,7 +26,7 @@ function event(id: string): TimelineEvent {
 
 const stack: TimelineStack = {
   key: 'a',
-  bucket: 'diagram::document_renamed',
+  bucket: 'document::document_renamed',
   events: [event('a'), event('b'), event('c')],
 };
 

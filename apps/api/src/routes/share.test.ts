@@ -460,7 +460,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     expect(notifyDocumentJoinMock).not.toHaveBeenCalled();
   });
 
-  it('counts Diagram·Joined once, on the first visit, at the link’s role (docs/specs/017-telemetry/telemetry.md)', async () => {
+  it('counts Document·Joined once, on the first visit, at the link’s role (docs/specs/017-telemetry/telemetry.md)', async () => {
     recordSharedAccessMock.mockResolvedValue(true);
     getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), role: 'edit' });
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
@@ -470,7 +470,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     expect(reportServerEventMock).toHaveBeenCalledWith(FAKE_ENV, 'Document', 'Joined', 'Edit');
   });
 
-  it('does not count Diagram·Joined on a refresh or return visit (docs/specs/017-telemetry/telemetry.md)', async () => {
+  it('does not count Document·Joined on a refresh or return visit (docs/specs/017-telemetry/telemetry.md)', async () => {
     // The editor used to emit on every open of the share URL; a reload
     // inflated "Collaborators Joined" roughly twofold.
     recordSharedAccessMock.mockResolvedValue(false);
@@ -480,7 +480,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     expect(reportServerEventMock).not.toHaveBeenCalled();
   });
 
-  it('does not count Diagram·Joined for the owner or an unidentified visitor', async () => {
+  it('does not count Document·Joined for the owner or an unidentified visitor', async () => {
     recordSharedAccessMock.mockResolvedValue(true);
     for (const visitor of ['o1', null]) {
       const { ctx, settled } = resolveCtx({ visitor });

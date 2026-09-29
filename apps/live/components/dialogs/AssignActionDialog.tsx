@@ -284,7 +284,7 @@ export function AssignActionDialog({
                     void onMoveToTeam(teamId).then((ok) => {
                       setMovingToTeamId(null);
                       if (!ok) setMoveFailed(true);
-                      else track('Action', 'Moved', 'DiagramToTeam');
+                      else track('Action', 'Moved', 'DocumentToTeam');
                     });
                   }
                 : undefined

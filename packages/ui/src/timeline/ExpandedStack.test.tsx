@@ -23,7 +23,7 @@ function event(id: string): TimelineEvent {
 
 const stack: TimelineStack = {
   key: 'e0',
-  bucket: 'diagram::document_renamed',
+  bucket: 'document::document_renamed',
   events: Array.from({ length: 15 }, (_, i) => event(`e${i}`)),
 };
 

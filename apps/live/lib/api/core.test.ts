@@ -194,7 +194,7 @@ describe('apiFetch / apiDelete write signal', () => {
   it('names the entity a DELETE ended, after the plain signal', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })));
     await apiDelete(`${API_BASE}/documents/d1`, 'g', {
-      action: 'delete diagram',
+      action: 'delete document',
       purge: { sourceType: 'document', sourceId: 'd1' },
     });
     expect(heard.mock.calls.map(([s]) => s)).toEqual([
@@ -209,7 +209,7 @@ describe('apiFetch / apiDelete write signal', () => {
     // from the feed on the strength of it.
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 404 })));
     await apiDelete(`${API_BASE}/documents/d1`, 'g', {
-      action: 'delete diagram',
+      action: 'delete document',
       purge: { sourceType: 'document', sourceId: 'd1' },
     });
     expect(heard).not.toHaveBeenCalled();

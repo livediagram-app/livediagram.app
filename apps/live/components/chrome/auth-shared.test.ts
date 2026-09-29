@@ -91,7 +91,7 @@ describe('authHrefWithReturn', () => {
     );
     // Query + hash survive so you land on the exact diagram tab.
     expect(authHrefWithReturn('/get-started/', '/document/abc?x=1#t=t2')).toBe(
-      '/get-started/?redirect_url=%2Fdiagram%2Fabc%3Fx%3D1%23t%3Dt2',
+      '/get-started/?redirect_url=%2Fdocument%2Fabc%3Fx%3D1%23t%3Dt2',
     );
   });
 

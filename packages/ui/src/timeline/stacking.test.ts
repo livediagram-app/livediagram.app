@@ -82,7 +82,7 @@ describe('buildStacks', () => {
 
 describe('bucketFor', () => {
   it('namespaces by source type so two products cannot collide', () => {
-    expect(bucketFor(event({ sourceType: 'document', eventType: 'x' }))).toBe('diagram::x');
+    expect(bucketFor(event({ sourceType: 'document', eventType: 'x' }))).toBe('document::x');
     expect(bucketFor(event({ sourceType: 'team', eventType: 'x' }))).toBe('team::x');
   });
 });

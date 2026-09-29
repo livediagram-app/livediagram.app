@@ -10,7 +10,7 @@ export class DocumentTrashedError extends Error {
   readonly documentId: string;
   constructor(documentId: string) {
     super(`diagram ${documentId} is in the Trash`);
-    this.name = 'DiagramTrashedError';
+    this.name = 'DocumentTrashedError';
     this.documentId = documentId;
   }
 }

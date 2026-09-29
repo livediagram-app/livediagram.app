@@ -12,8 +12,8 @@
 // already records. Pairs are `Category·Action`, the same spelling as the
 // editor's telemetry manifest.
 export const SERVER_EMITTED_EVENT_PAIRS: readonly string[] = [
-  'Diagram·Joined',
-  'Diagram·Used',
+  'Document·Joined',
+  'Document·Used',
   'Email·Sent',
   'Session·SignedIn',
   'Session·SignedUp',

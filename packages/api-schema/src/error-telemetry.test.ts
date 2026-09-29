@@ -34,7 +34,7 @@ describe('errorTypeToken', () => {
 
   it('keeps the dots inside a dotted part such as a route label', () => {
     expect(errorTypeToken('Internal', apiRouteLabel('PUT', '/api/documents/x/tabs/y'))).toBe(
-      'Internal.Put.Diagrams.Tabs',
+      'Internal.Put.Documents.Tabs',
     );
   });
 
@@ -94,10 +94,10 @@ describe('errorPageToken', () => {
 describe('apiRouteLabel', () => {
   it('keeps the resource and route words, drops ids', () => {
     expect(apiRouteLabel('PUT', '/api/documents/0b7c5f9e-1111/tabs/abc123')).toBe(
-      'Put.Diagrams.Tabs',
+      'Put.Documents.Tabs',
     );
     expect(apiRouteLabel('POST', 'https://livediagram.app/api/documents/x/tabs/y/comments')).toBe(
-      'Post.Diagrams.Tabs.Comments',
+      'Post.Documents.Tabs.Comments',
     );
     expect(apiRouteLabel('GET', 'http://localhost:8787/api/timeline?cursor=abc')).toBe(
       'Get.Timeline',

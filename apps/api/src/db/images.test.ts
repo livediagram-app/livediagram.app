@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { applyMigration } from '../test-sqlite-d1';
+import { linkDocumentTab } from './legacy-test-schema';
+import { migrateFrom } from '../test-sqlite-d1';
 import { resetImageRefIndexMemo } from './image-refs';
 import { documentReferencesImage, imageUsageByOwner } from './images';
 import { upsertTab } from './tabs';
@@ -46,10 +47,8 @@ describe('imageUsageByOwner', () => {
     db.sql.exec(
       `INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 't1', '${JSON.stringify(tabWith('t1', 'img'))}', 0)`,
     );
-    db.sql.exec(
-      "INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('A', 't1', 0, 0)",
-    );
-    applyMigration(db.sql, '0050');
+    linkDocumentTab(db.sql, 'A', 't1');
+    migrateFrom(db.sql, '0050');
     expect(await imageUsageByOwner(db.env, 'owner')).toEqual({ img: [{ id: 'A', name: 'A' }] });
     expect(refsFor(db.sql, 'img')).toBe(1);
   });
@@ -92,10 +91,8 @@ describe('documentReferencesImage', () => {
     db.sql.exec(
       `INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 't1', '${JSON.stringify(tabWith('t1', 'img'))}', 0)`,
     );
-    db.sql.exec(
-      "INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('A', 't1', 0, 0)",
-    );
-    applyMigration(db.sql, '0050');
+    linkDocumentTab(db.sql, 'A', 't1');
+    migrateFrom(db.sql, '0050');
     expect(await documentReferencesImage(db.env, 'A', 'img')).toBe(true);
   });
 });

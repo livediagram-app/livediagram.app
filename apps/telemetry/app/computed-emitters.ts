@@ -101,7 +101,7 @@ const ELEMENT_WHY = 'an element kind, as the palette catalogue spells it';
 const API_ERRORS = [
   'Http403.LoadTab.Forbidden',
   'Http500.SaveTab',
-  'Network.Put.Diagrams.Tabs',
+  'Network.Put.Documents.Tabs',
   'Auth.NoSessionToken',
   'SaveFailed.TypeError',
 ];
@@ -115,7 +115,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'Http<status>.SendEmail, any status Resend answers',
   },
   'apps/api/src/index.ts Error·Api': {
-    values: ['Internal.Put.Diagrams.Tabs', 'Internal.Get.Diagrams'],
+    values: ['Internal.Put.Documents.Tabs', 'Internal.Get.Documents'],
     open: 'Internal.<Method>.<Route>, the route the worker was serving',
   },
 
@@ -133,7 +133,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
 
   // Shared packages.
   'packages/telemetry-client/src/index.ts Error·Client': {
-    values: ['Uncaught.Diagram.TypeError', 'UnhandledRejection.Explorer.Error'],
+    values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
   },
   'packages/ui/src/PageViewTracker.tsx Page·View': {
@@ -246,7 +246,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'elementTelemetryType of the web component a row was added to',
   },
   'apps/live/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
-  'apps/live/hooks/persistence/useShareLinks.ts Diagram·Shared': {
+  'apps/live/hooks/persistence/useShareLinks.ts Document·Shared': {
     values: ['ExpiryWeek', 'ExpiryMonth', 'ExpirySixMonths'],
   },
   'apps/live/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },

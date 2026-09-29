@@ -75,7 +75,7 @@ export const INVITE_RESPONSE_EMAILS = email(
 );
 
 export const DOCUMENT_JOINED_EMAILS = email(
-  'DiagramJoined',
+  'DocumentJoined',
   'Diagram Joined Emails',
   'An owner told that someone opened one of their shared diagrams for the first time.',
 );
