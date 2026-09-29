@@ -158,6 +158,7 @@ folder id):
 
 | In Drive                                             | In livediagram                                                                                  |
 | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| File copied (Drive's "Make a copy")                  | A new diagram, as if Duplicate was pressed ([Copies made in Drive](#copies-made-in-drive))      |
 | File renamed                                         | Diagram renamed (the `.livediagram` extension is dropped; an empty name keeps the old one)      |
 | File moved to another mirrored folder                | Diagram moved to that folder                                                                    |
 | File moved to the root folder                        | Diagram moved to Unsorted                                                                       |
@@ -194,6 +195,40 @@ folder id):
 - Inbound changes go through the ordinary api routes (rename, move, delete,
   restore), so authorisation, the change log and realtime rooms behave exactly
   as if the user had done it in livediagram.
+
+## Copies made in Drive
+
+Copying a `.livediagram` file in Drive makes a **new diagram**, exactly as if
+the user had pressed **Duplicate** in livediagram, and the copy then mirrors
+that new diagram.
+
+- **Recognised by** a file new to livediagram that carries the `ldDiagramId` of
+  a diagram whose mirror is another file. A copy in the bin is left alone.
+- **Content.** When the original diagram is live, the new diagram is
+  duplicated from livediagram's database, which stays the source of truth: an
+  edit made to the copy's contents in Drive is not imported. When the original
+  is in the Trash (whose contents livediagram does not hand out) or gone
+  altogether, the copy's own contents are imported as a new diagram, as
+  **Import a copy** does.
+- **Name.** The copy's Drive name, the extension dropped (Drive names a copy
+  "Copy of …"). An empty name falls back to the original's name.
+- **Place.** The livediagram folder the copy's Drive folder mirrors; Unsorted
+  when the copy sits in the root, or in a folder livediagram cannot see (then
+  with [the notice](#folders-livediagram-cannot-see)).
+- **Then it mirrors.** The copy's `appProperties` are re-tagged with the new
+  diagram's id and it becomes that diagram's file; the next write replaces its
+  contents with the new diagram's.
+- **Once only.** The new diagram's id is derived from the copy's Drive file id,
+  so a pass interrupted between making the diagram and re-tagging the file
+  finds the diagram already there next time and only finishes the re-tag.
+- **What livediagram cannot see does nothing.** Whether Drive shows livediagram
+  a copy the user made, and whether the copy keeps `appProperties`, is not yet
+  verified on real Drive. A copy livediagram is never shown, or one without
+  `appProperties`, is not recognised as livediagram's and nothing happens.
+- **Never silent.** A copy livediagram recognises but cannot turn into a
+  diagram (its contents unreadable while the original is gone) is listed in
+  the Drive panel: "A copy made in Drive ({name}) couldn't be read, so no
+  diagram was made from it."
 
 ## Folders livediagram cannot see
 
@@ -411,7 +446,7 @@ Preset-enum events only, category `Drive`: connected and disconnected
 (`Linked` / `Unlinked`, typed `Broker` or `Browser`), reconnect needed
 (`Changed` `NeedsReconnect`), first mirror finished (`Created` `FirstMirror`,
 once per connection per browser), an inbound change applied (`Applied`, by
-type: `Rename`, `Move`, `Trash`, `Restore`, `Purge`, `UnknownFolder`), an Open
+type: `Copy`, `Rename`, `Move`, `Trash`, `Restore`, `Purge`, `UnknownFolder`), an Open
 with (`Opened`, by outcome: `Opened`, `ImportOffered`, `Error`).
 
 ## Non-goals
