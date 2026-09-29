@@ -18,9 +18,11 @@ import {
   CODE_THEMES,
   ELEMENT_TYPES,
   ENTITY_MAX_FIELDS,
+  NAME_MAX_LENGTH,
   SHAPE_KINDS,
   STICKY_PRESETS,
   THEMES,
+  truncateName,
 } from '@livediagram/diagram';
 
 export const SCHEMA_RESOURCE_URI = 'livediagram://schema/elements';
@@ -337,8 +339,19 @@ export const readDiagramShape = {
   tabId: z.string().optional().describe('Which tab to read; defaults to the first.'),
 };
 
+// A diagram or tab name (docs/specs/006-diagram/name-length.md). Shortened with
+// the same truncateName the api worker applies, so the name a tool reports back
+// is the one stored; the cap is stated for the model in the description.
+const nameField = (what: string, schema: z.ZodString = z.string()) =>
+  schema
+    .describe(
+      `${what} Keep it short: at most ${NAME_MAX_LENGTH} characters. A longer name is ` +
+        'shortened at a word boundary with an ellipsis.',
+    )
+    .transform(truncateName);
+
 const tabShape = z.object({
-  name: z.string().describe('Name of the tab.'),
+  name: nameField('Name of the tab.'),
   graph: graphField,
   mermaid: mermaidField,
   elements: elementArray.optional(),
@@ -346,7 +359,7 @@ const tabShape = z.object({
 });
 
 export const createDiagramShape = {
-  name: z.string().describe('Name for the new diagram.'),
+  name: nameField('Name for the new diagram.'),
   // `tabs` is preferred; `tab` is accepted as an alias for a single tab so a
   // client with a stale cached schema (or one that just sends `tab`) still works
   // — provide one or the other.
@@ -368,7 +381,7 @@ export const addTabShape = {
   diagramId: z
     .string()
     .describe('The diagram to add a tab to (from find_diagrams / read_diagram).'),
-  name: z.string().describe('Name of the new tab.'),
+  name: nameField('Name of the new tab.'),
   graph: graphField,
   mermaid: mermaidField,
   elements: elementArray.optional(),
@@ -437,7 +450,7 @@ export const listTrashShape = {};
 
 export const renameDiagramShape = {
   diagramId: z.string().describe('The diagram to rename (from find_diagrams / read_diagram).'),
-  name: z.string().min(1).describe('The new name.'),
+  name: nameField('The new name.', z.string().min(1)),
   tabId: z
     .string()
     .optional()
