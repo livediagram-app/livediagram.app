@@ -1,5 +1,5 @@
 // The whole-diagram envelope (docs/specs/022-drive-mirror/drive-mirror.md, "The file"):
-// the contents of a `.livediagram` file in Google Drive, and what "Import a
+// the contents of a `.livedoc` file in Google Drive, and what "Import a
 // copy" reads back. The sibling of the per-tab `livediagram.tab` envelope in
 // export-tab-text.ts: same shape (kind, schemaVersion, exportedAt), one
 // diagram with every tab, each tab's per-diagram folder, and the slide deck.

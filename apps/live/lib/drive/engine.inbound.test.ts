@@ -26,7 +26,7 @@ async function mirrored(options: ConstructorParameters<typeof FakeGoogle>[0] = {
 describe('inbound rows', () => {
   it('File renamed: diagram renamed, the extension dropped', async () => {
     const w = await mirrored();
-    w.google.userRename(w.file().id, 'Roadmap.livediagram');
+    w.google.userRename(w.file().id, 'Roadmap.livedoc');
     await w.engine.syncNow();
     expect(w.ld.diagram('d1')!.name).toBe('Roadmap');
     expect(w.events).toContain('Applied:Rename');
@@ -34,10 +34,10 @@ describe('inbound rows', () => {
 
   it('File renamed to nothing: the old name stays, and Drive gets it back', async () => {
     const w = await mirrored();
-    w.google.userRename(w.file().id, '.livediagram');
+    w.google.userRename(w.file().id, '.livedoc');
     await w.engine.syncNow();
     expect(w.ld.diagram('d1')!.name).toBe('Plan');
-    expect(w.file().name).toBe('Plan.livediagram');
+    expect(w.file().name).toBe('Plan.livedoc');
   });
 
   it('File moved to another mirrored folder: diagram moved', async () => {
@@ -177,33 +177,33 @@ describe('conflicts', () => {
   it('both sides renamed: the later change wins', async () => {
     const w = await mirrored();
     // Drive first, livediagram later: livediagram wins and Drive follows.
-    w.google.userRename(w.file().id, 'Drive name.livediagram');
+    w.google.userRename(w.file().id, 'Drive name.livedoc');
     w.clock.tick(1000);
     await w.ld.port().renameDiagram('d1', 'Local name');
     await w.engine.syncNow();
     expect(w.ld.diagram('d1')!.name).toBe('Local name');
-    expect(w.file().name).toBe('Local name.livediagram');
+    expect(w.file().name).toBe('Local name.livedoc');
   });
 
   it('both sides renamed, Drive later: Drive wins', async () => {
     const w = await mirrored();
     await w.ld.port().renameDiagram('d1', 'Local name');
     w.clock.tick(1000);
-    w.google.userRename(w.file().id, 'Drive name.livediagram');
+    w.google.userRename(w.file().id, 'Drive name.livedoc');
     await w.engine.syncNow();
     expect(w.ld.diagram('d1')!.name).toBe('Drive name');
-    expect(w.file().name).toBe('Drive name.livediagram');
+    expect(w.file().name).toBe('Drive name.livedoc');
   });
 
   it('a rename made in Drive while away is applied before any outbound write', async () => {
     const w = await mirrored();
     w.engine.stop();
-    w.google.userRename(w.file().id, 'Renamed while away.livediagram');
+    w.google.userRename(w.file().id, 'Renamed while away.livedoc');
     w.clock.tick(3_600_000);
     const next = makeEngine(w);
     await next.engine.start();
     expect(w.ld.diagram('d1')!.name).toBe('Renamed while away');
-    expect(w.file().name).toBe('Renamed while away.livediagram');
+    expect(w.file().name).toBe('Renamed while away.livedoc');
   });
 });
 
@@ -212,7 +212,7 @@ describe('Open with files and foreign files', () => {
     const w = await mirrored();
     const foreign = w.google.otherUserFile({
       owner: 'someone',
-      name: 'Theirs.livediagram',
+      name: 'Theirs.livedoc',
       mimeType: DRIVE_FILE_MIME,
       content: '{}',
       appProperties: { ldDiagramId: 'x', ldOrigin: 'other.host' },

@@ -9,6 +9,7 @@ import {
   DRIVE_PROP_DIAGRAM_ID,
   DRIVE_PROP_ORIGIN,
   isDriveFileId,
+  stripDriveName,
 } from '@livediagram/api-schema';
 import { parseDiagramEnvelope } from '../export-diagram-text';
 import { DriveApiError, type DriveClient } from './drive-client';
@@ -70,7 +71,7 @@ export async function resolveOpenWith(
     file.name.toLowerCase().endsWith(DRIVE_FILE_EXTENSION) ||
     !!diagramId;
   if (!ours) return { kind: 'error', reason: 'not-livediagram' };
-  const name = file.name.replace(/\.livediagram$/i, '') || 'Diagram';
+  const name = stripDriveName(file.name) ?? 'Diagram';
   if (!diagramId) return { kind: 'import', reason: 'no-id', name };
   if (file.appProperties[DRIVE_PROP_ORIGIN] !== deps.host)
     return { kind: 'import', reason: 'foreign', name };

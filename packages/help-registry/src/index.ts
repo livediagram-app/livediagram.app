@@ -560,7 +560,7 @@ export const articles: Article[] = [
     title: 'Google Drive',
     description: 'Mirror your Personal Space to your own Google Drive, kept in step both ways.',
     keywords:
-      'google drive mirror sync backup copy cloud storage open with livediagram file folders',
+      'google drive mirror sync backup copy cloud storage open with livediagram livedoc file folders',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },

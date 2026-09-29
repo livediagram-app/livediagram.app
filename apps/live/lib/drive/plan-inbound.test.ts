@@ -15,7 +15,7 @@ function item(over: Partial<DriveItem> = {}): DriveItem {
     kind: 'diagram',
     ldId: 'd1',
     driveFileId: 'file-d1',
-    name: 'Plan.livediagram',
+    name: 'Plan.livedoc',
     ldName: 'Plan',
     parentId: 'root',
     trashed: false,
@@ -42,7 +42,7 @@ const folderItem = item({
 function file(over: Partial<DriveFile> = {}): DriveFile {
   return {
     id: 'file-d1',
-    name: 'Plan.livediagram',
+    name: 'Plan.livedoc',
     mimeType: 'application/vnd.livediagram+json',
     parents: ['root'],
     trashed: false,
@@ -101,30 +101,30 @@ describe('planInbound: diagrams', () => {
   });
 
   it('renames the diagram, dropping the extension', () => {
-    const d = planInbound(change(file({ name: 'Roadmap.livediagram' })), snap());
+    const d = planInbound(change(file({ name: 'Roadmap.livedoc' })), snap());
     expect(d).toMatchObject({
       kind: 'apply',
       effects: [{ kind: 'rename-diagram', id: 'd1', name: 'Roadmap' }],
       types: ['Rename'],
-      record: { name: 'Roadmap.livediagram', ldName: 'Roadmap' },
+      record: { name: 'Roadmap.livedoc', ldName: 'Roadmap' },
     });
   });
 
   it('keeps the old name when the Drive name is empty once stripped', () => {
-    const d = planInbound(change(file({ name: '.livediagram' })), snap());
+    const d = planInbound(change(file({ name: '.livedoc' })), snap());
     expect(d).toMatchObject({ kind: 'apply', effects: [] });
   });
 
   it('lets the later side win when both renamed', () => {
     // livediagram renamed to "Local" after Drive's change: livediagram wins.
     const localLater = planInbound(
-      change(file({ name: 'Drive.livediagram' })),
+      change(file({ name: 'Drive.livedoc' })),
       snap({ name: 'Local', savedAt: T + 1000 }),
     );
     expect(localLater).toMatchObject({ kind: 'apply', effects: [], record: { ldName: 'Drive' } });
     // Drive's rename is the later one: Drive wins.
     const driveLater = planInbound(
-      change(file({ name: 'Drive.livediagram' })),
+      change(file({ name: 'Drive.livedoc' })),
       snap({ name: 'Local', savedAt: T - 1000 }),
     );
     expect(driveLater).toMatchObject({ effects: [{ kind: 'rename-diagram', name: 'Drive' }] });
@@ -195,11 +195,11 @@ describe('planInbound: diagrams', () => {
   });
 
   it('records a change whose value livediagram already holds without applying it', () => {
-    const d = planInbound(change(file({ name: 'Plan2.livediagram' })), snap({ name: 'Plan2' }));
+    const d = planInbound(change(file({ name: 'Plan2.livedoc' })), snap({ name: 'Plan2' }));
     expect(d).toMatchObject({
       kind: 'apply',
       effects: [],
-      record: { name: 'Plan2.livediagram', ldName: 'Plan2' },
+      record: { name: 'Plan2.livedoc', ldName: 'Plan2' },
     });
   });
 });

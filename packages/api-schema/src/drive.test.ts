@@ -9,18 +9,18 @@ import {
 } from './drive';
 
 describe('driveFileName', () => {
-  it('appends the .livediagram extension', () => {
+  it('appends the .livedoc extension', () => {
     expect(driveFileName('Roadmap')).toBe(`Roadmap${DRIVE_FILE_EXTENSION}`);
   });
 });
 
 describe('stripDriveName', () => {
-  it('drops the .livediagram extension', () => {
-    expect(stripDriveName('Roadmap.livediagram')).toBe('Roadmap');
+  it('drops the .livedoc extension', () => {
+    expect(stripDriveName('Roadmap.livedoc')).toBe('Roadmap');
   });
 
   it('drops the extension case-insensitively and trims', () => {
-    expect(stripDriveName('  Plan.LIVEDIAGRAM ')).toBe('Plan');
+    expect(stripDriveName('  Plan.LIVEDOC ')).toBe('Plan');
   });
 
   it('keeps a name without the extension', () => {
@@ -28,12 +28,12 @@ describe('stripDriveName', () => {
   });
 
   it('answers null for a name that is empty once stripped', () => {
-    expect(stripDriveName('.livediagram')).toBeNull();
+    expect(stripDriveName('.livedoc')).toBeNull();
     expect(stripDriveName('   ')).toBeNull();
   });
 
   it('truncates to the given maximum', () => {
-    expect(stripDriveName('abcdef.livediagram', 3)).toBe('abc');
+    expect(stripDriveName('abcdef.livedoc', 3)).toBe('abc');
   });
 });
 
@@ -56,5 +56,16 @@ describe('id validators', () => {
     expect(isDriveLeaseHolder('')).toBe(false);
     expect(isDriveLeaseHolder('a'.repeat(65))).toBe(false);
     expect(isDriveLeaseHolder('bad holder')).toBe(false);
+  });
+});
+
+describe('the Drive file extension (docs/specs/022-drive-mirror/drive-mirror.md, "The file")', () => {
+  it('is .livedoc, while the MIME type keeps the product name', () => {
+    expect(DRIVE_FILE_EXTENSION).toBe('.livedoc');
+    expect(driveFileName('Plan')).toBe('Plan.livedoc');
+  });
+
+  it('never reads another extension: nothing shipped under one', () => {
+    expect(stripDriveName('Plan.livediagram')).toBe('Plan.livediagram');
   });
 });

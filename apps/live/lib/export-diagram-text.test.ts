@@ -6,7 +6,7 @@ import {
   type EnvelopeTab,
 } from './export-diagram-text';
 
-// The `.livediagram` file's contents (docs/specs/022-drive-mirror/drive-mirror.md, "The file").
+// The `.livedoc` file's contents (docs/specs/022-drive-mirror/drive-mirror.md, "The file").
 
 const tab: EnvelopeTab = { id: 't1', name: 'Tab 1', elements: [], folder: 'Ideas' };
 

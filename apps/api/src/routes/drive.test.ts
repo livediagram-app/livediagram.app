@@ -84,7 +84,7 @@ function item(over: Partial<DriveItem> = {}): DriveItem {
     kind: 'diagram',
     ldId: 'd1',
     driveFileId: 'f1',
-    name: 'One.livediagram',
+    name: 'One.livedoc',
     ldName: 'One',
     parentId: 'root',
     trashed: false,

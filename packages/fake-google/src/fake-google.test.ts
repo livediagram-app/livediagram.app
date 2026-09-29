@@ -144,7 +144,7 @@ describe('files', () => {
     expect(root.parents).toEqual(['mydrive-me']);
     const up = multipart(
       {
-        name: 'A.livediagram',
+        name: 'A.livedoc',
         parents: [root.id],
         mimeType: 'application/vnd.livediagram+json',
         appProperties: { ldDiagramId: 'd1' },
@@ -160,7 +160,7 @@ describe('files', () => {
     );
     expect(file.status).toBe(200);
     expect(file.body).toMatchObject({
-      name: 'A.livediagram',
+      name: 'A.livedoc',
       parents: [root.id],
       trashed: false,
       appProperties: { ldDiagramId: 'd1' },
