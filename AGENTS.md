@@ -88,14 +88,14 @@ _Note:_ There is no need to stop in between phases; just keep going.
 - Specs are never task lists and carry no checkboxes.
 - Spec files SHOULD be unnumbered and named by subject; a category MAY hold several related specs.
 - Write the spec BEFORE implementing anything non-trivial, and keep it true afterwards.
-- Iterate the existing spec rather than adding a new one on the same subject; stay cognizant of the delta each change makes.
+- Iterate the existing spec rather than adding one on the same subject; stay cognizant of each delta.
 
 **Category folders**
 
 - The first five categories are reserved:
   - `001-project-vision` - the "why": problem, target audience, value proposition.
   - `002-project-scope` - the "what" and "what-not": features, high-level outline, technical constraints, non-goals.
-  - `003-system-architecture` - the "how" under the hood: data flow, infrastructure, state management, and the language and runtime boundaries.
+  - `003-system-architecture` - the "how" underneath: data flow, infrastructure, state, language/runtime boundaries.
   - `004-interface-design` - the "how" at the surface: UX/UI, wireframes, user journeys, visual language.
   - `005-project-roadmap` - the "when": milestones as outcomes, phases, launch strategy.
 - Further category folders MUST BE named after a **system** or, preferably, a **domain concept**.
@@ -111,8 +111,8 @@ _Note:_ There is no need to stop in between phases; just keep going.
 - Change flows in one-direction and is deterministic: a spec change updates the blueprint and then the code.
 - Any changes outside that are folded back into the spec and blueprint.
 - Blueprints do not invent design; if the spec is ambiguous, fix the spec first rather than guess.
-- Iterate the existing blueprints rather than rewriting them: change only what the spec changed, and stay cognizant of the delta.
-- Blueprints SHOULD apply documented defaults, recorded as one row per default in the category's `blueprints/DEFAULTS.md`.
+- Iterate existing blueprints, never rewrite: change only what the spec changed; stay cognizant of the delta.
+- Blueprints SHOULD apply documented defaults, one row per default in the category's `blueprints/DEFAULTS.md`.
 - A blueprint is complete only when every applicable **completeness category** is covered and checked off in `blueprints/COMPLETENESS.md`
 
 **Completeness categories**
@@ -133,7 +133,7 @@ _Note:_ There is no need to stop in between phases; just keep going.
 - **Assets and external resources** - every asset has a source, a licence, a path, and reproducible generation.
 - **Defaults ledger** - every default applied for a silent or qualitative spec has a ledger row.
 
-For each blueprint, record the applicable categories in the topic's committed `blueprints/COMPLETENESS.md`, a simple list, one line each:
+Record each blueprint's applicable categories in the committed `blueprints/COMPLETENESS.md`, one line each:
 
 - [x] Domain and naming
 - [x] Behaviour and state
@@ -146,22 +146,23 @@ Leave out any category that does not apply; unchecked means applicable but not c
 
 - Instruction sets live in `docs/instructions/<process>.md`, unnumbered and named after the process they encode.
 - They are indexed under `docs/instructions/README.md`.
-- Instruction sets are **reusable process memory**: _how a process is done_, not scoped to one piece of work like a plan.
+- Instruction sets are **reusable process memory**: _how a process is done_, not scoped to one piece of work.
 - Instruction sets carry no checkboxes; a plan MAY link to one, and progress is ticked in the plan.
 - Steps are **chronological**; ordered the way the work is actually done, not grouped by theme.
 - Steps are **granular**; each is small enough that "did it happen?" has a yes or no answer.
 - Steps are **opinionated**; taste, preferences and domain specifics are woven in, not left to model defaults.
-- Only **genuine forks** (taste, preference, business knowledge) are surfaced; every other decision is written down once.
+- Surface only **genuine forks** (taste, preference, business knowledge); write every other decision down once.
 - Instruction sets grow **empirically**; gotchas, hard gained knowledge, user input or missed steps are folded back in.
 
 ## Specs are the source of truth
 
-Before building or proposing anything, **check `docs/specs/`**. Every product decision, feature, constraint, and rule lives there. The index is at [`docs/specs/README.md`](docs/specs/README.md).
+- Before building or proposing anything, **check `docs/specs/`** ([index](docs/specs/README.md)).
+- Every product decision, feature, constraint and rule lives in `docs/specs/`.
 
 Workflow:
 
 - New feature, scope change, or rule → write or update a spec **first**, code second.
-- When a user request lands, capture it in a spec before writing code, and keep specs organised in their category folders (see Organisation process above).
+- Capture each user request in a spec before writing code, filed in its category folder.
 - Reference specs by filename in PRs and discussions.
 - If specs and code disagree, that's a bug — usually the spec is right; if not, fix the spec first.
 
@@ -243,7 +244,8 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 - **The canvas always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
   - **Guest path**: a per-browser participant id (`livediagram:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
-  - **Authed path**: a Clerk session JWT in `Authorization: Bearer <token>`. The api worker verifies via `CLERK_JWKS_URL` (`apps/api/src/auth/clerk.ts`) and uses the `sub` claim as the owner id. Required for per-account sync and future team workspaces.
+  - **Authed path**: a Clerk session JWT in `Authorization: Bearer <token>`, verified via `CLERK_JWKS_URL`.
+  - The api worker uses the `sub` claim as the owner id.
 - The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.
 - Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (custom UI; email-code or Google OAuth). On sign-up, guest diagrams migrate from the localStorage id to the Clerk user id via `POST /api/migrate`.
 
@@ -263,7 +265,15 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 **Decide where code belongs before you write it. Never accrete into god files.** Non-negotiable.
 
-- **Prefer small, cohesive files; extract on cohesion, not on a line count.** Don't wait for a file to get huge: pull a slice into its own module the moment it's independently meaningful (a self-contained component, hook, or helper), even when the host file is well under any threshold. A 200-line file mixing two unrelated concerns is worth splitting; size is a smell, not the trigger. **Soft target: keep source files under ~400 lines.** This isn't a hard cap, but a file over 400 lines reads as neglect to a new contributor regardless of how cohesive it is, so treat crossing it as a prompt to extract a cohesive slice (a render branch into its own component, a state slice into its own hook). Never hit the target by deleting explanatory comments — that trades a real quality signal for a cosmetic one; bring the number down by moving real code. A file past ~1000 lines is almost certainly doing too much and must be broken up. **Pure data is exempt from the line target.** A flat catalogue — one (or a few) exported array/record of data with no logic, like an icon set, a tech-icon catalogue, or the help-article registry — stays a single file however long it gets. The target measures _code_, where length signals cognitive load and tangled concerns; a data array has neither, so chopping it into `*-data-1/2/3` parts at arbitrary entry boundaries only scatters the catalogue across files and adds churn with no readability gain. Split a data file only when it genuinely holds two _different_ catalogues that deserve separate homes, not to chase a number. This was earned: `apps/live/app/diagram/[id]/editor-page.tsx` was a 3,647-line god component, now split into `useEditorState.ts` (orchestration hook), `EditorView.tsx` (JSX), and `EditorContext.tsx` (context, `EditorContextValue = ReturnType<typeof useEditorState>`), with a ~130-line page shell. `Canvas.tsx` and `FeatureArt.tsx` were split the same way. `useEditorState.ts` and `Canvas.tsx` already sit large, so prefer extracting new slices out of them rather than adding in. **A fully-decomposed orchestration root is exempt like pure data.** `useEditorState.ts` is the clearest case: it has already been split into ~30 domain sub-hooks, so what remains is irreducible — wiring (calling each hook and threading its deps) plus the assembled return view-model (`EditorContextValue`). Pushing such a root under the target would mean bundling hook-calls into meta-hooks (pure indirection) or splitting the return object (awkward), churn that doesn't improve the code. Keep pulling a genuinely-cohesive slice out of it whenever one appears (an inline effect, a self-contained handler group), but don't force the line count — for an orchestration root the bar is cohesion, not the number.
+- **Prefer small, cohesive files; extract on cohesion, not on a line count.**
+- Pull a slice into its own module the moment it's independently meaningful, even under any threshold.
+- **Soft target: keep source files under ~400 lines.** Crossing it is a prompt to extract a cohesive slice.
+- Never hit the target by deleting explanatory comments; bring the number down by moving real code.
+- A file past ~1000 lines is almost certainly doing too much and must be broken up.
+- **Pure data is exempt from the line target.** A flat catalogue stays a single file however long it gets.
+- Split a data file only when it genuinely holds two _different_ catalogues that deserve separate homes.
+- **A fully-decomposed orchestration root is exempt like pure data**; its bar is cohesion, not the number.
+- `useEditorState.ts` and `Canvas.tsx` already sit large; extract new slices out of them rather than adding in.
 - A new dialog / page / overlay → its **own component file** (e.g. `components/chrome/ApiErrorPage.tsx`), not another branch inside an existing screen.
 - New behaviour or a slice of state → its **own hook** (`useXxx.ts`), then composed in. Editor state lives in domain slices, not piled into one hook.
 - When you add to an existing file, confirm it's the _cohesive_ home, not just the convenient one. Wire new pieces in with the smallest edit to the host file.
@@ -279,27 +289,6 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 See [Architecture](docs/development/architecture.md#tech-stack).
 
-## Naming conventions
-
-- Workspace packages: `@livediagram/<name>`.
-- Apps in `apps/<name>` (e.g. `apps/marketing`, `apps/live`, `apps/telemetry`, `apps/help`, `apps/api`, `apps/mcp`, `apps/router`).
-- Cross-workspace deps use `"@livediagram/foo": "workspace:*"`.
-
-## Shared config
-
-- **TypeScript:** every workspace's `tsconfig.json` extends `../../tsconfig.base.json`. Two TypeScripts are installed on purpose: `@typescript/native` (an alias for `typescript@7`, the Go compiler) provides the `tsc` that `pnpm typecheck` runs, while `typescript` aliases `@typescript/typescript6` because 7.0 ships no compiler API and typescript-eslint / Next.js / Prettier import one. See [`docs/development/contributing.md`](docs/development/contributing.md#two-typescripts).
-- **ESLint:** flat config. Each workspace has `eslint.config.js`:
-  ```js
-  import config from '@livediagram/eslint-config';
-  export default config;
-  ```
-- **Prettier:** root `prettier.config.js` re-exports `@livediagram/prettier-config`; resolves automatically for all workspaces.
-- **Tailwind:** each app's `globals.css` imports the shared theme:
-  ```css
-  @import 'tailwindcss';
-  @import '@livediagram/tailwind-config';
-  ```
-
 ## Deployment
 
 See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment](docs/specs/016-platform/staging-environment.md).
@@ -313,4 +302,8 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 - Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - D1 schemas and migrations (when they arrive) live with the Worker that owns the binding.
 - The router worker (`apps/router`) holds **no business logic** — only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.
-- **Track key new functionality** via the anonymous-events schema (see [`docs/specs/017-telemetry/telemetry.md`](docs/specs/017-telemetry/telemetry.md)): when you ship a feature that meaningfully changes user behaviour (a new element kind, a new dialog, a new mode, a new shortcut surface, a new setting toggle), add a one-liner `track(category, action, type)` at the interaction's handler. Reuse the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums in `@livediagram/api-schema`, extending them only when no existing pair fits. The `type` is a preset enum value (e.g., `Square`, `DrawToAddOn`), never user content. The editor (`apps/live`) and the help centre (`apps/help`) emit, both through the shared `@livediagram/telemetry-client` engine with app-owned enable/opt-out policy; settings flips fire BEFORE the change is persisted so an opt-out event still reaches the wire.
+- **Track key new functionality** via the anonymous-events schema ([spec](docs/specs/017-telemetry/telemetry.md)).
+- A feature that meaningfully changes user behaviour gets a one-liner `track(category, action, type)` in its handler.
+- Reuse the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums; extend them only when no existing pair fits.
+- The `type` is a preset enum value (e.g., `Square`, `DrawToAddOn`), never user content.
+- Settings flips fire BEFORE the change is persisted so an opt-out event still reaches the wire.

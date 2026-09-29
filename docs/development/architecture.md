@@ -48,6 +48,16 @@ marketing/      off-site copy + media for listings and promotion (see docs/specs
 | `apps/mcp`       | The MCP server at its own host `mcp.livediagram.app` ([MCP server](../specs/015-api/mcp-server.md)). Hono + the MCP SDK over Streamable HTTP; nine tools (find / read / list-templates / create / add-tab / update / share / rename / delete diagrams) that wrap the api worker via a service binding, reusing `packages/diagram` for validation / layout / SVG render (rasterised to PNG with resvg-wasm). OAuth 2.1 + PKCE mints an `lvd_` API token. Signed-in only; absent without Clerk. | `livediagram-mcp`       |
 | `apps/router`    | A worker that holds no business logic, only `MARKETING` / `LIVE` / `TELEMETRY` / `HELP` / `API` service bindings that forward by path prefix. In local dev the bindings are replaced by `*_ORIGIN` vars (`wrangler dev --env local`) so the same worker proxies the localhost dev servers on one port ([Router app](../specs/016-platform/router-app.md)).                                                                                                                                    | `livediagram-router`    |
 
+## The editor's shape
+
+The editor route (`apps/live/app/diagram/[id]/`) is split three ways so no file becomes a god component:
+
+- `useEditorState.ts` is the orchestration hook: it calls each domain sub-hook, threads their dependencies, and assembles the return view-model.
+- `EditorContext.tsx` carries that view-model as `EditorContextValue = ReturnType<typeof useEditorState>`.
+- `EditorView.tsx` renders the JSX, leaving `editor-page.tsx` a thin page shell.
+
+`useEditorState.ts` is large by design: what remains in it is wiring, not logic, so it is exempt from the ~400-line soft target ([AGENTS.md](../../AGENTS.md#core-principle-no-god-files-plan-placement-first)). New behaviour goes into its own sub-hook, not into it.
+
 ## The shared packages
 
 Each app pulls these in via `workspace:*`:
