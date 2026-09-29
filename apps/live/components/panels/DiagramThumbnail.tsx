@@ -1,7 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { apiFetchDiagramThumbnailUrl } from '@/lib/api-client';
+import { MOTION_MS } from '@livediagram/tailwind-config/motion';
+import {
+  loadThumbnail,
+  peekThumbnail,
+  thumbnailKey,
+  type ThumbnailEntry,
+} from '@/lib/thumbnail-cache';
+import { ThumbnailLoader } from './ThumbnailLoader';
 
 // A cached SVG snapshot of a diagram (docs/specs/006-diagram/diagram-snapshots.md) so you can recognise it
 // without opening it. Shared by every Explorer surface that lists
@@ -14,18 +21,20 @@ import { apiFetchDiagramThumbnailUrl } from '@/lib/api-client';
 // lightweight (no element data); a thumbnail is fetched only once its
 // row/card scrolls into view, so a long list never fires dozens of
 // requests / server renders for things the user never reaches. While
-// idle / loading / broken it shows a sketch of an undrawn diagram (and,
-// where there's room, says so), so the layout never shifts and an empty
-// or access-denied diagram degrades gracefully.
+// idle / loading it shows that sketch drawing itself (ThumbnailLoader);
+// broken, the still sketch of an undrawn diagram (and, where there's
+// room, says so). Same box throughout, so the layout never shifts, and an
+// empty or access-denied diagram degrades gracefully. Settled snapshots
+// live in a page-wide cache (lib/thumbnail-cache.ts), so a remount (a
+// view switch, a folder, back to the Explorer) paints straight away.
 //
 // Size is controlled by the caller via `className` (a small box in a
 // row, a large preview in a card); the <img> fills it with object-fit
 // contain so the whole diagram stays visible at any aspect ratio.
 
-type State =
-  { status: 'idle' | 'broken' } | { status: 'ready'; src: string; backgroundColor: string | null };
+type State = { status: 'idle' } | ThumbnailEntry;
 // A fetch's outcome, tagged with the inputs it was fetched for.
-type Loaded = State & { key: string };
+type Loaded = ThumbnailEntry & { key: string };
 const IDLE: State = { status: 'idle' };
 
 const DEFAULT_BOX =
@@ -59,10 +68,40 @@ export function DiagramThumbnail({
   const ref = useRef<HTMLSpanElement>(null);
   const [visible, setVisible] = useState(false);
   // The latest outcome counts only for the inputs it was fetched for: anything else (a new version
-  // still loading, no viewer yet) is idle, so a revoked blob URL is never shown.
-  const fetchKey = JSON.stringify([ownerId, diagramId, version, shareCode ?? null]);
+  // still loading, no viewer yet) is idle, so an older version's picture is never shown.
+  const fetchKey = thumbnailKey({
+    ownerId: ownerId ?? '',
+    diagramId,
+    version,
+    shareCode: shareCode ?? null,
+  });
   const [loaded, setLoaded] = useState<Loaded | null>(null);
-  const state: State = loaded?.key === fetchKey ? loaded : IDLE;
+  // Our own outcome first, else one the cache already holds for these
+  // inputs (fetched by an earlier mount or another thumbnail).
+  const state: State =
+    loaded?.key === fetchKey ? loaded : (ownerId && peekThumbnail(fetchKey)) || IDLE;
+
+  // Loader to picture is a crossfade, not a cut. The <img> stays invisible
+  // until the browser has DECODED it (onLoad), so there is never a blank
+  // frame between the two; then the picture fades and settles in while the
+  // loader fades out, and the loader unmounts once the fade is over. A
+  // snapshot already in the cache when this thumbnail mounted (a view
+  // switch, a folder) skips all of that and paints at once.
+  const [instantKey] = useState(() =>
+    ownerId && peekThumbnail(fetchKey)?.status === 'ready' ? fetchKey : null,
+  );
+  const [decodedKey, setDecodedKey] = useState<string | null>(null);
+  const [settledKey, setSettledKey] = useState<string | null>(null);
+  const instant = instantKey === fetchKey;
+  const shown = state.status === 'ready' && (instant || decodedKey === fetchKey);
+  const settled = shown && (instant || settledKey === fetchKey);
+  useEffect(() => {
+    if (!shown || settled) return;
+    // A timer rather than transitionend: under reduced motion transitions
+    // collapse to 0s and never fire it.
+    const timer = setTimeout(() => setSettledKey(fetchKey), MOTION_MS.long);
+    return () => clearTimeout(timer);
+  }, [shown, settled, fetchKey]);
 
   // Defer the fetch until the row/card is near the viewport.
   useEffect(() => {
@@ -82,33 +121,19 @@ export function DiagramThumbnail({
   }, [offline, visible]);
 
   useEffect(() => {
-    if (offline || !visible || !ownerId) return;
+    if (offline || !visible || !ownerId || peekThumbnail(fetchKey)) return;
     let cancelled = false;
-    let activeUrl: string | null = null;
-    apiFetchDiagramThumbnailUrl(ownerId, diagramId, { version, shareCode: shareCode ?? null })
-      .then((result) => {
-        if (cancelled) {
-          if (result) URL.revokeObjectURL(result.url);
-          return;
-        }
-        if (!result) {
-          setLoaded({ key: fetchKey, status: 'broken' });
-          return;
-        }
-        activeUrl = result.url;
-        setLoaded({
-          key: fetchKey,
-          status: 'ready',
-          src: result.url,
-          backgroundColor: result.backgroundColor,
-        });
+    // The cache owns the blob URL (and revokes it on eviction), so there is
+    // nothing to release when this thumbnail unmounts.
+    loadThumbnail({ ownerId, diagramId, version, shareCode: shareCode ?? null })
+      .then((entry) => {
+        if (!cancelled) setLoaded({ ...entry, key: fetchKey });
       })
       .catch(() => {
         if (!cancelled) setLoaded({ key: fetchKey, status: 'broken' });
       });
     return () => {
       cancelled = true;
-      if (activeUrl) URL.revokeObjectURL(activeUrl);
     };
   }, [offline, visible, ownerId, diagramId, version, shareCode, fetchKey]);
 
@@ -130,30 +155,51 @@ export function DiagramThumbnail({
       ref={ref}
       aria-hidden
       // Paint the box in the diagram's own background colour once the
-      // snapshot loads, so the object-contain letterbox blends into the
+      // snapshot shows, so the object-contain letterbox blends into the
       // preview instead of clashing with a generic slate fill (docs/specs/006-diagram/diagram-snapshots.md).
+      // Eased in with the picture rather than switched under the loader.
       style={
-        state.status === 'ready' && state.backgroundColor
+        shown && state.status === 'ready' && state.backgroundColor
           ? { backgroundColor: state.backgroundColor }
           : undefined
       }
       // `@container`, so the placeholder can decide by its OWN width
       // whether there is room for a caption: a card preview gets the
       // words, a row thumb gets the sketch alone.
-      className={`@container flex shrink-0 items-center justify-center overflow-hidden text-slate-400 ${className}`}
+      className={`@container relative flex shrink-0 items-center justify-center overflow-hidden text-slate-400 ${
+        instant ? '' : 'transition-colors duration-long ease-out'
+      } ${className}`}
     >
       {state.status === 'ready' ? (
         // A blob URL, not a remote asset, so a plain <img> is correct
         // here (next/image can't load object URLs) — same as the canvas
         // ImageElementView.
-        <img src={state.src} alt="" className="h-full w-full object-contain" />
-      ) : (
-        // `broken` is the api saying there is no snapshot, which for a
-        // diagram you can open means it has nothing drawn on it yet; the
-        // caption says so, because a bare sketch in a big preview box
-        // reads as a broken image. Idle / loading keep the sketch alone:
-        // the picture may still be coming.
-        <BlankCanvasIllustration captioned={state.status === 'broken'} />
+        <img
+          src={state.src}
+          alt=""
+          onLoad={() => setDecodedKey(fetchKey)}
+          className={`absolute inset-0 h-full w-full object-contain ${
+            instant ? '' : 'transition duration-long ease-out'
+          } ${shown ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
+        />
+      ) : null}
+      {state.status === 'broken' ? (
+        // The api saying there is no snapshot, which for a diagram you can
+        // open means it has nothing drawn on it yet; the caption says so,
+        // because a bare sketch in a big preview box reads as a broken image.
+        <BlankCanvasIllustration />
+      ) : settled ? null : (
+        // Idle / loading: the picture is still coming, so the sketch draws
+        // itself rather than sitting there looking like an empty diagram.
+        // Stays mounted through the crossfade, fading out as the picture
+        // fades in.
+        <span
+          className={`flex h-full items-center justify-center transition-opacity duration-long ease-out ${
+            shown ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <ThumbnailLoader seed={diagramId} />
+        </span>
       )}
     </span>
   );
@@ -183,13 +229,13 @@ function OfflineIllustration() {
   );
 }
 
-// Placeholder shown while loading / when there's no snapshot: two nodes
-// and an arrow, the smallest thing that still says "diagram". Scales
-// with the box like the offline mark, capped so it stays a modest
+// Placeholder shown when there's no snapshot: three nodes and two
+// arrows, the smallest thing that still says "diagram". Scales with the
+// box like the offline mark, capped so it stays a modest
 // centred sketch in a card. Inlined so the component carries no
 // cross-folder icon dependency (it's imported from both app/ and
 // components/ surfaces).
-function BlankCanvasIllustration({ captioned = false }: { captioned?: boolean }) {
+function BlankCanvasIllustration() {
   return (
     <span className="flex h-full flex-col items-center justify-center gap-2 p-1">
       <svg
@@ -212,13 +258,11 @@ function BlankCanvasIllustration({ captioned = false }: { captioned?: boolean })
         <path d="M22 20c8 0 10-11 18-11M22 20c8 0 10 11 18 11" />
         <path d="M37 6.5l3 2.5-3 2.5M37 28.5l3 2.5-3 2.5" />
       </svg>
-      {captioned ? (
-        // Container-queried: only where the box is wide enough to hold
-        // the words without crowding the sketch (a card, not a row).
-        <span className="hidden text-[11px] font-medium text-slate-400 @min-[140px]:block">
-          Nothing drawn yet
-        </span>
-      ) : null}
+      {/* Container-queried: only where the box is wide enough to hold
+          the words without crowding the sketch (a card, not a row). */}
+      <span className="hidden text-[11px] font-medium text-slate-400 @min-[140px]:block">
+        Nothing drawn yet
+      </span>
     </span>
   );
 }

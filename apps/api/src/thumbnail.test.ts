@@ -85,6 +85,41 @@ describe('getDiagramThumbnailSvg', () => {
     expect(db.markThumbRendered).toHaveBeenCalledWith(env, 'd1', expect.any(Number));
   });
 
+  it('trusts a freshness stamp the caller already read, saving the query', async () => {
+    const images = r2();
+    images.get.mockResolvedValue({ text: async () => '<svg>cached</svg>' });
+    const env = { IMAGES: images } as unknown as Env;
+
+    const out = await getDiagramThumbnailSvg(env, { ...diagram(), thumbRenderedAt: 2000 });
+
+    expect(out).toBe('<svg>cached</svg>');
+    expect(db.getThumbRenderedAt).not.toHaveBeenCalled();
+  });
+
+  it('hands the cache write to `defer` instead of awaiting it', async () => {
+    const images = r2();
+    let finishPut!: () => void;
+    images.put.mockReturnValue(new Promise<void>((resolve) => (finishPut = resolve)));
+    db.getFirstTabData.mockResolvedValue(TAB_DATA);
+    const env = { IMAGES: images } as unknown as Env;
+    const deferred: Promise<unknown>[] = [];
+
+    // Resolves while the put is still pending: the response is not held
+    // behind the R2 write + D1 stamp.
+    const out = await getDiagramThumbnailSvg(
+      env,
+      { ...diagram(), thumbRenderedAt: null },
+      { defer: (p) => deferred.push(p) },
+    );
+    expect(out).toContain('<svg');
+    expect(deferred).toHaveLength(1);
+    expect(db.markThumbRendered).not.toHaveBeenCalled();
+
+    finishPut();
+    await deferred[0];
+    expect(db.markThumbRendered).toHaveBeenCalledWith(env, 'd1', expect.any(Number));
+  });
+
   it('re-renders when the freshness stamp is set but the object is gone', async () => {
     const images = r2();
     images.get.mockResolvedValue(null); // evicted despite a fresh stamp

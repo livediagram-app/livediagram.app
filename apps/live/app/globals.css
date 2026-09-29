@@ -4,6 +4,7 @@
 @import '@livediagram/template-previews/preview-motion.css';
 @import './qa-board.css';
 @import './canvas-motion.css';
+@import './thumbnail-loader.css';
 
 /* Scan the shared UI package so utility classes used only inside its
  * components (e.g. the <Brand> mark's hover-rotate) are generated here too.

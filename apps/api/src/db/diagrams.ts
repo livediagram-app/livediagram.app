@@ -115,6 +115,45 @@ export async function getDiagramMeta(
     : null;
 }
 
+// Thumbnail projection (docs/specs/006-diagram/diagram-snapshots.md): what the
+// snapshot route needs to gate access AND decide cache freshness, in ONE
+// query. getDiagram (3 queries) plus a separate thumb_rendered_at read put
+// four dependent D1 round trips in front of every Explorer preview, even a
+// fresh cache hit; this is one.
+export type DiagramThumbMeta = {
+  id: string;
+  ownerId: string;
+  teamId: string | null;
+  name: string;
+  savedAt: number;
+  thumbRenderedAt: number | null;
+};
+
+export async function getDiagramThumbMeta(env: Env, id: string): Promise<DiagramThumbMeta | null> {
+  const row = await env.DB.prepare(
+    'SELECT id, owner_id, team_id, name, saved_at, thumb_rendered_at FROM diagrams WHERE id = ? AND trashed_at IS NULL',
+  )
+    .bind(id)
+    .first<{
+      id: string;
+      owner_id: string;
+      team_id: string | null;
+      name: string;
+      saved_at: number;
+      thumb_rendered_at: number | null;
+    }>();
+  return row
+    ? {
+        id: row.id,
+        ownerId: row.owner_id,
+        teamId: row.team_id ?? null,
+        name: row.name,
+        savedAt: row.saved_at,
+        thumbRenderedAt: row.thumb_rendered_at ?? null,
+      }
+    : null;
+}
+
 export async function getDiagram(env: Env, id: string): Promise<DiagramDTO | null> {
   const row = await env.DB.prepare(
     `SELECT ${DIAGRAM_COLS} FROM diagrams WHERE id = ? AND trashed_at IS NULL`,

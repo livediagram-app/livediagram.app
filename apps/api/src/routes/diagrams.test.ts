@@ -25,6 +25,8 @@ const { db, canReadDiagram, canEditDiagram, resolveDiagramGrant } = vi.hoisted((
   db: {
     listDiagramsByOwner: vi.fn(),
     getDiagram: vi.fn(),
+    // The thumbnail route's one-query gate + freshness read.
+    getDiagramThumbMeta: vi.fn(),
     upsertDiagramMeta: vi.fn(),
     deleteDiagram: vi.fn(),
     // The Trash (docs/specs/013-workspace/trash.md): a plain delete trashes.
@@ -125,7 +127,7 @@ beforeEach(() => {
 
 describe('GET /diagrams/:id/thumbnail (docs/specs/006-diagram/diagram-snapshots.md access gate)', () => {
   it('404s an anonymous caller with no owner / share code / team — and never renders', async () => {
-    db.getDiagram.mockResolvedValue(fakeDiagram('someone-else'));
+    db.getDiagramThumbMeta.mockResolvedValue(fakeDiagram('someone-else'));
     canReadDiagram.mockResolvedValue(false);
     const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/thumbnail', { owner: null }));
     expect(res.status).toBe(404);
@@ -135,7 +137,7 @@ describe('GET /diagrams/:id/thumbnail (docs/specs/006-diagram/diagram-snapshots.
   });
 
   it('404s a known owner id that fails the read gate (not theirs, no share, no team)', async () => {
-    db.getDiagram.mockResolvedValue(fakeDiagram('someone-else'));
+    db.getDiagramThumbMeta.mockResolvedValue(fakeDiagram('someone-else'));
     canReadDiagram.mockResolvedValue(false);
     const res = await handleDiagrams(
       makeCtx('GET', '/api/diagrams/d1/thumbnail', { owner: 'intruder' }),
@@ -145,14 +147,14 @@ describe('GET /diagrams/:id/thumbnail (docs/specs/006-diagram/diagram-snapshots.
   });
 
   it('404s a missing diagram (no existence leak)', async () => {
-    db.getDiagram.mockResolvedValue(null);
+    db.getDiagramThumbMeta.mockResolvedValue(null);
     const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/thumbnail'));
     expect(res.status).toBe(404);
     expect(canReadDiagram).not.toHaveBeenCalled();
   });
 
   it('serves the SVG to a caller the read gate allows (owner / share / team)', async () => {
-    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    db.getDiagramThumbMeta.mockResolvedValue(fakeDiagram('owner-1'));
     canReadDiagram.mockResolvedValue(true);
     getDiagramThumbnailSvg.mockResolvedValue('<svg>ok</svg>');
     const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/thumbnail'));
@@ -163,11 +165,24 @@ describe('GET /diagrams/:id/thumbnail (docs/specs/006-diagram/diagram-snapshots.
   });
 
   it('404s when access is allowed but there is no snapshot (empty diagram / no R2)', async () => {
-    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    db.getDiagramThumbMeta.mockResolvedValue(fakeDiagram('owner-1'));
     canReadDiagram.mockResolvedValue(true);
     getDiagramThumbnailSvg.mockResolvedValue(null);
     const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/thumbnail'));
     expect(res.status).toBe(404);
+    // Past the gate and versioned by `?v=<savedAt>`, so the browser keeps it
+    // rather than re-asking on every Explorer visit.
+    expect(res.headers.get('Cache-Control')).toBe('private, max-age=86400');
+  });
+
+  it('never marks an access-denied 404 cacheable', async () => {
+    db.getDiagramThumbMeta.mockResolvedValue(fakeDiagram('someone-else'));
+    canReadDiagram.mockResolvedValue(false);
+    const res = await handleDiagrams(
+      makeCtx('GET', '/api/diagrams/d1/thumbnail', { owner: 'intruder' }),
+    );
+    expect(res.status).toBe(404);
+    expect(res.headers.get('Cache-Control')).toBeNull();
   });
 });
 
@@ -778,6 +793,7 @@ describe('a tab-scoped visitor', () => {
 
   beforeEach(() => {
     db.getDiagram.mockResolvedValue(scopedDiagram());
+    db.getDiagramThumbMeta.mockResolvedValue(scopedDiagram());
     resolveDiagramGrant.mockResolvedValue({ role: 'edit', tabScope: 't2' });
   });
 
