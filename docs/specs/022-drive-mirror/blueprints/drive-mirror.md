@@ -592,16 +592,17 @@ dropped (`[::1]:3000` → `::1`, `localhost:3000` → `localhost`):
 `driveIndicator(status, mode, syncingLong, now)` (`components/drive/drive-indicator.ts`) →
 `{ kind, label, announce, progress }`:
 
-| Kind        | When                                                                                 | Badge glyph (in a cloud)                                                 | `label` (tooltip and accessible name)                                     | `announce` (status region)         |
+| Kind        | When                                                                                 | Badge glyph (white, in a disc)                                           | `label` (tooltip and accessible name)                                     | `announce` (status region)         |
 | ----------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------- | ---------------------------------- |
 | `none`      | mode `off`, `starting`, `disconnected`                                               | no badge                                                                 | (none)                                                                    | (none)                             |
 | `attention` | `needs_reconnect`, `needs_resume`, an `error` or a notice                            | exclamation mark, amber-600 disc                                         | "Google Drive needs attention"                                            | same                               |
 | `syncing`   | `syncing` for at least `DRIVE_SYNCING_MARK_DELAY_MS` (600 ms), or `progress` present | two arrows, brand-600 disc; progress ring round the avatar while copying | "Syncing with Google Drive" / "Copying {done} of {total} to Google Drive" | "Syncing with Google Drive" / same |
-| `synced`    | `idle`, no error, `lastSyncedAt` set                                                 | tick, emerald-600 disc                                                   | "Synced to Google Drive {just now / 1 min ago / …}" (`relativeSince`)     | "Synced to Google Drive"           |
+| `synced`    | `idle`, no error, `lastSyncedAt` set                                                 | cloud, emerald-600 disc                                                  | "Synced to Google Drive {just now / 1 min ago / …}" (`relativeSince`)     | "Synced to Google Drive"           |
 
 `DriveSyncBadge` (`components/drive/DriveSyncBadge.tsx`) is a `<button>` of its own, a sibling of the account
-button inside AuthControls' `relative` wrapper, absolutely placed over the avatar's upper-right corner (28 × 28 px
-target, a 26 px cloud, filled per state, with a 3 px halo in the header's background). It never takes layout space. `aria-label` =
+button inside AuthControls' `relative` wrapper, absolutely placed so its visual centre sits 8 px right of and 15 px above the avatar's centre, on its upper-right
+corner: a 24 × 24 px target holding a 12 px badge (`DRIVE_BADGE_PX`), an 11.25 px disc filled per state inside a
+1.5 px ring in the header's background (the button's text colour: white, slate-900 in dark), with a white glyph. It never takes layout space. `aria-label` =
 `label`; the shared `Tooltip` shows the same words after the hover delay and at once on keyboard focus. Pressing it
 calls AuthControls' `onOpenAccount('cloud-sync')` (or links to `/explorer?settings=account&section=cloud-sync`).
 A visually hidden `role="status"` `aria-live="polite"` region holds `announce` (no time, so it does not speak every
@@ -621,24 +622,39 @@ keywords: 'drive google sync backup mirror cloud', description, helpArticle: 'go
 
 `driveSyncCopy(status, rootName, busy)` (`apps/live/lib/drive/cloud-sync-copy.ts`) → `{ badge, text, action }`:
 
-| State                | Badge            | Text                                                                                                                      | Action                                                  |
-| -------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `starting`           | Checking         | "Checking your Google Drive connection…"                                                                                  | none                                                    |
-| `disconnected`       | Not connected    | "Keep a copy of your documents in your own Google Drive, in folders that match yours, updated while livediagram is open." | **Connect Google Drive** (**Connecting…** while busy)   |
-| `idle` / `syncing`   | Synced / Syncing | "Your documents are copied to Google Drive, in the folder **{rootName}**." (no folder name while unknown)                 | **Sync now** (**Syncing…**)                             |
-| first mirror         | Copying          | "Copying {done} of {total} to Google Drive" and a progress bar                                                            | none                                                    |
-| `needs_reconnect`    | Needs attention  | "Google Drive stopped accepting livediagram's access, so syncing is paused. Nothing was deleted. Reconnect to carry on."  | **Reconnect**                                           |
-| `needs_resume`       | Needs attention  | "Drive access has lapsed in this browser. Resume to carry on syncing."                                                    | **Resume sync**                                         |
-| `rate_limited`       | Needs attention  | "Google asked livediagram to slow down. Syncing carries on less often for a while; there is nothing to do."               | none                                                    |
-| `offline` / `failed` | Needs attention  | "Couldn't reach Google Drive. livediagram tries again by itself; check your connection, or press Sync now."               | **Sync now**                                            |
-| lease elsewhere      | Synced           | "Another tab or device is copying to Google Drive right now; this one keeps checking for changes."                        | **Sync now**                                            |
-| notice               | Needs attention  | "{name}: Moved in Drive to a folder livediagram can't see. Show it this folder, or move the file back in Drive."          | **Show this folder to livediagram** (with a Picker key) |
+| State                | Badge            | Text                                                                                                                      | Action                                                                         |
+| -------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `starting`           | Checking         | "Checking your Google Drive connection…"                                                                                  | none                                                                           |
+| `disconnected`       | Not connected    | "Keep a copy of your documents in your own Google Drive, in folders that match yours, updated while livediagram is open." | **Connect Google Drive**; **Connecting…** from the press until the page leaves |
+| `idle` / `syncing`   | Synced / Syncing | "Your documents are copied to Google Drive, in the folder **{rootName}**." (no folder name while unknown)                 | **Sync now** (**Syncing…**)                                                    |
+| first mirror         | Copying          | "Copying {done} of {total} to Google Drive" and a progress bar                                                            | none                                                                           |
+| `needs_reconnect`    | Needs attention  | "Google Drive stopped accepting livediagram's access, so syncing is paused. Nothing was deleted. Reconnect to carry on."  | **Reconnect**                                                                  |
+| `needs_resume`       | Needs attention  | "Drive access has lapsed in this browser. Resume to carry on syncing."                                                    | **Resume sync**                                                                |
+| `rate_limited`       | Needs attention  | "Google asked livediagram to slow down. Syncing carries on less often for a while; there is nothing to do."               | none                                                                           |
+| `offline` / `failed` | Needs attention  | "Couldn't reach Google Drive. livediagram tries again by itself; check your connection, or press Sync now."               | **Sync now**                                                                   |
+| lease elsewhere      | Synced           | "Another tab or device is copying to Google Drive right now; this one keeps checking for changes."                        | **Sync now**                                                                   |
+| notice               | Needs attention  | "{name}: Moved in Drive to a folder livediagram can't see. Show it this folder, or move the file back in Drive."          | **Show this folder to livediagram** (with a Picker key)                        |
 
 `driveRhythmText()` is built from `DRIVE_POLL_INTERVAL_MS`, `DRIVE_WRITE_IDLE_MS` and `DRIVE_WRITE_MIN_INTERVAL_MS`
 through `durationWords(ms)` ("30 seconds", "a minute", "2 minutes"): "Checks for changes every 2 minutes while
 livediagram is open. Edits are copied a minute after you stop, at most once every 5 minutes per diagram." Shown while
 connected. `lastSyncedText(at, now)`: "Last synced just now" / "Last synced 1 min ago" / "Not synced yet". Connected
-rows also carry **Disconnect** (secondary).
+rows also carry **Disconnect** (`Button` variant `warning`: amber-400 with slate-900 text, 9:1 and more in both
+themes); its confirmation uses `ConfirmDialog` variant `warning` (the same amber confirm button).
+
+**Connecting.** `DriveMirrorContextValue` carries `connecting: boolean` and `connectError: string | null`.
+`connect()` sets `connecting` before any await; in broker mode it stays set once `window.location.assign` has run
+(the page is leaving), and a `pageshow` with `persisted` (Back from Google out of the bfcache) clears it. If
+`apiDriveState` or the browser token request throws, `connecting` clears and `connectError` is
+`DRIVE_CONNECT_FAILED`: "Couldn't start connecting to Google Drive. Check your connection and try again.", shown in
+the row's text slot in place of the description, with the pill **Not connected**; it clears on the next Connect.
+Logged `connect-failed` (warn). The pill reads **Connecting** while `connecting`.
+
+**Stable widths.** `StableLabel` (`@livediagram/ui`) renders every wording a control can show in one grid cell,
+all but the current one `invisible` and `aria-hidden`, so the control is always as wide as its longest wording. The
+state pill takes every `DriveSyncCopy.badge`; **Sync now** / **Syncing…**, **Connect Google Drive** /
+**Connecting…** and **Reconnect** / **Connecting…** take theirs. The e2e measures the pill, the Sync now button and
+the card across Synced and Syncing and expects the same boxes.
 
 `status.rootName`: the root's Drive name, set when the root is created (`driveRootName(host)`), found, checked on
 arrival, or renamed (an inbound change for the root's file id), `null` until known.
@@ -664,8 +680,8 @@ opened in livediagram." with **Go to Explorer**.
 ## Accessibility
 
 The Cloud Sync row lives in the Settings dialog (focus trap, Escape); its buttons are native buttons with visible
-focus rings. The badge is a 28 × 28 px button with its own name and a tooltip on hover and focus; its state is a glyph,
-not colour alone; the clouds (emerald-600, brand-600, amber-600) with white glyphs meet 3:1 for graphics in both themes. The progress bar is
+focus rings. The badge is a 24 × 24 px button with its own name and a tooltip on hover and focus; its state is a glyph,
+not colour alone; the discs (emerald-600, brand-600, amber-600) with white glyphs meet 3:1 for graphics in both themes. The progress bar is
 `role="progressbar"` with `aria-valuenow` / `aria-valuemax`. Status changes are announced with the shared
 announcer (polite). The banner is `role="status"`. The notice badge carries an `aria-label` with the notice text.
 Colours are the existing slate / brand tokens, which meet AA in both themes.
