@@ -76,37 +76,40 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   is nothing on it they could use.
 - **Dock modes**, chosen under **Settings** (see below) and kept in the
   user's synced preferences ([User preferences](../007-editor/user-preferences.md);
-  a guest keeps it in this browser): **Simple** (every group but shapes),
-  **With shapes** (the default: all four groups, as laid out below) and **Full drawing** (shown disabled, with the note
+  a guest keeps it in this browser): **Simple** (drawing tools, history and
+  settings only), **With shapes** (the default: all five groups, as laid out
+  below) and **Full drawing** (shown disabled, with the note
   "Coming soon"). Switching mode never moves the groups that stay: the
   dock re-centres once, and a flyout of a group that goes closes.
-- **The dock is four groups side by side**, centred together at the bottom
+- **The dock is five groups side by side**, centred together at the bottom
   of the canvas with a clear gap between them, left to right: **drawing
-  tools**, **shapes**, **history** (Undo, Redo) and **settings** (the cog on
-  its own). Each group is its own pill, and its own toolbar for assistive
-  technology ("Drawing tools", "Shapes", "History", "Settings"), each one Tab
-  stop with arrow keys moving within it.
+  tools**, **content** (Text, Sticky note, Path tool), **shapes**, **history**
+  (Undo, Redo) and **settings** (the cog on its own). Each group is its own
+  pill, and its own toolbar for assistive technology ("Drawing tools",
+  "Content", "Shapes", "History", "Settings"), each one Tab stop with arrow
+  keys moving within it.
 - **Drawing tools, left to right:**
   1. **Select** (marquee and move; the ordinary select tool).
   2. **Markers 1, 2 and 3**: the preset pens, one button each (see [Pens](#pens)).
   3. **Eraser**, with its mode (see [Eraser](#eraser)).
 - **History:** **Undo** and **Redo**, the same actions as the bottom-right
   cluster and the keyboard; disabled when there is nothing to undo or redo.
-- **Shapes, left to right** (With shapes mode):
+- **Content, left to right** (With shapes mode):
   1. **Text**.
   2. **Sticky note**.
   3. **Path tool** (see [Path tool](path-tool.md)).
-  4. **Pinned shapes**: up to two shape kinds the user pinned (see
+- **Shapes, left to right** (With shapes mode):
+  1. **Pinned shapes**: up to two shape kinds the user pinned (see
      [Shape slots](#shape-slots)); none by default.
-  5. A **separator**.
-  6. **Two frequent shape slots**: the two shape kinds this user picks most
+  2. A **separator**.
+  3. **Two frequent shape slots**: the two shape kinds this user picks most
      often that are not already on the bar (see [Shape slots](#shape-slots)).
-  7. **Shapes**: a small flyout of rectangle, ellipse, diamond, cylinder,
+  4. **Shapes**: a small flyout of rectangle, ellipse, diamond, cylinder,
      line and arrow (see [Shapes](#shapes)). It opens on hover (a mouse or a
      pen, never a finger) as well as on a press, without taking the keyboard
      focus, and closes a moment after the pointer leaves both it and the
      button; a press on a hover-opened flyout keeps it open.
-  8. **More shapes** (`…`): opens **on a press only**, with its **search
+  5. **More shapes** (`…`): opens **on a press only**, with its **search
      field focused at once**, so typing finds any shape of the palette's shape
      catalogue by name or keyword (flowchart, basic, block and every other
      shape kind the palette offers; not icons, templates or components).
@@ -151,8 +154,8 @@ The shapes group learns and keeps the shapes a user reaches for.
   the Shapes flyout in order, never repeating one on the bar. The slots
   update when a pick changes the ranking, never while a flyout is open or a
   drag is in progress, so a slot never moves under the pointer mid-gesture.
-- **Pinning:** dragging a frequent slot **to the left of the separator** pins
-  its kind there, permanently, for this user; up to **two** pinned kinds.
+- **Pinning:** dragging a frequent slot **to the left of the separator** (the start of
+  the shapes bar) pins its kind there, permanently, for this user; up to **two** pinned kinds.
   Dropping onto a pinned slot when two are pinned replaces that one; dropping
   elsewhere when two are pinned is refused, and the dragged slot settles back
   with the hint "Two shapes are pinned. Drag one out to swap." Dragging a
