@@ -261,12 +261,7 @@ A separate row at the bottom of the palette (separated from the add-buttons by a
 - **Undo** (left-curve arrow) — reverts the last change.
 - **Redo** (right-curve arrow) — reapplies an undone change.
 
-History depth:
-
-- **Desktop keeps at least 500 steps** of undo, and as many of redo.
-- **Mobile keeps as many as it can without becoming too heavy** for a phone's memory; a lower mobile cap is allowed only when measurement shows 500 is too heavy.
-- Today both run at **500 steps** in each direction (`HISTORY_LIMIT`); older states are dropped.
-- The measurement that makes 500 safe on mobile: snapshots share every unchanged tab and element, so a step costs about one pointer per element of the changed tab. 500 steps on a 2,000-element board hold roughly 8 MB.
+History is kept to a maximum of **500 steps** in each direction (`HISTORY_LIMIT`), on desktop and mobile alike. Older states are dropped. Snapshots share every unchanged tab and element, so a step costs about one pointer per element of the changed tab: 500 steps on a 2,000-element board hold roughly 8 MB, light enough for a phone.
 
 Undo-able actions: adding/deleting any element, label commits, lock toggle, layer order (bring/send), format-paint apply, duplicate-and-connect, drag-end (move or resize, including arrow-endpoint drags). A drag's snapshot is **armed** at the start but only **taken on the first actual movement** (the first `tick` past the engage threshold), so undo returns to the pre-drag state without intermediate frames — and a plain click that merely selects an element, or a press on a locked element / tab that never mutates, leaves the history untouched (it used to push a no-op snapshot and clear the redo stack on every click).
 
