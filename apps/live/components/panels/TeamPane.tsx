@@ -331,7 +331,7 @@ export function TeamPane({
           resets its open-folder `spot` — otherwise a subfolder open in
           team A leaks into team B as a stale, empty folder view. */}
       <TeamSharedDocuments
-        key={teamId}
+        key={`library-${teamId}`}
         ownerId={ownerId}
         teamId={teamId}
         teamName={team.name}
@@ -360,8 +360,10 @@ export function TeamPane({
           switching teams is a query-string navigation on this route, so
           without it the feed stays mounted and carries team A's view
           settings into team B — the category chips, the Everyone/Other
-          people filter, and the calendar month it was parked on. */}
-      <TeamTimeline key={teamId} ownerId={ownerId} teamId={teamId} />
+          people filter, and the calendar month it was parked on. Its key
+          differs from the library's: they are siblings, and React needs
+          sibling keys to be unique. */}
+      <TeamTimeline key={`timeline-${teamId}`} ownerId={ownerId} teamId={teamId} />
 
       <TeamInviteLinkDialog
         open={linkOpen}
