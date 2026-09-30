@@ -65,15 +65,13 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   swatches show the board's ink (and no fill for a background), and a
   restyle on a whiteboard never feeds the style memory diagram tabs use.
   Selected pen strokes get **Marker colour** and **Marker width** (Fine / Medium /
-  Bold). **Marker colour** is one row of **seven colours**, adaptive like the
-  colour picker's grid: the ink, then Red, Orange, Green, Teal, Blue and
-  Violet at shade 3; then a last swatch that opens the full picker (the grid,
-  Your colours and +). **A second row appears once the user has picked a
-  colour that is not one of those seven** (a grid shade or a custom colour,
-  from this panel's picker or a marker's): the most recently used such
-  colours, newest first, up to eight, kept in the user's synced preferences;
-  picking one of them moves it to the front. Until then the panel shows one
-  row. With nothing selected
+  Bold). The quick style panel is **quick choices only**: no colour picker in
+  it. **Marker colour** is the same **eight stock colours** as the marker's
+  picker, adaptive like them. Below them, **a second section of custom
+  colours appears only when custom colours are used on this whiteboard
+  tab**: the custom (hex) colours of the tab's marker strokes and shapes, up
+  to eight, most recently drawn first; with none on the tab, the section is
+  not there. A custom colour is added with the marker picker's **+**. With nothing selected
   and a pen in hand, the panel styles **that pen**: picking up a pen already
   offers its colour and width, the same settings its dock flyout holds.
   **Every pen shows the same rows**, so Marker width stays at the same height
@@ -253,32 +251,31 @@ The shapes group learns and keeps the shapes a user reaches for.
   press on the marker already in hand opens its **colour picker** (a flyout
   above it, like the others). For Marker 1 it holds the width only.
 - **The colour picker** (Markers 2 and 3), top to bottom:
-  - **The colour grid, always shown: 60 colours**, ten hue columns (Grey,
-    Red, Orange, Yellow, Green, Teal, Blue, Violet, Pink, Brown) by six
-    shade rows, the boldest on top and the softest at the bottom. No "more"
-    link and no hidden colours.
-  - **Every grid colour adapts to the board.** A colour is stored by name
-    and shade ("Blue, shade 3"), not as a hex value, and drawn in the version
-    tuned for the board it is shown on: on the light board a darker one, on
-    the dark board a lighter one, every one at least 3:1 against its board
-    (WCAG 1.4.11), row 1 about 7:1 stepping down to row 6 at 3:1. So no
-    colour is ever too close to either board, nothing had to be removed,
-    and two people in different appearances both see every stroke clearly.
-  - **Your colours:** up to six custom colours, most recently used first,
-    kept in the user's synced preferences; using a custom colour puts it at
-    the front, so picking it again is one press. A custom colour is one exact
-    hex value on both boards.
+  - **Eight stock colours** in one row: **Ink, Blue, Red, Orange, Green,
+    Teal, Violet, Pink**, the same eight as the quick style panel's.
+  - **Every stock colour adapts to the board.** It is stored by name, not as
+    a hex value, and drawn in the version tuned for the board it is shown on
+    (darker on the light board, lighter on the dark one), at least 4.5:1
+    against its board (WCAG 1.4.11 with room to spare). So none is ever too
+    close to either board, and two people in different appearances both see
+    every stroke clearly.
+  - **Your colours:** up to **eight** custom colours, most recently used
+    first, kept in the user's synced preferences; using a custom colour puts
+    it at the front, so picking it again is one press. A custom colour is one
+    exact hex value on both boards.
   - **+** at the end of that row opens the custom picker in place: a
     saturation and brightness square, a hue slider, a hex field and, where
     the browser has one, an **eyedropper**; **Use** applies it. When the
-    colour is under 3:1 on either board, a note says which ("Hard to see on
-    the dark board") and offers a nearby version that is not, as a swatch to
-    press.
+    colour is under 3:1 on either board, a **warning** in the warning colour
+    (amber, with its icon, at least 4.5:1 on the panel) says which ("Hard
+    to see on the dark board") and offers a nearby version that is not, as
+    a swatch to press. **The warning's line is always reserved**, empty
+    until needed, so it never shifts the picker.
   - **Width:** Fine, Medium, Bold.
-  - Each swatch has its name as its tooltip and accessible name ("Blue,
-    shade 3", "Custom #ff6b00"); arrow keys move through the grid in two
-    dimensions, Enter picks, Escape closes.
-- Markers 2 and 3 start as **Blue** and **Red**, shade 3. **Existing strokes
+  - Each swatch has its name as its tooltip and accessible name ("Blue",
+    "Custom #ff6b00"); arrow keys move through a row, Enter picks, Escape
+    closes.
+- Markers 2 and 3 start as **Blue** and **Red**. **Existing strokes
   stay as drawn**: a stroke keeps the exact colour it was drawn in; only
   strokes drawn after this record a named colour.
 - **A pen stays in hand.** After a stroke the pen is still armed, as the
@@ -338,7 +335,10 @@ The shapes group learns and keeps the shapes a user reaches for.
 - A stroke records the pen's colour and width on its `freehand` element when
   drawn, with its raw samples, a pressure per sample when a pen drew it, and
   its streamline. **Marker 1** records no explicit colour, so its strokes follow the
-  appearance; every other pen records its colour, which stays as drawn.
+  appearance; every other pen records its colour: a grid colour by name and
+  shade, so it adapts to each viewer's board, and a custom colour as its hex,
+  which stays as drawn. A recognised shape or line keeps its pen's colour the
+  same way.
 
 ## Shapes
 
