@@ -1,5 +1,8 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import type { QuickStyleView } from '@/lib/quick-style';
+import { heldPenStyle } from '@/lib/quick-style-pen';
+import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { describe, expect, it, vi } from 'vitest';
 import { QuickRadioRow } from './quick-style-rows';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
@@ -8,6 +11,10 @@ import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
 
 // The panel is desktop only; jsdom has no viewport to measure.
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
+// Nor a canvas to place it on: a measured spot, so the panel is visible to role queries.
+vi.mock('@/hooks/ui/useQuickStylePlacement', () => ({
+  useQuickStylePlacement: () => ({ left: 12, top: 12, width: null }),
+}));
 
 // docs/specs/008-canvas/quick-style-panel.md "Accessibility": each row is a named radio group; arrows
 // move and choose; one tab stop per row; titles are separate from the names.
@@ -205,6 +212,8 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
     setTextAlign: vi.fn(),
     setIconAlign: vi.fn(),
     setTextColour: vi.fn(),
+    setPenColour: vi.fn(),
+    setPenWidth: vi.fn(),
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),
@@ -232,5 +241,47 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
   it('shows the header with its help link otherwise', () => {
     renderPanel(false);
     expect(screen.getByLabelText('Learn about the quick style panel')).toBeTruthy();
+  });
+});
+
+describe('QuickStylePanel on a whiteboard: the pen rows', () => {
+  const api = (pen: QuickStyleView['pen'], targetIds: string[] = []) => ({
+    view: { targetIds, sections: {}, pen },
+    setStroke: vi.fn(),
+    setBackground: vi.fn(),
+    setWidth: vi.fn(),
+    setStrokeStyle: vi.fn(),
+    setTextAlign: vi.fn(),
+    setIconAlign: vi.fn(),
+    setTextColour: vi.fn(),
+    setPenColour: vi.fn(),
+    setPenWidth: vi.fn(),
+    clearStyles: vi.fn(),
+    setSwatchOverride: vi.fn(),
+    clearSwatchOverride: vi.fn(),
+  });
+  const second = heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[1]!);
+
+  it('styles the pen in hand, with nothing selected, and offers no Clear styles', () => {
+    const quickStyle = api(second);
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    expect(screen.getByText('Second pen')).toBeTruthy();
+    const colour = screen.getByRole('radiogroup', { name: 'Pen colour' });
+    expect(within(colour).getByRole('radio', { name: 'Blue' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    fireEvent.click(within(colour).getByRole('radio', { name: 'Red' }));
+    expect(quickStyle.setPenColour).toHaveBeenCalledWith('#e5484d');
+    const width = screen.getByRole('radiogroup', { name: 'Pen width' });
+    fireEvent.click(within(width).getByRole('radio', { name: 'Bold' }));
+    expect(quickStyle.setPenWidth).toHaveBeenCalledWith('bold');
+    expect(screen.queryByTestId('quick-style-clear')).toBeNull();
+  });
+
+  it('gives the main pen its width alone', () => {
+    const main = heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[0]!);
+    render(<QuickStylePanel quickStyle={api(main)} hidden={false} layout="toolbar" />);
+    expect(screen.queryByRole('radiogroup', { name: 'Pen colour' })).toBeNull();
+    expect(screen.getByRole('radiogroup', { name: 'Pen width' })).toBeTruthy();
   });
 });

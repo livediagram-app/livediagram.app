@@ -93,27 +93,22 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('Floating: docks right beneath the Palette, the Palette’s width, and follows it', async ({
+  test('Floating: on the left edge in the Palette’s dress, away from a right-hand Palette', async ({
     page,
     pageErrors,
   }) => {
-    // Tall enough that the whole panel fits beneath the Favourites Palette.
     await page.setViewportSize({ width: 1440, height: 1000 });
     await openBoard(page, 'floating');
-    await drawShape(page, 'o', { x: 500, y: 300 });
+    await drawShape(page, 'o', { x: 700, y: 300 });
     await expect(panel(page)).toBeVisible();
     await expect(panel(page).getByText('Quick style', { exact: true })).toBeVisible();
-    const docked = async () => {
+    await expect(async () => {
+      const canvas = (await page.locator(CANVAS).boundingBox())!;
       const p = (await page.locator(PALETTE).boundingBox())!;
       const q = (await panel(page).boundingBox())!;
-      expect(Math.abs(q.x - p.x)).toBeLessThan(1);
+      expect(q.x).toBeLessThan(canvas.x + canvas.width / 2);
       expect(Math.abs(q.width - p.width)).toBeLessThan(1);
-      expect(Math.abs(q.y - (p.y + p.height + 16))).toBeLessThan(1);
-    };
-    await expect(docked).toPass();
-    // Collapse the Palette to its banner: the panel rises with it.
-    await page.locator(PALETTE).getByRole('button', { name: 'Collapse palette' }).click();
-    await expect(docked).toPass();
+    }).toPass();
     expectNoPageErrors(pageErrors);
   });
 
@@ -169,7 +164,7 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('Toolbar: sits on the right edge, vertically centred', async ({ page, pageErrors }) => {
+  test('Toolbar: sits on the left edge, vertically centred', async ({ page, pageErrors }) => {
     await openBoard(page, 'toolbar');
     await drawShape(page, 'o', { x: 500, y: 400 });
     await expect(panel(page)).toBeVisible();
@@ -177,7 +172,7 @@ test.describe('quick style panel', () => {
     await expect(async () => {
       const canvas = (await page.locator(CANVAS).boundingBox())!;
       const q = (await panel(page).boundingBox())!;
-      expect(Math.abs(q.x + q.width - (canvas.x + canvas.width - 12))).toBeLessThan(1);
+      expect(Math.abs(q.x - (canvas.x + 12))).toBeLessThan(1);
       expect(Math.abs(q.y + q.height / 2 - (canvas.y + canvas.height / 2))).toBeLessThan(1);
     }).toPass();
     expectNoPageErrors(pageErrors);

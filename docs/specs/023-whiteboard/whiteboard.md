@@ -64,7 +64,11 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   drawn, since the pens colour only their own strokes. Its "theme default"
   swatches show the board's ink (and no fill for a background), and a
   restyle on a whiteboard never feeds the style memory diagram tabs use.
-  Strokes are not in the panel yet.
+  Selected pen strokes get **Pen colour** (the ink and the seven pen
+  colours) and **Pen width** (Fine / Medium / Bold). With nothing selected
+  and a pen in hand, the panel styles **that pen**: picking up a pen already
+  offers its colour (not for the main pen, always the ink) and width, the
+  same settings its dock flyout holds.
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
 - **The dock holds, left to right:**

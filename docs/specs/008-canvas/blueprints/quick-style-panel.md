@@ -151,7 +151,7 @@ ownerId })` → `{ overrides, setOverride(role, slot, hex), clearOverride(role, 
   text field (label "Hex", commits on Enter or blur when valid, shows "Enter a colour like #1a2b3c"
   when not), **Clear override** (disabled while the slot is not overridden) and **Done**. The colour
   input commits on `change` (the picker's close), never per `input` tick. Portalled to `body`,
-  `fixed`, `z-[var(--z-toolbar)]`; placed left of the panel (right edge 8 px left of it), top at the
+  `fixed`, `z-[var(--z-toolbar)]`; placed right of the panel (8 px from it), else left of it when the viewport has no room there, top at the
   swatch's top, clamped into the viewport. Opens with focus on the colour input; Escape, Done or a
   pointer-down outside closes it and returns focus to the swatch.
 - Opening: `contextmenu` on a slot 1-6 swatch (mouse, the context-menu key and Shift+F10 all
@@ -255,46 +255,28 @@ arrow), `useElementCreation.dropPaletteItem`, `useArrowConnect.connectArrowTo`,
 
 ## Placement
 
-`placeQuickStylePanel({ layout, area, panel, obstacles, anchor, gap })`, all rects in viewport px,
-`gap = QUICK_STYLE_GAP_PX = 12`; `layout` is `resolvePanelLayout(userPreferences)`; `anchor` is
-the floating Palette's rect or `null`. `inner` = `area` inset by `gap`.
+`placeQuickStylePanel({ area, panel, obstacles, gap })`, all rects in viewport px,
+`gap = QUICK_STYLE_GAP_PX = 12`. `inner` = `area` inset by `gap`.
 
-**Floating with an anchor** (`dockToPalette`), `D = QUICK_STYLE_DOCK_GAP_PX = 16`:
-
-1. `left = clamp(anchor.left, inner.left, inner.right - panel.width)`; `panel.width` is the
-   anchor's width (the panel is sized to the Palette before it is measured).
-2. `others` = obstacles other than the anchor's own rect; `column` = those overlapping
-   `[left, left + panel.width]` horizontally.
-3. Beneath: `top = anchor.bottom + D`. Repeat: a `column` obstacle covering `top` moves
-   `top` to its bottom + `D`; else `next` = the nearest `column` obstacle below,
-   `room = min(inner.bottom, next.top - D) - top`. `room >= panel.height` → **under-palette**.
-   The first `room >= QUICK_STYLE_DOCK_MIN_HEIGHT_PX = 96` is kept as the scrolling choice
-   (`maxHeight = room`). Continue from `next.bottom + D`; stop when there is no `next`.
-4. Above: `top = anchor.top - D - panel.height`, stepping above any `others` hit, while
-   `top >= inner.top`: a clear box → **over-palette**.
-5. Else the scrolling choice, if any; else the right-edge walk.
-
-**Right edge** (Toolbar, Minimal, and the Floating fallback):
-
-1. `rightX = area.right - gap - panel.width`; `centreY = area.top + (area.height - panel.height) / 2`.
-2. `edge` = obstacles whose rect intersects the band `[rightX - gap, area.right]` horizontally.
-3. Candidates in order: (a) `(rightX, centreY)`; (b) `(rightX, o.bottom + gap)` for each distinct
-   edge bottom, ascending; (c) `(rightX, o.top - gap - panel.height)` for each distinct edge top,
-   descending; (d) `(min(edge.left) - gap - panel.width, centreY)`; (e) `(area.left + gap, centreY)`.
+1. `leftX = area.left + gap`; `centreY = area.top + (area.height - panel.height) / 2`.
+2. `edge` = obstacles intersecting the band `[area.left, area.left + panel.width + 2 * gap]`.
+3. Candidates in order: (a) `(leftX, centreY)`; (b) `(leftX, o.bottom + gap)` for each distinct
+   edge bottom, ascending; (c) `(leftX, o.top - gap - panel.height)` for each distinct edge top,
+   descending; (d) `(max(edge.right) + gap, centreY)`; (e) `(area.right - gap - panel.width, centreY)`.
    (b) to (d) only when `edge` is non-empty.
 4. A candidate is valid when it lies inside `inner` and intersects no obstacle inflated by `gap`.
    The first valid wins; none → (a) with `fallback: true` (logged).
 
-`useQuickStylePlacement(panelRef, active, layout) => { left, top, width, maxHeight } | null`
-measures `main[data-canvas-a11y-root]` (area), the panel, the anchor
-`[data-tour-id="palette"][data-floating-panel]` (Floating only) and obstacles
+`useQuickStylePlacement(panelRef, active, layout) => { left, top, width } | null`
+measures `main[data-canvas-a11y-root]` (area), the panel, the Palette
+`[data-tour-id="palette"][data-floating-panel]` (Floating only, for its width) and obstacles
 `[data-tour-id="palette"], [data-toolbar-more], [data-floating-panel], [data-zoom-cluster]` with a
 non-empty rect, in a layout effect before paint, then again on: `ResizeObserver` (area, panel,
 obstacles, so a collapsing Palette is followed), a `MutationObserver` on the anchor's
 `style` / `class` (so a dragged Palette is followed live), `resize`, `pointerup` / `keyup`
 (capture), `transitionend`, and `livediagram:panel-layout-changed`; coalesced to one run per
-animation frame. The panel's height is its NATURAL height (`[data-quick-style-body]` scroll
-height), never the capped one, so the cap cannot oscillate. Until the first measure the panel
+animation frame. The panel's height is its natural height (`[data-quick-style-body]` scroll
+height). Until the first measure the panel
 renders `visibility: hidden` so it never paints in the wrong spot.
 
 ## Behaviour and state
@@ -308,14 +290,14 @@ Transitions are driven by selection and those flags only; the panel owns no stat
 
 ## Presentation and UX
 
-- Floating (docked): the Palette's dress: `rounded-lg border bg-white shadow-lg`
+- Floating: the Palette's dress: `rounded-lg border bg-white shadow-lg`
   (`dark:border-slate-800 dark:bg-slate-900`), `data-panel-translucent`, a header copied from
   `MovablePanelHeader` (title "Quick style" + `HelpArticleLink article="quickStylePanel"`, no drag or
-  collapse), and a body `[data-quick-style-body]` with `p-2.5`, `overflow-y-auto` under a cap; width
-  and `maxHeight` from the placement.
+  collapse), and a body `[data-quick-style-body]` with `p-2.5`; width from the Palette when one is
+  on screen.
 - Under Minimal chrome (`useMinimalChrome()`): the docked header is not rendered (its title and help
   link would both be hidden); the section titles stay. The docked body carries `scrollbar-slim`.
-- Toolbar / Minimal (compact): the same surface with no header, width `w-46` (184 px: seven 24 px
+- Toolbar / Minimal (compact): the same surface with no header, width `w-max min-w-46` (at least 184 px: seven 24 px
   targets plus 8 px padding a side), `p-2`; rows at `density="compact"`.
 - Both: `fixed`, `z-[var(--z-panel)]`, `data-quick-style-panel`, `data-layout`; stop `pointerdown` /
   `contextmenu` from reaching the canvas.
@@ -428,8 +410,8 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Carries to the next drawn element of the kind only                                | `style-memory.test.ts`, e2e                                      |
 | Parse drops junk                                                                  | `style-memory.test.ts`                                           |
 | Placement order and fallback                                                      | `quick-style-placement.test.ts`                                  |
-| Floating docks under the Palette, follows collapse / move, scrolls when short     | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
-| Toolbar sits on the right edge, centred                                           | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
+| Left edge centred, walks below / above / beside left chrome, then the right edge  | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
+| Toolbar and Floating sit on the left edge                                         | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
 | One click on Flowing sets dashed + flow                                           | `e2e/quick-style-panel.spec.ts`                                  |
 | Overrides replace a slot, keyed by theme, capped, pruned; parse drops junk        | `swatch-overrides.test.ts`, `swatch-override-prefs.test.ts`      |
 | Synced per user; theme switch shows that theme's slots; Clear override restores   | `useSwatchOverrides.test.tsx`                                    |
@@ -448,8 +430,6 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Lightness clamp, light / dark    | 0.36 to 0.52 / 0.6 to 0.74 | D38                                             | 0.25 to 0.8 |
 | `FILL_WASH` light / dark         | 0.2 / 0.3                  | D38                                             | 0.1 to 0.4  |
 | `QUICK_STYLE_GAP_PX`             | 12                         | Existing corner insets (`right-3`)              | 8 to 24     |
-| `QUICK_STYLE_DOCK_GAP_PX`        | 16                         | panel-docking.md corner-stack gap               | 8 to 24     |
-| `QUICK_STYLE_DOCK_MIN_HEIGHT_PX` | 96                         | D42: header + one row                           | 80 to 240   |
 | `SWATCH_OVERRIDE_MAX_THEMES`     | 8                          | D45                                             | 1 to 20     |
 | `SWATCH_OVERRIDE_MAX_BYTES`      | 800                        | D45: 4 KB blob, recent exclusions up to ~2.4 KB | 300 to 1200 |
 | `SWATCH_OVERRIDE_MAX_THEME_ID`   | 64                         | `custom:<uuid>` is 43                           | 43 to 128   |

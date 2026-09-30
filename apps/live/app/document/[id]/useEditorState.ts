@@ -2550,6 +2550,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commit,
     memory: styleMemory,
     swatchOverrides,
+    pen: {
+      held: whiteboardDock.tool === 'pen' ? whiteboardDock.activePen : null,
+      update: whiteboardDock.updatePen,
+    },
   });
 
   // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a

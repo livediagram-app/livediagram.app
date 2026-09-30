@@ -1,7 +1,7 @@
 'use client';
 
 // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): the few most-used style choices for
-// the selected shapes and arrows, on the right edge of the canvas. The context
+// the selected shapes and arrows, on the left edge of the canvas. The context
 // menu stays the complete home of every setting; this is the fast path to a
 // handful of them, and never grows into the old Editor panel.
 
@@ -32,6 +32,7 @@ import {
 } from '@livediagram/document';
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
+import { QuickPenRows } from './QuickPenRows';
 import {
   ClearStylesGlyph,
   FlowingLineGlyph,
@@ -115,8 +116,8 @@ export function QuickStylePanel({
   showTitles,
 }: {
   quickStyle: QuickStyleApi;
-  // Floating docks it under the Palette in the Palette's own panel dress;
-  // Toolbar and Minimal keep it compact on the right edge.
+  // Floating wears the Palette's own panel dress (docked under a Palette on
+  // the left); Toolbar and Minimal keep it compact. Always on the left edge.
   layout: QuickStyleLayout;
   // Zen, embeds, presenting, or a context menu open: the panel stands down.
   hidden: boolean;
@@ -168,13 +169,12 @@ export function QuickStylePanel({
               left: spot.left,
               top: spot.top,
               ...(spot.width ? { width: spot.width } : {}),
-              ...(spot.maxHeight ? { maxHeight: spot.maxHeight } : {}),
             }
           : // Measured before paint; hidden until then so it never flashes
             // in the wrong spot.
             { left: 0, top: 0, visibility: 'hidden' }
       }
-      className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${docked ? '' : 'w-46 gap-2.5 p-2'}`}
+      className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${docked ? '' : 'w-max min-w-46 gap-2.5 p-2'}`}
     >
       {docked && !minimalChrome ? (
         // The Palette's header language (MovablePanelHeader), minus the drag
@@ -200,27 +200,29 @@ export function QuickStylePanel({
           density={docked ? 'roomy' : 'compact'}
           onEditSwatch={(role, slot, anchor) => setEditing({ role, slot, anchor })}
         />
-        <div className="flex flex-col gap-1 border-t border-slate-200 pt-2 dark:border-slate-800">
-          {titles ? (
-            <span
-              aria-hidden
-              className="select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
-            >
-              Actions
-            </span>
-          ) : null}
-          <div role="group" aria-label="Actions">
-            <button
-              type="button"
-              onClick={quickStyle.clearStyles}
-              data-testid="quick-style-clear"
-              className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              <ClearStylesGlyph />
-              Clear styles
-            </button>
+        {view.targetIds.length > 0 ? (
+          <div className="flex flex-col gap-1 border-t border-slate-200 pt-2 dark:border-slate-800">
+            {titles ? (
+              <span
+                aria-hidden
+                className="select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                Actions
+              </span>
+            ) : null}
+            <div role="group" aria-label="Actions">
+              <button
+                type="button"
+                onClick={quickStyle.clearStyles}
+                data-testid="quick-style-clear"
+                className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                <ClearStylesGlyph />
+                Clear styles
+              </button>
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
       {editing && editedSwatch ? (
         <SwatchOverridePopover
@@ -259,6 +261,14 @@ function QuickStyleSections({
   const { width, style, textAlign, iconAlign } = view.sections;
   return (
     <>
+      {view.pen ? (
+        <QuickPenRows
+          pen={view.pen}
+          quickStyle={quickStyle}
+          showTitles={showTitles}
+          density={density}
+        />
+      ) : null}
       {COLOUR_ROWS.map((row) => {
         const colours = view.sections[row.section];
         return colours ? (

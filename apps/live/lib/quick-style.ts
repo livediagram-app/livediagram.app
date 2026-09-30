@@ -23,6 +23,7 @@ import {
   type ThemeDefinition,
 } from '@livediagram/document';
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
+import type { QuickPenStyle } from './quick-style-pen';
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement;
 export type QuickSectionId =
@@ -50,6 +51,8 @@ export type QuickStyleView = {
     textAlign?: { value: TextAlignX | null };
     iconAlign?: { value: QuickIconAlign | null };
   };
+  // A whiteboard's pen rows (lib/quick-style-pen): the selected strokes, or the pen in hand.
+  pen?: QuickPenStyle;
 };
 
 // An unlocked shape, arrow or text element: the only elements the panel styles.

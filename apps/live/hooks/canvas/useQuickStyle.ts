@@ -16,6 +16,16 @@ import type {
 import { track } from '@/lib/telemetry';
 import { isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
 import { onWhiteboard } from '@/lib/quick-style-whiteboard';
+import {
+  applyPenStyle,
+  heldPenStyle,
+  INK_CHOICE,
+  penWidthPx,
+  strokesPenStyle,
+  type PenColourChoice,
+  type PenWidthId,
+} from '@/lib/quick-style-pen';
+import type { WhiteboardPen, WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import {
   applyQuickFill,
@@ -46,6 +56,9 @@ export type QuickStyleApi = {
   setStrokeStyle: (style: QuickStrokeStyle) => void;
   setTextAlign: (align: TextAlignX) => void;
   setIconAlign: (align: QuickIconAlign) => void;
+  // A whiteboard's pen rows: the selected strokes, else the pen in hand.
+  setPenColour: (colour: PenColourChoice) => void;
+  setPenWidth: (width: PenWidthId) => void;
   clearStyles: () => void;
   // Custom swatches (docs/specs/008-canvas/quick-style-panel.md): edit the palette, style nothing.
   setSwatchOverride: (role: QuickSwatchRole, slot: QuickSwatchSlot, hex: string) => void;
@@ -62,6 +75,11 @@ export function useQuickStyle(deps: {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   memory: StyleMemoryApi;
   swatchOverrides: SwatchOverridesApi;
+  // The whiteboard pen in hand (null when none is), and how its settings change.
+  pen?: {
+    held: WhiteboardPen | null;
+    update: (id: WhiteboardPenId, patch: { colour?: string | null; width?: number }) => void;
+  };
 }): QuickStyleApi {
   const { activeTab, theme, selectionIds, editsBlocked, liveElements, commit, memory } = deps;
   const { overrides } = deps.swatchOverrides;
@@ -76,11 +94,18 @@ export function useQuickStyle(deps: {
   const whiteboard = isWhiteboardTab(activeTab);
   const { appearance } = useAppearance();
   const ink = WHITEBOARD_INK[appearance];
+  const held = deps.pen?.held ?? null;
   const view = useMemo(() => {
     if (editsBlocked) return null;
     const plain = quickStyleView(selected, theme, overrides);
-    return whiteboard ? onWhiteboard(plain, selected, ink) : plain;
-  }, [editsBlocked, selected, theme, overrides, whiteboard, ink]);
+    if (!whiteboard) return plain;
+    const board = onWhiteboard(plain, selected, ink);
+    // Selected strokes first; with nothing selected, the pen in hand.
+    const pen =
+      strokesPenStyle(selected, ink) ??
+      (selected.length === 0 && held ? heldPenStyle(held) : undefined);
+    return pen ? { ...(board ?? { targetIds: [], sections: {} }), pen } : board;
+  }, [editsBlocked, selected, theme, overrides, whiteboard, ink, held]);
 
   // Map the view's targets through `apply`, as one commit, then remember it.
   const run = (apply: (el: Element) => Element, telemetryType: string) => {
@@ -94,8 +119,31 @@ export function useQuickStyle(deps: {
     track('Element', 'Changed', telemetryType);
   };
 
+  const runPen = (
+    patch: { colour?: PenColourChoice; width?: PenWidthId },
+    telemetryType: string,
+  ) => {
+    const subject = view?.pen?.subject;
+    if (!subject || editsBlocked) return;
+    if (subject.kind === 'pen') {
+      // The pen's own setting, as its dock flyout sets it (and tracks it).
+      deps.pen?.update(subject.id, {
+        ...(patch.colour !== undefined
+          ? { colour: patch.colour === INK_CHOICE ? null : patch.colour }
+          : {}),
+        ...(patch.width !== undefined ? { width: penWidthPx(patch.width) } : {}),
+      });
+      return;
+    }
+    const ids = new Set(subject.ids);
+    commit((els) => els.map((el) => (ids.has(el.id) ? applyPenStyle(el, patch) : el)));
+    track('Element', 'Changed', telemetryType);
+  };
+
   return {
     view,
+    setPenColour: (colour) => runPen({ colour }, 'QuickStroke'),
+    setPenWidth: (width) => runPen({ width }, 'QuickStrokeWidth'),
     setStroke: (slot) => run((el) => applyQuickStroke(el, theme, slot, overrides), 'QuickStroke'),
     setBackground: (slot) =>
       run((el) => applyQuickFill(el, theme, slot, overrides), 'QuickBackground'),

@@ -20,7 +20,7 @@ export type QuickOption<V> = {
 };
 
 // Compact (Toolbar, Minimal): 20 px chips in touching 24 px targets, so the row
-// is exactly seven targets wide. Roomy (Floating): 24 px chips spread across
+// is exactly seven targets wide (a longer row widens the panel; a row never wraps). Roomy (Floating): 24 px chips spread across
 // the Palette's width. Every target is 24 x 24 px either way (WCAG 2.5.8).
 export type QuickRowDensity = 'compact' | 'roomy';
 

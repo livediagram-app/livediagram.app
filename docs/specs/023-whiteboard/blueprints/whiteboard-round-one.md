@@ -213,6 +213,12 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   (`apps/live/lib/quick-style-whiteboard.ts`): slot 0 of stroke and text shows the board ink, slot 0
   of background shows `transparent`, and an unfilled shape reads as background slot 0. Edits and
   Clear styles skip `memory.recordEdit` / `memory.forget`.
+- Pen rows (`apps/live/lib/quick-style-pen.ts`, `QuickPenRows.tsx`): `view.pen` is
+  `strokesPenStyle(selected, ink)` (pen strokes: `freehand` with `penWidth`, not a highlight, unlocked),
+  else `heldPenStyle(pen)` when nothing is selected and `whiteboardDock.tool === 'pen'`.
+  `setPenColour` / `setPenWidth` commit `applyPenStyle` over the strokes (`Element·Changed·QuickStroke`
+  / `QuickStrokeWidth`) or call `updatePen` for the held pen (its own `Whiteboard·Changed` tokens).
+  Ink is `INK_CHOICE` and clears `strokeColor`. Clear styles shows only when `targetIds` is non-empty.
 
 ### Shapes flyout hover, More flyout
 
