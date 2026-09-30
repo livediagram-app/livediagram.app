@@ -1,12 +1,11 @@
 import { Button } from '@livediagram/ui';
+import type { WizardStep } from './template-picker-wizard';
 import { ArrowRightIcon, FolderOpenIcon, SparkleIcon, Spinner } from './template-picker-icons';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // The TemplatePicker's footer row (docs/specs/007-editor/new-document-route.md), lifted out of the picker:
-// identity mode keeps a flat Cancel + Join pair; both wizard modes
-// (welcome + templates) swap controls per step. The picker hides it
-// entirely while the theme builder is open (the builder carries its own
-// Save / Cancel), so that gate stays at the call site.
+// identity mode keeps a flat Cancel + Join pair; the welcome wizard swaps
+// controls per step (Skip + Next, then Create); Quick Start is Cancel + Apply.
 export function TemplatePickerFooter({
   isIdentity,
   isWelcome,
@@ -20,22 +19,20 @@ export function TemplatePickerFooter({
 }: {
   isIdentity: boolean;
   isWelcome: boolean;
-  step: 'template' | 'theme' | 'settings';
+  step: WizardStep;
   busy: boolean;
   onSkip: () => void;
   onOpenExisting?: () => void;
   skipToDefaults: () => void;
-  goToStep: (step: 'template' | 'theme' | 'settings') => void;
+  goToStep: (step: WizardStep) => void;
   // Commit the current pick — Join in identity mode, Create on the welcome
-  // wizard's Settings step, Apply on the in-editor templates theme step.
+  // wizard's Location step, Apply in Quick Start.
   onCommit: () => void;
 }) {
   return (
     <>
-      {/* Footer. Identity mode keeps a flat Cancel + Join row. Both wizard
-        modes (welcome + templates) swap controls per step, and the
-        footer hides entirely while the theme step's builder is open
-        (the builder carries its own Save / Cancel). */}
+      {/* Footer. Identity mode keeps a flat Cancel + Join row; the other
+        two modes share the row below. */}
       {isIdentity ? (
         <DialogFooter>
           <p className="mr-auto text-[11px] text-slate-500 dark:text-slate-400">
@@ -96,15 +93,13 @@ export function TemplatePickerFooter({
               Skip
             </Button>
           ) : null}
-          {/* Advance vs commit. The welcome wizard has three steps
-            (template -> theme -> settings), so Next carries the user from
-            template to theme and from theme to settings, and only the
-            Settings step commits (Create). The in-editor templates flow
-            has no Settings step, so its theme step commits (Apply). */}
-          {step === 'template' || (step === 'theme' && isWelcome) ? (
+          {/* Advance vs commit. The welcome wizard's template step moves on
+            to Location (Next), where Create commits. Quick Start has one
+            page, so it commits (Apply) straight away. */}
+          {isWelcome && step === 'template' ? (
             <Button
               size="xs"
-              onClick={() => goToStep(step === 'template' ? 'theme' : 'settings')}
+              onClick={() => goToStep('settings')}
               className="gap-1.5 rounded-lg px-4 py-2 shadow-sm"
             >
               Next

@@ -77,8 +77,8 @@ export async function startTemplateDocument(
   // Category tiles are aria-labelled "Browse <name> templates"; the
   // template tiles carry their title + description as the accessible name.
   await page.getByRole('button', { name: category }).first().click();
+  // Picking a template moves straight on to the Location step.
   await page.getByRole('button', { name: template }).first().click();
-  await page.getByRole('button', { name: /^next$/i }).click();
   await page
     .getByRole('button', { name: /^(create|start|use this|done|finish)$/i })
     .first()
@@ -157,28 +157,21 @@ export async function dismissQuickTour(page: Page): Promise<void> {
 // Opens /new and takes "Just Draw" to the editor. Retried, because on a cold server the first click can
 // land before hydration; but only clicks while the wizard is still up: a click that already worked leaves
 // /new, and hunting for the button again would fail every retry while the editor loads under load.
+// A blank canvas straight away: /new?blank=1, the wizard bypass the landing
+// page's Just Draw links to (docs/specs/007-editor/new-document-route.md).
 export async function openJustDraw(page: Page): Promise<void> {
-  await page.goto('/new');
-  const canvas = page.locator('[data-canvas-a11y-root]');
-  await expect(async () => {
-    if (new URL(page.url()).pathname.replace(/\/$/, '') === '/new') {
-      await page.getByRole('button', { name: /^just draw$/i }).click({ timeout: 2_000 });
-    }
-    await canvas.waitFor({ timeout: 5_000 });
-  }).toPass({ timeout: 30_000 });
+  await page.goto('/new?blank=1');
+  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
 }
 
 export async function startBlankDocument(page: Page): Promise<void> {
   await page.goto('/new');
   await page.getByText('New Document', { exact: false }).waitFor();
-  // Step 1: pick the Blank template. Single-click advances to the theme
-  // step (docs/specs/006-document/offline-mode.md), so no explicit Next is needed here.
-  await page.getByText('Blank Canvas', { exact: false }).click();
-  // Step 2 (theme) -> step 3 (settings). ANCHORED name: a bare /next/i
-  // also matches the Next.js DevTools button on dev servers.
-  await page.getByRole('button', { name: /^next$/i }).click();
-  // Step 3 (settings): the footer's primary action finishes the wizard.
+  // Step 1: pick the Blank template. Single-click advances to the Location
+  // step (docs/specs/007-editor/new-document-route.md), so no explicit Next is needed here.
+  await page.getByText('Blank Canvas', { exact: false }).first().click();
+  // Step 2 (Location): the footer's primary action finishes the wizard.
   // Anchored finish verbs: an unanchored /create/i also matched the
   // settings step's "New Folder ... Create here" tile (the CI breakage
   // this comment is the tombstone for).

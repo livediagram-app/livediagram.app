@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { Button, CloseIcon, useClickOutside, useEscape } from '@livediagram/ui';
+import { CloseIcon, useClickOutside, useEscape } from '@livediagram/ui';
 import type { Participant } from '@/lib/identity';
-import { track } from '@/lib/telemetry';
 import { shufflePinned } from '@/lib/shuffle';
 import type { TemplateCategory, TemplateKind } from '@livediagram/templates';
 import {
@@ -11,7 +10,6 @@ import {
   templateCategory,
   untitledNameForTemplate,
 } from '@livediagram/templates';
-import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
 import {
   TemplatePickerBrowse,
   type ShelfCategory,
@@ -23,8 +21,7 @@ import { parsePlacement } from '@/components/placement/PlacementBrowser';
 import { NewDocumentSettingsStep } from './template-picker-settings';
 import { DEFAULT_SAVE_LOCATION, type SaveLocationId } from '@/lib/save-locations';
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
-import { PencilIcon } from './template-picker-icons';
-import { WizardSteps } from './template-picker-wizard';
+import { WizardSteps, type WizardStep } from './template-picker-wizard';
 
 // Whether this render is past hydration, as a store with nothing to subscribe to: prerender and
 // hydration read the server snapshot, every later render the client one.
@@ -117,9 +114,10 @@ type TemplatePickerProps = {
 const LISTED_TEMPLATES = TEMPLATES.filter((t) => !t.hidden);
 
 // The "Start a new document" modal, also the welcome screen. In welcome
-// mode it's a two-step wizard (template, then theme); other modes keep a
-// single page. Picking is confirmed explicitly (Create / Apply / Join) so
-// users can review their choices before committing.
+// mode it's a two-step wizard (template, then location); the in-editor Quick
+// Start is a single page where picking a template applies it. There is no
+// theme step: a document starts on the default theme (or its tab's), and the
+// Theme and canvas controls change it later (docs/specs/007-editor/new-document-route.md).
 export function TemplatePicker({
   mode,
   participant,
@@ -144,20 +142,15 @@ export function TemplatePicker({
   useEscape(onSkip);
   const isWelcome = mode === 'welcome';
   const isIdentity = mode === 'identity';
-  // Both the welcome (new-document) and the in-editor templates flows run as
-  // a two-step wizard (template, then theme). Identity mode is the only
-  // single-section, non-wizard surface.
-  const isWizard = !isIdentity;
+  // Only the welcome (new-document) flow is a wizard (template, then where it
+  // lives); Quick Start and the identity prompt are single pages.
+  const isWizard = isWelcome;
   // Identity / "your name" moved entirely into the Share flow — there's
   // no reason to collect it before the user explicitly shares. The
   // 'identity' mode is still used for visitors landing on a share URL
   // who need to confirm their display name first.
   const showIdentity = isIdentity;
   const showTemplates = !isIdentity;
-  // Themes are pickable wherever templates are — both the first-run
-  // welcome AND the standalone Browse-templates flow. Identity-only
-  // mode (visitors joining via a share link) skips them.
-  const showThemes = !isIdentity;
   // Locked-name (signed-in visitor) wins over the participant name —
   // we want the input to read the Clerk identity even if the
   // pre-existing participant record was created under a guest alias.
@@ -189,13 +182,12 @@ export function TemplatePicker({
   }, [templateQuery]);
   // Which category the user last opened on the shelf, or null for the
   // default (Popular). Held here, not in the browse, so it survives a peek
-  // at the theme step. A non-empty search query overrides the shelf and
+  // at the location step. A non-empty search query overrides the shelf and
   // shows flat results.
   const [openCategory, setOpenCategory] = useState<ShelfCategory | null>(null);
-  // Initial theme is whatever the caller hands us: the /new flow passes
-  // 'brand' (so Default is pre-selected for a fresh document), while a new
-  // tab copying an existing one passes that tab's theme.
-  const [themeId, setThemeId] = useState<string>(currentThemeId);
+  // The theme is whatever the caller hands us, unchanged: the /new flow
+  // passes 'brand' (Default), a new tab its source tab's theme.
+  const themeId = currentThemeId;
   // Save location (docs/specs/006-document/save-locations.md): livediagram (cloud) or Local Browser (Offline
   // Mode, docs/specs/006-document/offline-mode.md). Welcome wizard only; threaded into every onPick so Skip /
   // guided tour / Create all honour it. Stays at the default in non-welcome
@@ -224,35 +216,30 @@ export function TemplatePicker({
     return { saveLocation, documentName: name, ...parsePlacement(p) };
   };
   const settings = () => settingsFor(placement);
-  // Welcome mode is a two-step wizard: pick a template, then a theme
-  // (docs/specs/007-editor/new-document-route.md). Other modes keep the single-page layout. `themeBuilding`
-  // tracks whether the theme step's custom-theme builder is open, so the
-  // wizard hides its own Back / Create footer while the builder owns the
-  // surface (the builder has its own Save / Cancel).
-  const [step, setStep] = useState<'template' | 'theme' | 'settings'>('template');
+  // Welcome mode is a two-step wizard: pick a template, then where the
+  // document lives (docs/specs/007-editor/new-document-route.md). Other modes keep the single-page layout.
+  const [step, setStep] = useState<WizardStep>('template');
   // Direction of the last step change, so the incoming phase slides in
   // from the side it's travelling toward (forward = from the right, back
   // = from the left). Drives the tip-next / tip-prev slide animation on
   // the keyed step container below.
   const [stepDir, setStepDir] = useState<'forward' | 'backward'>('forward');
-  const STEP_ORDER = ['template', 'theme', 'settings'] as const;
-  const goToStep = (next: 'template' | 'theme' | 'settings') => {
+  const STEP_ORDER: readonly WizardStep[] = ['template', 'settings'];
+  const goToStep = (next: WizardStep) => {
     // The Settings step only exists on the welcome flow (an existing
     // document has no name / placement / offline choice to make).
     if (next === 'settings' && !isWelcome) return;
     setStepDir(STEP_ORDER.indexOf(next) >= STEP_ORDER.indexOf(step) ? 'forward' : 'backward');
     setStep(next);
   };
-  const [themeBuilding, setThemeBuilding] = useState(false);
   // The in-editor Quick Start is a panel over the canvas, not a blocking
   // modal: the palette, the Explorer and the canvas stay live around it. A
   // press anywhere outside the card means the user has moved on (to a
   // toolbar, or to drawing), so it closes as Cancel would rather than leave
-  // what they just opened or added hidden behind it. Not while the custom
-  // theme builder is open (that has its own Save / Cancel), and never on the
-  // welcome or name prompts, which ask for an answer.
+  // what they just opened or added hidden behind it. Never on the welcome
+  // or name prompts, which ask for an answer.
   const cardRef = useRef<HTMLDivElement>(null);
-  useClickOutside(cardRef, onSkip, mode === 'templates' && !themeBuilding);
+  useClickOutside(cardRef, onSkip, mode === 'templates');
   // Rotate which templates greet the user on each open so people keep
   // discovering options beyond the usual first rows, but always pin Blank
   // first. Shuffled once per mount via lazy useState so clicking around
@@ -294,25 +281,17 @@ export function TemplatePicker({
   // Section visibility. In wizard mode only the active step's section
   // shows; identity mode shows neither.
   const showTemplateSection = showTemplates && (!isWizard || step === 'template');
-  const showThemeSection = showThemes && (!isWizard || step === 'theme');
   // Skip the wizard entirely: the documented shortcut is Blank template +
   // Default theme (docs/specs/007-editor/new-document-route.md), committed straight away. Placement still honours
   // the URL context (/new?folder=…, ?team=…) the picker was pre-seeded with,
   // so skipping doesn't silently drop the document into personal Unsorted.
   const skipToDefaults = () =>
     onPick('blank', effectiveName, 'brand', { saveLocation, ...parsePlacement(placement) });
-  // The step rail's "Just Draw" shortcut (docs/specs/007-editor/new-document-route.md) is the same commit with
-  // its own adoption signal (docs/specs/017-telemetry/telemetry.md).
-  const justDraw = () => {
-    if (busy) return;
-    track('UI', 'Used', 'JustDraw');
-    skipToDefaults();
-  };
-  // Double-clicking a template advances to the theme step (the user still
-  // needs to pick a theme) rather than committing the whole wizard.
+  // Picking a template: the welcome wizard moves on to where the document
+  // lives; Quick Start applies it straight away.
   const onTemplateCommit = (kind: TemplateKind) => {
     setTemplateKind(kind);
-    if (isWizard) goToStep('theme');
+    if (isWizard) goToStep('settings');
     else onPick(kind, effectiveName, themeId, { saveLocation });
   };
   // Double-clicking a destination card on the Settings step selects it AND
@@ -346,17 +325,13 @@ export function TemplatePicker({
                     ? documentName && documentName.trim()
                       ? `Welcome to '${documentName.trim()}'`
                       : 'Welcome to this document'
-                    : step === 'theme'
-                      ? 'Pick a theme'
-                      : 'Quick Start'}
+                    : 'Quick Start'}
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
-                {isWizard
+                {!isIdentity
                   ? step === 'template'
                     ? 'Choose a template to start from.'
-                    : step === 'theme'
-                      ? 'Pick a theme, or build your own.'
-                      : 'Name your document and choose where it lives.'
+                    : 'Name your document and choose where it lives.'
                   : nameLocked
                     ? 'This is the name from your account; others will see it on this document.'
                     : 'Pick the name people will see while you collaborate on this document.'}
@@ -365,7 +340,7 @@ export function TemplatePicker({
             <div className="-mr-2 -mt-1 flex shrink-0 items-center gap-0.5">
               {showTemplates ? (
                 <HelpArticleLink
-                  article={step === 'theme' ? 'themes' : 'templates'}
+                  article="templates"
                   className="!h-8 !w-8 !rounded-lg !border-0 !text-sm !text-slate-400 hover:!bg-slate-100 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!bg-slate-800 dark:hover:!text-slate-200"
                 />
               ) : null}
@@ -379,34 +354,10 @@ export function TemplatePicker({
               </button>
             </div>
           </div>
-          {/* Step indicator: a modern two-segment progress rail so the
-              wizard reads as 1 of 2 at a glance. Both wizard modes. On the
-              welcome flow the rail row also carries the "Just Draw" shortcut
-              (docs/specs/007-editor/new-document-route.md) far right — straight to a blank canvas, no wizard.
-              Desktop only (sm+); mobile keeps the footer Skip. The hiding
-              is on a wrapper: Button's own `inline-flex` outranks a
-              `hidden` passed in className (same property, emitted later),
-              so the button itself can't be told to disappear. `sm:contents`
-              dissolves the wrapper on desktop so the row lays out as before. */}
-          {isWizard ? (
-            <div className="flex items-center justify-between gap-3">
-              <WizardSteps step={step} onStep={goToStep} includeSettings={isWelcome} />
-              {isWelcome ? (
-                <span className="hidden sm:contents">
-                  <Button
-                    variant="secondary"
-                    size="xs"
-                    onClick={justDraw}
-                    disabled={busy}
-                    className="shrink-0 gap-1.5 rounded-lg"
-                  >
-                    <PencilIcon />
-                    Just Draw
-                  </Button>
-                </span>
-              ) : null}
-            </div>
-          ) : null}
+          {/* Step indicator: a two-segment progress rail so the welcome
+              wizard reads as 1 of 2 at a glance. Quick Start is one page and
+              shows none. */}
+          {isWizard ? <WizardSteps step={step} onStep={goToStep} /> : null}
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 pt-5 pb-8">
@@ -458,32 +409,6 @@ export function TemplatePicker({
               />
             ) : null}
 
-            {/* Colour-scheme picker: a two-level browse (Default quick-pick, a card per
-              colour-temperament category, plus a Custom category for the
-              owner's saved themes). Reuses the exact picker the right-click
-              Tab Look & Feel dialog renders (docs/specs/011-theme/canvas-and-theme-dialog.md, /44) so the two can't
-              drift. Shown as step 2 of the welcome wizard, or stacked under
-              the template grid in templates mode. */}
-            {showThemeSection ? (
-              <CustomThemePicker
-                themeId={themeId}
-                // Single-click a theme (docs/specs/006-document/offline-mode.md): in the welcome wizard,
-                // selecting a theme advances straight to the Settings step; in
-                // the in-editor templates flow (no Settings step) it just sets
-                // the theme, leaving Apply to commit.
-                onSelect={(id) => {
-                  setThemeId(id);
-                  if (isWelcome) goToStep('settings');
-                }}
-                onCommit={(id) => {
-                  setThemeId(id);
-                  if (isWelcome) goToStep('settings');
-                  else onPick(templateKind, effectiveName, id, { saveLocation });
-                }}
-                onBuildingChange={setThemeBuilding}
-                browserClassName="mt-1"
-              />
-            ) : null}
             {/* Settings step (docs/specs/006-document/offline-mode.md, docs/specs/006-document/save-locations.md): name, save location, placement. */}
             {isWizard && step === 'settings' ? (
               <NewDocumentSettingsStep
@@ -508,21 +433,18 @@ export function TemplatePicker({
           </div>
         </div>
 
-        {/* Footer — see TemplatePickerFooter. Hidden entirely while the
-            theme step's builder is open (it carries its own Save / Cancel). */}
-        {!isIdentity && themeBuilding ? null : (
-          <TemplatePickerFooter
-            isIdentity={isIdentity}
-            isWelcome={isWelcome}
-            step={step}
-            busy={busy}
-            onSkip={onSkip}
-            onOpenExisting={onOpenExisting}
-            skipToDefaults={skipToDefaults}
-            goToStep={goToStep}
-            onCommit={() => onPick(templateKind, effectiveName, themeId, settings())}
-          />
-        )}
+        {/* Footer — see TemplatePickerFooter. */}
+        <TemplatePickerFooter
+          isIdentity={isIdentity}
+          isWelcome={isWelcome}
+          step={step}
+          busy={busy}
+          onSkip={onSkip}
+          onOpenExisting={onOpenExisting}
+          skipToDefaults={skipToDefaults}
+          goToStep={goToStep}
+          onCommit={() => onPick(templateKind, effectiveName, themeId, settings())}
+        />
       </div>
     </div>
   );

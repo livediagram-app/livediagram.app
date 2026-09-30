@@ -34,12 +34,8 @@ test.describe('Optical alignment audit', () => {
     await page.getByText('New Document', { exact: false }).first().waitFor();
     await expectCentred(page, 'wizard, template step');
     await page.getByRole('button', { name: /^next$/i }).click();
-    await page
-      .getByText('All themes', { exact: false })
-      .or(page.getByText('Default').first())
-      .first()
-      .waitFor();
-    await expectCentred(page, 'wizard, theme step');
+    await page.getByText('Name your document', { exact: false }).first().waitFor();
+    await expectCentred(page, 'wizard, location step');
     expectNoPageErrors(pageErrors);
   });
 

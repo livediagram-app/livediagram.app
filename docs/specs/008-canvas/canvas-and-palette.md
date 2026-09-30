@@ -596,7 +596,7 @@ type Element = {
 
 A first-run **welcome screen** doubles as the template picker — the "Start a new document" modal lets users scaffold a starter document and set up their identity in one step. It is also reachable from the empty-state card's **Browse templates** button.
 
-The modal is **multi-step in a single view**: identity at the top, then template selection, then theme selection, with an explicit **Create document** button at the bottom that commits all three at once. Users can preview their choices before committing instead of the previous one-click flow.
+The modal is a **two-step wizard** ([New document route](../007-editor/new-document-route.md#two-step-wizard)): template selection, then where the document lives, with an explicit **Create** at the end. There is no theme step: a document starts on the Default theme and the Theme and canvas controls change it later.
 
 ### Welcome / identity section
 
@@ -681,7 +681,7 @@ All template elements are inserted via the history hook (commit), so they're und
 
 ### Theme section
 
-Below the templates, the theme picker (see the two-level browse described under [Theme](#current-tab-section)) lets the user pick a preset theme — exactly the same `THEMES` catalogue the palette's Theme accordion uses. Defaults to **Default** (the `brand` id, whose light and dark halves the viewer’s appearance chooses between — [Live app](../007-editor/live-app.md)). Confirming with **Create document** applies the chosen theme to the new tab (background colour + pattern + pattern colour + theme id), which then affects the default colours of every element added afterwards.
+Retired. The picker used to end on a theme step; a new document now starts on the **Default** theme (the `brand` id, whose light and dark halves the viewer's appearance chooses between, [Live app](../007-editor/live-app.md)), and a new tab on its source tab's theme. Themes are changed afterwards from the Theme and canvas controls ([Canvas and theme dialog](../011-theme/canvas-and-theme-dialog.md)).
 
 ## Modifier hint banner
 

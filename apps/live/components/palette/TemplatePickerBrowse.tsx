@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { TemplateDescriptor, TemplateCategory, TemplateKind } from '@livediagram/templates';
 import { TEMPLATE_CATEGORIES } from '@livediagram/templates';
-import { SnapCarousel } from '@livediagram/ui';
+import { CloseIcon, SearchIcon, SnapCarousel } from '@livediagram/ui';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import { CategoryTile, TemplateCard } from '@/components/palette/template-picker-cards';
 
@@ -21,7 +21,7 @@ type Shelf = {
 // shelf). Render-only: the query / category state stays in TemplatePicker,
 // since the wizard remounts this section on every step switch (the step
 // container is keyed), so state held here would reset when the user peeks
-// at the theme step and comes back.
+// at the Location step and comes back.
 //
 // The shelf mirrors the landing page's "What do you want to create?" gallery
 // (docs/specs/019-marketing/marketing-site.md): ONE shelf is open as a carousel of large
@@ -54,7 +54,7 @@ export function TemplatePickerBrowse({
   popularTemplates: TemplateDescriptor[];
   categoryTemplates: (category: TemplateCategory) => TemplateDescriptor[];
   templateKind: TemplateKind;
-  // Single-click a template card: select it AND advance to the theme step
+  // Single-click a template card: select it AND move on (the welcome wizard to Location, Quick Start applies it)
   // (docs/specs/006-document/offline-mode.md). The same handler backs double-click, so either gesture works.
   onTemplateCommit: (kind: TemplateKind) => void;
 }) {
@@ -90,24 +90,38 @@ export function TemplatePickerBrowse({
 
   return (
     <>
-      <div className={`flex items-center justify-between gap-3 ${showIdentity ? 'mt-5' : ''}`}>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Quick Start
-        </p>
+      {/* Search leads the step as a full-width field (the landing gallery's
+          search in the picker's chrome), so finding a template by name reads
+          as the first way in rather than a small box beside a label. The
+          dialog title already says Quick Start / New Document, so there is no
+          section label above it. */}
+      <div className={`relative ${showIdentity ? 'mt-5' : ''}`}>
+        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400" />
         <input
-          type="text"
+          type="search"
           value={templateQuery}
           onChange={(e) => setTemplateQuery(e.target.value)}
-          placeholder="Search templates"
+          placeholder="Search for what you want to create..."
           aria-label="Search templates"
-          className="w-72 max-w-[70%] rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:placeholder:text-slate-400"
+          autoComplete="off"
+          className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-9 text-sm text-slate-800 placeholder:text-slate-400 transition [&::-webkit-search-cancel-button]:hidden focus:border-brand-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-400/25 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:bg-slate-800"
         />
+        {templateQuery ? (
+          <button
+            type="button"
+            onClick={() => setTemplateQuery('')}
+            aria-label="Clear search"
+            className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+          >
+            <CloseIcon />
+          </button>
+        ) : null}
       </div>
       {/* A non-empty search overrides the shelf and shows flat results across
           the whole catalogue. Blank is special-cased out of the category
           grouping (it's a "start from scratch", not a category template) and
           leads the Popular shelf instead. */}
-      <AnimatedHeightBox viewKey={templateFilter ? 'search' : 'shelf'} className="mt-2">
+      <AnimatedHeightBox viewKey={templateFilter ? 'search' : 'shelf'} className="mt-4">
         {templateFilter ? (
           filteredTemplates.length === 0 ? (
             <p className="px-1 py-6 text-center text-xs text-slate-400 dark:text-slate-400">
