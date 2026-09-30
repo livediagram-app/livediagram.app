@@ -1,8 +1,9 @@
 'use client';
 
-// API token state (docs/specs/015-api/public-api-and-tokens.md), loaded for a signed-in user so a consumer's
-// create form and list read the SAME source: the Settings token manager, and
-// the Explorer's timeline token-card menus. `enabled` gates the fetch (off for guests / when Clerk is not
+// API token state (docs/specs/015-api/public-api-and-tokens.md), loaded for a signed-in user. Consumed by
+// the Settings token manager and the Explorer's timeline token-card menus;
+// each mounts its own controller and a change in one refreshes the rest (see
+// TOKENS_CHANGED_EVENT). `enabled` gates the fetch (off for guests / when Clerk is not
 // configured), mirroring useTeams. Tokens are Clerk-only, so `ownerId` here is
 // always the signed-in account id when enabled.
 import { useCallback, useEffect, useState } from 'react';
@@ -11,6 +12,11 @@ import { apiCreateToken, apiListTokens, apiRevokeToken } from '@/lib/api-client'
 import { track } from '@/lib/telemetry';
 
 const MAX_TOKENS = 10;
+// Two instances can be mounted at once (the Explorer's, for its timeline
+// token menus, and the Settings token manager's), so a create or revoke in
+// one tells the others to re-read rather than leaving them stale.
+const TOKENS_CHANGED_EVENT = 'livediagram:tokens-changed';
+const announceChange = () => window.dispatchEvent(new Event(TOKENS_CHANGED_EVENT));
 
 export type TokensController = {
   list: ApiToken[] | null;
@@ -39,7 +45,10 @@ export function useTokens(ownerId: string | null, opts: { enabled: boolean }): T
   }, [enabled, ownerId]);
   useEffect(() => {
     load();
-  }, [load]);
+    if (!enabled) return;
+    window.addEventListener(TOKENS_CHANGED_EVENT, load);
+    return () => window.removeEventListener(TOKENS_CHANGED_EVENT, load);
+  }, [load, enabled]);
 
   const count = list?.length ?? 0;
   const atCap = count >= MAX_TOKENS;
@@ -54,7 +63,7 @@ export function useTokens(ownerId: string | null, opts: { enabled: boolean }): T
         // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): a token was minted by hand from the
         // Settings token manager. The MCP consent flow tracks its own 'MCP' source separately.
         track('Token', 'Created', 'Manual');
-        load();
+        announceChange();
         return res.token;
       } catch {
         setError('Could not create token.');
@@ -63,7 +72,7 @@ export function useTokens(ownerId: string | null, opts: { enabled: boolean }): T
         setCreating(false);
       }
     },
-    [ownerId, creating, atCap, load],
+    [ownerId, creating, atCap],
   );
 
   const revoke = useCallback(
@@ -73,12 +82,12 @@ export function useTokens(ownerId: string | null, opts: { enabled: boolean }): T
       try {
         await apiRevokeToken(ownerId, id);
         track('Token', 'Removed'); // docs/specs/017-telemetry/telemetry.md: a token was revoked
-        load();
+        announceChange();
       } catch {
         setError('Could not revoke token.');
       }
     },
-    [ownerId, load],
+    [ownerId],
   );
 
   return { list, count, max: MAX_TOKENS, atCap, creating, error, create, revoke };

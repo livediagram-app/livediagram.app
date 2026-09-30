@@ -5,11 +5,11 @@ import type { ApiToken } from '@livediagram/api-schema';
 
 export const DAY_MS = 86_400_000;
 // "Expires soon" inside this window: two weeks is enough notice to rotate.
-export const EXPIRES_SOON_MS = 14 * DAY_MS;
+const EXPIRES_SOON_MS = 14 * DAY_MS;
 // A token used this recently gets the green "in use" dot.
-export const RECENTLY_USED_MS = DAY_MS;
+const RECENTLY_USED_MS = DAY_MS;
 // Every token's fixed lifetime, mirrored from the api's mint (six months).
-export const TOKEN_LIFETIME_MONTHS = 6;
+const TOKEN_LIFETIME_MONTHS = 6;
 
 export type TokenStatus = 'active' | 'expiring' | 'expired';
 
