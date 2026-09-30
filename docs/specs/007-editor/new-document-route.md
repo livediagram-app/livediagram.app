@@ -246,7 +246,7 @@ The template and theme grids shuffle their order **once per open** of
 the picker, so returning users keep meeting options they have not
 explored instead of always seeing the same curated first rows.
 
-- **Pinned defaults stay first.** Blank diagram (templates) and the
+- **Pinned defaults stay first.** Blank Canvas (templates) and the
   `brand` scheme, labelled "Default" (theme), are always pinned to index
   0 — they are the sensible starting points, so they never get
   shuffled away. Everything else is randomised.
@@ -275,7 +275,7 @@ and the pattern controls in `components/palette/palette-controls.tsx`)
 
 The welcome screen is a **two-step wizard** rather than one long page:
 
-- **Step 1: Template.** The template browse (search, categories, drill-in).
+- **Step 1: Template.** The template browse (search, one open category's carousel, the other categories folded as tiles beneath it).
   Footer: **Skip** and **Next**. Double-clicking a template card advances to
   step 2 (it does not commit the whole wizard, so the user still picks a theme).
 - **Step 2: Theme.** The theme browse (below). Footer: **Back** (left arrow),
@@ -331,6 +331,16 @@ tab changes (a ref, not an activeId diff — `addTab` switches tab and opens the
 picker in one commit, which a naive diff would close immediately).
 `chooseTemplate` carries the matching backstop: a confirm that would land on a
 tab with elements dismisses the picker and writes nothing.
+
+**Quick Start closes when you reach past it.** It is a panel over the canvas,
+not a blocking modal: the palette, the Explorer, the bottom toolbars and the
+canvas stay live around it, and what they open or add would land hidden behind
+it. So a press anywhere outside the card (the shared `useClickOutside`) closes
+it exactly as Cancel does, and the press still reaches what it landed on (a
+palette tool arms as normal). Presses inside the card, including its search
+and carousel, keep it open. The custom theme builder on its theme step has its
+own Save / Cancel, so it suspends this while open. The first-run welcome and
+the name prompt ask for an answer and never close this way.
 
 The **empty-canvas hint** is a subdued **bottom banner** (`EmptyCanvasBanner`),
 shown while the active tab has no elements — not the old centre-of-canvas card,

@@ -1,23 +1,16 @@
-import { TemplatePreview } from '@livediagram/template-previews';
+import { PreviewFan } from '@livediagram/template-previews';
 import type { TemplateCategory } from '@livediagram/templates';
 import { BAND_CARD, BAND_CONTROL_HOVER, BAND_LABEL } from '@/components/band-classes';
 import type { GalleryTemplate } from '@/lib/template-gallery';
 
 // The template gallery's folded categories (docs/specs/019-marketing/marketing-site.md): one card
 // per category not yet open, so they read as part of the gallery rather than a row of tags under
-// it. Each shows a fanned stack of its first three templates' previews (the editor picker's own
-// art, re-lit in dark by preview-art-tile on the plate), its name and how many templates it
-// holds. Hovering or focusing a card fans the stack wider. Clicking opens the
+// it. Each shows a fanned stack of its first three templates' previews (PreviewFan, shared with
+// the editor's template picker), its name and how many templates it holds. Hovering or
+// focusing a card fans the stack wider. Clicking opens the
 // category's carousel above, as the chips it replaced did.
 
 type Group = { id: TemplateCategory; label: string; templates: GalleryTemplate[] };
-
-// Where each of the three previews sits in the fan, at rest and on hover.
-const FAN = [
-  '-translate-x-[108%] translate-y-[-44%] -rotate-6 group-hover:-translate-x-[122%] group-hover:-rotate-9 group-focus-visible:-translate-x-[122%] group-focus-visible:-rotate-9',
-  '-translate-x-1/2 -translate-y-[58%] z-10 group-hover:-translate-y-[66%] group-focus-visible:-translate-y-[66%]',
-  'translate-x-[8%] translate-y-[-44%] rotate-6 group-hover:translate-x-[22%] group-hover:rotate-9 group-focus-visible:translate-x-[22%] group-focus-visible:rotate-9',
-];
 
 export function CategoryTiles({
   groups,
@@ -44,16 +37,7 @@ export function CategoryTiles({
               aria-label={`Show ${group.label} templates`}
               className={`group flex h-full w-full cursor-pointer flex-col p-3 text-left ${BAND_CARD} ${BAND_CONTROL_HOVER}`}
             >
-              <span className="preview-art-tile relative block h-24 overflow-hidden rounded-xl bg-slate-50">
-                {group.templates.slice(0, 3).map((t, i) => (
-                  <span
-                    key={t.kind}
-                    className={`absolute left-1/2 top-1/2 flex h-14 w-[42%] items-center justify-center rounded-lg border border-slate-200 bg-white shadow-sm transition [&>svg]:h-10 [&>svg]:w-auto ${FAN[i]}`}
-                  >
-                    <TemplatePreview kind={t.kind} />
-                  </span>
-                ))}
-              </span>
+              <PreviewFan kinds={group.templates.map((t) => t.kind)} />
               <span className="mt-3 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {group.label}

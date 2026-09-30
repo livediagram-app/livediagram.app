@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { Button, CloseIcon, useEscape } from '@livediagram/ui';
+import { Button, CloseIcon, useClickOutside, useEscape } from '@livediagram/ui';
 import type { Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 import { shufflePinned } from '@/lib/shuffle';
@@ -7,11 +7,15 @@ import type { TemplateCategory, TemplateKind } from '@livediagram/templates';
 import {
   TEMPLATE_CATEGORIES,
   TEMPLATES,
+  POPULAR_TEMPLATE_KINDS,
   templateCategory,
   untitledNameForTemplate,
 } from '@livediagram/templates';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
-import { TemplatePickerBrowse } from '@/components/palette/TemplatePickerBrowse';
+import {
+  TemplatePickerBrowse,
+  type ShelfCategory,
+} from '@/components/palette/TemplatePickerBrowse';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { TemplatePickerFooter } from './TemplatePickerFooter';
@@ -183,10 +187,11 @@ export function TemplatePicker({
     const id = setTimeout(() => setDebouncedQuery(templateQuery), 180);
     return () => clearTimeout(id);
   }, [templateQuery]);
-  // Which category the user has drilled into on the overview, or null
-  // for the top-level overview (Blank quick-pick + a card per category).
-  // A non-empty search query overrides this and shows flat results.
-  const [openCategory, setOpenCategory] = useState<TemplateCategory | null>(null);
+  // Which category the user last opened on the shelf, or null for the
+  // default (Popular). Held here, not in the browse, so it survives a peek
+  // at the theme step. A non-empty search query overrides the shelf and
+  // shows flat results.
+  const [openCategory, setOpenCategory] = useState<ShelfCategory | null>(null);
   // Initial theme is whatever the caller hands us: the /new flow passes
   // 'brand' (so Default is pre-selected for a fresh document), while a new
   // tab copying an existing one passes that tab's theme.
@@ -239,6 +244,15 @@ export function TemplatePicker({
     setStep(next);
   };
   const [themeBuilding, setThemeBuilding] = useState(false);
+  // The in-editor Quick Start is a panel over the canvas, not a blocking
+  // modal: the palette, the Explorer and the canvas stay live around it. A
+  // press anywhere outside the card means the user has moved on (to a
+  // toolbar, or to drawing), so it closes as Cancel would rather than leave
+  // what they just opened or added hidden behind it. Not while the custom
+  // theme builder is open (that has its own Save / Cancel), and never on the
+  // welcome or name prompts, which ask for an answer.
+  const cardRef = useRef<HTMLDivElement>(null);
+  useClickOutside(cardRef, onSkip, mode === 'templates' && !themeBuilding);
   // Rotate which templates greet the user on each open so people keep
   // discovering options beyond the usual first rows, but always pin Blank
   // first. Shuffled once per mount via lazy useState so clicking around
@@ -267,11 +281,13 @@ export function TemplatePicker({
         );
       })
     : templates;
-  // Blank is pulled out of the category grouping and shown as a dedicated
-  // "start from scratch" card on the overview; `categoryTemplates` returns
-  // a category's templates with Blank excluded (it keeps the shuffled
-  // order so the preview collages rotate on each open).
-  const blankTemplate = TEMPLATES.find((t) => t.kind === 'blank');
+  // The Popular shelf, in its curated order (Blank Canvas first, so Blank
+  // needs no card of its own); `categoryTemplates` returns a category's
+  // templates with Blank excluded (it keeps the shuffled order so the
+  // preview fans rotate on each open).
+  const popularTemplates = POPULAR_TEMPLATE_KINDS.flatMap((kind) =>
+    TEMPLATES.filter((t) => t.kind === kind),
+  );
   const categoryTemplates = (category: TemplateCategory) =>
     templates.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === category);
 
@@ -314,6 +330,7 @@ export function TemplatePicker({
       className="pointer-events-none absolute inset-0 z-[var(--z-canvas-modal)] flex items-center justify-center"
     >
       <div
+        ref={cardRef}
         role="dialog"
         aria-modal="true"
         aria-label={isIdentity ? 'Confirm your name' : 'Start a new document'}
@@ -434,7 +451,7 @@ export function TemplatePicker({
                 filteredTemplates={filteredTemplates}
                 openCategory={openCategory}
                 setOpenCategory={setOpenCategory}
-                blankTemplate={blankTemplate}
+                popularTemplates={popularTemplates}
                 categoryTemplates={categoryTemplates}
                 templateKind={templateKind}
                 onTemplateCommit={onTemplateCommit}
