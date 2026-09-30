@@ -118,7 +118,8 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
   - **Eraser**: when active, toggle its flyout; else `cancelDraw()`, `selectCanvasTool('eraser')`.
   - **Sticky / Text**: `setCanvasTool('select')`, arm `{ type: 'sticky' }` / `{ type: 'text' }`
     (one-shot: after placing, the tool reads `select`). Both open for typing on drop
-    (`opensForTyping(intent, whiteboard)` in `draw-mode.ts`).
+    (`opensForTyping(intent, whiteboard)` in `draw-mode.ts`). A text box hugs its text:
+    [text-boxes](text-boxes.md).
   - **Shapes**: toggle the shapes flyout; picking a shape arms its intent (one-shot) and closes it.
     The pinned and frequent slots and More shapes are [whiteboard-dock](whiteboard-dock.md)'s.
   - **Recognition**: flip `recognise`, re-arm the pen intent when a pen is held, track
