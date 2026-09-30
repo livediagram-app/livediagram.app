@@ -1,7 +1,7 @@
 // The whiteboard's ink projection over a whole element list (docs/specs/023-whiteboard/whiteboard.md
 // "Appearance"), cached per source object so an unchanged element keeps its
 // identity between renders and the memoised element views stay quiet.
-import { inkWhiteboardElement, type Element } from '@livediagram/diagram';
+import { inkWhiteboardElement, type Element } from '@livediagram/document';
 
 export function createInkProjector(): (elements: Element[], ink: string) => Element[] {
   let cacheInk: string | null = null;

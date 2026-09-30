@@ -12,7 +12,7 @@ import {
   WHITEBOARD_BACKGROUNDS,
   type BackgroundPattern,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { CanvasTool } from '@/components/palette/CommandPalette.types';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';

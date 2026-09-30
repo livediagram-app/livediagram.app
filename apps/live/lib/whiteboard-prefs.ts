@@ -1,6 +1,6 @@
 // The whiteboard's device-local tool settings (docs/specs/023-whiteboard/whiteboard.md "Pens"): the preset
 // pens, which one is in hand, shape recognition and the eraser mode. The user's,
-// not the board's: stored in this browser, never sent with the diagram.
+// not the board's: stored in this browser, never sent with the document.
 
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 

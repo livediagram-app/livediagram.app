@@ -6,7 +6,7 @@ export type WizardStep = 'template' | 'theme' | 'settings';
 
 // Where a step request actually leads for the chosen template. A whiteboard
 // has no theme (docs/specs/023-whiteboard/whiteboard.md "Creating one"), so its theme step is skipped:
-// on to Location in the New Diagram wizard, straight to the commit in Quick
+// on to Location in the New Document wizard, straight to the commit in Quick
 // Start, which has no Location step.
 export function resolveWizardStep(
   next: WizardStep,

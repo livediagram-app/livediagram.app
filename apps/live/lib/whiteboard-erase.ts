@@ -7,7 +7,7 @@ import {
   strokeTouchesBrush,
   type Element,
   type FreehandElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 type Point = { x: number; y: number };
 

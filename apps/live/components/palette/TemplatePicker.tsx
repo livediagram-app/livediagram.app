@@ -21,7 +21,7 @@ import { DEFAULT_SAVE_LOCATION, type SaveLocationId } from '@/lib/save-locations
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
 import { PencilIcon } from './template-picker-icons';
 import { WizardSteps, resolveWizardStep, type WizardStep } from './template-picker-wizard';
-import { DEFAULT_SCHEME_ID } from '@livediagram/diagram';
+import { DEFAULT_SCHEME_ID } from '@livediagram/document';
 
 // Whether this render is past hydration, as a store with nothing to subscribe to: prerender and
 // hydration read the server snapshot, every later render the client one.

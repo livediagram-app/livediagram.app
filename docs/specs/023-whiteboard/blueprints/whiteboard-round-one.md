@@ -11,10 +11,10 @@ Scope, by file:
 
 | File                                                       | Role                                                                     |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `packages/diagram/src/tab-kind.ts`                         | `TabKind` gains `'whiteboard'`; `tabKindOf` reads it                     |
-| `packages/diagram/src/whiteboard.ts`                       | Tokens, backgrounds, `isWhiteboardTab`, `inkWhiteboardElement`           |
-| `packages/diagram/src/whiteboard-stroke.ts`                | Stroke geometry: `strokeTouchesBrush`, `eraseStrokePart`                 |
-| `packages/diagram/src/svg-render-shapes.ts`                | `svgFreehandShape` honours `penWidth` on every stroke                    |
+| `packages/document/src/tab-kind.ts`                        | `TabKind` gains `'whiteboard'`; `tabKindOf` reads it                     |
+| `packages/document/src/whiteboard.ts`                      | Tokens, backgrounds, `isWhiteboardTab`, `inkWhiteboardElement`           |
+| `packages/document/src/whiteboard-stroke.ts`               | Stroke geometry: `strokeTouchesBrush`, `eraseStrokePart`                 |
+| `packages/document/src/svg-render-shapes.ts`               | `svgFreehandShape` honours `penWidth` on every stroke                    |
 | `packages/api-schema` + `apps/api/src/openapi`             | `TabKind` enum regenerated; `Whiteboard` telemetry category              |
 | `packages/templates/src/templates.ts`                      | `'whiteboard'` kind, descriptor, category, pattern, overrides            |
 | `packages/templates/src/build-template.ts`                 | Whiteboard builds no elements                                            |
@@ -208,7 +208,7 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 ## Interfaces and contracts
 
 ```ts
-// packages/diagram
+// packages/document
 export type TabKind = 'diagram' | 'event-storming' | 'whiteboard';
 export function isWhiteboardTab(tab: { kind?: string } | undefined): boolean;
 export const WHITEBOARD_BOARD: Readonly<Record<Appearance, string>>;
@@ -355,10 +355,10 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 | Rule                                                | Test                                                                                     |
 | --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Kind reads and stamps                               | `packages/diagram/src/tab-kind.test.ts`                                                  |
-| Tokens meet contrast                                | `packages/diagram/src/whiteboard.test.ts`                                                |
-| Ink projection table                                | `packages/diagram/src/whiteboard.test.ts`                                                |
-| Stroke touch and partial split                      | `packages/diagram/src/whiteboard-stroke.test.ts`                                         |
+| Kind reads and stamps                               | `packages/document/src/tab-kind.test.ts`                                                 |
+| Tokens meet contrast                                | `packages/document/src/whiteboard.test.ts`                                               |
+| Ink projection table                                | `packages/document/src/whiteboard.test.ts`                                               |
+| Stroke touch and partial split                      | `packages/document/src/whiteboard-stroke.test.ts`                                        |
 | `penWidth` honoured on every stroke                 | `svg-render-shapes` test                                                                 |
 | Template kind, overrides, builder                   | `packages/templates` tests                                                               |
 | Prefs parse / defaults / pen colours contrast       | `apps/live/lib/whiteboard-prefs.test.ts`                                                 |

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createFreehand, type Element } from '@livediagram/diagram';
+import { createFreehand, type Element } from '@livediagram/document';
 import { createInkProjector } from './whiteboard-ink';
 
 const stroke = (): Element =>

@@ -4,7 +4,7 @@ import {
   createShape,
   type Element,
   type FreehandElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { partialEraseStep, strokesTouched } from './whiteboard-erase';
 
 const line = (id: string, y: number): FreehandElement => ({

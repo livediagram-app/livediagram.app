@@ -8,7 +8,7 @@
 
 import { Fragment, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Tooltip } from '@livediagram/ui';
-import { WHITEBOARD_BACKGROUNDS, whiteboardBackgroundOf } from '@livediagram/diagram';
+import { WHITEBOARD_BACKGROUNDS, whiteboardBackgroundOf } from '@livediagram/document';
 import { EraserIcon, HighlighterIcon, SelectIcon } from '@/components/palette/palette-icons';
 import { HIGHLIGHTER_COLORS, HIGHLIGHTER_WIDTHS } from '@/lib/highlighter-config';
 import {

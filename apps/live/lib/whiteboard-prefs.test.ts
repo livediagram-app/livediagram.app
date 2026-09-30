@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { WHITEBOARD_BOARD, contrastRatio } from '@livediagram/diagram';
+import { WHITEBOARD_BOARD, contrastRatio } from '@livediagram/document';
 import {
   DEFAULT_WHITEBOARD_PREFS,
   WHITEBOARD_PEN_COLOURS,

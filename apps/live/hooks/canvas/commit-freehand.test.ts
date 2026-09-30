@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, FreehandElement, ShapeElement, Tab } from '@livediagram/diagram';
+import type { Element, FreehandElement, ShapeElement, Tab } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { makeCommitFreehand } from './commit-freehand';
 

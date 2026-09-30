@@ -10,7 +10,7 @@ import { FormatPanel } from '@/components/panels/FormatPanel';
 import { HighlighterPanel } from '@/components/panels/HighlighterPanel';
 import { SlideDeckPanel } from '@/components/panels/SlideDeckPanel';
 import type { CanvasChromeProps } from './CanvasChrome';
-import { isWhiteboardTab } from '@livediagram/diagram';
+import { isWhiteboardTab } from '@livediagram/document';
 
 // The seven tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
 // docs/specs/008-canvas/format-panel.md, docs/specs/008-canvas/highlighter.md, docs/specs/012-collaboration/presentation-mode.md), lifted out of useCanvasChromePanels. They are siblings in
