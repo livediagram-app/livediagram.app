@@ -307,6 +307,11 @@ The shapes group learns and keeps the shapes a user reaches for.
   sticky and a text box are drawn in the board's ink at their default width,
   whichever pen was last in hand. A shape has no fill.
 - It previews that way while it is dragged out: solid, in the ink, unfilled.
+  **A line or an arrow previews as exactly the one that lands**, from the
+  first pixel of the drag: its real stroke width, colour and dash (its
+  tool style), its ends, and its arrowhead at its real shape and size, drawn
+  by the same arrow renderer in the canvas layer, so release changes nothing.
+  No stand-in line, no placeholder head scaled for the preview.
 - Another colour or width is the quick style panel's job: **with the tool in
   hand** (nothing selected) the panel styles what it draws next, captioned
   "Next rectangle", "Next arrow", "Next text box"; a choice there changes
