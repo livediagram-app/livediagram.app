@@ -598,8 +598,10 @@ test('a connection made in one tab starts syncing at once while another tab runs
   const row = page.locator('[data-cloud-sync="googleDrive"]');
   // Never "Not connected" once the connection exists: Connecting until the
   // mirror reports, then the first copy or Synced, within seconds.
-  await expect(pillOf(row)).toHaveText(/Connecting|Copying|Syncing|Synced/, { timeout: 1000 });
-  await expect(pillOf(row)).toHaveText(/Copying|Synced/, { timeout: 5000 });
+  await expect(pillOf(row)).toHaveText(/^(Connecting…|Copying .+|Syncing…|Last synced .+)$/, {
+    timeout: 1000,
+  });
+  await expect(pillOf(row)).toHaveText(/^(Copying .+|Last synced .+)$/, { timeout: 5000 });
   await expect
     .poll(() => google.fake.appFiles(user).some((f) => f.name === 'Tabs plan.livediagram'), {
       timeout: 10_000,
@@ -681,7 +683,7 @@ test('the Cloud Sync buttons never cover anything, at three widths', async ({
       await tab.goto('/explorer/recent?settings=account&section=cloud-sync');
       const row = tab.locator('[data-cloud-sync="googleDrive"]');
       await expect(pillOf(row)).toHaveText(
-        user === connected ? /Synced|Syncing/ : 'Not connected',
+        user === connected ? /^(Last synced .+|Syncing…)$/ : 'Not connected',
         {
           timeout: 15_000,
         },
