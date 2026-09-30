@@ -47,9 +47,10 @@ describe('FreehandSvg', () => {
       <FreehandSvg element={el} fill="none" stroke="#000" hitWidth={13.5} />,
     );
     const hit = container.querySelector('[data-stroke-hit]')!;
-    expect(hit.getAttribute('stroke-width')).toBe('13.5');
+    // The outline, grown by the margin either side (13.5 - the 1.5 px line).
+    expect(hit.getAttribute('stroke-width')).toBe('12');
     expect(hit.getAttribute('stroke')).toBe('transparent');
-    expect((hit as SVGElement).style.pointerEvents).toBe('stroke');
+    expect((hit as SVGElement).style.pointerEvents).toBe('all');
   });
 
   it('has no hit line otherwise', () => {

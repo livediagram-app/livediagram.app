@@ -120,6 +120,7 @@ export function FreehandSvg({
   // identically in every browser. The stroke being drawn (whiteboard/LiveInk.tsx) is this same svg
   // in the same layer, so release changes no pixel.
   if (isPenStroke(element)) {
+    const outline = penStrokePath(freehandPenStroke(element));
     return (
       <svg
         className={FREEHAND_SVG_CLASS}
@@ -127,7 +128,20 @@ export function FreehandSvg({
         preserveAspectRatio="none"
         aria-hidden
       >
-        <path d={penStrokePath(freehandPenStroke(element))} fill={stroke} stroke="none" />
+        <path d={outline} fill={stroke} stroke="none" />
+        {hitWidth !== undefined ? (
+          // Only the drawn line picks the stroke (docs/specs/023-whiteboard/whiteboard.md "Selecting"):
+          // the outline, grown by the margin either side, catches pointers.
+          <path
+            data-stroke-hit=""
+            d={outline}
+            fill="transparent"
+            stroke="transparent"
+            strokeWidth={Math.max(0, hitWidth - (element.penWidth ?? 0))}
+            strokeLinejoin="round"
+            style={{ pointerEvents: 'all' }}
+          />
+        ) : null}
       </svg>
     );
   }
