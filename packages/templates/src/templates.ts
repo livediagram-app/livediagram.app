@@ -1,4 +1,8 @@
-import { WHITEBOARD_DEFAULT_PATTERN, type BackgroundPattern, type Tab } from '@livediagram/document';
+import {
+  WHITEBOARD_DEFAULT_PATTERN,
+  type BackgroundPattern,
+  type Tab,
+} from '@livediagram/document';
 import { titleCase } from '@livediagram/api-schema';
 import { templateLayers } from './template-layers';
 
