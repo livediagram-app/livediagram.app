@@ -419,10 +419,8 @@ The eraser offers **both** modes, switched in its flyout:
   what Alt does; the pen stays down and the stroke carries on. The chip
   leaves when the pen moves on or lifts. A mouse stroke has Alt and shows no
   chip.
-- **Telemetry:** `Whiteboard` · `Toggled` · `RecogniseOnce` / `BreakShape`,
-  with the source in the type only as `Key` or `Chip` suffixes
-  (`RecogniseOnceKey`, `RecogniseOnceChip`, `BreakShapeKey`,
-  `BreakShapeChip`).
+- **Telemetry:** `Whiteboard` · `Toggled` · `RecogniseOnceKey`,
+  `RecogniseOnceChip`, `BreakShapeKey` or `BreakShapeChip`.
 
 ## Board background
 
