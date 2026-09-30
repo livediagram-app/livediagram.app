@@ -75,13 +75,9 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   "Pen stroke", "3 pen strokes"); power user mode leaves it out.
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
-- **Dock modes**, chosen under **Settings** (see below) and kept in the
-  user's synced preferences ([User preferences](../007-editor/user-preferences.md);
-  a guest keeps it in this browser): **Simple** (drawing tools, history and
-  settings only), **With shapes** (the default: all four groups, as laid out
-  below) and **Full drawing** (shown disabled, with the note
-  "Coming soon"). Switching mode never moves the groups that stay: the
-  dock re-centres once, and a flyout of a group that goes closes.
+- **One dock, no modes.** Every user sees the same four groups; the shapes
+  bar stays small by starting with just two pinned shapes, so there is no
+  simpler mode to switch to.
 - **The dock is four groups side by side**, centred together at the bottom
   of the canvas with a clear gap between them, left to right: **drawing
   tools**, **shapes**, **history** (Undo, Redo) and **settings** (the cog on
@@ -94,7 +90,7 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   3. **Text**, unless turned off under Settings, Tools.
   4. **Path tool** (see [Path tool](path-tool.md)), unless turned off there.
   5. **Eraser**, with its mode (see [Eraser](#eraser)).
-- **Shapes, left to right** (With shapes mode):
+- **Shapes, left to right:**
   1. **Pinned shapes**, the left side of the bar: up to seven shape kinds
      the user keeps there (see [Shape slots](#shape-slots)); by default
      **Arrow, Rectangle**, in that order. A pinned shape with a shape key
@@ -130,20 +126,18 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   in the drawing tools bar; it is one of the shapes: found in the Shapes
   flyout's search ("sticky", "note", "post-it"), shown in its slots once
   picked, and pinnable to the shapes bar like any shape. Its key **N** still
-  places one, from anywhere, in every mode, and counts as a pick.
+  places one, from anywhere, and counts as a pick.
 - **Settings**, the last group: a **cog** that opens **on a press only**, never on hover; a
-  flyout with no title of its own and five sections, each headed in the
+  flyout with no title of its own and four sections, each headed in the
   flyouts' small capitals and a row of buttons, top to bottom:
   **Background** (Plain / Dots / Grid), **Cursor** (Crosshair + nib, the
-  default / Dot), **Drawing** (Basic / Shape recognition), **Tools** and
-  **Mode** (Simple / With shapes / Full drawing, the last disabled with
-  "Coming soon"). The first three and Mode are switch buttons (one of
-  several); **Tools** is two independent toggles, **Text** and **Path
+  default / Dot), **Drawing** (Basic / Shape recognition) and **Tools**.
+  The first three are switch buttons (one of several); **Tools** is two independent toggles, **Text** and **Path
   tool**, each pressed while its button shows in the drawing tools bar. Both
   are on by default. Turning one off removes its
   button from the bar (the bar closes the gap; nothing else moves); its key
-  still picks it. The choice is the user's, kept in their synced preferences
-  with the dock mode, and applies to every whiteboard and every mode.
+  still picks it. The choice is the user's, kept in their synced preferences,
+  and applies to every whiteboard.
   Telemetry: `Whiteboard` · `Toggled` · `TextShown` / `TextHidden`,
   `PathShown` / `PathHidden`.
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
@@ -628,7 +622,6 @@ Preset-enum events only, never content, under a `Whiteboard` category:
 | A pen picked              | `Selected` | `Main`, `Second`, `Third`                                |
 | A shape picked in search  | `Selected` | `ShapeSearch` (never the kind)                           |
 | A shape pinned / unpinned | `Changed`  | `ShapePinned`, `ShapeUnpinned` (never the kind)          |
-| The dock mode chosen      | `Changed`  | `ModeSimple`, `ModeShapes`                               |
 | A pen changed             | `Changed`  | `PenColour`, `PenWidth` (a width on any pen), `PenReset` |
 | The pen cursor chosen     | `Changed`  | `CursorDot`, `CursorCrosshair`                           |
 | Eraser mode switched      | `Changed`  | `EraserStroke`, `EraserPartial`                          |
