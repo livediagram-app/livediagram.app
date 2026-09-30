@@ -280,6 +280,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404, 410],
   },
   {
+    method: 'GET',
+    path: '/documents/{id}/tabs/{tabId}/comment-pictures',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "The published profile pictures of a tab's comment authors, keyed by comment id. Empty unless the caller is signed in.",
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: { pictures: { type: 'object', additionalProperties: { type: 'string' } } },
+    },
+    statuses: [200, 403, 404],
+  },
+  {
     method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/qa',
     segment: 'documents',

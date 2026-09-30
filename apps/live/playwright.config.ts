@@ -71,6 +71,8 @@ export default defineConfig({
           E2E_LIVE_PORT: STUB_PORTS.live,
           E2E_API_PORT: STUB_PORTS.api,
           E2E_MARKETING_PORT: STUB_PORTS.marketing,
+          // The stack stands in for Clerk: it mints the stub's session tokens and the api verifies them.
+          E2E_CLERK_JWKS: '1',
         }
       : {},
   },

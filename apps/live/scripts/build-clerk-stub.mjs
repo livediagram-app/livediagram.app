@@ -23,8 +23,9 @@ const child = spawn('pnpm', ['exec', 'next', 'build'], {
   env: {
     ...process.env,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: STUB_KEY,
-    // Same-origin `/api`, as the e2e stack proxies it, whatever .env.local says.
-    NEXT_PUBLIC_API_BASE: '',
+    // Same-origin `/api`, as the e2e stack proxies it, whatever .env.local says. Spelled out: an
+    // empty value is not "unset" (API_BASE falls back only on undefined), and would drop the /api.
+    NEXT_PUBLIC_API_BASE: '/api',
     // A custom distDir makes Next write the static export there instead of `out/`.
     NEXT_DISTDIR: CLERK_STUB_OUT,
   },

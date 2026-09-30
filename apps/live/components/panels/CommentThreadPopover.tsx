@@ -281,6 +281,7 @@ function CommentRow({
     <li className={`group flex gap-2 py-2 ${resolved ? 'opacity-60' : ''}`}>
       <span className="mt-0.5 inline-flex">
         <AuthorDisc
+          commentId={comment.id}
           authorId={comment.authorId}
           size={24}
           as="div"

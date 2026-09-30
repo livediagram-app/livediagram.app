@@ -2,6 +2,7 @@ import type { Locator, Page, Route } from '@playwright/test';
 import { test, expect, expectNoPageErrors } from '../fixtures';
 import {
   clerkTargetPicture,
+  freshUserId,
   installClerkStub,
   STUB_PICTURE_SVG,
   TARGET_RIM,
@@ -30,7 +31,8 @@ const WEBBER: StubUser = {
 const trigger = (page: Page) => page.getByRole('button', { name: 'Account menu' });
 const avatarIn = (host: Locator) => host.locator('[data-avatar-state]');
 
-// Holds every picture request until `release`, so the loading state can be measured.
+// Holds every picture request until `release`, so the loading state can be measured. A page that
+// holds its pictures must not wait for `load` (which waits for images): see `openHeld`.
 function holdPictures(page: Page) {
   const held: Route[] = [];
   const referers: (string | undefined)[] = [];
@@ -67,7 +69,7 @@ test('draws the Google picture in the header and the identity card, without movi
   const pictures = holdPictures(page);
   await pictures.ready;
   await installClerkStub(page, WEBBER);
-  await page.goto('/explorer/timeline');
+  await page.goto('/explorer/timeline', { waitUntil: 'domcontentloaded' });
 
   const avatar = avatarIn(trigger(page));
   await expect(avatar).toHaveAttribute('data-avatar-state', 'loading');
@@ -104,7 +106,7 @@ test('keeps the initial when there is no picture, and asks for none', async ({
   const pictures = holdPictures(page);
   await pictures.ready;
   await installClerkStub(page, { ...WEBBER, hasImage: false, externalAccounts: [] });
-  await page.goto('/explorer/timeline');
+  await page.goto('/explorer/timeline', { waitUntil: 'domcontentloaded' });
 
   const avatar = avatarIn(trigger(page));
   await expect(avatar).toHaveAttribute('data-avatar-state', 'initial');
@@ -126,7 +128,7 @@ test('falls back to the initial when the picture fails, without moving', async (
   const pictures = holdPictures(page);
   await pictures.ready;
   await installClerkStub(page, WEBBER);
-  await page.goto('/explorer/timeline');
+  await page.goto('/explorer/timeline', { waitUntil: 'domcontentloaded' });
 
   const avatar = avatarIn(trigger(page));
   await expect(avatar).toHaveAttribute('data-avatar-state', 'loading');
@@ -188,5 +190,38 @@ test('frames the picture as its source does, crisp at 2x', async ({ browser, pag
   expect(Math.abs(edge.b - TARGET_RIM.b)).toBeLessThan(24);
 
   await context.close();
+  expectNoPageErrors(pageErrors);
+});
+
+// The switch (docs/specs/014-identity/profile-picture.md §4): on by default, so the account's
+// picture is published; off clears it for everyone else, while our own chrome keeps showing it.
+test('the switch publishes and withdraws the picture, and never hides it from us', async ({
+  page,
+  pageErrors,
+}) => {
+  const published: unknown[] = [];
+  const id = freshUserId('switch');
+  await page.route(`**/api/participants/${id}/picture`, async (route) => {
+    published.push(route.request().postDataJSON());
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+  await page.route(PICTURES, (route) =>
+    route.fulfill({ status: 200, contentType: 'image/svg+xml', body: STUB_PICTURE_SVG }),
+  );
+  await installClerkStub(page, { ...WEBBER, id });
+  await page.goto('/explorer/timeline');
+  await expect.poll(() => published).toEqual([{ pictureUrl: GOOGLE_PICTURE }]);
+
+  await trigger(page).click();
+  await page.getByRole('menuitem', { name: 'Account' }).click();
+  const toggle = page.getByRole('switch', { name: 'Show My Profile Picture' });
+  await expect(toggle).toBeChecked();
+  await toggle.click();
+  await expect(toggle).not.toBeChecked();
+  await expect.poll(() => published.at(-1)).toEqual({ pictureUrl: null });
+
+  // Our own chrome: the picture stays.
+  const card = page.getByRole('dialog').locator('[data-avatar-state]').first();
+  await expect(card).toHaveAttribute('data-avatar-state', 'picture');
   expectNoPageErrors(pageErrors);
 });
