@@ -35,9 +35,11 @@ Because the marquee starts on empty canvas, it never conflicts with dragging an 
 
 When the elements you want are not neatly boxed together, build the selection one at a time. Click the first element, then **hold Shift and click** more to add them without dropping what you already have. You can keep extending the selection across the canvas, picking out exactly the elements you need and leaving their neighbours untouched. Shift-clicking an element that is already selected removes it again, so you can fine-tune the set as you go.
 
+Only Shift adds to a selection. A plain click, without Shift, always starts over: click an element outside the selection and it becomes the only one selected, and click an element inside the selection to keep just that one.
+
 ## Acting on a selection
 
-However you gathered it, a multi-selection behaves as one. Drag any part of it and the whole set moves together, keeping its relative spacing. You can copy and paste the selection, delete it, lock it, or open the right-click menu to restyle the lot at once. The [format painter](/help/selection-modes/format-painter/) is happy to paint a look across an entire multi-selection too.
+However you gathered it, a multi-selection behaves as one. Press any part of it and drag, and the whole set moves together, keeping its relative spacing. You can copy and paste the selection, delete it, lock it, or open the right-click menu to restyle the lot at once. The [format painter](/help/selection-modes/format-painter/) is happy to paint a look across an entire multi-selection too.
 
 <Tip>
   Clicking an empty patch of canvas clears the current selection, so you always have a quick way to
