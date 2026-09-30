@@ -7,11 +7,12 @@
 import type { ReactNode } from 'react';
 import {
   WHITEBOARD_BACKGROUNDS,
+  WHITEBOARD_INK,
+  penColourCss,
   whiteboardBackgroundOf,
   type Appearance,
 } from '@livediagram/document';
 import {
-  WHITEBOARD_PEN_COLOURS,
   WHITEBOARD_PEN_WIDTHS,
   PEN_NAMES,
   penAdjustsColour,
@@ -25,6 +26,8 @@ import {
 } from '@/lib/whiteboard-pen-cursor';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { FlyoutHeading, FlyoutOption } from './WhiteboardFlyout';
+import { ColourPicker } from './ColourPicker';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import { BackgroundGlyph, OffGlyph, RecogniseGlyph } from './whiteboard-icons';
 
 const ERASER_MODES = [
@@ -38,24 +41,22 @@ const CURSOR_NAMES: Record<PenCursorVariant, string> = {
 };
 
 export function PenFlyoutBody({ pen, model }: { pen: WhiteboardPen; model: WhiteboardDockModel }) {
+  const { appearance } = useAppearance();
   return (
     <FlyoutRows>
-      {/* The main pen always stays the board's ink: its flyout is the width only. */}
+      {/* The main pen always stays the board's ink: its flyout is the width only. The others get
+          the colour picker (docs/specs/023-whiteboard/whiteboard.md "The colour picker"). */}
       {penAdjustsColour(pen) ? (
-        <FlyoutRow label="Colour">
-          {WHITEBOARD_PEN_COLOURS.map((c) => (
-            <FlyoutOption
-              key={c.label}
-              label={c.label}
-              selected={pen.colour === c.hex}
-              onPick={() => model.updatePen(pen.id, { colour: c.hex })}
-            >
-              <Swatch colour={c.hex} />
-            </FlyoutOption>
-          ))}
-        </FlyoutRow>
+        <ColourPicker
+          value={pen.colour}
+          board={appearance}
+          ink={WHITEBOARD_INK[appearance]}
+          yours={model.colourMemory.yours}
+          onPick={(colour) => model.updatePen(pen.id, { colour })}
+          onRemove={model.colourMemory.forget}
+        />
       ) : null}
-      <FlyoutRow label="Width">
+      <FlyoutRow label="Width" heading>
         {WHITEBOARD_PEN_WIDTHS.map((w) => (
           <FlyoutOption
             key={w.id}
@@ -138,7 +139,10 @@ export function SettingsFlyoutBody({
               aria-hidden
               width={20}
               height={20}
-              src={svgDataUrl(penCursorSvg(v, model.activePen.colour ?? ink, appearance).svg)}
+              src={svgDataUrl(
+                penCursorSvg(v, penColourCss(model.activePen.colour, appearance, ink), appearance)
+                  .svg,
+              )}
             />
             <span>{CURSOR_NAMES[v]}</span>
           </FlyoutOption>
@@ -197,16 +201,6 @@ function FlyoutRow({
       )}
       <div className="flex flex-wrap gap-1">{children}</div>
     </div>
-  );
-}
-
-function Swatch({ colour }: { colour: string }) {
-  return (
-    <span
-      aria-hidden
-      className="h-5 w-5 rounded-full border border-slate-300 dark:border-slate-600"
-      style={{ backgroundColor: colour }}
-    />
   );
 }
 

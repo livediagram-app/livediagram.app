@@ -13,6 +13,7 @@ import {
   WHITEBOARD_BACKGROUNDS,
   WHITEBOARD_UNSET_PATTERN,
   type BackgroundPattern,
+  type PenColour,
   type Tab,
 } from '@livediagram/document';
 import type { CanvasTool } from '@/components/palette/CommandPalette.types';
@@ -38,6 +39,7 @@ import {
   type WhiteboardShapeKey,
 } from '@/lib/whiteboard-shape-catalogue';
 import { useWhiteboardDockPrefs, type WhiteboardDockPrefsDeps } from './useWhiteboardDockPrefs';
+import { usePenColourMemory } from './usePenColourMemory';
 
 type Deps = {
   activeTab: Tab;
@@ -82,6 +84,8 @@ export function useWhiteboard(deps: Deps) {
   } = deps;
   // The synced dock preferences: pinned shapes and pick counts ("Shape slots").
   const dockPrefs = useWhiteboardDockPrefs(deps);
+  // Your colours ("The colour picker"), synced too.
+  const colourMemory = usePenColourMemory(deps);
   // S (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): each press raises this, and
   // the dock, which owns its flyouts, opens the Shapes flyout in answer.
   const [shapesRequest, setShapesRequest] = useState(0);
@@ -140,14 +144,17 @@ export function useWhiteboard(deps: Deps) {
     if (pen) track('Whiteboard', 'Selected', penTelemetryType(pen));
   };
 
-  const updatePen = (id: WhiteboardPenId, patch: { colour?: string | null; width?: number }) => {
+  const updatePen = (id: WhiteboardPenId, patch: { colour?: PenColour | null; width?: number }) => {
     const next = {
       ...prefs,
       pens: prefs.pens.map((p) => (p.id === id ? { ...p, ...patch } : p)),
     };
     setPrefs(next);
     if (tool === 'pen' && prefs.activePenId === id) armPen(next);
-    if (patch.colour !== undefined) track('Whiteboard', 'Changed', 'PenColour');
+    if (patch.colour !== undefined) {
+      track('Whiteboard', 'Changed', 'PenColour');
+      colourMemory.remember(patch.colour);
+    }
     if (patch.width !== undefined) track('Whiteboard', 'Changed', 'PenWidth');
   };
 
@@ -235,6 +242,7 @@ export function useWhiteboard(deps: Deps) {
     pickPen,
     updatePen,
     resetPen,
+    colourMemory,
     pickEraser,
     setEraserMode,
     // The sticky note is a shape (docs/specs/023-whiteboard/whiteboard.md "Shape slots"): N counts

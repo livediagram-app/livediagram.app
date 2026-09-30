@@ -84,6 +84,8 @@ export function WhiteboardFlyout({
       // The opener toggles the flyout itself; closing here as well would
       // reopen it on the same press.
       if ((target as Element).closest?.(`[aria-controls="${id}"]`)) return;
+      // A menu the flyout opened (a portal, such as a custom colour's Remove) is the flyout's own.
+      if ((target as Element).closest?.('[data-flyout-child]')) return;
       onCloseRef.current(false);
     };
     document.addEventListener('pointerdown', onDown, true);

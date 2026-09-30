@@ -10,6 +10,7 @@ import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
+import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
 import type { MindFlow } from './mind-flow';
@@ -150,6 +151,9 @@ export type ShapeElement = {
   font?: string;
   fillColor?: string;
   strokeColor?: string;
+  // A whiteboard marker's named colour (docs/specs/023-whiteboard/whiteboard.md "The colour picker"):
+  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  penColour?: PenColourName;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
   // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
@@ -881,6 +885,9 @@ export type FreehandElement = {
   // recorded, drawn with none). A pen stroke's points are its raw samples.
   pressures?: number[];
   streamline?: number;
+  // A whiteboard marker's named colour (docs/specs/023-whiteboard/whiteboard.md "The colour picker"):
+  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  penColour?: PenColourName;
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight
   // M/L segments instead of Catmull-Rom smoothing, so deliberately
   // placed corners stay corners. Absent on pencil / highlighter

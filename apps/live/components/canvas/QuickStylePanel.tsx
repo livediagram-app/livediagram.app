@@ -34,6 +34,14 @@ import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
 import { QuickPenRows } from './QuickPenRows';
 import {
+  QUICK_BORDER_PX,
+  QUICK_COMPACT_PADDING_PX,
+  QUICK_FLOATING_GAP_PX,
+  QUICK_FLOATING_PADDING_PX,
+  QUICK_ROW_TARGETS,
+  QUICK_TARGET_PX,
+} from './quick-style-metrics';
+import {
   ClearStylesGlyph,
   FlowingLineGlyph,
   IconAlignGlyph,
@@ -146,6 +154,7 @@ export function QuickStylePanel({
   if (editingGone) setEditing(null);
   if (!active) return null;
   const docked = layout === 'floating';
+  const frame = panelFrame(docked, !!spot?.width, !!view.pen);
   const editedSwatch = editing
     ? view.sections[ROW_OF(editing.role).section]?.swatches[editing.slot]
     : undefined;
@@ -167,18 +176,16 @@ export function QuickStylePanel({
         e.preventDefault();
         e.stopPropagation();
       }}
-      style={
-        spot
-          ? {
-              left: spot.left,
-              top: spot.top,
-              ...(spot.width ? { width: spot.width } : {}),
-            }
+      style={{
+        width: frame.width,
+        padding: frame.padding,
+        ...(spot
+          ? { left: spot.left, top: spot.top, ...(spot.width ? { width: spot.width } : {}) }
           : // Measured before paint; hidden until then so it never flashes
             // in the wrong spot.
-            { left: 0, top: 0, visibility: 'hidden' }
-      }
-      className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${panelWidthClass(docked, !!spot?.width, !!view.pen)}`}
+            { left: 0, top: 0, visibility: 'hidden' as const }),
+      }}
+      className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${frame.className}`}
     >
       {docked && !minimalChrome ? (
         // The Palette's header language (MovablePanelHeader), minus the drag
@@ -194,8 +201,9 @@ export function QuickStylePanel({
       <div
         data-quick-style-body=""
         className={
-          docked ? 'scrollbar-slim flex min-h-0 flex-col gap-2.5 overflow-y-auto p-2.5' : 'contents'
+          docked ? 'scrollbar-slim flex min-h-0 flex-col gap-2.5 overflow-y-auto' : 'contents'
         }
+        style={docked ? { padding: QUICK_FLOATING_PADDING_PX } : undefined}
       >
         <QuickStyleSections
           view={view}
@@ -246,14 +254,28 @@ export function QuickStylePanel({
   );
 }
 
-// A fixed width, never the content's: switching between a one-colour and a
-// seven-colour row must not resize the panel. Compact is seven 24 px targets
-// (184 px), or eight for a whiteboard's pen rows (the ink and seven colours,
-// 208 px); Floating takes the Palette's width, or 240 px with no Palette on
-// screen (a whiteboard), room for eight spread swatches.
-export function panelWidthClass(docked: boolean, paletteWidth: boolean, penRows: boolean): string {
-  if (docked) return paletteWidth ? '' : 'w-60';
-  return `${penRows ? 'w-52' : 'w-46'} gap-2.5 p-2`;
+// A fixed width, never the content's (docs/specs/008-canvas/quick-style-panel.md "Where it sits"):
+// switching between a one-colour and a seven-colour row must not resize the panel, and a swatch row
+// never wraps and is never clipped, so the width counts the targets, their gaps, the padding and
+// the border exactly. Compact rows put their targets side by side, touching; Floating spreads them
+// with a gap, and takes the Palette's width when a Palette is on screen.
+export function panelFrame(
+  docked: boolean,
+  paletteWidth: boolean,
+  penRows: boolean,
+): { className: string; width?: number; padding?: number } {
+  const targets = penRows ? QUICK_ROW_TARGETS.pen : QUICK_ROW_TARGETS.swatches;
+  const border = 2 * QUICK_BORDER_PX;
+  if (docked) {
+    if (paletteWidth) return { className: '' };
+    const row = targets * QUICK_TARGET_PX + (targets - 1) * QUICK_FLOATING_GAP_PX;
+    return { className: '', width: row + 2 * QUICK_FLOATING_PADDING_PX + border };
+  }
+  return {
+    className: 'gap-2.5',
+    width: targets * QUICK_TARGET_PX + 2 * QUICK_COMPACT_PADDING_PX + border,
+    padding: QUICK_COMPACT_PADDING_PX,
+  };
 }
 
 function QuickStyleSections({

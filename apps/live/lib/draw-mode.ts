@@ -10,7 +10,12 @@ import type {
   SessionTool,
   ShapeKind,
 } from '@livediagram/document';
-import { EMBED_PROVIDER_LABEL, eventStormingNote } from '@livediagram/document';
+import {
+  EMBED_PROVIDER_LABEL,
+  eventStormingNote,
+  penColourCss,
+  type PenColour,
+} from '@livediagram/document';
 
 // Draw-to-size intent. Picking any element from the palette except the
 // annotation (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas
@@ -98,7 +103,7 @@ export type PendingDraw =
   | {
       type: 'freehand';
       variant: 'whiteboard';
-      colour: string | null;
+      colour: PenColour | null;
       width: number;
       recognise: boolean;
     }
@@ -346,7 +351,11 @@ export function drawIntentCursor(intent: PendingDraw): string {
     if (intent.variant === 'whiteboard') {
       // The canvas draws the look chosen in the dock (useWhiteboardPenCursor);
       // this is its default, on the light board.
-      return penCursor(DEFAULT_PEN_CURSOR, intent.colour ?? 'rgb(28 25 23)', 'light');
+      return penCursor(
+        DEFAULT_PEN_CURSOR,
+        penColourCss(intent.colour, 'light', 'rgb(28 25 23)'),
+        'light',
+      );
     }
     if (intent.variant === 'shape-pen') {
       // Pen nib with a dashed square beside it: the nib says "drawing", the

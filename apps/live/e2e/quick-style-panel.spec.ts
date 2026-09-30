@@ -116,7 +116,7 @@ test.describe('quick style panel', () => {
     await openBoard(page, 'toolbar');
     await drawShape(page, 'o', { x: 500, y: 400 });
     await expect(panel(page)).toBeVisible();
-    expect((await panel(page).boundingBox())!.width).toBeCloseTo(184, 0);
+    expect((await panel(page).boundingBox())!.width).toBeCloseTo(186, 0);
     const swatches = panel(page)
       .getByRole('radiogroup', { name: 'Stroke', exact: true })
       .getByRole('radio');

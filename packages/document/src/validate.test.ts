@@ -86,6 +86,27 @@ describe('isValidElement', () => {
     expect(isValidElement({ ...pen, streamline: 2 })).toBe(false);
   });
 
+  it('accepts a marker\u2019s named colour on a stroke, a shape or a line, rejects any other', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "The colour picker": stored by name.
+    const points = [
+      { nx: 0, ny: 0 },
+      { nx: 1, ny: 1 },
+    ];
+    const pen = { id: 'f', type: 'freehand', closed: false, points, penWidth: 1.5, ...box };
+    const shape = { id: 's', type: 'shape', shape: 'circle', ...box };
+    const line = {
+      id: 'l',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 9, y: 9 },
+    };
+    for (const el of [pen, shape, line]) {
+      expect(isValidElement({ ...el, penColour: 'blue' })).toBe(true);
+      expect(isValidElement({ ...el, penColour: 'blue-3' })).toBe(false);
+      expect(isValidElement({ ...el, penColour: '#1d7afc' })).toBe(false);
+    }
+  });
+
   it('rejects a non-object / missing id / unknown type', () => {
     expect(isValidElement(null)).toBe(false);
     expect(isValidElement({ type: 'shape', shape: 'square', ...box })).toBe(false);

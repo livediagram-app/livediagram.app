@@ -467,6 +467,7 @@ export * from './mermaid';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
+export * from './pen-colours';
 export * from './path-geometry';
 export * from './path-element';
 export * from './component-factories';

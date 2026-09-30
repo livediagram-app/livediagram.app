@@ -29,7 +29,7 @@ A tab stays the kind it was made as: a whiteboard does not turn into a diagram t
 Instead of the palette, a whiteboard has a dock at the bottom of the canvas, in four groups from left to right: the **drawing tools**, the **shapes**, **Undo** and **Redo**, and **Settings**. The drawing tools:
 
 1. **Select** (key **V**), to pick up, move and resize what you have drawn.
-2. **Three markers**: **Marker 1**, **Marker 2** and **Marker 3** (keys **1**, **2** and **3**). Press a marker to pick it up; press the marker already in your hand to change its **width** (Fine, Medium or Bold). Marker 1 always draws in the board's own ink; Markers 2 and 3 start blue and red and can also change **colour**, so they can be any two colours you like. Right-click a marker to reset it to how it started. With a marker in your hand, the style panel on the left shows its colour and width too. Your markers are yours: they are remembered in this browser, not saved with the document.
+2. **Three markers**: **Marker 1**, **Marker 2** and **Marker 3** (keys **1**, **2** and **3**). Press a marker to pick it up; press the marker already in your hand to change its **width** (Fine, Medium or Bold). Marker 1 always draws in the board's own ink; Markers 2 and 3 start blue and red and can also change **colour**, so they can be any two colours you like. Their colour picker offers eight colours: **Ink** (the board's own, the default), Blue, Red, Orange, Green, Teal, Violet and Pink. Below them, **Your colours** keeps the last eight custom colours you used, and **+** opens a custom picker: drag in the square and along the hue slider, type a hex code, or pick a colour from the screen with the eyedropper where your browser has one, then press **Use**. If a custom colour would be hard to see on the light or the dark board, a warning says so and offers a nearby colour that reads well on both. To remove one of Your colours, right-click it (or press and hold it on a touch screen, or press **Shift+F10**) and choose **Remove**; strokes already drawn in it keep it. Right-click a marker to reset it to how it started. With a marker in your hand, the style panel on the left shows its colour and width too. Your markers are yours: they are remembered in this browser, not saved with the document.
 3. **Text** (**T**): press, then click or drag on the board.
 4. **The Path tool** (**P**, see below).
 5. **Eraser** (key **E**, see below).
@@ -41,7 +41,7 @@ The shapes:
 
 The **sticky note** is one of the shapes: search for it in Shapes ("sticky", "note" or "post-it"), pin it like any shape, or press **N** from anywhere to place one.
 
-Shapes are drawn in the board's ink, whichever pen you last used: the pens colour only their own strokes. To change a shape's colour or width, select it and use the style panel on the left; a selected pen stroke gets its colour and width there as well.
+Shapes are drawn in the board's ink, whichever pen you last used: the pens colour only their own strokes. To change a shape's colour or width, select it and use the style panel on the left; a selected marker stroke gets its **Marker colour** and **Marker width** there as well: the same eight colours as the markers, and, when custom colours are used on this tab, a second row with them, the most recently drawn first.
 
 **Undo** and **Redo** come next, as well as in the bottom-right corner, and last the **Settings** cog (press it to open it): the board's **Background**, the pen's **Cursor** (Crosshair + nib, the default, or Dot) and **Drawing** (Basic or Shape recognition).
 
@@ -51,7 +51,7 @@ To select a pen stroke, click its line; clicking elsewhere in its box selects wh
 
 What you draw shows in the pen's colour and width as you draw it, smoothed as it goes, and nothing animates in: a mark lands exactly as you drew it. With a pen (stylus) the line follows your pressure: press lightly for a finer line, harder for a bolder one, with the chosen width in between. With a mouse or a finger it keeps the chosen width all along. A pen stays in your hand after each stroke, so you can keep writing. Press **Select** or **Escape** to put it down. Opening a whiteboard puts your last pen in your hand straight away.
 
-The dock works from the keyboard too. Every tool has a key (shown on its button) that picks it from anywhere on the board, and **Escape** puts the tool down again (unless you are typing into a note or text box); the other single-letter shortcuts of a diagram tab do nothing here. To reach the dock itself, Tab to it, move along it with the **arrow keys**, and press **Enter** or **Space**. Escape closes a pen's colour and width options and takes you back to the dock. Each group is one Tab stop, so Tab moves from one group to the next.
+The dock works from the keyboard too. Every tool has a key (shown on its button) that picks it from anywhere on the board, and **Escape** puts the tool down again (unless you are typing into a note or text box); the other single-letter shortcuts of a diagram tab do nothing here. To reach the dock itself, Tab to it, move along it with the **arrow keys**, and press **Enter** or **Space**. In the colour picker the arrow keys move along a row of colours, and **Enter** picks one. Escape closes a marker's colour and width options and takes you back to the dock. Each group is one Tab stop, so Tab moves from one group to the next.
 
 ## Your shapes
 
@@ -113,6 +113,6 @@ Under **Settings**, choose a **Plain**, **Dots** or **Grid** board. A new whiteb
 
 ## Light and dark
 
-A whiteboard has no theme. In light mode it is an off-white board with black marker ink; in dark mode it takes on the editor's own dark canvas with light ink. **Marker 1**, and anything you draw without choosing a colour, follows whichever you are looking at, so two people in different modes each see their own board. Markers 2 and 3 keep their colour in both.
+A whiteboard has no theme. In light mode it is an off-white board with black marker ink; in dark mode it takes on the editor's own dark canvas with light ink. **Marker 1**, and anything you draw without choosing a colour, follows whichever you are looking at, so two people in different modes each see their own board. The colours of Markers 2 and 3 adapt too: each colour has a darker version for the light board and a lighter one for the dark board, so a blue stroke reads clearly for everyone, on screen and in exports. A custom colour is the same in both.
 
 </ArticleLayout>

@@ -10,6 +10,7 @@
 import type { ArrowFlow, ElementId, ElementLink, TextSize } from './index';
 import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 import type { AnimationSpeed } from './animation';
+import type { PenColourName } from './pen-colours';
 import type { BorderStyle } from './border-style';
 import type { QuickSwatchSlot } from './quick-swatches';
 
@@ -83,6 +84,9 @@ export type ArrowElement = {
   // default arrow slate when unset. There's no fill or text on an
   // arrow so this is the only colour field.
   strokeColor?: string;
+  // A whiteboard marker's named colour (docs/specs/023-whiteboard/whiteboard.md "The colour picker"):
+  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  penColour?: PenColourName;
   // The quick-swatch slot the stroke was picked from (docs/specs/008-canvas/quick-style-panel.md), so a
   // theme change re-derives it rather than resetting it to the theme stroke.
   strokeSwatch?: QuickSwatchSlot;

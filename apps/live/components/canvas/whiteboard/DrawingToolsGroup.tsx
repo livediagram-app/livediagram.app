@@ -10,7 +10,9 @@ import {
   SelectIcon,
   ShapePenIcon,
 } from '@/components/palette/palette-icons';
+import { penColourCss } from '@livediagram/document';
 import { penLabel } from '@/lib/whiteboard-prefs';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { DockButton, DockDivider, DockToolbar } from './DockToolbar';
@@ -29,6 +31,8 @@ export function DrawingToolsGroup({
   pickAndClose: (pick: () => void) => void;
 }) {
   const { tool, prefs } = model;
+  // A named colour in its version for this board (docs/specs/023-whiteboard/whiteboard.md).
+  const { appearance } = useAppearance();
   const expanded = (kind: string) => fly.flyout?.kind === kind;
   return (
     <DockToolbar label="Drawing tools" group="drawing">
@@ -57,7 +61,7 @@ export function DrawingToolsGroup({
             itemKey={pen.id}
             label={penLabel(pen)}
             shortcut={WHITEBOARD_TOOL_KEYS[pen.id]}
-            icon={<PenGlyph colour={pen.colour ?? ink} width={pen.width} />}
+            icon={<PenGlyph colour={penColourCss(pen.colour, appearance, ink)} width={pen.width} />}
             pressed={inHand}
             controls={{ id: `whiteboard-flyout-${pen.id}`, expanded: expanded(pen.id) }}
             onPress={(el) =>

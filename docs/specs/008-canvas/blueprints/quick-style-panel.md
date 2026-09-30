@@ -297,10 +297,15 @@ Transitions are driven by selection and those flags only; the panel owns no stat
   on screen.
 - Under Minimal chrome (`useMinimalChrome()`): the docked header is not rendered (its title and help
   link would both be hidden); the section titles stay. The docked body carries `scrollbar-slim`.
-- Toolbar / Minimal (compact): the same surface with no header, width `w-46` (184 px: seven 24 px
-  targets plus 8 px padding a side), or `w-52` (208 px, eight targets) when the view has pen rows;
-  `p-2`; rows at `density="compact"`. Floating with no Palette on screen is `w-60` (240 px).
-  `panelWidthClass(docked, paletteWidth, penRows)` picks it; the width never follows the content.
+- Toolbar / Minimal (compact): the same surface with no header; rows at `density="compact"`.
+- The width never follows the content, and a swatch row never wraps or clips: `panelFrame(docked,
+paletteWidth, penRows)` derives it in px from the named measures in `quick-style-metrics.ts`
+  (`QUICK_TARGET_PX` 24, `QUICK_BORDER_PX` 1, `QUICK_COMPACT_PADDING_PX` 8,
+  `QUICK_FLOATING_PADDING_PX` 10, `QUICK_FLOATING_GAP_PX` 4, `QUICK_ROW_TARGETS` 7 or 8 with pen
+  rows): compact is `targets · 24 + 2 · 8 + 2 · 1` (186 px, or 210 px with pen rows) with the
+  padding set from the same constant; Floating with no Palette on screen is
+  `8 · 24 + 7 · 4 + 2 · 10 + 2 · 1` (242 px), its body padded by `QUICK_FLOATING_PADDING_PX`;
+  Floating with a Palette takes the Palette's width.
 - Both: `fixed`, `z-[var(--z-panel)]`, `data-quick-style-panel`, `data-layout`; stop `pointerdown` /
   `contextmenu` from reaching the canvas.
 - Row order (D52): Stroke, Background, Text colour, Stroke width, Stroke style, Text alignment, Icon
@@ -419,7 +424,7 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Synced per user; theme switch shows that theme's slots; Clear override restores   | `useSwatchOverrides.test.tsx`                                    |
 | Overridden slot applies the custom colour unbound; highlight by colour            | `quick-style.test.ts`                                            |
 | Right-click / Shift+F10 opens the popover; picking saves; Clear override restores | `QuickStylePanel.test.tsx`, `e2e/quick-style-panel.spec.ts`      |
-| Toolbar panel is 184 px, targets 24 × 24                                          | `e2e/quick-style-panel.spec.ts`                                  |
+| Toolbar panel is 186 px, targets 24 × 24; swatch rows one line, never clipped     | `e2e/quick-style-panel.spec.ts`                                  |
 | Radio groups, names, keyboard                                                     | `QuickStylePanel.test.tsx`                                       |
 
 ## Constants and configuration

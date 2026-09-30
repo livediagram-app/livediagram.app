@@ -311,7 +311,7 @@ export function MenuToggleRow({
 }
 
 // A pipette: the tool that lifts a colour off something already there.
-function PipetteIcon() {
+export function PipetteIcon() {
   return (
     <Glyph size={14} units={24}>
       <path d="m2 22 1-1h3l9-9" />

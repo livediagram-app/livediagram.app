@@ -33,6 +33,7 @@ function setup(
     elements = map(elements);
   });
   const update = vi.fn();
+  const colours = { remember: vi.fn() };
   const { result } = renderHook(() =>
     useQuickStyle({
       activeTab: tab,
@@ -43,11 +44,11 @@ function setup(
       commit,
       memory: memory as never,
       swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() } as never,
-      pen: { held, update },
+      pen: { held, update, colours },
       toolIntent,
     }),
   );
-  return { result, commit, update, memory, elements: () => elements };
+  return { result, commit, update, memory, colours, elements: () => elements };
 }
 
 describe('useQuickStyle pen rows', () => {
@@ -56,11 +57,25 @@ describe('useQuickStyle pen rows', () => {
     expect(result.current.view?.pen?.subject).toEqual({
       kind: 'strokes',
       ids: ['s1'],
-      name: 'Pen stroke',
+      name: 'Marker stroke',
     });
     act(() => result.current.setPenWidth('bold'));
     expect(commit).toHaveBeenCalledTimes(1);
     expect(elements()[0]).toMatchObject({ penWidth: 2.5 });
+  });
+
+  it('offers the tab\u2019s custom colours, and remembers a custom restyle in Your colours', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": the second section.
+    const { result, elements, colours } = setup(['s1']);
+    expect(result.current.view?.pen?.colour.custom).toEqual([]);
+    act(() => result.current.setPenColour('teal'));
+    expect(elements()[0]).toMatchObject({ penColour: 'teal' });
+    expect(colours.remember).toHaveBeenCalledWith('teal');
+    act(() => result.current.setPenColour('#ff6b00'));
+    expect(elements()[0]).toMatchObject({ strokeColor: '#ff6b00' });
+    expect(colours.remember).toHaveBeenLastCalledWith('#ff6b00');
+    act(() => result.current.setPenColour('ink'));
+    expect(colours.remember).toHaveBeenLastCalledWith(null);
   });
 
   it('sets the pen in hand when nothing is selected, in px and with ink as null', () => {
@@ -68,8 +83,10 @@ describe('useQuickStyle pen rows', () => {
     expect(result.current.view?.pen?.subject).toMatchObject({ kind: 'pen', id: 'second' });
     act(() => result.current.setPenWidth('fine'));
     expect(update).toHaveBeenCalledWith('second', { width: 1 });
-    act(() => result.current.setPenColour('#2f9e44'));
-    expect(update).toHaveBeenCalledWith('second', { colour: '#2f9e44' });
+    act(() => result.current.setPenColour('green'));
+    expect(update).toHaveBeenCalledWith('second', { colour: 'green' });
+    act(() => result.current.setPenColour('ink'));
+    expect(update).toHaveBeenCalledWith('second', { colour: null });
     expect(commit).not.toHaveBeenCalled();
   });
 });

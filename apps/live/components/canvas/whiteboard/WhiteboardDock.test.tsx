@@ -143,6 +143,16 @@ describe('WhiteboardDock drawing tools', () => {
     ).toBe('false');
   });
 
+  it('draws a marker holding the ink in the ink, glyph and name alike', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "The colour picker": any marker may take the ink.
+    const pens = DEFAULT_WHITEBOARD_PREFS.pens.map((p) =>
+      p.id === 'second' ? { ...p, colour: null } : p,
+    );
+    renderDock(model('pen', { prefs: { ...DEFAULT_WHITEBOARD_PREFS, pens } }));
+    const button = screen.getByRole('button', { name: 'Marker 2, ink, medium' });
+    expect(button.querySelector('path[fill]')!.getAttribute('fill')).toBe('#1c1917');
+  });
+
   it('picks a pen, and opens its flyout when it is already in hand', () => {
     const { m } = renderDock();
     fireEvent.click(screen.getByRole('button', { name: 'Marker 2, blue, medium' }));
@@ -168,8 +178,10 @@ describe('WhiteboardDock drawing tools', () => {
       model('pen', { prefs: { ...DEFAULT_WHITEBOARD_PREFS, activePenId: 'second' } }),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Marker 2, blue, medium' }));
+    // The colour picker (docs/specs/023-whiteboard/whiteboard.md "The colour picker"): the eight stock colours.
+    expect(screen.getByTestId('stock-colours').querySelectorAll('button')).toHaveLength(8);
     fireEvent.click(screen.getByRole('button', { name: 'Violet' }));
-    expect(m.updatePen).toHaveBeenCalledWith('second', { colour: '#9061f9' });
+    expect(m.updatePen).toHaveBeenCalledWith('second', { colour: 'violet' });
     fireEvent.click(screen.getByRole('button', { name: 'Fine' }));
     expect(m.updatePen).toHaveBeenCalledWith('second', { width: 1 });
   });

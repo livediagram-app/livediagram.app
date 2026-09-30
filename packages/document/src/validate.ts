@@ -25,6 +25,7 @@ import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
 import { QA_MAX_ID, QA_MAX_NAME, QA_MAX_NOTES, QA_MAX_TEXT, QA_MAX_VOTERS } from './qa-board';
 import { COLLAB_ROUND_MAX } from './element-deltas';
 import { QUIZ_MAX_OPTIONS, QUIZ_OPTION_MAX_TEXT } from './quiz';
+import { isPenColourName } from './pen-colours';
 import {
   AGENDA_MAX_ITEMS,
   AGENDA_MAX_TEXT,
@@ -243,6 +244,8 @@ export function isValidElement(el: unknown): el is Element {
   if (el.strokeSwatch !== undefined && !isQuickSwatchSlot(el.strokeSwatch)) return false;
   if (el.fillSwatch !== undefined && !isQuickSwatchSlot(el.fillSwatch)) return false;
   if (el.textSwatch !== undefined && !isQuickSwatchSlot(el.textSwatch)) return false;
+  // A marker's named colour (docs/specs/023-whiteboard/whiteboard.md "The colour picker"): one of the 60.
+  if (el.penColour !== undefined && !isPenColourName(el.penColour)) return false;
 
   if (t === 'arrow') {
     return isValidEndpoint(el.from) && isValidEndpoint(el.to);

@@ -617,6 +617,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "opacity": {
         "type": "number"
       },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "routeBehind": {
         "type": "boolean"
       },
@@ -2727,6 +2730,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "const": "highlighter",
         "type": "string"
       },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "penWidth": {
         "type": "number"
       },
@@ -3608,6 +3614,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PenColourName": {
+    "enum": [
+      "blue",
+      "red",
+      "orange",
+      "green",
+      "teal",
+      "violet",
+      "pink"
+    ],
+    "type": "string"
+  },
   "PickerSource": {
     "enum": [
       "participants",
@@ -4088,6 +4106,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "pageTitle": {
         "type": "string"
+      },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
       },
       "pickerOptions": {
         "items": {

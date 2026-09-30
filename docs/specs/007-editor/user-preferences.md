@@ -263,6 +263,10 @@ type UserPreferences = {
   // shape catalogue are dropped on read (lib/whiteboard-dock-prefs).
   whiteboardPinnedShapes?: string[];
   whiteboardShapePicks?: Record<string, [number, number]>;
+  // The whiteboard markers' Your colours (../023-whiteboard/whiteboard.md "The
+  // colour picker"): up to eight custom #rrggbb, most recently used first; Remove
+  // takes one out. Junk is dropped on read (lib/pen-colour-memory).
+  whiteboardYourColours?: string[];
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.

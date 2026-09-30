@@ -2572,6 +2572,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     pen: {
       held: whiteboardDock.tool === 'pen' ? whiteboardDock.activePen : null,
       update: whiteboardDock.updatePen,
+      colours: whiteboardDock.colourMemory,
     },
     toolIntent: pendingDraw,
   });

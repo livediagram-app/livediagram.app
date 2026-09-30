@@ -223,6 +223,10 @@ export type UserPreferences = {
   // lib/whiteboard-dock-prefs, which parses them. Missing === the default pins, no history.
   whiteboardPinnedShapes?: WhiteboardShapeKey[];
   whiteboardShapePicks?: ShapePicks;
+  // The markers' Your colours (docs/specs/023-whiteboard/whiteboard.md "The colour picker"): up to
+  // eight custom #rrggbb, newest first. Read and written through lib/pen-colour-memory, which parses
+  // them. Missing === none yet.
+  whiteboardYourColours?: string[];
 };
 
 // How many excluded ids we keep. A document id is a 36-char UUID, so 200

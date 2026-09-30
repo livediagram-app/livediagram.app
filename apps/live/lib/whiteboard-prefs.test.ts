@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { WHITEBOARD_BOARD, contrastRatio } from '@livediagram/document';
 import {
   DEFAULT_WHITEBOARD_PREFS,
-  WHITEBOARD_PEN_COLOURS,
+  colourLabel,
   WHITEBOARD_PEN_WIDTHS,
   loadWhiteboardPrefs,
   parseWhiteboardPrefs,
@@ -20,10 +19,10 @@ afterEach(() => {
 
 // docs/specs/023-whiteboard/whiteboard.md "Pens".
 describe('whiteboard pens', () => {
-  it('offers the main pen and second and third pens, blue then red, at medium width', () => {
+  it('offers the main pen and second and third pens, ink then blue then red, at medium width', () => {
     const pens = DEFAULT_WHITEBOARD_PREFS.pens;
     expect(pens.map((p) => p.id)).toEqual(['main', 'second', 'third']);
-    expect(pens[0]!.colour).toBeNull();
+    expect(pens.map((p) => p.colour)).toEqual([null, 'blue', 'red']);
     expect(new Set(pens.map((p) => p.width))).toEqual(new Set([1.5]));
   });
 
@@ -37,25 +36,27 @@ describe('whiteboard pens', () => {
 
   it('lets only the second and third pens change colour; the main pen stays the default', () => {
     expect(DEFAULT_WHITEBOARD_PREFS.pens.map(penAdjustsColour)).toEqual([false, true, true]);
-    expect(WHITEBOARD_PEN_COLOURS.some((c) => c.hex === null)).toBe(false);
   });
 
-  it.each(WHITEBOARD_PEN_COLOURS)('$label reads on both boards (WCAG 1.4.11, 3:1)', ({ hex }) => {
-    expect(contrastRatio(hex, WHITEBOARD_BOARD.light)).toBeGreaterThanOrEqual(3);
-    expect(contrastRatio(hex, WHITEBOARD_BOARD.dark)).toBeGreaterThanOrEqual(3);
+  it('names a colour: the ink, a stock colour by name, a custom one by its hex', () => {
+    expect(colourLabel(null)).toBe('Ink');
+    expect(colourLabel('blue')).toBe('Blue');
+    expect(colourLabel('#ff6b00')).toBe('Custom #ff6b00');
   });
 
   it('names a pen by colour and width for assistive tech', () => {
     const [main, first] = DEFAULT_WHITEBOARD_PREFS.pens;
     expect(penLabel(main!)).toBe('Marker 1, medium');
     expect(penLabel({ ...first!, width: 2.5 })).toBe('Marker 2, blue, bold');
-    expect(penLabel({ ...first!, colour: '#9061f9' })).toBe('Marker 2, violet, medium');
+    expect(penLabel({ ...first!, colour: 'violet' })).toBe('Marker 2, violet, medium');
+    expect(penLabel({ ...first!, colour: null })).toBe('Marker 2, ink, medium');
+    expect(penLabel({ ...first!, colour: '#ff6b00' })).toBe('Marker 2, custom #ff6b00, medium');
   });
 
   it('reports a pen by its place, never its colour', () => {
     const [main, first, second] = DEFAULT_WHITEBOARD_PREFS.pens;
     expect(penTelemetryType(main!)).toBe('Main');
-    expect(penTelemetryType({ ...first!, colour: '#9061f9' })).toBe('Second');
+    expect(penTelemetryType({ ...first!, colour: 'violet' })).toBe('Second');
     expect(penTelemetryType(second!)).toBe('Third');
   });
 });
@@ -70,24 +71,54 @@ describe('parseWhiteboardPrefs', () => {
   it('reads widths by preset name, never by px, so retuning the px keeps a choice', () => {
     const parsed = parseWhiteboardPrefs({
       pens: [
-        { id: 'second', colour: '#9061f9', width: 'bold' },
+        { id: 'second', colour: 'violet', width: 'bold' },
         // A px width from before the presets were named: back to Medium.
-        { id: 'third', colour: '#e5484d', width: 4 },
+        { id: 'third', colour: 'red', width: 4 },
       ],
     });
-    expect(parsed.pens[1]).toEqual({ id: 'second', colour: '#9061f9', width: 2.5 });
+    expect(parsed.pens[1]).toEqual({ id: 'second', colour: 'violet', width: 2.5 });
     expect(parsed.pens[2]).toEqual(DEFAULT_WHITEBOARD_PREFS.pens[2]);
   });
 
-  it('never gives the main pen a colour, nor the second or third pen the ink', () => {
+  it('keeps the main pen in the ink, and lets the second and third pens take the ink too', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "The colour picker": Ink is a stock colour for any marker.
     const parsed = parseWhiteboardPrefs({
       pens: [
         { id: 'main', colour: '#e5484d', width: 'fine' },
-        { id: 'second', colour: null, width: 'medium' },
+        { id: 'second', colour: null, width: 'bold' },
+        { id: 'third', width: 'medium' },
       ],
     });
     expect(parsed.pens[0]).toEqual({ id: 'main', colour: null, width: 1 });
-    expect(parsed.pens[1]!.colour).toBe(DEFAULT_WHITEBOARD_PREFS.pens[1]!.colour);
+    expect(parsed.pens[1]).toEqual({ id: 'second', colour: null, width: 2.5 });
+    // Missing (not the ink): the pen's own default.
+    expect(parsed.pens[2]!.colour).toBe('red');
+  });
+
+  it('keeps a stock or custom colour, and reads an old fixed colour as its name', () => {
+    const parsed = parseWhiteboardPrefs({
+      pens: [
+        { id: 'second', colour: '#9061F9', width: 'medium' },
+        { id: 'third', colour: '#FF6B00', width: 'medium' },
+      ],
+    });
+    expect(parsed.pens[1]!.colour).toBe('violet');
+    expect(parsed.pens[2]!.colour).toBe('#ff6b00');
+    for (const [hex, name] of [
+      ['#1d7afc', 'blue'],
+      ['#e5484d', 'red'],
+      ['#d9480f', 'orange'],
+      ['#2f9e44', 'green'],
+      ['#0c8599', 'teal'],
+      ['#e64980', 'pink'],
+    ]) {
+      expect(parseWhiteboardPrefs({ pens: [{ id: 'second', colour: hex }] }).pens[1]!.colour).toBe(
+        name,
+      );
+    }
+    expect(
+      parseWhiteboardPrefs({ pens: [{ id: 'second', colour: 'blue-3' }] }).pens[1]!.colour,
+    ).toBe('blue');
   });
 
   it('drops a pen the dock no longer has and repairs an active pen that is gone', () => {

@@ -5,7 +5,7 @@
 // for the board's appearance. Null for anything else, which keeps its draw-intent cursor.
 
 import { useMemo } from 'react';
-import { WHITEBOARD_INK } from '@livediagram/document';
+import { WHITEBOARD_INK, penColourCss } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { penCursor, type PenCursorVariant } from '@/lib/whiteboard-pen-cursor';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -19,7 +19,8 @@ export function useWhiteboardPenCursor(
   const { appearance } = useAppearance();
   const pen =
     pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
-  const colour = pen ? (pen.colour ?? WHITEBOARD_INK[appearance]) : null;
+  // A named colour in its version for this board (docs/specs/023-whiteboard/whiteboard.md).
+  const colour = pen ? penColourCss(pen.colour, appearance, WHITEBOARD_INK[appearance]) : null;
   const strokePx = pen ? pen.width * zoom : 0;
   return useMemo(
     () => (colour && variant ? penCursor(variant, colour, appearance, strokePx) : null),

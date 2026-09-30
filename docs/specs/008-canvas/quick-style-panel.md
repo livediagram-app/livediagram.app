@@ -49,13 +49,14 @@ Each layout keeps its dress. In the Floating layout the panel wears the Palette'
 same surface, border, radius and shadow, the Palette's width (when a Palette is on screen), and a
 header with its title ("Quick style") and a help link. It is not draggable and has no collapse
 button of its own; it leaves when the selection does. In the Toolbar and Minimal layouts it is
-**compact** (no header, 184 px wide): the colour swatches draw a little smaller (20 px) but each
+**compact** (no header, 186 px wide): the colour swatches draw a little smaller (20 px) but each
 still sits in a **24 × 24 px target** (WCAG 2.2, 2.5.8 target size), seven to a row with the
 targets touching. **The width is fixed, never the content's**, so the panel never resizes as its
 rows change: a row of swatches never wraps and is never clipped (the width counts the swatches, their gaps, the padding and the border exactly), and a whiteboard's pen rows (up to eight colours: the ink
-and seven) use a compact width of eight targets (208 px) for every pen, even the main pen with its
-one. In the Floating layout with no Palette on screen (a whiteboard) it is 240 px, room for eight
-spread swatches. The panel-opacity preference
+and seven) use a compact width of eight targets (210 px) for every pen, even the main pen with its
+one. In the Floating layout with no Palette on screen (a whiteboard) it is 242 px, room for eight
+swatches 4 px apart. (Each width is its targets, their gaps, 8 px of padding a side, or 10 px in
+Floating, and a 1 px border a side.) The panel-opacity preference
 ([User preferences](../007-editor/user-preferences.md)) fades it in every layout.
 
 ### Collisions

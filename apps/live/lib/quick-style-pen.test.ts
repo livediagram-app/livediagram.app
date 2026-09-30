@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createFreehand, createShape, type Element } from '@livediagram/document';
+import { createFreehand, createShape, penColourHex, type Element } from '@livediagram/document';
 import { DEFAULT_WHITEBOARD_PREFS } from './whiteboard-prefs';
 import {
   applyPenStyle,
@@ -7,11 +7,16 @@ import {
   INK_CHOICE,
   isPenStroke,
   strokesPenStyle,
+  tabCustomColours,
+  type PenPalette,
 } from './quick-style-pen';
 
 // docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": pen strokes and the pen in
-// hand take their colour and width from the panel, in the pens' own palette and widths.
+// hand take their colour and width from the panel: quick choices only, the eight stock colours (Ink
+// first), adaptive, then the tab's custom colours when there are any; the pens' named widths.
 const INK = '#1c1917';
+const palette: PenPalette = { board: 'light', ink: INK, custom: [] };
+const EIGHT = ['Ink', 'Blue', 'Red', 'Orange', 'Green', 'Teal', 'Violet', 'Pink'];
 const stroke = (extra: object = {}) =>
   ({
     ...createFreehand(
@@ -37,63 +42,106 @@ describe('isPenStroke', () => {
 });
 
 describe('strokesPenStyle', () => {
-  it('names the strokes, offers the ink and every pen colour, and reads the shared values', () => {
+  it('names the strokes, offers the eight stock colours, and reads the shared values', () => {
     const style = strokesPenStyle(
-      [stroke({ strokeColor: '#e5484d' }), stroke({ strokeColor: '#e5484d' })],
-      INK,
+      [stroke({ penColour: 'red' }), stroke({ penColour: 'red' })],
+      palette,
     )!;
-    expect(style.colour!.options.map((o) => o.name)).toEqual([
-      'Ink',
-      'Blue',
-      'Red',
-      'Orange',
-      'Green',
-      'Teal',
-      'Violet',
-      'Pink',
-    ]);
-    expect(style.colour!.options[0]!.swatch).toBe(INK);
-    expect(style.subject).toMatchObject({ kind: 'strokes', name: '2 pen strokes' });
-    expect(style.colour!.value).toBe('#e5484d');
+    expect(style.colour.options.map((o) => o.name)).toEqual(EIGHT);
+    expect(style.colour.options[0]!.swatch).toBe(INK);
+    expect(style.colour.options[2]!.swatch).toBe(penColourHex('red', 'light'));
+    expect(style.colour.custom).toEqual([]);
+    expect(style.subject).toMatchObject({ kind: 'strokes', name: '2 marker strokes' });
+    expect(strokesPenStyle([stroke()], palette)!.subject.name).toBe('Marker stroke');
+    expect(style.colour.value).toBe('red');
     expect(style.width.value).toBe('medium');
   });
 
-  it('reads an unpainted stroke as the ink, and mixed values as none', () => {
-    expect(strokesPenStyle([stroke()], INK)!.colour!.value).toBe(INK_CHOICE);
+  it('draws every swatch in its version for the board', () => {
+    const dark = strokesPenStyle([stroke()], { ...palette, board: 'dark' })!;
+    expect(dark.colour.options[1]!.swatch).toBe(penColourHex('blue', 'dark'));
+  });
+
+  it('offers the tab\u2019s custom colours as a second section', () => {
+    const style = strokesPenStyle([stroke()], { ...palette, custom: ['#ff6b00', '#00a39b'] })!;
+    expect(style.colour.custom.map((o) => [o.value, o.name, o.swatch])).toEqual([
+      ['#ff6b00', 'Custom #ff6b00', '#ff6b00'],
+      ['#00a39b', 'Custom #00a39b', '#00a39b'],
+    ]);
+  });
+
+  it('reads an unpainted stroke as the ink, a custom one as its hex, and mixed values as none', () => {
+    expect(strokesPenStyle([stroke()], palette)!.colour.value).toBe(INK_CHOICE);
+    expect(strokesPenStyle([stroke({ strokeColor: '#FF6B00' })], palette)!.colour.value).toBe(
+      '#ff6b00',
+    );
     const mixed = strokesPenStyle(
-      [stroke(), stroke({ strokeColor: '#1d7afc', penWidth: 2.5 })],
-      INK,
+      [stroke(), stroke({ penColour: 'blue', penWidth: 2.5 })],
+      palette,
     )!;
-    expect(mixed.colour!.value).toBeNull();
+    expect(mixed.colour.value).toBeNull();
     expect(mixed.width.value).toBeNull();
   });
 
   it('is absent without a pen stroke', () => {
-    expect(strokesPenStyle([createShape('square', 0, 0)], INK)).toBeUndefined();
+    expect(strokesPenStyle([createShape('square', 0, 0)], palette)).toBeUndefined();
+  });
+});
+
+describe('tabCustomColours', () => {
+  it('lists the tab\u2019s custom stroke and shape colours, most recently drawn first, up to eight', () => {
+    const shape = (strokeColor?: string) => ({ ...createShape('circle', 0, 0), strokeColor });
+    const els = [
+      stroke({ strokeColor: '#111111' }),
+      shape('#222222'),
+      stroke({ penColour: 'blue' }),
+      stroke(),
+      stroke({ strokeColor: '#111111' }),
+      stroke({ strokeColor: '#FF6B00' }),
+      { ...stroke({ strokeColor: '#333333' }), pen: 'highlighter' } as Element,
+    ];
+    expect(tabCustomColours(els)).toEqual(['#ff6b00', '#111111', '#222222']);
+    const many = Array.from({ length: 12 }, (_, i) =>
+      stroke({ strokeColor: `#0000${String(i).padStart(2, '0')}` }),
+    );
+    expect(tabCustomColours(many)).toHaveLength(8);
+    expect(tabCustomColours(many)[0]).toBe('#000011');
+    expect(tabCustomColours([stroke()])).toEqual([]);
   });
 });
 
 describe('heldPenStyle', () => {
   it('gives the main pen its one colour, the ink, so every pen has the same rows', () => {
-    const style = heldPenStyle(main!, INK);
-    expect(style.colour!.options).toEqual([{ value: INK_CHOICE, name: 'Ink', swatch: INK }]);
-    expect(style.colour!.value).toBe(INK_CHOICE);
+    const style = heldPenStyle(main!, { ...palette, custom: ['#ff6b00'] });
+    expect(style.colour).toEqual({
+      value: INK_CHOICE,
+      options: [{ value: INK_CHOICE, name: 'Ink', swatch: INK }],
+      custom: [],
+    });
     expect(style.width.value).toBe('medium');
     expect(style.subject).toEqual({ kind: 'pen', id: 'main', name: 'Marker 1' });
   });
 
-  it('gives another pen its colours, without the ink', () => {
-    const style = heldPenStyle(second!, INK);
-    expect(style.colour!.options.map((o) => o.name)).not.toContain('Ink');
-    expect(style.colour!.value).toBe('#1d7afc');
+  it('gives another pen the eight stock colours, the ink among them, and the tab\u2019s customs', () => {
+    const style = heldPenStyle(second!, { ...palette, custom: ['#ff6b00'] });
+    expect(style.colour.options.map((o) => o.name)).toEqual(EIGHT);
+    expect(style.colour.custom.map((o) => o.value)).toEqual(['#ff6b00']);
+    expect(style.colour.value).toBe('blue');
+    // A marker holding the ink shows the ink as its choice.
+    expect(heldPenStyle({ ...second!, colour: null }, palette).colour.value).toBe(INK_CHOICE);
   });
 });
 
 describe('applyPenStyle', () => {
-  it('paints a stroke, and puts the ink back by clearing its colour', () => {
-    const red = applyPenStyle(stroke(), { colour: '#e5484d' });
-    expect(red).toMatchObject({ strokeColor: '#e5484d' });
-    expect('strokeColor' in applyPenStyle(red, { colour: INK_CHOICE })).toBe(false);
+  it('keeps a stock colour by name, a custom one as its hex, and clears both for the ink', () => {
+    const named = applyPenStyle(stroke({ strokeColor: '#ff6b00' }), { colour: 'red' });
+    expect(named).toMatchObject({ penColour: 'red' });
+    expect('strokeColor' in named).toBe(false);
+    const custom = applyPenStyle(named, { colour: '#00a39b' });
+    expect(custom).toMatchObject({ strokeColor: '#00a39b' });
+    expect('penColour' in custom).toBe(false);
+    const ink = applyPenStyle(named, { colour: INK_CHOICE });
+    expect('strokeColor' in ink || 'penColour' in ink).toBe(false);
   });
 
   it('sets the width in px from its name', () => {

@@ -108,7 +108,7 @@ describe('useWhiteboard', () => {
     const { deps, hook } = setup(board());
     act(() => hook.result.current.pickPen('third'));
     expect(deps.beginDraw).toHaveBeenLastCalledWith(
-      expect.objectContaining({ variant: 'whiteboard', colour: '#e5484d' }),
+      expect.objectContaining({ variant: 'whiteboard', colour: 'red' }),
     );
     expect(track).toHaveBeenCalledWith('Whiteboard', 'Selected', 'Third');
     expect(hook.result.current.prefs.activePenId).toBe('third');
@@ -186,6 +186,17 @@ describe('pen changes', () => {
     act(() => hook.result.current.updatePen('main', { width: 1 }));
     expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'PenColour');
     expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'PenWidth');
+  });
+
+  it('remembers a custom colour in Your colours, synced, and nothing for a stock colour', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "The colour picker".
+    const { hook } = setup(board());
+    act(() => hook.result.current.updatePen('second', { colour: 'teal' }));
+    act(() => hook.result.current.updatePen('third', { colour: '#FF6B00' }));
+    act(() => hook.result.current.updatePen('third', { colour: null }));
+    expect(hook.result.current.colourMemory.yours).toEqual(['#ff6b00']);
+    expect(readUserPreferences()).toMatchObject({ whiteboardYourColours: ['#ff6b00'] });
+    expect(hook.result.current.prefs.pens[2]!.colour).toBeNull();
   });
 });
 

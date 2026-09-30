@@ -34,6 +34,7 @@ const STYLE_FIELDS = [
   'penWidth',
   'pen',
   'streamline',
+  'penColour',
   'layerId',
   'opacity',
   'animation',

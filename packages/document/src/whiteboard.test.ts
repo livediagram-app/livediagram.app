@@ -11,10 +11,12 @@ import {
   WHITEBOARD_PATTERN,
   inkWhiteboardElement,
   isWhiteboardTab,
+  projectWhiteboardElement,
   nearestBorderStroke,
   whiteboardBackgroundOf,
 } from './whiteboard';
 import { createPath } from './path-element';
+import { penColourHex } from './pen-colours';
 
 const INK = '#123456';
 
@@ -152,6 +154,41 @@ describe('inkWhiteboardElement', () => {
   it('never touches a sticky note', () => {
     const sticky = { id: 'n', type: 'sticky', x: 0, y: 0, width: 1, height: 1 } as StickyElement;
     expect(inkWhiteboardElement(sticky, INK)).toBe(sticky);
+  });
+});
+
+// docs/specs/023-whiteboard/whiteboard.md "The colour picker": a named colour is drawn in the version
+// tuned for the viewer's board; an explicit colour wins; anything unpainted takes the ink.
+describe('projectWhiteboardElement', () => {
+  it('draws a marker stroke, a recognised shape and line in the named colour for the board', () => {
+    const line = {
+      id: 'a',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 1, y: 1 },
+      penColour: 'teal',
+    } as ArrowElement;
+    for (const board of ['light', 'dark'] as const) {
+      const hex = penColourHex('teal', board);
+      const stroke = projectWhiteboardElement(freehand({ penColour: 'teal' }), board);
+      expect(stroke.strokeColor).toBe(hex);
+      expect(stroke.fillColor).toBe('transparent');
+      expect(
+        projectWhiteboardElement(shape({ shape: 'circle', penColour: 'teal' }), board).strokeColor,
+      ).toBe(hex);
+      expect(projectWhiteboardElement(line, board).strokeColor).toBe(hex);
+    }
+  });
+
+  it('keeps an explicit colour, and inks an unpainted stroke in the board ink', () => {
+    const custom = freehand({ penColour: 'teal', strokeColor: '#ff6b00' });
+    expect(projectWhiteboardElement(custom, 'dark').strokeColor).toBe('#ff6b00');
+    expect(projectWhiteboardElement(freehand(), 'dark').strokeColor).toBe(WHITEBOARD_INK.dark);
+  });
+
+  it('returns the element itself when nothing changes', () => {
+    const done = freehand({ strokeColor: '#ff6b00', fillColor: 'transparent' });
+    expect(projectWhiteboardElement(done, 'light')).toBe(done);
   });
 });
 

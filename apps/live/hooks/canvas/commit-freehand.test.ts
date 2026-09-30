@@ -65,10 +65,18 @@ describe('a whiteboard pen stroke', () => {
     expect(stroke.strokeColor).toBeUndefined();
   });
 
-  it('records a coloured pen\u2019s colour as drawn', () => {
-    const s = setup(pen({ colour: '#e5484d', width: 8 }));
+  it('records a named colour by name, so it adapts to each viewer\u2019s board', () => {
+    const s = setup(pen({ colour: 'red', width: 8 }));
     s.commit(scribble, false);
-    expect(s.elements[0]).toMatchObject({ strokeColor: '#e5484d', penWidth: 8 });
+    expect(s.elements[0]).toMatchObject({ penColour: 'red', penWidth: 8 });
+    expect((s.elements[0] as FreehandElement).strokeColor).toBeUndefined();
+  });
+
+  it('records a custom colour as its hex, the same on both boards', () => {
+    const s = setup(pen({ colour: '#ff6b00', width: 8 }));
+    s.commit(scribble, false);
+    expect(s.elements[0]).toMatchObject({ strokeColor: '#ff6b00', penWidth: 8 });
+    expect((s.elements[0] as FreehandElement).penColour).toBeUndefined();
   });
 
   it('stays open even when it ends where it began', () => {
@@ -92,12 +100,12 @@ describe('a whiteboard pen stroke', () => {
   });
 
   it('turns a recognised stroke into a clean unfilled shape in the pen\u2019s colour and weight', () => {
-    const s = setup(pen({ colour: '#1d7afc', width: 8, recognise: true }));
+    const s = setup(pen({ colour: 'blue', width: 8, recognise: true }));
     s.commit(loop, false);
     const shape = s.elements[0] as ShapeElement;
     expect(shape.type).toBe('shape');
     expect(shape).toMatchObject({
-      strokeColor: '#1d7afc',
+      penColour: 'blue',
       strokeWidth: 'extra-thick',
       fillColor: 'transparent',
     });

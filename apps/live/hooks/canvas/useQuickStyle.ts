@@ -8,6 +8,7 @@ import { useMemo, useReducer } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { toolCaption, toolPhantom } from '@/lib/quick-style-tool';
 import type {
+  PenColour,
   Element,
   QuickSwatchRole,
   QuickSwatchSlot,
@@ -24,10 +25,12 @@ import {
   INK_CHOICE,
   penWidthPx,
   strokesPenStyle,
+  tabCustomColours,
   type PenColourChoice,
   type PenWidthId,
 } from '@/lib/quick-style-pen';
 import type { WhiteboardPen, WhiteboardPenId } from '@/lib/whiteboard-prefs';
+import type { PenColourMemoryApi } from './usePenColourMemory';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import {
   applyQuickFill,
@@ -80,7 +83,9 @@ export function useQuickStyle(deps: {
   // The whiteboard pen in hand (null when none is), and how its settings change.
   pen?: {
     held: WhiteboardPen | null;
-    update: (id: WhiteboardPenId, patch: { colour?: string | null; width?: number }) => void;
+    update: (id: WhiteboardPenId, patch: { colour?: PenColour | null; width?: number }) => void;
+    // Your colours: a custom colour used from the panel moves to their front.
+    colours?: Pick<PenColourMemoryApi, 'remember'>;
   };
   // The draw intent in hand: on a whiteboard, a shape, line, arrow or text tool
   // with nothing selected makes the panel style what it draws next.
@@ -100,6 +105,15 @@ export function useQuickStyle(deps: {
   const { appearance } = useAppearance();
   const ink = WHITEBOARD_INK[appearance];
   const held = deps.pen?.held ?? null;
+  // The custom colours used on this tab, the Marker colour row's second section.
+  const palette = useMemo(
+    () => ({
+      board: appearance,
+      ink,
+      custom: whiteboard ? tabCustomColours(activeTab.elements) : [],
+    }),
+    [appearance, ink, whiteboard, activeTab.elements],
+  );
   // A tool's choices land in memory, not the document: a version to re-read it.
   const [toolVersion, bumpTool] = useReducer((n: number) => n + 1, 0);
   const intent = deps.toolIntent ?? null;
@@ -122,10 +136,10 @@ export function useQuickStyle(deps: {
     const board = onWhiteboard(plain, selected, ink);
     // Selected strokes first; with nothing selected, the pen in hand.
     const pen =
-      strokesPenStyle(selected, ink) ??
-      (selected.length === 0 && held ? heldPenStyle(held, ink) : undefined);
+      strokesPenStyle(selected, palette) ??
+      (selected.length === 0 && held ? heldPenStyle(held, palette) : undefined);
     return pen ? { ...(board ?? { targetIds: [], sections: {} }), pen } : board;
-  }, [editsBlocked, selected, theme, overrides, whiteboard, ink, held, phantom, intent]);
+  }, [editsBlocked, selected, theme, overrides, whiteboard, ink, held, phantom, intent, palette]);
 
   // Map the view's targets through `apply`, as one commit, then remember it.
   const run = (apply: (el: Element) => Element, telemetryType: string) => {
@@ -169,6 +183,10 @@ export function useQuickStyle(deps: {
     const ids = new Set(subject.ids);
     commit((els) => els.map((el) => (ids.has(el.id) ? applyPenStyle(el, patch) : el)));
     track('Element', 'Changed', telemetryType);
+    // A custom colour used here moves to the front of Your colours.
+    if (patch.colour !== undefined) {
+      deps.pen?.colours?.remember(patch.colour === INK_CHOICE ? null : patch.colour);
+    }
   };
 
   return {

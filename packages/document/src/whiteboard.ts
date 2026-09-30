@@ -3,6 +3,7 @@
 // functions; the editor owns the dock and the device-local pens.
 import { BORDER_STROKE_PX, type BorderStroke } from './border-style';
 import { DARK_CANVAS_BACKGROUND_COLOR, DARK_CANVAS_PATTERN_COLOR } from './canvas-colors';
+import { penColourHex, type PenColourName } from './pen-colours';
 import type { Appearance } from './themes';
 import type { BackgroundPattern, Element } from './index';
 
@@ -94,6 +95,19 @@ export function inkWhiteboardElement<T extends Element>(el: T, ink: string): T {
     default:
       return el;
   }
+}
+
+// What an element shows on a whiteboard for the viewer's board: a marker's named colour in the
+// version tuned for that board (docs/specs/023-whiteboard/whiteboard.md "The colour picker"), when no
+// explicit stroke colour overrides it, then the board's ink for anything unpainted. Display-only,
+// and `el` itself when nothing changes.
+export function projectWhiteboardElement<T extends Element>(el: T, board: Appearance): T {
+  const named = (el as { penColour?: PenColourName }).penColour;
+  const coloured =
+    named !== undefined && (el as { strokeColor?: string }).strokeColor === undefined
+      ? { ...el, strokeColor: penColourHex(named, board) }
+      : el;
+  return inkWhiteboardElement(coloured, WHITEBOARD_INK[board]);
 }
 
 const BORDER_STROKES = Object.entries(BORDER_STROKE_PX) as [BorderStroke, number][];

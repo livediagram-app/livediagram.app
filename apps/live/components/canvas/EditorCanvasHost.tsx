@@ -403,7 +403,7 @@ export function EditorCanvasHost() {
   const [projectInk] = useState(createInkProjector);
   const shownElements = presentingElements ?? activeTab.elements;
   const canvasElements = isWhiteboardTab(activeTab)
-    ? projectInk(shownElements, WHITEBOARD_INK[appearance])
+    ? projectInk(shownElements, appearance)
     : shownElements;
   const activeTabChangeLog = useMemo(
     () => changeLog.filter((entry) => entry.tabId === activeId),

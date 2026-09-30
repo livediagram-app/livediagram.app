@@ -1,6 +1,7 @@
 import {
   createFreehand,
   createShape,
+  isPenColourName,
   nearestBorderStroke,
   recogniseShape,
   type RecognisedShape,
@@ -8,6 +9,7 @@ import {
   type ArrowElement,
   type Element,
   type FreehandElement,
+  type PenColour,
   type PenStroke,
   type Endpoint,
   type ShapeElement,
@@ -245,15 +247,23 @@ export type PenInk = Pick<FreehandElement, 'pressures' | 'streamline'> & {
 // recognition"): with recognition on, a stroke that reads as a shape is the
 // clean shape, unfilled, in the pen's colour and nearest weight; otherwise an
 // OPEN stroke (a written "o" is ink, not a filled shape) carrying the pen's
-// width. The main pen records no colour, so its marks follow the board.
+// width. The main pen records no colour, so its marks follow the board; a named colour is recorded
+// by name (drawn in its version for each viewer's board), a custom one as its hex.
 // Style memory is skipped on purpose: a board's marks wear the pen, not the
 // remembered diagram style.
+function penColourFields(
+  colour: PenColour | null,
+): Pick<FreehandElement, 'penColour' | 'strokeColor'> {
+  if (colour === null) return {};
+  return isPenColourName(colour) ? { penColour: colour } : { strokeColor: colour };
+}
+
 function whiteboardStroke(
   points: { x: number; y: number }[],
   pen: WhiteboardPenIntent,
   ink: PenInk | undefined,
 ): Element {
-  const colour = pen.colour ? { strokeColor: pen.colour } : {};
+  const colour = penColourFields(pen.colour);
   const stroke: PenStroke = {
     points,
     pressures: ink?.pressures,

@@ -1,6 +1,8 @@
 'use client';
 
+import { penColourCss } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { LiveStroke } from '@/lib/live-stroke';
 import { useRecognitionPreview } from '@/hooks/canvas/useRecognitionPreview';
 import { LiveInk } from '@/components/canvas/whiteboard/LiveInk';
@@ -23,7 +25,9 @@ type WhiteboardPenPreviewProps = {
 // pen or touch stroke held still the chip that flips it. One layer rasterises the preview and what
 // lands, so release changes no pixel.
 export function WhiteboardPenPreview({ stroke, pen, ink, zoom }: WhiteboardPenPreviewProps) {
-  const colour = pen.colour ?? ink;
+  // A named colour in its version for this board, as the stroke that lands is drawn.
+  const { appearance } = useAppearance();
+  const colour = penColourCss(pen.colour, appearance, ink);
   const { shape: recognised, chip } = useRecognitionPreview(stroke, pen.recognise, zoom, pen.width);
   return (
     <>

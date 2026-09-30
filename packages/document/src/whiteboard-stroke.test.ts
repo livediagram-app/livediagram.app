@@ -109,6 +109,18 @@ describe('eraseStrokePart', () => {
     }
   });
 
+  it('keeps the marker\u2019s named colour on every piece', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "The colour picker": the stroke adapts after a split too.
+    const pieces = eraseStrokePart(
+      line({ penColour: 'violet' }),
+      { x: 100, y: 100 },
+      { x: 100, y: 100 },
+      10,
+      mint,
+    )!;
+    expect(pieces.map((p) => p.penColour)).toEqual(['violet', 'violet']);
+  });
+
   it('leaves a stroke without pressures without them', () => {
     const pieces = eraseStrokePart(line(), { x: 100, y: 100 }, { x: 100, y: 100 }, 10, mint)!;
     for (const piece of pieces) expect(piece.pressures).toBeUndefined();

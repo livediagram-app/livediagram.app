@@ -2,6 +2,13 @@
 // second and third pens, which one is in hand, shape recognition and the eraser mode. The user's,
 // not the board's: stored in this browser, never sent with the document.
 
+import {
+  isCustomPenColour,
+  isPenColourName,
+  penColourLabel,
+  type PenColour,
+  type PenColourName,
+} from '@livediagram/document';
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 import {
   DEFAULT_PEN_CURSOR,
@@ -11,9 +18,11 @@ import {
 
 // Named by their place in the dock, never by a colour: the second and third can be any colour.
 export type WhiteboardPenId = 'main' | 'second' | 'third';
-// `colour` null is the board's own ink, which follows the appearance; only the
-// main pen has it. `width` is in px, derived from a named preset.
-export type WhiteboardPen = { id: WhiteboardPenId; colour: string | null; width: number };
+// `colour` (docs/specs/023-whiteboard/whiteboard.md "The colour picker"): null is the board's own
+// ink, the first stock colour, which any pen may take and the main pen always has; a stock name
+// ("blue") is drawn in its version for the board; a custom `#rrggbb` is the same on both. `width`
+// is in px, derived from a named preset.
+export type WhiteboardPen = { id: WhiteboardPenId; colour: PenColour | null; width: number };
 export type WhiteboardEraserMode = 'stroke' | 'partial';
 export type WhiteboardPrefs = {
   pens: WhiteboardPen[];
@@ -33,26 +42,24 @@ export const WHITEBOARD_PEN_WIDTHS: readonly { id: string; label: string; px: nu
 ];
 const MEDIUM_PX = 1.5;
 
-// The named colours an adjustable pen can take, each 3:1 or better on both
-// boards. The ink is not among them: it is the main pen's, and only its.
-export const WHITEBOARD_PEN_COLOURS: readonly { hex: string; label: string }[] = [
-  { hex: '#1d7afc', label: 'Blue' },
-  { hex: '#e5484d', label: 'Red' },
-  { hex: '#d9480f', label: 'Orange' },
-  { hex: '#2f9e44', label: 'Green' },
-  { hex: '#0c8599', label: 'Teal' },
-  { hex: '#9061f9', label: 'Violet' },
-  { hex: '#e64980', label: 'Pink' },
-];
-
-const colourHex = (label: string) => WHITEBOARD_PEN_COLOURS.find((c) => c.label === label)!.hex;
+// The fixed colours the second and third pens had before stock colours were named: a stored one is
+// read as the name it went by.
+const LEGACY_PEN_COLOURS: Readonly<Record<string, PenColourName>> = {
+  '#1d7afc': 'blue',
+  '#e5484d': 'red',
+  '#d9480f': 'orange',
+  '#2f9e44': 'green',
+  '#0c8599': 'teal',
+  '#9061f9': 'violet',
+  '#e64980': 'pink',
+};
 
 // Left to right in the dock.
 export const DEFAULT_WHITEBOARD_PREFS: WhiteboardPrefs = {
   pens: [
     { id: 'main', colour: null, width: MEDIUM_PX },
-    { id: 'second', colour: colourHex('Blue'), width: MEDIUM_PX },
-    { id: 'third', colour: colourHex('Red'), width: MEDIUM_PX },
+    { id: 'second', colour: 'blue', width: MEDIUM_PX },
+    { id: 'third', colour: 'red', width: MEDIUM_PX },
   ],
   activePenId: 'main',
   recognise: false,
@@ -74,14 +81,15 @@ const PEN_TELEMETRY: Record<WhiteboardPenId, string> = {
   third: 'Third',
 };
 
-/** The main pen always stays the board's ink; the second and third take any named colour. */
+/** The main pen always stays the board's ink; the second and third take any colour, the ink too. */
 export function penAdjustsColour(pen: WhiteboardPen): boolean {
   return pen.id !== 'main';
 }
 
-export function colourLabel(hex: string | null): string {
-  if (hex === null) return 'Ink';
-  return WHITEBOARD_PEN_COLOURS.find((c) => c.hex === hex)?.label ?? 'Custom';
+/** "Ink", "Blue" or "Custom #ff6b00": a colour's tooltip and accessible name. */
+export function colourLabel(colour: PenColour | null): string {
+  if (colour === null) return 'Ink';
+  return isPenColourName(colour) ? penColourLabel(colour) : `Custom ${colour}`;
 }
 
 export function widthLabel(px: number): string {
@@ -102,11 +110,22 @@ export function penTelemetryType(pen: WhiteboardPen): string {
 
 // --- Parsing ----------------------------------------------------------------
 
-const isNamedColour = (v: unknown): v is string => WHITEBOARD_PEN_COLOURS.some((c) => c.hex === v);
+// A stored colour: the ink (null), a name, a custom hex, or one of the old fixed colours read as its
+// name; undefined for anything else.
+function colourOf(v: unknown): PenColour | null | undefined {
+  if (v === null) return null;
+  if (isPenColourName(v)) return v;
+  if (!isCustomPenColour(v)) return undefined;
+  const hex = v.toLowerCase();
+  return LEGACY_PEN_COLOURS[hex] ?? hex;
+}
 // Widths are stored by preset NAME, so retuning a preset's px never
 // reinterprets somebody's choice; anything else (a bare px) falls back.
 const widthPxOf = (v: unknown): number | undefined =>
   WHITEBOARD_PEN_WIDTHS.find((w) => w.id === v)?.px;
+
+const orPreset = (colour: PenColour | null | undefined, preset: PenColour | null) =>
+  colour === undefined ? preset : colour;
 
 function parsePens(raw: unknown): WhiteboardPen[] {
   const stored = Array.isArray(raw) ? raw : [];
@@ -118,8 +137,7 @@ function parsePens(raw: unknown): WhiteboardPen[] {
     if (!found) return preset;
     return {
       id: preset.id,
-      colour:
-        penAdjustsColour(preset) && isNamedColour(found.colour) ? found.colour : preset.colour,
+      colour: penAdjustsColour(preset) ? orPreset(colourOf(found.colour), preset.colour) : null,
       width: widthPxOf(found.width) ?? preset.width,
     };
   });

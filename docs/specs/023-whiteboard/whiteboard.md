@@ -340,11 +340,11 @@ The shapes group learns and keeps the shapes a user reaches for.
   panels, and never travel with the document.
 - A stroke records the pen's colour and width on its `freehand` element when
   drawn, with its raw samples, a pressure per sample when a pen drew it, and
-  its streamline. **Marker 1** records no explicit colour, so its strokes follow the
-  appearance; every other pen records its colour: a grid colour by name and
-  shade, so it adapts to each viewer's board, and a custom colour as its hex,
-  which stays as drawn. A recognised shape or line keeps its pen's colour the
-  same way.
+  its streamline. A stroke in the **Ink** (Marker 1's, or any marker's) records
+  no explicit colour, so it follows the appearance; a stock colour is recorded
+  by name, so it adapts to each viewer's board, and a custom colour as its
+  hex, which stays as drawn. A recognised shape or line keeps its pen's colour
+  the same way.
 
 ## Shapes
 
