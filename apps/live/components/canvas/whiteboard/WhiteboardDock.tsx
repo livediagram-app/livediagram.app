@@ -507,6 +507,7 @@ export function WhiteboardDock({
           label: 'More',
           icon: <MoreGlyph />,
           flyoutKind: 'more',
+          hoverOpens: true,
           onPress: (el) => toggleFlyout('more', el),
         })}
       </div>

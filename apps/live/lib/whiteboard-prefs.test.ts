@@ -47,9 +47,9 @@ describe('whiteboard pens', () => {
 
   it('names a pen by colour and width for assistive tech', () => {
     const [main, first] = DEFAULT_WHITEBOARD_PREFS.pens;
-    expect(penLabel(main!)).toBe('Main pen, medium');
-    expect(penLabel({ ...first!, width: 2.5 })).toBe('Second pen, blue, bold');
-    expect(penLabel({ ...first!, colour: '#9061f9' })).toBe('Second pen, violet, medium');
+    expect(penLabel(main!)).toBe('Marker 1, medium');
+    expect(penLabel({ ...first!, width: 2.5 })).toBe('Marker 2, blue, bold');
+    expect(penLabel({ ...first!, colour: '#9061f9' })).toBe('Marker 2, violet, medium');
   });
 
   it('reports a pen by its place, never its colour', () => {

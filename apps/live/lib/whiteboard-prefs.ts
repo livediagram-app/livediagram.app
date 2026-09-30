@@ -64,9 +64,9 @@ const PEN_IDS: readonly WhiteboardPenId[] = ['main', 'second', 'third'];
 
 // What each pen is called, in the dock and in its flyout.
 export const PEN_NAMES: Record<WhiteboardPenId, string> = {
-  main: 'Main pen',
-  second: 'Second pen',
-  third: 'Third pen',
+  main: 'Marker 1',
+  second: 'Marker 2',
+  third: 'Marker 3',
 };
 const PEN_TELEMETRY: Record<WhiteboardPenId, string> = {
   main: 'Main',

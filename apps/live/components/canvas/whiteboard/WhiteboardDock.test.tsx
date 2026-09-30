@@ -57,10 +57,10 @@ describe('WhiteboardDock', () => {
   it('names each pen by colour and width and marks the one in hand', () => {
     renderDock();
     expect(
-      screen.getByRole('button', { name: 'Main pen, medium' }).getAttribute('aria-pressed'),
+      screen.getByRole('button', { name: 'Marker 1, medium' }).getAttribute('aria-pressed'),
     ).toBe('true');
     expect(
-      screen.getByRole('button', { name: 'Second pen, blue, medium' }).getAttribute('aria-pressed'),
+      screen.getByRole('button', { name: 'Marker 2, blue, medium' }).getAttribute('aria-pressed'),
     ).toBe('false');
   });
 
@@ -69,7 +69,7 @@ describe('WhiteboardDock', () => {
     const select = screen.getByRole('button', { name: 'Select' });
     select.focus();
     fireEvent.keyDown(select, { key: 'ArrowRight' });
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Main pen, medium' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Marker 1, medium' }));
     fireEvent.keyDown(document.activeElement!, { key: 'End' });
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'More' }));
     fireEvent.keyDown(document.activeElement!, { key: 'ArrowRight' });
@@ -80,31 +80,27 @@ describe('WhiteboardDock', () => {
 
   it('picks a pen, and opens its flyout when it is already in hand', () => {
     const { m } = renderDock();
-    fireEvent.click(screen.getByRole('button', { name: 'Second pen, blue, medium' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Marker 2, blue, medium' }));
     expect(m.pickPen).toHaveBeenCalledWith('second');
-    expect(screen.queryByRole('group', { name: 'Main pen' })).toBeNull();
-    const ink = screen.getByRole('button', { name: 'Main pen, medium' });
+    expect(screen.queryByRole('group', { name: 'Marker 1' })).toBeNull();
+    const ink = screen.getByRole('button', { name: 'Marker 1, medium' });
     fireEvent.click(ink);
     expect(m.pickPen).toHaveBeenCalledTimes(1);
     expect(ink.getAttribute('aria-expanded')).toBe('true');
-    expect(screen.getByRole('group', { name: 'Main pen' })).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'Marker 1' })).toBeTruthy();
   });
 
-  it('offers the main pen, then the second and third pens', () => {
+  it('offers marker 1, then markers 2 and 3', () => {
     renderDock();
     const pens = screen
-      .getAllByRole('button', { name: / pen, / })
+      .getAllByRole('button', { name: /^Marker \d, / })
       .map((b) => b.getAttribute('aria-label'));
-    expect(pens).toEqual([
-      'Main pen, medium',
-      'Second pen, blue, medium',
-      'Third pen, red, medium',
-    ]);
+    expect(pens).toEqual(['Marker 1, medium', 'Marker 2, blue, medium', 'Marker 3, red, medium']);
   });
 
   it('keeps the main pen its default colour: its flyout is the width only', () => {
     const { m } = renderDock();
-    fireEvent.click(screen.getByRole('button', { name: 'Main pen, medium' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Marker 1, medium' }));
     expect(screen.queryByText('Colour')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Bold' }));
     expect(m.updatePen).toHaveBeenCalledWith('main', { width: 2.5 });
@@ -114,7 +110,7 @@ describe('WhiteboardDock', () => {
     const { m } = renderDock(
       model('pen', { prefs: { ...DEFAULT_WHITEBOARD_PREFS, activePenId: 'second' } }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Second pen, blue, medium' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Marker 2, blue, medium' }));
     fireEvent.click(screen.getByRole('button', { name: 'Violet' }));
     expect(m.updatePen).toHaveBeenCalledWith('second', { colour: '#9061f9' });
     fireEvent.click(screen.getByRole('button', { name: 'Fine' }));
@@ -123,12 +119,12 @@ describe('WhiteboardDock', () => {
 
   it('closes a flyout on Escape and hands focus back to its opener', () => {
     renderDock();
-    const ink = screen.getByRole('button', { name: 'Main pen, medium' });
+    const ink = screen.getByRole('button', { name: 'Marker 1, medium' });
     fireEvent.click(ink);
-    const group = screen.getByRole('group', { name: 'Main pen' });
+    const group = screen.getByRole('group', { name: 'Marker 1' });
     expect(group.contains(document.activeElement)).toBe(true);
     fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
-    expect(screen.queryByRole('group', { name: 'Main pen' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Marker 1' })).toBeNull();
     expect(document.activeElement).toBe(ink);
   });
 
@@ -185,6 +181,21 @@ describe('WhiteboardDock', () => {
     expect(recognise.getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(recognise);
     expect(m.setRecognition).toHaveBeenCalledWith(true);
+  });
+
+  it('opens More on hover too', () => {
+    vi.useFakeTimers();
+    try {
+      renderDock();
+      const more = screen.getByRole('button', { name: 'More' });
+      fireEvent.pointerEnter(more, { pointerType: 'mouse' });
+      expect(screen.getByRole('group', { name: 'More' })).toBeTruthy();
+      fireEvent.pointerLeave(more, { pointerType: 'mouse' });
+      act(() => vi.advanceTimersByTime(1000));
+      expect(screen.queryByRole('group', { name: 'More' })).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('opens Shapes on hover and closes it a moment after the pointer leaves', () => {
@@ -247,9 +258,9 @@ describe('WhiteboardDock keys', () => {
     const keyOf = (name: RegExp) =>
       screen.getByRole('button', { name }).getAttribute('aria-keyshortcuts');
     expect(keyOf(/^Select/)).toBe('V');
-    expect(keyOf(/^Main pen/)).toBe('1');
-    expect(keyOf(/^Second pen/)).toBe('2');
-    expect(keyOf(/^Third pen/)).toBe('3');
+    expect(keyOf(/^Marker 1/)).toBe('1');
+    expect(keyOf(/^Marker 2/)).toBe('2');
+    expect(keyOf(/^Marker 3/)).toBe('3');
     expect(keyOf(/^Eraser/)).toBe('E');
     expect(keyOf(/^Sticky note/)).toBe('N');
     expect(keyOf(/^Text/)).toBe('T');
@@ -278,7 +289,7 @@ describe('WhiteboardDock extras', () => {
   it('resets a pen to how it started on a right-click, without picking it up', () => {
     const m = model();
     renderDock(m);
-    const second = screen.getByRole('button', { name: /^Second pen/ });
+    const second = screen.getByRole('button', { name: /^Marker 2/ });
     const ev = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
     second.dispatchEvent(ev);
     expect(ev.defaultPrevented).toBe(true);

@@ -69,8 +69,8 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   and a pen in hand, the panel styles **that pen**: picking up a pen already
   offers its colour and width, the same settings its dock flyout holds.
   **Every pen shows the same rows**, so Pen width stays at the same height
-  whichever pen is in hand: the main pen's colour row holds its one colour,
-  the ink. A caption above the rows names whose style it is ("Second pen",
+  whichever pen is in hand: Marker 1's colour row holds its one colour,
+  the ink. A caption above the rows names whose style it is ("Marker 2",
   "Pen stroke", "3 pen strokes"); power user mode leaves it out.
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
@@ -89,7 +89,7 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
      ([Power user mode](../007-editor/power-user-mode.md)): the bottom-right
      cluster already carries them there, so the dock drops the duplicate. On a
      phone or tablet layout, and outside the mode, the dock keeps them.
-  8. **More** (`…`): a flyout with no title of its own and three sections,
+  8. **More** (`…`): opens on hover like Shapes; a flyout with no title of its own and three sections,
      each headed in the flyouts' small capitals and a row of the same switch
      buttons: **Background** (Plain / Dots / Grid), **Drawing** (Basic /
      Shape recognition) and **Cursor** (Crosshair + nib / Dot). Later, when the operator asks for it, the full
@@ -123,18 +123,18 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   On the light board the crosshair and nib are black with a white outline; on
   the dark board they are the exact inverse, white, with no outline.
 
-- A whiteboard offers **three pens**, left to right: the **main pen**, the
-  **second pen** and the **third pen**, all Medium width. Picking a pen
+- A whiteboard offers **three pens**, left to right: **Marker 1**,
+  **Marker 2** and **Marker 3** (the interface's names for the pens), all Medium width. Picking a pen
   button selects it; picking the active pen again opens its flyout. The pens
   are named by their place, never by a colour, because the second and third
   pens can be any colour.
-- **The main pen always draws in the default colour**: the adaptive ink of
+- **Marker 1 always draws in the default colour**: the adaptive ink of
   the board (see [Appearance](#appearance)); its width is adjustable like any
   pen's, so its flyout offers the width only.
-- **The second and third pens are adjustable**: their flyouts change both
+- **Markers 2 and 3 are adjustable**: their flyouts change both
   colour and width. They start as **blue** (second) and **red** (third), and
   keep their place and name whatever colour they are given.
-- **Widths**, on every pen including the main pen: **Fine** (1 px),
+- **Widths**, on every pen including Marker 1: **Fine** (1 px),
   **Medium** (1.5 px, the default) and **Bold** (2.5 px),
   `WHITEBOARD_PEN_WIDTHS`: a subtle line at 100%, not a felt tip (the width at
   medium pressure). (Tuned with
@@ -147,7 +147,7 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   alone. The context-menu key and Shift+F10 on the focused button do the same.
 - **Colours** in an adjustable pen's flyout: a small set of named colours,
   each at least 3:1 against both boards (WCAG 1.4.11), `WHITEBOARD_PEN_COLOURS`.
-  The ink is not among them: it is the main pen's.
+  The ink is not among them: it is Marker 1's.
 - **A pen stays in hand.** After a stroke the pen is still armed, as the
   highlighter is ([Highlighter](../008-canvas/highlighter.md)): the next drag
   draws again, and the stroke just drawn is not selected. Select, Escape or
@@ -168,7 +168,7 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
     a pen or a finger (0.2), whose samples are steadier. A stroke keeps the
     streamline it was drawn with.
 - **What you draw is what lands.** While a stroke is being drawn it already
-  shows in the pen's colour, width and pressure (the main pen in the board's
+  shows in the pen's colour, width and pressure (Marker 1 in the board's
   ink), finished at every moment: its end is always where the pointer is. One
   function draws the stroke being drawn and the stroke that lands, on the
   canvas and in every export, so release changes nothing.
@@ -194,7 +194,7 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   panels, and never travel with the document.
 - A stroke records the pen's colour and width on its `freehand` element when
   drawn, with its raw samples, a pressure per sample when a pen drew it, and
-  its streamline. The **main pen** records no explicit colour, so its strokes follow the
+  its streamline. **Marker 1** records no explicit colour, so its strokes follow the
   appearance; every other pen records its colour, which stays as drawn.
 
 ## Shapes
@@ -320,9 +320,9 @@ which already follows the reader's light or dark appearance
 - **Dark:** the editor's own **dark canvas** (the Default theme's dark
   half, the blue-slate the dark chrome is made of) with a soft off-white ink.
   Not a literal green chalkboard: the board belongs to the app it sits in.
-- Only colours change. Pens behave identically in both; the **main pen** and
+- Only colours change. Pens behave identically in both; **Marker 1** and
   any unpainted element simply render in the appearance's ink colour. The
-  second and third pens keep the colour they drew with.
+  Markers 2 and 3 keep the colour they drew with.
 - The board and ink colours are two named tokens of the Default theme's
   whiteboard variant (`WHITEBOARD_BOARD`, `WHITEBOARD_INK`, one value per
   appearance), tuned with the operator; the light and dark pairs must meet
@@ -349,9 +349,9 @@ not apply: a whiteboard has no palette to mirror):
 | ------ | --------------------------------- |
 | V      | Select                            |
 | Escape | Put the tool down: back to Select |
-| 1      | Main pen                          |
-| 2      | Second pen                        |
-| 3      | Third pen                         |
+| 1      | Marker 1                          |
+| 2      | Marker 2                          |
+| 3      | Marker 3                          |
 | E      | Eraser                            |
 | N      | Sticky note                       |
 | T      | Text box                          |

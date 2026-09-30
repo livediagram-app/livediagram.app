@@ -265,7 +265,7 @@ describe('QuickStylePanel on a whiteboard: the pen rows', () => {
   it('styles the pen in hand, with nothing selected, and offers no Clear styles', () => {
     const quickStyle = api(second);
     render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
-    expect(screen.getByText('Second pen')).toBeTruthy();
+    expect(screen.getByText('Marker 2')).toBeTruthy();
     const colour = screen.getByRole('radiogroup', { name: 'Pen colour' });
     expect(within(colour).getByRole('radio', { name: 'Blue' }).getAttribute('aria-checked')).toBe(
       'true',
@@ -280,7 +280,7 @@ describe('QuickStylePanel on a whiteboard: the pen rows', () => {
 
   it('drops the pen name in power user mode', () => {
     render(<QuickStylePanel quickStyle={api(second)} hidden={false} layout="toolbar" powerUser />);
-    expect(screen.queryByText('Second pen')).toBeNull();
+    expect(screen.queryByText('Marker 2')).toBeNull();
     expect(screen.getByRole('radiogroup', { name: 'Pen width' })).toBeTruthy();
   });
 

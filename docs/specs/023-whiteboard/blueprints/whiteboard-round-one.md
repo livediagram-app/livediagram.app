@@ -230,7 +230,7 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   Clear styles skip `memory.recordEdit` / `memory.forget`.
 - Pen rows (`apps/live/lib/quick-style-pen.ts`, `QuickPenRows.tsx`): `view.pen` is
   `strokesPenStyle(selected, ink)` (pen strokes: `freehand` with `penWidth`, not a highlight, unlocked),
-  else `heldPenStyle(pen, ink)` (the main pen's colour row is the single Ink option, so every pen has
+  else `heldPenStyle(pen, ink)` (Marker 1's colour row is the single Ink option, so every pen has
   both rows) when nothing is selected and `whiteboardDock.tool === 'pen'`.
   `setPenColour` / `setPenWidth` commit `applyPenStyle` over the strokes (`Element·Changed·QuickStroke`
   / `QuickStrokeWidth`) or call `updatePen` for the held pen (its own `Whiteboard·Changed` tokens).
@@ -592,7 +592,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
   margin, measured from layout width before paint, since the pop-in starts at `scale(0)`), placed
   with the `translate` property because the pop-in animation owns `transform`.
 - Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
-- Copy: toolbar label "Whiteboard tools"; buttons "Select", "Main pen", "Second pen", "Third pen" (the second and third adding their colour, e.g. "Second pen, blue, medium"), "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition",
+- Copy: toolbar label "Whiteboard tools"; buttons "Select", "Marker 1", "Marker 2", "Marker 3" (2 and 3 adding their colour, e.g. "Marker 2, blue, medium"; `PEN_NAMES`), "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition",
   "Undo", "Redo", "More"; pen flyout "Colour" (second and third pens only), "Width" with "Fine", "Medium", "Bold"; eraser flyout
   "Stroke", "Partial" with hints "Remove whole strokes" / "Erase part of a stroke"; More flyout
   "Background" with "Plain", "Dots", "Grid"; Quick Start card "Whiteboard", "A plain board to draw on
@@ -602,7 +602,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 - `role="toolbar"`, `aria-label="Whiteboard tools"`, `aria-orientation="horizontal"`; roving
   tabindex: one tab stop, ArrowLeft / ArrowRight move (wrapping), Home / End jump.
-- Tool buttons carry `aria-pressed`; a pen's name includes its place, colour (second and third pens) and width ("Third pen, red, medium");
+- Tool buttons carry `aria-pressed`; a pen's name includes its place, colour (second and third pens) and width ("Marker 3, red, medium");
   flyout openers carry `aria-expanded` and `aria-controls`.
 - A flyout is a `role="group"` labelled by its title; opening moves focus to its selected control;
   Escape closes it and returns focus to the opener.

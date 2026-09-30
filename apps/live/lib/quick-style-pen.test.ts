@@ -79,7 +79,7 @@ describe('heldPenStyle', () => {
     expect(style.colour!.options).toEqual([{ value: INK_CHOICE, name: 'Ink', swatch: INK }]);
     expect(style.colour!.value).toBe(INK_CHOICE);
     expect(style.width.value).toBe('medium');
-    expect(style.subject).toEqual({ kind: 'pen', id: 'main', name: 'Main pen' });
+    expect(style.subject).toEqual({ kind: 'pen', id: 'main', name: 'Marker 1' });
   });
 
   it('gives another pen its colours, without the ink', () => {
