@@ -5556,6 +5556,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aspectLocked": {
         "type": "boolean"
       },
+      "autoWidth": {
+        "type": "boolean"
+      },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
@@ -5627,6 +5630,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "textItalic": {
         "type": "boolean"
+      },
+      "textScale": {
+        "type": "number"
       },
       "textSize": {
         "$ref": "#/components/schemas/TextSize"

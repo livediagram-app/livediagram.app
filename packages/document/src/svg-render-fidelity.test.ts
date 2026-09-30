@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renderElementsToSvg } from './svg-render';
-import { createShape } from './factories';
+import { createShape, createText } from './factories';
 import { wrapLabel } from './svg-render-primitives';
 import { SELECTION_MODES } from './selection-mode';
 import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
@@ -103,5 +103,17 @@ describe('Mode button glyph (docs/specs/020-import-export/export-fidelity.md)', 
     const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] } as unknown as Tab);
     const eraser = MODE_GLYPHS.eraser!.prims[0] as { d: string };
     expect(svg).toContain(eraser.d);
+  });
+});
+
+// docs/specs/023-whiteboard/whiteboard.md "Text boxes": a Shift-resized text box draws its text
+// scaled, and exports that way too.
+describe('Scaled text box export', () => {
+  it('draws the label at its size times its scale', () => {
+    const el = { ...createText(0, 0), id: 'txt', label: 'Big', textSize: 'sm' as const };
+    const tab = (textScale?: number) =>
+      ({ id: 't', name: 'T', elements: [{ ...el, textScale }] }) as unknown as Tab;
+    expect(renderElementsToSvg(tab())).toContain('font-size="14"');
+    expect(renderElementsToSvg(tab(2.5))).toContain('font-size="35"');
   });
 });

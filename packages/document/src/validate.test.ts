@@ -7,6 +7,8 @@ import {
   MAX_FREEHAND_POINTS,
   MAX_PATH_NODES,
   PATH_COORD_MAX,
+  TEXT_SCALE_MAX,
+  TEXT_SCALE_MIN,
 } from './validate';
 import { SELECTION_MODES } from './selection-mode';
 
@@ -315,5 +317,23 @@ describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', (
     expect(isValidElement({ ...shape, fillSwatch: 0 })).toBe(false);
     expect(isValidElement({ ...shape, strokeSwatch: '2' })).toBe(false);
     expect(isValidElement({ ...arrow, strokeSwatch: 7 })).toBe(false);
+  });
+});
+
+// docs/specs/023-whiteboard/whiteboard.md "Text boxes": a text box's hug fields.
+describe('text box validation', () => {
+  const text = { id: 't', type: 'text', x: 0, y: 0, width: 40, height: 22, label: 'Hi' };
+
+  it('takes an auto width and a Shift scale in range', () => {
+    expect(isValidElement({ ...text, autoWidth: true, textScale: 2.5 })).toBe(true);
+    expect(isValidElement({ ...text, textScale: TEXT_SCALE_MIN })).toBe(true);
+    expect(isValidElement({ ...text, textScale: TEXT_SCALE_MAX })).toBe(true);
+  });
+
+  it('refuses a scale out of range and a non-boolean auto width', () => {
+    expect(isValidElement({ ...text, textScale: 0 })).toBe(false);
+    expect(isValidElement({ ...text, textScale: TEXT_SCALE_MAX + 1 })).toBe(false);
+    expect(isValidElement({ ...text, textScale: Number.NaN })).toBe(false);
+    expect(isValidElement({ ...text, autoWidth: 'yes' })).toBe(false);
   });
 });

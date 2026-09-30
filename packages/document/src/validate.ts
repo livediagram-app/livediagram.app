@@ -63,6 +63,10 @@ export const MAX_FREEHAND_POINTS = 20_000;
 export const MAX_PATH_NODES = 5_000;
 // A normalised path coordinate: handles may reach beyond the box, never absurdly far.
 export const PATH_COORD_MAX = 1e6;
+// A Shift-resized text box's scale on its label (docs/specs/023-whiteboard/whiteboard.md "Text boxes"):
+// a 14 px label reads from 1.4 px to 560 px, past any real board, short of an abuse payload.
+export const TEXT_SCALE_MIN = 0.1;
+export const TEXT_SCALE_MAX = 40;
 const PATH_HANDLE_MODES = new Set(['corner', 'mirrored', 'aligned']);
 const MAX_TABLE_ROWS = 1_000;
 const MAX_TABLE_COLS = 1_000;
@@ -522,7 +526,17 @@ export function isValidElement(el: unknown): el is Element {
     return true;
   }
   if (t === 'path') return isValidPath(el);
-  // text / sticky / annotation / link-card carry no extra required fields.
+  // A whiteboard text box's hug fields (docs/specs/023-whiteboard/whiteboard.md "Text boxes").
+  if (t === 'text') {
+    if (el.autoWidth !== undefined && typeof el.autoWidth !== 'boolean') return false;
+    if (
+      el.textScale !== undefined &&
+      (!isNum(el.textScale) || el.textScale < TEXT_SCALE_MIN || el.textScale > TEXT_SCALE_MAX)
+    )
+      return false;
+    return true;
+  }
+  // sticky / annotation / link-card carry no extra required fields.
   return true;
 }
 

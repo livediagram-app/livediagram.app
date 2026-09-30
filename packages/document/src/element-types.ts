@@ -504,6 +504,13 @@ export type TextElement = {
   padding?: Padding;
   // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md); see ShapeElement.richText.
   richText?: TextRun[];
+  // A whiteboard text box placed with a click (docs/specs/023-whiteboard/whiteboard.md "Text
+  // boxes"): its width follows its text up to the wrap width. Absent = the width is set, and
+  // the text wraps inside it.
+  autoWidth?: boolean;
+  // Multiplier on the label size, set by a Shift resize of a whiteboard text box
+  // (docs/specs/023-whiteboard/whiteboard.md "Text boxes"). Absent = 1.
+  textScale?: number;
 };
 
 // --- Tables ----------------------------------------------------------------
