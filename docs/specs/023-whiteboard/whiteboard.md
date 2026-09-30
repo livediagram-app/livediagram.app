@@ -223,8 +223,18 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **A pen stroke is picked by its drawn line**, not its box: a click within
   6 screen px of the line (either side, at any zoom) selects it, and a click
   elsewhere in its box passes through to whatever is beneath, or the board.
-  Once selected, its box drags and resizes it as any element's. Shapes,
-  notes and text keep their whole box.
+  Once selected, its box drags and resizes it as any element's.
+- **A shape is picked by its drawn outline too** (rectangle, ellipse,
+  diamond, cylinder, a recognised triangle or star, and every other shape
+  kind): a click within 6 screen px of the outline selects it, and a click in
+  its empty inside passes through to whatever is beneath, or the board. A
+  shape with a **visible fill** is also picked anywhere on its fill. Lines and
+  arrows are picked by their line, and paths by their line or fill
+  ([Path tool](path-tool.md)). **Notes and text boxes** keep their whole box:
+  they are filled or hold text.
+- The **outline is the one drawn**, not the box: an ellipse by its curve, a
+  diamond by its four edges, a cylinder by its body and rim, following the
+  shape's rotation.
 - **Shift with Select always drags a selection box**, even when the press
   starts on an element, and the box **adds** what it encloses to the
   selection. A **Shift-click** on an element adds it to the selection or
@@ -264,7 +274,11 @@ The eraser offers **both** modes, switched in its flyout:
   existing eraser in Sweep mode, with one difference: a stroke counts as
   touched only where its ink is (within the brush of the drawn line), not
   anywhere in its bounding box, so erasing beside a long stroke leaves it
-  alone. Other elements are touched as on any tab.
+  alone. **The same holds for every element the whiteboard picks by its
+  drawn path** (see [Selecting](#selecting)): a shape is touched only where
+  its outline is (or its visible fill), a line or arrow only along its line, a
+  path along its line or fill. Brushing through a shape's empty inside erases
+  nothing. Notes and text boxes are touched anywhere in their box.
 - **Partial**: removes only the part of a stroke under the brush, splitting
   the stroke into the pieces either side. Pieces are new `freehand` elements
   with the original's colour, width and layer; one gesture is one undo, as
