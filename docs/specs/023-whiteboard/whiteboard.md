@@ -167,7 +167,13 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   - **Every sample counts.** Where the browser offers the samples it gathered
     between frames (coalesced events), the stroke uses all of them.
   - **Corners stay corners.** A sharp turn (a cusp in handwriting, the corner
-    of a box) keeps its point; curves and small loops stay round.
+    of a box) keeps its point, also where the pen paused on it; curves and
+    small loops stay round.
+  - **Release moves no pixel.** The stroke being drawn is drawn in the canvas
+    itself, beside the elements, laid out exactly as the stroke it becomes, so
+    the browser rasterises both alike. (Drawn in a separate overlay, a line
+    shifted by up to a device pixel or two on release, differently per engine
+    and zoom.) The shape recognition preview is drawn in the canvas too.
 - **Every freehand stroke draws through one curve**: a centripetal
   Catmull-Rom through the stroke's points, broken at its corners, the same on
   the canvas and in every export. It cannot overshoot into loops or bumps

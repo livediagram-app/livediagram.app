@@ -177,6 +177,27 @@ All parameters are in **screen px and milliseconds**. The stroke is processed in
 - **End to end** (Playwright, Chromium and WebKit): synthetic pointer paths show the preview `d` updating every frame and the committed element matching the last preview.
 - **Perceived lag on hardware**: film the pen at 240 fps slow motion while drawing at a steady speed. Lag in ms is (tip to ink-head distance) / speed. Compare before and after, with and without prediction and the ink trail.
 
+## Outcome
+
+Built as recommended; the spec is [Whiteboard](../specs/023-whiteboard/whiteboard.md#pens) and the
+engineering detail is the blueprint's "Live stroke pipeline"
+([whiteboard-round-one](../specs/023-whiteboard/blueprints/whiteboard-round-one.md)). Both open
+decisions below were settled: existing strokes redraw through the new curve, and the highlighter
+and the diagram pencil keep their RDP commit, sharing only the curve. Four findings changed the
+design or its starting values, each recorded in the spec and the blueprint:
+
+- A pause does need a special case. A mouse reports nothing while it rests, so the sample before a
+  pause had a one-sided window and was pulled 3.8 px back along the stroke, turning a box corner
+  into a chamfer. A gap longer than the window is now an end, pinned like the stroke's own ends.
+- `CORNER_TURN_DEG` is 80, not 100: at 100 a box's 90 degree corners bulged 3 px outside it.
+- The mouse `SMOOTH_CAP_PX` is 2, not 1.5: at 1.5 a 300 px/s line at 120 Hz kept 0.39 px of
+  0.5 px noise, over the 0.35 bound.
+- The preview is not drawn in a fixed overlay. The overlay and the canvas's transformed layer
+  rasterise the same geometry differently (up to 0.8 CSS px on a straight line, per engine and
+  zoom), so the live ink sits in the canvas layer, laid out exactly as the stroke it lands as; release
+  then moves no pixel. The delegated ink trail and a desynchronised canvas, both overlays, would
+  bring the same shift back.
+
 ## Open decisions
 
 - Switching `catmullRomToBezierPath` to centripetal with corner splitting also re-renders **existing** freehand strokes slightly differently, mostly less overshoot. The alternatives are a per-element version flag or accepting the change.
