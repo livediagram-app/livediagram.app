@@ -24,6 +24,17 @@ the user moves on purpose.
 
 ## What this means in practice
 
+- **Reserve per phase, not per message.** Reserve for the variants that can
+  follow each other without the user acting: within one phase (for example
+  Synced, Syncing and Copying 3 of 12 while connected) nothing moves. A change
+  of phase that follows the user's own action on that block (pressing
+  Connect or Disconnect) may change the block's height, like expanding a
+  section. Reserving for every message a component could ever show leaves
+  blocks of empty space and is itself a design fault.
+- **Reserve only what can actually appear together.** A button that shows
+  "Connect" in one phase and "Sync now" in another is sized for the labels
+  of the phase it is in, not for every label it could ever carry.
+
 - **Status labels reserve their longest variant.** A label with a closed set
   of states (Not connected / Connecting… / Synced / Syncing / Needs attention)
   renders every variant in the same grid cell, stacked, with only the active
