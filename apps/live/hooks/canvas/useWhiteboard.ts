@@ -28,11 +28,15 @@ import {
 } from '@/lib/whiteboard-prefs';
 import {
   activeWhiteboardTool,
-  whiteboardShapeIntent,
   whiteboardPenIntent,
-  type WhiteboardShapeId,
   type WhiteboardTool,
 } from '@/lib/whiteboard-tool';
+import {
+  armedWhiteboardShape,
+  whiteboardShapeEntry,
+  type WhiteboardShapeKey,
+} from '@/lib/whiteboard-shape-catalogue';
+import { useWhiteboardDockPrefs, type WhiteboardDockPrefsDeps } from './useWhiteboardDockPrefs';
 
 type Deps = {
   activeTab: Tab;
@@ -51,7 +55,7 @@ type Deps = {
   // leave it: the dock presses Select with a path glyph meanwhile.
   pathEditing: boolean;
   leavePathEdit: () => void;
-};
+} & WhiteboardDockPrefsDeps;
 
 export type WhiteboardDockModel = ReturnType<typeof useWhiteboard>;
 
@@ -75,6 +79,8 @@ export function useWhiteboard(deps: Deps) {
     pathEditing,
     leavePathEdit,
   } = deps;
+  // The synced dock preferences: mode, pinned shapes, pick counts ("Shape slots").
+  const dockPrefs = useWhiteboardDockPrefs(deps);
   const whiteboard = isWhiteboardTab(activeTab);
   // Read lazily from this browser (readLocalStorageSafe copes with no storage).
   const [prefs, setPrefsState] = useState<WhiteboardPrefs>(loadWhiteboardPrefs);
@@ -177,9 +183,23 @@ export function useWhiteboard(deps: Deps) {
     beginDraw(intent);
   };
 
-  const pickShape = (id: WhiteboardShapeId) => {
-    // Plain: a pen never colours another tool (docs/specs/023-whiteboard/whiteboard.md "Shapes").
-    pickIntent(whiteboardShapeIntent(id));
+  // Any catalogue shape, from the Shapes flyout, a slot, More shapes or a key. Plain: a pen never
+  // colours another tool (docs/specs/023-whiteboard/whiteboard.md "Shapes"). Every pick counts
+  // towards the frequent slots ("Shape slots").
+  const pickShape = (key: WhiteboardShapeKey) => {
+    const entry = whiteboardShapeEntry(key);
+    if (!entry) {
+      console.warn('[whiteboard] unknown shape', key);
+      return;
+    }
+    pickIntent(entry.intent);
+    dockPrefs.recordPick(key);
+  };
+
+  // A pick from the More shapes search: reported as one fixed token, never the kind.
+  const pickSearchedShape = (key: WhiteboardShapeKey) => {
+    pickShape(key);
+    track('Whiteboard', 'Selected', 'ShapeSearch');
   };
 
   const setRecognition = (on: boolean) => {
@@ -218,6 +238,14 @@ export function useWhiteboard(deps: Deps) {
     pickSticky: () => pickIntent({ type: 'sticky' }),
     pickText: () => pickIntent({ type: 'text' }),
     pickShape,
+    pickSearchedShape,
+    // The catalogue shape in hand, if any: its slot shows pressed.
+    armedShape: armedWhiteboardShape(pendingDraw),
+    dockMode: dockPrefs.mode,
+    setDockMode: dockPrefs.setMode,
+    pinnedShapes: dockPrefs.pinned,
+    frequentShapes: dockPrefs.frequent,
+    applySlotOutcome: dockPrefs.applySlotOutcome,
     pickPath,
     pathEditing,
     leavePathEdit,

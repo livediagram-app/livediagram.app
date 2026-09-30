@@ -2414,6 +2414,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setBackgroundPattern,
     pathEditing: isPathEditing(activeTab.elements, editingId),
     leavePathEdit: () => setEditingId(null),
+    userPreferences,
+    setUserPreferences,
+    writeUserPreferences,
+    ownerId: selfParticipant.id,
   });
 
   // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the

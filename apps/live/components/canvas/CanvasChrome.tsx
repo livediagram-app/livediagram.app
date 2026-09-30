@@ -44,7 +44,6 @@ import { useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
-import { isPowerUserMode } from '@/lib/power-user-mode';
 import { WhiteboardDock } from '@/components/canvas/whiteboard/WhiteboardDock';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
@@ -505,9 +504,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           canRedo={canRedo}
           onUndo={onUndo}
           onRedo={onRedo}
-          // Power user mode trims the duplicate: the corner cluster has them
-          // on a desktop (docs/specs/023-whiteboard/whiteboard.md "The dock").
-          showHistory={isMobile || !isPowerUserMode(settings)}
         />
       ) : null}
 

@@ -1,11 +1,17 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
+import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { useWhiteboard } from './useWhiteboard';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
+import {
+  readUserPreferences,
+  writeUserPreferences,
+  type UserPreferences,
+} from '@/lib/user-preferences';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -27,7 +33,20 @@ function setup(tab: Tab, pendingDraw: PendingDraw | null = null, canvasTool = 's
     pathEditing: false,
     leavePathEdit: vi.fn(),
   };
-  const hook = renderHook((d: typeof deps) => useWhiteboard(d), { initialProps: deps });
+  // The synced preferences as the editor holds them: state, written through to this browser.
+  const hook = renderHook(
+    (d: typeof deps) => {
+      const [userPreferences, setUserPreferences] = useState<UserPreferences>(readUserPreferences);
+      return useWhiteboard({
+        ...d,
+        userPreferences,
+        setUserPreferences,
+        writeUserPreferences,
+        ownerId: null,
+      });
+    },
+    { initialProps: deps },
+  );
   return { deps, hook };
 }
 
@@ -167,5 +186,98 @@ describe('pen changes', () => {
     act(() => hook.result.current.updatePen('main', { width: 1 }));
     expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'PenColour');
     expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'PenWidth');
+  });
+});
+
+describe('shapes from the catalogue', () => {
+  it('arms any catalogue shape plain, as a board shape, with its creation choice', () => {
+    const { deps, hook } = setup(board());
+    act(() => hook.result.current.pickShape('session-button:poll'));
+    expect(deps.beginDraw).toHaveBeenLastCalledWith({
+      type: 'shape',
+      kind: 'session-button',
+      session: 'poll',
+      board: true,
+    });
+  });
+
+  it('counts every pick towards the frequent slots, in the synced preferences', () => {
+    const { hook } = setup(board());
+    expect(hook.result.current.frequentShapes).toEqual(['rectangle', 'ellipse']);
+    act(() => hook.result.current.pickShape('triangle'));
+    act(() => hook.result.current.pickShape('triangle'));
+    act(() => hook.result.current.pickShape('star'));
+    expect(hook.result.current.frequentShapes).toEqual(['triangle', 'star']);
+    expect(readUserPreferences().whiteboardShapePicks).toMatchObject({
+      triangle: [2, expect.any(Number)],
+      star: [1, expect.any(Number)],
+    });
+  });
+
+  it('reports a search pick as one fixed token, never the kind', () => {
+    const { hook } = setup(board());
+    act(() => hook.result.current.pickSearchedShape('hexagon'));
+    expect(track).toHaveBeenCalledWith('Whiteboard', 'Selected', 'ShapeSearch');
+    expect(vi.mocked(track).mock.calls.flat()).not.toContain('hexagon');
+  });
+
+  it('refuses a key the catalogue does not know, arming nothing', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { deps, hook } = setup(board());
+    vi.mocked(deps.beginDraw).mockClear();
+    act(() => hook.result.current.pickShape('banner' as never));
+    expect(deps.beginDraw).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith('[whiteboard] unknown shape', 'banner');
+    warn.mockRestore();
+  });
+
+  it('says which catalogue shape is in hand', () => {
+    const { hook } = setup(board(), { type: 'shape', kind: 'hexagon', board: true });
+    expect(hook.result.current.armedShape).toBe('hexagon');
+  });
+});
+
+describe('dock mode and pins', () => {
+  it('starts With shapes and switches to Simple, reported and synced', () => {
+    const { hook } = setup(board());
+    expect(hook.result.current.dockMode).toBe('shapes');
+    act(() => hook.result.current.setDockMode('simple'));
+    expect(hook.result.current.dockMode).toBe('simple');
+    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'ModeSimple');
+    expect(readUserPreferences().whiteboardDockMode).toBe('simple');
+    act(() => hook.result.current.setDockMode('shapes'));
+    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'ModeShapes');
+    expect(readUserPreferences().whiteboardDockMode).toBeUndefined();
+  });
+
+  it('does nothing for the mode already in force', () => {
+    const { hook } = setup(board());
+    act(() => hook.result.current.setDockMode('shapes'));
+    expect(track).not.toHaveBeenCalled();
+  });
+
+  it('pins, replaces and unpins, reporting each without the kind', () => {
+    const { hook } = setup(board());
+    act(() => hook.result.current.applySlotOutcome({ type: 'pin', pinned: ['star'] }));
+    expect(hook.result.current.pinnedShapes).toEqual(['star']);
+    expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Changed', 'ShapePinned');
+    act(() => hook.result.current.applySlotOutcome({ type: 'pin', pinned: ['cloud'] }));
+    expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Changed', 'ShapePinned');
+    act(() => hook.result.current.applySlotOutcome({ type: 'unpin', pinned: [] }));
+    expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Changed', 'ShapeUnpinned');
+    expect(readUserPreferences().whiteboardPinnedShapes).toBeUndefined();
+  });
+
+  it('keeps pinned kinds out of the frequent slots', () => {
+    const { hook } = setup(board());
+    act(() => hook.result.current.applySlotOutcome({ type: 'pin', pinned: ['rectangle'] }));
+    expect(hook.result.current.frequentShapes).toEqual(['ellipse', 'diamond']);
+  });
+
+  it('writes nothing for a refused pin', () => {
+    const { hook } = setup(board());
+    act(() => hook.result.current.applySlotOutcome({ type: 'refused' }));
+    expect(readUserPreferences().whiteboardPinnedShapes).toBeUndefined();
+    expect(track).not.toHaveBeenCalled();
   });
 });

@@ -4,6 +4,7 @@
 import { Glyph, Prims } from '@livediagram/ui';
 import {
   lucideEllipsis,
+  lucideSettings,
   lucideShapes,
   lucideStickyNote,
   lucideType,
@@ -91,6 +92,15 @@ export function MoreGlyph() {
   return (
     <Glyph size={DOCK_ICON_PX} units={24}>
       <Prims prims={lucideEllipsis} />
+    </Glyph>
+  );
+}
+
+// Settings: the cog.
+export function SettingsGlyph() {
+  return (
+    <Glyph size={DOCK_ICON_PX} units={24}>
+      <Prims prims={lucideSettings} />
     </Glyph>
   );
 }
