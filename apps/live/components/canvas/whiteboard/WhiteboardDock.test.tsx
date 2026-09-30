@@ -247,14 +247,14 @@ describe('WhiteboardDock settings', () => {
     expect(cog.getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('heads Mode, Background, Drawing and Cursor, not a title of its own', () => {
+  it('heads Background, Cursor, Drawing and Mode, not a title of its own', () => {
     renderDock();
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     const settings = screen.getByRole('group', { name: 'Settings' });
     const headings = [...settings.querySelectorAll('[data-flyout-heading]')].map(
       (h) => h.textContent,
     );
-    expect(headings).toEqual(['Mode', 'Background', 'Drawing', 'Cursor']);
+    expect(headings).toEqual(['Background', 'Cursor', 'Drawing', 'Mode']);
   });
 
   it('switches the dock mode, and shows Full drawing as coming soon, not selectable', () => {
@@ -285,9 +285,9 @@ describe('WhiteboardDock settings', () => {
     const { m } = renderDock();
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     const row = screen.getByRole('group', { name: 'Cursor' });
-    expect(
-      within(row).getByRole('button', { name: 'Crosshair + nib' }).getAttribute('aria-pressed'),
-    ).toBe('true');
+    const options = within(row).getAllByRole('button');
+    expect(options.map((b) => b.getAttribute('aria-label'))).toEqual(['Crosshair + nib', 'Dot']);
+    expect(options[0]!.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(within(row).getByRole('button', { name: 'Dot' }));
     expect(m.setCursor).toHaveBeenCalledWith('dot');
   });

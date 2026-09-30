@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_PEN_CURSOR,
   PEN_CURSOR_DOT_MIN_PX,
   PEN_CURSOR_MAX_PX,
   PEN_CURSOR_VARIANTS,
@@ -9,8 +10,9 @@ import {
 
 // docs/specs/023-whiteboard/whiteboard.md "Pens": the pen cursor, Dot or Crosshair + nib.
 describe('penCursor', () => {
-  it('offers the dot and the crosshair with a nib', () => {
-    expect(PEN_CURSOR_VARIANTS).toEqual(['dot', 'nib-crosshair']);
+  it('offers the crosshair with a nib first, the default, then the dot', () => {
+    expect(PEN_CURSOR_VARIANTS).toEqual(['nib-crosshair', 'dot']);
+    expect(DEFAULT_PEN_CURSOR).toBe(PEN_CURSOR_VARIANTS[0]);
   });
 
   it('draws the dot in the pen colour, rimmed in the board colour', () => {

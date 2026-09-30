@@ -11,6 +11,7 @@ import type { PenCursorVariant } from '@/lib/whiteboard-pen-cursor';
 import {
   isWhiteboardTab,
   WHITEBOARD_BACKGROUNDS,
+  WHITEBOARD_UNSET_PATTERN,
   type BackgroundPattern,
   type Tab,
 } from '@livediagram/document';
@@ -218,7 +219,7 @@ export function useWhiteboard(deps: Deps) {
 
   const setBackground = (id: (typeof WHITEBOARD_BACKGROUNDS)[number]['id']) => {
     const bg = WHITEBOARD_BACKGROUNDS.find((b) => b.id === id);
-    if (!bg || bg.pattern === (activeTab.backgroundPattern ?? 'blank')) return;
+    if (!bg || bg.pattern === (activeTab.backgroundPattern ?? WHITEBOARD_UNSET_PATTERN)) return;
     setBackgroundPattern(bg.pattern);
     track('Whiteboard', 'Changed', BACKGROUND_TOKEN[bg.id]);
   };
@@ -228,7 +229,7 @@ export function useWhiteboard(deps: Deps) {
     tool,
     prefs,
     activePen,
-    background: activeTab.backgroundPattern ?? 'blank',
+    background: activeTab.backgroundPattern ?? WHITEBOARD_UNSET_PATTERN,
     pickSelect,
     pickPen,
     updatePen,

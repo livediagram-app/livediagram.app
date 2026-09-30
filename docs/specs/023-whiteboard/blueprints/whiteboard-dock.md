@@ -82,8 +82,8 @@ frequent slot, "toolbar" for a group in prose (it is a group; `role="toolbar"` i
 
 ### Settings
 
-- Sections in order: **Mode** (Simple / With shapes / Full drawing), **Background**, **Drawing**,
-  **Cursor**. Full drawing is a `FlyoutOption` with `unavailable`: `aria-disabled="true"`, no
+- Sections, top to bottom: **Background**, **Cursor** (Crosshair + nib first, the default),
+  **Drawing**, **Mode** (Simple / With shapes / Full drawing). Full drawing is a `FlyoutOption` with `unavailable`: `aria-disabled="true"`, no
   pick, accessible name "Full drawing, coming soon", a "Coming soon" caption under its label.
 
 ### More shapes

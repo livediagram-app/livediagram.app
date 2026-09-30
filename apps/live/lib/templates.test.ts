@@ -146,11 +146,12 @@ describe('TEMPLATES catalogue', () => {
 });
 
 describe('templateCanvasOverrides', () => {
-  it('makes a whiteboard tab on a plain board', () => {
-    // docs/specs/023-whiteboard/whiteboard.md: the kind lands on every creation path through here.
+  it('makes a whiteboard tab on a Grid board', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Board background": the kind and the Grid land on
+    // every creation path through here (the template, a new tab, Quick Start, the MCP worker).
     expect(templateCanvasOverrides('whiteboard')).toEqual({
       kind: 'whiteboard',
-      backgroundPattern: 'blank',
+      backgroundPattern: 'graph',
     });
   });
 

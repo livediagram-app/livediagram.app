@@ -330,8 +330,8 @@ and read it comfortably.
 - **Drag to size:** dragging out a text box sets its **width**; the text
   wraps inside it and the **height always hugs** the lines.
 - **Resizing** a text box with a side or corner handle sets its width the
-  same way; its height stays hugging the text. Shift (the aspect ratio rule)
-  scales the text size with the box instead, as on every tab.
+  same way; its height stays hugging the text. With Shift (the aspect ratio
+  rule) the box keeps its ratio by scaling the text size with it instead.
 - An empty text box left by clicking away is removed, as today.
 - Existing text boxes keep their size until edited or resized; then they hug.
 - Notes (stickies) keep their fixed note size.

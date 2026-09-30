@@ -40,7 +40,13 @@ export const WHITEBOARD_BACKGROUNDS: readonly {
   { id: 'grid', label: 'Grid', pattern: 'graph' },
 ];
 
-export const WHITEBOARD_DEFAULT_PATTERN: BackgroundPattern = 'blank';
+// A new whiteboard starts on Grid (docs/specs/023-whiteboard/whiteboard.md "Board background"),
+// written onto the tab when it is made (templateCanvasOverrides), so it never changes later.
+export const WHITEBOARD_DEFAULT_PATTERN: BackgroundPattern = 'graph';
+
+// A board stored without a pattern reads as Plain, as it always showed: the new-board default is
+// never read back onto an existing board.
+export const WHITEBOARD_UNSET_PATTERN: BackgroundPattern = 'blank';
 
 export function whiteboardBackgroundOf(
   pattern: BackgroundPattern | undefined,

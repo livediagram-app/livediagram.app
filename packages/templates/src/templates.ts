@@ -1,4 +1,4 @@
-import type { BackgroundPattern, Tab } from '@livediagram/document';
+import { WHITEBOARD_DEFAULT_PATTERN, type BackgroundPattern, type Tab } from '@livediagram/document';
 import { titleCase } from '@livediagram/api-schema';
 import { templateLayers } from './template-layers';
 
@@ -772,8 +772,8 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'empathy-map': 'grid',
   funnel: 'blank',
   storyboard: 'crosshatch',
-  // A whiteboard starts Plain (docs/specs/023-whiteboard/whiteboard.md "Board background").
-  whiteboard: 'blank',
+  // A new whiteboard starts on Grid (docs/specs/023-whiteboard/whiteboard.md "Board background").
+  whiteboard: WHITEBOARD_DEFAULT_PATTERN,
 };
 
 // Tab-level overrides a specific template ships with, applied on top

@@ -5,7 +5,9 @@ import type { ArrowElement, Element, FreehandElement, ShapeElement, StickyElemen
 import {
   WHITEBOARD_BACKGROUNDS,
   WHITEBOARD_BOARD,
+  WHITEBOARD_DEFAULT_PATTERN,
   WHITEBOARD_INK,
+  WHITEBOARD_UNSET_PATTERN,
   WHITEBOARD_PATTERN,
   inkWhiteboardElement,
   isWhiteboardTab,
@@ -82,6 +84,11 @@ describe('whiteboard backgrounds', () => {
     expect(whiteboardBackgroundOf('grid')).toBe('dots');
     expect(whiteboardBackgroundOf(undefined)).toBe('plain');
     expect(whiteboardBackgroundOf('waves')).toBe('plain');
+  });
+
+  it('starts a new whiteboard on Grid, and reads a board stored without one as Plain', () => {
+    expect(whiteboardBackgroundOf(WHITEBOARD_DEFAULT_PATTERN)).toBe('grid');
+    expect(whiteboardBackgroundOf(WHITEBOARD_UNSET_PATTERN)).toBe('plain');
   });
 });
 

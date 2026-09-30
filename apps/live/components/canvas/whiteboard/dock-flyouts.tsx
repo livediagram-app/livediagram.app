@@ -116,7 +116,8 @@ export function ShapesFlyoutBody({ onPick }: { onPick: (id: WhiteboardShapeId) =
   );
 }
 
-// Settings (the cog): Mode, Background, Drawing and Cursor, each a section of switch buttons.
+// Settings (the cog), top to bottom: Background, Cursor, Drawing and Mode, each a section of
+// switch buttons.
 export function SettingsFlyoutBody({
   model,
   ink,
@@ -129,6 +130,56 @@ export function SettingsFlyoutBody({
   const current = whiteboardBackgroundOf(model.background);
   return (
     <FlyoutRows>
+      <FlyoutRow label="Background" heading>
+        {WHITEBOARD_BACKGROUNDS.map((b) => (
+          <FlyoutOption
+            key={b.id}
+            wide
+            label={b.label}
+            selected={current === b.id}
+            onPick={() => model.setBackground(b.id)}
+          >
+            <BackgroundGlyph id={b.id} />
+            <span>{b.label}</span>
+          </FlyoutOption>
+        ))}
+      </FlyoutRow>
+      {/* The pen cursor (docs/specs/023-whiteboard/whiteboard.md "Pens"), each option showing itself. */}
+      <FlyoutRow label="Cursor" heading>
+        {PEN_CURSOR_VARIANTS.map((v) => (
+          <FlyoutOption
+            key={v}
+            wide
+            label={CURSOR_NAMES[v]}
+            selected={model.prefs.cursor === v}
+            onPick={() => model.setCursor(v)}
+          >
+            <img
+              alt=""
+              aria-hidden
+              width={20}
+              height={20}
+              src={svgDataUrl(penCursorSvg(v, model.activePen.colour ?? ink, appearance).svg)}
+            />
+            <span>{CURSOR_NAMES[v]}</span>
+          </FlyoutOption>
+        ))}
+      </FlyoutRow>
+      {/* A device-local setting (docs/specs/023-whiteboard/whiteboard.md "Shape recognition"). */}
+      <FlyoutRow label="Drawing" heading>
+        {([false, true] as const).map((on) => (
+          <FlyoutOption
+            key={String(on)}
+            wide
+            label={on ? 'Shape recognition' : 'Basic'}
+            selected={model.prefs.recognise === on}
+            onPick={() => model.setRecognition(on)}
+          >
+            {on ? <RecogniseGlyph /> : <OffGlyph />}
+            <span>{on ? 'Shape recognition' : 'Basic'}</span>
+          </FlyoutOption>
+        ))}
+      </FlyoutRow>
       {/* Dock modes (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"): synced per
           user. Full drawing is shown, but not selectable yet. */}
       <FlyoutRow label="Mode" heading>
@@ -159,56 +210,6 @@ export function SettingsFlyoutBody({
             </FlyoutOption>
           ),
         )}
-      </FlyoutRow>
-      <FlyoutRow label="Background" heading>
-        {WHITEBOARD_BACKGROUNDS.map((b) => (
-          <FlyoutOption
-            key={b.id}
-            wide
-            label={b.label}
-            selected={current === b.id}
-            onPick={() => model.setBackground(b.id)}
-          >
-            <BackgroundGlyph id={b.id} />
-            <span>{b.label}</span>
-          </FlyoutOption>
-        ))}
-      </FlyoutRow>
-      {/* A device-local setting (docs/specs/023-whiteboard/whiteboard.md "Shape recognition"). */}
-      <FlyoutRow label="Drawing" heading>
-        {([false, true] as const).map((on) => (
-          <FlyoutOption
-            key={String(on)}
-            wide
-            label={on ? 'Shape recognition' : 'Basic'}
-            selected={model.prefs.recognise === on}
-            onPick={() => model.setRecognition(on)}
-          >
-            {on ? <RecogniseGlyph /> : <OffGlyph />}
-            <span>{on ? 'Shape recognition' : 'Basic'}</span>
-          </FlyoutOption>
-        ))}
-      </FlyoutRow>
-      {/* The pen cursor (docs/specs/023-whiteboard/whiteboard.md "Pens"), each option showing itself. */}
-      <FlyoutRow label="Cursor" heading>
-        {PEN_CURSOR_VARIANTS.map((v) => (
-          <FlyoutOption
-            key={v}
-            wide
-            label={CURSOR_NAMES[v]}
-            selected={model.prefs.cursor === v}
-            onPick={() => model.setCursor(v)}
-          >
-            <img
-              alt=""
-              aria-hidden
-              width={20}
-              height={20}
-              src={svgDataUrl(penCursorSvg(v, model.activePen.colour ?? ink, appearance).svg)}
-            />
-            <span>{CURSOR_NAMES[v]}</span>
-          </FlyoutOption>
-        ))}
       </FlyoutRow>
     </FlyoutRows>
   );

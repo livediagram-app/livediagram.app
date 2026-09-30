@@ -72,7 +72,7 @@ describe('resolveTabBackdrop', () => {
     });
   });
 
-  it('starts a whiteboard with no pattern stored on Plain', () => {
+  it('keeps a whiteboard stored without a pattern on Plain, as it always showed', () => {
     expect(resolveTabBackdrop(tab({ kind: 'whiteboard' })).backgroundPattern).toBe('blank');
   });
 

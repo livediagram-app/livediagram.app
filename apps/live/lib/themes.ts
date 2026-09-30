@@ -17,7 +17,7 @@ import {
   isWhiteboardTab,
   schemeBackdrop,
   WHITEBOARD_BOARD,
-  WHITEBOARD_DEFAULT_PATTERN,
+  WHITEBOARD_UNSET_PATTERN,
   WHITEBOARD_PATTERN,
   type Appearance,
   type BackgroundPattern,
@@ -122,7 +122,7 @@ export function resolveTabBackdrop(
     return {
       backgroundColor: WHITEBOARD_BOARD[appearance],
       patternColor: WHITEBOARD_PATTERN[appearance],
-      backgroundPattern: tab.backgroundPattern ?? WHITEBOARD_DEFAULT_PATTERN,
+      backgroundPattern: tab.backgroundPattern ?? WHITEBOARD_UNSET_PATTERN,
       backgroundOpacity: 1,
     };
   }

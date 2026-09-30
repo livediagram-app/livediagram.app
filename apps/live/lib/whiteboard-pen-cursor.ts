@@ -4,7 +4,8 @@
 import { WHITEBOARD_BOARD, type Appearance } from '@livediagram/document';
 
 export type PenCursorVariant = 'dot' | 'nib-crosshair';
-export const PEN_CURSOR_VARIANTS: readonly PenCursorVariant[] = ['dot', 'nib-crosshair'];
+// The default first, as the Settings row lists them.
+export const PEN_CURSOR_VARIANTS: readonly PenCursorVariant[] = ['nib-crosshair', 'dot'];
 export const DEFAULT_PEN_CURSOR: PenCursorVariant = 'nib-crosshair';
 
 // The dot is the stroke's own width on screen, so it shows exactly what the pen will lay down,
