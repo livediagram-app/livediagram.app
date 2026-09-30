@@ -3,6 +3,14 @@ import { render, screen, within } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { Hero, HERO_CTAS } from './Hero';
 
+// The set is under test, not the animated stage, headline or connector around it, which need
+// layout jsdom has not got.
+vi.mock('./HeroIllustration', () => ({ HeroIllustration: () => null }));
+vi.mock('./HeroConnectors', () => ({ HeroConnectors: () => null }));
+vi.mock('./HeroTitleLine', () => ({
+  HeroTitleLine: ({ children }: { children: React.ReactNode }) => <>Diagram{children}</>,
+}));
+
 beforeAll(() => {
   // The illustration's stage reads the reduced-motion preference.
   vi.stubGlobal(
