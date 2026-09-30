@@ -20,7 +20,8 @@ editable.
 - **Whiteboards only.** The Path tool is a dock button and a key on a whiteboard; diagram tabs do
   not offer it. A path element that reaches a diagram tab (paste, a tab that stops being a
   whiteboard) renders, selects, moves, styles and edits there like any element.
-- **Dock:** after the three markers and before the eraser, labelled **Path tool**, key **P**
+- **Dock:** in the Shapes group, after the sticky note (see
+  [Whiteboard](whiteboard.md) "What a whiteboard shows"), labelled **Path tool**, key **P**
   (shown on the button and in `aria-keyshortcuts`). Its icon is **the Shape Pen's own palette
   icon**, unchanged: the same component, at the dock's icon size, never a
   redrawn copy.

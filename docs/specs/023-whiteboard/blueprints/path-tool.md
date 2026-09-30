@@ -7,41 +7,52 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                          | Role                                                                          |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`                      | `PathElement`, `PathNode`, `PathHandleMode`, `PathPoint`                      |
-| `packages/document/src/index.ts`                              | `PathElement` joins `BoxedElement`; re-exports                                |
-| `packages/document/src/path-geometry.ts`                      | Pure curve maths: segments, `d`, bounds, split, bend, smooth, nearest         |
-| `packages/document/src/path-element.ts`                       | Element ⇄ anchors: `pathAnchors`, `pathGeometry`, `createPath`, `reshapePath` |
-| `packages/document/src/validate.ts`                           | `'path'` in `ELEMENT_TYPES`; node, handle, mode and count checks              |
-| `packages/document/src/colors.ts`                             | Padding, default stroke and fill, border support for `path`                   |
-| `packages/document/src/element-kind-label.ts`                 | `Path`                                                                        |
-| `packages/document/src/whiteboard.ts`                         | Ink projection for `path`                                                     |
-| `packages/document/src/svg-render*.ts`                        | `svgPathElementShape`: the export twin of the canvas path                     |
-| `apps/api/src/openapi/schemas.generated.ts`                   | Regenerated: `PathElement` in `BoxedElement`                                  |
-| `packages/api-schema/src/telemetry-schema.ts`                 | (no change: `Whiteboard`, `Element`, `Selected`, `Added`, `Changed` exist)    |
-| `apps/live/lib/path-draw.ts`                                  | Pure drawing state machine                                                    |
-| `apps/live/lib/path-edit.ts`                                  | Pure edit-mode operations and hit testing                                     |
-| `apps/live/lib/draw-mode.ts`                                  | `PendingDraw` `{ type: 'path' }`, banner, cursor                              |
-| `apps/live/lib/whiteboard-tool.ts`                            | `WhiteboardTool` gains `path`                                                 |
-| `apps/live/lib/quick-style.ts`, `quick-style-tool.ts`         | A path is a quick-style target; "Next path" phantom                           |
-| `apps/live/lib/style-memory.ts`                               | Style kind `path` (`board:path` on a whiteboard)                              |
-| `apps/live/lib/element-names.ts`                              | "Path, N points" / "Closed path, N points"                                    |
-| `apps/live/lib/excalidraw-export.ts`                          | A path as a sampled `line`                                                    |
-| `apps/live/components/canvas/path/PathSvg.tsx`                | The canvas renderer, shared by committed and draft paths                      |
-| `apps/live/components/canvas/path/usePathDrawGesture.ts`      | Drawing: presses, drags, keys, commit                                         |
-| `apps/live/components/canvas/path/usePathEditGesture.ts`      | Edit mode: presses, drags, keys, commit                                       |
-| `apps/live/components/canvas/path/usePathTool.ts`             | Composes both for `Canvas`: press intercept, displayed elements, layers       |
-| `apps/live/components/canvas/path/PathDraftLayer.tsx`         | The path being drawn, rubber band, rings                                      |
-| `apps/live/components/canvas/path/PathEditLayer.tsx`          | Nodes, handles, box, snap guides                                              |
-| `apps/live/hooks/canvas/usePathCommits.ts`                    | Editor side: `commitPath`, `commitPathEdit`, telemetry                        |
-| `apps/live/hooks/canvas/useWhiteboard.ts`                     | `pickPath`, `pathEditing`, `leavePathEdit`                                    |
-| `apps/live/hooks/canvas/editor-shortcut-keys.ts`              | `P` on a whiteboard; `WHITEBOARD_TOOL_KEYS.path`                              |
-| `apps/live/components/canvas/whiteboard/WhiteboardDock.tsx`   | The Path tool button; Select's edit-mode glyph                                |
-| `apps/live/components/canvas/whiteboard/whiteboard-icons.tsx` | `PathEditGlyph`                                                               |
-| `apps/live/components/palette/palette-icons.tsx`              | `ShapePenIcon`: the Shape Pen tile's icon, shared with the dock               |
-| `apps/telemetry/app/event-explanations.ts`                    | Sentences for the four events                                                 |
-| `apps/help/app/canvas/whiteboards/page.mdx`                   | The Path tool section                                                         |
+| File                                                        | Role                                                                                                                              |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/element-types.ts`                    | `PathElement`, `PathNode`, `PathHandleMode`, `PathPoint`                                                                          |
+| `packages/document/src/index.ts`                            | `PathElement` joins `BoxedElement`; re-exports                                                                                    |
+| `packages/document/src/path-geometry.ts`                    | Pure curve maths: segments, `d`, bounds, split, bend, smooth, nearest                                                             |
+| `packages/document/src/path-element.ts`                     | Element ⇄ anchors: `pathAnchors`, `pathWorldAnchors`, `pathGeometry`, `createPath`, `reshapePath`, `continuedPath`, `reversePath` |
+| `packages/document/src/validate.ts`                         | `'path'` in `ELEMENT_TYPES`; node, handle, mode and count checks                                                                  |
+| `packages/document/src/colors.ts`                           | Padding, default stroke and fill, border support for `path`                                                                       |
+| `packages/document/src/element-kind-label.ts`               | `Path`                                                                                                                            |
+| `packages/document/src/whiteboard.ts`                       | Ink projection for `path`                                                                                                         |
+| `packages/document/src/whiteboard-stroke.ts`                | `pathTouchesBrush`: the eraser touches a path by its line or its fill                                                             |
+| `packages/document/src/svg-render*.ts`                      | `svgPathElementShape`: the export twin of the canvas path                                                                         |
+| `apps/api/src/openapi/schemas.generated.ts`                 | Regenerated: `PathElement` in `BoxedElement`                                                                                      |
+| `packages/api-schema/src/telemetry-schema.ts`               | (no change: `Whiteboard`, `Element`, `Selected`, `Added`, `Changed` exist)                                                        |
+| `apps/live/lib/path-draw.ts`                                | Pure drawing state machine                                                                                                        |
+| `apps/live/lib/path-edit.ts`                                | Pure edit-mode operations, hit test, node types, open / close, cursors, `toLocal` / `toWorld`                                     |
+| `apps/live/lib/path-edit-keys.ts`                           | `pathEditKey`: what one key does in edit mode                                                                                     |
+| `apps/live/lib/whiteboard-erase.ts`                         | `pathsTouched`: the eraser takes a path whole                                                                                     |
+| `apps/live/lib/export-as-seen.ts`                           | `tabAsSeen`: an export draws a whiteboard in its own ink                                                                          |
+| `apps/live/lib/draw-mode.ts`                                | `PendingDraw` `{ type: 'path' }`, banner, cursor                                                                                  |
+| `apps/live/lib/whiteboard-tool.ts`                          | `WhiteboardTool` gains `path`                                                                                                     |
+| `apps/live/lib/quick-style.ts`, `quick-style-tool.ts`       | A path is a quick-style target; "Next path" phantom                                                                               |
+| `apps/live/lib/style-memory.ts`                             | Style kind `path` (`board:path` on a whiteboard)                                                                                  |
+| `apps/live/lib/element-names.ts`                            | "Path, N points" / "Closed path, N points"                                                                                        |
+| `apps/live/lib/excalidraw-export.ts`                        | A path as a sampled `line`                                                                                                        |
+| `apps/live/components/canvas/path/PathSvg.tsx`              | The canvas renderer, shared by committed and draft paths                                                                          |
+| `apps/live/components/canvas/path/usePathDrawGesture.ts`    | Drawing: presses, drags, keys, commit                                                                                             |
+| `apps/live/components/canvas/path/usePathEditGesture.ts`    | Edit mode: presses, drags, keys, commit                                                                                           |
+| `apps/live/components/canvas/path/usePathTool.ts`           | Composes both for `Canvas`: press intercept, displayed elements, layers                                                           |
+| `apps/live/components/canvas/path/PathDraftLayer.tsx`       | The path being drawn, rubber band, rings                                                                                          |
+| `apps/live/components/canvas/path/PathEditLayer.tsx`        | Nodes, handles, box, snap guides                                                                                                  |
+| `apps/live/components/canvas/path/PathEditToolbar.tsx`      | The edit toolbar: node type, Delete point, Close / Open path, Done                                                                |
+| `apps/live/components/canvas/path/path-markers.tsx`         | Node and handle markers, `PATH_OVERLAY_Z`                                                                                         |
+| `apps/live/components/canvas/SelectionPopover.tsx`          | Edit points on a selected path                                                                                                    |
+| `apps/live/components/canvas/useBoxedElementGestures.ts`    | A double press (a double-tap) opens a path's edit mode                                                                            |
+| `apps/live/components/canvas/element-variant.ts`            | `editingLook`: a path in its edit mode takes no text cursor and no lift                                                           |
+| `apps/live/hooks/canvas/useEditModeContextMenu.ts`          | No element menu beside a path in its edit mode                                                                                    |
+| `apps/live/app/globals.css`                                 | `[data-path-cursor]`: descendants inherit the edit cursor                                                                         |
+| `apps/live/components/dialogs/EditorTabDialogs.tsx`         | Exports `tabAsSeen`                                                                                                               |
+| `apps/live/hooks/canvas/usePathCommits.ts`                  | Editor side: `commitPath`, `commitPathEdit`, telemetry                                                                            |
+| `apps/live/hooks/canvas/useWhiteboard.ts`                   | `pickPath`, `pathEditing`, `leavePathEdit`                                                                                        |
+| `apps/live/hooks/canvas/editor-shortcut-keys.ts`            | `P` on a whiteboard; `WHITEBOARD_TOOL_KEYS.path`                                                                                  |
+| `apps/live/components/canvas/whiteboard/WhiteboardDock.tsx` | The Path tool button (`ShapePenIcon`); Select's edit-mode glyph (`EditPointsIcon`)                                                |
+| `apps/live/components/palette/palette-icons.tsx`            | `ShapePenIcon` (the Shape Pen tile's icon, shared with the dock), `EditPointsIcon`                                                |
+| `apps/telemetry/app/event-explanations.ts`                  | Sentences for the four events                                                                                                     |
+| `apps/help/app/canvas/whiteboards/page.mdx`                 | The Path tool section                                                                                                             |
 
 ## Domain and naming
 
@@ -120,8 +131,9 @@ export type PathElement = {
 - `reshapePath(el, anchors, closed)`: the element with `pathGeometry(anchors, closed)`; for a rotated
   element, the box is then translated by `t = (c − c′) − R(c − c′)` (`c` the old centre, `c′` the new,
   `R` the rotation) so every node stays where it was on screen.
-- `splitSegment(seg, t)`: de Casteljau; returns the two halves. The new node is `mirrored` when the
-  segment was curved (its two new handles are collinear), `corner` with no handles when straight.
+- `splitSegment(seg, t)`: de Casteljau; returns the two halves (`insertNodeAt` makes the new node
+  `aligned` when the segment was curved, its two new handles collinear but of their own lengths, and
+  `corner` with no handles when straight).
 - `nearestOnSegment(seg, p)`: 24 samples, then 12 steps of interval halving about the best;
   `{ t, point, distance }`. `nearestOnPath` takes the best segment.
 - `bendSegment(seg, t, target)`: with `D = target − B(t)` and `k = 3t(1 − t)((1 − t)² + t²)`,
@@ -137,24 +149,29 @@ export type PathElement = {
 
 ### Drawing (`path-draw.ts`, `usePathDrawGesture`)
 
-State, local to the canvas: `PathDraft = { anchors, placed, continuing, drag, cursor } | null`, where
-`placed` counts the nodes this draft placed (Backspace removes only those) and
-`continuing = { id, reversed } | null`.
+State, local to the canvas: `PathDraft = { anchors, placed, continuing, lastPlacedAt } | null`,
+where `placed` counts the nodes this draft placed (Backspace removes only those),
+`continuing = { id } | null`, and `lastPlacedAt` the last placement's time (cleared once that press
+became a drag, which is never half a double-click).
 
-A **press** with the tool in hand, primary button, not Space-held, at canvas point `p`, in order:
+A **press** with the tool in hand, primary button, not Space-held, at canvas point `p`: Ctrl / Cmd
+and Alt first (see [Editing while drawing](#editing-while-drawing-usepathdrawgesture)), then
+`classifyPathPress`, in order, the radius being `PATH_CLOSE_PX / zoom` (a finger:
+`PATH_TOUCH_HIT_PX / zoom`):
 
-1. Within `PATH_NODE_HIT_PX / zoom` of the draft's **last** node and within `PATH_DOUBLE_PRESS_MS`
-   of that node's placement: **finish** (a double-click).
+1. Within the radius of the draft's **last** node and within `PATH_DOUBLE_PRESS_MS` of that node's
+   placement: **finish** (a double-click).
 2. Within that radius of the **first** node with `anchors.length >= 2`: a **close press**; the drag
    that follows pulls out node 0's handles (`handleOut` = pointer, `handleIn` its mirror, mode
    `mirrored`). Release: commit closed when `isCommittablePath(anchors, true)` (P3), else nothing.
-3. Within that radius of the **last** node (later than a double press): **cusp**: its `handleOut` is
-   removed (mode `corner` when it has no `handleIn`). No drag follows.
-4. No draft and within that radius of an **end node of an open path** on the tab (unlocked, not on an
+3. Within that radius of the **last** node (later than a double press): a drag moves it; a release
+   without one makes it a **cusp**: its `handleOut` is removed (mode `corner`).
+4. Within that radius of any other placed node: a drag moves it; a click does nothing (P18).
+5. No draft and within that radius of an **end node of an open path** on the tab (unlocked, not on an
    inert layer, not being edited): **continue**. Its anchors, in world px (rotation baked in, P4), are
    the draft, reversed when the start node was pressed; `continuing = { id, reversed }`; `placed = 0`.
-5. Otherwise **place** a node at `p` (Shift: `constrain45(last, p)`), mode `corner`, no handles; the
-   drag that follows shapes it.
+6. Otherwise **place** a node at `p` (Shift: `constrain45(last, p)`), mode `corner`, no handles; the
+   drag that follows shapes it. The first node of a new draft clears the selection.
 
 A **drag** (the pointer moves `PATH_DRAG_THRESHOLD_PX` screen px from the press): the node becomes
 `mirrored` with `handleOut` = pointer (Shift: `constrain45(node, pointer)`) and `handleIn` its mirror.
@@ -285,11 +302,13 @@ With the Path tool in hand, the draft is editable (as in Figma):
 - `activeWhiteboardTool`: `pendingDraw.type === 'path'` → `'path'`.
 - `useWhiteboard.pickPath()`: `setCanvasTool('select')`, `beginDraw({ type: 'path' })`, track
   `Whiteboard·Selected·Path`. Leaving a whiteboard tab cancels a path intent as it does a pen.
-- The dock button: after the markers, before the eraser: key `path`, label "Path tool", shortcut `P`,
+- The dock button, in the Shapes group after the sticky note (the dock's own blueprint places it):
+  key `path`, label "Path tool", shortcut `P`,
   `aria-pressed` when the tool is `path`, icon `ShapePenIcon` at `DOCK_ICON_PX`: the one component
   the Shape Pen palette tile renders at `TILE_GLYPH_PX`, never a redrawn copy.
 - `pathEditing` (the edited element is a path): the Select button is pressed, labelled "Select,
-  editing a path", icon `PathEditGlyph`; pressing it calls `leavePathEdit`.
+  editing a path", icon `EditPointsIcon` (the selection toolbar's Edit points glyph); pressing it
+  calls `leavePathEdit`.
 - `WHITEBOARD_EDIT_KEYS.p` → `pickPath`; `WHITEBOARD_TOOL_KEYS.path = 'P'`. Diagram tabs keep `P` as
   the pencil.
 - `typeIntoSelected` returns false for a path (no typed label, P1).
@@ -330,7 +349,8 @@ With the Path tool in hand, the draft is editable (as in Figma):
 - SVG export: `svgPathElementShape(el, stroke, fill)` writes `<path d="…" fill stroke stroke-width
 stroke-dasharray stroke-linecap="round" stroke-linejoin="round"/>` with `pathD(..., r2)`, inside the
   element's opacity and rotation group, as `svgFreehandShape` is.
-- Excalidraw: a `line` with `points` from `samplePath` relative to the first, `strokeColor`,
+- Excalidraw: a `line` with `points` from `samplePath` relative to the element's box (as a freehand's
+  are), `strokeColor`,
   `backgroundColor` (closed and filled), `strokeWidth` px.
 
 ## Interfaces and contracts
@@ -352,14 +372,32 @@ export function smoothHandles(anchors: readonly PathAnchor[], i: number, closed:
 export function constrain45(from: Point, to: Point): Point;
 export function partnerHandle(node: Point, moved: Point, partner: Point | undefined, mode: PathHandleMode): Point | undefined;
 export function samplePath(anchors: readonly PathAnchor[], closed: boolean, perSegment?: number): Point[];
-export function svgPathElementShape(el: PathElement, stroke: string, fill: string, origin?: Point): string;
+export function svgPathElementShape(el: PathElement, stroke: string, fill: string): string;
+export function pathWorldAnchors(el: PathElement): PathAnchor[];
+export function continuedPath(el: PathElement, anchors: readonly PathAnchor[], closed: boolean): PathElement;
+export function reversePath(anchors: readonly PathAnchor[]): PathAnchor[];
+export function pathTouchesBrush(el: PathElement, a: Point, b: Point, r: number): boolean;
 
 // apps/live
 export type PendingDraw = … | { type: 'path' };
 export type WhiteboardTool = 'select' | 'pen' | 'path' | 'eraser' | 'sticky' | 'text' | 'shape';
+export function classifyPathPress(draft: PathDraft | null, p: Point, opts: { zoom: number; now: number; ends: readonly PathEnd[]; radiusPx?: number }): PathPress;
+export function pathEditHit(anchors, closed, selected, p, zoom, strokePx, radiusPx?: number): PathEditHit;
+export function pathEditCursor(hit: PathEditHit): string; // move | PATH_ADD_CURSOR | default
+export function setNodeType(anchors, selected, type: PathHandleMode, closed: boolean): PathAnchor[];
+export function sharedNodeType(anchors, selected): PathHandleMode | null;
+export function openPathAt(anchors: readonly PathAnchor[], i: number): PathAnchor[];
+export function dragNodes(base, moving, pressed, delta: Point, shift: boolean, snapRadius: number): { anchors: PathAnchor[]; guides: PathGuides | null };
+export function pathEditKey(key: { key: string; shiftKey: boolean; mod: boolean }, anchors, closed, selected): PathKeyOutcome;
+export function toLocal(el, p: Point): Point; export function toWorld(el, p: Point): Point;
+export function tabAsSeen(tab: Tab, appearance?: Appearance): Tab;
+export function editingLook(element: { type: string }, isEditing: boolean): { raise: boolean; textCursor: boolean };
 // CanvasProps
 onCommitPath: (draft: { anchors: PathAnchor[]; closed: boolean; continuing: { id: string } | null }) => void;
 onCommitPathEdit: (id: string, next: { anchors: PathAnchor[]; closed: boolean }, kind: 'edit' | 'join') => void;
+onDressPath?: <T extends Element>(el: T) => T; // style memory, so the draft wears the style it lands with
+// SelectionPopover
+onEditPoints?: () => void;
 ```
 
 Validation (`isValidElement`, `t === 'path'`) rejects: `closed` not a boolean; `nodes` not an array
@@ -449,28 +487,38 @@ numbers only).
 
 ## Testing
 
-| Rule                                                  | Test                                                             |
-| ----------------------------------------------------- | ---------------------------------------------------------------- |
-| Segments, `d`, bounds from extremes, box of 1         | `packages/document/src/path-geometry.test.ts`                    |
-| Split keeps the curve, bend passes through the point  | `packages/document/src/path-geometry.test.ts`                    |
-| Smooth handles, 45°, partner by mode, nearest, sample | `packages/document/src/path-geometry.test.ts`                    |
-| Anchors ⇄ element, rotation kept by `reshapePath`     | `packages/document/src/path-element.test.ts`                     |
-| Validation                                            | `packages/document/src/validate.test.ts`                         |
-| Export twin                                           | `packages/document/src/svg-render-shapes.test.ts`                |
-| Ink projection                                        | `packages/document/src/whiteboard.test.ts`                       |
-| Drawing state machine                                 | `apps/live/lib/path-draw.test.ts`                                |
-| Edit operations and hit test                          | `apps/live/lib/path-edit.test.ts`                                |
-| Draw gesture: press, drag, keys, commit               | `apps/live/components/canvas/path/usePathDrawGesture.test.tsx`   |
-| Edit gesture: select, drag, keys, one commit          | `apps/live/components/canvas/path/usePathEditGesture.test.tsx`   |
-| Commit: new, continued, edit, delete, telemetry       | `apps/live/hooks/canvas/usePathCommits.test.tsx`                 |
-| Tool derivation                                       | `apps/live/lib/whiteboard-tool.test.ts`                          |
-| Dock button, key, edit glyph                          | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx` |
-| `pickPath`                                            | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                  |
-| Quick style and memory                                | `apps/live/lib/quick-style.test.ts`, `style-memory.test.ts`      |
-| Accessible name                                       | `apps/live/lib/element-names.test.ts`                            |
-| Excalidraw line                                       | `apps/live/lib/excalidraw-export.test.ts`                        |
-| Telemetry vocabulary and sentences                    | `apps/live/lib/telemetry-coverage.test.ts`, `apps/telemetry`     |
-| End to end                                            | Playwright, Chromium and WebKit, dark and light                  |
+| Rule                                                                                            | Test                                                                                                            |
+| ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Segments, `d`, bounds from extremes, box of 1                                                   | `packages/document/src/path-geometry.test.ts`                                                                   |
+| Split keeps the curve, bend passes through the point                                            | `packages/document/src/path-geometry.test.ts`                                                                   |
+| Smooth handles, 45°, partner by mode, nearest, sample                                           | `packages/document/src/path-geometry.test.ts`                                                                   |
+| Anchors ⇄ element, rotation kept by `reshapePath`                                               | `packages/document/src/path-element.test.ts`                                                                    |
+| Validation                                                                                      | `packages/document/src/validate.test.ts`                                                                        |
+| Export twin                                                                                     | `packages/document/src/svg-render-shapes.test.ts`                                                               |
+| Ink projection                                                                                  | `packages/document/src/whiteboard.test.ts`                                                                      |
+| Drawing state machine                                                                           | `apps/live/lib/path-draw.test.ts`                                                                               |
+| Edit operations and hit test                                                                    | `apps/live/lib/path-edit.test.ts`                                                                               |
+| Draw gesture: press, drag, keys, commit                                                         | `apps/live/components/canvas/path/usePathDrawGesture.test.tsx`                                                  |
+| Edit gesture: select, drag, keys, one commit                                                    | `apps/live/components/canvas/path/usePathEditGesture.test.tsx`                                                  |
+| Commit: new, continued, edit, delete, telemetry                                                 | `apps/live/hooks/canvas/usePathCommits.test.tsx`                                                                |
+| Tool derivation                                                                                 | `apps/live/lib/whiteboard-tool.test.ts`                                                                         |
+| Dock button, key, edit glyph                                                                    | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`                                                |
+| `pickPath`                                                                                      | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                                                                 |
+| Quick style and memory                                                                          | `apps/live/lib/quick-style.test.ts`, `style-memory.test.ts`                                                     |
+| Accessible name                                                                                 | `apps/live/lib/element-names.test.ts`                                                                           |
+| Excalidraw line                                                                                 | `apps/live/lib/excalidraw-export.test.ts`                                                                       |
+| Telemetry vocabulary and sentences                                                              | `apps/live/lib/telemetry-coverage.test.ts`, `apps/telemetry`                                                    |
+| Edit keys, Tab on into the toolbar                                                              | `apps/live/lib/path-edit-keys.test.ts`                                                                          |
+| Node types, open, cursors, `toWorld`, `dragNodes`                                               | `apps/live/lib/path-edit.test.ts`                                                                               |
+| Edit toolbar: radios, keys, disabled states                                                     | `apps/live/components/canvas/path/PathEditToolbar.test.tsx`                                                     |
+| Corner squares, smooth circles; overlays on top                                                 | `apps/live/components/canvas/path/PathEditLayer.test.tsx`                                                       |
+| Edit points                                                                                     | `apps/live/components/canvas/SelectionPopover.test.tsx`                                                         |
+| A double-tap opens edit mode                                                                    | `apps/live/components/canvas/useBoxedElementGestures.path.test.tsx`                                             |
+| No text cursor, no lift, no menu in edit mode                                                   | `apps/live/components/canvas/element-variant.test.ts`, `apps/live/hooks/canvas/useEditModeContextMenu.test.tsx` |
+| The eraser takes a path whole                                                                   | `packages/document/src/whiteboard-stroke.test.ts`, `apps/live/lib/whiteboard-erase.test.ts`                     |
+| Export in the board's ink                                                                       | `apps/live/lib/export-as-seen.test.ts`                                                                          |
+| The Shape Pen icon, one component                                                               | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`                                                |
+| End to end (every drawing and editing gesture, touch, cursors, overlay order, SVG / PNG export) | Playwright, Chromium and WebKit, dark and light, on the shared stack                                            |
 
 ## Constants and configuration
 
@@ -495,4 +543,4 @@ numbers only).
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md), rows P1 to P18.
+See [DEFAULTS.md](DEFAULTS.md), rows P1 to P20.
