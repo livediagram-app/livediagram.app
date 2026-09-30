@@ -38,13 +38,15 @@ describe('activeWhiteboardTool', () => {
 
 describe('whiteboardPenIntent', () => {
   it('carries the pen colour, width and recognition', () => {
-    expect(whiteboardPenIntent({ id: 'red', colour: '#e5484d', width: 8 }, true)).toEqual({
-      type: 'freehand',
-      variant: 'whiteboard',
-      colour: '#e5484d',
-      width: 8,
-      recognise: true,
-    });
+    expect(whiteboardPenIntent({ id: 'second-colour', colour: '#e5484d', width: 8 }, true)).toEqual(
+      {
+        type: 'freehand',
+        variant: 'whiteboard',
+        colour: '#e5484d',
+        width: 8,
+        recognise: true,
+      },
+    );
   });
 });
 
@@ -98,7 +100,7 @@ describe('whiteboardPointerRoute', () => {
 
 describe('whiteboardShapeIntent', () => {
   it('draws a shape with the pen in hand', () => {
-    const pen = { id: 'red' as const, colour: '#e5484d', width: 8 };
+    const pen = { id: 'second-colour' as const, colour: '#e5484d', width: 8 };
     expect(whiteboardShapeIntent('ellipse', pen)).toEqual({
       type: 'shape',
       kind: 'circle',
@@ -137,7 +139,7 @@ describe('applyWhiteboardPen', () => {
     });
   });
 
-  it('leaves an Ink shape unpainted so it follows the board', () => {
+  it('leaves a main-pen shape unpainted so it follows the board', () => {
     expect('strokeColor' in applyWhiteboardPen(shape, { colour: null, width: 4 })).toBe(false);
   });
 

@@ -223,14 +223,14 @@ export const WHITEBOARD_PENS = chart(
   'Whiteboard',
   'Selected',
   'Pens Picked',
-  'A whiteboard pen picked up, by its preset name, or Custom once recoloured.',
+  'A whiteboard pen picked up: the main pen, or the first or second colour pen.',
 );
 
 export const WHITEBOARD_SETTINGS = chart(
   'Whiteboard',
   'Changed',
-  'Eraser and Background',
-  "A whiteboard's eraser mode or board background changed.",
+  'Pens, Eraser and Background',
+  "A whiteboard pen's colour or width, the eraser mode or the board background changed.",
 );
 
 export const WHITEBOARD_RECOGNITION = chart(

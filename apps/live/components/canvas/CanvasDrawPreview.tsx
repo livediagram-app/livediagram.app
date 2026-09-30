@@ -23,7 +23,7 @@ type CanvasDrawPreviewProps = {
   stamp: StampGhost | null;
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
-  // The board's ink on a whiteboard (docs/specs/023-whiteboard/whiteboard.md), what the Ink pen
+  // The board's ink on a whiteboard (docs/specs/023-whiteboard/whiteboard.md), what the main pen
   // previews in. Absent elsewhere.
   whiteboardInk?: string;
 };
@@ -45,7 +45,7 @@ export function CanvasDrawPreview({
   whiteboardInk,
 }: CanvasDrawPreviewProps) {
   // A whiteboard mark previews as it will land (docs/specs/023-whiteboard/whiteboard.md "Pens"): the
-  // pen's colour (Ink: the board's) and width, solid, unfilled. Only the
+  // pen's colour (the main pen: the board's) and width, solid, unfilled. Only the
   // smoothing a committed stroke gets can still differ.
   const inkOf = (colour: string | null) => colour ?? whiteboardInk ?? 'currentColor';
   const showsPen = !!penPoints && pendingDraw?.type === 'freehand' && penPoints.length >= 2;

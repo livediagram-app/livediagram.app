@@ -89,29 +89,33 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 
 ## Pens
 
-- A whiteboard offers **three pens**, left to right: **Ink**, **Blue** and
-  **Red**, all Medium width. Picking a pen button selects it; picking the
-  active pen again opens its flyout.
-- **Ink always stays the default colour**: the adaptive ink of the board (see
-  [Appearance](#appearance)), so its flyout offers the width only.
-- **Blue and Red are the adjustable pens**: their flyouts change both colour
-  and width, so they can become any two of the named colours. They keep their
-  place (second and third) whatever colour they are given.
-- **Widths:** **Fine** (1.5 px), **Medium** (2.5 px, the default) and
-  **Bold** (4 px), `WHITEBOARD_PEN_WIDTHS`: a subtle marker at 100%, not a
-  felt tip. The width is recorded as the stroke's `penWidth`, which every
+- A whiteboard offers **three pens**, left to right: the **main pen**, the
+  **first colour pen** and the **second colour pen**, all Medium width.
+  Picking a pen button selects it; picking the active pen again opens its
+  flyout. The pens are named by their place, never by a colour, because the
+  colour pens can be any colour.
+- **The main pen always draws in the default colour**: the adaptive ink of
+  the board (see [Appearance](#appearance)); its width is adjustable like any
+  pen's, so its flyout offers the width only.
+- **The colour pens are adjustable**: their flyouts change both colour and
+  width. They start as **blue** (first) and **red** (second), and keep their
+  place and name whatever colour they are given.
+- **Widths**, on every pen including the main pen: **Fine** (1 px),
+  **Medium** (1.5 px, the default) and **Bold** (2.5 px),
+  `WHITEBOARD_PEN_WIDTHS`: a subtle line at 100%, not a felt tip. (Tuned with
+  the operator: Medium is what Fine was, each step one notch thinner.) The width is recorded as the stroke's `penWidth`, which every
   freehand renderer honours; choosing a border width from an element's menu
   afterwards replaces it. A pen stores its width as the preset's name, not its
   px, so retuning the px never reinterprets a stored choice.
 - **Colours** in an adjustable pen's flyout: a small set of named colours,
   each at least 3:1 against both boards (WCAG 1.4.11), `WHITEBOARD_PEN_COLOURS`.
-  Ink is not among them: it is the first pen's.
+  The ink is not among them: it is the main pen's.
 - **A pen stays in hand.** After a stroke the pen is still armed, as the
   highlighter is ([Highlighter](../008-canvas/highlighter.md)): the next drag
   draws again, and the stroke just drawn is not selected. Select, Escape or
   another tool puts it down.
 - **What you draw is what lands.** While a stroke is being drawn it already
-  shows in the pen's colour and width (the Ink pen in the board's ink); on
+  shows in the pen's colour and width (the main pen in the board's ink); on
   release only the smoothing of the line may change.
 - **Strokes stay open.** A whiteboard stroke that ends near its start is not
   closed and filled, as a pencil sketch on a diagram tab is: an "o" written on
@@ -120,7 +124,7 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   `localStorage` (`livediagram:v2:whiteboard-pens`), like the other tool
   panels, and never travel with the document.
 - A stroke records the pen's colour and width on its `freehand` element when
-  drawn. The **Ink** pen records no explicit colour, so its strokes follow the
+  drawn. The **main pen** records no explicit colour, so its strokes follow the
   appearance; every other pen records its colour, which stays as drawn.
 
 ## Shapes
@@ -205,9 +209,9 @@ which already follows the reader's light or dark appearance
 - **Dark:** the editor's own **dark canvas** (the Default theme's dark
   half, the blue-slate the dark chrome is made of) with a soft off-white ink.
   Not a literal green chalkboard: the board belongs to the app it sits in.
-- Only colours change. Pens behave identically in both; the **Ink** pen and
-  any unpainted element simply render in the appearance's ink colour. Explicit
-  pen colours (Blue, Red, or a chosen one) are kept as drawn.
+- Only colours change. Pens behave identically in both; the **main pen** and
+  any unpainted element simply render in the appearance's ink colour. The
+  colour pens keep the colour they drew with.
 - The board and ink colours are two named tokens of the Default theme's
   whiteboard variant (`WHITEBOARD_BOARD`, `WHITEBOARD_INK`, one value per
   appearance), tuned with the operator; the light and dark pairs must meet
@@ -243,13 +247,13 @@ Preset-enum events only, never content, under a `Whiteboard` category:
 | Event                     | Action     | Type                                                  |
 | ------------------------- | ---------- | ----------------------------------------------------- |
 | A whiteboard created      | `Created`  | `Template` (wizard), `NewTab`, `Import`               |
-| A pen picked              | `Selected` | `Ink`, `Blue`, `Red`, `Custom`                        |
+| A pen picked              | `Selected` | `Main`, `FirstColour`, `SecondColour`                 |
+| A pen changed             | `Changed`  | `PenColour`, `PenWidth` (a width on any pen)          |
 | Eraser mode switched      | `Changed`  | `EraserStroke`, `EraserPartial`                       |
 | Shape recognition toggled | `Toggled`  | `RecognitionOn`, `RecognitionOff`                     |
 | Background changed        | `Changed`  | `BackgroundPlain`, `BackgroundDots`, `BackgroundGrid` |
 
-A pen reports its default name while it keeps its default colour, and
-`Custom` once its colour has been changed. Strokes, stickies and text report
+A pen reports its place, never its colour. Strokes, stickies and text report
 through the ordinary `Element` / `Added` events.
 
 ## Help centre ([Help app](../018-help/help-app.md))

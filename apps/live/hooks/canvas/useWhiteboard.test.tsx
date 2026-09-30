@@ -40,7 +40,7 @@ describe('useWhiteboard', () => {
       type: 'freehand',
       variant: 'whiteboard',
       colour: null,
-      width: 2.5,
+      width: 1.5,
       recognise: false,
     });
   });
@@ -71,12 +71,12 @@ describe('useWhiteboard', () => {
 
   it('arms a picked pen and reports it', () => {
     const { deps, hook } = setup(board());
-    act(() => hook.result.current.pickPen('red'));
+    act(() => hook.result.current.pickPen('second-colour'));
     expect(deps.beginDraw).toHaveBeenLastCalledWith(
       expect.objectContaining({ variant: 'whiteboard', colour: '#e5484d' }),
     );
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Selected', 'Red');
-    expect(hook.result.current.prefs.activePenId).toBe('red');
+    expect(track).toHaveBeenCalledWith('Whiteboard', 'Selected', 'SecondColour');
+    expect(hook.result.current.prefs.activePenId).toBe('second-colour');
   });
 
   it('remembers recognition and eraser mode on this device', () => {
@@ -91,13 +91,13 @@ describe('useWhiteboard', () => {
 
   it('arms a dock shape with the pen in hand', () => {
     const { deps, hook } = setup(board());
-    act(() => hook.result.current.pickPen('blue'));
+    act(() => hook.result.current.pickPen('first-colour'));
     hook.rerender({ ...deps });
     act(() => hook.result.current.pickShape('diamond'));
     expect(deps.beginDraw).toHaveBeenLastCalledWith({
       type: 'shape',
       kind: 'diamond',
-      pen: { colour: '#1d7afc', width: 2.5 },
+      pen: { colour: '#1d7afc', width: 1.5 },
     });
   });
 
@@ -118,5 +118,15 @@ describe('useWhiteboard', () => {
     const { deps, hook } = setup(board('wb', { backgroundPattern: 'grid' }));
     act(() => hook.result.current.setBackground('dots'));
     expect(deps.setBackgroundPattern).not.toHaveBeenCalled();
+  });
+});
+
+describe('pen changes', () => {
+  it('reports a new colour and a new width, never the colour itself', () => {
+    const { hook } = setup(board());
+    act(() => hook.result.current.updatePen('first-colour', { colour: '#9061f9' }));
+    act(() => hook.result.current.updatePen('main', { width: 1 }));
+    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'PenColour');
+    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'PenWidth');
   });
 });

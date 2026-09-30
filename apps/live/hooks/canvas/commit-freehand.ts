@@ -232,7 +232,7 @@ type WhiteboardPenIntent = Extract<PendingDraw, { variant: 'whiteboard' }>;
 // recognition"): with recognition on, a stroke that reads as a shape is the
 // clean shape, unfilled, in the pen's colour and nearest weight; otherwise an
 // OPEN stroke (a written "o" is ink, not a filled shape) carrying the pen's
-// width. The Ink pen records no colour, so its marks follow the board.
+// width. The main pen records no colour, so its marks follow the board.
 // Style memory is skipped on purpose: a board's marks wear the pen, not the
 // remembered diagram style.
 function whiteboardStroke(points: { x: number; y: number }[], pen: WhiteboardPenIntent): Element {

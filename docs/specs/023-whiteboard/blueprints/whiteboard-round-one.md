@@ -43,23 +43,23 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term             | Identifier                                     | Meaning                                                  |
-| ---------------- | ---------------------------------------------- | -------------------------------------------------------- |
-| Whiteboard       | `kind: 'whiteboard'`, `isWhiteboardTab(tab)`   | A tab presented for freehand whiteboarding               |
-| Board            | `WHITEBOARD_BOARD[appearance]`                 | The canvas colour of a whiteboard                        |
-| Ink              | `WHITEBOARD_INK[appearance]`                   | The colour of every unpainted element on a whiteboard    |
-| Pattern          | `WHITEBOARD_PATTERN[appearance]`               | The colour of the dots and grid lines                    |
-| Background       | `WhiteboardBackground` (`plain/dots/grid`)     | A board's pattern, stored as `backgroundPattern`         |
-| Pen              | `WhiteboardPen`                                | A preset: id, colour (`null` = Ink), width in px         |
-| Pen width        | `WhiteboardPenWidth` (`fine/medium/bold`)      | 1.5, 2.5, 4 px, recorded as `penWidth`; stored by name   |
-| Pen intent       | `PendingDraw` freehand `variant: 'whiteboard'` | The held pen, with its colour, width and recognition     |
-| Dock             | `WhiteboardDock`                               | The floating bottom-centre toolbar                       |
-| Dock tool        | `WhiteboardTool`                               | `select/pen/eraser/sticky/text/shape`                    |
-| Flyout           | `WhiteboardFlyout`                             | A dock button's settings, opened above the dock          |
-| Eraser mode      | `WhiteboardEraserMode` (`stroke/partial`)      | Whole-stroke or part-of-stroke erase                     |
-| Ink projection   | `inkWhiteboardElement(el, ink)`                | Display-only colours for unpainted elements              |
-| Pen seen         | `markPenSeen()`, `penSeen()`                   | A `pen` pointer has been used in this page session       |
-| Whiteboard prefs | `WhiteboardPrefs`                              | Pens, active pen, recognition, eraser mode; device-local |
+| Term             | Identifier                                     | Meaning                                                                     |
+| ---------------- | ---------------------------------------------- | --------------------------------------------------------------------------- |
+| Whiteboard       | `kind: 'whiteboard'`, `isWhiteboardTab(tab)`   | A tab presented for freehand whiteboarding                                  |
+| Board            | `WHITEBOARD_BOARD[appearance]`                 | The canvas colour of a whiteboard                                           |
+| Ink              | `WHITEBOARD_INK[appearance]`                   | The colour of every unpainted element on a whiteboard                       |
+| Pattern          | `WHITEBOARD_PATTERN[appearance]`               | The colour of the dots and grid lines                                       |
+| Background       | `WhiteboardBackground` (`plain/dots/grid`)     | A board's pattern, stored as `backgroundPattern`                            |
+| Pen              | `WhiteboardPen`                                | Main, first colour or second colour: id, colour (`null` = ink), width in px |
+| Pen width        | `WhiteboardPenWidth` (`fine/medium/bold`)      | 1, 1.5, 2.5 px, recorded as `penWidth`; stored by name                      |
+| Pen intent       | `PendingDraw` freehand `variant: 'whiteboard'` | The held pen, with its colour, width and recognition                        |
+| Dock             | `WhiteboardDock`                               | The floating bottom-centre toolbar                                          |
+| Dock tool        | `WhiteboardTool`                               | `select/pen/eraser/sticky/text/shape`                                       |
+| Flyout           | `WhiteboardFlyout`                             | A dock button's settings, opened above the dock                             |
+| Eraser mode      | `WhiteboardEraserMode` (`stroke/partial`)      | Whole-stroke or part-of-stroke erase                                        |
+| Ink projection   | `inkWhiteboardElement(el, ink)`                | Display-only colours for unpainted elements                                 |
+| Pen seen         | `markPenSeen()`, `penSeen()`                   | A `pen` pointer has been used in this page session                          |
+| Whiteboard prefs | `WhiteboardPrefs`                              | Pens, active pen, recognition, eraser mode; device-local                    |
 
 Banned synonyms: "canvas kind" for tab kind, "marker" for a whiteboard pen (the highlighter is the
 marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard look.
@@ -87,8 +87,8 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
 ### Dock state
 
 - `WhiteboardPrefs = { pens: WhiteboardPen[3], activePenId, recognise: boolean, eraserMode }`,
-  defaults `DEFAULT_WHITEBOARD_PREFS` (pens Ink, Blue, Red at Medium; only Blue and Red adjust colour,
-  `penAdjustsColour`; `activePenId: 'ink'`;
+  defaults `DEFAULT_WHITEBOARD_PREFS` (the main pen, then the first and second colour pens (blue, red) at Medium; only the colour pens adjust colour,
+  `penAdjustsColour`; `activePenId: 'main'`;
   `recognise: false`; `eraserMode: 'stroke'`).
 - `activeWhiteboardTool(canvasTool, pendingDraw)`:
   - `canvasTool === 'eraser'` → `eraser` (a stray `highlighter` reads as `select`);
@@ -110,7 +110,8 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
   - **Undo / Redo**: `onUndo` / `onRedo`, disabled by `canUndo` / `canRedo`.
   - **More**: toggle the More flyout; picking a background writes `backgroundPattern` through the
     ordinary tab-canvas setter (undoable, synced) and tracks `Background<Name>`.
-- Changing a pen's colour or width updates `pens[p]` and re-arms the intent when `p` is held.
+- Changing a pen's colour or width updates `pens[p]`, re-arms the intent when `p` is held, and tracks
+  `Whiteboard / Changed / PenColour` or `PenWidth` (a pen is reported by its place, never its colour).
 - **Entering a whiteboard tab** (a new active tab, or the open tab turning into a whiteboard through
   Quick Start; editable, no intent armed, tool `select` or `pan`) arms the active pen (D2). The hook
   keys this on the pair of tab id and kind.
@@ -128,7 +129,7 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
    - a shape kind → shape at the bbox, `fillColor: 'transparent'`, `strokeColor` = pen colour when
      set, `strokeWidth` = `nearestBorderStroke(width)`; track as the Shape Pen does.
 3. Otherwise a freehand element: `closed: false` always, `penWidth: width`, `strokeColor` = pen
-   colour when set (Ink records none). Track `Element / Added / Freehand`.
+   colour when set (the main pen records none). Track `Element / Added / Freehand`.
 4. The pen stays armed; nothing is selected.
 
 `nearestBorderStroke(px)`: the `BorderStroke` whose `BORDER_STROKE_PX` is nearest, ties to the
@@ -255,7 +256,7 @@ export function eraseStrokePart(
 export function nearestBorderStroke(px: number): BorderStroke;
 
 // apps/live
-export type WhiteboardPenId = 'ink' | 'blue' | 'red';
+export type WhiteboardPenId = 'main' | 'first-colour' | 'second-colour';
 export type WhiteboardPen = { id: WhiteboardPenId; colour: string | null; width: number };
 export type WhiteboardEraserMode = 'stroke' | 'partial';
 export type WhiteboardPrefs = {
@@ -285,7 +286,7 @@ and `{ type: 'arrow'; ends?: ArrowEnds }`.
 
 Parsing rejects: a non-object or unparseable prefs value → defaults; a pen whose id is unknown →
 dropped and refilled from defaults; a colour that is not in `WHITEBOARD_PEN_COLOURS`, or any colour on
-the Ink pen → the pen's default colour; a width that is not a preset NAME (`fine`, `medium`, `bold`; widths are stored
+the main pen → the pen's default colour; a width that is not a preset NAME (`fine`, `medium`, `bold`; widths are stored
 by name so the px can be retuned) → Medium; an unknown `activePenId` or
 `eraserMode` → default; `recognise` not a boolean → `false`.
 
@@ -332,14 +333,14 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 - Dock: bottom centre, `bottom-4` from 1500 px wide, lifted above the bottom-right cluster below it; buttons
   44 × 44 px; rounded panel with the editor's panel surface tokens; separators between groups
   (select | pens | eraser | sticky, text, shapes | recognition | undo, redo | more).
-- Pen buttons: a filled nib in the pen's colour (Ink shows the ink colour), a thickness bar below
+- Pen buttons: a filled nib in the pen's colour (the main pen shows the ink colour), a thickness bar below
   scaled to its width.
 - Flyouts sit above their button, never move the dock; clamp to the viewport horizontally (12 px
   margin, measured from layout width before paint, since the pop-in starts at `scale(0)`), placed
   with the `translate` property because the pop-in animation owns `transform`.
 - Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
-- Copy: toolbar label "Whiteboard tools"; buttons "Select", "Ink pen", "Blue pen", "Red pen", "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition",
-  "Undo", "Redo", "More"; pen flyout "Colour" (Blue and Red only), "Width" with "Fine", "Medium", "Bold"; eraser flyout
+- Copy: toolbar label "Whiteboard tools"; buttons "Select", "Main pen", "First colour pen", "Second colour pen" (the colour pens adding their colour, e.g. "First colour pen, blue, medium"), "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition",
+  "Undo", "Redo", "More"; pen flyout "Colour" (colour pens only), "Width" with "Fine", "Medium", "Bold"; eraser flyout
   "Stroke", "Partial" with hints "Remove whole strokes" / "Erase part of a stroke"; More flyout
   "Background" with "Plain", "Dots", "Grid"; Quick Start card "Whiteboard", "A plain board to draw on
   with pens, stickies and shapes."
@@ -348,7 +349,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 - `role="toolbar"`, `aria-label="Whiteboard tools"`, `aria-orientation="horizontal"`; roving
   tabindex: one tab stop, ArrowLeft / ArrowRight move (wrapping), Home / End jump.
-- Tool buttons carry `aria-pressed`; a pen's name includes colour and width ("Red pen, medium");
+- Tool buttons carry `aria-pressed`; a pen's name includes its place, colour (colour pens) and width ("Second colour pen, red, medium");
   flyout openers carry `aria-expanded` and `aria-controls`.
 - A flyout is a `role="group"` labelled by its title; opening moves focus to its selected control;
   Escape closes it and returns focus to the opener.
@@ -404,7 +405,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | `WHITEBOARD_BOARD.light / dark`   | `#fbfaf7` / `#0d121a`            | spec values     | contrast >= 4.5 |
 | `WHITEBOARD_INK.light / dark`     | `#1c1917` / `#e2e8f0`            | spec values     | contrast >= 4.5 |
 | `WHITEBOARD_PATTERN.light / dark` | `#d6d3cb` / `#1c2735`            | D5, spec (dark) | faint, visible  |
-| `WHITEBOARD_PEN_WIDTHS`           | 1.5, 2.5, 4 px                   | spec            | 1 to 100        |
+| `WHITEBOARD_PEN_WIDTHS`           | 1, 1.5, 2.5 px                   | spec            | 1 to 100        |
 | `WHITEBOARD_ERASER_RADIUS_PX`     | stroke 10, partial 16            | D6              | 4 to 48         |
 | Partial densify step              | `max(r / 2, 1)` canvas px        | D7              |                 |
 | Crossing bisection steps          | 12                               | D7              | 8 to 20         |

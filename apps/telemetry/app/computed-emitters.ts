@@ -242,8 +242,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
   },
   'apps/live/hooks/canvas/useWhiteboard.ts Whiteboard·Selected': {
-    values: ['Ink', 'Blue', 'Red', 'Custom'],
-    open: 'penTelemetryType: the preset name of the pen, or Custom once recoloured',
+    values: ['Main', 'FirstColour', 'SecondColour'],
+    open: 'penTelemetryType: the place of the pen in the dock, never its colour',
   },
   'apps/live/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
     values: ['Banner', 'Callout', 'StatRow'],

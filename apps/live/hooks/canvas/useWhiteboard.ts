@@ -127,10 +127,8 @@ export function useWhiteboard(deps: Deps) {
     };
     setPrefs(next);
     if (tool === 'pen' && prefs.activePenId === id) armPen(next);
-    if (patch.colour !== undefined) {
-      const pen = next.pens.find((p) => p.id === id);
-      if (pen) track('Whiteboard', 'Selected', penTelemetryType(pen));
-    }
+    if (patch.colour !== undefined) track('Whiteboard', 'Changed', 'PenColour');
+    if (patch.width !== undefined) track('Whiteboard', 'Changed', 'PenWidth');
   };
 
   const pickEraser = () => {

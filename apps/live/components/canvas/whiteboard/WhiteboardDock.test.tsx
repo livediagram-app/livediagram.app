@@ -54,10 +54,12 @@ describe('WhiteboardDock', () => {
   it('names each pen by colour and width and marks the one in hand', () => {
     renderDock();
     expect(
-      screen.getByRole('button', { name: 'Ink pen, medium' }).getAttribute('aria-pressed'),
+      screen.getByRole('button', { name: 'Main pen, medium' }).getAttribute('aria-pressed'),
     ).toBe('true');
     expect(
-      screen.getByRole('button', { name: 'Blue pen, medium' }).getAttribute('aria-pressed'),
+      screen
+        .getByRole('button', { name: 'First colour pen, blue, medium' })
+        .getAttribute('aria-pressed'),
     ).toBe('false');
   });
 
@@ -66,7 +68,7 @@ describe('WhiteboardDock', () => {
     const select = screen.getByRole('button', { name: 'Select' });
     select.focus();
     fireEvent.keyDown(select, { key: 'ArrowRight' });
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Ink pen, medium' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Main pen, medium' }));
     fireEvent.keyDown(document.activeElement!, { key: 'End' });
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'More' }));
     fireEvent.keyDown(document.activeElement!, { key: 'ArrowRight' });
@@ -77,51 +79,55 @@ describe('WhiteboardDock', () => {
 
   it('picks a pen, and opens its flyout when it is already in hand', () => {
     const { m } = renderDock();
-    fireEvent.click(screen.getByRole('button', { name: 'Blue pen, medium' }));
-    expect(m.pickPen).toHaveBeenCalledWith('blue');
-    expect(screen.queryByRole('group', { name: 'Ink pen' })).toBeNull();
-    const ink = screen.getByRole('button', { name: 'Ink pen, medium' });
+    fireEvent.click(screen.getByRole('button', { name: 'First colour pen, blue, medium' }));
+    expect(m.pickPen).toHaveBeenCalledWith('first-colour');
+    expect(screen.queryByRole('group', { name: 'Main pen' })).toBeNull();
+    const ink = screen.getByRole('button', { name: 'Main pen, medium' });
     fireEvent.click(ink);
     expect(m.pickPen).toHaveBeenCalledTimes(1);
     expect(ink.getAttribute('aria-expanded')).toBe('true');
-    expect(screen.getByRole('group', { name: 'Ink pen' })).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'Main pen' })).toBeTruthy();
   });
 
-  it('offers three pens, Ink, Blue then Red', () => {
+  it('offers the main pen, then the first and second colour pens', () => {
     renderDock();
     const pens = screen
       .getAllByRole('button', { name: / pen, / })
       .map((b) => b.getAttribute('aria-label'));
-    expect(pens).toEqual(['Ink pen, medium', 'Blue pen, medium', 'Red pen, medium']);
+    expect(pens).toEqual([
+      'Main pen, medium',
+      'First colour pen, blue, medium',
+      'Second colour pen, red, medium',
+    ]);
   });
 
-  it('keeps the Ink pen its default colour: its flyout is the width only', () => {
+  it('keeps the main pen its default colour: its flyout is the width only', () => {
     const { m } = renderDock();
-    fireEvent.click(screen.getByRole('button', { name: 'Ink pen, medium' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Main pen, medium' }));
     expect(screen.queryByText('Colour')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Bold' }));
-    expect(m.updatePen).toHaveBeenCalledWith('ink', { width: 4 });
+    expect(m.updatePen).toHaveBeenCalledWith('main', { width: 2.5 });
   });
 
   it('changes the colour and width of an adjustable pen from its flyout', () => {
     const { m } = renderDock(
-      model('pen', { prefs: { ...DEFAULT_WHITEBOARD_PREFS, activePenId: 'blue' } }),
+      model('pen', { prefs: { ...DEFAULT_WHITEBOARD_PREFS, activePenId: 'first-colour' } }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Blue pen, medium' }));
+    fireEvent.click(screen.getByRole('button', { name: 'First colour pen, blue, medium' }));
     fireEvent.click(screen.getByRole('button', { name: 'Violet' }));
-    expect(m.updatePen).toHaveBeenCalledWith('blue', { colour: '#9061f9' });
+    expect(m.updatePen).toHaveBeenCalledWith('first-colour', { colour: '#9061f9' });
     fireEvent.click(screen.getByRole('button', { name: 'Fine' }));
-    expect(m.updatePen).toHaveBeenCalledWith('blue', { width: 1.5 });
+    expect(m.updatePen).toHaveBeenCalledWith('first-colour', { width: 1 });
   });
 
   it('closes a flyout on Escape and hands focus back to its opener', () => {
     renderDock();
-    const ink = screen.getByRole('button', { name: 'Ink pen, medium' });
+    const ink = screen.getByRole('button', { name: 'Main pen, medium' });
     fireEvent.click(ink);
-    const group = screen.getByRole('group', { name: 'Ink pen' });
+    const group = screen.getByRole('group', { name: 'Main pen' });
     expect(group.contains(document.activeElement)).toBe(true);
     fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
-    expect(screen.queryByRole('group', { name: 'Ink pen' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Main pen' })).toBeNull();
     expect(document.activeElement).toBe(ink);
   });
 

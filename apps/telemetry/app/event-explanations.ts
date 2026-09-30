@@ -18,12 +18,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Whiteboard|Created|NewTab':
     'Someone added a whiteboard tab, a plain board drawn on with pens, to a document from Quick Start.',
-  'Whiteboard|Selected|Ink':
-    "Someone picked up a whiteboard's Ink pen, which draws in the board's own ink colour: dark on the light board, light on the dark one.",
-  'Whiteboard|Selected|Red': "Someone picked up a whiteboard's Red pen.",
-  'Whiteboard|Selected|Blue': "Someone picked up a whiteboard's Blue pen.",
-  'Whiteboard|Selected|Custom':
-    'Someone picked up a whiteboard pen after changing its colour, or changed a pen to a new colour.',
+  'Whiteboard|Selected|Main':
+    "Someone picked up a whiteboard's main pen, which draws in the board's own ink colour: dark on the light board, light on the dark one.",
+  'Whiteboard|Selected|FirstColour':
+    "Someone picked up a whiteboard's first colour pen (blue unless they changed it).",
+  'Whiteboard|Selected|SecondColour':
+    "Someone picked up a whiteboard's second colour pen (red unless they changed it).",
+  'Whiteboard|Changed|PenColour': "Someone gave one of a whiteboard's colour pens a new colour.",
+  'Whiteboard|Changed|PenWidth': "Someone changed the width of one of a whiteboard's pens.",
   'Whiteboard|Changed|EraserStroke': "Someone set a whiteboard's eraser to remove whole strokes.",
   'Whiteboard|Changed|EraserPartial':
     "Someone set a whiteboard's eraser to rub out only the part of a stroke under it.",
@@ -835,7 +837,8 @@ export const EXACT: Readonly<Record<string, string>> = {
 export const BY_ACTION: Readonly<Record<string, string>> = {
   'Whiteboard|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
   'Whiteboard|Selected': 'Someone picked up one of the pens on a whiteboard.',
-  'Whiteboard|Changed': "Someone changed a whiteboard's eraser mode or board background.",
+  'Whiteboard|Changed':
+    "Someone changed a whiteboard pen's colour or width, the eraser mode or the board background.",
   'Whiteboard|Toggled': 'Someone switched shape recognition on a whiteboard on or off.',
   'Cta|Opened':
     'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',

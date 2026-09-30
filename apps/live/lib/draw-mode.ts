@@ -313,7 +313,7 @@ export function drawIntentCursor(intent: PendingDraw): string {
     }
     if (intent.variant === 'whiteboard') {
       // The nib with a dot of the pen's own colour (docs/specs/023-whiteboard/whiteboard.md): which pen
-      // is in hand, at the pointer. Ink shows as dark with a light rim so it
+      // is in hand, at the pointer. The main pen shows as dark with a light rim so it
       // reads on either board.
       const dot = intent.colour ?? 'rgb(28 25 23)';
       return drawCursorFromGlyph(

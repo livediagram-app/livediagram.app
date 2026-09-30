@@ -13,6 +13,7 @@ import { EraserIcon, SelectIcon } from '@/components/palette/palette-icons';
 import {
   WHITEBOARD_PEN_COLOURS,
   WHITEBOARD_PEN_WIDTHS,
+  PEN_NAMES,
   penAdjustsColour,
   penLabel,
   type WhiteboardPenId,
@@ -46,7 +47,7 @@ const ERASER_MODES = [
 
 export type WhiteboardDockProps = {
   model: WhiteboardDockModel;
-  // The board's ink for this appearance: what the Ink pen draws with.
+  // The board's ink for this appearance: what the main pen draws with.
   ink: string;
   canUndo: boolean;
   canRedo: boolean;
@@ -239,10 +240,11 @@ export function WhiteboardDock({
     }
     const pen = prefs.pens.find((p) => p.id === kind)!;
     return {
-      label: PEN_TITLES[pen.id],
+      // Named by its place, so "which pen am I editing" never changes under the pointer.
+      label: PEN_NAMES[pen.id],
       body: (
         <FlyoutRows>
-          {/* Ink always stays the board's ink: its flyout is the width only. */}
+          {/* The main pen always stays the board's ink: its flyout is the width only. */}
           {penAdjustsColour(pen) ? (
             <FlyoutRow label="Colour">
               {WHITEBOARD_PEN_COLOURS.map((c) => (
@@ -384,14 +386,6 @@ export function WhiteboardDock({
     </div>
   );
 }
-
-// A pen keeps its own name in its flyout title even once recoloured, so
-// "which pen am I editing" never changes under the pointer.
-const PEN_TITLES: Record<WhiteboardPenId, string> = {
-  ink: 'Ink pen',
-  blue: 'Blue pen',
-  red: 'Red pen',
-};
 
 function FlyoutRows({ children }: { children: ReactNode }) {
   return <div className="flex flex-col gap-3">{children}</div>;

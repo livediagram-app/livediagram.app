@@ -56,7 +56,7 @@ const scribble = [
 ];
 
 describe('a whiteboard pen stroke', () => {
-  it('records the pen width and no colour for the Ink pen', () => {
+  it('records the pen width and no colour for the main pen', () => {
     const s = setup(pen());
     s.commit(scribble, false);
     const stroke = s.elements[0] as FreehandElement;
@@ -104,7 +104,7 @@ describe('a whiteboard pen stroke', () => {
     expect(s.setPendingDraw).not.toHaveBeenCalledWith(null);
   });
 
-  it('leaves an Ink shape unpainted so it follows the board', () => {
+  it('leaves a main-pen shape unpainted so it follows the board', () => {
     const s = setup(pen({ recognise: true }));
     s.commit(loop, false);
     const shape = s.elements[0] as ShapeElement;

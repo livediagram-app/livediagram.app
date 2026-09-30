@@ -55,7 +55,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Email:
     'Emails the product sends (welcome, onboarding, team invites, notifications). Which email only, never who received it.',
   Whiteboard:
-    'Whiteboard tabs, drawn on with a dock of pens: a whiteboard created (from the New Document wizard or as a new tab), a pen picked, the eraser mode or board background changed, and shape recognition switched on or off. Never what was drawn.',
+    'Whiteboard tabs, drawn on with a dock of pens: a whiteboard created (from the New Document wizard or as a new tab), a pen picked or given a new colour or width, the eraser mode or board background changed, and shape recognition switched on or off. Never what was drawn.',
   Error:
     'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) client-side uncaught exceptions, and warnings (a degradation the author was carried through, such as a spent AI budget failing over to the in-browser reader). Never a message, stack, or URL.',
 };

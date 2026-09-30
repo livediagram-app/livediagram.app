@@ -40,7 +40,7 @@ describe('CanvasDrawPreview on a whiteboard', () => {
     expect(path.getAttribute('stroke-width')).toBe('8');
   });
 
-  it('previews the Ink pen in the board ink', () => {
+  it('previews the main pen in the board ink', () => {
     const { container } = render(
       <CanvasDrawPreview {...base} penPoints={stroke} pendingDraw={pen(null, 4)} />,
     );
