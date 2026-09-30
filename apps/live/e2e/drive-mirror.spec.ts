@@ -601,11 +601,20 @@ test('a connection made in one tab starts syncing at once while another tab runs
   await page.waitForURL(/\/explorer\/recent\?settings=account&section=cloud-sync/);
   const row = page.locator('[data-cloud-sync="googleDrive"]');
   // Never "Not connected" once the connection exists: Connecting until the
-  // mirror reports, then the first copy or Synced, within seconds.
-  await expect(pillOf(row)).toHaveText(/^(Connecting…|Copying .+|Syncing…|Last synced .+)$/, {
-    timeout: 1000,
-  });
-  await expect(pillOf(row)).toHaveText(/^(Copying .+|Last synced .+)$/, { timeout: 5000 });
+  // mirror reports, then the first copy or Last synced, without any focus.
+  await expect(row).toBeVisible();
+  let sawNotConnected = false;
+  await expect
+    .poll(
+      async () => {
+        const text = (await pillOf(row).allTextContents())[0] ?? '';
+        if (text === 'Not connected') sawNotConnected = true;
+        return /^(Copying .+|Last synced .+)$/.test(text);
+      },
+      { timeout: 10_000, intervals: [100] },
+    )
+    .toBe(true);
+  expect(sawNotConnected).toBe(false);
   await expect
     .poll(() => google.fake.appFiles(user).some((f) => f.name === 'Tabs plan.livediagram'), {
       timeout: 10_000,

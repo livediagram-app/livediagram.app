@@ -29,7 +29,8 @@ const election = vi.hoisted(() => ({
   takenOver: 0,
 }));
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/explorer/recent' }));
+const route = vi.hoisted(() => ({ path: '/explorer/recent' }));
+vi.mock('next/navigation', () => ({ usePathname: () => route.path }));
 vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({
   useClerkApiBootstrap: () => auth.value,
 }));
@@ -83,9 +84,9 @@ vi.mock('@/lib/drive/tab-election', () => ({
   onDriveFlushRequest: () => () => {},
 }));
 
-const { DriveMirrorProvider } = await import('./DriveMirrorProvider');
+const { DriveMirrorProvider, resetConnectOutcomeForTests } = await import('./DriveMirrorProvider');
 const { useDriveMirror, DRIVE_STATUS_INITIAL } = await import('./drive-mirror-context');
-const { markConnectConnected } = await import('@/lib/drive/consent');
+const { markConnectConnected, markConnectCancelled } = await import('@/lib/drive/consent');
 const {
   DRIVE_CHECK_ANSWER_MS,
   DRIVE_POLL_INTERVAL_MS,
@@ -120,11 +121,33 @@ beforeEach(() => {
   posted.length = 0;
   election.elect = true;
   election.takenOver = 0;
+  route.path = '/explorer/recent';
+  resetConnectOutcomeForTests();
+  window.history.replaceState(null, '', '/explorer/recent');
   sessionStorage.clear();
 });
 afterEach(cleanup);
 
 describe('DriveMirrorProvider', () => {
+  it('leaves the outcome of a trip to Google for the page it returns to, never taking it on /drive pages', async () => {
+    // /drive/connected renders the provider too; its child page marks the
+    // outcome in the same commit as the provider mounts.
+    route.path = '/drive/connected';
+    window.history.replaceState(null, '', '/drive/connected');
+    auth.value = { isSignedIn: true, authLoaded: true, clerkUserId: 'user_1' };
+    function MarksOnMount() {
+      useEffect(() => markConnectCancelled(sessionStorage), []);
+      return null;
+    }
+    render(
+      <DriveMirrorProvider>
+        <MarksOnMount />
+      </DriveMirrorProvider>,
+    );
+    await flush();
+    expect(sessionStorage.getItem('livediagram:v2:drive-connect-outcome')).toBe('cancelled');
+  });
+
   it('starts the mirror once the signed-in user becomes known after mount', async () => {
     const view = render(tree());
     await flush();

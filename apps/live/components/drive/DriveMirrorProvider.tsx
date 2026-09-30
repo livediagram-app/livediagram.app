@@ -64,6 +64,27 @@ import { DriveReconnectBanner } from './DriveReconnectBanner';
 // Pages that never run the engine: an embed lives in someone else's page,
 // and the Drive routes do their own one-off work.
 const QUIET_PATHS = ['/embed', '/drive'];
+const isQuiet = (pathname: string) =>
+  QUIET_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
+// The outcome of a trip to Google (a finished connection or a cancel), taken
+// once per page load by the page it returns to. Never on a /drive page: the
+// provider there mounts in the same commit as /drive/connected marks the
+// outcome, and taking it there would lose it on the way back.
+let pageOutcome: 'cancelled' | 'connected' | null | undefined;
+function connectOutcomeOnce(): 'cancelled' | 'connected' | null {
+  if (typeof window === 'undefined' || isQuiet(window.location.pathname)) return null;
+  if (pageOutcome === undefined) {
+    pageOutcome = peekConnectOutcome(sessionStorage);
+    clearConnectOutcome(sessionStorage);
+  }
+  return pageOutcome;
+}
+
+// Tests only: a fresh page load.
+export function resetConnectOutcomeForTests(): void {
+  pageOutcome = undefined;
+}
 
 // How long the row says Connecting after a finished connection if no mirror
 // reports on it.
@@ -95,11 +116,8 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
   // (docs/specs/022-drive-mirror/drive-mirror.md, "What the row says").
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
-  // How a trip to Google ended, read on the first render (a pure peek) and
-  // cleared from storage once mounted.
-  const [outcome] = useState(() =>
-    typeof window === 'undefined' ? null : peekConnectOutcome(sessionStorage),
-  );
+  // How a trip to Google ended, for the page it came back to.
+  const [outcome] = useState(connectOutcomeOnce);
   // A cancel at Google: said once, calmly.
   const [connectNote, setConnectNote] = useState<'cancelled' | null>(
     outcome === 'cancelled' ? 'cancelled' : null,
@@ -149,9 +167,6 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     const timer = window.setTimeout(() => setSettingUp(false), SETTING_UP_MAX_MS);
     return () => window.clearTimeout(timer);
   }, [settingUp]);
-  useEffect(() => {
-    clearConnectOutcome(sessionStorage);
-  }, []);
   // Back from Google out of the bfcache: the page is live again, not leaving.
   useEffect(() => {
     const onShow = (e: PageTransitionEvent) => {
@@ -162,7 +177,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
   }, []);
   const runtime = useRef<Runtime | null>(null);
   const signedIn = !!isSignedIn && authLoaded && !!clerkUserId;
-  const quiet = QUIET_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const quiet = isQuiet(pathname);
 
   useEffect(() => {
     if (!googleClientId || !signedIn) return;
