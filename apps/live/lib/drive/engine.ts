@@ -52,6 +52,10 @@ export type DriveMirrorStatus = {
   notices: DriveMirrorNotice[];
   // The root folder's Drive name, as the user sees it; null until known.
   rootName: string | null;
+  // Every mirrored (Personal Space) document: the savedAt last uploaded to
+  // Drive, or null while it has never been. A document not listed is not
+  // mirrored (a team, shared or offline document).
+  mirrored: Record<string, number | null>;
 };
 
 export type DriveEngineTelemetry = (
@@ -95,6 +99,7 @@ const INITIAL: DriveMirrorStatus = {
   leaseHeldElsewhere: false,
   notices: [],
   rootName: null,
+  mirrored: {},
 };
 
 export class DriveMirrorEngine {
@@ -295,6 +300,7 @@ export class DriveMirrorEngine {
         error: null,
         progress: null,
         notices: this.noticesOf(snapshot),
+        mirrored: this.mirroredOf(snapshot),
       });
       driveLog('pass-end', { kind });
     } catch (err) {
@@ -556,6 +562,14 @@ export class DriveMirrorEngine {
     }
     deps.firstMirror.mark(connection.connectedAt);
     deps.track('FirstMirrorFinished');
+  }
+
+  private mirroredOf(snapshot: MirrorSnapshot): Record<string, number | null> {
+    const out: Record<string, number | null> = {};
+    for (const d of snapshot.documents.values()) {
+      out[d.id] = snapshot.items.get(itemKey('document', d.id))?.mirroredSavedAt ?? null;
+    }
+    return out;
   }
 
   private noticesOf(snapshot: MirrorSnapshot): DriveMirrorNotice[] {

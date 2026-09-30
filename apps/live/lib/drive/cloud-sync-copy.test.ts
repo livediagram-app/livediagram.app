@@ -27,6 +27,7 @@ const status = (over: Partial<DriveMirrorStatus> = {}): DriveMirrorStatus => ({
   leaseHeldElsewhere: false,
   notices: [],
   rootName: 'livediagram (staging)',
+  mirrored: {},
   ...over,
 });
 const IDLE: DriveConnectState = { connecting: false, connectError: null, connectNote: null };

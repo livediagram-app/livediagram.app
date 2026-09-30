@@ -15,6 +15,7 @@ import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
 import { FavouriteMarker, FolderChip, VisibilityBadge } from './document-badges';
 import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
+import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { SYNTHETIC_FOLDERS, visibleSyntheticFolders } from './synthetic-folders';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { FolderCard, SyntheticFolderCard } from './explorer-folder-cards';
@@ -183,6 +184,7 @@ function DocumentCard(
           <DriveNoticeMarker documentId={liveDoc.id} />
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
           <RelativeTimeChip at={liveDoc.savedAt} />
+          <DocumentSyncMark documentId={liveDoc.id} savedAt={liveDoc.savedAt} />
         </div>
         {ownerLabel ? (
           <span className="truncate text-xs text-slate-500 dark:text-slate-400">{ownerLabel}</span>

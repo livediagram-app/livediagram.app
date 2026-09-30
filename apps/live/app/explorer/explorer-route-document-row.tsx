@@ -10,6 +10,7 @@ import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
 import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
 import { FavouriteMarker, FolderChip, VisibilityBadge } from './document-badges';
 import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
+import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
 // One document row in the full-page /explorer list (open / rename / move /
@@ -88,7 +89,10 @@ export function DocumentRow(props: DocumentEntryProps) {
       <span className="hidden sm:block">
         {showVisibility ? <VisibilityBadge document={liveDoc} /> : null}
       </span>
-      <RelativeTimeChip at={liveDoc.savedAt} />
+      <span className="flex items-center gap-1.5">
+        <RelativeTimeChip at={liveDoc.savedAt} />
+        <DocumentSyncMark documentId={liveDoc.id} savedAt={liveDoc.savedAt} />
+      </span>
       {renaming ? (
         <span />
       ) : (
