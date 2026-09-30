@@ -246,7 +246,7 @@ The template and theme grids shuffle their order **once per open** of
 the picker, so returning users keep meeting options they have not
 explored instead of always seeing the same curated first rows.
 
-- **Pinned defaults stay first.** Blank diagram (templates) and the
+- **Pinned defaults stay first.** Blank Canvas (templates) and the
   `brand` scheme, labelled "Default" (theme), are always pinned to index
   0 — they are the sensible starting points, so they never get
   shuffled away. Everything else is randomised.
@@ -275,13 +275,17 @@ and the pattern controls in `components/palette/palette-controls.tsx`)
 
 The welcome screen is a **two-step wizard** rather than one long page:
 
-- **Step 1: Template.** The template browse (search, categories, drill-in).
-  Footer: **Skip** and **Next**. Double-clicking a template card advances to
-  step 2 (it does not commit the whole wizard, so the user still picks a theme).
-- **Step 2: Theme.** The theme browse (below). Footer: **Back** (left arrow),
-  **Skip**, and **Create Document**.
+- **Step 1: Template.** The template browse (search, one open category's carousel, the other categories folded as tiles beneath it).
+  Footer: **Skip** and **Next**. Clicking a template card advances to step 2.
+- **Step 2: Location.** Where the document lives (the Settings step in code:
+  name, save location, placement). Footer: **Create**.
+- **There is no theme step.** A new document starts on the **Default** theme,
+  and the Theme and canvas controls change it later; asking for a theme before
+  anything is on the canvas was a decision most people could not yet make. (It
+  was step 2 of three, with a two-level theme browse and the custom-theme
+  builder; retired.)
 - A **two-segment progress rail** at the top shows the current step; clicking
-  either segment ("1 Template" / "2 Theme") jumps straight to that step.
+  either segment ("1 Template" / "2 Location") jumps straight to that step.
   The step number and each category card's template-count badge centre the
   digit's ink in their circle / pill (`text-optical-centre`,
   [Optical alignment](../004-interface-design/optical-alignment.md)), in both
@@ -290,7 +294,7 @@ The welcome screen is a **two-step wizard** rather than one long page:
   4px from the circle to the pill's left edge, the same as top and bottom
   ([Colour scheme](../004-interface-design/color-scheme.md#usage-rules)). The
   rail's first circle lines up with the dialog heading.
-- **Skip** (either step) commits the documented defaults straight away: the
+- **Skip** (on the template step) commits the documented defaults straight away: the
   **Blank** template and the **Default** theme. (This is why the welcome screen now
   has a Skip control where it previously had none.) The header **X** still
   dismisses.
@@ -309,11 +313,11 @@ isn't the placeholder. (The template-order shuffle moved to a mount effect, off
 the lazy `useState` initializer, so the statically-prerendered HTML matches
 hydration.)
 
-The in-editor template flow — titled **Quick Start** — uses the **same two-step
-wizard**, with mode-appropriate controls: its far-left escape is **Cancel** (not
-Open Existing), it has no Skip, and its primary action is **Apply** (not Create
-Document). Only the visitor identity prompt stays a single-section, non-wizard
-surface.
+The in-editor template flow — titled **Quick Start** — is a **single page**: the
+same template browse, no step rail, and picking a template applies it straight
+away, keeping the tab's current theme (a new tab carries its source tab's). Its
+footer is **Cancel** and **Apply** (which applies the selected card). The visitor
+identity prompt is the other single-section surface.
 
 **Quick Start opens only on an explicit request** — adding a tab
 (`useTabActions.addTab`) or the empty-canvas banner's **Quick Start** button,
@@ -332,6 +336,15 @@ picker in one commit, which a naive diff would close immediately).
 `chooseTemplate` carries the matching backstop: a confirm that would land on a
 tab with elements dismisses the picker and writes nothing.
 
+**Quick Start closes when you reach past it.** It is a panel over the canvas,
+not a blocking modal: the palette, the Explorer, the bottom toolbars and the
+canvas stay live around it, and what they open or add would land hidden behind
+it. So a press anywhere outside the card (the shared `useClickOutside`) closes
+it exactly as Cancel does, and the press still reaches what it landed on (a
+palette tool arms as normal). Presses inside the card, including its search
+and carousel, keep it open. The first-run welcome and the name prompt ask for
+an answer and never close this way.
+
 The **empty-canvas hint** is a subdued **bottom banner** (`EmptyCanvasBanner`),
 shown while the active tab has no elements — not the old centre-of-canvas card,
 which read as a half-finished modal. It is **not dismissible** (it simply goes
@@ -348,7 +361,7 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 
 ## Start Blank (skip the wizard)
 
-**Start Blank** is the name on every surface (the site header and the wizard's step rail); it was
+**Start Blank** is the name on every surface (the site header, and the `?blank=1` bypass it links to); it was
 "Just Draw" until the hero's **Drawing** came to mean a whiteboard. Its telemetry token stays
 `JustDraw`, so the funnel's history reads on unbroken.
 
@@ -376,9 +389,10 @@ default document name) without walking the wizard:
     redirects to the plain `/new` wizard rather than silently minting
     another blank document or trapping the user behind a page that always
     navigates forward again.
-  - The interactive tour's welcome offer ([Interactive editor tour ("Show me around")](editor-tour.md)) is never queued on
+  - The interactive tour's welcome offer ([Interactive editor tour ("Show me around")](editor-tour.md)) is not queued on
     this path: the create fires before the document count resolves, and a
-    Start Blank user has asked to get straight to the canvas.
+    Start Blank user has asked to get straight to the canvas. The hero's
+    `?welcome=1` variant (below) is the one exception.
   - **The wizard must never paint on this path, not even for a frame.**
     `/new` is a static export, so its prerendered HTML is the wizard and
     the query param is only knowable in the browser. A React-side check
@@ -404,9 +418,9 @@ default document name) without walking the wizard:
   the URL the marketing site's template gallery links every card to
   ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`.
 - **`/new?browse=<collection>`**: opens the wizard on a template
-  **collection** instead of the category overview: the template step shows
-  the collection's cards under a `← All templates` back bar, exactly as a
-  drilled-in category does. Collections are cross-category shortlists
+  **collection** instead of the category overview: the template step opens
+  with the collection as its open shelf, as a category tile opens one; the
+  collection has no tile of its own and leaves once another shelf opens. Collections are cross-category shortlists
   (`TEMPLATE_COLLECTIONS` in `packages/templates`); today there is one,
   **Brainstorm** (`brainstorm`): Mind map, Tree mind map, Bubble map,
   Affinity map, Fishbone and Event storming, in that order. It is not a
@@ -417,6 +431,51 @@ default document name) without walking the wizard:
   has rendered the collection. Read by `wizardBrowseCollection` in
   `apps/live/lib/new-document-params.ts`. The marketing hero's Brainstorm
   button links here.
+- **`/new?blank=1&welcome=1`**: The marketing hero's **launch
+  window** ([Marketing site](../019-marketing/marketing-site.md)), which grows
+  into a full-screen blank canvas before navigating here. It commits the blank
+  document exactly as `?blank=1` does, with two differences:
+  - **A quiet landing.** Nothing but that blank canvas shows from the page's
+    first frame until the editor has loaded over it: the Default scheme's
+    paper and dots, in place of the opening screen below. A pre-paint guard in
+    the root layout's `<head>` (`lib/quiet-landing-boot.ts`, in the head
+    because the body can paint before a script inside it has run) flags
+    `<html>`, hides the body and paints the canvas on `<html>` itself; `/new`
+    then renders the same canvas (`BlankCanvasScreen`) and lifts the flag.
+    Across the handoff a `sessionStorage` flag (`lib/quiet-landing.ts`,
+    written just before it, as the tour flag is) makes the editor's own waits
+    (the editor chunk loading, then the document) hold that canvas too
+    (`OpeningScreen`); the editor clears the flag once the document has
+    loaded, so a later load in the tab shows the usual opening screen.
+  - **One loader on that canvas.** The canvas carries a single loader
+    (`CanvasLoader` in `@livediagram/ui`: the opening screen's drawing loop,
+    "Creating your document" and its progress sweep), centred in the
+    viewport, from `/new`'s first frame until the editor appears. `/new`
+    prerenders it (hidden unless the pre-paint flag is set, and a
+    `visibility: visible` child still paints inside the hidden body), then
+    `BlankCanvasScreen` and the editor's `OpeningScreen` draw it in the same
+    place. The drawing loop (`DiagramBuildAnimation`) keeps its phase across
+    those remounts, reading the phase of the prerendered copy's running
+    animation on first mount, so it never jumps back to the start. The
+    marketing page's grown canvas draws no loader of its own: it only shows
+    for the moment of the navigation, and a copy there flashed and then
+    restarted on this page, reading as a second loader.
+  - **No wasted requests.** The bypass never shows the Settings step, so
+    `/new` does not fetch its placement options (folders, teams) on a bypass
+    (read from the URL when the fetch would start). The participant `/new`
+    loads and saves is remembered for the in-place handoff
+    (`lib/api/self.ts`, 30 seconds), so the editor's identity bootstrap does
+    not ask for it again, and the editor's favourites wait for the real
+    owner id rather than fetching for the `self` placeholder first. Opening
+    a document from the hero makes each request once.
+  - **The welcome offer.** The tour's welcome offer
+    ([Interactive editor tour ("Show me around")](editor-tour.md)) is queued,
+    though the create fires before the document count is known: whoever
+    clicks the hero's canvas is most likely new, and the synced `tourSeen`
+    gate keeps the offer from anyone who has already answered it.
+    Quick Start does not open; the visitor asked for a canvas. `welcome` alone
+    (no `blank`) does nothing, and the bfcache restore strips it with the bypass
+    params.
 - **`/new?via=<Surface>.<Slot>`**: the landing funnel's source
   ([Landing funnel](../019-marketing/landing-funnel.md)), added by a public page's CTA and
   combinable with every param above. `useCtaAttribution` reads it once,
@@ -425,15 +484,14 @@ default document name) without walking the wizard:
   can't count the arrival twice. Whichever path commits the document (Create,
   Skip or a bypass) then sends `Cta / Created / <source>`, once. An unknown
   source is stripped and ignored.
-- **A "Start Blank" button on the wizard's step rail** (welcome mode only):
-  far right on the same line as the Template / Theme / Settings chips,
-  desktop (`sm+`) only — mobile keeps the footer Skip as the compact
-  escape. One click commits the Skip defaults immediately (disabled while
-  a create is in flight, like Create).
+- **No "Start Blank" button inside the wizard.** It used to sit on the step
+  rail; the footer's **Skip** already commits the same blank defaults, and
+  Start Blank now lives only on the outside surfaces that link to
+  `/new?blank=1`.
 
 ### In-place handoff to the editor
 
-Every commit from `/new` (Create, Skip, Start Blank, and both bypass URLs)
+Every commit from `/new` (Create, Skip, and both bypass URLs)
 opens the editor **without a page load**. Once the document is persisted and
 placed, the page rewrites the address bar to `/document/<id>` with
 `history.replaceState` and renders the editor component (`EditorPage`, the
@@ -498,31 +556,23 @@ document"**; everything else stays put.
   so the sso-callback and OAuth consent cards keep composing it inside their
   own card.
 
-Skip and Start Blank honour the URL placement context (the `?folder` /
+Skip and the `?blank=1` bypass honour the URL placement context (the `?folder` /
 `?team` pre-seed): the blank document files where the Settings step's
 picker would have defaulted, not silently into personal Unsorted.
 
-Telemetry: both Start Blank surfaces fire `UI / Used / JustDraw` alongside
+Telemetry: the Start Blank bypass (`/new?blank=1`) fires `UI / Used / JustDraw` alongside
 the usual `Document / Created` event, so wizard-bypass adoption is
 measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
-## Custom themes in the picker
+## Custom themes
 
-The theme step shows the owner's **custom themes** ([Custom themes](../011-theme/custom-themes.md))
-as a **Custom** category in the browse, alongside the built-in colour categories.
-Its drill-in lists the saved themes (apply / edit / delete) plus a **+ New theme**
-card that opens the builder in place. This is the same `CustomThemePicker` the
-right-click Tab Look & Feel dialog renders, so the two surfaces (and the
-create/edit flow) stay identical. The `/new` route mounts a `CustomThemeProvider`
-so the saved themes load here. The chosen theme (built-in or `custom:<uuid>`)
-flows through the unchanged create path; the theme-id types along it (`onPick`,
-`commitNewDocument`, `buildTemplatedTab`) are `string` rather than `ThemeId` to
-carry the custom id.
-
-Inside a category drill-in, each built-in theme card shows a short **description**
-under its label (now that the theme step has room), sourced from an exhaustive
-`Record<ThemeId, string>` (`themeDescription`) so the compiler forces every theme
-to carry one. Custom theme cards show just the saved name.
+With the theme step retired, the picker no longer shows themes at all. Custom
+themes ([Custom themes](../011-theme/custom-themes.md)) are applied and built from
+the Tab Look & Feel dialog, which renders the same `CustomThemePicker` the theme
+step used. The create path still carries a theme id (`onPick`,
+`commitNewDocument`, `buildTemplatedTab` take a `string`, so a `custom:<uuid>`
+passes through), now always the caller's: `brand` on `/new`, the source tab's
+theme for a new tab.
 
 ## API impact
 
@@ -551,8 +601,6 @@ to carry one. Custom theme cards show just the saved name.
 - `/new?browse=brainstorm` → the wizard, its template step showing the
   Brainstorm collection.
 - `/new?browse=not-a-collection` → the plain wizard.
-- "Start Blank" on the wizard's step rail → blank document created
-  immediately, same as Skip.
 
 ## Out of scope for V1
 

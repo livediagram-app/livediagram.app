@@ -13,6 +13,7 @@ import {
   type TrashListing,
 } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import type { TrashGroup } from '@/lib/trash-groups';
 import type { useToast } from '@/hooks/ui/useToast';
 
@@ -61,6 +62,10 @@ export function useTrash(
       live = false;
     };
   }, [ownerId, apply]);
+
+  // A document binned, restored or purged in Google Drive
+  // (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow").
+  useAfterDriveChange(load, !!ownerId);
 
   const drop = (ids: string[]) => setListing((prev) => (prev ? without(prev, new Set(ids)) : prev));
 

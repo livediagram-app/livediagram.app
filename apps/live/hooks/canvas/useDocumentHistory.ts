@@ -13,7 +13,10 @@ import { graftLiveTabState, type Tab } from '@livediagram/document';
 //
 // All keep the past stack capped to HISTORY_LIMIT.
 
-export const HISTORY_LIMIT = 3;
+// Steps kept in each direction, on every device. Snapshots share unchanged tabs and elements, so a
+// step costs about one pointer per element of the changed tab: 500 steps on a 2,000-element board
+// measured ~8 MB of heap. Safe range: 1 to ~2,000.
+export const HISTORY_LIMIT = 500;
 
 export type History = {
   past: Tab[][];

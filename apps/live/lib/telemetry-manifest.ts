@@ -56,6 +56,13 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Document·Reverted',
   'Document·Shared',
   'Document·Undone',
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry").
+  'Drive·Applied',
+  'Drive·Changed',
+  'Drive·Created',
+  'Drive·Linked',
+  'Drive·Opened',
+  'Drive·Unlinked',
   'Element·Added',
   'Element·Changed',
   'Element·Copied',

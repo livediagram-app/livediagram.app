@@ -1,17 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { BAND_LABEL } from '@/components/band-classes';
-import { Glyph } from '@livediagram/ui';
+import { SnapCarousel } from '@livediagram/ui';
 
-// One category's row of the template gallery (docs/specs/019-marketing/marketing-site.md): a scroll-snapping
-// track that shows four cards across on desktop (two on a tablet, one on a
-// phone; the page size is pure CSS, so the arrows never have to know it),
-// with prev / next arrows in the heading row that page through the rest.
-// The track is a real horizontal scroller, so a touch swipe works too and
-// the arrows just scroll it by one page; scroll-snap lands a swipe on a
-// card edge. Arrows disable at either end and hide when every
-// card already fits.
+// One category's row of the template gallery (docs/specs/019-marketing/marketing-site.md): the shared
+// SnapCarousel (the editor's template picker browses a category with the same
+// one) showing four cards across on desktop, two on a tablet and one on a
+// phone, under the band's own heading style.
 export function TemplateCarousel({
   label,
   count,
@@ -31,109 +27,28 @@ export function TemplateCarousel({
   reveal?: boolean;
   children: ReactNode;
 }) {
-  const track = useRef<HTMLUListElement>(null);
-  const [canPrev, setCanPrev] = useState(false);
-  const [canNext, setCanNext] = useState(false);
-
-  const measure = useCallback(() => {
-    const el = track.current;
-    if (!el) return;
-    setCanPrev(el.scrollLeft > 1);
-    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
-  }, []);
-
-  useEffect(() => {
-    const el = track.current;
-    if (!el) return;
-    el.scrollTo({ left: 0 });
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [itemsKey, measure]);
-
-  // A page is one visible width PLUS the gap before the next card: whole
-  // cards fill the width with a gap between each, so the next page starts a
-  // gap past the edge. Scrolling by clientWidth alone fell a gap short each
-  // press, and iOS Safari doesn't re-snap a programmatic smooth scroll, so
-  // the card sat shifted right with its right border clipped. Landing on a
-  // whole multiple of the stride also realigns a swipe that stopped between
-  // pages.
-  const page = (direction: 1 | -1) => {
-    const el = track.current;
-    if (!el) return;
-    const stride = el.clientWidth + (parseFloat(getComputedStyle(el).columnGap) || 0);
-    const target = (Math.round(el.scrollLeft / stride) + direction) * stride;
-    el.scrollTo({ left: target, behavior: 'smooth' });
-  };
-
-  const paged = canPrev || canNext;
   return (
-    <div className={reveal ? 'tg-reveal' : undefined}>
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+    <SnapCarousel
+      className={reveal ? 'tg-reveal' : undefined}
+      label={label}
+      itemsKey={itemsKey}
+      heading={
+        <>
           <h3 className={BAND_LABEL}>{label}</h3>
           <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-medium tabular-nums text-slate-600 sm:hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
             {count}
             <span className="sr-only"> templates</span>
           </span>
-        </div>
-        {paged ? (
-          <div className="flex items-center gap-1.5">
-            <CarouselArrow
-              direction="prev"
-              label={label}
-              disabled={!canPrev}
-              onClick={() => page(-1)}
-            />
-            <CarouselArrow
-              direction="next"
-              label={label}
-              disabled={!canNext}
-              onClick={() => page(1)}
-            />
-          </div>
-        ) : null}
-      </div>
-      {/* Each card is a snap point sized to a quarter / half / all of the
-          track less the gaps, so a page is always whole cards. A category
-          with fewer cards than a page grows them to fill the row, so its
-          edges line up with the band (a lone search hit stops at half). The
-          scrollbar is hidden: the arrows and swipe are the controls. */}
-      <ul
-        ref={track}
-        onScroll={measure}
-        className="tg-reveal-track mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>li]:shrink-0 [&>li]:grow [&>li]:snap-start [&>li]:basis-full sm:[&>li]:max-w-[calc((100%-0.75rem)/2)] sm:[&>li]:basis-[calc((100%-0.75rem)/2)] lg:[&>li]:basis-[calc((100%-2.25rem)/4)]"
-      >
-        {children}
-      </ul>
-    </div>
-  );
-}
-
-function CarouselArrow({
-  direction,
-  label,
-  disabled,
-  onClick,
-}: {
-  direction: 'prev' | 'next';
-  label: string;
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  const prev = direction === 'prev';
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={`${prev ? 'Previous' : 'Next'} ${label} templates`}
-      className="flex items-center justify-center rounded-full border border-slate-200 bg-white p-1.5 text-slate-600 transition enabled:hover:border-brand-300 enabled:hover:text-brand-700 disabled:cursor-default disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:text-white"
+        </>
+      }
+      // Each card is a snap point sized to a quarter / half / all of the
+      // track less the gaps, so a page is always whole cards. A category
+      // with fewer cards than a page grows them to fill the row, so its
+      // edges line up with the band (a lone search hit stops at half).
+      trackClassName="tg-reveal-track mt-3"
+      itemClassName="[&>li]:basis-full sm:[&>li]:max-w-[calc((100%-0.75rem)/2)] sm:[&>li]:basis-[calc((100%-0.75rem)/2)] lg:[&>li]:basis-[calc((100%-2.25rem)/4)]"
     >
-      <Glyph size={18} units={24}>
-        {prev ? <path d="M15 6 L9 12 L15 18" /> : <path d="M9 6 L15 12 L9 18" />}
-      </Glyph>
-    </button>
+      {children}
+    </SnapCarousel>
   );
 }

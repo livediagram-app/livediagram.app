@@ -159,15 +159,7 @@ export function EraserIcon({ size = 14 }: IconSizeProps = {}) {
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
 // the CanvasThemeDialog. Distinct from FormatPainterIcon below (the
 // element-to-element format tool): this one styles the whole tab.
-export function ThemeBrushIcon({ size = 20 }: { size?: number }) {
-  return (
-    <Glyph size={size} units={20}>
-      <path d="M17 3c-3 1-6.4 3.6-8.3 6.1l2.2 2.2C13.4 9.4 16 6 17 3z" />
-      <path d="M8.7 9.1 6.5 11.3" />
-      <path d="M8 13.4a2.6 2.6 0 1 1-3.7-2.3c.8-.4 1.9-.2 2.6.5.7.7.9 1.3 1.1 1.8z" />
-    </Glyph>
-  );
-}
+export { ThemeBrushIcon } from '@livediagram/ui';
 
 // Format tool (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, the same glyph as the top-centre
 // "Copy formatting" chip (drawn once in @livediagram/ui): picks one

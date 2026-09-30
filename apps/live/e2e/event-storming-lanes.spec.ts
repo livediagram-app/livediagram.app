@@ -230,7 +230,15 @@ test('paste lands at the pointer over the canvas, and staggers when it is elsewh
   await page.keyboard.press('Escape');
   await notes.nth(0).click({ position: { x: 6, y: 60 } });
   await page.keyboard.press('ControlOrMeta+c');
-  const spot = view.toScreen(below.x + 700, below.y + 100 - 20);
+  // Two rhythm slots left of the note on its lane: free canvas, clear of the side panels, which
+  // take a right-click without opening a menu.
+  const menuX = below.x - 2 * (200 + 16) + 100;
+  const spot = view.toScreen(menuX, below.y + 100 - 20);
+  const onPanel = await page.evaluate(
+    ({ x, y }) => !!document.elementFromPoint(x, y)?.closest('[data-panel-translucent]'),
+    spot,
+  );
+  expect(onPanel, 'the right-click spot is covered by a panel').toBe(false);
   await page.mouse.click(spot.x, spot.y, { button: 'right' });
   await page
     .getByText(/^Paste$/)
@@ -241,7 +249,7 @@ test('paste lands at the pointer over the canvas, and staggers when it is elsewh
   const fromMenu = stickies(tab).filter((n) => n.label === row[0]!.label && n.y === below.y);
   // Placed as a drop there: on that lane, and within the capture radius of the
   // spot (a rhythm slot that close takes it).
-  expect(fromMenu.some((n) => Math.abs(n.x + 100 - (below.x + 700)) <= 100)).toBe(true);
+  expect(fromMenu.some((n) => Math.abs(n.x + 100 - menuX) <= 100)).toBe(true);
   expectNoPageErrors(pageErrors);
 });
 

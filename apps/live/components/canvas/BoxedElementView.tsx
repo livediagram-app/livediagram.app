@@ -233,6 +233,11 @@ function BoxedElementViewImpl({
         : isLocked
           ? 'cursor-default'
           : 'cursor-move';
+  // A Quiz (docs/specs/012-collaboration/quiz.md) is a disc in a square box:
+  // the box itself takes no presses, so the empty corners and the gaps between
+  // its answers behave as bare canvas. The face re-enables the disc, which is
+  // the one place that selects and drags it.
+  const bodyPassesThrough = element.type === 'shape' && element.shape === 'quiz';
 
   // When at least one remote participant has selected this element, the
   // border / stroke colour is overridden with the first remote selector's
@@ -383,7 +388,7 @@ function BoxedElementViewImpl({
         // A looping animation (docs/specs/008-canvas/canvas-and-palette.md) replaces the one-shot pop-in entry
         // class (both drive the `animation` property, so they can't co-exist).
         wrapperAnimClass
-      } ${variant.className} ${cursor}`}
+      } ${variant.className} ${cursor} ${bodyPassesThrough ? 'pointer-events-none' : ''}`}
       style={{
         // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
         ...({ '--iso-z': isoDepth } as React.CSSProperties),

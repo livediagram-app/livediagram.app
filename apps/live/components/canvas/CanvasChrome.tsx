@@ -639,7 +639,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   e.preventDefault();
                   e.stopPropagation();
                 }}
-                className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+                className="pointer-events-auto flex animate-fade-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
               >
                 <HoverCard
                   title="Theme & canvas"

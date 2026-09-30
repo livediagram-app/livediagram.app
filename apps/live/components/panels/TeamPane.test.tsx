@@ -92,3 +92,18 @@ describe('TeamPane loading', () => {
     expect(getTeam).toHaveBeenLastCalledWith('me', 't2');
   });
 });
+
+describe('TeamPane children', () => {
+  it('gives the team library and the team timeline keys of their own (no duplicate-key warning)', async () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    getTeam.mockResolvedValue(detail('t1', 'abc'));
+    render(pane());
+    await act(async () => {});
+    expect(screen.getByText(/abc/)).toBeTruthy();
+    const duplicateKey = errors.mock.calls.some((args) =>
+      args.some((a) => typeof a === 'string' && a.includes('same key')),
+    );
+    expect(duplicateKey).toBe(false);
+    errors.mockRestore();
+  });
+});

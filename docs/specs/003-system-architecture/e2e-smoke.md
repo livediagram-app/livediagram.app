@@ -12,7 +12,7 @@ test lives here.
 
 ## Why it's separate from CI's unit gate
 
-Browser E2E costs real CI minutes (a browser download + a running
+Browser E2E costs real CI minutes (a browser + a running
 stack), so it is **deliberately not on the per-PR critical path**. The
 `ci.yml` gate (lint / format / typecheck / test / build) stays fast and
 runs on every PR and push. The browser suite is its own workflow,
@@ -23,8 +23,9 @@ runs on every PR and push. The browser suite is its own workflow,
 - **`workflow_dispatch`**: run it by hand against a branch before merge
   when a change is browser-risky.
 
-It runs **every** spec file in `apps/live/e2e/` (`test:e2e` is
-`playwright test --project=chromium`, with no filter).
+It runs **every** spec file in `apps/live/e2e/` except the signed-in ones under `e2e/clerk-stub/`
+(`test:e2e` is `playwright test --project=chromium`, with no other filter); those run as a second
+step against their own build ([Signed-in specs](#signed-in-specs-clerk-stub)).
 
 Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 
@@ -32,15 +33,24 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   only when `E2E_WEBKIT=1` is set (after `playwright install webkit`) and runs just
   `import-images.spec.ts`, the image import pipeline's Safari path
   ([Import image pipeline](../020-import-export/import-image-pipeline.md)); CI never sets it.
-- **Browser binary cached** on `~/.cache/ms-playwright` keyed by the
-  Playwright version, so the ~120 MB download happens once per version
-  bump, not per run.
+- **Playwright's container image** (`mcr.microsoft.com/playwright:v<version>-noble`) runs the job:
+  Chromium and its system libraries come with it, so no run downloads a browser or apt-installs its
+  dependencies. The tag is the locked `@playwright/test` version; the workflow's first check fails,
+  naming the tag to set, when a Playwright bump leaves the image behind.
 - **Focused tests, not a matrix.** Each spec file proves what only a browser
   can show for one feature; breadth and edge cases stay in unit tests, where
   they are cheap.
-- `workers: 1` and `retries: 1` in CI, a 30-second per-test timeout and a
-  15-minute job timeout, so a hung run fails fast instead of burning minutes.
-- `fullyParallel` locally for authoring speed.
+- **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
+  and Playwright's default locally. Tests stay independent because each opens a fresh browser
+  context, so a fresh guest owner whose documents no other test sees.
+- `retries: 1` in CI, a 30-second per-test timeout and a 15-minute job timeout, so a hung run
+  fails fast instead of burning minutes.
+- **Traces of first failures** in CI (`retain-on-first-failure`): a test that fails and then passes
+  on retry still keeps the trace of its failing attempt, so a flaky test can be read rather than
+  guessed at. Each invocation keeps its own artefacts (`test-results` and `playwright-report`, or
+  their `-clerk-stub` twins), since a run clears its output folder when it starts. `e2e.yml`
+  uploads them whenever any holds a trace, a timed-out run included. Locally a trace is kept for a
+  retry only.
 - **No model downloads.** The photo-import tests stub the handwriting reader
   and serve the boundary model's weights from the app itself; nothing pulls
   weights over the wire.
@@ -85,6 +95,27 @@ Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
 developer with `pnpm dev` already running (live :3002 + api :8787) runs
 `pnpm --filter @livediagram/live test:e2e` against that stack with no
 extra boot.
+
+## Signed-in specs (Clerk stub)
+
+Clerk is a build-time switch ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
+guest-mode `out/` can never show a signed-in user. The specs in `apps/live/e2e/clerk-stub/` run
+against a second export, `apps/live/.next/out-clerk-stub/` (inside `.next/`, so every ignore and
+source scanner already skips it), built by `pnpm build:clerk-stub` with a
+publishable key for a host that cannot resolve. Each spec installs a fake `window.Clerk`
+(`e2e/clerk-stub/clerk-stub.ts`) before the page loads, which @clerk/react takes in place of
+downloading clerk-js, so a chosen user (name, email, pictures) sits behind the real hooks with no
+Clerk account, secret or network.
+
+`pnpm --filter @livediagram/live test:e2e:clerk-stub` sets `E2E_CLERK_STUB=1`, which adds the
+`clerk-stub` project and boots the stack with `E2E_LIVE_OUT=.next/out-clerk-stub` on its own ports
+(live `:3015`, api `:8788`, marketing `:3016`), so a guest stack already up on `:3002` is never
+reused for it. The stack also stands in for Clerk (`E2E_CLERK_JWKS=1`): it makes a signing key at
+boot, serves its JWKS on `/e2e/jwks.json`, starts the api worker with `CLERK_JWKS_URL` pointing at
+it, and mints a session token for any test account on `/e2e/token?sub=user_…`, which the fake
+`window.Clerk` hands out. So a stub account is a real verified account to the api and the realtime
+room, and two or three stub browsers can collaborate in one document. A test that changes an
+account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them after the smoke suite.
 
 ## No uncaught errors
 
@@ -135,6 +166,7 @@ One spec file per feature, each linking the spec it proves:
 | `optical-audit.spec.ts`        | dark mode at 4x, on the wizard, the editor and its dialogs, the Join dialog and the Explorer: every glyph in a small painted shape sits within 0.5px of its centre and stacked actions share one baseline; each failure names the shape, the offset and why it was held to centring                                                                                                           | [Optical alignment](../004-interface-design/optical-alignment.md)                                                                                      |
 | `optical-audit-sites.spec.ts`  | the same audit on the help centre, the telemetry dashboard and the marketing site                                                                                                                                                                                                                                                                                                             | [Optical alignment](../004-interface-design/optical-alignment.md)                                                                                      |
 | `optical-clip.spec.ts`         | a trimmed label that also truncates keeps its descenders, proven in pixels                                                                                                                                                                                                                                                                                                                    | [Optical alignment blueprint](../004-interface-design/blueprints/optical-alignment.md)                                                                 |
+| `shape-stroke-inside.spec.ts`  | every shape drawn to its box edge paints no stroke outside it, in pixels                                                                                                                                                                                                                                                                                                                      | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                                                                              |
 
 A new browser-risky feature adds one focused spec file here (or a case in the
 file of the feature it extends), linked from its own spec; depth stays in unit
@@ -153,7 +185,9 @@ tests where it's cheap.
   `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, marketing).
 - `.github/workflows/e2e.yml`: the cost-controlled workflow.
-- `test:e2e` script in `apps/live/package.json`.
+- `test:e2e` and `test:e2e:clerk-stub` scripts in `apps/live/package.json`; `build:clerk-stub`
+  (`apps/live/scripts/build-clerk-stub.mjs`) builds the export the latter runs against.
+- `apps/live/e2e/clerk-stub/`: the fake `window.Clerk` and the signed-in specs.
 
 Playwright is an `apps/live` dev dependency; it is **not** wired into
 `pnpm test` / `turbo run test` (that stays the fast unit gate), so

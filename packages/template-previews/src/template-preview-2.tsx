@@ -1,6 +1,7 @@
 import type { ReactElement, SVGProps } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
 import { pv } from './motion';
+import { Pop } from './story-parts';
 
 // Group 2 of 3 (agile / hierarchy / wireframes). Static SVG preview tiles (one branch per
 // TemplateKind; see template-preview.tsx for who renders them). Split out of template-preview.tsx to keep each file under the
@@ -8,104 +9,206 @@ import { pv } from './motion';
 export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
   switch (kind) {
     case 'kanban':
-      // Hover story: work moves right. A card leaves In progress for Done,
-      // a To do card follows it into In progress, and new work lands in To
-      // do. At rest Done is one card short, the gap the first card fills.
-      // The moving cards are drawn after every column so they pass OVER the
-      // column backgrounds rather than under them.
+      // Five tinted lanes (Backlog slate, To do sky, In progress amber,
+      // Review violet, Done green), each topped by its deep-hue header bar.
+      // In progress holds the blocked ticket (red border). Hover story: work
+      // moves right. The Review ticket lands in Done, an In progress ticket
+      // follows it into Review, and Done's trophy pops once the ticket lands.
+      // The moving cards are drawn after every lane so they pass OVER them.
       return (
         <svg width="70" height="44" viewBox="0 0 80 50" aria-hidden>
-          {/* Three columns: To do (slate), In progress (blue), Done (green). */}
           {[
-            { x: 4, fill: 'rgb(241 245 249)', stroke: 'rgb(203 213 225)', cards: [13, 23] },
-            { x: 30, fill: 'rgb(219 234 254)', stroke: 'rgb(147 197 253)', cards: [13, 23] },
-            { x: 56, fill: 'rgb(220 252 231)', stroke: 'rgb(134 239 172)', cards: [13, 23] },
+            {
+              x: 2,
+              fill: 'rgb(241 245 249)',
+              stroke: 'rgb(203 213 225)',
+              ink: 'rgb(51 65 85)',
+              cards: [9, 17, 25],
+            },
+            {
+              x: 17.5,
+              fill: 'rgb(224 242 254)',
+              stroke: 'rgb(125 211 252)',
+              ink: 'rgb(3 105 161)',
+              cards: [9, 17],
+            },
+            {
+              x: 33,
+              fill: 'rgb(254 243 199)',
+              stroke: 'rgb(252 211 77)',
+              ink: 'rgb(180 83 9)',
+              cards: [9],
+            },
+            {
+              x: 48.5,
+              fill: 'rgb(237 233 254)',
+              stroke: 'rgb(196 181 253)',
+              ink: 'rgb(109 40 217)',
+              cards: [],
+            },
+            {
+              x: 64,
+              fill: 'rgb(220 252 231)',
+              stroke: 'rgb(134 239 172)',
+              ink: 'rgb(21 128 61)',
+              cards: [9, 17],
+            },
           ].map((col) => (
             <g key={col.x}>
               <rect
                 x={col.x}
                 y="3"
-                width="20"
+                width="14"
                 height="44"
-                rx="2"
+                rx="1.5"
                 fill={col.fill}
                 stroke={col.stroke}
                 strokeWidth="0.75"
               />
+              <rect x={col.x + 2} y="5" width="7" height="1.8" rx="0.9" fill={col.ink} />
               {col.cards.map((sy) => (
-                <KanbanCard key={sy} x={col.x + 2} y={sy} />
+                <KanbanCard key={sy} x={col.x + 1} y={sy} />
               ))}
             </g>
           ))}
+          {/* The blocked ticket: a red border in In progress. */}
+          <KanbanCard x={34} y={25} stroke="rgb(220 38 38)" strokeWidth="1" />
           <KanbanCard
-            x={32}
-            y={33}
+            x={49.5}
+            y={9}
             className="pv-shift"
-            style={pv({ '--pv-dx': '26px', '--pv-at': '1000ms' })}
+            style={pv({ '--pv-dx': '15.5px', '--pv-dy': '16px', '--pv-at': '1000ms' })}
           />
           <KanbanCard
-            x={6}
-            y={33}
+            x={34}
+            y={17}
             className="pv-shift"
-            style={pv({ '--pv-dx': '26px', '--pv-at': '1600ms' })}
+            style={pv({ '--pv-dx': '15.5px', '--pv-dy': '-8px', '--pv-at': '1600ms' })}
           />
-          <KanbanCard
-            x={6}
-            y={33}
+          <circle
             className="pv-new"
             opacity="0"
+            cx="71"
+            cy="40"
+            r="3"
+            fill="rgb(250 204 21)"
+            stroke="rgb(202 138 4)"
+            strokeWidth="0.75"
             style={pv({ '--pv-at': '2200ms' })}
           />
         </svg>
       );
     case 'swot':
+      // Named axes (Helpful / Harmful ticks over the columns, Internal /
+      // External down the rows), the four tinted quadrants, and the So what?
+      // strip beneath. Hover story: a sticky in each quadrant's own hue lands,
+      // strengths first, then the strip's four moves are written in turn.
       return (
         <svg width="70" height="44" viewBox="0 0 80 50" aria-hidden>
-          {[
-            { x: 4, y: 3, fill: 'rgb(220 252 231)', stroke: 'rgb(134 239 172)' },
-            { x: 42, y: 3, fill: 'rgb(254 226 226)', stroke: 'rgb(252 165 165)' },
-            { x: 4, y: 25, fill: 'rgb(219 234 254)', stroke: 'rgb(147 197 253)' },
-            { x: 42, y: 25, fill: 'rgb(254 243 199)', stroke: 'rgb(252 211 77)' },
-          ].map((q, i) => (
+          {[12, 46].map((x) => (
             <rect
-              key={i}
-              x={q.x}
-              y={q.y}
-              width="34"
-              height="22"
-              rx="2"
-              fill={q.fill}
-              stroke={q.stroke}
-              strokeWidth="0.75"
+              key={x}
+              x={x + 11}
+              y="1.5"
+              width="10"
+              height="1.4"
+              rx="0.7"
+              fill="rgb(148 163 184)"
             />
           ))}
-          {/* Hover story: notes are sorted out of the middle into each
-              quadrant, strengths filling up first. */}
+          {[6, 20].map((y) => (
+            <rect key={y} x="3" y={y + 2} width="1.4" height="8" rx="0.7" fill="rgb(148 163 184)" />
+          ))}
           {[
-            { x: 10, y: 8, at: 900 },
-            { x: 48, y: 8, at: 1200 },
-            { x: 10, y: 30, at: 1500 },
-            { x: 48, y: 30, at: 1800 },
-            { x: 22, y: 15, at: 2200 },
-          ].map((n) => (
-            <rect
-              key={`${n.x}-${n.y}`}
-              className="pv-arrive"
-              opacity="0"
-              x={n.x}
-              y={n.y}
-              width="12"
-              height="6"
-              rx="0.75"
-              fill="white"
-              stroke="rgb(100 116 139)"
-              strokeWidth="0.5"
-              style={pv({
-                '--pv-from-x': `${34 - n.x}px`,
-                '--pv-from-y': `${22 - n.y}px`,
-                '--pv-at': `${n.at}ms`,
-              })}
-            />
+            {
+              x: 7,
+              y: 4,
+              fill: 'rgb(220 252 231)',
+              stroke: 'rgb(134 239 172)',
+              note: 'rgb(187 247 208)',
+              at: 900,
+            },
+            {
+              x: 42,
+              y: 4,
+              fill: 'rgb(255 228 230)',
+              stroke: 'rgb(253 164 175)',
+              note: 'rgb(254 205 211)',
+              at: 1150,
+            },
+            {
+              x: 7,
+              y: 19,
+              fill: 'rgb(219 234 254)',
+              stroke: 'rgb(147 197 253)',
+              note: 'rgb(186 230 253)',
+              at: 1400,
+            },
+            {
+              x: 42,
+              y: 19,
+              fill: 'rgb(254 243 199)',
+              stroke: 'rgb(252 211 77)',
+              note: 'rgb(253 230 138)',
+              at: 1650,
+            },
+          ].map((q) => (
+            <g key={`${q.x}-${q.y}`}>
+              <rect
+                x={q.x}
+                y={q.y}
+                width="33"
+                height="13"
+                rx="1.5"
+                fill={q.fill}
+                stroke={q.stroke}
+                strokeWidth="0.75"
+              />
+              <rect x={q.x + 2.5} y={q.y + 5} width="8" height="6" rx="0.6" fill={q.note} />
+              <rect x={q.x + 12.5} y={q.y + 5} width="8" height="6" rx="0.6" fill={q.note} />
+              <Pop
+                at={q.at}
+                x={q.x + 22.5}
+                y={q.y + 5}
+                width="8"
+                height="6"
+                rx="0.6"
+                fill={q.note}
+              />
+            </g>
+          ))}
+          <rect
+            x="7"
+            y="35"
+            width="68"
+            height="12"
+            rx="1.5"
+            fill="rgb(248 250 252)"
+            stroke="rgb(148 163 184)"
+            strokeWidth="1.2"
+          />
+          {[0, 1, 2, 3].map((i) => (
+            <g key={i}>
+              <rect
+                x={9.5 + i * 16.5}
+                y="38"
+                width="15"
+                height="6.5"
+                rx="0.8"
+                fill="white"
+                stroke="rgb(203 213 225)"
+                strokeWidth="0.6"
+              />
+              <Pop
+                at={2000 + i * 250}
+                x={10.5 + i * 16.5}
+                y="39.2"
+                width="7"
+                height="1.8"
+                rx="0.9"
+                fill="rgb(3 105 161)"
+              />
+            </g>
           ))}
         </svg>
       );
@@ -164,71 +267,99 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'milestone-timeline':
+      // A to-scale phase ribbon (violet / blue / amber / green segments) with
+      // six milestones alternating above and below: a ring on the ribbon's
+      // edge, a stem, a date chip and a callout card. Launch day is the
+      // larger amber hero. Hover story: the year fills along the ribbon up to
+      // launch, which then lights up.
       return (
         <svg width="80" height="40" viewBox="0 0 80 50" aria-hidden>
-          {/* Directional spine with an arrowhead: time flows right. */}
-          <line x1="4" y1="27" x2="72" y2="27" stroke="rgb(100 116 139)" strokeWidth="1.5" />
+          {[
+            { x: 7, w: 10.6, fill: 'rgb(237 233 254)' },
+            { x: 18.1, w: 16, fill: 'rgb(219 234 254)' },
+            { x: 34.6, w: 10.4, fill: 'rgb(254 243 199)' },
+            { x: 45.6, w: 27.4, fill: 'rgb(209 250 229)' },
+          ].map((p) => (
+            <rect key={p.x} x={p.x} y="23" width={p.w} height="4" rx="2" fill={p.fill} />
+          ))}
           <path
-            d="M72 27 L69 24.8 M72 27 L69 29.2"
+            d="M73.5 25 L77 25 M75.2 23.4 L77 25 L75.2 26.6"
             stroke="rgb(100 116 139)"
-            strokeWidth="1.5"
+            strokeWidth="0.8"
             fill="none"
           />
-          {/* Hover story: progress fills the spine up to the Launch
-              milestone, which then lights up. Dashed to nothing at rest
-              (strokeDasharray 0 1) so the static art shows no progress. */}
           <path
             className="pv-draw"
             pathLength="1"
             strokeDasharray="0 1"
-            d="M4 27 H47"
+            d="M8 25 H41"
             stroke="rgb(14 165 233)"
-            strokeWidth="2.6"
+            strokeWidth="1.4"
             style={pv({ '--pv-at': '900ms', '--pv-dur': '1400ms' })}
           />
-          {[13, 30, 47, 64].map((mx, i) => {
+          {[
+            { x: 8.8, deep: 'rgb(109 40 217)' },
+            { x: 17.2, deep: 'rgb(109 40 217)' },
+            { x: 32, deep: 'rgb(29 78 216)' },
+            { x: 41.1, deep: 'rgb(180 83 9)', hero: true },
+            { x: 56.3, deep: 'rgb(4 120 87)' },
+            { x: 67.5, deep: 'rgb(4 120 87)' },
+          ].map((m, i) => {
             const above = i % 2 === 0;
-            // The third milestone is the hero (Launch) card → brand tint.
-            const hero = i === 2;
+            const edge = above ? 23 : 27;
+            const w = m.hero ? 15 : 12;
+            const h = m.hero ? 10 : 8.5;
+            const cardY = above ? 3 : 36;
             return (
-              <g key={mx}>
-                <line
-                  x1={mx}
-                  y1={above ? 13 : 33}
-                  x2={mx}
-                  y2={above ? 24 : 40}
-                  stroke="rgb(148 163 184)"
-                  strokeWidth="0.75"
+              <g key={m.x}>
+                <path
+                  d={
+                    above
+                      ? `M${m.x} ${edge} L${m.x} ${cardY + h}`
+                      : `M${m.x} ${edge} L${m.x} ${cardY}`
+                  }
+                  stroke={m.deep}
+                  strokeWidth="0.5"
                 />
-                {/* Date chip riding the stem. */}
                 <rect
-                  x={mx - 4}
-                  y={above ? 16.5 : 31.5}
-                  width="8"
-                  height="4"
-                  rx="2"
-                  fill="rgb(226 232 240)"
+                  x={m.x - 3.5}
+                  y={above ? 15 : 30.5}
+                  width="7"
+                  height="3"
+                  rx="1.5"
+                  fill="white"
+                  stroke={m.deep}
+                  strokeWidth="0.45"
                 />
-                <circle
-                  cx={mx}
-                  cy="27"
-                  r="2.6"
-                  fill="rgb(14 165 233)"
-                  stroke="white"
-                  strokeWidth="0.75"
-                />
-                {/* Milestone card at the end of the stem. */}
+                <circle cx={m.x} cy={edge} r="1.2" fill="white" stroke={m.deep} strokeWidth="0.6" />
                 <rect
-                  x={mx - 9}
-                  y={above ? 4 : 40}
-                  width="18"
-                  height="9"
-                  rx="2"
-                  fill={hero ? 'rgb(186 230 253)' : 'white'}
-                  stroke={hero ? 'rgb(14 165 233)' : 'rgb(148 163 184)'}
-                  strokeWidth="0.75"
-                  className={hero ? 'pv-pulse' : undefined}
-                  style={hero ? pv({ '--pv-at': '2300ms' }) : undefined}
+                  x={m.x - w / 2}
+                  y={cardY}
+                  width={w}
+                  height={h}
+                  rx="1.2"
+                  fill={m.hero ? 'rgb(255 251 235)' : 'white'}
+                  stroke={m.deep}
+                  strokeWidth={m.hero ? 0.9 : 0.5}
+                  className={m.hero ? 'pv-pulse' : undefined}
+                  style={m.hero ? pv({ '--pv-at': '2300ms' }) : undefined}
+                />
+                <circle cx={m.x - w / 2 + 2} cy={cardY + 2.2} r="1" fill={m.deep} />
+                <rect
+                  x={m.x - w / 2 + 3.6}
+                  y={cardY + 1.6}
+                  width={w - 5.5}
+                  height="1.2"
+                  rx="0.4"
+                  fill="rgb(51 65 85)"
+                />
+                <rect
+                  x={m.x - w / 2 + 3.6}
+                  y={cardY + 4.2}
+                  width={w - 5.5}
+                  height="1"
+                  rx="0.4"
+                  fill="rgb(148 163 184)"
                 />
               </g>
             );
@@ -236,73 +367,77 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'milestone-timeline-vertical':
+      // A company history down the page: a downward spine with a disc per
+      // chapter, story cards alternating right and left, a bold year on the
+      // other side, an amber highlight card and a dashed next chapter at the
+      // arrow's tip. Hover story: the years run down the spine, each disc
+      // pulsing as it's reached, then the highlight lights up.
       return (
         <svg width="80" height="40" viewBox="0 0 80 50" aria-hidden>
-          {/* Downward spine with an arrowhead: time flows down. */}
-          <line x1="40" y1="4" x2="40" y2="45" stroke="rgb(100 116 139)" strokeWidth="1.5" />
+          <path d="M40 2 L40 47" stroke="rgb(168 162 158)" strokeWidth="1" />
           <path
-            d="M40 45 L37.8 42 M40 45 L42.2 42"
-            stroke="rgb(100 116 139)"
-            strokeWidth="1.5"
+            d="M38.4 45 L40 47.5 L41.6 45"
+            stroke="rgb(168 162 158)"
+            strokeWidth="1"
             fill="none"
           />
-          {/* Hover story: progress runs down the spine, each milestone dot
-              pulsing as it's reached, then the Launch card lights up.
-              Dashed to nothing at rest so the static art shows no progress. */}
           <path
             className="pv-draw"
             pathLength="1"
             strokeDasharray="0 1"
-            d="M40 4 V30"
-            stroke="rgb(14 165 233)"
-            strokeWidth="2.6"
+            d="M40 2 V33"
+            stroke="rgb(217 119 6)"
+            strokeWidth="1.6"
             style={pv({ '--pv-at': '900ms', '--pv-dur': '1500ms' })}
           />
-          {[10, 20, 30, 40].map((my, i) => {
-            const leftSide = i % 2 === 0;
-            // The third milestone is the hero (Launch) card → brand tint.
-            const hero = i === 2;
+          {[5, 11, 17, 23, 29, 35, 41].map((y, i) => {
+            const right = i % 2 === 0;
+            const highlight = i === 4;
+            const next = i === 6;
+            const stroke = highlight
+              ? 'rgb(217 119 6)'
+              : next
+                ? 'rgb(100 116 139)'
+                : 'rgb(146 64 14)';
             return (
-              <g key={my}>
-                <line
-                  x1={leftSide ? 24 : 44}
-                  y1={my}
-                  x2={leftSide ? 36 : 56}
-                  y2={my}
-                  stroke="rgb(148 163 184)"
-                  strokeWidth="0.75"
+              <g key={y}>
+                <path
+                  d={right ? `M41.6 ${y} L45 ${y}` : `M35 ${y} L38.4 ${y}`}
+                  stroke={stroke}
+                  strokeWidth="0.45"
+                  strokeDasharray={next ? '0.8 0.6' : undefined}
                 />
-                {/* Date chip riding the stem. */}
                 <rect
-                  x={leftSide ? 29 : 43}
-                  y={my - 2}
-                  width="8"
-                  height="4"
-                  rx="2"
-                  fill="rgb(226 232 240)"
+                  x={right ? 45 : 11}
+                  y={y - 2.4}
+                  width="24"
+                  height="4.8"
+                  rx="1"
+                  fill={highlight ? 'rgb(255 251 235)' : 'white'}
+                  stroke={stroke}
+                  strokeWidth={highlight ? 0.8 : 0.45}
+                  strokeDasharray={next ? '1 0.7' : undefined}
+                  className={highlight ? 'pv-pulse' : undefined}
+                  style={highlight ? pv({ '--pv-at': '2500ms' }) : undefined}
                 />
+                <rect
+                  x={right ? 48 : 14}
+                  y={y - 0.7}
+                  width="15"
+                  height="1.4"
+                  rx="0.4"
+                  fill="rgb(148 163 184)"
+                />
+                <rect x={right ? 29 : 44} y={y - 1} width="7" height="2" rx="0.5" fill={stroke} />
                 <circle
                   cx="40"
-                  cy={my}
-                  r="2.6"
-                  fill="rgb(14 165 233)"
-                  stroke="white"
-                  strokeWidth="0.75"
-                  className={i < 3 ? 'pv-pulse' : undefined}
-                  style={i < 3 ? pv({ '--pv-at': `${1000 + i * 520}ms` }) : undefined}
-                />
-                {/* Milestone card at the end of the stem. */}
-                <rect
-                  x={leftSide ? 6 : 56}
-                  y={my - 4.5}
-                  width="18"
-                  height="9"
-                  rx="2"
-                  fill={hero ? 'rgb(186 230 253)' : 'white'}
-                  stroke={hero ? 'rgb(14 165 233)' : 'rgb(148 163 184)'}
-                  strokeWidth="0.75"
-                  className={hero ? 'pv-pulse' : undefined}
-                  style={hero ? pv({ '--pv-at': '2600ms' }) : undefined}
+                  cy={y}
+                  r="1.6"
+                  fill={highlight ? 'rgb(254 243 199)' : 'white'}
+                  stroke={stroke}
+                  strokeWidth="0.6"
+                  className={i < 5 ? 'pv-pulse' : undefined}
+                  style={i < 5 ? pv({ '--pv-at': `${1000 + i * 300}ms` }) : undefined}
                 />
               </g>
             );
@@ -578,102 +713,171 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'mobile-wireframe':
+      // A three-phone flow joined by tap arrows, numbered pins on the
+      // screens and an amber notes rail. Hover story: the flow is walked,
+      // each Tap arrow drawing in turn, then each note's pin pulses in turn.
       return (
         <svg width="70" height="44" viewBox="0 0 80 50" aria-hidden>
-          {/* Three phone silhouettes with stacked content rows. */}
-          {[6, 30, 54].map((px) => (
+          {[3, 24, 45].map((px, i) => (
             <g key={px}>
               <rect
                 x={px}
-                y="3"
-                width="20"
-                height="44"
+                y="4"
+                width="15"
+                height="42"
                 rx="2.5"
                 fill="white"
                 stroke="rgb(100 116 139)"
                 strokeWidth="0.85"
               />
-              {/* Notch / status strip */}
-              <rect x={px + 2} y="5.5" width="16" height="1.5" rx="0.4" fill="rgb(186 230 253)" />
-              {/* Header strip */}
-              <rect
-                x={px + 2}
-                y="9"
-                width="16"
-                height="3"
-                rx="0.5"
-                fill="rgb(219 234 254)"
-                stroke="rgb(147 197 253)"
-                strokeWidth="0.4"
-              />
-              {/* Three content cards. Hover story: the middle screen scrolls
-                  its feed, the top card leaving as the rest move up. */}
-              {[15, 22, 29].map((cy, ci) => {
-                const scrolls = px === 30;
-                return (
+              <rect x={px + 2} y="7" width="11" height="1.4" rx="0.4" fill="rgb(203 213 225)" />
+              {i === 0 ? (
+                <>
                   <rect
-                    key={cy}
                     x={px + 2}
-                    y={cy}
-                    width="16"
+                    y="10.5"
+                    width="11"
+                    height="2.6"
+                    rx="1.3"
+                    fill="rgb(186 230 253)"
+                  />
+                  {[15, 21, 27].map((cy) => (
+                    <rect
+                      key={cy}
+                      x={px + 2}
+                      y={cy}
+                      width="11"
+                      height="4.5"
+                      rx="0.8"
+                      fill="white"
+                      stroke="rgb(148 163 184)"
+                      strokeWidth="0.4"
+                    />
+                  ))}
+                </>
+              ) : i === 1 ? (
+                <>
+                  <rect
+                    x={px + 2}
+                    y="10.5"
+                    width="11"
+                    height="7"
+                    rx="0.8"
+                    fill="rgb(241 245 249)"
+                    stroke="rgb(148 163 184)"
+                    strokeWidth="0.4"
+                  />
+                  {[2, 5.8, 9.6].map((dx, s) => (
+                    <rect
+                      key={dx}
+                      x={px + dx}
+                      y="20"
+                      width="3.4"
+                      height="2.2"
+                      rx="1.1"
+                      fill={s === 1 ? 'rgb(186 230 253)' : 'white'}
+                      stroke="rgb(14 165 233)"
+                      strokeWidth="0.35"
+                    />
+                  ))}
+                  {[24.5, 27.5, 30.5].map((cy) => (
+                    <rect
+                      key={cy}
+                      x={px + 2}
+                      y={cy}
+                      width="8"
+                      height="1.6"
+                      rx="0.4"
+                      fill="rgb(203 213 225)"
+                    />
+                  ))}
+                  <rect x={px + 2} y="37" width="11" height="3.6" rx="1.8" fill="rgb(3 105 161)" />
+                </>
+              ) : (
+                <>
+                  <circle
+                    cx={px + 7.5}
+                    cy="14"
+                    r="3"
+                    fill="rgb(254 243 199)"
+                    stroke="rgb(245 158 11)"
+                    strokeWidth="0.5"
+                  />
+                  <rect x={px + 3} y="19" width="9" height="1.8" rx="0.5" fill="rgb(15 23 42)" />
+                  {[3.5, 7.5, 11.5].map((dx) => (
+                    <circle key={dx} cx={px + dx} cy="25" r="1.2" fill="rgb(14 165 233)" />
+                  ))}
+                  <rect
+                    x={px + 2}
+                    y="29"
+                    width="11"
                     height="5"
-                    rx="0.5"
+                    rx="0.8"
                     fill="white"
                     stroke="rgb(148 163 184)"
                     strokeWidth="0.4"
-                    className={scrolls ? (ci === 0 ? 'pv-leave' : 'pv-shift') : undefined}
-                    style={
-                      scrolls
-                        ? pv(
-                            ci === 0
-                              ? { '--pv-at': '1000ms', '--pv-dur': '300ms' }
-                              : { '--pv-dy': '-7px', '--pv-at': '1000ms', '--pv-dur': '500ms' },
-                          )
-                        : undefined
-                    }
                   />
-                );
-              })}
-              {/* Bottom tab bar */}
-              <rect
-                x={px + 2}
-                y="40"
-                width="16"
-                height="4.5"
-                rx="0.5"
-                fill="rgb(241 245 249)"
-                stroke="rgb(203 213 225)"
-                strokeWidth="0.4"
+                </>
+              )}
+              {i !== 1 && (
+                <rect
+                  x={px + 2}
+                  y="40"
+                  width="11"
+                  height="3.4"
+                  rx="0.8"
+                  fill="white"
+                  stroke="rgb(148 163 184)"
+                  strokeWidth="0.4"
+                />
+              )}
+            </g>
+          ))}
+          {/* Tap arrows: menu item -> Customise, CTA -> Order placed. */}
+          {[
+            { x1: 16, y1: 17, x2: 23, y2: 24, at: 900 },
+            { x1: 37, y1: 39, x2: 44, y2: 26, at: 1500 },
+          ].map((a) => (
+            <g key={a.at}>
+              <line
+                x1={a.x1}
+                y1={a.y1}
+                x2={a.x2}
+                y2={a.y2}
+                stroke="rgb(15 23 42)"
+                strokeWidth="0.7"
+              />
+              <circle
+                className="pv-pulse"
+                cx={a.x2}
+                cy={a.y2}
+                r="0.9"
+                fill="rgb(15 23 42)"
+                style={pv({ '--pv-at': `${a.at}ms` })}
               />
             </g>
           ))}
-          {/* ...a fresh card scrolls in at the bottom of the feed, then a tap
-              lands on the right screen's tab bar. */}
-          <rect
-            className="pv-arrive"
-            opacity="0"
-            x="32"
-            y="29"
-            width="16"
-            height="5"
-            rx="0.5"
-            fill="rgb(224 242 254)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.5"
-            style={pv({ '--pv-from-y': '7px', '--pv-at': '1300ms' })}
-          />
-          <circle
-            className="pv-new"
-            opacity="0"
-            cx="64"
-            cy="42.25"
-            r="2"
-            fill="rgb(14 165 233)"
-            fillOpacity="0.6"
-            stroke="rgb(2 132 199)"
-            strokeWidth="0.5"
-            style={pv({ '--pv-at': '2200ms' })}
-          />
+          {/* Pins on the screens, and the notes rail they match. */}
+          {[
+            { cx: 17, cy: 11 },
+            { cx: 29, cy: 20 },
+            { cx: 58, cy: 25 },
+          ].map((p) => (
+            <circle key={p.cx} cx={p.cx} cy={p.cy} r="1.5" fill="rgb(3 105 161)" />
+          ))}
+          {[8, 18, 28].map((y, i) => (
+            <g key={y}>
+              <circle
+                className="pv-pulse"
+                cx="66"
+                cy={y + 2}
+                r="1.5"
+                fill="rgb(3 105 161)"
+                style={pv({ '--pv-at': `${2000 + i * 250}ms` })}
+              />
+              <rect x="68.5" y={y} width="9.5" height="7" rx="0.6" fill="rgb(253 230 138)" />
+            </g>
+          ))}
         </svg>
       );
     case 'laptop-wireframe':
@@ -824,155 +1028,133 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'slide-deck':
+      // Six 16:9 slides read left to right, each with a kicker and a
+      // headline, the pitch bodies sketched in (pains, a process, a chart,
+      // avatars, a pie), and a muted speaker-notes line under each. Hover
+      // story: the deck is presented, each slide lighting up in turn.
       return (
         <svg width="80" height="46" viewBox="0 0 80 50" aria-hidden>
-          {/* 2x2 grid of plain rectangle slides, each with a title
-              band + content bullets, joined by reading-order arrows. */}
           {[
-            { x: 4, y: 3 },
-            { x: 42, y: 3 },
-            { x: 4, y: 26 },
-            { x: 42, y: 26 },
+            { x: 3, y: 4 },
+            { x: 29, y: 4 },
+            { x: 55, y: 4 },
+            { x: 3, y: 27 },
+            { x: 29, y: 27 },
+            { x: 55, y: 27 },
           ].map((s, i) => (
             <g key={i}>
               <rect
                 x={s.x}
                 y={s.y}
-                width="34"
-                height="20"
-                rx="1.25"
+                width="22"
+                height="12.4"
+                rx="1"
                 fill="white"
                 stroke="rgb(100 116 139)"
-                strokeWidth="0.75"
+                strokeWidth="0.7"
               />
-              {/* Heading stadium */}
               <rect
-                x={s.x + 2.5}
-                y={s.y + 2}
-                width="29"
-                height="4"
-                rx="2"
-                fill="rgb(186 230 253)"
-                stroke="rgb(14 165 233)"
-                strokeWidth="0.4"
+                x={s.x + 2}
+                y={s.y + 1.8}
+                width="6"
+                height="1"
+                rx="0.3"
+                fill="rgb(148 163 184)"
               />
-              {/* Slide-specific content */}
-              {i === 0 ? (
-                <>
+              <rect
+                x={s.x + 2}
+                y={s.y + 3.6}
+                width="15"
+                height="1.8"
+                rx="0.4"
+                fill="rgb(15 23 42)"
+              />
+              {i === 0 && <circle cx={s.x + 18} cy={s.y + 9} r="2" fill="rgb(251 146 60)" />}
+              {i === 1 &&
+                [7, 9, 11].map((dy) => (
                   <rect
-                    x={s.x + 4}
-                    y={s.y + 9}
-                    width="22"
-                    height="2.5"
+                    key={dy}
+                    x={s.x + 2}
+                    y={s.y + dy - 0.4}
+                    width="12"
+                    height="0.9"
                     rx="0.3"
-                    fill="rgb(226 232 240)"
+                    fill="rgb(148 163 184)"
                   />
-                  <rect
-                    x={s.x + 4}
-                    y={s.y + 16}
-                    width="14"
-                    height="2.5"
-                    rx="1.2"
+                ))}
+              {i === 2 &&
+                [5, 11, 17].map((dx) => (
+                  <circle key={dx} cx={s.x + dx} cy={s.y + 9} r="1.6" fill="rgb(14 165 233)" />
+                ))}
+              {i === 3 && (
+                <polyline
+                  points={`${s.x + 2},${s.y + 11} ${s.x + 7},${s.y + 9.5} ${s.x + 12},${s.y + 8.5} ${s.x + 17},${s.y + 6.5}`}
+                  fill="none"
+                  stroke="rgb(14 165 233)"
+                  strokeWidth="0.8"
+                />
+              )}
+              {i === 4 &&
+                [5, 11, 17].map((dx) => (
+                  <circle
+                    key={dx}
+                    cx={s.x + dx}
+                    cy={s.y + 8.8}
+                    r="1.8"
+                    fill="none"
+                    stroke="rgb(14 165 233)"
+                    strokeWidth="0.6"
+                  />
+                ))}
+              {i === 5 && (
+                <>
+                  <circle cx={s.x + 6} cy={s.y + 8.8} r="2.4" fill="rgb(14 165 233)" />
+                  <path
+                    d={`M ${s.x + 6} ${s.y + 8.8} L ${s.x + 6} ${s.y + 6.4} A 2.4 2.4 0 0 1 ${s.x + 8.4} ${s.y + 8.8} Z`}
                     fill="rgb(186 230 253)"
                   />
+                  <rect
+                    x={s.x + 11}
+                    y={s.y + 7}
+                    width="8"
+                    height="0.9"
+                    rx="0.3"
+                    fill="rgb(148 163 184)"
+                  />
+                  <rect
+                    x={s.x + 11}
+                    y={s.y + 9.4}
+                    width="6"
+                    height="0.9"
+                    rx="0.3"
+                    fill="rgb(148 163 184)"
+                  />
                 </>
-              ) : i === 1 ? (
-                [9, 12.5, 16].map((ry) => (
-                  <g key={ry}>
-                    <rect
-                      x={s.x + 3}
-                      y={s.y + ry}
-                      width="3"
-                      height="2.4"
-                      rx="0.3"
-                      fill="rgb(241 245 249)"
-                      stroke="rgb(148 163 184)"
-                      strokeWidth="0.3"
-                    />
-                    <rect
-                      x={s.x + 7}
-                      y={s.y + ry}
-                      width="24"
-                      height="2.4"
-                      rx="0.3"
-                      fill="white"
-                      stroke="rgb(148 163 184)"
-                      strokeWidth="0.3"
-                    />
-                  </g>
-                ))
-              ) : i === 2 ? (
-                [4, 14, 24].map((rx) => (
-                  <g key={rx}>
-                    <rect
-                      x={s.x + rx}
-                      y={s.y + 9}
-                      width="8"
-                      height="9"
-                      rx="0.5"
-                      fill="white"
-                      stroke="rgb(148 163 184)"
-                      strokeWidth="0.3"
-                    />
-                    <circle cx={s.x + rx + 4} cy={s.y + 12} r="1.4" fill="rgb(186 230 253)" />
-                  </g>
-                ))
-              ) : (
-                [9, 12.5, 16].map((ry) => (
-                  <g key={ry}>
-                    <circle
-                      cx={s.x + 4.5}
-                      cy={s.y + ry + 1.2}
-                      r="1"
-                      fill="rgb(220 252 231)"
-                      stroke="rgb(74 222 128)"
-                      strokeWidth="0.3"
-                    />
-                    <rect
-                      x={s.x + 7}
-                      y={s.y + ry}
-                      width="24"
-                      height="2.4"
-                      rx="1.2"
-                      fill="white"
-                      stroke="rgb(148 163 184)"
-                      strokeWidth="0.3"
-                    />
-                  </g>
-                ))
               )}
+              {/* Speaker notes under the slide. */}
+              <rect
+                x={s.x}
+                y={s.y + 14.4}
+                width="16"
+                height="1.2"
+                rx="0.4"
+                fill="rgb(203 213 225)"
+              />
+              <rect
+                className="pv-new"
+                opacity="0"
+                x={s.x - 0.6}
+                y={s.y - 0.6}
+                width="23.2"
+                height="13.6"
+                rx="1.4"
+                fill="rgb(14 165 233)"
+                fillOpacity="0.12"
+                stroke="rgb(14 165 233)"
+                strokeWidth="1.1"
+                style={pv({ '--pv-at': `${900 + i * 260}ms` })}
+              />
             </g>
-          ))}
-          {/* Connecting arrows showing the reading order 1 -> 2 -> 4 -> 3. */}
-          <line x1="38" y1="13" x2="42" y2="13" stroke="rgb(100 116 139)" strokeWidth="0.7" />
-          <polygon points="42,13 40.5,12 40.5,14" fill="rgb(100 116 139)" />
-          <line x1="59" y1="23" x2="59" y2="26" stroke="rgb(100 116 139)" strokeWidth="0.7" />
-          <polygon points="59,26 58,24.5 60,24.5" fill="rgb(100 116 139)" />
-          <line x1="42" y1="36" x2="38" y2="36" stroke="rgb(100 116 139)" strokeWidth="0.7" />
-          <polygon points="38,36 39.5,35 39.5,37" fill="rgb(100 116 139)" />
-          {/* Hover story: presenting walks the deck in reading order
-              (1, 2, 4, 3), each slide lighting up as it's shown. */}
-          {[
-            { x: 4, y: 3, at: 900 },
-            { x: 42, y: 3, at: 1450 },
-            { x: 42, y: 26, at: 2000 },
-            { x: 4, y: 26, at: 2550 },
-          ].map((s) => (
-            <rect
-              key={`${s.x}-${s.y}`}
-              className="pv-new"
-              opacity="0"
-              x={s.x - 0.8}
-              y={s.y - 0.8}
-              width="35.6"
-              height="21.6"
-              rx="1.6"
-              fill="rgb(14 165 233)"
-              fillOpacity="0.12"
-              stroke="rgb(14 165 233)"
-              strokeWidth="1.3"
-              style={pv({ '--pv-at': `${s.at}ms` })}
-            />
           ))}
         </svg>
       );
@@ -981,7 +1163,7 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
   }
 }
 
-// One kanban card (the kanban preview draws nine, three of them moving).
+// One kanban card (the kanban preview draws ten, two of them moving).
 function KanbanCard({
   x,
   y,
@@ -991,8 +1173,8 @@ function KanbanCard({
     <rect
       x={x}
       y={y}
-      width="16"
-      height="7"
+      width="12"
+      height="6"
       rx="1"
       fill="white"
       stroke="rgb(148 163 184)"

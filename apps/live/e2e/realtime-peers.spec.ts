@@ -1,5 +1,12 @@
 import type { Browser, Page } from '@playwright/test';
-import { expect, test, guestSigFor, mintSignedGuest, ownerHeaders } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  test,
+  guestSigFor,
+  mintSignedGuest,
+  ownerHeaders,
+} from './fixtures';
 
 // Two people on one shared document (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
 // the other online, an edit reaches the other side live, the autosave keeps everyone's edits (a peer's is
@@ -33,11 +40,6 @@ async function openAs(
   const page = await ctx.newPage();
   await page.goto(url);
   return page;
-}
-
-async function declineTour(page: Page): Promise<void> {
-  const decline = page.getByRole('button', { name: /^no thanks$/i }).first();
-  if (await decline.isVisible().catch(() => false)) await decline.click();
 }
 
 const squares = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /Square/ });
@@ -79,8 +81,8 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   const peerPage = await openAs(browser, baseURL!, `/document/shared?s=${code}`, null);
   await peerPage.getByRole('button', { name: /^join$/i }).click();
   await peerPage.locator(CANVAS).waitFor();
-  await declineTour(ownerPage);
-  await declineTour(peerPage);
+  await dismissQuickTour(ownerPage);
+  await dismissQuickTour(peerPage);
 
   // Presence: the owner sees two people online, the peer among them.
   const online = ownerPage.locator('[role="img"][aria-label$="(Online)"]');

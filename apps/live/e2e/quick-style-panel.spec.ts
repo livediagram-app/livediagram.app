@@ -254,7 +254,11 @@ test.describe('quick style panel', () => {
       'aria-checked',
       'true',
     );
-    await page.mouse.click(500, 300, { button: 'right' });
+    // On the circle itself: a click the panel or any other chrome would take opens no element menu.
+    await page
+      .locator(CANVAS)
+      .getByRole('img', { name: 'Circle', exact: true })
+      .click({ button: 'right' });
     await expect(page.getByRole('menu').first()).toBeVisible();
     await expect(panel(page)).toBeHidden();
     expectNoPageErrors(pageErrors);

@@ -148,6 +148,35 @@ describe('settings catalogue', () => {
     expect(visibleCategories(true, ctx).map((c) => c.id)).toContain('ai');
   });
 
+  it('places API Tokens between Account and Privacy', () => {
+    const ids = SETTINGS_CATEGORIES.filter((c) => !c.parent).map((c) => c.id);
+    expect(ids.slice(-3)).toEqual(['account', 'tokens', 'privacy']);
+  });
+
+  it('offers API Tokens, and the AI link to it, only where sign-in exists', () => {
+    const ids = (authEnabled: boolean) =>
+      visibleCategories(true, { emailEnabled: false, signedIn: false, authEnabled }).map(
+        (c) => c.id,
+      );
+    const aiRows = (authEnabled: boolean) =>
+      visibleCategories(true, { emailEnabled: false, signedIn: true, authEnabled })
+        .find((c) => c.id === 'ai')!
+        .rows.map((r) => r.key);
+    // A guest on a deployment WITH sign-in still sees the category: its row
+    // says why it is empty and links to sign in.
+    expect(ids(true)).toContain('tokens');
+    expect(ids(false)).not.toContain('tokens');
+    expect(aiRows(true)).toContain('apiTokensLink');
+    expect(aiRows(false)).not.toContain('apiTokensLink');
+  });
+
+  it('points every link row at a category that exists', () => {
+    const ids = new Set(SETTINGS_CATEGORIES.map((c) => c.id));
+    const links = ALL_ROWS.filter((r) => r.kind === 'link');
+    expect(links.length).toBeGreaterThan(0);
+    for (const row of links) expect(ids.has(row.target), row.key).toBe(true);
+  });
+
   it('drops the email rows unless mail can be sent AND someone is signed in', () => {
     const withEmail = visibleCategories(true, { emailEnabled: true, signedIn: true });
     const without = visibleCategories(true, { emailEnabled: false, signedIn: true });

@@ -163,8 +163,9 @@ export function HelpMarkIcon() {
   );
 }
 
-// Tiny "opens in a new tab" glyph for the text variant.
-function ArrowOutIcon() {
+// Tiny "opens in a new tab" glyph for the text variant, and for any text link
+// that leaves the app.
+export function ArrowOutIcon() {
   return (
     <Glyph size={11} units={20}>
       <path d="M8 4H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3" />

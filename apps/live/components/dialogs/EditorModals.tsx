@@ -24,6 +24,7 @@ export function EditorModals() {
     settingsOpen,
     settingsFocus,
     settingsCategory,
+    settingsSection,
     closeSettings,
     userPreferences,
     setUserPreferences,
@@ -64,6 +65,7 @@ export function EditorModals() {
           onClose={closeSettings}
           focus={settingsFocus}
           initialCategoryId={settingsCategory}
+          initialSectionId={settingsSection}
           aiCapable={aiCapable}
         />
       ) : null}

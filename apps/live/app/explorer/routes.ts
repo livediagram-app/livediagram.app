@@ -46,8 +46,6 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/images';
     case 'themes':
       return '/explorer/themes';
-    case 'tokens':
-      return '/explorer/tokens';
     case 'trash':
       return '/explorer/trash';
     case 'invites':
@@ -97,8 +95,6 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'gallery' };
     case '/explorer/themes':
       return { kind: 'themes' };
-    case '/explorer/tokens':
-      return { kind: 'tokens' };
     case '/explorer/trash':
       return { kind: 'trash' };
     case '/explorer/invites':

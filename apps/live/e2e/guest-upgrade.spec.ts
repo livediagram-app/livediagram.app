@@ -15,11 +15,8 @@ test('a reload in the middle of the signed-id upgrade keeps the document', async
     await route.fetch();
     moved();
   });
-  await page.goto('/new');
-  await page
-    .getByRole('button', { name: /^start blank$/i })
-    .first()
-    .click();
+  // Straight to a blank canvas (the Start Blank link).
+  await page.goto('/new?blank=1');
   await page.waitForURL(/\/document\//);
   const id = /\/document\/([^/?#]+)/.exec(page.url())![1];
   await movedOnServer;

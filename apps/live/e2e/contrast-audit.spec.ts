@@ -1,6 +1,6 @@
 import { auditContrast, type ContrastReport } from './contrast';
 import { CANVAS, darkVisitor, freshDarkPage, seedDocument, shareLink } from './audit-screens';
-import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, untilHydrated } from './fixtures';
 
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
 // docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)). Every visible text node on each
@@ -27,16 +27,13 @@ test.describe('Contrast audit, dark mode', () => {
     await darkVisitor(page);
     await page.goto('/new');
     await page.getByText('New Document', { exact: false }).first().waitFor();
+    await untilHydrated(page.getByRole('button', { name: /^next$/i }));
     await expect(page.locator('html')).toHaveClass(/dark/);
     expectAA(await auditContrast(page), 'wizard, template step');
 
     await page.getByRole('button', { name: /^next$/i }).click();
-    await page
-      .getByText('All themes', { exact: false })
-      .or(page.getByText('Default').first())
-      .first()
-      .waitFor();
-    expectAA(await auditContrast(page), 'wizard, theme step');
+    await page.getByText('Name your document', { exact: false }).first().waitFor();
+    expectAA(await auditContrast(page), 'wizard, location step');
     expectNoPageErrors(pageErrors);
   });
 

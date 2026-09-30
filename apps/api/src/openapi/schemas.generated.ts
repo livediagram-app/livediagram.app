@@ -822,6 +822,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aiEnabled": {
         "type": "boolean"
       },
+      "driveMode": {
+        "$ref": "#/components/schemas/DriveMode"
+      },
       "emailEnabled": {
         "type": "boolean"
       }
@@ -2284,6 +2287,193 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "DriveAccessToken": {
+    "additionalProperties": false,
+    "properties": {
+      "accessToken": {
+        "type": "string"
+      },
+      "expiresAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "accessToken",
+      "expiresAt"
+    ],
+    "type": "object"
+  },
+  "DriveConnection": {
+    "additionalProperties": false,
+    "properties": {
+      "connectedAt": {
+        "type": "number"
+      },
+      "hasRefreshToken": {
+        "type": "boolean"
+      },
+      "pageToken": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pageTokenSavedAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "rootFolderId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "status": {
+        "$ref": "#/components/schemas/DriveConnectionStatus"
+      }
+    },
+    "required": [
+      "status",
+      "hasRefreshToken",
+      "rootFolderId",
+      "pageToken",
+      "pageTokenSavedAt",
+      "connectedAt"
+    ],
+    "type": "object"
+  },
+  "DriveConnectionStatus": {
+    "enum": [
+      "connected",
+      "needs_reconnect"
+    ],
+    "type": "string"
+  },
+  "DriveItem": {
+    "additionalProperties": false,
+    "properties": {
+      "driveFileId": {
+        "type": "string"
+      },
+      "headRevisionId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "kind": {
+        "$ref": "#/components/schemas/DriveItemKind"
+      },
+      "ldId": {
+        "type": "string"
+      },
+      "ldName": {
+        "type": "string"
+      },
+      "md5": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "mirroredSavedAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "name": {
+        "type": "string"
+      },
+      "notice": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/DriveNotice"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "noticeParentId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "parentId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "trashed": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "kind",
+      "ldId",
+      "driveFileId",
+      "name",
+      "ldName",
+      "parentId",
+      "trashed",
+      "md5",
+      "headRevisionId",
+      "mirroredSavedAt",
+      "notice",
+      "noticeParentId"
+    ],
+    "type": "object"
+  },
+  "DriveItemKind": {
+    "enum": [
+      "document",
+      "folder"
+    ],
+    "type": "string"
+  },
+  "DriveLease": {
+    "additionalProperties": false,
+    "properties": {
+      "acquired": {
+        "type": "boolean"
+      },
+      "expiresAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "holder": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "acquired",
+      "holder",
+      "expiresAt"
+    ],
+    "type": "object"
+  },
+  "DriveMode": {
+    "enum": [
+      "off",
+      "browser",
+      "broker"
+    ],
+    "type": "string"
+  },
+  "DriveNotice": {
+    "const": "unseen_folder",
+    "type": "string"
+  },
   "Element": {
     "anyOf": [
       {
@@ -3394,13 +3584,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
       }
     },
     "required": [
       "id",
       "name",
       "color",
-      "createdAt"
+      "createdAt",
+      "pictureUrl"
     ],
     "type": "object"
   },
@@ -5235,6 +5432,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "role": {
         "$ref": "#/components/schemas/TeamRole"
       },
@@ -5262,6 +5465,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "role",
       "status",
       "name",
+      "pictureUrl",
       "createdAt",
       "updatedAt"
     ],
@@ -5332,6 +5536,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Unhelpful",
       "Returned",
       "Restored",
+      "Applied",
       "Sent",
       "Api",
       "Client",
@@ -5369,7 +5574,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Page",
       "Cta",
       "Trash",
-      "Whiteboard"
+      "Whiteboard",
+      "Drive"
     ],
     "type": "string"
   },

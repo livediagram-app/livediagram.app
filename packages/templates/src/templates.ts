@@ -25,11 +25,10 @@ export type TemplateKind =
   | 'kanban'
   | 'swot'
   | 'timeline'
-  // Milestone timelines: the richer, presentation-ready siblings of the
-  // plain 'timeline' — a directional spine with stemmed milestone cards,
-  // each carrying a date chip and a one-line description. The horizontal
-  // kind keeps the original 'milestone-timeline' id; the vertical variant
-  // runs the same composition down the page.
+  // Milestone timelines: the storytelling, presentation-ready siblings of
+  // the plain 'timeline'. The horizontal kind (the original
+  // 'milestone-timeline' id) places a launch year to scale on a phase
+  // ribbon; the vertical variant tells a company history down the page.
   | 'milestone-timeline'
   | 'milestone-timeline-vertical'
   | 'venn'
@@ -42,94 +41,125 @@ export type TemplateKind =
   | 'mobile-wireframe'
   | 'laptop-wireframe'
   | 'slide-deck'
-  // A growth / momentum flywheel: hub + four sectors with a clockwise
-  // arrow loop. An extra, alongside the other strategy / wireframing
-  // starters.
+  // A growth / momentum flywheel: a spinning hub and four hue-tinted
+  // stage wheels on a flowing clockwise loop, each with its metric, plus
+  // push / friction stickies. An extra.
   | 'flywheel'
   // Logo-design exploration sheet: six labelled artboards (horizontal /
   // stacked lockups with and without a tagline, the mark as an app icon,
   // a one-colour version) plus the brand palette, so a designer picks
   // the composition that fits, deletes the rest, and iterates.
   | 'logo-design'
-  // Gantt chart: a month header row plus six cascading milestone rows
-  // (label + full-width track + coloured duration bar). A project-
-  // planning starter, and an extra.
+  // Gantt chart: a twelve-week plan on a month + week calendar, grouped
+  // by workstream, with owners, progress bars, dependencies, a milestone
+  // and a Today line. A project-planning starter, and an extra.
   | 'gantt'
   // Group card: a greeting card the whole team signs (cover + message
   // wall). The kind id predates the name. An extra.
   | 'live-card'
-  // Comparison table: a plan-comparison grid (the table element).
+  // Comparison table: a plan-buying decision on the table element, with
+  // ticks / crosses and the recommended plan highlighted.
   | 'comparison-table'
   // Technical / developer-diagram starters (docs/specs/008-canvas/canvas-and-palette.md "Templates"). They
-  // reuse the existing shape vocabulary — cylinders for datastores, the
-  // table element for entities, dashed arrows for lifelines / returns —
+  // reuse the existing shape vocabulary (cylinders for datastores, the
+  // entity element for tables, dashed arrows for lifelines / returns)
   // so a dev audience has a first-class starting point. All extras.
   | 'system-architecture'
   | 'er-diagram'
   | 'sequence-diagram'
-  // Impact / Effort prioritisation chart: crossed value / effort axes
-  // with items scattered across the field to drag into the right
-  // quadrant. A product / planning starter.
+  // Impact / Effort prioritisation matrix: four named quadrants (Quick
+  // wins / Big bets / Fill-ins / Money pits) with dot-voted items placed,
+  // beside a vote, size, commit rail. A product / planning starter.
   | 'prioritization-matrix'
-  // Now / Next / Later product roadmap: three tinted lanes of initiative
-  // cards, each tagged with its theme. The strategic sibling of the
-  // date-driven Gantt.
+  // Now / Next / Later outcome roadmap: theme swimlanes across three
+  // horizons of initiative cards, under one goal. The strategic sibling of
+  // the date-driven Gantt.
   | 'roadmap'
-  // RACI matrix: a tasks-by-roles table of R / A / C / I ownership
-  // chips plus a legend spelling each letter out.
+  // RACI matrix: a tasks-by-roles table with every letter cell tinted by
+  // its role, a legend spelling each letter out, and review checks.
   | 'raci-matrix'
-  // User story mapping (agile): an activity backbone across the top with
-  // story stickies beneath, sliced into release bands.
+  // User story mapping (agile): activities over tasks (the backbone) over
+  // story stickies, sliced into release lanes.
   | 'user-story-map'
-  // Affinity map: brainstorm stickies clustered into labelled themes,
-  // with an unsorted pile still to file.
+  // Affinity map: research notes grouped under insight headers and
+  // themes, with dot-vote tallies and an unsorted pile still to place.
   | 'affinity-map'
   // Lean Coffee (docs/specs/012-collaboration/qa-board.md): an agenda-less meeting run on a Q&A board, with
-  // a timebox timer, a keep-going poll and a takeaways checklist.
+  // its four-step loop drawn out, timebox timers, a keep-going poll and takeaways.
   | 'lean-coffee'
-  // Town Hall Q&A (docs/specs/012-collaboration/qa-board.md): an audience Q&A board beside an agenda, a
-  // Q&A timer and a follow-ups checklist.
+  // Town Hall Q&A (docs/specs/012-collaboration/qa-board.md): an audience Q&A board beside the panel, a
+  // run-of-show agenda, a facilitator kit and a follow-ups checklist.
   | 'town-hall'
-  // The classic nine-block Business Model Canvas, every block seeded
-  // with a prompt and starter notes.
+  // The classic nine-block Business Model Canvas, coloured by area,
+  // numbered in fill order and seeded with worked sticky notes.
   | 'business-model-canvas'
   // Empathy map: Says / Thinks / Does / Feels quadrants around a
   // central persona.
   | 'empathy-map'
-  // Conversion funnel: narrowing stages with stage counts and
-  // conversion-rate callouts down the side.
+  // Conversion funnel: narrowing stages with counts, derived step rates
+  // and a callout on the biggest drop-off.
   | 'funnel'
-  // OKR tree: an objective branching into measurable key results and
-  // the initiatives that move them.
+  // OKR tree: an objective branching into measurable key results (each
+  // with a progress ring) and the initiatives that move them.
   | 'okr-tree'
-  // Sitemap: a website's page hierarchy (home, sections, sub-pages)
-  // drawn with elbow connectors.
+  // Sitemap: a website's page hierarchy (home, nav sections, pages with
+  // their routes, footer and utility pages) drawn with elbow connectors.
   | 'sitemap'
-  // Web page wireframe in a browser frame: nav, hero, feature cards and
-  // footer. The landing-page sibling of the mobile / laptop wireframes.
+  // Web page wireframe in a browser frame: an annotated landing page (nav,
+  // hero, product shot, social proof, benefits, footer) with pinned notes.
+  // The landing-page sibling of the mobile / laptop wireframes.
   | 'browser-wireframe'
-  // Storyboard: numbered scene frames with captions for sketching a
-  // narrative sequence.
+  // Storyboard: numbered shots of a short ad, each with a shot + timing
+  // chip, a sketch, and action + sound lines beneath.
   | 'storyboard'
-  // Cloud architecture (Technology icons, docs/specs/010-palette/technology-icons.md): an edge-to-data
-  // topology with CDN, load balancer, services, queue and stores.
+  // Cloud architecture (Technology icons, docs/specs/010-palette/technology-icons.md): an AWS stack with
+  // its services grouped into edge, region, VPC and subnet frames.
   | 'cloud-architecture'
-  // UML class diagram: compartmented classes wired by inheritance /
-  // composition / association arrows (uses the UML arrowhead shapes).
+  // UML class diagram: entity classes wired by inheritance / composition /
+  // aggregation / association arrows (uses the UML arrowhead shapes).
   | 'uml-class'
-  // UML state machine: initial / final markers and stadium states wired
-  // by event-labelled transitions.
+  // UML state machine: initial / final pseudostates, a composite state and
+  // transitions labelled event [guard] / action.
   | 'state-machine'
-  // Floor plan: rooms drawn to a real metric scale (80px = 1m) and
-  // furnished with the top-down Furniture icons. The only template whose
-  // geometry means something in the world, so its scale is captioned on
-  // the canvas.
+  // Floor plan: rooms drawn to a real metric scale (80px = 1m), furnished
+  // with the top-down Furniture icons, zone-tinted, dimensioned and keyed.
+  // The only template whose geometry means something in the world, so its
+  // scale is captioned on the canvas.
   | 'floor-plan'
   // Event storming (docs/specs/021-event-storming/event-storming.md): the sticky-note workshop grammar for
   // exploring a business domain — orange domain events first, the rest
   // of the notation arrives incrementally. Colours ARE the semantics,
   // so its stickies pin their fills with `themeLockFill`.
   | 'event-storming'
+  // Retro formats (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the Retrospective's siblings, run
+  // with the same opening rail and closing actions so a team can rotate
+  // formats without relearning the ritual. Columns (Start / Stop /
+  // Continue, Mad / Sad / Glad), a 2x2 (4Ls) and a picture (Sailboat).
+  | 'start-stop-continue'
+  | 'mad-sad-glad'
+  | 'four-ls'
+  | 'sailboat'
+  // A blameless incident postmortem: impact, a phased timeline, five whys,
+  // what helped and hurt, and prioritised follow-ups.
+  | 'incident-postmortem'
+  // Product discovery's opportunity solution tree: outcome, opportunities,
+  // solutions and assumption tests, one hue per level.
+  | 'opportunity-solution-tree'
+  // Crazy 8s: the design-sprint sketching exercise, eight one-minute frames
+  // beside an 8-minute timer, a vote and a done check.
+  | 'crazy-eights'
+  // Power / interest stakeholder grid with stances and an engagement plan.
+  | 'stakeholder-map'
+  // 5x5 likelihood x impact heatmap beside a risk register.
+  | 'risk-matrix'
+  // A research-backed user persona laid out as a profile sheet.
+  | 'user-persona'
+  // A meeting that runs itself: purpose, attendees, a live agenda element,
+  // and the parking lot, decisions and actions it produces.
+  | 'meeting-agenda'
+  // Personal objectives, written with a sentence formula and a SMART check,
+  // balanced across life areas, with key results and a check-in rhythm.
+  | 'objectives-planner'
   // Whiteboard (docs/specs/023-whiteboard/whiteboard.md): a blank tab of the whiteboard KIND, drawn on
   // with a dock of pens rather than the palette. Shown beside Blank as a
   // quick-pick, never inside a category grid.
@@ -159,7 +189,7 @@ export type TemplateDescriptor = {
 export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank',
-    title: 'Blank diagram',
+    title: 'Blank Canvas',
     description: 'An empty canvas to start with whatever you like.',
   },
   {
@@ -170,7 +200,8 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'mindmap',
     title: 'Mind map',
-    description: 'A central idea with branching topics radiating around it.',
+    description:
+      'A team offsite plan: five colour-coded branches with glyphs radiating from the topic.',
   },
   {
     kind: 'mindmap-tree',
@@ -180,12 +211,13 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'mindmap-bubble',
     title: 'Bubble map',
-    description: 'A central topic ringed by descriptive bubbles.',
+    description: 'A brand voice ringed by six adjectives, each with a line that proves it.',
   },
   {
     kind: 'orgchart',
     title: 'Org chart',
-    description: 'A simple hierarchy: leader with direct reports.',
+    description:
+      'A leadership team by person, with team bands, a dotted-line report and an open role.',
   },
   {
     kind: 'retrospective',
@@ -196,7 +228,8 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'flowchart',
     title: 'Flowchart',
-    description: 'Start → step → decision → end, with a branching path.',
+    description:
+      'A checkout drawn with the five ISO symbols, retry and back-order loops, and a key.',
   },
   {
     kind: 'swimlane',
@@ -207,7 +240,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'decision-tree',
     title: 'Decision tree',
-    description: 'A question branching yes / no into cascading outcomes.',
+    description: 'Can we ship on Friday? Yes / no questions down to go, wait and stop outcomes.',
     extra: true,
   },
   {
@@ -225,12 +258,12 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'kanban',
     title: 'Kanban',
-    description: 'Five lanes from Backlog to Done, with ticket cards and priority chips.',
+    description: 'Five lanes with WIP limits, tagged and owned tickets, and a blocked card.',
   },
   {
     kind: 'swot',
     title: 'SWOT',
-    description: 'Spacious 2×2 with a role icon and bullet starters in each quadrant.',
+    description: 'A 2×2 with named axes and sticky evidence, then a strip turning it into moves.',
   },
   {
     kind: 'timeline',
@@ -240,13 +273,15 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'milestone-timeline',
     title: 'Horizontal milestone timeline',
-    description: 'Dated milestone cards on stems above and below a directional spine.',
+    description:
+      'A launch year to scale: milestone cards on stems above and below a phase ribbon, with launch day as the hero.',
     extra: true,
   },
   {
     kind: 'milestone-timeline-vertical',
     title: 'Vertical milestone timeline',
-    description: 'Dated milestone cards branching left and right of a downward spine.',
+    description:
+      'A company history down the page: big years one side, story cards the other, a highlight and the next chapter.',
     extra: true,
   },
   {
@@ -277,7 +312,8 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'mobile-wireframe',
     title: 'Mobile wireframe',
-    description: 'Three phone screens side by side: a user-flow starter for mobile UI work.',
+    description:
+      'A three-screen app flow joined by tap arrows, with numbered pins matching design notes.',
     extra: true,
   },
   {
@@ -290,14 +326,15 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'slide-deck',
     title: 'Slide deck',
-    description: 'Four blank slides in a 2 by 2 grid, like a short PowerPoint outline.',
+    description:
+      'A six-slide pitch (title, problem, solution, traction, team, the ask) with speaker notes.',
     extra: true,
   },
   {
     kind: 'flywheel',
     title: 'Flywheel',
     description:
-      'A central momentum hub with four reinforcing stages and a clockwise loop of arrows.',
+      'A growth loop that turns: four stages feeding each other round a spinning hub, each with its number, plus the push and friction acting on it.',
     extra: true,
   },
   {
@@ -311,7 +348,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'gantt',
     title: 'Gantt chart',
     description:
-      'A month header with six cascading milestone rows: labels, tracks and coloured duration bars for project planning.',
+      'A twelve-week launch plan: workstreams, owners, progress bars, dependencies, a launch milestone and a Today line.',
     extra: true,
   },
   {
@@ -324,7 +361,8 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'comparison-table',
     title: 'Comparison table',
-    description: 'A plan-comparison grid with header row + column and zebra striping.',
+    description:
+      'Three plans side by side with ticks and crosses, the cost for your team, and the recommended plan highlighted.',
     extra: true,
   },
   {
@@ -338,63 +376,66 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'er-diagram',
     title: 'Database schema',
     description:
-      'Entity-relationship (ER) diagram: four tables (Users / Orders / Products / OrderItems) wired by relationships.',
+      'ER diagram of a food-delivery app: six tables with PK / FK columns, one-to-many relationships and their multiplicities.',
     extra: true,
   },
   {
     kind: 'sequence-diagram',
     title: 'Sequence diagram',
     description:
-      'Participant lifelines with request / response messages stepping down a login flow.',
+      'UML checkout flow: an actor, lifelines, activation bars, sync / async / reply messages and an alt fragment.',
     extra: true,
   },
   {
     kind: 'prioritization-matrix',
     title: 'Prioritization matrix',
-    description: 'Value vs Effort chart with crossed axes and items to scatter into quadrants.',
+    description: 'Impact vs effort: Quick wins, Big bets, Fill-ins and Money pits, with a vote.',
     extra: true,
   },
   {
     kind: 'roadmap',
     title: 'Roadmap',
-    description: 'Now / Next / Later lanes of initiative cards, each tagged with its theme.',
+    description:
+      'Now / Next / Later by theme: outcome cards under one goal, with confidence and status at a glance.',
     extra: true,
   },
   {
     kind: 'raci-matrix',
     title: 'RACI matrix',
-    description: 'A tasks-by-roles grid of R / A / C / I ownership chips, with a legend.',
+    description:
+      'Launch tasks by named roles with colour-coded R / A / C / I cells, a legend, and the checks to review it against.',
     extra: true,
   },
   {
     kind: 'user-story-map',
     title: 'User story map',
-    description: 'An activity backbone with story cards beneath, sliced into release bands.',
+    description: 'Activities over tasks over stories, sliced into release lanes.',
     extra: true,
   },
   {
     kind: 'affinity-map',
     title: 'Affinity map',
-    description: 'Brainstorm stickies clustered into labelled themes, plus an unsorted pile.',
+    description: 'Research notes grouped under insights and themes, with dot-vote tallies.',
     extra: true,
   },
   {
     kind: 'lean-coffee',
     title: 'Lean Coffee',
     description:
-      'The room brings the topics, upvotes them, and talks through the top ones in timeboxes.',
+      'The four-step loop drawn out, a topics board, and the timers and poll that run it.',
     extra: true,
   },
   {
     kind: 'town-hall',
     title: 'Town Hall Q&A',
-    description: 'An upvoted audience Q&A with an agenda, a timer and a follow-ups list.',
+    description: 'An upvoted audience Q&A beside the panel, a run of show and a facilitator kit.',
     extra: true,
   },
   {
     kind: 'business-model-canvas',
     title: 'Business Model Canvas',
-    description: 'The classic nine-block canvas, every block seeded with starter notes.',
+    description:
+      'The classic nine blocks for a worked meal-kit business, coloured by area and numbered in the order to fill them.',
     extra: true,
   },
   {
@@ -407,55 +448,64 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'funnel',
     title: 'Funnel',
-    description: 'Four narrowing stages with counts and conversion rates down the side.',
+    description:
+      'Four narrowing stages with real counts and step rates, and a callout on the biggest drop-off with experiments to fix it.',
     extra: true,
   },
   {
     kind: 'okr-tree',
     title: 'OKR tree',
-    description: 'An objective branching into measurable key results and their initiatives.',
+    description:
+      'An objective over key results with progress rings, and initiatives with status badges.',
     extra: true,
   },
   {
     kind: 'sitemap',
     title: 'Sitemap',
-    description: 'A website page hierarchy: home, sections and their sub-pages.',
+    description:
+      'A site page tree: nav sections, pages with type glyphs and routes, footer and utility pages.',
     extra: true,
   },
   {
     kind: 'browser-wireframe',
     title: 'Web page wireframe',
-    description: 'A browser frame with nav, hero, feature cards and footer for landing pages.',
+    description:
+      'A real landing page in a browser frame, annotated with pinned notes on why it is laid out so.',
     extra: true,
   },
   {
     kind: 'storyboard',
     title: 'Storyboard',
-    description: 'Six numbered scene frames with captions for sketching a narrative.',
+    description:
+      'A 30-second ad in six shots: shot and timing chips, sketches, action and sound lines.',
     extra: true,
   },
   {
     kind: 'cloud-architecture',
     title: 'Cloud architecture',
-    description: 'An edge-to-data cloud topology: CDN, load balancer, services and stores.',
+    description:
+      'A food-delivery stack on AWS: real service icons nested in edge, region, VPC and subnet groups.',
     extra: true,
   },
   {
     kind: 'uml-class',
     title: 'Class diagram',
-    description: 'UML classes with attributes and methods, wired by inheritance arrows.',
+    description:
+      'UML classes with visibility and types, wired by inheritance, composition, aggregation and associations.',
     extra: true,
   },
   {
     kind: 'state-machine',
     title: 'State machine',
-    description: 'States and labelled transitions tracing an order from draft to delivered.',
+    description:
+      'A delivery order’s UML lifecycle: a composite state, guards, a timeout and three final states.',
     extra: true,
   },
   {
     kind: 'floor-plan',
     title: 'Floor plan',
-    description: 'A two-bed flat drawn to scale, furnished with top-down furniture symbols.',
+    description:
+      'A two-bed flat with study drawn to scale: furniture, colour zones, dimensions and a key.',
     extra: true,
   },
   {
@@ -463,6 +513,90 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Event storming',
     description:
       'Explore a business domain with the sticky-note workshop notation: orange domain events on a left-to-right timeline.',
+    extra: true,
+  },
+  {
+    kind: 'start-stop-continue',
+    title: 'Start, Stop, Continue',
+    description:
+      'The plainest retro: what to begin, what to drop and what to keep, with a vote and owned actions.',
+    extra: true,
+  },
+  {
+    kind: 'mad-sad-glad',
+    title: 'Mad, Sad, Glad',
+    description:
+      'A feelings-first retro with an anonymous idea box, emoji-led columns and actions that ask what would help.',
+    extra: true,
+  },
+  {
+    kind: 'four-ls',
+    title: '4Ls retrospective',
+    description:
+      'Liked, Learned, Lacked and Longed for in a 2x2: the reflective retro for after a milestone.',
+    extra: true,
+  },
+  {
+    kind: 'sailboat',
+    title: 'Sailboat retrospective',
+    description:
+      'The picture retro: wind that pushes us, anchors that hold us back, rocks ahead and the island we sail for.',
+    extra: true,
+  },
+  {
+    kind: 'incident-postmortem',
+    title: 'Incident postmortem',
+    description:
+      'A blameless postmortem: impact, a phased timeline, five whys, what helped and prioritised follow-ups.',
+    extra: true,
+  },
+  {
+    kind: 'opportunity-solution-tree',
+    title: 'Opportunity solution tree',
+    description:
+      "Product discovery from one outcome: needs in the customer's voice, a target, three solutions and their tests.",
+    extra: true,
+  },
+  {
+    kind: 'crazy-eights',
+    title: 'Crazy 8s',
+    description:
+      'Eight ideas in eight minutes: a sketch sheet of one-minute frames, a timer, a done check and a vote.',
+    extra: true,
+  },
+  {
+    kind: 'stakeholder-map',
+    title: 'Stakeholder map',
+    description:
+      'Power vs interest: who to manage closely, keep satisfied, inform or monitor, with stances and an engagement plan.',
+    extra: true,
+  },
+  {
+    kind: 'risk-matrix',
+    title: 'Risk matrix',
+    description:
+      'A 5x5 likelihood and impact heatmap with numbered risks, a residual move, and a register with owners and trends.',
+    extra: true,
+  },
+  {
+    kind: 'user-persona',
+    title: 'User persona',
+    description:
+      'A research-backed persona: profile and quote, goals, frustrations, behaviours, personality and how we help.',
+    extra: true,
+  },
+  {
+    kind: 'meeting-agenda',
+    title: 'Meeting agenda',
+    description:
+      'A weekly sync that runs itself: purpose and roles, a timed agenda, then parking lot, decisions and actions.',
+    extra: true,
+  },
+  {
+    kind: 'objectives-planner',
+    title: 'Objectives planner',
+    description:
+      'Write personal objectives that stick: start with why, a sentence formula, a SMART test, key results and check-ins.',
     extra: true,
   },
 ];
@@ -510,8 +644,8 @@ export const TEMPLATE_CATEGORIES: { id: TemplateCategory; label: string; descrip
   },
   {
     id: 'project-management',
-    label: 'Project Management',
-    description: 'Timelines, Gantt charts and roadmaps.',
+    label: 'Projects',
+    description: 'Plans, timelines, risks and meeting agendas.',
   },
   {
     id: 'strategy',
@@ -550,10 +684,15 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   pyramid: 'hierarchies',
   fishbone: 'hierarchies',
   'okr-tree': 'hierarchies',
+  'opportunity-solution-tree': 'hierarchies',
   sitemap: 'hierarchies',
   // Planning: agile boards, retrospectives, prioritisation, story maps.
   kanban: 'planning',
   retrospective: 'planning',
+  'start-stop-continue': 'planning',
+  'mad-sad-glad': 'planning',
+  'four-ls': 'planning',
+  sailboat: 'planning',
   'prioritization-matrix': 'planning',
   'user-story-map': 'planning',
   'affinity-map': 'planning',
@@ -561,13 +700,16 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   // category's retros already make a home for.
   'lean-coffee': 'planning',
   'town-hall': 'planning',
-  // Project Management: time-ordered schedules, roadmaps + ownership.
+  // Projects: time-ordered schedules, roadmaps + ownership.
   gantt: 'project-management',
   timeline: 'project-management',
   'milestone-timeline': 'project-management',
   'milestone-timeline-vertical': 'project-management',
   roadmap: 'project-management',
   'raci-matrix': 'project-management',
+  'risk-matrix': 'project-management',
+  'meeting-agenda': 'project-management',
+  'objectives-planner': 'project-management',
   // Strategy: business / product analysis, decision frameworks + set
   // relationships (Venn).
   swot: 'strategy',
@@ -577,6 +719,8 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   venn: 'strategy',
   'business-model-canvas': 'strategy',
   'empathy-map': 'strategy',
+  'user-persona': 'strategy',
+  'stakeholder-map': 'strategy',
   funnel: 'strategy',
   // Design: wireframes, slides + visual mock-ups.
   'mobile-wireframe': 'design',
@@ -589,6 +733,7 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   // A floor plan is a layout drawing, so it sits with the wireframes and
   // mock-ups rather than with the developer diagrams in Technical.
   'floor-plan': 'design',
+  'crazy-eights': 'design',
   // Technical / developer diagrams.
   'system-architecture': 'technical',
   'cloud-architecture': 'technical',
@@ -599,6 +744,7 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'event-storming': 'technical',
   // Nominal, like Blank: the picker shows Whiteboard only as a quick-pick.
   whiteboard: 'design',
+  'incident-postmortem': 'technical',
 };
 
 // Collections (docs/specs/007-editor/new-document-route.md "?browse=<collection>"): cross-category
@@ -664,6 +810,18 @@ export function templateShelfTemplates(
     (t) => t.kind !== 'blank' && t.kind !== 'whiteboard' && templateCategory(t.kind) === shelf,
   );
 }
+// The picker's "Popular" shelf (docs/specs/008-canvas/canvas-and-palette.md "Templates section"): where
+// most people start, open by default above the categories. Not a category of
+// its own (every kind here still lives in its real one); Blank Canvas leads it,
+// so the picker needs no separate blank card.
+export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
+  'blank',
+  'mindmap',
+  'sailboat',
+  'flowchart',
+  'kanban',
+  'orgchart',
+];
 
 export function templateCategory(kind: TemplateKind): TemplateCategory {
   return TEMPLATE_CATEGORY[kind];
@@ -778,6 +936,39 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   storyboard: 'crosshatch',
   // A new whiteboard starts on Grid (docs/specs/023-whiteboard/whiteboard.md "Board background").
   whiteboard: WHITEBOARD_DEFAULT_PATTERN,
+  // The twelve-starter batch follows the same split: the retro formats,
+  // Crazy 8s, persona, agenda and objectives are sticky-note / workshop
+  // boards on the dot grid, as is the postmortem (a dense written report,
+  // where graph lines behind every card read as noise); the matrices and
+  // tree ride graph paper;
+  // the Sailboat's drawn scene gets a blank canvas like the flywheel.
+  'start-stop-continue': 'grid',
+  'mad-sad-glad': 'grid',
+  'four-ls': 'grid',
+  sailboat: 'blank',
+  'incident-postmortem': 'grid',
+  'opportunity-solution-tree': 'graph',
+  'crazy-eights': 'grid',
+  'stakeholder-map': 'graph',
+  'risk-matrix': 'graph',
+  'user-persona': 'grid',
+  'meeting-agenda': 'grid',
+  // A personal planning sheet, read closely like a page: even dots behind
+  // its cards read as noise, so it gets a clean canvas.
+  'objectives-planner': 'blank',
+};
+
+// How far each loud backdrop pattern steps back behind a template's content
+// (the tab's `backgroundOpacity`, which dims only the pattern layer). Graph
+// paper is the loudest (two line weights across the whole page), so it drops
+// the most; ruled lines, crosshatch and the checkerboard sit between. The dot
+// grid and a blank canvas are already quiet and keep full strength. The user
+// can still turn any of them back up in the Canvas controls.
+const TEMPLATE_PATTERN_OPACITY: Partial<Record<BackgroundPattern, number>> = {
+  graph: 0.4,
+  crosshatch: 0.5,
+  lines: 0.6,
+  checkerboard: 0.6,
 };
 
 // Tab-level overrides a specific template ships with, applied on top
@@ -792,13 +983,23 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   const overrides: Partial<Tab> = {};
   const pattern = TEMPLATE_PATTERNS[kind];
   if (pattern) overrides.backgroundPattern = pattern;
-  if (
+  // The pattern recedes behind the content: a template is read, so its
+  // backdrop should organise the page rather than compete with it. The
+  // louder the pattern, the further it steps back (TEMPLATE_PATTERN_OPACITY);
+  // a few radial / stage layouts soften further still, and the lower of the
+  // two wins.
+  // A whiteboard draws its own quiet board pattern (docs/specs/023-whiteboard/whiteboard.md "Board
+  // background"), so it never takes a template's dimming.
+  const quiet = pattern && kind !== 'whiteboard' ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
+  const soft =
     kind === 'mindmap' ||
     kind === 'mindmap-tree' ||
     kind === 'journey' ||
     kind === 'prioritization-matrix'
-  )
-    overrides.backgroundOpacity = 0.8;
+      ? 0.8
+      : undefined;
+  const opacity = Math.min(quiet ?? 1, soft ?? 1);
+  if (opacity < 1) overrides.backgroundOpacity = opacity;
   const layers = templateLayers(kind);
   if (layers) overrides.layers = layers;
   // A template can also declare what KIND of board it makes (docs/specs/021-event-storming/event-storming.md).

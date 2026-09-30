@@ -65,6 +65,30 @@ describe('connectRoom reconnect cursor', () => {
     vi.unstubAllGlobals();
   });
 
+  // An identity update (docs/specs/014-identity/profile-picture.md §4): sent over the open socket,
+  // and what the next hello says after a reconnect.
+  it('sends a picture change as an identity frame and says hello with it after a reconnect', () => {
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+    );
+    const first = FakeSocket.all[0]!;
+    first.fire('open');
+    const picture = 'https://img.clerk.com/me';
+    room.updateSelf({ id: 'me', name: 'Me', color: '#000', picture });
+    expect(first.sent.at(-1)).toEqual({
+      kind: 'identity',
+      participant: { id: 'me', name: 'Me', color: '#000', picture },
+    });
+    first.fire('close');
+    vi.runOnlyPendingTimers();
+    const second = FakeSocket.all[1]!;
+    second.fire('open');
+    expect(second.sent[0]).toMatchObject({ kind: 'hello', participant: { picture } });
+    room.close();
+  });
+
   function reconnectSync(frames: unknown[]) {
     const room = connectRoom(
       'd1',

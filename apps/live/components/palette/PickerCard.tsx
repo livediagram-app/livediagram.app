@@ -19,6 +19,8 @@ export function PickerCard({
   label,
   description,
   count,
+  className = '',
+  clampDescription = true,
   children,
 }: {
   active: boolean;
@@ -36,6 +38,11 @@ export function PickerCard({
   // Category cards only: how many things are inside. Omitted on the cards
   // that ARE the thing rather than a way in to more of them.
   count?: number;
+  // Extra layout classes, e.g. h-full w-full so carousel cards share a height.
+  className?: string;
+  // Two lines is plenty for a theme or category blurb; a template's description is what it
+  // is picked by, so template cards show it whole (false).
+  clampDescription?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -45,13 +52,13 @@ export function PickerCard({
       onDoubleClick={onCommit}
       aria-label={ariaLabel}
       aria-pressed={active}
-      className={
+      className={`${
         // min-w-0 on the button itself: grid items default to min-width:auto,
         // which lets a long unbroken label push the card wider than its track.
         active
           ? 'preview-motion-host flex min-w-0 flex-col items-start gap-1.5 rounded-lg border-2 border-brand-400 bg-brand-50 p-2 text-left dark:border-brand-500 dark:bg-brand-500/15'
           : 'preview-motion-host flex min-w-0 flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
-      }
+      } ${className}`}
     >
       {children}
       {/* w-full is what bounds the caption: the button is a column flex with
@@ -88,7 +95,9 @@ export function PickerCard({
         {/* A whole-pixel line height (leading-snug made 15.125px), so card
             rows stay on whole pixels and the count badge's half-pixel fix
             above holds on every row, not just the first. */}
-        <p className="mt-0.5 line-clamp-2 text-[11px] leading-[15px] text-slate-500 dark:text-slate-300">
+        <p
+          className={`mt-0.5 text-[11px] leading-[15px] text-slate-500 dark:text-slate-300 ${clampDescription ? 'line-clamp-2' : ''}`}
+        >
           {description}
         </p>
       </div>

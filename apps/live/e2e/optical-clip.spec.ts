@@ -37,8 +37,8 @@ async function paintsFullInk(label: Locator): Promise<boolean> {
 test('Settings category labels keep their descenders', async ({ page, pageErrors }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 720 });
-  await page.goto('/new');
-  await page.getByRole('button', { name: /^start blank$/i }).click();
+  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
+  await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 

@@ -30,13 +30,23 @@ export const AFTER_WRITE_MIN_INTERVAL_MS = 5_000;
 
 export function useAfterApiWrite(
   onWrite: (signal: ApiWriteSignal) => void,
-  opts: { enabled?: boolean; delayMs?: number; minIntervalMs?: number } = {},
+  opts: {
+    enabled?: boolean;
+    delayMs?: number;
+    minIntervalMs?: number;
+    // Only signals it accepts count (the Drive views take `drive` ones only).
+    filter?: (signal: ApiWriteSignal) => boolean;
+  } = {},
 ): void {
   const {
     enabled = true,
     delayMs = AFTER_WRITE_DELAY_MS,
     minIntervalMs = AFTER_WRITE_MIN_INTERVAL_MS,
   } = opts;
+  const filter = useRef(opts.filter);
+  useEffect(() => {
+    filter.current = opts.filter;
+  });
   const callback = useRef(onWrite);
   useEffect(() => {
     callback.current = onWrite;
@@ -48,6 +58,7 @@ export function useAfterApiWrite(
     let lastRun = 0;
 
     const unsubscribe = subscribeApiWrites((signal) => {
+      if (filter.current && !filter.current(signal)) return;
       // A purge is handed over at once — the feed drops those cards
       // synchronously — and only the re-read that follows is throttled,
       // so a burst of deletes still costs one read.

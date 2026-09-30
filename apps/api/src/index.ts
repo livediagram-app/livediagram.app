@@ -59,6 +59,7 @@ import { handleTeams } from './routes/teams';
 import { handleShared } from './routes/shared';
 import { handleTelemetry } from './routes/telemetry';
 import { handleTrash } from './routes/trash';
+import { handleDrive } from './routes/drive';
 import type { Env } from './types';
 
 export { DocumentRoom };
@@ -324,6 +325,8 @@ const worker = {
           return await handleGuestId(ctx);
         case 'participants':
           return await handleParticipants(ctx);
+        case 'drive':
+          return await handleDrive(ctx);
       }
     } catch (err) {
       // Log the real error server-side, but don't echo its message to the

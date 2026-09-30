@@ -450,8 +450,9 @@ describe('renderElementsToSvg', () => {
 
     it('renders a hexagon silhouette instead of a rectangle', () => {
       const svg = renderElementsToSvg(tab([shape('h', { shape: 'hexagon' })]));
-      // The table's 0..100 hexagon, mapped onto the 100 x 80 box.
-      expect(svg).toContain('polygon points="25,0 75,0 100,40 75,80 25,80 0,40"');
+      // The table's 0..100 hexagon, mapped onto the 100 x 80 box inset by
+      // half the medium stroke, so the outline stays inside the box.
+      expect(svg).toContain('polygon points="25.5,1 74.5,1 99,40 74.5,79 25.5,79 1,40"');
     });
 
     it('renders a frame see-through by default, but paints a picked fill like the canvas', () => {

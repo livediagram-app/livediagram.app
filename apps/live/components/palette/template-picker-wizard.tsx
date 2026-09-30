@@ -1,51 +1,29 @@
 import { Fragment } from 'react';
 import { SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
-import type { TemplateKind } from '@livediagram/templates';
 
-export type WizardStep = 'template' | 'theme' | 'settings';
-
-// Where a step request actually leads for the chosen template. A whiteboard
-// has no theme (docs/specs/023-whiteboard/whiteboard.md "Creating one"), so its theme step is skipped:
-// on to Location in the New Document wizard, straight to the commit in Quick
-// Start, which has no Location step.
-export function resolveWizardStep(
-  next: WizardStep,
-  kind: TemplateKind,
-  withSettings: boolean,
-): WizardStep | 'commit' {
-  if (next !== 'theme' || kind !== 'whiteboard') return next;
-  return withSettings ? 'settings' : 'commit';
-}
+export type WizardStep = 'template' | 'settings';
 const WIZARD_STEPS: { key: WizardStep; label: string }[] = [
   { key: 'template', label: 'Template' },
-  // One word, like the chips either side of it: a step chip is read at a
-  // glance, and the step's own heading carries the longer copy.
-  { key: 'theme', label: 'Theme' },
   // The step is still "settings" in code; what it asks is where the document
   // lives (name, save location, folder), so the chip says that.
   { key: 'settings', label: 'Location' },
 ];
 
-// The wizard header for the template picker (Template -> Theme -> Settings,
-// docs/specs/006-document/offline-mode.md), plus its StepChip pill. A compact, left-aligned stepper: each
-// chip jumps to that step, and the connector fills brand as you advance so
-// it reads as progress rather than a static rule. On a phone the three
-// chips have ~340px between them: the connectors shrink and the chip
-// padding tightens (sm: restores the roomy desktop rail) so the third chip
-// isn't clipped at the edge. The Settings step exists
-// only on the welcome (new-document) flow: the in-editor Browse-templates
-// dialog re-themes an EXISTING document, where name / placement / offline
-// don't apply, so it renders a two-chip rail.
+// The welcome wizard's header (Template -> Location,
+// docs/specs/007-editor/new-document-route.md), plus its StepChip pill. A compact, left-aligned
+// stepper: each chip jumps to that step, and the connector fills brand as you
+// advance so it reads as progress rather than a static rule. There is no theme
+// step: a new document starts on the default theme and the Theme and canvas
+// controls change it later. Quick Start (in the editor) is a single page, so it
+// renders no rail at all.
 export function WizardSteps({
   step,
   onStep,
-  includeSettings = true,
 }: {
   step: WizardStep;
   onStep: (s: WizardStep) => void;
-  includeSettings?: boolean;
 }) {
-  const steps = includeSettings ? WIZARD_STEPS : WIZARD_STEPS.filter((s) => s.key !== 'settings');
+  const steps = WIZARD_STEPS;
   const idx = steps.findIndex((s) => s.key === step);
   return (
     <div className="-ml-1 flex items-center justify-start gap-1 sm:gap-1.5">

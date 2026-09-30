@@ -5,9 +5,11 @@ import { useEffect, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
+import { requestDriveFlush } from '@/lib/drive/tab-election';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { Explorer } from '@/components/panels/Explorer';
-import { DocumentLoading } from '@/components/chrome/DocumentLoading';
+import { OpeningScreen } from '@/components/chrome/OpeningScreen';
+import { clearQuietLanding } from '@/lib/quiet-landing';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
@@ -55,6 +57,12 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   useEffect(() => {
     void ensureIconCatalogs();
   }, []);
+  // Leaving a document (another document, the Explorer) flushes its pending
+  // Google Drive write (docs/specs/022-drive-mirror/drive-mirror.md, "Cadence").
+  useEffect(() => {
+    if (!state.documentId) return;
+    return () => requestDriveFlush();
+  }, [state.documentId]);
   // Tab title reflects the document: "<name> | livediagram" (falls back to
   // Untitled when the document has no name yet). Updates as the user renames.
   useEffect(() => {
@@ -86,6 +94,11 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
     setLoadingDocument,
     setPasswordRetry,
   } = state;
+  // The hero launch window's quiet landing (lib/quiet-landing.ts) ends once the document is in:
+  // a later load in this tab shows the usual opening screen.
+  useEffect(() => {
+    if (!loadingDocument) clearQuietLanding();
+  }, [loadingDocument]);
 
   // The full Explorer panel that sits behind the error / not-found status
   // screens (identical in both), built once from state. Just a React
@@ -194,7 +207,8 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   }
 
   if (loadingDocument) {
-    return <DocumentLoading stage="opening" />;
+    // Arriving from the hero's launch window, the load holds the quiet blank canvas /new showed.
+    return <OpeningScreen />;
   }
 
   return (

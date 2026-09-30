@@ -63,13 +63,28 @@ describe('the shape geometry table', () => {
     (kind) => {
       const svg = renderElementsToSvg(tabOf([shapeAt(kind)]));
       const geometry = shapeGeometry(kind, 160 / 100)!;
-      const fit = boxFit(geometry, { x: 10, y: 20, width: 160, height: 100 });
+      // A stroke-inside kind lands in the box inset by half the medium (2px) stroke.
+      const box = geometry.strokeInside
+        ? { x: 11, y: 21, width: 158, height: 98 }
+        : { x: 10, y: 20, width: 160, height: 100 };
+      const fit = boxFit(geometry, box);
       for (const part of geometry.parts) expect(svg).toContain(partMark(fitShapePart(part, fit)));
       // Mapped into the box, never a stretched viewBox: resvg (the MCP
       // preview) ignores non-scaling-stroke and would scale the border.
       expect(svg).not.toContain('preserveAspectRatio="none"');
     },
   );
+
+  it('keeps the stroke inside the box for every shape drawn to its edge', () => {
+    expect(SHAPE_GEOMETRY_KINDS.filter((kind) => shapeGeometry(kind)?.strokeInside)).toEqual([
+      'diamond',
+      'parallelogram',
+      'hexagon',
+      'document',
+      'cylinder',
+      'cloud',
+    ]);
+  });
 
   it('maps a stretched part into the box, stroke untouched', () => {
     const frame = shapeGeometry('frame', 1.6)!;
@@ -96,12 +111,12 @@ describe('the shape geometry table', () => {
     expect(fit).toEqual({ sx: 1, sy: 1, ox: 45, oy: 0 });
   });
 
-  it('the export draws the diamond natively from the table points', () => {
-    const svg = renderElementsToSvg(tabOf([shapeAt('diamond')]));
+  it('the export draws the diamond natively from the table points, inset by half the stroke', () => {
+    const svg = renderElementsToSvg(tabOf([shapeAt('diamond', { strokeWidth: 'thick' })]));
     expect(svg).toContain(
-      `<polygon points="${scaledPolygonPoints(DIAMOND_POINTS, 10, 20, 160, 100)}"`,
+      `<polygon points="${scaledPolygonPoints(DIAMOND_POINTS, 12, 22, 156, 96)}"`,
     );
-    expect(scaledPolygonPoints(DIAMOND_POINTS, 10, 20, 160, 100)).toBe('90,20 170,70 90,120 10,70');
+    expect(scaledPolygonPoints(DIAMOND_POINTS, 12, 22, 156, 96)).toBe('90,22 168,70 90,118 12,70');
   });
 
   it('keeps the laptop bezel even on a wide box, as the canvas does', () => {

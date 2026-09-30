@@ -228,6 +228,9 @@ type UserPreferences = {
   // When false, suppress the "someone first opened one of my shared
   // documents" email. Defaults to true (notify).
   notifyDocumentJoin?: boolean;
+  // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
+  // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT (on).
+  showProfilePicture?: boolean;
   // When false, suppress the "someone accepted/declined a team invite I
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
@@ -398,8 +401,7 @@ that is the only control.
   preference had a row in the dialog, those were five second homes for
   settings that already had one. A handful of preferences DO keep a second,
   in-context control where that control is the thing itself rather than a
-  settings menu: the Appearance cycle button in the footer, the Explorer's
-  its API Tokens page, and each of those rows says
+  settings menu: the Appearance cycle button in the footer, and each of those rows says
   **"Also in ..."** so the pair reads as deliberate.
 - There are no per-tool preferences left: the one there was
   (`recogniseShapes`, flipped from the pencil's banner) became two palette
@@ -431,7 +433,12 @@ and the dialog stays as the one complete, browsable index of them.
   gear-icon button in the TabBar footer, sitting between Search and the
   dark-mode toggle. The "Keyboard shortcuts" command in search
   ([Command palette (⌘K)](command-palette.md)) opens it on the **Keyboard** category; that category replaced the standalone
-  Shortcuts dialog and the footer's keyboard button. Visible in every role: view-role visitors can still
+  Shortcuts dialog and the footer's keyboard button. Settings can also open on a **section**
+  of a category (the Google Drive connect flow returns to Account > Cloud Sync): the section
+  scrolls into view and its heading takes focus. The Explorer and the editor both take
+  `?settings=<category>&section=<section>` in their URL: it opens Settings there on load, and
+  stays in the URL while Settings is open (removed when it closes), so a page left for
+  another site and reached again with Back reopens it. Visible in every role: view-role visitors can still
   flip their own telemetry preference and (harmlessly) their own
   auto-rebind preference, even though they can't edit elements.
   **Shaped like the iOS Settings app**, in both of that app's forms, because
@@ -497,10 +504,26 @@ and the dialog stays as the one complete, browsable index of them.
   **Quick Style**, one per panel),
   **Notifications** (in-editor, plus the six email preferences),
   **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
-  suggested prompts, API tokens), **Account** (identity, delete account, see
-  [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)), **Privacy** (telemetry). Editor leads because it is what most
-  people came to change; Account and Privacy sit at the end, where the
-  account-shaped things belong. Preferences whose
+  suggested prompts, and a **Manage API Tokens** link row that opens the API
+  Tokens category), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the
+  deployment offers, [Google Drive mirror](../022-drive-mirror/drive-mirror.md)), delete account, see
+  [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)), **API Tokens** (create, view and
+  revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category);
+  only when sign-in is enabled on the deployment), **Privacy** (telemetry).
+  Editor leads because it is what most
+  people came to change; Account, API Tokens and Privacy sit at the end, where the
+  account-shaped things belong.
+
+  **A link row** (`kind: 'link'`) opens another category of the same dialog
+  in place, the way the power user preset readout goes to a row: it names the
+  category it opens and never navigates the page.
+
+  **Every signed-out message links to sign in.** Wherever a Settings row says
+  something needs an account (the guest identity card, Delete Account, the
+  email stand-in card, the API Tokens manager), the message ends with a
+  **Sign In** link to `/sign-in/` that returns to the current page. On a
+  deployment without sign-in (`clerkEnabled` false) there is nowhere to sign
+  in, so the link is absent. Preferences whose
   day-to-day home used to be a panel's own gear popover live here now, and
   only here - see **UI placement** below.
 

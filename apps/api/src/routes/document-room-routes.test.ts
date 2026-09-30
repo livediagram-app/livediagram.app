@@ -188,6 +188,7 @@ describe('POST room-ticket', () => {
       role: 'edit',
       tabScope: null,
       shareCode: null,
+      account: false,
     });
   });
 
@@ -202,6 +203,7 @@ describe('POST room-ticket', () => {
       role: 'view',
       tabScope: null,
       shareCode: 'C',
+      account: false,
     });
   });
 
@@ -288,6 +290,69 @@ describe('WebSocket upgrade: tab scope', () => {
       role: 'edit',
       tabScope: 't2',
       shareCode: 'CODE1234',
+      account: false,
     });
+  });
+});
+
+// The account bit (docs/specs/014-identity/profile-picture.md §6): only a verified Clerk session
+// mints an account ticket, and the upgrade stamps the bit on every path, so a client header can
+// never claim it.
+describe('account sessions', () => {
+  it('mints an account ticket for a verified Clerk caller only', async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
+    gates.resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: null, shareCode: 'C' });
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', {
+        owner: 'user_ann',
+        clerkUserId: 'user_ann',
+      }),
+    );
+    expect(db.createWsTicket).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'd1',
+      expect.objectContaining({ account: true }),
+    );
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', {
+        owner: 'user_ann',
+        verifiedUserId: 'user_ann',
+      }),
+    );
+    expect(db.createWsTicket).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'd1',
+      expect.objectContaining({ account: false }),
+    );
+  });
+
+  it('stamps X-Verified-Account from the ticket, and 0 on every other leg', async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
+    db.consumeWsTicket.mockResolvedValue({
+      role: 'edit',
+      tabScope: null,
+      shareCode: null,
+      account: true,
+    });
+    const ticketed = roomEnv();
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', '/api/documents/d1/ws?t=T', {
+        owner: null,
+        headers: { Upgrade: 'websocket' },
+        env: ticketed.env,
+      }),
+    );
+    expect(ticketed.seen[0]!.headers.get('X-Verified-Account')).toBe('1');
+
+    db.getShareLink.mockResolvedValue({ documentId: 'd1', role: 'view' });
+    const anonymous = roomEnv();
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', '/api/documents/d1/ws?s=CODE1234', {
+        owner: null,
+        headers: { Upgrade: 'websocket', 'X-Verified-Account': '1' },
+        env: anonymous.env,
+      }),
+    );
+    expect(anonymous.seen[0]!.headers.get('X-Verified-Account')).toBe('0');
   });
 });

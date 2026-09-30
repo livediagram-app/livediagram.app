@@ -105,8 +105,8 @@ export const categories: Category[] = [
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
-      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, and email notifications work.',
-    articleCount: 8,
+      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, the Google Drive mirror, and email notifications work.',
+    articleCount: 9,
   },
   {
     slug: 'privacy-and-security',
@@ -326,7 +326,7 @@ export const articles: Article[] = [
     title: 'Power User Mode',
     description: 'Recommended settings in one switch, and Minimal chrome for a quieter interface.',
     keywords:
-      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings',
+      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings appearance light dark right-click',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -509,8 +509,10 @@ export const articles: Article[] = [
   {
     slug: 'signing-in',
     title: 'Signing In',
-    description: 'Create an account, sign in, and migrate your guest documents.',
-    keywords: 'login log in sign up register email code google oauth account create migrate',
+    description:
+      'Create an account, sign in, migrate your guest documents, and use your Google picture.',
+    keywords:
+      'login log in sign up register email code google oauth account create migrate avatar profile picture photo initials hide collaborators',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -552,6 +554,15 @@ export const articles: Article[] = [
     title: 'Connect an AI tool (MCP)',
     description: 'Connect Claude or any MCP client to find, view, create, and edit your documents.',
     keywords: 'claude chatgpt cursor model context protocol ai integration assistant llm connector',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
+  {
+    slug: 'google-drive',
+    title: 'Google Drive',
+    description: 'Sync your Personal Space to your own Google Drive, both ways.',
+    keywords:
+      'google drive mirror sync backup copy cloud storage open with livediagram file folders',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -1211,7 +1222,8 @@ export const articles: Article[] = [
     slug: 'templates',
     title: 'Templates',
     description: 'Start from a themed template instead of a blank canvas.',
-    keywords: 'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start',
+    keywords:
+      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

@@ -6,15 +6,12 @@
 // element; the check is its own button beside it (buttons don't nest).
 
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { lucideCheck } from '@livediagram/icons/lucide';
-import { CommentIcon, HoverCard, lucideGlyph, SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
+import { CheckIcon, CommentIcon, HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { initialsOf } from '@/lib/identity';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import type { ActionRow, CommentRow } from '@/components/panels/CollaboratePanel';
 import { firstName } from './collaborate-model';
-
-const CheckGlyph = lucideGlyph(lucideCheck, 12);
 
 // A comment author's colour as ink: as chosen on light, lifted toward white on
 // dark, where a deep blue or purple name would sink into the panel.
@@ -92,7 +89,7 @@ export function ActionRowItem({
           : 'border-slate-300 text-transparent group-hover/check:border-brand-500 group-hover/check:text-brand-500 dark:border-slate-600'
       } ${pressed ? 'qa-pop' : ''}`}
     >
-      <CheckGlyph size={11} />
+      <CheckIcon size={11} />
     </span>
   );
   return (

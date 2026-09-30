@@ -682,6 +682,8 @@ export function Canvas(props: CanvasProps) {
             : undefined
         }
         data-path-cursor={pathTool.cursor ? '' : undefined}
+        // Fades in as the editor arrives (globals.css, "Editor fade-in").
+        data-canvas-world=""
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.

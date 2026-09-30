@@ -12,7 +12,6 @@ const STATIC_NODES: SelectedNode[] = [
   { kind: 'recent' },
   { kind: 'favourites' },
   { kind: 'themes' },
-  { kind: 'tokens' },
   { kind: 'all' },
   { kind: 'unsorted' },
   { kind: 'generated' },

@@ -34,17 +34,17 @@ pen widths, dock spacing) are named constants, tuned in place.
 
 - **New Document wizard:** a **Whiteboard** template (a `TemplateKind` with a
   blank builder and a preview tile, `packages/templates`), producing a document
-  with one whiteboard tab. It is the **last tile** of the template grid, after
-  every category (Blank diagram first, the categories, then Whiteboard: a
-  different activity from the diagram templates), described **"Free drawing
+  with one whiteboard tab. It is the **last tile** of the picker, after every
+  category tile under Explore More Categories (a different activity from the
+  diagram templates, so never on a shelf), described **"Free drawing
   without distractions"**.
 - **New tab:** the tab bar's new-tab action opens Quick Start as on any
-  document, and Quick Start offers **Whiteboard** as a quick-pick beside
-  **Blank**, so a whiteboard can be added to any document in the same two
+  document, and Quick Start offers **Whiteboard** as the last tile after the
+  categories, so a whiteboard can be added to any document in the same two
   clicks as an ordinary tab.
-- **No theme step.** A whiteboard has no theme, so picking Whiteboard skips
-  the wizard's theme step: in the New Document wizard it goes straight to the
-  settings step, in Quick Start it lands at once.
+- **No theme.** A whiteboard has no theme; like every template now, picking
+  it goes straight to the settings step in the New Document wizard and lands
+  at once in Quick Start.
 - **Import:** a Microsoft Whiteboard import lands on a whiteboard tab.
 - A tab's kind is fixed at creation. Converting a diagram tab into a
   whiteboard (or back) is not offered: the two present the same elements very

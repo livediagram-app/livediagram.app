@@ -115,7 +115,13 @@ export type SharePasswordResponse = { password: string | null };
 export type ChangeLogListResponse = { entries: ChangeLogEntry[] };
 export type ChangeLogAppendResponse = { entry: ChangeLogEntry };
 export type ParticipantResponse = {
-  participant: { id: string; name: string; color: string; createdAt: number };
+  participant: {
+    id: string;
+    name: string;
+    color: string;
+    createdAt: number;
+    pictureUrl?: string | null;
+  };
 };
 
 // Result of resolving a share code (docs/specs/013-workspace/share-password.md). A protected document
@@ -166,9 +172,29 @@ let currentTokenProvider: TokenProvider | null = null;
 // signed-out tab can't flush with a dead identity.
 let lastKnownToken: string | null = null;
 
-// Register / clear the Clerk token provider (hooks/persistence/useClerkApiBootstrap.ts).
-// Pass `null` to clear (sign-out / unmount).
+// Every mounted useClerkApiBootstrap registers the same provider; the
+// newest registration is the one in force, and it stays in force until the
+// LAST registration goes. A single slot cleared on unmount let one component
+// leaving (a Settings row, a dialog) take the Bearer away from the page
+// still mounted around it, and its next save failed as unauthenticated.
+const registrations: TokenProvider[] = [];
+
+export function registerTokenProvider(provider: TokenProvider): () => void {
+  registrations.push(provider);
+  currentTokenProvider = provider;
+  lastKnownToken = null;
+  return () => {
+    const at = registrations.lastIndexOf(provider);
+    if (at >= 0) registrations.splice(at, 1);
+    currentTokenProvider = registrations.at(-1) ?? null;
+    lastKnownToken = null;
+  };
+}
+
+// Set / clear the provider outright, dropping every registration (tests,
+// and callers that own the whole identity). Pass `null` to clear.
 export function setTokenProvider(provider: TokenProvider | null): void {
+  registrations.length = 0;
   currentTokenProvider = provider;
   // Clear on EVERY provider change, not just sign-out: a replaced
   // provider means the cached token came from a session we no longer

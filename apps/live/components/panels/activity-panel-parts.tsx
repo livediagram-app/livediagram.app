@@ -11,6 +11,8 @@ import type { ChangeLogEntry } from '@/lib/api-client';
 import { formatRelativeTimeShort, useRelativeNow } from '@/lib/relative-time';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { Glyph, HoverCard, lucideGlyph } from '@livediagram/ui';
+// The cluster glyphs live in @livediagram/ui so the marketing hero's mock draws the same ones.
+export { ActivityIcon, RedoIcon, UndoIcon } from '@livediagram/ui';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // Save-status badge that lived in the footer; the Activity panel
@@ -223,36 +225,9 @@ export function UndoRedoButton({
   );
 }
 
-export function UndoIcon() {
-  return (
-    <Glyph size={13} units={16}>
-      <path d="M3.5 6.5h6.75A3.25 3.25 0 0 1 13.5 9.75v0a3.25 3.25 0 0 1-3.25 3.25H6" />
-      <path d="M6 3.5L3 6.5L6 9.5" />
-    </Glyph>
-  );
-}
-
-export function RedoIcon() {
-  return (
-    <Glyph size={13} units={16}>
-      <path d="M12.5 6.5H5.75A3.25 3.25 0 0 0 2.5 9.75v0A3.25 3.25 0 0 0 5.75 13H10" />
-      <path d="M10 3.5L13 6.5L10 9.5" />
-    </Glyph>
-  );
-}
-
 const RevertIcon = lucideGlyph(lucideUndo2, 10);
 
 // Clock-with-counter-clockwise-arrow — the universal "history" icon.
 // Lines up with the Activity panel's role as the editorial timeline.
 // `size` defaults to the panel header's 20px; Settings draws it at 16 beside
 // its Activity sub-category.
-export function ActivityIcon({ size = 20 }: { size?: number } = {}) {
-  return (
-    <Glyph size={size} units={20}>
-      <path d="M3.5 6.5A6.5 6.5 0 1 1 3 10.5" />
-      <path d="M3 3.5V6.5H6" />
-      <path d="M10 6.5V10.5L12.75 12" />
-    </Glyph>
-  );
-}

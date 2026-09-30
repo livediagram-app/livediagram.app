@@ -19,7 +19,7 @@
 import { StaticClerkProvider } from '@/components/providers/StaticClerkProvider';
 import { AuthenticateWithRedirectCallback } from '@clerk/react';
 import { AuthCard, AuthDisabledNotice } from '@/components/chrome/auth-shared';
-import { DiagramBuildAnimation } from '@/components/canvas/DiagramBuildAnimation';
+import { DiagramBuildAnimation } from '@livediagram/ui';
 import { clerkEnabled } from '@/lib/clerk-config';
 
 function SSOCallbackPageInner() {

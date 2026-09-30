@@ -280,6 +280,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404, 410],
   },
   {
+    method: 'GET',
+    path: '/documents/{id}/tabs/{tabId}/comment-pictures',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "The published profile pictures of a tab's comment authors, keyed by comment id. Empty unless the caller is signed in.",
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: { pictures: { type: 'object', additionalProperties: { type: 'string' } } },
+    },
+    statuses: [200, 403, 404],
+  },
+  {
     method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/qa',
     segment: 'documents',
@@ -797,7 +811,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/participants/{id}',
     segment: 'participants',
     tag: 'Participants',
-    summary: "Get a participant's display name and colour.",
+    summary:
+      "Get a participant's display name and colour; their published picture only for a signed-in caller.",
     auth: 'public',
     responseSchema: wrap('participant', 'ParticipantRecord'),
     statuses: [200, 404],
@@ -815,6 +830,25 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['name', 'color'],
     },
     responseSchema: wrap('participant', 'ParticipantRecord'),
+    statuses: [200, 400, 401, 403, 404],
+  },
+  {
+    method: 'PUT',
+    path: '/participants/{id}/picture',
+    segment: 'participants',
+    tag: 'Participants',
+    summary:
+      'Set or clear your published profile picture (a Clerk image URL; signed-in session only).',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { pictureUrl: { type: ['string', 'null'] } },
+      required: ['pictureUrl'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: { pictureUrl: { type: ['string', 'null'] } },
+    },
     statuses: [200, 400, 401, 403, 404],
   },
 
@@ -1328,6 +1362,156 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     query: [{ name: 'url', required: true, description: 'The URL to unfurl.' }],
     responseSchema: 'UnfurlResult',
     statuses: [200, 400, 429],
+  },
+
+  // ---- Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md) ----
+  // Every route needs a Clerk SESSION: the guest header and API tokens are both
+  // refused, and each answers 503 drive_not_configured when the deployment has
+  // no GOOGLE_CLIENT_ID. First-party only; the mirror runs in the user's browser.
+  {
+    method: 'POST',
+    path: '/drive/state',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Mint the signed consent `state` for a redirect URI (broker mode). Clerk session only.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { redirectUri: { type: 'string' } },
+      required: ['redirectUri'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: { state: { type: 'string' } },
+      required: ['state'],
+    },
+    statuses: [200, 400, 401, 503],
+  },
+  {
+    method: 'POST',
+    path: '/drive/connect',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Redeem a Google consent code: the refresh token is sealed and stored, never returned. Clerk session only.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { code: { type: 'string' }, state: { type: 'string' } },
+      required: ['code', 'state'],
+    },
+    responseSchema: wrap('connection', 'DriveConnection'),
+    statuses: [200, 400, 401, 502, 503],
+  },
+  {
+    method: 'POST',
+    path: '/drive/token',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Mint a one-hour Google access token from the stored refresh token. 409 drive_needs_reconnect when Google revoked the grant; 429 drive_token_rate_limited past 10 a minute.',
+    auth: 'clerk',
+    responseSchema: 'DriveAccessToken',
+    statuses: [200, 401, 404, 409, 429, 502, 503],
+  },
+  {
+    method: 'GET',
+    path: '/drive/connection',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary: "The caller's Drive connection summary, or null.",
+    auth: 'clerk',
+    responseSchema: {
+      type: 'object',
+      properties: { connection: { oneOf: [ref('DriveConnection'), { type: 'null' }] } },
+      required: ['connection'],
+    },
+    statuses: [200, 401, 503],
+  },
+  {
+    method: 'PUT',
+    path: '/drive/connection',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Record the mirror root folder and changes page token. In browser mode this also creates the connection.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        rootFolderId: { type: ['string', 'null'] },
+        pageToken: { type: 'string' },
+      },
+    },
+    responseSchema: wrap('connection', 'DriveConnection'),
+    statuses: [200, 400, 401, 404, 503],
+  },
+  {
+    method: 'DELETE',
+    path: '/drive/connection',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Disconnect: revoke the grant at Google and delete the stored token and mirror rows. Drive files stay.',
+    auth: 'clerk',
+    statuses: [204, 401, 503],
+  },
+  {
+    method: 'GET',
+    path: '/drive/items',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary: "The caller's mirrored documents and folders with the Drive state last written.",
+    auth: 'clerk',
+    responseSchema: listOf('items', 'DriveItem'),
+    statuses: [200, 401, 503],
+  },
+  {
+    method: 'PUT',
+    path: '/drive/items',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Upsert up to 100 mirrored items. 409 drive_item_conflict when a Drive file id is already held.',
+    auth: 'clerk',
+    requestSchema: listOf('items', 'DriveItem'),
+    responseSchema: listOf('items', 'DriveItem'),
+    statuses: [200, 400, 401, 404, 409, 503],
+  },
+  {
+    method: 'DELETE',
+    path: '/drive/items/{kind}/{ldId}',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary: 'Forget one mirrored item (`kind` is `document` or `folder`).',
+    auth: 'clerk',
+    statuses: [204, 400, 401, 503],
+  },
+  {
+    method: 'POST',
+    path: '/drive/lease',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary: 'Take or renew the cross-device write lease for this holder.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { holder: { type: 'string' } },
+      required: ['holder'],
+    },
+    responseSchema: 'DriveLease',
+    statuses: [200, 400, 401, 404, 503],
+  },
+  {
+    method: 'DELETE',
+    path: '/drive/lease',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary: 'Release the write lease, if this holder has it.',
+    auth: 'clerk',
+    query: [{ name: 'holder', required: true, description: 'The device id holding the lease.' }],
+    statuses: [204, 400, 401, 503],
   },
 
   // ---- Telemetry ----

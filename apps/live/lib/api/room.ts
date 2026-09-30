@@ -103,13 +103,19 @@ export function isOutboxOp(msg: RoomOutgoing): boolean {
 const RECONNECT_BASE_MS = 500;
 const RECONNECT_MAX_MS = 15_000;
 
+/** Who this client says it is to the room: the room overrides `id` (see connectRoom). */
+export type RoomSelf = { id: string; key?: string; name: string; color: string; picture?: string };
+
 export function connectRoom(
   documentId: string,
   // `key` is the document-write id (docs/specs/012-collaboration/participant-responses.md), relayed to peers verbatim so
   // an answer saved on the document can be joined back to the person in the
   // roster. The room OVERRIDES `id` with its own per-socket presence id
   // (docs/specs/015-api/public-api-and-tokens.md §6), which is why the two are separate fields.
-  participant: { id: string; key?: string; name: string; color: string },
+  //
+  // `picture` is the published profile picture (docs/specs/014-identity/profile-picture.md §6); the
+  // room keeps it only for an account session.
+  initialParticipant: RoomSelf,
   handlers: RoomHandlers,
   options: RoomAuthOptions = {},
   // Read at every (re)connect rather than captured once: the baton can be
@@ -120,7 +126,10 @@ export function connectRoom(
   send: (msg: RoomOutgoing) => void;
   close: () => void;
   cursor: () => { epoch: string; seq: number } | null;
+  updateSelf: (participant: RoomSelf) => void;
 } {
+  // Read at every (re)connect, and replaced by updateSelf, so a reconnect says hello as we are now.
+  let participant = initialParticipant;
   // Auth identifiers ride on the query string (see roomQueryString). The
   // share password is read from the same session state apiHeaders uses, so
   // the editor doesn't have to thread it through; owners never have it set.
@@ -242,6 +251,14 @@ export function connectRoom(
       ws.readyState === WebSocket.OPEN && lastEpoch !== null
         ? { epoch: lastEpoch, seq: lastSeq }
         : null,
+    // An identity change over the open socket (docs/specs/014-identity/profile-picture.md §4): the
+    // room updates the roster in place. A closed socket just remembers it for the next hello.
+    updateSelf: (next) => {
+      participant = next;
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ kind: 'identity', participant } satisfies RoomOutgoing));
+      }
+    },
     close: () => {
       closed = true;
       outbox = [];

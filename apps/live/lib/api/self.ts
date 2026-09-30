@@ -27,7 +27,26 @@ async function _apiLoadSelf(id: string): Promise<Participant | null> {
     status: 'online',
   };
 }
-export const apiLoadSelf = dedupeInFlight(_apiLoadSelf, (id) => id);
+const loadSelfOnce = dedupeInFlight(_apiLoadSelf, (id) => id);
+
+// The participant this page last loaded or saved, briefly. /new hands the new document to the
+// editor IN PLACE (docs/specs/007-editor/new-document-route.md), so the editor's identity bootstrap
+// asked again for the participant /new had just read and written: one wasted round trip on every
+// new document. A reload is a new page and starts empty, and presence carries any live change.
+const RECENT_SELF_MS = 30_000;
+let recentSelf: { participant: Participant; at: number } | null = null;
+function rememberSelf(participant: Participant) {
+  recentSelf = { participant, at: Date.now() };
+}
+
+export async function apiLoadSelf(id: string): Promise<Participant | null> {
+  if (recentSelf?.participant.id === id && Date.now() - recentSelf.at < RECENT_SELF_MS) {
+    return { ...recentSelf.participant };
+  }
+  const loaded = await loadSelfOnce(id);
+  if (loaded) rememberSelf(loaded);
+  return loaded;
+}
 
 // Account self-deletion (Clerk-only). Wipes the caller's documents,
 // folders, and participant row server-side; the caller is expected
@@ -149,4 +168,17 @@ export async function apiSaveSelf(p: Participant): Promise<void> {
     body: JSON.stringify({ name: p.name, color: p.color }),
   });
   await expectOkVoid(res, 'save self');
+  rememberSelf({ id: p.id, name: p.name, color: p.color, status: 'online' });
+}
+
+// Publish or clear this account's profile picture (docs/specs/014-identity/profile-picture.md §6).
+// Clerk-only server-side. Returns the status so the caller can tell "no participant row yet" (404)
+// from a real failure.
+export async function apiSetProfilePicture(id: string, pictureUrl: string | null): Promise<number> {
+  const res = await apiFetch(`${API_BASE}/participants/${id}/picture`, {
+    method: 'PUT',
+    headers: await apiHeaders(id, { body: true }),
+    body: JSON.stringify({ pictureUrl }),
+  });
+  return res.status;
 }

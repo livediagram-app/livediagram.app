@@ -85,6 +85,18 @@ const ALL_KINDS = [
   'state-machine',
   'floor-plan',
   'event-storming',
+  'start-stop-continue',
+  'mad-sad-glad',
+  'four-ls',
+  'sailboat',
+  'incident-postmortem',
+  'opportunity-solution-tree',
+  'crazy-eights',
+  'stakeholder-map',
+  'risk-matrix',
+  'user-persona',
+  'meeting-agenda',
+  'objectives-planner',
   'whiteboard',
 ] as const satisfies readonly TemplateKind[];
 
@@ -228,39 +240,48 @@ describe('buildTemplatedTab', () => {
   });
 
   it('non-mindmap templates do not inherit mindmap-specific overrides', () => {
-    const tab = buildTemplatedTab('flowchart', 'slate', 'tab-1', 'flow');
-    expect(tab.backgroundOpacity).toBeUndefined();
+    // A dot-grid board carries no opacity at all; a graph-paper one only the
+    // quiet-pattern step back (0.4), never the mind map's 0.8.
+    expect(
+      buildTemplatedTab('retrospective', 'slate', 'tab-1', 'retro').backgroundOpacity,
+    ).toBeUndefined();
+    expect(buildTemplatedTab('flowchart', 'slate', 'tab-1', 'flow').backgroundOpacity).toBe(0.4);
   });
 });
 
-describe('gantt milestone bars survive theming', () => {
-  // The six milestone bars carry distinct intrinsic fills. They opt out
-  // of theme recolouring via `themeLockFill` so a non-brand theme (which
-  // maps every shape to one element-fill) can't merge them into a single
-  // indistinguishable block. The header + tracks must NOT carry the flag:
-  // they are background chrome and should adopt the theme fill.
-  it('pins exactly the six milestone-bar fills and leaves chrome unpinned', () => {
+describe('gantt workstream bars survive theming', () => {
+  // The six progress bars carry their workstream's tint as the track fill.
+  // They opt out of theme recolouring via `themeLockFill` so a non-brand
+  // theme (which maps every shape to one element-fill) can't merge the three
+  // workstreams into one colour. The sheet, header and group bands must NOT
+  // carry the flag: they are background chrome and adopt the theme fill.
+  const bars = (els: Element[]) =>
+    els.filter(
+      (el): el is Extract<Element, { type: 'shape' }> =>
+        el.type === 'shape' && el.shape === 'progress-bar',
+    );
+
+  it('locks every bar track and leaves the chrome unlocked', () => {
     const els = buildTemplate('gantt', 0, 0);
-    const locked = els.filter(
-      (el) => (el as { themeLockFill?: boolean }).themeLockFill === true,
-    ) as Array<Extract<Element, { type: 'shape' }>>;
-    expect(locked.length).toBe(6);
-    // Each pinned bar has a fill, and the six fills are all distinct.
-    const fills = locked.map((b) => b.fillColor);
-    expect(fills.every((f) => typeof f === 'string')).toBe(true);
-    expect(new Set(fills).size).toBe(6);
+    expect(bars(els)).toHaveLength(6);
+    expect(bars(els).every((b) => b.themeLockFill)).toBe(true);
+    // One track tint per workstream.
+    expect(new Set(bars(els).map((b) => b.fillColor)).size).toBe(3);
+    const squares = els.filter(
+      (el): el is Extract<Element, { type: 'shape' }> =>
+        el.type === 'shape' && el.shape === 'square' && el.width > 1000,
+    );
+    // The sheet, the calendar header and the three group bands.
+    expect(squares).toHaveLength(5);
+    expect(squares.some((s) => s.themeLockFill)).toBe(false);
   });
 
-  it('themed gantt build keeps the six bar fills distinct', () => {
+  it('themed gantt build keeps the three workstream tints distinct', () => {
     // End-to-end through buildTemplatedTab (the /live/new path), which
     // recolours to the chosen theme. Without the lock, all bars would
     // collapse to the Slate element-fill and the Set would be size 1.
     const tab = buildTemplatedTab('gantt', 'slate', 'tab-g', 'Gantt');
-    const barFills = tab.elements
-      .filter((el) => (el as { themeLockFill?: boolean }).themeLockFill === true)
-      .map((el) => (el as Extract<Element, { type: 'shape' }>).fillColor);
-    expect(barFills.length).toBe(6);
-    expect(new Set(barFills).size).toBe(6);
+    expect(new Set(bars(tab.elements).map((b) => b.fillColor)).size).toBe(3);
   });
 });
 
@@ -323,34 +344,15 @@ describe('board templates seed per-range rich text', () => {
     const cards = buildTemplate('kanban', 0, 0).filter((el) =>
       Array.isArray((el as { richText?: unknown }).richText),
     );
-    // Realistic mid-sprint board: varied card counts per lane (4 + 3 + 2 + 3).
-    expect(cards.length).toBe(12);
+    // Realistic mid-sprint board: varied card counts per lane (4 + 3 + 3 + 1 + 4).
+    expect(cards.length).toBe(15);
     for (const card of cards) {
       const runs = (card as { richText: { text: string; bold?: boolean }[] }).richText;
-      // Bold ticket id lead-in (e.g. "LIVE-241:") + a plain summary run.
+      // Bold ticket id lead-in (e.g. "CHK-241:") + a plain summary run.
       expect(runs[0]?.bold).toBe(true);
-      expect(runs[0]?.text).toMatch(/^LIVE-\d+:$/);
+      expect(runs[0]?.text).toMatch(/^CHK-\d+:$/);
       expect(runs[1]?.bold).toBeUndefined();
     }
-  });
-
-  it('swot bullets tint the marker to the quadrant hue, leaving the text plain', () => {
-    labelMirrorsRuns('swot');
-    const bullets = buildTemplate('swot', 0, 0).filter((el) =>
-      Array.isArray((el as { richText?: unknown }).richText),
-    );
-    // Four quadrants, three starter bullets each.
-    expect(bullets.length).toBe(12);
-    const markerColours = new Set<string>();
-    for (const bullet of bullets) {
-      const runs = (bullet as { richText: { text: string; color?: string }[] }).richText;
-      expect(runs[0]!.text).toBe('• ');
-      expect(typeof runs[0]!.color).toBe('string');
-      expect(runs[1]?.color).toBeUndefined();
-      markerColours.add(runs[0]!.color!);
-    }
-    // One distinct hue per quadrant.
-    expect(markerColours.size).toBe(4);
   });
 });
 
@@ -365,8 +367,16 @@ describe('floor plan geometry', () => {
     const b = el as { x: number; y: number; width: number; height: number };
     return { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y + b.height };
   };
-  // Rooms are the square scaffold shapes; the frame is the outer wall.
-  const rooms = elements.filter((el) => el.type === 'shape' && el.shape === 'square').map(boxOf);
+  // Rooms are the opaque square scaffold shapes (the translucent squares
+  // are their zone washes); the frame is the outer wall.
+  const rooms = elements
+    .filter(
+      (el) =>
+        el.type === 'shape' &&
+        el.shape === 'square' &&
+        (el as { opacity?: number }).opacity === undefined,
+    )
+    .map(boxOf);
   // Furniture is everything on the content layer (doors ride the
   // scaffold with the walls, because they straddle one).
   const furniture = elements.filter((el) => el.layerId === 'layer:template:content');

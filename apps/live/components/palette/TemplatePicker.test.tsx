@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
-const track = vi.hoisted(() => vi.fn());
-vi.mock('@/lib/telemetry', () => ({ track }));
+vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 import type { Participant } from '@/lib/identity';
 import { TemplatePicker } from './TemplatePicker';
@@ -20,24 +19,26 @@ beforeAll(() => {
   );
 });
 
+// Nor scrollTo / scrollIntoView, which the template shelf's carousel uses.
+Element.prototype.scrollTo ??= () => {};
+Element.prototype.scrollIntoView ??= () => {};
+
 const participant: Participant = { id: 'p1', name: 'Ada', color: '#0ea5e9', status: 'online' };
 
-// docs/specs/007-editor/new-document-route.md "Start Blank": the wizard's step rail carries it.
-describe('TemplatePicker step rail', () => {
-  it('offers Start Blank, which commits the blank defaults and keeps its JustDraw token', () => {
-    const onPick = vi.fn();
+// docs/specs/007-editor/new-document-route.md "Start Blank": it lives on the outside surfaces that link
+// to /new?blank=1; inside the wizard the footer's Skip commits the same blank defaults.
+describe('TemplatePicker, the welcome wizard', () => {
+  it('has no Start Blank or Just Draw button of its own', () => {
     render(
       <TemplatePicker
         mode="welcome"
         participant={participant}
         currentThemeId="brand"
-        onPick={onPick}
+        onPick={vi.fn()}
         onSkip={() => {}}
       />,
     );
     expect(screen.queryByRole('button', { name: /just draw/i })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /^start blank$/i }));
-    expect(track).toHaveBeenCalledWith('UI', 'Used', 'JustDraw');
-    expect(onPick).toHaveBeenCalledWith('blank', expect.any(String), 'brand', expect.any(Object));
+    expect(screen.queryByRole('button', { name: /^start blank$/i })).toBeNull();
   });
 });

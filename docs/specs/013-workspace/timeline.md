@@ -729,14 +729,14 @@ team folder) gets the one-verb menu below.
 kind of thing**, resolved from the Explorer's own state and run through
 the Explorer's own handlers (`useTimelineEntityMenus`):
 
-| Card                                   | Verbs                                                                                  |
-| -------------------------------------- | -------------------------------------------------------------------------------------- |
-| API token (created, expiring)          | Open Tokens · **Revoke Token** (confirmed with the Tokens pane's own warning)          |
-| Team (created, renamed, members, role) | Open Team · Edit Team _(admin)_ · Leave Team · Delete Team _(admin)_                   |
-| Invite received                        | Open Invites · **Accept Invite** · **Decline Invite**                                  |
-| Theme saved                            | Open Themes · Edit Theme (the same builder modal the Themes pane opens) · Delete Theme |
-| Images uploaded                        | Open Images                                                                            |
-| Document the Explorer can't resolve    | Open Document                                                                          |
+| Card                                   | Verbs                                                                                                    |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| API token (created, expiring)          | Open API Tokens (Settings, in place) · **Revoke Token** (confirmed with the token manager's own warning) |
+| Team (created, renamed, members, role) | Open Team · Edit Team _(admin)_ · Leave Team · Delete Team _(admin)_                                     |
+| Invite received                        | Open Invites · **Accept Invite** · **Decline Invite**                                                    |
+| Theme saved                            | Open Themes · Edit Theme (the same builder modal the Themes pane opens) · Delete Theme                   |
+| Images uploaded                        | Open Images                                                                                              |
+| Document the Explorer can't resolve    | Open Document                                                                                            |
 
 Plus **Remove from Timeline** on all of them (§2.9), and the destructive
 verbs last, red, under their own separator, the way the document menu

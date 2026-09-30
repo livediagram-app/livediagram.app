@@ -34,6 +34,10 @@ describe('historyCommit', () => {
     expect(next.future).toEqual([]);
   });
 
+  it('keeps at least 500 steps of history', () => {
+    expect(HISTORY_LIMIT).toBeGreaterThanOrEqual(500);
+  });
+
   it('caps the past stack at HISTORY_LIMIT', () => {
     // Build a past that's already at the cap, then commit one more.
     const filled: History = {
@@ -89,7 +93,7 @@ describe('historyUndo', () => {
   });
 
   it('caps the future stack at HISTORY_LIMIT on consecutive undos', () => {
-    // Past with 4 entries; future already capped at HISTORY_LIMIT.
+    // Future already capped at HISTORY_LIMIT.
     const h: History = {
       past: [[tab('P0')]],
       present: [tab('cur')],

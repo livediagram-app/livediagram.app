@@ -35,6 +35,18 @@ function tokensAfter(source: string, marker: string, close: string): string[] {
   return [...block.matchAll(/'([A-Za-z0-9-]+)'/g)].map((m) => m[1]!);
 }
 
+// The Drive mirror's inbound change types and Open with outcomes.
+const DRIVE_INBOUND_TYPES = tokensAfter(
+  read('live/lib/drive/plan-inbound.ts'),
+  'export type InboundType',
+  ';',
+);
+const DRIVE_OPEN_WITH_TYPES = tokensAfter(
+  read('live/lib/drive/open-with.ts'),
+  'export function openWithTelemetryType',
+  '{',
+);
+
 // The api's email templates: `export type EmailKind = 'Welcome' | ...;`.
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
@@ -176,6 +188,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
   'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  // The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
+  // the inbound change types and the Open with outcomes, read from their unions.
+  'apps/live/lib/drive/browser-engine.ts Drive·Applied': { values: DRIVE_INBOUND_TYPES },
+  'apps/live/components/drive/DriveOpen.tsx Drive·Opened': { values: DRIVE_OPEN_WITH_TYPES },
   'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/live/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.

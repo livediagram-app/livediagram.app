@@ -15,6 +15,7 @@ export const CTA_SOURCES = {
     'Hero',
     'HeroDraw',
     'HeroBrainstorm',
+    'HeroCanvas',
     'Gallery',
     'GalleryDraw',
     'Closing',

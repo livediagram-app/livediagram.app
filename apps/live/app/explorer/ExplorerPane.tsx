@@ -3,21 +3,19 @@
 import dynamic from 'next/dynamic';
 import { useState, useCallback } from 'react';
 import { useExplorer } from './ExplorerContext';
-import { NewTokenButton } from '@/components/panels/NewTokenButton';
-import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ListView, PaneHeader, SharedList, SkeletonRows, type PaneDocument } from './views';
 import { CardView } from './CardView';
 import { useExplorerViewMode } from './useExplorerViewMode';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DynamicFolderInfo } from './DynamicFolderInfo';
-import { TimelineControls, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { TimelineControls } from '@livediagram/ui';
 import { DocumentHistoryDialog } from '@/components/panels/DocumentHistoryDialog';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
 
 // The browse sections that render a folders + documents grid the List/Card
-// toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes, tokens,
+// toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes,
 // profile, team, invites, shared) have their own fixed layout.
 const BROWSE_KINDS = new Set([
   'recent',
@@ -41,7 +39,6 @@ const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
   shared: 'sharedWithYou',
   gallery: 'imageGallery',
   themes: 'customThemes',
-  tokens: 'apiTokens',
   trash: 'trash',
   unsorted: 'unsorted',
   offline: 'offlineMode',
@@ -53,10 +50,6 @@ const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
 // route, so none of them sit in the shared explorer chunk.
 const GalleryPane = dynamic(
   () => import('@/components/panels/GalleryPane').then((m) => m.GalleryPane),
-  { ssr: false },
-);
-const TokensPane = dynamic(
-  () => import('@/components/panels/TokensPane').then((m) => m.TokensPane),
   { ssr: false },
 );
 const TrashSection = dynamic(() => import('./TrashSection').then((m) => m.TrashSection), {
@@ -105,7 +98,6 @@ export function ExplorerPane() {
     ownerId,
     clerkUserId,
     clerkDisplayName,
-    tokens,
     activity,
     paneTitle,
     paneCrumbs,
@@ -137,7 +129,6 @@ export function ExplorerPane() {
     moveTeamDests,
     moveDocumentTo,
   } = useExplorer();
-  const { signInHref } = useAuthHrefs();
 
   // A team you're not a member of 404s in TeamPane (it doesn't leak the
   // name). When that happens, drop the title/breadcrumb above it — there
@@ -202,8 +193,6 @@ export function ExplorerPane() {
         headerActions={
           selected.kind === 'timeline' ? (
             <TimelineControls controls={timeline.controls} />
-          ) : selected.kind === 'tokens' && clerkUserId ? (
-            <NewTokenButton tokens={tokens} />
           ) : undefined
         }
         viewMode={isBrowse ? viewMode : undefined}
@@ -222,7 +211,6 @@ export function ExplorerPane() {
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
-          selected.kind === 'tokens' ||
           selected.kind === 'trash' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
@@ -244,7 +232,6 @@ export function ExplorerPane() {
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
-          selected.kind === 'tokens' ||
           selected.kind === 'trash' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
@@ -314,28 +301,6 @@ export function ExplorerPane() {
         <ThemesPane />
       ) : selected.kind === 'trash' ? (
         <TrashSection />
-      ) : selected.kind === 'tokens' ? (
-        // Signed-in only (docs/specs/015-api/public-api-and-tokens.md). Reached via the sidebar only when signed
-        // in, but a guest could deep-link /explorer/tokens — show a sign-in
-        // prompt rather than a TokensPane that would just 403.
-        clerkUserId ? (
-          <TokensPane tokens={tokens.list} error={tokens.error} onRevoke={tokens.revoke} />
-        ) : (
-          <div className="rounded-xl border border-dashed border-slate-300 px-6 py-10 text-center dark:border-slate-700">
-            <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-              Sign in to use API tokens
-            </p>
-            <p className="mt-1 text-xs text-slate-400">
-              API tokens are an account feature for calling the API from your own scripts.
-            </p>
-            <a
-              href={signInHref}
-              className={`mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
-            >
-              Sign in
-            </a>
-          </div>
-        )
       ) : selected.kind === 'shared' ? (
         <SharedList shared={shared} ownerId={ownerId} onDismiss={dismissShared} />
       ) : paneContent.folders.length === 0 &&

@@ -1,235 +1,250 @@
-// Formal UML templates: the class diagram and the state machine. Both
-// lean on UML notation the arrow model already ships (docs/specs/008-canvas/canvas-and-palette.md): hollow
-// triangle heads for inheritance, hollow diamonds for aggregation, and
-// event-labelled transitions. They share a file because they share
-// that notation vocabulary; the looser architecture sketches live in
-// template-builders-technical.ts.
+// The UML class diagram template (docs/specs/008-canvas/canvas-and-palette.md "Templates"). Its sibling,
+// the state machine, lives in template-builders-state-machine.ts; both
+// draw the same Plateful order the other technical starters describe.
 //
-// Each builder is pure: it takes a centre (cx, cy) and returns a fresh
-// Element[]. Sizing constants live inline so each template is
-// self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
+// Pure: takes a centre (cx, cy), returns a fresh Element[].
 
 import {
+  createArrow,
   createPinnedArrow,
   createShape,
+  createText,
+  entityHeight,
+  type Anchor,
+  type ArrowheadShape,
   type Element,
   type EntityField,
 } from '@livediagram/document';
+import { techHeader, TECH_HEADER_H, TECH_MUTED } from './template-builders-technical-kit';
 
-// A small media-library class model: an abstract MediaItem with Song /
-// Podcast subclasses and a Playlist aggregating items.
+// Plateful's order domain model in real UML class notation, laid out as a
+// plus around Order so every relationship is one straight line.
 //
-// Each class is one ENTITY element (docs/specs/009-elements/entity.md) — a title bar over member
-// rows. It used to be two flush-stacked tables sharing a groupId, where the
-// SEAM between them stood in for the attribute / method separator: three
-// objects pretending to be one class, and members that could only be edited
-// as table cells rather than as members.
+// Each class is one Entity element (docs/specs/009-elements/entity.md): the
+// class name in the title bar, then its members, attributes first and
+// operations after. Every member carries its visibility (+ public,
+// - private, # protected) and its type sits in the type column, so an
+// operation shows its return type there (`+ total()` | `Money`). The
+// abstract Payment's name is italic and stereotyped, as UML draws it, and
+// OrderStatus is an «enumeration» whose literals are the states the state
+// machine template walks through.
 //
-// The separator goes with it, which is the honest trade. UML's three
-// compartments were never the point of this template; a class you can add a
-// member to from its own menu is worth more than a rule drawn by an accident
-// of stacking. Methods keep their `()` so they still read as methods, and
-// attributes keep their types in the type column where they belong.
-//
-// Members use UML visibility markers (- private, + public).
+// The relationships are the ones a class diagram exists to tell apart:
+// - generalisation (hollow triangle at the parent): Card and Wallet
+//   payments are Payments;
+// - composition (filled diamond at the whole): an Order is made of its
+//   OrderLines, which do not outlive it;
+// - aggregation (hollow diamond at the whole): a Restaurant has MenuItems;
+// - association (open head, the navigable direction): a Customer places
+//   Orders, an Order is paid by Payments and received by a Restaurant, an
+//   OrderLine refers to a MenuItem.
+// Each association and whole-part line is labelled with its role and both
+// multiplicities, in the order the line runs ("places · 1 : 0..*"). A key
+// in the free top-left corner shows the four line ends, so a newcomer can
+// read the diagram without a UML reference open.
+type Klass = {
+  name: string;
+  col: number;
+  row: number;
+  fields: EntityField[];
+  italic?: boolean;
+  width?: number;
+  dx?: number;
+};
+
+const f = (name: string, type?: string): EntityField => (type ? { name, type } : { name });
+
+const CLASSES: Klass[] = [
+  {
+    name: 'Customer',
+    col: 1,
+    row: 0,
+    fields: [f('- id', 'UUID'), f('- email', 'Email'), f('+ placeOrder(basket)', 'Order')],
+  },
+  {
+    name: '«abstract» Payment',
+    col: 0,
+    row: 1,
+    italic: true,
+    fields: [
+      f('# amount', 'Money'),
+      f('# status', 'PaymentStatus'),
+      f('+ authorise()', 'Boolean'),
+      f('+ refund()', 'void'),
+    ],
+  },
+  {
+    name: 'Order',
+    col: 1,
+    row: 1,
+    fields: [
+      f('- id', 'UUID'),
+      f('- status', 'OrderStatus'),
+      f('- placedAt', 'Instant'),
+      f('+ total()', 'Money'),
+      f('+ accept(prepMins)', 'void'),
+      f('+ cancel(reason)', 'void'),
+    ],
+  },
+  {
+    name: 'Restaurant',
+    col: 2,
+    row: 1,
+    fields: [f('- name', 'String'), f('- isOpen', 'Boolean'), f('+ decline(order)', 'void')],
+  },
+  {
+    name: 'CardPayment',
+    col: 0,
+    row: 2,
+    width: 204,
+    dx: -116,
+    fields: [f('- last4', 'String'), f('+ authorise()', 'Boolean')],
+  },
+  {
+    name: 'WalletPayment',
+    col: 0,
+    row: 2,
+    width: 204,
+    dx: 116,
+    fields: [f('- provider', 'Wallet'), f('+ authorise()', 'Boolean')],
+  },
+  {
+    name: 'OrderLine',
+    col: 1,
+    row: 2,
+    fields: [f('- quantity', 'Integer'), f('- unitPrice', 'Money'), f('+ subtotal()', 'Money')],
+  },
+  {
+    name: 'MenuItem',
+    col: 2,
+    row: 2,
+    fields: [f('- name', 'String'), f('- price', 'Money'), f('- available', 'Boolean')],
+  },
+  {
+    name: '«enumeration» OrderStatus',
+    col: 2,
+    row: 0,
+    width: 320,
+    fields: [
+      'PLACED',
+      'ACCEPTED',
+      'PREPARING',
+      'READY',
+      'OUT_FOR_DELIVERY',
+      'DELIVERED',
+      'REJECTED',
+      'CANCELLED',
+    ].map((literal) => f(literal)),
+  },
+];
+
+// [from, anchor, to, anchor, head at `to`, label]
+const LINKS: [string, Anchor, string, Anchor, ArrowheadShape, string?][] = [
+  ['Customer', 's', 'Order', 'n', 'line', 'places · 1 : 0..*'],
+  ['Order', 'w', '«abstract» Payment', 'e', 'line', 'paid by · 1 : 1..*'],
+  ['Order', 'e', 'Restaurant', 'w', 'line', 'received by · 0..* : 1'],
+  ['OrderLine', 'n', 'Order', 's', 'diamond', 'lines · 1..* : 1'],
+  ['MenuItem', 'n', 'Restaurant', 's', 'diamond-hollow', 'menu · 0..* : 1'],
+  ['OrderLine', 'e', 'MenuItem', 'w', 'line', 'of · 0..* : 1'],
+  ['CardPayment', 'n', '«abstract» Payment', 's', 'triangle-hollow'],
+  ['WalletPayment', 'n', '«abstract» Payment', 's', 'triangle-hollow'],
+];
+
+// The key: one short line per relationship kind, head on the right.
+const KEY: [ArrowheadShape, string][] = [
+  ['triangle-hollow', 'is a kind of (inherits)'],
+  ['diamond', 'is made of (composition)'],
+  ['diamond-hollow', 'has (aggregation)'],
+  ['line', 'knows about (association)'],
+];
+
 export function buildUmlClass(cx: number, cy: number): Element[] {
-  const classW = 270;
-  const rowH = 26;
-  // The entity's title band (docs/specs/009-elements/entity.md) at the default text size.
-  const TITLE_H = 30;
-
-  type UmlClass = {
-    name: string;
-    centerX: number;
-    topY: number;
-    attributes: string[];
-    methods: string[];
-  };
-
-  const topRowY = cy - 280;
-  const bottomRowY = cy + 90;
-  const classes: UmlClass[] = [
-    {
-      name: 'MediaItem',
-      centerX: cx + 110,
-      topY: topRowY,
-      attributes: ['- title: string', '- duration: int'],
-      methods: ['+ play()', '+ pause()'],
-    },
-    {
-      name: 'Playlist',
-      centerX: cx - 350,
-      topY: topRowY,
-      attributes: ['- name: string', '- items: MediaItem[]'],
-      methods: ['+ add(item)', '+ shuffle()'],
-    },
-    {
-      name: 'Song',
-      centerX: cx - 110,
-      topY: bottomRowY,
-      attributes: ['- artist: string', '- album: string'],
-      methods: ['+ play()'],
-    },
-    {
-      name: 'Podcast',
-      centerX: cx + 330,
-      topY: bottomRowY,
-      attributes: ['- show: string', '- episode: int'],
-      methods: ['+ play()'],
-    },
+  const classW = 260;
+  const colPitch = 440;
+  const vGap = 110;
+  const heightOf = (k: Klass) => entityHeight(k.fields.length, 'md');
+  const rowHalf = [0, 1, 2].map((r) =>
+    Math.max(...CLASSES.filter((k) => k.row === r).map((k) => heightOf(k) / 2)),
+  );
+  const gridW = 2 * colPitch + classW + 2 * 16;
+  const gridH = 2 * (rowHalf[0]! + rowHalf[1]! + rowHalf[2]!) + 2 * vGap;
+  const headGap = 28;
+  const left = cx - gridW / 2;
+  const top = cy - (TECH_HEADER_H + headGap + gridH) / 2;
+  const gridTop = top + TECH_HEADER_H + headGap;
+  const colX = (c: number) => left + 16 + classW / 2 + c * colPitch;
+  const rowMid = [
+    gridTop + rowHalf[0]!,
+    gridTop + 2 * rowHalf[0]! + vGap + rowHalf[1]!,
+    gridTop + 2 * (rowHalf[0]! + rowHalf[1]!) + 2 * vGap + rowHalf[2]!,
   ];
 
-  const elements: Element[] = [];
-  const boxByName = new Map<string, Element>();
+  const elements: Element[] = techHeader(
+    left,
+    top,
+    gridW,
+    'Plateful · order domain model',
+    'Members read visibility name | type (+ public, - private, # protected). Lines are labelled role · multiplicity at each end, in the direction they run.',
+  );
 
-  for (const c of classes) {
-    // Attributes carry their type in the type column; methods are name-only,
-    // so the column stays empty for them rather than repeating "()" twice.
-    const fields: EntityField[] = [
-      ...c.attributes.map((a) => {
-        const [name, type] = a.split(': ');
-        return type ? { name: name ?? a, type } : { name: a };
-      }),
-      ...c.methods.map((m) => ({ name: m })),
-    ];
-    const height = TITLE_H + fields.length * rowH;
-    const box = {
-      ...createShape('entity', c.centerX - classW / 2, c.topY),
-      width: classW,
-      height,
-      label: c.name,
-      entityFields: fields,
+  const idByName = new Map<string, string>();
+  for (const k of CLASSES) {
+    const w = k.width ?? classW;
+    const h = heightOf(k);
+    const box: Element = {
+      ...createShape('entity', colX(k.col) + (k.dx ?? 0) - w / 2, rowMid[k.row]! - h / 2),
+      width: w,
+      height: h,
+      label: k.name,
+      textSize: 'md',
+      entityFields: k.fields,
+      ...(k.italic ? { textItalic: true } : {}),
+      // The aggregate root carries the hero preset.
+      ...(k.name === 'Order' ? { colorPreset: 'soft' } : {}),
     };
-    boxByName.set(c.name, box);
+    idByName.set(k.name, box.id);
     elements.push(box);
   }
 
-  // Inheritance: hollow triangle pointing at the parent (UML
-  // generalisation). The subclasses sit below MediaItem, so the arrows
-  // rise from their header tables into the parent's methods
-  // compartment edge, converging on the shared bottom anchor.
-  const parent = boxByName.get('MediaItem')!;
-  for (const child of ['Song', 'Podcast']) {
+  for (const [from, fromA, to, toA, head, label] of LINKS) {
     elements.push({
-      ...createPinnedArrow(boxByName.get(child)!.id, 'n', parent.id, 's'),
-      arrowheadShape: 'triangle-hollow',
+      ...createPinnedArrow(idByName.get(from)!, fromA, idByName.get(to)!, toA),
+      arrowheadShape: head,
+      arrowheadSize: 'large',
+      ...(label ? { label } : {}),
     });
   }
 
-  // Aggregation: hollow diamond at the Playlist (owner) end, with the
-  // multiplicity as the edge label. Items live independently of any
-  // playlist, hence aggregation rather than composition.
+  // The key, in the free top-left cell.
+  const keyX = colX(0) - classW / 2;
+  const keyTop = gridTop + 8;
   elements.push({
-    ...createPinnedArrow(boxByName.get('MediaItem')!.id, 'w', boxByName.get('Playlist')!.id, 'e'),
-    arrowheadShape: 'diamond-hollow',
-    label: '0..*',
+    ...createText(keyX, keyTop),
+    width: classW,
+    height: 28,
+    label: 'Reading the lines',
+    textSize: 'sm',
+    textBold: true,
+    textAlignX: 'left',
   });
-
-  return elements;
-}
-
-// An order lifecycle as a UML state machine: an initial dot, a chain
-// of stadium states wired by event-labelled transitions, a Cancelled
-// branch off the two states that can still abort, and a bullseye
-// final marker. The initial / final markers lock their inks (like the
-// Gantt bars lock their fills) so they stay solid black-dot notation
-// under every theme.
-export function buildStateMachine(cx: number, cy: number): Element[] {
-  const stateW = 172;
-  const stateH = 64;
-  // Pitch leaves an ~90px gap between states so the event labels sit
-  // on the transition, not on the neighbouring stadiums.
-  const pitch = 260;
-  // The Cancelled branch hangs 200px below the happy path, so the state
-  // row rides high enough that the whole machine's bounding box centres
-  // on (cx, cy) rather than drifting below it.
-  const stateY = cy - 132;
-  const INK = '#0f172a';
-
-  const elements: Element[] = [];
-
-  const states = ['Draft', 'Submitted', 'Paid', 'Shipped', 'Delivered'];
-  const firstCenterX = cx - ((states.length - 1) / 2) * pitch;
-  const stateEls = states.map((label, i) => ({
-    ...createShape('stadium', firstCenterX + i * pitch - stateW / 2, stateY),
-    width: stateW,
-    height: stateH,
-    label,
-    textSize: 'md' as const,
-    // Entry state soft, terminal success bold, the rest theme-plain.
-    ...(label === 'Draft' ? { colorPreset: 'soft' } : {}),
-    ...(label === 'Delivered' ? { colorPreset: 'bold' } : {}),
-  }));
-  elements.push(...stateEls);
-
-  // Initial pseudo-state: a solid dot feeding the first state, sitting
-  // one marker-gap off the chain's left edge on the state centreline.
-  const markerGap = 96;
-  const midY = stateY + stateH / 2;
-  const dotSize = 26;
-  const initialCenterX = firstCenterX - stateW / 2 - markerGap;
-  const initial = {
-    ...createShape('circle', initialCenterX - dotSize / 2, midY - dotSize / 2),
-    width: dotSize,
-    height: dotSize,
-    fillColor: INK,
-    strokeColor: INK,
-    themeLockFill: true,
-  };
-  elements.push(initial);
-
-  // Final state: the bullseye, an outlined ring around a locked solid dot.
-  const ringSize = 38;
-  const coreSize = 22;
-  const finalCenterX = firstCenterX + (states.length - 1) * pitch + stateW / 2 + markerGap;
-  const ring = {
-    ...createShape('circle', finalCenterX - ringSize / 2, midY - ringSize / 2),
-    width: ringSize,
-    height: ringSize,
-    fillColor: '#ffffff',
-    strokeColor: INK,
-    themeLockFill: true,
-  };
-  const core = {
-    ...createShape('circle', finalCenterX - coreSize / 2, midY - coreSize / 2),
-    width: coreSize,
-    height: coreSize,
-    fillColor: INK,
-    strokeColor: INK,
-    themeLockFill: true,
-  };
-  elements.push(ring, core);
-
-  // Happy-path transitions, each labelled with the event that fires it.
-  const events = ['submit', 'pay', 'ship', 'deliver'];
-  events.forEach((event, i) => {
-    elements.push({
-      ...createPinnedArrow(stateEls[i]!.id, 'e', stateEls[i + 1]!.id, 'w'),
-      label: event,
-    });
-  });
-  elements.push(createPinnedArrow(initial.id, 'e', stateEls[0]!.id, 'w'));
-  elements.push(createPinnedArrow(stateEls[states.length - 1]!.id, 'e', ring.id, 'w'));
-
-  // The abort branch: an order can be cancelled while submitted, or
-  // refunded once paid. Both fall into one Cancelled state below the
-  // happy path, kept outline-styled so it reads as the exception.
-  const cancelled = {
-    ...createShape('stadium', cx - 195 - stateW / 2, stateY + 200),
-    width: stateW,
-    height: stateH,
-    label: 'Cancelled',
-    textSize: 'md' as const,
-    colorPreset: 'outline',
-  };
-  elements.push(cancelled);
-  elements.push({
-    ...createPinnedArrow(stateEls[1]!.id, 's', cancelled.id, 'n'),
-    label: 'cancel',
-  });
-  elements.push({
-    ...createPinnedArrow(stateEls[2]!.id, 's', cancelled.id, 'n'),
-    label: 'refund',
+  KEY.forEach(([head, meaning], i) => {
+    const y = keyTop + 44 + i * 30;
+    elements.push(
+      {
+        ...createArrow(keyX, y, keyX + 52, y),
+        arrowheadShape: head,
+        arrowheadSize: 'large',
+      },
+      {
+        ...createText(keyX + 66, y - 12),
+        width: classW - 66,
+        height: 24,
+        label: meaning,
+        textSize: 'sm',
+        textColor: TECH_MUTED,
+        textAlignX: 'left',
+      },
+    );
   });
 
   return elements;

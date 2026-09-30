@@ -16,7 +16,7 @@ Every app's root layout inlines the same tiny script, before first paint, that a
 ## The control
 
 - One button that **cycles Light → Dark → System**, showing the CURRENT setting (sun / moon / monitor); its accessible name says where the next click goes.
-- In the editor it sits in the tab bar's controls ([Live app](../007-editor/live-app.md)).
+- In the editor it sits in the tab bar's controls ([Live app](../007-editor/live-app.md)). In [Power user mode](../007-editor/power-user-mode.md#quick-appearance-switch) a click switches between Light and Dark, and a right-click sets System. The public sites, the home page included, have no power user mode and always cycle.
 - On the public sites it sits in the shared `SiteHeader`, icon-only, just left of the header's call-to-action buttons, on every page of marketing, help and the dashboard. It is quiet (a ghost icon button), so the header keeps its simplicity.
 - The public-site control emits **no telemetry**: those sites report page views only ([Page view telemetry](../017-telemetry/page-view-telemetry.md)). The editor's control keeps its `UI / Toggled / <setting>` event.
 

@@ -21,6 +21,7 @@ describe('CTA_SOURCES', () => {
       'Home.Hero',
       'Home.HeroDraw',
       'Home.HeroBrainstorm',
+      'Home.HeroCanvas',
       'Home.Gallery',
       'Home.GalleryDraw',
       'Home.Closing',

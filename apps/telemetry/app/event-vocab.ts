@@ -51,6 +51,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Token: 'API tokens: created by hand or by an AI tool connecting over MCP, and revoked.',
   Trash:
     'The Trash deleted documents wait in for 30 days: opened, restored from, deleted from for good, and emptied.',
+  Drive:
+    'The Google Drive mirror: connected, disconnected, needing reconnection, finishing its first copy, changes coming back from Drive, and files opened from Drive.',
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Email:
     'Emails the product sends (welcome, onboarding, team invites, notifications). Which email only, never who received it.',
@@ -100,6 +102,9 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Token: '#d946ef',
   // Warm stone: a quiet backstop, apart from Document's sky and Error's red.
   Trash: '#78716c',
+  // Deep brown: apart from the greens (Action, Element, Cta), Email's teal and
+  // Activity's amber.
+  Drive: '#854d0e',
   Mcp: '#f43f5e',
   Email: '#0d9488',
   Error: '#dc2626',

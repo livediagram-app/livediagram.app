@@ -44,6 +44,7 @@ const writer: ParticipantDTO = {
   name: 'Server Writer',
   color: '#0ea5e9',
   createdAt: 0,
+  pictureUrl: null,
 };
 
 describe('rewriteCommentAuthors', () => {
