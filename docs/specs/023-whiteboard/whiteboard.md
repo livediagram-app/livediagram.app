@@ -235,6 +235,14 @@ The shapes group learns and keeps the shapes a user reaches for.
   ink), finished at every moment: its end is always where the pointer is. One
   function draws the stroke being drawn and the stroke that lands, on the
   canvas and in every export, so release changes nothing.
+  - **Ink already drawn never moves while drawing.** As each new sample
+    arrives, only the tip changes: the last stretch of the stroke, at most
+    three stroke widths (or 6 screen px, whichever is more) behind the
+    pointer, may reshape as the end cap and streamline catch up; every pixel
+    behind it stays exactly where it was, at any zoom, on a straight,
+    diagonal or curved stroke, with or without pressure. No shimmer, jitter or
+    re-antialiasing of the finished part from re-laying out the stroke's box
+    as it grows.
   - **Release moves no pixel.** The stroke being drawn is drawn in the canvas
     itself, beside the elements, laid out exactly as the stroke it becomes, so
     the browser rasterises both alike. (Drawn in a separate overlay, a line
