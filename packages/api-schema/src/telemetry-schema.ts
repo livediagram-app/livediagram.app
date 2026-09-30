@@ -124,7 +124,7 @@ export const TELEMETRY_CATEGORIES = [
   // Whiteboard tabs (docs/specs/023-whiteboard/whiteboard.md): a whiteboard 'Created' (`type` how:
   // 'Template' | 'NewTab' | 'Import'), a pen 'Selected' ('Main' | 'Second' | 'Third'),
   // a pen, the eraser mode and the background 'Changed' ('PenColour' | 'PenWidth' |
-  // 'PenReset', 'EraserStroke' | 'EraserPartial', 'BackgroundPlain' | 'BackgroundDots' |
+  // 'PenReset', 'CursorDot' | 'CursorCrosshair', 'EraserStroke' | 'EraserPartial', 'BackgroundPlain' | 'BackgroundDots' |
   // 'BackgroundGrid') and shape recognition 'Toggled' ('RecognitionOn' |
   // 'RecognitionOff'). Presets only; never content.
   'Whiteboard',

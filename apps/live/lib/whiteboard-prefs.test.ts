@@ -113,6 +113,14 @@ describe('parseWhiteboardPrefs', () => {
   });
 });
 
+describe('the pen cursor', () => {
+  it('starts as the crosshair with a nib and keeps a valid choice', () => {
+    expect(DEFAULT_WHITEBOARD_PREFS.cursor).toBe('nib-crosshair');
+    expect(parseWhiteboardPrefs({ cursor: 'dot' }).cursor).toBe('dot');
+    expect(parseWhiteboardPrefs({ cursor: 'ring' }).cursor).toBe('nib-crosshair');
+  });
+});
+
 describe('storage', () => {
   it('round-trips through localStorage, widths stored by name', () => {
     const prefs = {

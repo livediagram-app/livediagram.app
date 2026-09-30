@@ -19,6 +19,13 @@ import {
   type WhiteboardPenId,
 } from '@/lib/whiteboard-prefs';
 import { WHITEBOARD_SHAPES } from '@/lib/whiteboard-tool';
+import {
+  PEN_CURSOR_VARIANTS,
+  penCursorSvg,
+  svgDataUrl,
+  type PenCursorVariant,
+} from '@/lib/whiteboard-pen-cursor';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { FlyoutHeading, FlyoutOption, WhiteboardFlyout } from './WhiteboardFlyout';
 import { useHoverClose } from './useHoverClose';
@@ -75,6 +82,7 @@ export function WhiteboardDock({
   onRedo,
   showHistory = true,
 }: WhiteboardDockProps) {
+  const { appearance } = useAppearance();
   const [flyout, setFlyout] = useState<Flyout | null>(null);
   // The roving tab stop, by the button's data-dock-item key.
   const [focusKey, setFocusKey] = useState('select');
@@ -327,6 +335,27 @@ export function WhiteboardDock({
                 </FlyoutOption>
               ))}
             </FlyoutRow>
+            {/* The pen cursor (docs/specs/023-whiteboard/whiteboard.md "Pens"), each option showing itself. */}
+            <FlyoutRow label="Cursor" heading>
+              {PEN_CURSOR_VARIANTS.map((v) => (
+                <FlyoutOption
+                  key={v}
+                  wide
+                  label={CURSOR_NAMES[v]}
+                  selected={prefs.cursor === v}
+                  onPick={() => model.setCursor(v)}
+                >
+                  <img
+                    alt=""
+                    aria-hidden
+                    width={20}
+                    height={20}
+                    src={svgDataUrl(penCursorSvg(v, model.activePen.colour ?? ink, appearance).svg)}
+                  />
+                  <span>{CURSOR_NAMES[v]}</span>
+                </FlyoutOption>
+              ))}
+            </FlyoutRow>
           </FlyoutRows>
         ),
       };
@@ -484,6 +513,11 @@ export function WhiteboardDock({
     </div>
   );
 }
+
+const CURSOR_NAMES: Record<PenCursorVariant, string> = {
+  dot: 'Dot',
+  'nib-crosshair': 'Crosshair + nib',
+};
 
 function FlyoutRows({ children }: { children: ReactNode }) {
   return <div className="flex flex-col gap-3">{children}</div>;

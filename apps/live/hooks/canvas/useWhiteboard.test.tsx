@@ -122,6 +122,15 @@ describe('useWhiteboard', () => {
   });
 });
 
+describe('pen cursor', () => {
+  it('sets the cursor, remembers it and reports the choice', () => {
+    const { hook } = setup(board());
+    act(() => hook.result.current.setCursor('dot'));
+    expect(hook.result.current.prefs.cursor).toBe('dot');
+    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'CursorDot');
+  });
+});
+
 describe('pen changes', () => {
   it('resets a pen to its starting colour and width', () => {
     const { hook } = setup(board());

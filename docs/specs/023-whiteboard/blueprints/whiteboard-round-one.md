@@ -258,7 +258,13 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   `useCanvasPanAndMarquee`: a sub-4 px additive marquee toggles `clickTarget` (`onShiftSelect`) or does
   nothing; a real one unions `currentSelection()` with its hits.
 - `[data-pen-in-hand]` on the canvas wrapper while a whiteboard pen is held; `globals.css` makes every
-  descendant inherit the pen cursor. `lib/whiteboard-pen-cursor.ts` holds the five candidate looks.
+  descendant inherit the pen cursor.
+- `lib/whiteboard-pen-cursor.ts`: `PEN_CURSOR_VARIANTS` (`dot`, `nib-crosshair`), `DEFAULT_PEN_CURSOR`,
+  `penCursorSvg(variant, colour, appearance)` (dot rimmed in `WHITEBOARD_BOARD[appearance]`; the
+  crosshair + nib black with a white outline on light, white with no outline on dark, its dot rimmed in
+  the inverse), `penCursor`. `WhiteboardPrefs.cursor` (parsed, default `nib-crosshair`), `setCursor`
+  (`Whiteboard·Changed·CursorDot | CursorCrosshair`), the More flyout's Cursor row, and
+  `useWhiteboardPenCursor(pendingDraw, variant)` feeding the Canvas cursor style.
 
 ### Recognition preview
 

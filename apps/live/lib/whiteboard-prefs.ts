@@ -3,6 +3,11 @@
 // not the board's: stored in this browser, never sent with the document.
 
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
+import {
+  DEFAULT_PEN_CURSOR,
+  PEN_CURSOR_VARIANTS,
+  type PenCursorVariant,
+} from './whiteboard-pen-cursor';
 
 // Named by their place in the dock, never by a colour: the second and third can be any colour.
 export type WhiteboardPenId = 'main' | 'second' | 'third';
@@ -15,6 +20,8 @@ export type WhiteboardPrefs = {
   activePenId: WhiteboardPenId;
   recognise: boolean;
   eraserMode: WhiteboardEraserMode;
+  // The cursor while a pen is in hand (lib/whiteboard-pen-cursor).
+  cursor: PenCursorVariant;
 };
 
 // Subtle at 100%: a line, not a felt tip. Tuned with the operator: Medium is
@@ -50,6 +57,7 @@ export const DEFAULT_WHITEBOARD_PREFS: WhiteboardPrefs = {
   activePenId: 'main',
   recognise: false,
   eraserMode: 'stroke',
+  cursor: DEFAULT_PEN_CURSOR,
 };
 
 const PEN_IDS: readonly WhiteboardPenId[] = ['main', 'second', 'third'];
@@ -128,6 +136,9 @@ export function parseWhiteboardPrefs(raw: unknown): WhiteboardPrefs {
       : DEFAULT_WHITEBOARD_PREFS.activePenId,
     recognise: o.recognise === true,
     eraserMode: o.eraserMode === 'partial' ? 'partial' : 'stroke',
+    cursor: PEN_CURSOR_VARIANTS.includes(o.cursor as PenCursorVariant)
+      ? (o.cursor as PenCursorVariant)
+      : DEFAULT_PEN_CURSOR,
   };
 }
 

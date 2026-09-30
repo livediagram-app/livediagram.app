@@ -7,6 +7,7 @@
 // eraser mode) and turns dock presses into ordinary editor calls.
 
 import { useEffect, useRef, useState } from 'react';
+import type { PenCursorVariant } from '@/lib/whiteboard-pen-cursor';
 import {
   isWhiteboardTab,
   WHITEBOARD_BACKGROUNDS,
@@ -172,6 +173,12 @@ export function useWhiteboard(deps: Deps) {
     track('Whiteboard', 'Toggled', next.recognise ? 'RecognitionOn' : 'RecognitionOff');
   };
 
+  const setCursor = (cursor: PenCursorVariant) => {
+    if (cursor === prefs.cursor) return;
+    setPrefs({ ...prefs, cursor });
+    track('Whiteboard', 'Changed', cursor === 'dot' ? 'CursorDot' : 'CursorCrosshair');
+  };
+
   const setBackground = (id: (typeof WHITEBOARD_BACKGROUNDS)[number]['id']) => {
     const bg = WHITEBOARD_BACKGROUNDS.find((b) => b.id === id);
     if (!bg || bg.pattern === (activeTab.backgroundPattern ?? 'blank')) return;
@@ -195,6 +202,7 @@ export function useWhiteboard(deps: Deps) {
     pickText: () => pickIntent({ type: 'text' }),
     pickShape,
     setRecognition,
+    setCursor,
     setBackground,
   };
 }

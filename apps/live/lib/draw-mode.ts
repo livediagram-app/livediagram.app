@@ -1,3 +1,4 @@
+import { DEFAULT_PEN_CURSOR, penCursor } from './whiteboard-pen-cursor';
 import type {
   ArrowEnds,
   ComponentKind,
@@ -315,13 +316,9 @@ export function drawIntentCursor(intent: PendingDraw): string {
       );
     }
     if (intent.variant === 'whiteboard') {
-      // The nib with a dot of the pen's own colour (docs/specs/023-whiteboard/whiteboard.md): which pen
-      // is in hand, at the pointer. The main pen shows as dark with a light rim so it
-      // reads on either board.
-      const dot = intent.colour ?? 'rgb(28 25 23)';
-      return drawCursorFromGlyph(
-        `<path d="M14 22 L20 16 L23 19 L17 25 Z M20 16 L22 14" stroke="black" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none" /><circle cx="23.5" cy="12.5" r="3" fill="${dot}" stroke="white" stroke-width="1" />`,
-      );
+      // The canvas draws the look chosen in the dock (useWhiteboardPenCursor);
+      // this is its default, on the light board.
+      return penCursor(DEFAULT_PEN_CURSOR, intent.colour ?? 'rgb(28 25 23)', 'light');
     }
     if (intent.variant === 'shape-pen') {
       // Pen nib with a dashed square beside it: the nib says "drawing", the

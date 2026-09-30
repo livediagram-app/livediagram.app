@@ -49,6 +49,7 @@ import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { EraserBrushRing } from '@/components/canvas/EraserBrushRing';
 import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
 import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
+import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
@@ -123,6 +124,8 @@ export function Canvas(props: CanvasProps) {
   } = props;
 
   const wrapperRef = useRef<HTMLDivElement>(null);
+  // A whiteboard pen's own cursor, as chosen in the dock's More flyout.
+  const penCursorValue = useWhiteboardPenCursor(pendingDraw, props.whiteboardDock?.prefs.cursor);
 
   // Paint mode covers BOTH painter entry points: a single-shot armed source
   // (toolbar) and the persistent Format canvas tool — the tool must read as
@@ -599,7 +602,7 @@ export function Canvas(props: CanvasProps) {
         // surrounding "letterbox" gap falls through to <main>. Without
         // setting cursor here too, the user would see the OS default
         // arrow in that gap while a draw-to-size intent is pending.
-        ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
+        ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
       }}
     >
       {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
@@ -674,7 +677,7 @@ export function Canvas(props: CanvasProps) {
           // intents inherited the default arrow cursor because the
           // wrapper drops its Tailwind cursor- class above when
           // pendingDraw is set, leaving no cursor specified at all.
-          ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
+          ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
         }}
       >
         {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted

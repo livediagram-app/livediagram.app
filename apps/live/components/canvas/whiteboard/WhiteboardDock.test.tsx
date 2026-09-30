@@ -23,6 +23,7 @@ function model(tool: WhiteboardTool = 'pen', over: Partial<WhiteboardDockModel> 
     pickText: vi.fn(),
     pickShape: vi.fn(),
     setRecognition: vi.fn(),
+    setCursor: vi.fn(),
     setBackground: vi.fn(),
     ...over,
   } as WhiteboardDockModel;
@@ -154,12 +155,23 @@ describe('WhiteboardDock', () => {
     expect(m.setBackground).toHaveBeenCalledWith('grid');
   });
 
-  it('heads More with Background and Drawing, not a title of its own', () => {
+  it('heads More with Background, Drawing and Cursor, not a title of its own', () => {
     renderDock();
     fireEvent.click(screen.getByRole('button', { name: 'More' }));
     const more = screen.getByRole('group', { name: 'More' });
     const headings = [...more.querySelectorAll('[data-flyout-heading]')].map((h) => h.textContent);
-    expect(headings).toEqual(['Background', 'Drawing']);
+    expect(headings).toEqual(['Background', 'Drawing', 'Cursor']);
+  });
+
+  it('switches the pen cursor between the dot and the crosshair with a nib', () => {
+    const { m } = renderDock();
+    fireEvent.click(screen.getByRole('button', { name: 'More' }));
+    const row = screen.getByRole('group', { name: 'Cursor' });
+    expect(
+      within(row).getByRole('button', { name: 'Crosshair + nib' }).getAttribute('aria-pressed'),
+    ).toBe('true');
+    fireEvent.click(within(row).getByRole('button', { name: 'Dot' }));
+    expect(m.setCursor).toHaveBeenCalledWith('dot');
   });
 
   it('switches Drawing between Basic and Shape recognition', () => {

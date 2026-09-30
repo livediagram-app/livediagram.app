@@ -89,10 +89,10 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
      ([Power user mode](../007-editor/power-user-mode.md)): the bottom-right
      cluster already carries them there, so the dock drops the duplicate. On a
      phone or tablet layout, and outside the mode, the dock keeps them.
-  8. **More** (`…`): a flyout with no title of its own and two sections,
+  8. **More** (`…`): a flyout with no title of its own and three sections,
      each headed in the flyouts' small capitals and a row of the same switch
-     buttons: **Background** (Plain / Dots / Grid) and **Drawing** (Basic /
-     Shape recognition). Later, when the operator asks for it, the full
+     buttons: **Background** (Plain / Dots / Grid), **Drawing** (Basic /
+     Shape recognition) and **Cursor** (Crosshair + nib / Dot). Later, when the operator asks for it, the full
      palette as an escape hatch.
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
   none, search does not offer it (nor the format painter), and one held on a
@@ -111,9 +111,13 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 
 - **With a pen in hand, the cursor never changes** over a shape, note, line
   or handle: the pen draws wherever it presses, so nothing under it offers
-  another action. (The cursor's look is being chosen from five candidates,
-  `apps/live/lib/whiteboard-pen-cursor.ts`; today's crosshair with a nib is the
-  default until then.)
+  another action.
+- **Two cursor looks**, chosen under **Cursor** in the dock's More flyout and
+  remembered device-locally with the pens: **Crosshair + nib** (the default:
+  a crosshair at the tip, a nib and a dot of the pen's colour beside it) and
+  **Dot** (a dot of the pen's colour at the tip, rimmed in the board's colour).
+  On the light board the crosshair and nib are black with a white outline; on
+  the dark board they are the exact inverse, white, with no outline.
 
 - A whiteboard offers **three pens**, left to right: the **main pen**, the
   **second pen** and the **third pen**, all Medium width. Picking a pen
@@ -361,6 +365,7 @@ Preset-enum events only, never content, under a `Whiteboard` category:
 | A whiteboard created      | `Created`  | `Template` (wizard), `NewTab`, `Import`                  |
 | A pen picked              | `Selected` | `Main`, `Second`, `Third`                                |
 | A pen changed             | `Changed`  | `PenColour`, `PenWidth` (a width on any pen), `PenReset` |
+| The pen cursor chosen     | `Changed`  | `CursorDot`, `CursorCrosshair`                           |
 | Eraser mode switched      | `Changed`  | `EraserStroke`, `EraserPartial`                          |
 | Shape recognition toggled | `Toggled`  | `RecognitionOn`, `RecognitionOff`                        |
 | Background changed        | `Changed`  | `BackgroundPlain`, `BackgroundDots`, `BackgroundGrid`    |
