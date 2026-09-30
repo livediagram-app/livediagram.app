@@ -127,6 +127,12 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
   is held, so a node or handle already placed can be dragged; **Alt-click** a placed node converts
   it; **dragging a placed node** (not the first, which closes) moves it. Releasing the key resumes
   drawing from the last node.
+- **Cursors in edit mode** say what a press will do, and **never show a text cursor** (the
+  path's label, the canvas and the overlays underneath never lend theirs, and no drag in edit mode
+  selects text): the **arrow** over empty space and the path's fill; **move** over a node or a
+  handle; a **pen with a plus** over a segment (a click adds a node there, a drag bends it). While
+  drawing, the Path tool's pen cursor, with a **closing ring** over the first node and a **continue
+  ring** over an open path's end.
 - **Touch:** drag a node or handle with a finger or pen as with a mouse; double-tap a node toggles
   corner and smooth; every hit target is at least 24 x 24 px on screen, and a finger's target is
   the nearest node or handle within 16 screen px.
