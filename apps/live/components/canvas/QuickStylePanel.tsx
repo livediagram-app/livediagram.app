@@ -114,10 +114,14 @@ export function QuickStylePanel({
   hidden,
   layout,
   showTitles,
+  powerUser = false,
 }: {
   quickStyle: QuickStyleApi;
-  // Floating wears the Palette's own panel dress (docked under a Palette on
-  // the left); Toolbar and Minimal keep it compact. Always on the left edge.
+  // Power user mode (docs/specs/007-editor/power-user-mode.md) drops the caption naming the pen
+  // or strokes a whiteboard's pen rows style.
+  powerUser?: boolean;
+  // Floating wears the Palette's own panel dress; Toolbar and Minimal keep it
+  // compact. Always on the left edge.
   layout: QuickStyleLayout;
   // Zen, embeds, presenting, or a context menu open: the panel stands down.
   hidden: boolean;
@@ -197,6 +201,7 @@ export function QuickStylePanel({
           view={view}
           quickStyle={quickStyle}
           showTitles={titles}
+          showSubject={!powerUser}
           density={docked ? 'roomy' : 'compact'}
           onEditSwatch={(role, slot, anchor) => setEditing({ role, slot, anchor })}
         />
@@ -245,12 +250,14 @@ function QuickStyleSections({
   view,
   quickStyle,
   showTitles,
+  showSubject,
   density,
   onEditSwatch,
 }: {
   view: QuickStyleView;
   quickStyle: QuickStyleApi;
   showTitles: boolean;
+  showSubject: boolean;
   density: QuickRowDensity;
   onEditSwatch: (role: QuickSwatchRole, slot: QuickSwatchSlot, anchor: HTMLButtonElement) => void;
 }) {
@@ -266,6 +273,7 @@ function QuickStyleSections({
           pen={view.pen}
           quickStyle={quickStyle}
           showTitles={showTitles}
+          showSubject={showSubject}
           density={density}
         />
       ) : null}

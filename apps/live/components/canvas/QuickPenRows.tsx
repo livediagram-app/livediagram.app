@@ -22,31 +22,32 @@ export function QuickPenRows({
   quickStyle,
   showTitles,
   density,
+  showSubject,
 }: {
   pen: QuickPenStyle;
+  // The caption naming the pen or the strokes; off in power user mode.
+  showSubject: boolean;
   quickStyle: QuickStyleApi;
   showTitles: boolean;
   density: QuickRowDensity;
 }) {
   return (
     <>
-      {pen.subject.kind === 'pen' ? (
-        // Whose style this is: the pen in hand, not a selection.
+      {showSubject ? (
+        // Whose style this is: the pen in hand, or the selected strokes.
         <p className="px-0.5 text-xs font-medium text-slate-700 dark:text-slate-200">
           {pen.subject.name}
         </p>
       ) : null}
-      {pen.colour ? (
-        <QuickRadioRow
-          title="Pen colour"
-          testId="quick-style-pen-colour"
-          showTitle={showTitles}
-          density={density}
-          options={pen.colour.options.map((o) => ({ ...o, content: null }))}
-          value={pen.colour.value}
-          onChoose={quickStyle.setPenColour}
-        />
-      ) : null}
+      <QuickRadioRow
+        title="Pen colour"
+        testId="quick-style-pen-colour"
+        showTitle={showTitles}
+        density={density}
+        options={pen.colour.options.map((o) => ({ ...o, content: null }))}
+        value={pen.colour.value}
+        onChoose={quickStyle.setPenColour}
+      />
       <QuickRadioRow
         title="Pen width"
         testId="quick-style-pen-width"

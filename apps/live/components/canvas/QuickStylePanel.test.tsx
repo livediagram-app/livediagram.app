@@ -260,7 +260,7 @@ describe('QuickStylePanel on a whiteboard: the pen rows', () => {
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),
   });
-  const second = heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[1]!);
+  const second = heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[1]!, '#1c1917');
 
   it('styles the pen in hand, with nothing selected, and offers no Clear styles', () => {
     const quickStyle = api(second);
@@ -278,10 +278,27 @@ describe('QuickStylePanel on a whiteboard: the pen rows', () => {
     expect(screen.queryByTestId('quick-style-clear')).toBeNull();
   });
 
-  it('gives the main pen its width alone', () => {
-    const main = heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[0]!);
-    render(<QuickStylePanel quickStyle={api(main)} hidden={false} layout="toolbar" />);
-    expect(screen.queryByRole('radiogroup', { name: 'Pen colour' })).toBeNull();
+  it('drops the pen name in power user mode', () => {
+    render(<QuickStylePanel quickStyle={api(second)} hidden={false} layout="toolbar" powerUser />);
+    expect(screen.queryByText('Second pen')).toBeNull();
     expect(screen.getByRole('radiogroup', { name: 'Pen width' })).toBeTruthy();
+  });
+
+  it('keeps Pen width at the same height for every pen', () => {
+    const rowsBefore = (i: number) => {
+      const { container, unmount } = render(
+        <QuickStylePanel
+          quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[i]!, '#1c1917'))}
+          hidden={false}
+          layout="toolbar"
+        />,
+      );
+      const width = container.querySelector('[data-testid="quick-style-pen-width"]')!;
+      const body = container.querySelector('[data-quick-style-body]')!;
+      const index = [...body.children].findIndex((el) => el.contains(width));
+      unmount();
+      return index;
+    };
+    expect(new Set([0, 1, 2].map(rowsBefore)).size).toBe(1);
   });
 });

@@ -37,7 +37,7 @@ describe('isPenStroke', () => {
 });
 
 describe('strokesPenStyle', () => {
-  it('offers the ink and every pen colour, and reads the shared colour and width', () => {
+  it('names the strokes, offers the ink and every pen colour, and reads the shared values', () => {
     const style = strokesPenStyle(
       [stroke({ strokeColor: '#e5484d' }), stroke({ strokeColor: '#e5484d' })],
       INK,
@@ -53,6 +53,7 @@ describe('strokesPenStyle', () => {
       'Pink',
     ]);
     expect(style.colour!.options[0]!.swatch).toBe(INK);
+    expect(style.subject).toMatchObject({ kind: 'strokes', name: '2 pen strokes' });
     expect(style.colour!.value).toBe('#e5484d');
     expect(style.width.value).toBe('medium');
   });
@@ -73,15 +74,16 @@ describe('strokesPenStyle', () => {
 });
 
 describe('heldPenStyle', () => {
-  it('gives the main pen a width only: it is always the ink', () => {
-    const style = heldPenStyle(main!);
-    expect(style.colour).toBeUndefined();
+  it('gives the main pen its one colour, the ink, so every pen has the same rows', () => {
+    const style = heldPenStyle(main!, INK);
+    expect(style.colour!.options).toEqual([{ value: INK_CHOICE, name: 'Ink', swatch: INK }]);
+    expect(style.colour!.value).toBe(INK_CHOICE);
     expect(style.width.value).toBe('medium');
     expect(style.subject).toEqual({ kind: 'pen', id: 'main', name: 'Main pen' });
   });
 
   it('gives another pen its colours, without the ink', () => {
-    const style = heldPenStyle(second!);
+    const style = heldPenStyle(second!, INK);
     expect(style.colour!.options.map((o) => o.name)).not.toContain('Ink');
     expect(style.colour!.value).toBe('#1d7afc');
   });

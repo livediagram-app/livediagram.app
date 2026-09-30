@@ -215,10 +215,13 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   Clear styles skip `memory.recordEdit` / `memory.forget`.
 - Pen rows (`apps/live/lib/quick-style-pen.ts`, `QuickPenRows.tsx`): `view.pen` is
   `strokesPenStyle(selected, ink)` (pen strokes: `freehand` with `penWidth`, not a highlight, unlocked),
-  else `heldPenStyle(pen)` when nothing is selected and `whiteboardDock.tool === 'pen'`.
+  else `heldPenStyle(pen, ink)` (the main pen's colour row is the single Ink option, so every pen has
+  both rows) when nothing is selected and `whiteboardDock.tool === 'pen'`.
   `setPenColour` / `setPenWidth` commit `applyPenStyle` over the strokes (`Element·Changed·QuickStroke`
   / `QuickStrokeWidth`) or call `updatePen` for the held pen (its own `Whiteboard·Changed` tokens).
-  Ink is `INK_CHOICE` and clears `strokeColor`. Clear styles shows only when `targetIds` is non-empty.
+  Ink is `INK_CHOICE` and clears `strokeColor`. Clear styles shows only when `targetIds` is non-empty. `QuickPenRows`
+  shows `subject.name` as a caption unless `QuickStylePanel` has `powerUser` (from `isPowerUserMode`).
+  Choosing the held pen's current value is a no-op.
 
 ### Shapes flyout hover, More flyout
 

@@ -103,7 +103,7 @@ export function useQuickStyle(deps: {
     // Selected strokes first; with nothing selected, the pen in hand.
     const pen =
       strokesPenStyle(selected, ink) ??
-      (selected.length === 0 && held ? heldPenStyle(held) : undefined);
+      (selected.length === 0 && held ? heldPenStyle(held, ink) : undefined);
     return pen ? { ...(board ?? { targetIds: [], sections: {} }), pen } : board;
   }, [editsBlocked, selected, theme, overrides, whiteboard, ink, held]);
 
@@ -126,6 +126,10 @@ export function useQuickStyle(deps: {
     const subject = view?.pen?.subject;
     if (!subject || editsBlocked) return;
     if (subject.kind === 'pen') {
+      // Choosing what the pen already has changes (and reports) nothing.
+      const pen = view!.pen!;
+      if (patch.colour !== undefined && patch.colour === pen.colour.value) return;
+      if (patch.width !== undefined && patch.width === pen.width.value) return;
       // The pen's own setting, as its dock flyout sets it (and tracks it).
       deps.pen?.update(subject.id, {
         ...(patch.colour !== undefined

@@ -45,7 +45,11 @@ function setup(selection: string[], held = DEFAULT_WHITEBOARD_PREFS.pens[1]!) {
 describe('useQuickStyle pen rows', () => {
   it('restyles the selected strokes in one commit', () => {
     const { result, commit, elements } = setup(['s1']);
-    expect(result.current.view?.pen?.subject).toEqual({ kind: 'strokes', ids: ['s1'] });
+    expect(result.current.view?.pen?.subject).toEqual({
+      kind: 'strokes',
+      ids: ['s1'],
+      name: 'Pen stroke',
+    });
     act(() => result.current.setPenWidth('bold'));
     expect(commit).toHaveBeenCalledTimes(1);
     expect(elements()[0]).toMatchObject({ penWidth: 2.5 });

@@ -67,8 +67,11 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   Selected pen strokes get **Pen colour** (the ink and the seven pen
   colours) and **Pen width** (Fine / Medium / Bold). With nothing selected
   and a pen in hand, the panel styles **that pen**: picking up a pen already
-  offers its colour (not for the main pen, always the ink) and width, the
-  same settings its dock flyout holds.
+  offers its colour and width, the same settings its dock flyout holds.
+  **Every pen shows the same rows**, so Pen width stays at the same height
+  whichever pen is in hand: the main pen's colour row holds its one colour,
+  the ink. A caption above the rows names whose style it is ("Second pen",
+  "Pen stroke", "3 pen strokes"); power user mode leaves it out.
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
 - **The dock holds, left to right:**
