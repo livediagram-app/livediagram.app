@@ -72,7 +72,7 @@ describe('TemplatePickerBrowse, the whiteboard tile', () => {
     const tiles = [...grid.children];
     const last = tiles[tiles.length - 1]!;
     expect(last.textContent).toContain('Whiteboard');
-    expect(last.textContent).toContain('Free drawing with markers and shapes');
+    expect(last.textContent).toContain('Free drawing without distractions');
     expect(tiles[1]!.textContent).not.toContain('Whiteboard');
   });
 });

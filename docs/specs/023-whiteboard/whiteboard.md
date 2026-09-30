@@ -37,7 +37,7 @@ pen widths, dock spacing) are named constants, tuned in place.
   with one whiteboard tab. It is the **last tile** of the template grid, after
   every category (Blank diagram first, the categories, then Whiteboard: a
   different activity from the diagram templates), described **"Free drawing
-  with markers and shapes"**.
+  without distractions"**.
 - **New tab:** the tab bar's new-tab action opens Quick Start as on any
   document, and Quick Start offers **Whiteboard** as a quick-pick beside
   **Blank**, so a whiteboard can be added to any document in the same two

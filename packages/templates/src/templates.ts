@@ -165,7 +165,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'whiteboard',
     title: 'Whiteboard',
-    description: 'Free drawing with markers and shapes',
+    description: 'Free drawing without distractions',
   },
   {
     kind: 'mindmap',
