@@ -11,7 +11,7 @@ import {
   type PenStroke,
   type RecognisedShape,
 } from '@livediagram/document';
-import { adjustRecognised } from './recognition-preview';
+import { adjustRecognised, shiftRatio } from './recognition-preview';
 
 type Point = { x: number; y: number };
 
@@ -40,7 +40,8 @@ export type LiveStroke = {
   snapTo(shape: RecognisedShape): void;
   /**
    * Sets whether Shift is held, as the latest pointer event says: while it is, reshaping keeps the
-   * shape perfect (`adjustRecognised`'s `constrain`). True when that changed.
+   * shape perfect, held to the `shiftRatio` of the shape as it is when Shift takes effect (as
+   * shown when pressed, or as recognised when already held at the lock). True when that changed.
    */
   constrain(on: boolean): boolean;
   /** The locked shape as the pen has reshaped it so far; null until the stroke is locked. */
@@ -59,6 +60,12 @@ export function createLiveStroke(
   const listeners = new Set<() => void>();
   let snap: { shape: RecognisedShape; grab: Point } | null = null;
   let constrained = false;
+  // Width over height while Shift holds a locked shape; undefined while free or unlocked.
+  let ratio: number | undefined;
+  const free = () => {
+    const pointer = points[points.length - 1];
+    return snap && pointer ? adjustRecognised(snap.shape, snap.grab, pointer) : null;
+  };
   return {
     pointer,
     pointerId,
@@ -86,16 +93,20 @@ export function createLiveStroke(
     },
     snapTo(shape) {
       const grab = points[points.length - 1];
-      if (grab) snap = { shape, grab };
+      if (!grab) return;
+      snap = { shape, grab };
+      if (constrained) ratio = shiftRatio(shape);
     },
     constrain(on) {
       if (on === constrained) return false;
       constrained = on;
+      const shown = on ? free() : null;
+      ratio = shown ? shiftRatio(shown) : undefined;
       return true;
     },
     shaped() {
       const pointer = points[points.length - 1];
-      return snap && pointer ? adjustRecognised(snap.shape, snap.grab, pointer, constrained) : null;
+      return snap && pointer ? adjustRecognised(snap.shape, snap.grab, pointer, ratio) : null;
     },
   };
 }

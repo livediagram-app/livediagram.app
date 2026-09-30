@@ -4,6 +4,7 @@ import {
   RECOGNITION_PREVIEW_DWELL_MS,
   RECOGNITION_PREVIEW_STILL_PX,
   recogniseBoardStroke,
+  shiftRatio,
   stillSince,
 } from './recognition-preview';
 
@@ -94,7 +95,7 @@ describe('adjustRecognised', () => {
 });
 
 // docs/specs/023-whiteboard/whiteboard.md "Shape recognition": Shift while reshaping makes it perfect.
-describe('adjustRecognised, constrained (Shift)', () => {
+describe('adjustRecognised, held to a ratio (Shift)', () => {
   const box = {
     kind: 'circle' as const,
     bbox: { x: 0, y: 0, width: 100, height: 60 },
@@ -109,58 +110,58 @@ describe('adjustRecognised, constrained (Shift)', () => {
   };
 
   it('keeps a box as wide as it is tall, the corner following the larger distance', () => {
-    const out = adjustRecognised(box, { x: 98, y: 58 }, { x: 148, y: 68 }, true);
+    const out = adjustRecognised(box, { x: 98, y: 58 }, { x: 148, y: 68 }, 1);
     expect(out).toEqual({ ...box, bbox: { x: 0, y: 0, width: 150, height: 150 } });
   });
 
   it('follows the taller side when the pen has moved further down than across', () => {
-    const out = adjustRecognised(box, { x: 98, y: 58 }, { x: 88, y: 158 }, true);
+    const out = adjustRecognised(box, { x: 98, y: 58 }, { x: 88, y: 158 }, 1);
     expect(out.bbox).toEqual({ x: 0, y: 0, width: 160, height: 160 });
   });
 
   it('grows from the fixed corner on whichever side the pen is', () => {
-    const out = adjustRecognised(box, { x: 2, y: 2 }, { x: -8, y: 2 }, true);
+    const out = adjustRecognised(box, { x: 2, y: 2 }, { x: -8, y: 2 }, 1);
     expect(out.bbox).toEqual({ x: -10, y: -50, width: 110, height: 110 });
   });
 
   it('still flips past the fixed corner, perfect on the other side', () => {
-    const out = adjustRecognised(box, { x: 100, y: 60 }, { x: -50, y: 60 }, true);
+    const out = adjustRecognised(box, { x: 100, y: 60 }, { x: -50, y: 60 }, 1);
     expect(out.bbox).toEqual({ x: -60, y: 0, width: 60, height: 60 });
   });
 
   it('keeps the side it had when the dragged corner lines up with the fixed one', () => {
-    const out = adjustRecognised(box, { x: 100, y: 60 }, { x: 0, y: 60 }, true);
+    const out = adjustRecognised(box, { x: 100, y: 60 }, { x: 0, y: 60 }, 1);
     expect(out.bbox).toEqual({ x: 0, y: 0, width: 60, height: 60 });
   });
 
   it('makes the box perfect even where the pen has not moved', () => {
-    const out = adjustRecognised(box, { x: 98, y: 58 }, { x: 98, y: 58 }, true);
+    const out = adjustRecognised(box, { x: 98, y: 58 }, { x: 98, y: 58 }, 1);
     expect(out.bbox).toEqual({ x: 0, y: 0, width: 100, height: 100 });
   });
 
   it('keeps every boxed kind', () => {
     for (const kind of ['square', 'diamond', 'triangle', 'star', 'circle'] as const) {
-      const out = adjustRecognised({ ...box, kind }, { x: 98, y: 58 }, { x: 98, y: 58 }, true);
+      const out = adjustRecognised({ ...box, kind }, { x: 98, y: 58 }, { x: 98, y: 58 }, 1);
       expect(out.kind).toBe(kind);
       expect(out.bbox.width).toBe(out.bbox.height);
     }
   });
 
   it('snaps a line to horizontal about its fixed end', () => {
-    const out = adjustRecognised(line, { x: 101, y: 1 }, { x: 181, y: 71 }, true);
+    const out = adjustRecognised(line, { x: 101, y: 1 }, { x: 181, y: 71 }, 1);
     expect(out.from).toEqual({ x: 0, y: 0 });
     expect(out.to).toEqual({ x: 180, y: 0 });
     expect(out.bbox).toEqual({ x: 0, y: 0, width: 180, height: 0 });
   });
 
   it('snaps a line to the diagonal, the end nearest the pen along it', () => {
-    const out = adjustRecognised(line, { x: 101, y: 1 }, { x: 161, y: 141 }, true);
+    const out = adjustRecognised(line, { x: 101, y: 1 }, { x: 161, y: 141 }, 1);
     expect(out.from).toEqual({ x: 0, y: 0 });
     expect(out.to).toEqual({ x: 150, y: 150 });
   });
 
   it('snaps the near end of a line to vertical, keeping the far one', () => {
-    const out = adjustRecognised(line, { x: -1, y: 0 }, { x: 95, y: -120 }, true);
+    const out = adjustRecognised(line, { x: -1, y: 0 }, { x: 95, y: -120 }, 1);
     expect(out.from).toEqual({ x: 100, y: -120 });
     expect(out.to).toEqual({ x: 100, y: 0 });
     expect(out.bbox).toEqual({ x: 100, y: -120, width: 0, height: 120 });
@@ -176,10 +177,74 @@ describe('adjustRecognised, constrained (Shift)', () => {
         seg,
         { x: 10, y: 0 },
         { x: 100 * Math.cos(a), y: 100 * Math.sin(a) },
-        true,
+        1,
       );
       const angle = (Math.atan2(out.to!.y, out.to!.x) * 180) / Math.PI;
       expect((angle + 360) % 360).toBeCloseTo(step * 45, 6);
     }
+  });
+});
+
+// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": a rectangle snaps to the nearest of
+// 1:1, 5:3 and 3:5 by the logarithm of width over height; every other box keeps 1:1.
+describe('shiftRatio', () => {
+  const of = (
+    kind: 'square' | 'circle' | 'diamond' | 'triangle' | 'star' | 'line',
+    w: number,
+    h: number,
+  ) => shiftRatio({ kind, bbox: { x: 0, y: 0, width: w, height: h }, confidence: 1 });
+
+  it('makes a drawn square a perfect square', () => {
+    expect(of('square', 100, 98)).toBe(1);
+    expect(of('square', 98, 100)).toBe(1);
+  });
+
+  it('makes a drawn rectangle a clean 5:3 or 3:5', () => {
+    expect(of('square', 100, 60)).toBe(5 / 3);
+    expect(of('square', 60, 100)).toBe(3 / 5);
+    expect(of('square', 300, 100)).toBe(5 / 3);
+    expect(of('square', 100, 300)).toBe(3 / 5);
+  });
+
+  it('splits 1:1 from 5:3 at their geometric mean', () => {
+    expect(of('square', 128, 100)).toBe(1);
+    expect(of('square', 130, 100)).toBe(5 / 3);
+    expect(of('square', 100, 128)).toBe(1);
+    expect(of('square', 100, 130)).toBe(3 / 5);
+  });
+
+  it('reads a flat rectangle as landscape, a thin one as portrait, and a dot as square', () => {
+    expect(of('square', 100, 0)).toBe(5 / 3);
+    expect(of('square', 0, 100)).toBe(3 / 5);
+    expect(of('square', 0, 0)).toBe(1);
+  });
+
+  it('keeps every other shape 1:1, however it was drawn', () => {
+    for (const kind of ['circle', 'diamond', 'triangle', 'star', 'line'] as const) {
+      expect(of(kind, 100, 60)).toBe(1);
+    }
+  });
+});
+
+describe('adjustRecognised, held to 5:3', () => {
+  const rect = {
+    kind: 'square' as const,
+    bbox: { x: 0, y: 0, width: 100, height: 60 },
+    confidence: 1,
+  };
+
+  it('follows the width when the pen has gone further across than the ratio', () => {
+    const out = adjustRecognised(rect, { x: 98, y: 58 }, { x: 148, y: 68 }, 5 / 3);
+    expect(out.bbox).toEqual({ x: 0, y: 0, width: 150, height: 90 });
+  });
+
+  it('follows the height when the pen has gone further down than the ratio', () => {
+    const out = adjustRecognised(rect, { x: 98, y: 58 }, { x: 98, y: 148 }, 5 / 3);
+    expect(out.bbox).toEqual({ x: 0, y: 0, width: 250, height: 150 });
+  });
+
+  it('keeps the ratio flipped past the fixed corner', () => {
+    const out = adjustRecognised(rect, { x: 100, y: 60 }, { x: -50, y: 60 }, 5 / 3);
+    expect(out.bbox).toEqual({ x: -100, y: 0, width: 100, height: 60 });
   });
 });

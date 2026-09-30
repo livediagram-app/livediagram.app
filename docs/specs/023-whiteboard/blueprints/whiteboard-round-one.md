@@ -291,15 +291,23 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   flipping past it). `useRecognitionPreview` shows `shaped()` on every update once locked (the lock
   itself included), and the commit passes it as `ink.snapped`, which `whiteboardStroke` lands
   instead of re-reading the stroke.
-- Shift: `adjustRecognised(shape, grab, pointer, constrain)`. With `constrain` a box's moving corner
-  goes to the larger of `|dx|`, `|dy|` from the fixed corner on each axis, on the side it is on (the
-  box's own side when lined up on that axis), so width equals height, even where the pen has not
-  moved; a line's moving end goes to the nearest point on the nearest 45 degree ray from its fixed
-  end (whole-step direction vectors, so axis snaps are exact). Without it, a pen that has not moved
-  changes nothing. `LiveStroke.constrain(on)` stores the flag `shaped()` passes and returns whether
-  it changed. `useWhiteboardPenGesture` seeds it from the press's `shiftKey` and sets it from every
-  `pointermove`'s `shiftKey` before pushing the sample, notifying when either the sample or the flag
-  changed; `pointerup` leaves it, so what lands is what the last move showed.
+- Shift: `adjustRecognised(shape, grab, pointer, ratio)`. With `ratio` (width over height) set, a
+  box's moving corner, relative to the fixed corner, follows `|dx|` when `|dx| >= |dy| * ratio`
+  (height `|dx| / ratio`) and `|dy|` otherwise (width `|dy| * ratio`), on the side it is on (the
+  box's own side when lined up on that axis), even where the pen has not moved; a line's moving end
+  goes to the nearest point on the nearest 45 degree ray from its fixed end (whole-step direction
+  vectors, so axis snaps are exact). Without it, a pen that has not moved changes nothing.
+- `shiftRatio(shape)`: for `kind === 'square'` (a rectangle) the nearest of `SHIFT_RECTANGLE_RATIOS`
+  (`[1, 5 / 3, 3 / 5]`) by `|log(width / height) - log(ratio)|`, 1:1 winning a tie (the 1:1 / 5:3
+  split sits at their geometric mean, about 1.29); zero height reads 5:3, zero width 3:5, both 1:1.
+  Every other kind is 1.
+- `LiveStroke.constrain(on)` returns whether Shift changed. Turning it on measures
+  `shiftRatio` of the shape as shown (the free `adjustRecognised` at the last sample); `snapTo`
+  with Shift already on measures the recognised shape; turning it off clears the ratio, and
+  pressing again measures afresh. `shaped()` passes that ratio. `useWhiteboardPenGesture` seeds
+  the flag from the press's `shiftKey` and sets it from every `pointermove`'s `shiftKey` before
+  pushing the sample, notifying when either the sample or the flag changed; `pointerup` leaves it,
+  so what lands is what the last move showed.
 
 - `apps/live/lib/recognition-preview.ts`: `RECOGNITION_THRESHOLD` (0.4), `RECOGNITION_PREVIEW_DWELL_MS`
   (500), `RECOGNITION_PREVIEW_STILL_PX` (4 screen px), `recogniseBoardStroke(points)`,

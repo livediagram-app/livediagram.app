@@ -228,6 +228,17 @@ describe('useWhiteboardPenGesture', () => {
       expect(s.onCommitFreehand.mock.calls[0]![2].snapped).toEqual(shown);
     });
 
+    it('commits a drawn rectangle as a clean 5:3, measured as Shift is pressed', () => {
+      const s = locked();
+      s.stroke.snapTo({ ...circle, kind: 'square' });
+      s.send(pointer('pointermove', { x: 160, y: 90, shift: true }));
+      s.send(pointer('pointerup', { x: 160, y: 90, shift: true }));
+      const landed = s.onCommitFreehand.mock.calls[0]![2].snapped;
+      expect(landed.kind).toBe('square');
+      expect(landed.bbox.width).toBe(150);
+      expect(landed.bbox.height).toBeCloseTo(90, 9);
+    });
+
     it('takes Shift held on the press as held from the start', () => {
       vi.spyOn(console, 'debug').mockImplementation(() => {});
       const s = setup();

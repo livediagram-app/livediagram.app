@@ -89,4 +89,60 @@ describe('createLiveStroke, constrained', () => {
     s.constrain(false);
     expect(s.shaped()!.bbox).toEqual({ x: 0, y: 0, width: 150, height: 70 });
   });
+
+  const rect = (width: number, height: number) => ({
+    kind: 'square' as const,
+    bbox: { x: 0, y: 0, width, height },
+    confidence: 1,
+  });
+
+  it('snaps a rectangle to the ratio nearest its own as Shift takes effect', () => {
+    const square = createLiveStroke('mouse', 1);
+    square.push(100, 98);
+    square.snapTo(rect(100, 98));
+    square.push(120, 98);
+    square.constrain(true);
+    expect(square.shaped()!.bbox).toEqual({ x: 0, y: 0, width: 120, height: 120 });
+
+    const wide = createLiveStroke('mouse', 1);
+    wide.push(100, 60);
+    wide.snapTo(rect(100, 60));
+    wide.push(150, 60);
+    wide.constrain(true);
+    expect(wide.shaped()!.bbox.width).toBe(150);
+    expect(wide.shaped()!.bbox.height).toBeCloseTo(90, 9);
+  });
+
+  it('measures the rectangle as it is when Shift is pressed, not as it was recognised', () => {
+    const s = createLiveStroke('mouse', 1);
+    s.push(100, 100);
+    s.snapTo(rect(100, 100));
+    // Dragged free to 150 x 70 first: landscape by now.
+    s.push(150, 70);
+    s.constrain(true);
+    s.push(150, 71);
+    expect(s.shaped()!.bbox.width).toBe(150);
+    expect(s.shaped()!.bbox.height).toBeCloseTo(90, 9);
+  });
+
+  it('measures again each time Shift is pressed', () => {
+    const s = createLiveStroke('mouse', 1);
+    s.push(100, 60);
+    s.snapTo(rect(100, 60));
+    s.constrain(true);
+    s.constrain(false);
+    s.push(100, 100);
+    s.constrain(true);
+    expect(s.shaped()!.bbox).toEqual({ x: 0, y: 0, width: 100, height: 100 });
+  });
+
+  it('measures the recognised rectangle when Shift is already held as it locks', () => {
+    const s = createLiveStroke('mouse', 1);
+    s.constrain(true);
+    s.push(60, 100);
+    s.snapTo(rect(60, 100));
+    s.push(60, 120);
+    expect(s.shaped()!.bbox.height).toBe(120);
+    expect(s.shaped()!.bbox.width).toBeCloseTo(72, 9);
+  });
 });
