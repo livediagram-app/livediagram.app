@@ -16,6 +16,7 @@ function model(tool: WhiteboardTool = 'pen', over: Partial<WhiteboardDockModel> 
     pickSelect: vi.fn(),
     pickPen: vi.fn(),
     updatePen: vi.fn(),
+    resetPen: vi.fn(),
     pickEraser: vi.fn(),
     setEraserMode: vi.fn(),
     pickSticky: vi.fn(),
@@ -27,13 +28,14 @@ function model(tool: WhiteboardTool = 'pen', over: Partial<WhiteboardDockModel> 
   } as WhiteboardDockModel;
 }
 
-function renderDock(m = model(), extra: { canUndo?: boolean } = {}) {
+function renderDock(m = model(), extra: { canUndo?: boolean; showHistory?: boolean } = {}) {
   const onUndo = vi.fn();
   render(
     <WhiteboardDock
       model={m}
       ink="#1c1917"
       canUndo={extra.canUndo ?? true}
+      showHistory={extra.showHistory}
       canRedo={false}
       onUndo={onUndo}
       onRedo={vi.fn()}
@@ -257,5 +259,25 @@ describe('WhiteboardDock keys', () => {
       ['Line', 'L'],
       ['Arrow', 'A'],
     ]);
+  });
+});
+
+describe('WhiteboardDock extras', () => {
+  it('resets a pen to how it started on a right-click, without picking it up', () => {
+    const m = model();
+    renderDock(m);
+    const second = screen.getByRole('button', { name: /^Second pen/ });
+    const ev = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    second.dispatchEvent(ev);
+    expect(ev.defaultPrevented).toBe(true);
+    expect(m.resetPen).toHaveBeenCalledWith('second');
+    expect(m.pickPen).not.toHaveBeenCalled();
+  });
+
+  it('leaves Undo and Redo out when the corner cluster carries them', () => {
+    renderDock(model(), { showHistory: false });
+    expect(screen.queryByRole('button', { name: 'Undo' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Redo' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'More' })).toBeTruthy();
   });
 });

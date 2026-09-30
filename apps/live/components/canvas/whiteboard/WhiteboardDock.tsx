@@ -62,6 +62,8 @@ export type WhiteboardDockProps = {
   canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
+  // Off where the corner cluster already carries Undo / Redo (power user mode on a desktop).
+  showHistory?: boolean;
 };
 
 export function WhiteboardDock({
@@ -71,6 +73,7 @@ export function WhiteboardDock({
   canRedo,
   onUndo,
   onRedo,
+  showHistory = true,
 }: WhiteboardDockProps) {
   const [flyout, setFlyout] = useState<Flyout | null>(null);
   // The roving tab stop, by the button's data-dock-item key.
@@ -155,6 +158,8 @@ export function WhiteboardDock({
     disabled?: boolean;
     // The key that picks this tool (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts").
     shortcut?: string;
+    // A right-click (or the context-menu key) on the button.
+    onContext?: () => void;
   }) => (
     <Tooltip label={o.label}>
       <button
@@ -170,6 +175,15 @@ export function WhiteboardDock({
         tabIndex={focusKey === o.key ? 0 : -1}
         onFocus={() => setFocusKey(o.key)}
         onClick={(e) => o.onPress(e.currentTarget)}
+        onContextMenu={
+          o.onContext
+            ? (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                o.onContext!();
+              }
+            : undefined
+        }
         onPointerEnter={
           o.hoverOpens && o.flyoutKind
             ? (e) => {
@@ -222,6 +236,7 @@ export function WhiteboardDock({
           flyoutKind: pen.id,
           onPress: (el) =>
             inHand ? toggleFlyout(pen.id, el) : pickAndClose(() => model.pickPen(pen.id)),
+          onContext: () => model.resetPen(pen.id),
         })}
       </Fragment>
     );
@@ -438,21 +453,25 @@ export function WhiteboardDock({
           hoverOpens: true,
           onPress: (el) => toggleFlyout('shapes', el),
         })}
-        {divider('d5')}
-        {item({
-          key: 'undo',
-          label: 'Undo',
-          icon: <UndoGlyph />,
-          disabled: !canUndo,
-          onPress: onUndo,
-        })}
-        {item({
-          key: 'redo',
-          label: 'Redo',
-          icon: <RedoGlyph />,
-          disabled: !canRedo,
-          onPress: onRedo,
-        })}
+        {showHistory ? divider('d5') : null}
+        {showHistory
+          ? item({
+              key: 'undo',
+              label: 'Undo',
+              icon: <UndoGlyph />,
+              disabled: !canUndo,
+              onPress: onUndo,
+            })
+          : null}
+        {showHistory
+          ? item({
+              key: 'redo',
+              label: 'Redo',
+              icon: <RedoGlyph />,
+              disabled: !canRedo,
+              onPress: onRedo,
+            })
+          : null}
         {divider('d6')}
         {item({
           key: 'more',

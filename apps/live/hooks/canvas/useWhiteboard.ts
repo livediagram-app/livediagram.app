@@ -17,6 +17,7 @@ import type { CanvasTool } from '@/components/palette/CommandPalette.types';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import {
+  DEFAULT_WHITEBOARD_PREFS,
   loadWhiteboardPrefs,
   penTelemetryType,
   saveWhiteboardPrefs,
@@ -131,6 +132,17 @@ export function useWhiteboard(deps: Deps) {
     if (patch.width !== undefined) track('Whiteboard', 'Changed', 'PenWidth');
   };
 
+  // Right-click on a pen: back to how it started, colour and width (docs/specs/023-whiteboard/whiteboard.md "Pens").
+  const resetPen = (id: WhiteboardPenId) => {
+    const preset = DEFAULT_WHITEBOARD_PREFS.pens.find((p) => p.id === id);
+    const pen = prefs.pens.find((p) => p.id === id);
+    if (!preset || !pen || (pen.colour === preset.colour && pen.width === preset.width)) return;
+    const next = { ...prefs, pens: prefs.pens.map((p) => (p.id === id ? preset : p)) };
+    setPrefs(next);
+    if (tool === 'pen' && prefs.activePenId === id) armPen(next);
+    track('Whiteboard', 'Changed', 'PenReset');
+  };
+
   const pickEraser = () => {
     cancelDraw();
     selectCanvasTool('eraser');
@@ -176,6 +188,7 @@ export function useWhiteboard(deps: Deps) {
     pickSelect,
     pickPen,
     updatePen,
+    resetPen,
     pickEraser,
     setEraserMode,
     pickSticky: () => pickIntent({ type: 'sticky' }),

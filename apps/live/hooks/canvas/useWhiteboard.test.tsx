@@ -5,6 +5,7 @@ import type { Tab } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { useWhiteboard } from './useWhiteboard';
+import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -122,6 +123,20 @@ describe('useWhiteboard', () => {
 });
 
 describe('pen changes', () => {
+  it('resets a pen to its starting colour and width', () => {
+    const { hook } = setup(board());
+    act(() => hook.result.current.updatePen('second', { colour: '#9061f9', width: 2.5 }));
+    act(() => hook.result.current.resetPen('second'));
+    expect(hook.result.current.prefs.pens[1]).toEqual(DEFAULT_WHITEBOARD_PREFS.pens[1]);
+    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'PenReset');
+  });
+
+  it('does nothing for a pen already as it started', () => {
+    const { hook } = setup(board());
+    act(() => hook.result.current.resetPen('third'));
+    expect(track).not.toHaveBeenCalledWith('Whiteboard', 'Changed', 'PenReset');
+  });
+
   it('reports a new colour and a new width, never the colour itself', () => {
     const { hook } = setup(board());
     act(() => hook.result.current.updatePen('second', { colour: '#9061f9' }));

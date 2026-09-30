@@ -82,7 +82,10 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
      pen, never a finger) as well as on a press, without taking the keyboard
      focus, and closes a moment after the pointer leaves both it and the
      button; a press on a hover-opened flyout keeps it open.
-  7. **Undo** / **Redo**.
+  7. **Undo** / **Redo**. Not in **power user mode** on a desktop
+     ([Power user mode](../007-editor/power-user-mode.md)): the bottom-right
+     cluster already carries them there, so the dock drops the duplicate. On a
+     phone or tablet layout, and outside the mode, the dock keeps them.
   8. **More** (`…`): a flyout with no title of its own and two sections,
      each headed in the flyouts' small capitals and a row of the same switch
      buttons: **Background** (Plain / Dots / Grid) and **Drawing** (Basic /
@@ -121,6 +124,9 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   freehand renderer honours; choosing a border width from an element's menu
   afterwards replaces it. A pen stores its width as the preset's name, not its
   px, so retuning the px never reinterprets a stored choice.
+- **Right-clicking a pen resets it** to how it started (its starting colour
+  and Medium), without picking it up; a pen already as it started is left
+  alone. The context-menu key and Shift+F10 on the focused button do the same.
 - **Colours** in an adjustable pen's flyout: a small set of named colours,
   each at least 3:1 against both boards (WCAG 1.4.11), `WHITEBOARD_PEN_COLOURS`.
   The ink is not among them: it is the main pen's.
@@ -310,14 +316,14 @@ where people learn the keys), and carries it in `aria-keyshortcuts`.
 
 Preset-enum events only, never content, under a `Whiteboard` category:
 
-| Event                     | Action     | Type                                                  |
-| ------------------------- | ---------- | ----------------------------------------------------- |
-| A whiteboard created      | `Created`  | `Template` (wizard), `NewTab`, `Import`               |
-| A pen picked              | `Selected` | `Main`, `Second`, `Third`                             |
-| A pen changed             | `Changed`  | `PenColour`, `PenWidth` (a width on any pen)          |
-| Eraser mode switched      | `Changed`  | `EraserStroke`, `EraserPartial`                       |
-| Shape recognition toggled | `Toggled`  | `RecognitionOn`, `RecognitionOff`                     |
-| Background changed        | `Changed`  | `BackgroundPlain`, `BackgroundDots`, `BackgroundGrid` |
+| Event                     | Action     | Type                                                     |
+| ------------------------- | ---------- | -------------------------------------------------------- |
+| A whiteboard created      | `Created`  | `Template` (wizard), `NewTab`, `Import`                  |
+| A pen picked              | `Selected` | `Main`, `Second`, `Third`                                |
+| A pen changed             | `Changed`  | `PenColour`, `PenWidth` (a width on any pen), `PenReset` |
+| Eraser mode switched      | `Changed`  | `EraserStroke`, `EraserPartial`                          |
+| Shape recognition toggled | `Toggled`  | `RecognitionOn`, `RecognitionOff`                        |
+| Background changed        | `Changed`  | `BackgroundPlain`, `BackgroundDots`, `BackgroundGrid`    |
 
 A pen reports its place, never its colour. Strokes, stickies and text report
 through the ordinary `Element` / `Added` events.

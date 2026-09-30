@@ -26,6 +26,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone picked up a whiteboard's third pen (red unless they changed it).",
   'Whiteboard|Changed|PenColour': "Someone gave a whiteboard's second or third pen a new colour.",
   'Whiteboard|Changed|PenWidth': "Someone changed the width of one of a whiteboard's pens.",
+  'Whiteboard|Changed|PenReset':
+    "Someone reset one of a whiteboard's pens to its starting colour and width.",
   'Whiteboard|Changed|EraserStroke': "Someone set a whiteboard's eraser to remove whole strokes.",
   'Whiteboard|Changed|EraserPartial':
     "Someone set a whiteboard's eraser to rub out only the part of a stroke under it.",
