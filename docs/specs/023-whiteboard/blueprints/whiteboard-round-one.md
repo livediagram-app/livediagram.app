@@ -345,19 +345,34 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 
 ### Pen strokes: exact thickness, no guides
 
-- `FreehandSvg` draws a pen stroke (`isPenStroke`: `penWidth` set, not a highlighter) as the filled
-  outline `penStrokePath(freehandPenStroke(el))`, `fill` = the stroke colour, `stroke="none"`, in
-  an svg of class `FREEHAND_SVG_CLASS` with a viewBox the size of the element: canvas px, scaled by
-  the canvas zoom in every engine. Other strokes keep the 100-unit viewBox, the Catmull-Rom path and
+- `FreehandSvg` draws a pen stroke (`isPenStroke`: `penWidth` set, not a highlighter) as
+  `penStrokeSvg(el)`: the filled outline `d = penStrokePath(freehandPenStroke(el, { x, y }))` in
+  canvas coordinates, `fill` = the stroke colour, `stroke="none"`, in an svg of class
+  `FREEHAND_SVG_CLASS` with `viewBox = "x y max(w,1) max(h,1)"` (the element's own box on the
+  board): canvas px, scaled by the canvas zoom in every engine, and the outline's numbers never
+  depend on where the box is. Other strokes keep the 100-unit viewBox, the Catmull-Rom path and
   `non-scaling-stroke`.
 - `svgFreehandShape` (the export twin) writes the same outline from `freehandPenStroke(el, { x, y })`
   with numbers rounded by `r2`: `<path d="…" fill="colour" stroke="none"/>`.
 - `LiveInk` draws the in-flight pen stroke inside the canvas's transformed wrapper (`Canvas.tsx`,
   after the element layer, via `WhiteboardPenPreview`) as exactly the committed `FreehandSvg`: each
   update takes `freehandGeometry(points)` (what `createFreehand` gives), writes a `div.absolute` at
-  its box and an svg of class `FREEHAND_SVG_CLASS` with its viewBox, and sets the path to
-  `penStrokePath(freehandPenStroke({ ...geometry, penWidth, pressures, streamline }))`. The same input,
-  function and layout in the same layer: release changes no pixel.
+  its box and sets the svg's viewBox and path from
+  `penStrokeSvg({ ...geometry, penWidth, pressures, streamline })`. The same input, function and
+  layout in the same layer: release changes no pixel.
+- **Settled ink stays still** (spec "Ink the smoothing has settled never moves while drawing"). The
+  tip is the stretch of the centre line from the last streamlined point to the pointer, with its end
+  cap; perfect-freehand joins each point's sides along the average of its own and the next
+  direction and the path curves through the midpoints of the outline, so the outline's curve into
+  the last streamlined point turns with the tip too (the tip in pixels runs from the streamlined
+  point before it). Behind that nothing moves, by three guards:
+  - `freehandGeometry` puts the box on whole canvas px (`x = floor(minX − 1)`,
+    `y = floor(minY − 1)`, `width = ceil(maxX + 1) − x`, `height = ceil(maxY + 1) − y`). Layout
+    snaps a positioned box and its svg to the pixel grid; a fractional box that moved or grew with
+    every sample re-rasterised the whole path at a new sub-pixel offset (the whole stroke shook).
+  - `penStrokeSvg` draws in canvas coordinates, so the float numbers the rasteriser gets for
+    settled ink are the same whether the box moved or not.
+  - `penStrokeOutline` cancels perfect-freehand's end trim (below).
 - `isWhiteboardPenIntent(intent)` (`draw-mode.ts`): `useCanvasDrawGesture` starts the stroke at the
   raw pointer (no `snapDrawStart`) and shows no pre-press dot; `computeDrawGuides` returns no hover
   or stroke guides.
@@ -408,12 +423,19 @@ other pointer records none (D10, D14). `streamline = PEN_STREAMLINE[pointer]`.
   `last: true`. perfect-freehand's radius at pressure p is `size · easing(0.5 − 0.6 · (0.5 − p))`,
   so the width is exactly `width` at p = 0.5 (`penPressureWidth(width, p)`), 0.437× at 0 and
   1.345× at 1.
-- `penStrokeOutline` = `getStroke(input, options)`; `penStrokePath(stroke, fmt)` =
+- `penStrokeOutline` = `getStrokeOutlinePoints(untrimmed(getStrokePoints(input, options)), options)`:
+  perfect-freehand's `getStroke` with its end trim cancelled. perfect-freehand leaves out of the
+  outline every point closer than `END_NOISE_THRESHOLD` (3 canvas px) to the end of the line, so a
+  slow stroke's settled points dropped out and came back as the end moved; `untrimmed` adds
+  `PERFECT_FREEHAND_END_NOISE` to the last point's `runningLength` (read only by that trim and by
+  tapers, which the pen has none of), so no earlier point is ever trimmed.
+- `penStrokePath(stroke, fmt)` =
   `M p0 Q p0 mid(p0,p1) p1 mid(p1,p2) … pn mid(pn,p0) L p0 Z` (Excalidraw's getSvgPathFromStroke);
   no points: `''`.
 - `penStrokeCentreline` = `getStrokePoints(input, options)`'s points: what recognition reads.
 - `freehandPenStroke(el, origin = {0, 0})`: points `origin + (nx · max(width, 1), ny · max(height,
 1))`, `pressures`, `width = penWidth`, `streamline = el.streamline ?? 0` (D11).
+- `penStrokeSvg(el)`: `{ viewBox: "x y max(w,1) max(h,1)", d: penStrokePath(freehandPenStroke(el, { x, y })) }`.
 
 **Render** (`LiveInk`, inside the canvas's transformed layer): see "Pen strokes" above; the whole
 outline is rebuilt per update, as Excalidraw does.
@@ -471,7 +493,7 @@ export function eraseStrokePart(
 export function nearestBorderStroke(px: number): BorderStroke;
 // FreehandElement gains `pressures?: number[]` (one per point, 0 to 1) and `streamline?: number` (0 to 1).
 export type FreehandGeometry = Pick<FreehandElement, 'x' | 'y' | 'width' | 'height' | 'points'>;
-export function freehandGeometry(rawPoints: readonly Point[]): FreehandGeometry; // createFreehand's box
+export function freehandGeometry(rawPoints: readonly Point[]): FreehandGeometry; // createFreehand's box, whole px
 export type PenPointerKind = 'pen' | 'mouse' | 'touch';
 export const PEN_STREAMLINE: Readonly<Record<PenPointerKind, number>>;
 export const PEN_THINNING: number;
@@ -495,6 +517,11 @@ export type PenStrokeSource = Pick<
   'points' | 'width' | 'height' | 'pressures' | 'penWidth' | 'streamline'
 >;
 export function freehandPenStroke(el: PenStrokeSource, origin?: Point): PenStroke;
+export function penStrokeSvg(el: PenStrokeSource & Pick<FreehandElement, 'x' | 'y'>): {
+  viewBox: string;
+  d: string;
+};
+export const PERFECT_FREEHAND_END_NOISE: number;
 
 // apps/live
 export type WhiteboardPenId = 'main' | 'second' | 'third';
@@ -663,6 +690,9 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Ink projection table                                | `packages/document/src/whiteboard.test.ts`                                               |
 | Stroke touch and partial split                      | `packages/document/src/whiteboard-stroke.test.ts`                                        |
 | Pen ink: width at pressure, outline, centre line    | `packages/document/src/pen-stroke.test.ts`                                               |
+| Settled ink unchanged as samples arrive (no trim)   | `packages/document/src/pen-stroke.test.ts`                                               |
+| Freehand box on whole canvas px, points round-trip  | `packages/document/src/freehand.test.ts`                                                 |
+| Pen stroke svg in canvas coordinates                | `apps/live/components/canvas/freehand-svg.test.tsx`                                      |
 | Pressures and streamline validated                  | `packages/document/src/validate.test.ts`                                                 |
 | Export draws the pen outline                        | `packages/document/src/svg-render.test.ts`, `svg-render-shapes.test.ts`                  |
 | Partial erase keeps pressures and streamline        | `packages/document/src/whiteboard-stroke.test.ts`                                        |
@@ -690,23 +720,24 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Constants and configuration
 
-| Constant                          | Value                            | Provenance      | Safe range      |
-| --------------------------------- | -------------------------------- | --------------- | --------------- |
-| `WHITEBOARD_BOARD.light / dark`   | `#fbfaf7` / `#0d121a`            | spec values     | contrast >= 4.5 |
-| `WHITEBOARD_INK.light / dark`     | `#1c1917` / `#e2e8f0`            | spec values     | contrast >= 4.5 |
-| `WHITEBOARD_PATTERN.light / dark` | `#d6d3cb` / `#1c2735`            | D5, spec (dark) | faint, visible  |
-| `WHITEBOARD_PEN_WIDTHS`           | 1, 1.5, 2.5 px                   | spec            | 1 to 100        |
-| `WHITEBOARD_ERASER_RADIUS_PX`     | stroke 10, partial 16            | D6              | 4 to 48         |
-| Partial densify step              | `max(r / 2, 1)` canvas px        | D7              |                 |
-| Crossing bisection steps          | 12                               | D7              | 8 to 20         |
-| Recognition threshold             | 0.4                              | Shape Pen       |                 |
-| Storage key                       | `livediagram:v2:whiteboard-pens` | spec            |                 |
-| `PEN_STREAMLINE`                  | mouse 0.5, pen 0.2, touch 0.2    | Excalidraw      | 0 to 1          |
-| `PEN_THINNING`                    | 0.6                              | Excalidraw      | 0 to 1          |
-| `PEN_SMOOTHING`                   | 0.5                              | Excalidraw      | 0 to 1          |
-| `PEN_MID_PRESSURE`                | 0.5                              | Pointer Events  | 0 to 1          |
-| perfect-freehand `size`           | `width / (2 · sin(π/4))`         | calibration     | derived         |
-| perfect-freehand `easing`         | `t => sin(t · π / 2)`            | Excalidraw      |                 |
+| Constant                          | Value                            | Provenance       | Safe range      |
+| --------------------------------- | -------------------------------- | ---------------- | --------------- |
+| `WHITEBOARD_BOARD.light / dark`   | `#fbfaf7` / `#0d121a`            | spec values      | contrast >= 4.5 |
+| `WHITEBOARD_INK.light / dark`     | `#1c1917` / `#e2e8f0`            | spec values      | contrast >= 4.5 |
+| `WHITEBOARD_PATTERN.light / dark` | `#d6d3cb` / `#1c2735`            | D5, spec (dark)  | faint, visible  |
+| `WHITEBOARD_PEN_WIDTHS`           | 1, 1.5, 2.5 px                   | spec             | 1 to 100        |
+| `WHITEBOARD_ERASER_RADIUS_PX`     | stroke 10, partial 16            | D6               | 4 to 48         |
+| Partial densify step              | `max(r / 2, 1)` canvas px        | D7               |                 |
+| Crossing bisection steps          | 12                               | D7               | 8 to 20         |
+| Recognition threshold             | 0.4                              | Shape Pen        |                 |
+| Storage key                       | `livediagram:v2:whiteboard-pens` | spec             |                 |
+| `PEN_STREAMLINE`                  | mouse 0.5, pen 0.2, touch 0.2    | Excalidraw       | 0 to 1          |
+| `PEN_THINNING`                    | 0.6                              | Excalidraw       | 0 to 1          |
+| `PEN_SMOOTHING`                   | 0.5                              | Excalidraw       | 0 to 1          |
+| `PEN_MID_PRESSURE`                | 0.5                              | Pointer Events   | 0 to 1          |
+| `PERFECT_FREEHAND_END_NOISE`      | 3                                | perfect-freehand | its value       |
+| perfect-freehand `size`           | `width / (2 · sin(π/4))`         | calibration      | derived         |
+| perfect-freehand `easing`         | `t => sin(t · π / 2)`            | Excalidraw       |                 |
 
 ## Defaults ledger
 

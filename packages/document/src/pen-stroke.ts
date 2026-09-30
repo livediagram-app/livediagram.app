@@ -3,9 +3,15 @@
 // pressure per point when the pen reported one, its pen width and its streamline; one pure
 // function turns that into a filled outline, for the stroke being drawn, the stroke that lands and
 // the SVG export alike. `last: true` always, so the stroke being drawn is already the finished one
-// and release reshapes nothing.
+// and release reshapes nothing. Ink the smoothing has settled never moves as samples arrive: only
+// the tip, from the last streamlined point to the pointer with its end cap, reshapes.
 
-import { getStroke, getStrokePoints, type StrokeOptions } from 'perfect-freehand';
+import {
+  getStrokeOutlinePoints,
+  getStrokePoints,
+  type StrokeOptions,
+  type StrokePoint,
+} from 'perfect-freehand';
 import type { Point } from './geometry-primitives';
 import type { FreehandElement } from './element-types';
 
@@ -26,6 +32,11 @@ export const PEN_SMOOTHING = 0.5;
 // The pressure a stroke without one draws at: every mouse stroke, a finger
 // without force, and pen strokes drawn before pressure was recorded.
 export const PEN_MID_PRESSURE = 0.5;
+// perfect-freehand's END_NOISE_THRESHOLD (canvas px, not exported): it leaves out of the outline
+// every point closer than this to the end of the line, so while a stroke is drawn slowly the
+// settled points behind the tip dropped out and came back as each sample moved the end. The
+// outline cancels it by carrying the last point this much further along the line.
+export const PERFECT_FREEHAND_END_NOISE = 3;
 
 const easing = (t: number) => Math.sin((t * Math.PI) / 2);
 
@@ -75,10 +86,25 @@ function optionsOf(stroke: PenStroke): StrokeOptions {
   };
 }
 
-/** The stroke's outline polygon. */
+// The centre line with its end trim cancelled: the last point's running length is the only one
+// the outline compares against END_NOISE (no taper reads it), so moving it on by the threshold
+// keeps every earlier point in the outline.
+function untrimmed(points: StrokePoint[]): StrokePoint[] {
+  const last = points[points.length - 1];
+  if (!last || points.length < 2) return points;
+  return [
+    ...points.slice(0, -1),
+    { ...last, runningLength: last.runningLength + PERFECT_FREEHAND_END_NOISE },
+  ];
+}
+
+/** The stroke's outline polygon: perfect-freehand's getStroke, without its end trim. */
 export function penStrokeOutline(stroke: PenStroke): Point[] {
   if (stroke.points.length === 0) return [];
-  return getStroke(inputOf(stroke), optionsOf(stroke)).map(([x, y]) => ({ x: x!, y: y! }));
+  const options = optionsOf(stroke);
+  return getStrokeOutlinePoints(untrimmed(getStrokePoints(inputOf(stroke), options)), options).map(
+    ([x, y]) => ({ x: x!, y: y! }),
+  );
 }
 
 /**
@@ -115,18 +141,18 @@ export function isPenStroke(el: FreehandElement): boolean {
   return el.penWidth !== undefined && el.pen !== 'highlighter';
 }
 
-/**
- * A pen stroke element as perfect-freehand input: its points in its own box, or on the canvas
- * from `origin` (the element's x, y). A stroke stored before pressure and streamline were
- * recorded was already smoothed when it landed, so it draws with no streamline at the middle
- * pressure.
- */
 // The fields of a freehand its pen ink reads (so the live ink can pass its geometry).
 export type PenStrokeSource = Pick<
   FreehandElement,
   'points' | 'width' | 'height' | 'pressures' | 'penWidth' | 'streamline'
 >;
 
+/**
+ * A pen stroke element as perfect-freehand input: its points in its own box, or on the canvas
+ * from `origin` (the element's x, y). A stroke stored before pressure and streamline were
+ * recorded was already smoothed when it landed, so it draws with no streamline at the middle
+ * pressure.
+ */
 export function freehandPenStroke(el: PenStrokeSource, origin: Point = { x: 0, y: 0 }): PenStroke {
   const w = Math.max(el.width, 1);
   const h = Math.max(el.height, 1);
@@ -135,5 +161,21 @@ export function freehandPenStroke(el: PenStrokeSource, origin: Point = { x: 0, y
     pressures: el.pressures,
     width: el.penWidth ?? 1,
     streamline: el.streamline ?? 0,
+  };
+}
+
+/**
+ * The svg a pen stroke element draws in, on the canvas and while it is drawn (LiveInk): a viewBox
+ * on the element's own box in canvas coordinates, one unit a canvas px, and the outline where it is
+ * on the board. So the path's numbers never depend on where the box is: as a stroke grows and its
+ * box moves, the ink already drawn reaches the rasteriser at the same coordinates.
+ */
+export function penStrokeSvg(el: PenStrokeSource & Pick<FreehandElement, 'x' | 'y'>): {
+  viewBox: string;
+  d: string;
+} {
+  return {
+    viewBox: `${el.x} ${el.y} ${Math.max(el.width, 1)} ${Math.max(el.height, 1)}`,
+    d: penStrokePath(freehandPenStroke(el, { x: el.x, y: el.y })),
   };
 }

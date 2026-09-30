@@ -10,6 +10,7 @@ import {
   penStrokeOutline,
   penStrokePath,
   penStrokeSize,
+  penStrokeSvg,
   type PenStroke,
 } from './index';
 
@@ -124,6 +125,85 @@ describe('penStrokePath', () => {
   });
 });
 
+// Ink the smoothing has settled never moves while drawing (docs/specs/023-whiteboard/whiteboard.md
+// "Pens"): the tip is the stretch from the last streamlined point to the pointer, with its end cap;
+// every outline point farther from it than the stroke's widest radius is exactly where it was.
+describe('settled ink', () => {
+  const distToSegment = (p: Point, a: Point, b: Point) => {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const l2 = dx * dx + dy * dy;
+    const t = l2 === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2));
+    return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+  };
+  // A slightly wobbly diagonal at `step` px per sample, down-right or up-left.
+  const wobbly = (step: number, dir: 1 | -1): Point[] =>
+    Array.from({ length: 40 }, (_, i) => ({
+      x: 100 + dir * i * step + 1.1 * Math.cos(i * 1.3),
+      y: 100 + dir * i * step * 0.75 + 1.3 * Math.sin(i * 0.9),
+    }));
+  const pressures = Array.from({ length: 40 }, (_, i) => 0.1 + 0.45 * (1 + Math.sin(i * 0.23)));
+  const cases = [0.5, 3, 12].flatMap((step) =>
+    ([1, -1] as const).flatMap((dir) =>
+      [PEN_STREAMLINE.mouse, PEN_STREAMLINE.pen].flatMap((streamline) =>
+        [false, true].map((pressure) => ({ step, dir, streamline, pressure })),
+      ),
+    ),
+  );
+
+  it.each(cases)(
+    'keeps every settled outline point as a sample arrives (step $step, dir $dir, streamline $streamline, pressure $pressure)',
+    ({ step, dir, streamline, pressure }) => {
+      const points = wobbly(step, dir);
+      const width = 1.5;
+      const widest = penPressureWidth(width, 1) / 2;
+      const at = (n: number): PenStroke => ({
+        points: points.slice(0, n),
+        pressures: pressure ? pressures.slice(0, n) : undefined,
+        width,
+        streamline,
+      });
+      const moved: string[] = [];
+      // From three samples on: with two, the whole stroke is still the tip.
+      for (let n = 3; n < points.length; n++) {
+        const next = new Set(penStrokeOutline(at(n + 1)).map((p) => `${p.x},${p.y}`));
+        const centre = penStrokeCentreline(at(n));
+        const settledEnd = centre[centre.length - 2]!;
+        const pointer = centre[centre.length - 1]!;
+        for (const p of penStrokeOutline(at(n))) {
+          if (distToSegment(p, settledEnd, pointer) <= widest) continue;
+          if (!next.has(`${p.x},${p.y}`)) moved.push(`n=${n} (${p.x}, ${p.y})`);
+        }
+      }
+      expect(moved).toEqual([]);
+    },
+  );
+
+  it('keeps the settled ink on the canvas through the growing box, as the live ink draws it', () => {
+    const points = wobbly(3, -1);
+    const onCanvas = (n: number) => {
+      const el = createFreehand(points.slice(0, n), false);
+      return penStrokeOutline(
+        freehandPenStroke({ ...el, penWidth: 1.5, streamline: 0.5 }, { x: el.x, y: el.y }),
+      );
+    };
+    for (let n = 10; n < points.length; n++) {
+      const before = onCanvas(n);
+      const after = onCanvas(n + 1);
+      // The start cap and the first stretch of the left side are long settled.
+      for (let i = 0; i < 8; i++) {
+        expect(after[i]!.x).toBeCloseTo(before[i]!.x, 9);
+        expect(after[i]!.y).toBeCloseTo(before[i]!.y, 9);
+      }
+      const tail = (o: Point[]) => o.slice(-8);
+      tail(after).forEach((p, i) => {
+        expect(p.x).toBeCloseTo(tail(before)[i]!.x, 9);
+        expect(p.y).toBeCloseTo(tail(before)[i]!.y, 9);
+      });
+    }
+  });
+});
+
 describe('penStrokeCentreline', () => {
   it('is the streamlined centre: smoother than the input, from its first point', () => {
     const zig = Array.from({ length: 30 }, (_, i) => ({ x: i * 3, y: i % 2 ? 1 : -1 }));
@@ -156,6 +236,13 @@ describe('freehandPenStroke', () => {
       expect(p.y).toBeCloseTo(raw[i]!.y, 9);
     });
     expect(local).toMatchObject({ width: 2.5, pressures: [0.2, 0.5, 0.9], streamline: 0.2 });
+  });
+
+  it('draws in canvas coordinates: a viewBox on its own box, the outline where it is on the board', () => {
+    const moved = { ...el, x: 7, y: -3 };
+    const svg = penStrokeSvg(moved);
+    expect(svg.viewBox).toBe(`7 -3 ${el.width} ${el.height}`);
+    expect(svg.d).toBe(penStrokePath(freehandPenStroke(moved, { x: 7, y: -3 })));
   });
 
   it('draws an older pen stroke, without pressures or streamline, as it stored it: no streamline', () => {

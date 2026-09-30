@@ -3,9 +3,8 @@ import {
   BORDER_STROKE_PX,
   BROWSER_CHROME,
   catmullRomToBezierPath,
-  freehandPenStroke,
   isPenStroke,
-  penStrokePath,
+  penStrokeSvg,
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
   type FreehandElement,
@@ -116,18 +115,14 @@ export function FreehandSvg({
   // right behaviour for a degenerate single-click "stroke".
   // A whiteboard pen stroke (docs/specs/023-whiteboard/whiteboard.md "Pens") is ink on the board:
   // the filled perfect-freehand outline of its raw points and pressures (pen-stroke.ts), in canvas
-  // px in a viewBox the size of the element, so the canvas zoom scales it like everything else,
-  // identically in every browser. The stroke being drawn (whiteboard/LiveInk.tsx) is this same svg
-  // in the same layer, so release changes no pixel.
+  // coordinates in a viewBox on the element's own box (penStrokeSvg), so the canvas zoom scales it
+  // like everything else, identically in every browser, and the outline's numbers never depend on
+  // where the box is. The stroke being drawn (whiteboard/LiveInk.tsx) is this same svg in the same
+  // layer, so its settled ink stays still as it grows and release changes no pixel.
   if (isPenStroke(element)) {
-    const outline = penStrokePath(freehandPenStroke(element));
+    const { viewBox, d: outline } = penStrokeSvg(element);
     return (
-      <svg
-        className={FREEHAND_SVG_CLASS}
-        viewBox={`0 0 ${Math.max(element.width, 1)} ${Math.max(element.height, 1)}`}
-        preserveAspectRatio="none"
-        aria-hidden
-      >
+      <svg className={FREEHAND_SVG_CLASS} viewBox={viewBox} preserveAspectRatio="none" aria-hidden>
         <path d={outline} fill={stroke} stroke="none" />
         {hitWidth !== undefined ? (
           // Only the drawn line picks the stroke (docs/specs/023-whiteboard/whiteboard.md "Selecting"):

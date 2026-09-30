@@ -27,8 +27,10 @@ describe('FreehandSvg', () => {
     const { container } = render(<FreehandSvg element={el} fill="none" stroke="#000" />);
     const svg = container.querySelector('svg')!;
     const path = container.querySelector('path')!;
-    expect(svg.getAttribute('viewBox')).toBe(`0 0 ${el.width} ${el.height}`);
-    expect(path.getAttribute('d')).toBe(penStrokePath(freehandPenStroke(el)));
+    // In canvas coordinates: the viewBox is the element's own box on the board, so the outline's
+    // numbers never depend on where the box is (a growing stroke's ink stays still).
+    expect(svg.getAttribute('viewBox')).toBe(`${el.x} ${el.y} ${el.width} ${el.height}`);
+    expect(path.getAttribute('d')).toBe(penStrokePath(freehandPenStroke(el, { x: el.x, y: el.y })));
     expect(path.getAttribute('fill')).toBe('#000');
     expect(path.getAttribute('stroke')).toBe('none');
   });

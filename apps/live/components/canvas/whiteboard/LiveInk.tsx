@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef } from 'react';
-import { freehandGeometry, freehandPenStroke, penStrokePath } from '@livediagram/document';
+import { freehandGeometry, penStrokeSvg } from '@livediagram/document';
 import { FREEHAND_SVG_CLASS } from '@/components/canvas/boxed-element-overlays';
 import type { LiveStroke } from '@/lib/live-stroke';
 
@@ -17,11 +17,13 @@ type LiveInkProps = {
 // The stroke being drawn with a whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "Pens";
 // blueprint whiteboard-round-one "Pen ink"). It sits inside the canvas's transformed layer, beside
 // the committed elements, and IS the stroke it lands as: the same geometry (`freehandGeometry`, what
-// `createFreehand` gives), a box at that geometry's place, the same svg and viewBox, and the same
-// filled perfect-freehand outline (`penStrokePath` of `freehandPenStroke`) that FreehandSvg draws.
-// So the one layer rasterises both alike and release changes no pixel. Each update rewrites the box
-// and the path straight in the DOM, from the stroke's subscriber inside the input handler, with no
-// React render; like Excalidraw, the whole outline is redrawn each time.
+// `createFreehand` gives), a box at that geometry's place, and the same svg, viewBox and filled
+// perfect-freehand outline (`penStrokeSvg`) that FreehandSvg draws. So the one layer rasterises
+// both alike and release changes no pixel. The box sits on whole canvas px and the outline is in
+// canvas coordinates, so as the box grows the ink the smoothing has settled stays pixel-still.
+// Each update rewrites the box and the path straight in the DOM, from the stroke's subscriber
+// inside the input handler, with no React render; like Excalidraw, the whole outline is redrawn
+// each time.
 export function LiveInk({ stroke, colour, width, hidden }: LiveInkProps) {
   const frameRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -38,14 +40,14 @@ export function LiveInk({ stroke, colour, width, hidden }: LiveInkProps) {
       frame.style.top = `${geometry.y}px`;
       frame.style.width = `${geometry.width}px`;
       frame.style.height = `${geometry.height}px`;
-      svg.setAttribute('viewBox', `0 0 ${geometry.width} ${geometry.height}`);
-      const ink = freehandPenStroke({
+      const ink = penStrokeSvg({
         ...geometry,
         penWidth: width,
         pressures: stroke.pressures ? [...stroke.pressures] : undefined,
         streamline: stroke.streamline,
       });
-      path.setAttribute('d', penStrokePath(ink));
+      svg.setAttribute('viewBox', ink.viewBox);
+      path.setAttribute('d', ink.d);
     };
     draw();
     const unsubscribe = stroke.subscribe(draw);
