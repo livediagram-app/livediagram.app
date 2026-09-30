@@ -5,6 +5,7 @@ import { defineConfig, devices } from '@playwright/test';
 // or a developer's already-running `pnpm dev` stack when one is up
 // (reuseExistingServer below).
 const isCI = !!process.env.CI;
+const CI_WORKERS = 4;
 // The signed-in specs (e2e/clerk-stub/, docs/specs/014-identity/blueprints/profile-picture.md) need
 // the Clerk-enabled export (`pnpm build:clerk-stub`). They run as their own invocation
 // (`pnpm test:e2e:clerk-stub`) on their own ports, so a guest stack already up on :3002 is never
@@ -21,10 +22,11 @@ export default defineConfig({
   // fail fast rather than burn CI minutes on a hung run.
   timeout: 30_000,
   expect: { timeout: 10_000 },
-  // Parallel locally for authoring speed; serialized in CI so one
-  // worker's api-worker + D1 state can't race another's.
-  fullyParallel: !isCI,
-  workers: isCI ? 1 : undefined,
+  // Every test opens a fresh browser context, so a fresh guest owner with its own documents; tests
+  // share the stack but never its data, and run in parallel everywhere. CI pins one worker per
+  // vCPU of the GitHub runner.
+  fullyParallel: true,
+  workers: isCI ? CI_WORKERS : undefined,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
   reporter: isCI ? [['github'], ['list'], ['html', { open: 'never' }]] : [['list']],

@@ -39,9 +39,11 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Focused tests, not a matrix.** Each spec file proves what only a browser
   can show for one feature; breadth and edge cases stay in unit tests, where
   they are cheap.
-- `workers: 1` and `retries: 1` in CI, a 30-second per-test timeout and a
-  15-minute job timeout, so a hung run fails fast instead of burning minutes.
-- `fullyParallel` locally for authoring speed.
+- **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
+  and Playwright's default locally. Tests stay independent because each opens a fresh browser
+  context, so a fresh guest owner whose documents no other test sees.
+- `retries: 1` in CI, a 30-second per-test timeout and a 15-minute job timeout, so a hung run
+  fails fast instead of burning minutes.
 - **No model downloads.** The photo-import tests stub the handwriting reader
   and serve the boundary model's weights from the app itself; nothing pulls
   weights over the wire.
