@@ -13,7 +13,7 @@ import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
-import { FavouriteMarker, FolderChip, VisibilityBadge } from './document-badges';
+import { FavouriteMarker, FolderChip, VisibilityBadge, useIconOnlyBadges } from './document-badges';
 import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
 import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { SYNTHETIC_FOLDERS, visibleSyntheticFolders } from './synthetic-folders';
@@ -131,6 +131,7 @@ function DocumentCard(
     favourite,
   } = props;
   const menu = useRowMenu({ disabled: renaming });
+  const iconOnlyBadges = useIconOnlyBadges();
   const href = hrefForDocument(liveDoc);
   const ownerLabel = showOwner ? ownerLabelFor(liveDoc) : null;
   const thumbnail = (
@@ -178,12 +179,18 @@ function DocumentCard(
           )}
         </div>
         {/* Keep every column the list shows: owner, visibility, updated. */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          {showVisibilityBadge ? <VisibilityBadge document={liveDoc} /> : null}
+        {/* One line: the badges keep their size, the time gives way with an
+            ellipsis, the sync mark holds the right edge. */}
+        <div className="flex min-w-0 items-center gap-x-2 [&>*]:shrink-0">
+          {showVisibilityBadge ? (
+            <VisibilityBadge document={liveDoc} iconOnly={iconOnlyBadges} />
+          ) : null}
           {favourite ? <FavouriteMarker /> : null}
           <DriveNoticeMarker documentId={liveDoc.id} />
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
-          <RelativeTimeChip at={liveDoc.savedAt} />
+          <span className="min-w-0 !shrink truncate">
+            <RelativeTimeChip at={liveDoc.savedAt} />
+          </span>
           <span className="ml-auto">
             <DocumentSyncMark documentId={liveDoc.id} savedAt={liveDoc.savedAt} />
           </span>

@@ -8,7 +8,7 @@ import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
 import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
-import { FavouriteMarker, FolderChip, VisibilityBadge } from './document-badges';
+import { FavouriteMarker, FolderChip, VisibilityBadge, useIconOnlyBadges } from './document-badges';
 import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
 import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
@@ -31,6 +31,7 @@ export function DocumentRow(props: DocumentEntryProps) {
     showVisibility = true,
   } = props;
   const menu = useRowMenu({ disabled: renaming });
+  const iconOnlyBadges = useIconOnlyBadges();
   const href = hrefForDocument(liveDoc);
 
   const titleNode = renaming ? (
@@ -87,11 +88,13 @@ export function DocumentRow(props: DocumentEntryProps) {
         </span>
       ) : null}
       <span className="hidden sm:block">
-        {showVisibility ? <VisibilityBadge document={liveDoc} /> : null}
+        {showVisibility ? <VisibilityBadge document={liveDoc} iconOnly={iconOnlyBadges} /> : null}
       </span>
       {/* The sync mark at the column's right edge, so the marks line up. */}
-      <span className="flex items-center justify-between gap-1.5">
-        <RelativeTimeChip at={liveDoc.savedAt} />
+      <span className="flex min-w-0 items-center justify-between gap-1.5">
+        <span className="min-w-0 truncate">
+          <RelativeTimeChip at={liveDoc.savedAt} />
+        </span>
         <DocumentSyncMark documentId={liveDoc.id} savedAt={liveDoc.savedAt} />
       </span>
       {renaming ? (
