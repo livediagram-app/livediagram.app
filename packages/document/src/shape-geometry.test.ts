@@ -63,13 +63,28 @@ describe('the shape geometry table', () => {
     (kind) => {
       const svg = renderElementsToSvg(tabOf([shapeAt(kind)]));
       const geometry = shapeGeometry(kind, 160 / 100)!;
-      const fit = boxFit(geometry, { x: 10, y: 20, width: 160, height: 100 });
+      // A stroke-inside kind lands in the box inset by half the medium (2px) stroke.
+      const box = geometry.strokeInside
+        ? { x: 11, y: 21, width: 158, height: 98 }
+        : { x: 10, y: 20, width: 160, height: 100 };
+      const fit = boxFit(geometry, box);
       for (const part of geometry.parts) expect(svg).toContain(partMark(fitShapePart(part, fit)));
       // Mapped into the box, never a stretched viewBox: resvg (the MCP
       // preview) ignores non-scaling-stroke and would scale the border.
       expect(svg).not.toContain('preserveAspectRatio="none"');
     },
   );
+
+  it('keeps the stroke inside the box for every shape drawn to its edge', () => {
+    expect(SHAPE_GEOMETRY_KINDS.filter((kind) => shapeGeometry(kind)?.strokeInside)).toEqual([
+      'diamond',
+      'parallelogram',
+      'hexagon',
+      'document',
+      'cylinder',
+      'cloud',
+    ]);
+  });
 
   it('maps a stretched part into the box, stroke untouched', () => {
     const frame = shapeGeometry('frame', 1.6)!;

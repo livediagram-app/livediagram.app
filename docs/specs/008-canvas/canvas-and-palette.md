@@ -540,7 +540,7 @@ Twenty-one general-purpose and device shape kinds are covered here, all rendered
 
 Styling: a `brand-500` outline over a faint `brand-50` fill, with a subtle drop shadow. Same colours for every kind — only the geometry differs. Fill / stroke colours can be overridden per element via the element's right-click context menu (Colours category).
 
-Square and circle render purely via CSS (`border-radius` + `background-color` on the wrapper `div`). Every other kind renders its geometry through an **inner SVG overlay** with `viewBox="0 0 100 100"` and `preserveAspectRatio="none"`, so it stretches with the element's box. The wrapper carries no border or background for those — only the selection ring. Resize handles attach to the wrapper's bounding box, not to the geometry. Arrow anchors on an outlined kind are projected onto its drawn outline ([Arrow anchors and auto-rebind](arrow-anchors.md)).
+Square and circle render purely via CSS (`border-radius` + `background-color` on the wrapper `div`). Every other kind renders its geometry through an **inner SVG overlay** with `viewBox="0 0 100 100"` and `preserveAspectRatio="none"`, so it stretches with the element's box. A silhouette whose outline touches the box edge (diamond, parallelogram, hexagon, document, cylinder, cloud) is marked `strokeInside` in the shared geometry table: its svg is inset by half the stroke, so the outline stays inside the box like a square's CSS border. The wrapper carries no border or background for those — only the selection ring. Resize handles attach to the wrapper's bounding box, not to the geometry. Arrow anchors on an outlined kind are projected onto its drawn outline ([Arrow anchors and auto-rebind](arrow-anchors.md)).
 
 ## Data model
 
