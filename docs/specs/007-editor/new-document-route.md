@@ -349,7 +349,7 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 ## Start Blank (skip the wizard)
 
 **Start Blank** is the name on every surface (the site header and the wizard's step rail); it was
-"Just Draw" until the hero's **Draw** came to mean a whiteboard. Its telemetry token stays
+"Just Draw" until the hero's **Drawing** came to mean a whiteboard. Its telemetry token stays
 `JustDraw`, so the funnel's history reads on unbroken.
 
 Some users don't want a template, a theme, or a settings step — they want

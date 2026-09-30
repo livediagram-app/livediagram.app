@@ -84,9 +84,9 @@ The slots:
   (`/new`) and Start Blank (`/new?blank=1`). The help centre's header has one
   Start drawing button, its `Header`.
 - `Hero` / `HeroDraw` / `HeroBrainstorm`: the landing hero's three, Diagram
-  (`/new`), Draw (`/new?template=whiteboard`) and Brainstorm
+  (`/new`), Drawing (`/new?template=whiteboard`) and Brainstorm
   (`/new?browse=brainstorm`). `HeroDraw` kept its slot when Start Blank's blank
-  canvas became Draw's whiteboard: it is the same button in the same place,
+  canvas became Drawing's whiteboard: it is the same button in the same place,
   so its series carries on. On a feature page, `Hero` is the category hero's
   Start drawing.
 - `Gallery`: any card in the landing template gallery

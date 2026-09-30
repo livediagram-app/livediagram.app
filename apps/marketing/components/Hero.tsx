@@ -30,7 +30,7 @@ export const HERO_CTAS: readonly {
   Icon: ComponentType<IconProps>;
 }[] = [
   {
-    label: 'Draw',
+    label: 'Drawing',
     href: templateCreateHref('whiteboard'),
     source: 'Home.HeroDraw',
     Icon: MarkerIcon,
@@ -84,7 +84,7 @@ export function Hero() {
           builds it with you in real time.
         </p>
         {/* Three ways in (docs/specs/019-marketing/marketing-site.md "Hero"), one equal set in the
-            order people reach for them: Draw lands straight on a whiteboard with a pen in hand,
+            order people reach for them: Drawing lands straight on a whiteboard with a pen in hand,
             Diagram is the wizard and its whole catalogue, Brainstorm opens the wizard on the
             brainstorming formats. Peers, so one style, one size and an icon each; one row that
             never wraps from sm up, stacked in the same order on mobile. */}

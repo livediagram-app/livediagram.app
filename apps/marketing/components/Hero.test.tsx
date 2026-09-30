@@ -19,14 +19,14 @@ beforeAll(() => {
   );
 });
 
-// docs/specs/019-marketing/marketing-site.md "Hero": Draw, Diagram, Brainstorm, in that order,
+// docs/specs/019-marketing/marketing-site.md "Hero": Drawing, Diagram, Brainstorm, in that order,
 // presented as one equal set.
 describe('the hero calls to action', () => {
-  it('offers Draw, Diagram and Brainstorm, in that order', () => {
-    expect(HERO_CTAS.map((c) => c.label)).toEqual(['Draw', 'Diagram', 'Brainstorm']);
+  it('offers Drawing, Diagram and Brainstorm, in that order', () => {
+    expect(HERO_CTAS.map((c) => c.label)).toEqual(['Drawing', 'Diagram', 'Brainstorm']);
   });
 
-  it('sends Draw straight to a whiteboard, Diagram to the wizard, Brainstorm to its collection', () => {
+  it('sends Drawing straight to a whiteboard, Diagram to the wizard, Brainstorm to its collection', () => {
     expect(HERO_CTAS.map((c) => [c.href, c.source])).toEqual([
       ['/new?template=whiteboard', 'Home.HeroDraw'],
       ['/new', 'Home.Hero'],
@@ -44,7 +44,7 @@ describe('the hero set', () => {
 
   it('is one group named for assistive technology, holding the three in order', () => {
     const all = links();
-    expect(all.map((a) => a.textContent)).toEqual(['Draw', 'Diagram', 'Brainstorm']);
+    expect(all.map((a) => a.textContent)).toEqual(['Drawing', 'Diagram', 'Brainstorm']);
     expect(all.map((a) => a.getAttribute('href'))).toEqual([
       '/new?template=whiteboard&via=Home.HeroDraw',
       '/new?via=Home.Hero',
