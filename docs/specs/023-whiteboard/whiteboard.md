@@ -74,11 +74,12 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   "Pen stroke", "3 pen strokes"); power user mode leaves it out.
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
-- **The dock is two groups side by side**, centred together at the bottom
+- **The dock is three groups side by side**, centred together at the bottom
   of the canvas with a clear gap between them: **drawing tools** on the left,
-  **shapes** on the right. Each group is its own pill, and its own toolbar
-  for assistive technology ("Drawing tools", "Shapes"), each one Tab stop with
-  arrow keys moving within it.
+  **history** (Undo, Redo) in the middle, **shapes** on the right. Each group
+  is its own pill, and its own toolbar for assistive technology ("Drawing
+  tools", "History", "Shapes"), each one Tab stop with arrow keys moving
+  within it.
 - **Drawing tools, left to right:**
   1. **Select** (marquee and move; the ordinary select tool).
   2. **Markers 1, 2 and 3**: the preset pens, one button each (see [Pens](#pens)).
@@ -88,16 +89,23 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
      flyouts' small capitals and a row of the same switch buttons:
      **Background** (Plain / Dots / Grid), **Drawing** (Basic / Shape
      recognition) and **Cursor** (Crosshair + nib / Dot).
+- **History:** **Undo** and **Redo**, the same actions as the bottom-right
+  cluster and the keyboard; disabled when there is nothing to undo or redo.
 - **Shapes, left to right:**
   1. **Text**.
   2. **Sticky note**.
   3. **Path tool** (see [Path tool](path-tool.md)).
-  4. **Shapes**: a small flyout of rectangle, ellipse, diamond, cylinder,
+  4. **Pinned shapes**: up to two shape kinds the user pinned (see
+     [Shape slots](#shape-slots)); none by default.
+  5. A **separator**.
+  6. **Two frequent shape slots**: the two shape kinds this user picks most
+     often that are not already on the bar (see [Shape slots](#shape-slots)).
+  7. **Shapes**: a small flyout of rectangle, ellipse, diamond, cylinder,
      line and arrow (see [Shapes](#shapes)). It opens on hover (a mouse or a
      pen, never a finger) as well as on a press, without taking the keyboard
      focus, and closes a moment after the pointer leaves both it and the
      button; a press on a hover-opened flyout keeps it open.
-  5. **More shapes** (`…`): opens **on a press only**, with its **search
+  8. **More shapes** (`…`): opens **on a press only**, with its **search
      field focused at once**, so typing finds any shape of the palette's shape
      catalogue by name or keyword (flowchart, basic, block and every other
      shape kind the palette offers; not icons, templates or components).
@@ -107,8 +115,6 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
      one, which arms it like a dock shape (plain ink, the tool style of its
      kind, drawn with a drag or dropped with a click), and closes the flyout;
      **Escape** closes it without picking. No match says "No shapes match".
-- **Undo and Redo are not in the dock**: the bottom-right cluster carries them
-  on every layout.
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
   none, search does not offer it (nor the format painter), and one held on a
   diagram tab is put down on arriving at a whiteboard.
@@ -121,6 +127,40 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   styling is reached through right-click, as on any tab, but the menu offers
   only what a whiteboard element uses (colour, width, delete, bring forward /
   send back, duplicate, comment).
+
+## Shape slots
+
+The shapes group learns and keeps the shapes a user reaches for.
+
+- **Frequent slots:** two buttons between the separator and **Shapes**, each
+  arming its shape kind like a dock shape (plain ink, its kind's tool style),
+  with the kind's own preview as its icon and its name as its label. They hold
+  the two shape kinds this user has **picked most often** on whiteboards (from
+  the Shapes flyout, More shapes, a frequent slot, or a shape key), counting
+  every pick, excluding kinds **already on the bar** (the pinned shapes). Ties
+  go to the kind picked most recently. With too little history, the empty
+  slots fall back to **Rectangle**, then **Ellipse**, then the next kinds of
+  the Shapes flyout in order, never repeating one on the bar. The slots
+  update when a pick changes the ranking, never while a flyout is open or a
+  drag is in progress, so a slot never moves under the pointer mid-gesture.
+- **Pinning:** dragging a frequent slot **to the left of the separator** pins
+  its kind there, permanently, for this user; up to **two** pinned kinds.
+  Dropping onto a pinned slot when two are pinned replaces that one; dropping
+  elsewhere when two are pinned is refused, and the dragged slot settles back
+  with the hint "Two shapes are pinned. Drag one out to swap." Dragging a
+  pinned shape **to the right of the separator** unpins it. The pointer and
+  the drop position show where it will land while dragging; a drag starts
+  after 6 screen px, so a press still picks.
+- **Pinning without a drag:** a right-click or long-press on a slot, or
+  Shift+F10 / the context-menu key on a focused slot, offers **Pin to dock**
+  (frequent) or **Unpin** (pinned), with the same limit and refusal.
+- **Stored per user:** the pick counts and the pinned kinds live in the
+  user's synced preferences ([User preferences](../007-editor/user-preferences.md)),
+  so they follow the user across devices; a guest keeps them in this
+  browser. Only kinds from the palette's shape catalogue are stored; unknown
+  kinds are dropped on read.
+- **Telemetry:** `Whiteboard` · `Changed` · `ShapePinned` / `ShapeUnpinned`
+  (never the kind).
 
 ## Pens
 
