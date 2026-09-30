@@ -5,7 +5,7 @@ Status: specified
 The **Path tool** is a vector pen for whiteboards, in the manner of Figma's and Illustrator's pen
 tools: click to place corner points, drag to pull out curves, and edit every point and handle
 afterwards. It is a new tool, built apart from the Shape Pen
-([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)), whose icon it varies.
+([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)), whose icon it wears.
 
 ## Why
 
@@ -21,8 +21,9 @@ editable.
   not offer it. A path element that reaches a diagram tab (paste, a tab that stops being a
   whiteboard) renders, selects, moves, styles and edits there like any element.
 - **Dock:** after the three markers and before the eraser, labelled **Path tool**, key **P**
-  (shown on the button and in `aria-keyshortcuts`). Its icon is the Shape Pen's nib varied: the nib
-  over a curve with one anchor and its handle.
+  (shown on the button and in `aria-keyshortcuts`). Its icon is **the Shape Pen's own palette
+  icon**, unchanged: the same component, at the dock's icon size, never a
+  redrawn copy.
 - **Key P** picks it from anywhere on a whiteboard (not while typing). On diagram tabs P stays the
   pencil.
 - Picking it puts any marker, shape or eraser down, like every dock tool.
