@@ -165,8 +165,7 @@ import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 // state-snapshot stack: we can't undo past what useDocumentHistory
 // remembers, so there's no point in tracking more log entries than
 // that. Imported from the hook directly so the two stacks can't
-// drift (was a literal mirror of `3` here, which is the kind of
-// duplication a future HISTORY_LIMIT bump would silently break).
+// drift.
 
 export function useEditorState(opts: { embed?: boolean } = {}) {
   // Read-only embed view (docs/specs/013-workspace/embeds.md). The flag forces view behaviour
