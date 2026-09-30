@@ -6,20 +6,20 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                 | Role                                                                |
-| ---------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/shape-factory.ts`             | 72x112, transparent, `#38bdf8` energy, `aspectLocked`, unlabelled   |
-| `packages/document/src/validate.ts`                  | `portalTarget` must be a non-empty string                           |
-| `packages/document/src/svg-render-faces.ts`          | The export ring (`'portal'`)                                        |
-| `apps/live/lib/portals.ts`                           | Names, sites, resolution, exit point, camera centring               |
-| `apps/live/components/canvas/portal-travel.ts`       | `makePortalTravel`: `enterPortal` and `resolvePortal`               |
-| `apps/live/components/canvas/Canvas.tsx`             | Builds the travel, wires click and walk-in through `enterPortalRef` |
-| `apps/live/hooks/canvas/useAvatarWalk.ts`            | Arrival hook, `teleportTo`, the ignored exit portal                 |
-| `apps/live/components/canvas/PortalFace.tsx`         | The ring, lit / dead states, the press, tooltips                    |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`  | Renders the face while not editing                                  |
-| `apps/live/components/palette/PortalMenuSection.tsx` | Name, Leads to, Create portal                                       |
-| `apps/live/hooks/canvas/usePortalSetters.ts`         | Link, unlink, rename, create across tabs                            |
-| `apps/live/lib/themes.ts`                            | `deriveNewBoxedColours` leaves a portal's colours alone             |
+| File                                                 | Role                                                              |
+| ---------------------------------------------------- | ----------------------------------------------------------------- |
+| `packages/document/src/shape-factory.ts`             | 72x112, transparent, `#38bdf8` energy, `aspectLocked`, unlabelled |
+| `packages/document/src/validate.ts`                  | `portalTarget` must be a non-empty string                         |
+| `packages/document/src/svg-render-faces.ts`          | The export ring (`'portal'`)                                      |
+| `apps/live/lib/portals.ts`                           | Names, sites, resolution, exit point, camera centring             |
+| `apps/live/components/canvas/portal-travel.ts`       | `usePortalTravel`: `enterPortal` and `resolvePortal`, no state    |
+| `apps/live/components/canvas/Canvas.tsx`             | Calls `usePortalTravel`; walk-in through `enterPortalRef`         |
+| `apps/live/hooks/canvas/useAvatarWalk.ts`            | Arrival hook, `teleportTo`, the ignored exit portal               |
+| `apps/live/components/canvas/PortalFace.tsx`         | The ring, lit / dead states, the press, hover cards               |
+| `apps/live/components/canvas/ElementFaceRouter.tsx`  | Renders the face while not editing                                |
+| `apps/live/components/palette/PortalMenuSection.tsx` | Name, Leads to, Create portal                                     |
+| `apps/live/hooks/canvas/usePortalSetters.ts`         | Link, unlink, rename, create across tabs                          |
+| `apps/live/lib/themes.ts`                            | `deriveNewBoxedColours` leaves a portal's colours alone           |
 
 ## Domain and naming
 
@@ -33,7 +33,7 @@ Scope, by file:
 | Destination    | `PortalDestination = { portal, tabId, elements }` | The far portal, its tab and that tab's elements        |
 | Unlinked       | `resolvePortalDestination(...) === null`          | Dead ring, inert                                       |
 | Portal name    | `portalName(elements, portal)`                    | Trimmed label, else `Portal <n>` (per tab) [QF11]      |
-| Travel         | `enterPortal(from)`                               | Switch tab, centre camera, place the character         |
+| Travel         | `enterPortal(from)` (`usePortalTravel`)           | Switch tab, centre camera, place the character         |
 | Exit point     | `portalExitPoint(portal)`                         | Bottom centre of the far portal (the avatar's feet)    |
 | Arrived portal | `arrivedPortalRef` in `useAvatarWalk`             | The exit portal, ignored until the character steps off |
 
@@ -65,12 +65,16 @@ Banned synonyms: "door" (it survives only as the persisted palette tile id `tool
 
 - **Click.** `PortalFace` wraps a `<button>` in `usePressWithoutDrag(onEnter)`; `onEnter` is
   `resolvePortal(element).travel`, absent when unlinked.
-- **Walk-in.** The `useAvatarWalk` effect on `[active, standingOnId]`:
+- **Walk-in.** The `useAvatarWalk` effect on `[active, standingOnId]`, which hands the lookup to
+  the `arriveOn` effect event (so `elements` is read, never a trigger):
   1. Inactive: clear both refs.
   2. `standingOnId === null`: clear `arrivedPortalRef` (D115).
   3. Same as last frame, or equal to `arrivedPortalRef`: ignore.
   4. A `portal` under the feet: call `onWalkIntoPortal`, which is `enterPortalRef.current`.
-- Both triggers run the same `enterPortal`.
+- Both triggers run the same `enterPortal`. `usePortalTravel` owns no state and builds both actions
+  from the render's values; `Canvas` holds the latest `enterPortal` in `enterPortalRef`
+  (`useLatest`), because the walk hook needs travel and travel needs the walk hook's
+  `teleportTo`.
 
 ### Linking (`usePortalSetters`)
 
@@ -111,7 +115,7 @@ export function resolvePortalDestination(from: ShapeElement,
 export function portalExitPoint(portal: PortalBox): { x: number; y: number };
 export function viewportOffsetCentredOn(portal: PortalBox,
   size: { width: number; height: number }, zoom: number): { x: number; y: number };
-export function makePortalTravel(deps: PortalTravelDeps): {
+export function usePortalTravel(deps: PortalTravelDeps): {
   enterPortal: (from: ShapeElement) => void;
   resolvePortal: (element: ShapeElement) => { targetName: string | null; travel?: () => void };
 };
@@ -143,7 +147,7 @@ export function makePortalTravel(deps: PortalTravelDeps): {
 | E4  | One-sided link                            | Resolves both ways                                    |
 | E5  | Own target and an incoming link disagree  | Own target wins                                       |
 | E6  | Far portal on another tab                 | Tab switch first, then camera and character           |
-| E7  | Unlinked press                            | Face inert; tooltip explains                          |
+| E7  | Unlinked press                            | Face inert; hover card explains                       |
 | E8  | Drag on the ring                          | Moves, never travels                                  |
 | E9  | Arrive on the exit portal                 | Ignored until bare canvas (D115)                      |
 | E10 | Exit portal overlaps another element      | Stepping onto that element does not clear the ignore  |
@@ -162,7 +166,7 @@ export function makePortalTravel(deps: PortalTravelDeps): {
 - `portalSites` scans every tab: `O(total elements)` per resolve.
 - `resolvePortal` runs per portal per render (`ElementFaceRouter` calls it twice). With `p`
   portals and `n` elements that is `O(p·n)` per render, fine at the `MAX_ELEMENTS_PER_TAB` scale
-  for the handful of portals a board holds.
+  for the handful of portals a canvas holds.
 
 ## Presentation and UX
 
@@ -174,18 +178,20 @@ export function makePortalTravel(deps: PortalTravelDeps): {
 - **No caption:** the name never renders on the canvas.
 - **Palette:** tile `tools:door` ("Add portal") in the **Navigate** accordion
   (`tileGroup: 'move'`) of the Behaviours category.
-- **Tooltips:** linked: title "Go to <far name>", description "Click to travel, or walk your
-  Avatar-mode character into it. The link works both ways." Unlinked: title "Portal (not linked)",
-  description "Right-click the portal and open Portal to pick the one it leads to."
-- **Menu:** accordion **Portal**: **Name** field (placeholder = own positional name, commit on
-  blur / Enter); **Leads to** two-column tiles, this tab first, off-tab as `Name · Tab`, current
-  active, re-pick unlinks; **Create portal** always last.
+- **Hover cards** (`HoverCard`, wrapping the whole face): linked: title "Go to <far name>",
+  description "Click to travel, or walk your Avatar-mode character into it. The link works both
+  ways." Unlinked: title "Portal (not linked)", description "Right-click the portal and open
+  Portal to pick the one it leads to."
+- **Menu:** accordion **Portal**: **Name** field (placeholder = own positional name, commit on blur
+  / Enter, re-seeded by `useFollowingDraft` on another portal or a changed label); **Leads to**
+  two-column tiles, this tab first, off-tab as `Name · Tab`, current active, re-pick unlinks;
+  **Create portal** always last.
 - **Theme:** `deriveNewBoxedColours` returns early for `portal`; the energy keeps `#38bdf8`.
 
 ## Accessibility
 
 - Linked: a native `<button>`, `aria-label` `"<label> — go to <far name>"`.
-- Unlinked: a `div` inside the tooltip; no role.
+- Unlinked: a `div` inside the hover card; no role.
 - The art is `aria-hidden`.
 - Hover and press are 100 ms transitions; nothing loops.
 
@@ -215,9 +221,10 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Incoming link and precedence (E4, E5)                  | "leads back down an INCOMING link", "prefers …" | `apps/live/lib/portals.test.ts`                     |
 | Cross-tab resolution (E6)                              | `resolvePortalDestination` block                | `apps/live/lib/portals.test.ts`                     |
 | Exit point, camera centring with zoom                  | `portalExitPoint`, `viewportOffsetCentredOn`    | `apps/live/lib/portals.test.ts`                     |
-| Travel order, ignored exit, unlinked inert (I4)        | `makePortalTravel` block                        | `apps/live/components/canvas/portal-travel.test.ts` |
+| Travel order, ignored exit, unlinked inert (I4)        | `usePortalTravel` block                         | `apps/live/components/canvas/portal-travel.test.ts` |
 | Not votable                                            | "rejects the interactive Behaviour shapes"      | `packages/document/src/session.test.ts`             |
 | Export draws a ring                                    | "draws more than a box and a label"             | `packages/document/src/export-consistency.test.ts`  |
+| Export ring lit when linked, dim when not              | "draws a portal as its lit ring when paired, …" | `packages/document/src/svg-render-fidelity.test.ts` |
 | Two-way link, release, unlink, create, rename (I2)     | none                                            | (gap) [QF9] [QF10]                                  |
 | Walk-in once, exit ignored (I3)                        | none                                            | (gap)                                               |
 | Drag never travels                                     | none                                            | (gap)                                               |

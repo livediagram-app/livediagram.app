@@ -147,8 +147,7 @@ copying a bold root would give the map two roots.
 size, colours and their theme binding, border, corner radius, shadow and text
 styling, never the label, position or links. Growing a template's branch
 therefore gives a node that matches its siblings rather than a default box
-among styled ones. It replaces the earlier rule, which inherited only the size
-of the node grown from.
+among styled ones.
 
 ## Connectors
 
@@ -160,9 +159,9 @@ not direction, and the curve is what keeps a fanned column of children legible.
 
 The faces a connector joins are the **flow's**, not the nearest pair: a tree
 leaves the parent's east face and enters the child's west face however far down
-the column the child is. The nearest-pair chooser picked the parent's south
-face for a third child, and the connector then ran behind the second child to
-reach it. A balanced map uses east or west by the side the child is on, a
+the column the child is. The nearest-pair chooser would pick the parent's south
+face for a third child, and the connector would then run behind the second
+child to reach it. A balanced map uses east or west by the side the child is on, a
 downward map south to north, and only the bubble flow, which fans in every
 direction, asks the shared chooser (`bestAnchorTowards`). A re-layout
 (tidy growth, Tidy Map, a flow change) re-anchors the map's connectors by the
@@ -183,10 +182,10 @@ Shift+Tab stays traversal, since only plain Tab grows.
 
 Someone who knows the keystrokes types them faster than the editor re-renders:
 "Tab, Marketing, Enter, Sales" arrives as one burst. Every key in that burst
-belongs to a node that may not be on screen yet. Before this rule the early
-ones went to the node being left, to the canvas as shortcuts, or nowhere:
-labels came out blank, and a Tab pressed during the gap grew from the wrong
-node, stacking two nodes on one spot.
+belongs to a node that may not be on screen yet. Left alone, the early ones
+go to the node being left, to the canvas as shortcuts, or nowhere: labels come
+out blank, and a Tab pressed during the gap grows from the wrong node,
+stacking two nodes on one spot.
 
 So a growth opens a **handoff** (`apps/live/lib/mind-handoff.ts`): until the new
 node's label editor has mounted and taken focus, every keystroke is captured
@@ -200,10 +199,10 @@ several nodes lands exactly as typed. Escape ends the typing: the text is kept,
 or an empty node is removed as below.
 
 Finishing the node from the editor state rather than replaying the key inside
-the new editor is deliberate. The replay raced the editor's own mount: its
-label commit read the tab through a ref refreshed only in a passive effect, so
-it wrote back a snapshot from before the node existed, and a remount right
-after mount could close the editor before the replay ran, dropping the rest of
+the new editor is deliberate. A replay races the editor's own mount: its
+label commit reads the tab through a ref refreshed only in a passive effect, so
+it writes back a snapshot from before the node existed, and a remount right
+after mount can close the editor before the replay runs, dropping the rest of
 the burst. Keys held with Cmd, Ctrl or Alt pass through untouched,
 so undo still works mid-burst. A handoff that is never claimed (a peer removed
 the node) lets go after 1.5 s and writes its buffer to the label, so nothing
@@ -217,7 +216,7 @@ against each other rather than both taking the same slot.
 
 In a mind node's label editor **Escape commits** rather than cancels. Escape is
 how people leave a chain of typing, and the node they leave is the one they just
-finished, so a cancel threw away the last thing they said.
+finished, so a cancel would throw away the last thing they said.
 
 An **empty** node that was empty when the edit began, has a parent and has no
 children is not something anybody meant to keep: it is the Tab pressed one time
@@ -229,15 +228,16 @@ node, closing the gap its growth opened, so it stays tidy.
 
 The view follows the keyboard: a grown node that lands off screen, or under the
 floating panels along the canvas's sides, is scrolled into view (the viewport's
-`scrollIntoView`, with a side margin wide enough to clear the palette). A branch
-typed past the edge of the screen otherwise carried on out of sight, with the
-editor typing into a box nobody could see.
+`scrollIntoView`, with a side margin wide enough to clear the palette).
+Otherwise a branch typed past the edge of the screen carries on out of sight,
+with the editor typing into a box nobody can see.
 
 ## Moving a branch
 
 Dragging a mind node carries its **whole subtree**, the way a frame carries its
 contents. A branch is one idea: moving its heading and leaving its points
-behind is never the intent, and re-dragging each of them was the workaround.
+behind is never the intent, and re-dragging each of them would be the
+workaround.
 Resizing a node resizes only that node.
 
 ## Flows: the shape the map grows in
@@ -260,8 +260,8 @@ selected node's menu:
 - **Bubble**: branches fanned around the parent. Laid out tidily, the root's
   children share the full circle **equally**, starting from the root's west
   side and running clockwise, so a lone first branch points east. Weighting
-  them by leaf count swung every other branch round the dial each time one of
-  them grew a leaf. Every deeper level splits its parent's wedge by leaf count,
+  them by leaf count would swing every other branch round the dial each time
+  one of them grew a leaf. Every deeper level splits its parent's wedge by leaf count,
   and each ring grows until the nodes on it clear each other. In free
   placement each new child takes the next free angle either side of the
   direction the branch already runs in.
@@ -272,8 +272,9 @@ pick on any node sets its root's, and selecting several nodes of one map sets it
 once.
 
 Picking a flow **re-lays the map out** in it straight away, around the root
-(which stays put). A flow that only changed where the next node would land left
-the map looking exactly the same after the click, so the pick looked broken.
+(which stays put). A flow that only changed where the next node would land
+would leave the map looking exactly the same after the click, so the pick would
+look broken.
 The flow change and the re-layout are one undo step.
 
 The **keystrokes do not change**. Tab is still a child and Enter still a
@@ -295,8 +296,8 @@ dragging nodes around, and from then on growth keeps it tidy.
 
 ## Round nodes
 
-A mind node honours its **corner radius** setting; with none it is the soft
-12 px box it always was. A square node with a full radius is a circle, which is
+A mind node honours its **corner radius** setting; with none it is a soft
+12 px box. A square node with a full radius is a circle, which is
 how the bubble map template draws its bubbles while staying a live map. The
 exported SVG uses the same radius.
 
@@ -337,7 +338,7 @@ centred one would land underneath the very "+" the actions live in.
 
 ## What it is not
 
-Not an auto-layout. Nodes are placed where they fit and then stay put: a mind
+Not an auto-layout of anything else on the tab. Tidy growth re-lays out only
 the map being grown, and only while that map is still exactly as the layout
 left it; a hand-arranged map is never re-flowed by a keystroke. Arbitrary
 diagrams keep the radial / tree re-layouts in Auto Layout

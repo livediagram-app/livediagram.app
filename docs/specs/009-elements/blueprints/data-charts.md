@@ -17,6 +17,7 @@ Scope, by file:
 | `packages/document/src/svg-render-charts.ts`                                              | `svgPieChart`, `svgBarChart`, `svgLineChart`                                                                                                                            |
 | `packages/document/src/svg-render-shapes.ts`                                              | `svgLegendShape`                                                                                                                                                        |
 | `packages/document/src/svg-render.ts`                                                     | Export: resolves the chart palette per tab, routes the legend                                                                                                           |
+| `packages/document/src/svg-render-body.ts`                                                | `svgElementBody`: routes the three charts to their emitters with the tab ramp                                                                                           |
 | `packages/document/src/validate.ts`                                                       | `SHAPE_KINDS`, array bounds, `chartPalette`, `legendItems` checks                                                                                                       |
 | `apps/live/lib/chart.ts`                                                                  | `chartAnim`; re-exports `chartFrame`                                                                                                                                    |
 | `apps/live/lib/csv.ts`                                                                    | `parseCsvLineData`                                                                                                                                                      |
@@ -129,11 +130,11 @@ independent of the key (D106).
    below one), **Import CSV** (`parseCsvLineData`), committing the whole dataset on each blur or
    structural change.
 3. Tools flyout, **Chart** section: `LegendPositionTiles` (Off / Top / Left / Right / Below), then
-   `LegendTextSize` while the key is on.
+   `LegendTextSize` while the key is on; picking Off unmounts it and shrinks the flyout [QE14].
 4. Animation section: `PieAnimTiles` replaces the boxed set.
 5. Style band: Colours and Border are hidden; **Presets** shows `ChartPalettePresets` (eight
    tiles, hover previews, click commits `'ChartPalette'`) and a Reset that clears `chartPalette`
-   [GE1].
+   [GE1]. The quick style panel offers no colour row on a chart [GE18].
 6. Legend element, Tools flyout, **Legend** section: `LegendDataEditor` (rows) and
    `LegendTextSize`.
 
@@ -211,18 +212,19 @@ Palette ids are permanent; names may change.
 
 ## Errors and edge cases
 
-| #   | Case                           | Handling                                                     |
-| --- | ------------------------------ | ------------------------------------------------------------ |
-| E1  | Empty `pieSlices`              | Sample data renders (`D101`)                                 |
-| E2  | Negative value                 | Treated as 0 for size; the readout shows the stored value    |
-| E3  | All values 0                   | Divisor 1: nothing drawn, the key still lists the rows       |
-| E4  | One datum at 100 %             | Full circle, readout anchored at the top                     |
-| E5  | Non-numeric value from the api | NaN geometry [GE5]                                           |
-| E6  | Unknown `chartPalette`         | Rejected on write; at render falls through to the theme ramp |
-| E7  | Key strip too small            | Key not rendered                                             |
-| E8  | CSV with no usable rows        | `null`; the dialog does nothing and says nothing [GE9]       |
-| E9  | Series shorter than categories | A missing value reads as 0 (`valAt`)                         |
-| E10 | Custom tab theme in an export  | Export ramp from `getBuiltInTheme`, default scheme [GE3]     |
+| #   | Case                           | Handling                                                          |
+| --- | ------------------------------ | ----------------------------------------------------------------- |
+| E1  | Empty `pieSlices`              | Sample data renders (`D101`)                                      |
+| E2  | Negative value                 | Treated as 0 for size; the readout shows the stored value         |
+| E3  | All values 0                   | Divisor 1: nothing drawn, the key still lists the rows            |
+| E4  | One datum at 100 %             | Full circle, readout anchored at the top                          |
+| E5  | Non-numeric value from the api | NaN geometry [GE5]                                                |
+| E6  | Unknown `chartPalette`         | Rejected on write; at render falls through to the theme ramp      |
+| E7  | Key strip too small            | Key not rendered                                                  |
+| E8  | CSV with no usable rows        | `null`; the dialog does nothing and says nothing [GE9]            |
+| E9  | Series shorter than categories | A missing value reads as 0 (`valAt`)                              |
+| E10 | Custom tab theme in an export  | Export ramp from `getBuiltInTheme`, default scheme [GE3]          |
+| E11 | Legend exported on dark paper  | Rows in `el.textColor ?? '#1e293b'`, dark on the dark card [GE17] |
 
 ## Security and trust
 
@@ -256,7 +258,8 @@ function per render; hover state is per view.
 ## Web experience
 
 Canvas-space only: no CLS. Data edits commit on blur, not per keystroke (INP). The line dialog
-is lazy-loaded through `EditorElementDialogs` like the other element dialogs.
+is lazy-loaded through `EditorElementDialogs` like the other element dialogs, with `ssr: false`
+so its first open suspends at its own boundary rather than the editor's.
 
 ## Observability
 
@@ -267,24 +270,26 @@ fallbacks are silent [GE12].
 
 ## Testing
 
-| Rule                                             | Test                                                             | File                                                |
-| ------------------------------------------------ | ---------------------------------------------------------------- | --------------------------------------------------- |
-| `isChartShape` is the three kinds                | is exactly the three chart kinds                                 | `packages/document/src/data-shapes.test.ts`         |
-| Key Below by default, side strip, hidden         | chartFrame layout cases (seven)                                  | `apps/live/lib/chart.test.ts`                       |
-| Per-datum colour, else cycle the palette         | prefers an explicit slice colour, else cycles the palette        | `apps/live/lib/chart.test.ts`                       |
-| Empty data falls back to samples                 | falls back to the default slices when the element has none       | `apps/live/lib/chart.test.ts`                       |
-| Palettes: eight colours, unique, resolvable      | chart palettes cases                                             | `packages/document/src/chart-palettes.test.ts`      |
-| Preset writes only the palette                   | sets the palette on a chart without touching its data            | `apps/live/lib/style-presets.test.ts`               |
-| Key sizes 11 / 14 / 18, export parity            | legendFontPx cases                                               | `packages/document/src/label-font.test.ts`          |
-| CSV parsing                                      | parseCsvLineData cases                                           | `apps/live/lib/csv.test.ts`                         |
-| Data / anim / legend setters                     | pie chart setter cases                                           | `apps/live/hooks/canvas/useElementStyle.test.ts`    |
-| Export draws charts unframed                     | leaves a chart unframed; draws more than a box                   | `packages/document/src/export-consistency.test.ts`  |
-| Every kind renders without NaN                   | never emits NaN or undefined                                     | `packages/document/src/svg-render-coverage.test.ts` |
-| Ladder: datum > chart palette > theme > built-in | partial (`chartFrame` only); none for `themeChartPalette` [GE11] |                                                     |
-| Reset clears the palette                         | none [GE1]                                                       |                                                     |
-| Legend matches an adjacent chart                 | none [QE3]                                                       |                                                     |
-| Grow / pop once, spin / pulse loop               | none [GE11]                                                      |                                                     |
-| Readout on hover regardless of the key           | none [GE11]                                                      |                                                     |
+| Rule                                             | Test                                                                                                                                       | File                                                              |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `isChartShape` is the three kinds                | is exactly the three chart kinds                                                                                                           | `packages/document/src/data-shapes.test.ts`                       |
+| Key Below by default, side strip, hidden         | chartFrame layout cases (seven)                                                                                                            | `apps/live/lib/chart.test.ts`                                     |
+| Per-datum colour, else cycle the palette         | prefers an explicit slice colour, else cycles the palette                                                                                  | `apps/live/lib/chart.test.ts`                                     |
+| Empty data falls back to samples                 | falls back to the default slices when the element has none                                                                                 | `apps/live/lib/chart.test.ts`                                     |
+| Palettes: eight colours, unique, resolvable      | chart palettes cases                                                                                                                       | `packages/document/src/chart-palettes.test.ts`                    |
+| Preset writes only the palette                   | sets the palette on a chart without touching its data                                                                                      | `apps/live/lib/style-presets.test.ts`                             |
+| Key sizes 11 / 14 / 18, export parity            | legendFontPx cases                                                                                                                         | `packages/document/src/label-font.test.ts`                        |
+| CSV parsing                                      | parseCsvLineData cases                                                                                                                     | `apps/live/lib/csv.test.ts`                                       |
+| Data / anim / legend setters                     | pie chart setter cases                                                                                                                     | `apps/live/hooks/canvas/useElementStyle.test.ts`                  |
+| Export draws charts unframed                     | leaves a chart unframed; draws more than a box and a label for each of them                                                                | `packages/document/src/export-consistency.test.ts`                |
+| Menu row drafts survive a re-render, follow data | keeps a typed draft through a re-render with the same rows; follows the element when its rows change (`PieDataEditor`, `LegendDataEditor`) | `apps/live/components/palette/context-menu-data-editors.test.tsx` |
+| Line dialog suspends at its own boundary         | each carry their own Suspense boundary (ssr: false or a loading component)                                                                 | `apps/live/lib/dynamic-has-boundary.test.ts`                      |
+| Every kind renders without NaN                   | never emits NaN or undefined                                                                                                               | `packages/document/src/svg-render-coverage.test.ts`               |
+| Ladder: datum > chart palette > theme > built-in | partial (`chartFrame` only); none for `themeChartPalette` [GE11]                                                                           |                                                                   |
+| Reset clears the palette                         | none [GE1]                                                                                                                                 |                                                                   |
+| Legend matches an adjacent chart                 | none [QE3]                                                                                                                                 |                                                                   |
+| Grow / pop once, spin / pulse loop               | none [GE11]                                                                                                                                |                                                                   |
+| Readout on hover regardless of the key           | none [GE11]                                                                                                                                |                                                                   |
 
 ## Constants and configuration
 

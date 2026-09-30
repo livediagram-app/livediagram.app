@@ -17,10 +17,12 @@ Scope, by file:
 | `packages/document/src/data-shapes.ts`                       | `isSelfDrawingShape`: stat row and process carry no label                        |
 | `packages/document/src/validate.ts`                          | Row, masthead and caption bounds; the legacy `pinned-group` end                  |
 | `packages/document/src/legacy-groups.ts`                     | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
-| `packages/document/src/stored-elements.ts`                   | `migrateStoredElements`: every stored-tab entry point                            |
+| `packages/document/src/stored-elements.ts`                   | `migrateStoredElements`: legacy groups, then legacy docks                        |
+| `packages/document/src/stored-tab.ts`                        | `migrateStoredTab`: every stored-tab entry point runs it                         |
 | `apps/api/src/tab-row.ts`                                    | `rowToTab` runs the migration                                                    |
+| `apps/api/src/thumbnail.ts`                                  | The thumbnail render runs the migration on the tab it parses                     |
 | `apps/live/lib/offline/offline-store.ts`                     | `offlineLoadTab` runs the migration                                              |
-| `apps/live/lib/import-merge.ts`                              | `mergeFields` runs the migration on a JSON tab import [QA2]                      |
+| `apps/live/lib/import-merge.ts`                              | `mergeImportedTab` runs the migration on a JSON tab import [QA2]                 |
 | `apps/live/components/canvas/web/*.tsx`                      | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
 | `apps/live/components/canvas/InlineTextLine.tsx`             | The in-place single-line editor                                                  |
 | `apps/live/components/canvas/ElementFaceRouter.tsx`          | Routes faces; computes `editable`                                                |
@@ -122,8 +124,10 @@ shape kind.
 
 ### Legacy groups (read path)
 
-`migrateStoredElements(elements) = dropLegacyDocks(migrateLegacyGroups(elements))`, run by
-`rowToTab`, `offlineLoadTab` and the JSON tab import [QA2]:
+`migrateStoredTab(tab)` runs `migrateRetiredScheme`, then
+`upgradeLegacyLinks(migrateStoredElements(elements))`, where
+`migrateStoredElements(elements) = dropLegacyDocks(migrateLegacyGroups(elements))`. It runs in
+`rowToTab`, the thumbnail render, `offlineLoadTab` and `mergeImportedTab` [QA2]. The groups step:
 
 1. `hasLegacyGroups` false → return the same array (no copy).
 2. Union box per `groupId` over non-arrow elements.
@@ -159,10 +163,13 @@ export function createComponent(
   colors: ComponentColors,
 ): Element;
 
-// packages/document/src/legacy-groups.ts / stored-elements.ts
+// packages/document/src/legacy-groups.ts / stored-elements.ts / stored-tab.ts
 export function hasLegacyGroups(elements: readonly Element[]): boolean;
 export function migrateLegacyGroups(elements: Element[]): Element[];
 export function migrateStoredElements(elements: Element[]): Element[];
+export function migrateStoredTab<
+  T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
+>(tab: T): T;
 
 // apps/live/hooks/canvas/useWebComponentSetters.ts
 setWebRows: (elementId: string, rows: WebRows) => void;
@@ -195,7 +202,8 @@ The minimums (`STATS_MIN`, `PROCESS_MIN_STEPS`) are enforced by the write paths,
 | `groupId`, `pinned-group` ends      | legacy    | Never written by current code; migrated on read |
 | Inline edit text                    | ephemeral | In the DOM until blur                           |
 
-Migration runs on every read and is idempotent; nothing is written back until the next save.
+Migration runs on every read and is idempotent; a tab with nothing to migrate comes back as the
+same object. Nothing is written back until the next save.
 
 ## Errors and edge cases
 
@@ -217,8 +225,8 @@ Migration runs on every read and is idempotent; nothing is written back until th
 ## Security and trust
 
 All fields arrive through `isValidTab` at the api; strings are bounded, rendered as React text on
-the canvas and escaped with `xmlEscape` in export. `migrateStoredElements` runs on the api read
-path, so MCP, share links and thumbnails never see legacy shapes.
+the canvas and escaped with `xmlEscape` in export. `migrateStoredTab` runs on the api read path
+and in the thumbnail render, so MCP, share links and thumbnails never see legacy shapes.
 
 ## Performance and limits
 
@@ -233,6 +241,10 @@ the input unchanged in the common case.
   header, stat row and process expose no Border controls (`SELF_PAINTING_SHAPES`) [QA4].
 - Header logo: the inline icon when set, else the brand's first letter; callout badge: the inline
   icon, else "i" [QA4].
+- Disc glyphs (the callout badge, the header monogram, the process step numbers) sit on their cap
+  band: `GlyphDisc` on the canvas, `capBandBaselineY` in the export.
+- Quick Style Panel: the same predicates as the menu (`supportsBorderControls`,
+  `acceptsInlineIcon`), and text alignment on every web component.
 - Placeholders while empty: "Subtitle", "Heading", "0", "Caption", "Step", "Link", "Title",
   "Supporting line".
 
@@ -251,33 +263,39 @@ Faces are canvas-space; in-place edits touch the DOM only until blur, then one c
 
 ## Observability
 
-None in code today; the migration's no-op and rewrite paths emit nothing [GA1].
+None for groups: the migration's no-op and rewrite paths emit nothing, while the scheme step of
+the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 
 ## Testing
 
-| Rule                                         | Test                                                                         | File                                                             |
-| -------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| One element per component, no `groupId` (I1) | every component builds exactly one element                                   | `packages/document/src/web-components.test.ts`                   |
-| Colours per family                           | dresses the accent-bar kinds in the accent with white text                   | `packages/document/src/web-components.test.ts`                   |
-| Hero is an image with a caption              | the hero is an image with a caption card in the accent                       | `packages/document/src/web-components.test.ts`                   |
-| Bounds (I3)                                  | validation bounds the rows (three cases)                                     | `packages/document/src/web-components.test.ts`                   |
-| Layouts re-flow (I4)                         | layouts re-flow with the box (four cases)                                    | `packages/document/src/web-components.test.ts`                   |
-| Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                | `packages/document/src/web-components.test.ts`                   |
-| Export draws rows, title once, hero caption  | headless render (three cases)                                                | `packages/document/src/web-components.test.ts`                   |
-| `withWebRows` / `appendWebRow`               | row writes (two cases)                                                       | `packages/document/src/web-components.test.ts`                   |
-| Faces commit, inert until selected           | web component faces (six cases)                                              | `apps/live/components/canvas/web/WebComponentFace.test.tsx`      |
-| Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                              | `apps/live/components/palette/context-menu-web-editors.test.tsx` |
-| Setters, caption toggle                      | useWebComponentSetters (five cases)                                          | `apps/live/hooks/canvas/useWebComponentSetters.test.ts`          |
-| Migration freezes and strips (I2)            | migrateLegacyGroups (five cases)                                             | `packages/document/src/legacy-groups.test.ts`                    |
-| Migration pipeline                           | migrateStoredElements (two cases)                                            | `packages/document/src/stored-elements.test.ts`                  |
-| api read migrates                            | freezes a legacy group out of the stored elements                            | `apps/api/src/tab-row.test.ts`                                   |
-| Excalidraw import has no groups              | maps common properties: opacity, angle, lock, link, dash; groups are dropped | `apps/live/lib/excalidraw-import.test.ts`                        |
-| ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                     | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
-| Single selection bounds itself               | a single selection is bounded by the element itself                          | `apps/live/lib/canvas-selection.test.ts`                         |
-| Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                           | `apps/live/lib/draw-commit.test.ts`                              |
-| Offline and import migrate                   | none [GA14]                                                                  |                                                                  |
-| Ring add hidden when full                    | none [GA14]                                                                  |                                                                  |
-| Export draws the inline icon                 | none [GA2]                                                                   |                                                                  |
+| Rule                                         | Test                                                                                  | File                                                             |
+| -------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| One element per component, no `groupId` (I1) | every component builds exactly one element                                            | `packages/document/src/web-components.test.ts`                   |
+| Colours per family                           | dresses the accent-bar kinds in the accent with white text                            | `packages/document/src/web-components.test.ts`                   |
+| Hero is an image with a caption              | the hero is an image with a caption card in the accent                                | `packages/document/src/web-components.test.ts`                   |
+| Bounds (I3)                                  | validation bounds the rows (three cases)                                              | `packages/document/src/web-components.test.ts`                   |
+| Layouts re-flow (I4)                         | layouts re-flow with the box (four cases)                                             | `packages/document/src/web-components.test.ts`                   |
+| Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                         | `packages/document/src/web-components.test.ts`                   |
+| Export draws rows, title once, hero caption  | headless render (three cases)                                                         | `packages/document/src/web-components.test.ts`                   |
+| `withWebRows` / `appendWebRow`               | row writes (two cases)                                                                | `packages/document/src/web-components.test.ts`                   |
+| Faces commit, inert until selected           | web component faces (six cases)                                                       | `apps/live/components/canvas/web/WebComponentFace.test.tsx`      |
+| Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                                       | `apps/live/components/palette/context-menu-web-editors.test.tsx` |
+| Setters, caption toggle                      | useWebComponentSetters (five cases)                                                   | `apps/live/hooks/canvas/useWebComponentSetters.test.ts`          |
+| Migration freezes and strips (I2)            | migrateLegacyGroups (five cases)                                                      | `packages/document/src/legacy-groups.test.ts`                    |
+| Migration pipeline                           | migrateStoredElements (two cases)                                                     | `packages/document/src/stored-elements.test.ts`                  |
+| Tab migration includes the element step      | migrates a retired scheme and retired element fields in one pass                      | `packages/document/src/stored-tab.test.ts`                       |
+| api read migrates                            | freezes a legacy group out of the stored elements                                     | `apps/api/src/tab-row.test.ts`                                   |
+| Offline load runs the tab migration          | migrates a tab saved against a retired scheme on load                                 | `apps/live/lib/offline/offline-store.test.ts`                    |
+| JSON import runs the tab migration           | migrates an imported tab saved against a retired scheme                               | `apps/live/lib/import-merge.test.ts`                             |
+| Thumbnail runs the tab migration             | renders the migrated tab, not the colours Charcoal baked                              | `apps/api/src/thumbnail.test.ts`                                 |
+| Excalidraw import has no groups              | maps common properties: opacity, angle, lock, link, dash; groups are dropped          | `apps/live/lib/excalidraw-import.test.ts`                        |
+| ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                              | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
+| Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/live/lib/canvas-selection.test.ts`                         |
+| Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/live/lib/draw-commit.test.ts`                              |
+| Disc glyphs on the cap band in export        | %s centres its disc glyph on its cap band                                             | `packages/document/src/svg-cap-band-render.test.ts`              |
+| Text alignment in the Quick Style Panel      | offers no text alignment on a kind with its own face, but keeps it on a web component | `apps/live/lib/quick-style.test.ts`                              |
+| Ring add hidden when full                    | none [GA14]                                                                           |                                                                  |
+| Export draws the inline icon                 | none [GA2]                                                                            |                                                                  |
 
 ## Constants and configuration
 

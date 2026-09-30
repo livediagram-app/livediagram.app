@@ -31,6 +31,6 @@ Colours map to the existing controls: the **fill colour** is the track, the **st
 A **Progress** section inside the menu's **Tools** flyout (only for progress shapes; they are excluded from the **Shape** morph grid, which would drop the `progress` field) offers:
 
 - a **Percentage** slider (0–100, mirrors the Opacity row), and
-- **Fill animation** tiles: None / Fill / Pulse / Stripes (`ProgressAnimKindGlyph`); once an animation is picked, a **Speed** row (Slow / Normal / Fast) and a **Repeat** toggle appear beneath it.
+- **Fill animation** tiles: None / Fill / Pulse / Stripes (`ProgressAnimKindGlyph`); once an animation is picked, a **Speed** row (Slowest / Slow / Normal / Fast) and a **Repeat** toggle appear beneath it.
 
 Setters `setProgressSelected` / `setProgressAnimSelected` / `setProgressAnimSpeedSelected` / `setProgressAnimRepeatSelected` (`useDataShapeSetters`, exposed through `useElementStyle`) apply to every selected progress shape; changes emit `track('Element', 'Changed', 'Progress' | 'ProgressAnim')`.

@@ -20,6 +20,8 @@ Scope, by file:
 | `packages/document/src/element-kind-label.ts`            | `elementKindLabel`: `video` reads "Embed"                                  |
 | `packages/document/src/svg-render-describe.ts`           | Headless export: the generic rect branch [QC2]                             |
 | `apps/live/components/canvas/VideoView.tsx`              | The face: empty state, poster, load card, player, controls, no-load notice |
+| `packages/ui/src/Tooltip.tsx`                            | `Tooltip`: names each player control button                                |
+| `packages/ui/src/HoverCard.tsx`                          | `HoverCard`: explains the website's new-tab link                           |
 | `apps/live/components/canvas/use-frame-blocked.ts`       | `useFrameBlocked`: the no-load watch                                       |
 | `apps/live/components/canvas/element-variant.ts`         | The dark rounded frame (`case 'video'`)                                    |
 | `apps/live/components/canvas/ElementFaceRouter.tsx`      | Routes `video` to `VideoView`                                              |
@@ -29,6 +31,7 @@ Scope, by file:
 | `apps/live/components/dialogs/LinkPickerDialog.tsx`      | `UrlOnlyConfig`: URL mode only, validate as you type and at commit         |
 | `apps/live/lib/url-safety.ts`                            | `normaliseUrl`, `isSafeFollowUrl`                                          |
 | `apps/live/components/palette/palette-tile-defs.tsx`     | Six `media:embed-*` tiles, `tileGroup: 'embed'`                            |
+| `apps/live/components/palette/palette-tile-art.tsx`      | `YouTubeTileArt`, `VimeoTileArt`, `LoomTileArt`, `FigmaTileArt`            |
 | `apps/live/components/palette/palette-create-tabs.tsx`   | `PaletteMediaTab`: the Embed group under Image and Avatar                  |
 | `apps/live/components/palette/PaletteTileGroup.tsx`      | The collapsible group row                                                  |
 | `apps/live/components/palette/palette-group-state.tsx`   | `PaletteGroupProvider`, `usePaletteGroup` [QC11]                           |
@@ -113,7 +116,9 @@ Transitions:
 - `playing` → `poster` / `load-card`: **Stop**, which also clears `controls` and calls
   `frame.reset()`. The iframe unmounts.
 - `controls` toggles with **Use the player** / **Lock the player**; only meaningful while playing.
-- Any change of `target?.embedUrl` resets `playing` and `controls` to `false` (D60).
+- Any change of `target?.embedUrl` resets `playing` and `controls` to `false` (D60). `VideoView`
+  compares it during render against the `playedUrl` it last saw, so the reset lands in the same
+  render and the old player never paints under the new link.
 - Unmount (tab switch, element deleted) discards both.
 
 Guards and invariants:
@@ -131,7 +136,7 @@ Guards and invariants:
 
 `VideoView` passes `playing ? target.embedUrl : undefined`, for every provider (D63) [QC6].
 
-1. A new `src` clears `failed`.
+1. A new `src` clears `failed` in the same render (compared against the `askedAbout` state).
 2. With a `src`, a `LOAD_TIMEOUT_MS` timer starts; its expiry sets `failed = true`.
 3. The iframe's `onLoad` clears the timer and sets `failed = false`.
 4. `reset()` sets `failed = false`; unmount or a `src` change clears the timer.
@@ -168,7 +173,10 @@ The element starts with `aspectLocked: true`; the lock is a user-toggleable flag
 `PaletteMediaTab` renders the ungrouped Media tiles, then one `PaletteTileGroup` titled "Embed"
 holding the six `tileGroup: 'embed'` tiles. `usePaletteGroup(title)` reads the shared `openId`
 under a `PaletteGroupProvider` (one open at a time; the toggle closes an open group); without a
-provider it keeps local state. Closed by default (D75) [QC11].
+provider it keeps local state. Closed by default (D75) [QC11]. `ToolbarPalette` and
+`CommandPalette` each mount a provider above their tabs, and the only other `PaletteTileGroup` is
+the Components tab's "Web Elements", so opening one of the two closes the other; the Behaviour
+tab's groups are the drill-in `PaletteGroupBrowser`, which this state does not govern [QC11].
 
 ## Interfaces and contracts
 
@@ -200,7 +208,6 @@ export type UrlOnlyConfig = {
 
 // apps/live/components/canvas/use-frame-blocked.ts
 export function useFrameBlocked(src: string | undefined): {
-  ref: React.RefObject<HTMLIFrameElement | null>;
   failed: boolean;
   onLoad: () => void;
   reset: () => void;
@@ -305,11 +312,13 @@ renders the generic empty-state copy. JSON export round-trips through `validate.
 - **Unembeddable.** "Can't embed that link" and the URL, truncated [QC9].
 - **Poster.** `object-cover`, a 68:48 red play badge at 24 % of the card height (min 26 px),
   `hover:scale-110`.
-- **Load card.** Upper-case label chip over a **Load embed** button.
+- **Load card.** The label chip in capitals (`text-optical-caps`) over a **Load embed** button.
 - **Controls.** Top-left, `left-1.5 top-1.5`, 24 px buttons, hidden until hover or focus-within:
-  **Use the player controls** / **Lock the player (drag the video)** (pressed state brand-500),
-  **Stop video**, and for a website an **Open this page in a new tab** anchor (title "Blank? Open
-  this page in a new tab").
+  **Use the player controls** / **Lock the player (drag the video)** (pressed state brand-500,
+  `SOLID_BRAND_DARK_CONTROL` in dark mode), **Stop video**, each named by a `Tooltip` with the
+  same words; and for a website an **Open this page in a new tab** anchor inside a `HoverCard`
+  titled "Open this page in a new tab" and described "For when the embed stays blank: some sites
+  refuse to be shown inside another page."
 - **No-load notice.** "<label> isn't loading", "Many sites refuse to be shown inside another page,
   and some are just slow. Either way the site decides, not the canvas.", and **Open in a new tab**
   to `target.embedUrl` [QC6].
@@ -329,8 +338,12 @@ states.
 ## Accessibility
 
 - Play badge: `<button aria-label="Play video">`; **Load embed** has visible text.
-- Control buttons: `aria-label` and `title` equal, `aria-pressed` on the player toggle; the new-tab
-  anchors carry `aria-label`. Keyboard focus reveals the controls through `focus-within`.
+- Control buttons: `aria-label`, repeated visually by a `Tooltip` (after a 1 s hover, at once on
+  keyboard focus, on a long press on touch;
+  [Tooltips, hover cards and popovers](../../004-interface-design/tooltips-hover-cards-popovers.md));
+  `aria-pressed` on the player toggle. The controls' new-tab anchor carries `aria-label` and a
+  `HoverCard`, shown at once on hover or focus; the notice's link has visible text. Keyboard focus
+  reveals the controls through `focus-within`.
 - The iframe has `title="<label> embed"`. Poster `alt=""` with `aria-hidden`; every glyph SVG is
   `aria-hidden`.
 - Link dialog: the field carries `aria-invalid` and `aria-describedby="link-picker-url-error"` when
@@ -338,6 +351,8 @@ states.
 - Palette group: `<button aria-expanded>`.
 - Contrast on the default fill `#0f172a`: slate-200 copy 14.6:1, slate-400 hint 7.0:1. A user fill
   can break this [QC7].
+- The pressed player toggle is a white glyph on brand-600 in dark mode (6.0:1), but on brand-500
+  `#0ea5e9` in light mode (2.8:1, under the 3:1 non-text minimum) (GC12).
 - Motion: the badge's `hover:scale-110` and control fades are pointer or focus driven, not
   autoplaying; they are not gated by `motion-reduce`.
 
@@ -359,37 +374,46 @@ No log exists at any decision point today (GC1). Proposed fingerprints, prefix `
 | O2  | play / load pressed                      | `console.info`  | `[embed] load id=<id> provider=<provider>`                 |
 | O3  | `useFrameBlocked` timer fires            | `console.warn`  | `[embed] no-load provider=<provider> after=<ms>`           |
 
+The one log the face can emit is the shared `Tooltip`'s `[tooltip] label is not the accessible name`
+(`console.warn`), should a control's tooltip and `aria-label` ever disagree.
+
 Telemetry (not logs): `Element·Added·Video` on creation (draw path in `useShapeDrawing`, copy paths
 through `elementTelemetryType`), `Element·Used·Video` on play or load.
 
 ## Testing
 
-| Rule                                                                                                | Test                                                                | File                                                      |
-| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------- |
-| Every YouTube URL form and host                                                                     | watch, other params, youtu.be, embed/shorts/live/v, alternate hosts | `packages/document/src/youtube.test.ts`                   |
-| Host case-insensitive, id case-sensitive                                                            | `is case-insensitive about the host but not the id`                 | `youtube.test.ts`                                         |
-| `?v=` only on a YouTube host; lookalikes refused                                                    | two `returns null` cases                                            | `youtube.test.ts`                                         |
-| Id is exactly 11 URL-safe chars                                                                     | wrong length or alphabet                                            | `youtube.test.ts`                                         |
-| Dangerous schemes refused                                                                           | `javascript:` / `data:` for both parsers                            | `youtube.test.ts`                                         |
-| Poster on `i.ytimg.com`, player on no-cookie with autoplay                                          | `url builders`                                                      | `youtube.test.ts`                                         |
-| Vimeo, Loom, Figma, Google resolution                                                               | one test each                                                       | `youtube.test.ts`                                         |
-| Google Form is not a document                                                                       | `returns null for a Google host that is not an embeddable doc`      | `youtube.test.ts`                                         |
-| Website catch-all, host label, no poster                                                            | `treats any other http(s) host as a plain website embed`            | `youtube.test.ts`                                         |
-| Lookalike is a website, never the provider                                                          | `does not mistake a lookalike host ...`                             | `youtube.test.ts`                                         |
-| Malformed known-provider link is `null`                                                             | `still refuses a malformed link ...` (Vimeo, Google only) [QC1]     | `youtube.test.ts`                                         |
-| Drag fits 16:9 and centres                                                                          | two `buildDrawnBoxed` tests                                         | `apps/live/lib/draw-commit.test.ts`                       |
-| Tile provider lands on the element                                                                  | `carries the embed provider through the gesture ...`                | `draw-commit.test.ts`                                     |
-| Banner names the provider, 16:9 note off on mobile                                                  | two `drawBannerMessage` tests                                       | `apps/live/lib/draw-mode.test.ts`                         |
-| `Video` has a telemetry bucket                                                                      | `gives every NON-shape element kind a bucket too`                   | `apps/live/lib/palette-telemetry-coverage.test.ts`        |
-| Embed group has tiles and a renderer                                                                | tile-group coverage                                                 | `apps/live/components/palette/palette-tile-defs.test.tsx` |
-| `video` is in the element vocabulary                                                                | vocabulary fixture                                                  | `packages/document/src/element-type-vocabulary.test.ts`   |
-| No iframe until play; pointer-inert iframe; sandbox on website only; controls; reset on link change | none (GC2)                                                          | none                                                      |
-| No-load watch timing and reset                                                                      | none (GC3)                                                          | none                                                      |
-| Picker: URL only, validated as typed and at commit, on normalised URL                               | none (GC4)                                                          | none                                                      |
-| One palette group open at a time; local fallback                                                    | none (GC5)                                                          | none                                                      |
-| `createVideo` 480×270 locked; `embedProvider` closed set                                            | none (GC6)                                                          | none                                                      |
-| Export representation                                                                               | none [QC2] (GC10)                                                   | none                                                      |
-| End to end: place, link, play, drag still works                                                     | none (GC9)                                                          | none                                                      |
+| Rule                                                                                              | Test                                                                | File                                                      |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------- |
+| Every YouTube URL form and host                                                                   | watch, other params, youtu.be, embed/shorts/live/v, alternate hosts | `packages/document/src/youtube.test.ts`                   |
+| Host case-insensitive, id case-sensitive                                                          | `is case-insensitive about the host but not the id`                 | `youtube.test.ts`                                         |
+| `?v=` only on a YouTube host; lookalikes refused                                                  | two `returns null` cases                                            | `youtube.test.ts`                                         |
+| Id is exactly 11 URL-safe chars                                                                   | wrong length or alphabet                                            | `youtube.test.ts`                                         |
+| Dangerous schemes refused                                                                         | `javascript:` / `data:` for both parsers                            | `youtube.test.ts`                                         |
+| Poster on `i.ytimg.com`, player on no-cookie with autoplay                                        | `url builders`                                                      | `youtube.test.ts`                                         |
+| Vimeo, Loom, Figma, Google resolution                                                             | one test each                                                       | `youtube.test.ts`                                         |
+| Google Form is not a document                                                                     | `returns null for a Google host that is not an embeddable doc`      | `youtube.test.ts`                                         |
+| Website catch-all, host label, no poster                                                          | `treats any other http(s) host as a plain website embed`            | `youtube.test.ts`                                         |
+| Lookalike is a website, never the provider                                                        | `does not mistake a lookalike host ...`                             | `youtube.test.ts`                                         |
+| Malformed known-provider link is `null`                                                           | `still refuses a malformed link ...` (Vimeo, Google only) [QC1]     | `youtube.test.ts`                                         |
+| Drag fits 16:9 and centres                                                                        | two `buildDrawnBoxed` tests                                         | `apps/live/lib/draw-commit.test.ts`                       |
+| Tile provider lands on the element                                                                | `carries the embed provider through the gesture ...`                | `draw-commit.test.ts`                                     |
+| Banner names the provider, 16:9 note off on mobile                                                | two `drawBannerMessage` tests                                       | `apps/live/lib/draw-mode.test.ts`                         |
+| `Video` has a telemetry bucket                                                                    | `gives every NON-shape element kind a bucket too`                   | `apps/live/lib/palette-telemetry-coverage.test.ts`        |
+| Embed group has tiles and a renderer                                                              | tile-group coverage                                                 | `apps/live/components/palette/palette-tile-defs.test.tsx` |
+| `video` is in the element vocabulary                                                              | vocabulary fixture                                                  | `packages/document/src/element-type-vocabulary.test.ts`   |
+| No iframe until play (I1)                                                                         | `mounts the player only once play is pressed`                       | `apps/live/components/canvas/VideoView.test.tsx`          |
+| A link change tears the player down (D60)                                                         | `stops the player when the link changes`                            | `VideoView.test.tsx`                                      |
+| Pointer-inert iframe; sandbox on website only; controls; load card; empty and unembeddable states | none (GC2)                                                          | none                                                      |
+| No load event within `LOAD_TIMEOUT_MS` is a failure                                               | `calls a frame dead when it never loads`                            | `apps/live/components/canvas/use-frame-blocked.test.tsx`  |
+| A load event settles the watch                                                                    | `settles on any load event`                                         | `use-frame-blocked.test.tsx`                              |
+| A new `src` forgets the verdict and asks again                                                    | `forgets the verdict when the URL changes, and asks again`          | `use-frame-blocked.test.tsx`                              |
+| No `src`, no watch                                                                                | `asks nothing without a URL`                                        | `use-frame-blocked.test.tsx`                              |
+| `reset()` clears the verdict                                                                      | none (GC3)                                                          | none                                                      |
+| Picker: URL only, validated as typed and at commit, on normalised URL                             | none (GC4)                                                          | none                                                      |
+| One palette group open at a time; local fallback                                                  | none (GC5)                                                          | none                                                      |
+| `createVideo` 480×270 locked; `embedProvider` closed set                                          | none (GC6)                                                          | none                                                      |
+| Export representation                                                                             | none [QC2] (GC10)                                                   | none                                                      |
+| End to end: place, link, play, drag still works                                                   | none (GC9)                                                          | none                                                      |
 
 ## Constants and configuration
 
@@ -414,9 +438,11 @@ through `elementTelemetryType`), `Element·Used·Video` on play or load.
 
 ## Assets and external resources
 
-| Resource                              | Source                                                                 | Licence / terms             | Loaded                       |
-| ------------------------------------- | ---------------------------------------------------------------------- | --------------------------- | ---------------------------- |
-| YouTube poster                        | `https://i.ytimg.com/vi/<id>/hqdefault.jpg`                            | YouTube Terms of Service    | On render of a YouTube embed |
-| YouTube player                        | `https://www.youtube-nocookie.com/embed/<id>`                          | YouTube API Terms           | On play                      |
-| Vimeo / Loom / Figma / Google players | provider embed URLs above                                              | Each provider's embed terms | On **Load embed**            |
-| Play badge, glyphs, tile icons        | inline SVG in `VideoView.tsx`, `palette-tile-defs.tsx`, `draw-mode.ts` | Repository MIT              | Bundled                      |
+| Resource                               | Source                                                                                               | Licence / terms             | Loaded                       |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------- | ---------------------------- |
+| YouTube poster                         | `https://i.ytimg.com/vi/<id>/hqdefault.jpg`                                                          | YouTube Terms of Service    | On render of a YouTube embed |
+| YouTube player                         | `https://www.youtube-nocookie.com/embed/<id>`                                                        | YouTube API Terms           | On play                      |
+| Vimeo / Loom / Figma / Google players  | provider embed URLs above                                                                            | Each provider's embed terms | On **Load embed**            |
+| Play badge, glyphs, draw cursor        | inline SVG and `Glyph` in `VideoView.tsx`, SVG string in `draw-mode.ts`                              | Repository MIT              | Bundled                      |
+| YouTube, Vimeo, Loom, Figma tile marks | inline SVG in `palette-tile-art.tsx`                                                                 | Repository MIT              | Bundled                      |
+| Google Docs, Website tile icons        | `lucideFileText`, `lucideGlobe` in `packages/icons/src/lucide.generated.ts` (`lucide-static` 1.48.0) | ISC (Lucide)                | Bundled                      |

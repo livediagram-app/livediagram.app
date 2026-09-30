@@ -13,6 +13,7 @@ Scope, by file:
 | `packages/document/src/shape-factory.ts`                  | Size 200 × 44; seeds `rating` and the amber stroke                                                                   |
 | `packages/document/src/colors.ts`                         | `SELF_PAINTING_SHAPES` membership                                                                                    |
 | `packages/document/src/svg-render-data.ts`                | `svgRating`: the export body                                                                                         |
+| `packages/document/src/svg-render-body.ts`                | `svgElementBody`: routes `'rating'` to `svgRating` with the resolved stroke                                          |
 | `apps/live/components/canvas/RatingView.tsx`              | Canvas stars, animation class, stagger                                                                               |
 | `apps/live/components/canvas/ShapeContentRouter.tsx`      | Routes `'rating'` to `RatingView`                                                                                    |
 | `apps/live/components/canvas/element-variant.ts`          | Borderless wrapper via `SELF_PAINTING_SHAPES`                                                                        |
@@ -40,7 +41,9 @@ Banned synonyms: "stars value", "score animation" (say star animation), "review"
 ### Create
 
 `createShape('rating', x, y)` seeds `rating: RATING_DEFAULT` (3) and `strokeColor: '#f59e0b'`
-(amber-500); size 200 × 44.
+(amber-500); size 200 × 44. Style memory
+([Quick style panel](../../008-canvas/quick-style-panel.md)) then dresses it with the colours last
+picked for ratings (`applyStyleMemory`), which may replace the amber.
 
 ### Render
 
@@ -62,7 +65,8 @@ Banned synonyms: "stars value", "score animation" (say star animation), "review"
 
 1. The Rating section (Tools flyout) shows `RatingPickerRow`: five buttons, `aria-label` "n star(s)",
    each calling `setRatingSelected(n)` with `n` in `1..5`; a star is lit when `n <= value`.
-2. `RatingAnimTiles`: an "Animation" header, None + the four, then Speed and Repeat once one is set.
+2. `RatingAnimTiles`: an "Animation" header, None + the four, then Speed and Repeat, which mount
+   once one is set and so grow the Tools flyout on a selection [QE14].
 3. The boxed Animation category is also offered [QE2].
 4. There is no on-canvas interaction: the stars are not buttons (`D100`).
 
@@ -124,7 +128,8 @@ Five small SVGs per element; CSS-only animation on `transform` / `opacity`.
 ## Presentation and UX
 
 Five stars centred in the box, filled in the accent, empty in slate-300 outline. Palette: Data
-category, caption "Rating", blurb "A score out of five stars".
+category, caption "Rating", blurb "A score out of five stars". The quick style panel's Stroke row
+sets the accent; its Background row, like the menu's Fill, writes a fill nothing paints [GE18].
 
 ## Accessibility
 
@@ -151,7 +156,7 @@ Telemetry only: `track('Element', 'Added', 'Rating')` on create (`shapeTelemetry
 | Animation set and clear                  | sets and clears the rating animation                   | `apps/live/hooks/canvas/useElementStyle.test.ts`   |
 | Kind gate                                | leaves non-rating shapes untouched                     | `apps/live/hooks/canvas/useElementStyle.test.ts`   |
 | Patcher: own kind only, empty = no trace | `makeShapePatcher` cases                               | `apps/live/hooks/canvas/shape-patcher.test.ts`     |
-| Export draws stars                       | draws more than a box for each of them                 | `packages/document/src/export-consistency.test.ts` |
+| Export draws stars                       | draws more than a box and a label for each of them     | `packages/document/src/export-consistency.test.ts` |
 | Default three filled, amber              | none [GE11]                                            |                                                    |
 | Pop / rock once, twinkle / pulse loop    | none [GE11]                                            |                                                    |
 | Stagger only for pop / twinkle           | none [GE11]                                            |                                                    |

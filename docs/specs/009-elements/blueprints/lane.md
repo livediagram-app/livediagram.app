@@ -22,6 +22,8 @@ Scope, by file:
 | `apps/live/hooks/canvas/useColorStyleSetters.ts`               | `setHeaderFillSelected`                                                 |
 | `apps/live/components/palette/ElementColourBorderSections.tsx` | The Heading colour row                                                  |
 | `apps/live/components/palette/palette-tile-defs.tsx`           | Tile `tools:lane`, section `build`                                      |
+| `packages/templates/src/template-builders-flows.ts`            | Swimlane (row lanes) and approval workflow (column lanes) templates     |
+| `packages/templates/src/template-builders-technical.ts`        | System architecture template: one lane per tier                         |
 
 ## Domain and naming
 
@@ -174,6 +176,9 @@ CSS `background-color` and SVG `fill`, which ignore invalid values.
 - Heading colour: the "Heading" row in the Colours section, shown when `hasHeadingBand`; it reads
   `'transparent'` while unset.
 - Border: the ordinary shape border (`strokeWidth`, default `medium`, 2px) [QA9].
+- Templates stack lanes spaced, never flush [QA9]: the swimlane's four row lanes 12px apart with a
+  160px gutter, the approval workflow's three column lanes 12px apart under 56px header bands, the
+  system architecture's four tier lanes 14px apart.
 
 ## Accessibility
 
@@ -201,6 +206,9 @@ None in code today [GA1].
 | Export strip follows the edge, fill vs wash   | chrome the canvas draws on a box                                             | `packages/document/src/svg-render.test.ts`         |
 | Export draws a body                           | every kind with a body draws one                                             | `packages/document/src/export-consistency.test.ts` |
 | Release slices are lanes                      | user story map drops an activity backbone over release-banded story stickies | `apps/live/lib/templates.test.ts`                  |
+| Swimlane: role lanes, steps clear of gutters  | the swimlane template (four cases)                                           | `apps/live/lib/template-flows.test.ts`             |
+| Column lanes with header bands                | groups the steps into Requester / Manager / Finance role columns             | `apps/live/lib/template-flows.test.ts`             |
+| Tier lanes                                    | stacks the Clients / Edge / Services / Data lanes                            | `apps/live/lib/template-builders.test.ts`          |
 | Containment rules (I3, I4) for frames         | withFrameContents                                                            | `apps/live/lib/canvas.test.ts`                     |
 | A lane carries its contents                   | none [GA14]                                                                  |                                                    |
 | Drag clamp, centred 2x, one commit (I2)       | none [GA14]                                                                  |                                                    |

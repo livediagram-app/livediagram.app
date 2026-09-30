@@ -3,33 +3,33 @@
 Derived from [Annotations](../annotations.md). The note it carries is specified in
 [Rich-text notes](../rich-text-notes.md) and blueprinted in [rich-text-notes.md](rich-text-notes.md).
 The spec decides; this file only adds engineering precision. Defaults applied where the spec is
-silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `DDn`.
+silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                     | Role                                                               |
-| -------------------------------------------------------- | ------------------------------------------------------------------ |
-| `packages/document/src/element-types.ts`                 | `AnnotationElement`                                                |
-| `packages/document/src/index.ts`                         | `isBoxed` and the `BoxedElement` union include `'annotation'`      |
-| `packages/document/src/factories.ts`                     | `createAnnotation`, `ANNOTATION_SIZE`                              |
-| `packages/document/src/colors.ts`                        | Per-type colour and padding defaults; `supportsColours`            |
-| `packages/document/src/themes.ts`                        | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                    |
-| `packages/document/src/svg-render-describe.ts`           | Export shape: an ellipse                                           |
-| `apps/live/lib/canvas.ts`                                | `inheritedSizeFor` keeps the marker size                           |
-| `apps/live/lib/canvas-selection.ts`                      | No quick-connect plus on an annotation                             |
-| `apps/live/lib/themes.ts`                                | `deriveNewBoxedColours` treats an annotation like a shape          |
-| `apps/live/lib/draw-mode.ts`                             | Annotation is absent from draw-to-size                             |
-| `apps/live/app/document/[id]/useElementCreation.ts`      | `addAnnotation`: viewport-centre drop + telemetry                  |
-| `apps/live/components/palette/palette-tile-defs.tsx`     | Tile `tools:annotation`, `toolGroup: 'write'`                      |
-| `apps/live/components/palette/PaletteTileGrid.tsx`       | Routes the tile to `addAnnotation`, never arms a draw              |
-| `apps/live/components/canvas/element-variant.ts`         | The round, bordered wrapper style                                  |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`      | Renders `AnnotationGlyph` as the face                              |
-| `apps/live/components/canvas/AnnotationMarker.tsx`       | `AnnotationGlyph`, `AnnotationHoverNote`                           |
-| `apps/live/components/canvas/BoxedElementView.tsx`       | Hover state, preview gate, badge suppression                       |
-| `apps/live/components/canvas/useBoxedElementGestures.ts` | Double-click opens the note [QD9]                                  |
-| `apps/live/components/canvas/element-parts.tsx`          | `SelectionChromeLayer`: resize handles for a selected marker [QD8] |
-| `apps/live/components/palette/EditorContextMenu.tsx`     | Size section shown, Rotation hidden for an annotation [QD8]        |
-| `apps/live/lib/export-tab-text.ts`                       | Markdown outline [QD11]                                            |
+| File                                                     | Role                                                                |
+| -------------------------------------------------------- | ------------------------------------------------------------------- |
+| `packages/document/src/element-types.ts`                 | `AnnotationElement`                                                 |
+| `packages/document/src/index.ts`                         | `isBoxed` and the `BoxedElement` union include `'annotation'`       |
+| `packages/document/src/factories.ts`                     | `createAnnotation`, `ANNOTATION_SIZE`                               |
+| `packages/document/src/colors.ts`                        | Per-type colour and padding defaults; `DARK_INK`; `supportsColours` |
+| `packages/document/src/themes.ts`                        | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |
+| `packages/document/src/svg-render-describe.ts`           | Export shape: an ellipse                                            |
+| `apps/live/lib/canvas.ts`                                | `inheritedSizeFor` keeps the marker size                            |
+| `apps/live/lib/canvas-selection.ts`                      | No quick-connect plus on an annotation                              |
+| `apps/live/lib/themes.ts`                                | `deriveNewBoxedColours` treats an annotation like a shape           |
+| `apps/live/lib/draw-mode.ts`                             | Annotation is absent from draw-to-size                              |
+| `apps/live/app/document/[id]/useElementCreation.ts`      | `addAnnotation`: viewport-centre drop + telemetry                   |
+| `apps/live/components/palette/palette-tile-defs.tsx`     | Tile `tools:annotation`, `toolGroup: 'write'`                       |
+| `apps/live/components/palette/PaletteTileGrid.tsx`       | Routes the tile to `addAnnotation`, never arms a draw               |
+| `apps/live/components/canvas/element-variant.ts`         | The round, bordered wrapper style                                   |
+| `apps/live/components/canvas/ElementFaceRouter.tsx`      | Renders `AnnotationGlyph` as the face                               |
+| `apps/live/components/canvas/AnnotationMarker.tsx`       | `AnnotationGlyph`, `AnnotationHoverNote`                            |
+| `apps/live/components/canvas/BoxedElementView.tsx`       | Hover state, preview gate, badge suppression                        |
+| `apps/live/components/canvas/useBoxedElementGestures.ts` | Double-click opens the note [QD9]                                   |
+| `apps/live/components/canvas/element-parts.tsx`          | `SelectionChromeLayer`: resize handles for a selected marker [QD8]  |
+| `apps/live/components/palette/EditorContextMenu.tsx`     | Size section shown, Rotation hidden for an annotation [QD8]         |
+| `apps/live/lib/export-tab-text.ts`                       | Markdown outline [QD11]                                             |
 
 ## Domain and naming
 
@@ -54,7 +54,7 @@ component), "tooltip" for the hover preview.
    `createAnnotation(x, y)` centred on the viewport, with `deriveNewBoxedColours` applied, selects
    it, and commits once (one undo step).
 3. `track('Element', 'Added', 'Annotation')`.
-4. A new annotation is `44 × 44` and `aspectLocked: true` (DD, see Constants); `inheritedSizeFor`
+4. A new annotation is `44 × 44` and `aspectLocked: true` (see Constants); `inheritedSizeFor`
    returns its own size whatever is selected.
 
 ### Hover
@@ -85,6 +85,8 @@ States per marker: `hovering` (local `useState`), `isSelected`, `isEditing`.
 
 Move, recolour (Colours accordion), layer, lock, link, comment, assign an action and delete follow
 the generic boxed paths. No quick-connect plus appears (`showPlus` excludes annotations, D90) [QD11].
+The quick style panel does not open for an annotation: `isQuickStyleTarget` takes shapes, arrows
+and text only.
 
 Invariants:
 
@@ -173,8 +175,9 @@ from links, so it cannot capture canvas gestures.
 
 - Marker: a circle (`borderRadius: 50%`), 2px solid border in the stroke, `shadow-sm`, glyph at 58%
   of the box tinted by the stroke.
-- Colours (D89): light fill `#e0f2fe`, stroke `#0ea5e9`; dark fill `#3a3a44`, stroke `#a1a1aa`;
-  padding `none`. A theme sets fill and stroke only.
+- Colours (D89): light fill `#e0f2fe`, stroke `#0ea5e9`; dark fill `DARK_INK.annotationFill`
+  (`#1c2533`, a shade above the dark shape fill), stroke `DARK_INK.stroke` (`#64748b`); padding
+  `none`. A theme sets fill and stroke only.
 - Preview (D87): portal, `z-[var(--z-toast)]`, white / slate-900 card, `max-w` 280px, `max-h-60`,
   above the marker with a 10px gap, below when too close to the top.
 - Tile: caption from the tile, description "Annotation. A note marker: hover to read it,
@@ -187,8 +190,9 @@ from links, so it cannot capture canvas gestures.
 - Hover preview meets WCAG 2.2 SC 1.4.13: dismissible (Escape), hoverable, persistent until the
   pointer leaves both [QD10].
 - Keyboard: the command palette's `note` command opens the note for the selected annotation.
-- Contrast: glyph `#0ea5e9` on `#e0f2fe` is a non-text graphic above 3:1; dark `#a1a1aa` on
-  `#3a3a44` likewise.
+- Contrast (WCAG 1.4.11, 3:1 for a graphic): the glyph and ring reach 3:1 in both appearances
+  [QD18]. The dark pair, `#64748b` on `#1c2533`, is 3.24:1. The light default, `#0ea5e9` on
+  `#e0f2fe`, is 2.42:1, and the ring on the white canvas 2.77:1, below it (GD16).
 - Motion: none.
 
 ## Web experience
@@ -217,7 +221,9 @@ Telemetry: `Element` / `Added` / `Annotation`; opening reuses `Note` / `Opened`.
 | Tile routes to an action                       | palette telemetry coverage                     | `apps/live/lib/palette-telemetry-coverage.test.ts`             |
 | No inline text (I1)                            | `elementHasText` false for annotation          | `packages/document/src/element-has-text.test.ts`               |
 | No shadow; arrows do not hide behind it        | shadow / arrow-behind exclusions               | `packages/document/src/shadow.test.ts`, `arrow-behind.test.ts` |
+| Dark fill a shade above the shape fill (D89)   | lifts an annotation marker a shade above ...   | `packages/document/src/canvas-ink.test.ts`                     |
 | Themes fill + stroke, not text                 | none                                           | (GD7)                                                          |
+| Glyph and ring at 3:1 in both appearances      | none                                           | (GD16) [QD18]                                                  |
 | `supportsColours` true                         | none                                           | (GD7)                                                          |
 | Hover preview gate (I3), flip, Escape [QD10]   | none                                           | (GD7)                                                          |
 | Double-click opens, read-only opens read-only  | none                                           | (GD7)                                                          |
@@ -234,5 +240,5 @@ Telemetry: `Element` / `Added` / `Annotation`; opening reuses `Note` / `Opened`.
 | Flip threshold            | `120`                      | Space needed above, px (inline literal) | `AnnotationMarker.tsx`     |
 | Preview max height        | `max-h-60` (15rem)         | D87                                     | `AnnotationMarker.tsx`     |
 | Glyph size                | `58%` of the marker        | Reads at 44px; 50% to 66%               | `AnnotationMarker.tsx`     |
-| `DARK_INK.annotationFill` | `#3a3a44`                  | One step above the dark shape fill      | `colors.ts`                |
+| `DARK_INK.annotationFill` | `#1c2533`                  | A shade above `DARK_INK.fill` `#141b26` | `colors.ts`                |
 | `EDGE_MARGIN`             | `VIEWPORT_EDGE_MARGIN` = 8 | Shared popover margin                   | `lib/clamp-to-viewport.ts` |

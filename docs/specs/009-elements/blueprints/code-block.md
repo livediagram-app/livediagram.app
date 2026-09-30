@@ -99,7 +99,9 @@ A failed load renders plain text and retries on the next mount (D105).
 4. `setCodeSelected` writes to every selected code block, not only the one the dialog opened
    for [GE7].
 5. Style band: Colours and Border are absent (`supportsColours` false); **Presets** holds the
-   eight schemes with hover preview and click commit (`'CodeTheme'`).
+   eight schemes with hover preview and click commit (`'CodeTheme'`). For the same reason the
+   quick style panel has no section for a code block (`supportsQuickSection`), so a code block
+   alone raises no panel.
 
 ## Interfaces and contracts
 
@@ -171,7 +173,8 @@ snippet length with no regular expression over the whole input.
 
 `CODE_MAX_LENGTH` bounds the tokenizer to 4 000 characters per block, tokenised on every render
 of a loaded block. The chunk is fetched once per page, only when a block mounts, so first paints
-without a code block never pay for it. The dialog is lazy-loaded.
+without a code block never pay for it. The dialog is lazy-loaded with `ssr: false`, so its first
+open suspends at its own boundary rather than the editor's.
 
 ## Presentation and UX
 
@@ -203,19 +206,20 @@ The tokenizer and dialog are separate chunks (LCP unaffected). The canvas card i
 
 ## Testing
 
-| Rule                                            | Test                                               | File                                        |
-| ----------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
-| Guard matches only `code-block`                 | code block matches only its own kind               | `packages/document/src/data-shapes.test.ts` |
-| Bounded snippet, closed language set            | bounds the code block + checklist fields           | `packages/document/src/validate.test.ts`    |
-| Every scheme complete, unique, default midnight | code themes cases                                  | `packages/document/src/code-themes.test.ts` |
-| Unknown scheme falls back                       | falls back rather than returning undefined         | `packages/document/src/code-themes.test.ts` |
-| Headless render: card, lines, badge             | renders a code block as the dark card + mono lines | `packages/document/src/svg-render.test.ts`  |
-| Headless wraps word-first; off keeps one line   | code block wrapping cases                          | `packages/document/src/code-themes.test.ts` |
-| Preset writes only the scheme                   | sets the scheme on a code block and nothing else   | `apps/live/lib/style-presets.test.ts`       |
-| Tokenizer classes per language                  | none [GE11]                                        |                                             |
-| Degrades to plain until loaded                  | none [GE11]                                        |                                             |
-| Tab inserts two spaces; Save is one undo step   | none [GE11]                                        |                                             |
-| Double-click opens the dialog                   | none [GE11]                                        |                                             |
+| Rule                                            | Test                                                                       | File                                         |
+| ----------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------- |
+| Guard matches only `code-block`                 | code block matches only its own kind                                       | `packages/document/src/data-shapes.test.ts`  |
+| Bounded snippet, closed language set            | bounds the code block + checklist fields                                   | `packages/document/src/validate.test.ts`     |
+| Every scheme complete, unique, default midnight | code themes cases                                                          | `packages/document/src/code-themes.test.ts`  |
+| Unknown scheme falls back                       | falls back rather than returning undefined                                 | `packages/document/src/code-themes.test.ts`  |
+| Headless render: card, lines, badge             | renders a code block as the dark card + mono lines                         | `packages/document/src/svg-render.test.ts`   |
+| Headless wraps word-first; off keeps one line   | code block wrapping cases                                                  | `packages/document/src/code-themes.test.ts`  |
+| Preset writes only the scheme                   | sets the scheme on a code block and nothing else                           | `apps/live/lib/style-presets.test.ts`        |
+| Tokenizer classes per language                  | none [GE11]                                                                |                                              |
+| Degrades to plain until loaded                  | none [GE11]                                                                |                                              |
+| Tab inserts two spaces; Save is one undo step   | none [GE11]                                                                |                                              |
+| Double-click opens the dialog                   | none [GE11]                                                                |                                              |
+| Dialog suspends at its own boundary             | each carry their own Suspense boundary (ssr: false or a loading component) | `apps/live/lib/dynamic-has-boundary.test.ts` |
 
 ## Constants and configuration
 

@@ -43,7 +43,9 @@ list".
 ### Create
 
 `createShape('checklist', x, y)`: 240 × 180 with `CHECKLIST_DEFAULT_ITEMS` (First task, Second task,
-Third task, all unchecked). Telemetry `Added Checklist`.
+Third task, all unchecked). Telemetry `Added Checklist`. Style memory
+([Quick style panel](../../008-canvas/quick-style-panel.md)) then dresses it with the colours last
+picked for checklists (`applyStyleMemory`).
 
 ### Render
 
@@ -78,7 +80,8 @@ sends no whole-element update.
 
 ### Row edit
 
-1. `ChecklistRowsEditor` keeps a local draft, reseeded when the element's rows change.
+1. `ChecklistRowsEditor` keeps a local draft (`useFollowingDraft`), replaced during render when
+   the element's rows change, so a typed draft survives a re-render with the same rows.
 2. Text inputs (`maxLength` 200, placeholder "Task") commit the whole draft on blur.
 3. `+ Add row` appends `{ text: '', done: false }`, disabled at 30 rows. `×` removes a row,
    disabled at one row (`D102`).
@@ -113,15 +116,16 @@ like any field once applied. No migration.
 
 ## Errors and edge cases
 
-| #   | Case                                 | Handling                                                        |
-| --- | ------------------------------------ | --------------------------------------------------------------- |
-| E1  | Two people tick different rows       | Both deltas land                                                |
-| E2  | Peer reordered or retitled meanwhile | Delta finds the row by text, or does nothing                    |
-| E3  | Duplicate row texts                  | Index first; otherwise the first row with that text (`D103`)    |
-| E4  | Peer's whole copy lacks a tick       | `keepLocalTicks` keeps ours                                     |
-| E5  | More rows than fit                   | Clipped on the canvas; export draws `floor((h - 24) / 26)` rows |
-| E6  | Long row text                        | Ellipsis on the canvas; export cuts at the width in 7 px chars  |
-| E7  | Locked layer or user-locked (menu)   | Tick still applies [GE6]                                        |
+| #   | Case                                 | Handling                                                          |
+| --- | ------------------------------------ | ----------------------------------------------------------------- |
+| E1  | Two people tick different rows       | Both deltas land                                                  |
+| E2  | Peer reordered or retitled meanwhile | Delta finds the row by text, or does nothing                      |
+| E3  | Duplicate row texts                  | Index first; otherwise the first row with that text (`D103`)      |
+| E4  | Peer's whole copy lacks a tick       | `keepLocalTicks` keeps ours                                       |
+| E5  | More rows than fit                   | Clipped on the canvas; export draws `floor((h - 24) / 26)` rows   |
+| E6  | Long row text                        | Ellipsis on the canvas; export cuts at the width in 7 px chars    |
+| E7  | Locked layer or user-locked (menu)   | Tick still applies [GE6]                                          |
+| E8  | Exported on dark paper               | Rows in `el.textColor ?? '#1e293b'`, dark on the dark card [GE17] |
 
 ## Security and trust
 
@@ -134,7 +138,8 @@ At most 30 rows of at most 200 characters; a tick is one small delta, not a whol
 
 ## Presentation and UX
 
-Themed card that follows the tab theme. Palette: Components category, caption "Checklist",
+Themed card that follows the tab theme; the quick style panel's Stroke and Background rows set
+the accent and the card. Palette: Components category, caption "Checklist",
 blurb "Tickable to-do rows". AI vocabulary includes it with `checklistItems` (max 30 rows).
 
 ## Accessibility
@@ -157,18 +162,19 @@ dropped delta (no match) is silent [GE12].
 
 ## Testing
 
-| Rule                                   | Test                                                    | File                                           |
-| -------------------------------------- | ------------------------------------------------------- | ---------------------------------------------- |
-| Guard matches only `checklist`         | checklist matches only its own kind                     | `packages/document/src/data-shapes.test.ts`    |
-| Bounds                                 | bounds the code block + checklist fields                | `packages/document/src/validate.test.ts`       |
-| Two ticks on different rows both land  | ticks different checklist rows from two people          | `packages/document/src/element-deltas.test.ts` |
-| Row found by text after a move         | finds a checklist row by its text when the rows moved   | `packages/document/src/element-deltas.test.ts` |
-| Whole-element update keeps ticks       | keeps our ticks and our comments, takes their row edits | `packages/document/src/element-deltas.test.ts` |
-| Tick-only change is delta-only         | is true for an answer, a tick or a comment alone        | `packages/document/src/element-deltas.test.ts` |
-| Export: rows, strike-through, footer   | renders a checklist as rows with ticked boxes           | `packages/document/src/svg-render.test.ts`     |
-| Starter rows all unchecked, no footer  | none [GE11]                                             |                                                |
-| Lock and layer gating of ticks         | none [GE6]                                              |                                                |
-| Ticks are not undoable and not tracked | none [GE11]                                             |                                                |
+| Rule                                   | Test                                                                                                 | File                                                              |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Guard matches only `checklist`         | checklist matches only its own kind                                                                  | `packages/document/src/data-shapes.test.ts`                       |
+| Bounds                                 | bounds the code block + checklist fields                                                             | `packages/document/src/validate.test.ts`                          |
+| Two ticks on different rows both land  | ticks different checklist rows from two people                                                       | `packages/document/src/element-deltas.test.ts`                    |
+| Row found by text after a move         | finds a checklist row by its text when the rows moved                                                | `packages/document/src/element-deltas.test.ts`                    |
+| Whole-element update keeps ticks       | keeps our ticks and our comments, takes their row edits                                              | `packages/document/src/element-deltas.test.ts`                    |
+| Tick-only change is delta-only         | is true for an answer, a tick or a comment alone                                                     | `packages/document/src/element-deltas.test.ts`                    |
+| Export: rows, strike-through, footer   | renders a checklist as rows with ticked boxes                                                        | `packages/document/src/svg-render.test.ts`                        |
+| Row draft survives, follows the rows   | keeps a typed draft through a re-render with the same rows; follows the element when its rows change | `apps/live/components/palette/context-menu-data-editors.test.tsx` |
+| Starter rows all unchecked, no footer  | none [GE11]                                                                                          |                                                                   |
+| Lock and layer gating of ticks         | none [GE6]                                                                                           |                                                                   |
+| Ticks are not undoable and not tracked | none [GE11]                                                                                          |                                                                   |
 
 ## Constants and configuration
 

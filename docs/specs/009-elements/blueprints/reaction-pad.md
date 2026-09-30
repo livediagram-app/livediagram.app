@@ -6,26 +6,27 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                     | Role                                                                 |
-| -------------------------------------------------------- | -------------------------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                   | `REACTIONS`, labels, emoji, hints, pad labels, default, `isReaction` |
-| `packages/document/src/shape-factory.ts`                 | 150x110, `reaction: REACTION_DEFAULT`, label "Celebrate"             |
-| `packages/document/src/validate.ts`                      | Validates the `reaction` field [QF21]                                |
-| `packages/document/src/session.ts`                       | `NON_VOTABLE_SHAPES` includes `reaction-pad`                         |
-| `packages/document/src/svg-render-faces.ts`              | Export glyph and label                                               |
-| `packages/api-schema/src/room-messages.ts`               | The `reaction` op; `'reaction'` in `PRESENCE_OP_KINDS`               |
-| `apps/live/components/canvas/ReactionPadFace.tsx`        | The floor pad, tooltip, press                                        |
-| `apps/live/components/canvas/ReactionBurst.tsx`          | Canvas surface, clock, reduced motion, cleanup                       |
-| `apps/live/lib/reaction-particles.ts`                    | Pure spawn, step, alpha, draw                                        |
-| `apps/live/hooks/canvas/useReactionBursts.ts`            | Bursts keyed by element id; play, receive, clear                     |
-| `apps/live/app/document/[id]/useEditorState.ts`          | `fireReaction`: play, broadcast, track                               |
-| `apps/live/hooks/collab/useEditorBroadcast.ts`           | `broadcastReaction` and its gate                                     |
-| `apps/live/app/document/[id]/useRoomConnection.ts`       | Receives the op                                                      |
-| `apps/live/components/canvas/Canvas.tsx`                 | `onWalkIntoReactionPad` runs `onFireReaction`                        |
-| `apps/live/components/canvas/BoxedElementView.tsx`       | Mounts `ReactionBurst` beside the label stack                        |
-| `apps/live/components/palette/palette-tile-defs.tsx`     | `tools:reaction-<reaction>`, `tileGroup: 'reaction'`                 |
-| `apps/live/components/palette/BehaviourMenuSections.tsx` | `ReactionMenuSection`                                                |
-| `apps/live/hooks/canvas/usePortalSetters.ts`             | `setReactionSelected`                                                |
+| File                                                     | Role                                                              |
+| -------------------------------------------------------- | ----------------------------------------------------------------- |
+| `packages/document/src/data-shapes.ts`                   | `REACTIONS`, hues, labels, emoji, hints, pad labels, `isReaction` |
+| `packages/document/src/shape-factory.ts`                 | 150x110, `reaction: REACTION_DEFAULT`, label "Celebrate"          |
+| `packages/document/src/validate.ts`                      | Validates the `reaction` field [QF21]                             |
+| `packages/document/src/session.ts`                       | `NON_VOTABLE_SHAPES` includes `reaction-pad`                      |
+| `packages/document/src/svg-render-faces.ts`              | `reactionPad`: the export wash, spot, emoji and label chip        |
+| `packages/api-schema/src/room-messages.ts`               | The `reaction` op; `'reaction'` in `PRESENCE_OP_KINDS`            |
+| `apps/live/components/canvas/ReactionPadFace.tsx`        | The face: glow, emoji, spot, press ring, label pill; the press    |
+| `apps/live/app/qa-board.css`                             | `pad-bob`, `pad-ring`, the hover lift and the press squash        |
+| `apps/live/components/canvas/ReactionBurst.tsx`          | Canvas surface, clock, reduced motion, cleanup                    |
+| `apps/live/lib/reaction-particles.ts`                    | Pure spawn, step, alpha, draw                                     |
+| `apps/live/hooks/canvas/useReactionBursts.ts`            | Bursts keyed by element id; play, receive, clear                  |
+| `apps/live/app/document/[id]/useEditorState.ts`          | `fireReaction`: play, broadcast, track                            |
+| `apps/live/hooks/collab/useEditorBroadcast.ts`           | `broadcastReaction` and its gate                                  |
+| `apps/live/app/document/[id]/useRoomConnection.ts`       | Receives the op                                                   |
+| `apps/live/components/canvas/Canvas.tsx`                 | `onWalkIntoReactionPad` runs `onFireReaction`                     |
+| `apps/live/components/canvas/BoxedElementView.tsx`       | Mounts `ReactionBurst` beside the label stack                     |
+| `apps/live/components/palette/palette-tile-defs.tsx`     | `tools:reaction-<reaction>`, `tileGroup: 'reaction'`              |
+| `apps/live/components/palette/BehaviourMenuSections.tsx` | `ReactionMenuSection`                                             |
+| `apps/live/hooks/canvas/usePortalSetters.ts`             | `setReactionSelected`                                             |
 
 ## Domain and naming
 
@@ -40,6 +41,8 @@ Scope, by file:
 | Particle kind | `ParticleKind`                                     | `ribbon`, `star`, `heart`, `dot`, `ring`, `spark`                |
 | Reaction op   | `{ kind: 'reaction', tabId, elementId, reaction }` | The presence message                                             |
 | Pad label     | `REACTION_PAD_LABEL[reaction]`                     | The caption a placed pad takes                                   |
+| Hues          | `REACTION_HUES[reaction]`                          | The fixed `[from, to]` pair behind the glow, spot and ring       |
+| Spot          | the ellipse under the emoji                        | Where a character stands; the press ring starts there            |
 
 Banned synonyms: "emoji burst", "celebration", "effect", "button" for the pad (it is a pad),
 "vote".
@@ -112,6 +115,7 @@ Invariants:
 ```ts
 export const REACTIONS = ['confetti', 'sparkles', 'hearts', 'applause', 'fireworks'] as const;
 export type Reaction = (typeof REACTIONS)[number];
+export const REACTION_HUES: Record<Reaction, readonly [string, string]>;
 export const REACTION_LABEL: Record<Reaction, string>;
 export const REACTION_EMOJI: Record<Reaction, string>;
 export const REACTION_HINT: Record<Reaction, string>;
@@ -187,10 +191,20 @@ export function drawParticle(ctx: CanvasRenderingContext2D, p: Particle): void;
 
 ## Presentation and UX
 
-- **Pad:** a floor pad (`PadTread`), glyph `min(46cqw, 46cqh)` centred, 11 px label beneath,
-  `rounded-[inherit]`, press scales to 0.97. `@container` on the wrapper so the glyph resolves.
-- **Tooltip:** title `"<Reaction> pad"`, description `"<hint>. Press it, or walk a character onto
-it in Avatar mode."`.
+- **Pad:** a `[container-type:size]` wrapper, so `cqw` and `cqh` resolve against the pad. Over
+  the element box, a glow `radial-gradient(70% 70% at 50% 42%)` from `tint(from, 0.28)` to
+  `tint(to, 0.1)` at 55%, gone by 80%. The emoji at `min(34cqw, 40cqh)` with a
+  `tint(to, 0.45)` drop shadow, standing on the spot: `46cqw` by `9cqh`, pulled up `5cqh`,
+  `tint(from, 0.55)` to `tint(to, 0.18)`. The label, when set, in a 10.5 px semibold pill on
+  `tint(textColor, 0.07)`, truncated; an empty label draws no pill.
+- **Colour:** `REACTION_HUES` only, never the theme; the theme reaches the box and the label.
+- **Motion:** the emoji bobs (`pad-bob`, 2.8 s, 4% of its height); hover pauses the bob and
+  lifts it (`translateY(-6%) scale(1.08)`, `brightness(1.08)`); a press squashes it
+  (`scale(0.9, 0.84)`) and throws a `pad-ring` from the spot (600 ms, border in `from`), keyed
+  by a press count so every press replays it (D146).
+- **No hover card** on the face; the palette tile's hover card and the menu hint explain it.
+- **Export:** `reactionPad` draws the wash, the spot, the emoji as text (colour depends on the
+  renderer's emoji font) and the label chip, at the canvas proportions; no motion.
 - **Burst:** centred on the pad, `z-10` over the face and under selection chrome, pointer-inert.
 - **Palette:** a **React** accordion (`palette-create-tabs.tsx`) in Behaviours, one tile per
   reaction with its emoji [QF22].
@@ -203,7 +217,8 @@ it in Avatar mode."`.
 - Live: native `<button>`, `aria-label` `"Set off <Reaction>"`.
 - Inert: `role="img"`, `aria-label` `"<Reaction> pad"`.
 - Glyph `aria-hidden`; the burst canvas `aria-hidden`.
-- `prefers-reduced-motion: reduce` shows one still frame (I4).
+- `prefers-reduced-motion: reduce` shows one still frame (I4); the bob, lift, squash and ring
+  collapse under the reduced-motion rules in `globals.css`.
 
 ## Web experience
 
@@ -226,32 +241,33 @@ No log exists today. Proposed fingerprints (gap, see the report):
 
 ## Testing
 
-| Rule                                                   | Test                                                    | File                                               |
-| ------------------------------------------------------ | ------------------------------------------------------- | -------------------------------------------------- |
-| Registered kind; default reaction and label            | "is a registered shape kind", "starts on the default …" | `apps/live/lib/reaction.test.ts`                   |
-| Five reactions, distinct glyphs, meaningful hints      | "describes all five reactions, with no gaps"            | `apps/live/lib/reaction.test.ts`                   |
-| Unknown name guarded                                   | "guards an unknown reaction name from a newer peer"     | `apps/live/lib/reaction.test.ts`                   |
-| Not votable                                            | "is a control, not a vote candidate"                    | `apps/live/lib/reaction.test.ts`                   |
-| Particle counts, spread, scale and its clamp           | `spawnBurst` block                                      | `apps/live/lib/reaction-particles.test.ts`         |
-| Confetti rises and falls; hearts float; shells stagger | `spawnBurst` block                                      | `apps/live/lib/reaction-particles.test.ts`         |
-| Each reaction its own palette                          | "uses each reaction its own palette"                    | `apps/live/lib/reaction-particles.test.ts`         |
-| Closed-form step, launch delay, death                  | `stepParticles` block                                   | `apps/live/lib/reaction-particles.test.ts`         |
-| Frame-rate independence (I3)                           | "is frame-rate independent …"                           | `apps/live/lib/reaction-particles.test.ts`         |
-| Alpha fade in, hold, fade out                          | `alphaOf` block                                         | `apps/live/lib/reaction-particles.test.ts`         |
-| Op is presence, never logged                           | presence classification tests                           | `apps/api/src/document-room.test.ts`               |
-| Telemetry token `ReactionPad`                          | palette census                                          | `apps/live/lib/palette-telemetry-coverage.test.ts` |
-| One burst per pad, restart on re-fire (I2)             | none                                                    | (gap)                                              |
-| Local-first then broadcast                             | none                                                    | (gap)                                              |
-| Walk-on fires once per arrival                         | none                                                    | (gap)                                              |
-| Reduced motion, `dt` clamp, DPR cap, unmount (I4)      | none                                                    | (gap)                                              |
-| Unknown element `reaction` rejected                    | none                                                    | (gap) [QF21]                                       |
+| Rule                                                   | Test                                                    | File                                                |
+| ------------------------------------------------------ | ------------------------------------------------------- | --------------------------------------------------- |
+| Registered kind; default reaction and label            | "is a registered shape kind", "starts on the default …" | `apps/live/lib/reaction.test.ts`                    |
+| Five reactions, distinct glyphs, meaningful hints      | "describes all five reactions, with no gaps"            | `apps/live/lib/reaction.test.ts`                    |
+| Unknown name guarded                                   | "guards an unknown reaction name from a newer peer"     | `apps/live/lib/reaction.test.ts`                    |
+| Not votable                                            | "is a control, not a vote candidate"                    | `apps/live/lib/reaction.test.ts`                    |
+| Particle counts, spread, scale and its clamp           | `spawnBurst` block                                      | `apps/live/lib/reaction-particles.test.ts`          |
+| Confetti rises and falls; hearts float; shells stagger | `spawnBurst` block                                      | `apps/live/lib/reaction-particles.test.ts`          |
+| Each reaction its own palette                          | "uses each reaction its own palette"                    | `apps/live/lib/reaction-particles.test.ts`          |
+| Closed-form step, launch delay, death                  | `stepParticles` block                                   | `apps/live/lib/reaction-particles.test.ts`          |
+| Frame-rate independence (I3)                           | "is frame-rate independent …"                           | `apps/live/lib/reaction-particles.test.ts`          |
+| Alpha fade in, hold, fade out                          | `alphaOf` block                                         | `apps/live/lib/reaction-particles.test.ts`          |
+| Op is presence, never logged                           | presence classification tests                           | `apps/api/src/document-room.test.ts`                |
+| Telemetry token `ReactionPad`                          | palette census                                          | `apps/live/lib/palette-telemetry-coverage.test.ts`  |
+| Export draws the label in its chip                     | "puts a Reaction pad label in its chip"                 | `packages/document/src/svg-render-fidelity.test.ts` |
+| One burst per pad, restart on re-fire (I2)             | none                                                    | (gap)                                               |
+| Local-first then broadcast                             | none                                                    | (gap)                                               |
+| Walk-on fires once per arrival                         | none                                                    | (gap)                                               |
+| Reduced motion, `dt` clamp, DPR cap, unmount (I4)      | none                                                    | (gap)                                               |
+| Unknown element `reaction` rejected                    | none                                                    | (gap) [QF21]                                        |
 
 ## Constants and configuration
 
 | Name                                 | Value                         | Provenance / safe range                       |
 | ------------------------------------ | ----------------------------- | --------------------------------------------- |
 | `SHAPE_DEFAULT_SIZE['reaction-pad']` | `{ width: 150, height: 110 }` | Press-me square; the burst scale's base width |
-| `REACTION_DEFAULT`                   | `'confetti'`                  | The celebration most boards want              |
+| `REACTION_DEFAULT`                   | `'confetti'`                  | The celebration most canvases want            |
 | `OVERSCAN` (`ReactionBurst.tsx`)     | `2`                           | Pad-widths per side; 1 to 3                   |
 | `BURST_MS`                           | `2600`                        | Hard stop; above the longest life (D127)      |
 | DPR cap                              | `2`                           | Backing store; 1 to 2                         |
@@ -259,3 +275,5 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Reduced-motion instant               | `0.45` s, held `900` ms       | Mid-burst still (D128)                        |
 | Scale clamp                          | `[0.55, 3]`                   | Tiny and huge pads stay readable (D129)       |
 | Particle counts                      | 88, 54, 30, 3 + 48, 3 x 26-35 | `spawnBurst`, per reaction                    |
+| `REACTION_HUES`                      | Five `[from, to]` pairs       | Fixed per reaction, never themed; spec hues   |
+| `pad-bob` / `pad-ring`               | 2.8 s loop, 4% / 600 ms       | Ambient and press motion (D146)               |

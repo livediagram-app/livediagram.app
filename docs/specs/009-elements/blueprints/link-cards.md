@@ -66,7 +66,8 @@ States of one card: **empty** (no `link`) → **linked, unfurling** (url link, n
 'url'` and a selected element is a link card (GB9), it calls `apiUnfurl(url)` once. On a
    non-null result it commits, as its own history step (D57), `meta = { url, title, image,
 favicon }` on each selected link card whose link is still that URL (D50), and tracks
-   `track('Element', 'Changed', 'LinkUnfurled')`. A null result changes nothing.
+   `track('Element', 'Changed', 'LinkUnfurled')` only when a card took the preview (GB9). A null
+   result changes nothing.
 4. **Sync.** `meta` rides the tab body and the element op; peers and reloads never re-fetch.
 5. **Render.** `LinkCardView` trusts `meta` only when `meta.url === link.url`. The title is the
    trusted `meta.title` else the host without `www.` (GB11); the destination is the URL, the
@@ -81,7 +82,7 @@ favicon }` on each selected link card whose link is still that URL (D50), and tr
 
 ### `GET /api/unfurl?url=<encoded>`
 
-1. Method not GET → 404.
+1. A path segment after `unfurl`, or a method other than GET → 404.
 2. `UNFURL_RATE_LIMITER` bound and over limit for `clientIp(request)` → 429 `rate_limited`.
    Unbound → allowed.
 3. No `url` → 400 `missing url`. `parsePublicHttpUrl` null → 400 `invalid or disallowed url`.
@@ -164,7 +165,7 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
 | 200      | Fetched, or network error / timeout      | `UnfurlResult` (at least `url`)             |
 | 400      | Missing, malformed, non-http(s), blocked | `missing url` / `invalid or disallowed url` |
 | 400      | Redirected to a blocked host             | `redirected to a disallowed url`            |
-| 404      | Not GET                                  | `notFound()`                                |
+| 404      | Not GET, or an extra path segment        | `notFound()`                                |
 | 429      | Rate limited                             | `rate_limited`                              |
 
 `siteName` and `description` stay on the wire and are not cached on the element `[QB13]`.

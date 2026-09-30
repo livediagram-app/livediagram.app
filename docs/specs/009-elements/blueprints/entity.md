@@ -12,9 +12,12 @@ Scope, by file:
 | `packages/document/src/element-types.ts`                     | `ShapeElement.entityFields`                           |
 | `packages/document/src/shape-factory.ts`                     | `createShape('entity', …)` defaults                   |
 | `packages/document/src/validate.ts`                          | `SHAPE_KINDS` entry and the `entityFields` bounds     |
+| `packages/document/src/entity-geometry.ts`                   | `entityHeaderHeight`, `entityHeight`, row metrics     |
 | `packages/document/src/svg-render-data.ts`                   | `svgEntityRows`: rule and rows in the headless render |
 | `packages/document/src/label-font.ts`                        | `LABEL_FONT_PX`, `labelFontPx`: the title's px table  |
-| `apps/live/components/canvas/EntityView.tsx`                 | `EntityView`, `entityHeaderHeight`                    |
+| `packages/document/src/graph-authoring.ts`                   | `entityNode`: a graph node with fields is an entity   |
+| `apps/mcp/src/element-normalise.ts`                          | `normaliseEntity`: an authored box fits its rows      |
+| `apps/live/components/canvas/EntityView.tsx`                 | `EntityView`: the canvas rule and rows                |
 | `apps/live/components/canvas/label-style.ts`                 | `FIXED_FONT_PX` (re-export of `LABEL_FONT_PX`)        |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`              | `setEntityFieldsSelected`                             |
 | `apps/live/components/palette/context-menu-data-editors.tsx` | `EntityFieldsEditor`                                  |
@@ -34,7 +37,7 @@ Scope, by file:
 | Title bar | `entityHeaderHeight(element)` px | The band above the rule                        |
 | Rule      | (render only)                    | The 1px line under the title bar               |
 
-Banned synonyms: "record" in new code or copy (older comments use it), "class box", "attribute"
+Banned synonyms: "record" in new code or copy (some comments use it), "class box", "attribute"
 for a field, "column" for a field. "Entity" is the single user-facing and code term.
 
 ## Behaviour and state
@@ -49,10 +52,16 @@ for a field, "column" for a field. "Entity" is the single user-facing and code t
    `fields.slice(0, ENTITY_MAX_FIELDS)`, each `name` sliced to `ENTITY_MAX_TEXT`, and `type` kept
    only when non-empty after trimming, sliced to `ENTITY_MAX_TEXT` [GA12]. One `commit`, tracks
    `Element·Changed·Entity`.
-5. **Title bar height** (`entityHeaderHeight`): `fontPx` is `16` for `'scale'` (or absent) and
-   `FIXED_FONT_PX[size]` otherwise; height `max(30, round(fontPx * 1.25) + 10)`. One function in
-   `@livediagram/document` serves canvas and export, and reads the same absent-size default the
-   label uses [GA11].
+5. **Title bar height** (`entityHeaderHeight(textSize)`): `fontPx` is
+   `labelFontPx(textSize ?? 'scale')`, the table `FIXED_FONT_PX` re-exports; height
+   `max(30, round(fontPx * 1.25) + 10)`. One function in `packages/document/src/entity-geometry.ts`
+   serves the canvas (`EntityView`) and the export (`svgEntityRows`), and reads the same
+   absent-size default the label uses [GA11].
+6. **Authored size** (`entityHeight(rows, textSize)`): the title bar, plus, with rows,
+   `rows * ENTITY_ROW_TEXT_PX + (rows - 1) * ENTITY_ROW_GAP_PX + 2 * ENTITY_BODY_PAD_PX`, rounded
+   up. MCP element writes (`normaliseEntity`) raise a shorter box to it; graph authoring
+   (`entityNode`) builds a `textSize: 'sm'` entity that height, 200 to 360 wide by a glyph
+   estimate. The editor never resizes an entity (`D141`) [QA12].
 
 Invariants:
 
@@ -72,8 +81,12 @@ export type EntityField = { name: string; type?: string };
 // packages/document/src/element-types.ts (ShapeElement)
 entityFields?: EntityField[];
 
-// apps/live/components/canvas/EntityView.tsx
-export function entityHeaderHeight(element: ShapeElement): number;
+// packages/document/src/entity-geometry.ts
+export const ENTITY_ROW_TEXT_PX = 11 * 1.25;
+export const ENTITY_ROW_GAP_PX = 3;
+export const ENTITY_BODY_PAD_PX = 6;
+export function entityHeaderHeight(textSize: TextSize | undefined): number;
+export function entityHeight(rows: number, textSize: TextSize | undefined): number;
 
 // apps/live/hooks/canvas/useDataShapeSetters.ts
 setEntityFieldsSelected: (fields: EntityField[]) => void;
@@ -106,8 +119,9 @@ No migration: absent `entityFields` renders as an empty list.
 | E4  | Paste of more than 40 rows         | Sliced to 40 on commit                                            |
 | E5  | 41st row via Add field             | Button `disabled` at 40                                           |
 | E6  | Whitespace-only type               | Dropped to `undefined` [GA12]                                     |
-| E7  | `textSize` absent in a stored file | Band and label read the same default [GA11]                       |
+| E7  | `textSize` absent in a stored file | Band and label read the same default, canvas and export [GA11]    |
 | E8  | Locked or read-only                | Nothing on the canvas is a control; rows edit only from the menu  |
+| E9  | Authored via MCP or a graph        | Box raised to `entityHeight`, so no row is clipped (`D141`)       |
 
 ## Security and trust
 
@@ -141,24 +155,30 @@ None in code today [GA1].
 
 ## Testing
 
-| Rule                                         | Test                                          | File                                                |
-| -------------------------------------------- | --------------------------------------------- | --------------------------------------------------- |
-| Band follows text size, 30 floor             | entityHeaderHeight (three cases)              | `apps/live/components/canvas/entity-header.test.ts` |
-| Export keeps the card box and draws a body   | still frames a record; every kind with a body | `packages/document/src/export-consistency.test.ts`  |
-| Class template uses entities, fields as rows | class diagram drops four entity classes       | `apps/live/lib/templates.test.ts`                   |
-| Bounds 40 / 80, `type` optional (I1)         | none [GA14]                                   |                                                     |
-| Cleared type stores `undefined` (I2)         | none [GA14]                                   |                                                     |
-| Editor commits on blur, add, remove          | none [GA14]                                   |                                                     |
-| Canvas and export band agree (I3)            | none [GA11]                                   |                                                     |
+| Rule                                         | Test                                                          | File                                               |
+| -------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| Band follows text size, 30 floor             | entityHeaderHeight (two cases)                                | `packages/document/src/entity-geometry.test.ts`    |
+| Authored height shows every row              | entityHeight (two cases)                                      | `packages/document/src/entity-geometry.test.ts`    |
+| MCP write grows the box to its rows          | aligns an entity title top-left and grows the box to its rows | `apps/mcp/src/element-normalise.test.ts`           |
+| Export keeps the card box and draws a body   | still frames a record; every kind with a body                 | `packages/document/src/export-consistency.test.ts` |
+| Class template uses entities, fields as rows | class diagram drops four entity classes                       | `apps/live/lib/templates.test.ts`                  |
+| Bounds 40 / 80, `type` optional (I1)         | none [GA14]                                                   |                                                    |
+| Cleared type stores `undefined` (I2)         | none [GA14]                                                   |                                                    |
+| Editor commits on blur, add, remove          | none [GA14]                                                   |                                                    |
+| Canvas and export band agree (I3)            | none [GA11]                                                   |                                                    |
+| Graph authoring builds an entity             | none [GA14]                                                   |                                                    |
 
 ## Constants and configuration
 
-| Name                | Value       | Provenance / safe range                                |
-| ------------------- | ----------- | ------------------------------------------------------ |
-| `ENTITY_MAX_FIELDS` | 40          | Readable in one box; 20 to 80                          |
-| `ENTITY_MAX_TEXT`   | 80          | A signature fits; 40 to 200                            |
-| Band floor          | 30          | The band at the 16px size; fixed                       |
-| Band line height    | 1.25        | Tailwind `leading-tight`                               |
-| Band padding        | 10          | The label's vertical padding                           |
-| Rule colour         | `'#cbd5e1'` | Tailwind slate-300 (`MUTED_RULE` in export)            |
-| Row sizes           | 11 / 10 px  | Name / type; the export's row pitch is `11 * 1.25 + 3` |
+| Name                 | Value       | Provenance / safe range                       |
+| -------------------- | ----------- | --------------------------------------------- |
+| `ENTITY_MAX_FIELDS`  | 40          | Readable in one box; 20 to 80                 |
+| `ENTITY_MAX_TEXT`    | 80          | A signature fits; 40 to 200                   |
+| Band floor           | 30          | The band at the 16px size; fixed              |
+| Band line height     | 1.25        | Tailwind `leading-tight`                      |
+| Band padding         | 10          | The label's vertical padding                  |
+| Rule colour          | `'#cbd5e1'` | Tailwind slate-300 (`MUTED_RULE` in export)   |
+| Row sizes            | 11 / 10 px  | Name / type                                   |
+| `ENTITY_ROW_TEXT_PX` | 13.75       | An 11px name at `leading-tight`               |
+| `ENTITY_ROW_GAP_PX`  | 3           | Between rows (`gap-[3px]` on canvas)          |
+| `ENTITY_BODY_PAD_PX` | 6           | Above and below the list (`py-1.5` on canvas) |
