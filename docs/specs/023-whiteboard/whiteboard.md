@@ -225,6 +225,16 @@ The eraser offers **both** modes, switched in its flyout:
   shape keeps the stroke's colour and width (the nearest border width) and has
   no fill. Undo removes it; recognition happens on release, so there is no
   intermediate stroke to bring back.
+- **A preview while the pen holds still**: with recognition on, keeping the
+  pen pressed and still (within 4 screen px) for **half a second** swaps the
+  stroke being drawn for the shape it reads as, in the pen's colour and
+  weight, exactly where it will land. Lifting the pen then lands that shape;
+  moving on drops the preview at once and the stroke carries on, and the next
+  pause asks again. A stroke that reads as no shape shows no preview. Half a
+  second is long enough that a pause mid-letter does not trigger it and short
+  enough to feel like an answer (Procreate's QuickShape and GoodNotes sit
+  around the same). The preview and the commit run the same test on the same
+  smoothed points (`recogniseBoardStroke`), so what shows is what lands.
 - When off, strokes stay as drawn.
 
 ## Board background

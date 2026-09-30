@@ -14,6 +14,11 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { NoteGhost } from '@/components/canvas/NoteGhost';
+import {
+  PenShapePreview,
+  RecognisedShapePreview,
+} from '@/components/canvas/whiteboard/BoardShapePreview';
+import { useRecognitionPreview } from '@/hooks/canvas/useRecognitionPreview';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
 
 type CanvasDrawPreviewProps = {
@@ -61,6 +66,16 @@ export function CanvasDrawPreview({
   const showsBox = !!drawDrag && !!pendingDraw && !stamp;
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
   const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox);
+  // Recognition on: holding the pen still shows the shape the stroke becomes.
+  const recognising =
+    showsPen && pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard'
+      ? pendingDraw.recognise
+      : false;
+  const recognised = useRecognitionPreview(
+    recognising ? penPoints : null,
+    recognising,
+    viewportZoom,
+  );
   return (
     <>
       {stamp && pendingDraw?.type === 'sticky' ? (
@@ -121,6 +136,17 @@ export function CanvasDrawPreview({
             // A whiteboard pen: its own colour and its width in canvas px, so the
             // stroke being drawn is exactly as thick as the one that lands.
             const wb = pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
+            if (wb && recognised) {
+              return (
+                <RecognisedShapePreview
+                  shape={recognised}
+                  colour={inkOf(wb.colour)}
+                  penWidth={wb.width}
+                  zoom={viewportZoom}
+                  origin={rect}
+                />
+              );
+            }
             return (
               <svg
                 aria-hidden
@@ -326,53 +352,3 @@ export function CanvasDrawPreview({
     </>
   );
 }
-
-// A whiteboard shape while it is drawn: the outline the committed shape will
-// have, in the board's ink at the default weight, unfilled. SVG-rendered outlines keep a
-// screen-px stroke; CSS-bordered ones (rectangle, ellipse) scale with the zoom,
-// as the committed shapes do.
-function PenShapePreview({
-  kind,
-  colour,
-  widthPx,
-  usesSvg,
-  radius,
-  zoom,
-  aspect,
-}: {
-  kind: import('@livediagram/document').ShapeKind;
-  colour: string;
-  widthPx: number;
-  usesSvg: boolean;
-  radius: string;
-  zoom: number;
-  aspect: number;
-}) {
-  if (usesSvg) {
-    return (
-      <ShapeSvgOverlay
-        shape={kind}
-        fill="none"
-        stroke={colour}
-        strokeWidth={widthPx}
-        aspect={aspect}
-      />
-    );
-  }
-  return (
-    <div
-      data-pen-preview=""
-      className="h-full w-full"
-      style={{
-        borderStyle: 'solid',
-        borderColor: colour,
-        borderWidth: widthPx * zoom,
-        // The committed shape's own corners: a rectangle's default 8 canvas px.
-        borderRadius: radius === '4px' ? `${SHAPE_CORNER_PX * zoom}px` : radius,
-      }}
-    />
-  );
-}
-
-// A rectangle's default corner radius on the canvas (element-variant's 8px).
-const SHAPE_CORNER_PX = 8;

@@ -233,6 +233,19 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   (Plain / Dots / Grid) and Drawing (Basic / Shape recognition, `setRecognition(on)`). The dock has
   no recognition button.
 
+### Recognition preview
+
+- `apps/live/lib/recognition-preview.ts`: `RECOGNITION_THRESHOLD` (0.4), `RECOGNITION_PREVIEW_DWELL_MS`
+  (500), `RECOGNITION_PREVIEW_STILL_PX` (4 screen px), `recogniseBoardStroke(points)`, `stillSince`.
+  `commit-freehand`'s `whiteboardStroke` uses `recogniseBoardStroke`.
+- `useRecognitionPreview(points, active, zoom)`: restarts a dwell timer whenever the latest sample
+  leaves the still radius of the last anchor; on firing it recognises `simplifyPenStroke(points,
+zoom)` and stores `{ shape, first, count, anchor }`. It returns the shape only while the stroke is
+  the same (`points[0]`) and every sample since `count - 1` stays still. Logs
+  `[whiteboard] recognition preview <kind>`.
+- `CanvasDrawPreview` renders `RecognisedShapePreview` (`components/canvas/whiteboard/BoardShapePreview.tsx`,
+  beside `PenShapePreview`) instead of the stroke path while a shape is returned.
+
 ### Shapes are plain ink
 
 - A pen is a separate tool: pens do not set the colour of other tools. `whiteboardShapeIntent(id)`

@@ -18,6 +18,7 @@ import { titleCaseType, track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { HIGHLIGHTER_DEFAULT_WIDTH } from '@/hooks/canvas/useShapeDrawing';
 import { simplifyPenStroke } from '@/lib/pen-smoothing';
+import { RECOGNITION_THRESHOLD, recogniseBoardStroke } from '@/lib/recognition-preview';
 
 // WHAT A PEN STROKE BECOMES (docs/specs/008-canvas/two-pens.md's two pens, docs/specs/008-canvas/highlighter.md's highlighter).
 //
@@ -33,9 +34,6 @@ import { simplifyPenStroke } from '@/lib/pen-smoothing';
 // Decision and effect are interleaved on purpose and stay that way. Each
 // branch mints its element and commits it in the same breath; teasing the two
 // apart would be a rewrite of behaviour nobody asked for, not a move.
-
-// Shape Pen recognition bar; see the note in makeCommitFreehand.
-const RECOGNITION_THRESHOLD = 0.4;
 
 export function makeCommitFreehand({
   editsBlocked,
@@ -237,8 +235,9 @@ type WhiteboardPenIntent = Extract<PendingDraw, { variant: 'whiteboard' }>;
 // remembered diagram style.
 function whiteboardStroke(points: { x: number; y: number }[], pen: WhiteboardPenIntent): Element {
   const colour = pen.colour ? { strokeColor: pen.colour } : {};
-  const detected = pen.recognise ? recogniseShape(points) : null;
-  if (detected && detected.confidence >= RECOGNITION_THRESHOLD) {
+  // The same test the hold-still preview runs (lib/recognition-preview), so it is what lands.
+  const detected = pen.recognise ? recogniseBoardStroke(points) : null;
+  if (detected) {
     track('Element', 'Added', detected.kind === 'line' ? 'Arrow' : titleCaseType(detected.kind));
     if (detected.kind === 'line') {
       const from = detected.from ?? points[0]!;

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { act, render } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { RECOGNITION_PREVIEW_DWELL_MS } from '@/lib/recognition-preview';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { CanvasDrawPreview } from './CanvasDrawPreview';
 
@@ -112,5 +113,52 @@ describe('the live pen stroke is already smoothed (docs/specs/023-whiteboard/whi
     expect(d).toContain('C');
     expect(d).not.toContain('L');
     expect((d.match(/C/g) ?? []).length).toBe(1);
+  });
+});
+
+describe('the recognition preview (docs/specs/023-whiteboard/whiteboard.md "Shape recognition")', () => {
+  const square: { x: number; y: number }[] = [];
+  for (let i = 0; i <= 20; i++) square.push({ x: i * 10, y: 0 });
+  for (let i = 1; i <= 20; i++) square.push({ x: 200, y: i * 10 });
+  for (let i = 1; i <= 20; i++) square.push({ x: 200 - i * 10, y: 200 });
+  for (let i = 1; i <= 20; i++) square.push({ x: 0, y: 200 - i * 10 });
+
+  it('swaps the stroke for the clean shape once the pen holds still, with recognition on', () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(
+        <CanvasDrawPreview
+          {...base}
+          viewportZoom={1}
+          penPoints={square}
+          pendingDraw={{ ...pen('#e5484d', 1.5), recognise: true } as PendingDraw}
+        />,
+      );
+      expect(container.querySelector('[data-recognition-preview]')).toBeNull();
+      act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
+      const preview = container.querySelector('[data-recognition-preview="square"]');
+      expect(preview).not.toBeNull();
+      expect(container.querySelector('path')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('never previews with recognition off', () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(
+        <CanvasDrawPreview
+          {...base}
+          viewportZoom={1}
+          penPoints={square}
+          pendingDraw={pen(null, 1.5)}
+        />,
+      );
+      act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS * 2));
+      expect(container.querySelector('[data-recognition-preview]')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
