@@ -1,8 +1,9 @@
 'use client';
 
-// The More shapes search's state (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"):
-// the query, its results, and the result the arrow keys have reached. Focus stays in the field;
-// the active result is announced through aria-activedescendant (the combobox pattern).
+// The Shapes flyout's state (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows",
+// "Shape slots"): the query, what it shows (the six slots in two rows, Recent over Most used, or at
+// most six results) and the entry the arrow keys have reached. Focus stays in the field; the active
+// entry is announced through aria-activedescendant (the combobox pattern).
 
 import { useMemo, useState, type KeyboardEvent } from 'react';
 import {
@@ -10,10 +11,15 @@ import {
   searchWhiteboardShapes,
   type GridDirection,
 } from '@/lib/whiteboard-shape-search';
-import type { WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
+import {
+  whiteboardShapeEntry,
+  type WhiteboardShapeEntry,
+  type WhiteboardShapeKey,
+} from '@/lib/whiteboard-shape-catalogue';
+import type { ShapeSlots } from '@/lib/whiteboard-shape-slots';
 
-// Results per row: six 40 px cells fill the flyout's fixed width.
-export const SHAPE_SEARCH_COLUMNS = 6;
+// Entries per row: three, so the six slots are two rows and six results two rows too.
+export const SHAPE_GRID_COLUMNS = 3;
 
 const DIRECTIONS: Record<string, GridDirection> = {
   ArrowLeft: 'left',
@@ -22,12 +28,30 @@ const DIRECTIONS: Record<string, GridDirection> = {
   ArrowDown: 'down',
 };
 
-export function useShapeSearch(onPick: (key: WhiteboardShapeKey) => void) {
+export type ShapeGridGroup = { id: string; label: string; entries: WhiteboardShapeEntry[] };
+
+const entriesOf = (keys: readonly WhiteboardShapeKey[]) =>
+  keys.map(whiteboardShapeEntry).filter((e): e is WhiteboardShapeEntry => e !== undefined);
+
+export function useShapeSearch(
+  slots: ShapeSlots,
+  onPick: (key: WhiteboardShapeKey, searched: boolean) => void,
+) {
   const [query, setQueryState] = useState('');
   const [active, setActive] = useState(0);
-  const view = useMemo(() => searchWhiteboardShapes(query), [query]);
-  const flat = useMemo(() => view.groups.flatMap((g) => g.entries), [view]);
-  const sizes = useMemo(() => view.groups.map((g) => g.entries.length), [view]);
+  const searching = query.trim().length > 0;
+  const groups: ShapeGridGroup[] = useMemo(
+    () =>
+      searching
+        ? [{ id: 'results', label: 'Matching shapes', entries: searchWhiteboardShapes(query) }]
+        : // Recent on top, Most used below (a kind in both shows only below: Most used is steadier).
+          [
+            { id: 'recent', label: 'Recent shapes', entries: entriesOf(slots.recent) },
+            { id: 'most-used', label: 'Most used shapes', entries: entriesOf(slots.mostUsed) },
+          ],
+    [searching, query, slots],
+  );
+  const flat = useMemo(() => groups.flatMap((g) => g.entries), [groups]);
 
   // A new query starts at its best match.
   const setQuery = (next: string) => {
@@ -40,20 +64,22 @@ export function useShapeSearch(onPick: (key: WhiteboardShapeKey) => void) {
     // Every arrow walks the grid (the spec's rule); Home and End still move the caret.
     if (dir) {
       e.preventDefault();
-      setActive((i) => gridStep(sizes, SHAPE_SEARCH_COLUMNS, i, dir));
+      const sizes = groups.map((g) => g.entries.length);
+      setActive((i) => gridStep(sizes, SHAPE_GRID_COLUMNS, i, dir));
       return;
     }
     if (e.key === 'Enter') {
       e.preventDefault();
       const entry = flat[active];
-      if (entry) onPick(entry.key);
+      if (entry) onPick(entry.key, searching);
     }
   };
 
   return {
     query,
     setQuery,
-    view,
+    searching,
+    groups,
     flat,
     active: Math.min(active, Math.max(0, flat.length - 1)),
     setActive,
