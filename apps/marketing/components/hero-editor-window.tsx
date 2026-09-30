@@ -248,7 +248,7 @@ export function EditorWindow({
               </span>
               <span className="inline-flex items-center gap-0.5">
                 <StarGlyph />
-                Favourites
+                <span className="text-optical-line">Favourites</span>
                 <ChevronDownIcon size={8} />
               </span>
             </div>

@@ -57,8 +57,8 @@ const transitions = (all: MotionRecord[]) =>
   all.filter((m) => Number.isFinite(m.active) && m.iterations < 2);
 
 async function justDraw(page: Page): Promise<void> {
-  await page.goto('/new');
-  await page.getByRole('button', { name: /^just draw$/i }).click();
+  // Straight to a blank canvas: the /new?blank=1 bypass (the landing page's Just Draw).
+  await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 }

@@ -16,9 +16,9 @@ import {
 test('the new-document wizard renders', async ({ page, pageErrors }) => {
   await page.goto('/new');
   await expect(page.getByText('New Document', { exact: false })).toBeVisible();
-  // The Quick Start template grid is the client-rendered heart of the
-  // wizard; its presence proves the picker mounted, not just the shell.
-  await expect(page.getByText('Quick Start', { exact: false })).toBeVisible();
+  // The template shelf is the client-rendered heart of the wizard; its
+  // Popular heading proves the picker mounted, not just the shell.
+  await expect(page.getByRole('heading', { name: 'Popular' })).toBeVisible();
   await expect(page.getByText('Blank Canvas', { exact: false })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });

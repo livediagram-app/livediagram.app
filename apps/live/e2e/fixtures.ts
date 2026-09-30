@@ -154,9 +154,6 @@ export async function dismissQuickTour(page: Page): Promise<void> {
   await decline.waitFor({ state: 'detached' });
 }
 
-// Opens /new and takes "Just Draw" to the editor. Retried, because on a cold server the first click can
-// land before hydration; but only clicks while the wizard is still up: a click that already worked leaves
-// /new, and hunting for the button again would fail every retry while the editor loads under load.
 // A blank canvas straight away: /new?blank=1, the wizard bypass the landing
 // page's Just Draw links to (docs/specs/007-editor/new-document-route.md).
 export async function openJustDraw(page: Page): Promise<void> {

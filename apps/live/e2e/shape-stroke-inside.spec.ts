@@ -10,6 +10,14 @@ const MARGIN_PX = 6;
 const INK_THRESHOLD = 24;
 
 async function inkOutsideBox(page: Page, element: Locator): Promise<number> {
+  // A new element pops in (a scale entry animation), and a bounding box read
+  // mid-pop is the shrunken one, while the screenshots below finish the
+  // animation first. The ring would then be clipped from a box smaller than
+  // the diamond it measures, and count the diamond's own edges as ink. Wait
+  // the entry out before measuring.
+  await element.evaluate((el: HTMLElement) =>
+    Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)),
+  );
   const box = (await element.boundingBox())!;
   const clip = {
     x: box.x - MARGIN_PX,

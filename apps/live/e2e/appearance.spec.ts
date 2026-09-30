@@ -13,8 +13,8 @@ const CANVAS = '[data-canvas-a11y-root]';
 // The wizard's Skip path (docs/specs/007-editor/new-document-route.md): a blank document on the Default colour
 // scheme, in one click. What this suite needs is a default tab, not the wizard.
 async function justDraw(page: import('@playwright/test').Page): Promise<void> {
-  await page.goto('/new');
-  await page.getByRole('button', { name: /^just draw$/i }).click();
+  // Straight to a blank canvas: the /new?blank=1 bypass (the landing page's Just Draw).
+  await page.goto('/new?blank=1');
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);
 }

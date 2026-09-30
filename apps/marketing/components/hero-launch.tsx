@@ -174,7 +174,9 @@ export function LaunchCanvasOverlay({
                   <Prims prims={PROOF_NODE[point].icon} />
                 </Glyph>
               </span>
-              {point}
+              {/* Cap-band centred against the icon tile (optical-alignment.md): a bare text
+                  node sat by its line box, visibly high on Linux fonts. */}
+              <span className="text-optical-line">{point}</span>
             </span>
             {i < PROOF_POINTS.length - 1 ? (
               <svg

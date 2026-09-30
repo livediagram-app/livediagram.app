@@ -158,10 +158,14 @@ export function TemplatePickerBrowse({
                       <h3 className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
                         {open.label}
                       </h3>
-                      <span className="shrink-0 rounded-full bg-white px-1.5 py-px text-[10px] font-semibold tabular-nums text-slate-500 dark:bg-slate-700 dark:text-slate-300">
-                        {open.items.length}
-                        <span className="sr-only"> templates</span>
+                      {/* The PickerCard count badge: the digit's ink centred in the
+                          pill (text-optical-centre, optical-alignment.md), and the
+                          screen-reader word kept outside it so it never skews the
+                          pill's content box. */}
+                      <span className="relative top-[0.5px] inline-flex h-3.5 shrink-0 items-center justify-center rounded-full bg-white px-1.5 text-[10px] font-semibold leading-none tabular-nums text-slate-500 dark:bg-slate-700 dark:text-slate-300">
+                        <span className="text-optical-centre">{open.items.length}</span>
                       </span>
+                      <span className="sr-only"> templates</span>
                       <span className="hidden truncate text-xs text-slate-500 sm:inline dark:text-slate-400">
                         {open.description}
                       </span>

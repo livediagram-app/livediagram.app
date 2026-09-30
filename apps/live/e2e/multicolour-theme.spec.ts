@@ -37,7 +37,11 @@ test.describe('Multi-colour themes', () => {
     const logs: string[] = [];
     page.on('console', (msg) => logs.push(msg.text()));
 
-    await startTemplateDocument(page, /Browse Mind maps templates/, /^Mind map/i);
+    // The Tree mind map: its nodes take the theme's presets, so a theme switch
+    // owns their colours. (The radial Mind map template authors a hue per
+    // branch, which a switch rightly keeps as a customisation, per
+    // docs/specs/011-theme/multicolour-themes.md.)
+    await startTemplateDocument(page, /Browse Mind maps templates/, /^Tree mind map/i);
     await dismissQuickTour(page);
     // The template's own theme carries none of Rainbow's hues, so any found
     // afterwards came from the switch.
