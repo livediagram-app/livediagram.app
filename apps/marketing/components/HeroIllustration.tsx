@@ -34,7 +34,7 @@
 // first window centred, and reduced-motion settles every build, the canvas
 // tint, and hides the laser.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
 import {
   ArchitectureDiagram,
@@ -43,7 +43,9 @@ import {
   SlideDeckDiagram,
   TimelineDiagram,
 } from './hero-diagrams';
+import { snapStage } from '@/lib/hero-stage';
 import { EditorWindow, type TabDef } from './hero-editor-window';
+import { useStageBox } from './useStageBox';
 import {
   LAUNCH_DWELL_MS,
   LAUNCH_HREF,
@@ -205,6 +207,12 @@ export function HeroIllustration() {
   }, [active, reduceMotion]);
 
   const tx = (100 - card) / 2 - active * (card + GAP);
+  // Whole-pixel geometry once the stage is measured (lib/hero-stage.ts), so the centred window's
+  // text renders sharp; the percentages above hold until then (and with JS off).
+  const stageRef = useRef<HTMLDivElement>(null);
+  const box = useStageBox(stageRef);
+  const snapped = box ? snapStage(box, card, GAP, active) : null;
+  const cardWidth = snapped ? `${snapped.cardPx}px` : `${card}%`;
 
   const { launch, layer } = useLaunchGrow();
 
@@ -212,13 +220,18 @@ export function HeroIllustration() {
   return (
     <div className="mx-auto mt-16 w-full max-w-6xl">
       <div
+        ref={stageRef}
         aria-hidden
         data-hero-anchor="stage"
         className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)]"
       >
         <div
           className="hero-track flex w-full"
-          style={{ gap: `${GAP}%`, transform: `translateX(${tx}%)` }}
+          style={
+            snapped
+              ? { gap: `${snapped.gapPx}px`, transform: `translateX(${snapped.translatePx}px)` }
+              : { gap: `${GAP}%`, transform: `translateX(${tx}%)` }
+          }
         >
           {CARDS.map((c, i) => {
             const playing = i === active;
@@ -275,7 +288,7 @@ export function HeroIllustration() {
                       e.preventDefault();
                     }
                   }}
-                  style={{ width: `${card}%` }}
+                  style={{ width: cardWidth }}
                   className={'group block cursor-pointer ' + cardClassName}
                 >
                   {frame}
@@ -288,7 +301,7 @@ export function HeroIllustration() {
                 type="button"
                 tabIndex={-1}
                 onClick={() => show(i)}
-                style={{ width: `${card}%` }}
+                style={{ width: cardWidth }}
                 className={cardClassName}
               >
                 {frame}

@@ -1054,20 +1054,19 @@
 
 /* The launch window (components/hero-launch.tsx, docs/specs/019-marketing/marketing-site.md).
    Its invitation breathes while the window is centred: an attention pulse, so an ambient loop
-   (docs/specs/004-interface-design/motion.md). */
+   (docs/specs/004-interface-design/motion.md). Only its glow ring moves, never a scale: a scaled
+   button resamples its label every frame, and the text never sits sharp. */
 .hero-launch-invite {
   animation: hero-launch-invite 2.4s ease-in-out infinite;
 }
 @keyframes hero-launch-invite {
   0%,
   100% {
-    transform: scale(1);
     box-shadow:
       0 10px 15px -3px rgb(14 165 233 / 0.3),
       0 0 0 0 rgb(14 165 233 / 0.35);
   }
   50% {
-    transform: scale(1.04);
     box-shadow:
       0 10px 15px -3px rgb(14 165 233 / 0.3),
       0 0 0 10px rgb(14 165 233 / 0);
@@ -1117,29 +1116,16 @@
   animation: hero-proof-arrow 260ms ease-out
     calc(var(--proof-start, 400ms) + 220ms + var(--i) * 420ms) both;
 }
-.hero-proof-arrow-down {
-  transform-origin: center top;
-  animation: hero-proof-arrow-down 260ms ease-out
-    calc(var(--proof-start, 400ms) + 220ms + var(--i) * 420ms) both;
-}
-@keyframes hero-proof-arrow-down {
-  from {
-    opacity: 0;
-    transform: scaleY(0.2);
-  }
-  to {
-    opacity: 1;
-    transform: scaleY(1);
-  }
-}
 @keyframes hero-proof-node {
   from {
     opacity: 0;
     transform: scale(0.85);
   }
+  /* none, not scale(1): a finished node should hold no transform at all, so its text sits on
+     whole pixels. */
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: none;
   }
 }
 @keyframes hero-proof-arrow {
@@ -1149,14 +1135,13 @@
   }
   to {
     opacity: 1;
-    transform: scaleX(1);
+    transform: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-launch-invite,
   .hero-proof-node,
-  .hero-proof-arrow,
-  .hero-proof-arrow-down {
+  .hero-proof-arrow {
     animation: none;
   }
 }

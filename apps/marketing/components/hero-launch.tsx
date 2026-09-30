@@ -121,10 +121,10 @@ export function LaunchCanvasOverlay({
   afterConnector: boolean;
 }) {
   return (
-    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-5 px-6 pt-10 sm:gap-16 sm:pt-0">
+    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-16 px-6">
       <span
         className={
-          'inline-flex items-center gap-2 rounded-full bg-brand-600 px-3 py-1.5 text-xs font-semibold sm:px-4 sm:py-2 sm:text-sm text-white shadow-lg shadow-brand-500/30 transition group-hover:bg-brand-500 dark:bg-brand-500 dark:group-hover:bg-brand-400 ' +
+          'inline-flex items-center gap-2 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition group-hover:bg-brand-500 dark:bg-brand-500 dark:group-hover:bg-brand-400 ' +
           (playing ? 'hero-launch-invite' : '')
         }
       >
@@ -133,28 +133,29 @@ export function LaunchCanvasOverlay({
         </Glyph>
         Click to start drawing
       </span>
-      {/* The proof points as a little flow on the canvas: each a node drawn as the editor draws an
-          unpainted shape on the Default scheme, wired to the next (a row; a column on a phone).
+      {/* The proof points as a little flow on the canvas: each a node painted as a user paints a
+          shape, wired to the next. Not on a phone, where the window is too narrow for a row and a
+          column crowded the invitation; the hero's screen-reader list still carries them.
           They build in, one after the other, while the window is centred. */}
       <ol
         className={
-          'flex w-full max-w-2xl flex-col items-center justify-center sm:flex-row lg:w-auto lg:max-w-none ' +
+          'hidden w-full max-w-2xl items-center justify-center sm:flex lg:w-auto lg:max-w-none ' +
           (afterConnector ? 'hero-proof-after-connector' : '')
         }
       >
         {PROOF_POINTS.map((point, i) => (
           <li
             key={point}
-            className="flex min-w-0 flex-col items-center sm:flex-1 sm:flex-row sm:last:flex-none sm:last:basis-[22%] lg:flex-none lg:last:basis-auto"
+            className="flex min-w-0 flex-1 items-center last:flex-none last:basis-[22%] lg:flex-none lg:last:basis-auto"
             style={{ '--i': i, '--hue': PROOF_NODE[point].hue } as CSSProperties}
           >
             <span
               className={
-                'flex w-44 items-center gap-2 rounded-xl border-[1.5px] border-(--hue) bg-[color-mix(in_srgb,var(--hue)_10%,var(--art-paper))] py-1 pl-1 pr-2.5 sm:py-1.5 sm:pl-1.5 text-left text-[10px] font-semibold leading-tight text-[color-mix(in_srgb,var(--hue)_55%,var(--art-text))] shadow-sm shadow-[color-mix(in_srgb,var(--hue)_25%,transparent)] sm:min-h-11 sm:w-full sm:text-[11px] lg:w-auto lg:whitespace-nowrap ' +
+                'flex min-h-11 w-full items-center gap-2 rounded-xl border-[1.5px] border-(--hue) bg-[color-mix(in_srgb,var(--hue)_10%,var(--art-paper))] py-1.5 pl-1.5 pr-2.5 text-left text-[11px] font-semibold leading-tight text-[color-mix(in_srgb,var(--hue)_55%,var(--art-text))] shadow-sm shadow-[color-mix(in_srgb,var(--hue)_25%,transparent)] lg:w-auto lg:whitespace-nowrap ' +
                 (playing ? 'hero-proof-node' : '')
               }
             >
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-(--hue) text-white sm:h-6 sm:w-6 sm:rounded-lg">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-(--hue) text-white">
                 <Glyph size={12} units={24}>
                   <Prims prims={PROOF_NODE[point].icon} />
                 </Glyph>
@@ -162,38 +163,21 @@ export function LaunchCanvasOverlay({
               {point}
             </span>
             {i < PROOF_POINTS.length - 1 ? (
-              <>
-                <svg
-                  aria-hidden
-                  viewBox="0 0 10 24"
-                  className={
-                    'my-0.5 h-4 w-2.5 shrink-0 text-(--hue) sm:hidden ' +
-                    (playing ? 'hero-proof-arrow-down' : '')
-                  }
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 1v21M1.5 18 5 22l3.5-4" />
-                </svg>
-                <svg
-                  aria-hidden
-                  viewBox="0 0 24 10"
-                  className={
-                    'mx-1.5 hidden h-2.5 w-6 shrink-0 text-(--hue) sm:block lg:mx-1 lg:w-5 ' +
-                    (playing ? 'hero-proof-arrow' : '')
-                  }
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M1 5h21M18 1.5 22 5l-4 3.5" />
-                </svg>
-              </>
+              <svg
+                aria-hidden
+                viewBox="0 0 24 10"
+                className={
+                  'mx-1.5 h-2.5 w-6 shrink-0 text-(--hue) lg:mx-1 lg:w-5 ' +
+                  (playing ? 'hero-proof-arrow' : '')
+                }
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M1 5h21M18 1.5 22 5l-4 3.5" />
+              </svg>
             ) : null}
           </li>
         ))}
