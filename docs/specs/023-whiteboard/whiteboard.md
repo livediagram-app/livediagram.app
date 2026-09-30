@@ -101,7 +101,7 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **Shapes, left to right** (With shapes mode):
   1. **Pinned shapes**, the left side of the bar: up to seven shape kinds
      the user keeps there (see [Shape slots](#shape-slots)); by default
-     **Line, Arrow, Rectangle, Diamond, Ellipse**, in that order.
+     **Arrow, Rectangle, Ellipse, Diamond**, in that order.
   2. A **separator**.
   3. **Two frequent shape slots**: the two shape kinds this user picks most
      often that are not already on the bar (see [Shape slots](#shape-slots)).
@@ -163,8 +163,8 @@ The shapes group learns and keeps the shapes a user reaches for.
   update when a pick changes the ranking, never while a flyout is open or a
   drag is in progress, so a slot never moves under the pointer mid-gesture.
 - **Pinned side:** the left of the shapes bar, before the separator. A user
-  who has never changed it has five pins, in this order: **Line**, **Arrow**,
-  **Rectangle**, **Diamond**, **Ellipse**. Up to **seven** kinds can be pinned.
+  who has never changed it has four pins, in this order: **Arrow**,
+  **Rectangle**, **Ellipse**, **Diamond**. Up to **seven** kinds can be pinned.
 - **Pinning:** dragging a frequent slot **to the left of the separator** pins
   its kind at the drop position. With seven pinned, dropping onto a pinned
   slot replaces that one; dropping elsewhere is refused, and the dragged slot
@@ -306,8 +306,9 @@ The shapes group learns and keeps the shapes a user reaches for.
   styles with a tool in hand puts its kind back to plain ink. Line and arrow
   share one remembered style, as all arrows do.
 - A whiteboard keeps **its own style memory**, apart from its document's
-  diagram tabs: a board's styles never dress a diagram's next shape, nor the
-  other way round.
+  diagram tabs: whiteboarding is a different activity, so a board's styles
+  never dress a diagram's next shape, nor a diagram's a board's, for any
+  shape kind, tool style or restyle, in the same document or another.
 - A **recognised** shape (see [Shape recognition](#shape-recognition)) is
   different: it is a pen stroke tidied up, so it keeps that pen's colour and
   weight.
