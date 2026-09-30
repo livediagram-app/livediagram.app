@@ -126,7 +126,8 @@ export const TELEMETRY_CATEGORIES = [
   // a pen, the eraser mode and the background 'Changed' ('PenColour' | 'PenWidth' |
   // 'PenReset', 'CursorDot' | 'CursorCrosshair', 'EraserStroke' | 'EraserPartial', 'BackgroundPlain' | 'BackgroundDots' |
   // 'BackgroundGrid') and shape recognition 'Toggled' ('RecognitionOn' |
-  // 'RecognitionOff'). Presets only; never content.
+  // 'RecognitionOff', and for one stroke 'RecogniseOnceKey' | 'RecogniseOnceChip' |
+  // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Whiteboard',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];

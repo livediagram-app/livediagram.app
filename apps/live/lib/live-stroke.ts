@@ -39,6 +39,17 @@ export type LiveStroke = {
    */
   snapTo(shape: RecognisedShape): void;
   /**
+   * Breaks the stroke out of its locked shape (Alt, or the chip): it is ink again, exactly as drawn
+   * so far, and lands as ink unless it locks again. False when no shape was locked.
+   */
+  unsnap(): boolean;
+  /** True once broken out of a shape and not locked since: it lands as drawn, never recognised. */
+  keepsInk(): boolean;
+  /** Sets whether Alt is held: while it is, holding still does not lock the stroke. */
+  holdInk(on: boolean): void;
+  /** Whether Alt holds the stroke as ink. */
+  inkHeld(): boolean;
+  /**
    * Sets whether Shift is held, as the latest pointer event says: while it is, reshaping keeps the
    * shape perfect, held to the `shiftRatio` of the shape as it is when Shift takes effect (as
    * shown when pressed, or as recognised when already held at the lock). True when that changed.
@@ -59,6 +70,8 @@ export function createLiveStroke(
   const pressures: number[] | null = pointer === 'pen' ? [] : null;
   const listeners = new Set<() => void>();
   let snap: { shape: RecognisedShape; grab: Point } | null = null;
+  let broken = false;
+  let held = false;
   let constrained = false;
   // Width over height while Shift holds a locked shape; undefined while free or unlocked.
   let ratio: number | undefined;
@@ -95,8 +108,21 @@ export function createLiveStroke(
       const grab = points[points.length - 1];
       if (!grab) return;
       snap = { shape, grab };
+      broken = false;
       if (constrained) ratio = shiftRatio(shape);
     },
+    unsnap() {
+      if (!snap) return false;
+      snap = null;
+      ratio = undefined;
+      broken = true;
+      return true;
+    },
+    keepsInk: () => broken,
+    holdInk(on) {
+      held = on;
+    },
+    inkHeld: () => held,
     constrain(on) {
       if (on === constrained) return false;
       constrained = on;

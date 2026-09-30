@@ -1,9 +1,12 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
+import { track } from '@/lib/telemetry';
 import { useWhiteboardPenGesture } from './useWhiteboardPenGesture';
+
+vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 // The whiteboard pen gesture (docs/specs/023-whiteboard/whiteboard.md "Pens", "Touch and pen input";
 // blueprint whiteboard-round-one "Pen ink").
@@ -257,5 +260,118 @@ describe('useWhiteboardPenGesture', () => {
       stroke.snapTo(circle);
       expect(stroke.shaped()!.bbox).toEqual({ x: 0, y: 0, width: 100, height: 100 });
     });
+  });
+});
+
+// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": Alt (Option) flips the stroke.
+describe('useWhiteboardPenGesture, with Alt', () => {
+  /** A key event as the browser sends it; `defaultPrevented` says whether the page kept it. */
+  const key = (type: 'keydown' | 'keyup', k = 'Alt', repeat = false) =>
+    new KeyboardEvent(type, { key: k, repeat, cancelable: true, altKey: type === 'keydown' });
+  /** A square drawn from client (10, 20), canvas (0, 0): 200 canvas px a side. */
+  const drawSquare = (s: ReturnType<typeof setup>) => {
+    s.press(10, 20);
+    const side = (i: number) => i * 10;
+    for (let i = 1; i <= 20; i++) s.send(pointer('pointermove', { x: 10 + side(i), y: 20 }));
+    for (let i = 1; i <= 20; i++) s.send(pointer('pointermove', { x: 210, y: 20 + side(i) }));
+    for (let i = 1; i <= 20; i++) s.send(pointer('pointermove', { x: 210 - side(i), y: 220 }));
+    for (let i = 1; i <= 19; i++) s.send(pointer('pointermove', { x: 10, y: 220 - side(i) }));
+    return s.hook.result.current.penStroke!;
+  };
+
+  beforeEach(() => {
+    vi.spyOn(console, 'debug').mockImplementation(() => {});
+    vi.mocked(track).mockClear();
+  });
+
+  it('recognises the stroke at once with recognition off, and it lands as the shape', () => {
+    const s = setup();
+    const stroke = drawSquare(s);
+    const down = key('keydown');
+    s.send(down);
+    expect(down.defaultPrevented).toBe(true);
+    expect(stroke.shaped()?.kind).toBe('square');
+    expect(track).toHaveBeenCalledWith('Whiteboard', 'Toggled', 'RecogniseOnceKey');
+    const up = key('keyup');
+    s.send(up);
+    expect(up.defaultPrevented).toBe(true);
+    // Releasing Alt changes nothing.
+    expect(stroke.shaped()?.kind).toBe('square');
+    s.send(pointer('pointerup', { x: 10, y: 30 }));
+    const [, , ink] = s.onCommitFreehand.mock.calls[0]!;
+    expect(ink.snapped.kind).toBe('square');
+    expect(ink.keepInk).toBeUndefined();
+  });
+
+  it('breaks a shown shape back to ink, held while Alt is, and it lands as ink', () => {
+    const s = setup();
+    const stroke = drawSquare(s);
+    s.send(key('keydown'));
+    s.send(key('keyup'));
+    s.send(key('keydown'));
+    expect(stroke.shaped()).toBeNull();
+    expect(stroke.inkHeld()).toBe(true);
+    expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Toggled', 'BreakShapeKey');
+    s.send(key('keyup'));
+    expect(stroke.inkHeld()).toBe(false);
+    s.send(pointer('pointerup', { x: 10, y: 30 }));
+    const [, , ink] = s.onCommitFreehand.mock.calls[0]!;
+    expect(ink.snapped).toBeUndefined();
+    expect(ink.keepInk).toBe(true);
+  });
+
+  it('holds the ink from any Alt press, so the dwell does not snap while it is down', () => {
+    const s = setup();
+    s.press(10, 20);
+    s.send(pointer('pointermove', { x: 40, y: 50 }));
+    const stroke = s.hook.result.current.penStroke!;
+    s.send(key('keydown'));
+    expect(stroke.inkHeld()).toBe(true);
+    // A window losing focus never leaves Alt stuck down.
+    s.send(new FocusEvent('blur'));
+    expect(stroke.inkHeld()).toBe(false);
+  });
+
+  it('flips once per press: a held key repeating changes nothing', () => {
+    const s = setup();
+    const stroke = drawSquare(s);
+    s.send(key('keydown'));
+    const repeat = key('keydown', 'Alt', true);
+    s.send(repeat);
+    expect(repeat.defaultPrevented).toBe(true);
+    expect(stroke.shaped()?.kind).toBe('square');
+    expect(track).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the browser menu shut when Alt is released after the lift', () => {
+    const s = setup();
+    drawSquare(s);
+    s.send(key('keydown'));
+    s.send(pointer('pointerup', { x: 10, y: 30 }));
+    const up = key('keyup');
+    s.send(up);
+    expect(up.defaultPrevented).toBe(true);
+    // Only that once: a later Alt is the browser's again.
+    const later = key('keyup');
+    s.send(later);
+    expect(later.defaultPrevented).toBe(false);
+  });
+
+  it('leaves Alt alone when no stroke is being drawn', () => {
+    const s = setup();
+    const down = key('keydown');
+    s.send(down);
+    expect(down.defaultPrevented).toBe(false);
+    expect(track).not.toHaveBeenCalled();
+    expect(s.hook.result.current.penStroke).toBeNull();
+  });
+
+  it('ignores other keys', () => {
+    const s = setup();
+    const stroke = drawSquare(s);
+    const down = key('keydown', 'a');
+    s.send(down);
+    expect(down.defaultPrevented).toBe(false);
+    expect(stroke.shaped()).toBeNull();
   });
 });

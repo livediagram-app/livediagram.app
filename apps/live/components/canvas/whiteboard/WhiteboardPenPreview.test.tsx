@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, render } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFreehand, type FreehandElement } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -8,6 +8,8 @@ import type { LiveStroke } from '@/lib/live-stroke';
 import { liveStrokeOf } from '@/lib/live-stroke-test-utils';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { WhiteboardPenPreview } from './WhiteboardPenPreview';
+
+vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 // The whiteboard pen's in-flight preview (docs/specs/023-whiteboard/whiteboard.md "Pens"): drawn
 // inside the canvas's own transformed layer as exactly the stroke it lands as (the same box, svg
@@ -140,6 +142,70 @@ describe('WhiteboardPenPreview', () => {
       );
       act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS * 2));
       expect(container.querySelector('[data-recognition-preview]')).toBeNull();
+    });
+  });
+
+  // docs/specs/023-whiteboard/whiteboard.md "Shape recognition": the chip on a touch screen.
+  describe('the chip', () => {
+    const square: { x: number; y: number }[] = [];
+    for (let i = 0; i <= 20; i++) square.push({ x: i * 10, y: 0 });
+    for (let i = 1; i <= 20; i++) square.push({ x: 200, y: i * 10 });
+    for (let i = 1; i <= 20; i++) square.push({ x: 200 - i * 10, y: 200 });
+    for (let i = 1; i <= 19; i++) square.push({ x: 0, y: 200 - i * 10 });
+
+    const held = (pointerType: string, recognise = false) => {
+      vi.useFakeTimers();
+      vi.spyOn(console, 'debug').mockImplementation(() => {});
+      const stroke = liveStrokeOf(square, { pointerType });
+      const view = render(
+        <WhiteboardPenPreview stroke={stroke} pen={pen({ recognise })} ink="#1c1917" zoom={2} />,
+      );
+      act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
+      return { stroke, ...view };
+    };
+
+    it('offers Make shape just above and before the tip, the same size at any zoom', () => {
+      const { container } = held('touch');
+      const chip = screen.getByRole('button', { name: 'Make shape' });
+      expect(chip.hasAttribute('data-floating-panel')).toBe(true);
+      const anchor = container.querySelector('[data-recognition-chip-anchor]') as HTMLElement;
+      // At the tip (canvas 0, 10), undoing the canvas zoom of 2.
+      expect(anchor.style.transform).toBe('translate(0px, 10px) scale(0.5)');
+    });
+
+    it('makes the shape on a tap and offers Keep drawing, the pen still down', () => {
+      const { container, stroke } = held('pen');
+      fireEvent.pointerDown(screen.getByRole('button', { name: 'Make shape' }), {
+        pointerId: 7,
+      });
+      expect(stroke.shaped()?.kind).toBe('square');
+      expect(container.querySelector('[data-recognition-preview="square"]')).not.toBeNull();
+      fireEvent.pointerDown(screen.getByRole('button', { name: 'Keep drawing' }), {
+        pointerId: 7,
+      });
+      expect(stroke.shaped()).toBeNull();
+      expect(stroke.keepsInk()).toBe(true);
+      expect(container.querySelector('[data-recognition-preview]')).toBeNull();
+    });
+
+    it('keeps its tap to itself: no pan, pinch or new stroke starts under it', () => {
+      held('touch');
+      const onParentDown = vi.fn();
+      document.body.addEventListener('pointerdown', onParentDown);
+      const onDocTouch = vi.fn();
+      document.addEventListener('touchstart', onDocTouch);
+      const chip = screen.getByRole('button', { name: 'Make shape' });
+      fireEvent.pointerDown(chip, { pointerId: 7 });
+      fireEvent.touchStart(chip);
+      document.removeEventListener('touchstart', onDocTouch);
+      document.body.removeEventListener('pointerdown', onParentDown);
+      expect(onParentDown).not.toHaveBeenCalled();
+      expect(onDocTouch).not.toHaveBeenCalled();
+    });
+
+    it('is never offered to a mouse', () => {
+      held('mouse', true);
+      expect(screen.queryByRole('button')).toBeNull();
     });
   });
 });

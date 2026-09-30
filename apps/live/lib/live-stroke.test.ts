@@ -146,3 +146,56 @@ describe('createLiveStroke, constrained', () => {
     expect(s.shaped()!.bbox.width).toBeCloseTo(72, 9);
   });
 });
+
+// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": Alt (or the chip) breaks out.
+describe('createLiveStroke, broken out of a shape', () => {
+  const circle = {
+    kind: 'circle' as const,
+    bbox: { x: 0, y: 0, width: 100, height: 60 },
+    confidence: 1,
+  };
+
+  it('is ink again, exactly as drawn so far, and lands as ink', () => {
+    const s = createLiveStroke('mouse', 1);
+    s.push(0, 0);
+    s.push(100, 60);
+    s.snapTo(circle);
+    s.push(120, 70);
+    expect(s.keepsInk()).toBe(false);
+    expect(s.unsnap()).toBe(true);
+    expect(s.shaped()).toBeNull();
+    expect(s.keepsInk()).toBe(true);
+    expect(s.points).toEqual([
+      { x: 0, y: 0 },
+      { x: 100, y: 60 },
+      { x: 120, y: 70 },
+    ]);
+  });
+
+  it('breaks nothing when no shape is locked', () => {
+    const s = createLiveStroke('mouse', 1);
+    s.push(0, 0);
+    expect(s.unsnap()).toBe(false);
+    expect(s.keepsInk()).toBe(false);
+  });
+
+  it('lands the shape again once it locks again', () => {
+    const s = createLiveStroke('mouse', 1);
+    s.push(100, 60);
+    s.snapTo(circle);
+    s.unsnap();
+    s.push(110, 60);
+    s.snapTo(circle);
+    expect(s.keepsInk()).toBe(false);
+    expect(s.shaped()!.bbox).toEqual(circle.bbox);
+  });
+
+  it('says whether the ink is held (Alt down), so the dwell leaves it', () => {
+    const s = createLiveStroke('mouse', 1);
+    expect(s.inkHeld()).toBe(false);
+    s.holdInk(true);
+    expect(s.inkHeld()).toBe(true);
+    s.holdInk(false);
+    expect(s.inkHeld()).toBe(false);
+  });
+});

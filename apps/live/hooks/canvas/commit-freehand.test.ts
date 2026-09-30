@@ -145,6 +145,24 @@ describe('a whiteboard pen stroke', () => {
     expect('snapped' in s.elements[0]!).toBe(false);
   });
 
+  it('lands a stroke broken out of its shape as ink, even with recognition on', () => {
+    const s = setup(pen({ recognise: true }));
+    s.commit(loop, false, { streamline: 0.2, keepInk: true });
+    expect(s.elements[0]!.type).toBe('freehand');
+    expect('keepInk' in s.elements[0]!).toBe(false);
+  });
+
+  it('lands a stroke Alt recognised as the shape, even with recognition off', () => {
+    const s = setup(pen({ recognise: false }));
+    const snapped = {
+      kind: 'circle' as const,
+      bbox: { x: 50, y: 50, width: 100, height: 100 },
+      confidence: 1,
+    };
+    s.commit(loop, false, { streamline: 0.2, snapped });
+    expect(s.elements[0]).toMatchObject({ type: 'shape', x: 50, y: 50, width: 100, height: 100 });
+  });
+
   it('keeps strokes as drawn with recognition off', () => {
     const s = setup(pen({ recognise: false }));
     s.commit(loop, false);

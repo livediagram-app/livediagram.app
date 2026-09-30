@@ -233,10 +233,12 @@ export function makeCommitFreehand({
 
 type WhiteboardPenIntent = Extract<PendingDraw, { variant: 'whiteboard' }>;
 // A whiteboard pen stroke's ink beyond its points: a pressure per point (a pen) and the streamline.
-// What the pen drew with, and, when a held-still stroke locked to a recognised shape, that shape
-// as the pen reshaped it: it lands as is, never re-read from the stroke.
+// What the pen drew with, and, when the stroke locked to a recognised shape (held still, or Alt),
+// that shape as the pen reshaped it: it lands as is, never re-read from the stroke. `keepInk`: the
+// stroke was broken out of a shape (Alt, or the chip), so it lands as drawn, never recognised.
 export type PenInk = Pick<FreehandElement, 'pressures' | 'streamline'> & {
   snapped?: RecognisedShape;
+  keepInk?: true;
 };
 
 // What a whiteboard pen stroke becomes (docs/specs/023-whiteboard/whiteboard.md "Pens", "Shape
@@ -260,7 +262,8 @@ function whiteboardStroke(
   };
   // The same test on the same stroke the hold-still preview runs (lib/recognition-preview), so
   // it is what lands.
-  const detected = ink?.snapped ?? (pen.recognise ? recogniseBoardStroke(stroke) : null);
+  const detected =
+    ink?.snapped ?? (pen.recognise && !ink?.keepInk ? recogniseBoardStroke(stroke) : null);
   if (detected) {
     track('Element', 'Added', detected.kind === 'line' ? 'Arrow' : titleCaseType(detected.kind));
     if (detected.kind === 'line') {
@@ -288,6 +291,6 @@ function whiteboardStroke(
     };
   }
   track('Element', 'Added', 'Freehand');
-  const { snapped: _shape, ...drawn } = ink ?? {};
+  const { snapped: _shape, keepInk: _keep, ...drawn } = ink ?? {};
   return { ...createFreehand(points, false), penWidth: pen.width, ...drawn, ...colour };
 }
