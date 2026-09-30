@@ -40,6 +40,10 @@ describe('shared chrome glyph centring', () => {
     expect(off).toEqual([]);
   });
 
+  it('draws the check on the centre line of its box', () => {
+    expect(offset(icons.CheckIcon)).toEqual({ dx: 0, dy: 0 });
+  });
+
   it('lists only exceptions that still exist', () => {
     const names = new Set(ICONS.map(([n]) => n));
     expect(Object.keys(CENTRING_EXCEPTIONS).filter((n) => !names.has(n))).toEqual([]);

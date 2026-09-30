@@ -1,5 +1,5 @@
+import type { IconPrim } from '@livediagram/icons';
 import {
-  lucideCheck,
   lucideCopy,
   lucideCopyPlus,
   lucideLock,
@@ -29,7 +29,10 @@ export const PencilIcon = lucideGlyph(lucidePencil, 14);
 export const RefreshIcon = lucideGlyph(lucideRefreshCw, 14);
 export const PlusIcon = lucideGlyph(lucidePlus, 14);
 export const CloseIcon = lucideGlyph(lucideX, 14);
-export const CheckIcon = lucideGlyph(lucideCheck, 12);
+// Lucide's check sits half a unit above its box's centre line; drawn here half a unit lower, on it
+// (docs/specs/004-interface-design/iconography.md, "Guarding").
+const CENTRED_CHECK: readonly IconPrim[] = [{ t: 'path', d: 'M20 6.5 9 17.5l-5-5' }];
+export const CheckIcon = lucideGlyph(CENTRED_CHECK, 12);
 // A paint roller: the format painter (copy one element's style onto others).
 export const FormatPainterIcon = lucideGlyph(lucidePaintRoller, 14);
 

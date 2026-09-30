@@ -28,7 +28,9 @@ export function PreviewFan({
   cardClassName?: string;
 }) {
   return (
+    // Composition, not a glyph frame: the optical audit leaves the fanned thumbnails alone (D45).
     <span
+      data-optical-ignore
       className={`preview-art-tile relative block overflow-hidden bg-slate-50 ${plateClassName}`}
     >
       {kinds.slice(0, 3).map((kind, i) => (
