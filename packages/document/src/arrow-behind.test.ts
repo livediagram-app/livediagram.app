@@ -143,4 +143,27 @@ describe('routeBehindHoles', () => {
     };
     expect(routeBehindHoles(arrow(), from, to, [other])).toEqual([]);
   });
+
+  it('ignores a freehand stroke: ink is not a box to hide behind', () => {
+    const stroke = {
+      id: 'f1',
+      type: 'freehand',
+      x: 200,
+      y: 0,
+      width: 100,
+      height: 100,
+      points: [
+        { nx: 0, ny: 0 },
+        { nx: 1, ny: 1 },
+      ],
+      closed: false,
+      penWidth: 1.5,
+    } as Element;
+    expect(routeBehindHoles(arrow(), from, to, [stroke])).toEqual([]);
+  });
+
+  it('ignores a shape with no fill, such as a whiteboard outline', () => {
+    const outline = box('o', 200, 0, { fillColor: 'transparent' });
+    expect(routeBehindHoles(arrow(), from, to, [outline])).toEqual([]);
+  });
 });

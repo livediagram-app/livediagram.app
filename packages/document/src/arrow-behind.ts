@@ -45,10 +45,14 @@ export function arrowRoutesBehind(arrow: ArrowElement): boolean {
 //     feature could have.
 //   - `text` and `annotation` have no fill to hide behind. Breaking a line
 //     under a transparent label reads as a rendering fault, not as depth.
-//   - freehand / arrows aren't boxes at all.
+//   - freehand / arrows aren't boxes at all (a freehand IS boxed in the
+//     element model, so it is excluded by name): ink hides nothing.
+//   - a shape with no fill (a whiteboard outline) has nothing to hide
+//     behind either, like text.
 function isOccluder(el: Element): el is BoxedElement {
   if (!isBoxed(el)) return false;
-  if (el.type === 'text' || el.type === 'annotation') return false;
+  if (el.type === 'text' || el.type === 'annotation' || el.type === 'freehand') return false;
+  if (el.type === 'shape' && el.fillColor === 'transparent') return false;
   return !(el.type === 'shape' && el.shape === 'frame');
 }
 
