@@ -193,7 +193,7 @@ for (const theme of THEMES) {
       // Connecting: the state request held back, so the button says so.
       const releaseState = await slow(page, '**/api/drive/state', 2500);
       await row.getByRole('button', { name: 'Connect', exact: true }).click();
-      await expect(row.getByRole('button', { name: 'Connecting…' })).toBeVisible();
+      await expect(pillOf(row)).toHaveText('Connecting…');
       await shot(
         page,
         'cloud-sync-2-connecting',

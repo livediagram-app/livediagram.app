@@ -23,6 +23,9 @@ const MARK: Record<DocumentSyncState, ReturnType<typeof lucideGlyph>> = {
   syncing: lucideGlyph(lucideCloudSync, 14),
 };
 
+// On-screen stroke in px.
+export const DOCUMENT_SYNC_WEIGHT = 1;
+
 export function DocumentSyncMark({ documentId, savedAt }: { documentId: string; savedAt: number }) {
   const state = useDocumentSync(documentId, savedAt);
   if (!state) return null;
@@ -41,7 +44,8 @@ export function DocumentSyncMark({ documentId, savedAt }: { documentId: string; 
             : 'text-brand-600 dark:text-brand-300'
         } ${state === 'syncing' ? 'motion-safe:animate-pulse' : ''}`}
       >
-        <Icon />
+        {/* Finer than the house weight: a quiet mark beside quiet metadata. */}
+        <Icon weight={DOCUMENT_SYNC_WEIGHT} />
       </span>
     </Tooltip>
   );

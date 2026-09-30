@@ -266,8 +266,12 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   // page leaves for Google.
   await slow(page, '**/api/drive/state', 1500);
   await panel.getByRole('button', { name: 'Connect', exact: true }).click();
-  await expect(panel.getByRole('button', { name: 'Connecting…' })).toBeVisible({ timeout: 300 });
-  await expect(pillOf(panel)).toHaveText('Connecting…');
+  // Said once, in the status; the button keeps its word and is held.
+  await expect(pillOf(panel)).toHaveText('Connecting…', { timeout: 300 });
+  await expect(panel.getByRole('button', { name: 'Connect', exact: true })).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  );
   await expectStable(panel);
 
   // Google's consent (the fake agrees), /drive/connected, back where the user
@@ -695,6 +699,88 @@ test('the Cloud Sync buttons never cover anything, at three widths', async ({
       });
     }
     await other?.close();
+  }
+  expectNoPageErrors(pageErrors);
+});
+
+test('a document row lines up its visibility badge, its time and its sync mark on one centre line', async ({
+  page,
+  pageErrors,
+}) => {
+  // docs/specs/004-interface-design/optical-alignment.md: every optical offset within 0.5 CSS px.
+  // The user an earlier test connected and left connected.
+  await signIn(page, `${USER}_tabs`);
+  for (const [mode, minimal] of [
+    ['card', false],
+    ['card', true],
+    ['list', false],
+    ['list', true],
+  ] as const) {
+    await page.addInitScript(
+      ([m, min]) => {
+        localStorage.setItem('livediagram:explorer-view', m as string);
+        localStorage.setItem(
+          'livediagram:user-preferences:v1',
+          JSON.stringify(min ? { powerUserMode: true } : {}),
+        );
+      },
+      [mode, minimal],
+    );
+    await page.goto('/explorer/recent');
+    const mark = page.locator('[data-document-sync]').first();
+    await expect(mark).toBeVisible({ timeout: 15_000 });
+    const centres = await mark.evaluate((node) => {
+      const mid = (el: Element) => {
+        const b = el.getBoundingClientRect();
+        return { x: b.left + b.width / 2, y: b.top + b.height / 2, w: b.width, h: b.height };
+      };
+      // The row or card holding this mark.
+      const badgeIn = (el: Element) =>
+        Array.from(el.querySelectorAll('span')).find(
+          (s) => s.className.includes('ring-1') && /Private/.test(s.textContent ?? ''),
+        );
+      // The smallest ancestor holding the time and the visibility badge too.
+      let row: Element | null = node;
+      while (row && !(row.querySelector('.text-optical-line.text-slate-400') && badgeIn(row)))
+        row = row.parentElement;
+      const time = row!.querySelector('.text-optical-line.text-slate-400')!;
+      const badge = badgeIn(row!)!;
+      const icon = node.querySelector('svg')!;
+      const badgeIcon = badge.querySelector('svg')!;
+      return {
+        mark: mid(node),
+        markInk: mid(icon),
+        time: mid(time),
+        badge: mid(badge),
+        badgeInk: mid(badgeIcon),
+      };
+    });
+    const label = `${mode}${minimal ? ' minimal' : ''}`;
+    expect(Math.abs(centres.mark.y - centres.time.y), `${label}: mark vs time`).toBeLessThanOrEqual(
+      0.5,
+    );
+    expect(
+      Math.abs(centres.badge.y - centres.time.y),
+      `${label}: badge vs time`,
+    ).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(centres.markInk.y - centres.mark.y), `${label}: mark ink`).toBeLessThanOrEqual(
+      0.5,
+    );
+    if (minimal) {
+      // The icon-only badge is a circle with its lock in the middle.
+      expect(Math.abs(centres.badge.w - centres.badge.h), `${label}: circle`).toBeLessThanOrEqual(
+        0.5,
+      );
+      expect(
+        Math.abs(centres.badgeInk.x - centres.badge.x),
+        `${label}: lock x`,
+      ).toBeLessThanOrEqual(0.5);
+      expect(
+        Math.abs(centres.badgeInk.y - centres.badge.y),
+        `${label}: lock y`,
+      ).toBeLessThanOrEqual(0.5);
+    }
+    await page.screenshot({ path: `${SHOTS}/09-row-${mode}${minimal ? '-minimal' : ''}.png` });
   }
   expectNoPageErrors(pageErrors);
 });

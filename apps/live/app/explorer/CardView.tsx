@@ -188,10 +188,14 @@ function DocumentCard(
           {favourite ? <FavouriteMarker /> : null}
           <DriveNoticeMarker documentId={liveDoc.id} />
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
-          <span className="min-w-0 !shrink truncate">
+          {/* A flex box, so the time centres on the row like its neighbours;
+              the time truncates itself. */}
+          <span className="flex min-w-0 !shrink items-center">
             <RelativeTimeChip at={liveDoc.savedAt} />
           </span>
-          <span className="ml-auto">
+          {/* A flex box, not an inline span: an inline wrapper sits the mark on
+              the text baseline and lifts it off the row's centre. */}
+          <span className="ml-auto flex items-center">
             <DocumentSyncMark documentId={liveDoc.id} savedAt={liveDoc.savedAt} />
           </span>
         </div>

@@ -87,12 +87,13 @@ export function DocumentRow(props: DocumentEntryProps) {
           {ownerLabelFor(liveDoc)}
         </span>
       ) : null}
-      <span className="hidden sm:block">
+      {/* Flex, so the badge centres on the row like the time beside it. */}
+      <span className="hidden sm:flex sm:items-center">
         {showVisibility ? <VisibilityBadge document={liveDoc} iconOnly={iconOnlyBadges} /> : null}
       </span>
       {/* The sync mark at the column's right edge, so the marks line up. */}
       <span className="flex min-w-0 items-center justify-between gap-1.5">
-        <span className="min-w-0 truncate">
+        <span className="flex min-w-0 items-center">
           <RelativeTimeChip at={liveDoc.savedAt} />
         </span>
         <DocumentSyncMark documentId={liveDoc.id} savedAt={liveDoc.savedAt} />

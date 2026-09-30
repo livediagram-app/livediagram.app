@@ -92,21 +92,33 @@ export function VisibilityBadge({
   document: PaneDocument;
   iconOnly?: boolean;
 }) {
-  // Icon only: the word is dropped, the badge keeps its colour and hover card,
-  // and the name stays for assistive technology.
+  // Icon only (optical-alignment.md): the badge becomes a circle of the full
+  // badge's own height. An empty strut on the same text line gives it exactly
+  // that height, and the icon is centred by ink; the word stays for assistive
+  // technology, the hover card for everyone else.
   const word = (text: string) =>
     iconOnly ? (
-      <span className="sr-only">{text}</span>
+      <>
+        <span aria-hidden className="text-optical-line w-0 overflow-hidden">
+          {'\u200b'}
+        </span>
+        <span className="sr-only">{text}</span>
+      </>
     ) : (
       <span className="text-optical-line text-optical-caps">{text}</span>
     );
-  const shape = iconOnly ? 'px-1' : '';
+  // Width = the badge's height: one text line plus its block padding. No
+  // optical-edges: that pulls a LEADING icon towards the edge beside a word, and
+  // a lone icon is centred by its ink instead.
+  const base = iconOnly
+    ? `${badgeBase.replace('optical-edges ', '').replace('gap-1 ', '').replace('px-2 ', '')} w-[calc(1lh+0.25rem)] justify-center`
+    : badgeBase;
   if (liveDoc.ownerId === OFFLINE_OWNER_ID) {
     return (
       <HoverCard title="Offline" description="Saved only in this browser. Not synced or backed up.">
         <span
           tabIndex={iconOnly ? 0 : undefined}
-          className={`${badgeBase} ${shape} bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30`}
+          className={`${base} bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30`}
         >
           <Glyph size={9} units={9}>
             <path d="M2.4 6.6h3.4a1.4 1.4 0 0 0 .2-2.8 1.9 1.9 0 0 0-3.3-.5A1.35 1.35 0 0 0 2.4 6.6Z" />
@@ -122,7 +134,7 @@ export function VisibilityBadge({
       <HoverCard title="Shared" description="Anyone with the link can open it.">
         <span
           tabIndex={iconOnly ? 0 : undefined}
-          className={`${badgeBase} ${shape} bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30`}
+          className={`${base} bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30`}
         >
           <SharedDotIcon />
           {word('Shared')}
@@ -138,7 +150,7 @@ export function VisibilityBadge({
       >
         <span
           tabIndex={iconOnly ? 0 : undefined}
-          className={`${badgeBase} ${shape} bg-brand-50 text-brand-700 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30`}
+          className={`${base} bg-brand-50 text-brand-700 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30`}
         >
           <Glyph size={9} units={9} strokeLinejoin="miter">
             <circle cx="3.2" cy="3.2" r="1.4" />
@@ -155,7 +167,7 @@ export function VisibilityBadge({
     <HoverCard title="Private" description="Only visible to you.">
       <span
         tabIndex={iconOnly ? 0 : undefined}
-        className={`${badgeBase} ${shape} bg-slate-100 text-slate-500 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700`}
+        className={`${base} bg-slate-100 text-slate-500 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700`}
       >
         <Glyph size={9} units={9}>
           <rect x="1.6" y="4" width="5.8" height="3.6" rx="0.9" />
