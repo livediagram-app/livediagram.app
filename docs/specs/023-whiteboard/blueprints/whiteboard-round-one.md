@@ -20,6 +20,8 @@ Scope, by file:
 | `apps/live/components/canvas/useWhiteboardPenGesture.ts`          | The whiteboard pen gesture: capture, pressure, commit                     |
 | `apps/live/components/canvas/whiteboard/LiveInk.tsx`              | The stroke being drawn, laid out as it lands, written to the DOM          |
 | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.tsx` | Live ink and recognised shape, inside the canvas's transformed layer      |
+| `apps/live/lib/recognition-flip.ts`                               | Alt or the chip flips the stroke being drawn between ink and a shape      |
+| `apps/live/components/canvas/whiteboard/RecognitionChip.tsx`      | The Make shape / Keep drawing chip at a held-still pen or finger          |
 | `packages/document/src/svg-render-shapes.ts`                      | `svgFreehandShape` honours `penWidth` on every stroke                     |
 | `packages/api-schema` + `apps/api/src/openapi`                    | `TabKind` enum regenerated; `Whiteboard` telemetry category               |
 | `packages/templates/src/templates.ts`                             | `'whiteboard'` kind, descriptor, category, pattern, overrides             |
@@ -318,13 +320,55 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   (500), `RECOGNITION_PREVIEW_STILL_PX` (4 screen px), `recogniseBoardStroke(points)`,
   `stillSince(sample, from, count, anchor, zoom)` (samples `from` to `count - 1` by accessor).
   `commit-freehand`'s `whiteboardStroke` uses `recogniseBoardStroke`.
-- `useRecognitionPreview(stroke, active, zoom, penWidth)` subscribes to the `LiveStroke`. On each update it
-  walks only the raw samples added since the last update; any sample farther than
-  `RECOGNITION_PREVIEW_STILL_PX / zoom` from the anchor moves the anchor to the newest sample, drops
-  a shown preview and restarts the dwell timer. The first update sets the anchor and starts the
-  timer. On firing it recognises `stroke.ink(penWidth)` (the centre line of the stroke release would
-  land) and shows the shape when one is found. A new stroke or `stroke === null` clears everything. Logs
-  `[whiteboard] recognition preview <kind>`.
+- `useRecognitionPreview(stroke, active, zoom, penWidth)` subscribes to the `LiveStroke` whatever
+  `active` is, and returns `{ shape, chip }`: `shape` is `stroke.shaped()` on every update, so a
+  lock or a break from anywhere (the dwell, Alt, the chip) shows at once. On each update it walks
+  only the raw samples added since the last update; any sample farther than
+  `RECOGNITION_PREVIEW_STILL_PX / zoom` from the anchor moves the anchor to the newest sample,
+  drops the chip and restarts the dwell timer. The first update sets the anchor and starts the
+  timer. The timer runs only when `active` or the stroke's pointer is `pen` or `touch`, and not for
+  a locked mouse stroke. On firing, an unlocked stroke's `stroke.ink(penWidth)` (the centre line
+  of the stroke release would land) is recognised once; with `active` and not `inkHeld()` a found
+  shape locks (`snapTo`, `[whiteboard] recognition preview <kind>`). Then, for a `pen` or `touch`
+  stroke, the chip is `keep` when locked, `make` when the reading found a shape, otherwise none
+  (`[whiteboard] recognition chip <action>`); its `at` is the anchor. An update within the still
+  radius while the chip shows turns it round after a flip: `make` on a locked stroke becomes
+  `keep`; `keep` on an unlocked one becomes `make` if the ink reads as a shape, else none (D24).
+  A new stroke or `stroke === null` clears everything.
+
+### Alt and the chip (recognition for one stroke)
+
+- `LiveStroke.unsnap()` drops the lock and the Shift ratio and sets `keepsInk()`, returning false
+  when nothing was locked; `snapTo` clears `keepsInk()`. The samples never change, so the ink is
+  exactly as drawn so far, reshaping drag included. `holdInk(on)` / `inkHeld()` carry Alt held.
+- `flipRecognition(stroke, penWidth)`: `unsnap()` true gives `broken`; otherwise
+  `recogniseBoardStroke(stroke.ink(penWidth))` locks a found shape with `snapTo` (grabbed at the
+  last sample, as the dwell does) and gives `recognised`, or null (the stroke stays ink). It reads
+  neither `recognise` nor `inkHeld()`: Alt with recognition on and no shape shown recognises at
+  once too (D22). `flipStrokeRecognition(stroke, penWidth, via)` logs
+  `[whiteboard] recognition flip by <via>: <recognised|broken|no shape>`, and on a flip tracks
+  `Whiteboard` / `Toggled` / `RecogniseOnceKey` | `RecogniseOnceChip` | `BreakShapeKey` |
+  `BreakShapeChip` and calls `notify()`.
+- `useWhiteboardPenGesture`, while `penStroke` is set, listens on `window`: `keydown` with
+  `key === 'Alt'` calls `preventDefault()` and marks the next Alt `keyup` to be swallowed; unless
+  it is a repeat or the stroke is pinched it calls `holdInk(true)` and
+  `flipStrokeRecognition(stroke, pen width, 'key')`. `keyup` Alt calls `holdInk(false)`, and so
+  does `blur`. A `keyup` listener mounted for the hook's life calls `preventDefault()` on the Alt
+  release that was marked, even after the lift, and clears the mark (D27). Other keys are ignored.
+- The dwell never locks while `inkHeld()`, and after a break it waits for the pen to move beyond
+  the still radius before it runs again (D23), so a chip tap is not undone half a second later.
+- `WhiteboardPenPreview` renders `RecognitionChip` while `chip` is set, its `onFlip` calling
+  `flipStrokeRecognition(stroke, pen.width, 'chip')`. `RecognitionChip` is a zero-size anchor at
+  `translate(at.x px, at.y px) scale(1 / zoom)` (origin top left, `z-10`) holding a `button`
+  whose bottom-right corner sits `RECOGNITION_CHIP_GAP_PX` (12) screen px above and before the
+  tip (D25). The button carries `data-floating-panel`, so `onPointerDownCapture` on the canvas
+  surface returns before the pen-seen pan, the path, spotlight, avatar and draw intercepts; its
+  `pointerdown` calls `preventDefault()`, `stopPropagation()` and `onFlip()` (D26); a native
+  `touchstart` listener stops propagation, so `useCanvasPinchZoom`'s document `touchstart` never
+  sees a second touch and never sets `isPinchingRef`. The stroke's own listeners ignore the tap's
+  other `pointerId`.
+- Commit: `whiteboardStroke` lands `ink.snapped` when present; otherwise it recognises only when
+  `pen.recognise && !ink.keepInk`; `snapped` and `keepInk` are stripped from the element.
 - `WhiteboardPenPreview` renders `RecognisedShapePreview` (`components/canvas/whiteboard/BoardShapePreview.tsx`,
   beside `PenShapePreview`) while a shape is returned, and hides (never unmounts) `LiveInk`, whose
   sealed chunks live only in the DOM. `RecognisedShapePreview` draws in canvas px inside the
@@ -402,7 +446,9 @@ RDP commit (`simplifyPenStroke`) and the Catmull-Rom path. The recipe is Excalid
    nothing is sampled.
 3. `pointerup` from the stroke's pointer: clear `penStroke`; unless pinched
    (`[whiteboard] stroke discarded: pinch`), push the lift position with the last pressure (D13) and
-   commit `onCommitFreehand(points, false, { pressures?, streamline })`.
+   commit `onCommitFreehand(points, false, { pressures?, streamline, snapped? | keepInk? })`:
+   `snapped` is `shaped()` when the stroke is locked, otherwise `keepInk: true` when
+   `keepsInk()` (broken out of a shape), otherwise neither.
 4. `pointercancel` from the stroke's pointer: clear `penStroke`, commit nothing
    (`[whiteboard] stroke discarded: cancel`). The pen intent leaving mid-stroke (Escape, another
    tool) does the same (`[whiteboard] stroke discarded: pen put down`).
@@ -557,19 +603,37 @@ export type LiveStroke = {
   ink(width: number): PenStroke;
   subscribe(listener: () => void): () => void;
   notify(): void;
+  snapTo(shape: RecognisedShape): void; // locks; clears keepsInk
+  unsnap(): boolean; // false when not locked
+  keepsInk(): boolean; // broken out and not locked since
+  holdInk(on: boolean): void; // Alt held: the dwell does not lock
+  inkHeld(): boolean;
+  constrain(on: boolean): boolean; // Shift; true when it changed
+  shaped(): RecognisedShape | null;
 };
 export function createLiveStroke(
   pointerType: string | undefined,
   pointerId: number | undefined,
 ): LiveStroke;
 export function recogniseBoardStroke(stroke: PenStroke): RecognisedShape | null; // on its centre line
+export type RecognitionChipState = { action: 'make' | 'keep'; at: Point }; // at: canvas px
 export function useRecognitionPreview(
   stroke: LiveStroke | null,
   active: boolean,
   zoom: number,
   penWidth: number,
-): RecognisedShape | null;
-// CanvasProps.onCommitFreehand(points, recogniseShapes, ink?: Pick<FreehandElement, 'pressures' | 'streamline'>)
+): { shape: RecognisedShape | null; chip: RecognitionChipState | null };
+export function flipRecognition(
+  stroke: LiveStroke,
+  penWidth: number,
+): 'recognised' | 'broken' | null;
+export function flipStrokeRecognition(
+  stroke: LiveStroke,
+  penWidth: number,
+  via: 'key' | 'chip',
+): 'recognised' | 'broken' | null; // + notify, telemetry, log
+// CanvasProps.onCommitFreehand(points, recogniseShapes, ink?: PenInk)
+// PenInk = Pick<FreehandElement, 'pressures' | 'streamline'> & { snapped?: RecognisedShape; keepInk?: true }
 export const FREEHAND_SVG_CLASS: string; // the svg a freehand stroke, live or landed, draws in
 ```
 
@@ -615,6 +679,13 @@ No migration: `kind` is an existing optional string field; `penWidth` already ex
 - A sample exactly repeating the previous one: dropped; nothing else is dropped.
 - A tap (one sample): nothing is committed and the pen stays armed.
 - A pen held still: no new samples; the stroke already ends where the pen is (`last: true`).
+- Alt on ink that reads as no shape: nothing changes, nothing is tracked; the next press tries
+  again. Alt with no stroke live: untouched, the browser's. Alt held as the key repeats: one flip.
+- Alt released after the lift: that release is still kept from the browser, once (D27).
+- The window losing focus with Alt down: `holdInk(false)`, so the dwell is never stuck off.
+- A chip tap while the stroke is pinched or lifted: the chip has already left with the stroke.
+- A chip tap when the ink no longer reads as a shape (reshaped past it): the chip left when the
+  offer turned round to none, so there is no dead button.
 - A pen stroke stored before pressures and streamline: drawn at the middle pressure with no
   streamline (D11). A preset border width chosen later drops `penWidth`, `pressures` and
   `streamline` together: the stroke becomes a plain freehand.
@@ -651,6 +722,9 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
   "Stroke", "Partial" with hints "Remove whole strokes" / "Erase part of a stroke"; Settings flyout
   "Background" with "Plain", "Dots", "Grid"; Quick Start card "Whiteboard", "A plain board to draw on
   with pens, stickies and shapes."
+- Recognition chip: a pill 44 px tall and at least 44 px wide, `px-4`, `text-sm` medium, full
+  radius, `shadow-lg`; `bg-slate-900 text-white` in light, `bg-slate-100 text-slate-900` in dark
+  (the dock hint's pair), so it stands off either board. Copy "Make shape" / "Keep drawing".
 
 ## Accessibility
 
@@ -663,6 +737,9 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
   Escape closes it and returns focus to the opener.
 - Contrast: ink on board >= 4.5:1 per appearance, pen colours >= 3:1 on both boards (tests).
 - Reduced motion: the dock and flyout animations use the app's `.reduce-motion` / media-query rule.
+- Recognition chip: a `button` named by its visible text, a 44 x 44 px minimum target (WCAG 2.2
+  2.5.8), text at least 4.5:1 on its fill; `tabIndex={-1}`, as it exists only while a pointer is
+  held down and the keyboard has Alt for the same flip (D28). No animation.
 
 ## Web Experience
 
@@ -680,6 +757,9 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 - Discarded pinch strokes: `console.debug('[whiteboard] stroke discarded: pinch')`; cancelled ones:
   `[whiteboard] stroke discarded: cancel`. A pen put down mid-stroke: `[whiteboard] stroke discarded: pen put down`.
 - Every committed pen stroke: `[whiteboard] stroke <pointer> samples=<n> pressure=<yes|no>`.
+- Recognition: `[whiteboard] recognition preview <kind>` (the dwell locked),
+  `[whiteboard] recognition chip <make|keep>` (the chip offered) and
+  `[whiteboard] recognition flip by <key|chip>: <recognised|broken|no shape>` (Alt or the chip).
 
 ## Testing
 
@@ -699,6 +779,12 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Live stroke samples and pressures                   | `apps/live/lib/live-stroke.test.ts`                                                      |
 | Pen gesture: pressure, pointer, cancel, commit      | `apps/live/components/canvas/useWhiteboardPenGesture.test.tsx`                           |
 | Live ink laid out as it lands, recognition preview  | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`                   |
+| Break out of a shape, keep ink, hold ink            | `apps/live/lib/live-stroke.test.ts`                                                      |
+| Alt or chip flip and its telemetry                  | `apps/live/lib/recognition-flip.test.ts`                                                 |
+| Dwell, flips and the chip's offer                   | `apps/live/hooks/canvas/useRecognitionPreview.test.tsx`                                  |
+| Alt mid-stroke: flip, hold, keys kept, what lands   | `apps/live/components/canvas/useWhiteboardPenGesture.test.tsx`                           |
+| Chip place, tap, keeps its presses to itself        | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`                   |
+| Broken ink lands as ink; Alt's shape lands as shape | `apps/live/hooks/canvas/commit-freehand.test.ts`                                         |
 | `penWidth` honoured on every stroke                 | `svg-render-shapes` test                                                                 |
 | Template kind, overrides, builder                   | `packages/templates` tests                                                               |
 | Prefs parse / defaults / pen colours contrast       | `apps/live/lib/whiteboard-prefs.test.ts`                                                 |
@@ -730,6 +816,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Partial densify step              | `max(r / 2, 1)` canvas px        | D7               |                 |
 | Crossing bisection steps          | 12                               | D7               | 8 to 20         |
 | Recognition threshold             | 0.4                              | Shape Pen        |                 |
+| `RECOGNITION_CHIP_GAP_PX`         | 12 screen px                     | D25              | 8 to 24         |
 | Storage key                       | `livediagram:v2:whiteboard-pens` | spec             |                 |
 | `PEN_STREAMLINE`                  | mouse 0.5, pen 0.2, touch 0.2    | Excalidraw       | 0 to 1          |
 | `PEN_THINNING`                    | 0.6                              | Excalidraw       | 0 to 1          |
