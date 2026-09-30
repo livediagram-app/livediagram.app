@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { fakeD1 } from '../test-d1';
 import { consumeWsTicket, createWsTicket } from './ws-tickets';
 
-const EDIT = { role: 'edit', tabScope: null, shareCode: null } as const;
-const VIEW = { role: 'view', tabScope: null, shareCode: null } as const;
+const EDIT = { role: 'edit', tabScope: null, shareCode: null, account: false } as const;
+const VIEW = { role: 'view', tabScope: null, shareCode: null, account: false } as const;
 
 // A ws ticket is the only thing standing between "passed the REST access
 // gates for this document" and an open realtime socket: the upgrade can't
@@ -17,15 +17,20 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
     const db = fakeD1();
     const ticket = await createWsTicket(db.env, 'diag-1', EDIT, 1_000_000);
     const insert = db.one('INSERT INTO ws_tickets');
-    expect(insert.bindings).toEqual([ticket, 'diag-1', 'edit', 1_060_000, null, null]);
+    expect(insert.bindings).toEqual([ticket, 'diag-1', 'edit', 1_060_000, null, null, 0]);
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: the ticket carries the scope and the admitting code
   // from the mint to the upgrade.
   it('writes a tab scope and the code that granted it', async () => {
     const db = fakeD1();
-    await createWsTicket(db.env, 'diag-1', { role: 'view', tabScope: 't2', shareCode: 'CODE2345' });
-    expect(db.one('INSERT INTO ws_tickets').bindings.slice(4)).toEqual(['t2', 'CODE2345']);
+    await createWsTicket(db.env, 'diag-1', {
+      role: 'view',
+      tabScope: 't2',
+      shareCode: 'CODE2345',
+      account: false,
+    });
+    expect(db.one('INSERT INTO ws_tickets').bindings.slice(4)).toEqual(['t2', 'CODE2345', 0]);
   });
 
   it('mints an unguessable ticket, never a value the caller supplied', async () => {
@@ -52,6 +57,7 @@ describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => 
       role: 'view',
       tabScope: 't2',
       shareCode: 'CODE2345',
+      account: false,
     });
   });
 
@@ -61,6 +67,7 @@ describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => 
       role: 'edit',
       tabScope: null,
       shareCode: null,
+      account: false,
     });
   });
 

@@ -7,6 +7,7 @@
 import { useCallback, useMemo } from 'react';
 import type { Tab } from '@livediagram/document';
 import type { Participant } from '@/lib/identity';
+import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import type { PresenceClock } from './usePresenceState';
 import type { LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
@@ -97,11 +98,14 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   //
   // Statuses derive from the presence clock (usePresenceState): its tick moves idle peers to away, and a
   // returning peer's first op moves them back at once.
+  // Our own entry shows our picture to us whatever the switch says: it is our screen
+  // (docs/specs/014-identity/profile-picture.md §4).
+  const ownPicture = useDeferredAuth().user?.pictureUrl ?? null;
   const participantsByTab = buildParticipantsByTab({
     documentShareable,
     documentTeamId,
     activeId,
-    selfParticipant,
+    selfParticipant: ownPicture ? { ...selfParticipant, picture: ownPicture } : selfParticipant,
     tabs,
     remoteTabFocus,
     livePresence,

@@ -1,10 +1,10 @@
 # Image element + per-owner gallery
 
-Users can drop an image element on the canvas, upload the bytes, and reuse anything they've previously uploaded from a per-owner gallery. Images live in Cloudflare R2, with a D1 table indexing them. See [Document structure](../006-document/document-structure.md) for the broader element model and [11-api.md](../015-api/api.md) for the API conventions this spec extends.
+Users can drop an image element on the canvas, upload the bytes, and reuse anything they've previously uploaded from a per-owner gallery. Images live in Cloudflare R2, with a D1 table indexing them. See [Document structure](../006-document/document-structure.md) for the broader element model and [API app](../015-api/api.md) for the API conventions this spec extends.
 
 ## Element model
 
-A fourth element kind alongside `ShapeElement` / `TextElement` / `StickyElement` / `ArrowElement` (see [05](../006-document/document-structure.md)). Canonical type in `@livediagram/document` (declared in `src/element-types.ts` with the other boxed elements, re-exported through the package):
+An element kind alongside `ShapeElement` / `TextElement` / `StickyElement` / `ArrowElement` (see [Document structure](../006-document/document-structure.md)). Canonical type in `@livediagram/document` (declared in `src/element-types.ts` with the other boxed elements, re-exported through the package):
 
 ```ts
 type ImageElement = {
@@ -41,8 +41,8 @@ Resizing aspect-locks by default (the image's `naturalWidth:naturalHeight` ratio
 
 ## Storage
 
-- **R2 bucket:** `livediagram-images`. Binding name `IMAGES` in `apps/api/wrangler.toml`. One bucket per environment (preview + production declared separately).
-- **D1 table:** `images`, added as `apps/api/migrations/0014_images.sql`:
+- **R2 bucket:** `livediagram-images`. Binding name `IMAGES` in `apps/api/wrangler.toml`. One bucket per environment (production `livediagram-images` and staging `livediagram-images-staging`, declared separately).
+- **D1 table:** `images`, created by `apps/api/migrations/0014_images.sql`:
   ```sql
   CREATE TABLE images (
     id              TEXT PRIMARY KEY,           -- R2 object key (uuid v4)
@@ -82,12 +82,12 @@ Server-side enforcement: the upload endpoint checks `Content-Type` against the w
 ### Size cap
 
 - **Per-file cap: 10 MB.** Sits comfortably above typical phone JPEGs (2–4 MB) and 4K screenshots (~3–6 MB as PNG), while staying well below the Workers request-body limit (100 MB). Going higher hurts the picker UX (long uploads on slow networks) without serving real diagram content; canvas images render at thumbnail or modest sizes, so an 8K original is wasted bytes.
-- **Per-owner soft cap: configurable via two env vars** in the api worker, `IMAGE_MAX_PER_OWNER` and `IMAGE_MAX_BYTES_PER_OWNER` (decimal strings, parsed with `parseInt`). Hosted livediagram.app sets them to `100` and `104857600` (100 MB) respectively, through its hosted profile (`apps/api/hosted-vars.json`, sent with every hosted deploy and read back off the live worker, [Deployment](../016-platform/deployment.md) "Hosted profile"). Both are optional: unset, blank, `0`, or non-numeric values read as "no limit", which is the OSS self-host default where the operator runs their own storage budget (see [03](../002-project-scope/open-source-and-business-model.md)). When either cap is exceeded the worker returns 403 with `{ error: "gallery_full", reason: "count" | "bytes", limit, current }` so the client can render an accurate message.
+- **Per-owner soft cap: configurable via two env vars** in the api worker, `IMAGE_MAX_PER_OWNER` and `IMAGE_MAX_BYTES_PER_OWNER` (decimal strings, parsed with `parseInt`). Hosted livediagram.app sets them to `100` and `104857600` (100 MB) respectively, through its hosted profile (`apps/api/hosted-vars.json`, sent with every hosted deploy and read back off the live worker, [Deployment](../016-platform/deployment.md) "Hosted profile"). Both are optional: unset, blank, `0`, or non-numeric values read as "no limit", which is the OSS self-host default where the operator runs their own storage budget (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). When either cap is exceeded the worker returns 403 with `{ error: "gallery_full", reason: "count" | "bytes", limit, current }` so the client can render an accurate message.
 - Enforcement order on POST: `Content-Length` against the per-file cap first (rejects oversize uploads before any D1 round-trip), then an early `X-Image-Sha256` dedupe lookup (returns the existing image without parsing the body when the header matches a row at `(owner, sha)`), then per-owner totals against the soft cap (a single grouped `COUNT + SUM(byte_size) WHERE owner_id = ?` query). Only uploads that clear all three actually parse the body and write to R2. The early totals check is a fast path, not the guarantee: the row's `INSERT` repeats both cap checks inside the statement, so uploads racing each other (the [Import image pipeline](../020-import-export/import-image-pipeline.md) sends three at once) cannot together pass a cap. An insert the caps refuse deletes the R2 object it just wrote and answers the same 403 `gallery_full`; in the rare case that the gallery has room again by then (an image was deleted meanwhile) it answers 409 `{ error: "upload_conflict" }` and the client may retry (the [Import image pipeline](../020-import-export/import-image-pipeline.md) retries once).
 
 ## API endpoints
 
-Added to the existing routes in [11-api.md](../015-api/api.md). All JSON except where noted.
+Extends the routes in [API app](../015-api/api.md). All JSON except where noted.
 
 | Method | Path                | Auth          | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ------ | ------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -97,21 +97,21 @@ Added to the existing routes in [11-api.md](../015-api/api.md). All JSON except 
 | DELETE | `/api/images/:id`   | owner         | Removes the R2 object + the D1 row. Returns 200 even if the image is still referenced by an `ImageElement` in some tab (the renderer's broken-image fallback covers that case). Documented as "deletes from gallery; existing references break."                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | GET    | `/api/images/usage` | owner         | Inverse index of which of the owner's documents reference each owned image. Returns `{ usage: Record<imageId, { id, name }[]> }`. One query over the [reference index](#reference-index): the owner's `documents → document_tabs → image_refs`, no tab body read, each document listed once per image. Images with no references are omitted from the map (treat a missing key as "unused"). Drives the Explorer Image Gallery's "Used in N documents" badge ([Folders](../013-workspace/folders.md)). Returns `{ usage: {} }` (a 503 to the caller) when the api worker has no R2 binding, so the explorer page renders an empty gallery instead of erroring.                                                                                                                                                                                                                                            |
 
-`ImageSummary` is added to `packages/api-schema/src/index.ts` so the client and server can't drift on the shape.
+`ImageSummary` lives in `packages/api-schema/src/index.ts` so the client and server can't drift on the shape.
 
 ## Frontend wiring
 
 ### Palette
 
-A new **Image** entry in the Palette's **Tools** accordion (see [09](../008-canvas/canvas-and-palette.md)). Like the other draw-capable tools, picking it arms the draw-to-size gesture: a tap drops a default-size `ImageElement` (`imageId: null`) and a drag sizes it, then the image picker opens to attach a file.
+The **Image** entry (`tools:image`) in the Palette's **Media** section (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). Like the other draw-capable tools, picking it arms the draw-to-size gesture: a tap drops a default-size `ImageElement` (`imageId: null`) and a drag sizes it, then the image picker opens to attach a file.
 
 ### Placeholder rendering
 
-When `imageId === null`, `<ImageElementView>` (new component in `apps/live/components/`) renders a dashed-border box with a centred "image" SVG icon and the text "Click to upload". Clicking opens the image picker modal (below). The placeholder is interactive only for the document owner / edit-role share visitor; view-role visitors see the placeholder grayed out and read-only.
+When `imageId === null`, `<ImageElementView>` (`apps/live/components/canvas/ImageElementView.tsx`) renders a dashed-border box with a centred "image" SVG icon and the text "Click to upload". Clicking opens the image picker modal (below). The placeholder is interactive only for the document owner / edit-role share visitor; view-role visitors see the placeholder grayed out and read-only.
 
 ### Image picker modal
 
-New `apps/live/components/panels/ImagePicker.tsx`, lazy-loaded via `next/dynamic` (matches the other on-demand modals like `ExportTabDialog` and `ShareDialog`). Two-tab modal:
+`apps/live/components/panels/ImagePicker.tsx`, lazy-loaded via `next/dynamic` (matches the other on-demand modals like `ExportTabDialog` and `ShareDialog`). Two-tab modal:
 
 - **Upload tab.** Drag-and-drop zone + file-input fallback. On drop:
   1. Client checks the file's content type + size against the accepted list / cap.
@@ -137,16 +137,16 @@ there leaves placeholders and a count, never a failed import.
 
 ### Visual export (PNG / SVG / PDF)
 
-The visual tab exporters embed the bitmap so an image / avatar element looks the same in a downloaded file as on the canvas — they no longer fall back to a dashed placeholder. Because the bytes live behind the authenticated `GET /api/images/<id>` endpoint (a native `<img src>` can't send the owner / share headers), the export **prefetches** each referenced image as a base64 `data:` URL via `apiFetchImageDataUrl` (`apps/live/lib/export-tab-images.ts` → `loadTabImages`), then threads a `imageId → bytes` map into the renderers:
+The visual tab exporters embed the bitmap so an image / avatar element looks the same in a downloaded file as on the canvas, rather than a dashed placeholder. Because the bytes live behind the authenticated `GET /api/images/<id>` endpoint (a native `<img src>` can't send the owner / share headers), the export **prefetches** each referenced image as a base64 `data:` URL via `apiFetchImageDataUrl` (`apps/live/lib/export-tab-images.ts` → `loadTabImages`), then threads a `imageId → bytes` map into the renderers:
 
 - **SVG** inlines an `<image>` with the data URL (so the downloaded `.svg` stays self-contained), a per-element `clipPath` for the corner radius (a `full`-radius avatar clamps to a circle), and `preserveAspectRatio` mapping `objectFit` (`cover` → `slice`, `contain` → `meet`), over a white backing rect that matches the on-screen white background.
 - **PNG / PDF** `ctx.drawImage` the decoded bitmap into the same rounded, clipped box (data URLs are same-origin, so the canvas isn't tainted and the PDF's `getImageData` read still works).
 
-The decision is centralized in `describeBoxedExport` (`packages/document/src/svg-render.ts`), which now carries `href` / `objectFit` / `radius` on the image `ExportShape` and takes an optional `resolveImageHref` resolver. A missing / failed image (or any caller that supplies no resolver) keeps the placeholder, so the snapshot degrades gracefully per-image.
+The decision is centralized in `describeBoxedExport` (`packages/document/src/svg-render-describe.ts`, re-exported through `svg-render.ts`), which carries `href` / `objectFit` / `radius` on the image `ExportShape` and takes an optional `resolveImageHref` resolver. A missing / failed image (or any caller that supplies no resolver) keeps the placeholder, so the snapshot degrades gracefully per-image.
 
 ### Preview / live image (server-rendered SVG)
 
-The same `renderElementsToSvg` powers the headless snapshot behind the Explorer **preview** thumbnail (`GET /api/documents/:id/thumbnail`) and the public **live image** (`GET /api/share/:code/image.svg`) — both via `getDocumentThumbnailSvg` ([Document SVG snapshots](../006-document/document-snapshots.md), [Live image share link](../013-workspace/live-image-share.md)). That path now embeds images too: it runs in the api Worker (no DOM, no fetch-with-auth), so instead of the browser's `apiFetchImageDataUrl` it reads each referenced id straight from the R2 `IMAGES` bucket (key = `imageId`), base64-encodes the bytes with the object's stored content type, and passes the `resolveImageHref` resolver to the renderer. A per-snapshot **embed budget** (`IMAGE_EMBED_BUDGET_BYTES`, 3 MB raw) bounds how much bitmap is inlined so a photo-heavy document can't produce a multi-megabyte cached thumbnail; images past the budget (or missing from R2) keep the placeholder. The snapshot is cached in R2 and invalidated by `saved_at`, so swapping an element's image (an edit, which bumps `saved_at`) re-renders with the new bytes.
+The same `renderElementsToSvg` powers the headless snapshot behind the Explorer **preview** thumbnail (`GET /api/documents/:id/thumbnail`) and the public **live image** (`GET /api/share/:code/image.svg`) — both via `getDocumentThumbnailSvg` ([Document SVG snapshots](../006-document/document-snapshots.md), [Live image share link](../013-workspace/live-image-share.md)). That path embeds images too: it runs in the api Worker (no DOM, no fetch-with-auth), so instead of the browser's `apiFetchImageDataUrl` it reads each referenced id straight from the R2 `IMAGES` bucket (key = `imageId`), base64-encodes the bytes with the object's stored content type, and passes the `resolveImageHref` resolver to the renderer. A per-snapshot **embed budget** (`IMAGE_EMBED_BUDGET_BYTES`, 3 MB raw) bounds how much bitmap is inlined so a photo-heavy document can't produce a multi-megabyte cached thumbnail; images past the budget (or missing from R2) keep the placeholder. The snapshot is cached in R2 and invalidated by `saved_at`, so swapping an element's image (an edit, which bumps `saved_at`) re-renders with the new bytes.
 
 ## Self-host degradation
 
@@ -192,7 +192,7 @@ CREATE INDEX image_refs_image_idx ON image_refs (image_id);
 
 Uploaded bytes that no document references are dead weight in R2 + D1. A daily sweep reclaims them so an abandoned upload (dropped a placeholder, never picked a file; uploaded then deleted the element; tried a few candidates and kept one) doesn't accrue storage forever.
 
-- **Schedule.** Folded into the api worker's existing daily `0 3 * * *` cron (see [12-activity-and-audit.md](../012-collaboration/activity-and-audit.md) and [22-telemetry.md](../017-telemetry/telemetry.md), which run their own retention sweeps off the same trigger). No new worker and no new cron entry: the reuse principle says a third retention sweep belongs alongside the first two in `apps/api/src/index.ts`'s `scheduled()` handler, not in a standalone worker that would re-declare the same D1 + R2 bindings.
+- **Schedule.** Runs on the api worker's daily `0 3 * * *` cron (see [Activity and audit log](../012-collaboration/activity-and-audit.md) and [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), which run their own retention sweeps off the same trigger). There is no separate worker or cron entry: the reuse principle puts this sweep alongside the other retention sweeps in `apps/api/src/index.ts`'s `scheduled()` handler, not in a standalone worker that would re-declare the same D1 + R2 bindings.
 - **What's eligible.** An image is deleted only when it is **both** (a) older than a **30-day** floor (`images.created_at < now - 30d`) **and** (b) referenced by **no** document. The age floor is the safety margin: a freshly uploaded image that hasn't been placed on the canvas yet (or is mid-edit) is never reaped out from under the user. 30 days is deliberately generous — this is a storage-hygiene sweep, not an aggressive GC.
 - **Only once the index is complete.** While the [reference index](#reference-index) backfill is still running the sweep deletes nothing and logs `image sweep: paused, reference index backfill incomplete`. A partial index would read unindexed references as absent.
 - **"Referenced" is store-wide, not owner-scoped.** An image is referenced when any `image_refs` row names it and that row's tab still exists, whoever owns the tab: a shared tab ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)) can place an image inside another owner's document. A dangling row (its tab gone) doesn't count. No tab body is read.
@@ -204,17 +204,17 @@ Uploaded bytes that no document references are dead weight in R2 + D1. A daily s
 
 ## Realtime
 
-Image uploads / deletes don't go through the realtime room. The element's `imageId` change is just another field mutation, carried by the existing `update-element` op + the per-tab autosave (see [11-api.md](../015-api/api.md) realtime model). Other participants pull the bytes lazily on next render. No special "upload progress" broadcast in v1.
+Image uploads / deletes don't go through the realtime room. The element's `imageId` change is just another field mutation, carried by the existing `update-element` op + the per-tab autosave (see [API app](../015-api/api.md) realtime model). Other participants pull the bytes lazily on next render. There is no "upload progress" broadcast.
 
 ## Activity log
 
-`Set image` + `Cleared image` entries land in the change log per [12-activity-and-audit.md](../012-collaboration/activity-and-audit.md). Revert restores the prior `imageId` (which may resolve to a still-live image, a deleted one rendering broken, or `null`). Clearing the image doesn't delete the gallery row — gallery management is a separate gesture in the picker modal.
+`Set image` + `Cleared image` entries land in the change log per [Activity and audit log](../012-collaboration/activity-and-audit.md). Revert restores the prior `imageId` (which may resolve to a still-live image, a deleted one rendering broken, or `null`). Clearing the image doesn't delete the gallery row — gallery management is a separate gesture in the picker modal.
 
-## Out of scope (for the first slice)
+## Out of scope
 
-- **EXIF on non-JPEG formats.** PNG / WebP / GIF can technically embed XMP / EXIF chunks too. v1 strips JPEG metadata only because that's where ~all real-world leaks come from (phone-camera output). Stripping the other formats would require per-format chunk parsers; revisit if a leak case surfaces.
+- **EXIF on non-JPEG formats.** PNG / WebP / GIF can technically embed XMP / EXIF chunks too. Only JPEG metadata is stripped, because that's where ~all real-world leaks come from (phone-camera output). Stripping the other formats would require per-format chunk parsers; revisit if a leak case surfaces.
 - **Image cropping / rotation.** The picker accepts the file as-is. Resize works via the existing canvas handles.
 - **Per-image share links.** The same image can be referenced by multiple documents of the same owner; the document-scoped `GET /api/images/:id?d=<documentId>` read endpoint covers cross-document sharing for visitors holding a share code, without any per-image plumbing.
-- **CDN / image-optimisation.** Cloudflare's edge cache (via the `immutable` Cache-Control) is the only transform layer in v1. No on-the-fly resize / format conversion. Future: Cloudflare Image Resizing or a custom transform Worker.
-- **External-source image clipboard via `navigator.clipboard.read()`.** v1's Cmd+V image-paste path listens to the browser's native `paste` event and reads `clipboardData.items`, which is permissionless. The picker modal + drag-drop + the `paste` shortcut (Cmd/Ctrl+V on the canvas, image MIME on the clipboard data routes through `uploadImageFile` and lands as a new image element) are the entry paths today; `navigator.clipboard.read()` (which would let us probe the clipboard on a button click without requiring an actual paste gesture) needs the browser's clipboard-read permission prompt and isn't wired.
+- **CDN / image-optimisation.** Cloudflare's edge cache (via the `immutable` Cache-Control) is the only transform layer. No on-the-fly resize / format conversion. Future: Cloudflare Image Resizing or a custom transform Worker.
+- **External-source image clipboard via `navigator.clipboard.read()`.** The Cmd+V image-paste path listens to the browser's native `paste` event and reads `clipboardData.items`, which is permissionless. The picker modal + drag-drop + the `paste` shortcut (Cmd/Ctrl+V on the canvas, image MIME on the clipboard data routes through `uploadImageFile` and lands as a new image element) are the entry paths today; `navigator.clipboard.read()` (which would let us probe the clipboard on a button click without requiring an actual paste gesture) needs the browser's clipboard-read permission prompt and is not used.
 - **External-URL images.** No `imageId === 'https://...'` shape. Every image is internal so the bytes survive an upstream taking the source down + don't leak referrer headers.

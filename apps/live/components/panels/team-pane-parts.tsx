@@ -1,4 +1,6 @@
-import { CloseIcon, Select, HoverCard, Glyph, GlyphDisc } from '@livediagram/ui';
+import { CloseIcon, Select, HoverCard, Glyph } from '@livediagram/ui';
+import { PictureDisc } from '@/components/primitives/PictureDisc';
+import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import type { TeamMember, TeamRole } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
@@ -90,9 +92,13 @@ export function TeamMemberRow({
   // of whether the lazy claim has identified them yet.
   const pending = m.status === 'invited';
   const removable = isAdmin && !isSelf && !pinnedAdmin;
+  // Our own row shows our picture to us whatever the switch says; everyone else's shows what they
+  // published (docs/specs/014-identity/profile-picture.md §5).
+  const ownPicture = useDeferredAuth().user?.pictureUrl ?? null;
   return (
     <li key={m.id} className="group flex items-center gap-3 px-4 py-2.5">
-      <GlyphDisc
+      <PictureDisc
+        pictureUrl={isSelf ? ownPicture : m.pictureUrl}
         size={32}
         aria-hidden
         style={{
@@ -103,7 +109,7 @@ export function TeamMemberRow({
         } ${IDENTITY_FILL}`}
       >
         {initialsOf(name)}
-      </GlyphDisc>
+      </PictureDisc>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <span className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">

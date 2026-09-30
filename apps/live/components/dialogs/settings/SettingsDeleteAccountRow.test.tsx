@@ -9,6 +9,10 @@ import { SETTINGS_CATEGORIES, type SettingsDeleteAccountRowSpec } from './settin
 
 const auth = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/components/providers/deferred-auth', () => ({ useDeferredAuth: () => auth.value }));
+vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true, sessionsEnabled: true }));
+vi.mock('@/components/chrome/auth-shared', () => ({
+  useAuthHrefs: () => ({ signInHref: '/sign-in/?redirect_url=%2Fexplorer' }),
+}));
 
 const { DELETE_ACCOUNT_GUEST, DELETE_ACCOUNT_SIGNED_IN, SettingsDeleteAccountRow } =
   await import('./SettingsAccountRows');
@@ -29,11 +33,13 @@ describe('SettingsDeleteAccountRow', () => {
     expect(description()).toContain(DELETE_ACCOUNT_SIGNED_IN);
   });
 
-  it('tells a guest to sign in first, with no button', () => {
+  it('offers a guest the way in beside the label, with no Delete button', () => {
     auth.value = { authLoaded: true, isSignedIn: false, user: null, signOut: vi.fn() };
     render(<SettingsDeleteAccountRow row={ROW} />);
     expect(screen.queryByRole('button', { name: 'Delete Account' })).toBeNull();
-    expect(screen.getByText('Sign in first')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Sign In' }).getAttribute('href')).toBe(
+      '/sign-in/?redirect_url=%2Fexplorer',
+    );
     expect(description()).toContain(DELETE_ACCOUNT_GUEST);
   });
 });

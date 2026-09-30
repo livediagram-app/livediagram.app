@@ -107,7 +107,7 @@ describe('mock-up palette, dark half', () => {
 describe('hero window veil', () => {
   it('fades to the dark page colour in dark appearance', () => {
     const pageDark = read('app/layout.tsx').match(/<body[^>]*\b(dark:bg-slate-\d+)/)?.[1];
-    const veil = read('components/HeroIllustration.tsx').match(
+    const veil = read('components/hero-editor-window.tsx').match(
       /className=\{`pointer-events-none absolute inset-0 z-20 ([^`$]*)/,
     )?.[1];
     expect(pageDark).toBeTruthy();

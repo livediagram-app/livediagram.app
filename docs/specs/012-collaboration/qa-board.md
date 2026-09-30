@@ -217,18 +217,34 @@ Two templates in the Agile category are built around the board
 (`template-builders-sessions.ts`), the first templates to seat a Collaborate
 element:
 
-- **Lean Coffee** (`lean-coffee`): a board labelled Topics between the
-  format's how-it-works steps and its tools: an 8-minute timer, a "Keep going
-  on this topic?" Yes/No poll, and a takeaways checklist. Lean Coffee is the
-  board's loop almost exactly (propose, upvote, discuss the top topic, Done,
-  next), which is why it earned a template.
-- **Town Hall Q&A** (`town-hall`): a "Questions for the panel" board beside an
-  agenda with a Q&A block, a 30-minute timer for it, and a follow-ups
-  checklist for what the panel can't answer live.
+- **Lean Coffee** (`lean-coffee`): "Lean Coffee · Product crew, Thursday
+  9:30" (with a coffee sticker) and a one-line how-to. The loop is drawn down
+  the left as four tinted step cards (1 Propose / 2 Vote / 3 Discuss / 4 Keep
+  going?), each with a number disc, a glyph and one line of how, joined by
+  pinned arrows, plus a curved "Next topic" arrow from step 4 back to step 3,
+  so the ritual's shape is visible before anyone reads it. A board labelled
+  Topics sits in the middle. On the right, a **Facilitator kit** in the order
+  it is pressed, each tool beside the words that say when: the 8-minute
+  timebox timer (step 3), the "Keep going on this topic?" Yes/No poll (step
+  4), and a 4-minute extension timer; then a Takeaways checklist. Lean Coffee
+  is the board's loop almost exactly (propose, upvote, discuss the top topic,
+  Done, next), which is why it earned a template.
+- **Town Hall Q&A** (`town-hall`): "Q3 all-hands · Town hall" (with a
+  microphone sticker) and a one-line how-to. The left column introduces **the
+  panel** (three people, each an initials disc with a name and role) over a
+  **run of show**: an agenda whose segments name their owner ("The quarter in
+  numbers · Dev"), with a 30-minute Open Q&A block. A "Questions for the
+  panel" board is the centre. On the right, the **Facilitator kit**: a
+  30-minute timer for the Q&A, an Applause reaction pad, and a 1-to-5 rating
+  poll ("How useful was today?") to close on; then a Follow-ups checklist for
+  what the panel can't answer live, with an owner and a date.
 
 Both boards start **empty**. A session template is used live, and example
 questions would be the first thing a facilitator had to delete in front of the
-room; the board's own empty state already says what to do.
+room; the board's own empty state already says what to do. The scaffolding
+around each board (the steps, the panel, the agenda) carries the worked
+example instead. Neither ships layers: everything on a session board is used
+live, so there is no scaffold to lock.
 
 ## Export and render
 

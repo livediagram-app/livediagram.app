@@ -205,4 +205,48 @@ test.describe('Power user mode', () => {
     await expect(tabBar(page).getByText('Search', { exact: true })).toBeVisible();
     expectNoPageErrors(pageErrors);
   });
+
+  test('the Appearance control flips on click and follows the device on right-click', async ({
+    page,
+    pageErrors,
+  }) => {
+    await openEditor(page);
+    const appearance = tabBar(page).getByRole('button', { name: /^Appearance: / });
+    const painted = () =>
+      page.evaluate(() => (document.documentElement.classList.contains('dark') ? 'dark' : 'light'));
+    // Outside the mode: the three-step cycle, System first on this dark device.
+    await expect(appearance).toHaveAccessibleName('Appearance: System. Switch to Light.');
+
+    await setPowerUserMode(page, true);
+    await closeSettings(page);
+    await expect(appearance).toHaveAccessibleName(
+      'Appearance: System. Switch to Light. Right-click to follow your device.',
+    );
+
+    await appearance.click();
+    await expect(appearance).toHaveAccessibleName(/^Appearance: Light\. Switch to Dark\./);
+    expect(await painted()).toBe('light');
+    await appearance.click();
+    await expect(appearance).toHaveAccessibleName(/^Appearance: Dark\. Switch to Light\./);
+    expect(await painted()).toBe('dark');
+    await appearance.click();
+    await expect(appearance).toHaveAccessibleName(/^Appearance: Light\./);
+
+    // Right-click: back to System, which paints this device's dark, and no browser menu.
+    await appearance.click({ button: 'right' });
+    await expect(appearance).toHaveAccessibleName(/^Appearance: System\./);
+    expect(await painted()).toBe('dark');
+    expect(await page.evaluate(() => localStorage.getItem('livediagram:v2:ui-mode'))).toBe(
+      'system',
+    );
+    await expect(page.getByRole('menu')).toHaveCount(0);
+
+    // The keyboard reaches System too: Shift+F10 on the focused control.
+    await appearance.click();
+    await expect(appearance).toHaveAccessibleName(/^Appearance: Light\./);
+    await appearance.focus();
+    await page.keyboard.press('Shift+F10');
+    await expect(appearance).toHaveAccessibleName(/^Appearance: System\./);
+    expectNoPageErrors(pageErrors);
+  });
 });

@@ -23,8 +23,9 @@ runs on every PR and push. The browser suite is its own workflow,
 - **`workflow_dispatch`**: run it by hand against a branch before merge
   when a change is browser-risky.
 
-It runs **every** spec file in `apps/live/e2e/` (`test:e2e` is
-`playwright test --project=chromium`, with no filter).
+It runs **every** spec file in `apps/live/e2e/` except the signed-in ones under `e2e/clerk-stub/`
+(`test:e2e` is `playwright test --project=chromium`, with no other filter); those run as a second
+step against their own build ([Signed-in specs](#signed-in-specs-clerk-stub)).
 
 Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 
@@ -85,6 +86,27 @@ Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
 developer with `pnpm dev` already running (live :3002 + api :8787) runs
 `pnpm --filter @livediagram/live test:e2e` against that stack with no
 extra boot.
+
+## Signed-in specs (Clerk stub)
+
+Clerk is a build-time switch ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
+guest-mode `out/` can never show a signed-in user. The specs in `apps/live/e2e/clerk-stub/` run
+against a second export, `apps/live/.next/out-clerk-stub/` (inside `.next/`, so every ignore and
+source scanner already skips it), built by `pnpm build:clerk-stub` with a
+publishable key for a host that cannot resolve. Each spec installs a fake `window.Clerk`
+(`e2e/clerk-stub/clerk-stub.ts`) before the page loads, which @clerk/react takes in place of
+downloading clerk-js, so a chosen user (name, email, pictures) sits behind the real hooks with no
+Clerk account, secret or network.
+
+`pnpm --filter @livediagram/live test:e2e:clerk-stub` sets `E2E_CLERK_STUB=1`, which adds the
+`clerk-stub` project and boots the stack with `E2E_LIVE_OUT=.next/out-clerk-stub` on its own ports
+(live `:3015`, api `:8788`, marketing `:3016`), so a guest stack already up on `:3002` is never
+reused for it. The stack also stands in for Clerk (`E2E_CLERK_JWKS=1`): it makes a signing key at
+boot, serves its JWKS on `/e2e/jwks.json`, starts the api worker with `CLERK_JWKS_URL` pointing at
+it, and mints a session token for any test account on `/e2e/token?sub=user_…`, which the fake
+`window.Clerk` hands out. So a stub account is a real verified account to the api and the realtime
+room, and two or three stub browsers can collaborate in one document. A test that changes an
+account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them after the smoke suite.
 
 ## No uncaught errors
 
@@ -152,7 +174,9 @@ tests where it's cheap.
   `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, marketing).
 - `.github/workflows/e2e.yml`: the cost-controlled workflow.
-- `test:e2e` script in `apps/live/package.json`.
+- `test:e2e` and `test:e2e:clerk-stub` scripts in `apps/live/package.json`; `build:clerk-stub`
+  (`apps/live/scripts/build-clerk-stub.mjs`) builds the export the latter runs against.
+- `apps/live/e2e/clerk-stub/`: the fake `window.Clerk` and the signed-in specs.
 
 Playwright is an `apps/live` dev dependency; it is **not** wired into
 `pnpm test` / `turbo run test` (that stays the fast unit gate), so

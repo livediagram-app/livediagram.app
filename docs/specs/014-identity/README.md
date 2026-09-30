@@ -6,3 +6,5 @@ Follow the references below only as needed; never upfront.
 - ./sign-in-encouragement.md - when working on Sign-in encouragement: Dismissible guest banner (Explorer + delayed in-editor) + "why sign in" modal
 - ./transactional-email.md - when working on Transactional & lifecycle email (Resend): Optional Resend integration, gated on `RESEND_API_KEY`: welcome + week-1 (Explorer) + week-2 (Teams) onboarding series off the daily cron, plus transactional team-invite and account-deleted emails. Off (no sends) when the key is unset
 - ./profile-and-email-notifications.md - when working on Account settings & email notifications: Signed-in account home in the Explorer (avatar, name, email, join date); delete-account moves here; two opt-out email notifications (someone joins my document, someone responds to my team invite), gated like [Transactional & lifecycle email (Resend)](transactional-email.md)
+- ./profile-picture.md - when working on Profile picture: uploaded or Google picture as the avatar, shown to signed-in collaborators behind a switch, initials as fallback
+- ./blueprints/README.md - when implementing an identity spec from its blueprint (profile picture)

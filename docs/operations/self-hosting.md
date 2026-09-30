@@ -101,7 +101,7 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
    echo "$(date +%s000)" | pnpm --filter @livediagram/api exec wrangler secret put GUEST_SIG_ENFORCE_AFTER
    ```
 
-6. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with Clerk.** They're a signed-in-only feature, so a self-host with Clerk configured gets the Explorer "API tokens" section automatically; a guest-only self-host has no accounts and therefore no tokens (nothing to configure). Each token lasts six months and is stored hashed.
+6. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with Clerk.** They're a signed-in-only feature, so a self-host with Clerk configured gets the API Tokens category in Settings automatically; a guest-only self-host has no accounts and therefore no tokens (nothing to configure). Each token lasts six months and is stored hashed.
 
 7. **Optional — "Continue with Google" button.** To surface Google OAuth on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (a production `pk_live_*` instance needs your own Google Cloud OAuth client registered against Clerk's redirect URI, `https://clerk.<domain>/v1/oauth_callback`, shown verbatim in the dashboard), then set the build-time flag on the live app alongside the publishable key:
 
@@ -173,8 +173,8 @@ nothing. To run it:
 
 3. **Deploy after the api worker** (it reaches api over a service binding). The
    deploy workflow already orders `mcp` after `api`. Tokens minted via the MCP
-   are ordinary `lvd_` API tokens — they appear in the Explorer's API tokens
-   page and are revocable there.
+   are ordinary `lvd_` API tokens — they appear in the API Tokens category of
+   Settings and are revocable there.
 
 4. **Only if you've turned telemetry on:** set the same `INTERNAL_EVENTS_KEY` on
    both workers — see [Telemetry](#telemetry-off-by-default-for-self-hosters)

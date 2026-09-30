@@ -55,7 +55,7 @@ export function AnimatedLinesBackdrop() {
       // Hidden below sm: the wizard card fills the viewport on mobile, so
       // the backdrop is never visible there and shouldn't burn animation.
       className="pointer-events-none absolute inset-0 hidden overflow-hidden sm:block"
-      // Sit behind the picker card (z-[var(--z-modal)]) but above the plain backdrop.
+      // Sit behind the picker card (z-[var(--z-canvas-modal)]) but above the plain backdrop.
       style={{ zIndex: 0 }}
     >
       <style>{`

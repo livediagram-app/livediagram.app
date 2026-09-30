@@ -326,7 +326,7 @@ export const articles: Article[] = [
     title: 'Power User Mode',
     description: 'Recommended settings in one switch, and Minimal chrome for a quieter interface.',
     keywords:
-      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings',
+      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings appearance light dark right-click',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -509,8 +509,10 @@ export const articles: Article[] = [
   {
     slug: 'signing-in',
     title: 'Signing In',
-    description: 'Create an account, sign in, and migrate your guest documents.',
-    keywords: 'login log in sign up register email code google oauth account create migrate',
+    description:
+      'Create an account, sign in, migrate your guest documents, and use your Google picture.',
+    keywords:
+      'login log in sign up register email code google oauth account create migrate avatar profile picture photo initials hide collaborators',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },

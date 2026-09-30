@@ -17,7 +17,7 @@ import { createContext, useContext } from 'react';
 import { clerkEnabled, clerkPublishableKey, e2eAuthEnabled } from '@/lib/clerk-config';
 
 // The subset of the Clerk user the app actually renders (AuthControls
-// menu, ProfilePane identity card, the bootstrap's display name).
+// menu, the Settings identity card, the bootstrap's display name).
 type DeferredAuthUser = {
   id: string;
   firstName: string | null;
@@ -26,6 +26,9 @@ type DeferredAuthUser = {
   username: string | null;
   email: string | null;
   createdAt: Date | null;
+  // The resolved profile picture (docs/specs/014-identity/profile-picture.md), or null for the
+  // initials avatar.
+  pictureUrl: string | null;
 };
 
 export type DeferredAuthState = {

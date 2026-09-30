@@ -3566,13 +3566,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
       }
     },
     "required": [
       "id",
       "name",
       "color",
-      "createdAt"
+      "createdAt",
+      "pictureUrl"
     ],
     "type": "object"
   },
@@ -5201,6 +5208,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "role": {
         "$ref": "#/components/schemas/TeamRole"
       },
@@ -5228,6 +5241,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "role",
       "status",
       "name",
+      "pictureUrl",
       "createdAt",
       "updatedAt"
     ],

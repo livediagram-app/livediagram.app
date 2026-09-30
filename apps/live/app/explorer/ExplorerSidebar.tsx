@@ -5,7 +5,6 @@ import {
   ClockIcon,
   ImageIcon,
   InviteIcon,
-  KeyIcon,
   PaletteIcon,
   PlusIcon,
   ShareIcon,
@@ -65,7 +64,6 @@ export function ExplorerSidebar() {
     teamFolders,
     invites,
     teamsEnabled,
-    tokens,
     recentCount,
     timelineUnread,
     activity,
@@ -271,8 +269,8 @@ export function ExplorerSidebar() {
         />
       ))}
 
-      {/* Teams (docs/specs/013-workspace/teams.md): signed-in only. Signed-out users see neither this
-          nor External connections inline; they get one bottom-of-sidebar
+      {/* Teams (docs/specs/013-workspace/teams.md): signed-in only. Signed-out users don't see it
+          inline; they get one bottom-of-sidebar
           sign-in banner instead. A no-auth self-host never has teams. */}
       {teamsEnabled ? (
         <>
@@ -375,22 +373,6 @@ export function ExplorerSidebar() {
         onClick={() => go({ kind: 'trash' })}
         depth={0}
       />
-      {/* External connections (docs/specs/015-api/public-api-and-tokens.md): API tokens, signed-in only. Hidden
-          for signed-out users (they get the bottom banner below instead). */}
-      {teamsEnabled ? (
-        <>
-          <SidebarSectionLabel>External connections</SidebarSectionLabel>
-          <SidebarRow
-            icon={<KeyIcon />}
-            label="API Tokens"
-            selected={selected.kind === 'tokens'}
-            onClick={() => go({ kind: 'tokens' })}
-            depth={0}
-            badge={tokens.count > 0 ? tokens.count : undefined}
-          />
-        </>
-      ) : null}
-
       {/* One sign-in banner at the bottom, in place of per-section nudges, when
           auth is configured but the visitor is signed out. */}
       {clerkEnabled && !teamsEnabled ? (
@@ -403,7 +385,7 @@ export function ExplorerSidebar() {
           </span>
           <span>
             <span className="block text-xs font-semibold text-slate-700 dark:text-slate-100">
-              Sign in to access Teams and External connections
+              Sign in to access Teams
             </span>
             <span className="mt-0.5 block text-[11px] leading-snug text-slate-500 dark:text-slate-400">
               Free, and your guest documents come with you.

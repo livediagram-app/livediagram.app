@@ -62,14 +62,25 @@ export function QuizOption({
     <button
       type="button"
       {...press}
-      disabled={!onPress}
+      // An answer is a vote, never a grab: the press stops here so picking
+      // does not select the quiz (which would lock it to the picker for
+      // everyone else) or nudge it. Only the disc selects and drags it.
+      onPointerDown={(e) => {
+        press.onPointerDown(e);
+        e.stopPropagation();
+      }}
+      onDoubleClick={(e) => e.stopPropagation()}
+      // aria-disabled rather than `disabled`: a disabled button fires no
+      // pointer events, so a press on a locked answer would slip past the
+      // stop above and select the quiz after all.
+      aria-disabled={!onPress}
       aria-pressed={state === 'open' || state === 'locked' ? mine : undefined}
       aria-label={`${letterLabel}: ${text}${right ? ', correct' : ''}${
         count !== null ? `, ${count} picked` : ''
       }`}
-      className={`lvd-quiz-fan pointer-events-auto absolute flex items-center gap-2 rounded-2xl border-2 px-2.5 text-left transition-[opacity,background-color,border-color] duration-150 enabled:cursor-pointer enabled:hover:brightness-95 disabled:cursor-default ${
-        right ? 'lvd-quiz-correct z-10' : ''
-      }`}
+      className={`lvd-quiz-fan pointer-events-auto absolute flex items-center gap-2 rounded-2xl border-2 px-2.5 text-left transition-[opacity,background-color,border-color] duration-150 ${
+        onPress ? 'cursor-pointer hover:brightness-95' : 'cursor-default'
+      } ${right ? 'lvd-quiz-correct z-10' : ''}`}
       style={
         {
           left: at.x - QUIZ_OPTION_WIDTH / 2,

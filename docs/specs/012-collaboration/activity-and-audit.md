@@ -176,7 +176,7 @@ ops shouldn't ride a visitor's share code.
      Activity panel ends up showing exactly what was visible before
      the undo.
    - The marker stacks are bounded by the same limit as
-     `useDocumentHistory` (3 steps) and mutate 1:1 with it (including
+     `useDocumentHistory` (`HISTORY_LIMIT`, 500 steps) and mutate 1:1 with it (including
      clearing on `reset`), so they can't drift out of sync. A fresh
      commit clears the redo stack — same semantics as the
      state-snapshot history's `future`.

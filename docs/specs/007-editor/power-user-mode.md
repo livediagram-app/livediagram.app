@@ -120,6 +120,25 @@ Other consumers:
   and two rows of coloured squares are otherwise indistinguishable at a glance. Words that teach go; words that name
   what a control changes stay.
 
+### Quick appearance switch
+
+While the mode is on, the status bar's **Appearance** control ([Appearance](../004-interface-design/appearance.md#the-control))
+switches between Light and Dark instead of cycling through System, so the everyday flip is one click:
+
+- **Click** switches to the opposite of what the chrome is painted as: Light goes to Dark, Dark to Light, and System
+  goes to the opposite of what the device currently resolves to. Every click visibly changes the chrome.
+- **Right-click** (the context menu gesture: right-click, the Menu key or Shift+F10, a long press where the device
+  maps it to a context menu) sets **System** and opens no browser menu. On System already, it changes nothing.
+- **Its name says both.** The accessible name reads where you are, where a click goes, and that a right-click follows
+  the device ("Appearance: Dark. Switch to Light. Right-click to follow your device."). The hover card's description
+  says the same.
+- It applies wherever the control reads the mode: the editor's status bar and the Explorer's bottom bar. It is not a
+  Minimal chrome behaviour: it holds with Minimal chrome off.
+- The public sites (the home page, help centre and dashboard) have no power user mode, so their control keeps the
+  three-step cycle whatever the preference holds.
+- The Settings **Appearance** row is unchanged: it offers all three settings.
+- Telemetry is the control's existing `UI / Toggled / <setting>` event, whichever gesture made the pick.
+
 ## Discovery: the offer
 
 The mode is offered **once**, ever, to people whose use suggests they would want it.

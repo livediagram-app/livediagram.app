@@ -55,11 +55,15 @@ describe('EditorHeader stack row', () => {
     },
   );
 
-  it('draws the account initial as a glyph disc filling the slot', () => {
+  it('draws the account avatar, its initial as a glyph disc filling the slot', () => {
     renderHeader();
     const slot = screen.getByRole('button', { name: 'Account menu' })
       .firstElementChild as HTMLElement;
-    const disc = slot.firstElementChild as HTMLElement;
+    // The account avatar (docs/specs/014-identity/profile-picture.md) holds the slot at its size.
+    const avatar = slot.firstElementChild as HTMLElement;
+    expect(avatar.dataset.avatarState).toBe('initial');
+    expect(avatar.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
+    const disc = avatar.firstElementChild as HTMLElement;
     expect(disc.dataset.optical).toBe('disc');
     expect(disc.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
     expect(disc.querySelector('.text-optical-centre')?.textContent).toBe('W');

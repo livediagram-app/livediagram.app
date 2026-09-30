@@ -511,7 +511,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
-    "Someone created a new personal API token by hand, from Settings or the Explorer's API Tokens page.",
+    'Someone created a new personal API token by hand, from the API Tokens category in Settings.',
   'Token|Removed|': 'Someone revoked an API token.',
   'UI|Added|PaletteFavourite': 'Someone added a tile to their Favourites in the shape palette.',
   'UI|Added|Slide':
@@ -621,6 +621,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the Notifications category in the Settings dialog.',
   'UI|Opened|SettingsPanels': 'Someone opened the Panels category in the Settings dialog.',
   'UI|Opened|SettingsPrivacy': 'Someone opened the Privacy category in the Settings dialog.',
+  'UI|Opened|SettingsTokens': 'Someone opened the API Tokens category in the Settings dialog.',
   'UI|Opened|Share': 'Someone opened the Share dialog.',
   'UI|Opened|Shortcuts': 'Someone opened the keyboard-shortcuts dialog.',
   'UI|Opened|SignInReasons':
@@ -740,6 +741,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
   'UI|Toggled|NotifyActionAssignedOn':
     'Someone turned on the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
+  'UI|Toggled|ShowProfilePictureOff':
+    'Someone stopped showing their profile picture to collaborators, in Settings > Account.',
+  'UI|Toggled|ShowProfilePictureOn':
+    'Someone started showing their profile picture to collaborators again, in Settings > Account.',
   'UI|Toggled|NotifyMentionsOff':
     'Someone turned off the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications.',
   'UI|Toggled|NotifyMentionsOn':

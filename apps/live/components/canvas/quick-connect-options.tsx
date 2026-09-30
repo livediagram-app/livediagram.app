@@ -165,26 +165,33 @@ function AddColumnIcon() {
   );
 }
 
-// A node with a branch running off it.
+// Both glyphs draw the SAME two roles so the pair reads as a contrast: the
+// selected node is solid, the node about to be added is an outline with a
+// "+". Direction carries the meaning, matching the default tree flow
+// (docs/specs/009-elements/mind-node.md): a child goes one level deeper, off
+// to the right; a sibling lands below, at the same level under the same parent.
+
+// This node (solid) with a new node branching off to its right.
 function MindChildIcon() {
   return (
-    <Glyph size={OPTION_ICON_SIZE} units={16} strokeLinejoin="miter">
-      <rect x="1" y="6" width="5" height="4" rx="1" />
-      <path d="M6 8h3.5" />
-      <rect x="10" y="2.5" width="5" height="4" rx="1" />
-      <rect x="10" y="9.5" width="5" height="4" rx="1" />
-      <path d="M9.5 8V4.5M9.5 8v3.5" />
+    <Glyph size={OPTION_ICON_SIZE} units={16}>
+      <rect x="1" y="5.5" width="5" height="5" rx="1" fill="currentColor" />
+      <path d="M6 8h2.5" />
+      <rect x="8.5" y="4.5" width="6.5" height="7" rx="1.5" />
+      <path d="M11.75 6.5v3M10.25 8h3" />
     </Glyph>
   );
 }
 
-// Two nodes side by side at the same level.
+// This node (solid) with a new node stacked under it, both hanging off the
+// same parent bracket.
 function MindSiblingIcon() {
   return (
-    <Glyph size={OPTION_ICON_SIZE} units={16} strokeLinejoin="miter">
-      <rect x="9" y="1.5" width="6" height="4.5" rx="1" />
-      <rect x="9" y="9.5" width="6" height="4.5" rx="1" />
-      <path d="M1 8h4M5 8V3.75h4M5 8v3.75h4" />
+    <Glyph size={OPTION_ICON_SIZE} units={16}>
+      <path d="M1.5 4h3M4.5 4v8.25h2" />
+      <rect x="6.5" y="1.5" width="8.5" height="5" rx="1" fill="currentColor" />
+      <rect x="6.5" y="9" width="8.5" height="6.5" rx="1.5" />
+      <path d="M10.75 10.75v3M9.25 12.25h3" />
     </Glyph>
   );
 }

@@ -15,6 +15,7 @@ import { clerkEnabled } from '@/lib/clerk-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { writeUserPreferences } from '@/lib/user-preferences';
+import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
@@ -78,6 +79,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
     settingsFocus,
     setSettingsFocus,
     settingsCategory,
+    openSettingsOn,
     setSettingsCategory,
     settingsSection,
     setSettingsSection,
@@ -125,13 +127,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
           <Brand href="/" size="md" />
           <ProductNav current="explorer" showOnMobile />
         </div>
-        <AuthControls
-          onOpenAccount={() => {
-            setSettingsCategory('account');
-            setSettingsSection(null);
-            setSettingsOpen(true);
-          }}
-        />
+        <AuthControls onOpenAccount={() => openSettingsOn('account')} />
       </header>
 
       <main
@@ -203,6 +199,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
         <ChromeControls
           onOpenSearch={() => setSearchOpen(true)}
           onOpenSettings={() => setSettingsOpen(true)}
+          powerUser={isPowerUserMode(prefs)}
         />
       </div>
 

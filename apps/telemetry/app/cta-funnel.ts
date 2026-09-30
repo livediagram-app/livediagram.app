@@ -58,6 +58,7 @@ const SLOT_LABELS: Record<CtaSlot, string> = {
   HeaderDraw: 'Header: Just Draw',
   Hero: 'Hero: Choose Template',
   HeroDraw: 'Hero: Just Draw',
+  HeroCanvas: 'Hero: Canvas',
   Gallery: 'Template Gallery Cards',
   GalleryDraw: 'Gallery: Blank Canvas Link',
   Closing: 'Closing Band: Start Drawing',

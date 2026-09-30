@@ -175,6 +175,10 @@ export type UserPreferences = {
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
+  // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
+  // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT. The owner
+  // always sees their own picture whatever this says.
+  showProfilePicture?: boolean;
   // The interactive editor tour's seen-guard (docs/specs/007-editor/editor-tour.md). True once the
   // tour's welcome offer has been answered (taken, skipped, or declined),
   // so the offer never re-appears for this user — synced, so it follows
@@ -284,6 +288,14 @@ export function withPanelLayout(prefs: UserPreferences, layout: PanelLayout): Us
 // default, so only an explicit `false` turns the on-move rebind off. The
 // single home for the default: the Settings row and the editor-preferences
 // hook both call this instead of re-deriving it.
+/** The switch's default (docs/specs/014-identity/profile-picture.md §4): on, by operator decision. */
+export const SHOW_PROFILE_PICTURE_DEFAULT = true;
+
+/** Whether collaborators may see this account's profile picture. */
+export function showProfilePictureEnabled(prefs: UserPreferences): boolean {
+  return prefs.showProfilePicture ?? SHOW_PROFILE_PICTURE_DEFAULT;
+}
+
 export function autoRebindArrowsEnabled(prefs: UserPreferences): boolean {
   return prefs.autoRebindArrows !== false;
 }

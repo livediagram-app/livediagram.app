@@ -4,8 +4,16 @@ import { defineConfig, devices } from '@playwright/test';
 // against the real production build + api worker (scripts/e2e-stack.mjs),
 // or a developer's already-running `pnpm dev` stack when one is up
 // (reuseExistingServer below).
-const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:3002';
 const isCI = !!process.env.CI;
+// The signed-in specs (e2e/clerk-stub/, docs/specs/014-identity/blueprints/profile-picture.md) need
+// the Clerk-enabled export (`pnpm build:clerk-stub`). They run as their own invocation
+// (`pnpm test:e2e:clerk-stub`) on their own ports, so a guest stack already up on :3002 is never
+// mistaken for it.
+const clerkStub = process.env.E2E_CLERK_STUB === '1';
+const STUB_PORTS = { live: '3015', api: '8788', marketing: '3016' };
+const BASE_URL =
+  process.env.E2E_BASE_URL ??
+  (clerkStub ? `http://localhost:${STUB_PORTS.live}` : 'http://localhost:3002');
 
 export default defineConfig({
   testDir: './e2e',
@@ -28,8 +36,8 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      // Needs its own build and stack (E2E_DRIVE=1); see the drive project.
-      testIgnore: /drive-(mirror|shots)\.spec\.ts/,
+      // The Drive and signed-in suites need their own builds and stacks; see below.
+      testIgnore: [/drive-(mirror|shots)\.spec\.ts/, /clerk-stub\//],
     },
     // Opt-in (pnpm --filter @livediagram/live test:e2e:drive): the Google Drive
     // mirror against the fake Google, signed in through the test-only auth
@@ -47,6 +55,15 @@ export default defineConfig({
             name: 'drive-shots',
             use: { ...devices['Desktop Chrome'] },
             testMatch: /drive-shots\.spec\.ts/,
+          },
+        ]
+      : []),
+    ...(clerkStub
+      ? [
+          {
+            name: 'clerk-stub',
+            use: { ...devices['Desktop Chrome'] },
+            testMatch: /clerk-stub\/.*\.spec\.ts/,
           },
         ]
       : []),
@@ -72,5 +89,15 @@ export default defineConfig({
     timeout: 180_000,
     stdout: 'pipe',
     stderr: 'pipe',
+    env: clerkStub
+      ? {
+          E2E_LIVE_OUT: '.next/out-clerk-stub',
+          E2E_LIVE_PORT: STUB_PORTS.live,
+          E2E_API_PORT: STUB_PORTS.api,
+          E2E_MARKETING_PORT: STUB_PORTS.marketing,
+          // The stack stands in for Clerk: it mints the stub's session tokens and the api verifies them.
+          E2E_CLERK_JWKS: '1',
+        }
+      : {},
   },
 });

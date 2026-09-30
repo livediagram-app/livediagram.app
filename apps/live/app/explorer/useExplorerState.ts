@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
 import {
   apiListDocuments,
   apiListSharedWith,
@@ -35,6 +36,7 @@ import { useExplorerMoves } from './useExplorerMoves';
 import { useExplorerPane } from './useExplorerPane';
 import type { SelectedNode } from './views';
 import { indexFolders, folderBreadcrumb, folderDescendants } from '@/lib/folder-tree';
+import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';
 
 // All Explorer state + handlers, lifted out of the old single-page
 // component when the sections became routes (docs/specs/013-workspace/folders.md): the layout's
@@ -59,6 +61,8 @@ export function useExplorerState() {
   );
 
   const { authLoaded, clerkUserId, clerkDisplayName, isSignedIn } = useClerkApiBootstrap();
+  // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
+  usePublishPicture(clerkUserId);
 
   // Synced user preferences (docs/specs/007-editor/user-preferences.md). Owned HERE rather than in
   // ExplorerShell because the pane needs them too (Recent honours the
@@ -120,9 +124,9 @@ export function useExplorerState() {
     declineInvite,
     refresh: refreshTeams,
   } = useTeams(ownerId, { enabled: teamsEnabled });
-  // API tokens (docs/specs/015-api/public-api-and-tokens.md): signed-in only, same gate as teams. Loaded here so
-  // the sidebar badge, the header New-token popover, and the list pane share
-  // one source.
+  // API tokens (docs/specs/015-api/public-api-and-tokens.md): signed-in only, same gate as teams. Loaded here for
+  // the timeline's token-card menus, which offer Revoke for a token that is
+  // still live. Managing them is the Settings API Tokens category.
   const tokens = useTokens(ownerId, { enabled: teamsEnabled });
   const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -145,6 +149,16 @@ export function useExplorerState() {
   const [settingsCategory, setSettingsCategory] = useState<string | null>(null);
   // Section of it, for `&section=<id>` (the Drive connect flow returns to Cloud Sync).
   const [settingsSection, setSettingsSection] = useState<string | null>(null);
+  // Open Settings on a category in place: the account menu, and any link
+  // that names one (a timeline token card, lib/open-settings.ts).
+  // `sectionId` scrolls to and focuses one section of it (settingsSectionId).
+  const openSettingsOn = useCallback((categoryId: string, sectionId?: string) => {
+    setSettingsFocus(null);
+    setSettingsCategory(categoryId);
+    setSettingsSection(sectionId ?? null);
+    setSettingsOpen(true);
+  }, []);
+  useOpenSettingsRequests(openSettingsOn);
   // `?settings=<category>` deep link. The Settings dialog replaced the
   // /explorer/profile page (docs/specs/014-identity/profile-and-email-notifications.md), and mail already in people's inboxes
   // links at their notification preferences, so any surface can name the pane
@@ -541,6 +555,7 @@ export function useExplorerState() {
     setSettingsCategory,
     settingsSection,
     setSettingsSection,
+    openSettingsOn,
     // Folder + document actions
     folderActions,
     createFolder,
