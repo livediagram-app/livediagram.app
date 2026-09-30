@@ -860,7 +860,9 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'risk-matrix': 'graph',
   'user-persona': 'grid',
   'meeting-agenda': 'grid',
-  'objectives-planner': 'grid',
+  // A personal planning sheet, read closely like a page: even dots behind
+  // its cards read as noise, so it gets a clean canvas.
+  'objectives-planner': 'blank',
 };
 
 // Tab-level overrides a specific template ships with, applied on top
