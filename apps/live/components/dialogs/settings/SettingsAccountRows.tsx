@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button, SOLID_BRAND_DARK } from '@livediagram/ui';
 import { SettingsRowShell } from './SettingsRowShell';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
-import { AccountAvatar } from '@/components/primitives/AccountAvatar';
+import { PictureDisc } from '@/components/primitives/PictureDisc';
 import { accountInitial } from '@/lib/account-avatar';
 import type { SettingsDeleteAccountRowSpec, SettingsIdentityRowSpec } from './settings-catalogue';
 
@@ -44,12 +44,14 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
         <div className="flex items-center gap-3.5 rounded-xl border border-slate-200 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-800">
           {signedIn ? (
             <>
-              <AccountAvatar
-                initial={accountInitial(user)}
-                pictureUrl={user?.pictureUrl ?? null}
+              <PictureDisc
+                pictureUrl={user?.pictureUrl}
                 size={IDENTITY_AVATAR_PX}
+                aria-hidden
                 className={`bg-brand-500 text-lg font-semibold text-white ${SOLID_BRAND_DARK}`}
-              />
+              >
+                {accountInitial(user)}
+              </PictureDisc>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium text-slate-800 dark:text-slate-100">
                   {name}

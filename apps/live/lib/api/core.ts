@@ -115,7 +115,13 @@ export type SharePasswordResponse = { password: string | null };
 export type ChangeLogListResponse = { entries: ChangeLogEntry[] };
 export type ChangeLogAppendResponse = { entry: ChangeLogEntry };
 export type ParticipantResponse = {
-  participant: { id: string; name: string; color: string; createdAt: number };
+  participant: {
+    id: string;
+    name: string;
+    color: string;
+    createdAt: number;
+    pictureUrl?: string | null;
+  };
 };
 
 // Result of resolving a share code (docs/specs/013-workspace/share-password.md). A protected document

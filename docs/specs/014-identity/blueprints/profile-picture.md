@@ -13,7 +13,7 @@ are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `apps/api/src/db/teams.ts`                                             | Joined members carry `pictureUrl`                                                                                       |
 | `apps/api/src/db/ws-tickets.ts`, `routes/document-room-routes.ts`      | Ticket `account` bit; `X-Verified-Account` stamped on every upgrade                                                     |
 | `apps/api/src/document-room.ts`, `document-room-rules.ts`              | Session `account`; hello keeps `picture` for accounts only; roster stripped per recipient                               |
-| `apps/live/lib/account-avatar.ts`                                      | `resolveProfilePicture` (manual > Google > copy), `clerkImageSource`, `sizedPictureUrl`                                 |
+| `apps/live/lib/account-avatar.ts`                                      | `resolveProfilePicture` (manual > Google > copy), `clerkImageSource`, `pictureSrc`, `pictureSrcSet`                     |
 | `apps/live/lib/user-preferences.ts`                                    | `showProfilePicture`, `SHOW_PROFILE_PICTURE_DEFAULT`, `showProfilePictureEnabled`                                       |
 | `apps/live/components/dialogs/settings/settings-catalogue.ts`          | Account > You toggle "Show my profile picture"                                                                          |
 | `apps/live/hooks/identity/usePublishedPicture.ts`                      | The URL others may see (switch applied) and its PUT on change                                                           |
@@ -44,10 +44,11 @@ Banned: "photo" and "avatar URL" as identifiers.
 
 `resolveProfilePicture(user)`:
 
-1. `user.hasImage && clerkImageSource(user.imageUrl) === 'upload'` → `sizedPictureUrl(user.imageUrl)`.
-2. First `externalAccounts` entry with `provider === 'google'` and non-empty `imageUrl` whose
-   `sizedPictureUrl` is non-null.
-3. `user.hasImage` → `sizedPictureUrl(user.imageUrl)`.
+1. `user.hasImage && isProfilePictureUrl(user.imageUrl) && clerkImageSource(user.imageUrl) === 'upload'`
+   → `user.imageUrl`.
+2. First `externalAccounts` entry with `provider === 'google'` and `isProfilePictureUrl(imageUrl)`
+   → its `imageUrl`.
+3. `user.hasImage && isProfilePictureUrl(user.imageUrl)` → `user.imageUrl`.
 4. null.
 
 `clerkImageSource(url)`: host must be `img.clerk.com`; decode the first path segment as base64url
@@ -55,9 +56,10 @@ JSON (D1). `type === 'default'` → `'default'`; `type === 'proxy'` and `src` ho
 `images.clerk.dev`: path starts `/uploaded/` → `'upload'`, `/oauth_` → `'oauth'`; any other
 `src` → `'other'`; anything that fails → `'unknown'`.
 
-`sizedPictureUrl(url)`: `isProfilePictureUrl` must pass (https, host `img.clerk.com`, ≤ 512
-chars before sizing); sets `width`/`height` 96 and `fit=crop`; the sized result must still pass,
-else null.
+The resolved URL is the unsized Clerk URL; it is what is published. Each disc requests
+`pictureSrc(url, 96)` as `src` and `pictureSrcSet(url)` (`96w`, `192w`) with `sizes` = its size.
+`pictureSrc` deletes `fit` and sets `width` and `height` to the size: never `fit=crop`, which
+Clerk answers with a 160x96 band (spec §2).
 
 Published picture: signed in && `showProfilePictureEnabled(prefs)` → `pictureUrl`, else null.
 Recomputed on every auth emission and every `PREFERENCES_CHANGED_EVENT`.

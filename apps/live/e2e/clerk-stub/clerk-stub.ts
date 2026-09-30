@@ -82,3 +82,16 @@ export async function installClerkStub(page: Page, user: StubUser): Promise<void
 
 /** A stand-in picture: a flat disc of colour, served as SVG from Clerk's image host. */
 export const STUB_PICTURE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><rect width="96" height="96" fill="#f59e0b"/><circle cx="48" cy="38" r="18" fill="#7c2d12"/><path d="M14 96c4-22 18-32 34-32s30 10 34 32z" fill="#7c2d12"/></svg>`;
+
+/**
+ * A target (red rim, green ring, blue centre) standing in for a square Google picture, answered
+ * the way Clerk's image host answers (measured, docs/specs/014-identity/profile-picture.md §2): a
+ * size alone gives the full square; `fit=crop` gives a 160x96 band through the middle, which a
+ * round disc then crops again. The rim is what a correctly framed disc shows at its edge.
+ */
+export const TARGET_RIM = { r: 239, g: 68, b: 68 };
+export function clerkTargetPicture(url: string): string {
+  const crop = new URL(url).searchParams.get('fit') === 'crop';
+  const [w, h, viewBox] = crop ? [160, 96, '0 20 100 60'] : [96, 96, '0 0 100 100'];
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${viewBox}" preserveAspectRatio="none"><rect width="100" height="100" fill="rgb(${TARGET_RIM.r},${TARGET_RIM.g},${TARGET_RIM.b})"/><circle cx="50" cy="50" r="38" fill="#22c55e"/><circle cx="50" cy="50" r="24" fill="#3b82f6"/></svg>`;
+}

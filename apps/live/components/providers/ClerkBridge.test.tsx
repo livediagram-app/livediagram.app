@@ -54,8 +54,6 @@ describe('ClerkBridge', () => {
   it('publishes the resolved profile picture (docs/specs/014-identity/profile-picture.md)', () => {
     const onState = vi.fn<(s: DeferredAuthState) => void>();
     render(<ClerkBridge onState={onState} />);
-    expect(onState.mock.lastCall![0].user?.pictureUrl).toBe(
-      'https://img.clerk.com/google-picture?width=96&height=96&fit=crop',
-    );
+    expect(onState.mock.lastCall![0].user?.pictureUrl).toBe('https://img.clerk.com/google-picture');
   });
 });

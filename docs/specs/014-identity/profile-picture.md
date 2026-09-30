@@ -87,8 +87,17 @@ an automatic one):
 Only `https:` URLs on Clerk's image host `img.clerk.com` are accepted; any
 other URL counts as no picture. That is also the host Clerk's own CSP guide
 names for `img-src` ([CSP headers](https://clerk.com/docs/guides/secure/best-practices/csp-headers)).
-The URL is requested as a 96 by 96 crop (`width=96&height=96&fit=crop`), one
-size for every surface so a browser fetches each person's picture once.
+The picture is fetched through Clerk, framed exactly as Google (or the upload)
+frames it: Clerk is asked for a **size only**, `width=N&height=N`, never
+`fit=crop`. Measured on 2026-09-29 against a public Clerk proxy of a Google
+picture (source 1000x1000, Google's own `=s1000-c` square):
+`width=96&height=96&fit=crop` returned a **160x96** band, which the round disc
+then cropped again, zooming the face in by about 1.7x (RMSE 0.35 against the
+source at the same size); `width=96&height=96` returned 96x96 with the same
+framing as the source (RMSE 0.03, resampling only), and Clerk's proxy itself
+matches Google's rendering (RMSE 0.004). Each disc offers a 96px and a 192px
+source (`srcset` with `sizes` set to the disc's size), so a 44px disc is
+crisp at 2x and 3x and the smaller discs reuse the 96px download.
 
 livediagram offers no upload of its own; an upload made through Clerk (its
 account portal, or an app on the same Clerk instance) is honoured.

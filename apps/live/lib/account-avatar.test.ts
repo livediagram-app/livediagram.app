@@ -1,18 +1,29 @@
-// The account avatar's picture resolution (docs/specs/014-identity/profile-picture.md §2).
+// The profile picture's resolution and URL transform (docs/specs/014-identity/profile-picture.md §1,
+// §2).
 
 import { describe, expect, it } from 'vitest';
 import {
   accountInitial,
+  clerkImageSource,
   pictureHost,
+  pictureSrc,
+  pictureSrcSet,
   resolveProfilePicture,
-  sizedPictureUrl,
   type ClerkPictureSource,
 } from './account-avatar';
 
-const GOOGLE = 'https://img.clerk.com/google-picture';
-const UPLOADED = 'https://img.clerk.com/uploaded-picture';
-const DEFAULT_AVATAR = 'https://img.clerk.com/default-avatar';
-const SIZED = '?width=96&height=96&fit=crop';
+// Clerk image URLs name their source in a base64url JSON path segment (spec §1).
+const clerkUrl = (source: object): string =>
+  `https://img.clerk.com/${btoa(JSON.stringify(source)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')}`;
+
+const UPLOADED = clerkUrl({ type: 'proxy', src: 'https://images.clerk.dev/uploaded/img_abc' });
+const COPIED = clerkUrl({ type: 'proxy', src: 'https://images.clerk.dev/oauth_google/img_def' });
+const GOOGLE = clerkUrl({
+  type: 'proxy',
+  src: 'https://lh3.googleusercontent.com/a/ACg8oc=s1000-c',
+  s: 'sig',
+});
+const DEFAULT_AVATAR = clerkUrl({ type: 'default', iid: 'ins_1', rid: 'user_1', initials: 'W' });
 
 const user = (over: Partial<ClerkPictureSource> = {}): ClerkPictureSource => ({
   hasImage: false,
@@ -21,73 +32,88 @@ const user = (over: Partial<ClerkPictureSource> = {}): ClerkPictureSource => ({
   ...over,
 });
 
-describe('resolveProfilePicture', () => {
-  it("prefers the Google account's picture", () => {
-    const picture = resolveProfilePicture(
-      user({
-        hasImage: true,
-        imageUrl: UPLOADED,
-        externalAccounts: [
-          { provider: 'github', imageUrl: 'https://img.clerk.com/github' },
-          { provider: 'google', imageUrl: GOOGLE },
-        ],
-      }),
-    );
-    expect(picture).toBe(`${GOOGLE}${SIZED}`);
+describe('clerkImageSource', () => {
+  it('reads the source Clerk encodes in the URL', () => {
+    expect(clerkImageSource(UPLOADED)).toBe('upload');
+    expect(clerkImageSource(COPIED)).toBe('oauth');
+    expect(clerkImageSource(DEFAULT_AVATAR)).toBe('default');
+    expect(clerkImageSource(GOOGLE)).toBe('other');
   });
 
-  it('falls back to the Clerk profile image when it is a real picture', () => {
-    expect(resolveProfilePicture(user({ hasImage: true, imageUrl: UPLOADED }))).toBe(
-      `${UPLOADED}${SIZED}`,
-    );
-  });
-
-  it("ignores Clerk's generated avatar when hasImage is false", () => {
-    expect(resolveProfilePicture(user())).toBeNull();
-  });
-
-  it('skips a Google account without a picture', () => {
-    const picture = resolveProfilePicture(
-      user({
-        hasImage: true,
-        imageUrl: UPLOADED,
-        externalAccounts: [{ provider: 'google', imageUrl: '' }],
-      }),
-    );
-    expect(picture).toBe(`${UPLOADED}${SIZED}`);
-  });
-
-  it('skips a Google picture that is not https, then tries the profile image', () => {
-    const picture = resolveProfilePicture(
-      user({
-        hasImage: true,
-        imageUrl: UPLOADED,
-        externalAccounts: [{ provider: 'google', imageUrl: 'http://img.clerk.com/x' }],
-      }),
-    );
-    expect(picture).toBe(`${UPLOADED}${SIZED}`);
-  });
-
-  it('returns null when no source yields a usable URL', () => {
-    expect(resolveProfilePicture(user({ hasImage: true, imageUrl: 'not a url' }))).toBeNull();
+  it('never calls anything it cannot read an upload', () => {
+    expect(clerkImageSource('https://img.clerk.com/not-base64-json')).toBe('unknown');
+    expect(clerkImageSource('https://evil.example/eyJ0eXBlIjoicHJveHkifQ')).toBe('unknown');
+    expect(clerkImageSource('nonsense')).toBe('unknown');
+    const lookalike = clerkUrl({ type: 'proxy', src: 'https://images.clerk.dev.evil/uploaded/x' });
+    expect(clerkImageSource(lookalike)).toBe('other');
   });
 });
 
-describe('sizedPictureUrl', () => {
-  it('rejects http and malformed URLs', () => {
-    expect(sizedPictureUrl('http://img.clerk.com/a')).toBeNull();
-    expect(sizedPictureUrl('javascript:alert(1)')).toBeNull();
-    expect(sizedPictureUrl('data:image/png;base64,AAAA')).toBeNull();
-    expect(sizedPictureUrl('/relative.png')).toBeNull();
-    expect(sizedPictureUrl('')).toBeNull();
+describe('resolveProfilePicture', () => {
+  const google = [{ provider: 'google', imageUrl: GOOGLE }];
+
+  it('puts a picture the person uploaded over the Google one', () => {
+    expect(
+      resolveProfilePicture(user({ hasImage: true, imageUrl: UPLOADED, externalAccounts: google })),
+    ).toBe(UPLOADED);
   });
 
-  it('sizes Clerk image URLs and leaves other hosts alone', () => {
-    expect(sizedPictureUrl('https://img.clerk.com/abc?width=400&quality=90')).toBe(
-      'https://img.clerk.com/abc?width=96&quality=90&height=96&fit=crop',
+  it("prefers the Google account's picture over Clerk's copy of it", () => {
+    expect(
+      resolveProfilePicture(user({ hasImage: true, imageUrl: COPIED, externalAccounts: google })),
+    ).toBe(GOOGLE);
+  });
+
+  it("falls back to Clerk's copy with no Google account", () => {
+    expect(resolveProfilePicture(user({ hasImage: true, imageUrl: COPIED }))).toBe(COPIED);
+  });
+
+  it("never shows Clerk's generated avatar", () => {
+    expect(resolveProfilePicture(user())).toBeNull();
+    expect(resolveProfilePicture(user({ hasImage: false, imageUrl: UPLOADED }))).toBeNull();
+  });
+
+  it('skips a Google account without a usable picture', () => {
+    expect(
+      resolveProfilePicture(
+        user({
+          hasImage: true,
+          imageUrl: COPIED,
+          externalAccounts: [
+            { provider: 'google', imageUrl: '' },
+            { provider: 'google', imageUrl: 'https://lh3.googleusercontent.com/a/x=s96-c' },
+          ],
+        }),
+      ),
+    ).toBe(COPIED);
+  });
+
+  it("accepts only https URLs on Clerk's image host", () => {
+    expect(
+      resolveProfilePicture(user({ hasImage: true, imageUrl: 'http://img.clerk.com/x' })),
+    ).toBeNull();
+    expect(
+      resolveProfilePicture(user({ hasImage: true, imageUrl: 'https://evil.example/x' })),
+    ).toBeNull();
+  });
+});
+
+// The transform (spec §2): size only, never a crop. `fit=crop` made Clerk serve a 160x96 band that
+// the circle then cropped again, zooming the face in; a size alone keeps Google's framing.
+describe('pictureSrc', () => {
+  it('asks Clerk for a square size and nothing else', () => {
+    expect(pictureSrc(GOOGLE, 96)).toBe(`${GOOGLE}?width=96&height=96`);
+  });
+
+  it('replaces any size or fit already on the URL', () => {
+    expect(pictureSrc(`${GOOGLE}?width=400&fit=crop&quality=90`, 192)).toBe(
+      `${GOOGLE}?width=192&quality=90&height=192`,
     );
-    expect(sizedPictureUrl('https://lh3.googleusercontent.com/a/xyz=s96-c')).toBe(
-      'https://lh3.googleusercontent.com/a/xyz=s96-c',
+  });
+
+  it('offers a 1x and a 2x source for the browser to choose from', () => {
+    expect(pictureSrcSet(GOOGLE)).toBe(
+      `${GOOGLE}?width=96&height=96 96w, ${GOOGLE}?width=192&height=192 192w`,
     );
   });
 });

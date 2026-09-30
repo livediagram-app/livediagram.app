@@ -27,7 +27,7 @@ import { useClickOutside, SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { AccountAvatar } from '@/components/primitives/AccountAvatar';
+import { PictureDisc } from '@/components/primitives/PictureDisc';
 import { accountInitial } from '@/lib/account-avatar';
 import {
   HEADER_ACTION_BTN,
@@ -98,12 +98,14 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
       >
         <HeaderGlyph>
           {/* The profile picture when there is one (docs/specs/014-identity/profile-picture.md). */}
-          <AccountAvatar
-            initial={accountInitial(user)}
-            pictureUrl={user?.pictureUrl ?? null}
+          <PictureDisc
+            pictureUrl={user?.pictureUrl}
             size={HEADER_ICON_SLOT_PX}
+            aria-hidden
             className={`bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
-          />
+          >
+            {accountInitial(user)}
+          </PictureDisc>
         </HeaderGlyph>
         <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>
       </button>

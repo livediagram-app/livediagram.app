@@ -1,12 +1,15 @@
-// The account avatar's data (docs/specs/014-identity/profile-picture.md): which picture draws the
-// signed-in user to themselves, at what size, and the initial it falls back to. Pure, so the
-// Clerk bridge and the tests share one answer.
+// The profile picture's data (docs/specs/014-identity/profile-picture.md): which picture draws a
+// signed-in person, how it is requested from Clerk, and the initial it falls back to. Pure, so the
+// Clerk bridge, every avatar surface and the tests share one answer.
 
-/** One size for every surface, so the browser fetches the picture once: 44px at 2x, 20px at 4x. */
-export const PROFILE_PICTURE_PX = 96;
+import { isProfilePictureUrl } from '@livediagram/api-schema';
 
-/** Clerk's image host; its URLs take the documented `width` / `height` / `fit` parameters. */
-export const CLERK_IMAGE_HOST = 'img.clerk.com';
+/**
+ * The sizes Clerk is asked for: 96px covers the largest disc (44px) at 2x, 192px at 3x and up.
+ * Size only, never `fit=crop`: Clerk answers a crop with a 160x96 band that the circle crops
+ * again, zooming the face in; a square size keeps the framing Google chose.
+ */
+export const PICTURE_SIZES_PX = [96, 192] as const;
 
 /** The slice of Clerk's `UserResource` the resolver reads; the real user satisfies it as is. */
 export type ClerkPictureSource = {
@@ -15,33 +18,62 @@ export type ClerkPictureSource = {
   externalAccounts: readonly { provider: string; imageUrl: string }[];
 };
 
+/** What a Clerk image URL says it serves (spec §1): observed, undocumented, read defensively. */
+export type ClerkImageSource = 'upload' | 'oauth' | 'default' | 'other' | 'unknown';
+
+const CLERK_STORAGE_HOST = 'images.clerk.dev';
+
 /**
- * The profile picture URL, or null for the initials avatar. The Google account's picture comes
- * first because it is the one Google reported last; then Clerk's own image, but only when
- * `hasImage` says it is a real picture rather than Clerk's generated default.
+ * The source a Clerk image URL encodes in its first path segment, a base64url JSON object. Any
+ * URL that does not decode cleanly is `'unknown'`, never `'upload'`, so a format change at Clerk
+ * can only make an upload lose to the Google picture, not the other way round.
  */
-export function resolveProfilePicture(user: ClerkPictureSource): string | null {
-  const google = user.externalAccounts.find((a) => a.provider === 'google' && a.imageUrl !== '');
-  const fromGoogle = google ? sizedPictureUrl(google.imageUrl) : null;
-  if (fromGoogle) return fromGoogle;
-  if (!user.hasImage) return null;
-  return sizedPictureUrl(user.imageUrl);
+export function clerkImageSource(url: string): ClerkImageSource {
+  try {
+    const parsed = new URL(url);
+    if (!isProfilePictureUrl(`${parsed.origin}${parsed.pathname}`)) return 'unknown';
+    const segment = parsed.pathname.split('/')[1] ?? '';
+    const json = atob(segment.replace(/-/g, '+').replace(/_/g, '/'));
+    const decoded = JSON.parse(json) as { type?: unknown; src?: unknown };
+    if (decoded.type === 'default') return 'default';
+    if (decoded.type !== 'proxy' || typeof decoded.src !== 'string') return 'unknown';
+    const src = new URL(decoded.src);
+    if (src.hostname !== CLERK_STORAGE_HOST) return 'other';
+    if (src.pathname.startsWith('/uploaded/')) return 'upload';
+    if (src.pathname.startsWith('/oauth_')) return 'oauth';
+    return 'other';
+  } catch {
+    return 'unknown';
+  }
 }
 
-/** An `https:` URL, cropped to `PROFILE_PICTURE_PX` when Clerk serves it; anything else is null. */
-export function sizedPictureUrl(url: string): string | null {
-  let parsed: URL;
-  try {
-    parsed = new URL(url);
-  } catch {
-    return null;
-  }
-  if (parsed.protocol !== 'https:') return null;
-  if (parsed.hostname !== CLERK_IMAGE_HOST) return parsed.toString();
-  parsed.searchParams.set('width', String(PROFILE_PICTURE_PX));
-  parsed.searchParams.set('height', String(PROFILE_PICTURE_PX));
-  parsed.searchParams.set('fit', 'crop');
+/**
+ * The profile picture URL, or null for the initials avatar (spec §2): a manual upload over the
+ * Google picture, the Google picture over Clerk's copy of it, and never Clerk's generated default.
+ * Only https URLs on Clerk's image host count.
+ */
+export function resolveProfilePicture(user: ClerkPictureSource): string | null {
+  const own = user.hasImage && isProfilePictureUrl(user.imageUrl) ? user.imageUrl : null;
+  if (own && clerkImageSource(own) === 'upload') return own;
+  const google = user.externalAccounts.find(
+    (a) => a.provider === 'google' && isProfilePictureUrl(a.imageUrl),
+  );
+  if (google) return google.imageUrl;
+  return own;
+}
+
+/** The picture at `px` square: Clerk's documented `width` / `height`, with any `fit` removed. */
+export function pictureSrc(url: string, px: number): string {
+  const parsed = new URL(url);
+  parsed.searchParams.delete('fit');
+  parsed.searchParams.set('width', String(px));
+  parsed.searchParams.set('height', String(px));
   return parsed.toString();
+}
+
+/** Width-described sources, so each disc's `sizes` picks 1x or 2x crisp. */
+export function pictureSrcSet(url: string): string {
+  return PICTURE_SIZES_PX.map((px) => `${pictureSrc(url, px)} ${px}w`).join(', ');
 }
 
 /** The letter on the initials avatar: first name, else username, else '?'. */

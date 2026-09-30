@@ -1,6 +1,12 @@
 import type { Locator, Page, Route } from '@playwright/test';
 import { test, expect, expectNoPageErrors } from '../fixtures';
-import { installClerkStub, STUB_PICTURE_SVG, type StubUser } from './clerk-stub';
+import {
+  clerkTargetPicture,
+  installClerkStub,
+  STUB_PICTURE_SVG,
+  TARGET_RIM,
+  type StubUser,
+} from './clerk-stub';
 
 // The account avatar end to end (docs/specs/014-identity/profile-picture.md), against the
 // Clerk-enabled export with a stubbed signed-in user: the Google picture in the header trigger
@@ -75,7 +81,8 @@ test('draws the Google picture in the header and the identity card, without movi
   expect(loadingAvatarBox).toMatchObject({ width: 20, height: 20 });
 
   // The Google account's picture, cropped to 96px, fetched with no referrer.
-  expect(pictures.urls[0]).toBe(`${GOOGLE_PICTURE}?width=96&height=96&fit=crop`);
+  // Size only, never a crop (docs/specs/014-identity/profile-picture.md §2).
+  expect(pictures.urls[0]).toBe(`${GOOGLE_PICTURE}?width=96&height=96`);
   expect(pictures.referers.every((r) => r === undefined)).toBe(true);
 
   await trigger(page).click();
@@ -131,5 +138,55 @@ test('falls back to the initial when the picture fails, without moving', async (
   expect(await trigger(page).boundingBox()).toEqual(loadingBox);
   expect(warnings.some((w) => w.startsWith('[profile-picture] load failed'))).toBe(true);
 
+  expectNoPageErrors(pageErrors);
+});
+
+// Framing (docs/specs/014-identity/profile-picture.md §2): the disc shows the whole picture, as
+// Google frames it. Against a stub that answers like Clerk, a `fit=crop` request would come back
+// as a band the disc crops again, and the edge of the disc would show the green ring, not the rim.
+test('frames the picture as its source does, crisp at 2x', async ({ browser, pageErrors }) => {
+  const context = await browser.newContext({ deviceScaleFactor: 2, colorScheme: 'dark' });
+  const page = await context.newPage();
+  page.on('pageerror', (e) => pageErrors.push(e.message));
+  const requested: string[] = [];
+  await page.route(PICTURES, (route) => {
+    requested.push(route.request().url());
+    return route.fulfill({
+      status: 200,
+      contentType: 'image/svg+xml',
+      body: clerkTargetPicture(route.request().url()),
+    });
+  });
+  await installClerkStub(page, WEBBER);
+  await page.goto('/explorer/timeline');
+  await trigger(page).click();
+  await page.getByRole('menuitem', { name: 'Account' }).click();
+  const card = page.getByRole('dialog').locator('[data-avatar-state]').first();
+  await expect(card).toHaveAttribute('data-avatar-state', 'picture');
+  await expect.poll(async () => await card.boundingBox()).toMatchObject({ width: 44, height: 44 });
+
+  // At 2x the 44px disc needs 88 device pixels: the browser takes the 96px source, never a crop.
+  expect(requested.every((u) => !u.includes('fit='))).toBe(true);
+  const img = card.locator('img');
+  expect(await img.evaluate((el: HTMLImageElement) => el.currentSrc)).toContain('width=96');
+
+  // The rim sits in the outer fifth of the picture; 4 CSS px inside the disc's left edge, on its
+  // horizontal centre line, is well inside it when the framing is right.
+  const shot = await card.screenshot();
+  const edge = await page.evaluate(async (png: string) => {
+    const bitmap = await createImageBitmap(
+      await (await fetch(`data:image/png;base64,${png}`)).blob(),
+    );
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(bitmap, 0, 0);
+    const px = ctx.getImageData(8, Math.floor(bitmap.height / 2), 1, 1).data;
+    return { r: px[0] ?? 0, g: px[1] ?? 0, b: px[2] ?? 0 };
+  }, shot.toString('base64'));
+  expect(Math.abs(edge.r - TARGET_RIM.r)).toBeLessThan(24);
+  expect(Math.abs(edge.g - TARGET_RIM.g)).toBeLessThan(24);
+  expect(Math.abs(edge.b - TARGET_RIM.b)).toBeLessThan(24);
+
+  await context.close();
   expectNoPageErrors(pageErrors);
 });
