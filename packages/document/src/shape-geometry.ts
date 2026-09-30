@@ -47,6 +47,10 @@ export type ShapeGeometry = {
   // proportional (the actor, who would otherwise turn into a smear).
   preserveAspectRatio: 'none' | 'xMidYMid meet';
   parts: readonly ShapePart[];
+  // The art is drawn into the box inset by half the stroke, so the stroke
+  // stays inside the box as a CSS border does (the diamond's tips would
+  // otherwise poke past the edge a square of the same box draws).
+  strokeInside?: true;
 };
 
 // The thin stroke every `detail` part draws at, in screen pixels.
@@ -97,7 +101,7 @@ export const ACTOR_VIEWBOX = { width: 90, height: 130 } as const;
 
 // Every silhouette whose geometry does not depend on the element's size.
 const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
-  diamond: stretch(polygon(DIAMOND_POINTS)),
+  diamond: { ...stretch(polygon(DIAMOND_POINTS)), strokeInside: true },
   parallelogram: stretch(polygon('20,0 100,0 80,100 0,100')),
   hexagon: stretch(polygon('25,0 75,0 100,50 75,100 25,100 0,50')),
   document: stretch(path('M 0 0 L 100 0 L 100 92 C 80 109, 65 79, 50 94 C 35 109, 20 79, 0 94 Z')),

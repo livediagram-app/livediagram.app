@@ -213,9 +213,18 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     const b = el.type === 'shape' ? borderOf(el) : { width: 1.5, dash: null };
     shapeStr = `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(Math.max(0, el.width / 2 - b.width / 2))}" ry="${r2(Math.max(0, el.height / 2 - b.width / 2))}" fill="${xmlEscape(shape.fill)}"${strokeAttrs(shape.stroke, b.width, b.dash)}/>`;
   } else if (shape.kind === 'diamond') {
-    // Native at element coordinates, from the shared table's points.
+    // Native at element coordinates, from the shared table's points, inset
+    // by half the border so the tips stay inside the box (strokeInside).
     const b = el.type === 'shape' ? borderOf(el) : { width: 1.5, dash: null };
-    shapeStr = `<polygon points="${scaledPolygonPoints(DIAMOND_POINTS, el.x, el.y, el.width, el.height)}" fill="${xmlEscape(shape.fill)}"${strokeAttrs(shape.stroke, b.width, b.dash)} stroke-linejoin="round"/>`;
+    const inset = b.width / 2;
+    const points = scaledPolygonPoints(
+      DIAMOND_POINTS,
+      el.x + inset,
+      el.y + inset,
+      Math.max(0, el.width - b.width),
+      Math.max(0, el.height - b.width),
+    );
+    shapeStr = `<polygon points="${points}" fill="${xmlEscape(shape.fill)}"${strokeAttrs(shape.stroke, b.width, b.dash)} stroke-linejoin="round"/>`;
   } else if (shape.kind === 'rect') {
     // Shape silhouettes (hexagon / cylinder / document / devices / actor /
     // frame ...) mirror the editor overlay's geometry; kinds without one
