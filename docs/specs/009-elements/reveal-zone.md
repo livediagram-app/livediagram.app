@@ -1,7 +1,5 @@
 # Reveal zone
 
-Status: **implemented**.
-
 A panel that **covers part of the canvas until someone clicks it**. Quiz answers, a retro column nobody should read before they have written their own, an estimate you don't want anchored by the first number on the canvas.
 
 ## Why
@@ -18,7 +16,7 @@ back on a reload.
 
 That holds while nobody is facilitating. When somebody holds the baton
 ([Facilitator](../012-collaboration/facilitator.md)) the lift is **theirs**, and the element's own
-`revealed` field — the room-wide reveal that already exists — is how they use
+`revealed` field — the room-wide reveal — is how they use
 it: "now let's look at the answers" is a thing said to a room, not a thing done
 privately. Everybody else's cover stays down until they say so. With no
 facilitator, nothing about this element changes.
