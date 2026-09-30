@@ -17,8 +17,16 @@
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
-import { clerkEnabled, clerkPublishableKey } from '@/lib/clerk-config';
+import { clerkEnabled, clerkPublishableKey, e2eAuthEnabled } from '@/lib/clerk-config';
 import { DEFERRED_AUTH_DEFAULT, DeferredAuthContext } from './deferred-auth';
+
+// Test builds only (see e2eAuthEnabled): never part of a real bundle.
+const LazyE2EAuthBridge = e2eAuthEnabled
+  ? dynamic(() => import('./E2EAuthBridge').then((m) => m.E2EAuthBridge), {
+      ssr: false,
+      loading: () => null,
+    })
+  : null;
 
 const LazyClerkBridge = dynamic(() => import('./ClerkBridge').then((m) => m.ClerkBridge), {
   ssr: false,
@@ -51,6 +59,7 @@ export function ClerkProvider({ children }: { children: ReactNode }) {
     <DeferredAuthContext.Provider value={authState}>
       {children}
       {configured ? <LazyClerkBridge onState={setAuthState} /> : null}
+      {LazyE2EAuthBridge && !staticClerkRoute ? <LazyE2EAuthBridge onState={setAuthState} /> : null}
     </DeferredAuthContext.Provider>
   );
 }

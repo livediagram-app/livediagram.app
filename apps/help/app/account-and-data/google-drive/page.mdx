@@ -1,0 +1,80 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Google Drive',
+  description:
+    'Sync your Personal Space to your own Google Drive: every document becomes a .livediagram file, synced both ways while livediagram is open, and opens from Drive with Open with.',
+  path: '/help/account-and-data/google-drive/',
+});
+
+<ArticleLayout
+  title="Google Drive"
+  description="Keep a copy of your documents in your own Google Drive, in folders that match yours, synced both ways."
+  categoryTitle="Account and Data"
+  categorySlug="account-and-data"
+>
+
+When you are signed in, you can **sync your Personal Space to your own Google Drive**. Every document becomes a `.livediagram` file in a **livediagram** folder, arranged in the same folders you use here, with a picture of the document as its thumbnail.
+
+The copy in Drive is a mirror. Your documents still live in livediagram, so sharing, realtime editing and history work exactly as before.
+
+## Connecting
+
+Open **Settings**, then **Account**, and find **Google Drive** under **Cloud Sync**. Choose **Connect**. Google asks you to let livediagram create files in your Drive and appear in its **Open with** menu.
+
+**livediagram only sees files it created, or a file you open with it.** Google gives it no view of the rest of your Drive: not your other files, not folders you make in Drive, not copies you make there.
+
+The first time, livediagram copies every document into Drive, oldest first, into a folder called **livediagram**, with the progress in Cloud Sync. If you close the tab part way, it carries on next time. You may rename or move that folder in Drive; livediagram keeps using it.
+
+## Seeing how it is doing
+
+Open **Settings**, then **Account**, then **Cloud Sync**. The Google Drive row says when it last synced (for example **Last synced 3 mins ago**), or that it is syncing or copying, and checks again as you open it. Under the row, it says which Drive folder your documents are synced to. When something needs you, the status turns amber and a second line says what happened, with the button to fix it: **Reconnect**, **Resume** or **Show folder**.
+
+## What stays in sync
+
+Syncing is automatic: there is nothing to press. It runs while a livediagram tab is open, and catches up when you come back; nothing happens while nobody is here. It checks for changes every 2 minutes while livediagram is open, and again when you return to the tab, and copies your edits a minute after you stop, at most once every 5 minutes per document, so a long editing session writes to Drive a few times rather than on every keystroke.
+
+| Here in livediagram               | In Google Drive                         |
+| --------------------------------- | --------------------------------------- |
+| Create, edit or rename a document | The file is created, updated or renamed |
+| Move a document to another folder | The file moves                          |
+| Delete a document                 | The file moves to Drive's bin           |
+| Restore a document from the Trash | The file comes back from the bin        |
+| Create, rename or move a folder   | The Drive folder follows                |
+
+It works the other way too: **rename** a file in Drive, **move** it to another folder in the livediagram tree, or **move it to the bin**, and the document follows here. Restoring it from Drive's bin restores the document, and emptying the bin deletes it for good from your [Trash](/help/account-and-data/trash/).
+
+Edits to a file's contents made outside livediagram are not taken in: livediagram writes its copy again the next time it syncs.
+
+## Copies made in Drive
+
+**Copies you make in Drive are not picked up automatically.** A **Make a copy** in Drive is a file livediagram did not create, so Google keeps it hidden from livediagram. To bring one in, right-click it and choose **Open with**, then **livediagram**: you are offered **Import as new document**, and your original stays as it is. Or use **Duplicate** inside livediagram.
+
+## Folders livediagram cannot see
+
+A folder you make in Google Drive itself is invisible to livediagram until you show it one. If you move a document's file into such a folder, the document moves to **Unsorted** here and Cloud Sync says so. Choose **Show folder**, pick the folder, and livediagram makes a matching folder and moves the document into it. From then on that folder syncs both ways.
+
+Folders you create in livediagram always appear in Drive, so building your tree here needs no extra step.
+
+## When Cloud Sync needs attention
+
+- **Syncing a little slower for now.** Google limits how often an app may use Drive. When livediagram reaches that limit, Google asks it to slow down; it waits longer between checks for a while, then returns to its usual pace. There is nothing to do.
+- **Can't reach Google Drive.** Your connection or Google is unavailable. livediagram tries again by itself, and at once when you return to the tab.
+- **Google Drive needs reconnecting.** Google stopped accepting livediagram's access: you removed it from your Google account, changed your password, or Google expired it. Syncing pauses and **nothing is deleted**, here or in Drive. Choose **Reconnect** and sync carries on where it stopped.
+- **Syncing paused in this browser.** Some setups keep Drive access only for a while in the browser. Choose **Resume** to carry on.
+
+## Opening a document from Drive
+
+Right-click a `.livediagram` file in Google Drive and choose **Open with**, then **livediagram**. Your own document opens straight away. If someone shared the file with you in Drive, or it came from another livediagram, you are offered **Import a copy**, which makes a new document of your own from it. A copy you made in Drive of one of your own documents offers **Import as new document** instead: a new document from the copy's contents, which that copy then keeps in sync.
+
+## Disconnecting
+
+Choose **Disconnect** under Settings, Account, Cloud Sync. livediagram stops updating Drive and forgets its access; **your files stay in Drive**. You can also remove livediagram from your Google account's settings: Cloud Sync then offers **Reconnect**, and nothing is deleted.
+
+<Tip>
+  Cloud Sync covers your Personal Space. Team libraries, documents shared with you and documents
+  kept only in this browser are not synced.
+</Tip>
+
+</ArticleLayout>

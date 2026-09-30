@@ -15,7 +15,7 @@ import { apiHeaders, setTokenProvider } from '@/lib/api/core';
 import { resetGuestMigrationForTests } from '@/lib/guest-migration';
 import { setGuestIdentity } from '@/lib/local-identity';
 
-vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true }));
+vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true, sessionsEnabled: true }));
 const { getToken } = vi.hoisted(() => ({
   getToken: vi.fn(async (opts?: { skipCache?: boolean }): Promise<string | null> =>
     opts?.skipCache ? 'jwt-fresh' : 'jwt-1',
@@ -126,5 +126,31 @@ describe('useClerkApiBootstrap guest migration', () => {
       );
     });
     expect(apiMigrateGuestData).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('useClerkApiBootstrap with several mounts', () => {
+  // AuthControls, the Settings dialog's rows and the page itself each mount
+  // the hook; the Drive mirror's provider mounts it at the root. One of them
+  // unmounting must not take the Bearer away from the rest.
+  it('keeps the provider while any mount remains', async () => {
+    function Probe() {
+      useClerkApiBootstrap();
+      return null;
+    }
+    function Page({ extra }: { extra: boolean }) {
+      return (
+        <>
+          <Probe />
+          {extra ? <Probe /> : null}
+        </>
+      );
+    }
+    const view = render(<Page extra />);
+    view.rerender(<Page extra={false} />);
+    const sent = (await apiHeaders('user_abc')) as Record<string, string>;
+    expect(sent['Authorization']).toBe('Bearer jwt-1');
+    view.unmount();
+    await expect(apiHeaders('user_abc')).rejects.toThrow();
   });
 });

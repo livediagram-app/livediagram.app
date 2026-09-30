@@ -150,6 +150,30 @@ describe('SettingsCategoryPane telemetry', () => {
   });
 });
 
+describe('SettingsCategoryPane: targeting a section', () => {
+  it('scrolls a targeted section into view and focuses its heading', async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    const account = SETTINGS_CATEGORIES.find((c) => c.id === 'account')!;
+    render(
+      <SettingsCategoryPane
+        category={account}
+        settings={{}}
+        onChange={vi.fn()}
+        focusSectionId="your-data"
+      />,
+    );
+    await new Promise((r) => requestAnimationFrame(r));
+    const heading = screen.getByRole('heading', { name: 'Your Data' });
+    expect(heading.id).toBe('settings-section-your-data');
+    expect(document.activeElement).toBe(heading);
+    expect(scroll).toHaveBeenCalledWith(expect.objectContaining({ block: 'start' }));
+    expect(heading.closest('[data-settings-section]')!.getAttribute('data-settings-section')).toBe(
+      'your-data',
+    );
+  });
+});
+
 describe('SettingsCategoryPane link rows', () => {
   it('opens the linked category in place', () => {
     const ai = SETTINGS_CATEGORIES.find((c) => c.id === 'ai')!;

@@ -27,6 +27,7 @@ function fakeEnv(opts: {
           }
           return { results: [] };
         },
+        first: async () => null,
         run: async () => ({ meta: { changes: 1 } }),
       }),
     };

@@ -14,6 +14,11 @@ import {
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
 import type { SettingsIllustrationId } from './settings-illustrations';
+import {
+  CLOUD_SYNC_PROVIDERS,
+  CLOUD_SYNC_SECTION,
+  type CloudSyncProviderId,
+} from '@/lib/cloud-sync/providers';
 
 // The Settings dialog as DATA: the categories, and per category the rows
 // (docs/specs/007-editor/user-preferences.md). The dialog used to spell every row out as JSX inside one
@@ -54,6 +59,8 @@ export type SettingsRowContext = {
   authEnabled?: boolean;
   powerUserMode?: boolean;
   preferences?: UserPreferences;
+  // Cloud Sync providers the deployment offers (docs/specs/022-drive-mirror/drive-mirror.md).
+  cloudProviders?: readonly CloudSyncProviderId[];
 };
 
 type RowBase = {
@@ -187,6 +194,14 @@ export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
 
+// One Cloud Sync provider (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"): its
+// connection, status and actions. Not a preference: it reads the provider's
+// own state, so it carries no read/write pair.
+export type SettingsCloudSyncRowSpec = RowBase & {
+  kind: 'cloudSync';
+  provider: CloudSyncProviderId;
+};
+
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsChoiceRowSpec
@@ -200,7 +215,8 @@ export type SettingsRowSpec =
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
-  | SettingsPresetSummaryRowSpec;
+  | SettingsPresetSummaryRowSpec
+  | SettingsCloudSyncRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -818,6 +834,18 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'Deleted documents wait here for 30 days before they are removed for good. Restore one to put it back where it was.',
         helpArticle: 'trash',
       },
+      // One row per provider, from the Cloud Sync catalogue.
+      ...CLOUD_SYNC_PROVIDERS.map((p): SettingsCloudSyncRowSpec => ({
+        kind: 'cloudSync',
+        key: `cloudSync-${p.id}`,
+        provider: p.id,
+        section: CLOUD_SYNC_SECTION,
+        label: p.label,
+        keywords: p.keywords,
+        description: p.description,
+        helpArticle: p.helpArticle,
+        available: (ctx) => ctx.cloudProviders?.includes(p.id) ?? false,
+      })),
       {
         kind: 'deleteAccount',
         key: 'deleteAccount',
@@ -864,6 +892,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
 ];
+
+// A section's target id: "Cloud Sync" → "cloud-sync". Settings can open on one
+// (docs/specs/007-editor/user-preferences.md).
+export function settingsSectionId(section: string): string {
+  return section.trim().toLowerCase().replace(/\s+/g, '-');
+}
 
 // The categories actually offered right now, with each one's rows filtered to
 // those that apply. AI only appears when the api worker advertises the

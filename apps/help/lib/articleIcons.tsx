@@ -201,6 +201,13 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M4 13v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" />
     </Glyph>
   ),
+  // A folder with a two-way arrow across it: the mirror kept in step.
+  'google-drive': (
+    <Glyph>
+      <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+      <path d="M8 12h8M14 10l2 2-2 2M10 16l-2-2 2-2" />
+    </Glyph>
+  ),
   // A bin with an arrow rising out of it: the way back. The plain bin is
   // `deleting-your-data`.
   trash: (

@@ -5,6 +5,7 @@ import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { PageViewBoot } from '@/components/providers/PageViewBoot';
 import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
+import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livediagram/document';
 import { QUIET_LANDING_BOOT_SCRIPT, QUIET_LANDING_CSS } from '@/lib/quiet-landing-boot';
@@ -112,7 +113,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <TruthArmBoot />
         <ClerkProvider>
           <ToastProvider>
-            <ConfirmProvider>{children}</ConfirmProvider>
+            <ConfirmProvider>
+              {/* The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): runs in one
+                  tab per browser, signed in, on a deployment that offers it. */}
+              <DriveMirrorProvider>{children}</DriveMirrorProvider>
+            </ConfirmProvider>
           </ToastProvider>
         </ClerkProvider>
       </body>

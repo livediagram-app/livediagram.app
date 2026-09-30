@@ -9,7 +9,7 @@ import { TeamInviteJoin } from './TeamInviteJoin';
 import { clearGuestSelfId, getGuestSelfId, setGuestIdentity } from '@/lib/local-identity';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true }));
+vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true, sessionsEnabled: true }));
 vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({
   useClerkApiBootstrap: () => ({ authLoaded: true, isSignedIn: false, clerkUserId: null }),
 }));

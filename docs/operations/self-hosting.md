@@ -18,7 +18,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 What you do NOT need:
 
 - Clerk: auth is optional. Without it, every user is a guest (a per-browser id stored in `localStorage`, carried as `X-Owner-Id`). With Clerk configured, the api worker reaches `CLERK_JWKS_URL` to verify Bearer tokens — an outbound call only on the auth path.
-- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)) and OpenAI for the AI assistant ([AI Assistance](../specs/007-editor/ai-assistance.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
+- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)), OpenAI for the AI assistant ([AI Assistance](../specs/007-editor/ai-assistance.md)), and a Google OAuth client for the Google Drive mirror ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
 - A separate database host: D1 covers everything.
 
 ## One-time Cloudflare setup
@@ -239,6 +239,30 @@ Optional knobs (plain `[vars]`):
 - `APP_BASE_URL`: public origin for links in emails, defaults to `https://livediagram.app`.
 
 If you enable this on a deployment that already has signed-in users, run the one-time backfill in [Transactional & lifecycle email (Resend) §4](../specs/014-identity/transactional-email.md) first, so existing users aren't "welcomed" on their next sign-in.
+
+## Google Drive mirror (optional, needs Clerk)
+
+Signed-in users can mirror their Personal Space to their own Google Drive ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)). It is **off until you set a Google OAuth client id**; with none, Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`. The Drive traffic goes from each user's browser straight to Google; your worker only brokers tokens and stores a few small rows in D1.
+
+1. In Google Cloud, create a project, enable the **Google Drive API**, and create an OAuth client of type **Web application**. Add `https://<your-host>/drive/connected` as an authorised redirect URI and `https://<your-host>` as a JavaScript origin. The consent screen needs only the non-sensitive scopes `drive.file` and `drive.install`, so no verification or security assessment is required.
+2. For **Open with**, configure the Drive API's **Drive UI integration**: Open URL `https://<your-host>/drive/open`, default MIME type `application/vnd.livediagram+json`, default extension `livediagram`.
+3. Set the client id on the api worker as a `[vars]` entry `GOOGLE_CLIENT_ID`, and build the live app with the same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+4. For syncing without a click every hour, also set two worker secrets (without them the browser holds hour-long tokens and asks the user to **Resume sync**):
+
+```sh
+pnpm --filter @livediagram/api exec wrangler secret put GOOGLE_CLIENT_SECRET
+pnpm --filter @livediagram/api exec wrangler secret put DRIVE_TOKEN_KEY   # openssl rand -base64 32
+```
+
+5. Optional: `NEXT_PUBLIC_GOOGLE_API_KEY`, a browser API key (restricted by HTTP referrer) for the Google Picker, which lets users show livediagram a folder they made in Drive. Without it the mirror works and that one step is not offered.
+
+**More than one environment** (a staging beside production): give each its **own Google Cloud project**. A project has one Drive UI integration Open URL, so a shared project could only ever open files on one host; `drive.file` access is per project, so files stay apart; and consent screens and test users stay apart. Each environment then has its own client id (worker var and live build, the same value within an environment), client secret, `DRIVE_TOKEN_KEY` and Picker key. livediagram.app does exactly this: its client ids sit per environment in `apps/api/hosted-vars.json` (`environments.production` / `environments.staging`, empty until set, which keeps the mirror off there), its Picker keys are the `NEXT_PUBLIC_GOOGLE_API_KEY` and `NEXT_PUBLIC_GOOGLE_API_KEY_STAGING` GitHub secrets, and every deploy checks that the worker and the live build carry the same client id.
+
+If your site redirects one host to another (livediagram.app sends the apex to `www`), register both as JavaScript origins with `/drive/connected` redirect URIs: the consent flow uses whichever host the app actually runs on.
+
+The mirror's root folder in each user's Drive is named **`livediagram (self-hosted)`** on your deployment (livediagram.app's own is `livediagram`, its staging and local development `livediagram (staging)`), so a user of both never gets two folders of the same name. There is no setting: the name comes from the host, is given only when the folder is created, and users may rename or move it freely.
+
+`DRIVE_TOKEN_KEY` seals the stored refresh tokens; changing it turns every connection into **Needs reconnecting**. Files a different deployment's Google project created are foreign to yours and import as copies. Your privacy policy must describe the Google user data you handle; livediagram.app's is in the help centre under Policies.
 
 ## Per-owner image gallery caps
 

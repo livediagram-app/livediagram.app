@@ -36,6 +36,7 @@ export {
   API_BASE,
   DOCUMENT_LIST_LOAD_SAFETY_MS,
   setTokenProvider,
+  registerTokenProvider,
   setSessionSharePassword,
   getSessionSharePassword,
   readCachedSharePassword,
@@ -62,3 +63,4 @@ export * from './api/preferences';
 export * from './api/ai';
 export * from './api/unfurl';
 export * from './api/trash';
+export * from './api/drive';

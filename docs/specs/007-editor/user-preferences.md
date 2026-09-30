@@ -422,7 +422,12 @@ and the dialog stays as the one complete, browsable index of them.
   gear-icon button in the TabBar footer, sitting between Search and the
   dark-mode toggle. The "Keyboard shortcuts" command in search
   ([Command palette (⌘K)](command-palette.md)) opens it on the **Keyboard** category; that category replaced the standalone
-  Shortcuts dialog and the footer's keyboard button. Visible in every role: view-role visitors can still
+  Shortcuts dialog and the footer's keyboard button. Settings can also open on a **section**
+  of a category (the Google Drive connect flow returns to Account > Cloud Sync): the section
+  scrolls into view and its heading takes focus. The Explorer and the editor both take
+  `?settings=<category>&section=<section>` in their URL: it opens Settings there on load, and
+  stays in the URL while Settings is open (removed when it closes), so a page left for
+  another site and reached again with Back reopens it. Visible in every role: view-role visitors can still
   flip their own telemetry preference and (harmlessly) their own
   auto-rebind preference, even though they can't edit elements.
   **Shaped like the iOS Settings app**, in both of that app's forms, because
@@ -489,7 +494,8 @@ and the dialog stays as the one complete, browsable index of them.
   **Notifications** (in-editor, plus the six email preferences),
   **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
   suggested prompts, and a **Manage API Tokens** link row that opens the API
-  Tokens category), **Account** (identity, Trash, delete account, see
+  Tokens category), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the
+  deployment offers, [Google Drive mirror](../022-drive-mirror/drive-mirror.md)), delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)), **API Tokens** (create, view and
   revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category);
   only when sign-in is enabled on the deployment), **Privacy** (telemetry).

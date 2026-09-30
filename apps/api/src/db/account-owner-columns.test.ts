@@ -63,6 +63,9 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'email_lifecycle', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'auth_accounts', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'team_members', column: 'user_id', migrate: { kind: 'account-only' } },
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): signed-in only.
+  { table: 'drive_connections', column: 'owner_id', migrate: { kind: 'account-only' } },
+  { table: 'drive_items', column: 'owner_id', migrate: { kind: 'account-only' } },
 ];
 
 // Column names that mark an owner-keyed column wherever they appear.
@@ -177,6 +180,15 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
   });
   insert(sql, 'email_lifecycle', { owner_id: id, email: `${id}@example.com`, created_at: T0 });
   insert(sql, 'auth_accounts', { owner_id: id, first_seen_at: T0 });
+  insert(sql, 'drive_connections', { owner_id: id, status: 'connected', connected_at: T0 });
+  insert(sql, 'drive_items', {
+    owner_id: id,
+    item_kind: 'document',
+    ld_id: `d-`,
+    drive_file_id: `file-`,
+    name: 'x.livediagram',
+    ld_name: 'x',
+  });
   insert(sql, 'teams', { id: 'team-1', name: 'Team', created_at: T0, updated_at: T0 });
   for (const [n, userId] of [id, peer].entries()) {
     insert(sql, 'team_members', {

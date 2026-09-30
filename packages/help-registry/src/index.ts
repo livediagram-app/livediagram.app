@@ -105,8 +105,8 @@ export const categories: Category[] = [
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
-      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, and email notifications work.',
-    articleCount: 8,
+      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, the Google Drive mirror, and email notifications work.',
+    articleCount: 9,
   },
   {
     slug: 'privacy-and-security',
@@ -554,6 +554,15 @@ export const articles: Article[] = [
     title: 'Connect an AI tool (MCP)',
     description: 'Connect Claude or any MCP client to find, view, create, and edit your documents.',
     keywords: 'claude chatgpt cursor model context protocol ai integration assistant llm connector',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
+  {
+    slug: 'google-drive',
+    title: 'Google Drive',
+    description: 'Sync your Personal Space to your own Google Drive, both ways.',
+    keywords:
+      'google drive mirror sync backup copy cloud storage open with livediagram file folders',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },

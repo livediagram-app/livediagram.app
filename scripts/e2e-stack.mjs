@@ -53,6 +53,22 @@ const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);
 const LIVE_ONLY = process.env.E2E_LIVE_ONLY === '1';
 const NO_AI = process.env.E2E_NO_AI === '1';
 const AI_BUDGET_SPENT = process.env.E2E_AI_BUDGET_SPENT === '1';
+//   E2E_DRIVE=1      the Google Drive mirror e2e (docs/specs/022-drive-mirror/blueprints/
+//                    drive-mirror.md, "Testing"): the api worker verifies JWTs
+//                    against the JWKS the test serves (E2E_DRIVE_JWKS_PORT) and
+//                    talks OAuth to the fake Google the test serves
+//                    (E2E_DRIVE_GOOGLE_PORT). Test values only; the live build
+//                    must carry NEXT_PUBLIC_E2E_AUTH=1.
+const DRIVE = process.env.E2E_DRIVE === '1';
+const DRIVE_JWKS_PORT = Number(process.env.E2E_DRIVE_JWKS_PORT ?? 8795);
+const DRIVE_GOOGLE_PORT = Number(process.env.E2E_DRIVE_GOOGLE_PORT ?? 8796);
+const DRIVE_E2E_VARS = {
+  CLERK_JWKS_URL: `http://127.0.0.1:${DRIVE_JWKS_PORT}/jwks.json`,
+  GOOGLE_CLIENT_ID: '123456789012-e2e.apps.googleusercontent.com',
+  GOOGLE_CLIENT_SECRET: 'e2e-client-secret',
+  DRIVE_TOKEN_KEY: Buffer.alloc(32, 7).toString('base64'),
+  GOOGLE_OAUTH_BASE_URL: `http://127.0.0.1:${DRIVE_GOOGLE_PORT}`,
+};
 //   E2E_CLERK_JWKS=1  act as Clerk for the signed-in specs (docs/specs/003-system-architecture/
 //                    e2e-smoke.md): a key made at boot, its JWKS on /e2e/jwks.json for the api
 //                    worker to verify against, and /e2e/token?sub=<id> minting a session token
@@ -380,6 +396,7 @@ async function main() {
       // localhost editor. Blank it, as `pnpm dev` does (docs/specs/007-editor/ai-assistance.md).
       '--var',
       'AI_ALLOWED_ORIGINS:',
+      ...(DRIVE ? Object.entries(DRIVE_E2E_VARS).flatMap(([k, v]) => ['--var', `${k}:${v}`]) : []),
       // Guest ids are signed as in production (docs/specs/014-identity/auth-and-guest-access.md), so
       // the signed-id upgrade a fresh guest goes through runs here too. A test-only secret.
       '--var',

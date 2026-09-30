@@ -33,7 +33,31 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /clerk-stub\// },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      // The Drive and signed-in suites need their own builds and stacks; see below.
+      testIgnore: [/drive-(mirror|shots)\.spec\.ts/, /clerk-stub\//],
+    },
+    // Opt-in (pnpm --filter @livediagram/live test:e2e:drive): the Google Drive
+    // mirror against the fake Google, signed in through the test-only auth
+    // bridge (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing").
+    // Kept out of CI's default run: it needs a build with NEXT_PUBLIC_E2E_AUTH.
+    ...(process.env.E2E_DRIVE === '1'
+      ? [
+          {
+            name: 'drive',
+            use: { ...devices['Desktop Chrome'], colorScheme: 'dark' as const },
+            testMatch: /drive-mirror\.spec\.ts/,
+          },
+          // Every Drive state as a screenshot, light and dark (drive-shots.spec.ts).
+          {
+            name: 'drive-shots',
+            use: { ...devices['Desktop Chrome'] },
+            testMatch: /drive-shots\.spec\.ts/,
+          },
+        ]
+      : []),
     ...(clerkStub
       ? [
           {

@@ -22,6 +22,7 @@ import {
 import { trackDailyReturn } from '@/lib/daily-return';
 import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useFolders } from '@/hooks/persistence/useFolders';
+import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/persistence/useTeams';
 import { useTokens } from '@/hooks/persistence/useTokens';
@@ -146,34 +147,35 @@ export function useExplorerState() {
   // Category to open on, for the `?settings=` deep link. Distinct from
   // `settingsFocus`, which additionally rings one row.
   const [settingsCategory, setSettingsCategory] = useState<string | null>(null);
+  // Section of it, for `&section=<id>` (the Drive connect flow returns to Cloud Sync).
+  const [settingsSection, setSettingsSection] = useState<string | null>(null);
   // Open Settings on a category in place: the account menu, and any link
   // that names one (a timeline token card, lib/open-settings.ts).
-  const openSettingsOn = useCallback((categoryId: string) => {
+  // `sectionId` scrolls to and focuses one section of it (settingsSectionId).
+  const openSettingsOn = useCallback((categoryId: string, sectionId?: string) => {
     setSettingsFocus(null);
     setSettingsCategory(categoryId);
+    setSettingsSection(sectionId ?? null);
     setSettingsOpen(true);
   }, []);
   useOpenSettingsRequests(openSettingsOn);
   // `?settings=<category>` deep link. The Settings dialog replaced the
   // /explorer/profile page (docs/specs/014-identity/profile-and-email-notifications.md), and mail already in people's inboxes
   // links at their notification preferences, so any surface can name the pane
-  // it means. Opened during render, once per link; the param is then stripped,
-  // so a refresh or a back does not keep reopening the dialog.
+  // it means. Opened during render, once per link. The params stay while
+  // Settings is open, so a page left for Google and reached again with Back
+  // reopens it (docs/specs/007-editor/user-preferences.md), and go when it closes.
   const settingsLink = searchParams?.get('settings') ?? null;
+  const sectionLink = searchParams?.get('section') ?? null;
   const [settingsLinkSeen, setSettingsLinkSeen] = useState<string | null>(null);
   if (settingsLink !== settingsLinkSeen) {
     setSettingsLinkSeen(settingsLink);
     if (settingsLink) {
       setSettingsCategory(settingsLink);
+      setSettingsSection(sectionLink);
       setSettingsOpen(true);
     }
   }
-  useEffect(() => {
-    if (!settingsLink) return;
-    const url = new URL(window.location.href);
-    url.searchParams.delete('settings');
-    window.history.replaceState({}, '', url.toString());
-  }, [settingsLink]);
   // Which folder branches (and which teams) are open in the sidebar.
   // Local state only; a fresh visit starts everything collapsed. Team
   // ids live in the same set so a team's folder subtree expands the
@@ -261,6 +263,12 @@ export function useExplorerState() {
   useEffect(() => {
     if (loadOwner) void load(loadOwner);
   }, [loadOwner, load]);
+  // A change made in Google Drive reaches this page without a reload
+  // (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow"). Quietly:
+  // no skeleton, the lists just settle.
+  useAfterDriveChange(() => {
+    if (loadOwner) void load(loadOwner);
+  }, !!loadOwner);
 
   // ---- Derived tree shape ---------------------------------------
   // Index folders by parentId so the recursive renderer can walk
@@ -545,6 +553,8 @@ export function useExplorerState() {
     setSettingsFocus,
     settingsCategory,
     setSettingsCategory,
+    settingsSection,
+    setSettingsSection,
     openSettingsOn,
     // Folder + document actions
     folderActions,

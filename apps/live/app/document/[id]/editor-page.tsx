@@ -5,6 +5,7 @@ import { useEffect, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
+import { requestDriveFlush } from '@/lib/drive/tab-election';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { Explorer } from '@/components/panels/Explorer';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
@@ -56,6 +57,12 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   useEffect(() => {
     void ensureIconCatalogs();
   }, []);
+  // Leaving a document (another document, the Explorer) flushes its pending
+  // Google Drive write (docs/specs/022-drive-mirror/drive-mirror.md, "Cadence").
+  useEffect(() => {
+    if (!state.documentId) return;
+    return () => requestDriveFlush();
+  }, [state.documentId]);
   // Tab title reflects the document: "<name> | livediagram" (falls back to
   // Untitled when the document has no name yet). Updates as the user renames.
   useEffect(() => {

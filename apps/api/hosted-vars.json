@@ -1,5 +1,13 @@
 {
   "TELEMETRY_ENABLED": "true",
   "IMAGE_MAX_PER_OWNER": "100",
-  "IMAGE_MAX_BYTES_PER_OWNER": "104857600"
+  "IMAGE_MAX_BYTES_PER_OWNER": "104857600",
+  "environments": {
+    "production": {
+      "GOOGLE_CLIENT_ID": "1067879369165-6o7bsl1nlrv14mqq4q0sc41immecd4u2.apps.googleusercontent.com"
+    },
+    "staging": {
+      "GOOGLE_CLIENT_ID": "1086769580516-elcn86mcfr16vcp1oov4gnn3s32sb7ut.apps.googleusercontent.com"
+    }
+  }
 }

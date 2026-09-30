@@ -24,6 +24,7 @@ import {
   LIVE_TOGETHER,
   LOOK_AND_FEEL,
   MCP_TOOL_CALLS,
+  DRIVE_MIRROR,
   OFFLINE_MODE,
   PAGE_VIEWS_BY_APP,
   PALETTE_USE,
@@ -119,7 +120,7 @@ export const GROUPS: MetricGroup[] = [
   },
   {
     title: 'Connections',
-    metrics: [API_TOKEN_ACTIVITY, MCP_TOOL_CALLS],
+    metrics: [API_TOKEN_ACTIVITY, MCP_TOOL_CALLS, DRIVE_MIRROR],
   },
   {
     title: 'Health & support',

@@ -8,7 +8,15 @@ import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
 import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
-import { FavouriteMarker, FolderChip, VisibilityBadge } from './document-badges';
+import {
+  FavouriteMarker,
+  FolderChip,
+  VisibilityBadge,
+  isMirrorable,
+  useIconOnlyBadges,
+} from './document-badges';
+import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
+import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
 // One document row in the full-page /explorer list (open / rename / move /
@@ -29,6 +37,7 @@ export function DocumentRow(props: DocumentEntryProps) {
     showVisibility = true,
   } = props;
   const menu = useRowMenu({ disabled: renaming });
+  const iconOnlyBadges = useIconOnlyBadges();
   const href = hrefForDocument(liveDoc);
 
   const titleNode = renaming ? (
@@ -71,6 +80,7 @@ export function DocumentRow(props: DocumentEntryProps) {
             vertical line you can scan rather than at ragged name-end
             positions (docs/specs/013-workspace/favourites.md). */}
         {favourite ? <FavouriteMarker /> : null}
+        <DriveNoticeMarker documentId={liveDoc.id} />
         {titleNode}
         {folderChip ? (
           <span className="hidden shrink-0 sm:inline-flex">
@@ -83,10 +93,21 @@ export function DocumentRow(props: DocumentEntryProps) {
           {ownerLabelFor(liveDoc)}
         </span>
       ) : null}
-      <span className="hidden sm:block">
-        {showVisibility ? <VisibilityBadge document={liveDoc} /> : null}
+      {/* Flex, so the badge centres on the row like the time beside it. */}
+      <span className="hidden sm:flex sm:items-center">
+        {showVisibility ? <VisibilityBadge document={liveDoc} iconOnly={iconOnlyBadges} /> : null}
       </span>
-      <RelativeTimeChip at={liveDoc.savedAt} />
+      {/* The sync mark at the column's right edge, so the marks line up. */}
+      <span className="flex min-w-0 items-center justify-between gap-1.5">
+        <span className="flex min-w-0 items-center">
+          <RelativeTimeChip at={liveDoc.savedAt} />
+        </span>
+        <DocumentSyncMark
+          documentId={liveDoc.id}
+          savedAt={liveDoc.savedAt}
+          mirrorable={isMirrorable(liveDoc)}
+        />
+      </span>
       {renaming ? (
         <span />
       ) : (

@@ -20,6 +20,19 @@ export const clerkEnabled =
 
 export const clerkPublishableKey = clerkEnabled ? key : null;
 
+// Test builds only: the opt-in Google Drive e2e
+// (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing") signs in without
+// Clerk, through E2EAuthBridge and a JWT the test mints against its own JWKS.
+// A compile-time constant like the rest of this file, so a real build (which
+// never sets it) drops the branch and the bridge entirely.
+export const e2eAuthEnabled = process.env.NEXT_PUBLIC_E2E_AUTH === '1';
+
+// Whether this build can have a signed-in session at all: real Clerk, or the
+// test bridge. Only the session plumbing (the deferred provider, the api
+// bootstrap, the account menu) reads this; everything Clerk-specific keeps
+// reading clerkEnabled.
+export const sessionsEnabled = clerkEnabled || e2eAuthEnabled;
+
 // Whether the sign-in / sign-up pages should show the "Continue with
 // Google" OAuth button. Gated by `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED`
 // so dev tenants (which can use Clerk's shared Google credentials)
