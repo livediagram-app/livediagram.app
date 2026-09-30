@@ -152,8 +152,9 @@ export function useWhiteboard(deps: Deps) {
     pickIntent(whiteboardShapeIntent(id));
   };
 
-  const toggleRecognition = () => {
-    const next = { ...prefs, recognise: !prefs.recognise };
+  const setRecognition = (on: boolean) => {
+    if (on === prefs.recognise) return;
+    const next = { ...prefs, recognise: on };
     setPrefs(next);
     if (tool === 'pen') armPen(next);
     track('Whiteboard', 'Toggled', next.recognise ? 'RecognitionOn' : 'RecognitionOff');
@@ -180,7 +181,7 @@ export function useWhiteboard(deps: Deps) {
     pickSticky: () => pickIntent({ type: 'sticky' }),
     pickText: () => pickIntent({ type: 'text' }),
     pickShape,
-    toggleRecognition,
+    setRecognition,
     setBackground,
   };
 }

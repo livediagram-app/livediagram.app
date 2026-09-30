@@ -59,6 +59,15 @@ export function RecogniseGlyph() {
   );
 }
 
+// Recognition off: the rough stroke stays as drawn.
+export function OffGlyph() {
+  return (
+    <Glyph size={DOCK_ICON_PX} units={24}>
+      <path d="M5 15 C5 8 13 5 15.5 10.5 S10 20 6 16.5" />
+    </Glyph>
+  );
+}
+
 export function UndoGlyph() {
   return (
     <Glyph size={DOCK_ICON_PX} units={24}>
@@ -110,6 +119,13 @@ export function ShapeGlyph({ id }: { id: string }) {
       return (
         <Glyph size={DOCK_ICON_PX} units={24}>
           <path d="M12 3 L21 12 L12 21 L3 12 Z" />
+        </Glyph>
+      );
+    case 'cylinder':
+      return (
+        <Glyph size={DOCK_ICON_PX} units={24}>
+          <ellipse cx="12" cy="6" rx="7" ry="2.5" />
+          <path d="M5 6 V18 C5 19.4 8.1 20.5 12 20.5 S19 19.4 19 18 V6" />
         </Glyph>
       );
     case 'line':

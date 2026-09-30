@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import type { WhiteboardTool } from '@/lib/whiteboard-tool';
@@ -21,7 +21,7 @@ function model(tool: WhiteboardTool = 'pen', over: Partial<WhiteboardDockModel> 
     pickSticky: vi.fn(),
     pickText: vi.fn(),
     pickShape: vi.fn(),
-    toggleRecognition: vi.fn(),
+    setRecognition: vi.fn(),
     setBackground: vi.fn(),
     ...over,
   } as WhiteboardDockModel;
@@ -152,12 +152,61 @@ describe('WhiteboardDock', () => {
     expect(m.setBackground).toHaveBeenCalledWith('grid');
   });
 
-  it('shows recognition as a toggle', () => {
+  it('heads More with Background and Drawing, not a title of its own', () => {
+    renderDock();
+    fireEvent.click(screen.getByRole('button', { name: 'More' }));
+    const more = screen.getByRole('group', { name: 'More' });
+    const headings = [...more.querySelectorAll('[data-flyout-heading]')].map((h) => h.textContent);
+    expect(headings).toEqual(['Background', 'Drawing']);
+  });
+
+  it('switches Drawing between Basic and Shape recognition', () => {
     const { m } = renderDock();
-    const toggle = screen.getByRole('button', { name: 'Shape recognition' });
-    expect(toggle.getAttribute('aria-pressed')).toBe('false');
-    fireEvent.click(toggle);
-    expect(m.toggleRecognition).toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'Shape recognition' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'More' }));
+    const row = screen.getByRole('group', { name: 'Drawing' });
+    const basic = within(row).getByRole('button', { name: 'Basic' });
+    const recognise = within(row).getByRole('button', { name: 'Shape recognition' });
+    expect(basic.getAttribute('aria-pressed')).toBe('true');
+    expect(recognise.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(recognise);
+    expect(m.setRecognition).toHaveBeenCalledWith(true);
+  });
+
+  it('opens Shapes on hover and closes it a moment after the pointer leaves', () => {
+    vi.useFakeTimers();
+    try {
+      renderDock();
+      const shapes = screen.getByRole('button', { name: 'Shapes' });
+      fireEvent.pointerEnter(shapes, { pointerType: 'mouse' });
+      expect(screen.getByRole('group', { name: 'Shapes' })).toBeTruthy();
+      // Hovering never takes the keyboard focus away from the board.
+      expect(screen.getByRole('group', { name: 'Shapes' }).contains(document.activeElement)).toBe(
+        false,
+      );
+      fireEvent.pointerLeave(shapes, { pointerType: 'mouse' });
+      // Crossing the gap into the flyout keeps it open.
+      fireEvent.pointerEnter(screen.getByRole('group', { name: 'Shapes' }), {
+        pointerType: 'mouse',
+      });
+      act(() => vi.advanceTimersByTime(1000));
+      expect(screen.getByRole('group', { name: 'Shapes' })).toBeTruthy();
+      fireEvent.pointerLeave(screen.getByRole('group', { name: 'Shapes' }), {
+        pointerType: 'mouse',
+      });
+      act(() => vi.advanceTimersByTime(1000));
+      expect(screen.queryByRole('group', { name: 'Shapes' })).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not open Shapes for a finger passing over it', () => {
+    renderDock();
+    fireEvent.pointerEnter(screen.getByRole('button', { name: 'Shapes' }), {
+      pointerType: 'touch',
+    });
+    expect(screen.queryByRole('group', { name: 'Shapes' })).toBeNull();
   });
 
   it('has no highlighter', () => {
@@ -192,7 +241,7 @@ describe('WhiteboardDock keys', () => {
     expect(keyOf(/^Text/)).toBe('T');
   });
 
-  it('offers rectangle, ellipse, diamond, line and arrow with their keys, and no triangle', () => {
+  it('offers rectangle, ellipse, diamond, cylinder, line and arrow with their keys, and no triangle', () => {
     renderDock();
     fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
     const group = screen.getByRole('group', { name: 'Shapes' });
@@ -204,6 +253,7 @@ describe('WhiteboardDock keys', () => {
       ['Rectangle', 'R'],
       ['Ellipse', 'O'],
       ['Diamond', 'D'],
+      ['Cylinder', 'C'],
       ['Line', 'L'],
       ['Arrow', 'A'],
     ]);

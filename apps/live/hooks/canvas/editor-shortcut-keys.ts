@@ -339,6 +339,7 @@ export const WHITEBOARD_EDIT_KEYS: Record<string, ShortcutAction> = {
   r: (l) => l.whiteboard?.pickShape('rectangle'),
   o: (l) => l.whiteboard?.pickShape('ellipse'),
   d: (l) => l.whiteboard?.pickShape('diamond'),
+  c: (l) => l.whiteboard?.pickShape('cylinder'),
   l: (l) => l.whiteboard?.pickShape('line'),
   a: (l) => l.whiteboard?.pickShape('arrow'),
 };
@@ -355,6 +356,7 @@ export const WHITEBOARD_TOOL_KEYS = {
   rectangle: 'R',
   ellipse: 'O',
   diamond: 'D',
+  cylinder: 'C',
   line: 'L',
   arrow: 'A',
 } as const;

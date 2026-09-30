@@ -445,8 +445,6 @@ export function EditorView() {
                 embedMode ||
                 // Off in Settings (docs/specs/007-editor/user-preferences.md); style memory stays.
                 !panelEnabled(userPreferences, 'quickStylePanelEnabled') ||
-                // A whiteboard has no styling panel (docs/specs/023-whiteboard/whiteboard.md).
-                whiteboard ||
                 (contextMenu !== null && contextMenu.mode !== 'canvas')
               }
               // Phones never show it, so the desktop layout is the one that counts.

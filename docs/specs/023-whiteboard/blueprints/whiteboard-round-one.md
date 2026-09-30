@@ -206,6 +206,24 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 - The draw-mode banner does not show for a held pen (`isHeldPenIntent`).
 - The dock renders when `whiteboard && !readOnly && !chromeHidden`.
 
+### Quick style panel on a whiteboard
+
+- `EditorView` no longer hides `QuickStylePanel` on a whiteboard.
+- `useQuickStyle` on a whiteboard maps its view through `onWhiteboard(view, selected, ink)`
+  (`apps/live/lib/quick-style-whiteboard.ts`): slot 0 of stroke and text shows the board ink, slot 0
+  of background shows `transparent`, and an unfilled shape reads as background slot 0. Edits and
+  Clear styles skip `memory.recordEdit` / `memory.forget`.
+
+### Shapes flyout hover, More flyout
+
+- The Shapes button opens its flyout on `pointerenter` (not touch) as a hover flyout; leaving the
+  button or the flyout schedules a close after `HOVER_CLOSE_MS` (250 ms, `useHoverClose`), cancelled
+  by entering either. A press on a hover flyout makes it sticky. A hover flyout passes
+  `takeFocus={false}` so it never moves the keyboard focus.
+- The More flyout (`hideTitle`, accessible name "More") holds two headed sections: Background
+  (Plain / Dots / Grid) and Drawing (Basic / Shape recognition, `setRecognition(on)`). The dock has
+  no recognition button.
+
 ### Shapes are plain ink
 
 - A pen is a separate tool: pens do not set the colour of other tools. `whiteboardShapeIntent(id)`
@@ -236,8 +254,8 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 - `EditorKeyboardShortcutsDeps.whiteboard` (`{ pickSelect, pickPen, pickEraser }`, null off a whiteboard);
   `useEditorState` passes the dock's actions.
 - On a whiteboard the listener consults only `WHITEBOARD_VIEW_KEYS` (V select, H hand, Z zen) and,
-  for editors, `WHITEBOARD_EDIT_KEYS` (1, 2, 3 pens; E eraser; N note; T text; R, O, D, L, A the dock
-  shapes via `pickShape`, drawn with the pen in hand), then stops: the diagram tab's
+  for editors, `WHITEBOARD_EDIT_KEYS` (1, 2, 3 pens; E eraser; N note; T text; R, O, D, C, L, A the dock
+  shapes via `pickShape`, plain ink), then stops: the diagram tab's
   `VIEW_TOOL_KEYS` / `EDIT_KEYS` never run there. Type-to-edit and modifier shortcuts run first,
   unchanged.
 - Escape: the narrow Escape listener also arms for a whiteboard eraser and calls `pickSelect`; a

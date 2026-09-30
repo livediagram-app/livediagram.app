@@ -14,6 +14,10 @@ export function WhiteboardFlyout({
   label,
   left,
   onClose,
+  onPointerEnter,
+  onPointerLeave,
+  takeFocus = true,
+  hideTitle = false,
   children,
 }: {
   id: string;
@@ -21,6 +25,14 @@ export function WhiteboardFlyout({
   // Horizontal centre, in px from the dock wrapper's left edge.
   left: number;
   onClose: (returnFocus: boolean) => void;
+  // A hover-opened flyout stays while the pointer is over it.
+  onPointerEnter?: () => void;
+  onPointerLeave?: () => void;
+  // False for a flyout the pointer opened: hovering never moves the keyboard focus.
+  takeFocus?: boolean;
+  // A flyout whose sections carry their own headings shows no title (it keeps
+  // `label` as its accessible name).
+  hideTitle?: boolean;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -53,7 +65,7 @@ export function WhiteboardFlyout({
     const initial =
       node?.querySelector<HTMLElement>('[aria-pressed="true"]') ??
       node?.querySelector<HTMLElement>('button');
-    initial?.focus({ preventScroll: true });
+    if (takeFocus) initial?.focus({ preventScroll: true });
     const onDown = (e: PointerEvent) => {
       const target = e.target as Node | null;
       if (!target || node?.contains(target)) return;
@@ -64,7 +76,7 @@ export function WhiteboardFlyout({
     };
     document.addEventListener('pointerdown', onDown, true);
     return () => document.removeEventListener('pointerdown', onDown, true);
-  }, [id]);
+  }, [id, takeFocus]);
 
   return (
     <div
@@ -79,13 +91,13 @@ export function WhiteboardFlyout({
         onClose(true);
       }}
       onPointerDown={(e) => e.stopPropagation()}
+      onPointerEnter={(e) => (e.pointerType !== 'touch' ? onPointerEnter?.() : undefined)}
+      onPointerLeave={(e) => (e.pointerType !== 'touch' ? onPointerLeave?.() : undefined)}
       // `translate`, not `transform`: the pop-in animation owns `transform`.
       style={{ left, translate: `calc(-50% + ${nudge}px) 0` }}
       className="pointer-events-auto absolute bottom-full mb-2 w-max max-w-[min(20rem,calc(100vw-1.5rem))] animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-        {label}
-      </p>
+      {hideTitle ? null : <FlyoutHeading className="mb-2">{label}</FlyoutHeading>}
       {children}
     </div>
   );
@@ -131,5 +143,23 @@ export function FlyoutOption({
         ) : null}
       </button>
     </Tooltip>
+  );
+}
+
+// The flyouts' small-capitals heading: a flyout's title, or a section's.
+export function FlyoutHeading({
+  className = '',
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <p
+      data-flyout-heading=""
+      className={`text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${className}`}
+    >
+      {children}
+    </p>
   );
 }

@@ -129,17 +129,18 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
     expect(wb.pickEraser).toHaveBeenCalledTimes(1);
   });
 
-  it('adds notes, text and the dock shapes with N, T, R, O, D, L and A', () => {
+  it('adds notes, text and the dock shapes with N, T, R, O, D, C, L and A', () => {
     const { wb, addShape } = board();
     press('n');
     press('t');
-    for (const k of ['r', 'o', 'd', 'l', 'a']) press(k);
+    for (const k of ['r', 'o', 'd', 'c', 'l', 'a']) press(k);
     expect(wb.pickSticky).toHaveBeenCalledTimes(1);
     expect(wb.pickText).toHaveBeenCalledTimes(1);
     expect(wb.pickShape.mock.calls.map((c) => c[0])).toEqual([
       'rectangle',
       'ellipse',
       'diamond',
+      'cylinder',
       'line',
       'arrow',
     ]);
@@ -147,10 +148,10 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
     expect(addShape).not.toHaveBeenCalled();
   });
 
-  it('leaves the other diagram tab keys out: no laser on K, no cylinder on C', () => {
+  it('leaves the other diagram tab keys out: no laser on K, no parallelogram on G', () => {
     const { wb, addShape, setCanvasTool } = board();
     press('k');
-    press('c');
+    press('g');
     expect(addShape).not.toHaveBeenCalled();
     expect(wb.pickShape).not.toHaveBeenCalled();
     expect(setCanvasTool).not.toHaveBeenCalledWith('laser');

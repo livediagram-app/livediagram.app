@@ -20,13 +20,15 @@ import {
 } from '@/lib/whiteboard-prefs';
 import { WHITEBOARD_SHAPES } from '@/lib/whiteboard-tool';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
-import { FlyoutOption, WhiteboardFlyout } from './WhiteboardFlyout';
+import { FlyoutHeading, FlyoutOption, WhiteboardFlyout } from './WhiteboardFlyout';
+import { useHoverClose } from './useHoverClose';
 import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import {
   BackgroundGlyph,
   DOCK_ICON_PX,
   MoreGlyph,
   PenGlyph,
+  OffGlyph,
   RecogniseGlyph,
   RedoGlyph,
   ShapeGlyph,
@@ -37,9 +39,15 @@ import {
 } from './whiteboard-icons';
 
 type Flyout = {
+  // Opened by the pointer resting on its button: closes again when it leaves.
+  hover?: boolean;
   kind: WhiteboardPenId | 'eraser' | 'shapes' | 'more';
   left: number;
 };
+
+// How long a hover-opened flyout waits after the pointer leaves, so crossing
+// the gap into it (or brushing past) never snaps it shut.
+const HOVER_CLOSE_MS = 250;
 
 const ERASER_MODES = [
   { id: 'stroke', label: 'Stroke', hint: 'Remove whole strokes' },
@@ -72,15 +80,39 @@ export function WhiteboardDock({
   const openerOf = (kind: Flyout['kind']) =>
     document.querySelector<HTMLElement>(`[data-whiteboard-dock] [data-dock-item="${kind}"]`);
 
+  const openFlyout = (kind: Flyout['kind'], opener: HTMLElement, hover = false) => {
+    // Measured once, on opening: the flyout is placed, never re-laid out.
+    const wrap = opener.closest('[data-whiteboard-dock]')?.getBoundingClientRect();
+    const btn = opener.getBoundingClientRect();
+    setFlyout({ kind, hover, left: wrap ? btn.left + btn.width / 2 - wrap.left : 0 });
+  };
+
   const toggleFlyout = (kind: Flyout['kind'], opener: HTMLElement) => {
+    cancelHoverClose();
+    // A press on a flyout the pointer opened keeps it open (it stops being a
+    // hover flyout) rather than closing what the pointer just showed.
+    if (flyout?.kind === kind && flyout.hover) {
+      setFlyout({ ...flyout, hover: false });
+      return;
+    }
     if (flyout?.kind === kind) {
       setFlyout(null);
       return;
     }
-    // Measured once, on the press: the flyout is placed, never re-laid out.
-    const wrap = opener.closest('[data-whiteboard-dock]')?.getBoundingClientRect();
-    const btn = opener.getBoundingClientRect();
-    setFlyout({ kind, left: wrap ? btn.left + btn.width / 2 - wrap.left : 0 });
+    openFlyout(kind, opener);
+  };
+
+  // Hover (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"): Shapes opens while the
+  // pointer rests on it and closes a moment after it leaves both the button and
+  // the flyout, so crossing the gap between them never loses it. Never for touch.
+  const { schedule: scheduleHoverClose, cancel: cancelHoverClose } = useHoverClose(HOVER_CLOSE_MS);
+  const hoverEnter = (kind: Flyout['kind'], opener: HTMLElement | null) => {
+    cancelHoverClose();
+    if (flyout?.kind !== kind && opener) openFlyout(kind, opener, true);
+  };
+  const hoverLeave = () => {
+    if (!flyout?.hover) return;
+    scheduleHoverClose(() => setFlyout((f) => (f?.hover ? null : f)));
   };
 
   const closeFlyout = (returnFocus: boolean) => {
@@ -118,6 +150,8 @@ export function WhiteboardDock({
     onPress: (el: HTMLElement) => void;
     pressed?: boolean;
     flyoutKind?: Flyout['kind'];
+    // Opens the flyout on hover (a mouse or a pen, never a finger).
+    hoverOpens?: boolean;
     disabled?: boolean;
     // The key that picks this tool (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts").
     shortcut?: string;
@@ -136,6 +170,16 @@ export function WhiteboardDock({
         tabIndex={focusKey === o.key ? 0 : -1}
         onFocus={() => setFocusKey(o.key)}
         onClick={(e) => o.onPress(e.currentTarget)}
+        onPointerEnter={
+          o.hoverOpens && o.flyoutKind
+            ? (e) => {
+                if (e.pointerType !== 'touch') hoverEnter(o.flyoutKind!, e.currentTarget);
+              }
+            : undefined
+        }
+        onPointerLeave={
+          o.hoverOpens ? (e) => (e.pointerType !== 'touch' ? hoverLeave() : undefined) : undefined
+        }
         className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white ${
           o.pressed
             ? 'bg-brand-50 text-brand-700 ring-2 ring-inset ring-brand-500 dark:bg-brand-500/15 dark:text-brand-200'
@@ -235,22 +279,40 @@ export function WhiteboardDock({
     if (kind === 'more') {
       const current = whiteboardBackgroundOf(model.background);
       return {
-        label: 'Background',
+        label: 'More',
         body: (
-          <FlyoutRow label="">
-            {WHITEBOARD_BACKGROUNDS.map((b) => (
-              <FlyoutOption
-                key={b.id}
-                wide
-                label={b.label}
-                selected={current === b.id}
-                onPick={() => model.setBackground(b.id)}
-              >
-                <BackgroundGlyph id={b.id} />
-                <span>{b.label}</span>
-              </FlyoutOption>
-            ))}
-          </FlyoutRow>
+          <FlyoutRows>
+            <FlyoutRow label="Background" heading>
+              {WHITEBOARD_BACKGROUNDS.map((b) => (
+                <FlyoutOption
+                  key={b.id}
+                  wide
+                  label={b.label}
+                  selected={current === b.id}
+                  onPick={() => model.setBackground(b.id)}
+                >
+                  <BackgroundGlyph id={b.id} />
+                  <span>{b.label}</span>
+                </FlyoutOption>
+              ))}
+            </FlyoutRow>
+            {/* The same switch buttons, for a device-local setting
+                (docs/specs/023-whiteboard/whiteboard.md "Shape recognition"). */}
+            <FlyoutRow label="Drawing" heading>
+              {([false, true] as const).map((on) => (
+                <FlyoutOption
+                  key={String(on)}
+                  wide
+                  label={on ? 'Shape recognition' : 'Basic'}
+                  selected={prefs.recognise === on}
+                  onPick={() => model.setRecognition(on)}
+                >
+                  {on ? <RecogniseGlyph /> : <OffGlyph />}
+                  <span>{on ? 'Shape recognition' : 'Basic'}</span>
+                </FlyoutOption>
+              ))}
+            </FlyoutRow>
+          </FlyoutRows>
         ),
       };
     }
@@ -314,6 +376,10 @@ export function WhiteboardDock({
           label={open.label}
           left={flyout.left}
           onClose={closeFlyout}
+          onPointerEnter={() => cancelHoverClose()}
+          onPointerLeave={hoverLeave}
+          takeFocus={!flyout.hover}
+          hideTitle={flyout.kind === 'more'}
         >
           {open.body}
         </WhiteboardFlyout>
@@ -369,15 +435,8 @@ export function WhiteboardDock({
           icon: <ShapesGlyph />,
           pressed: tool === 'shape',
           flyoutKind: 'shapes',
+          hoverOpens: true,
           onPress: (el) => toggleFlyout('shapes', el),
-        })}
-        {divider('d4')}
-        {item({
-          key: 'recognise',
-          label: 'Shape recognition',
-          icon: <RecogniseGlyph />,
-          pressed: prefs.recognise,
-          onPress: () => model.toggleRecognition(),
         })}
         {divider('d5')}
         {item({
@@ -411,12 +470,23 @@ function FlyoutRows({ children }: { children: ReactNode }) {
   return <div className="flex flex-col gap-3">{children}</div>;
 }
 
-function FlyoutRow({ label, children }: { label: string; children: ReactNode }) {
+// `heading`: the row is a section, headed in the flyouts' small capitals.
+function FlyoutRow({
+  label,
+  heading = false,
+  children,
+}: {
+  label: string;
+  heading?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <div>
-      {label ? (
+    <div role="group" aria-label={label || undefined}>
+      {!label ? null : heading ? (
+        <FlyoutHeading className="mb-1.5">{label}</FlyoutHeading>
+      ) : (
         <p className="mb-1 text-xs font-medium text-slate-600 dark:text-slate-300">{label}</p>
-      ) : null}
+      )}
       <div className="flex flex-wrap gap-1">{children}</div>
     </div>
   );

@@ -50,11 +50,12 @@ describe('whiteboardPenIntent', () => {
 });
 
 describe('WHITEBOARD_SHAPES', () => {
-  it('offers rectangle, ellipse, diamond, line and arrow', () => {
+  it('offers rectangle, ellipse, diamond, cylinder, line and arrow', () => {
     expect(WHITEBOARD_SHAPES.map((s) => s.label)).toEqual([
       'Rectangle',
       'Ellipse',
       'Diamond',
+      'Cylinder',
       'Line',
       'Arrow',
     ]);

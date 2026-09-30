@@ -14,6 +14,9 @@ import type {
   ThemeDefinition,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
+import { isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
+import { onWhiteboard } from '@/lib/quick-style-whiteboard';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import {
   applyQuickFill,
   applyQuickIconAlign,
@@ -67,10 +70,17 @@ export function useQuickStyle(deps: {
     () => activeTab.elements.filter((el) => selectionIds.has(el.id)),
     [activeTab.elements, selectionIds],
   );
-  const view = useMemo(
-    () => (editsBlocked ? null : quickStyleView(selected, theme, overrides)),
-    [editsBlocked, selected, theme, overrides],
-  );
+  // On a whiteboard (docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays") the
+  // defaults read as the board's ink, and a restyle there never teaches the
+  // style memory what a diagram's next shape should wear.
+  const whiteboard = isWhiteboardTab(activeTab);
+  const { appearance } = useAppearance();
+  const ink = WHITEBOARD_INK[appearance];
+  const view = useMemo(() => {
+    if (editsBlocked) return null;
+    const plain = quickStyleView(selected, theme, overrides);
+    return whiteboard ? onWhiteboard(plain, selected, ink) : plain;
+  }, [editsBlocked, selected, theme, overrides, whiteboard, ink]);
 
   // Map the view's targets through `apply`, as one commit, then remember it.
   const run = (apply: (el: Element) => Element, telemetryType: string) => {
@@ -80,7 +90,7 @@ export function useQuickStyle(deps: {
     const map = (els: Element[]) => els.map((el) => (ids.has(el.id) ? apply(el) : el));
     const after = map(before);
     commit(map);
-    memory.recordEdit(before, after);
+    if (!whiteboard) memory.recordEdit(before, after);
     track('Element', 'Changed', telemetryType);
   };
 
@@ -106,7 +116,7 @@ export function useQuickStyle(deps: {
         const kind = targets.has(el.id) ? styleKindOf(el) : null;
         if (kind) kinds.add(kind);
       }
-      memory.forget([...kinds]);
+      if (!whiteboard) memory.forget([...kinds]);
     },
     setSwatchOverride: (role, slot, hex) => {
       track('UI', 'Changed', 'QuickSwatchCustom');

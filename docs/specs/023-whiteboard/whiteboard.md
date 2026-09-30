@@ -60,8 +60,11 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   collaboration, comments, layers, activity and zoom controls stay, because
   they are about the document, not about drawing.
 - **The quick style panel stays** ([Quick style panel](../008-canvas/quick-style-panel.md)):
-  it is how a shape, line, text box or stroke gets another colour or width
-  once drawn, since the pens colour only their own strokes.
+  it is how a shape, line or text box gets another colour or width once
+  drawn, since the pens colour only their own strokes. Its "theme default"
+  swatches show the board's ink (and no fill for a background), and a
+  restyle on a whiteboard never feeds the style memory diagram tabs use.
+  Strokes are not in the panel yet.
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
 - **The dock holds, left to right:**
@@ -70,13 +73,16 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   3. **Eraser**, with its mode (see [Eraser](#eraser)).
   4. **Sticky note**.
   5. **Text**.
-  6. **Shapes**: a small flyout of rectangle, ellipse, diamond, line
-     and arrow (see [Shapes](#shapes)). It opens on hover as well as on a
-     press, and closes a moment after the pointer leaves both it and the
-     button.
-  7. **Shape recognition** toggle (see [Shape recognition](#shape-recognition)).
-  8. **Undo** / **Redo**.
-  9. **More**: board background and, when the operator asks for it, the full
+  6. **Shapes**: a small flyout of rectangle, ellipse, diamond, cylinder,
+     line and arrow (see [Shapes](#shapes)). It opens on hover (a mouse or a
+     pen, never a finger) as well as on a press, without taking the keyboard
+     focus, and closes a moment after the pointer leaves both it and the
+     button; a press on a hover-opened flyout keeps it open.
+  7. **Undo** / **Redo**.
+  8. **More** (`…`): a flyout with no title of its own and two sections,
+     each headed in the flyouts' small capitals and a row of the same switch
+     buttons: **Background** (Plain / Dots / Grid) and **Drawing** (Basic /
+     Shape recognition). Later, when the operator asks for it, the full
      palette as an escape hatch.
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
   none, search does not offer it (nor the format painter), and one held on a
@@ -195,8 +201,9 @@ The eraser offers **both** modes, switched in its flyout:
 
 ## Shape recognition
 
-- A **toggle** in the dock, **off by default**, remembered device-locally with
-  the pens.
+- The **Drawing** section of the dock's **More** (`…`) flyout: **Basic**
+  (strokes stay as drawn, the default) or **Shape recognition**, remembered
+  device-locally with the pens.
 - When on, a pen stroke that reads as a shape on release is replaced by the
   clean shape, using the Shape Pen's recogniser
   ([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)). The clean
@@ -264,6 +271,7 @@ not apply: a whiteboard has no palette to mirror):
 | R      | Rectangle                         |
 | O      | Ellipse (circle / oval)           |
 | D      | Diamond                           |
+| C      | Cylinder                          |
 | L      | Line                              |
 | A      | Arrow                             |
 

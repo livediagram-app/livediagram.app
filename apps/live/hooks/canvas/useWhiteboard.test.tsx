@@ -81,7 +81,7 @@ describe('useWhiteboard', () => {
 
   it('remembers recognition and eraser mode on this device', () => {
     const { hook } = setup(board());
-    act(() => hook.result.current.toggleRecognition());
+    act(() => hook.result.current.setRecognition(true));
     act(() => hook.result.current.setEraserMode('partial'));
     expect(track).toHaveBeenCalledWith('Whiteboard', 'Toggled', 'RecognitionOn');
     expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'EraserPartial');
