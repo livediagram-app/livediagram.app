@@ -20,7 +20,7 @@ import { apiCreateFolder } from '@/lib/api-client';
 import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { track } from '@/lib/telemetry';
 import { folderDescendants } from '@/lib/folder-tree';
-import { TEAM_TRASH_RESTORE_HINT } from '@/lib/trash-copy';
+import { deleteConfirmation } from '@/lib/delete-confirmation';
 
 // "Shared documents" on the team page (docs/specs/013-workspace/team-shared-documents.md): the team's folder
 // tree + documents, navigated with a small breadcrumb instead of a
@@ -168,17 +168,14 @@ export function TeamSharedDocuments({
   const deleteDocument = async (id: string) => {
     const d = lib.documents.find((x) => x.id === id);
     const notice = await fetchSharedTabsNotice(ownerId, id, 'delete');
-    const ok = await confirm({
-      title: 'Delete team document?',
-      message: [
-        `"${d?.name || 'This document'}" will be deleted for the whole team.`,
-        notice,
-        TEAM_TRASH_RESTORE_HINT,
-      ]
-        .filter(Boolean)
-        .join(' '),
-      confirmLabel: 'Delete',
-    });
+    const ok = await confirm(
+      deleteConfirmation({
+        name: d?.name,
+        hasShareLinks: (d?.shareCode ?? null) !== null,
+        sharedTabsNotice: notice,
+        team: true,
+      }),
+    );
     if (ok) void lib.deleteDocument(id);
   };
 

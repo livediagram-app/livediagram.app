@@ -21,7 +21,7 @@ import {
 import { duplicateDocument as duplicate } from '@/lib/duplicate-document';
 import { markDocumentDeleted } from '@/lib/document-tombstones';
 import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
-import { TRASH_RESTORE_HINT } from '@/lib/trash-copy';
+import { deleteConfirmation, lookUpShareLinks } from '@/lib/delete-confirmation';
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -138,23 +138,17 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
   ) => {
     if (typeof window === 'undefined' || !ownerId) return;
     if (!opts?.skipConfirm) {
-      const target =
-        id === currentDocument?.id
-          ? { name: currentDocument.name }
-          : documentList.find((d) => d.id === id);
-      // Tabs also in other documents stay there; say so before it happens.
-      const notice = await fetchSharedTabsNotice(ownerId, id, 'delete');
-      const ok = await confirm({
-        title: `Delete "${target?.name || 'this document'}"?`,
-        message: [
-          'Its share links stop working, and visitors see that it was deleted.',
-          notice,
-          TRASH_RESTORE_HINT,
-        ]
-          .filter(Boolean)
-          .join(' '),
-        confirmLabel: 'Delete document',
-      });
+      const listed = documentList.find((d) => d.id === id);
+      const name = id === currentDocument?.id ? currentDocument.name : listed?.name;
+      // Tabs also in other documents stay there, and share links stop working:
+      // said only when they apply (lib/delete-confirmation.ts).
+      const [notice, hasShareLinks] = await Promise.all([
+        fetchSharedTabsNotice(ownerId, id, 'delete'),
+        listed ? Promise.resolve(listed.shareCode !== null) : lookUpShareLinks(ownerId, id),
+      ]);
+      const ok = await confirm(
+        deleteConfirmation({ name, hasShareLinks, sharedTabsNotice: notice }),
+      );
       if (!ok) return;
     }
     // Tombstone first, ALWAYS: the open editor's autosave (debounce + the

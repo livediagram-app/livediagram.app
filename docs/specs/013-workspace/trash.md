@@ -10,10 +10,21 @@ deletion still feels permanent, the delete confirmations stay, and nothing nags
 about where the document went. Someone who deleted the wrong thing can go and
 fetch it back.
 
-Every delete confirmation says so once, quietly, and nothing else does: "It
-can be restored from Settings › Trash for 30 days." (for a team document, "Any
-teammate can restore it …"). There is no undo toast and no "moved to Trash"
-message.
+### Deleting
+
+Every document delete asks one short question, the same everywhere (the
+Explorer, the editor, the Explorer panel's popover, the team library;
+`apps/live/lib/delete-confirmation.ts`):
+
+- Title **Please confirm**; first line **Delete "<name>"?**
+- A second line only for what applies, in this order: "It is deleted for the
+  whole team." (a team document), "Its share links stop working." (only when
+  the document has share links; for the document open in the editor this is
+  asked of the server, and left out when it cannot say), and the shared-tabs
+  sentence ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)).
+- The **Delete** button is not red: nothing is lost for 30 days.
+- The Trash is not mentioned: it is a backstop, found in Settings. There is no
+  undo toast and no "moved to Trash" message.
 
 Every delete of a whole document goes to the Trash: the Explorer, the editor,
 the team library, the public API with a token, and the MCP server. The rule is
