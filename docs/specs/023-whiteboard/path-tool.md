@@ -145,12 +145,12 @@ A path is edited in its own **edit mode**, as in Figma:
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-| Event                        | Action     | Type                             |
-| ---------------------------- | ---------- | -------------------------------- |
-| The Path tool picked         | `Selected` | `Whiteboard` · `Path`            |
-| A path committed             | `Added`    | `Element` · `Path`               |
-| A path edited in edit mode   | `Changed`  | `Element` · `PathEdit`           |
-| A path closed while editing  | `Changed`  | `Element` · `PathJoin`           |
+| Event                       | Action     | Type                   |
+| --------------------------- | ---------- | ---------------------- |
+| The Path tool picked        | `Selected` | `Whiteboard` · `Path`  |
+| A path committed            | `Added`    | `Element` · `Path`     |
+| A path edited in edit mode  | `Changed`  | `Element` · `PathEdit` |
+| A path closed while editing | `Changed`  | `Element` · `PathJoin` |
 
 ## Non-goals (round one)
 
