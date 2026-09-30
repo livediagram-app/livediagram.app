@@ -110,7 +110,7 @@ export function ConfirmPopover({
             }}
           />
         ) : null}
-        <p className="whitespace-pre-line text-xs text-slate-700 dark:text-slate-200">{message}</p>
+        <p className="text-xs text-slate-700 dark:text-slate-200">{message}</p>
         <div className="flex justify-end gap-2">
           {/* py-1 keeps the popover's tighter rhythm; the classes append
               after the size scale, so they win. */}

@@ -17,7 +17,7 @@ import { ExplorerSections } from '@/components/panels/ExplorerSections';
 import type { ExplorerProps } from './Explorer.types';
 import { useExplorerViewModel } from './useExplorerViewModel';
 import { useExplorerRowDelete } from './useExplorerRowDelete';
-import { deleteConfirmationMessage } from '@/lib/delete-confirmation';
+import { TEAM_TRASH_RESTORE_HINT, TRASH_RESTORE_HINT } from '@/lib/trash-copy';
 
 // Floating "Explorer" panel pinned to the top-left of the canvas by
 // default. Symmetric to the Palette in shape and behaviour.
@@ -409,19 +409,17 @@ function ExplorerImpl({
       {deleteConfirm ? (
         <ConfirmPopover
           anchor={deleteConfirm.anchor}
-          message={(() => {
-            const personal = liveDocs.find((d) => d.id === deleteConfirm.id);
-            const team = teamDocuments.find((d) => d.id === deleteConfirm.id);
-            const doc = personal ?? team;
-            return deleteConfirmationMessage({
-              name: doc?.name,
-              hasShareLinks: (doc?.shareCode ?? null) !== null,
-              sharedTabsNotice: deleteConfirm.notice,
-              team: !personal && !!team,
-            });
-          })()}
-          // Not red: a delete goes to the Trash.
-          danger={false}
+          message={`Delete "${
+            liveDocs.find((d) => d.id === deleteConfirm.id)?.name ||
+            teamDocuments.find((d) => d.id === deleteConfirm.id)?.name ||
+            'this document'
+          }"? Its share links stop working.${
+            deleteConfirm.notice ? ` ${deleteConfirm.notice}` : ''
+          } ${
+            teamDocuments.some((d) => d.id === deleteConfirm.id)
+              ? TEAM_TRASH_RESTORE_HINT
+              : TRASH_RESTORE_HINT
+          }`}
           confirmLabel="Delete"
           onConfirm={() => {
             const id = deleteConfirm.id;
