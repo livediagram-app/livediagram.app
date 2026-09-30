@@ -1,6 +1,15 @@
 import { ctaHref, type CtaSource } from '@livediagram/api-schema';
 import { templateBrowseHref, templateCreateHref } from '@livediagram/templates';
-import { buttonClassName, Glyph, ButtonContent } from '@livediagram/ui';
+import {
+  buttonClassName,
+  ButtonContent,
+  FlowchartIcon,
+  Glyph,
+  MarkerIcon,
+  MindmapIcon,
+  type IconProps,
+} from '@livediagram/ui';
+import type { ComponentType } from 'react';
 import { HeroIllustration } from './HeroIllustration';
 
 // Each one true today (docs/specs/019-marketing/marketing-site.md's golden rule): no paid tier, the canvas works
@@ -12,18 +21,36 @@ const PROOF_POINTS = [
   'Open source (MIT)',
 ];
 
-// The hero's three calls to action, each with its landing-funnel source
+// The hero's three ways to start, each with its icon and its landing-funnel source
 // (docs/specs/019-marketing/landing-funnel.md).
 export const HERO_CTAS: readonly {
   label: string;
   href: string;
   source: CtaSource;
-  primary?: boolean;
+  Icon: ComponentType<IconProps>;
 }[] = [
-  { label: 'Draw', href: templateCreateHref('whiteboard'), source: 'Home.HeroDraw' },
-  { label: 'Diagram', href: '/new', source: 'Home.Hero', primary: true },
-  { label: 'Brainstorm', href: templateBrowseHref('brainstorm'), source: 'Home.HeroBrainstorm' },
+  {
+    label: 'Draw',
+    href: templateCreateHref('whiteboard'),
+    source: 'Home.HeroDraw',
+    Icon: MarkerIcon,
+  },
+  { label: 'Diagram', href: '/new', source: 'Home.Hero', Icon: FlowchartIcon },
+  {
+    label: 'Brainstorm',
+    href: templateBrowseHref('brainstorm'),
+    source: 'Home.HeroBrainstorm',
+    Icon: MindmapIcon,
+  },
 ];
+
+// One class for all three: the secondary style (none filled), one height from the size, one width
+// from sm up, so they read as peers and the row holds still.
+const HERO_CTA_CLASS = buttonClassName({
+  variant: 'secondary',
+  size: 'lg',
+  className: 'w-full shadow-sm sm:w-44',
+});
 
 function ProofPoints() {
   return (
@@ -56,24 +83,20 @@ export function Hero() {
           Sketch an idea, start from a template, or map a whole system. Share a link and your team
           builds it with you in real time.
         </p>
-        {/* Three ways in (docs/specs/019-marketing/marketing-site.md), in the order people reach for them:
-            Draw lands straight on a whiteboard with a pen in hand, Diagram is
-            the wizard and its whole catalogue (the encouraged path, so the
-            filled button, in the middle), Brainstorm opens the wizard on the
-            brainstorming formats. One width for all three, so the row holds
-            still; stacked in the same order on mobile. */}
-        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          {HERO_CTAS.map((cta) => (
-            <a
-              key={cta.label}
-              href={ctaHref(cta.href, cta.source)}
-              className={buttonClassName({
-                variant: cta.primary ? undefined : 'secondary',
-                size: 'lg',
-                className: 'w-full shadow-sm sm:w-40',
-              })}
-            >
-              <ButtonContent>{cta.label}</ButtonContent>
+        {/* Three ways in (docs/specs/019-marketing/marketing-site.md "Hero"), one equal set in the
+            order people reach for them: Draw lands straight on a whiteboard with a pen in hand,
+            Diagram is the wizard and its whole catalogue, Brainstorm opens the wizard on the
+            brainstorming formats. Peers, so one style, one size and an icon each; one row that
+            never wraps from sm up, stacked in the same order on mobile. */}
+        <div
+          role="group"
+          aria-label="Ways to start"
+          className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-nowrap"
+        >
+          {HERO_CTAS.map(({ label, href, source, Icon }) => (
+            <a key={label} href={ctaHref(href, source)} className={HERO_CTA_CLASS}>
+              <Icon size={18} className="shrink-0 text-brand-600 dark:text-brand-300" />
+              <ButtonContent>{label}</ButtonContent>
             </a>
           ))}
         </div>
