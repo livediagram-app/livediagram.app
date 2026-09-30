@@ -8,18 +8,20 @@ import { dockModel as model, renderDock } from './dock-test-utils';
 const itemsOf = (group: string) =>
   [
     ...document.querySelectorAll<HTMLElement>(
-      `[data-dock-group="${group}"] [data-dock-item], [data-dock-group="${group}"] [data-slot-separator]`,
+      `[data-dock-group="${group}"] [data-dock-item], [data-dock-group="${group}"] [data-pinned-separator]`,
     ),
   ].map((el) => el.dataset.dockItem ?? '|');
 
 describe('WhiteboardDock groups', () => {
-  it('is three labelled horizontal toolbars, each one tab stop', () => {
+  it('is five labelled horizontal toolbars, each one tab stop', () => {
     renderDock();
     const bars = screen.getAllByRole('toolbar');
     expect(bars.map((b) => b.getAttribute('aria-label'))).toEqual([
       'Drawing tools',
-      'History',
+      'Content',
       'Shapes',
+      'History',
+      'Settings',
     ]);
     for (const bar of bars) {
       expect(bar.getAttribute('aria-orientation')).toBe('horizontal');
@@ -27,31 +29,26 @@ describe('WhiteboardDock groups', () => {
     }
   });
 
-  it('lays out Select, the markers, Eraser, Text and Settings as the drawing tools', () => {
+  it('lays out Select, the markers and Eraser as the drawing tools', () => {
     renderDock();
-    expect(itemsOf('drawing')).toEqual([
-      'select',
-      'main',
-      'second',
-      'third',
-      'eraser',
-      'text',
-      'settings',
-    ]);
+    expect(itemsOf('drawing')).toEqual(['select', 'main', 'second', 'third', 'eraser']);
   });
 
-  it('lays out Sticky note, Path tool, the separator, the slots, Shapes and More shapes', () => {
+  it('gives the cog a group of its own, last', () => {
+    renderDock();
+    expect(itemsOf('settings')).toEqual(['settings']);
+    const bars = screen.getAllByRole('toolbar');
+    expect(bars[bars.length - 1]!.getAttribute('aria-label')).toBe('Settings');
+  });
+
+  it('lays out Text, Sticky note and Path tool as the content', () => {
+    renderDock();
+    expect(itemsOf('content')).toEqual(['text', 'sticky', 'path']);
+  });
+
+  it('lays out the shapes bar as the pinned shapes, a separator and Shapes', () => {
     renderDock(model('select', { pinnedShapes: ['star'] }));
-    expect(itemsOf('shapes')).toEqual([
-      'sticky',
-      'path',
-      'pinned:star',
-      '|',
-      'frequent:rectangle',
-      'frequent:ellipse',
-      'shapes',
-      'search',
-    ]);
+    expect(itemsOf('shapes')).toEqual(['pinned:star', '|', 'shapes']);
   });
 
   it('walks one group with the arrow keys, wrapping, and Home / End, never into the next', () => {
@@ -61,30 +58,35 @@ describe('WhiteboardDock groups', () => {
     fireEvent.keyDown(select, { key: 'ArrowRight' });
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Marker 1, medium' }));
     fireEvent.keyDown(document.activeElement!, { key: 'End' });
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Settings' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Eraser' }));
     fireEvent.keyDown(document.activeElement!, { key: 'ArrowRight' });
     expect(document.activeElement).toBe(select);
     fireEvent.keyDown(select, { key: 'ArrowLeft' });
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Settings' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Eraser' }));
     fireEvent.keyDown(document.activeElement!, { key: 'Home' });
     expect(document.activeElement).toBe(select);
   });
 
   it('moves the tab stop to the last focused button of its group', () => {
     renderDock();
-    const text = screen.getByRole('button', { name: 'Text' });
-    act(() => text.focus());
-    expect(text.getAttribute('tabindex')).toBe('0');
-    expect(screen.getByRole('button', { name: 'Select' }).getAttribute('tabindex')).toBe('-1');
+    const sticky = screen.getByRole('button', { name: 'Sticky note' });
+    act(() => sticky.focus());
+    expect(sticky.getAttribute('tabindex')).toBe('0');
+    expect(screen.getByRole('button', { name: 'Text' }).getAttribute('tabindex')).toBe('-1');
+    // The other groups keep their own stops.
+    expect(screen.getByRole('button', { name: 'Select' }).getAttribute('tabindex')).toBe('0');
   });
 
-  it('shows only Drawing tools and History in Simple mode', () => {
+  it('shows every group but Shapes in Simple mode', () => {
     renderDock(model('select', { dockMode: 'simple' }));
     expect(screen.getAllByRole('toolbar').map((b) => b.getAttribute('aria-label'))).toEqual([
       'Drawing tools',
       'History',
+      'Settings',
     ]);
     expect(screen.queryByRole('button', { name: 'Sticky note' })).toBeNull();
+    // Content goes with Shapes, so Simple has no Text button (its key still works).
+    expect(screen.queryByRole('button', { name: 'Text' })).toBeNull();
   });
 
   it('closes a Shapes-group flyout when the group goes, and keeps the others alone', () => {
@@ -105,6 +107,83 @@ describe('WhiteboardDock groups', () => {
     );
     expect(screen.queryByRole('group', { name: 'Shapes' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Select' })).toBeTruthy();
+  });
+});
+
+describe('WhiteboardDock mode switch', () => {
+  it('keeps the Settings flyout over its cog when the dock re-centres', () => {
+    // The cog sits 400 px in with Shapes shown, 100 px in without.
+    const spy = vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      const el = this as HTMLElement;
+      const shapes = document.querySelector('[data-dock-group="shapes"]') !== null;
+      const left = el.dataset.dockItem === 'settings' ? (shapes ? 400 : 100) : 0;
+      return {
+        left,
+        right: left + 44,
+        width: el.dataset.dockItem ? 44 : 0,
+        top: 0,
+        bottom: 44,
+        height: 44,
+        x: left,
+        y: 0,
+        toJSON: () => ({}),
+      };
+    });
+    try {
+      const m = model('select');
+      const { view } = renderDock(m);
+      fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+      const flyout = () => document.getElementById('whiteboard-flyout-settings')!;
+      expect(flyout().style.left).toBe('422px');
+      view.rerender(
+        <WhiteboardDock
+          model={{ ...m, dockMode: 'simple' }}
+          ink="#1c1917"
+          canUndo
+          canRedo={false}
+          onUndo={vi.fn()}
+          onRedo={vi.fn()}
+        />,
+      );
+      expect(flyout().style.left).toBe('122px');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});
+
+describe('WhiteboardDock scrolling', () => {
+  it('keeps an open flyout over its button as the groups scroll', () => {
+    let cogLeft = 400;
+    const spy = vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      const left = (this as HTMLElement).dataset.dockItem === 'settings' ? cogLeft : 0;
+      return {
+        left,
+        right: left + 44,
+        width: 44,
+        top: 0,
+        bottom: 44,
+        height: 44,
+        x: left,
+        y: 0,
+        toJSON: () => ({}),
+      };
+    });
+    try {
+      renderDock();
+      fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+      const flyout = () => document.getElementById('whiteboard-flyout-settings');
+      expect(flyout()!.style.left).toBe('422px');
+      cogLeft = 250;
+      fireEvent.scroll(document.querySelector('[data-dock-scroller]')!);
+      expect(flyout()!.style.left).toBe('272px');
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
 
@@ -186,12 +265,11 @@ describe('WhiteboardDock drawing tools', () => {
     expect(m.setEraserMode).toHaveBeenCalledWith('partial');
   });
 
-  it('picks Text from the drawing tools', () => {
+  it('picks Text, the first of the Content bar', () => {
     const { m } = renderDock();
-    const text = within(screen.getByRole('toolbar', { name: 'Drawing tools' })).getByRole(
-      'button',
-      { name: 'Text' },
-    );
+    const text = within(screen.getByRole('toolbar', { name: 'Content' })).getByRole('button', {
+      name: 'Text',
+    });
     fireEvent.click(text);
     expect(m.pickText).toHaveBeenCalled();
   });

@@ -1,40 +1,88 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_PINNED_SHAPES,
   dropIndicatorX,
-  frequentShapes,
+  PINNED_SHAPES_MAX,
   pinFromMenu,
   recordShapePick,
   resolveSlotDrop,
   SHAPE_PICKS_KEPT,
+  shapeSlots,
   slotDropTarget,
   unpinShape,
   type ShapePicks,
+  type SlotLayout,
 } from './whiteboard-shape-slots';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 
-describe('frequentShapes', () => {
-  it('falls back to Rectangle then Ellipse with no history', () => {
-    expect(frequentShapes({}, [])).toEqual(['rectangle', 'ellipse']);
+// Seven pinned: the limit.
+const FULL: WhiteboardShapeKey[] = [
+  'star',
+  'cloud',
+  'hexagon',
+  'triangle',
+  'document',
+  'stadium',
+  'trapezoid',
+];
+
+describe('the pinned side', () => {
+  it('holds Arrow, Rectangle and Ellipse by default, of at most seven', () => {
+    expect(DEFAULT_PINNED_SHAPES).toEqual(['arrow', 'rectangle', 'ellipse']);
+    expect(PINNED_SHAPES_MAX).toBe(7);
+  });
+});
+
+describe('shapeSlots', () => {
+  it('falls back down the Shapes flyout order past the default pins', () => {
+    expect(shapeSlots({}, DEFAULT_PINNED_SHAPES)).toEqual({
+      mostUsed: ['diamond', 'cylinder', 'line'],
+      recent: ['parallelogram', 'hexagon', 'document'],
+    });
   });
 
-  it('ranks by how often a kind was picked', () => {
-    const picks: ShapePicks = { triangle: [5, 10], star: [9, 5], rectangle: [2, 99] };
-    expect(frequentShapes(picks, [])).toEqual(['star', 'triangle']);
+  it('puts the most picked kinds first, then the most recent others, newest first', () => {
+    const picks: ShapePicks = {
+      star: [9, 1],
+      cloud: [1, 5],
+      hexagon: [2, 7],
+      triangle: [1, 3],
+      stadium: [4, 2],
+      trapezoid: [1, 9],
+      document: [1, 4],
+    };
+    expect(shapeSlots(picks, [])).toEqual({
+      mostUsed: ['star', 'stadium', 'hexagon'],
+      recent: ['trapezoid', 'cloud', 'document'],
+    });
   });
 
-  it('breaks a tie in favour of the kind picked most recently', () => {
-    const picks: ShapePicks = { triangle: [3, 10], star: [3, 20] };
-    expect(frequentShapes(picks, [])).toEqual(['star', 'triangle']);
+  it('breaks a most-used tie in favour of the kind picked most recently', () => {
+    const picks: ShapePicks = { star: [3, 10], cloud: [3, 20] };
+    expect(shapeSlots(picks, []).mostUsed.slice(0, 2)).toEqual(['cloud', 'star']);
   });
 
-  it('leaves out kinds already pinned, and fills from the fallbacks without repeating', () => {
-    expect(frequentShapes({ star: [4, 1] }, ['rectangle'])).toEqual(['star', 'ellipse']);
-    expect(frequentShapes({}, ['rectangle', 'ellipse'])).toEqual(['diamond', 'cylinder']);
-    expect(frequentShapes({ ellipse: [1, 1] }, [])).toEqual(['ellipse', 'rectangle']);
+  it('leaves pinned kinds out of every slot, and never shows a kind twice', () => {
+    const picks: ShapePicks = { arrow: [9, 9], star: [2, 1], cloud: [1, 8] };
+    const { mostUsed, recent } = shapeSlots(picks, DEFAULT_PINNED_SHAPES);
+    expect(mostUsed).toEqual(['star', 'cloud', 'diamond']);
+    expect(recent).toEqual(['cylinder', 'line', 'parallelogram']);
+    const all = [...DEFAULT_PINNED_SHAPES, ...mostUsed, ...recent];
+    expect(new Set(all).size).toBe(all.length);
+  });
+
+  it('shows an unpinned kind at once when its picks rank it', () => {
+    const picks: ShapePicks = { rectangle: [3, 1], star: [1, 2] };
+    expect(shapeSlots(picks, DEFAULT_PINNED_SHAPES).mostUsed[0]).toBe('star');
+    expect(shapeSlots(picks, ['arrow', 'ellipse']).mostUsed[0]).toBe('rectangle');
   });
 
   it('ignores kinds the catalogue does not know', () => {
-    expect(frequentShapes({ banner: [50, 1] }, [])).toEqual(['rectangle', 'ellipse']);
+    expect(shapeSlots({ banner: [50, 1] }, []).mostUsed).toEqual([
+      'rectangle',
+      'ellipse',
+      'diamond',
+    ]);
   });
 });
 
@@ -45,9 +93,9 @@ describe('recordShapePick', () => {
     expect(recordShapePick(once, 'star', 200)).toEqual({ star: [2, 200] });
   });
 
-  it('keeps a bounded history, dropping the weakest other kind, never the one just picked', () => {
+  it('keeps a bounded record, dropping the least recent kind that is not among the most picked', () => {
     let picks: ShapePicks = {};
-    const keys: WhiteboardShapeKey[] = [
+    const catalogue: WhiteboardShapeKey[] = [
       'rectangle',
       'ellipse',
       'diamond',
@@ -60,116 +108,155 @@ describe('recordShapePick', () => {
       'cloud',
       'document',
       'stadium',
+      'trapezoid',
+      'parallelogram',
+      'speech-bubble',
+      'page',
+      'mind-node',
+      'lane',
+      'frame',
+      'timeline-rail',
     ];
-    keys.forEach((k, i) => {
-      picks = recordShapePick(picks, k, i);
-      picks = recordShapePick(picks, k, i);
+    // Rectangle is picked often but long ago; the rest once each, later.
+    for (let i = 0; i < 5; i++) picks = recordShapePick(picks, 'rectangle', i);
+    catalogue.slice(1).forEach((k, i) => {
+      picks = recordShapePick(picks, k, 10 + i);
     });
     expect(Object.keys(picks)).toHaveLength(SHAPE_PICKS_KEPT);
-    const next = recordShapePick(picks, 'trapezoid', 100);
+    const next = recordShapePick(picks, 'browser', 100);
     expect(Object.keys(next)).toHaveLength(SHAPE_PICKS_KEPT);
-    expect(next.trapezoid).toEqual([1, 100]);
-    expect(next.rectangle).toBeUndefined();
+    expect(next.browser).toEqual([1, 100]);
+    // The heavy hitter survives; the least recent single pick goes.
+    expect(next.rectangle).toEqual([5, 4]);
+    expect(next.ellipse).toBeUndefined();
   });
 });
 
 describe('slotDropTarget', () => {
-  // Two pinned slots at 0..44 and 46..90, the separator at 100.
-  const layout = {
-    separatorX: 100,
+  // Two pinned slots at 0..44 and 46..90; the separator at 93. The bar spans 0..150, 0..44 high.
+  const layout: SlotLayout = {
+    boundaryX: 93,
+    bar: { left: 0, right: 150, top: 0, bottom: 44 },
     pinned: [
-      { key: 'star' as const, left: 0, right: 44 },
-      { key: 'cloud' as const, left: 46, right: 90 },
+      { key: 'star', left: 0, right: 44 },
+      { key: 'cloud', left: 46, right: 90 },
     ],
   };
 
-  it('reads right of the separator as the frequent side', () => {
-    expect(slotDropTarget(150, layout)).toEqual({ zone: 'frequent' });
+  it('reads past the separator as past the pinned side', () => {
+    expect(slotDropTarget(120, 20, layout)).toEqual({ zone: 'past' });
   });
 
-  it('reads a pointer over a pinned slot as onto that slot', () => {
-    expect(slotDropTarget(20, layout)).toEqual({ zone: 'pinned', onto: 'star', index: 0 });
-    expect(slotDropTarget(60, layout)).toEqual({ zone: 'pinned', onto: 'cloud', index: 1 });
+  it('reads a pointer well off the bar as off it (the flyout above included)', () => {
+    expect(slotDropTarget(20, -120, layout)).toEqual({ zone: 'off' });
+    expect(slotDropTarget(-200, 20, layout)).toEqual({ zone: 'off' });
   });
 
-  it('reads the gap left of the separator as an insertion point', () => {
-    expect(slotDropTarget(95, layout)).toEqual({ zone: 'pinned', index: 2 });
-    expect(slotDropTarget(-10, layout)).toEqual({ zone: 'pinned', index: 0 });
+  it('reads a pointer over a pinned slot as onto it, before or after it by which half', () => {
+    expect(slotDropTarget(20, 20, layout)).toEqual({ zone: 'pinned', onto: 'star', index: 0 });
+    expect(slotDropTarget(30, 20, layout)).toEqual({ zone: 'pinned', onto: 'star', index: 1 });
+    expect(slotDropTarget(60, 20, layout)).toEqual({ zone: 'pinned', onto: 'cloud', index: 1 });
+    expect(slotDropTarget(80, 20, layout)).toEqual({ zone: 'pinned', onto: 'cloud', index: 2 });
+  });
+
+  it('reads the reach just left of the bar as the start of the pinned side', () => {
+    expect(slotDropTarget(-10, 20, layout)).toEqual({ zone: 'pinned', index: 0 });
+  });
+
+  it('gives an empty pinned side the room before the separator', () => {
+    const empty: SlotLayout = { ...layout, boundaryX: 6, pinned: [] };
+    expect(slotDropTarget(-20, 20, empty)).toEqual({ zone: 'pinned', index: 0 });
+    expect(slotDropTarget(20, 20, empty)).toEqual({ zone: 'past' });
   });
 });
 
 describe('resolveSlotDrop', () => {
-  it('pins a frequent kind where it is dropped', () => {
+  it('pins a flyout shape where it is dropped', () => {
     expect(
-      resolveSlotDrop(['star'], { key: 'cloud', from: 'frequent' }, { zone: 'pinned', index: 0 }),
+      resolveSlotDrop(['star'], { key: 'cloud', from: 'flyout' }, { zone: 'pinned', index: 0 }),
     ).toEqual({ type: 'pin', pinned: ['cloud', 'star'] });
     expect(
-      resolveSlotDrop([], { key: 'cloud', from: 'frequent' }, { zone: 'pinned', index: 0 }),
+      resolveSlotDrop([], { key: 'cloud', from: 'flyout' }, { zone: 'pinned', index: 0 }),
     ).toEqual({ type: 'pin', pinned: ['cloud'] });
   });
 
-  it('replaces a pinned kind it is dropped onto when two are pinned', () => {
+  it('pins beside the slot it is dropped on while there is room, never replacing it', () => {
     expect(
       resolveSlotDrop(
         ['star', 'cloud'],
-        { key: 'hexagon', from: 'frequent' },
-        { zone: 'pinned', onto: 'cloud', index: 1 },
+        { key: 'hexagon', from: 'flyout' },
+        { zone: 'pinned', onto: 'cloud', index: 2 },
       ),
-    ).toEqual({ type: 'pin', pinned: ['star', 'hexagon'] });
+    ).toEqual({ type: 'pin', pinned: ['star', 'cloud', 'hexagon'] });
   });
 
-  it('refuses a third pin dropped anywhere else', () => {
+  it('replaces a pinned kind it is dropped onto when seven are pinned', () => {
     expect(
       resolveSlotDrop(
-        ['star', 'cloud'],
-        { key: 'hexagon', from: 'frequent' },
-        { zone: 'pinned', index: 2 },
+        FULL,
+        { key: 'rectangle', from: 'flyout' },
+        { zone: 'pinned', onto: 'cloud', index: 1 },
       ),
+    ).toEqual({
+      type: 'pin',
+      pinned: ['star', 'rectangle', 'hexagon', 'triangle', 'document', 'stadium', 'trapezoid'],
+    });
+  });
+
+  it('refuses an eighth pin dropped anywhere else on the pinned side', () => {
+    expect(
+      resolveSlotDrop(FULL, { key: 'rectangle', from: 'flyout' }, { zone: 'pinned', index: 2 }),
     ).toEqual({ type: 'refused' });
   });
 
-  it('unpins a pinned kind dragged right of the separator', () => {
+  it('unpins a pinned kind dragged past the separator or off the bar', () => {
     expect(
-      resolveSlotDrop(['star', 'cloud'], { key: 'star', from: 'pinned' }, { zone: 'frequent' }),
+      resolveSlotDrop(['star', 'cloud'], { key: 'star', from: 'pinned' }, { zone: 'past' }),
     ).toEqual({ type: 'unpin', pinned: ['cloud'] });
+    expect(resolveSlotDrop(['star'], { key: 'star', from: 'pinned' }, { zone: 'off' })).toEqual({
+      type: 'unpin',
+      pinned: [],
+    });
   });
 
-  it('reorders the pinned kinds among themselves', () => {
+  it('does nothing for a flyout shape dropped past the separator or off the bar', () => {
+    expect(resolveSlotDrop([], { key: 'star', from: 'flyout' }, { zone: 'past' })).toEqual({
+      type: 'none',
+    });
+    expect(resolveSlotDrop([], { key: 'star', from: 'flyout' }, { zone: 'off' })).toEqual({
+      type: 'none',
+    });
+  });
+
+  it('reorders the pinned kinds among themselves, by insertion point', () => {
+    expect(
+      resolveSlotDrop(
+        ['star', 'cloud'],
+        { key: 'star', from: 'pinned' },
+        { zone: 'pinned', onto: 'cloud', index: 2 },
+      ),
+    ).toEqual({ type: 'pin', pinned: ['cloud', 'star'] });
     expect(
       resolveSlotDrop(
         ['star', 'cloud'],
         { key: 'star', from: 'pinned' },
         { zone: 'pinned', onto: 'cloud', index: 1 },
       ),
-    ).toEqual({ type: 'pin', pinned: ['cloud', 'star'] });
-    expect(
-      resolveSlotDrop(
-        ['star', 'cloud'],
-        { key: 'cloud', from: 'pinned' },
-        { zone: 'pinned', index: 0 },
-      ),
-    ).toEqual({ type: 'pin', pinned: ['cloud', 'star'] });
-  });
-
-  it('does nothing for a frequent slot dropped back on its own side, or a pinned one left in place', () => {
-    expect(resolveSlotDrop([], { key: 'star', from: 'frequent' }, { zone: 'frequent' })).toEqual({
-      type: 'none',
-    });
-    expect(
-      resolveSlotDrop(
-        ['star', 'cloud'],
-        { key: 'star', from: 'pinned' },
-        { zone: 'pinned', onto: 'star', index: 0 },
-      ),
     ).toEqual({ type: 'none' });
+    expect(
+      resolveSlotDrop(FULL, { key: 'document', from: 'pinned' }, { zone: 'pinned', index: 0 }),
+    ).toEqual({
+      type: 'pin',
+      pinned: ['document', 'star', 'cloud', 'hexagon', 'triangle', 'stadium', 'trapezoid'],
+    });
   });
 });
 
 describe('pinning without a drag', () => {
-  it('pins at the end while there is room, and refuses a third', () => {
+  it('pins at the end while there is room, and refuses an eighth', () => {
     expect(pinFromMenu([], 'star')).toEqual({ type: 'pin', pinned: ['star'] });
     expect(pinFromMenu(['star'], 'cloud')).toEqual({ type: 'pin', pinned: ['star', 'cloud'] });
-    expect(pinFromMenu(['star', 'cloud'], 'hexagon')).toEqual({ type: 'refused' });
+    expect(pinFromMenu(FULL, 'rectangle')).toEqual({ type: 'refused' });
   });
 
   it('unpins', () => {
@@ -178,26 +265,39 @@ describe('pinning without a drag', () => {
 });
 
 describe('dropIndicatorX', () => {
-  const layout = {
-    separatorX: 100,
-    pinned: [{ key: 'star' as const, left: 0, right: 44 }],
+  const layout: SlotLayout = {
+    boundaryX: 91,
+    bar: { left: 0, right: 300, top: 0, bottom: 44 },
+    pinned: [{ key: 'star', left: 0, right: 44 }],
   };
-  const frequent = { key: 'cloud' as const, from: 'frequent' as const };
+  const slot = { key: 'cloud' as const, from: 'flyout' as const };
 
   it('marks the insertion point on the pinned side', () => {
-    expect(dropIndicatorX(layout, frequent, { zone: 'pinned', index: 0 })).toBe(-2);
-    expect(dropIndicatorX(layout, frequent, { zone: 'pinned', index: 1 })).toBe(46);
+    expect(dropIndicatorX(layout, slot, { zone: 'pinned', index: 0 })).toBe(-2);
+    expect(dropIndicatorX(layout, slot, { zone: 'pinned', index: 1 })).toBe(46);
+    const empty: SlotLayout = { ...layout, boundaryX: 4, pinned: [] };
+    expect(dropIndicatorX(empty, slot, { zone: 'pinned', index: 0 })).toBe(2);
+  });
+
+  it('rings a pinned slot rather than drawing a bar when a full side would replace it', () => {
+    const full: SlotLayout = {
+      ...layout,
+      boundaryX: 400,
+      pinned: FULL.map((key, i) => ({ key, left: i * 46, right: i * 46 + 44 })),
+    };
+    expect(dropIndicatorX(full, slot, { zone: 'pinned', index: 0, onto: 'star' })).toBeNull();
     expect(
-      dropIndicatorX({ separatorX: 100, pinned: [] }, frequent, { zone: 'pinned', index: 0 }),
-    ).toBe(96);
+      dropIndicatorX(
+        full,
+        { key: 'cloud', from: 'pinned' },
+        { zone: 'pinned', index: 0, onto: 'star' },
+      ),
+    ).toBe(-2);
   });
 
-  it('rings a pinned slot rather than drawing a bar when dropping onto it', () => {
-    expect(dropIndicatorX(layout, frequent, { zone: 'pinned', index: 0, onto: 'star' })).toBeNull();
-  });
-
-  it('marks the frequent side only for a pinned kind being dragged out', () => {
-    expect(dropIndicatorX(layout, frequent, { zone: 'frequent' })).toBeNull();
-    expect(dropIndicatorX(layout, { key: 'star', from: 'pinned' }, { zone: 'frequent' })).toBe(104);
+  it('marks the separator for a pinned kind leaving past it, and nothing off the bar', () => {
+    expect(dropIndicatorX(layout, { key: 'star', from: 'pinned' }, { zone: 'past' })).toBe(91);
+    expect(dropIndicatorX(layout, slot, { zone: 'past' })).toBeNull();
+    expect(dropIndicatorX(layout, { key: 'star', from: 'pinned' }, { zone: 'off' })).toBeNull();
   });
 });

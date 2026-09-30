@@ -1,97 +1,217 @@
 // @vitest-environment jsdom
-import { fireEvent, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import { WHITEBOARD_SHAPE_CATALOGUE } from '@/lib/whiteboard-shape-catalogue';
+import { act, fireEvent, screen, within } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { dockModel as model, renderDock } from './dock-test-utils';
+import { WhiteboardDock } from './WhiteboardDock';
 
-function openSearch() {
-  const opener = screen.getByRole('button', { name: 'More shapes' });
-  fireEvent.click(opener);
-  return { opener, field: screen.getByRole('combobox', { name: 'Search shapes' }) };
-}
-
-const options = () => screen.getAllByRole('option');
+const flyout = () => screen.queryByRole('group', { name: 'Shapes' });
+const field = () => screen.getByRole('combobox', { name: 'Search shapes' });
+const options = () => screen.queryAllByRole('option');
+const labels = () => options().map((o) => o.getAttribute('aria-label'));
 const active = () => options().find((o) => o.getAttribute('aria-selected') === 'true');
 
-describe('More shapes', () => {
-  it('opens on a press only, with its search field focused at once', () => {
+function openByPress() {
+  const opener = screen.getByRole('button', { name: 'Shapes' });
+  fireEvent.click(opener);
+  return opener;
+}
+
+describe('the Shapes flyout', () => {
+  it('opens on a press with its search field focused', () => {
     renderDock();
-    const opener = screen.getByRole('button', { name: 'More shapes' });
-    fireEvent.pointerEnter(opener, { pointerType: 'mouse' });
-    expect(screen.queryByRole('group', { name: 'More shapes' })).toBeNull();
-    const { field } = openSearch();
-    expect(document.activeElement).toBe(field);
+    const opener = openByPress();
+    expect(document.activeElement).toBe(field());
     expect(opener.getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('shows every shape for an empty field, grouped as in the palette', () => {
+  it('opens on hover too, and then its field takes the focus', () => {
     renderDock();
-    openSearch();
-    expect(options()).toHaveLength(WHITEBOARD_SHAPE_CATALOGUE.length);
+    fireEvent.pointerEnter(screen.getByRole('button', { name: 'Shapes' }), {
+      pointerType: 'mouse',
+    });
+    expect(flyout()).toBeTruthy();
+    expect(document.activeElement).toBe(field());
+  });
+
+  it('does not open for a finger passing over it', () => {
+    renderDock();
+    fireEvent.pointerEnter(screen.getByRole('button', { name: 'Shapes' }), {
+      pointerType: 'touch',
+    });
+    expect(flyout()).toBeNull();
+  });
+
+  it('shows the six slots in two unlabelled rows, Recent over Most used, keys where they have one', () => {
+    renderDock();
+    openByPress();
     const listbox = screen.getByRole('listbox', { name: 'Shapes' });
-    const groups = within(listbox)
-      .getAllByRole('group')
-      .map((g) => g.textContent?.match(/^[A-Z][a-z]+/)?.[0]);
-    expect(groups.slice(0, 3)).toEqual(['Shapes', 'Write', 'Draw']);
+    // Named for screen readers, with nothing written on screen.
+    const rows = within(listbox).getAllByRole('group');
+    expect(rows.map((r) => r.getAttribute('aria-label'))).toEqual([
+      'Recent shapes',
+      'Most used shapes',
+    ]);
+    expect(listbox.textContent).not.toMatch(/Recent|Most used/);
+    expect(listbox.querySelector('[data-flyout-heading]')).toBeNull();
+    expect(
+      options().map((o) => [o.getAttribute('aria-label'), o.getAttribute('aria-keyshortcuts')]),
+    ).toEqual([
+      ['Parallelogram', null],
+      ['Hexagon', null],
+      ['Document', null],
+      ['Diamond', 'D'],
+      ['Cylinder', 'C'],
+      ['Line', 'L'],
+    ]);
   });
 
-  it('ranks the named shape first as you type', () => {
+  it('picks a slot with a press, plainly, and closes', () => {
+    const { m } = renderDock();
+    openByPress();
+    fireEvent.click(screen.getByRole('option', { name: 'Cylinder' }));
+    expect(m.pickShape).toHaveBeenCalledWith('cylinder');
+    expect(m.pickSearchedShape).not.toHaveBeenCalled();
+    expect(flyout()).toBeNull();
+  });
+
+  it('keeps its slots while open, whatever the ranking does meanwhile', () => {
+    const m = model();
+    const { view } = renderDock(m);
+    openByPress();
+    view.rerender(
+      <WhiteboardDock
+        model={{
+          ...m,
+          slotShapes: { mostUsed: ['star', 'cloud', 'hexagon'], recent: m.slotShapes.recent },
+        }}
+        ink="#1c1917"
+        canUndo
+        canRedo={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+      />,
+    );
+    expect(labels().slice(3)).toEqual(['Diamond', 'Cylinder', 'Line']);
+  });
+
+  it('pins a slot from its menu (right-click), inside the flyout', () => {
+    const { m } = renderDock(model('select', { pinnedShapes: ['arrow'] }));
+    openByPress();
+    fireEvent.contextMenu(screen.getByRole('option', { name: 'Line' }));
+    expect(flyout()).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Pin to dock' }));
+    expect(m.applySlotOutcome).toHaveBeenCalledWith({ type: 'pin', pinned: ['arrow', 'line'] });
+  });
+
+  it('pins the reached entry from the keyboard (Shift+F10 in the field), Escape backs out', () => {
+    const { m } = renderDock(model('select', { pinnedShapes: [] }));
+    openByPress();
+    fireEvent.keyDown(field(), { key: 'ArrowRight' });
+    fireEvent.keyDown(field(), { key: 'F10', shiftKey: true });
+    const pin = screen.getByRole('button', { name: 'Pin to dock' });
+    expect(document.activeElement).toBe(pin);
+    fireEvent.keyDown(pin, { key: 'Escape' });
+    expect(flyout()).toBeTruthy();
+    expect(document.activeElement).toBe(field());
+    fireEvent.keyDown(field(), { key: 'ContextMenu' });
+    fireEvent.click(screen.getByRole('button', { name: 'Pin to dock' }));
+    expect(m.applySlotOutcome).toHaveBeenCalledWith({ type: 'pin', pinned: ['hexagon'] });
+  });
+
+  it('replaces the slots with at most six results as you type, the named shape first', () => {
     renderDock();
-    const { field } = openSearch();
-    fireEvent.change(field, { target: { value: 'trap' } });
-    expect(options()[0]!.getAttribute('aria-label')).toBe('Trapezoid');
-    expect(active()!.getAttribute('aria-label')).toBe('Trapezoid');
-    expect(field.getAttribute('aria-activedescendant')).toBe(active()!.id);
+    openByPress();
+    fireEvent.change(field(), { target: { value: 'a' } });
+    expect(options()).toHaveLength(6);
+    fireEvent.change(field(), { target: { value: 'trap' } });
+    expect(labels()[0]).toBe('Trapezoid');
+    expect(field().getAttribute('aria-activedescendant')).toBe(active()!.id);
   });
 
-  it('moves with the arrow keys and picks with Enter, then closes', () => {
+  it('moves with the arrow keys and picks a result with Enter, reported as a search pick', () => {
     const { m } = renderDock();
-    const { field } = openSearch();
-    fireEvent.change(field, { target: { value: 'database' } });
+    openByPress();
+    fireEvent.keyDown(field(), { key: 'ArrowRight' });
+    fireEvent.keyDown(field(), { key: 'ArrowDown' });
     expect(active()!.getAttribute('aria-label')).toBe('Cylinder');
-    fireEvent.change(field, { target: { value: '' } });
-    fireEvent.keyDown(field, { key: 'ArrowRight' });
-    fireEvent.keyDown(field, { key: 'ArrowRight' });
-    expect(active()!.getAttribute('aria-label')).toBe('Diamond');
-    fireEvent.keyDown(field, { key: 'ArrowDown' });
-    expect(active()!.getAttribute('aria-label')).toBe('Cloud');
-    fireEvent.keyDown(field, { key: 'Enter' });
-    expect(m.pickSearchedShape).toHaveBeenCalledWith('cloud');
-    expect(screen.queryByRole('group', { name: 'More shapes' })).toBeNull();
-  });
-
-  it('picks with a press', () => {
-    const { m } = renderDock();
-    const { field } = openSearch();
-    fireEvent.change(field, { target: { value: 'cloud' } });
-    fireEvent.click(screen.getByRole('option', { name: 'Cloud' }));
-    expect(m.pickSearchedShape).toHaveBeenCalledWith('cloud');
+    fireEvent.change(field(), { target: { value: 'database' } });
+    expect(active()!.getAttribute('aria-label')).toBe('Cylinder');
+    fireEvent.keyDown(field(), { key: 'Enter' });
+    expect(m.pickSearchedShape).toHaveBeenCalledWith('cylinder');
+    expect(flyout()).toBeNull();
   });
 
   it('says so when nothing matches, and Enter picks nothing', () => {
     const { m } = renderDock();
-    const { field } = openSearch();
-    fireEvent.change(field, { target: { value: 'zzqx' } });
+    openByPress();
+    fireEvent.change(field(), { target: { value: 'zzqx' } });
     expect(screen.getByText('No shapes match')).toBeTruthy();
-    expect(screen.queryAllByRole('option')).toHaveLength(0);
-    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(options()).toHaveLength(0);
+    fireEvent.keyDown(field(), { key: 'Enter' });
     expect(m.pickSearchedShape).not.toHaveBeenCalled();
   });
 
-  it('closes on Escape without picking, handing focus back to its button', () => {
+  it('closes a pressed-open flyout on Escape, back to its button', () => {
     const { m } = renderDock(model('select'));
-    const { opener, field } = openSearch();
-    fireEvent.keyDown(field, { key: 'Escape' });
-    expect(screen.queryByRole('group', { name: 'More shapes' })).toBeNull();
+    const opener = openByPress();
+    fireEvent.keyDown(field(), { key: 'Escape' });
+    expect(flyout()).toBeNull();
     expect(document.activeElement).toBe(opener);
-    expect(m.pickSearchedShape).not.toHaveBeenCalled();
+    expect(m.pickShape).not.toHaveBeenCalled();
+  });
+
+  it('gives the focus back to the board when a hover-opened flyout closes on Escape', () => {
+    renderDock();
+    fireEvent.pointerEnter(screen.getByRole('button', { name: 'Shapes' }), {
+      pointerType: 'mouse',
+    });
+    fireEvent.keyDown(field(), { key: 'Escape' });
+    expect(flyout()).toBeNull();
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('closes a moment after the pointer leaves, focus and all, and back to the board', () => {
+    vi.useFakeTimers();
+    try {
+      renderDock();
+      const shapes = screen.getByRole('button', { name: 'Shapes' });
+      fireEvent.pointerEnter(shapes, { pointerType: 'mouse' });
+      fireEvent.pointerLeave(shapes, { pointerType: 'mouse' });
+      // Crossing the gap into the flyout keeps it open.
+      fireEvent.pointerEnter(flyout()!, { pointerType: 'mouse' });
+      act(() => vi.advanceTimersByTime(1000));
+      expect(flyout()).toBeTruthy();
+      fireEvent.pointerLeave(flyout()!, { pointerType: 'mouse' });
+      act(() => vi.advanceTimersByTime(1000));
+      expect(flyout()).toBeNull();
+      expect(document.activeElement).toBe(document.body);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('stays open for someone typing, whatever the pointer does', () => {
+    vi.useFakeTimers();
+    try {
+      renderDock();
+      const shapes = screen.getByRole('button', { name: 'Shapes' });
+      fireEvent.pointerEnter(shapes, { pointerType: 'mouse' });
+      fireEvent.keyDown(field(), { key: 'h' });
+      fireEvent.change(field(), { target: { value: 'h' } });
+      fireEvent.pointerLeave(shapes, { pointerType: 'mouse' });
+      act(() => vi.advanceTimersByTime(1000));
+      expect(flyout()).toBeTruthy();
+      expect(document.activeElement).toBe(field());
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('draws the previews in the board ink', () => {
     renderDock();
-    openSearch();
+    openByPress();
     const preview = document.querySelector<HTMLElement>(
-      '[data-shape-search] [data-shape-preview="hexagon"]',
+      '[data-shape-search] [data-shape-preview="cylinder"]',
     )!;
     expect(preview.style.color).toBe('rgb(28, 25, 23)');
   });

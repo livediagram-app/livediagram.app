@@ -23,7 +23,7 @@ export type WhiteboardShapeEntry = {
   label: string;
   // Searched after the label, as the palette search does.
   keywords: string;
-  // The palette category it sits in: its group in the More shapes flyout.
+  // The palette category it sits in, which orders the catalogue.
   group: string;
   // Armed as a board shape: plain ink, the tool style of its kind.
   intent: PendingDraw;
@@ -103,12 +103,6 @@ function buildCatalogue(): WhiteboardShapeEntry[] {
 }
 
 export const WHITEBOARD_SHAPE_CATALOGUE: readonly WhiteboardShapeEntry[] = buildCatalogue();
-
-// The groups, in order, named as the palette names its categories.
-export const WHITEBOARD_SHAPE_GROUPS: readonly { id: string; label: string }[] =
-  PALETTE_CATEGORIES.filter((c) => WHITEBOARD_SHAPE_CATALOGUE.some((e) => e.group === c.id)).map(
-    (c) => ({ id: c.id, label: c.label }),
-  );
 
 const BY_KEY = new Map<string, WhiteboardShapeEntry>(
   WHITEBOARD_SHAPE_CATALOGUE.map((e) => [e.key, e]),

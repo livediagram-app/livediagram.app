@@ -220,9 +220,9 @@ export type UserPreferences = {
   // One-way latch: the power user mode offer has been shown to this account.
   powerUserOfferShown?: boolean;
   // The whiteboard dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows",
-  // "Shape slots"): its mode, the pinned shape kinds and the pick counts behind the frequent
-  // slots. Read and written through lib/whiteboard-dock-prefs, which parses them. Missing ===
-  // With shapes, nothing pinned, no history.
+  // "Shape slots"): its mode, the pinned shape kinds and the pick counts behind the Shapes
+  // flyout's slots. Read and written through lib/whiteboard-dock-prefs, which parses them. Missing ===
+  // With shapes, the default pins, no history.
   whiteboardDockMode?: WhiteboardDockMode;
   whiteboardPinnedShapes?: WhiteboardShapeKey[];
   whiteboardShapePicks?: ShapePicks;

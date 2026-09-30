@@ -31,7 +31,10 @@ export function dockModel(
     dockMode: 'shapes' as const,
     setDockMode: vi.fn(),
     pinnedShapes: [],
-    frequentShapes: ['rectangle', 'ellipse'],
+    slotShapes: {
+      mostUsed: ['diamond', 'cylinder', 'line'],
+      recent: ['parallelogram', 'hexagon', 'document'],
+    },
     applySlotOutcome: vi.fn(),
     pickPath: vi.fn(),
     pathEditing: false,

@@ -203,11 +203,17 @@ describe('shapes from the catalogue', () => {
 
   it('counts every pick towards the frequent slots, in the synced preferences', () => {
     const { hook } = setup(board());
-    expect(hook.result.current.frequentShapes).toEqual(['rectangle', 'ellipse']);
+    // The default pins (Arrow, Rectangle, Ellipse) stay off the slots.
+    expect(hook.result.current.pinnedShapes).toEqual(['arrow', 'rectangle', 'ellipse']);
+    expect(hook.result.current.slotShapes).toEqual({
+      mostUsed: ['diamond', 'cylinder', 'line'],
+      recent: ['parallelogram', 'hexagon', 'document'],
+    });
     act(() => hook.result.current.pickShape('triangle'));
     act(() => hook.result.current.pickShape('triangle'));
     act(() => hook.result.current.pickShape('star'));
-    expect(hook.result.current.frequentShapes).toEqual(['triangle', 'star']);
+    // Most used first; Recent the others, newest first.
+    expect(hook.result.current.slotShapes.mostUsed.slice(0, 2)).toEqual(['triangle', 'star']);
     expect(readUserPreferences().whiteboardShapePicks).toMatchObject({
       triangle: [2, expect.any(Number)],
       star: [1, expect.any(Number)],
@@ -258,20 +264,34 @@ describe('dock mode and pins', () => {
 
   it('pins, replaces and unpins, reporting each without the kind', () => {
     const { hook } = setup(board());
-    act(() => hook.result.current.applySlotOutcome({ type: 'pin', pinned: ['star'] }));
-    expect(hook.result.current.pinnedShapes).toEqual(['star']);
+    const defaults = hook.result.current.pinnedShapes;
+    act(() => hook.result.current.applySlotOutcome({ type: 'pin', pinned: [...defaults, 'star'] }));
+    expect(hook.result.current.pinnedShapes).toEqual([...defaults, 'star']);
     expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Changed', 'ShapePinned');
-    act(() => hook.result.current.applySlotOutcome({ type: 'pin', pinned: ['cloud'] }));
+    act(() =>
+      hook.result.current.applySlotOutcome({ type: 'pin', pinned: [...defaults, 'cloud'] }),
+    );
     expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Changed', 'ShapePinned');
-    act(() => hook.result.current.applySlotOutcome({ type: 'unpin', pinned: [] }));
+    act(() => hook.result.current.applySlotOutcome({ type: 'unpin', pinned: [...defaults] }));
     expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Changed', 'ShapeUnpinned');
-    expect(readUserPreferences().whiteboardPinnedShapes).toBeUndefined();
+    expect(vi.mocked(track).mock.calls.flat()).not.toContain('cloud');
   });
 
-  it('keeps pinned kinds out of the frequent slots', () => {
+  it('keeps an emptied pinned side empty, and an unpinned kind keeps its count', () => {
+    const { hook } = setup(board());
+    act(() => hook.result.current.pickShape('rectangle'));
+    act(() => hook.result.current.applySlotOutcome({ type: 'unpin', pinned: [] }));
+    expect(hook.result.current.pinnedShapes).toEqual([]);
+    expect(readUserPreferences().whiteboardPinnedShapes).toEqual([]);
+    // Rectangle was picked once, so it shows in Most used at once.
+    expect(hook.result.current.slotShapes.mostUsed[0]).toBe('rectangle');
+  });
+
+  it('keeps pinned kinds out of the slots', () => {
     const { hook } = setup(board());
     act(() => hook.result.current.applySlotOutcome({ type: 'pin', pinned: ['rectangle'] }));
-    expect(hook.result.current.frequentShapes).toEqual(['ellipse', 'diamond']);
+    const { mostUsed, recent } = hook.result.current.slotShapes;
+    expect([...mostUsed, ...recent]).not.toContain('rectangle');
   });
 
   it('writes nothing for a refused pin', () => {

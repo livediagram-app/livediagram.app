@@ -3,7 +3,6 @@ import {
   armedWhiteboardShape,
   isWhiteboardShapeKey,
   WHITEBOARD_SHAPE_CATALOGUE,
-  WHITEBOARD_SHAPE_GROUPS,
   whiteboardShapeEntry,
 } from './whiteboard-shape-catalogue';
 import { SHAPE_TILES } from './palette-search';
@@ -47,16 +46,9 @@ describe('the whiteboard shape catalogue', () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it('groups in the palette category order, naming each group as the palette does', () => {
-    expect(WHITEBOARD_SHAPE_GROUPS.map((g) => g.label)).toEqual([
-      'Shapes',
-      'Write',
-      'Draw',
-      'Build',
-      'Devices',
-      'Data',
-      'Behaviours',
-    ]);
+  it('orders its groups as the palette orders its categories', () => {
+    const groups = [...new Set(WHITEBOARD_SHAPE_CATALOGUE.map((x) => x.group))];
+    expect(groups).toEqual(['shapes', 'write', 'draw', 'build', 'devices', 'data', 'behaviour']);
   });
 
   it('arms every entry plain, as a board shape', () => {

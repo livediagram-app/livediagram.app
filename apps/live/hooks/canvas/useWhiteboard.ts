@@ -184,7 +184,7 @@ export function useWhiteboard(deps: Deps) {
 
   // Any catalogue shape, from the Shapes flyout, a slot, More shapes or a key. Plain: a pen never
   // colours another tool (docs/specs/023-whiteboard/whiteboard.md "Shapes"). Every pick counts
-  // towards the frequent slots ("Shape slots").
+  // towards the Shapes flyout's slots ("Shape slots").
   const pickShape = (key: WhiteboardShapeKey) => {
     const entry = whiteboardShapeEntry(key);
     if (!entry) {
@@ -243,7 +243,7 @@ export function useWhiteboard(deps: Deps) {
     dockMode: dockPrefs.mode,
     setDockMode: dockPrefs.setMode,
     pinnedShapes: dockPrefs.pinned,
-    frequentShapes: dockPrefs.frequent,
+    slotShapes: dockPrefs.slots,
     applySlotOutcome: dockPrefs.applySlotOutcome,
     pickPath,
     pathEditing,

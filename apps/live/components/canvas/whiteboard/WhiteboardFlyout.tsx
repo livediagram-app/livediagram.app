@@ -17,6 +17,7 @@ export function WhiteboardFlyout({
   onPointerEnter,
   onPointerLeave,
   takeFocus = true,
+  restoreFocus = false,
   hideTitle = false,
   children,
 }: {
@@ -28,8 +29,12 @@ export function WhiteboardFlyout({
   // A hover-opened flyout stays while the pointer is over it.
   onPointerEnter?: () => void;
   onPointerLeave?: () => void;
-  // False for a flyout the pointer opened: hovering never moves the keyboard focus.
+  // False for a flyout the pointer opened: hovering never moves the keyboard focus (the Shapes
+  // flyout's field is the one exception).
   takeFocus?: boolean;
+  // On closing, give the focus back to the board when it is still in the flyout or nowhere: a
+  // hover-opened Shapes flyout took it without being asked.
+  restoreFocus?: boolean;
   // A flyout whose sections carry their own headings shows no title (it keeps
   // `label` as its accessible name).
   hideTitle?: boolean;
@@ -60,6 +65,11 @@ export function WhiteboardFlyout({
     onCloseRef.current = onClose;
   });
 
+  const restoreRef = useRef(restoreFocus);
+  useEffect(() => {
+    restoreRef.current = restoreFocus;
+  });
+
   useEffect(() => {
     const node = ref.current;
     // A field first (More shapes opens typing), then the choice in force, then the first button.
@@ -77,7 +87,13 @@ export function WhiteboardFlyout({
       onCloseRef.current(false);
     };
     document.addEventListener('pointerdown', onDown, true);
-    return () => document.removeEventListener('pointerdown', onDown, true);
+    return () => {
+      document.removeEventListener('pointerdown', onDown, true);
+      if (!restoreRef.current || !takeFocus) return;
+      const now = document.activeElement as HTMLElement | null;
+      if (now && now !== document.body && !node?.contains(now)) return;
+      now?.blur?.();
+    };
   }, [id, takeFocus]);
 
   return (

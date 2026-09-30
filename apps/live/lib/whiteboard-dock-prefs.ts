@@ -1,11 +1,15 @@
 // The whiteboard dock's synced preferences (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard
 // shows", "Shape slots"): the dock mode, the pinned shape kinds and the pick counts behind the
-// frequent slots. They live in the user's preferences blob (lib/user-preferences.ts), so they follow
+// Shapes flyout's slots. They live in the user's preferences blob (lib/user-preferences.ts), so they follow
 // a signed-in user across devices and stay in this browser for a guest. Read through here, never
 // directly: a stored value is only trusted once parsed.
 import type { UserPreferences } from './user-preferences';
 import { isWhiteboardShapeKey, type WhiteboardShapeKey } from './whiteboard-shape-catalogue';
-import { PINNED_SHAPES_MAX, type ShapePicks } from './whiteboard-shape-slots';
+import {
+  DEFAULT_PINNED_SHAPES,
+  PINNED_SHAPES_MAX,
+  type ShapePicks,
+} from './whiteboard-shape-slots';
 
 // 'full' (Full drawing) is shown under Settings but not selectable yet ("Coming soon").
 export type WhiteboardDockMode = 'simple' | 'shapes';
@@ -32,8 +36,9 @@ function parseMode(raw: unknown): WhiteboardDockMode {
   return raw === 'simple' || raw === 'shapes' ? raw : DEFAULT_WHITEBOARD_DOCK_MODE;
 }
 
+// Absent (never changed) or malformed: the defaults. An array, even empty, is the user's own.
 function parsePinned(raw: unknown): WhiteboardShapeKey[] {
-  if (!Array.isArray(raw)) return [];
+  if (!Array.isArray(raw)) return [...DEFAULT_PINNED_SHAPES];
   const out: WhiteboardShapeKey[] = [];
   for (const key of raw) {
     if (out.length === PINNED_SHAPES_MAX) break;
@@ -64,7 +69,7 @@ export function readWhiteboardDockPrefs(prefs: UserPreferences): WhiteboardDockP
   };
 }
 
-/** The preferences with `patch` applied; a default or empty value is removed rather than stored. */
+/** The preferences with `patch` applied; the default mode and empty counts are removed, not stored. */
 export function withWhiteboardDockPrefs(
   prefs: UserPreferences,
   patch: Partial<WhiteboardDockPrefs>,
@@ -74,10 +79,8 @@ export function withWhiteboardDockPrefs(
     if (patch.mode === DEFAULT_WHITEBOARD_DOCK_MODE) delete next.whiteboardDockMode;
     else next.whiteboardDockMode = patch.mode;
   }
-  if (patch.pinned !== undefined) {
-    if (patch.pinned.length === 0) delete next.whiteboardPinnedShapes;
-    else next.whiteboardPinnedShapes = patch.pinned;
-  }
+  // Stored once changed, even empty: absent means the default pins.
+  if (patch.pinned !== undefined) next.whiteboardPinnedShapes = patch.pinned;
   if (patch.picks !== undefined) {
     if (Object.keys(patch.picks).length === 0) delete next.whiteboardShapePicks;
     else next.whiteboardShapePicks = patch.picks;

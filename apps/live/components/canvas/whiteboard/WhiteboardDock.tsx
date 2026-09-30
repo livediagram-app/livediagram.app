@@ -1,32 +1,42 @@
 'use client';
 
 // The whiteboard's floating dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"):
-// three groups side by side at the bottom centre, in place of the palette: Drawing tools, History
-// and Shapes (Shapes only in the With shapes mode). Each group is its own toolbar with one Tab stop.
+// five groups side by side at the bottom centre, in place of the palette: Drawing tools, Content
+// and Shapes (both only in the With shapes mode), History and Settings. Each group is its own
+// toolbar with one Tab stop.
 // Flyouts open ABOVE the dock, one at a time, so nothing moves under the pointer when a tool is
 // picked; on a narrow screen the groups scroll sideways together.
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
-import { pinFromMenu, unpinShape, type SlotSource } from '@/lib/whiteboard-shape-slots';
+import {
+  pinFromMenu,
+  resolveSlotDrop,
+  unpinShape,
+  type SlotOutcome,
+  type SlotSource,
+} from '@/lib/whiteboard-shape-slots';
 import {
   EraserFlyoutBody,
   PenFlyoutBody,
   penFlyoutLabel,
   SettingsFlyoutBody,
-  ShapesFlyoutBody,
   SlotMenuBody,
 } from './dock-flyouts';
+import { ContentGroup } from './ContentGroup';
 import { DrawingToolsGroup } from './DrawingToolsGroup';
 import { HistoryGroup } from './HistoryGroup';
-import { ShapeSearch } from './ShapeSearch';
+import { SettingsGroup } from './SettingsGroup';
+import { ShapesFlyout } from './ShapesFlyout';
 import { PINS_FULL_HINT, ShapesGroup } from './ShapesGroup';
+import { SlotGhost } from './SlotGhost';
 import { SHAPES_GROUP_FLYOUTS, useDockFlyout, type DockFlyout } from './useDockFlyout';
+import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
 
-// How long the "two pinned" hint stays up.
+// How long the "seven pinned" hint stays up.
 const HINT_MS = 4000;
 
 export type WhiteboardDockProps = {
@@ -58,6 +68,15 @@ export function WhiteboardDock({
     if (!showShapes && flyoutKind && SHAPES_GROUP_FLYOUTS.includes(flyoutKind)) fly.close();
   }, [showShapes, flyoutKind, fly]);
 
+  // The mode changes which groups show: the Settings flyout (open while the mode is chosen) follows
+  // its cog to where the re-centred dock put it.
+  const { reanchor } = fly;
+  useLayoutEffect(() => {
+    reanchor();
+    // Only a mode switch moves the openers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model.dockMode]);
+
   useEffect(() => {
     if (!hint) return;
     const t = setTimeout(() => setHint(null), HINT_MS);
@@ -69,27 +88,59 @@ export function WhiteboardDock({
     pick();
   };
 
-  // "Two shapes are pinned": above the Shapes group, where the refused slot settles back.
+  // "Seven shapes are pinned": above the Shapes group, where the refused shape settles back.
   const showPinsFull = (group: HTMLElement | null) => {
     const wrap = group?.closest('[data-whiteboard-dock]')?.getBoundingClientRect();
     const box = group?.getBoundingClientRect();
     setHint({ left: wrap && box ? box.left + box.width / 2 - wrap.left : 0 });
   };
 
-  // Pin to dock / Unpin from a slot's menu: the same limit and refusal as a drag.
-  const chooseFromSlotMenu = (slot: SlotSource) => {
+  const shapesBar = () =>
+    document.querySelector<HTMLElement>('[data-whiteboard-dock] [data-dock-group="shapes"]');
+
+  // A pin or an unpin, from a drop or a menu: a refusal writes nothing and shows the hint.
+  const settle = (outcome: SlotOutcome) => {
+    if (outcome.type === 'none') return;
+    if (outcome.type === 'refused') {
+      console.debug('[whiteboard-dock] pin refused: side full');
+      showPinsFull(shapesBar());
+      return;
+    }
+    model.applySlotOutcome(outcome);
+  };
+
+  // One drag for both sources: a flyout slot or result onto the pinned side, or a pinned shape off
+  // it. The Shapes flyout stays open for the drag (no hover close) and closes once it lands.
+  const slotDrag = useShapeSlotDrag({
+    onStart: () => fly.stick(),
+    onDrop: (source, target) => {
+      const outcome = resolveSlotDrop(model.pinnedShapes, source, target);
+      if (source.from === 'flyout' && outcome.type !== 'none') fly.close();
+      settle(outcome);
+    },
+  });
+  const { drag } = slotDrag;
+  const refusing = drag
+    ? resolveSlotDrop(model.pinnedShapes, drag.source, drag.target).type === 'refused'
+    : false;
+  // The pointer says what a release would do.
+  useEffect(() => {
+    if (!drag) return;
+    const prev = document.body.style.cursor;
+    document.body.style.cursor = refusing ? 'not-allowed' : 'grabbing';
+    return () => {
+      document.body.style.cursor = prev;
+    };
+  }, [drag, refusing]);
+
+  // Pin to dock (a flyout shape) or Unpin (a pinned one) from a menu: the limit and refusal of a drag.
+  const chooseFromMenu = (slot: SlotSource) => {
     const outcome =
       slot.from === 'pinned'
         ? unpinShape(model.pinnedShapes, slot.key)
         : pinFromMenu(model.pinnedShapes, slot.key);
     fly.close(true);
-    if (outcome.type !== 'refused') {
-      model.applySlotOutcome(outcome);
-      return;
-    }
-    showPinsFull(
-      document.querySelector<HTMLElement>('[data-whiteboard-dock] [data-dock-group="shapes"]'),
-    );
+    settle(outcome);
   };
 
   const flyoutContent = (
@@ -101,24 +152,25 @@ export function WhiteboardDock({
       case 'shapes':
         return {
           label: 'Shapes',
-          body: <ShapesFlyoutBody onPick={(id) => pickAndClose(() => model.pickShape(id))} />,
+          hideTitle: true,
+          body: (
+            <ShapesFlyout
+              ink={ink}
+              slots={model.slotShapes}
+              slotDrag={slotDrag}
+              onPin={(key) => chooseFromMenu({ key, from: 'flyout' })}
+              onEngage={fly.stick}
+              onPick={(key, searched) =>
+                pickAndClose(() => (searched ? model.pickSearchedShape(key) : model.pickShape(key)))
+              }
+            />
+          ),
         };
       case 'settings':
         return {
           label: 'Settings',
           hideTitle: true,
           body: <SettingsFlyoutBody model={model} ink={ink} appearance={appearance} />,
-        };
-      case 'search':
-        return {
-          label: 'More shapes',
-          hideTitle: true,
-          body: (
-            <ShapeSearch
-              ink={ink}
-              onPick={(key) => pickAndClose(() => model.pickSearchedShape(key))}
-            />
-          ),
         };
       case 'slot': {
         const slot = f.slot;
@@ -127,10 +179,7 @@ export function WhiteboardDock({
         return {
           label: entry.label,
           body: (
-            <SlotMenuBody
-              pinned={slot.from === 'pinned'}
-              onChoose={() => chooseFromSlotMenu(slot)}
-            />
+            <SlotMenuBody pinned={slot.from === 'pinned'} onChoose={() => chooseFromMenu(slot)} />
           ),
         };
       }
@@ -157,7 +206,7 @@ export function WhiteboardDock({
       }}
       // Centred, and lifted above the bottom-right cluster (history, layers, zoom) until the
       // viewport is wide enough for the two side by side (D9).
-      className="pointer-events-none absolute bottom-[4.25rem] left-1/2 z-[var(--z-toolbar)] w-max max-w-[calc(100%-1.5rem)] -translate-x-1/2 min-[1680px]:bottom-4"
+      className="pointer-events-none absolute bottom-[4.25rem] left-1/2 z-[var(--z-toolbar)] w-max max-w-[calc(100%-1.5rem)] -translate-x-1/2 min-[1760px]:bottom-4"
     >
       {fly.flyout && open ? (
         <WhiteboardFlyout
@@ -168,7 +217,9 @@ export function WhiteboardDock({
           onClose={fly.close}
           onPointerEnter={fly.cancelHoverClose}
           onPointerLeave={fly.hoverLeave}
-          takeFocus={!fly.flyout.hover}
+          // The Shapes flyout's field takes the focus even on a hover, and gives it back on closing.
+          takeFocus={!fly.flyout.hover || fly.flyout.kind === 'shapes'}
+          restoreFocus={fly.flyout.viaHover}
           hideTitle={open.hideTitle}
         >
           {open.body}
@@ -189,21 +240,27 @@ export function WhiteboardDock({
         {hint ? PINS_FULL_HINT : ''}
       </p>
       {/* The groups scroll together on a narrow screen; the padding keeps their shadows unclipped.
-          Scrolling moves the openers, so an open flyout closes rather than float off its button. */}
+          Scrolling moves the openers, so an open flyout follows its button. */}
       <div
         data-dock-scroller=""
-        onScroll={() => (fly.flyout ? fly.close() : undefined)}
+        onScroll={fly.reanchor}
         className="-m-3 flex items-center gap-3 overflow-x-auto p-3 [scrollbar-width:none]"
       >
         <DrawingToolsGroup model={model} ink={ink} fly={fly} pickAndClose={pickAndClose} />
-        <HistoryGroup canUndo={canUndo} canRedo={canRedo} onUndo={onUndo} onRedo={onRedo} />
+        {showShapes ? <ContentGroup model={model} pickAndClose={pickAndClose} /> : null}
         {showShapes ? (
           <ShapesGroup
             model={model}
             fly={fly}
+            slotDrag={slotDrag}
+            refusing={refusing}
             pickAndClose={pickAndClose}
-            onRefused={showPinsFull}
           />
+        ) : null}
+        <HistoryGroup canUndo={canUndo} canRedo={canRedo} onUndo={onUndo} onRedo={onRedo} />
+        <SettingsGroup fly={fly} />
+        {drag ? (
+          <SlotGhost dragKey={drag.source.key} x={drag.x} y={drag.y} refusing={refusing} />
         ) : null}
       </div>
     </div>

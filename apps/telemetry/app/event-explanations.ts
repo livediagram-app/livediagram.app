@@ -23,7 +23,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Whiteboard|Selected|Path':
     "Someone picked up a whiteboard's Path tool, a vector pen: each click places a point and a drag pulls out a curve.",
   'Whiteboard|Selected|ShapeSearch':
-    "Someone picked a shape from a whiteboard's More shapes search, which finds any of the palette's shapes by name.",
+    "Someone picked a shape they searched for in a whiteboard's Shapes flyout, which finds any of the palette's shapes by name.",
   'Whiteboard|Selected|Second':
     "Someone picked up a whiteboard's second pen (blue unless they changed it).",
   'Whiteboard|Selected|Third':

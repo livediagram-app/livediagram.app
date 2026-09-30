@@ -6,6 +6,7 @@ import { render } from '@testing-library/react';
 import { ShapePenIcon } from '@/components/palette/palette-icons';
 import { tileById } from '@/components/palette/palette-tile-defs';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
+import type { WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
 import { DOCK_ICON_PX } from './whiteboard-icons';
 import { WhiteboardDock } from './WhiteboardDock';
 import { dockModel as model, renderDock } from './dock-test-utils';
@@ -13,72 +14,24 @@ import { PINS_FULL_HINT } from './ShapesGroup';
 
 const shapesBar = () => screen.getByRole('toolbar', { name: 'Shapes' });
 
+// Seven pinned: the limit.
+const FULL: WhiteboardShapeKey[] = [
+  'star',
+  'cloud',
+  'hexagon',
+  'triangle',
+  'document',
+  'stadium',
+  'trapezoid',
+];
+
 afterEach(() => vi.restoreAllMocks());
 
-describe('the Shapes flyout', () => {
-  it('picks a shape and closes', () => {
-    const { m } = renderDock();
-    fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Diamond' }));
-    expect(m.pickShape).toHaveBeenCalledWith('diamond');
-    expect(screen.queryByRole('group', { name: 'Shapes' })).toBeNull();
-  });
-
-  it('offers rectangle, ellipse, diamond, cylinder, line and arrow with their keys', () => {
-    renderDock();
-    fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
-    const group = screen.getByRole('group', { name: 'Shapes' });
-    const options = [...group.querySelectorAll('button')].map((b) => [
-      b.getAttribute('aria-label'),
-      b.getAttribute('aria-keyshortcuts'),
-    ]);
-    expect(options).toEqual([
-      ['Rectangle', 'R'],
-      ['Ellipse', 'O'],
-      ['Diamond', 'D'],
-      ['Cylinder', 'C'],
-      ['Line', 'L'],
-      ['Arrow', 'A'],
-    ]);
-  });
-
-  it('opens on hover and closes a moment after the pointer leaves', () => {
-    vi.useFakeTimers();
-    try {
-      renderDock();
-      const shapes = screen.getByRole('button', { name: 'Shapes' });
-      fireEvent.pointerEnter(shapes, { pointerType: 'mouse' });
-      const flyout = screen.getByRole('group', { name: 'Shapes' });
-      // Hovering never takes the keyboard focus away from the board.
-      expect(flyout.contains(document.activeElement)).toBe(false);
-      fireEvent.pointerLeave(shapes, { pointerType: 'mouse' });
-      // Crossing the gap into the flyout keeps it open.
-      fireEvent.pointerEnter(flyout, { pointerType: 'mouse' });
-      act(() => vi.advanceTimersByTime(1000));
-      expect(screen.getByRole('group', { name: 'Shapes' })).toBeTruthy();
-      fireEvent.pointerLeave(screen.getByRole('group', { name: 'Shapes' }), {
-        pointerType: 'mouse',
-      });
-      act(() => vi.advanceTimersByTime(1000));
-      expect(screen.queryByRole('group', { name: 'Shapes' })).toBeNull();
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it('does not open for a finger passing over it', () => {
-    renderDock();
-    fireEvent.pointerEnter(screen.getByRole('button', { name: 'Shapes' }), {
-      pointerType: 'touch',
-    });
-    expect(screen.queryByRole('group', { name: 'Shapes' })).toBeNull();
-  });
-});
-
-describe('the Path tool in the Shapes group', () => {
+describe('the Path tool in the Content group', () => {
   it('follows the sticky note and presses while in hand', () => {
     const { m } = renderDock(model('path'));
-    const button = within(shapesBar()).getByRole('button', { name: 'Path tool' });
+    const content = screen.getByRole('toolbar', { name: 'Content' });
+    const button = within(content).getByRole('button', { name: 'Path tool' });
     expect(button.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(button);
     expect(m.pickPath).toHaveBeenCalled();
@@ -94,53 +47,34 @@ describe('the Path tool in the Shapes group', () => {
   });
 });
 
-describe('shape slots', () => {
-  it('fills the frequent slots with their kinds, each arming its kind', () => {
-    const { m } = renderDock(model('select', { frequentShapes: ['star', 'hexagon'] }));
+describe('the pinned side', () => {
+  it('holds the pinned shapes, a separator and Shapes, and nothing else', () => {
+    renderDock(model('select', { pinnedShapes: ['arrow', 'rectangle', 'ellipse'] }));
+    const items = [
+      ...shapesBar().querySelectorAll<HTMLElement>('[data-dock-item], [data-pinned-separator]'),
+    ].map((el) => el.dataset.dockItem ?? '|');
+    expect(items).toEqual(['pinned:arrow', 'pinned:rectangle', 'pinned:ellipse', '|', 'shapes']);
+  });
+
+  it('arms a pinned kind with a press', () => {
+    const { m } = renderDock(model('select', { pinnedShapes: ['star'] }));
     fireEvent.click(within(shapesBar()).getByRole('button', { name: 'Star' }));
     expect(m.pickShape).toHaveBeenCalledWith('star');
   });
 
-  it('presses the slot of the kind in hand, and neither Shapes nor More shapes', () => {
-    renderDock(model('shape', { armedShape: 'rectangle' }));
-    const bar = shapesBar();
-    expect(
-      within(bar).getByRole('button', { name: 'Rectangle' }).getAttribute('aria-pressed'),
-    ).toBe('true');
-    expect(within(bar).getByRole('button', { name: 'Shapes' }).getAttribute('aria-pressed')).toBe(
-      'false',
+  it('presses the pinned kind in hand, and Shapes for any other board shape', () => {
+    const { view } = renderDock(
+      model('shape', { pinnedShapes: ['rectangle'], armedShape: 'rectangle' }),
     );
-  });
-
-  it('presses Shapes for a flyout kind off the bar, More shapes for any other kind', () => {
-    const { view } = renderDock(model('shape', { armedShape: 'diamond' }));
     const pressed = (name: string) =>
       within(shapesBar()).getByRole('button', { name }).getAttribute('aria-pressed');
-    expect(pressed('Shapes')).toBe('true');
-    expect(pressed('More shapes')).toBe('false');
-    view.rerender(dock(model('shape', { armedShape: 'hexagon' })));
+    expect(pressed('Rectangle')).toBe('true');
     expect(pressed('Shapes')).toBe('false');
-    expect(pressed('More shapes')).toBe('true');
+    view.rerender(dock(model('shape', { pinnedShapes: ['rectangle'], armedShape: 'hexagon' })));
+    expect(pressed('Shapes')).toBe('true');
   });
 
-  it('holds the frequent slots still while a flyout is open, then catches up', () => {
-    const m = model('select');
-    const { view } = renderDock(m);
-    fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
-    view.rerender(dock({ ...m, frequentShapes: ['star', 'rectangle'] }));
-    expect(slotKeys()).toEqual(['rectangle', 'ellipse']);
-    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
-    expect(slotKeys()).toEqual(['star', 'rectangle']);
-  });
-
-  it('pins a frequent kind from its menu (right-click)', () => {
-    const { m } = renderDock(model('select'));
-    fireEvent.contextMenu(within(shapesBar()).getByRole('button', { name: 'Ellipse' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Pin to dock' }));
-    expect(m.applySlotOutcome).toHaveBeenCalledWith({ type: 'pin', pinned: ['ellipse'] });
-  });
-
-  it('unpins a pinned kind from its menu (Shift+F10)', () => {
+  it('unpins from its menu (Shift+F10)', () => {
     const { m } = renderDock(model('select', { pinnedShapes: ['star'] }));
     const star = within(shapesBar()).getByRole('button', { name: 'Star' });
     fireEvent.keyDown(star, { key: 'F10', shiftKey: true });
@@ -148,25 +82,23 @@ describe('shape slots', () => {
     expect(m.applySlotOutcome).toHaveBeenCalledWith({ type: 'unpin', pinned: [] });
   });
 
-  it('refuses a third pin from the menu, with the hint', () => {
+  it('unpins from its menu (right-click)', () => {
     const { m } = renderDock(model('select', { pinnedShapes: ['star', 'cloud'] }));
-    fireEvent.keyDown(within(shapesBar()).getByRole('button', { name: 'Rectangle' }), {
-      key: 'ContextMenu',
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Pin to dock' }));
-    expect(m.applySlotOutcome).not.toHaveBeenCalled();
-    expect(screen.getByRole('status').textContent).toBe(PINS_FULL_HINT);
+    fireEvent.contextMenu(within(shapesBar()).getByRole('button', { name: 'Cloud' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Unpin' }));
+    expect(m.applySlotOutcome).toHaveBeenCalledWith({ type: 'unpin', pinned: ['star'] });
   });
 });
 
-describe('dragging a slot', () => {
-  // The separator at x 100; pinned slots 44 wide from x 0.
+describe('dragging onto and off the pinned side', () => {
+  // Pinned slots 44 wide from x 0, 46 apart; the separator at x 400; the bar 0..500, 0..44 high.
   function layOut() {
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
       const el = this as HTMLElement;
-      if (el.dataset.slotSeparator !== undefined) return rect(100, 1);
+      if (el.dataset.pinnedSeparator !== undefined) return rect(400, 1);
+      if (el.dataset.dockGroup === 'shapes') return rect(0, 500);
       if (el.dataset.pinnedSlot !== undefined) {
         const i = [...document.querySelectorAll('[data-pinned-slot]')].indexOf(el);
         return rect(i * 46, 44);
@@ -175,77 +107,132 @@ describe('dragging a slot', () => {
     });
   }
 
-  it('pins a frequent kind dragged left of the separator', () => {
+  const openFlyout = () => fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
+  const option = (name: string) => screen.getByRole('option', { name });
+
+  it('pins a flyout slot dropped on the pinned side, then closes the flyout', () => {
     layOut();
-    const { m } = renderDock(model('select'));
-    const ellipse = within(shapesBar()).getByRole('button', { name: 'Ellipse' });
-    fireEvent.pointerDown(ellipse, { button: 0, clientX: 150, clientY: 10 });
-    move(140);
-    move(50);
-    expect(document.querySelector('[data-slot-ghost="ellipse"]')).toBeTruthy();
+    const { m } = renderDock(model('select', { pinnedShapes: ['star'] }));
+    openFlyout();
+    const diamond = option('Diamond');
+    fireEvent.pointerDown(diamond, { button: 0, clientX: 450, clientY: -80 });
+    move(440, -70);
+    move(300, 20);
+    expect(document.querySelector('[data-slot-ghost="diamond"]')).toBeTruthy();
     expect(document.querySelector('[data-slot-drop-indicator="ok"]')).toBeTruthy();
-    up(50);
-    fireEvent.click(ellipse);
-    expect(m.applySlotOutcome).toHaveBeenCalledWith({ type: 'pin', pinned: ['ellipse'] });
-    // The release is the end of the drag, not a pick.
+    // The flyout stays open for the drag.
+    expect(screen.getByRole('group', { name: 'Shapes' })).toBeTruthy();
+    up(300, 20);
+    fireEvent.click(diamond);
+    expect(m.applySlotOutcome).toHaveBeenCalledWith({ type: 'pin', pinned: ['star', 'diamond'] });
     expect(m.pickShape).not.toHaveBeenCalled();
-    expect(document.querySelector('[data-slot-ghost]')).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Shapes' })).toBeNull();
+  });
+
+  it('pins a search result the same way', () => {
+    layOut();
+    const { m } = renderDock(model('select', { pinnedShapes: [] }));
+    openFlyout();
+    fireEvent.change(screen.getByRole('combobox', { name: 'Search shapes' }), {
+      target: { value: 'cloud' },
+    });
+    fireEvent.pointerDown(option('Cloud'), { button: 0, clientX: 450, clientY: -80 });
+    move(300, -60);
+    move(-20, 20);
+    up(-20, 20);
+    expect(m.applySlotOutcome).toHaveBeenCalledWith({ type: 'pin', pinned: ['cloud'] });
   });
 
   it('still picks on a press that travels less than the threshold', () => {
     layOut();
     const { m } = renderDock(model('select'));
-    const ellipse = within(shapesBar()).getByRole('button', { name: 'Ellipse' });
-    fireEvent.pointerDown(ellipse, { button: 0, clientX: 150, clientY: 10 });
-    move(154);
-    up(154);
-    fireEvent.click(ellipse);
+    openFlyout();
+    const diamond = option('Diamond');
+    fireEvent.pointerDown(diamond, { button: 0, clientX: 450, clientY: -80 });
+    move(454, -80);
+    up(454, -80);
+    fireEvent.click(diamond);
     expect(m.applySlotOutcome).not.toHaveBeenCalled();
-    expect(m.pickShape).toHaveBeenCalledWith('ellipse');
+    expect(m.pickShape).toHaveBeenCalledWith('diamond');
   });
 
-  it('unpins a pinned kind dragged right of the separator', () => {
+  it('leaves the flyout open when a shape is dropped off the bar', () => {
     layOut();
-    const { m } = renderDock(model('select', { pinnedShapes: ['star'] }));
+    const { m } = renderDock(model('select'));
+    openFlyout();
+    fireEvent.pointerDown(option('Diamond'), { button: 0, clientX: 450, clientY: -80 });
+    move(460, -200);
+    up(460, -200);
+    expect(m.applySlotOutcome).not.toHaveBeenCalled();
+    expect(screen.getByRole('group', { name: 'Shapes' })).toBeTruthy();
+  });
+
+  it('unpins a pinned kind dragged past the separator, or off the bar', () => {
+    layOut();
+    const { m, view } = renderDock(model('select', { pinnedShapes: ['star', 'cloud'] }));
     const star = within(shapesBar()).getByRole('button', { name: 'Star' });
     fireEvent.pointerDown(star, { button: 0, clientX: 20, clientY: 10 });
-    move(160);
-    up(160);
-    expect(m.applySlotOutcome).toHaveBeenCalledWith({ type: 'unpin', pinned: [] });
+    move(460, 20);
+    expect(document.querySelector('[data-slot-drop-indicator="ok"]')).toBeTruthy();
+    up(460, 20);
+    expect(m.applySlotOutcome).toHaveBeenLastCalledWith({ type: 'unpin', pinned: ['cloud'] });
+    view.rerender(dock({ ...m, pinnedShapes: ['cloud'] }));
+    const cloud = within(shapesBar()).getByRole('button', { name: 'Cloud' });
+    fireEvent.pointerDown(cloud, { button: 0, clientX: 20, clientY: 10 });
+    move(20, 300);
+    up(20, 300);
+    expect(m.applySlotOutcome).toHaveBeenLastCalledWith({ type: 'unpin', pinned: [] });
   });
 
-  it('refuses a third pin dropped between the pinned slots, and says why', () => {
+  it('reorders within the pinned side', () => {
     layOut();
     const { m } = renderDock(model('select', { pinnedShapes: ['star', 'cloud'] }));
-    const ellipse = within(shapesBar()).getByRole('button', { name: 'Ellipse' });
-    fireEvent.pointerDown(ellipse, { button: 0, clientX: 200, clientY: 10 });
-    move(95);
+    const cloud = within(shapesBar()).getByRole('button', { name: 'Cloud' });
+    fireEvent.pointerDown(cloud, { button: 0, clientX: 60, clientY: 10 });
+    move(30, 20);
+    move(10, 20);
+    up(10, 20);
+    expect(m.applySlotOutcome).toHaveBeenCalledWith({ type: 'pin', pinned: ['cloud', 'star'] });
+  });
+
+  it('refuses an eighth pin dropped beside the pinned shapes, and says why', () => {
+    layOut();
+    const { m } = renderDock(model('select', { pinnedShapes: FULL }));
+    openFlyout();
+    fireEvent.pointerDown(option('Diamond'), { button: 0, clientX: 450, clientY: -80 });
+    move(360, 20);
     expect(document.querySelector('[data-slot-drop-indicator="refused"]')).toBeTruthy();
-    up(95);
+    up(360, 20);
     expect(m.applySlotOutcome).not.toHaveBeenCalled();
     expect(screen.getByRole('status').textContent).toBe(PINS_FULL_HINT);
   });
 
-  it('replaces a pinned kind it is dropped onto', () => {
+  it('replaces a pinned kind it is dropped onto when seven are pinned', () => {
     layOut();
-    const { m } = renderDock(model('select', { pinnedShapes: ['star', 'cloud'] }));
-    const ellipse = within(shapesBar()).getByRole('button', { name: 'Ellipse' });
-    fireEvent.pointerDown(ellipse, { button: 0, clientX: 200, clientY: 10 });
-    move(60);
-    up(60);
-    expect(m.applySlotOutcome).toHaveBeenCalledWith({ type: 'pin', pinned: ['star', 'ellipse'] });
+    const { m } = renderDock(model('select', { pinnedShapes: FULL }));
+    openFlyout();
+    fireEvent.pointerDown(option('Diamond'), { button: 0, clientX: 450, clientY: -80 });
+    move(60, 20);
+    expect(within(shapesBar()).getByRole('button', { name: 'Cloud' }).className).toContain(
+      'ring-2',
+    );
+    up(60, 20);
+    expect(m.applySlotOutcome).toHaveBeenCalledWith({
+      type: 'pin',
+      pinned: ['star', 'diamond', 'hexagon', 'triangle', 'document', 'stadium', 'trapezoid'],
+    });
   });
 
   it('drops nothing when Escape cancels the drag', () => {
     layOut();
     const { m } = renderDock(model('select'));
-    const ellipse = within(shapesBar()).getByRole('button', { name: 'Ellipse' });
-    fireEvent.pointerDown(ellipse, { button: 0, clientX: 150, clientY: 10 });
-    move(50);
+    openFlyout();
+    fireEvent.pointerDown(option('Diamond'), { button: 0, clientX: 450, clientY: -80 });
+    move(300, 20);
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
-    up(50);
+    up(300, 20);
     expect(m.applySlotOutcome).not.toHaveBeenCalled();
   });
 });
@@ -263,12 +250,6 @@ function dock(m: WhiteboardDockModel) {
   );
 }
 
-function slotKeys() {
-  return [...document.querySelectorAll<HTMLElement>('[data-frequent-slot]')].map(
-    (el) => el.dataset.slotKey,
-  );
-}
-
 function rect(left: number, width: number): DOMRect {
   return {
     left,
@@ -283,19 +264,18 @@ function rect(left: number, width: number): DOMRect {
   };
 }
 
-function move(clientX: number) {
+function move(clientX: number, clientY: number) {
   act(() => {
-    window.dispatchEvent(pointer('pointermove', clientX));
+    window.dispatchEvent(pointer('pointermove', clientX, clientY));
   });
 }
 
-function up(clientX: number) {
+function up(clientX: number, clientY: number) {
   act(() => {
-    window.dispatchEvent(pointer('pointerup', clientX));
+    window.dispatchEvent(pointer('pointerup', clientX, clientY));
   });
 }
 
-function pointer(type: string, clientX: number): Event {
-  const ev = new MouseEvent(type, { clientX, clientY: 10, bubbles: true, cancelable: true });
-  return ev;
+function pointer(type: string, clientX: number, clientY: number): Event {
+  return new MouseEvent(type, { clientX, clientY, bubbles: true, cancelable: true });
 }

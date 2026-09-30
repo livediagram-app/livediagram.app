@@ -1,48 +1,31 @@
-// The More shapes search (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"): the
-// whiteboard's shape catalogue, ranked the way the palette search ranks (exact name, name prefix,
-// name substring, keyword), best match first; an empty field is the whole catalogue, grouped as in
-// the palette. Plus the grid's arrow-key movement. Pure.
+// The Shapes flyout's search (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"): at
+// most six of the whiteboard's shape catalogue, ranked the way the palette search ranks (exact
+// name, name prefix, name substring, keyword), best match first; an empty field finds nothing (the
+// flyout shows its slots). Never the full list. Plus the grid's arrow-key movement. Pure.
 import { paletteRank } from './search';
 import {
   WHITEBOARD_SHAPE_CATALOGUE,
-  WHITEBOARD_SHAPE_GROUPS,
   type WhiteboardShapeEntry,
 } from './whiteboard-shape-catalogue';
 
-export type ShapeSearchGroup = { id: string; label: string; entries: WhiteboardShapeEntry[] };
-
-export type ShapeSearchView = {
-  // False for an empty field: the groups are the palette's, with headings.
-  searching: boolean;
-  groups: ShapeSearchGroup[];
-};
+// The most results a typed query shows (the spec's six: one small grid, no scrolling).
+export const SHAPE_SEARCH_LIMIT = 6;
 
 // A rank the palette search treats as "no match".
 const NO_MATCH = 4;
 
-export function searchWhiteboardShapes(query: string): ShapeSearchView {
+export function searchWhiteboardShapes(query: string): WhiteboardShapeEntry[] {
   const q = query.trim();
-  if (!q) {
-    return {
-      searching: false,
-      groups: WHITEBOARD_SHAPE_GROUPS.map((g) => ({
-        ...g,
-        entries: WHITEBOARD_SHAPE_CATALOGUE.filter((e) => e.group === g.id),
-      })),
-    };
-  }
-  const entries = WHITEBOARD_SHAPE_CATALOGUE.map((e, i) => ({
+  if (!q) return [];
+  return WHITEBOARD_SHAPE_CATALOGUE.map((e, i) => ({
     e,
     i,
     rank: paletteRank(q, { name: e.label, keywords: e.keywords }),
   }))
     .filter((m) => m.rank < NO_MATCH)
     .sort((a, b) => a.rank - b.rank || a.i - b.i)
+    .slice(0, SHAPE_SEARCH_LIMIT)
     .map((m) => m.e);
-  return {
-    searching: true,
-    groups: entries.length > 0 ? [{ id: 'matches', label: 'Matches', entries }] : [],
-  };
 }
 
 export type GridDirection = 'left' | 'right' | 'up' | 'down';

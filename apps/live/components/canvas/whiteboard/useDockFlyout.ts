@@ -9,15 +9,18 @@ import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { SlotSource } from '@/lib/whiteboard-shape-slots';
 import { useHoverClose } from './useHoverClose';
 
-export type DockFlyoutKind = WhiteboardPenId | 'eraser' | 'settings' | 'shapes' | 'search' | 'slot';
+export type DockFlyoutKind = WhiteboardPenId | 'eraser' | 'settings' | 'shapes' | 'slot';
 
 // The flyouts whose openers live in the Shapes group: they close when that group goes (Simple mode).
-export const SHAPES_GROUP_FLYOUTS: readonly DockFlyoutKind[] = ['shapes', 'search', 'slot'];
+export const SHAPES_GROUP_FLYOUTS: readonly DockFlyoutKind[] = ['shapes', 'slot'];
 
 export type DockFlyout = {
   kind: DockFlyoutKind;
   // Opened by the pointer resting on its button: closes again when it leaves.
   hover: boolean;
+  // Opened by hover, even if it has since been made to stay: closing gives the focus back to the
+  // board, not to the opener (the Shapes flyout's field takes the focus on a hover).
+  viaHover: boolean;
   // Horizontal centre, in px from the dock wrapper's left edge; measured once, on opening.
   left: number;
   // The opener's data-dock-item, which gets the focus back on Escape.
@@ -48,6 +51,7 @@ export function useDockFlyout() {
     setFlyout({
       kind,
       hover: extra.hover ?? false,
+      viaHover: extra.hover ?? false,
       left: measure(opener),
       openerKey: opener.dataset.dockItem ?? '',
       slot: extra.slot,
@@ -79,17 +83,36 @@ export function useDockFlyout() {
     schedule(() => setFlyout((f) => (f?.hover ? null : f)));
   };
 
+  // Keep a hover-opened flyout open once the user works in it (typing in the Shapes search).
+  const stick = () => {
+    cancelHoverClose();
+    setFlyout((f) => (f?.hover ? { ...f, hover: false } : f));
+  };
+
   const close = (returnFocus = false) => {
     const key = flyout?.openerKey;
+    const toOpener = returnFocus && !flyout?.viaHover;
     setFlyout(null);
-    if (returnFocus && key) {
+    if (toOpener && key) {
       document
         .querySelector<HTMLElement>(`[data-whiteboard-dock] [data-dock-item="${key}"]`)
         ?.focus();
     }
   };
 
-  return { flyout, open, toggle, hoverEnter, hoverLeave, cancelHoverClose, close };
+  // Place the open flyout over its opener again, once the opener has moved (a mode switch removed
+  // a group before it and the dock re-centred).
+  const reanchor = () => {
+    if (!flyout) return;
+    const opener = document.querySelector<HTMLElement>(
+      `[data-whiteboard-dock] [data-dock-item="${flyout.openerKey}"]`,
+    );
+    if (!opener) return;
+    const left = measure(opener);
+    if (left !== flyout.left) setFlyout({ ...flyout, left });
+  };
+
+  return { flyout, open, toggle, hoverEnter, hoverLeave, cancelHoverClose, close, stick, reanchor };
 }
 
 export type DockFlyoutApi = ReturnType<typeof useDockFlyout>;

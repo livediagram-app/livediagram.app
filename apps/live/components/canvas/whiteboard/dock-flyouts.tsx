@@ -1,8 +1,8 @@
 'use client';
 
 // What each dock flyout holds (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"): a
-// pen's colour and width, the eraser's mode, the Shapes flyout, the Settings sections and a shape
-// slot's menu. The More shapes search has its own component (ShapeSearch).
+// pen's colour and width, the eraser's mode, the Settings sections and a shape slot's menu. The
+// Shapes flyout has its own component (ShapesFlyout).
 
 import type { ReactNode } from 'react';
 import {
@@ -17,7 +17,6 @@ import {
   penAdjustsColour,
   type WhiteboardPen,
 } from '@/lib/whiteboard-prefs';
-import { WHITEBOARD_SHAPES, type WhiteboardShapeId } from '@/lib/whiteboard-tool';
 import { WHITEBOARD_DOCK_MODES } from '@/lib/whiteboard-dock-prefs';
 import {
   PEN_CURSOR_VARIANTS,
@@ -26,9 +25,8 @@ import {
   type PenCursorVariant,
 } from '@/lib/whiteboard-pen-cursor';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
-import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import { FlyoutHeading, FlyoutOption } from './WhiteboardFlyout';
-import { BackgroundGlyph, OffGlyph, RecogniseGlyph, ShapeGlyph } from './whiteboard-icons';
+import { BackgroundGlyph, OffGlyph, RecogniseGlyph } from './whiteboard-icons';
 
 const ERASER_MODES = [
   { id: 'stroke', label: 'Stroke', hint: 'Remove whole strokes' },
@@ -92,24 +90,6 @@ export function EraserFlyoutBody({ model }: { model: WhiteboardDockModel }) {
             <span className="font-medium">{m.label}</span>
             <span className="text-xs text-slate-500 dark:text-slate-400">{m.hint}</span>
           </span>
-        </FlyoutOption>
-      ))}
-    </div>
-  );
-}
-
-export function ShapesFlyoutBody({ onPick }: { onPick: (id: WhiteboardShapeId) => void }) {
-  return (
-    <div className="grid grid-cols-3 gap-1">
-      {WHITEBOARD_SHAPES.map((s) => (
-        <FlyoutOption
-          key={s.id}
-          label={s.label}
-          shortcut={WHITEBOARD_TOOL_KEYS[s.id]}
-          selected={false}
-          onPick={() => onPick(s.id)}
-        >
-          <ShapeGlyph id={s.id} />
         </FlyoutOption>
       ))}
     </div>

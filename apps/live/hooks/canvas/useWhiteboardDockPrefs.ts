@@ -15,7 +15,7 @@ import {
   type WhiteboardDockPrefs,
 } from '@/lib/whiteboard-dock-prefs';
 import type { WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
-import { frequentShapes, recordShapePick, type SlotOutcome } from '@/lib/whiteboard-shape-slots';
+import { recordShapePick, shapeSlots, type SlotOutcome } from '@/lib/whiteboard-shape-slots';
 
 export type WhiteboardDockPrefsDeps = {
   userPreferences: UserPreferences;
@@ -34,7 +34,8 @@ export function useWhiteboardDockPrefs({
     () => readWhiteboardDockPrefs(userPreferences),
     [userPreferences],
   );
-  const frequent = useMemo(() => frequentShapes(picks, pinned), [picks, pinned]);
+  // The most-used slot, then the two last-used ones.
+  const slots = useMemo(() => shapeSlots(picks, pinned), [picks, pinned]);
 
   // Written off the FRESHEST stored preferences, not this render's snapshot: the PUT sends the
   // whole blob, so a stale base would undo other writes.
@@ -68,5 +69,5 @@ export function useWhiteboardDockPrefs({
     update(() => ({ pinned: outcome.pinned }));
   };
 
-  return { mode, pinned, frequent, setMode, recordPick, applySlotOutcome };
+  return { mode, pinned, slots, setMode, recordPick, applySlotOutcome };
 }

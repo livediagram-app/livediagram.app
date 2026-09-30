@@ -1,8 +1,7 @@
 'use client';
 
 // The dock's Drawing tools group (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"):
-// Select, Markers 1 to 3, Eraser, Text and Settings. A pen or the eraser already in hand opens its
-// flyout; Settings (the cog) opens on a press only, never on hover.
+// Select, Markers 1 to 3 and Eraser. A pen or the eraser already in hand opens its flyout.
 
 import { EditPointsIcon, EraserIcon, SelectIcon } from '@/components/palette/palette-icons';
 import { penLabel } from '@/lib/whiteboard-prefs';
@@ -10,7 +9,7 @@ import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { DockButton, DockDivider, DockToolbar } from './DockToolbar';
 import type { DockFlyoutApi } from './useDockFlyout';
-import { DOCK_ICON_PX, PenGlyph, SettingsGlyph, TextGlyph } from './whiteboard-icons';
+import { DOCK_ICON_PX, PenGlyph } from './whiteboard-icons';
 
 export function DrawingToolsGroup({
   model,
@@ -73,22 +72,6 @@ export function DrawingToolsGroup({
         onPress={(el) =>
           tool === 'eraser' ? fly.toggle('eraser', el) : pickAndClose(model.pickEraser)
         }
-      />
-      <DockButton
-        itemKey="text"
-        label="Text"
-        shortcut={WHITEBOARD_TOOL_KEYS.text}
-        icon={<TextGlyph />}
-        pressed={tool === 'text'}
-        onPress={() => pickAndClose(model.pickText)}
-      />
-      <DockDivider />
-      <DockButton
-        itemKey="settings"
-        label="Settings"
-        icon={<SettingsGlyph />}
-        controls={{ id: 'whiteboard-flyout-settings', expanded: expanded('settings') }}
-        onPress={(el) => fly.toggle('settings', el)}
       />
     </DockToolbar>
   );
