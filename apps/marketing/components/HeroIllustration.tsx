@@ -52,6 +52,7 @@ import {
   LAUNCH_TAB,
   LAUNCH_TITLE,
   LaunchCanvasOverlay,
+  prefetchLaunch,
   useLaunchGrow,
 } from './hero-launch';
 
@@ -285,6 +286,7 @@ export function HeroIllustration() {
                   href={LAUNCH_HREF}
                   data-hero-anchor="window"
                   tabIndex={-1}
+                  onPointerEnter={prefetchLaunch}
                   onClick={(e) => {
                     if (!playing) {
                       e.preventDefault();

@@ -9,8 +9,10 @@
 // trap a fixed child), clipped from the canvas's own rect to the whole viewport. It is the
 // editor's blank canvas, and /new?blank=1&welcome=1 holds that same canvas until the editor
 // has loaded over it (apps/live BlankCanvasScreen), so the whole way in is one surface.
-// It runs for the page-transition token (docs/specs/004-interface-design/motion.md), and the
-// navigation follows its end, so nobody waits on it for longer than a dialog opens.
+// It runs for 600ms, eased in and out, paced as the illustration it grows out of (a content
+// illustration, docs/specs/004-interface-design/motion.md), and the navigation follows its end.
+// The window prefetches /new when the pointer first rests on it (prefetchLaunch), so the page is
+// usually in the cache by then.
 
 import { useEffect, useState, type CSSProperties, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
@@ -33,6 +35,18 @@ export const LAUNCH_DWELL_MS = 60000;
 
 // Marks the canvas surface inside an editor window, the rect the growth starts from.
 export const HERO_CANVAS_ATTR = 'data-hero-canvas';
+
+// Warm the browser's cache with /new the first time the launch window is pointed at, so the
+// navigation at the end of the growth has less to fetch. Once per page; a no-op without support.
+let prefetched = false;
+export function prefetchLaunch() {
+  if (prefetched) return;
+  prefetched = true;
+  const link = document.createElement('link');
+  link.rel = 'prefetch';
+  link.href = LAUNCH_HREF;
+  document.head.appendChild(link);
+}
 
 type GrowFrom = { top: number; right: number; bottom: number; left: number };
 

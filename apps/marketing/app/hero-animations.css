@@ -1077,7 +1077,9 @@
    canvas (the Default scheme's paper and 24px dots, which the window already draws), and its dots
    slide from where the window drew them (--grow-x/-y) onto the page grid, so it ends exactly on
    the quiet landing /new?blank=1&welcome=1 paints (apps/live BlankCanvasScreen) and the editor
-   then loads over it. The page-transition token, 250ms; the navigation follows its end. */
+   then loads over it. 600ms, eased in and out: paced as the illustration it grows out of rather
+   than as chrome, so the canvas visibly becomes the page (at 250ms it read as a jump), and the
+   navigation follows its end, by when the launch window's prefetch has usually brought /new in. */
 .hero-grow {
   position: fixed;
   inset: 0;
@@ -1086,7 +1088,7 @@
   background-image: radial-gradient(circle, var(--art-grid) 1px, transparent 1px);
   background-size: 24px 24px;
   background-position: 0 0;
-  animation: hero-grow 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: hero-grow 600ms cubic-bezier(0.65, 0, 0.35, 1) both;
 }
 @keyframes hero-grow {
   from {
