@@ -1,5 +1,5 @@
-import type { TemplateDescriptor, TemplateCategory, TemplateKind } from '@livediagram/templates';
-import { TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
+import type { TemplateDescriptor, TemplateKind, TemplateShelf } from '@livediagram/templates';
+import { TEMPLATE_CATEGORIES, templateCategory, templateShelfLabel } from '@livediagram/templates';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import { BackBar } from '@/components/primitives/BackBar';
 import { CategoryCard, TemplateCard } from '@/components/palette/template-picker-cards';
@@ -17,11 +17,11 @@ export function TemplatePickerBrowse({
   setTemplateQuery,
   templateFilter,
   filteredTemplates,
-  openCategory,
-  setOpenCategory,
+  openShelf,
+  setOpenShelf,
   blankTemplate,
   whiteboardTemplate,
-  categoryTemplates,
+  shelfTemplates,
   templateKind,
   onTemplateCommit,
 }: {
@@ -32,12 +32,13 @@ export function TemplatePickerBrowse({
   // The debounced, normalised filter actually applied (empty = browse).
   templateFilter: string;
   filteredTemplates: TemplateDescriptor[];
-  openCategory: TemplateCategory | null;
-  setOpenCategory: (c: TemplateCategory | null) => void;
+  // The category or collection drilled into, or null for the overview.
+  openShelf: TemplateShelf | null;
+  setOpenShelf: (s: TemplateShelf | null) => void;
   blankTemplate: TemplateDescriptor | undefined;
   // The whiteboard quick-pick beside Blank (docs/specs/023-whiteboard/whiteboard.md).
   whiteboardTemplate: TemplateDescriptor | undefined;
-  categoryTemplates: (category: TemplateCategory) => TemplateDescriptor[];
+  shelfTemplates: (shelf: TemplateShelf) => TemplateDescriptor[];
   templateKind: TemplateKind;
   // Single-click a template card: select it AND advance to the theme step
   // (docs/specs/006-document/offline-mode.md). The same handler backs double-click, so either gesture works.
@@ -67,7 +68,7 @@ export function TemplatePickerBrowse({
           grouping — it's a "start from scratch", not a category
           template — and lives only on the overview row. */}
       <AnimatedHeightBox
-        viewKey={templateFilter ? 'search' : (openCategory ?? 'overview')}
+        viewKey={templateFilter ? 'search' : (openShelf ?? 'overview')}
         className="mt-2"
       >
         {templateFilter ? (
@@ -88,17 +89,15 @@ export function TemplatePickerBrowse({
               ))}
             </div>
           )
-        ) : openCategory ? (
+        ) : openShelf ? (
           <>
             <BackBar
               label="All templates"
-              current={
-                TEMPLATE_CATEGORIES.find((c) => c.id === openCategory)?.label ?? openCategory
-              }
-              onClick={() => setOpenCategory(null)}
+              current={templateShelfLabel(openShelf)}
+              onClick={() => setOpenShelf(null)}
             />
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {categoryTemplates(openCategory).map((t) => (
+              {shelfTemplates(openShelf).map((t) => (
                 <TemplateCard
                   key={t.kind}
                   template={t}
@@ -128,7 +127,7 @@ export function TemplatePickerBrowse({
               />
             ) : null}
             {TEMPLATE_CATEGORIES.map((cat) => {
-              const items = categoryTemplates(cat.id);
+              const items = shelfTemplates(cat.id);
               if (items.length === 0) return null;
               return (
                 <CategoryCard
@@ -142,7 +141,7 @@ export function TemplatePickerBrowse({
                     templateKind !== 'whiteboard' &&
                     templateCategory(templateKind) === cat.id
                   }
-                  onOpen={() => setOpenCategory(cat.id)}
+                  onOpen={() => setOpenShelf(cat.id)}
                 />
               );
             })}

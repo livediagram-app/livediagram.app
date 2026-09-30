@@ -1,4 +1,5 @@
-import { ctaHref } from '@livediagram/api-schema';
+import { ctaHref, type CtaSource } from '@livediagram/api-schema';
+import { templateBrowseHref, templateCreateHref } from '@livediagram/templates';
 import { buttonClassName, Glyph, ButtonContent } from '@livediagram/ui';
 import { HeroIllustration } from './HeroIllustration';
 
@@ -9,6 +10,19 @@ const PROOF_POINTS = [
   'No sign-up',
   'Real-time collaboration',
   'Open source (MIT)',
+];
+
+// The hero's three calls to action, each with its landing-funnel source
+// (docs/specs/019-marketing/landing-funnel.md).
+export const HERO_CTAS: readonly {
+  label: string;
+  href: string;
+  source: CtaSource;
+  primary?: boolean;
+}[] = [
+  { label: 'Draw', href: templateCreateHref('whiteboard'), source: 'Home.HeroDraw' },
+  { label: 'Diagram', href: '/new', source: 'Home.Hero', primary: true },
+  { label: 'Brainstorm', href: templateBrowseHref('brainstorm'), source: 'Home.HeroBrainstorm' },
 ];
 
 function ProofPoints() {
@@ -42,31 +56,26 @@ export function Hero() {
           Sketch an idea, start from a template, or map a whole system. Share a link and your team
           builds it with you in real time.
         </p>
-        {/* CTA pair (docs/specs/019-marketing/marketing-site.md): the wizard is the encouraged path, so Choose
-            Template is the primary and sits on the right; Just Draw is the
-            straight-to-blank-canvas escape hatch (docs/specs/007-editor/new-document-route.md). DOM order keeps
-            the primary first so the mobile stack leads with it; sm:order-*
-            swaps them side by side on desktop. */}
+        {/* Three ways in (docs/specs/019-marketing/marketing-site.md), in the order people reach for them:
+            Draw lands straight on a whiteboard with a pen in hand, Diagram is
+            the wizard and its whole catalogue (the encouraged path, so the
+            filled button, in the middle), Brainstorm opens the wizard on the
+            brainstorming formats. One width for all three, so the row holds
+            still; stacked in the same order on mobile. */}
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <a
-            href={ctaHref('/new', 'Home.Hero')}
-            className={buttonClassName({
-              size: 'lg',
-              className: 'w-full shadow-sm sm:order-2 sm:w-auto',
-            })}
-          >
-            <ButtonContent>Choose Template</ButtonContent>
-          </a>
-          <a
-            href={ctaHref('/new?blank=1', 'Home.HeroDraw')}
-            className={buttonClassName({
-              variant: 'secondary',
-              size: 'lg',
-              className: 'w-full shadow-sm sm:order-1 sm:w-auto',
-            })}
-          >
-            <ButtonContent>Just Draw</ButtonContent>
-          </a>
+          {HERO_CTAS.map((cta) => (
+            <a
+              key={cta.label}
+              href={ctaHref(cta.href, cta.source)}
+              className={buttonClassName({
+                variant: cta.primary ? undefined : 'secondary',
+                size: 'lg',
+                className: 'w-full shadow-sm sm:w-40',
+              })}
+            >
+              <ButtonContent>{cta.label}</ButtonContent>
+            </a>
+          ))}
         </div>
         <ProofPoints />
 

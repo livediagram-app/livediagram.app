@@ -56,8 +56,9 @@ export const SURFACE_LABELS: Record<CtaSurface, string> = {
 const SLOT_LABELS: Record<CtaSlot, string> = {
   Header: 'Header: Choose Template',
   HeaderDraw: 'Header: Just Draw',
-  Hero: 'Hero: Choose Template',
-  HeroDraw: 'Hero: Just Draw',
+  Hero: 'Hero: Diagram',
+  HeroDraw: 'Hero: Draw',
+  HeroBrainstorm: 'Hero: Brainstorm',
   Gallery: 'Template Gallery Cards',
   GalleryDraw: 'Gallery: Blank Canvas Link',
   Closing: 'Closing Band: Start Drawing',

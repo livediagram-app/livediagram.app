@@ -41,7 +41,11 @@ import {
 } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
-import { WIZARD_BYPASS_PARAMS, wizardBypassKind } from '@/lib/new-document-params';
+import {
+  WIZARD_BYPASS_PARAMS,
+  wizardBrowseCollection,
+  wizardBypassKind,
+} from '@/lib/new-document-params';
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -61,6 +65,9 @@ const EditorPage = dynamic(loadEditor, {
 const subscribeNever = () => () => {};
 const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
 const noBypass = () => null;
+// The collection the wizard opens on (`?browse=`), read the same way.
+const browseFromUrl = () => wizardBrowseCollection(window.location.search);
+const noBrowse = () => null;
 
 // Folder shape the Settings step's placement browser consumes.
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-document-route.md.
@@ -170,6 +177,16 @@ export default function NewDocumentPage() {
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
+  // `?browse=<collection>` (docs/specs/007-editor/new-document-route.md): the same external-store read,
+  // and the same guard: the prerendered step is the category overview, so the
+  // wizard card stays hidden until the render that shows the collection (or,
+  // for an unknown one, at once), so the author never sees it swap.
+  const browseShelf = useSyncExternalStore(subscribeNever, browseFromUrl, noBrowse);
+  useLayoutEffect(() => {
+    if (browseFromUrl() === browseShelf) {
+      document.documentElement.removeAttribute('data-wizard-browse');
+    }
+  }, [browseShelf]);
 
   useEffect(() => {
     document.title = 'New document | livediagram';
@@ -441,10 +458,10 @@ export default function NewDocumentPage() {
       <script
         dangerouslySetInnerHTML={{
           __html:
-            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','')}catch(e){}",
+            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('browse'))document.documentElement.setAttribute('data-wizard-browse','')}catch(e){}",
         }}
       />
-      <style>{`html[data-just-draw] [data-wizard-only]{visibility:hidden}`}</style>
+      <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-browse] [data-wizard-only]{visibility:hidden}`}</style>
       <EditorHeader
         documentName="New document"
         hideTitle
@@ -477,6 +494,7 @@ export default function NewDocumentPage() {
               teams={teams}
               teamFolders={teamFolders}
               initialPlacement={initialPlacement}
+              initialShelf={browseShelf}
               onCreateFolder={createPickerFolder}
               // Teams are Clerk-only (docs/specs/013-workspace/teams.md): a guest gets no New Team tile.
               onCreateTeam={clerkUserId ? createPickerTeam : undefined}

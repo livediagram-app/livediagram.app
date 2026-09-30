@@ -9,7 +9,16 @@
 // Which slots each public surface has. A source names a button, never a
 // visitor: the only values it can ever take are the ones below.
 export const CTA_SOURCES = {
-  Home: ['Header', 'HeaderDraw', 'Hero', 'HeroDraw', 'Gallery', 'GalleryDraw', 'Closing'],
+  Home: [
+    'Header',
+    'HeaderDraw',
+    'Hero',
+    'HeroDraw',
+    'HeroBrainstorm',
+    'Gallery',
+    'GalleryDraw',
+    'Closing',
+  ],
   Feature: ['Header', 'HeaderDraw', 'Hero', 'Closing'],
   Compare: ['Header', 'HeaderDraw', 'Card'],
   Faq: ['Header', 'HeaderDraw', 'Card'],

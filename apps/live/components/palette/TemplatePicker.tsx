@@ -3,11 +3,12 @@ import { Button, CloseIcon, useEscape } from '@livediagram/ui';
 import type { Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 import { shufflePinned } from '@/lib/shuffle';
-import type { TemplateCategory, TemplateKind } from '@livediagram/templates';
+import type { TemplateCollection, TemplateKind, TemplateShelf } from '@livediagram/templates';
 import {
   TEMPLATE_CATEGORIES,
   TEMPLATES,
   templateCategory,
+  templateShelfTemplates,
   untitledNameForTemplate,
 } from '@livediagram/templates';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
@@ -82,6 +83,9 @@ type TemplatePickerProps = {
   teamFolders?: Record<string, { id: string; name: string; parentId: string | null }[]>;
   // Pre-selected placement (the /new URL's folder / team context).
   initialPlacement?: string;
+  // The collection the template step opens on (the /new URL's `?browse=`),
+  // or null for the category overview.
+  initialShelf?: TemplateCollection | null;
   // Inline folder creation from the placement browser (name popover). Creates
   // in the given scope and returns the new folder (null on failure).
   onCreateFolder?: (
@@ -131,6 +135,7 @@ export function TemplatePicker({
   teams = [],
   teamFolders = {},
   initialPlacement,
+  initialShelf = null,
   onCreateFolder,
   onCreateTeam,
 }: TemplatePickerProps) {
@@ -187,7 +192,10 @@ export function TemplatePicker({
   // Which category the user has drilled into on the overview, or null
   // for the top-level overview (Blank quick-pick + a card per category).
   // A non-empty search query overrides this and shows flat results.
-  const [openCategory, setOpenCategory] = useState<TemplateCategory | null>(null);
+  // Undefined until the author moves: until then the step shows the shelf the
+  // host opened it on (`?browse=<collection>`, docs/specs/007-editor/new-document-route.md).
+  const [chosenShelf, setOpenShelf] = useState<TemplateShelf | null | undefined>(undefined);
+  const openShelf = chosenShelf === undefined ? (initialShelf ?? null) : chosenShelf;
   // Initial theme is whatever the caller hands us: the /new flow passes
   // 'brand' (so Default is pre-selected for a fresh document), while a new
   // tab copying an existing one passes that tab's theme.
@@ -278,17 +286,14 @@ export function TemplatePicker({
       })
     : templates;
   // Blank is pulled out of the category grouping and shown as a dedicated
-  // "start from scratch" card on the overview; `categoryTemplates` returns
+  // "start from scratch" card on the overview; `shelfTemplates` returns
   // a category's templates with Blank excluded (it keeps the shuffled
   // order so the preview collages rotate on each open).
   // Whiteboard sits beside it the same way: a kind of tab to start, not a
   // scaffold (docs/specs/023-whiteboard/whiteboard.md "Creating one").
   const blankTemplate = TEMPLATES.find((t) => t.kind === 'blank');
   const whiteboardTemplate = TEMPLATES.find((t) => t.kind === 'whiteboard');
-  const categoryTemplates = (category: TemplateCategory) =>
-    templates.filter(
-      (t) => t.kind !== 'blank' && t.kind !== 'whiteboard' && templateCategory(t.kind) === category,
-    );
+  const shelfTemplates = (shelf: TemplateShelf) => templateShelfTemplates(shelf, templates);
 
   // Section visibility. In wizard mode only the active step's section
   // shows; identity mode shows neither.
@@ -447,11 +452,11 @@ export function TemplatePicker({
                 setTemplateQuery={setTemplateQuery}
                 templateFilter={templateFilter}
                 filteredTemplates={filteredTemplates}
-                openCategory={openCategory}
-                setOpenCategory={setOpenCategory}
+                openShelf={openShelf}
+                setOpenShelf={setOpenShelf}
                 blankTemplate={blankTemplate}
                 whiteboardTemplate={whiteboardTemplate}
-                categoryTemplates={categoryTemplates}
+                shelfTemplates={shelfTemplates}
                 templateKind={templateKind}
                 onTemplateCommit={onTemplateCommit}
               />

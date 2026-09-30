@@ -597,6 +597,70 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   whiteboard: 'design',
 };
 
+// Collections (docs/specs/007-editor/new-document-route.md "?browse=<collection>"): cross-category
+// shortlists a link can open the wizard on, shown as a drilled-in view with no
+// overview card of their own. Ids never collide with a category id, so one
+// view id names either. The order is the order the cards show in.
+export type TemplateCollection = 'brainstorm';
+
+export const TEMPLATE_COLLECTIONS: {
+  id: TemplateCollection;
+  label: string;
+  description: string;
+  kinds: readonly TemplateKind[];
+}[] = [
+  {
+    id: 'brainstorm',
+    label: 'Brainstorm',
+    description: 'Mind maps, affinity maps, fishbones and event storming.',
+    kinds: [
+      'mindmap',
+      'mindmap-tree',
+      'mindmap-bubble',
+      'affinity-map',
+      'fishbone',
+      'event-storming',
+    ],
+  },
+];
+
+export function isTemplateCollection(value: unknown): value is TemplateCollection {
+  return typeof value === 'string' && TEMPLATE_COLLECTIONS.some((c) => c.id === value);
+}
+
+// The editor URL that opens the wizard on a collection: what the marketing
+// hero's Brainstorm button links to.
+export function templateBrowseHref(collection: TemplateCollection): string {
+  return `/new?browse=${encodeURIComponent(collection)}`;
+}
+
+// What the template step can be drilled into: a category or a collection.
+export type TemplateShelf = TemplateCategory | TemplateCollection;
+
+export function templateShelfLabel(shelf: TemplateShelf): string {
+  return (
+    TEMPLATE_COLLECTIONS.find((c) => c.id === shelf)?.label ??
+    TEMPLATE_CATEGORIES.find((c) => c.id === shelf)?.label ??
+    shelf
+  );
+}
+
+// A shelf's cards from `templates` (the picker's shuffled, listed catalogue):
+// a collection in its own order, a category in the order given. Blank and
+// Whiteboard are quick-picks, never on a category shelf.
+export function templateShelfTemplates(
+  shelf: TemplateShelf,
+  templates: readonly TemplateDescriptor[],
+): TemplateDescriptor[] {
+  const collection = TEMPLATE_COLLECTIONS.find((c) => c.id === shelf);
+  if (collection) {
+    return collection.kinds.flatMap((kind) => templates.find((t) => t.kind === kind) ?? []);
+  }
+  return templates.filter(
+    (t) => t.kind !== 'blank' && t.kind !== 'whiteboard' && templateCategory(t.kind) === shelf,
+  );
+}
+
 export function templateCategory(kind: TemplateKind): TemplateCategory {
   return TEMPLATE_CATEGORY[kind];
 }
