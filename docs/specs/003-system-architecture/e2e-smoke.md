@@ -12,7 +12,7 @@ test lives here.
 
 ## Why it's separate from CI's unit gate
 
-Browser E2E costs real CI minutes (a browser download + a running
+Browser E2E costs real CI minutes (a browser + a running
 stack), so it is **deliberately not on the per-PR critical path**. The
 `ci.yml` gate (lint / format / typecheck / test / build) stays fast and
 runs on every PR and push. The browser suite is its own workflow,
@@ -33,15 +33,24 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   only when `E2E_WEBKIT=1` is set (after `playwright install webkit`) and runs just
   `import-images.spec.ts`, the image import pipeline's Safari path
   ([Import image pipeline](../020-import-export/import-image-pipeline.md)); CI never sets it.
-- **Browser binary cached** on `~/.cache/ms-playwright` keyed by the
-  Playwright version, so the ~120 MB download happens once per version
-  bump, not per run.
+- **Playwright's container image** (`mcr.microsoft.com/playwright:v<version>-noble`) runs the job:
+  Chromium and its system libraries come with it, so no run downloads a browser or apt-installs its
+  dependencies. The tag is the locked `@playwright/test` version; the workflow's first check fails,
+  naming the tag to set, when a Playwright bump leaves the image behind.
 - **Focused tests, not a matrix.** Each spec file proves what only a browser
   can show for one feature; breadth and edge cases stay in unit tests, where
   they are cheap.
-- `workers: 1` and `retries: 1` in CI, a 30-second per-test timeout and a
-  15-minute job timeout, so a hung run fails fast instead of burning minutes.
-- `fullyParallel` locally for authoring speed.
+- **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
+  and Playwright's default locally. Tests stay independent because each opens a fresh browser
+  context, so a fresh guest owner whose documents no other test sees.
+- `retries: 1` in CI, a 30-second per-test timeout and a 15-minute job timeout, so a hung run
+  fails fast instead of burning minutes.
+- **Traces of first failures** in CI (`retain-on-first-failure`): a test that fails and then passes
+  on retry still keeps the trace of its failing attempt, so a flaky test can be read rather than
+  guessed at. Each invocation keeps its own artefacts (`test-results` and `playwright-report`, or
+  their `-clerk-stub` twins), since a run clears its output folder when it starts. `e2e.yml`
+  uploads them whenever any holds a trace, a timed-out run included. Locally a trace is kept for a
+  retry only.
 - **No model downloads.** The photo-import tests stub the handwriting reader
   and serve the boundary model's weights from the app itself; nothing pulls
   weights over the wire.

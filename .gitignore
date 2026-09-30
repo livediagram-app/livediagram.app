@@ -45,8 +45,8 @@ apps/*/AGENTS.md
 apps/*/CLAUDE.md
 
 # Playwright e2e artifacts (docs/specs/003-system-architecture/e2e-smoke.md)
-apps/live/test-results/
-apps/live/playwright-report/
+apps/live/test-results*/
+apps/live/playwright-report*/
 apps/live/.playwright/
 
 # Turbo

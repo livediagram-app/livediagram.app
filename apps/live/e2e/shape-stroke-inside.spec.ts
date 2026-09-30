@@ -17,10 +17,15 @@ async function inkOutsideBox(page: Page, element: Locator): Promise<number> {
   // mid-pop is the shrunken one, while the screenshots below finish the
   // animation first. The ring would then be clipped from a box smaller than
   // the diamond it measures, and count the diamond's own edges as ink. Wait
-  // the entry out before measuring.
-  await element.evaluate((el: HTMLElement) =>
-    Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)),
-  );
+  // the entry out before measuring. A re-render can cancel the entry and start it afresh; a cancelled
+  // animation rejects its `finished`, so settle each one and look again until none is still going.
+  await element.evaluate(async (el: HTMLElement) => {
+    for (;;) {
+      const going = el.getAnimations({ subtree: true }).filter((a) => a.playState !== 'finished');
+      if (going.length === 0) return;
+      await Promise.allSettled(going.map((a) => a.finished));
+    }
+  });
   const box = (await element.boundingBox())!;
   const clip = {
     x: box.x - MARGIN_PX,

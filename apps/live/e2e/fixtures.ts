@@ -1,4 +1,4 @@
-import { test as base, expect, type Page } from '@playwright/test';
+import { test as base, expect, type Locator, type Page } from '@playwright/test';
 
 // Shared fixture (docs/specs/003-system-architecture/e2e-smoke.md): every smoke test fails on an uncaught
 // exception or unhandled rejection surfaced to the page — the class the
@@ -59,6 +59,17 @@ export function expectNoPageErrors(pageErrors: string[]): void {
   expect(pageErrors, `unexpected page errors:\n${pageErrors.join('\n')}`).toEqual([]);
 }
 
+// The wizard is a static export: its buttons are in the HTML before React attaches their handlers, and
+// a click in that gap does nothing, more often the busier the machine. React tags every element it
+// has hydrated with a `__reactProps$` key; wait for it on the element about to be used.
+export async function untilHydrated(locator: Locator): Promise<void> {
+  await expect
+    .poll(() =>
+      locator.evaluate((el) => Object.keys(el).some((key) => key.startsWith('__reactProps$'))),
+    )
+    .toBe(true);
+}
+
 // Complete the /new template wizard into a blank document and land on
 // the editor canvas. Shared by the create-flow tests; resilient to the
 // wizard's step count by clicking whatever advances it.
@@ -76,7 +87,9 @@ export async function startTemplateDocument(
   await page.getByText('New Document', { exact: false }).waitFor();
   // Category tiles are aria-labelled "Browse <name> templates"; the
   // template tiles carry their title + description as the accessible name.
-  await page.getByRole('button', { name: category }).first().click();
+  const categoryTile = page.getByRole('button', { name: category }).first();
+  await untilHydrated(categoryTile);
+  await categoryTile.click();
   // Picking a template moves straight on to the Location step.
   await page.getByRole('button', { name: template }).first().click();
   await page
@@ -167,7 +180,9 @@ export async function startBlankDocument(page: Page): Promise<void> {
   await page.getByText('New Document', { exact: false }).waitFor();
   // Step 1: pick the Blank template. Single-click advances to the Location
   // step (docs/specs/007-editor/new-document-route.md), so no explicit Next is needed here.
-  await page.getByText('Blank Canvas', { exact: false }).first().click();
+  const blank = page.getByText('Blank Canvas', { exact: false }).first();
+  await untilHydrated(blank);
+  await blank.click();
   // Step 2 (Location): the footer's primary action finishes the wizard.
   // Anchored finish verbs: an unanchored /create/i also matched the
   // settings step's "New Folder ... Create here" tile (the CI breakage
