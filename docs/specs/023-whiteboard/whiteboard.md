@@ -90,23 +90,23 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   1. **Select** (marquee and move; the ordinary select tool).
   2. **Markers 1, 2 and 3**: the preset pens, one button each (see [Pens](#pens)).
   3. **Eraser**, with its mode (see [Eraser](#eraser)).
-  4. **Text**.
 - **History:** **Undo** and **Redo**, the same actions as the bottom-right
   cluster and the keyboard; disabled when there is nothing to undo or redo.
 - **Shapes, left to right** (With shapes mode):
-  1. **Sticky note**.
-  2. **Path tool** (see [Path tool](path-tool.md)).
-  3. **Pinned shapes**: up to two shape kinds the user pinned (see
+  1. **Text**.
+  2. **Sticky note**.
+  3. **Path tool** (see [Path tool](path-tool.md)).
+  4. **Pinned shapes**: up to two shape kinds the user pinned (see
      [Shape slots](#shape-slots)); none by default.
-  4. A **separator**.
-  5. **Two frequent shape slots**: the two shape kinds this user picks most
+  5. A **separator**.
+  6. **Two frequent shape slots**: the two shape kinds this user picks most
      often that are not already on the bar (see [Shape slots](#shape-slots)).
-  6. **Shapes**: a small flyout of rectangle, ellipse, diamond, cylinder,
+  7. **Shapes**: a small flyout of rectangle, ellipse, diamond, cylinder,
      line and arrow (see [Shapes](#shapes)). It opens on hover (a mouse or a
      pen, never a finger) as well as on a press, without taking the keyboard
      focus, and closes a moment after the pointer leaves both it and the
      button; a press on a hover-opened flyout keeps it open.
-  7. **More shapes** (`…`): opens **on a press only**, with its **search
+  8. **More shapes** (`…`): opens **on a press only**, with its **search
      field focused at once**, so typing finds any shape of the palette's shape
      catalogue by name or keyword (flowchart, basic, block and every other
      shape kind the palette offers; not icons, templates or components).
