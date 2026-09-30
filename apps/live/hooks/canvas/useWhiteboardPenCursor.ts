@@ -13,13 +13,16 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 export function useWhiteboardPenCursor(
   pendingDraw: PendingDraw | null,
   variant: PenCursorVariant | undefined,
+  // The canvas zoom: the dot is the stroke's width on screen.
+  zoom: number,
 ): string | null {
   const { appearance } = useAppearance();
   const pen =
     pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
   const colour = pen ? (pen.colour ?? WHITEBOARD_INK[appearance]) : null;
+  const strokePx = pen ? pen.width * zoom : 0;
   return useMemo(
-    () => (colour && variant ? penCursor(variant, colour, appearance) : null),
-    [colour, variant, appearance],
+    () => (colour && variant ? penCursor(variant, colour, appearance, strokePx) : null),
+    [colour, variant, appearance, strokePx],
   );
 }

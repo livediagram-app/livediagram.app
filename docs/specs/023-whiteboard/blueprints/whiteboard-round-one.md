@@ -260,11 +260,13 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 - `[data-pen-in-hand]` on the canvas wrapper while a whiteboard pen is held; `globals.css` makes every
   descendant inherit the pen cursor.
 - `lib/whiteboard-pen-cursor.ts`: `PEN_CURSOR_VARIANTS` (`dot`, `nib-crosshair`), `DEFAULT_PEN_CURSOR`,
-  `penCursorSvg(variant, colour, appearance)` (dot rimmed in `WHITEBOARD_BOARD[appearance]`; the
+  `penCursorSvg(variant, colour, appearance, strokePx)` (dot `max(strokePx, PEN_CURSOR_DOT_MIN_PX = 6)`
+  across, capped under `PEN_CURSOR_MAX_PX = 128`, rimmed 1.5 px outside in `WHITEBOARD_BOARD[appearance]`, hotspot
+  a whole pixel at its centre; the
   crosshair + nib black with a white outline on light, white with no outline on dark, its dot rimmed in
   the inverse), `penCursor`. `WhiteboardPrefs.cursor` (parsed, default `nib-crosshair`), `setCursor`
   (`Whiteboard·Changed·CursorDot | CursorCrosshair`), the More flyout's Cursor row, and
-  `useWhiteboardPenCursor(pendingDraw, variant)` feeding the Canvas cursor style.
+  `useWhiteboardPenCursor(pendingDraw, variant, zoom)` (strokePx = pen width x zoom) feeding the Canvas cursor style.
 
 ### Recognition preview
 

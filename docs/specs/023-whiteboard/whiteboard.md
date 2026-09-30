@@ -116,6 +116,10 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   remembered device-locally with the pens: **Crosshair + nib** (the default:
   a crosshair at the tip, a nib and a dot of the pen's colour beside it) and
   **Dot** (a dot of the pen's colour at the tip, rimmed in the board's colour).
+  The dot is **as wide as the stroke on screen** (the pen's width times the
+  zoom), so it shows exactly what the pen will lay down, but never under 6 px
+  across, so it stays visible zoomed far out (and never over 128 px, the most
+  a browser shows as a cursor).
   On the light board the crosshair and nib are black with a white outline; on
   the dark board they are the exact inverse, white, with no outline.
 

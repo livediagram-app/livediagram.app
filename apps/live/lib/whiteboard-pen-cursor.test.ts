@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { PEN_CURSOR_VARIANTS, penCursor, penCursorSvg } from './whiteboard-pen-cursor';
+import {
+  PEN_CURSOR_DOT_MIN_PX,
+  PEN_CURSOR_MAX_PX,
+  PEN_CURSOR_VARIANTS,
+  penCursor,
+  penCursorSvg,
+} from './whiteboard-pen-cursor';
 
 // docs/specs/023-whiteboard/whiteboard.md "Pens": the pen cursor, Dot or Crosshair + nib.
 describe('penCursor', () => {
@@ -11,6 +17,17 @@ describe('penCursor', () => {
     expect(penCursorSvg('dot', '#e5484d', 'dark').svg).toContain("fill='#e5484d'");
     expect(penCursorSvg('dot', '#e5484d', 'dark').svg).toContain("stroke='#0d121a'");
     expect(penCursorSvg('dot', '#e5484d', 'light').svg).toContain("stroke='#fbfaf7'");
+  });
+
+  it('makes the dot at least as wide as the stroke on screen, and never too small to see', () => {
+    const dot = (px: number) =>
+      Number(penCursorSvg('dot', '#000', 'light', px).svg.match(/r='([\d.]+)' fill='#000'/)![1]) *
+      2;
+    expect(dot(12)).toBe(12);
+    expect(dot(1.5)).toBe(PEN_CURSOR_DOT_MIN_PX);
+    expect(dot(500)).toBeLessThanOrEqual(PEN_CURSOR_MAX_PX);
+    const { size, hotspot } = penCursorSvg('dot', '#000', 'light', 12);
+    expect(hotspot).toEqual([size / 2, size / 2]);
   });
 
   it('draws the crosshair black with a white outline on the light board', () => {

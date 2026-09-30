@@ -125,7 +125,11 @@ export function Canvas(props: CanvasProps) {
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   // A whiteboard pen's own cursor, as chosen in the dock's More flyout.
-  const penCursorValue = useWhiteboardPenCursor(pendingDraw, props.whiteboardDock?.prefs.cursor);
+  const penCursorValue = useWhiteboardPenCursor(
+    pendingDraw,
+    props.whiteboardDock?.prefs.cursor,
+    viewportZoom,
+  );
 
   // Paint mode covers BOTH painter entry points: a single-shot armed source
   // (toolbar) and the persistent Format canvas tool — the tool must read as
