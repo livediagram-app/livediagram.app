@@ -294,9 +294,13 @@ The eraser offers **both** modes, switched in its flyout:
   **reshapes it**: a line's end nearer the pen follows the pen, its other end
   stays; a shape's corner nearer the pen follows the pen, the opposite corner
   stays, and dragging past it flips the box. **Shift** held while reshaping
-  makes the shape perfect: a circle stays a true circle, and a square,
-  diamond, triangle or star stays as wide as it is tall (the dragged corner
-  follows the larger of the two distances); a line snaps to 45° steps about
+  makes the shape perfect: a circle stays a true circle, and a diamond,
+  triangle or star stays as wide as it is tall (the dragged corner follows the
+  larger of the two distances). A **rectangle** snaps to whichever of three
+  ratios is nearest its own when Shift is pressed: **1:1** (a square),
+  **5:3** (landscape) or **3:5** (portrait), nearest by the logarithm of
+  width over height, so a drawn square becomes a perfect square and a drawn
+  rectangle a clean 5:3 or 3:5; a line snaps to 45° steps about
   its fixed end. Releasing Shift lets it free again on the next move. Lifting
   lands the shape exactly as shown.
 - **Shift keeps the aspect ratio** whenever a placed element is resized on a
