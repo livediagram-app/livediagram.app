@@ -3,6 +3,7 @@ import type { PendingDraw } from './draw-mode';
 import {
   WHITEBOARD_SHAPES,
   applyWhiteboardPen,
+  whiteboardTakesTyping,
   whiteboardShapeIntent,
   activeWhiteboardTool,
   whiteboardPenIntent,
@@ -145,5 +146,20 @@ describe('applyWhiteboardPen', () => {
       strokeColor: '#2f9e44',
       strokeWidth: 2,
     });
+  });
+});
+
+describe('whiteboardTakesTyping', () => {
+  // docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts": on a whiteboard only a note or text
+  // box turns a keypress into typing; a selected shape or stroke leaves the key to the dock.
+  it('lets a note or a text box take the keypress', () => {
+    expect(whiteboardTakesTyping({ type: 'sticky' })).toBe(true);
+    expect(whiteboardTakesTyping({ type: 'text' })).toBe(true);
+  });
+
+  it('leaves the key to the tools for a shape, a line or a stroke', () => {
+    expect(whiteboardTakesTyping({ type: 'shape' })).toBe(false);
+    expect(whiteboardTakesTyping({ type: 'arrow' })).toBe(false);
+    expect(whiteboardTakesTyping({ type: 'freehand' })).toBe(false);
   });
 });

@@ -3,6 +3,7 @@ import { isUntitledDocumentName } from '@livediagram/templates';
 import {
   hasRichFormatting,
   isBoxed,
+  isWhiteboardTab,
   opensInlineLabelEditor,
   normalizeRuns,
   truncateName,
@@ -11,6 +12,7 @@ import {
   type Tab,
   type TextRun,
 } from '@livediagram/document';
+import { whiteboardTakesTyping } from '@/lib/whiteboard-tool';
 import { patchTab } from './editor-page-helpers';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 
@@ -217,6 +219,8 @@ export function useSelectionEditing(opts: {
     if (!labelable) return false;
     // Self-drawing data components have no editable label (see beginEdit).
     if (el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return false;
+    // A whiteboard leaves the key to its dock unless a note or text box is selected.
+    if (isWhiteboardTab(activeTab) && !whiteboardTakesTyping(el)) return false;
     // Type-to-edit REPLACES the whole label with the typed char, so any
     // per-range `richText` from a prior edit must be dropped — otherwise the
     // editor would re-open against the stale runs instead of the seed char.

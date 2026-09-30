@@ -83,6 +83,13 @@ export function applyWhiteboardPen<T extends Element>(el: T, pen: WhiteboardPenI
   };
 }
 
+// On a whiteboard only a note or a text box turns a keypress into typing
+// (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): a shape just drawn stays selected,
+// and R, O, D and the rest must still pick the next tool rather than label it.
+export function whiteboardTakesTyping(el: Pick<Element, 'type'>): boolean {
+  return el.type === 'sticky' || el.type === 'text';
+}
+
 // Microsoft Whiteboard's rule (docs/specs/023-whiteboard/whiteboard.md "Touch and pen input"): once a
 // pen has been used on this device, a single finger pans rather than inks, so
 // a resting palm or a guiding finger never draws. `inking` is true while a pen,

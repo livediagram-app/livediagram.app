@@ -187,6 +187,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
         live.canvasTool !== 'avatar' &&
+        !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
         live.selectedId === null &&
         live.multiSelectedIds.size === 0
       ) {
@@ -211,6 +212,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
         live.canvasTool !== 'avatar' &&
+        // A whiteboard eraser in hand is put down first (the narrow listener).
+        !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
         (live.selectedId !== null || live.multiSelectedIds.size > 0)
       ) {
         e.preventDefault();

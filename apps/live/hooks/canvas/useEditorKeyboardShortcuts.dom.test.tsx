@@ -156,6 +156,23 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
     expect(setCanvasTool).not.toHaveBeenCalledWith('laser');
   });
 
+  it('puts the eraser down before clearing a selection', () => {
+    const wb = {
+      pickSelect: vi.fn(),
+      pickPen: vi.fn(),
+      pickEraser: vi.fn(),
+      pickSticky: vi.fn(),
+      pickText: vi.fn(),
+      pickShape: vi.fn(),
+    };
+    const onDeselect = vi.fn();
+    const { bag } = deps({ selectedId: 'a', whiteboard: wb, canvasTool: 'eraser', onDeselect });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('Escape');
+    expect(wb.pickSelect).toHaveBeenCalledTimes(1);
+    expect(onDeselect).not.toHaveBeenCalled();
+  });
+
   it('puts the eraser down with Escape', () => {
     const wb = {
       pickSelect: vi.fn(),
