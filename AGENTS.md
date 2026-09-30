@@ -50,7 +50,7 @@ Further details below.
 
 ### Plans
 
-- Plans live as a single Markdown file in the project's `plans/` folder, numbered `0001-<topic>.md`.
+- Plans live as a single Markdown file in the main checkout's `plans/` folder, numbered `0001-<topic>.md`.
 - They live inside the `plans/` folder, which MAY be **gitignored** (recommended).
 - Plans describe **work**, split into sequenced **phases** of checkboxed **steps**:.
   - **work** includes research, specification, building, testing, verification, definition of done, and anything else that's needed.
