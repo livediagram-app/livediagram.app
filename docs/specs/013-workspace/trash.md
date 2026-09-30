@@ -16,7 +16,7 @@ Every document delete asks one short question, the same everywhere (the
 Explorer, the editor, the Explorer panel's popover, the team library;
 `apps/live/lib/delete-confirmation.ts`):
 
-- Title **Please confirm**; first line **Delete "<name>"?**
+- Title **Confirm**; first line **Delete "<name>"?**
 - A second line only for what applies, in this order: "It is deleted for the
   whole team." (a team document), "Its share links stop working." (only when
   the document has share links; for the document open in the editor this is

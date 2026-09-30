@@ -50,7 +50,7 @@ test('delete, find it in Settings › Trash, restore it', async ({ page, baseURL
   await page.getByRole('button', { name: 'Menu for Quarterly plan' }).click();
   await page.getByRole('menu').last().getByText('Delete', { exact: true }).click();
   const confirm = page.getByRole('dialog');
-  await expect(confirm.getByRole('heading')).toHaveText('Please confirm');
+  await expect(confirm.getByRole('heading')).toHaveText('Confirm');
   // No share links, no shared tabs: just the question.
   await expect(confirm).toContainText('Delete "Quarterly plan"?');
   await expect(confirm).not.toContainText('share links');
