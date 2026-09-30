@@ -1,26 +1,16 @@
 import { ctaHref } from '@livediagram/api-schema';
-import { buttonClassName, Glyph, ButtonContent } from '@livediagram/ui';
+import { buttonClassName, ButtonContent } from '@livediagram/ui';
+import { HeroConnectors } from './HeroConnectors';
 import { HeroIllustration } from './HeroIllustration';
+import { PROOF_POINTS } from '@/lib/proof-points';
 
-// Each one true today (docs/specs/019-marketing/marketing-site.md's golden rule): no paid tier, the canvas works
-// signed out, edits land live, and the repo is MIT.
-const PROOF_POINTS = [
-  'Free for everyone',
-  'No sign-up',
-  'Real-time collaboration',
-  'Open source (MIT)',
-];
-
+// The proof points live on the stage's launch window now (hero-launch.tsx); the stage is
+// decorative, so screen readers get them here.
 function ProofPoints() {
   return (
-    <ul className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-slate-600 dark:text-slate-300">
+    <ul className="sr-only">
       {PROOF_POINTS.map((point) => (
-        <li key={point} className="flex items-center gap-1.5">
-          <Glyph size={16} units={16} className="h-4 w-4 text-emerald-500">
-            <path d="M3.5 8.5l3 3 6-7" />
-          </Glyph>
-          {point}
-        </li>
+        <li key={point}>{point}</li>
       ))}
     </ul>
   );
@@ -33,9 +23,14 @@ export function Hero() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[600px] bg-gradient-to-b from-brand-100 via-brand-50 to-transparent dark:from-brand-500/20 dark:via-brand-500/5"
       />
-      <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-center sm:pt-32 sm:pb-28">
+      <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-20 text-center sm:pt-32 sm:pb-28">
+        {/* An arrow from the headline to the illustration, drawn on load (HeroConnectors). */}
+        <HeroConnectors />
         {/* Says what it is and the one thing that sets it apart (docs/specs/019-marketing/marketing-site.md). */}
-        <h1 className="mx-auto max-w-3xl text-balance text-5xl font-semibold tracking-tight text-slate-900 sm:text-7xl dark:text-slate-100">
+        <h1
+          data-hero-anchor="title"
+          className="mx-auto max-w-3xl text-balance text-5xl font-semibold tracking-tight text-slate-900 sm:text-7xl dark:text-slate-100"
+        >
           Diagram together, <span className="text-brand-600 dark:text-brand-300">live</span>.
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-slate-600 sm:text-xl dark:text-slate-300">

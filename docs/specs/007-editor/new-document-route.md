@@ -372,9 +372,10 @@ default document name) without walking the wizard:
     redirects to the plain `/new` wizard rather than silently minting
     another blank document or trapping the user behind a page that always
     navigates forward again.
-  - The interactive tour's welcome offer ([Interactive editor tour ("Show me around")](editor-tour.md)) is never queued on
+  - The interactive tour's welcome offer ([Interactive editor tour ("Show me around")](editor-tour.md)) is not queued on
     this path: the create fires before the document count resolves, and a
-    "just draw" user has asked to get straight to the canvas.
+    "just draw" user has asked to get straight to the canvas. The hero's
+    `?welcome=1` variant (below) is the one exception.
   - **The wizard must never paint on this path, not even for a frame.**
     `/new` is a static export, so its prerendered HTML is the wizard and
     the query param is only knowable in the browser. A React-side check
@@ -399,20 +400,30 @@ default document name) without walking the wizard:
   page, its restore cleanup and the guard agree on what counts. This is
   the URL the marketing site's template gallery links every card to
   ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`.
-- **`/new?blank=1&quickstart=1`**: Just Draw that lands **with Quick Start
-  open**. It commits the blank document exactly as `?blank=1` does, and the
-  editor then opens its Quick Start picker over the empty tab, as if the
-  empty-canvas banner's Quick Start button had been pressed. This is the URL
-  the marketing hero's launch window grows into
-  ([Marketing site](../019-marketing/marketing-site.md)): the visitor clicked
-  a blank canvas, so they arrive on one with the templates offered. The intent
-  crosses the in-place handoff as a one-shot `sessionStorage` flag
-  (`lib/quick-start-pending.ts`, written just before the handoff, as the tour
-  flag is), and the editor **consumes** it the first time the document has
-  loaded, is editable, and its active tab is empty. Consumed, not peeked: a
-  reload lands on the canvas like any blank document, and Cancel is final.
-  `quickstart` alone (no `blank`) does nothing; it only rides the blank
-  bypass, and the bfcache restore strips it with the bypass params.
+- **`/new?blank=1&welcome=1`**: Just Draw from the marketing hero's **launch
+  window** ([Marketing site](../019-marketing/marketing-site.md)), which grows
+  into a full-screen blank canvas before navigating here. It commits the blank
+  document exactly as `?blank=1` does, with two differences:
+  - **A quiet landing.** Nothing but that blank canvas shows from the page's
+    first frame until the editor has loaded over it: the Default scheme's
+    paper and dots, in place of the opening screen below. A pre-paint guard in
+    the root layout's `<head>` (`lib/quiet-landing-boot.ts`, in the head
+    because the body can paint before a script inside it has run) flags
+    `<html>`, hides the body and paints the canvas on `<html>` itself; `/new`
+    then renders the same canvas (`BlankCanvasScreen`) and lifts the flag.
+    Across the handoff a `sessionStorage` flag (`lib/quiet-landing.ts`,
+    written just before it, as the tour flag is) makes the editor's own waits
+    (the editor chunk loading, then the document) hold that canvas too
+    (`OpeningScreen`); the editor clears the flag once the document has
+    loaded, so a later load in the tab shows the usual opening screen.
+  - **The welcome offer.** The tour's welcome offer
+    ([Interactive editor tour ("Show me around")](editor-tour.md)) is queued,
+    though the create fires before the document count is known: whoever
+    clicks the hero's canvas is most likely new, and the synced `tourSeen`
+    gate keeps the offer from anyone who has already answered it.
+    Quick Start does not open; the visitor asked for a canvas. `welcome` alone
+    (no `blank`) does nothing, and the bfcache restore strips it with the bypass
+    params.
 - **`/new?via=<Surface>.<Slot>`**: the landing funnel's source
   ([Landing funnel](../019-marketing/landing-funnel.md)), added by a public page's CTA and
   combinable with every param above. `useCtaAttribution` reads it once,

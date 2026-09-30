@@ -8,7 +8,6 @@ import {
   lucideFileInput,
   lucideFolder,
   lucideScale,
-  lucideSlidersHorizontal,
 } from '@livediagram/icons/lucide';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
@@ -50,5 +49,4 @@ export function GithubIcon() {
 // scales of the law, a row of the Explorer's ⋯ menu.
 export const ScaleIcon = lucideGlyph(lucideScale, MENU_ICON_PX);
 
-// Settings: two sliders, never a cog (a cog's spokes read as a sun, the appearance toggle).
-export const SettingsIcon = lucideGlyph(lucideSlidersHorizontal, 16);
+export { SettingsIcon } from '@livediagram/ui';

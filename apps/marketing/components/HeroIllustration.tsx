@@ -24,7 +24,7 @@
 // The centred window plays its pure-CSS build (globals.css, hero-*); the
 // peeking windows render settled (.hero-static), blurred + faded, with the
 // stage edges masked so they fade out rather than hard-clip. The stage
-// auto-advances every 16s and centres a window when clicked (timer resets on
+// auto-advances every 16s (the launch window holds for 32s) and centres a window when clicked (timer resets on
 // interaction). Every window ends the same way: over its last second it
 // fades to a light grey, the stage moves on, and the next window lifts from
 // that grey (hero-fade), so no build is ever seen snapping back to its first
@@ -45,6 +45,7 @@ import {
 } from './hero-diagrams';
 import { EditorWindow, type TabDef } from './hero-editor-window';
 import {
+  LAUNCH_DWELL_MS,
   LAUNCH_HREF,
   LAUNCH_TAB,
   LAUNCH_TITLE,
@@ -58,6 +59,10 @@ import {
 const CARD_WIDE = 68;
 const CARD_NARROW = 88;
 const GAP = 3;
+
+// One build cycle: every window but the launch window plays for this long, and the hero-* build
+// and veil keyframes are timed to it.
+const CYCLE_MS = 16000;
 
 const CARDS: {
   key: string;
@@ -80,6 +85,8 @@ const CARDS: {
   layers?: boolean;
   // The launch window: a link that grows into a new document (hero-launch.tsx).
   launch?: boolean;
+  // Draw the editor in its Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md).
+  toolbar?: boolean;
 }[] = [
   {
     key: 'launch',
@@ -91,6 +98,7 @@ const CARDS: {
     shared: false,
     theming: false,
     launch: true,
+    toolbar: true,
   },
   {
     key: 'flowchart',
@@ -175,16 +183,25 @@ function useCardWidth() {
 
 export function HeroIllustration() {
   const [active, setActive] = useState(0);
+  // Until the stage first moves, the launch window is on its page-load play, where its flow waits
+  // for the headline's connector to land.
+  const [moved, setMoved] = useState(false);
+  const show = (i: number) => {
+    setActive(i);
+    setMoved(true);
+  };
   const card = useCardWidth();
 
   // Auto-advance one window per build cycle; reset whenever `active` changes
   // (so a click gives the clicked window a full cycle). Skipped under reduced
   // motion (and stops if the visitor turns it on mid-visit).
   const reduceMotion = useMediaQuery(PREFERS_REDUCED_MOTION);
+  // The launch window holds longer (LAUNCH_DWELL_MS): it is the one a visitor can step into.
   useEffect(() => {
     if (reduceMotion) return;
-    const id = window.setInterval(() => setActive((a) => (a + 1) % CARDS.length), 16000);
-    return () => window.clearInterval(id);
+    const dwell = CARDS[active]?.launch ? LAUNCH_DWELL_MS : CYCLE_MS;
+    const id = window.setTimeout(() => show((active + 1) % CARDS.length), dwell);
+    return () => window.clearTimeout(id);
   }, [active, reduceMotion]);
 
   const tx = (100 - card) / 2 - active * (card + GAP);
@@ -196,6 +213,7 @@ export function HeroIllustration() {
     <div className="mx-auto mt-16 w-full max-w-6xl">
       <div
         aria-hidden
+        data-hero-anchor="stage"
         className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)]"
       >
         <div
@@ -227,7 +245,14 @@ export function HeroIllustration() {
                 tool={c.tool}
                 playing={playing}
                 document={liveDoc}
-                overlay={c.launch ? <LaunchCanvasOverlay playing={playing} /> : undefined}
+                overlay={
+                  c.launch ? (
+                    <LaunchCanvasOverlay playing={playing} afterConnector={!moved} />
+                  ) : undefined
+                }
+                toolbar={c.toolbar ?? false}
+                empty={c.launch ?? false}
+                veil={!c.launch}
               />
             );
             const cardClassName =
@@ -240,11 +265,12 @@ export function HeroIllustration() {
                 <a
                   key={c.key}
                   href={LAUNCH_HREF}
+                  data-hero-anchor="window"
                   tabIndex={-1}
                   onClick={(e) => {
                     if (!playing) {
                       e.preventDefault();
-                      setActive(i);
+                      show(i);
                     } else if (launch(e)) {
                       e.preventDefault();
                     }
@@ -261,7 +287,7 @@ export function HeroIllustration() {
                 key={c.key}
                 type="button"
                 tabIndex={-1}
-                onClick={() => setActive(i)}
+                onClick={() => show(i)}
                 style={{ width: `${card}%` }}
                 className={cardClassName}
               >
@@ -287,7 +313,7 @@ export function HeroIllustration() {
               type="button"
               aria-label={c.label}
               aria-current={i === active}
-              onClick={() => setActive(i)}
+              onClick={() => show(i)}
               className={
                 'h-2 rounded-full transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ' +
                 (i === active

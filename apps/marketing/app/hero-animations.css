@@ -1074,35 +1074,171 @@
   }
 }
 /* A click grows the canvas to fill the screen: a fixed layer clipped from the canvas's rect
-   (--grow-t/-r/-b/-l, set from the click) to the whole viewport, its paper easing from the
-   window's canvas to the opening screen's (apps/live DocumentLoading: slate-50, slate-950 in
-   dark), so it lands on the screen /new paints next. The page-transition token, 250ms; the
-   navigation follows its end. */
+   (--grow-t/-r/-b/-l, set from the click) to the whole viewport. It is the editor's own blank
+   canvas (the Default scheme's paper and 24px dots, which the window already draws), and its dots
+   slide from where the window drew them (--grow-x/-y) onto the page grid, so it ends exactly on
+   the quiet landing /new?blank=1&quickstart=1 paints (apps/live BlankCanvasScreen) and the editor
+   then loads over it. The page-transition token, 250ms; the navigation follows its end. */
 .hero-grow {
   position: fixed;
   inset: 0;
   z-index: 100;
-  --grow-paper: #f8fafc;
-  background-color: var(--grow-paper);
-  background-image: radial-gradient(circle at center, var(--art-grid) 1px, transparent 1px);
+  background-color: var(--art-paper);
+  background-image: radial-gradient(circle, var(--art-grid) 1px, transparent 1px);
   background-size: 24px 24px;
+  background-position: 0 0;
   animation: hero-grow 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.dark .hero-grow {
-  --grow-paper: #020617;
 }
 @keyframes hero-grow {
   from {
     clip-path: inset(var(--grow-t) var(--grow-r) var(--grow-b) var(--grow-l) round 8px);
-    background-color: var(--art-paper);
+    background-position: var(--grow-x) var(--grow-y);
   }
   to {
     clip-path: inset(0 round 0);
-    background-color: var(--grow-paper);
+    background-position: 0 0;
+  }
+}
+/* On the page's first play the flow waits for the headline's connector (HeroConnectors) to land
+   on the window, from sm up where that arrow is drawn: its head lands at 1.45s. */
+@media (min-width: 640px) {
+  .hero-proof-after-connector {
+    --proof-start: 1750ms;
+  }
+}
+/* The launch window's proof points build in as a flow, a node then the arrow to the next, as
+   the hero's diagrams build; --i is the node's place in the flow. */
+.hero-proof-node {
+  animation: hero-proof-node 420ms cubic-bezier(0.34, 1.56, 0.64, 1)
+    calc(var(--proof-start, 400ms) + var(--i) * 420ms) both;
+}
+.hero-proof-arrow {
+  transform-origin: left center;
+  animation: hero-proof-arrow 260ms ease-out
+    calc(var(--proof-start, 400ms) + 220ms + var(--i) * 420ms) both;
+}
+.hero-proof-arrow-down {
+  transform-origin: center top;
+  animation: hero-proof-arrow-down 260ms ease-out
+    calc(var(--proof-start, 400ms) + 220ms + var(--i) * 420ms) both;
+}
+@keyframes hero-proof-arrow-down {
+  from {
+    opacity: 0;
+    transform: scaleY(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+@keyframes hero-proof-node {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes hero-proof-arrow {
+  from {
+    opacity: 0;
+    transform: scaleX(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-launch-invite {
+  .hero-launch-invite,
+  .hero-proof-node,
+  .hero-proof-arrow,
+  .hero-proof-arrow-down {
     animation: none;
+  }
+}
+
+/* The hero's connector (components/HeroConnectors.tsx, docs/specs/019-marketing/marketing-site.md):
+   once, on load, an arrow draws from the headline down to the illustration, its head lands, the
+   centred window flashes a dashed selection ring, and a pulse of light runs the line: the
+   editor's loading-animation gesture played once. The base is the settled picture (line drawn,
+   head in place, no ring or pulse), which reduced motion keeps. */
+.hero-conn-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.hero-conn-head,
+.hero-conn-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.hero-conn-ring,
+.hero-conn-pulse {
+  opacity: 0;
+}
+.hero-conn-pulse {
+  stroke-dasharray: 0.16 2;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-conn-line {
+    animation: hero-conn-line 1000ms cubic-bezier(0.65, 0, 0.35, 1) 450ms both;
+  }
+  .hero-conn-head {
+    animation: hero-conn-head 260ms ease-out 1410ms both;
+  }
+  .hero-conn-ring {
+    animation: hero-conn-ring 1000ms ease-out 1430ms both;
+  }
+  .hero-conn-pulse {
+    animation: hero-conn-pulse 900ms ease-in-out 2150ms both;
+  }
+}
+@keyframes hero-conn-line {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes hero-conn-head {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes hero-conn-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+  25%,
+  55% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+@keyframes hero-conn-pulse {
+  0% {
+    opacity: 1;
+    stroke-dashoffset: 0.16;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: -1;
   }
 }

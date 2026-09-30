@@ -14,14 +14,13 @@ import {
   TabsLabelIcon,
 } from '@livediagram/ui';
 import { SLIDES } from './hero-diagrams';
+import { EyeGlyph, Shape, ShareGlyph, StarGlyph, TabAvatar } from './hero-illustration-glyphs';
 import {
-  EyeGlyph,
-  Shape,
-  ShareGlyph,
-  StarGlyph,
-  TabAvatar,
-  ToolGlyph,
-} from './hero-illustration-glyphs';
+  CanvasCluster,
+  TabBarToolbelt,
+  ToolbarMenuButton,
+  ToolbarStrip,
+} from './hero-editor-chrome';
 import { HeroThemeDialog } from './hero-theme-dialog';
 import { HERO_CANVAS_ATTR } from './hero-launch';
 
@@ -74,6 +73,9 @@ export function EditorWindow({
   tool,
   presenting,
   overlay,
+  toolbar = false,
+  empty = false,
+  veil = true,
 }: {
   title: string;
   tabs: TabDef[];
@@ -87,6 +89,14 @@ export function EditorWindow({
   presenting: boolean;
   // Drawn over the canvas, above the diagram (the launch window's invitation and empty banner).
   overlay?: ReactNode;
+  // The Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md): the Palette is a strip
+  // at the top centre and a menu button stands where the Explorer would float.
+  toolbar?: boolean;
+  // A new document with nothing on it yet: undo and redo sit disabled.
+  empty?: boolean;
+  // The end-of-cycle veil hides a build snapping back to its first frame; a window with no build
+  // (the launch window) has nothing to hide and holds longer than a cycle, so it goes without.
+  veil?: boolean;
 }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
@@ -97,13 +107,15 @@ export function EditorWindow({
             the stage advances behind the grey. When the window stops playing
             it is remounted to lift once more, so the peeking card doesn't
             snap from grey to its settled frame. */}
-        <div
-          key={playing ? 'play' : 'idle'}
-          aria-hidden
-          className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 dark:bg-slate-950 ${
-            playing ? 'hero-fade' : 'hero-fade-out'
-          }`}
-        />
+        {veil ? (
+          <div
+            key={playing ? 'play' : 'idle'}
+            aria-hidden
+            className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 dark:bg-slate-950 ${
+              playing ? 'hero-fade' : 'hero-fade-out'
+            }`}
+          />
+        ) : null}
         {/* Presenting is full screen (docs/specs/012-collaboration/presentation-mode.md): no header, no tab bar, no
             panels, just the slide's canvas and the HUD. */}
         {presenting ? null : (
@@ -189,6 +201,12 @@ export function EditorWindow({
               <span className="text-white/70">✕</span>
             </div>
           ) : null}
+          {toolbar ? (
+            <>
+              <ToolbarMenuButton />
+              <ToolbarStrip />
+            </>
+          ) : null}
           {layers ? (
             <div className="absolute right-2 top-2 hidden items-center gap-3 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-md sm:flex dark:border-slate-800 dark:bg-slate-900">
               <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -200,7 +218,7 @@ export function EditorWindow({
           <div
             className={
               'absolute right-2 top-2 w-40 flex-col rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-800 dark:bg-slate-900 ' +
-              (layers || presenting ? 'hidden' : 'hidden sm:flex')
+              (layers || presenting || toolbar ? 'hidden' : 'hidden sm:flex')
             }
           >
             <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1 dark:border-slate-800">
@@ -279,31 +297,11 @@ export function EditorWindow({
             </div>
           ) : null}
 
-          {/* Zoom cluster (static chrome): history, undo / redo, layers, the
-              look-and-feel brush, and the zoom readout. */}
-          <div
-            className={
-              'absolute bottom-2 right-2 items-center gap-1.5 text-slate-500 dark:text-slate-400 ' +
-              (presenting ? 'hidden' : 'hidden sm:flex')
-            }
-          >
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <ToolGlyph kind="history" small />
-              <ToolGlyph kind="undo" small />
-              <ToolGlyph kind="redo" small />
-            </span>
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <ToolGlyph kind="layers" small />
-            </span>
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <ToolGlyph kind="brush" small />
-            </span>
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-2 text-[9px] font-medium shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <span className="px-1.5">−</span>
-              100%
-              <span className="px-1.5">+</span>
-            </span>
-          </div>
+          {/* The canvas cluster (static chrome), drawn from the editor's own glyphs. */}
+          <CanvasCluster
+            className={'absolute bottom-2 right-2 ' + (presenting ? 'hidden' : 'hidden sm:flex')}
+            empty={empty}
+          />
 
           {/* The diagram centres in the canvas left clear by the open palette
               (or, on the timeline window, by the Layers panel), so no node
@@ -311,7 +309,7 @@ export function EditorWindow({
           <div
             className={
               'absolute inset-y-0 left-0 right-0 ' +
-              (layers ? 'sm:left-36' : presenting ? '' : 'sm:right-44')
+              (layers ? 'sm:left-36' : presenting || toolbar ? '' : 'sm:right-44')
             }
           >
             <svg
@@ -411,12 +409,7 @@ export function EditorWindow({
               </div>
               {/* Toolbelt: hidden on mobile (it clashes with the tabs in the
                   narrower windows), shown from sm up. */}
-              <div className="ml-auto hidden items-center gap-1 text-slate-400 sm:flex">
-                <ToolGlyph kind="search" small />
-                <ToolGlyph kind="keys" small />
-                <ToolGlyph kind="sliders" small />
-                <ToolGlyph kind="moon" small />
-              </div>
+              <TabBarToolbelt />
             </div>
           </>
         )}

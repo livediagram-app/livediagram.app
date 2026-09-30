@@ -138,7 +138,6 @@ import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { useEditorHistory } from './useEditorHistory';
 import { useRevertPreview } from './useRevertPreview';
 import { useTemplateFlow } from './useTemplateFlow';
-import { useQuickStartHandoff } from './useQuickStartHandoff';
 import { usePanelLayout } from './usePanelLayout';
 import { usePresenceRows } from './usePresenceRows';
 import { usePresenceState } from './usePresenceState';
@@ -2068,12 +2067,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelfParticipant,
     setTemplatePickerMode,
     requestFit,
-  });
-  // The hero launch window's landing (/new?blank=1&quickstart=1): Quick Start opens on arrival.
-  useQuickStartHandoff({
-    ready: !loadingDocument && hydrated && !isReadOnly,
-    activeTabEmpty: activeTab.elements.length === 0,
-    openTemplatePicker,
   });
 
   // Debounced activity-log emitters (see hooks/useActivityLogDebounce

@@ -7,7 +7,8 @@ import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { Explorer } from '@/components/panels/Explorer';
-import { DocumentLoading } from '@/components/chrome/DocumentLoading';
+import { OpeningScreen } from '@/components/chrome/OpeningScreen';
+import { clearQuietLanding } from '@/lib/quiet-landing';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
@@ -86,6 +87,11 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
     setLoadingDocument,
     setPasswordRetry,
   } = state;
+  // The hero launch window's quiet landing (lib/quiet-landing.ts) ends once the document is in:
+  // a later load in this tab shows the usual opening screen.
+  useEffect(() => {
+    if (!loadingDocument) clearQuietLanding();
+  }, [loadingDocument]);
 
   // The full Explorer panel that sits behind the error / not-found status
   // screens (identical in both), built once from state. Just a React
@@ -194,7 +200,8 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   }
 
   if (loadingDocument) {
-    return <DocumentLoading stage="opening" />;
+    // Arriving from the hero's launch window, the load holds the quiet blank canvas /new showed.
+    return <OpeningScreen />;
   }
 
   return (

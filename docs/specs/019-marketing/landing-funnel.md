@@ -86,7 +86,7 @@ The slots:
 - `Hero` / `HeroDraw`: the landing hero's pair; on a feature page, `Hero` is
   the category hero's Start drawing.
 - `HeroCanvas`: the hero stage's launch window, the mini canvas that grows
-  into the editor (`/new?blank=1&quickstart=1`).
+  into the editor (`/new?blank=1&welcome=1`).
 - `Gallery`: any card in the landing template gallery
   (`/new?template=<kind>`). The template itself is already reported by
   `Template·Used`, so it is not repeated in the source. `GalleryDraw` is the
