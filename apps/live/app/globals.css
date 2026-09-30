@@ -13,6 +13,23 @@
 /* The shared template-browse art (PreviewFan) carries its own utility classes. */
 @source '../../../packages/template-previews/src/PreviewFan.tsx';
 
+/*
+ * Editor fade-in (docs/specs/004-interface-design/motion.md): the editor's floating chrome and
+ * the canvas content fade in as they mount rather than popping into place, most visibly as a
+ * document opens. Opacity only, so the canvas world's inline transform and a panel's own
+ * position are untouched; `fade-in` has no `to`, so a translucent panel settles at its own
+ * opacity. In the components layer, so a surface's own entrance utility (a panel's pop-in, a
+ * banner's fade) still wins. Reduced motion collapses it with every other animation.
+ */
+@layer components {
+  [data-floating-panel],
+  [data-editor-tabbar],
+  [data-zoom-cluster],
+  [data-canvas-world] {
+    animation: fade-in var(--transition-duration-short) ease-out;
+  }
+}
+
 @layer base {
   button:not(:disabled),
   [role='button']:not([aria-disabled='true']) {

@@ -645,6 +645,8 @@ export function Canvas(props: CanvasProps) {
         // the base plane while the camera orbits so they can't z-fight
         // (flicker) with the coplanar contents above them.
         data-iso={canvasTool === 'isometric' ? '' : undefined}
+        // Fades in as the editor arrives (globals.css, "Editor fade-in").
+        data-canvas-world=""
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.

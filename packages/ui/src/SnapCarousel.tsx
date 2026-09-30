@@ -13,7 +13,7 @@ import { Glyph } from './icons/Glyph';
 // arrows just scroll it by one page; scroll-snap lands a swipe on a card edge.
 // How many cards make a page is pure CSS (the caller's `itemClassName` sizes
 // each `li`), so the arrows never have to know it. Arrows disable at either
-// end and hide when every card already fits.
+// end and hide (keeping their space) when every card already fits.
 export function SnapCarousel({
   heading,
   label,
@@ -77,22 +77,28 @@ export function SnapCarousel({
     <div className={className}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-2">{heading}</div>
-        {paged ? (
-          <div className="flex shrink-0 items-center gap-1.5">
-            <CarouselArrow
-              direction="prev"
-              label={label}
-              disabled={!canPrev}
-              onClick={() => page(-1)}
-            />
-            <CarouselArrow
-              direction="next"
-              label={label}
-              disabled={!canNext}
-              onClick={() => page(1)}
-            />
-          </div>
-        ) : null}
+        {/* Always rendered, only hidden when every card fits: the track is
+            measured after mount, and arrows that appeared then made the heading
+            row taller and nudged everything below it on load. `invisible`
+            keeps their space and takes them out of the tab order and the
+            accessibility tree. */}
+        <div
+          className={`flex shrink-0 items-center gap-1.5 ${paged ? '' : 'invisible'}`}
+          aria-hidden={paged ? undefined : true}
+        >
+          <CarouselArrow
+            direction="prev"
+            label={label}
+            disabled={!canPrev}
+            onClick={() => page(-1)}
+          />
+          <CarouselArrow
+            direction="next"
+            label={label}
+            disabled={!canNext}
+            onClick={() => page(1)}
+          />
+        </div>
       </div>
       {/* The scrollbar is hidden: the arrows and swipe are the controls. */}
       <ul

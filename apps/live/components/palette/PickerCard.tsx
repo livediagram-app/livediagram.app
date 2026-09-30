@@ -20,6 +20,7 @@ export function PickerCard({
   description,
   count,
   className = '',
+  clampDescription = true,
   children,
 }: {
   active: boolean;
@@ -39,6 +40,9 @@ export function PickerCard({
   count?: number;
   // Extra layout classes, e.g. h-full w-full so carousel cards share a height.
   className?: string;
+  // Two lines is plenty for a theme or category blurb; a template's description is what it
+  // is picked by, so template cards show it whole (false).
+  clampDescription?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -91,7 +95,9 @@ export function PickerCard({
         {/* A whole-pixel line height (leading-snug made 15.125px), so card
             rows stay on whole pixels and the count badge's half-pixel fix
             above holds on every row, not just the first. */}
-        <p className="mt-0.5 line-clamp-2 text-[11px] leading-[15px] text-slate-500 dark:text-slate-300">
+        <p
+          className={`mt-0.5 text-[11px] leading-[15px] text-slate-500 dark:text-slate-300 ${clampDescription ? 'line-clamp-2' : ''}`}
+        >
           {description}
         </p>
       </div>
