@@ -27,7 +27,8 @@ jobs:
     # or apt-installs them. Its tag is the locked @playwright/test version; the first step checks it.
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
-      options: --user 1001
+      # Host IPC: Chromium in a container otherwise runs on a 64 MB /dev/shm.
+      options: --user 1001 --ipc=host
     steps:
       - name: Check out
         uses: actions/checkout@v7
