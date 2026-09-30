@@ -380,17 +380,17 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Constants and configuration
 
-| Constant                          | Value                            | Provenance           | Safe range      |
-| --------------------------------- | -------------------------------- | -------------------- | --------------- |
-| `WHITEBOARD_BOARD.light / dark`   | `#fbfaf7` / `#1f2724`            | spec starting values | contrast >= 4.5 |
-| `WHITEBOARD_INK.light / dark`     | `#1c1917` / `#ece8dc`            | spec starting values | contrast >= 4.5 |
-| `WHITEBOARD_PATTERN.light / dark` | `#d6d3cb` / `#3a4540`            | D5                   | faint, visible  |
-| `WHITEBOARD_PEN_WIDTHS`           | 2, 4, 8 px                       | spec                 | 1 to 100        |
-| `WHITEBOARD_ERASER_RADIUS_PX`     | stroke 10, partial 16            | D6                   | 4 to 48         |
-| Partial densify step              | `max(r / 2, 1)` canvas px        | D7                   |                 |
-| Crossing bisection steps          | 12                               | D7                   | 8 to 20         |
-| Recognition threshold             | 0.4                              | Shape Pen            |                 |
-| Storage key                       | `livediagram:v2:whiteboard-pens` | spec                 |                 |
+| Constant                          | Value                            | Provenance      | Safe range      |
+| --------------------------------- | -------------------------------- | --------------- | --------------- |
+| `WHITEBOARD_BOARD.light / dark`   | `#fbfaf7` / `#0d121a`            | spec values     | contrast >= 4.5 |
+| `WHITEBOARD_INK.light / dark`     | `#1c1917` / `#e2e8f0`            | spec values     | contrast >= 4.5 |
+| `WHITEBOARD_PATTERN.light / dark` | `#d6d3cb` / `#1c2735`            | D5, spec (dark) | faint, visible  |
+| `WHITEBOARD_PEN_WIDTHS`           | 2, 4, 8 px                       | spec            | 1 to 100        |
+| `WHITEBOARD_ERASER_RADIUS_PX`     | stroke 10, partial 16            | D6              | 4 to 48         |
+| Partial densify step              | `max(r / 2, 1)` canvas px        | D7              |                 |
+| Crossing bisection steps          | 12                               | D7              | 8 to 20         |
+| Recognition threshold             | 0.4                              | Shape Pen       |                 |
+| Storage key                       | `livediagram:v2:whiteboard-pens` | spec            |                 |
 
 ## Defaults ledger
 

@@ -2,6 +2,7 @@
 // projection that gives unpainted elements the board's ink. Pure data and pure
 // functions; the editor owns the dock and the device-local pens.
 import { BORDER_STROKE_PX, type BorderStroke } from './border-style';
+import { DARK_CANVAS_BACKGROUND_COLOR, DARK_CANVAS_PATTERN_COLOR } from './canvas-colors';
 import type { Appearance } from './themes';
 import type { BackgroundPattern, Element } from './index';
 
@@ -9,20 +10,21 @@ export function isWhiteboardTab(tab: { kind?: string } | undefined): boolean {
   return tab?.kind === 'whiteboard';
 }
 
-// The whiteboard variant of the Default theme: a whiteboard in light, a
-// chalkboard in dark. Tuned with the operator; ink on board stays >= 4.5:1.
+// The whiteboard variant of the Default theme: an off-white whiteboard in
+// light; in dark the editor's own dark canvas, so the board belongs to the app
+// rather than imitating a green chalkboard. Ink on board stays >= 4.5:1.
 export const WHITEBOARD_BOARD: Readonly<Record<Appearance, string>> = {
   light: '#fbfaf7',
-  dark: '#1f2724',
+  dark: DARK_CANVAS_BACKGROUND_COLOR,
 };
 export const WHITEBOARD_INK: Readonly<Record<Appearance, string>> = {
   light: '#1c1917',
-  dark: '#ece8dc',
+  dark: '#e2e8f0',
 };
 // The dots and grid lines: a faint mix of ink over board.
 export const WHITEBOARD_PATTERN: Readonly<Record<Appearance, string>> = {
   light: '#d6d3cb',
-  dark: '#3a4540',
+  dark: DARK_CANVAS_PATTERN_COLOR,
 };
 
 export type WhiteboardBackground = 'plain' | 'dots' | 'grid';

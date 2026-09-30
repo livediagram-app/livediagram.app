@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DARK_CANVAS_BACKGROUND_COLOR, DARK_CANVAS_PATTERN_COLOR } from './canvas-colors';
 import { contrastRatio } from './colors';
 import type { ArrowElement, Element, FreehandElement, ShapeElement, StickyElement } from './index';
 import {
@@ -53,9 +54,10 @@ describe('whiteboard tokens', () => {
     expect(contrastRatio(WHITEBOARD_INK[a], WHITEBOARD_BOARD[a])).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('is a whiteboard in light and a chalkboard in dark', () => {
+  it("is an off-white whiteboard in light and the editor's own dark canvas in dark", () => {
     expect(contrastRatio(WHITEBOARD_BOARD.light, '#ffffff')).toBeLessThan(1.1);
-    expect(contrastRatio(WHITEBOARD_BOARD.dark, '#000000')).toBeLessThan(2);
+    expect(WHITEBOARD_BOARD.dark).toBe(DARK_CANVAS_BACKGROUND_COLOR);
+    expect(WHITEBOARD_PATTERN.dark).toBe(DARK_CANVAS_PATTERN_COLOR);
   });
 
   it.each(['light', 'dark'] as const)('keeps the pattern faint against the board (%s)', (a) => {

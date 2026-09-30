@@ -19,7 +19,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Whiteboard|Created|NewTab':
     'Someone added a whiteboard tab, a plain board drawn on with pens, to a document from Quick Start.',
   'Whiteboard|Selected|Ink':
-    "Someone picked up a whiteboard's Ink pen, which draws in the board's own marker or chalk colour.",
+    "Someone picked up a whiteboard's Ink pen, which draws in the board's own ink colour: dark on the light board, light on the dark one.",
   'Whiteboard|Selected|Red': "Someone picked up a whiteboard's Red pen.",
   'Whiteboard|Selected|Blue': "Someone picked up a whiteboard's Blue pen.",
   'Whiteboard|Selected|Green': "Someone picked up a whiteboard's Green pen.",

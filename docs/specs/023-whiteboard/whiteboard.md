@@ -176,8 +176,9 @@ which already follows the reader's light or dark appearance
 
 - **Light:** a **whiteboard**: an off-white board with a **black marker** as
   the ink colour.
-- **Dark:** a **chalkboard**: a dark board with **chalk** (a soft off-white)
-  as the ink colour.
+- **Dark:** the editor's own **dark canvas** (the Default theme's dark
+  half, the blue-slate the dark chrome is made of) with a soft off-white ink.
+  Not a literal green chalkboard: the board belongs to the app it sits in.
 - Only colours change. Pens behave identically in both; the **Ink** pen and
   any unpainted element simply render in the appearance's ink colour. Explicit
   pen colours (Red, Blue, Green, or a chosen one) are kept as drawn.
@@ -187,8 +188,9 @@ which already follows the reader's light or dark appearance
   WCAG 2.2 AA contrast for ink on board (at least 4.5:1). A third token,
   `WHITEBOARD_PATTERN`, paints the dots and grid lines, faint against the
   board.
-- **Starting values:** light board `#fbfaf7` with ink `#1c1917`; dark board
-  `#1f2724` with chalk `#ece8dc`.
+- **Values:** light board `#fbfaf7` with ink `#1c1917`; dark board `#0d121a`
+  (`DARK_CANVAS_BACKGROUND_COLOR`) with ink `#e2e8f0`, its dots and grid the
+  dark canvas's own pattern colour (`DARK_CANVAS_PATTERN_COLOR`).
 - Nothing is written onto elements: the ink is a **display projection**. An
   unpainted stroke, text, shape or line is drawn in the ink colour while it
   sits on a whiteboard, and in the ordinary default colours anywhere else.
@@ -235,8 +237,8 @@ the two erasers, shape recognition and backgrounds. Registered per
 The whiteboard is built in rounds and tuned with the operator between them.
 
 - **Round one** (built, being tuned): the kind, the template and Quick Start
-  entry, the dock with every tool above, pen versus touch, the whiteboard and
-  chalkboard look, the backgrounds, telemetry and the help article. Opening a
+  entry, the dock with every tool above, pen versus touch, the light and dark
+  board looks, the backgrounds, telemetry and the help article. Opening a
   whiteboard, or turning a fresh tab into one, puts the active pen in hand.
   The dock sits above the bottom-right controls until the window is wide
   enough for both on one line.

@@ -48,7 +48,7 @@ describe('getTheme under an appearance', () => {
 });
 
 describe('resolveTabBackdrop', () => {
-  it('paints a whiteboard as a whiteboard in light and a chalkboard in dark', () => {
+  it('paints a whiteboard board in both appearances, ignoring the stored theme', () => {
     // docs/specs/023-whiteboard/whiteboard.md "Appearance": the board ignores any stored theme or colour.
     const t = tab({
       kind: 'whiteboard',
