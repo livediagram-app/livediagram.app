@@ -169,6 +169,10 @@ E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 E2E_NO_AI=1 node scripts/e2
 on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
 `aiEnabled: false`.
 
+`E2E_LIVE_OUT=<dir>` serves another export of the live app (the signed-in specs use
+`.next/out-clerk-stub`), and `E2E_CLERK_JWKS=1` makes the stack stand in for Clerk: the api
+verifies session tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
+
 To try a hosted reader whose free budget is spent, swap `E2E_NO_AI=1` for
 `E2E_AI_BUDGET_SPENT=1`: the api still reports a model, every
 `/api/ai/read-notes` call answers 429 `ai_quota`, and the import fails over

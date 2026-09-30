@@ -101,8 +101,12 @@ Clerk account, secret or network.
 `pnpm --filter @livediagram/live test:e2e:clerk-stub` sets `E2E_CLERK_STUB=1`, which adds the
 `clerk-stub` project and boots the stack with `E2E_LIVE_OUT=.next/out-clerk-stub` on its own ports
 (live `:3015`, api `:8788`, marketing `:3016`), so a guest stack already up on `:3002` is never
-reused for it. The stub's session token verifies nowhere, so api reads fail in these specs; they
-assert on chrome, not data. `e2e.yml` builds and runs them after the smoke suite.
+reused for it. The stack also stands in for Clerk (`E2E_CLERK_JWKS=1`): it makes a signing key at
+boot, serves its JWKS on `/e2e/jwks.json`, starts the api worker with `CLERK_JWKS_URL` pointing at
+it, and mints a session token for any test account on `/e2e/token?sub=user_…`, which the fake
+`window.Clerk` hands out. So a stub account is a real verified account to the api and the realtime
+room, and two or three stub browsers can collaborate in one document. A test that changes an
+account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them after the smoke suite.
 
 ## No uncaught errors
 

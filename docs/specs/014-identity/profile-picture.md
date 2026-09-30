@@ -124,8 +124,7 @@ account across devices. Its default is one named constant,
 
 - **On**: collaborators who are signed in see your picture (§5).
 - **Off**: everyone else sees your initials, everywhere, including rooms that
-  are already open: the change goes out with the next presence update, which
-  the toggle itself sends.
+  are already open: the toggle sends the room an identity update at once.
 - **Your own chrome always shows your picture to you**, whatever the switch
   says: it is your screen.
 
@@ -156,15 +155,20 @@ verified Clerk session and both cleared when the switch is off:
   must be that id's verified Clerk session (a guest header or an API token is
   refused). `GET /api/participants/<id>` returns `pictureUrl` only to a
   signed-in caller, and team member lists carry it for joined members.
-  Comment authors are resolved through the same GET, by the author id the
-  comment already carries.
+- **Comment authors** are looked up by the server, because a reader never
+  holds other people's comment author ids (they are owner ids, a guest's
+  credential, redacted on every read).
+  `GET /api/documents/<id>/tabs/<tabId>/comment-pictures` answers a reader
+  with read access with comment id to picture URL, and an anonymous reader
+  with an empty map. Your own comments show your own picture to you.
 - **The realtime room's presence.** A signed-in client's room join mints a
   one-time room ticket over authenticated REST, which records that the
   session is a verified account (`ws_tickets.account`, same migration). The
   room keeps a `picture` from a `hello` only for such a session, and sends it
   only to recipients who are themselves account sessions; everyone else gets
-  the same roster without it. Turning the switch off or on sends a fresh
-  `hello`, which updates the roster in place.
+  the same roster without it. Turning the switch off or on sends an
+  `identity` frame over the open socket, which updates the roster in place
+  without re-joining.
 
 Trust: the room and the participant record accept only `https` URLs on
 `img.clerk.com`, at most 512 characters, from a verified account. They cannot
@@ -224,9 +228,10 @@ initials underneath keep their existing contrast.
 One request per distinct person per page for a 96px crop (a few kilobytes)
 from Clerk's CDN, after auth has settled. The picture adds at most 512 bytes
 to a presence entry and one D1 column read to the member-list and participant
-reads that already happen. A comment author's picture is one cached
-`GET /api/participants/<id>` per distinct author per page, made only for
-signed-in viewers. Images decode off the main thread (`decoding="async"`).
+reads that already happen. Comment pictures are one
+`comment-pictures` request per tab per page (again only when a comment the
+page has not seen appears), made only for signed-in readers, reading at most
+50 distinct authors' records. Images decode off the main thread (`decoding="async"`).
 
 ## 11. Observability and telemetry
 
