@@ -25,6 +25,7 @@ import {
   ES_LANES,
   isEventStormingNote,
   isBoxed,
+  isWhiteboardTab,
   nearestElementTowards,
   opposingAnchor,
   rebindArrowAnchorsAfterMove,
@@ -45,10 +46,12 @@ import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 import { applyArrowDragMove } from './arrow-drag-apply';
 import { applyShiftDuplicateSwap, type ShiftDupSwap } from './shift-duplicate-swap';
 import {
+  resizedElement,
   resolveBoxedMove,
   resolveBoxedResize,
   translateBoxedSelection,
 } from './boxed-drag-resolve';
+import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { useSnapGuideState } from './useSnapGuideState';
 import { useArrowDragHandlers } from './useArrowDragHandlers';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
@@ -428,11 +431,21 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           });
           if (!resize) return;
           if (resize.guides !== null) scheduleGuides(resize.guides);
+          // A lone whiteboard text box hugs its text through the resize
+          // (docs/specs/023-whiteboard/whiteboard.md "Text boxes").
+          const textHug =
+            isWhiteboardTab(activeTab) && drag.startBounds.size === 1
+              ? {
+                  mode: drag.mode,
+                  constrain: drag.aspectLocked || e.shiftKey,
+                  measure: measureDrawnText(activeTab.font),
+                }
+              : null;
           tick((els) =>
             els.map((el) => {
               if (!isBoxed(el)) return el;
               const next = resize.boundsById.get(el.id);
-              return next ? { ...el, ...next } : el;
+              return next ? resizedElement(el, next, textHug) : el;
             }),
           );
         }

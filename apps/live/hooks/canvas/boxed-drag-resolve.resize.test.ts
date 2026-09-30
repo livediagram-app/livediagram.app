@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, createText, type Element, type TextElement } from '@livediagram/document';
 import type { DragMode, ShapeBounds } from '@/lib/canvas';
-import { resolveBoxedResize } from './boxed-drag-resolve';
+import { resizedElement, resolveBoxedResize } from './boxed-drag-resolve';
 
 // The resize frame resolver under Shift (docs/specs/008-canvas/canvas-and-palette.md "Resize"): the
 // ratio the element or selection had when the drag began survives every handle, the snap still
@@ -124,5 +124,49 @@ describe('resolveBoxedResize, a multi-selection with Shift', () => {
   it('scales freely without Shift', () => {
     const out = resize(pair(), ['a', 'b'], 'resize-se', 250, 0, { shiftHeld: false }).boundsById;
     expect(out.get('a')).toEqual({ x: 0, y: 0, width: 200, height: 50 });
+  });
+});
+
+// A whiteboard text box hugs its text through a resize (docs/specs/023-whiteboard/whiteboard.md
+// "Text boxes"): the frame's bounds set the width, the height is the text's, and Shift scales the
+// text instead.
+describe('resizedElement', () => {
+  const hello = {
+    ...createText(0, 0),
+    label: 'Hello',
+    width: 43,
+    height: 22,
+    textSize: 'sm' as const,
+  };
+  // Half the font px a character, the leading 1.25, wrapping at the given width.
+  const measure = (el: TextElement) => (width: number) => {
+    const px = 14 * (el.textScale ?? 1);
+    const lines = Math.max(1, Math.ceil(((el.label ?? '').length * px * 0.5) / width));
+    return { width, height: lines * px * 1.25 };
+  };
+
+  it('takes the bounds as they are without a hug', () => {
+    const out = resizedElement(hello, { x: 1, y: 2, width: 30, height: 90 }, null);
+    expect(out).toMatchObject({ x: 1, y: 2, width: 30, height: 90 });
+  });
+
+  it('hugs the height of a whiteboard text box to the rewrapped text', () => {
+    const hug = { mode: 'resize-e' as const, constrain: false, measure };
+    const out = resizedElement(hello, { x: 0, y: 0, width: 28, height: 22 }, hug);
+    expect(out).toMatchObject({ width: 28, height: 39 });
+  });
+
+  it('scales the text of a whiteboard text box under Shift', () => {
+    const hug = { mode: 'resize-se' as const, constrain: true, measure };
+    const out = resizedElement(hello, { x: 0, y: 0, width: 78, height: 40 }, hug);
+    expect(out).toMatchObject({ width: 78, height: 39, textScale: 2 });
+  });
+
+  it('leaves a rotated text box and any other element to the bounds', () => {
+    const hug = { mode: 'resize-e' as const, constrain: false, measure };
+    const bounds = { x: 0, y: 0, width: 28, height: 22 };
+    expect(resizedElement({ ...hello, rotation: 30 }, bounds, hug)).toMatchObject(bounds);
+    const square = box('s', 0, 0, 43, 22) as never;
+    expect(resizedElement(square, bounds, hug)).toMatchObject(bounds);
   });
 });

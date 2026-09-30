@@ -90,6 +90,40 @@ describe('buildDrawnComponent', () => {
 describe('buildDrawnBoxed', () => {
   const shapeIntent = { type: 'shape', kind: 'square' } as const;
 
+  // docs/specs/023-whiteboard/whiteboard.md "Text boxes": a text box hugs its text.
+  it('places a whiteboard text box empty, caret-sized, at the click', () => {
+    const out = buildDrawnBoxed(
+      { type: 'text' },
+      500,
+      300,
+      502,
+      301,
+      null,
+      tab({ kind: 'whiteboard' }),
+    );
+    // 14 px text in a 1.25 line: 17.5, rounded up, plus 2 px above and below.
+    expect(out).toMatchObject({ label: '', autoWidth: true, x: 496, y: 289, width: 8, height: 22 });
+  });
+
+  it('sets a dragged whiteboard text box to the dragged width and one line', () => {
+    const out = buildDrawnBoxed(
+      { type: 'text' },
+      100,
+      50,
+      340,
+      200,
+      null,
+      tab({ kind: 'whiteboard' }),
+    );
+    expect(out).toMatchObject({ label: '', x: 100, y: 50, width: 240, height: 22 });
+    expect('autoWidth' in out).toBe(false);
+  });
+
+  it('keeps a diagram tab text box at its default size', () => {
+    const out = buildDrawnBoxed({ type: 'text' }, 500, 300, 502, 301, null, tab());
+    expect(out).toMatchObject({ label: 'Text', width: 220, height: 64 });
+  });
+
   it('centres the factory-default size on a tap', () => {
     const out = buildDrawnBoxed(shapeIntent, 500, 300, 504, 303, null, tab());
     expect(out.width).toBe(120); // square factory default

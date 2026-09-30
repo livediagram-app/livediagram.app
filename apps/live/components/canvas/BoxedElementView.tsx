@@ -28,6 +28,7 @@ import { captionBandAlignY, captionBandClass } from '@/components/primitives/ico
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
+import { useTextHug } from '@/components/canvas/useTextHug';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { ChairView } from '@/components/canvas/collab/ChairView';
@@ -302,6 +303,9 @@ function BoxedElementViewImpl({
   const iconCaptionBand =
     element.type === 'shape' && element.shape === 'icon' ? captionBandClass(alignX, alignY) : null;
 
+  // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
+  const textHug = useTextHug(element, isEditing, fontFamily);
+
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
@@ -325,6 +329,7 @@ function BoxedElementViewImpl({
     // centred alone on top of the text while editing.
     !!inlineIcon || !!marker,
     labelAnimClass,
+    textHug.label,
   );
 
   // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
@@ -379,8 +384,8 @@ function BoxedElementViewImpl({
         ...({ '--iso-z': isoDepth } as React.CSSProperties),
         left: element.x,
         top: element.y,
-        width: element.width,
-        height: element.height,
+        width: textHug.box?.width ?? element.width,
+        height: textHug.box?.height ?? element.height,
         color: textColor,
         // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): elements off the votable layer stay
         // VISIBLE — you still need the canvas's context to judge what

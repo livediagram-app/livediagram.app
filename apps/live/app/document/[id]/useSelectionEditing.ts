@@ -13,6 +13,8 @@ import {
   type TextRun,
 } from '@livediagram/document';
 import { whiteboardTakesTyping } from '@/lib/whiteboard-tool';
+import { hugCommittedText, hugsText } from '@/lib/text-hug';
+import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { patchTab } from './editor-page-helpers';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 
@@ -152,29 +154,48 @@ export function useSelectionEditing(opts: {
     // plain JSON. `label` stays the plain-text mirror either way.
     const richText = runs ? normalizeRuns(runs) : undefined;
     const keepRich = hasRichFormatting(richText);
+    // A whiteboard text box hugs its text (docs/specs/023-whiteboard/whiteboard.md "Text boxes"):
+    // the commit sizes it to the committed text in the same step, and removes it when left empty.
+    const whiteboard = isWhiteboardTab(activeTab);
+    const measure = measureDrawnText(activeTab.font);
+    const target = activeTab.elements.find((el) => el.id === elementId);
+    const removesEmpty = !!target && hugsText(target, whiteboard) && label.trim() === '';
     commit((els) =>
-      els.map((el) => {
-        if (el.id !== elementId) return el;
+      els.flatMap((el): Element[] => {
+        if (el.id !== elementId) return [el];
         // Boxed elements always carry a label; arrows treat an empty
         // string as "no label" and drop the field so the data model
         // round-trips cleanly through API JSON.
         if (isBoxed(el)) {
           const { richText: _prev, ...base } = el as typeof el & { richText?: TextRun[] };
-          void _prev;
-          return keepRich ? { ...base, label, richText } : { ...base, label };
+          const next = keepRich ? { ...base, label, richText } : { ...base, label };
+          if (!hugsText(next, whiteboard)) return [next];
+          // An edit that changed nothing leaves the box as it was, so an existing box keeps its
+          // size until it is edited.
+          const unchanged =
+            label !== '' &&
+            (el.label ?? '') === label &&
+            JSON.stringify(_prev ?? null) === JSON.stringify(keepRich ? richText : null);
+          if (unchanged) return [next];
+          const hugged = hugCommittedText(next, measure);
+          return hugged ? [hugged] : [];
         }
         if (el.type === 'arrow') {
           if (label.length === 0) {
             const { label: _drop, ...rest } = el;
             void _drop;
-            return rest;
+            return [rest];
           }
-          return { ...el, label };
+          return [{ ...el, label }];
         }
-        return el;
+        return [el];
       }),
     );
     setEditingId(null);
+    if (removesEmpty) {
+      console.debug('[text-hug] removed an empty text box', elementId);
+      setSelectedId(null);
+    }
     // While the document is still on its default name, mirror the label of
     // the very first element of the very first tab into the document title:
     // typing on the welcome rectangle is a strong signal of intent. Once

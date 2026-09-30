@@ -424,6 +424,7 @@ export function EditorCanvasHost() {
     editingId,
     elements: activeTab.elements,
     isReadOnly,
+    whiteboard: isWhiteboardTab(activeTab),
     setContextMenu,
   });
 

@@ -8,9 +8,11 @@ import {
   isFixedSizeShape,
   isLayerLocked,
   isLayerVisible,
+  isWhiteboardTab,
   REACTION_PAD_LABEL,
   type EventStormingNoteKind,
   type StickyElement,
+  type TextElement,
 } from '@livediagram/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
@@ -37,6 +39,7 @@ import { isTechIconId } from '@/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { stampSizeFor } from '@/lib/stamp-placement';
+import { placedTextBox } from '@/lib/text-hug';
 
 // The pure element construction behind commitDraw (docs/specs/008-canvas/canvas-and-palette.md draw-to-add),
 // lifted out of useShapeDrawing: each builder interprets the gesture's
@@ -272,6 +275,18 @@ export function buildDrawnBoxed(
     theme: activeTab.theme,
   });
   // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md).
+  const textSize = activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {};
+  // A whiteboard text box hugs its text (docs/specs/023-whiteboard/whiteboard.md "Text boxes"): it
+  // lands empty, one line tall, caret-sized at a click or at the dragged width.
+  const hugged =
+    base.type === 'text' && isWhiteboardTab(activeTab)
+      ? placedTextBox(
+          { ...base, ...textSize } as TextElement,
+          isTap,
+          { x: startX, y: startY },
+          dragBox,
+        )
+      : {};
   return {
     ...base,
     ...colours,
@@ -279,7 +294,8 @@ export function buildDrawnBoxed(
     y,
     width,
     height,
-    ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
+    ...textSize,
+    ...hugged,
     // Icon draw intent: carry the chosen glyph id + seed label onto the
     // freshly-drawn 'icon' shape (so palette icons / tech icons draw to
     // size like any shape, see draw-mode.ts).

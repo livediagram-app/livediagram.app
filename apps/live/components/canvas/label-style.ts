@@ -11,6 +11,7 @@ import type {
   TextAlignX,
   TextAlignY,
   TextRun,
+  TextSize,
   RunHeading,
 } from '@livediagram/document';
 import type { RunDefaults } from '@/components/rich-text/rich-text-format';
@@ -58,6 +59,22 @@ export const MULTI_RUN_PX: Record<RunSize, number> = {
   md: MULTI_FONT_PX.md,
   lg: MULTI_FONT_PX.lg,
 };
+
+// The base px a label is drawn at: a note's scale for a multi-line label, else the single-line
+// scale, where 'scale' is a middling fixed size (only a note fits its text to its box). A
+// Shift-resized text box multiplies it by its own scale (docs/specs/023-whiteboard/whiteboard.md).
+export function labelBasePx(multiline: boolean, textSize: TextSize): number {
+  return multiline ? MULTI_FONT_PX[textSize] : LABEL_FONT_PX[textSize];
+}
+
+// The px a run's own size override draws at, scaled with the label.
+export function labelRunPx(multiline: boolean, scale = 1): Record<RunSize, number> {
+  const table = multiline ? MULTI_RUN_PX : FIXED_FONT_PX;
+  return { sm: table.sm * scale, md: table.md * scale, lg: table.lg * scale };
+}
+
+// A label's inset: px on every side, or a CSS padding (a whiteboard text box's 2px 4px).
+export type LabelPadding = number | string;
 
 // Inline label-style props applied by every label renderer (scaling,
 // fixed, multiline). Stored independently so any combination, e.g.
