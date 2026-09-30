@@ -459,6 +459,8 @@ export * from './graph-authoring';
 export * from './mermaid';
 export * from './duplicate';
 export * from './polyline';
+export * from './stroke-smoother';
+export * from './stroke-path';
 export * from './component-factories';
 export * from './table';
 
