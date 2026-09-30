@@ -26,7 +26,13 @@ const popular = POPULAR_TEMPLATE_KINDS.map(byKind);
 const categoryTemplates = (c: TemplateCategory) =>
   TEMPLATES.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === c);
 
-function Shelf({ initial = null }: { initial?: ShelfCategory | null }) {
+function Shelf({
+  initial = null,
+  onCommit = vi.fn(),
+}: {
+  initial?: ShelfCategory | null;
+  onCommit?: (kind: string) => void;
+}) {
   const [open, setOpen] = useState<ShelfCategory | null>(initial);
   return (
     <TemplatePickerBrowse
@@ -41,7 +47,7 @@ function Shelf({ initial = null }: { initial?: ShelfCategory | null }) {
       categoryTemplates={categoryTemplates}
       whiteboardTemplate={byKind('whiteboard')}
       templateKind="blank"
-      onTemplateCommit={vi.fn()}
+      onTemplateCommit={onCommit}
     />
   );
 }
@@ -49,20 +55,23 @@ function Shelf({ initial = null }: { initial?: ShelfCategory | null }) {
 const stage = () => screen.getAllByRole('heading', { level: 3 })[0]!;
 
 describe('the whiteboard tile', () => {
-  it('closes the category tiles, last, with its own description', () => {
-    render(<Shelf />);
+  it('closes the category tiles, last, three across so the grid fills three rows', () => {
+    const commit = vi.fn();
+    render(<Shelf onCommit={commit} />);
     const tiles = screen.getAllByRole('button', { name: /Browse .* templates/ })[0]!.closest('ul')!;
+    expect(tiles.className).toContain('sm:grid-cols-3');
+    expect(tiles.children).toHaveLength(9);
     const last = tiles.lastElementChild!;
     expect(last.textContent).toContain('Whiteboard');
     expect(last.textContent).toContain('Free drawing without distractions');
+    fireEvent.click(screen.getByRole('button', { name: /^Start a whiteboard/ }));
+    expect(commit).toHaveBeenCalledWith('whiteboard');
   });
 
   it('is never on a shelf', () => {
     render(<Shelf initial="design" />);
     expect(stage().textContent).toContain('Design');
-    expect(
-      screen.getAllByText('Whiteboard').every((el) => !el.closest('[data-carousel], .scroll-mt-4')),
-    ).toBe(true);
+    expect(screen.getAllByText('Whiteboard')).toHaveLength(1);
   });
 });
 

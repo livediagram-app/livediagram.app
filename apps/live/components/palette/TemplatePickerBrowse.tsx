@@ -252,7 +252,8 @@ export function TemplatePickerBrowse({
                 {folded.length} more categories, {foldedCount} more templates
               </p>
             </div>
-            <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {/* Three across, so the eight categories and Whiteboard fill three even rows. */}
+            <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
               {folded.map((shelf) => (
                 <li key={shelf.id}>
                   <CategoryTile
@@ -265,12 +266,13 @@ export function TemplatePickerBrowse({
                 </li>
               ))}
               {whiteboardTemplate ? (
-                <li className="flex">
-                  <TemplateCard
-                    template={whiteboardTemplate}
-                    active={templateKind === 'whiteboard'}
-                    onSelect={() => onTemplateCommit('whiteboard')}
-                    onCommit={() => onTemplateCommit('whiteboard')}
+                <li>
+                  <CategoryTile
+                    label={whiteboardTemplate.title}
+                    ariaLabel={`Start a whiteboard: ${whiteboardTemplate.description}`}
+                    description={whiteboardTemplate.description}
+                    kinds={['whiteboard']}
+                    onOpen={() => onTemplateCommit('whiteboard')}
                   />
                 </li>
               ) : null}

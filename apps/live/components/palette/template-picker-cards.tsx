@@ -60,12 +60,16 @@ export function CategoryTile({
   label,
   ariaLabel,
   count,
+  description,
   kinds,
   onOpen,
 }: {
   label: string;
   ariaLabel: string;
-  count: number;
+  // A shelf's template count; absent for a tile that starts something itself (Whiteboard).
+  count?: number;
+  // One muted line under the name, for a tile that is not a shelf.
+  description?: string;
   // The shelf's templates; the first three make the fan.
   kinds: readonly TemplateKind[];
   onOpen: () => void;
@@ -86,10 +90,17 @@ export function CategoryTile({
         <span className="line-clamp-2 min-w-0 break-words text-xs font-semibold leading-4 text-slate-900 dark:text-slate-100">
           {label}
         </span>
-        <span className="shrink-0 rounded-full bg-brand-50 px-1.5 py-px text-[10px] font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
-          {count}
-        </span>
+        {count !== undefined ? (
+          <span className="shrink-0 rounded-full bg-brand-50 px-1.5 py-px text-[10px] font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
+            {count}
+          </span>
+        ) : null}
       </span>
+      {description ? (
+        <span className="-mt-1 line-clamp-1 text-[11px] leading-4 text-slate-500 dark:text-slate-400">
+          {description}
+        </span>
+      ) : null}
     </button>
   );
 }
