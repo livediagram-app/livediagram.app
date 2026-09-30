@@ -181,7 +181,7 @@ export type TemplateDescriptor = {
 export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank',
-    title: 'Blank diagram',
+    title: 'Blank Canvas',
     description: 'An empty canvas to start with whatever you like.',
   },
   {
@@ -631,7 +631,7 @@ export const TEMPLATE_CATEGORIES: { id: TemplateCategory; label: string; descrip
   },
   {
     id: 'project-management',
-    label: 'Project Management',
+    label: 'Projects',
     description: 'Plans, timelines, risks and meeting agendas.',
   },
   {
@@ -687,7 +687,7 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   // category's retros already make a home for.
   'lean-coffee': 'planning',
   'town-hall': 'planning',
-  // Project Management: time-ordered schedules, roadmaps + ownership.
+  // Projects: time-ordered schedules, roadmaps + ownership.
   gantt: 'project-management',
   timeline: 'project-management',
   'milestone-timeline': 'project-management',
@@ -731,6 +731,19 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'event-storming': 'technical',
   'incident-postmortem': 'technical',
 };
+
+// The picker's "Popular" shelf (docs/specs/008-canvas/canvas-and-palette.md "Templates section"): where
+// most people start, open by default above the categories. Not a category of
+// its own (every kind here still lives in its real one); Blank Canvas leads it,
+// so the picker needs no separate blank card.
+export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
+  'blank',
+  'mindmap',
+  'sailboat',
+  'flowchart',
+  'kanban',
+  'orgchart',
+];
 
 export function templateCategory(kind: TemplateKind): TemplateCategory {
   return TEMPLATE_CATEGORY[kind];
@@ -865,6 +878,19 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'objectives-planner': 'blank',
 };
 
+// How far each loud backdrop pattern steps back behind a template's content
+// (the tab's `backgroundOpacity`, which dims only the pattern layer). Graph
+// paper is the loudest (two line weights across the whole page), so it drops
+// the most; ruled lines, crosshatch and the checkerboard sit between. The dot
+// grid and a blank canvas are already quiet and keep full strength. The user
+// can still turn any of them back up in the Canvas controls.
+const TEMPLATE_PATTERN_OPACITY: Partial<Record<BackgroundPattern, number>> = {
+  graph: 0.4,
+  crosshatch: 0.5,
+  lines: 0.6,
+  checkerboard: 0.6,
+};
+
 // Tab-level overrides a specific template ships with, applied on top
 // of whatever theme is selected. Each template carries its preferred
 // backdrop pattern (see TEMPLATE_PATTERNS); Mind map and User journey
@@ -877,13 +903,21 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   const overrides: Partial<Tab> = {};
   const pattern = TEMPLATE_PATTERNS[kind];
   if (pattern) overrides.backgroundPattern = pattern;
-  if (
+  // The pattern recedes behind the content: a template is read, so its
+  // backdrop should organise the page rather than compete with it. The
+  // louder the pattern, the further it steps back (TEMPLATE_PATTERN_OPACITY);
+  // a few radial / stage layouts soften further still, and the lower of the
+  // two wins.
+  const quiet = pattern ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
+  const soft =
     kind === 'mindmap' ||
     kind === 'mindmap-tree' ||
     kind === 'journey' ||
     kind === 'prioritization-matrix'
-  )
-    overrides.backgroundOpacity = 0.8;
+      ? 0.8
+      : undefined;
+  const opacity = Math.min(quiet ?? 1, soft ?? 1);
+  if (opacity < 1) overrides.backgroundOpacity = opacity;
   const layers = templateLayers(kind);
   if (layers) overrides.layers = layers;
   // A template can also declare what KIND of board it makes (docs/specs/021-event-storming/event-storming.md).

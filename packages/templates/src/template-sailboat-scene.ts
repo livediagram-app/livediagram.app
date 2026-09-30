@@ -89,11 +89,41 @@ export type SceneLayout = {
   // The rocks' left edge and the island's centre, scene-local x.
   rocksX: number;
   islandX: number;
+  // The sun's centre, scene-local. Drawn before the sea, so a sun on the
+  // horizon sets into it.
   sunX: number;
+  sunY: number;
 };
 
-// The sky panel, sea and surface texture: the backdrop every zone sits on.
-export function sceneBackdrop(ox: number, oy: number, s: SceneLayout): Element[] {
+// Where the mast starts: the rig keeps its height above the waterline
+// however deep the sky is.
+const mastTopOf = (s: SceneLayout) => s.waterline - 338;
+
+// The jib's leading edge at scene-local height `y`, so gusts can aim at it.
+export function jibEdgeX(s: SceneLayout, y: number): number {
+  const top = mastTopOf(s) + 40;
+  const foot = s.waterline - 50;
+  return s.boatX - 10 - (120 * (y - top)) / (foot - top);
+}
+
+// The sky panel the whole picture sits in.
+export function sceneSky(ox: number, oy: number, s: SceneLayout): Element[] {
+  return [
+    {
+      ...createShape('square', ox, oy),
+      width: s.width,
+      height: s.height,
+      fillColor: SCENE_COLOURS.sky,
+      strokeColor: SCENE_COLOURS.skyEdge,
+      borderRadius: 'lg',
+      themeLockFill: true,
+      ...SCAFFOLD,
+    },
+  ];
+}
+
+// The sea with its waved surface, and the wake trailing the boat.
+export function sceneSea(ox: number, oy: number, s: SceneLayout): Element[] {
   const { width: w, height: h, waterline: wl } = s;
   const r = 14;
   // The sea follows the panel's rounded bottom corners.
@@ -110,16 +140,6 @@ export function sceneBackdrop(ox: number, oy: number, s: SceneLayout): Element[]
     [0, h - r],
   ];
   return [
-    {
-      ...createShape('square', ox, oy),
-      width: w,
-      height: h,
-      fillColor: SCENE_COLOURS.sky,
-      strokeColor: SCENE_COLOURS.skyEdge,
-      borderRadius: 'lg',
-      themeLockFill: true,
-      ...SCAFFOLD,
-    },
     sketch(ox, oy, sea, {
       closed: true,
       fill: SCENE_COLOURS.sea,
@@ -127,14 +147,11 @@ export function sceneBackdrop(ox: number, oy: number, s: SceneLayout): Element[]
       width: 'thin',
       straight: true,
     }),
-    // The wake trailing from the stern, so the boat reads as under way, and
-    // a couple of swells further out.
+    // The wake trailing from the stern, so the boat reads as under way.
     ...[
-      { x: s.boatX - 330, y: wl + 26, w: 130 },
-      { x: s.boatX - 420, y: wl + 56, w: 170 },
-      { x: s.boatX - 520, y: wl + 90, w: 200 },
-      { x: 60, y: wl + 250, w: 120 },
-      { x: 150, y: wl + 350, w: 90 },
+      { x: s.boatX - 330, y: wl + 24, w: 130 },
+      { x: s.boatX - 430, y: wl + 50, w: 170 },
+      { x: s.boatX - 540, y: wl + 74, w: 200 },
     ].map((l) =>
       sketch(ox, oy, waveLine(l.x, l.x + l.w, l.y, 4, 40), {
         closed: false,
@@ -146,11 +163,12 @@ export function sceneBackdrop(ox: number, oy: number, s: SceneLayout): Element[]
   ];
 }
 
-// The sun low in the sky, with a pale halo, and two gulls.
+// The sun setting on the horizon behind the island, with a pale halo, and
+// two gulls heading for it.
 export function sceneSun(ox: number, oy: number, s: SceneLayout): Element[] {
-  const size = 84;
-  const glow = 124;
-  const cy = 88;
+  const size = 108;
+  const glow = 160;
+  const cy = s.sunY;
   const disc = (d: number, fill: string): Element => ({
     ...createShape('circle', ox + s.sunX - d / 2, oy + cy - d / 2),
     width: d,
@@ -176,8 +194,8 @@ export function sceneSun(ox: number, oy: number, s: SceneLayout): Element[] {
   return [
     disc(glow, SCENE_COLOURS.sunGlow),
     disc(size, SCENE_COLOURS.sun),
-    gull(s.sunX - 110, cy + 30, 14),
-    gull(s.sunX - 78, cy + 6, 10),
+    gull(s.sunX - 250, cy - 150, 14),
+    gull(s.sunX - 212, cy - 176, 10),
   ];
 }
 
@@ -188,7 +206,7 @@ export function sceneBoat(ox: number, oy: number, s: SceneLayout): Element[] {
   const wl = s.waterline;
   const hullTop = wl - 34;
   const hullBot = wl + 34;
-  const mastTop = 92;
+  const mastTop = mastTopOf(s);
   const boomY = hullTop - 16;
   const hull: Pt[] = [
     [x - 170, hullTop],

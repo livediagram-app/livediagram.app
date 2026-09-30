@@ -180,6 +180,7 @@ function Column({
   hue,
   notes,
   noteTop,
+  cols = 1,
 }: {
   x: number;
   y: number;
@@ -188,9 +189,12 @@ function Column({
   hue: Hue;
   notes: number;
   noteTop: number;
+  cols?: number;
 }) {
   const gap = 1.2;
-  const nh = (y + h - 1.5 - noteTop - gap * (notes - 1)) / notes;
+  const rows = Math.ceil(notes / cols);
+  const nh = (y + h - 1.5 - noteTop - gap * (rows - 1)) / rows;
+  const nw = (w - 2.6 - gap * (cols - 1)) / cols;
   return (
     <g>
       <rect
@@ -206,9 +210,9 @@ function Column({
       {Array.from({ length: notes }, (_, i) => (
         <rect
           key={i}
-          x={x + 1.3}
-          y={noteTop + i * (nh + gap)}
-          width={w - 2.6}
+          x={x + 1.3 + (i % cols) * (nw + gap)}
+          y={noteTop + Math.floor(i / cols) * (nh + gap)}
+          width={nw}
           height={nh}
           rx="0.4"
           fill={hue.note}
@@ -311,7 +315,7 @@ function StartStopContinue() {
       <Buttons x={2} y={30} w={13} />
       {cols.map((c) => (
         <g key={c.x}>
-          <Column x={c.x} y={4} w={14} h={42} hue={c.hue} notes={3} noteTop={12} />
+          <Column x={c.x} y={4} w={14} h={42} hue={c.hue} notes={6} cols={2} noteTop={12} />
           {/* The lamp: a solid disc in the column's hue with its glyph. */}
           <circle
             cx={c.x + 3.4}
@@ -336,7 +340,7 @@ function StartStopContinue() {
           <rect x={c.x + 6.6} y="6.8" width="5.5" height="1.6" rx="0.4" fill={c.hue.deep} />
         </g>
       ))}
-      <Actions x={63.5} y={4} w={14.5} h={42} rows={3} rowTop={9} />
+      <Actions x={63.5} y={4} w={14.5} h={42} rows={4} rowTop={9} />
       {/* From Sprint 21: two done, one carried over. */}
       <rect x={65} y={24} width="7" height="1.4" rx="0.4" fill="rgb(15 23 42)" />
       {[28, 32, 36].map((ry, i) => (
@@ -441,7 +445,7 @@ function MadSadGlad() {
       <Buttons x={2} y={40} w={13} />
       {cols.map((c) => (
         <g key={c.x}>
-          <Column x={c.x} y={4} w={14} h={42} hue={c.hue} notes={4} noteTop={12.5} />
+          <Column x={c.x} y={4} w={14} h={42} hue={c.hue} notes={6} cols={2} noteTop={12.5} />
           <g
             className={c.mood === 'glad' ? 'pv-pulse' : undefined}
             style={c.mood === 'glad' ? pv({ '--pv-at': '2100ms' }) : undefined}
@@ -451,7 +455,7 @@ function MadSadGlad() {
           <rect x={c.x + 8} y="6.4" width="4.5" height="1.6" rx="0.4" fill={c.hue.deep} />
         </g>
       ))}
-      <Actions x={63.5} y={4} w={14.5} h={42} rows={4} rowTop={9} />
+      <Actions x={63.5} y={4} w={14.5} h={42} rows={5} rowTop={9} />
       <rect x={65} y={30} width="11.5" height="14.5" rx="0.4" fill="rgb(251 207 232)" />
       {/* Hover story: the room answers the mood check, an anonymous card
           drops into the idea box, Glad lights up, and a thank-you heart
@@ -516,13 +520,14 @@ function FourLs() {
             strokeWidth="0.6"
           />
           <rect x={q.x + 1.5} y={q.y + 1.6} width="8" height="1.6" rx="0.4" fill={q.hue.deep} />
-          {[0, 1, 2].map((i) => (
+          {/* Six notes, two rows of three. */}
+          {[0, 1, 2, 3, 4, 5].map((i) => (
             <rect
               key={i}
-              x={q.x + 1.5 + i * 9}
-              y={q.y + 5}
+              x={q.x + 1.5 + (i % 3) * 9}
+              y={q.y + 4.6 + Math.floor(i / 3) * 4.9}
               width="8"
-              height="7.8"
+              height="4.3"
               rx="0.4"
               fill={q.hue.note}
             />
@@ -541,47 +546,44 @@ function FourLs() {
         strokeWidth="1"
       />
       <rect x={19} y={39.8} width="9" height="1.6" rx="0.4" fill="rgb(15 23 42)" />
-      {[
-        { x: 33, y: 39.2 },
-        { x: 33, y: 42.4 },
-        { x: 55, y: 39.2 },
-        { x: 55, y: 42.4 },
-      ].map((r) => (
-        <g key={`${r.x}-${r.y}`}>
-          <rect
-            x={r.x}
-            y={r.y}
-            width="2.2"
-            height="2.2"
-            rx="0.4"
-            fill="white"
-            stroke={INK}
-            strokeWidth="0.45"
-          />
-          <line
-            x1={r.x + 3.2}
-            y1={r.y + 1.1}
-            x2={r.x + 19}
-            y2={r.y + 1.1}
-            stroke={SLATE}
-            strokeWidth="0.6"
-          />
-        </g>
-      ))}
+      {[33, 55]
+        .flatMap((x) => [38.2, 40.7, 43.2].map((y) => ({ x, y })))
+        .map((r) => (
+          <g key={`${r.x}-${r.y}`}>
+            <rect
+              x={r.x}
+              y={r.y}
+              width="1.8"
+              height="1.8"
+              rx="0.4"
+              fill="white"
+              stroke={INK}
+              strokeWidth="0.45"
+            />
+            <line
+              x1={r.x + 2.8}
+              y1={r.y + 0.9}
+              x2={r.x + 19}
+              y2={r.y + 0.9}
+              stroke={SLATE}
+              strokeWidth="0.6"
+            />
+          </g>
+        ))}
       {/* Hover story: the four Ls fill in turn with one more note each,
           dots gather on Lacked, and its action gets ticked. */}
-      <Pop at={1100} x={19.5} y={8.2} width="8" height="1" rx="0.3" fill="rgb(21 128 61)" />
-      <Pop at={1300} x={50.5} y={8.2} width="8" height="1" rx="0.3" fill="rgb(3 105 161)" />
-      <Pop at={1500} x={19.5} y={24.2} width="8" height="1" rx="0.3" fill="rgb(180 83 9)" />
-      <Pop at={1700} x={50.5} y={24.2} width="8" height="1" rx="0.3" fill="rgb(109 40 217)" />
-      <Dots cx={32} cy={29.5} from={1900} />
-      <Tick x={33} y={39.2} at={2600} />
+      <Pop at={1100} x={19.5} y={10.3} width="6" height="0.9" rx="0.3" fill="rgb(21 128 61)" />
+      <Pop at={1300} x={50.5} y={10.3} width="6" height="0.9" rx="0.3" fill="rgb(3 105 161)" />
+      <Pop at={1500} x={19.5} y={26.3} width="6" height="0.9" rx="0.3" fill="rgb(180 83 9)" />
+      <Pop at={1700} x={50.5} y={26.3} width="6" height="0.9" rx="0.3" fill="rgb(109 40 217)" />
+      <Dots cx={32} cy={31.8} from={1900} />
+      <Tick x={32.8} y={37.9} at={2600} />
     </svg>
   );
 }
 
 function Sailboat() {
-  const wl = 26;
+  const wl = 28;
   return (
     <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
       <MoodCard x={2} y={4} w={10} h={14} />
@@ -599,7 +601,8 @@ function Sailboat() {
         <line key={ry} x1={3.5} y1={ry} x2={10.5} y2={ry} stroke={SLATE} strokeWidth="0.6" />
       ))}
       <Buttons x={2} y={36} w={10} />
-      {/* The scene: sky, a waved sea, sun, island, rocks and the boat. */}
+      {/* The scene: sky, the sun setting behind the island, a waved sea,
+          the island, rocks and the boat. */}
       <rect
         x={13.5}
         y={4}
@@ -610,97 +613,107 @@ function Sailboat() {
         stroke="rgb(186 230 253)"
         strokeWidth="0.6"
       />
+      <circle cx={57.4} cy={wl - 1} r="3" fill="rgb(254 249 195)" />
+      <circle cx={57.4} cy={wl - 1} r="2" fill="rgb(253 224 71)" />
       <path
-        d={`M13.5 ${wl} Q15.5 ${wl - 1} 17.5 ${wl} Q19.5 ${wl + 1} 21.5 ${wl} Q23.5 ${wl - 1} 25.5 ${wl} Q27.5 ${wl + 1} 29.5 ${wl} Q31.5 ${wl - 1} 33.5 ${wl} Q35.5 ${wl + 1} 37.5 ${wl} Q39.5 ${wl - 1} 41.5 ${wl} Q43.5 ${wl + 1} 45.5 ${wl} Q47.5 ${wl - 1} 49.5 ${wl} Q51.5 ${wl + 1} 53.5 ${wl} Q55.5 ${wl - 1} 57.5 ${wl} Q59.5 ${wl + 1} 61.5 ${wl} L64.5 ${wl} L64.5 44.5 Q64.5 46 63 46 L15 46 Q13.5 46 13.5 44.5 Z`}
+        d={`M13.5 ${wl} Q14.5 ${wl - 1} 15.5 ${wl} Q16.5 ${wl + 1} 17.5 ${wl} Q18.5 ${wl - 1} 19.5 ${wl} Q20.5 ${wl + 1} 21.5 ${wl} Q22.5 ${wl - 1} 23.5 ${wl} Q24.5 ${wl + 1} 25.5 ${wl} Q26.5 ${wl - 1} 27.5 ${wl} Q28.5 ${wl + 1} 29.5 ${wl} Q30.5 ${wl - 1} 31.5 ${wl} Q32.5 ${wl + 1} 33.5 ${wl} Q34.5 ${wl - 1} 35.5 ${wl} Q36.5 ${wl + 1} 37.5 ${wl} Q38.5 ${wl - 1} 39.5 ${wl} Q40.5 ${wl + 1} 41.5 ${wl} Q42.5 ${wl - 1} 43.5 ${wl} Q44.5 ${wl + 1} 45.5 ${wl} Q46.5 ${wl - 1} 47.5 ${wl} Q48.5 ${wl + 1} 49.5 ${wl} Q50.5 ${wl - 1} 51.5 ${wl} Q52.5 ${wl + 1} 53.5 ${wl} Q54.5 ${wl - 1} 55.5 ${wl} Q56.5 ${wl + 1} 57.5 ${wl} Q58.5 ${wl - 1} 59.5 ${wl} Q60.5 ${wl + 1} 61.5 ${wl} Q62.5 ${wl - 1} 63.5 ${wl} L64.5 ${wl} L64.5 44.5 Q64.5 46 63 46 L15 46 Q13.5 46 13.5 44.5 Z`}
         fill="rgb(125 211 252)"
       />
-      <circle cx={49} cy={9.5} r="3.6" fill="rgb(254 249 195)" />
-      <circle cx={49} cy={9.5} r="2.5" fill="rgb(253 224 71)" />
       {/* Island and palm on the horizon. */}
-      <path d="M52 22.3 L52.8 18.2" stroke="rgb(146 64 14)" strokeWidth="0.7" />
+      <path d={`M56 ${wl - 1.5} L56.6 ${wl - 5.6}`} stroke="rgb(146 64 14)" strokeWidth="0.6" />
       <path
-        d="M52.8 18.2 L49.8 19.4 M52.8 18.2 L55.8 19.2 M52.8 18.2 L51.2 16.8 M52.8 18.2 L54.6 16.8"
+        d={`M56.6 ${wl - 5.6} L54.2 ${wl - 4.6} M56.6 ${wl - 5.6} L59 ${wl - 4.7} M56.6 ${wl - 5.6} L55.4 ${wl - 6.8} M56.6 ${wl - 5.6} L58 ${wl - 6.8}`}
         stroke="rgb(22 163 74)"
-        strokeWidth="0.8"
+        strokeWidth="0.7"
       />
-      <path d={`M46 ${wl + 0.3} Q52.5 ${wl - 5.5} 59 ${wl + 0.3} Z`} fill="rgb(252 211 77)" />
+      <path d={`M51.8 ${wl + 0.3} Q56.5 ${wl - 3.6} 61.3 ${wl + 0.3} Z`} fill="rgb(252 211 77)" />
       {/* Rocks ahead of the bow. */}
       <path
-        d={`M41 ${wl + 0.5} L42.4 ${wl - 2.6} L43.2 ${wl - 2} L44.2 ${wl - 4} L45.6 ${wl + 0.5} Z`}
+        d={`M42 ${wl + 0.5} L43 ${wl - 1.8} L43.7 ${wl - 1.3} L44.6 ${wl - 3} L46 ${wl + 0.5} Z`}
         fill="rgb(120 113 108)"
       />
       {/* The boat, sailing on the story. */}
       <g
         className="pv-shift"
-        style={pv({ '--pv-dx': '2px', '--pv-at': '600ms', '--pv-dur': '2400ms' })}
+        style={pv({ '--pv-dx': '1.5px', '--pv-at': '600ms', '--pv-dur': '2400ms' })}
       >
-        <rect x={31.6} y={10} width="0.8" height="14" fill="rgb(120 53 15)" />
-        <path d="M32.8 11 L39 23 L32.8 23 Z" fill="white" stroke={SLATE} strokeWidth="0.3" />
-        <path d="M31.2 13 L31.2 23 L26.4 23 Z" fill="white" stroke={SLATE} strokeWidth="0.3" />
-        <path d="M32.4 10 L34.8 10.6 L32.4 11.2 Z" fill="rgb(225 29 72)" />
-        <path d="M25 24 L39.6 24 L37.8 27.6 L27 27.6 Z" fill="rgb(180 83 9)" />
+        <rect x={34.2} y={14.3} width="0.7" height="12.5" fill="rgb(120 53 15)" />
+        <path
+          d="M35.2 15.2 L39.6 25.6 L35.2 25.6 Z"
+          fill="white"
+          stroke={SLATE}
+          strokeWidth="0.3"
+        />
+        <path
+          d="M33.9 16.6 L33.9 25.6 L30.2 25.6 Z"
+          fill="white"
+          stroke={SLATE}
+          strokeWidth="0.3"
+        />
+        <path d="M34.9 14.3 L36.9 14.8 L34.9 15.3 Z" fill="rgb(225 29 72)" />
+        <path d="M29 26.4 L40.6 26.4 L39 29.6 L30.4 29.6 Z" fill="rgb(180 83 9)" />
       </g>
-      {/* Zones: Wind (sky, left), Island (top right), Anchors and Rocks
-          (in the water), each a tinted card holding notes in its hue. */}
+      {/* Zones, eight notes each: Wind tall on the left of the sky, the
+          Island wide across the top right, Anchors and Rocks in the water. */}
       {[
-        { x: 15, y: 5.5, w: 10.5, h: 11, hue: HUE.teal },
-        { x: 55, y: 5.5, w: 8, h: 7.5, hue: HUE.amber },
-        { x: 25, y: 32, w: 14.5, h: 12.5, hue: HUE.slate },
-        { x: 43, y: 32, w: 20, h: 12.5, hue: HUE.rose },
-      ].map((z) => (
-        <g key={z.x}>
-          <rect
-            x={z.x}
-            y={z.y}
-            width={z.w}
-            height={z.h}
-            rx="1"
-            fill={z.hue.fill}
-            stroke={z.hue.stroke}
-            strokeWidth="0.5"
-          />
-          <rect
-            x={z.x + 1}
-            y={z.y + 1.2}
-            width={Math.min(6, z.w - 2)}
-            height="1.2"
-            rx="0.3"
-            fill={z.hue.deep}
-          />
-          <rect
-            x={z.x + 1}
-            y={z.y + 3.6}
-            width={(z.w - 3) / 2}
-            height={z.h - 4.8}
-            rx="0.3"
-            fill={z.hue.note}
-          />
-          <rect
-            x={z.x + 2 + (z.w - 3) / 2}
-            y={z.y + 3.6}
-            width={(z.w - 3) / 2}
-            height={z.h - 4.8}
-            rx="0.3"
-            fill={z.hue.note}
-          />
-        </g>
-      ))}
+        { x: 14.3, y: 5, w: 12, h: 21.7, hue: HUE.teal, cols: 2 },
+        { x: 41.3, y: 5, w: 22.2, h: 13.3, hue: HUE.amber, cols: 4 },
+        { x: 14.3, y: 31.7, w: 22.3, h: 13.3, hue: HUE.slate, cols: 4 },
+        { x: 37.6, y: 31.7, w: 25.9, h: 13.3, hue: HUE.rose, cols: 4 },
+      ].map((z) => {
+        const rows = 8 / z.cols;
+        const nw = (z.w - 2 - (z.cols - 1) * 0.6) / z.cols;
+        const nh = (z.h - 4.6 - (rows - 1) * 0.6) / rows;
+        return (
+          <g key={`${z.x}-${z.y}`}>
+            <rect
+              x={z.x}
+              y={z.y}
+              width={z.w}
+              height={z.h}
+              rx="1"
+              fill={z.hue.fill}
+              stroke={z.hue.stroke}
+              strokeWidth="0.5"
+            />
+            <rect
+              x={z.x + 1}
+              y={z.y + 1.2}
+              width={Math.min(6, z.w - 2)}
+              height="1.2"
+              rx="0.3"
+              fill={z.hue.deep}
+            />
+            {Array.from({ length: 8 }, (_, i) => (
+              <rect
+                key={i}
+                x={z.x + 1 + (i % z.cols) * (nw + 0.6)}
+                y={z.y + 3.6 + Math.floor(i / z.cols) * (nh + 0.6)}
+                width={nw}
+                height={nh}
+                rx="0.3"
+                fill={z.hue.note}
+              />
+            ))}
+          </g>
+        );
+      })}
       {/* The anchor rope from the hull down to the Anchors card. */}
       <path
-        d="M35 27.6 L37.2 32"
+        d="M35 29.6 L35.4 31.7"
         stroke="rgb(51 65 85)"
         strokeWidth="0.4"
         strokeDasharray="0.8 0.6"
       />
-      <Actions x={66} y={4} w={12} h={42} rows={4} rowTop={9} />
+      <Actions x={66} y={4} w={12} h={42} rows={6} rowTop={9} />
       {/* Hover story: gusts blow from the Wind card into the sails, the
           boat makes way, and dots land on a rock worth steering round. */}
-      {[9, 12.5, 16].map((gy, i) => (
+      {[17, 20, 23].map((gy, i) => (
         <rect
           key={gy}
           className="pv-travel"
           opacity="0"
-          x={25.8}
+          x={26.8}
           y={gy}
           width="2.4"
           height="0.6"
@@ -709,7 +722,7 @@ function Sailboat() {
           style={pv({ '--pv-dx': '3px', '--pv-at': `${500 + i * 350}ms`, '--pv-dur': '1400ms' })}
         />
       ))}
-      <Dots cx={48} cy={40} from={1800} />
+      <Dots cx={44} cy={38.5} from={1800} />
       <Tick x={67.5} y={9} at={2600} />
     </svg>
   );

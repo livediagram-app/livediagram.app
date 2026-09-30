@@ -170,19 +170,28 @@ describe('templateCanvasOverrides', () => {
   });
 
   it('gives alignment-heavy scaffolds a square graph paper backdrop', () => {
-    expect(templateCanvasOverrides('flowchart')).toEqual({ backgroundPattern: 'graph' });
-    expect(templateCanvasOverrides('orgchart')).toEqual({ backgroundPattern: 'graph' });
+    expect(templateCanvasOverrides('flowchart')).toEqual({
+      backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
+    });
+    expect(templateCanvasOverrides('orgchart')).toEqual({
+      backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
+    });
     // Layered templates (docs/specs/006-document/layers.md) additionally carry their Tab.layers.
     expect(templateCanvasOverrides('swot')).toEqual({
       backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
       layers: templateLayers('swot'),
     });
     expect(templateCanvasOverrides('gantt')).toEqual({
       backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
       layers: templateLayers('gantt'),
     });
     expect(templateCanvasOverrides('mobile-wireframe')).toEqual({
       backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
       layers: templateLayers('mobile-wireframe'),
     });
   });
@@ -195,19 +204,25 @@ describe('templateCanvasOverrides', () => {
   it('gives the slide deck a crosshatch backdrop', () => {
     expect(templateCanvasOverrides('slide-deck')).toEqual({
       backgroundPattern: 'crosshatch',
+      backgroundOpacity: 0.5,
       layers: templateLayers('slide-deck'),
     });
   });
 
   it('gives the logo sheet a checkerboard design board and timelines ruled lines', () => {
-    expect(templateCanvasOverrides('logo-design')).toEqual({ backgroundPattern: 'checkerboard' });
+    expect(templateCanvasOverrides('logo-design')).toEqual({
+      backgroundPattern: 'checkerboard',
+      backgroundOpacity: 0.6,
+    });
     expect(templateCanvasOverrides('timeline')).toEqual({
       backgroundPattern: 'lines',
+      backgroundOpacity: 0.6,
       layers: templateLayers('timeline'),
     });
     expect(templateCanvasOverrides('journey')).toEqual({
       backgroundPattern: 'lines',
-      backgroundOpacity: 0.8,
+      // The quieter of the lines rule (0.6) and the stage softening (0.8).
+      backgroundOpacity: 0.6,
       layers: templateLayers('journey'),
     });
   });
@@ -219,6 +234,7 @@ describe('templateCanvasOverrides', () => {
   it('ships the kanban board with its Board / Cards layers (docs/specs/006-document/layers.md)', () => {
     expect(templateCanvasOverrides('kanban')).toEqual({
       backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
       layers: [
         { id: TEMPLATE_SCAFFOLD_LAYER_ID, name: 'Board' },
         { id: TEMPLATE_CONTENT_LAYER_ID, name: 'Cards' },
@@ -363,23 +379,24 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Start / Stop / Continue: how-to, rail note, 3 columns + actions panel,
     // 3 lamp discs + their glyphs, actions glyph, verbs, prompts, actions
     // header + hint, From Sprint 21 heading. Stickies: title, mood check,
-    // timer + vote, 9 notes, actions + last-sprint checklists.
-    'start-stop-continue': { names: ['Board', 'Stickies'], scaffold: 22, content: 15 },
+    // timer + vote, 18 notes (6 per column), actions + last-sprint checklists.
+    'start-stop-continue': { names: ['Board', 'Stickies'], scaffold: 22, content: 24 },
     // Mad / Sad / Glad: how-to, 3 columns + actions panel, 3 emoji stickers,
     // names, prompts, actions header, hint + glyph, check-in line, Kind words
-    // heading. Stickies: title, mood check, idea box, timer + vote, 12 notes,
-    // kind-words note, checklist, heart sticker.
-    'mad-sad-glad': { names: ['Board', 'Stickies'], scaffold: 19, content: 20 },
+    // heading. Stickies: title, mood check, idea box, timer + vote, 18 notes
+    // (6 per column), kind-words note, checklist, heart sticker.
+    'mad-sad-glad': { names: ['Board', 'Stickies'], scaffold: 19, content: 26 },
     // 4Ls: how-to, rail note, numbers heading, 4 quadrants + strip, glyphs,
     // names, prompts, strip header + hint. Stickies: title, rocket, mood
-    // check, timer + vote, stat row, 12 notes, 2 checklists.
-    'four-ls': { names: ['Board', 'Stickies'], scaffold: 23, content: 20 },
-    // Sailboat: how-to, rail note, the drawn scene (sky, sea, sun, boat,
-    // rocks, island), 3 gust arrows, 4 zones of panel, name, prompt and glyph,
-    // actions panel, header, hint + glyph, island + Shout-outs headings.
-    // Stickies: title, mood check, agenda, timer + vote, 14 zone notes, 2
-    // shout-outs, checklist, progress bar, clap sticker.
-    sailboat: { names: ['Board', 'Stickies'], scaffold: 63, content: 24 },
+    // check, timer + vote, stat row, 24 notes (6 per quadrant), 2 checklists.
+    'four-ls': { names: ['Board', 'Stickies'], scaffold: 23, content: 32 },
+    // Sailboat: how-to, rail note, the drawn scene (sky, sea + wake, setting
+    // sun, gulls, boat, rocks, island), 3 gust arrows, 4 zones of panel, name,
+    // prompt and glyph, the anchor rope + drawn anchor, actions panel, header,
+    // hint + glyph, island + Shout-outs headings. Stickies: title, mood check,
+    // agenda, timer + vote, 32 zone notes (8 per zone), 3 shout-outs,
+    // checklist, progress bar, clap sticker.
+    sailboat: { names: ['Board', 'Stickies'], scaffold: 61, content: 43 },
     // Report: caption, 4 section headings, 5 phase headers, the summary card,
     // the Blameless callout and 3 findings columns. Findings: title, 3 chips,
     // summary, stat row, 10 timeline cards, the impact spans, 5 whys, the
@@ -502,9 +519,13 @@ describe('buildTemplatedTab', () => {
     expect(tab.backgroundOpacity).toBe(0.8);
   });
 
-  it('leaves non-mindmap templates without a backdrop opacity override', () => {
-    const tab = buildTemplatedTab('flowchart', 'brand', 'tab-1', 'flow');
-    expect(tab.backgroundOpacity).toBeUndefined();
+  it('steps loud patterns back behind the content and leaves quiet ones alone', () => {
+    // Graph paper is the loudest, so it recedes furthest.
+    expect(buildTemplatedTab('flowchart', 'brand', 'tab-1', 'flow').backgroundOpacity).toBe(0.4);
+    // The dot grid is already quiet: no override.
+    expect(
+      buildTemplatedTab('retrospective', 'brand', 'tab-1', 'retro').backgroundOpacity,
+    ).toBeUndefined();
   });
 
   it('recolours shape elements with the chosen theme palette', () => {

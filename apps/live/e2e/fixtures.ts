@@ -174,7 +174,7 @@ export async function startBlankDocument(page: Page): Promise<void> {
   await page.getByText('New Document', { exact: false }).waitFor();
   // Step 1: pick the Blank template. Single-click advances to the theme
   // step (docs/specs/006-document/offline-mode.md), so no explicit Next is needed here.
-  await page.getByText('Blank diagram', { exact: false }).click();
+  await page.getByText('Blank Canvas', { exact: false }).click();
   // Step 2 (theme) -> step 3 (settings). ANCHORED name: a bare /next/i
   // also matches the Next.js DevTools button on dev servers.
   await page.getByRole('button', { name: /^next$/i }).click();

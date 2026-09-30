@@ -17,14 +17,14 @@ import {
   RETRO_HUES,
   RETRO_MUTED,
   railNote,
-  retroColumnHeight,
   retroHeading,
   retroNotesTop,
   retroPanel,
   retroSticky,
   SCAFFOLD,
   sessionButtons,
-  stickyStack,
+  stickyGrid,
+  stickyGridHeight,
   type RetroHue,
 } from './template-retro-kit';
 
@@ -47,6 +47,8 @@ const MSG_COLUMNS: {
       'I got paged at 3am three nights running',
       'I rebuilt the same endpoint twice because the spec moved',
       'I lost my focus days to meetings',
+      'I gave an estimate and it became a deadline',
+      'I waited four days for a design answer',
     ],
   },
   {
@@ -59,6 +61,8 @@ const MSG_COLUMNS: {
       'I was sad we cut the accessibility fixes',
       'I felt my review comments went unanswered',
       'I never got to finish the search spike',
+      'I missed the launch party because I was on call',
+      'I felt nobody noticed the migration work',
     ],
   },
   {
@@ -71,6 +75,8 @@ const MSG_COLUMNS: {
       'I’m glad Marco paired with me on the migration',
       'I shipped my first feature end to end',
       'I felt heard in Tuesday’s planning',
+      'I enjoyed Thursday’s call with a real customer',
+      'I’m glad the flaky tests are finally gone',
     ],
   },
 ];
@@ -80,6 +86,7 @@ const MSG_ACTIONS = [
   'Weekly on-call shifts, not nightly · Raj · Wed',
   'Protect two focus days · Leo · Thu',
   'Answer reviews within a day · Team · Fri',
+  'Design answers within two days · Ines · Wed',
 ];
 
 // Two cards already in the box, still sealed: the room sees a count, never
@@ -90,11 +97,13 @@ const MSG_ANONYMOUS = [
 ];
 
 export function buildMadSadGlad(cx: number, cy: number): Element[] {
-  const { colW, railW, gap, pad, titleH, subtitleH, headGap, buttonH } = RETRO;
-  // Taller notes than the other formats: the rail carries the idea box too,
-  // and a sealed box needs the room to show its count.
-  const stickyH = 132;
-  const colH = retroColumnHeight(MSG_COLUMNS[0]!.notes.length, stickyH);
+  const { railW, gap, pad, titleH, subtitleH, headGap, buttonH, stickyGap } = RETRO;
+  // Six notes two abreast in wider columns. Taller notes than the other
+  // formats: the rail carries the idea box too, and a sealed box needs the
+  // room to show its count.
+  const colW = 400;
+  const noteH = 176;
+  const colH = retroNotesTop(0) + stickyGridHeight(6, 2, noteH) + pad;
   const totalW = railW + (colW + gap) * 4;
   const x0 = cx - totalW / 2;
   const y0 = cy - (titleH + subtitleH + headGap + colH) / 2;
@@ -103,7 +112,7 @@ export function buildMadSadGlad(cx: number, cy: number): Element[] {
 
   // The rail opens on honesty: the mood check, then the anonymous box for
   // what nobody will say out loud, then the writing and voting tools.
-  const tempH = 252;
+  const tempH = 240;
   const boxY = top + tempH + 20;
   const buttonsY = top + colH - buttonH;
   const elements: Element[] = [
@@ -161,7 +170,16 @@ export function buildMadSadGlad(cx: number, cy: number): Element[] {
         textAlignX: 'left',
         ...SCAFFOLD,
       },
-      ...stickyStack(x + pad, notesTop, colW - pad * 2, stickyH, col.notes, col.hue.sticky),
+      ...stickyGrid(
+        x + pad,
+        notesTop,
+        colW - pad * 2,
+        noteH,
+        2,
+        col.notes,
+        col.hue.sticky,
+        stickyGap,
+      ),
     );
   });
 
@@ -174,6 +192,7 @@ export function buildMadSadGlad(cx: number, cy: number): Element[] {
       label: 'What would help?',
       hint: 'One owner and a day each',
       items: MSG_ACTIONS,
+      width: colW,
     }),
   );
   const checkTop = notesTop + checklistHeight(MSG_ACTIONS.length) + 12;
@@ -191,14 +210,17 @@ export function buildMadSadGlad(cx: number, cy: number): Element[] {
   const kindNoteTop = kindTop + 44;
   elements.push(
     panelHeading(actionsX + pad, kindTop, innerW, 'Kind words'),
-    retroSticky(
-      actionsX + pad,
-      kindNoteTop,
-      innerW,
-      top + colH - pad - kindNoteTop,
-      'Thank you Dana for two brilliant years. The on-call runbook is all you.',
-      { fill: '#fbcfe8', text: '#500724' },
-    ),
+    {
+      ...retroSticky(
+        actionsX + pad,
+        kindNoteTop,
+        innerW,
+        top + colH - pad - kindNoteTop,
+        'Thank you Dana for two brilliant years. The on-call runbook is all you.',
+        { fill: '#fbcfe8', text: '#500724' },
+      ),
+      textSize: 'md',
+    },
     {
       ...createShape('sticker', actionsX + colW - pad - 64 - 8, top + colH - pad - 64 - 8),
       width: 64,

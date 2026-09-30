@@ -19,7 +19,7 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
   // The Quick Start template grid is the client-rendered heart of the
   // wizard; its presence proves the picker mounted, not just the shell.
   await expect(page.getByText('Quick Start', { exact: false })).toBeVisible();
-  await expect(page.getByText('Blank diagram', { exact: false })).toBeVisible();
+  await expect(page.getByText('Blank Canvas', { exact: false })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
@@ -28,7 +28,7 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
 // open invisibly behind it.
 test('the apps menu opens in front of the new-document wizard', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.getByText('Blank diagram', { exact: false })).toBeVisible();
+  await expect(page.getByText('Blank Canvas', { exact: false })).toBeVisible();
 
   await page.getByRole('button', { name: /^switch section/i }).click();
   const menu = page.getByRole('menu');

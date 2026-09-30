@@ -24,7 +24,8 @@ import {
   SCAFFOLD,
   moodCheck,
   sessionButtons,
-  stickyStack,
+  stickyGrid,
+  stickyGridHeight,
   checklistHeight,
   type RetroHue,
 } from './template-retro-kit';
@@ -39,6 +40,9 @@ const FOUR_LS: { label: string; hint: string; icon: string; hue: RetroHue; notes
       'Daily launch-room standups kept us in sync',
       'Design QA caught issues before customers did',
       'Support joined planning from week one',
+      'The staged rollout felt calm',
+      'Finance signed off pricing early',
+      'Pizza at the Friday bug bash',
     ],
   },
   {
@@ -50,6 +54,9 @@ const FOUR_LS: { label: string; hint: string; icon: string; hue: RetroHue; notes
       'Apple Pay shoppers convert twice as often',
       'Feature flags let us roll back in minutes',
       'Load tests need real basket sizes',
+      'Guest checkout matters more than we thought',
+      'Error copy drives support tickets',
+      'Mobile Safari needs its own QA pass',
     ],
   },
   {
@@ -61,6 +68,9 @@ const FOUR_LS: { label: string; hint: string; icon: string; hue: RetroHue; notes
       'A clear owner for payment errors',
       'Time to fix the address form',
       'Analytics ready on launch day',
+      'A rollback runbook anyone could follow',
+      'Test cards for every region',
+      'Design time for the edge cases',
     ],
   },
   {
@@ -72,27 +82,35 @@ const FOUR_LS: { label: string; hint: string; icon: string; hue: RetroHue; notes
       'A sandbox copy of the payment provider',
       'One more week of beta',
       'A launch checklist we trust',
+      'One dashboard the whole team watches',
+      'Fewer meetings in launch week',
+      'Customer quotes from day one',
     ],
   },
 ];
 
-// Split over two checklists across the strip, two lines each.
+// Split over two checklists across the strip, three lines each.
 const FOUR_LS_ACTIONS = [
   'Name an owner for payment errors · Mei · 3 Oct',
   'Write the launch checklist · Tom · 7 Oct',
+  'Order regional test cards · Joe · 9 Oct',
   'Stand up a payments sandbox · Ravi · 10 Oct',
+  'Write a rollback runbook · Ana · 14 Oct',
   'Analytics live before launch · Kim · 17 Oct',
 ];
 
 export function buildFourLs(cx: number, cy: number): Element[] {
-  const { railW, gap, pad, titleH, subtitleH, headGap, stickyH, stickyGap, buttonH } = RETRO;
+  const { railW, gap, pad, titleH, subtitleH, headGap, stickyGap, buttonH } = RETRO;
+  // Six notes per quadrant, two rows of three.
   const perRow = 3;
   const noteW = 176;
+  const noteH = 108;
   const quadW = pad * 2 + perRow * noteW + (perRow - 1) * stickyGap;
-  const quadH = retroNotesTop(0) + stickyH + pad;
+  const quadH = retroNotesTop(0) + stickyGridHeight(6, perRow, noteH) + pad;
   const gridW = quadW * 2 + gap;
   const gridH = quadH * 2 + gap;
-  const stripH = pad * 2 + checklistHeight(2);
+  const half = FOUR_LS_ACTIONS.length / 2;
+  const stripH = pad * 2 + checklistHeight(half);
   const bodyH = gridH + gap + stripH;
   const totalW = railW + gap + gridW;
   const x0 = cx - totalW / 2;
@@ -102,7 +120,7 @@ export function buildFourLs(cx: number, cy: number): Element[] {
 
   // Rail: the mood, the tools, a note, then the milestone's facts at the
   // foot, level with the actions strip.
-  const tempH = RETRO.tempH;
+  const tempH = 380;
   const buttonsY = top + tempH + 24;
   const statH = 96;
   const statY = top + bodyH - statH;
@@ -167,18 +185,17 @@ export function buildFourLs(cx: number, cy: number): Element[] {
       retroPanel(x, y, quadW, quadH, q.hue),
       ...retroHeader(x, y, quadW, q.label, q.hint, q.icon, q.hue.headerColor),
     );
-    q.notes.forEach((note, j) => {
-      elements.push(
-        ...stickyStack(
-          x + pad + j * (noteW + stickyGap),
-          retroNotesTop(y),
-          noteW,
-          stickyH,
-          [note],
-          q.hue.sticky,
-        ),
-      );
-    });
+    elements.push(
+      ...stickyGrid(
+        x + pad,
+        retroNotesTop(y),
+        quadW - pad * 2,
+        noteH,
+        perRow,
+        q.notes,
+        q.hue.sticky,
+      ),
+    );
   });
 
   // The strip: the header block on the left, the checklist over two columns.
@@ -197,8 +214,8 @@ export function buildFourLs(cx: number, cy: number): Element[] {
       'check-circle',
       RETRO_INK,
     ),
-    actionChecklist(listX, stripY + pad, listW, FOUR_LS_ACTIONS.slice(0, 2)),
-    actionChecklist(listX + listW + 24, stripY + pad, listW, FOUR_LS_ACTIONS.slice(2)),
+    actionChecklist(listX, stripY + pad, listW, FOUR_LS_ACTIONS.slice(0, half)),
+    actionChecklist(listX + listW + 24, stripY + pad, listW, FOUR_LS_ACTIONS.slice(half)),
   );
   return elements;
 }

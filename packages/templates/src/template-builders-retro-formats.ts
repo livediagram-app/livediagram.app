@@ -16,13 +16,13 @@ import {
   RETRO,
   RETRO_HUES,
   RETRO_MUTED,
-  retroColumnHeight,
   retroHeading,
   retroNotesTop,
   retroPanel,
   retroRail,
   SCAFFOLD,
-  stickyStack,
+  stickyGrid,
+  stickyGridHeight,
   type RetroHue,
 } from './template-retro-kit';
 
@@ -55,6 +55,9 @@ const SSC_COLUMNS: {
       'Write the release notes as we merge',
       'Pair on every on-call handover',
       'Demo work in progress on Thursdays',
+      'Add a screenshot to every UI pull request',
+      'Rotate who runs standup each week',
+      'Book a user interview every fortnight',
     ],
   },
   {
@@ -67,6 +70,9 @@ const SSC_COLUMNS: {
       'Picking up new tickets while reviews wait',
       'Merging after 3pm on a Friday',
       'Taking scope changes over DMs',
+      'Skipping tests to make the demo',
+      'Leaving noisy alerts on mute',
+      'Estimating big tickets on the spot',
     ],
   },
   {
@@ -79,6 +85,9 @@ const SSC_COLUMNS: {
       'Ten-minute bug triage after standup',
       'A design and dev kickoff for every epic',
       'Posting shipped work in #wins',
+      'Pairing new joiners for their first week',
+      'Keeping pull requests under 300 lines',
+      'The Friday afternoon learning hour',
     ],
   },
 ];
@@ -87,6 +96,7 @@ const SSC_ACTIONS = [
   'Release notes in PR template · Priya · Tue',
   'No merges after 3pm Friday · Tom · Fri',
   'Scope asks go through the board · Jo · Mon',
+  'Standup rota in the team channel · Leo · Mon',
 ];
 
 // Last sprint's actions, checked in before this one's are written: two done,
@@ -162,8 +172,11 @@ function lamp(x: number, y: number, kind: Lamp, fill: string): Element[] {
 }
 
 export function buildStartStopContinue(cx: number, cy: number): Element[] {
-  const { colW, railW, gap, pad, headerH, titleH, subtitleH, headGap, stickyH } = RETRO;
-  const colH = retroColumnHeight(3);
+  const { railW, gap, pad, headerH, titleH, subtitleH, headGap, stickyGap } = RETRO;
+  // Wider columns than the Retrospective: six notes sit two abreast.
+  const colW = 400;
+  const noteH = 124;
+  const colH = retroNotesTop(0) + stickyGridHeight(6, 2, noteH) + pad;
   const totalW = railW + (colW + gap) * 4;
   const x0 = cx - totalW / 2;
   const y0 = cy - (titleH + subtitleH + headGap + colH) / 2;
@@ -213,14 +226,27 @@ export function buildStartStopContinue(cx: number, cy: number): Element[] {
         textAlignX: 'left',
         ...SCAFFOLD,
       },
-      ...stickyStack(x + pad, notesTop, colW - pad * 2, stickyH, col.notes, col.hue.sticky),
+      ...stickyGrid(
+        x + pad,
+        notesTop,
+        colW - pad * 2,
+        noteH,
+        2,
+        col.notes,
+        col.hue.sticky,
+        stickyGap,
+      ),
     );
   });
 
   // Action items, then last sprint's list checked in underneath it.
   const actionsX = x0 + railW + gap + 3 * (colW + gap);
   elements.push(
-    ...actionsColumn(actionsX, top, colH, { hint: 'One owner and a day each', items: SSC_ACTIONS }),
+    ...actionsColumn(actionsX, top, colH, {
+      hint: 'One owner and a day each',
+      items: SSC_ACTIONS,
+      width: colW,
+    }),
   );
   const lastTop = notesTop + checklistHeight(SSC_ACTIONS.length) + 24;
   elements.push(

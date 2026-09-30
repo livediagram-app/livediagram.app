@@ -203,6 +203,6 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
   }
 }
 
-// The "Blank diagram" template is truly blank — no seeded element. The user
+// The "Blank Canvas" template is truly blank — no seeded element. The user
 // starts from an empty canvas (with the empty-canvas hint banner, docs/specs/007-editor/new-document-route.md) and
 // adds their first element from the palette / Quick Start.

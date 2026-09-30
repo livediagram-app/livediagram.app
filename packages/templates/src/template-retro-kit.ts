@@ -313,6 +313,46 @@ export function stickyStack(
   );
 }
 
+// A grid of notes `cols` wide, filled row by row, `gap` apart both ways. The
+// fuller formats lay six or eight notes per column or zone this way.
+export function stickyGrid(
+  x: number,
+  y: number,
+  width: number,
+  noteH: number,
+  cols: number,
+  notes: readonly string[],
+  sticky: RetroHue['sticky'],
+  gap: number = RETRO.stickyGap,
+  // The fuller boards write their notes a size up so they still read when
+  // the whole board is zoomed to fit.
+  textSize: 'sm' | 'md' = 'md',
+): Element[] {
+  const noteW = (width - (cols - 1) * gap) / cols;
+  return notes.map((note, i) => ({
+    ...retroSticky(
+      x + (i % cols) * (noteW + gap),
+      y + Math.floor(i / cols) * (noteH + gap),
+      noteW,
+      noteH,
+      note,
+      sticky,
+    ),
+    textSize,
+  }));
+}
+
+// The height of a grid of `count` notes `cols` wide.
+export const stickyGridHeight = (
+  count: number,
+  cols: number,
+  noteH: number,
+  gap: number = RETRO.stickyGap,
+) => {
+  const rows = Math.ceil(count / cols);
+  return rows * noteH + (rows - 1) * gap;
+};
+
 // The height of a column holding `notes` stickies, header to bottom padding.
 export const retroColumnHeight = (notes: number, stickyH: number = RETRO.stickyH) =>
   RETRO.pad +

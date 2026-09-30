@@ -94,6 +94,23 @@ describe('every retro format', () => {
     }
   });
 
+  it('fills a real retro: a full board of distinct notes', () => {
+    const perCategory = {
+      'start-stop-continue': 6,
+      'mad-sad-glad': 6,
+      'four-ls': 6,
+      sailboat: 8,
+    } as const;
+    for (const kind of kinds) {
+      const labels = stickiesOf(buildTemplate(kind, 0, 0)).map((s) => s.label);
+      expect(new Set(labels).size, kind).toBe(labels.length);
+      // Categories (3 columns, or 4 quadrants / zones) times notes each, plus
+      // the thank-you notes that close the board.
+      const categories = kind === 'four-ls' || kind === 'sailboat' ? 4 : 3;
+      expect(labels.length, kind).toBeGreaterThanOrEqual(categories * perCategory[kind]);
+    }
+  });
+
   it('never overlaps two notes', () => {
     for (const kind of kinds) {
       const notes = stickiesOf(buildTemplate(kind, 0, 0));
@@ -119,7 +136,12 @@ describe('start, stop, continue template', () => {
     expect(cols.map((c) => c.fillColor)).toEqual(['#dcfce7', '#ffe4e6', '#e0f2fe']);
     expect(cols[0]!.x).toBeLessThan(cols[1]!.x);
     expect(cols[1]!.x).toBeLessThan(cols[2]!.x);
-    for (const col of cols) expect(notesIn(els, col)).toHaveLength(3);
+    // Six notes each, two abreast.
+    for (const col of cols) {
+      const notes = notesIn(els, col);
+      expect(notes).toHaveLength(6);
+      expect(new Set(notes.map((n) => n.x)).size).toBe(2);
+    }
     expect(text(els, 'What’s getting in our way?')).toBeTruthy();
   });
 
@@ -172,7 +194,8 @@ describe('mad, sad, glad template', () => {
       expect(inside(sticker, panel)).toBe(true);
       expect(sticker.width).toBeGreaterThanOrEqual(64);
       const notes = notesIn(els, panel);
-      expect(notes).toHaveLength(4);
+      expect(notes).toHaveLength(6);
+      expect(new Set(notes.map((n) => n.x)).size).toBe(2);
       for (const n of notes) expect(n.label).toMatch(/^I[ ’]/);
       // The emoji leads: above every note.
       for (const n of notes) expect(sticker.y + sticker.height).toBeLessThan(n.y);
@@ -215,7 +238,10 @@ describe('4Ls template', () => {
       [longed, 'star'],
     ] as const) {
       expect(icons.some((i) => i.iconId === icon && inside(i, panel!))).toBe(true);
-      expect(notesIn(els, panel!)).toHaveLength(3);
+      // Two rows of three.
+      const notes = notesIn(els, panel!);
+      expect(notes).toHaveLength(6);
+      expect(new Set(notes.map((n) => n.y)).size).toBe(2);
     }
   });
 
@@ -286,10 +312,10 @@ describe('sailboat template', () => {
     expect(rocks.y).toBeGreaterThan(waterline);
     expect(rocks.x).toBeGreaterThan(anchors.x + anchors.width);
     for (const [z, n] of [
-      [wind, 4],
-      [island, 2],
-      [anchors, 4],
-      [rocks, 4],
+      [wind, 8],
+      [island, 8],
+      [anchors, 8],
+      [rocks, 8],
     ] as const) {
       expect(notesIn(els, z)).toHaveLength(n);
     }

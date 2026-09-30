@@ -233,8 +233,12 @@ describe('buildTemplatedTab', () => {
   });
 
   it('non-mindmap templates do not inherit mindmap-specific overrides', () => {
-    const tab = buildTemplatedTab('flowchart', 'slate', 'tab-1', 'flow');
-    expect(tab.backgroundOpacity).toBeUndefined();
+    // A dot-grid board carries no opacity at all; a graph-paper one only the
+    // quiet-pattern step back (0.4), never the mind map's 0.8.
+    expect(
+      buildTemplatedTab('retrospective', 'slate', 'tab-1', 'retro').backgroundOpacity,
+    ).toBeUndefined();
+    expect(buildTemplatedTab('flowchart', 'slate', 'tab-1', 'flow').backgroundOpacity).toBe(0.4);
   });
 });
 

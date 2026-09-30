@@ -25,17 +25,20 @@ import {
   retroHeading,
   retroNotesTop,
   retroPanel,
-  retroSticky,
   SCAFFOLD,
   sessionButtons,
+  stickyGrid,
+  stickyGridHeight,
   stickyStack,
   type RetroHue,
 } from './template-retro-kit';
 import {
-  sceneBackdrop,
+  jibEdgeX,
   sceneBoat,
   sceneIsland,
   sceneRocks,
+  sceneSea,
+  sceneSky,
   sceneSun,
   type SceneLayout,
 } from './template-sailboat-scene';
@@ -53,18 +56,31 @@ type Zone = {
   cols: number;
 };
 
-const SCENE: SceneLayout = {
-  width: 1400,
-  height: 880,
-  waterline: 430,
-  boatX: 660,
-  rocksX: 880,
-  islandX: 1180,
-  sunX: 840,
-};
+// Wind stands tall on the left of the sky (two notes abreast), the Island
+// runs wide across the top right, and Anchors and Rocks sit side by side in
+// the water, eight notes each.
+const NOTE_H = 92;
+const NOTE_GAP = 12;
+const TALL_W = 364; // two notes of 156
+const WIDE_W = 676; // four notes of 150
 
-const NOTE_H = 96;
-const ZONE_TOP_BELOW = SCENE.waterline + 84;
+const zoneHeight = (count: number, cols: number) =>
+  retroNotesTop(0) + stickyGridHeight(count, cols, NOTE_H, NOTE_GAP) + RETRO.pad;
+
+const SCENE_W = 1540;
+const WATERLINE = 24 + zoneHeight(8, 2) + 40;
+const ZONE_TOP_BELOW = WATERLINE + 84;
+
+const SCENE: SceneLayout = {
+  width: SCENE_W,
+  height: ZONE_TOP_BELOW + zoneHeight(8, 4) + 24,
+  waterline: WATERLINE,
+  boatX: 640,
+  rocksX: 860,
+  islandX: 1300,
+  sunX: 1330,
+  sunY: WATERLINE - 20,
+};
 
 const ZONES: Zone[] = [
   {
@@ -72,11 +88,20 @@ const ZONES: Zone[] = [
     hint: 'Where are we sailing to?',
     icon: 'flag',
     hue: RETRO_HUES.amber,
-    notes: ['Mobile app in the App Store by 1 March', '10k weekly active users by summer'],
-    x: SCENE.width - 24 - 440,
+    notes: [
+      'Mobile app in the App Store by 1 March',
+      '10k weekly active users by summer',
+      'A 4.5 star rating or better',
+      'Checkout in under a minute',
+      'Offline mode for the commute',
+      'Crash-free sessions above 99.5%',
+      'Push alerts people keep switched on',
+      'Web and app on one design system',
+    ],
+    x: SCENE_W - 24 - WIDE_W,
     y: 24,
-    w: 440,
-    cols: 2,
+    w: WIDE_W,
+    cols: 4,
   },
   {
     label: 'Wind',
@@ -88,10 +113,14 @@ const ZONES: Zone[] = [
       'The design system is ready',
       'Two engineers joined in July',
       'Leadership backs the roadmap',
+      'Beta testers send feedback daily',
+      'New CI builds in six minutes',
+      'Support flags bugs within hours',
+      'Marketing has a launch budget',
     ],
     x: 24,
     y: 24,
-    w: 400,
+    w: TALL_W,
     cols: 2,
   },
   {
@@ -104,11 +133,15 @@ const ZONES: Zone[] = [
       'Manual QA on every release',
       'Too many projects in parallel',
       'On-call eats our Fridays',
+      'Design reviews wait a week',
+      'No test phones for older Androids',
+      'Release sign-off needs three people',
+      'Tech debt tickets never get picked',
     ],
-    x: SCENE.boatX - 190,
+    x: 24,
     y: ZONE_TOP_BELOW,
-    w: 400,
-    cols: 2,
+    w: WIDE_W,
+    cols: 4,
   },
   {
     label: 'Rocks',
@@ -120,11 +153,15 @@ const ZONES: Zone[] = [
       'The payments contract ends in January',
       'Only Mei knows the build pipeline',
       'Holiday code freeze from 18 December',
+      'iOS 19 changes the notification rules',
+      'A competitor launches in February',
+      'Our analytics SDK is being retired',
+      'Two of us are on parental leave in Q1',
     ],
-    x: SCENE.boatX + 236,
+    x: 24 + WIDE_W + 32,
     y: ZONE_TOP_BELOW,
-    w: SCENE.width - 24 - (SCENE.boatX + 236),
-    cols: 2,
+    w: SCENE_W - 24 - (24 + WIDE_W + 32),
+    cols: 4,
   },
 ];
 
@@ -133,6 +170,8 @@ const SAIL_ACTIONS = [
   'Pair on the build pipeline · Mei · Wed',
   'Book App Store review early · Jo · 1 Feb',
   'Pause one side project · Sam · Mon',
+  'Buy older Android test phones · Kim · Thu',
+  'One debt ticket every sprint · Leo · Tue',
 ];
 
 const VOYAGE = [
@@ -143,11 +182,6 @@ const VOYAGE = [
   { label: 'Rocks', minutes: 8 },
   { label: 'Vote and act', minutes: 11 },
 ];
-
-const zoneHeight = (z: Zone) => {
-  const rows = Math.ceil(z.notes.length / z.cols);
-  return retroNotesTop(0) + rows * NOTE_H + (rows - 1) * RETRO.stickyGap + RETRO.pad;
-};
 
 // A drawn anchor, the Anchors zone's glyph: ring, shank, stock and arms.
 function anchorGlyph(x: number, y: number, size: number, color: string): Element[] {
@@ -209,9 +243,9 @@ export function buildSailboat(cx: number, cy: number): Element[] {
   const sy = top;
 
   // Rail: the mood, the voyage's running order, the tools, then a note.
-  const tempH = 300;
+  const tempH = 340;
   const agendaY = top + tempH + 20;
-  const agendaH = 300;
+  const agendaH = 340;
   const buttonsY = agendaY + agendaH + 20;
   const noteY = buttonsY + buttonH + 20;
   const elements: Element[] = [
@@ -241,10 +275,12 @@ export function buildSailboat(cx: number, cy: number): Element[] {
     ),
   ];
 
-  // The scene, back to front: sky and sea, sun, island, rocks, boat.
+  // The scene, back to front: sky, the sun setting behind the horizon, sea,
+  // island, rocks, boat.
   elements.push(
-    ...sceneBackdrop(sx, sy, SCENE),
+    ...sceneSky(sx, sy, SCENE),
     ...sceneSun(sx, sy, SCENE),
+    ...sceneSea(sx, sy, SCENE),
     ...sceneIsland(sx, sy, SCENE),
     ...sceneRocks(sx, sy, SCENE),
     ...sceneBoat(sx, sy, SCENE),
@@ -252,11 +288,10 @@ export function buildSailboat(cx: number, cy: number): Element[] {
 
   // Wind: three gusts blowing from the Wind zone into the sails.
   const wind = ZONES.find((z) => z.label === 'Wind')!;
-  const jibLeft = (y: number) =>
-    SCENE.boatX - 10 - (120 * (y - 132)) / (SCENE.waterline - 50 - 132);
-  [170, 240, 310].forEach((ly, i) => {
+  const jibTop = SCENE.waterline - 298;
+  [jibTop + 40, jibTop + 120, jibTop + 200].forEach((ly, i) => {
     const fromX = sx + wind.x + wind.w + 12;
-    const toX = sx + jibLeft(ly) - 14;
+    const toX = sx + jibEdgeX(SCENE, ly) - 14;
     elements.push({
       ...createArrow(fromX, sy + ly, toX, sy + ly + 6),
       arrowStyle: 'curved',
@@ -275,26 +310,25 @@ export function buildSailboat(cx: number, cy: number): Element[] {
   ZONES.forEach((z) => {
     const x = sx + z.x;
     const y = sy + z.y;
-    const h = zoneHeight(z);
-    const noteW = (z.w - pad * 2 - (z.cols - 1) * stickyGap) / z.cols;
+    const h = zoneHeight(z.notes.length, z.cols);
     elements.push(
       retroPanel(x, y, z.w, h, z.hue, { opacity: 0.94, borderRadius: 'lg' }),
       ...retroHeader(x, y, z.w, z.label, z.hint, z.icon, z.hue.headerColor).filter(
         (el) => !(el.type === 'shape' && el.shape === 'icon' && !el.iconId),
       ),
     );
-    z.notes.forEach((note, i) => {
-      elements.push(
-        retroSticky(
-          x + pad + (i % z.cols) * (noteW + stickyGap),
-          retroNotesTop(y) + Math.floor(i / z.cols) * (NOTE_H + stickyGap),
-          noteW,
-          NOTE_H,
-          note,
-          z.hue.sticky,
-        ),
-      );
-    });
+    elements.push(
+      ...stickyGrid(
+        x + pad,
+        retroNotesTop(y),
+        z.w - pad * 2,
+        NOTE_H,
+        z.cols,
+        z.notes,
+        z.hue.sticky,
+        NOTE_GAP,
+      ),
+    );
   });
 
   // Anchors: the drawn anchor is the zone's glyph, on a rope from the hull.
@@ -360,18 +394,19 @@ export function buildSailboat(cx: number, cy: number): Element[] {
   const shoutNoteTop = shoutTop + 44;
   elements.push(
     panelHeading(actionsX + pad, shoutTop, innerW, 'Shout-outs'),
-    // Two thank-yous stacked, so the room reads it as a pile to add to.
+    // Three thank-yous stacked, so the room reads it as a pile to add to.
     ...stickyStack(
       actionsX + pad,
       shoutNoteTop,
       innerW,
-      (top + bodyH - pad - shoutNoteTop - stickyGap) / 2,
+      (top + bodyH - pad - shoutNoteTop - 2 * stickyGap) / 3,
       [
         'Thanks Priya for steering us through the beta launch!',
         'Kudos Ravi for the calm 2am rollback on Tuesday.',
+        'Mei, your pipeline notes saved my week. Thank you!',
       ],
       { fill: '#fde68a', text: '#451a03' },
-    ),
+    ).map((note) => ({ ...note, textSize: 'md' as const })),
     {
       ...createShape('sticker', actionsX + colW - pad - 64 - 8, top + bodyH - pad - 64 - 8),
       width: 64,
