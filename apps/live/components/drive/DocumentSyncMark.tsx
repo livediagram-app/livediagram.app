@@ -44,19 +44,36 @@ const PRIMS: Record<DocumentSyncState, readonly IconPrim[]> = {
 };
 
 // Vendored Lucide glyphs (docs/specs/004-interface-design/iconography.md).
+// Only the symbol moves, the cloud stays still: the syncing arrows turn, the
+// waiting arrow drifts up. Ambient indicators (motion.md), off with reduced
+// motion (the OS setting through motion-safe, the app's setting in globals.css).
+const MOTION: Record<DocumentSyncState, string> = {
+  synced: '',
+  waiting: 'motion-safe:animate-sync-rise',
+  syncing: 'motion-safe:animate-sync-spin',
+  failed: '',
+};
+
 function SyncGlyph({ state, size = 14, ...rest }: IconProps & { state: DocumentSyncState }) {
+  const paths = PRIMS[state].filter((p) => p.t === 'path');
   return (
     <Glyph size={size} units={24} {...rest}>
-      {PRIMS[state].map((p, i) =>
-        p.t === 'path' ? (
-          <path
-            key={i}
-            d={p.d}
-            data-sync-part={isCloud(p.d) ? 'cloud' : 'symbol'}
-            className={isCloud(p.d) ? undefined : ACCENT[state]}
-          />
-        ) : null,
-      )}
+      {paths
+        .filter((p) => isCloud(p.d))
+        .map((p) => (
+          <path key={p.d} d={p.d} data-sync-part="cloud" />
+        ))}
+      <g
+        data-sync-part="symbol"
+        className={`${ACCENT[state]} ${MOTION[state]}`}
+        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+      >
+        {paths
+          .filter((p) => !isCloud(p.d))
+          .map((p) => (
+            <path key={p.d} d={p.d} />
+          ))}
+      </g>
     </Glyph>
   );
 }
@@ -85,9 +102,7 @@ export function DocumentSyncMark({
         tabIndex={0}
         aria-label={label}
         data-document-sync={state}
-        className={`inline-flex size-4 shrink-0 items-center justify-center rounded-sm text-slate-400 focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-slate-500 ${
-          state === 'syncing' ? 'motion-safe:animate-pulse' : ''
-        }`}
+        className="inline-flex size-4 shrink-0 items-center justify-center rounded-sm text-slate-400 focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-slate-500"
       >
         {/* Finer than the house weight: a quiet mark beside quiet metadata. */}
         <SyncGlyph state={state} weight={DOCUMENT_SYNC_WEIGHT} />

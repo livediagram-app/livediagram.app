@@ -117,28 +117,26 @@ describe('DocumentSyncMark', () => {
     ).toBeTruthy();
   });
 
-  it('keeps every cloud quiet and colours only its symbol: the check green, the arrows blue', () => {
-    const parts = (state: string) =>
-      [...document.querySelectorAll(`[data-document-sync="${state}"] svg path`)].map((p) => ({
-        part: p.getAttribute('data-sync-part'),
-        cls: p.getAttribute('class') ?? '',
-      }));
-    for (const [s, savedAt, colour] of [
-      [status(), 100, 'emerald'],
-      [status(), 101, 'blue'],
-      [status({ state: 'syncing' }), 101, 'blue'],
-      [status({ failed: ['mine'] }), 101, 'amber'],
+  it('keeps every cloud quiet and still; only its symbol takes a colour and moves', () => {
+    for (const [s, savedAt, colour, motion] of [
+      [status(), 100, 'emerald', null],
+      [status(), 101, 'blue', 'motion-safe:animate-sync-rise'],
+      [status({ state: 'syncing' }), 101, 'blue', 'motion-safe:animate-sync-spin'],
+      [status({ failed: ['mine'] }), 101, 'amber', null],
     ] as const) {
       show(s, savedAt);
-      const state = document
-        .querySelector('[data-document-sync]')!
-        .getAttribute('data-document-sync')!;
-      const all = parts(state);
-      expect(all.filter((p) => p.part === 'cloud')).toHaveLength(1);
-      for (const p of all) {
-        if (p.part === 'cloud') expect(p.cls).toBe('');
-        else expect(p.cls).toContain(`text-${colour}-600`);
-      }
+      const mark = document.querySelector('[data-document-sync]')!;
+      const clouds = mark.querySelectorAll('[data-sync-part="cloud"]');
+      expect(clouds).toHaveLength(1);
+      expect(clouds[0]!.getAttribute('class') ?? '').toBe('');
+      const symbol = mark.querySelector('g[data-sync-part="symbol"]')!;
+      expect(symbol.querySelectorAll('path').length).toBeGreaterThan(0);
+      const cls = symbol.getAttribute('class') ?? '';
+      expect(cls).toContain(`text-${colour}-600`);
+      if (motion) expect(cls).toContain(motion);
+      else expect(cls).not.toMatch(/animate-/);
+      // Turns about its own centre, not the icon's corner.
+      expect((symbol as SVGGElement).style.transformBox).toBe('fill-box');
       cleanup();
     }
   });
