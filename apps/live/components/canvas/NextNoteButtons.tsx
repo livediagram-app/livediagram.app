@@ -135,7 +135,7 @@ export function NextNoteButtons({
                 setPreviewKey(null);
                 onAdd(t.fromId, t.side);
               }}
-              className={`group absolute flex items-center focus-visible:outline-none ${
+              className={`group pointer-events-auto absolute flex items-center focus-visible:outline-none ${
                 outward ? 'justify-start' : 'justify-end'
               }`}
               style={{

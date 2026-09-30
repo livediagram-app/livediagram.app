@@ -68,7 +68,8 @@ snapEdge)` with `lead` from the raw pointer, so the square survives the snap; wi
   the remote cursors and the laser, at `z-index: SELECTION_GRIPS_Z_INDEX`, `pointer-events: none`,
   `inset: 0` (canvas coordinates). Inside it, in paint order: the canvas's own grips (next-note
   buttons, quick-connect pluses, union border, union handles), an `<svg>` whose `<g>` hosts SVG
-  grips, then a `<div>` host for HTML grips.
+  grips, then a `<div>` host for HTML grips. Every pressable thing in the layer re-enables pointer
+  events on itself (`pointer-events-auto`): the next-note buttons, the pluses, every handle.
 - The layer hands its two hosts to `SelectionGripsContext` from a layout effect, so the first commit
   re-renders synchronously and the grips fill before the first paint; on unmount the hosts go null.
 - An element view renders its grips where it always did, wrapped in `BoxGripsPortal` (HTML) or
