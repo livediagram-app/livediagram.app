@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useTokens } from '@/hooks/persistence/useTokens';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CATEGORY_GLYPHS } from './settings-icons';
 import { SettingsRowShell } from './SettingsRowShell';
 import { SettingsSignInLink } from './SettingsSignInLink';
@@ -23,7 +24,10 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
   const tokens = useTokens(clerkUserId ?? null, { enabled });
   const [composing, setComposing] = useState(false);
   const [secret, setSecret] = useState<string | null>(null);
-  const busy = composing || secret !== null;
+  // First run: with no tokens and nothing just minted, the composer is the
+  // category, one field and one button, rather than an empty list plus two
+  // routes to the same form.
+  const firstRun = tokens.list !== null && tokens.list.length === 0 && secret === null;
 
   return (
     <SettingsRowShell
@@ -53,26 +57,30 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
               <SettingsTokenOverview
                 count={tokens.list === null ? null : tokens.count}
                 max={tokens.max}
-                composing={busy}
+                composing={composing || secret !== null}
                 onNew={() => setComposing(true)}
               />
               {secret !== null ? (
                 <SettingsTokenReveal secret={secret} onDone={() => setSecret(null)} />
-              ) : composing ? (
+              ) : composing || firstRun ? (
                 <SettingsTokenCreate
                   tokens={tokens}
-                  onCancel={() => setComposing(false)}
+                  onCancel={firstRun ? undefined : () => setComposing(false)}
                   onCreated={(minted) => {
                     setComposing(false);
                     setSecret(minted);
                   }}
                 />
               ) : null}
-              <SettingsTokenList
-                tokens={tokens.list}
-                onRevoke={tokens.revoke}
-                onCreateFirst={busy ? undefined : () => setComposing(true)}
-              />
+              {firstRun ? (
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Connecting Claude or another AI tool? It creates its own token when you approve
+                  it.{' '}
+                  <HelpArticleLink article="connectAiTool" variant="text" label="Read the guide" />
+                </p>
+              ) : (
+                <SettingsTokenList tokens={tokens.list} onRevoke={tokens.revoke} />
+              )}
             </>
           )}
         </div>

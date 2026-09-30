@@ -23,6 +23,9 @@ export function SettingsTokenOverview({
   composing: boolean;
   onNew: () => void;
 }) {
+  // No tokens yet: the composer below is the one thing to do, so the header
+  // offers no second way to it and no meter reading "0 of 10".
+  const firstRun = count === 0;
   const atCap = count !== null && count >= max;
   const fill = atCap
     ? 'bg-rose-500'
@@ -47,7 +50,7 @@ export function SettingsTokenOverview({
             Let your scripts and AI tools work with your documents, signed in as you.
           </span>
         </span>
-        {composing ? null : (
+        {composing || firstRun ? null : (
           <Button size="xs" onClick={onNew} disabled={count === null || atCap} className="shrink-0">
             <PlusIcon />
             New Token
@@ -55,7 +58,7 @@ export function SettingsTokenOverview({
         )}
       </div>
 
-      {count === null ? null : (
+      {count === null || firstRun ? null : (
         <div className="flex items-center gap-3">
           <div
             role="meter"

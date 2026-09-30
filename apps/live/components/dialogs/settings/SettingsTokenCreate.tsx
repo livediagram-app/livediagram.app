@@ -21,7 +21,9 @@ export function SettingsTokenCreate({
 }: {
   tokens: TokensController;
   onCreated: (secret: string) => void;
-  onCancel: () => void;
+  // Absent when the composer is the first-run state rather than something
+  // the reader opened: there is nothing to cancel back to.
+  onCancel?: () => void;
 }) {
   const [name, setName] = useState('');
   // Fixed when the composer opens: the preview is a date, not a ticking clock.
@@ -41,7 +43,7 @@ export function SettingsTokenCreate({
         void submit();
       }}
       onKeyDown={(e) => {
-        if (e.key === 'Escape') {
+        if (e.key === 'Escape' && onCancel) {
           // Settings closes on Escape too; this one only closes the composer.
           e.stopPropagation();
           onCancel();
@@ -59,7 +61,9 @@ export function SettingsTokenCreate({
           id="settings-token-name"
           value={name}
           maxLength={MAX_NAME}
-          autoFocus
+          // Focus only when opened on purpose; the first-run form must not
+          // steal focus (and scroll) from whoever just opened Settings.
+          autoFocus={!!onCancel}
           onChange={(e) => setName(e.target.value)}
           placeholder="Name your token"
           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-brand-500/20"
@@ -98,9 +102,11 @@ export function SettingsTokenCreate({
       ) : null}
 
       <div className="flex items-center justify-end gap-2">
-        <Button size="xs" variant="secondary" onClick={onCancel}>
-          Cancel
-        </Button>
+        {onCancel ? (
+          <Button size="xs" variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+        ) : null}
         <Button type="submit" size="xs" disabled={tokens.creating || tokens.atCap}>
           {tokens.creating ? 'Creating…' : 'Create Token'}
         </Button>

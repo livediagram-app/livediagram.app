@@ -58,32 +58,40 @@ describe('SettingsTokensRow', () => {
     expect(api.apiListTokens).not.toHaveBeenCalled();
   });
 
+  it('opens on the create form when there are no tokens, with nothing competing', async () => {
+    api.apiListTokens.mockResolvedValue([]);
+    render(<SettingsTokensRow row={ROW} />);
+    // The form is the empty state: no second button to it, no "0 of 10".
+    expect(await screen.findByLabelText('What Is It For?')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'New Token' })).toBeNull();
+    expect(screen.queryByRole('meter')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+  });
+
   it('creates a token and shows its secret once', async () => {
     api.apiListTokens.mockResolvedValue([]);
     api.apiCreateToken.mockResolvedValue({ token: 'lvd_secret', id: 'tok1' });
     render(<SettingsTokensRow row={ROW} />);
-    await screen.findByText('No Tokens Yet');
-    expect(
-      screen.getByRole('meter', { name: 'Token slots used' }).getAttribute('aria-valuetext'),
-    ).toBe('0 of 10');
-    fireEvent.click(screen.getByRole('button', { name: 'New Token' }));
     // A chip fills the name; the field stays editable.
-    fireEvent.click(screen.getByRole('button', { name: 'CI Bot' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'CI Bot' }));
     expect((screen.getByLabelText('What Is It For?') as HTMLInputElement).value).toBe('CI Bot');
+    api.apiListTokens.mockResolvedValue([TOKEN]);
     fireEvent.click(screen.getByRole('button', { name: 'Create Token' }));
     const reveal = await screen.findByRole('status', { name: 'New token created' });
     expect(reveal.textContent).toContain('lvd_secret');
     expect(api.apiCreateToken).toHaveBeenCalledWith('user_1', 'CI Bot');
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(screen.queryByText(/lvd_secret/)).toBeNull();
+    // Now there is one: the list, the meter and New Token take over.
+    expect(await screen.findByText('CI bot')).toBeTruthy();
+    expect(screen.getByRole('meter').getAttribute('aria-valuetext')).toBe('1 of 10');
     expect(screen.getByRole('button', { name: 'New Token' })).toBeTruthy();
   });
 
-  it('closes the composer on Escape without creating anything', async () => {
-    api.apiListTokens.mockResolvedValue([]);
+  it('closes an opened composer on Escape without creating anything', async () => {
+    api.apiListTokens.mockResolvedValue([TOKEN]);
     render(<SettingsTokensRow row={ROW} />);
-    await screen.findByText('No Tokens Yet');
-    fireEvent.click(screen.getByRole('button', { name: 'Create Your First Token' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'New Token' }));
     fireEvent.keyDown(screen.getByLabelText('What Is It For?'), { key: 'Escape' });
     expect(screen.queryByLabelText('What Is It For?')).toBeNull();
     expect(api.apiCreateToken).not.toHaveBeenCalled();

@@ -220,8 +220,8 @@ out top to bottom:
   live token (brand; amber from 8; rose at the cap). A **New Token** button
   opens the composer; at the cap it is disabled and the meter says to revoke
   one first.
-- **Composer.** Opens in place under the overview. A name field (optional, up
-  to 60 characters, focused on open) with **suggestion chips** that fill it
+- **Composer.** Opens in place under the overview from New Token. A name
+  field (optional, up to 60 characters, focused when opened) with **suggestion chips** that fill it
   ("Claude", "Cursor", "CI Bot", "Local Script"), a live line saying when the
   token will expire (six months from today, as a date), then **Cancel** and
   **Create Token**. Enter submits, Escape cancels.
@@ -239,10 +239,12 @@ out top to bottom:
   has passed, tinted by status (Active / Expires soon inside 14 days /
   Expired), labelled with the time left. A **Revoke** control per card opens
   a confirmation popover with the revoke warning first.
-- **Empty state.** When there are none: a small terminal sketch of a token in
-  use, "No tokens yet", a **Create Your First Token** button that opens the
-  composer, and a link to the Connect an AI Tool help article for readers who
-  want MCP rather than a script.
+- **First run.** With no tokens, the composer is already open and is the
+  whole category: no New Token button, no meter, no Cancel, and no empty-list
+  card, so the one thing on screen is the form. It does not take focus on
+  load. Under it a single quiet line points readers who want to connect an AI
+  tool at the Connect an AI Tool guide, since that flow creates its own token.
+  Once a token exists the overview's meter and New Token button take over.
 
 "Edit" is exactly what the API supports: create and revoke. There is no rename
 or scope change; a token is replaced by creating a new one and revoking the old.
