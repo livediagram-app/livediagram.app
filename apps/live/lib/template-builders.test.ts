@@ -85,6 +85,18 @@ const ALL_KINDS = [
   'state-machine',
   'floor-plan',
   'event-storming',
+  'start-stop-continue',
+  'mad-sad-glad',
+  'four-ls',
+  'sailboat',
+  'incident-postmortem',
+  'opportunity-solution-tree',
+  'crazy-eights',
+  'stakeholder-map',
+  'risk-matrix',
+  'user-persona',
+  'meeting-agenda',
+  'objectives-planner',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
