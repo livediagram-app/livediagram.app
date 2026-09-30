@@ -74,31 +74,46 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   "Pen stroke", "3 pen strokes"); power user mode leaves it out.
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
-- **The dock holds, left to right:**
+- **The dock is two groups side by side**, centred together at the bottom
+  of the canvas with a clear gap between them: **drawing tools** on the left,
+  **shapes** on the right. Each group is its own pill, and its own toolbar
+  for assistive technology ("Drawing tools", "Shapes"), each one Tab stop with
+  arrow keys moving within it.
+- **Drawing tools, left to right:**
   1. **Select** (marquee and move; the ordinary select tool).
-  2. **Pens**: the preset pens, one button each (see [Pens](#pens)).
+  2. **Markers 1, 2 and 3**: the preset pens, one button each (see [Pens](#pens)).
   3. **Eraser**, with its mode (see [Eraser](#eraser)).
-  4. **Sticky note**.
-  5. **Text**.
-  6. **Shapes**: a small flyout of rectangle, ellipse, diamond, cylinder,
+  4. **Settings** (a **cog**): opens **on a press only**, never on hover; a
+     flyout with no title of its own and three sections, each headed in the
+     flyouts' small capitals and a row of the same switch buttons:
+     **Background** (Plain / Dots / Grid), **Drawing** (Basic / Shape
+     recognition) and **Cursor** (Crosshair + nib / Dot).
+- **Shapes, left to right:**
+  1. **Text**.
+  2. **Sticky note**.
+  3. **Path tool** (see [Path tool](path-tool.md)).
+  4. **Shapes**: a small flyout of rectangle, ellipse, diamond, cylinder,
      line and arrow (see [Shapes](#shapes)). It opens on hover (a mouse or a
      pen, never a finger) as well as on a press, without taking the keyboard
      focus, and closes a moment after the pointer leaves both it and the
      button; a press on a hover-opened flyout keeps it open.
-  7. **Undo** / **Redo**. Not in **power user mode** on a desktop
-     ([Power user mode](../007-editor/power-user-mode.md)): the bottom-right
-     cluster already carries them there, so the dock drops the duplicate. On a
-     phone or tablet layout, and outside the mode, the dock keeps them.
-  8. **More** (`…`): opens on hover like Shapes; a flyout with no title of its own and three sections,
-     each headed in the flyouts' small capitals and a row of the same switch
-     buttons: **Background** (Plain / Dots / Grid), **Drawing** (Basic /
-     Shape recognition) and **Cursor** (Crosshair + nib / Dot). Later, when the operator asks for it, the full
-     palette as an escape hatch.
+  5. **More shapes** (`…`): opens **on a press only**, with its **search
+     field focused at once**, so typing finds any shape of the palette's shape
+     catalogue by name or keyword (flowchart, basic, block and every other
+     shape kind the palette offers; not icons, templates or components).
+     Results show as a grid of the shapes' own previews in the board's ink,
+     best match first; an empty field shows every shape, grouped as in the
+     palette. Arrow keys move through the results, **Enter** or a press picks
+     one, which arms it like a dock shape (plain ink, the tool style of its
+     kind, drawn with a drag or dropped with a click), and closes the flyout;
+     **Escape** closes it without picking. No match says "No shapes match".
+- **Undo and Redo are not in the dock**: the bottom-right cluster carries them
+  on every layout.
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
   none, search does not offer it (nor the format painter), and one held on a
   diagram tab is put down on arriving at a whiteboard.
 - The dock never moves when a tool is picked: flyouts open **above** it, and
-  the dock's own width is fixed per breakpoint, so nothing shifts under the
+  each group's own width is fixed per breakpoint, so nothing shifts under the
   pointer (zero layout shift).
 - On narrow screens the dock scrolls horizontally rather than wrapping.
 - A sticky or a text box placed from the dock opens for typing at once.
@@ -112,7 +127,7 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **With a pen in hand, the cursor never changes** over a shape, note, line
   or handle: the pen draws wherever it presses, so nothing under it offers
   another action.
-- **Two cursor looks**, chosen under **Cursor** in the dock's More flyout and
+- **Two cursor looks**, chosen under **Cursor** in the dock's Settings flyout and
   remembered device-locally with the pens: **Crosshair + nib** (the default:
   a crosshair at the tip, a nib and a dot of the pen's colour beside it) and
   **Dot** (a dot of the pen's colour at the tip, rimmed in the board's colour).
@@ -291,7 +306,7 @@ The eraser offers **both** modes, switched in its flyout:
 
 ## Shape recognition
 
-- The **Drawing** section of the dock's **More** (`…`) flyout: **Basic**
+- The **Drawing** section of the dock's **Settings** (cog) flyout: **Basic**
   (strokes stay as drawn, the default) or **Shape recognition**, remembered
   device-locally with the pens.
 - When on, a pen stroke that reads as a shape on release is replaced by the
@@ -329,7 +344,7 @@ The eraser offers **both** modes, switched in its flyout:
 ## Board background
 
 - **Plain**, **Dots** or **Grid**, chosen per whiteboard from the dock's
-  **More** flyout and stored on the tab as its `backgroundPattern` (`blank`,
+  **Settings** flyout and stored on the tab as its `backgroundPattern` (`blank`,
   `grid` and `graph`: the canvas's own dot grid and graph paper), so every
   participant sees the same board and older readers render it too. Default
   **Plain**.
