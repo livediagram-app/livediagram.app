@@ -142,6 +142,10 @@ type SessionAttachment = {
   //     so revoking or rescoping that code can close exactly its sockets.
   tabScope?: string | null;
   shareCode?: string | null;
+  //   - `account`: a verified Clerk account holds this session, from X-Verified-Account
+  //     (docs/specs/014-identity/profile-picture.md §6). Only such a session may put a picture on the
+  //     roster, and only such a session receives the pictures on it.
+  account?: boolean;
 };
 
 // Share-link ops that end the sessions their code admitted.
@@ -320,7 +324,8 @@ export class DocumentRoom implements DurableObject {
     // the worker on every upgrade (empty = none).
     const tabScope = request.headers.get('X-Verified-Tab-Scope') || null;
     const shareCode = request.headers.get('X-Verified-Share-Code') || null;
-    this.acceptSession(server, verifiedRole, isOwner, tabScope, shareCode);
+    const account = request.headers.get('X-Verified-Account') === '1';
+    this.acceptSession(server, verifiedRole, isOwner, tabScope, shareCode, account);
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -333,6 +338,7 @@ export class DocumentRoom implements DurableObject {
     isOwner = false,
     tabScope: string | null = null,
     shareCode: string | null = null,
+    account = false,
   ): void {
     // Per-session ephemeral presence id (docs/specs/015-api/public-api-and-tokens.md §6): the broadcast presence /
     // cursor id is a fresh server-assigned random, NOT the connector's real
@@ -347,6 +353,7 @@ export class DocumentRoom implements DurableObject {
       isOwner,
       tabScope,
       shareCode,
+      account,
     } satisfies SessionAttachment);
     // Hibernation-aware accept: the runtime owns the socket's event
     // delivery (webSocketMessage / webSocketClose / webSocketError) and
@@ -546,6 +553,17 @@ export class DocumentRoom implements DurableObject {
     if (!decision.admit) return;
     const session = this.readSession(ws);
     if (!session) return;
+    if (msg.kind === 'identity') {
+      // An identity update (docs/specs/014-identity/profile-picture.md §4): the hello rules again,
+      // keeping the tab this session is on, then a fresh roster. Not a join, so none of the join's
+      // side effects run, and a session that never said hello has nothing to update.
+      if (!session.presence) return;
+      const next = helloPresence(msg.participant, session);
+      if (session.presence.tabId !== undefined) next.tabId = session.presence.tabId;
+      ws.serializeAttachment({ ...session, presence: next } satisfies SessionAttachment);
+      this.broadcastPresence();
+      return;
+    }
     if (msg.kind === 'hello') {
       // Force the server-resolved role AND the server-assigned ephemeral id
       // onto the stored presence: the hello frame's own `role` / `id` are
@@ -960,15 +978,26 @@ export class DocumentRoom implements DurableObject {
     // that knows which presence belongs to which socket, so it excludes it here.
     // Presence comes off each socket's attachment (deserialized once per
     // socket, then reused for every recipient's roster).
-    const entries: [WebSocket, ParticipantPresence | null][] = [];
+    //
+    // Profile pictures go only to account sessions (docs/specs/014-identity/profile-picture.md §5): an
+    // anonymous share-link visitor gets the same roster with every picture removed, so the URL
+    // never reaches them.
+    const entries: [WebSocket, ParticipantPresence | null, boolean][] = [];
     for (const ws of this.state.getWebSockets()) {
       if (ws === except) continue;
-      entries.push([ws, this.readSession(ws)?.presence ?? null]);
+      const session = this.readSession(ws);
+      entries.push([ws, session?.presence ?? null, session?.account === true]);
     }
-    for (const [ws] of entries) {
+    for (const [ws, , account] of entries) {
       const others: ParticipantPresence[] = [];
       for (const [peer, presence] of entries) {
-        if (peer !== ws && presence) others.push(presence);
+        if (peer === ws || !presence) continue;
+        if (account || presence.picture === undefined) {
+          others.push(presence);
+          continue;
+        }
+        const { picture: _hidden, ...withoutPicture } = presence;
+        others.push(withoutPicture);
       }
       try {
         ws.send(JSON.stringify({ kind: 'presence', participants: others } satisfies ServerMessage));

@@ -207,6 +207,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
               // createdAt satisfies the ParticipantRecord shape; the
               // rewrite only reads id/name/color.
               createdAt: existing.createdAt,
+              pictureUrl: null,
             }
           : await getParticipant(env, owner);
       const sanitised = writerParticipant

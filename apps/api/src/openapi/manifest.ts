@@ -797,7 +797,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/participants/{id}',
     segment: 'participants',
     tag: 'Participants',
-    summary: "Get a participant's display name and colour.",
+    summary:
+      "Get a participant's display name and colour; their published picture only for a signed-in caller.",
     auth: 'public',
     responseSchema: wrap('participant', 'ParticipantRecord'),
     statuses: [200, 404],
@@ -815,6 +816,25 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['name', 'color'],
     },
     responseSchema: wrap('participant', 'ParticipantRecord'),
+    statuses: [200, 400, 401, 403, 404],
+  },
+  {
+    method: 'PUT',
+    path: '/participants/{id}/picture',
+    segment: 'participants',
+    tag: 'Participants',
+    summary:
+      'Set or clear your published profile picture (a Clerk image URL; signed-in session only).',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { pictureUrl: { type: ['string', 'null'] } },
+      required: ['pictureUrl'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: { pictureUrl: { type: ['string', 'null'] } },
+    },
     statuses: [200, 400, 401, 403, 404],
   },
 

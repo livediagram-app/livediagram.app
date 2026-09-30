@@ -38,7 +38,15 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // granted it (docs/specs/013-workspace/tab-scoped-share-links.md); the ticket takes all three to the room.
     const grant = await gateGrant(ctx, id, liveDoc.ownerId, liveDoc.teamId);
     if (!grant) return notFound();
-    const ticket = await createWsTicket(env, id, grant);
+    // A verified Clerk session (not an API token, not a guest header) marks the ticket as an
+    // account session: the room lets it publish a profile picture and see others'
+    // (docs/specs/014-identity/profile-picture.md §6).
+    const ticket = await createWsTicket(env, id, {
+      role: grant.role,
+      tabScope: grant.tabScope,
+      shareCode: grant.shareCode,
+      account: ctx.clerkUserId !== null,
+    });
     return json({ ticket });
   }
 
@@ -56,6 +64,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // (docs/specs/013-workspace/tab-scoped-share-links.md). Null for the owner and a team member.
     let tabScope: string | null = null;
     let shareCode: string | null = null;
+    // Only a ticket can say the session is a verified account; every other leg is anonymous.
+    let account = false;
     const claimedOwnerId = url.searchParams.get('o');
     // Gate-only projection — the upgrade uses only ownerId/teamId. A document
     // in the Trash (docs/specs/013-workspace/trash.md) reads as missing, so no
@@ -81,7 +91,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // leg); a personal guest owner's id stays an unguessable UUID.
     const isOwnerUpgrade = isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
     if (admission) {
-      ({ role, tabScope, shareCode } = admission);
+      ({ role, tabScope, shareCode, account } = admission);
     } else if (isOwnerUpgrade) {
       role = 'edit';
     } else {
@@ -134,6 +144,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // none (docs/specs/013-workspace/tab-scoped-share-links.md).
     forwarded.headers.set('X-Verified-Tab-Scope', tabScope ?? '');
     forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
+    // Whether a verified account holds this session (docs/specs/014-identity/profile-picture.md §6),
+    // set on every path for the same reason as the headers above.
+    forwarded.headers.set('X-Verified-Account', account ? '1' : '0');
     return stub.fetch(forwarded);
   }
 

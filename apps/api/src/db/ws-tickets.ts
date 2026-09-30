@@ -17,7 +17,15 @@ const WS_TICKET_TTL_MS = 60_000;
 // What a ticket admits its holder with: the role, and for a share-link
 // visitor the tab scope and the code (docs/specs/013-workspace/tab-scoped-share-links.md), so the room can
 // confine the session and close it when that code is revoked or rescoped.
-export type WsAdmission = { role: ShareRole; tabScope: string | null; shareCode: string | null };
+//
+// `account` records that a verified Clerk session minted it, so the room knows which sessions may
+// publish a profile picture and which may receive one (docs/specs/014-identity/profile-picture.md §6).
+export type WsAdmission = {
+  role: ShareRole;
+  tabScope: string | null;
+  shareCode: string | null;
+  account: boolean;
+};
 
 export async function createWsTicket(
   env: Env,
@@ -30,7 +38,7 @@ export async function createWsTicket(
   await env.DB.prepare('DELETE FROM ws_tickets WHERE expires_at <= ?').bind(now).run();
   const ticket = crypto.randomUUID();
   await env.DB.prepare(
-    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code) VALUES (?, ?, ?, ?, ?, ?)',
+    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, account) VALUES (?, ?, ?, ?, ?, ?, ?)',
   )
     .bind(
       ticket,
@@ -39,6 +47,7 @@ export async function createWsTicket(
       now + WS_TICKET_TTL_MS,
       admission.tabScope,
       admission.shareCode,
+      admission.account ? 1 : 0,
     )
     .run();
   return ticket;
@@ -55,10 +64,20 @@ export async function consumeWsTicket(
   now = Date.now(),
 ): Promise<WsAdmission | null> {
   const row = await env.DB.prepare(
-    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code',
+    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, account',
   )
     .bind(ticket, documentId, now)
-    .first<{ role: string; tab_scope?: string | null; share_code?: string | null }>();
+    .first<{
+      role: string;
+      tab_scope?: string | null;
+      share_code?: string | null;
+      account?: number | null;
+    }>();
   if (row?.role !== 'edit' && row?.role !== 'view') return null;
-  return { role: row.role, tabScope: row.tab_scope ?? null, shareCode: row.share_code ?? null };
+  return {
+    role: row.role,
+    tabScope: row.tab_scope ?? null,
+    shareCode: row.share_code ?? null,
+    account: row.account === 1,
+  };
 }

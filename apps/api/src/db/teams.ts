@@ -61,6 +61,7 @@ function rowToMember(row: MemberRow): TeamMember {
     // Filled in by listTeamMembers via the participants join; the bare
     // row mapping leaves it null.
     name: null,
+    pictureUrl: null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -107,11 +108,19 @@ export async function listTeamMembers(env: Env, teamId: string): Promise<TeamMem
   // Resolve each connected member's display name from their participant
   // profile (docs/specs/013-workspace/teams.md) so the list shows real names ("Anna Smith"), not
   // just the prettified invite email. Pending / profile-less rows stay
-  // null and the client falls back to the email.
+  // null and the client falls back to the email. A JOINED member's published
+  // profile picture rides along (docs/specs/014-identity/profile-picture.md §5): the list is
+  // read only by signed-in members, and a pending invitee has not joined anyone yet.
   return Promise.all(
-    members.map(async (m) =>
-      m.userId ? { ...m, name: (await getParticipant(env, m.userId))?.name ?? null } : m,
-    ),
+    members.map(async (m) => {
+      if (!m.userId) return m;
+      const p = await getParticipant(env, m.userId);
+      return {
+        ...m,
+        name: p?.name ?? null,
+        pictureUrl: m.status === 'joined' ? (p?.pictureUrl ?? null) : null,
+      };
+    }),
   );
 }
 
